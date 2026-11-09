@@ -1,0 +1,120 @@
+{
+  "at": "2026-11-05T07:41:39.704553+00:00",
+  "rows": [
+    {
+      "mode": "original-async",
+      "warm": 500,
+      "iterations": 2000,
+      "checks": {
+        "synchronousPromiseRejected": true,
+        "readFailurePreserved": true,
+        "originalSensitiveExceptionNotExposed": true,
+        "pendingRootMapEmpty": true,
+        "allMetricValuesValid": true
+      },
+      "primaryMainDelta": {
+        "rss": 2424832,
+        "heapUsed": 19553308,
+        "heapTotal": 2048000,
+        "external": 0
+      },
+      "actualAppVersions": {
+        "node": "24.19.0",
+        "acorn": "8.17.0",
+        "ada": "3.4.4",
+        "amaro": "1.1.10",
+        "ares": "1.34.6",
+        "brotli": "1.2.0",
+        "cldr": "48.0",
+        "icu": "78.2",
+        "llhttp": "9.4.3",
+        "merve": "1.2.2",
+        "modules": "146",
+        "napi": "10",
+        "nbytes": "0.1.4",
+        "ncrypto": "0.0.1",
+        "nghttp2": "1.69.0",
+        "nghttp3": "",
+        "ngtcp2": "",
+        "openssl": "0.0.0",
+        "simdjson": "4.6.4",
+        "simdutf": "7.7.0",
+        "sqlite": "3.53.3",
+        "tz": "2025c",
+        "undici": "7.29.0",
+        "unicode": "17.0",
+        "uv": "1.52.1",
+        "uvwasi": "0.0.23",
+        "v8": "14.8.178.38-electron.0",
+        "zlib": "1.3.2.1-motley",
+        "zstd": "1.6.0",
+        "electron": "42.11.14",
+        "chrome": "148.0.7778.280"
+      },
+      "normalExit": {
+        "pid": 37635,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "mode": "existing-sync",
+      "warm": 500,
+      "iterations": 2000,
+      "checks": {
+        "synchronousPromiseRejected": true,
+        "readFailurePreserved": true,
+        "originalSensitiveExceptionNotExposed": true,
+        "pendingRootMapEmpty": true,
+        "allMetricValuesValid": true
+      },
+      "primaryMainDelta": {
+        "rss": 475136,
+        "heapUsed": 14648304,
+        "heapTotal": 262144,
+        "external": 0
+      },
+      "actualAppVersions": {
+        "node": "24.19.0",
+        "acorn": "8.17.0",
+        "ada": "3.4.4",
+        "amaro": "1.1.10",
+        "ares": "1.34.6",
+        "brotli": "1.2.0",
+        "cldr": "48.0",
+        "icu": "78.2",
+        "llhttp": "9.4.3",
+        "merve": "1.2.2",
+        "modules": "146",
+        "napi": "10",
+        "nbytes": "0.1.4",
+        "ncrypto": "0.0.1",
+        "nghttp2": "1.69.0",
+        "nghttp3": "",
+        "ngtcp2": "",
+        "openssl": "0.0.0",
+        "simdjson": "4.6.4",
+        "simdutf": "7.7.0",
+        "sqlite": "3.53.3",
+        "tz": "2025c",
+        "undici": "7.29.0",
+        "unicode": "17.0",
+        "uv": "1.52.1",
+        "uvwasi": "0.0.23",
+        "v8": "14.8.178.38-electron.0",
+        "zlib": "1.3.2.1-motley",
+        "zstd": "1.6.0",
+        "electron": "42.11.14",
+        "chrome": "148.0.7778.280"
+      },
+      "normalExit": {
+        "pid": 38204,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "scope": "Two fresh actual browser App020 instances, same immutable package/unchanged shared harness and exact same synchronous getter, original default async vs existing synchronous:true;500warm+20s naturalsettle+2000calls; no forceGC/model/CLI/UIinput/systemclipboard. Engineering allocation control, not full5page T111.",
+  "conclusion": "Existing synchronous mode returns valid same-contract metric values, rejects Promise and preserves intentionally sanitized exceptions/root cleanup. In this actualApp control async main RSS grows2424832B vs sync475136B; heap deltas19553308B vs14648304B. Confirms observation mode contributes allocation/residency; no proof it explains all originalApp/renderer growth. Use existing sync mode only for proven synchronous getAppMetrics in next originalfull driver; keep all7originalpoints/35+5/1800s/samplerHz/thresholds and originalsix.",
+  "formalCaseCredit": 0
+}

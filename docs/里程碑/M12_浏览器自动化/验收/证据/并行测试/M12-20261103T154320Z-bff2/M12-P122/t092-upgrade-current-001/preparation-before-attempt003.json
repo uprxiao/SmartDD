@@ -1,0 +1,288 @@
+{
+  "schema": "m12-t092-upgrade-preparation-v1",
+  "at": "2026-11-06T02:50:19Z",
+  "root": "/private/tmp/willyou-m12-t092-upgrade-001",
+  "status": "static-prepared-no-app-started",
+  "case": {
+    "id": "M12-T092",
+    "association": "O13 / R06.1",
+    "layers": [
+      "A"
+    ],
+    "preconditions": "用不含浏览器应用的旧版本数据目录升级",
+    "steps": "启动新版本，查看已有项目的选用状态",
+    "expected": "已有项目不自动开启浏览器，界面提示用户可自行开启"
+  },
+  "criteria": [
+    {
+      "id": "T092-C01",
+      "expected": "旧包真实启动本轮全新隔离userData，原目录中存在两个合成项目且资源catalog不含browser；不使用日常数据。"
+    },
+    {
+      "id": "T092-C02",
+      "expected": "旧包正常退出；同一userData由未修改App022启动，两个原项目身份保留。"
+    },
+    {
+      "id": "T092-C03",
+      "expected": "真实UI进入两个原项目应用页，浏览器未自动开启；DOM switch未勾选、只读IPC与私有SQLite选用记录互证。"
+    },
+    {
+      "id": "T092-C04",
+      "expected": "可见页面启用说明及浏览器启用label/可用开关或明确自行开启入口表达用户可自行开启；保留DOM/ARIA/截图，Root按原语义复核，不额外要求旧项目字面。"
+    },
+    {
+      "id": "T092-C05",
+      "expected": "原始结果/错误分类/截图/日志/源与包身份留证，正常退出、精确自有进程/端口清场；不改变验收选用状态。"
+    }
+  ],
+  "priorEvidence": {
+    "formal": "原T092仍待执行，当前continuation与轮次没有T091/T092实际升级交付；不复用别条UI当本条",
+    "M11OldPackage": "原公开M11临时包已不存在，已读原安装result定位，仅复用其历史身份事实",
+    "installedOldSource": "/Applications/WillYou.app，version0.1.1 / commit a64e751d1eff6a4dedfa571fae2e90369415c752 dirty=true，不冒充44b公开M11包；仅文件读取/复制"
+  },
+  "oldCopy": {
+    "source": "/Applications/WillYou.app",
+    "dest": "/private/tmp/willyou-m12-t092-upgrade-001/old-app/WillYou.app",
+    "sourceUnchanged": true,
+    "exactPayloadEntries": 20060,
+    "treeSha256": "c8564ba30cc3d1744e9d4c3f93062d1854d23562f30997f78cf3b1079efbc88c",
+    "seconds": 8.663
+  },
+  "packages": [
+    {
+      "kind": "old",
+      "app": "/private/tmp/willyou-m12-t092-upgrade-001/old-app/WillYou.app",
+      "version": "0.1.1",
+      "bundleId": "com.smartdd.desktop",
+      "executable": "/private/tmp/willyou-m12-t092-upgrade-001/old-app/WillYou.app/Contents/MacOS/WillYou",
+      "asarSha256": "f1b2c0ec1bc65a37c44c6ae51f70d33503321c78b7cd1d123f0fdb17d53b80cc",
+      "native": {
+        "native/willyou-files": "cbed256bf528b032f8a004252672d8a77d9f6403751380871f8dd16c6f26f736",
+        "native/smartdd-voice": "3cfc03e8efc2993803d1332e34b28d460ed2ece7e1b40287d9605f86c9aca880",
+        "native/willyou-foxmail": "f4983a40160631cd91a96d39d3fc4bd5b18b43436338ff8386e7ebe1a89fc5ea",
+        "native/willyou-app": "4fb7e02cbc8b5b1ff6f0f47219f065c7448c4d95d772fb506110e527ed993b7e",
+        "native/willyou-process-identity": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10"
+      },
+      "catalog": {
+        "adapters": [
+          {
+            "agentId": "claude-code",
+            "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+            "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+            "version": "1.0.0"
+          },
+          {
+            "agentId": "claude-code",
+            "hash": "7284d69ee91989050dbcae769df0db4b6465620a0e6bac2fce04382cf2f54478",
+            "path": "adapters/claude-code/1.1.0/7284d69ee91989050dbcae769df0db4b6465620a0e6bac2fce04382cf2f54478",
+            "version": "1.1.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+            "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+            "version": "1.0.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "89b38cca2f5123881372b62687c48a4d4a17bc1b379bd3c2a679ad9da4c2c75f",
+            "path": "adapters/codex/1.1.0/89b38cca2f5123881372b62687c48a4d4a17bc1b379bd3c2a679ad9da4c2c75f",
+            "version": "1.1.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "8145898dc3ba2b292694ca999cae39911954ef256617ed5bb9df119050c9ec5d",
+            "path": "adapters/codex/1.2.0/8145898dc3ba2b292694ca999cae39911954ef256617ed5bb9df119050c9ec5d",
+            "version": "1.2.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655",
+            "path": "adapters/codex/1.3.0/765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655",
+            "version": "1.3.0"
+          }
+        ],
+        "apps": [
+          {
+            "appId": "zentao",
+            "hash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+            "path": "apps/zentao/1.1.0/4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+            "version": "1.1.0"
+          },
+          {
+            "appId": "mail",
+            "hash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "path": "apps/mail/1.1.0/7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "version": "1.1.0"
+          },
+          {
+            "appId": "sample-kv",
+            "hash": "2fa22e7345c54bcb2b22552bf39189ec848c682154f43cc010f3ada6cee6151c",
+            "path": "apps/sample-kv/1.0.0/2fa22e7345c54bcb2b22552bf39189ec848c682154f43cc010f3ada6cee6151c",
+            "version": "1.0.0"
+          }
+        ],
+        "build": {
+          "appVersion": "0.1.1",
+          "commit": "a64e751d1eff6a4dedfa571fae2e90369415c752",
+          "dirty": true,
+          "resourceSetHash": "408fbe36456ddb988ff67aa141720a3cf5592b8184cfaac7e44b75832789ea32"
+        },
+        "indexHash": "deab70881f6bb7bb98e91db5073c474753a25c7120044702a0b094c40a33356b",
+        "runtimes": [
+          {
+            "bridgeEntry": "mcp-bridge.cjs",
+            "hash": "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+            "id": "applications",
+            "path": "runtimes/adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+            "protocolMajor": 1
+          }
+        ],
+        "schema": "willyou-capability-bundles-v1"
+      }
+    },
+    {
+      "kind": "current",
+      "app": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app",
+      "version": "0.1.1",
+      "bundleId": "com.smartdd.desktop",
+      "executable": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "asarSha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
+      "native": {
+        "native/willyou-files": "cbed256bf528b032f8a004252672d8a77d9f6403751380871f8dd16c6f26f736",
+        "native/smartdd-voice": "3cfc03e8efc2993803d1332e34b28d460ed2ece7e1b40287d9605f86c9aca880",
+        "native/willyou-foxmail": "f4983a40160631cd91a96d39d3fc4bd5b18b43436338ff8386e7ebe1a89fc5ea",
+        "native/willyou-app": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+        "native/willyou-process-identity": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10"
+      },
+      "catalog": {
+        "adapters": [
+          {
+            "agentId": "claude-code",
+            "hash": "1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+            "path": "adapters/claude-code/1.0.0/1967e11726d9479645e8969a7a7e87c633359b11559c806bd2532cf2794d49ab",
+            "version": "1.0.0"
+          },
+          {
+            "agentId": "claude-code",
+            "hash": "7284d69ee91989050dbcae769df0db4b6465620a0e6bac2fce04382cf2f54478",
+            "path": "adapters/claude-code/1.1.0/7284d69ee91989050dbcae769df0db4b6465620a0e6bac2fce04382cf2f54478",
+            "version": "1.1.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+            "path": "adapters/codex/1.0.0/1659d62fd8bc1afac617ad98915cf2d22288dfe4cbe634fc57889823181413f0",
+            "version": "1.0.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "89b38cca2f5123881372b62687c48a4d4a17bc1b379bd3c2a679ad9da4c2c75f",
+            "path": "adapters/codex/1.1.0/89b38cca2f5123881372b62687c48a4d4a17bc1b379bd3c2a679ad9da4c2c75f",
+            "version": "1.1.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "8145898dc3ba2b292694ca999cae39911954ef256617ed5bb9df119050c9ec5d",
+            "path": "adapters/codex/1.2.0/8145898dc3ba2b292694ca999cae39911954ef256617ed5bb9df119050c9ec5d",
+            "version": "1.2.0"
+          },
+          {
+            "agentId": "codex",
+            "hash": "765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655",
+            "path": "adapters/codex/1.3.0/765fdc8b63b2922ca929d0719103cec464fa9b082c27f4c734d4931070ce8655",
+            "version": "1.3.0"
+          }
+        ],
+        "apps": [
+          {
+            "appId": "zentao",
+            "hash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+            "path": "apps/zentao/1.1.0/4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+            "version": "1.1.0"
+          },
+          {
+            "appId": "mail",
+            "hash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "path": "apps/mail/1.1.0/7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+            "version": "1.1.0"
+          },
+          {
+            "appId": "sample-kv",
+            "hash": "2fa22e7345c54bcb2b22552bf39189ec848c682154f43cc010f3ada6cee6151c",
+            "path": "apps/sample-kv/1.0.0/2fa22e7345c54bcb2b22552bf39189ec848c682154f43cc010f3ada6cee6151c",
+            "version": "1.0.0"
+          },
+          {
+            "appId": "browser",
+            "hash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+            "path": "apps/browser/0.1.1/d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+            "version": "0.1.1"
+          }
+        ],
+        "build": {
+          "appVersion": "0.1.1",
+          "commit": "3e78e496bde068b8b33644ac5df680eac3c76581",
+          "dirty": true,
+          "resourceSetHash": "3772bc07684809cb4b4d57b0ae2d3776a8ddfc589595eddfed54ac353248a677"
+        },
+        "indexHash": "bd5fb2006fb46bbf99a5f484b292be611fb3c9a731ef96b37d29c10253e33540",
+        "runtimes": [
+          {
+            "bridgeEntry": "mcp-bridge.cjs",
+            "hash": "adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+            "id": "applications",
+            "path": "runtimes/adc15d5422904ec27ee9216e702e8a05139f7a49085aca2774b29d6249ad7625",
+            "protocolMajor": 1
+          }
+        ],
+        "schema": "willyou-capability-bundles-v1"
+      }
+    }
+  ],
+  "sourceInputManifest": {
+    "path": "/private/tmp/willyou-m12-p114-source-026/source-inputs.json",
+    "sha256": "345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9"
+  },
+  "drivers": [
+    {
+      "path": "/private/tmp/willyou-m12-p114-source-026/source/scripts/lib/electron-harness.mjs",
+      "sha256": "1a1f1ec56674175e6aa15bad7a7ff0660415bad59b595c3d41d8e6aaee55cfd3"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p114-source-026/source/scripts/lib/app-focus-guard.mjs",
+      "sha256": "78b555426c3e340899c308f198937f4129318c7a10da144a7eb11e8439e251b7"
+    }
+  ],
+  "documentInputs": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/AGENTS.md",
+      "sha256": "ae5d554de277aa79a9749eed28874b3cdf3a2ba12e8fef39cb109627130d413e"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/README.md",
+      "sha256": "4941e5919b136b7d792505795ca147630b0d53dbb68a06f0c66affb365c51292"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "sha256": "a3e42e4056990c08f05d5659bac80077ef7e5872b74491c0692485d55e327c47"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/技研/技术方案.md",
+      "sha256": "03e29593d05a0ac0c34d34f0262c5d5c1ce9910839073db60e32c42a7f4aee81"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "sha256": "83d4fc414d18f2d8a680003b5fb32c8493bca99ed569509c3517c1529a1f6e2a"
+    }
+  ],
+  "executionBoundary": "No Native/App/UI/OS/PTY/CLI started in preparation. Runtime gate requires Root resource lease. No tasks/AI/CLI needed. Project creation only oldApp preparation RPC; actual upgrade navigation via guarded trueUI. No SQL writes or direct selection mutation. No global activation or CUA path selection.",
+  "externalDriver": {
+    "path": "/private/tmp/willyou-m12-t092-upgrade-001/run.mjs",
+    "sha256": "aa963ff841b76555d743b31de0400e221c9a3a3570f27c7253c5a006978c04c5",
+    "syntaxCheck": "node --check exit0; static only"
+  },
+  "windowLabel": "[A] M12 T092 App022 旧项目升级",
+  "initialFocusPolicy": "After newApp health/prerequisites and one setup reload, set only exact owned native window title; preserve UI structure. Passive Native+DOM focus wait bounded90000ms, require3 stable samples with exact window/webContents IDs; no activation/rearm.",
+  "resume": "Reuse actual oldApp exited0/null and successful independent readonly oldDB checkpoint; never rerun oldApp or prereq projects. Original readonly-observer failure cause unproven and retained."
+}

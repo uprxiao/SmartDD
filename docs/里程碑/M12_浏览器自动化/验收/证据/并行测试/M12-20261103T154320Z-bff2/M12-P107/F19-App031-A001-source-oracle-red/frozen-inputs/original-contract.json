@@ -1,0 +1,60 @@
+{
+  "parent": "M12-T130",
+  "originalCase": {
+    "id": "M9-T-F19",
+    "group": "F",
+    "title": "DOCX预览",
+    "requirements": [
+      "M9-R06.9"
+    ],
+    "level": "单元／集成／安装端到端",
+    "environments": [
+      "I",
+      "A"
+    ],
+    "data": [
+      "D07"
+    ],
+    "steps": "表格/图片/页眉/中文字体/修订docx打开并查看。",
+    "expected": "Document渲染结果与fixture参照逐项记录；不宣称未验证版式/修订/写回等价。",
+    "source": "V F10",
+    "prototype": "PS-viewer",
+    "basis": "参考事实＋迁移设计",
+    "status": "通过",
+    "evidence": [
+      "证据/m9-acceptance-docx-preview-dev166-r97-20261020.json",
+      "证据/并行测试/M9-20261021T005835Z-9de5-12b28f/M9-G147/attempt-004/result.json",
+      "证据/m9-acceptance-docx-legacy-controls-complete-r167-20261023-9de5.json"
+    ],
+    "actual_result": "DEV166完整I/A：3新真实FileService/root/原r97OfficePagesWorker/nativeLibreOffice集成与15原回归共18全过0skip；含修订、明确缺失字体、生成无修订对照三份 genuine DOCX 各两页A4，独立Poppler/stdlib核对2x2表格全部cell/225pt列距、两页页眉页脚、中文、64x32源绿图144x72pt/RGB全像素及alpha蒙版、修订两段文本或clean输入无删除段、源ZIP名称/顺序/全部part hash。正常r97三输入×浅深6组，真实100%缩放/滚轮到第2页，12实际canvas非空/首图green18145像素/二页0，原UI读取的PDF回执和chunk拼接hash一致且各作独立核验；只读/无editor、零save，6源bytes/inode/mtime不变。30原RPC入参/结果JSON及12原Worker请求/回包V8 hash核验，6parse线程均退出（正常terminate的exitCode1），8handler/Worker构造恢复，App正常0/null/私有进程消失。实际字体差异明确：正常声明LiberationSans/NotoSansCJKSC，PDF字体集合LiberationSans/Bold、ArialUnicodeMS、AppleColorEmoji；缺字体输入变LiberationSerif/Bold等，已看实际canvas中文/页眉页脚/图/插入下划线与删除线，未声称原声明字体全可用/同字形。clean仅另生成输入，不是App接受修订；评论UI、Show/Hide redlines、RequestEdits、DOCX写回、Word/Codex全像素及其它平台未据此通过。类型/新鲜82运行及原r97六smoke继承，生产/P/native/依赖/版本0改，1363恢复输入/4验证delta。首15过3红因oracle误把同尺寸白alpha当RGB图，按PDF对象类型区分后保留精确RGB/alpha原断言并18过；离线审计/driver最后V8谓词由不存在delivered改deliveredAt，独立对保存的6回包重验同强条件，交互/数据不变且测试版driver留存。\n2026-10-23T13:03:15.725337+00:00 r167-G147004-inline-break-red：新默认legacy候选真实App先完成浅色三份新rich文档，含真实PNG64×32/1与3页/Zoom125与Fit/实际hover、keyboard focus、dock/undock、末页导航和scroll同步；原F19 revisions.docx（ece314…b859）预期2页，实际tracked只有1页且丢J11 SECOND PAGE ORIGINAL，原20s页数等待首停。与原附件、保真、修改及来源合同无关，不改预期。root同一原件新增2组件用例均原样复现1页红，确认docx-preview splitBySection原地截断首份model，第二份tracked复用后丢尾；独立parse候选修复已使相关48测/两类型通过，尚待新App A。前3行绿不计本条完整，旧原生PDF I/A绿保留其历史边界；A001/002 driver红、A003 hover10s未定因及cleanupOnly均保留，不冒正常退出。\n2026-10-23T13:26:47.656648+00:00 r167 DOCX完整归账：M9-DEV-121已修复并真实复验：每个clean/tracked独立解析，原同run分页符后第二页文本恢复；同原fixture2测先红后绿、48相关/两类型、native6、G144I3/P12通过。原G146真实源/native/WorkerI5因20main/preload及native未变按hash保留，当前A006原3复杂DOCX×两主题各2页/表4格/64×32已解码图/页眉页脚中文和修订内容逐项记录，真实滚动页2→1，12源bytes/inode/size/mtimeNs/ctimeNs不变，正常0/null。实际computed CSS字体集合明确归档，未知glyph font/Word像素/完整OOXML/修订接受拒绝写回不声称。原F19旧PDF绿与G147004新红均保留。",
+    "defects": [
+      "M9-DEV-121"
+    ],
+    "legacy_parent_requirements": [
+      "M9-R06",
+      "M9-R05"
+    ],
+    "prototype_pages": [
+      "P11"
+    ],
+    "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+    "prototype_note": "本条原约定I/A，无P源码、布局、字体资产变化；真实DOCX只读页投影与原型示例分开。记录实际字体替换和修订内容呈现，不认定原型/未验控件/写回/完整视觉等价。",
+    "decision_dependencies": [],
+    "engineering_dependencies": [],
+    "evidence_dependencies": [],
+    "scope": "m9-local",
+    "applicability": {
+      "classification": "current-local",
+      "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+      "deferred_branch": null,
+      "current_requirements": [
+        "M9-R06.9"
+      ],
+      "deferred_requirements": [],
+      "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+    }
+  },
+  "currentLayer": "A only",
+  "currentScope": "Original final r167 current-defaultlegacy3complexDOCX×light/dark6:2pages,table4cells,decoded64x32image,header/footerChinese,revisions/fontfallback,real scroll2→1,fullsourceZIP/stat unchanged. Original older nativePDFI separate, not replayed/misrepresented as currentdefaultA.",
+  "notANewResultLedger": true
+}

@@ -1,0 +1,11 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+const root='/private/tmp/willyou-m12-p089-coalition-long-001/analysis-prior-004',repo='/Users/liubu/hx/4.uprxiao/SmartDD';
+assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,root+'/cache');assert.equal(process.env.NODE_COMPILE_CACHE,root+'/cache-node');
+const {default:ts}=await import(pathToFileURL('/private/tmp/willyou-m12-p078-source-023/source/node_modules/typescript/lib/typescript.js'));
+const files=new Map([[repo+'/src/main/core/applications/tool-service.ts',await readFile(root+'/candidate/tool-service.ts','utf8')],[repo+'/src/main/core/applications/__tests__/tool-service.test.ts',await readFile(root+'/candidate/tool-service.test.ts','utf8')]]);
+const config=ts.readConfigFile(repo+'/tsconfig.node.json',ts.sys.readFile);assert(!config.error);const parsed=ts.parseJsonConfigFileContent(config.config,ts.sys,repo,{noEmit:true,incremental:false});assert.equal(parsed.errors.length,0);
+const host=ts.createCompilerHost(parsed.options),original=host.getSourceFile.bind(host);host.getSourceFile=(name,version,...rest)=>files.has(name)?ts.createSourceFile(name,files.get(name),version,true):original(name,version,...rest);
+const program=ts.createProgram([...new Set([...parsed.fileNames,...files.keys()])],parsed.options,host),diagnostics=ts.getPreEmitDiagnostics(program).map(d=>({file:d.file?.fileName,line:d.file?d.file.getLineAndCharacterOfPosition(d.start??0).line+1:null,code:d.code,message:ts.flattenDiagnosticMessageText(d.messageText,' ')}));
+const out={at:new Date().toISOString(),scope:'Read-only virtual source overlay typecheck, candidate not applied, no Native/unit/App/model executed',diagnostics,exitCode:diagnostics.length?1:0,originalProjectFiles:parsed.fileNames.length,candidateFiles:[...files.keys()],NativeExecuted:false};await writeFile(root+'/candidate-typecheck.json',JSON.stringify(out,null,2)+'\n');console.log(JSON.stringify({exitCode:out.exitCode,diagnostics:diagnostics.slice(0,15),NativeExecuted:false}));process.exitCode=out.exitCode;

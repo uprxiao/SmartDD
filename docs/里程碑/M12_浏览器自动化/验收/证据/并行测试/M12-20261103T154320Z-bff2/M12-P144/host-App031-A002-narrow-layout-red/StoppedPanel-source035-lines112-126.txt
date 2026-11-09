@@ -1,0 +1,15 @@
+112:             <div className="flex items-center gap-2">
+113:               <Select value={profileId} onValueChange={(v) => setProfileId(v as string | null)}>
+114:                 <SelectTrigger className="w-56" data-testid="task-resume-profile">
+115:                   <SelectValue placeholder={t('task.pickProfile')} />
+116:                 </SelectTrigger>
+117:                 <SelectContent>
+118:                   {candidates.map((p) => (
+119:                     <SelectItem key={p.id} value={p.id}>
+120:                       {p.name}
+121:                       <ProfileHealthMark profile={p} />
+122:                     </SelectItem>
+123:                   ))}
+124:                 </SelectContent>
+125:               </Select>
+126:               <Button data-testid="task-resume" disabled={!chosen || resuming} onClick={() => void resume()}>

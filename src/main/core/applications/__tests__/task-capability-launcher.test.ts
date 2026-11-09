@@ -73,6 +73,7 @@ beforeEach(async({task})=>{
  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
  vi.spyOn(managed.broker,'prepare').mockImplementation(async(...args)=>{const value=await prepare(...args);handles.set(args[0].ptyId,value.bridge);return value;});
  vi.spyOn(ptys,'kill').mockImplementation(id=>{kill(id);const handle=handles.get(id);if(handle){handles.delete(id);queueFixtureBridgeExit(handle);}});
+
 });
 afterEach(async()=>{
  const failures:unknown[]=[];
@@ -101,17 +102,46 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   const running=await create(),launch=ptys.launches[0],runtime=running.task.runtimeSnapshot!,fixed=(await managed.sessions.get(running.task.id)).snapshot,plan=managed.runs.bridgePreparation(runtime.runId).plan!;
   expect(fixed.schema).toBe(3);expect(fixed.adapterBinding.version).toBe('1.4.0');expect(plan.allowed).toMatchObject([{appId:'mail',capabilityId:'mail.draft.list',entry:'cli'}]);expect(plan.sandbox).toEqual({source:policy.source,digest:policy.digest});
   const token=launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!;expect(token).toMatch(/^[a-f0-9]{64}$/);expect(launch.env![VALUE_PREFIX+'WILLYOU_ENDPOINT']).toBe(managed.cli!.endpoint);expect(launch.env![VALUE_PREFIX+'PATH']).toContain(dirname(realpathSync(resolve('out/native/willyou-app'))));
+  expect(launch.env).not.toHaveProperty('WILLYOU_CLI_INACTIVE');expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_CLI_INACTIVE');
   expect(JSON.stringify(runtime)).not.toContain(token);expect(readFileSync(runtime.manifestPath,'utf8')).not.toContain(token);expect(JSON.stringify(launch.args)).not.toContain(token);
   // R16: the Skill comes from the machine-wide library (rendered and tested in skill-library-service), never per run.
   expect(plan.skills).toEqual([]);expect(fixed.packages[0].skills).toEqual([]);expect(existsSync(join(home,'.agents/skills'))).toBe(false);
+
   expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.cli!.endpoint).slice(0,12)+'.extends=":read-only"');expect(launch.args!.join(' ')).toContain(managed.cli!.endpoint);expect(launch.args!.join(' ')).not.toContain('pending-bootstrap.json');
   expect(await request(token)).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',data:{items:[]},operation:{origin:'cli'}}});
   tasks.kill(running.task.id);await vi.waitFor(()=>expect(ptys.live.size).toBe(0));expect(await request(token)).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+ });
+ async function deselectLastCliApp(){
+  await applications.selections.select({projectId,appId:'mail',enabled:false,expectedRevision:1,connections:{foxmail:null,smtp:null}});
+  await applications.selections.setAdded('browser',true,0);
+  await applications.selections.select({projectId,appId:'browser',enabled:false,expectedRevision:0,connections:{}});
+ }
+ it('keeps identity and snapshot protection with no enabled apps, then authorizes an app enabled in the same run',async()=>{
+  await deselectLastCliApp();const running=await create(),launch=ptys.launches[0],runId=running.task.runtimeSnapshot!.runId;
+  expect(managed.runs.assertActive(runId).snapshot.packages).toEqual([]);
+  expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_CLI_INACTIVE');
+  expect(launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']).toMatch(/^[a-f0-9]{64}$/);
+  expect(launch.args!.join(' ')).toContain('wy_cli_');
+  expect(launch.args).toContain('shell_snapshot');
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:2,connections:{foxmail:null,smtp:null}});
+  expect(managed.runs.assertActive(runId).snapshot.packages.map(p=>p.appId)).toContain('mail');
+  tasks.kill(running.task.id);await vi.waitFor(()=>expect(managed.runs.get(runId).state).toBe('stopped'));
+  expect(()=>managed.runs.assertActive(runId)).toThrow();
+ });
+ it.each(['unverified-policy','unknown-version'] as const)('does not deliver the inactive CLI mode for %s',async fault=>{
+  await deselectLastCliApp();if(fault==='unverified-policy')cliPolicyAvailable=false;else writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "99.0.0";; *) exit 70;; esac\n');
+  const running=await create(),launch=ptys.launches[0];expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_CLI_INACTIVE');expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');
+  expect(launch.env![VALUE_PREFIX+'PATH']??'').not.toContain(dirname(realpathSync(resolve('out/native/willyou-app'))));tasks.kill(running.task.id);
+ });
+ it('rejects an AI profile trying to inject the host inactive marker',async()=>{
+  const original=profiles.get(codexId);profiles.update(codexId,{name:original.name,runner:'codex',executable:profiles.resolve(codexId).command,args:[],env:[{name:'WILLYOU_CLI_INACTIVE',value:'1',secret:false}],color:null,isDefault:true});
+  await expect(create()).rejects.toThrow('保留变量');expect(ptys.launches).toEqual([]);
  });
  it('uses the declared MCP fallback without a token or policy injection when effective sandbox is unverified',async()=>{
   cliPolicyAvailable=false;const running=await create(),launch=ptys.launches[0],plan=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId).plan!;
   expect(plan.allowed).toMatchObject([{entry:'mcp'}]);expect(plan.applications[0]).toMatchObject({fallback:true});expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_ENDPOINT');expect(launch.args!.join(' ')).not.toContain('wy_cli_');
   expect(plan.skills).toEqual([]);
+
  });
 
  // M11 T25 regression: FakePTY only; no actual Agent/App/native PTY.
@@ -354,6 +384,7 @@ const seedNativeHistory=(runner:'claude-code'|'codex',id:string,stateRoot=join(h
  writeFileSync(file,JSON.stringify(runner==='codex'?{type:'session_meta',payload:{id,cwd,timestamp:new Date(stamp).toISOString(),originator:'codex_cli_rs'}}:{type:'user',message:{role:'user',content:'synthetic retained native history'}})+'\n');return file;
 };
 
+
 describe('task cancellation before the native fork',()=>{
  it.each(['cancel','prepare-error','host-shutdown','host-shutdown-before-arming'] as const)('settles the known unspawned CLI and bridge after %s during arming',async reason=>{
   await applications.selections.setAdded('mail',true,0);
@@ -527,6 +558,7 @@ describe('ZenTao switch retains already narrowed native-only running work',()=>{
   await x.next();expect(tasks.activePty(loaded.task.id)).toBeNull();expect(ptys.live.has(pty)).toBe(true);expect(tasks.activePty(native.task.id)).toBe(pty);
  },20000);
 });
+
 
 describe('actual host preparation records independent native diagnostics',()=>{
  // R1.0: Skills are not per session, so only the session's own MCP names can collide with a user entry; the user's entry wins.

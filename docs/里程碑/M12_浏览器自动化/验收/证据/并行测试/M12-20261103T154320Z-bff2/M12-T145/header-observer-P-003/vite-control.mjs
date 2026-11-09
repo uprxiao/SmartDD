@@ -1,0 +1,2 @@
+// Serving/cache isolation only, original frozen Vite config retained.
+import completeIncludes from './optimizer-includes.mjs';import original from './reference/control/source/prototypes/m6-codex/vite.config.mjs';const root='/private/tmp/willyou-m12-t145-header-return-P-003';export default{...original,cacheDir:root+'/cache/vite-control',optimizeDeps:{...original.optimizeDeps,include:[...(original.optimizeDeps?.include??[]),...completeIncludes]},server:{...original.server,host:'127.0.0.1',fs:{allow:[root+'/reference/control/source',root+'/deps/packages']}}};

@@ -1,0 +1,131 @@
+/* M12 production view follows the approved shared prototype browser.css. */
+.fw-file-main{display:flex;flex:1;flex-direction:column;min-height:0;overflow:hidden}.fw-file-main[hidden]{display:none}
+.bw-workspace{display:flex;flex-direction:column;flex:1;min-height:0;position:relative;color:var(--text)}
+.bw-toolbar{gap:6px}.bw-nav{display:flex;gap:1px;flex-shrink:0}.bw-address{flex:1;max-width:none;gap:6px;padding:0 6px 0 10px;display:flex;align-items:center;min-width:0}
+.bw-profile{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;font-size:11px;color:var(--secondary);background:var(--hover);border-radius:10px;padding:2px 7px}
+button.bw-profile{border:0;cursor:pointer}
+button.bw-profile:hover{color:var(--text);background:var(--selected)}
+.bw-profile:focus-visible{outline:2px solid #718bb5;outline-offset:3px}
+.bw-address input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:12px;line-height:28px;color:var(--text);padding:0}.bw-address:focus-within{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.bw-page{position:relative;flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;background:var(--surface)}
+.bw-launcher{flex:1;overflow:auto;display:flex;flex-direction:column;gap:28px;padding:28px 28px 32px;color:var(--text)}
+.bw-launcher h2{margin:0 0 14px;font-size:14px;line-height:20px;font-weight:600;color:var(--text)}
+.bw-launcher-tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.bw-launcher-tool{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:0;border-radius:10px;background:var(--hover);color:var(--text);font-size:13px;text-align:left}
+.bw-launcher-tool:hover:not(:disabled){filter:brightness(.97)}
+.bw-launcher-tool span{flex:1}
+.bw-launcher-tool kbd{font:11px var(--mono);color:var(--secondary);padding:1px 6px;border-radius:6px;background:var(--bg)}
+.bw-launcher-sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px 8px}
+.bw-launcher-site{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 6px;border:0;border-radius:12px;background:none;color:var(--text);min-width:0}
+.bw-launcher-site:hover{background:var(--hover)}
+.bw-launcher-icon{display:grid;place-items:center;width:48px;height:48px;color:var(--secondary)}
+.bw-launcher-name{max-width:100%;font-size:13px;line-height:18px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bw-launcher-empty{margin:0;font-size:13px;line-height:20px;color:var(--secondary)}
+.bw-failure{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 24px;text-align:center;color:var(--secondary)}.bw-failure h2{font-size:18px;line-height:24px;font-weight:550;color:var(--text);overflow-wrap:anywhere}.bw-failure code{font-size:11px}.bw-failure button{border:1px solid var(--border);padding:6px 14px;border-radius:8px}
+.bw-banner,.bw-find,.bw-menu-row{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:12px;line-height:18px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}.bw-banner span{flex:1;overflow-wrap:anywhere}.bw-banner button,.bw-menu-row button{padding:3px 8px;border-radius:6px;background:var(--hover)}.bw-find input{flex:1;min-width:0;height:28px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:0 9px;color:var(--text)}
+.bw-progress{position:relative;height:0;flex-shrink:0;z-index:1;pointer-events:none}.bw-progress::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);background-size:40% 100%;background-repeat:no-repeat;animation:bw-progress .9s linear infinite}@keyframes bw-progress{from{background-position:-40% 0}to{background-position:140% 0}}
+.bw-tab-icon{width:14px;height:14px;object-fit:contain;flex-shrink:0}
+.bw-page-snapshot{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.bw-dismiss{position:absolute;inset:0;z-index:58;background:transparent}.bw-menu{position:absolute;top:51px;right:12px;max-height:min(65vh,520px);overflow:auto;z-index:59;background:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:12px;min-width:220px;max-width:90%;padding:6px}.bw-menu button{display:flex;align-items:center;gap:8px;min-height:32px;width:100%;padding:6px 9px;font-size:12px;text-align:left;border-radius:6px;word-break:break-all}.bw-menu button:hover{background:var(--hover)}.bw-menu kbd{margin-left:auto;font:11px var(--mono);color:var(--muted)}
+/* Browser surfaces inherit the approved prototype shadow without changing other app panels. */
+.bw-workspace,.bw-access-floating{--shadow:0 12px 44px #00000012,0 2px 8px #00000008}
+.ydark .bw-workspace,.ydark .bw-access-floating{--shadow:0 12px 44px #00000044,0 2px 8px #00000022}
+/* Approved B14/PanelDialog geometry; this scrim belongs to the browser pane. */
+.bw-scrim{position:absolute;inset:0;z-index:60;border-radius:inherit;background:#0005;display:flex;align-items:center;justify-content:center}
+.bw-dialog{background:var(--bg);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:min(480px,calc(100% - 32px));padding:0;display:flex;flex-direction:column;max-height:calc(100% - 32px);min-width:0}
+.bw-dialog p{color:var(--secondary);margin:12px 0 24px}
+.bw-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 8px 22px}.bw-dialog-head h2{font-size:16px;line-height:22px;font-weight:600;margin:0;color:var(--text)}
+.bw-dialog-body{padding:6px 22px 14px;overflow:auto;display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--text)}.bw-dialog-actions{display:flex;justify-content:flex-end;gap:12px;padding:12px 18px 18px;border-top:1px solid var(--border);flex-wrap:wrap}.bw-dialog-actions button{font-size:12px;padding:8px 12px;border:1px solid var(--border);border-radius:8px}.bw-dialog-actions button:last-child{background:var(--primary);color:var(--on-primary)}
+.bw-hint{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:18px;color:var(--secondary);margin:0}
+.bw-hint>svg{flex-shrink:0;margin-top:3px}
+.bw-warn-list code,.bw-hint code{font:12px var(--mono);background:var(--hover);border-radius:4px;padding:0 4px}
+.bw-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12px}
+.bw-kv>span{color:var(--secondary)}
+.bw-kv>strong{font-weight:500;overflow-wrap:anywhere}
+.bw-radios{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.bw-radios legend{font-size:12px;color:var(--secondary);margin-bottom:6px;padding:0}
+.bw-radios label{display:flex;align-items:center;gap:8px;font-size:13px}
+.bw-radios input{margin:0}
+.bw-restart{color:#9a6200}
+.bw-row-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bw-mini{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;height:26px;padding:0 9px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg);color:var(--text);white-space:nowrap}.bw-mini:hover{background:var(--hover)}.bw-mini:disabled{opacity:.45;pointer-events:none}.bw-mini-danger{color:#c0392b;border-color:#e6b0aa}.bw-danger-text{color:#c0392b}.ydark .bw-danger-text{color:#ef8f84}.bw-danger-text{font-size:12px;line-height:18px;overflow-wrap:anywhere}
+
+/* Approved B12 profile list and site-decision layout. */
+.bw-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bw-list li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:9px}
+.bw-list li>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bw-list strong{font-weight:500;font-size:12px;overflow-wrap:anywhere}
+.bw-list small{font-size:11px;color:var(--secondary)}
+.bw-empty-note{font-size:12px;color:var(--muted);margin:0}
+.bw-profiles{display:grid;grid-template-columns:minmax(200px,240px) 1fr;gap:16px;min-height:280px}
+.bw-profile-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.bw-profile-list button{width:100%;display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:9px;text-align:left;color:var(--text)}
+.bw-profile-list button:hover{background:var(--hover)}
+.bw-profile-list button.selected{background:var(--selected)}
+.bw-profile-list button>svg{color:var(--secondary);flex-shrink:0}
+.bw-profile-list button>span{display:flex;flex-direction:column;min-width:0}
+.bw-profile-list strong{font-weight:500;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bw-profile-list small{font-size:11px;color:var(--secondary)}
+.bw-profile-list .bw-add{color:var(--accent);font-size:12px}
+.bw-profile-detail{display:flex;flex-direction:column;gap:8px;min-width:0}
+.bw-profile-detail h3{margin:0;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.bw-profile-detail h4{margin:8px 0 0;font-size:12px;font-weight:600;color:var(--secondary)}
+.bw-dialog-wide{width:min(760px,calc(100% - 32px))}
+@media(max-width:760px){.bw-profiles{grid-template-columns:1fr}}
+
+/* Approved B06 permission prompt; participates in pane layout above the native view. */
+.bw-prompt{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:12px;line-height:18px;background:var(--bg);border-bottom:1px solid var(--border);box-shadow:0 2px 8px #0000000f}
+.bw-prompt>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.bw-prompt code{font:11px var(--mono)}
+.bw-prompt>svg{color:var(--accent);flex-shrink:0}
+
+/* B05 warning/icon and B06 explicit permission choices from the approved prototype. */
+.bw-security{display:inline-flex;align-items:center;flex-shrink:0;color:var(--secondary)}
+.bw-security.bw-certificate{color:#c0392b}
+.bw-failure-actions{display:flex;align-items:center;gap:12px;margin-top:6px}
+.bw-mini-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.bw-mini-primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.bw-danger-link{font-size:12px;color:#c0392b;text-decoration:underline}
+:root[data-theme="dark"] .bw-danger-link{color:#ef8f84}
+
+/* B07 overlay geometry and item states from the approved shared prototype. */
+.bw-downloads{position:absolute;top:48px;right:10px;z-index:40;width:min(400px,calc(100% - 20px));display:flex;flex-direction:column;gap:6px;padding:8px 10px 10px;border:1px solid var(--border);border-radius:12px;background:var(--bg);box-shadow:0 10px 30px rgba(0,0,0,.14);max-height:min(320px,calc(100% - 60px));overflow:auto}
+.bw-downloads-head{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--secondary);padding:0 0 2px}
+.bw-downloads-head strong{color:var(--text);font-weight:600}
+.bw-downloads-head span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bw-download{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)}
+.bw-download>svg{color:var(--secondary);flex-shrink:0}
+.bw-download-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.bw-download-text strong{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bw-download-text span{font-size:11px;color:var(--secondary)}
+.bw-download-meter{display:block;height:3px;border-radius:2px;background:var(--hover);overflow:hidden;margin-top:2px}
+.bw-download-meter>span{display:block;height:100%;background:var(--accent);transition:width .25s}
+.bw-downloads{z-index:59}
+.bw-download-trigger{position:relative}.bw-download-trigger i{position:absolute;right:3px;top:3px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* Approved B06 basic-auth form. */
+.bw-dialog-head p{margin:4px 0 0;font-size:12px;line-height:18px;color:var(--secondary)}
+.bw-form{display:flex;flex-direction:column;gap:10px}
+.bw-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--secondary)}
+.bw-form input{height:32px;border:1px solid var(--border-strong);border-radius:7px;padding:0 10px;font-size:13px;background:var(--surface);color:var(--text)}
+.bw-warn-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:20px}
+.bw-attention{margin:10px 0;padding:10px 12px;border:1px solid #e3a008;border-radius:10px;background:color-mix(in srgb,#e3a008 10%,var(--bg));color:var(--text);font-size:12px;line-height:18px}
+.bw-attention p{margin:4px 0 8px;color:var(--secondary)}
+.bw-agent{background:color-mix(in srgb,var(--accent) 8%,var(--bg));color:var(--text)}.bw-agent svg{color:var(--accent)}
+.bw-paused{background:#fdf4e3;color:#6b4500}:root[data-theme="dark"] .bw-paused{background:#3a2e17;color:#f0d29a}
+.bw-pause,.bw-resume{display:flex;align-items:center;gap:5px;white-space:nowrap}.bw-resume{color:var(--accent)}
+.bw-agent-glow::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 22px color-mix(in srgb,var(--accent) 35%,transparent)}
+.bw-agent-dot{display:block;width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--accent)}
+.bw-access-floating{position:fixed;z-index:90;right:10px;top:52px;bottom:10px;width:min(52vw,660px);min-width:min(300px,50vw);pointer-events:none;border-radius:12px}.bw-access-floating>.bw-scrim{pointer-events:auto}
+
+/* Native WebContentsView is inset inside this border; renderer pseudo-elements
+   alone would be occluded by the native child surface. */
+.bw-page{border:2px solid transparent}.bw-page.bw-agent-glow{border-color:var(--accent)}
+/* Blank content is renderer-owned: its existing glow pseudo-element remains visible. */
+.bw-page:has(>.bw-launcher){border-width:0}
+
+/* M12 browser controls keep visible focus and pointer-pressed states. */
+.fw-web-tab>button:enabled:hover{background:color-mix(in srgb,var(--text) 8%,transparent)}
+.fw-web-tab>button:enabled:active{background:color-mix(in srgb,var(--text) 16%,transparent);color:var(--text)}
+.bw-toolbar button:enabled:active,.fw-tabs>[aria-label="新建网页标签"]:enabled:active{background:color-mix(in srgb,var(--text) 16%,transparent)}
+.bw-toolbar .fw-icon:enabled:active,.fw-tabs>[aria-label="新建网页标签"]:enabled:active{color:var(--text)}
+.fw-web-tab>button:focus-visible,.bw-toolbar .fw-icon:focus-visible,.fw-tabs>[aria-label="新建网页标签"]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}

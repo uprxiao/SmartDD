@@ -1,0 +1,1 @@
+import{createHash}from'node:crypto';import{writeFile}from'node:fs/promises';export const ROOT='/private/tmp/willyou-m12-t043-supplemental-review-001';export const sha=b=>createHash('sha256').update(b).digest('hex');export const save=(n,v)=>writeFile(ROOT+'/'+n,JSON.stringify(v,null,2)+'\n',{mode:0o600});

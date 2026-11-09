@@ -1,0 +1,85 @@
+{
+  "status": "FROZEN_PENDING_ROOT_NATIVE_LEASE",
+  "case": "M12-T130",
+  "subset": "Original M9 F17 unchanged one Native I test over five synthetic fixtures",
+  "privateRoot": "/private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001",
+  "manifest": {
+    "path": "/private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/manifest.json",
+    "sha256": "21399f0232040e90db9091fd32fec7978e9636d6b54a8a4ae0ee76637c543440",
+    "fileCount": 260,
+    "linkCount": 5
+  },
+  "sourceManifestSHA256": "6bef94caf3a7ceb9b7bbcc7061e66ef8693f5065849302382bd8ea0266085af7",
+  "originalTestSHA256": "5f8ac50ec33e1386329adda2ca7e0a5968c7ab5df96afeace9248e1b159344ac",
+  "fixtureCases": 5,
+  "selectedTests": 1,
+  "maxWorkers": 1,
+  "noFileParallelism": true,
+  "resources": [
+    "Node",
+    "compiler-tooling",
+    "NativeFileBroker",
+    "NAPI-watcher",
+    "OS-own-process-observation"
+  ],
+  "forbidden": [
+    "App launch",
+    "frontmost activation",
+    "UI input",
+    "PTY",
+    "HTTP/listener",
+    "auth",
+    "clipboard",
+    "model",
+    "production/public ledger edits"
+  ],
+  "lease": {
+    "path": "/private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/lease.receipt.json",
+    "group": "M12-T130-F17-current-native-I001",
+    "owner": "/root/t125_resume_ready",
+    "mustBindThisReadySHA": true
+  },
+  "cwd": "/private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001",
+  "execute": "env WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/run.mjs --execute",
+  "cleanup": "env WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/cleanup.mjs --verify",
+  "judge": "env NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t130-native-remaining-prep-001/F17-native-I-001/judge.mjs",
+  "expected": "Exactly original1pass, zero skip/todo/fail; original5fixtures and source SHA/inode/mtime/ctime preserved; actual current App026 broker children zero/no signal; current watcher addon loaded; inputs unchanged; independent own-resource allClear. Zero formal increment, original T130 full A/P not covered.",
+  "executedOrCollected": false,
+  "formalNewPasses": 0,
+  "staticChecks": {
+    "syntaxFiles": 9,
+    "allExit0": true,
+    "runtimeASTClosureFiles": 142,
+    "all142MatchOldAndCurrentSource030": true,
+    "resolvedBareEntries": 17,
+    "noMissingImports": true,
+    "fixtureGeneratorOriginalBytes": true
+  },
+  "currentNativeBinding": {
+    "sourceManifest": "/private/tmp/willyou-m12-t091-source-030/source-inputs.json",
+    "sourceManifestSHA256": "6bef94caf3a7ceb9b7bbcc7061e66ef8693f5065849302382bd8ea0266085af7",
+    "installedApp": "/private/tmp/willyou-m12-app026-installer-001/Installed Applications/WillYou.app",
+    "asar": {
+      "path": "/private/tmp/willyou-m12-app026-installer-001/Installed Applications/WillYou.app/Contents/Resources/app.asar",
+      "sha256": "49c38b61f6ed48eddf79aa639af881d7bba7e9eaf881950ffd70f2a76ded5c73"
+    },
+    "executable": {
+      "path": "/private/tmp/willyou-m12-app026-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
+      "sha256": "cdabf32bfb03c44e55c356b86a314d5b01dee2baa9d82be095ace02987e1ba04"
+    },
+    "broker": {
+      "path": "/private/tmp/willyou-m12-app026-installer-001/Installed Applications/WillYou.app/Contents/Resources/native/willyou-files",
+      "sha256": "cbed256bf528b032f8a004252672d8a77d9f6403751380871f8dd16c6f26f736"
+    },
+    "watcher": {
+      "path": "/private/tmp/willyou-m12-app026-installer-001/Installed Applications/WillYou.app/Contents/Resources/app.asar.unpacked/node_modules/@parcel/watcher-darwin-arm64/watcher.node",
+      "sha256": "855e6a77081bd6c2e7893545dcd6438fe8057f91a05d594cdc7d50f5008331e5"
+    },
+    "scope": "Actual current package native files under ordinary Node; no production main/Electron runtime/signature-policy/App A claim. Original electron mock retained. No SQLite imported in runtime AST closure. Watcher loader exact packed ASAR extraction, native addon directly linked from current installed App."
+  },
+  "priorFiveU": {
+    "manifest": "/private/tmp/willyou-m12-t130-native-remaining-prep-001/safe-delivery-001/manifest.json",
+    "sha256": "545e38f1e36461e8c1632a45af900e7b93cffabcb56d01605e92e6c682a8db02",
+    "notRerun": true
+  }
+}

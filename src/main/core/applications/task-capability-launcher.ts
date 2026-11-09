@@ -25,8 +25,9 @@ import {CurrentApplicationAuthorization} from './current-authorization';
 import {SkillLibraryService} from './skill-library-service';
 import {cleanupPreLibraryCopies} from './legacy-copy-cleanup';
 import {retirePreLibraryResources,type PreLibraryRetirement} from './retire-pre-library-resources';
-import type {CodexCliSandboxPlan} from './codex-effective-sandbox';
+import {codexProfileArgsForCli,type CodexCliSandboxPlan} from './codex-effective-sandbox';
 import {createApplicationRunPlan,selectCapabilityEntry,type RunPlanAvailability} from './run-plan';
+
 import { AgentBridgeProcesses } from './agent-bridge-processes';
 import { MacProcessIdentityReader, type ProcessIdentityReader } from './process-identity';
 import { MacUnixPeerIdentityReader, type UnixPeerIdentityReader } from './unix-peer-identity';
@@ -65,7 +66,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly bridges:AgentBridgeProcesses;
   readonly broker:PrivateApplicationBroker;
   readonly bridgeRecovery=new BridgeSupervisor();
-  private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.inspect(taskId,runId);});
+  private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.collectSkillObservations(taskId,runId);},undefined,runId=>this.applications.sessionDiagnostics.forgetSkillObservations(runId));
   private readonly recoveryServices=new Map<string,string>();
   private readonly active=new Map<string,ActiveLaunch>();
   private readonly pending=new Set<Promise<TaskCapabilityLaunch>>();
@@ -145,8 +146,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     // §15.4: the CLI sandbox is delivered only for a version whose declared levels include L0.cli; undeclared versions fail closed.
     if(!this.support.adapters.effective(snapshot.adapterBinding.hash,native.version).levels.includes('L0.cli'))return;
     const inspect=this.options.inspectSandbox??delivery.effectiveSandbox;
+
     if(!inspect)return;
-    this.planningCliPolicies.set(input.taskId,await inspect.call(delivery,input,native));
+    const policy=await inspect.call(delivery,input,native);
+    this.planningCliPolicies.set(input.taskId,policy);
   }
 
   private bindings(projectId:string,appIds:readonly string[]):RunBindingRevision[]{return this.authorization.bindings(projectId,appIds);}
@@ -300,9 +303,9 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
         phase='restricting';this.broker.revokeRun(run.runId);this.cli?.revokeRun(run.runId);await bridge?.bridge.cancelBeforeLaunch();
         await this.runs.restrictToNative(run.runId,cause);effective=false;prepared.release();prepared=this.unavailableRuntime(input,stored,run.runId,cause?.issueCode??'AGENT_ADAPTER_UNSUPPORTED');
-        prepared.snapshot.selfCheck?.issues.push(reason);entry.runtime=prepared;launch.runtime=prepared;launch.args=[];launch.env={};launch.initialInput=undefined;phase='native-only';return launch;
+        prepared.snapshot.selfCheck?.issues.push(reason);entry.runtime=prepared;launch.runtime=prepared;launch.args=[];launch.profileArgs=undefined;launch.env={};launch.initialInput=undefined;phase='native-only';return launch;
       };
-      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args:plan?.args??[],env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native.command,
+      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args:plan?.args??[],profileArgs:cliEnvironment&&policy?.available?codexProfileArgsForCli(input.profile.args,policy):undefined,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native.command,
         assertBeforeFork:()=>{if(effective)gate();},
         nativeOnly:reason=>narrow(reason),
         beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effective)gate();phase='arming';if(!nativeOnly&&effective)await bridge?.bridge.arm();await run.cli.arm();},
@@ -311,6 +314,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>this.stopWithSkillHistory(input.taskId,entry,reason),
         bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});prepared.snapshot.sessionCapabilities=bound.pointer;if(effective)this.skillObservations.start(input.taskId,run.runId,run.signal);}};
       return planIssue?narrow(planIssue,{reason:'managed_capabilities_unavailable',issueCode:planIssue}):launch;
+
     }catch(error){await run.stop('prepare-failed').catch(()=>{});await this.releaseStopped(entry);throw error;}
   }
   private async prepareUnavailableSession(input:TaskLaunchInput,current:StoredCapabilitySession,native:NativeLaunchContext|undefined,unavailable:string|undefined):Promise<TaskCapabilityLaunch>{

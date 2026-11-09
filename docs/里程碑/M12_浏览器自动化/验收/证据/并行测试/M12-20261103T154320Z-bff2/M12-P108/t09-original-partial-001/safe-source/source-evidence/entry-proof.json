@@ -1,0 +1,52 @@
+{
+  "sourceRoot": "/private/tmp/willyou-m12-p101-source-025/source",
+  "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+  "records": [
+    {
+      "source": "src/main/core/applications/cli-gateway.ts",
+      "savedPath": "source-evidence/src--main--core--applications--cli-gateway.ts",
+      "sha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef",
+      "verifiedAgainst3682Manifest": true
+    },
+    {
+      "source": "src/main/core/applications/unix-peer-identity.ts",
+      "savedPath": "source-evidence/src--main--core--applications--unix-peer-identity.ts",
+      "sha256": "f46474c0f9fb9451f0d8980440846f406b18fc00b88f9ea7ec038b277f0bf798",
+      "verifiedAgainst3682Manifest": true
+    },
+    {
+      "source": "src/main/core/applications/task-capability-launcher.ts",
+      "savedPath": "source-evidence/src--main--core--applications--task-capability-launcher.ts",
+      "sha256": "7b8182e0e9895c8e60dfd36bc4eb57fc4a579ad2f50bf87f26f003d081368b50",
+      "verifiedAgainst3682Manifest": true
+    },
+    {
+      "source": "src/main/core/applications/providers/zentao.ts",
+      "savedPath": "source-evidence/src--main--core--applications--providers--zentao.ts",
+      "sha256": "9a1c6ccd879a5812ff92dac654da00029d2dddc801a0a1e4a14a721aa8c283b8",
+      "verifiedAgainst3682Manifest": true
+    },
+    {
+      "source": "src/shared/application-activity.ts",
+      "savedPath": "source-evidence/src--shared--application-activity.ts",
+      "sha256": "dc03e886e4ced107dd2d5c2d4735f5f656eea7abb156154fc6b08ce218c327e1",
+      "verifiedAgainst3682Manifest": true
+    },
+    {
+      "source": "src/main/core/applications/activity-service.ts",
+      "savedPath": "source-evidence/src--main--core--applications--activity-service.ts",
+      "sha256": "969966e6bfe837538f52b42efc64eeb8ee264b4549585083b15617c9397026d0",
+      "verifiedAgainst3682Manifest": true
+    }
+  ],
+  "inference": [
+    "task-capability-launcher.ts119 uses real MacUnixPeerIdentityReader for CLI when options.peers absent; no fixture replaces this in smoke",
+    "unix-peer-identity.ts reads accepted socket kernel fd and validates pid/birth chain, executable and uid",
+    "cli-gateway.ts authenticate verifies token, actual peer, pinned executable, exact active-run ancestor birth, entry and scope before business",
+    "Successful original pinned CLI stdout+currentrun Host succeeded+current connectionA+actual GET is runtime admission evidence only; six fault responses not yet observed"
+  ],
+  "limits": [
+    "Not an independent reproducible-binary proof; official App021 build gate/source025 manifest reused",
+    "No copied constructor hook or extra API added to App/production"
+  ]
+}

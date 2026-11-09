@@ -1,0 +1,83 @@
+{
+  "kind": "pure-synthesized-counter-math-no-OS-or-App",
+  "checksPassed": 6,
+  "sourceHashes": {
+    "analyze.py": "baf806956315f6ea83b6471602ecc173d754155bf0304f31e25e5e93664adf37",
+    "check-analysis.py": "326d2bc16a449f58069d4ac046be4db55344cedd7806dd16df41680f94317322"
+  },
+  "results": [
+    {
+      "name": "weighted",
+      "cpu": 4.333333333333334,
+      "checks": {
+        "T111-S01-RSS30vs10": "passed",
+        "T111-S02-last4-RSS": "passed",
+        "T111-S03-complete-idle-CPU-observation": "passed",
+        "T111-S04-idle-CPU-under5": "passed",
+        "T111-S05-full-owned-process-scope": "passed"
+      },
+      "boundary": "Synthesized arithmetic only; other Native/I criteria intentionally absent and full case must not pass"
+    },
+    {
+      "name": "exact-cpu5",
+      "cpu": 5.0,
+      "checks": {
+        "T111-S01-RSS30vs10": "passed",
+        "T111-S02-last4-RSS": "passed",
+        "T111-S03-complete-idle-CPU-observation": "passed",
+        "T111-S04-idle-CPU-under5": "failed-or-needs-analysis",
+        "T111-S05-full-owned-process-scope": "passed"
+      },
+      "boundary": "Synthesized arithmetic only; other Native/I criteria intentionally absent and full case must not pass"
+    },
+    {
+      "name": "rss-over110",
+      "cpu": 1.0,
+      "checks": {
+        "T111-S01-RSS30vs10": "failed-or-needs-analysis",
+        "T111-S02-last4-RSS": "passed",
+        "T111-S03-complete-idle-CPU-observation": "passed",
+        "T111-S04-idle-CPU-under5": "passed",
+        "T111-S05-full-owned-process-scope": "passed"
+      },
+      "boundary": "Synthesized arithmetic only; other Native/I criteria intentionally absent and full case must not pass"
+    },
+    {
+      "name": "strict-rising",
+      "cpu": 1.0,
+      "checks": {
+        "T111-S01-RSS30vs10": "passed",
+        "T111-S02-last4-RSS": "failed-or-needs-analysis",
+        "T111-S03-complete-idle-CPU-observation": "passed",
+        "T111-S04-idle-CPU-under5": "passed",
+        "T111-S05-full-owned-process-scope": "passed"
+      },
+      "boundary": "Synthesized arithmetic only; other Native/I criteria intentionally absent and full case must not pass"
+    },
+    {
+      "name": "plateau",
+      "cpu": 1.0,
+      "checks": {
+        "T111-S01-RSS30vs10": "passed",
+        "T111-S02-last4-RSS": "passed",
+        "T111-S03-complete-idle-CPU-observation": "passed",
+        "T111-S04-idle-CPU-under5": "passed",
+        "T111-S05-full-owned-process-scope": "passed"
+      },
+      "boundary": "Synthesized arithmetic only; other Native/I criteria intentionally absent and full case must not pass"
+    },
+    {
+      "name": "pid-gap",
+      "cpu": null,
+      "checks": {
+        "T111-S01-RSS30vs10": "passed",
+        "T111-S02-last4-RSS": "passed",
+        "T111-S03-complete-idle-CPU-observation": "failed-or-needs-analysis",
+        "T111-S04-idle-CPU-under5": "failed-or-needs-analysis",
+        "T111-S05-full-owned-process-scope": "passed"
+      },
+      "boundary": "Synthesized arithmetic only; other Native/I criteria intentionally absent and full case must not pass"
+    }
+  ],
+  "formalCaseCredit": 0
+}

@@ -1,0 +1,44 @@
+{
+  "source": "/private/tmp/willyou-m12-t088-system-clipboard-app022-006/clipboard-bridge.swift",
+  "sha256": "96e83d690330b065105eef1ecbe8926a34acc776cfaef59aefee10511dfe57e7",
+  "scope": "File-only API/source inspection, no general pasteboard read or helper process.",
+  "protectionPresent": {
+    "allItemsTypesDataAndOrder": true,
+    "privateBackup0600OwnerRegularNoSymlinkExclusive": true,
+    "changeCountAndOwnedSnapshotBeforeRestore": true,
+    "quiescenceBeforeRestore": true,
+    "originalContentOrDerivedHashesNotPublic": true
+  },
+  "interfaces": [
+    "--self-test (named board, never .general)",
+    "--general --backup EXACT_HARDCODED_PATH",
+    "capture-set-marker",
+    "arm-cli-write {sourceURL:http://127.0.0.1:<port>/site}",
+    "observe-cli-write (only exact synthetic x plus whitelisted Chromium source metadata)",
+    "work-quiesced",
+    "restore",
+    "finish"
+  ],
+  "exactIncompatibilities": [
+    {
+      "lines": [
+        11,
+        12,
+        27,
+        29,
+        238
+      ],
+      "fact": "ownRoot and originalPath hardcoded to old T088006 runtime; arbitrary new-root backup is rejected."
+    },
+    {
+      "lines": [
+        109,
+        114,
+        116,
+        142
+      ],
+      "fact": "Adoption requires original local /site URL and exact x representations; D23 absolute path cannot be adopted and safe restore would defer."
+    }
+  ],
+  "decision": "Keep D23 copy missing. Do not weaken helper to accept arbitrary current clipboard or build a new framework. A compatible narrow expected-path/actual source-metadata adoption and named safety controls would be a separate required adaptation before any general write; none prepared/executed here."
+}

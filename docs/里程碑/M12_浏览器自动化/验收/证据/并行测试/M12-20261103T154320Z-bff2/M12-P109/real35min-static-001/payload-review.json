@@ -1,0 +1,42 @@
+{
+  "schema": "m12-t043-new-payload-review-v1",
+  "scope": "M12-T043-real-35min",
+  "marker": "M12_T043_35MIN_20261105_b72e",
+  "destination": {
+    "provider": "openai",
+    "model": "gpt-6.1-sol",
+    "runner": "Codex0.166.0"
+  },
+  "prompt": "M12_T043_35MIN_20261105_b72e\n这是隔离的 M12-T043 运行身份续约验收。只使用当前任务、当前项目和本次交付的公开浏览器 Skill；不要访问网页、外站、其他应用或日常数据。先完整读取本次浏览器 Skill，保持当前默认 workspace-write/on-request，不提权，不改变沙箱、审批、时钟或环境。\n1. 单独实际执行一次 `willyou-app browser tab list`，完整保留原始结果。失败就如实停止，不自动重发。\n2. 成功后在当前任务目录执行 `python3 .t043-fixtures/lease_wait.py`。这是已审的本机纯等待夹具：宿主核对第一次真实调用后才放行，随后用真实单调时间等待至少 2100 秒。它会按实际经过时间输出进度。若工具返回后台 session，持续有界观察同一 session，直到原句柄明确返回 wait-done，不能把 session 已创建或进度回显当作等待完成，也不能另起替代等待。\n3. wait-done 后仍在同一会话、同一运行中，再单独实际执行一次 `willyou-app browser tab list`，完整保留原始结果。两次之间不执行别的应用命令，不复制、修改或重建运行身份。\n4. 第二次成功后执行 `python3 .t043-fixtures/revocation_probe.py --start`。这是本次明确使用的故障夹具：它创建一个独立会话的本机子进程，先用同一个固定原生 CLI 做停止前正控；原运行身份只保存在子进程内存/环境中。看到 probe-ready 后不要继续发业务命令或重复启动探针，只说明已就绪并等待宿主停止本任务。命令可能保持后台运行，这是预期，宿主负责本次进程的停止与清场。\n绝不能读取/打印认证文件、私有探针状态、运行令牌或端点值及其哈希，不把它们放进命令行、提示或公开报告。只可输出本机夹具提供的状态与非秘密调用元数据。不可绕过失败、伪造完成、改时钟或重试结果未知的写操作。",
+  "newExactConsentRequired": true,
+  "priorConsentApplicable": false,
+  "sentData": [
+    "one exact synthetic prompt",
+    "public delivered browserSkill",
+    "synthetic project/CLI and directory metadata",
+    "actual CLI read-only results and local wait/probe state"
+  ],
+  "neverSent": [
+    "account auth cache contents",
+    "run token/endpoint values or credential hashes",
+    "daily project or site data"
+  ],
+  "duration": {
+    "actualWaitSeconds": 2100,
+    "expectedTotalMinutes": "40–48 incl setup/focus/probe/cleanup",
+    "noClockSubstitution": true
+  },
+  "additionalFixtureBoundary": "Explicit detached test controller only for same-stockCLI before/after revoke proof; survival must be observed, never claimed as normal App-stop cleanup.",
+  "reviewedLocalFixtures": [
+    {
+      "relativePath": ".t043-fixtures/lease_wait.py",
+      "sha256": "1fb8c9c4d2e0702bda9b64f05835a4053ef3a5abc117802cab94b364880f9b58",
+      "scope": "Actual monotonic 2100 seconds only; no CLI/auth/network"
+    },
+    {
+      "relativePath": ".t043-fixtures/revocation_probe.py",
+      "sha256": "98c1668c8f7cd635440eda09c6fac3dc00c69618d9aecfdecaf3d01d5a8bc6fd",
+      "scope": "Explicit detached test process, original credential only memory/env; same pinned stock CLI before/after stop"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+P067006 S03 file-only review
+
+S03 is a driver/schema mismatch, not a product cancellation failure. The original filter required action==wait; unified M11 activity reports capability ID browser.nav.wait. The same actual activity detail correctly exposes browser.command==wait. The original filter returns zero rows. Original raw/result/judge remain byte-identical and the original failed result is retained.
+
+Current-run/current-task/current-project/current-page and literal wait text/90000ms match one Host detail: operation 074f9d95-9656-492b-922a-d0e0b4b18721, request 15e7b90f-58fb-4308-9f03-72bcd66b0ae2, failed/BROWSER_ERROR/read-only, attempt1, real endedAt. Actual wait was active, real UI tasks.kill fired, readwaits cleared, real run became null, and original Helper callback received SIGTERM 149ms after kill handler. This was before its 90s wait deadline. No CLI completion/exit code is fabricated: stopping the receiver prevented final CLI stdout; observer explicitly says reportedByCli:false.
+
+The independent S03 result is supported by 20 passing checks including wrong run/task/page/command negative controls. Existing S05 is independently recomputed: all 250 active observations share actual host logical-end 1793882993275 and +20000ms deadline; final active sample is deadline-22ms, first absent at deadline+54ms, maximum observed sample gap88ms, UI dot/glow both zero. Logical cancellation/endRun, Helper callback (+89ms), and M11 audit commit (+141ms) are distinct boundaries and are not claimed identical. Original requirements R07.2/R07.7 specify command-end20s; retained source shows cancellation calls activity finish on run end. No stricter invented endedAt/action spelling is added to the contract.
+
+Only S03 and the associated activity evidence are adjudicated here. Other original checks remain their original data and source-applicability boundary. Formal case increment0; coordinator decides final T114 accounting. No SQLite query was necessary. No App/Native/model/OS process query, mutation of original data, or rerun occurred. Resources held[]. Root already independently verified the original run cleanup; this review does not fabricate a new OS cleanup scan.
+
+Reproduce purely from files: python3 /private/tmp/willyou-m12-p067006-s03-review-001/review.py
+The script's first draft used an incorrect helper event argv/error carrier and failed before conclusion; review-initial-schema-error.py and preparation-error.txt preserve it. The corrected review uses actual command/raw.error only. No original failure is erased.

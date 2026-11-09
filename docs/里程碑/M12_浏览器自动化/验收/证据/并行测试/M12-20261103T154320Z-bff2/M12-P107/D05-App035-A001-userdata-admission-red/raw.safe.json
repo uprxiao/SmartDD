@@ -1,0 +1,475 @@
+{
+  "case": "M12-T130/D05",
+  "layer": "A",
+  "status": "failed-or-deferred",
+  "startedAt": "2026-11-07T18:07:00.982Z",
+  "finishedAt": "2026-11-07T18:07:08.440Z",
+  "driverPid": 50912,
+  "sourceManifestSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
+  "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
+  "modelCalls": 0,
+  "authReads": 0,
+  "formalIncrement": 0,
+  "cleanupErrors": [],
+  "failure": {
+    "stage": "d05-light-insensitive:open-App",
+    "name": "AssertionError",
+    "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'failed-or-partial'\n- 'executed-unjudged'\n",
+    "code": "ERR_ASSERTION"
+  },
+  "environment": {
+    "at": "2026-11-07T18:07:00.983Z",
+    "base": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes",
+    "volumes": [
+      {
+        "kind": "insensitive",
+        "format": "APFS",
+        "sensitive": false,
+        "mount": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive",
+        "image": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive.dmg",
+        "device": "/dev/disk5s1",
+        "mountedDevice": 16777239,
+        "detached": true,
+        "capacityBytes": 67067904,
+        "actualProbe": {
+          "lowerCreate": "EEXIST",
+          "upperInode": "16",
+          "lowerInode": "16",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79"
+        }
+      },
+      {
+        "kind": "sensitive",
+        "format": "Case-sensitive APFS",
+        "sensitive": true,
+        "mount": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/sensitive",
+        "image": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/sensitive.dmg",
+        "device": "/dev/disk7s1",
+        "mountedDevice": 16777243,
+        "detached": true,
+        "capacityBytes": 67067904,
+        "actualProbe": {
+          "lowerCreate": "created",
+          "upperInode": "16",
+          "lowerInode": "17",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "61413ee5c361db405097a5ead22801f6f5be1a957867c3ae1543ea04ed89c5b3"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "APFS",
+          "-volname",
+          "WillYou-D05-insensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:07:00.984Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:02.008Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:07:02.009Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:02.240Z"
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive-attach.plist"
+        ],
+        "startedAt": "2026-11-07T18:07:02.243Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:02.301Z"
+      },
+      {
+        "args": [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive"
+        ],
+        "startedAt": "2026-11-07T18:07:02.303Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:02.403Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "Case-sensitive APFS",
+          "-volname",
+          "WillYou-D05-sensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/sensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:07:02.404Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:03.422Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/sensitive",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/sensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:07:03.423Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:03.689Z"
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/sensitive-attach.plist"
+        ],
+        "startedAt": "2026-11-07T18:07:03.690Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:03.730Z"
+      },
+      {
+        "args": [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/sensitive"
+        ],
+        "startedAt": "2026-11-07T18:07:03.733Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:03.990Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "detach",
+          "/dev/disk7s1"
+        ],
+        "startedAt": "2026-11-07T18:07:08.044Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:08.240Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "detach",
+          "/dev/disk5s1"
+        ],
+        "startedAt": "2026-11-07T18:07:08.242Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:07:08.437Z"
+      }
+    ],
+    "cases": [
+      {
+        "kind": "insensitive",
+        "slot": "d05-light-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive/d05-light-insensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive/d05-light-insensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/volumes/insensitive-d05-light-insensitive-root-alias"
+      }
+    ],
+    "boundary": "Original readonly D05: own two64MiBAPFS/APFSX only; actual EEXIST/inode/bytes decide semantics, not labels. No system/user volume modification.",
+    "finishedAt": "2026-11-07T18:07:08.439Z"
+  },
+  "modes": [
+    {
+      "kind": "d05-light-insensitive",
+      "theme": "light",
+      "volumeKind": "insensitive",
+      "status": "failed-or-partial",
+      "startedAt": "2026-11-07T18:07:03.993Z",
+      "finishedAt": "2026-11-07T18:07:08.043Z",
+      "appPid": 50967,
+      "projectId": "7726edbe-03e5-4e52-b271-d0056acef0d4",
+      "tasksBefore": [],
+      "setupReloadCount": 1,
+      "actualTheme": "ylight",
+      "window": {
+        "id": 1,
+        "title": "[A] T130 D05 App035 d05-light-insensitive"
+      },
+      "failure": {
+        "stage": "d05-light-insensitive:open-App",
+        "label": "primary-failure",
+        "path": "/private/tmp/willyou-m12-t130-D05-App035-A-prep-001/runtime-001/d05-light-insensitive/primary-failure.private.log",
+        "name": "AssertionError",
+        "code": "ERR_ASSERTION",
+        "message": "The expression evaluated to a falsy value:\n\n  assert([privateRoot+'/runtime-001/normal/userdata'].includes(userData))\n",
+        "sha256": "924c9f5304169762f6518ac4151e9f5601879d14ff8de92634d7c08a23d4fde4"
+      },
+      "before": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794074823992617234",
+          "ctimeNs": "1794074823992617234",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794074823992617234",
+          "ctimeNs": "1794074823992617234",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "20",
+          "mode": 384,
+          "size": "44",
+          "mtimeNs": "1794074823992752527",
+          "ctimeNs": "1794074823992752527",
+          "sha256": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "21",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794074823992883154",
+          "ctimeNs": "1794074823992883154",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "22",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794074823992928654",
+          "ctimeNs": "1794074823992928654",
+          "target": "inner"
+        }
+      },
+      "after": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794074823992617234",
+          "ctimeNs": "1794074823992617234",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794074823992617234",
+          "ctimeNs": "1794074823992617234",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "20",
+          "mode": 384,
+          "size": "44",
+          "mtimeNs": "1794074823992752527",
+          "ctimeNs": "1794074823992752527",
+          "sha256": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "21",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794074823992883154",
+          "ctimeNs": "1794074823992883154",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "22",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794074823992928654",
+          "ctimeNs": "1794074823992928654",
+          "target": "inner"
+        }
+      },
+      "projectEntries": [
+        "A.txt",
+        "inner",
+        "link-dir",
+        "link.txt"
+      ],
+      "appCleanup": {
+        "normalQuitRequested": true,
+        "normalWaitExit": {
+          "pid": 50967,
+          "code": 0,
+          "signal": null
+        },
+        "normalExitConfirmed": true,
+        "finalWaitExit": {
+          "pid": 50967,
+          "code": 0,
+          "signal": null
+        },
+        "observedProcess": {
+          "pid": 50967,
+          "spawnedAtMs": 1794074823999,
+          "exit": {
+            "atMs": 1794074828042,
+            "code": 0,
+            "signal": null
+          },
+          "signals": [],
+          "inspectorCloseRequests": [
+            {
+              "atMs": 1794074827809
+            },
+            {
+              "atMs": 1794074828042
+            },
+            {
+              "atMs": 1794074828042
+            }
+          ],
+          "currentCode": 0,
+          "currentSignal": null
+        },
+        "steps": [
+          {
+            "label": "request-own-normal-quit",
+            "at": "2026-11-07T18:07:07.808Z",
+            "ok": true
+          },
+          {
+            "label": "wait-own-normal-exit",
+            "at": "2026-11-07T18:07:07.809Z",
+            "ok": true
+          },
+          {
+            "label": "save-own-private-app-logs",
+            "at": "2026-11-07T18:07:08.042Z",
+            "ok": true
+          },
+          {
+            "label": "close-exact-owned-harness",
+            "at": "2026-11-07T18:07:08.042Z",
+            "ok": true
+          },
+          {
+            "label": "wait-final-owned-process-exit",
+            "at": "2026-11-07T18:07:08.042Z",
+            "ok": true
+          },
+          {
+            "label": "capture-final-owned-process-observation",
+            "at": "2026-11-07T18:07:08.042Z",
+            "ok": true
+          }
+        ]
+      },
+      "observedProcess": {
+        "pid": 50967,
+        "spawnedAtMs": 1794074823999,
+        "exit": {
+          "atMs": 1794074828042,
+          "code": 0,
+          "signal": null
+        },
+        "signals": [],
+        "inspectorCloseRequests": [
+          {
+            "atMs": 1794074827809
+          },
+          {
+            "atMs": 1794074828042
+          },
+          {
+            "atMs": 1794074828042
+          }
+        ],
+        "currentCode": 0,
+        "currentSignal": null
+      },
+      "appExit": {
+        "pid": 50967,
+        "code": 0,
+        "signal": null
+      },
+      "cleanupErrors": [],
+      "originalComplete": false,
+      "businessChecksComplete": 0,
+      "readiness": [],
+      "actions": [],
+      "failureDOM": {
+        "at": "2026-11-07T18:07:07.621Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": null,
+        "text": null,
+        "selection": null,
+        "cmCount": 0,
+        "tabs": [],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "search": {
+          "paths": []
+        }
+      },
+      "activationNotReached": true,
+      "initialFocusNotReached": true
+    }
+  ],
+  "sourcePrivateSHA256": "29fd4c6f5c8f4b74859e3303a5d450dae67b5e0cdd3023c7e6db45a9627c41a5"
+}

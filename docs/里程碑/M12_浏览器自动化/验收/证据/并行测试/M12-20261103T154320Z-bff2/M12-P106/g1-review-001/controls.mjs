@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {writeFile} from 'node:fs/promises';
+const sha=x=>createHash('sha256').update(x).digest('hex');
+const canonical=x=>x===null||typeof x!=='object'?JSON.stringify(x):Array.isArray(x)?'['+x.map(canonical).join(',')+']':'{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+canonical(x[k])).join(',')+'}';
+const bytes=Buffer.from('Synthetic rendered SOP\n'),file={path:'SKILL.md',size:bytes.length,sha256:sha(bytes)};
+const rendered=files=>sha(canonical(files.map(({path,size,sha256})=>({path,size,sha256})).sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0)));
+const checks=[];const check=(name,fn)=>{fn();checks.push({name,passed:true});};
+check('Even one-file directory aggregate differs from single-file SHA',()=>assert.notEqual(rendered([file]),file.sha256));
+check('Actual G1 equality rejects valid separated hashes',()=>assert.throws(()=>assert.equal(file.sha256,rendered([file]))));
+const helper={path:'helpers/read.mjs',size:1,sha256:sha(Buffer.from('x'))};
+check('Auxiliary file changes aggregate without changing SKILL target SHA',()=>{assert.notEqual(rendered([file,helper]),rendered([file,{...helper,sha256:sha(Buffer.from('y'))}]));assert.equal(file.sha256,sha(bytes));});
+check('Relative helper path changes directory aggregate',()=>assert.notEqual(rendered([file,helper]),rendered([file,{...helper,path:'other/read.mjs'}])));
+check('Source executable metadata affects template aggregate but rendered algorithm excludes it',()=>{const a=[{...file,executable:true}],b=[{...file,executable:false}];assert.notEqual(sha(canonical(a)),sha(canonical(b)));assert.equal(rendered(a),rendered(b));});
+check('Read target hash remains bytes SHA and cannot be aggregate',()=>{assert.equal(sha(bytes),file.sha256);assert.notEqual(sha(bytes),rendered([file,helper]));});
+await writeFile(new URL('./control-result.json',import.meta.url),JSON.stringify({status:'pure-data-controls-pass',checks,nativeCalls:0,appsStarted:0,modelCalls:0,formalNewPasses:0},null,2)+'\n');
+console.log(JSON.stringify({passed:checks.length}));

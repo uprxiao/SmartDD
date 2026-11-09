@@ -1,0 +1,123 @@
+{
+  "at": "2026-11-03T08:15:01.698979+00:00",
+  "baseline": "/private/tmp/m12-r1-review-20261103T081236Z",
+  "items": [
+    {
+      "item": "暂停候选：引用snapshot→AX及check→action竞态",
+      "status": "open",
+      "finding": "R1-E01",
+      "refs": [
+        "需求R03.2",
+        "技研:155",
+        "T051"
+      ]
+    },
+    {
+      "item": "暂停候选：跨页ref同串",
+      "status": "open",
+      "finding": "R1-E02",
+      "refs": [
+        "需求R02.2/R03.2",
+        "技研:155",
+        "T051"
+      ]
+    },
+    {
+      "item": "暂停候选：中断输入进度",
+      "status": "open",
+      "finding": "R1-E03",
+      "refs": [
+        "需求R03.9",
+        "技研:133",
+        "T060"
+      ]
+    },
+    {
+      "item": "暂停候选：Cookie比对恢复竞态",
+      "status": "open",
+      "finding": "R1-E04",
+      "refs": [
+        "需求R06.4",
+        "技研:194-198",
+        "T081"
+      ]
+    },
+    {
+      "item": "R1→原型：Cookie冲突/需要处理/恢复处置",
+      "status": "incomplete",
+      "finding": "R1-E05",
+      "refs": [
+        "需求R06.4",
+        "BrowserPanels.jsx:110-174",
+        "T081"
+      ]
+    },
+    {
+      "item": "R1→命令映射数量/读写分类",
+      "status": "consistent_static",
+      "refs": [
+        "需求R02.3/R06.2",
+        "映射表.generated.md:3",
+        "T093"
+      ],
+      "actual": "82实现=79Orca+3新增，21read/61write；83映射行含open-url不适用"
+    },
+    {
+      "item": "R1→wait fn拆分",
+      "status": "consistent_static",
+      "refs": [
+        "需求R04.4",
+        "gen_command_map.py",
+        "T066/T095"
+      ],
+      "actual": "读wait公开用法不含fn；新增wait fn为写"
+    },
+    {
+      "item": "命令→121条权威用例",
+      "status": "consistent_id_mapping",
+      "refs": [
+        "命令用例对照.generated.md",
+        "验收/测试用例.md"
+      ],
+      "actual": "121唯一编号，映射所有编号存在；不代表全部判据已执行或完整覆盖"
+    },
+    {
+      "item": "S1→具体判据",
+      "status": "partially_mapped",
+      "finding": "R1-E06",
+      "refs": [
+        "技研:324",
+        "T051/T053/T059/T107/T112"
+      ]
+    },
+    {
+      "item": "E4原始问题与源码完整性",
+      "status": "supported",
+      "refs": [
+        "E4文档",
+        "E4结果source-sha256.txt",
+        "static-checks.json"
+      ],
+      "actual": "四源码hash匹配；原始输出支持旧ref误点、waitfn写入、长type失败；E4b仅静态身份信号，不等于完整修复已证实"
+    },
+    {
+      "item": "R1新增R01.0/R01.13",
+      "status": "summary_only_no_new_ui",
+      "refs": [
+        "需求.md:698",
+        "原型B01/B14",
+        "T001/T003/T004/T022"
+      ],
+      "actual": "位置与设置的已有规则汇总，不能据新增编号要求重做已确认原型"
+    },
+    {
+      "item": "上轮修复：错误码/exec目标/授权分支/参数语法/数量检查",
+      "status": "keep_previous_closure",
+      "refs": [
+        "需求R02.3/R02.7/R02.11/R06.3",
+        "技研对应条款"
+      ],
+      "actual": "本次未发现相关回退，不把待实现等同新缺陷；未重跑旧原生/原型验证"
+    }
+  ]
+}

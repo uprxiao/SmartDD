@@ -1,0 +1,1 @@
+import{createHash}from'node:crypto';import{writeFile}from'node:fs/promises';export const ROOT="/private/tmp/willyou-m12-t130-F07-F09-App035-A-prep-001";export const sha=x=>createHash('sha256').update(x).digest('hex');export const save=(name,data)=>writeFile(ROOT+'/'+name,JSON.stringify(data,null,2)+'\n',{mode:0o600});

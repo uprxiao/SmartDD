@@ -1,0 +1,77 @@
+{
+  "at": "2026-11-04T19:36:24.053886+00:00",
+  "group": "M12-P074",
+  "attempt": "002",
+  "layer": "Actual Native/M11/CLI I only; notA/modelR",
+  "status": "three-original-I-complete-candidates-one-driver-partial",
+  "formalCaseIncrement": 0,
+  "candidateComplete": [
+    "M12-T033",
+    "M12-T034",
+    "M12-T044"
+  ],
+  "caseResults": {
+    "M12-T033": "passed",
+    "M12-T034": "passed",
+    "M12-T094": "failed-or-partial",
+    "M12-T044": "passed"
+  },
+  "originalJudge": "adjudication.json",
+  "scopedIndependentJudge": "adjudication-scoped.json",
+  "scopedCorrectionActualRerun": false,
+  "correction": "T033 contract completed before T094; exclude later cleanup SIGTERM/empty stdout from T033 all-output check. Keep original judge. Cleanup independently passed despite aggregate driver failure. All original T033 fields, errors, popup kind/opener and pre-T094 one-JSON outputs unchanged.",
+  "T094": {
+    "status": "partial-driver-error",
+    "diagnosis": "driver-diagnosis.json",
+    "siteOnce": 1,
+    "gateHeldAfterOriginalHelper": true,
+    "actualTransportDisconnect": false,
+    "actualEOFRequestIdAndOperationGet": "not executed",
+    "writeReplayed": false
+  },
+  "performance": {
+    "snapshot": {
+      "count": 50,
+      "medianMs": 808.6998329999999,
+      "p90Ms": 831.111208,
+      "minMs": 764.900167,
+      "maxMs": 875.00675,
+      "driverRoundTripMedianMs": 813.840083,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    },
+    "click": {
+      "count": 50,
+      "medianMs": 816.1368335,
+      "p90Ms": 842.657833,
+      "minMs": 780.142083,
+      "maxMs": 868.057875,
+      "driverRoundTripMedianMs": 822.3096255,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    }
+  },
+  "cleanup": {
+    "path": "cleanup.json",
+    "pidCount": 232,
+    "ports": [
+      53646,
+      53722,
+      53736,
+      53901
+    ],
+    "allExactPidsAbsent": true,
+    "allPortsClosed": true,
+    "allHelperRuntimeFilesGone": true,
+    "allUnixGatewayGone": true,
+    "hostExit": {
+      "atMs": 1793820864507,
+      "code": 0,
+      "signal": null
+    },
+    "fallbackSignals": [],
+    "ownedPendingCliCleanupSignal": "SIGTERM only for pending real T094 CLI after driver failure; raw host events preserved"
+  },
+  "startedAt": "2026-11-04T19:32:47.025Z",
+  "finishedAt": "2026-11-04T19:34:24.629Z",
+  "resourceLease": "released after exact read-only verification",
+  "next": "Await root acceptance of three completed originals and new isolated T094-only lease/driver fix. No public ledger changes."
+}

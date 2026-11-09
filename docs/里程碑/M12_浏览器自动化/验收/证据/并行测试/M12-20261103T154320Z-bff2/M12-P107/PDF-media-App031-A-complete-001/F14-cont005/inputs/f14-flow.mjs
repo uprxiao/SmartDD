@@ -1,0 +1,36 @@
+import{pdfScrollObserver}from'./pdf-scroll-observer.mjs';
+// Complete original F14 body only. F15 evidence retained at original immutable root.
+import assert from'node:assert/strict';import{join,basename}from'node:path';
+export async function runF14Acceptance({actual,ui,result,projectPath,scratch,fingerprints,persist,screenshot,openFile,changeStage}){
+const app={evaluate:(...x)=>actual.evaluate(...x),waitFor:(...x)=>actual.waitFor(...x),invoke:(...x)=>actual.invoke(...x),click:(...x)=>ui.click(...x),open:openFile,exists:selector=>'Boolean(document.querySelector('+JSON.stringify(selector)+'))',project:{id:result.projectId},get rendererErrors(){return actual.rendererErrors},screenshot:path=>screenshot(basename(path)),cdp:async(method,params,...rest)=>{const value=await actual.cdp(method,params,...rest);if(method.startsWith('Input.')||method==='Page.reload'){result.actions.push({kind:'original-pdf-cdp-input',method,type:params?.type,key:params?.key,textCharacters:params?.text?.length,at:new Date().toISOString()});await persist();}return value}};
+const markStage=async name=>{changeStage(name);await persist()};
+const ready=()=>app.waitFor("Boolean(document.querySelector('.fw-pdf-page:not(.fw-pdf-thumb) canvas[data-rendered=true]'))&&Boolean(document.querySelector('.fw-pdf-page:not(.fw-pdf-thumb) .fw-pdf-text span'))",20000);
+const close=async name=>{await app.click(`[aria-label=${JSON.stringify('关闭 '+name)}]`);await app.waitFor("!document.querySelector('.fw-pdf')")};
+const settling=pdfScrollObserver(app,result,persist);try{
+ {
+  await markStage('normal-navigation');await app.open('normal.pdf');await ready();await app.waitFor("document.querySelector('.fw-pdf-status')?.textContent.includes('/ 3 页')");
+  const selection=await app.evaluate("(()=>{const nodes=[...document.querySelectorAll('.fw-pdf-page:not(.fw-pdf-thumb) .fw-pdf-text span')];for(const s of nodes){const r=s.getBoundingClientRect();if(r.width>35&&r.y>100&&r.bottom<innerHeight-80)return{x:r.left+3,end:r.right-3,y:r.y+r.height/2,text:s.textContent}}return null})()");assert(selection);result.selectionAnchor=selection;
+  await app.cdp('Input.dispatchMouseEvent',{type:'mousePressed',x:selection.x,y:selection.y,button:'left',buttons:1,clickCount:1});await app.cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:selection.end,y:selection.y,button:'left',buttons:1});await app.cdp('Input.dispatchMouseEvent',{type:'mouseReleased',x:selection.end,y:selection.y,button:'left',buttons:0,clickCount:1});
+  const selected=await app.evaluate('window.getSelection().toString()');assert(selected.trim().length>2);result.actualSelectedText=selected;
+  const initialWidth=await app.evaluate("document.querySelector('.fw-pdf-page:not(.fw-pdf-thumb)').getBoundingClientRect().width");
+  await app.click('[aria-label="PDF 缩放"]');await app.click('[role=menuitem]','150%');await app.waitFor("document.querySelector('.fw-pdf-zoom')?.textContent.includes('150%')");await ready();
+  const zoomWidth=await app.evaluate("document.querySelector('.fw-pdf-page:not(.fw-pdf-thumb)').getBoundingClientRect().width");assert(zoomWidth>initialWidth);result.zoomGeometry={initialWidth,zoomWidth};
+  await app.click('[aria-label="停靠缩略图"]');await settling.begin('navigation-before-close');await app.click('button.fw-pdf-thumb-button[aria-label="第 3 页"]');const navigationSettled=await settling.wait();
+  const before={page:navigationSettled.status,zoom:navigationSettled.zoom,selectedText:selected,settledGeometry:navigationSettled};result.navigation=before;await app.screenshot(join(scratch,'normal-before-close.png'));
+  await close('normal.pdf');await markStage('normal-restore');await app.click('[aria-label="文件菜单"]');await app.click('[role=menuitem]','重新打开关闭的文件');await ready();
+
+  await settling.begin('close-reopen-restored');const restoredSettled=await settling.wait();
+  result.restored={page:restoredSettled.status,zoom:restoredSettled.zoom,markerText:restoredSettled.page3.markerText,settledGeometry:restoredSettled};assert(result.restored.page.includes('第 3 / 3 页'),'Closed PDF page position was lost');assert(result.restored.zoom.includes('150%'),'Closed PDF zoom was lost');await app.screenshot(join(scratch,'normal-restored.png'));
+  const scope={kind:'project',projectId:app.project.id};
+  await app.waitFor(`window.electronAPI.invoke('files.workspaceSnapshot',${JSON.stringify(scope)}).then(s=>s.state?.routes.some(r=>r.relativePath==='normal.pdf'&&r.pdf?.page===3&&r.pdf?.zoom===150))`);
+  result.persisted=(await app.invoke('files.workspaceSnapshot',scope)).state.routes.find(r=>r.relativePath==='normal.pdf');
+  await markStage('normal-workspace-reload');await app.cdp('Page.reload');await app.waitFor(app.exists(`[data-project-id="${app.project.id}"]`));await app.click(`[data-project-id="${app.project.id}"] [data-testid=sidebar-project-more]`);await app.click('[data-testid=sidebar-project-edit]');await app.waitFor(app.exists('[data-testid=project-files]'));
+  result.reloadedPanelInitiallyVisible=await app.evaluate("Boolean(document.querySelector('[data-testid=file-workspace]'))");
+  if(!result.reloadedPanelInitiallyVisible)await app.click('[data-testid=project-files]');await ready();
+
+  await settling.begin('workspace-reloaded-restored');const reloadedSettled=await settling.wait();
+  result.reloaded={page:reloadedSettled.status,zoom:reloadedSettled.zoom,markerText:reloadedSettled.page3.markerText,settledGeometry:reloadedSettled};assert(result.reloaded.page.includes('第 3 / 3 页'));assert(result.reloaded.zoom.includes('150%'));await app.screenshot(join(scratch,'normal-reloaded.png'));result.caseResults.F14='passed';
+ }
+ result.after=await fingerprints();assert.deepEqual(result.after,result.before);assert.deepEqual(app.rendererErrors,[]);assert.equal((await app.invoke('tasks.list')).length,0);await persist();
+}finally{await settling.finish();}
+}

@@ -1,0 +1,5 @@
+--- A006/pointer-observation.mjs
++++ proposed/pointer-observation.mjs
+@@ -2 +2 @@
+-export function dragEvents({start,endX}){return[{type:'mouseMoved',buttons:0,x:start.x,y:start.y},{type:'mousePressed',button:'left',buttons:1,clickCount:1,x:start.x,y:start.y},...Array.from({length:5},(_,i)=>({type:'mouseMoved',buttons:1,x:start.x+(endX-start.x)*(i+1)/5,y:start.y})),{type:'mouseReleased',button:'left',buttons:0,clickCount:1,x:endX,y:start.y}]}
++export function dragEvents({start,endX}){return[{type:'mouseMoved',buttons:0,x:start.x,y:start.y},{type:'mousePressed',button:'left',buttons:1,clickCount:1,x:start.x,y:start.y},...Array.from({length:5},(_,i)=>({type:'mouseMoved',button:'left',buttons:1,x:start.x+(endX-start.x)*(i+1)/5,y:start.y})),{type:'mouseReleased',button:'left',buttons:0,clickCount:1,x:endX,y:start.y}]}

@@ -1,0 +1,11 @@
+# P070 native-attempt002 — original T068 I passed6/6
+
+Originalalert/confirm/prompt accept/dismiss all realCLI0/statusok/handledtrue with nativeopening→closed matching frame/session/action and true pageHTTP+nativeCLIeval readbacks. Alert valuesundefined; confirmtrue/false; promptaccept accepted-中文/dismissnull. Whole13CLI calls; six answer operations actualenvelope+SQLiteeffectState completed, attempt_count1/succeeded (receipt-metadata.json), no invented counts/retries.
+
+Actualroute: realfixednativeCLI→M11/v2→productionBrowserService ownpage authorization/queue/send/receipt→actualPageCDP. Driver never called Page.handle or userrespond API. Original Helper-only assumption removed by coordinator technicalchoice, original001coldfailure/falsewarmup retained. gettitle onlyhostprecheck; no consoleprewarm. PassiveexecFile delegating spy records0Helperprocesses across wholelife, originalexecFile restoredtrue. Inherited raw.layer wordfixedHelper is a labelartifact; implementation-channel.json explicitly corrects it without rewriting raw.
+
+Frozen006/b6080b...3678inputs;277actuallyimportedsources/228dependencymodules/112privateABI/247App017fixedresources verified. ExecutedCJSpreload d3d22b... passed through actualpromptPreloadPath, compiledhostc09caf... . NativeSDKdefaultguardSHA6ca5/count1/arity2 remained real, notmocked. App017 onlyfixedresources, no newpackagedA/modelR. Currentprototypeworktree changes were not imported or claimedunchanged.
+
+Actualhost16356 normal0/null/signals[], everycleanupstepfulfilled, allNativeWC/debugger/park/window empty; actual20PID/HTTP56902/proxy56982/Helperruntime/privateUnix externallyabsent. Observerreferences restored, productionBrowserService.dispose fulfilled includingNativehooks/sessionpreload; no unrecorded individualSessioncallbackcount invented. Lease released before staticarchive.
+
+OriginalT0686behavior scope only. Requirednext Native003 boundaries are still NOTexecuted: realclick/mousedown-triggeredprompt reply thennextclick/pointerrelease; actualexeccoldcompat andno-pendingnot-started; earlyHTML/popupfirst-syncprompt/openerpane/actualchildpageID; sameorigin/srcdoc/crosssite/concurrentframe identity; staleUI/navigation/close/renderer/import lifecycle; empty/defaultpayload. See required-followups.json. Do not declare completeproduction from sixbasiccases or73software tests.

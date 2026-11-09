@@ -1,0 +1,263 @@
+{
+  "at": "2026-11-05T13:32:51.922Z",
+  "scope": "Only original T126 two app combinations, reusing actual dual-selected T122.ambiguous plus actual browserOnly; not T122 verdict",
+  "originalRawSha256": "30ce55fd8341bf839c61636c6365c7c5aa3a99ac828f922107a05cf6035bf347",
+  "checks": [
+    {
+      "name": "dual actual plan includes browser+zentao and CLI",
+      "passed": true
+    },
+    {
+      "name": "dual actual full Skill first read reproduce-bug",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(proof.complete)\n"
+    },
+    {
+      "name": "dual actual full Skill first read bug-analysis",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(proof.complete)\n"
+    },
+    {
+      "name": "dual SOP explicitly guides actual ZenTao Skill",
+      "passed": true
+    },
+    {
+      "name": "dual actual successful M10 call in same actor/package/plan",
+      "passed": true
+    },
+    {
+      "name": "browser-only actual plan and no ZenTao Skill/entry",
+      "passed": true
+    },
+    {
+      "name": "browser-only full actual SOP read before actual question",
+      "passed": true
+    },
+    {
+      "name": "browser-only SOP asks environment/account and has no ZenTao invocation syntax",
+      "passed": true
+    },
+    {
+      "name": "browser-only actual model asks environment/account, no M10 Host invocation",
+      "passed": true
+    }
+  ],
+  "proofs": {
+    "T122.ambiguous": {
+      "source": {
+        "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/T122-ambiguous-native-before-stop-0.private.jsonl",
+        "sha256": "640303edec4b31a12e559ad1666b13b6dd99ada28e8f9d16e1934c1d62e0b4ae",
+        "bytes": 497435,
+        "originalSource": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/codex/sessions/2026/11/05/rollout-2026-11-05T21-21-11-01a1abde-db87-7252-8440-785032103cc9.jsonl"
+      },
+      "taskId": "49d97991-7f4c-4830-bffa-0ca6d7758032",
+      "runId": "aa3aa857-19f7-4646-ac4b-defc5fc4ab4a",
+      "projectId": "efd26442-33b3-4b1b-8477-8553b87d7792",
+      "planHash": "cafd0c7597b5419e13f5e06eb6dfbfae04789bb716101177210e4b1dd47e0e4d",
+      "apps": [
+        {
+          "appId": "browser",
+          "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+          "entry": "cli"
+        },
+        {
+          "appId": "zentao",
+          "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+          "entry": "cli"
+        }
+      ],
+      "verifiedDelivered": [
+        {
+          "appId": "browser",
+          "skillId": "browser",
+          "skillFileSha256": "7b50874c4de5db4b38ba240195c1f31b98374f0aa66d1a41f20563f28acb205c",
+          "renderedHash": "14a25cadcf80aa5b14d0443927e52e276c8adda88814cdb37efb6790075ef508",
+          "templateHash": "4b8d22f811d8a176fd12a691934c678471b3d755856a8a19dee0dc650fd4c473"
+        },
+        {
+          "appId": "browser",
+          "skillId": "reproduce-bug",
+          "skillFileSha256": "e10fa816bd4531b9a7d5625ac6a5b68f8058835b864a0645fcb824c9a2b2bbec",
+          "renderedHash": "674cb7815b79c44a9e84d65eb09612b7008045155e2f7cc549c004191ba4e19a",
+          "templateHash": "b17793be7785d39418c3c5d222ca4b9009b802267a48c076e4956881efe9d88c"
+        },
+        {
+          "appId": "zentao",
+          "skillId": "bug-analysis",
+          "skillFileSha256": "3e4d8d12fedcd3a82b04a06a63e952fd4c47f5a932de84315f19f4e73c8531bc",
+          "renderedHash": "81a24696875fc37862cd0ba646217fa1ad0fbd7cd253233adc64cd803f805007",
+          "templateHash": "f994c237ee6f3e464c76d74e570f255bd07633f3b37a16770ba9d4f9aff8bb7b"
+        },
+        {
+          "appId": "zentao",
+          "skillId": "story-review",
+          "skillFileSha256": "e9eb74bec1dfe65636ddc84d3587b68209e76a946d7481ff1ceb4051e470f26c",
+          "renderedHash": "3b57ec65ae16c79b547b9506ee779c7e2400fc26b7dbb7b71d817fb38b024e2c",
+          "templateHash": "40c52d743df3ce86e450e440b556ba9cd504d3a9f64dca588346c54a31a4a15c"
+        }
+      ],
+      "skillProof": [
+        {
+          "appId": "browser",
+          "skillId": "reproduce-bug",
+          "proof": {
+            "complete": false,
+            "reads": []
+          }
+        },
+        {
+          "appId": "zentao",
+          "skillId": "bug-analysis",
+          "proof": {
+            "complete": false,
+            "reads": []
+          }
+        }
+      ],
+      "successfulSupportedM10": [
+        {
+          "source": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/T122-ambiguous-native-before-stop-0.private.jsonl",
+          "line": 27,
+          "callId": "call_f01540bcf0d741379d2fc570b6369cdc#2",
+          "capabilityId": "zentao.object.list",
+          "requestId": "cf1c29e3-1466-4957-aedd-357864817b86",
+          "operationId": "0f0ea904-6b36-4e67-ae25-3e7b008799e6",
+          "effectState": "read-only",
+          "childExitCodeObserved": 0
+        },
+        {
+          "source": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/T122-ambiguous-native-before-stop-0.private.jsonl",
+          "line": 35,
+          "callId": "call_848df8b3526e4c82a0076e53d5fab05f#0",
+          "capabilityId": "zentao.object.get",
+          "requestId": "b3977bae-df77-47f5-8418-739dee45fc00",
+          "operationId": "6992ea9b-1371-4d59-91b2-33f6be46bd77",
+          "effectState": "read-only",
+          "childExitCodeObserved": 0
+        }
+      ],
+      "completion": [
+        {
+          "line": 93,
+          "at": "2026-11-05T13:23:16.656Z",
+          "messageSha256": "b5a4be77b62f98ef39700b5025c2ea3810d1c8fbd6e92457668e6446f8d71046"
+        }
+      ],
+      "remainingOriginalParserUnsupported": [
+        {
+          "line": 16,
+          "outerCallId": "call_61336a0c17e246a8936e34672966c4db",
+          "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n3 !== 2\n"
+        },
+        {
+          "line": 41,
+          "outerCallId": "call_9e2ce82988b74a61a05bb1b17528b4bb",
+          "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n3 !== 2\n"
+        },
+        {
+          "line": 56,
+          "outerCallId": "call_a6ac52973c74474abf43fbab16733238",
+          "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(ts.isAwaitExpression(n))\n"
+        },
+        {
+          "line": 72,
+          "outerCallId": "call_650153fb7bda4e00afbfad3986c535e1",
+          "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n3 !== 2\n"
+        },
+        {
+          "line": 82,
+          "outerCallId": "call_a963c2c9befe4318a7af0665abfc1c40",
+          "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(ts.isCallExpression(c)&&ts.isPropertyAccessExpression(c.expression)&&ts.isIdentifier(c.expression.expression)&&c.expression.expression.text==='tools'&&c.expression.name.text==='exec_command')\n"
+        }
+      ]
+    },
+    "T126.browserOnly": {
+      "source": {
+        "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/T126-browserOnly-native-before-stop-0.private.jsonl",
+        "sha256": "745ab74e63099bcc3fd1c0a206f8666887461f46ba2fa8ec8a1ee6e61ae0fb7f",
+        "bytes": 225538,
+        "originalSource": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/codex/sessions/2026/11/05/rollout-2026-11-05T21-23-21-01a1abe0-d5a4-7193-89be-9f5ccffec4f4.jsonl"
+      },
+      "taskId": "16f45c8e-a870-4617-8043-7d8c53dd9915",
+      "runId": "86ff2760-98e9-47b7-be7f-468151415999",
+      "projectId": "f8fd64df-059c-49e7-b472-18d1efc3b61a",
+      "planHash": "fa2b68facb0448d9b2a89742fe732ac98ec739d1e7148484be390093cb25f5dc",
+      "apps": [
+        {
+          "appId": "browser",
+          "packageHash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+          "entry": "cli"
+        }
+      ],
+      "verifiedDelivered": [
+        {
+          "appId": "browser",
+          "skillId": "browser",
+          "skillFileSha256": "7b50874c4de5db4b38ba240195c1f31b98374f0aa66d1a41f20563f28acb205c",
+          "renderedHash": "14a25cadcf80aa5b14d0443927e52e276c8adda88814cdb37efb6790075ef508",
+          "templateHash": "4b8d22f811d8a176fd12a691934c678471b3d755856a8a19dee0dc650fd4c473"
+        },
+        {
+          "appId": "browser",
+          "skillId": "reproduce-bug",
+          "skillFileSha256": "e10fa816bd4531b9a7d5625ac6a5b68f8058835b864a0645fcb824c9a2b2bbec",
+          "renderedHash": "674cb7815b79c44a9e84d65eb09612b7008045155e2f7cc549c004191ba4e19a",
+          "templateHash": "b17793be7785d39418c3c5d222ca4b9009b802267a48c076e4956881efe9d88c"
+        }
+      ],
+      "skillProof": [
+        {
+          "source": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/T126-browserOnly-native-before-stop-0.private.jsonl",
+          "requestLine": 16,
+          "outputLine": 20,
+          "outerCallId": "call_367fc5576d944f28901ddd54d8c9132e",
+          "requestAt": "2026-11-05T13:23:31.765Z",
+          "outputAt": "2026-11-05T13:23:31.953Z",
+          "index": 0,
+          "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/home/.agents/skills/smartdd-a-browser-reproduce-bug-9828ece1bb16/SKILL.md",
+          "appId": "browser",
+          "skillId": "reproduce-bug",
+          "sha256": "e10fa816bd4531b9a7d5625ac6a5b68f8058835b864a0645fcb824c9a2b2bbec",
+          "childExitCodeObserved": 0,
+          "fullContent": true,
+          "commandMode": "literal finite exec array; allSettled index/result fulfilled"
+        },
+        {
+          "source": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/T126-browserOnly-native-before-stop-0.private.jsonl",
+          "requestLine": 16,
+          "outputLine": 20,
+          "outerCallId": "call_367fc5576d944f28901ddd54d8c9132e",
+          "requestAt": "2026-11-05T13:23:31.765Z",
+          "outputAt": "2026-11-05T13:23:31.953Z",
+          "index": 1,
+          "path": "/private/tmp/willyou-m12-sop-real-static-002/attempt-005/runtime-001/home/.agents/skills/smartdd-a-browser-browser-7eee29c34045/SKILL.md",
+          "appId": "browser",
+          "skillId": "browser",
+          "sha256": "7b50874c4de5db4b38ba240195c1f31b98374f0aa66d1a41f20563f28acb205c",
+          "childExitCodeObserved": 0,
+          "fullContent": true,
+          "commandMode": "literal finite exec array; allSettled index/result fulfilled"
+        }
+      ],
+      "successfulSupportedM10": [],
+      "completion": [
+        {
+          "line": 28,
+          "at": "2026-11-05T13:23:51.423Z",
+          "messageSha256": "55bd5dc9faea4d41ebe3201ce0c31d515d6cc4eb3ada414822a297a628f3ab70"
+        }
+      ],
+      "remainingOriginalParserUnsupported": [
+        {
+          "line": 16,
+          "outerCallId": "call_367fc5576d944f28901ddd54d8c9132e",
+          "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(ts.isCallExpression(c)&&ts.isPropertyAccessExpression(c.expression)&&ts.isIdentifier(c.expression.expression)&&c.expression.expression.text==='tools'&&c.expression.name.text==='exec_command')\n"
+        }
+      ]
+    }
+  },
+  "recommendation": "Specific evidence gap remains, no whole-case recommendation",
+  "formalCaseIncrement": 0,
+  "resourcesHeld": [],
+  "boundary": "No model/Native/App/SQL/OS/auth access, original005 untouched. Unknown unrelated complex carriers remain listed; their classification is not silently marked parsed."
+}

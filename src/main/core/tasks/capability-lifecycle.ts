@@ -9,6 +9,8 @@ export interface TaskCapabilityLaunch {
   ptyId: string;
   runtime?: PreparedRuntime;
   args: string[];
+  /** Host-verified per-run equivalent of profile argv; the stored profile stays unchanged. */
+  profileArgs?: string[];
   env: Record<string,string>;
   command?: string;
   /** Host-only, before any fork window is armed. Never changes the fixed selection. */

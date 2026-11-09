@@ -1,0 +1,125 @@
+{
+  "group": "M12-P103",
+  "scope": "original full1800s CPU/RSS execution; no automatic formalcredit",
+  "formalCaseCredit": 0,
+  "startedAt": "2026-11-05T10:49:03.960Z",
+  "outerPid": 93549,
+  "wrapperKernelExitCode": null,
+  "wrapperKernelSignal": null,
+  "knownPids": [
+    93549,
+    93555,
+    93586,
+    93591,
+    93592,
+    93593
+  ],
+  "events": [],
+  "errors": [
+    "Error: Bounded wait: late wrapper callback\n    at bounded (file:///private/tmp/willyou-m12-p103-app021-long-001/run.mjs:13:142)\n    at async main (file:///private/tmp/willyou-m12-p103-app021-long-001/run.mjs:35:315)\n    at async file:///private/tmp/willyou-m12-p103-app021-long-001/run.mjs:53:39"
+  ],
+  "cleanupErrors": [],
+  "subprocesses": [
+    {
+      "pid": 93555,
+      "program": "/usr/bin/clang",
+      "args": [
+        "-fobjc-arc",
+        "-fblocks",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fmodules-cache-path=/private/tmp/willyou-m12-p103-app021-long-001/cache/clang",
+        "-framework",
+        "AppKit",
+        "-framework",
+        "Foundation",
+        "/private/tmp/willyou-m12-p103-app021-long-001/wrapper.m",
+        "-o",
+        "/private/tmp/willyou-m12-p103-app021-long-001/wrapper/M12AcceptanceRunner.app/Contents/MacOS/M12AcceptanceRunner"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "signals": []
+    },
+    {
+      "pid": 93586,
+      "program": "/usr/bin/clang",
+      "args": [
+        "-fobjc-arc",
+        "-fblocks",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fmodules-cache-path=/private/tmp/willyou-m12-p103-app021-long-001/cache/clang",
+        "-framework",
+        "AppKit",
+        "-framework",
+        "Foundation",
+        "/private/tmp/willyou-m12-p103-app021-long-001/broker.m",
+        "-o",
+        "/private/tmp/willyou-m12-p103-app021-long-001/broker"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "signals": []
+    },
+    {
+      "pid": 93591,
+      "program": "/usr/bin/codesign",
+      "args": [
+        "--force",
+        "--sign",
+        "-",
+        "/private/tmp/willyou-m12-p103-app021-long-001/wrapper/M12AcceptanceRunner.app"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "/private/tmp/willyou-m12-p103-app021-long-001/wrapper/M12AcceptanceRunner.app: replacing existing signature\n",
+      "signals": []
+    },
+    {
+      "pid": 93592,
+      "program": "/usr/bin/codesign",
+      "args": [
+        "--verify",
+        "--deep",
+        "--strict",
+        "/private/tmp/willyou-m12-p103-app021-long-001/wrapper/M12AcceptanceRunner.app"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "signals": []
+    }
+  ],
+  "pins": {
+    "wrapperExeSha256": "fd8d223022503dcbe5372da314283590e5ceee2a9f5bb74f77965cf76e341e9e",
+    "brokerSha256": "cbeddaacc4066f9c6353774242f4cf5585000fc2c87c330dcc94cf1f5648f5ae",
+    "nodeSha256": "2e3f1286a7eb3736346ed1803e458a0ff909e2b2d5bc746144dcb76970e9b99d",
+    "node": "/Users/liubu/.hermes/node/bin/node",
+    "wrapperBundleIdentifier": "com.willyou.acceptance.m12.p103.39bf77e32c6a"
+  },
+  "brokerPid": 93593,
+  "brokerExit": {
+    "code": 3,
+    "signal": null,
+    "stderr": "",
+    "notWrapperKernelExit": true
+  },
+  "callbackUnresolved": true,
+  "status": "failed-or-partial",
+  "failure": {
+    "stage": "one-nonactive-LaunchServices-wrapper",
+    "error": "Error: Bounded wait: late wrapper callback\n    at bounded (file:///private/tmp/willyou-m12-p103-app021-long-001/run.mjs:13:142)\n    at async main (file:///private/tmp/willyou-m12-p103-app021-long-001/run.mjs:35:315)\n    at async file:///private/tmp/willyou-m12-p103-app021-long-001/run.mjs:53:39"
+  },
+  "cleanupUnresolved": true,
+  "finishedAt": "2026-11-05T10:51:27.778Z",
+  "stage": "cleanup-unresolved-lease-not-released"
+}

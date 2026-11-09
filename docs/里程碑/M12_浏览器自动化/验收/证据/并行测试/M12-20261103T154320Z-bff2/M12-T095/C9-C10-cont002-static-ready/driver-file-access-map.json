@@ -1,0 +1,90 @@
+{
+  "static": [
+    {
+      "root": "controlRoot",
+      "names": [
+        "execution-ready.json",
+        "payload-review.json",
+        "pin.json",
+        "lease.receipt.json (Root generated)",
+        "continuation-inputs.json",
+        "main-entry.json",
+        "real-cli-expected.json",
+        "initial-foreground-authorization.receipt.json",
+        "activate-initial-exact-pid.applescript"
+      ]
+    },
+    {
+      "root": "exact004",
+      "names": [
+        "raw.json",
+        "cleanup.json",
+        "runtime-001/codex/sessions/**/*.jsonl (future appended Native; only exact own root)",
+        "runtime-001/**/SKILL.md (actual plan-authorized current delivery)",
+        "runtime-001/userdata/smartdd.db (future App readonly query)"
+      ]
+    },
+    {
+      "root": "offline001",
+      "names": [
+        "output-001/proof.private.json",
+        "output-001/result.safe.json"
+      ]
+    },
+    {
+      "root": "package/external pins",
+      "source": "pin.json.files+sourceManifest/buildResult/browserPackage; exact original App027 pins"
+    }
+  ],
+  "dynamicTemplates": {
+    "newPrivateEvidence": [
+      "runtime-001/{extra-setup-control,new-run}-{rendered-payload.private.txt,full-native.private.jsonl,ack.private.jsonl}",
+      "runtime-001/{extra-setup-control,new-run}-input.private.json",
+      "runtime-001/*-menu.private.jsonl",
+      "runtime-001/*-wait.private.jsonl",
+      "runtime-001/startup-capture.private.json",
+      "runtime-001/electron.private.log",
+      "runtime-001/*.private.log",
+      "runtime-001/*.png",
+      "initial-foreground-attempt-{actualPID}.json",
+      "live.json",
+      "raw.json",
+      "cleanup.json",
+      "judge.json"
+    ],
+    "absentBeforeExecute": [
+      "runtime-001",
+      "execution-started.json",
+      "raw.json",
+      "live.json",
+      "cleanup.json",
+      "judge.json"
+    ],
+    "liveReuse": "Exact004 owned runtime exists and is intentionally reused, never copied; no DB/Cookie/auth read during static prep."
+  },
+  "navigation002": {
+    "module": "task-open-ui.mjs",
+    "reads": "Readonly current tasks.get/applications.session + actual own renderer descriptor",
+    "outputs": [
+      "runtime-001/b-open-samples.private.jsonl",
+      "runtime-001/b-open-samples.private.jsonl.failure.private.png"
+    ],
+    "appendBeforeEveryDecision": true,
+    "bodyExecution": "Trusted fixed driver only under futureRootlease; no model code eval",
+    "relativeGraph": {
+      "files": 47,
+      "edges": 69,
+      "missing": 0
+    }
+  },
+  "stopRestartAmendment": {
+    "file": "access-ui.mjs",
+    "outputs": [
+      "runtime-001/stop-restart-samples.private.jsonl",
+      "runtime-001/stop-restart-failure.private.log",
+      "runtime-001/stop-restart-failure.private.png"
+    ],
+    "reads": "Readonly same tasks.get/session/accessState plus same own-renderer controls/terminal metadata; no secret/cookie/config read",
+    "routing": "StoppedPanel presence -> wait exact enabled panel resume. Retained visible original terminal + no StoppedPanel -> open real actions, wait exact enabled header-resume. Never fallback due transient disabled."
+  }
+}

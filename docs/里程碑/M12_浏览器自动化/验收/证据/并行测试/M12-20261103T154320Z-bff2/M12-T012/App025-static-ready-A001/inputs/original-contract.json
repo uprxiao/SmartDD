@@ -1,0 +1,54 @@
+{
+  "schema": "original-T012-full-A-contract-v1",
+  "case": "M12-T012",
+  "layers": [
+    "A"
+  ],
+  "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+  "sourceSHA256": "b9f48372a4b2329c2f4e1a555408c4cfe95caf9120abc94cd92178cf395eb058",
+  "originalRow": "| M12-T012 | R01.5、O3、B05 | A | F-TLS | 打开非本机自签证书地址；点“我了解风险，继续访问”；重启 App 后再访问；到登录态管理里撤销该例外后再访问；另让 Agent 对该地址执行 `goto` | 首次显示证书错误页和风险提示；继续访问后页面加载，地址栏显示红色“证书不受信任”图标；例外按主机记在当前 profile，重启后仍有效；撤销后重新拦截；Agent 的 `goto` 只得到加载失败，不能放行 | — | 待执行 | — |",
+  "allCriteria": [
+    "non-local hostname self-signed first blocked with original certificate failure/risk warning",
+    "trusted UI click 我了解风险，继续访问 then actual TLS marker loads",
+    "addressbar red 证书不受信任 icon visible",
+    "exception stored by host under actual current browser profile",
+    "normal App quit0/null then same userdata new App/profile visits actual TLS site without new override",
+    "trusted UI profile manager revoke exact host exception then revisit blocks with original cert error",
+    "actual TaskService managed native willyou-app CLI goto same revoked target fails as loading failure and cannot grant exception"
+  ],
+  "validOldEvidenceBoundary": "P011/P012 technical I can explain fixture/network policy, but does not satisfy any original T012 A; all seven current A criteria must execute. No substitute model R is claimed or needed by original A-only contract.",
+  "fixture": {
+    "host": "m12-cert.test",
+    "explicitRouting": "MAP m12-cert.test 127.0.0.1",
+    "nonLocalHostString": true,
+    "localTLSOnly": true,
+    "TLSPrivateKey": "fresh synthetic runtime key from pinned openssl only after full lease; chmod600 then delete; never archive/read daily keys",
+    "forbidden": [
+      "ignore-certificate-errors",
+      "allow-insecure-localhost",
+      "disable-web-security",
+      "Browser.grantPermissions",
+      "OS trust-store/hosts edits"
+    ]
+  },
+  "preconditions": "one independent App userdata/project/fake terminal profile; automatic fake health; all RPC fixture setup before one reload per new App; exactPID initial activation only once then original NativeDOMstable3s and one guard per App instance",
+  "candidateBoundary": {
+    "T009": {
+      "original": "| M12-T009 | R01.2、K4 | A＋S | 焦点在网页正文内 | 真实键盘按 ⌘R、⌘W、⌘T、⌘⇧T、⌘F；再把焦点移到终端按 ⌘R | 焦点在网页时：⌘R 刷新网页而不是重载 WillYou 窗口，⌘W 关闭网页标签，⌘T 新建网页标签，⌘⇧T 重开最近关闭的标签，⌘F 打开页内查找；焦点在终端时快捷键保持原有行为。CDP 键盘事件不能证明菜单快捷键，S 层必须实按 | — | 待执行 | — |",
+      "remaining": "A+S; original S real keyboard presses, cannot close as short pure A"
+    },
+    "T024": {
+      "original": "| M12-T024 | R01.11、U1、U2 | A＋S | P1／T1，右侧工作区关闭；另有无项目任务 T0 和 P1 项目视图 | 点任务标题栏“新建标签页”；再关闭右侧工作区，焦点放在终端，实按 ⇧⌘B；在文件区打开 Pages 文档进入编辑后按 ⇧⌘B；查看 T0 和项目视图的标题栏 | 前两次都打开右侧工作区并新建一个网页标签、显示启动页；Pages 编辑中 ⇧⌘B 由编辑器处理，不新建标签；T0 与项目视图没有该按钮，⇧⌘B 无效果。S 层实按快捷键 | — | 待执行 | — |",
+      "remaining": "A+S includes actual system shortcut and Pages edit shortcut ownership"
+    },
+    "T091": {
+      "original": "| M12-T091 | R06.1、O13 | A＋R | 新建项目 P3；在 P3 的“项目选用”页取消浏览器应用 | 在新建后的 P3 任务里调用浏览器命令；取消选用后新开任务再调用 | 新项目默认选用，调用成功；取消选用后新运行的调用返回 `ENTRY_NOT_ACTIVE` 或 `SCOPE_DENIED`，Skill 中没有浏览器 | — | 待执行 | — |",
+      "remaining": "A+R requires real OpenAI model under original UI-launched definition; no-model short group cannot close it"
+    },
+    "T017": {
+      "original": "| M12-T017 | R01.8、O4、B06 | A＋I | 权限请求页（定位） | 用户点允许；刷新后再次请求；在登录态管理里撤销；另由 Agent 执行任意命令尝试授权 | 首次弹提示；允许后按站点记在当前 profile，再次请求自动沿用；撤销后重新弹提示；没有任何 Agent 命令能授予站点权限 | — | 待执行 | — |",
+      "remaining": "P014 technical native I green; top-document source delta limited, but old/current framework and SQLite native SHA differ. No whole current I equivalence asserted; defer closure rather than count only A."
+    }
+  },
+  "formalNewPasses": 0
+}

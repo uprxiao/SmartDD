@@ -1,0 +1,1 @@
+App055 current064 originalS6 background01-05 only. No App/DMG/installed output copied. All5 declaredparents exist,9 outputs absent. Actual01-05 native lease required; Root independently enforces12GiB disk gate before execution. Then phase06 binds fresh actual installed outputs before07/08/09. No production rebuild, daily credentials, model or visible UI input.

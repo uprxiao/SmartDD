@@ -1,0 +1,21 @@
+{
+  "case":"M12-T088",
+  "layers":["I","S"],
+  "authority":"docs/里程碑/M12_浏览器自动化/验收/测试用例.md M12-T088; 需求.md R05.7/R06.2/O17",
+  "originalPrecondition":"系统剪贴板里预先放入一段标记文字",
+  "originalSteps":"clipboard write --text x、clipboard read；检查系统剪贴板",
+  "originalExpected":"E3 已证实读写的是系统剪贴板。按 O17（用户选 A）判定：读到的就是系统剪贴板内容，写入后系统剪贴板被改，Skill 写明“剪贴板是用户的系统剪贴板，只在用户要求时读写”；测试前保存、测试后恢复系统剪贴板原内容",
+  "criteria":[
+    {"id":"C1","layer":"S","required":"Capture all original general items/types/raw Data in order into RAM and exclusive0600 private backup; refuse unreadable/over-budget/concurrent state before first write."},
+    {"id":"C2","layer":"I+S","required":"System general marker set; original managed pinned nativeCLI clipboard read returns exact unique marker. No general API may substitute for CLI."},
+    {"id":"C3","layer":"I+S","required":"Original managed CLI clipboard write --text x returns completed; actual general NSPasteboard contains only exact synthetic x. Original CLI read back x separately."},
+    {"id":"C4","layer":"S","required":"After App and all native CLI work have stopped, all original item/type/raw Data/order restored exactly; no private original backup remains. Concurrent new state prevents overwrite and case stays unpassed."},
+    {"id":"C5","layer":"I","required":"Actual delivered product browser Skill explicitly states user's SYSTEM clipboard and only explicit user request; actual package bytes hash pinned."}
+  ],
+  "nonAssertedSafetyGate":"Future real Swift compile followed by UNIQUE NAMED pasteboard 8 safety tests. Named tests are never system-general S proof. A failed gate stops before general access.",
+  "permissions":"Any actual pending clipboard permission is allowed only by one real trusted UI click during the original in-flight CLI call. New App health/RPC precedes once setup reload, stable1s real initial focus within120s, then one focus guard. No direct policy mutation/approval injection/CLI retry.",
+  "privacy":"Original or unexpected clipboard text/types/raw bytes and hashes are never public. Only RAM/0600 ignored runtime backup/native output/error/electron logs. Public results carry expected synthetic marker/x or booleans. No screenshots while general is captured.",
+  "concurrencyBoundary":"NSPasteboard exposes no atomic compare-and-swap. Immediate changeCount+ordered-byte ownership checks cannot eliminate the check/write race; no concurrent copying during test is a required operating precondition. Detected changes retain private recovery data and are not overwritten.",
+  "currentExecution":"Static only; no Swift compile, named/general access, App, OS probe, listener or real model invocation. Future execution requires coordinator Native/UI lease and actual initial foreground cooperation.",
+  "formalCasePass":false
+}

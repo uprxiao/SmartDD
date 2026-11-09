@@ -1,0 +1,4 @@
+R003真实qa前置已完成，但合成密码进入shell命令，原credentialAccessAttempts安全门槛正确拒绝；不是读取实际auth。
+原拒绝命令SHA256 1795d8b01df57923298ec26bc520a8d046674b0dcc6f7388d7471345b0c4a533；原完整Native/raw保留，安全说明不重发密码命令。
+原judge0/11；App52230正常0/null/signals[]，独立15PID/11TCP/2Unix/1helper全clear且Root已release。
+R004仅新实例+提示中的安全stdin传输规范；不重放旧task，不放宽原parser/安全判据，不把transport预检当Host/App/model通过。

@@ -96,6 +96,19 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const context=caller&&typeof caller==='object'?this.callers.get(caller):undefined;
     if(!context)throw new ApplicationError('SCOPE_DENIED','调用身份不是当前宿主签发');this.record(context);return context;
   }
+  /** A retained module needs the run lifetime, not this command's cancellation.
+   * Only an authenticated, still-active opaque agent context can obtain it. */
+  agentRunSignal(context:ApplicationExecutionContext<A>):AbortSignal{
+    this.record(context);
+    if(context.callerKind!=='agent-run'||context.scopeKind!=='project'||!context.projectId||!context.taskId||!context.runId||!this.agentCalls.has(context))
+      throw new ApplicationError('SCOPE_DENIED','运行生命周期只允许当前宿主签发的Agent业务上下文');
+    const current=this.deps.assertRun(context.runId);
+    if(current.run.runId!==context.runId||current.run.projectId!==context.projectId||current.run.taskId!==context.taskId||
+      !current.snapshot.packages.some(pack=>pack.appId===context.appId&&pack.packageHash===context.packageHash))
+      throw new ApplicationError('SCOPE_DENIED','运行生命周期与当前业务上下文不符');
+    if(current.signal.aborted)throw new ApplicationError('SCOPE_DENIED','本次Agent运行已结束');
+    return current.signal;
+  }
   async withSignal<T>(context:ApplicationExecutionContext<A>,signal:AbortSignal|undefined,work:()=>Promise<T>):Promise<T>{
     const record=this.record(context),cancel=()=>record.abort.abort(signal?.reason);
     if(signal){signal.addEventListener('abort',cancel,{once:true});if(signal.aborted)cancel();}

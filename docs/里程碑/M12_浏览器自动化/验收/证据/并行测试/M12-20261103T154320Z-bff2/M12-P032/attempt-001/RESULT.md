@@ -1,0 +1,3 @@
+# P032统一App011
+macOS arm64预览包构建exit0；SQLite/PTY/voiceBridge/fileBroker/officeRenderer/fileWatcher实际native smoke全passed。2835输入SHA+mode构建前后全一致，且每个文件字节均与d37a504249a9d4507bf5de7694b5dcd1230f9a69 Git blob匹配，可恢复。此次纳入真实SQL和policy静态输入，P021较少输入清单不冒充完整闭包。
+ASAR09570b48860d6a13f6623fc95794f81a75e973fe1f01db17b9f6cd129d0fe4ca；helper7a、SOURCEdb70、CLI2da7、identity8599未变。包含导入、审计及P031恢复状态修复。仅ad-hoc预览，无notarization/x64/完整S6或发布结论。构建会话32049已exit0，资源释放。新生产包由P033继续真实UI，正式51/121、70待收口、42.15%保持。

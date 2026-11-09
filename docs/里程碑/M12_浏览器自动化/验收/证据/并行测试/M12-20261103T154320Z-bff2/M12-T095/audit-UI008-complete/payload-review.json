@@ -1,0 +1,50 @@
+{
+  "case": "M12-T095",
+  "scope": "UI-only008 audit tail; 0 model/CLI/business payload",
+  "newPrompts": [],
+  "newCLI": [],
+  "newTaskOrRun": false,
+  "noAuthenticationReadOrCopy": true,
+  "existingM12AuthorizationContinues": true,
+  "original17": "actual00415+actual006D2",
+  "extraSetup": "actual005 only1, not replayed",
+  "UIOnly": [
+    "Applications navigation",
+    "Activity navigation",
+    "Real read-older pagination if needed",
+    "Open exact original observe snapshot/control click details",
+    "Expand trace",
+    "Read visible user authorization source and take dialog clips",
+    "Close details"
+  ],
+  "activationAuthorization": {
+    "status": "explicitly-authorized",
+    "scope": "M12-isolated-initial-foreground-only",
+    "userMessageReference": "call_7fa2b9ae68354542a7dcf11b953aeea9/0",
+    "userAnswer": "允许按准确 PID 首次激活测试窗口",
+    "scriptSHA256": "481e2888fa1a4c8e24aa47ae44613ff1ab2ad94b780f3e508f984b91521b8d96",
+    "at": "2026-11-06T11:04:34.060070+00:00",
+    "policy": "Each exact new isolated test process only once, after live PID/exe/privateuserData verification; real NativeDOM3s then unchanged focusguard; no running refocus/rearm/daily-window/clipboard/OSpermission changes. OS prompts user only."
+  },
+  "foregroundObserverAuthorization": {
+    "script": "/private/tmp/willyou-m12-foreground-observer-001/frontmost.jxa",
+    "scriptSHA256": "9ba6592ac04e90d6cb8e3ef5e0ea3c0f40f838a23e23e6fa23879b94e389e14c",
+    "review": "/private/tmp/willyou-m12-foreground-observer-001/review.json",
+    "reviewSHA256": "22e96f75f2973c8c3c438e658c67adcdef94e19f80df94af91cf108b3a983ba1",
+    "authorization": "call_a7e18198b72945f681b5aa301f74e044/0",
+    "actualUserAnswer": "允许，只读记录前台应用名称和 PID",
+    "currentAttemptExecuted": false,
+    "boundary": "Original authorized script bytes unchanged; execute at most once only on focus-yield catch before App closes. Read result name/PID only, bounded5s; failures recorded without blocking cleanup."
+  },
+  "exclusions": [
+    "Task sidebar/resume/start/stop",
+    "Model input/Enter",
+    "CLI spawning",
+    "Counter fixture server",
+    "Health",
+    "Authentication copy/read",
+    "Native browser navigation",
+    "Runtime/db/cookie edits",
+    "Focus rearm"
+  ]
+}

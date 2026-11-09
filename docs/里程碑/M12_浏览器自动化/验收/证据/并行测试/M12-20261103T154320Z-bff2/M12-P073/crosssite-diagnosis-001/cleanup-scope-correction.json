@@ -1,0 +1,37 @@
+{
+  "origin": "Post-delivery static scope correction; original328file delivery untouched",
+  "originalManifestSha256": "d0a81477e4bfc70815e2ad674721c07fc4f62ab7acb38146a0fd1bde6d4dabe8",
+  "originalCleanupSha256": "d7ce2f0e58be42567c0c2db9e9adbedda40ca69755bf0513f577fad586493070",
+  "originalClaim": "remainingUnixGateway[]/allUnixGatewayGone=true",
+  "actualScannedRoot": "/private/tmp/willyou-m12-p073-dialog-boundaries-native-002/runtime-001/tmp",
+  "scanCoversActualGateway": false,
+  "actualProductionAllocation": {
+    "source": "source/src/main/core/applications/cli-gateway.ts:36-43",
+    "directory": "realpathSync(mkdtempSync('/tmp/wy-cli-'+process.getuid()+'-'))",
+    "endpoint": "join(directory,'cli.sock')",
+    "tmpdirIgnored": true
+  },
+  "exactRandomGatewayPathCaptured": false,
+  "randomPathRecoverableFromSavedEvidence": false,
+  "actualNormalGatewayCloseSteps": [
+    {
+      "name": "close-real-gateway",
+      "startedAt": 1793824138432,
+      "timeout": 8000,
+      "status": "fulfilled",
+      "finishedAt": 1793824138435
+    }
+  ],
+  "activeResourceEvidence": {
+    "hostExit": {
+      "atMs": 1793824138557,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "all81KnownPidsAbsent": true,
+    "normalCloseImplementation": "Destroys peers, closes server, removes exactdev/ino cli.sock and ownedemptydir; fulfilled actualstep retained."
+  },
+  "conclusion": "No active owned process/socket listener remains by normal close and PID absence. Actual random gateway filesystem path was not logged, so per-path unlink/absence assertion is unverified. Do not claim privateTmp scan covered it.",
+  "nextAttemptRequiredObservation": "Record gateway.endpoint only (no token/environment values), exactlstat both endpoint+directory after actual close. Never scan/delete unknown directories."
+}

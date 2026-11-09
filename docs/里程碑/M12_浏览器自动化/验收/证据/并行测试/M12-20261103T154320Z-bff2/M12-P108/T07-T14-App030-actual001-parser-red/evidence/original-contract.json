@@ -1,0 +1,68 @@
+{
+  "parent": "M12-T131",
+  "originalNine": [
+    "T01",
+    "T06",
+    "T07",
+    "T08",
+    "T09",
+    "T14",
+    "T29",
+    "T37",
+    "T38"
+  ],
+  "closedNoReplay": [
+    "T01",
+    "T06",
+    "T08",
+    "T09",
+    "T29",
+    "T37",
+    "T38"
+  ],
+  "thisGroup": [
+    "M11-T07 I+A+R",
+    "M11-T14 I+A+R"
+  ],
+  "rows": [
+    {
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "sourceSHA256": "1832f013fa15bd6ae111058d3288f67db42645d078b667d9b9bed0d52f44f3c1",
+      "line": 192,
+      "originalText": "| M12-T131 | U3、M12-D01／D02 | I＋A＋R | M11 权威账中受网关改动影响的用例：T01、T06、T07、T08、T09、T14、T29、T37、T38 | 在M12基线上按原步骤／层级重跑；T38租约按需求§3已批准D01增加活跃续租与真实停止两支，其余身份／范围／无副作用断言保持 | 原身份、范围、固定计划与无副作用拒绝判据继续成立；令牌有效期按已批准M12-D01：活跃运行续租，真实停止／撤销后原令牌拒绝且不恢复运行。T38原“活跃但过期即拒绝”与现行需求冲突，仅在M12按此对齐并保留旧红；不回写M11账 | 原9子用例中T01（I/A/R）、T06（I/A/R）、T08（原仅I）、T09（I/A原故障合同）、T29（I/A/R）、T37（I/A/R）、T38（I/A原身份合同）已闭合。T09原I63按150生产文件不变复用，A001正常/HTTP超时/断连/取消已独立7/7；C003真实CLI挂住后30.031秒TIMEOUT、同child实际SIGTERM结束，原合同后验及Root均7/7，没有要求额外SIGKILL；M005同上游先正常读、再真实tools/call期间断连，Host INVALID_RESPONSE/read-only/attempt1。Root核M原生3调用与只读实际DB两完整行、原4/5额外tools/list假设红保留，窄派生独立5/5、27精确清场、App正常0/null/signals[]。原wrapper失败/提前清场及勘误保留，未因解析修正重发业务。T29/T37/T38既有逐原合同结论保持；额外Native私有缓存运行token发现M12-NATIVE-CACHE-01仍开放，不宣称全部隐私检查通过。剩原T07/T14的UI/R及正常重启判据，父仍部分通过；M11合成provider口径不外推M12真实SOP业务R。 | 部分通过 | [T08 I实际绿](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t08-actual-I-003/manifest.json)；[T08协调复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t08-coordinator-review-001/coordinator-review.json)；[T06/T38原绿与expired红](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/scope-auth-actual-I-001/manifest.json)；[D01两分支实际绿](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/scope-auth-actual-I-002/manifest.json)；[协调独立复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/d01-coordinator-review-001/coordinator-review.json) ；[T09原I协调](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-read-coordinator-001/manifest.json)；[T37原I协调](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t37-run-plan-coordinator-001/manifest.json)；[生命周期原I协调](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/lifecycle-coordinator-001/manifest.json)；[T01已有实际I/A/R独立复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t01-coordinator-001/manifest.json) ；[后台链路与V2来源复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/composition-smoke-review-001/manifest.json)、[Root独立重放](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/composition-smoke-root-review-001/manifest.json) ；[T06真实五拒绝与合法A](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t06-real-AR-001/manifest.json)、[T06 Root独立重放](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t06-root-review-001/manifest.json)  ；[T38真实结果与隐私红](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t38-real-A-001/manifest.json)、[Root重放](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t38-root-review-002/manifest.json)、[缓存边界审计](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/native-token-cache-boundary-001/manifest.json)、[T29当前软件31项](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t29-current-policy-UI-001/manifest.json)  ；[T29原失败](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t29-actual001-failure/manifest.json)、[四组实际](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t29-actual002/manifest.json)、[Root独立重放](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t29-root-review-001/manifest.json)  ；[T37真实A/R](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t37-real-AR-001/manifest.json)、[T37 Root重放](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t37-root-review-001/manifest.json)、[T38原合同映射](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t38-original-contract-review-001/manifest.json)  ；[T09原实际部分与原红](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-original-partial-001/manifest.json)、[T09 Root独立复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-root-original-review-003/manifest.json)、[仅剩CM冻结稿](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-cm-ready-002/manifest.json) ；[T09 C原合同后验](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-C-original-contract-001/manifest.json)、[C独立复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-C-root-review-001/manifest.json)、[M实际结果独立复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-M-root-review-001/manifest.json)、[旧wrapper失败与勘误](证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-wrapper-retirement-errata-001/manifest.json) |"
+    },
+    {
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 28,
+      "originalText": "| M11-T07／R07、R09／I＋A＋R | A 受管会话有效；保留本次身份和待执行请求 | 正常调用后经 UI 停止／停用／撤销，再使用原身份调用；建立合法新运行作对照 | 原身份失效，不能复活；新运行只能获得当前允许权限；记录与真实进程收尾对应 | **通过（I＋A＋R，精确复用组合）**；C6实际UI stop/恢复及新operation归新run、旧token前后拒绝与当前6份认证/生命周期源码同hash。C7真实全局停用→原受管CLI SCOPE_DENIED/原token撤销，UI重新启用后仍AUTH_REQUIRED；实际断开确认清掉secret_ref，原CLI拒绝/业务增量0。I原stop精确断言复用，不计过滤项。C7前三命令的引号/原生select/额外恢复菜单过渡失败保留，必需新运行正控沿用C6而非伪称重跑；全部自有进程/端口/观察钩子收尾，明文token0。[组合逐项审查](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T07/review-002/result.json)。 |"
+    },
+    {
+      "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M11_应用接入标准化/验收/测试用例.md",
+      "sourceSHA256": "5ce7720f385563fd28420a220b7dd4b1bf5355fef48e37364934798b53c9f721",
+      "line": 35,
+      "originalText": "| M11-T14／R09、R10、R12／I＋A＋R | A 正常受管运行，已有持久配置；未授权外部终端 | 退出并重启 App，恢复原会话、检查配置；在无有效授权上下文中直接调用 CLI | 持久配置按原服务保持；恢复与固定权限一致；无授权调用明确拒绝，不因可执行文件可见就获权 | **通过**；A 层原生退出由 AX 执行器完成（`kAXMenuBar`→菜单项「退出 WillYou」→独立 `AXDialog`「有 1 个任务正在运行」→「退出」；`signalsSent=false`、`syntheticPointerEvents=false`），`normalExit` code 0、原 CLI 消失、旧 run `stopped`／`revoked`；重开同 userData 后经真实侧栏选择恢复同 `nativeId`，新 PTY／run 按原命名权限档完成真实 Codex CLI 读（`origin=cli`），base 配置未变、原 snapshot 指针哈希不变；外部无身份 CLI `AUTH_REQUIRED`。C5 的 I 层夹具红与 CUA `cgWindowNotFound` 缺项、本次前三个失败轮次（相对路径、按到 Apple 菜单、未激活时 `AXWindows` 为空）均保留为历史失败。[本次结果](证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001/result.json)、[退出回执](证据/并行测试/M11-C9-20261102T060500Z-t14/M11-C9-A-T14-RESTART/attempt-001/quit-receipt.json)、[C5 原生工具缺项](证据/并行测试/M11-C5-20261101T175140Z-cccc/M11-C5-A-RESTART/attempt-001/)。 |"
+    }
+  ],
+  "RDefinition": "Original M11 accepted local synthetic Responses provider with true UI/Codex/stock native CLI/Host. This is not real OpenAI M12 SOP R.",
+  "criteria": {
+    "T07": [
+      "valid managed original identity and pending controls",
+      "actual normal read",
+      "real UI stop / global disable / disconnect confirmation",
+      "old identity rejected after each; no provider business side effect",
+      "reenable cannot revive old token",
+      "legal UI new run has only current fixed allowed permissions; fresh token differs in memory",
+      "operation binds actual new run; original process and registry stopped/revoked"
+    ],
+    "T14": [
+      "actual active managed run and persistent profile/project/config",
+      "real AX application-menu Quit + actual running-task confirmation; normal0/null/signals[]",
+      "old actual CLI gone and old run stopped/revoked",
+      "same private userdata restart; real UI restore same Task and Native id, new PTY/run",
+      "profile/project/business-config/snapshot-pointer preserved",
+      "real CLI read under same fixed named user policy succeeds and Host op binds new run",
+      "bare external actual packaged CLI has AUTH_REQUIRED3; visible binary grants nothing"
+    ]
+  }
+}

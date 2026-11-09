@@ -1,0 +1,9 @@
+READY current App057 installed-startup original07–09 after original06 file-only binding completed. Exact installed path: /private/tmp/willyou-m12-app057-installer-001/Installed Applications/WillYou.app. App057/source068; original3 real stockCLI identity-preflight → installed-create-page → installed-snapshot exactly once, original8judge/clean gates preserved. No keymouse/focus/guard/modelR prerequisite added.
+
+Only phase06/purestatic were executed by preparer. Root must grant original exact resources before07. Execute07: WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app057-installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-app057-installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-app057-installed-startup-001/run.mjs --execute
+
+Then08: WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app057-installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-app057-installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-app057-installed-startup-001/cleanup.mjs --verify
+
+Then09: WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app057-installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-app057-installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-app057-installed-startup-001/judge.mjs
+
+Source-only candidate checkpoint retained as candidate-manifest.json; it is historical NOTREADY, not current closure. Current execution-ready.json/manifest.json are final. Old contract authority row/SHA kept as historical; current-contract-scope-proof.json shows identical T140/T143 six criteria fields under current V1.6/R1.8. Runtime/oldoutputs/credentials never copied; only151 original frozen TypeScript source deps copied, fresh cache/node created.

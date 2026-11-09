@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-07T17:47:27.172210+00:00",
+  "originalRow": "| **M9-T-A11 面板尺寸恢复**<br>M9-R01.2、M9-R08.6 | 本期本机 | 集成／安装端到端<br>I+A / D01 | 改变外层宽度和树宽度，退出后重新启动。 | 分别恢复批准字段；旧像素值迁移与比例值兼容按方案；不持久化临时 lease。<br>依据：L§4 | P01；P01/P02；本条I＋实际App尺寸与恢复已核对，合成原型浅深色另留证，未扩大为完整P/V验收<br>实际：I＋r27实际App：全局外层约0.61比例与task工作区内树300px分别保存；正常退出code0并在新App重开同任务/固定文件，两项恢复，布局不含lease/generation。显式610px旧偏好作为I前置，在1100px窗口按实际文件区域迁移为约0.584291且初宽610，1600px时按比例约761.906；内树仍300。两次普通退出均0/null signal，退出前经UI停止本次合成任务，未代验原生运行中确认；源文件字节/inode/mtime不变。 DEV085 r37终端fit调度改变后，实际App相关回归通过，原状态/数据与PTY边界保持；不重复增加正式计数。<br>缺陷：M9-DEV-074 | 通过 | [记录](证据/m9-acceptance-layout-dev074-r27-20261018.json)；[记录](证据/m9-acceptance-terminal-layout-dev085-r37-20261018.json) |",
+  "originalSource": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+    "sha256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a"
+  },
+  "originalDriver": {
+    "path": "/private/tmp/willyou-m12-browser-code-style-source-039/source/scripts/files/layout-acceptance-ui.mjs",
+    "sha256": "b95fcb933a255f96fb2e229e27d8f95b1a1dfe1c8be41c65455df5d3bb722d2c"
+  },
+  "criteria": [
+    {
+      "id": "A11-A1",
+      "expected": "真实拖动外层约0.61比例和内树300，互相独立；保存全局比例与task工作区内树/固定route。"
+    },
+    {
+      "id": "A11-A2",
+      "expected": "退出前真实UI停止唯一合成任务，App正常0-null；新App同userData/同task恢复比例、树宽300和固定文件，不持久lease/generation。"
+    },
+    {
+      "id": "A11-A3",
+      "expected": "原610px旧偏好仅I前置；1100px实际窗口/可用区下迁移为实际比例并初宽610，另一个屏幕可用真实宽度按此比例恢复，内树仍300。"
+    },
+    {
+      "id": "A11-A4",
+      "expected": "首实例活task/PTY/run/receiverPID在布局前后保持、零输入/执行；第二App只显示原任务文件区，不主动启动/恢复、不给已结束旧PTY加绑定门槛；若migration reload前已有活PTY则保持。源fullstat/hash同，App正常退出与独立资源清场分账。"
+    }
+  ],
+  "windowBoundary": "Only original A11; actual1400/1100 widths within current screen, no A08 extremes/no1600 outside-screen prerequisite. Real size receipts preserved.",
+  "migrationReload": "Original explicit migration reload is tested case action, retains same once-installed guard; no rearm/re-activation. Setup reload once per new App before initial focus.",
+  "formalIncrement": 0
+}

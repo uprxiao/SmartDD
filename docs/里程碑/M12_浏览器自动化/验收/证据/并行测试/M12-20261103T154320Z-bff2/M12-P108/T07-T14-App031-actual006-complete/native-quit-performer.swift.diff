@@ -1,0 +1,25 @@
+--- 005-normalized/native-quit-performer.swift
++++ 006/native-quit-performer.swift
+@@ -183,6 +183,22 @@
+     usleep(300_000)
+ } while Date() < dialogDeadline
+ 
++// Signal only actual menu/confirmation completion. Node may now release its owned inspector;
++// the original independent exact-PID process exit observation below is still mandatory.
++if dialogSeen && confirmationResult == 0, let confirmedPath = argumentValue("--confirmed-out") {
++    do {
++        let payload: [String: Any] = ["schema":"t131-native-confirmation-v1", "at":timestamp(),
++            "pid":Int(expectedPID), "executable":expectedExe, "bundle":expectedBundle,
++            "windowTitle":window.title, "accessibilityTrusted":trust, "activated":false,
++            "quitItemTitle":pressed, "quitItemEnabled":quitEnabled ?? true,
++            "confirmationDialogAppeared":dialogSeen, "confirmationDialogText":seenText,
++            "confirmationButton":"退出", "confirmationPressResult":0,
++            "syntheticPointerEvents":false, "signalsSent":false]
++        let data = try JSONSerialization.data(withJSONObject:payload,options:[.prettyPrinted,.sortedKeys])
++        try data.write(to:URL(fileURLWithPath:confirmedPath),options:.atomic)
++        try FileManager.default.setAttributes([.posixPermissions:0o600],ofItemAtPath:confirmedPath)
++    } catch { writeReceipt(["ok":false,"reason":"confirmation-progress-write-failed","pid":Int(expectedPID),"signalsSent":false],5) }
++}
+ var exited = false
+ let exitDeadline = Date().addingTimeInterval(30)
+ repeat {

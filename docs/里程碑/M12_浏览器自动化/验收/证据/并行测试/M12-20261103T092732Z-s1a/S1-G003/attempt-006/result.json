@@ -1,0 +1,1508 @@
+{
+  "at": "2026-11-03T12:50:55.063Z",
+  "steps": [
+    {
+      "args": [
+        "tab",
+        "list"
+      ],
+      "value": {
+        "tabs": [
+          {
+            "active": true,
+            "label": null,
+            "tabId": "t1",
+            "title": "[I] M12 S1 proxy",
+            "type": "page",
+            "url": "http://127.0.0.1:63869/"
+          }
+        ]
+      },
+      "ms": 140
+    },
+    {
+      "args": [
+        "snapshot"
+      ],
+      "value": {
+        "origin": "http://127.0.0.1:63869/",
+        "refs": {
+          "e1": {
+            "name": "S1 synthetic page",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "Action",
+            "role": "button"
+          },
+          "e3": {
+            "name": "Input",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"S1 synthetic page\" [level=1, ref=e1]\n- button \"Action\" [ref=e2]\n- textbox \"Input\" [ref=e3]: preserve\n  - StaticText \"preserve\"\n- paragraph"
+      },
+      "ms": 18
+    },
+    {
+      "args": [
+        "click",
+        "#action"
+      ],
+      "value": {
+        "clicked": "#action"
+      },
+      "ms": 18
+    },
+    {
+      "args": [
+        "fill",
+        "#field",
+        "S1-through-per-page-proxy"
+      ],
+      "value": {
+        "filled": "#field"
+      },
+      "ms": 15
+    }
+  ],
+  "stages": [
+    {
+      "stage": "cdp",
+      "method": "Page.enable"
+    },
+    {
+      "stage": "cdp",
+      "method": "Emulation.setFocusEmulationEnabled"
+    },
+    {
+      "stage": "cdp",
+      "method": "Target.setAutoAttach"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.enable"
+    },
+    {
+      "stage": "cdp",
+      "method": "Page.addScriptToEvaluateOnNewDocument"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "upgrade",
+        "host": "127.0.0.1:63878",
+        "origin": null,
+        "allowed": true
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "connected"
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "socket-close",
+        "code": 1005
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "upgrade",
+        "host": "127.0.0.1:63878",
+        "origin": null,
+        "allowed": true
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "connected"
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.setDiscoverTargets",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.getTargets",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.attachToTarget",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Page.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Page.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.runIfWaitingForDebugger",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.runIfWaitingForDebugger"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Network.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Network.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.setAutoAttach",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Target.setAutoAttach"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "DOM.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.getFullAXTree",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.getFullAXTree"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.callFunctionOn",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.callFunctionOn",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.insertText",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.insertText"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "DOM.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.getFullAXTree",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.getFullAXTree"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.resolveNode"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.releaseObject"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "DOM.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.getFullAXTree",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.getFullAXTree"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.resolveNode"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.releaseObject"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "DOM.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.getFullAXTree",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.getFullAXTree"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.resolveNode"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.insertText"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.releaseObject"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "DOM.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.getFullAXTree",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.getFullAXTree"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.resolveNode"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.releaseObject"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "socket-close",
+        "code": 1006
+      }
+    }
+  ],
+  "hostPid": 34316,
+  "ready": {
+    "ready": true,
+    "pid": 34316,
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    },
+    "boundary": "I: real production proxy and fixed helper, synthetic page, no global debug port, not packaged App",
+    "endpoint": "ws://127.0.0.1:63878/3c075552364b0195b945bfb21a5d201907ff0b682aa480bb75639de786687c9c"
+  },
+  "direct": {
+    "id": 1,
+    "result": {
+      "protocolVersion": "1.3",
+      "product": "Chrome/148.0.7778.280",
+      "revision": "",
+      "userAgent": "",
+      "jsVersion": ""
+    }
+  },
+  "observed": {
+    "state": {
+      "hits": [
+        "action"
+      ],
+      "value": "S1-through-per-page-proxy",
+      "windowHits": [
+        "action"
+      ]
+    },
+    "methods": [
+      "Page.enable",
+      "Emulation.setFocusEmulationEnabled",
+      "Target.setAutoAttach",
+      "Runtime.enable",
+      "Page.addScriptToEvaluateOnNewDocument",
+      "Page.enable",
+      "Runtime.enable",
+      "Runtime.runIfWaitingForDebugger",
+      "Network.enable",
+      "Target.setAutoAttach",
+      "DOM.enable",
+      "Accessibility.enable",
+      "Accessibility.getFullAXTree",
+      "Runtime.evaluate",
+      "Runtime.evaluate",
+      "Runtime.evaluate",
+      "Input.dispatchMouseEvent",
+      "Input.dispatchMouseEvent",
+      "Input.dispatchMouseEvent",
+      "Runtime.evaluate",
+      "Runtime.callFunctionOn",
+      "Runtime.callFunctionOn",
+      "Input.insertText",
+      "Runtime.evaluate"
+    ]
+  },
+  "boundControl": {
+    "snapshot": {
+      "origin": "http://127.0.0.1:63869/",
+      "snapshot": "- heading \"S1 synthetic page\" [level=1, ref=@p1s3e1]\n- button \"Action\" [ref=@p1s3e2]\n- textbox \"Input\" [ref=@p1s3e3]: preserve\n  - StaticText \"preserve\"\n- paragraph",
+      "refs": [
+        {
+          "ref": "@p1s3e1",
+          "role": "heading",
+          "name": "S1 synthetic page",
+          "available": true
+        },
+        {
+          "ref": "@p1s3e2",
+          "role": "button",
+          "name": "Action",
+          "available": true
+        },
+        {
+          "ref": "@p1s3e3",
+          "role": "textbox",
+          "name": "Input",
+          "available": true
+        }
+      ]
+    },
+    "action": {
+      "action": {
+        "clicked": "[data-willyou-ref=\"8ae837093813d68e0952a01d1f7e35e1\"]"
+      },
+      "path": "fixed helper",
+      "guard": {
+        "accepted": [
+          "pointerover",
+          "mouseover",
+          "pointermove",
+          "mousemove",
+          "pointerdown",
+          "mousedown",
+          "focus",
+          "focusin",
+          "pointerup",
+          "mouseup",
+          "click"
+        ],
+        "blocked": [],
+        "connected": true
+      }
+    },
+    "observed": {
+      "state": {
+        "hits": [
+          "action"
+        ],
+        "value": "preserve",
+        "windowHits": [
+          "action"
+        ]
+      },
+      "methods": [
+        "Page.enable",
+        "Emulation.setFocusEmulationEnabled",
+        "Target.setAutoAttach",
+        "Runtime.enable",
+        "Page.addScriptToEvaluateOnNewDocument",
+        "Page.enable",
+        "Runtime.enable",
+        "Runtime.runIfWaitingForDebugger",
+        "Network.enable",
+        "Target.setAutoAttach",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Input.insertText",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate"
+      ]
+    }
+  },
+  "boundClone": {
+    "snapshot": {
+      "origin": "http://127.0.0.1:63869/",
+      "snapshot": "- heading \"S1 synthetic page\" [level=1, ref=@p1s5e1]\n- button \"Action\" [ref=@p1s5e2]\n- textbox \"Input\" [ref=@p1s5e3]: preserve\n  - StaticText \"preserve\"\n- paragraph",
+      "refs": [
+        {
+          "ref": "@p1s5e1",
+          "role": "heading",
+          "name": "S1 synthetic page",
+          "available": true
+        },
+        {
+          "ref": "@p1s5e2",
+          "role": "button",
+          "name": "Action",
+          "available": true
+        },
+        {
+          "ref": "@p1s5e3",
+          "role": "textbox",
+          "name": "Input",
+          "available": true
+        }
+      ]
+    },
+    "action": {
+      "action": {
+        "clicked": "[data-willyou-ref=\"3d87214ce17582eb0e704786c4fbd65f\"]"
+      },
+      "path": "fixed helper",
+      "guard": {
+        "accepted": [],
+        "blocked": [
+          "pointerover",
+          "mouseover",
+          "pointermove",
+          "mousemove",
+          "pointerdown",
+          "pointerup",
+          "click"
+        ],
+        "connected": false
+      }
+    },
+    "observed": {
+      "state": {
+        "hits": [],
+        "value": "preserve",
+        "windowHits": []
+      },
+      "methods": [
+        "Page.enable",
+        "Emulation.setFocusEmulationEnabled",
+        "Target.setAutoAttach",
+        "Runtime.enable",
+        "Page.addScriptToEvaluateOnNewDocument",
+        "Page.enable",
+        "Runtime.enable",
+        "Runtime.runIfWaitingForDebugger",
+        "Network.enable",
+        "Target.setAutoAttach",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Input.insertText",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate"
+      ]
+    }
+  },
+  "boundControlFill": {
+    "snapshot": {
+      "origin": "http://127.0.0.1:63869/",
+      "snapshot": "- heading \"S1 synthetic page\" [level=1, ref=@p1s7e1]\n- button \"Action\" [ref=@p1s7e2]\n- textbox \"Input\" [ref=@p1s7e3]: preserve\n  - StaticText \"preserve\"\n- paragraph",
+      "refs": [
+        {
+          "ref": "@p1s7e1",
+          "role": "heading",
+          "name": "S1 synthetic page",
+          "available": true
+        },
+        {
+          "ref": "@p1s7e2",
+          "role": "button",
+          "name": "Action",
+          "available": true
+        },
+        {
+          "ref": "@p1s7e3",
+          "role": "textbox",
+          "name": "Input",
+          "available": true
+        }
+      ]
+    },
+    "action": {
+      "action": {
+        "filled": "@p1s7e3"
+      },
+      "path": "host retained-node selection + native Input.insertText",
+      "guard": {
+        "accepted": [
+          "focus",
+          "focusin",
+          "beforeinput",
+          "input"
+        ],
+        "blocked": [],
+        "connected": true
+      }
+    },
+    "observed": {
+      "state": {
+        "hits": [],
+        "value": "new-value",
+        "windowHits": []
+      },
+      "methods": [
+        "Page.enable",
+        "Emulation.setFocusEmulationEnabled",
+        "Target.setAutoAttach",
+        "Runtime.enable",
+        "Page.addScriptToEvaluateOnNewDocument",
+        "Page.enable",
+        "Runtime.enable",
+        "Runtime.runIfWaitingForDebugger",
+        "Network.enable",
+        "Target.setAutoAttach",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Input.insertText",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Input.insertText",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate"
+      ]
+    }
+  },
+  "boundCloneFill": {
+    "snapshot": {
+      "origin": "http://127.0.0.1:63869/",
+      "snapshot": "- heading \"S1 synthetic page\" [level=1, ref=@p1s9e1]\n- button \"Action\" [ref=@p1s9e2]\n- textbox \"Input\" [ref=@p1s9e3]: preserve\n  - StaticText \"preserve\"\n- paragraph",
+      "refs": [
+        {
+          "ref": "@p1s9e1",
+          "role": "heading",
+          "name": "S1 synthetic page",
+          "available": true
+        },
+        {
+          "ref": "@p1s9e2",
+          "role": "button",
+          "name": "Action",
+          "available": true
+        },
+        {
+          "ref": "@p1s9e3",
+          "role": "textbox",
+          "name": "Input",
+          "available": true
+        }
+      ]
+    },
+    "action": {
+      "error": {
+        "code": "BROWSER_STALE_REF",
+        "message": "页面引用已经失效，请重新 snapshot"
+      },
+      "path": "host retained-node selection + native Input.insertText",
+      "guard": {
+        "accepted": [],
+        "blocked": [],
+        "connected": false
+      }
+    },
+    "observed": {
+      "state": {
+        "hits": [],
+        "value": "preserve",
+        "windowHits": []
+      },
+      "methods": [
+        "Page.enable",
+        "Emulation.setFocusEmulationEnabled",
+        "Target.setAutoAttach",
+        "Runtime.enable",
+        "Page.addScriptToEvaluateOnNewDocument",
+        "Page.enable",
+        "Runtime.enable",
+        "Runtime.runIfWaitingForDebugger",
+        "Network.enable",
+        "Target.setAutoAttach",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Input.insertText",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Input.dispatchMouseEvent",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Input.insertText",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate",
+        "DOM.enable",
+        "Accessibility.enable",
+        "Accessibility.getFullAXTree",
+        "Runtime.evaluate",
+        "Runtime.evaluate",
+        "DOM.resolveNode",
+        "Runtime.callFunctionOn",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.evaluate",
+        "Runtime.callFunctionOn",
+        "Runtime.releaseObject",
+        "Runtime.evaluate"
+      ]
+    }
+  },
+  "cleanup": {
+    "closed": true,
+    "helperCleanup": {
+      "daemonPid": 34325,
+      "daemonState": "stopped",
+      "clientStopped": true,
+      "socketFilesRemoved": true
+    }
+  },
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  }
+}

@@ -1,0 +1,235 @@
+import type { SkillReadTarget, SkillReadObservation } from './codex-skill-read-evidence';
+import { validSkillObservations } from './skill-observation-contract';
+import { builtinNativeEvidenceAdapters, type NativeEvidenceAdapterRegistry } from './native-evidence-adapters';
+import { constants } from 'node:fs';
+import { open, opendir, lstat, realpath } from 'node:fs/promises';
+import { join, relative, isAbsolute, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
+import { ApplicationError } from '@shared/applications';
+import type { RunContext } from './run-registry';
+import { digest } from './manifest';
+import { NativeUserInputs, type HostUserInputReceipt } from './native-user-inputs';
+import { runPlanSkillView } from './application-skill-view';
+
+const LIMIT = { tail: 4 * 1024 * 1024, line: 1024 * 1024, head: 65536, entries: 4096, records: 8192, proofs: 64 };
+/** Fallback used only when no registry is wired (isolated unit fixtures); production queries the adapter registry. */
+const retainedSupported: Record<string, readonly string[]> = { 'claude-code': ['2.1.303'], codex: ['0.162.1'] };
+/** Declared levels for the run's fixed adapter and CLI version (design §15.4). L2 opens Skill evidence, L3 opens chat authorization. */
+export type NativeMessageLevels = (adapterHash: string, runner: string, cliVersion: string) => readonly string[];
+const retainedLevels: NativeMessageLevels = (_hash, runner, version) => retainedSupported[runner]?.includes(version) ? ['L0.skill', 'L0.mcp', 'L1', 'L2', 'L3'] : [];
+const utf8 = (bytes: Uint8Array) => new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+const json = (bytes: Uint8Array): any => { try { return JSON.parse(utf8(bytes)); } catch { return null; } };
+export interface NativeUserMessage {
+  readonly id: string; readonly runId: string; readonly runner: string; readonly cliVersion: string;
+  readonly nativeSessionId: string; readonly timestamp: number; readonly text: string;
+  readonly recordHash: string; readonly receipt: HostUserInputReceipt;
+}
+export interface NativeUserMessageResult {
+  status: 'matched' | 'no-match' | 'unavailable' | 'unsupported';
+  messages: readonly NativeUserMessage[]; issueCode: string | null;
+}
+interface Registration { version: string; signal: AbortSignal; detach: () => void }
+interface Proof { file: string; root: string; offset: number; length: number; device: number; inode: number; headerHash: string | null; cwd: string; expiresAt: number }
+/** Main-process origin evidence only. Native roles AND input accepted by the owned PTY or launch argument must
+ * match. Neither a native file nor one of these receipts decides whether sending is intended.
+ * No method is exposed by RPC, MCP, or the versioned package runtime.
+ */
+export class NativeUserMessages {
+  private readonly registrations = new Map<string, Registration>();
+  private readonly proofs = new Map<NativeUserMessage, Proof>();
+  private closed = false;
+  constructor(private readonly inputs: NativeUserInputs, private readonly current: (runId: string) => RunContext, private readonly now = Date.now, private readonly supportsMessages: NativeMessageLevels = retainedLevels, private readonly formats: NativeEvidenceAdapterRegistry = builtinNativeEvidenceAdapters) {}
+  register(runId: string, version: string, signal: AbortSignal): void {
+    if (this.closed || signal.aborted) return;
+    const old = this.registrations.get(runId);
+    if (old) { if (old.version !== version || old.signal !== signal) throw new ApplicationError('RESOURCE_STATE_CHANGED', '原生消息读取版本已固定'); return; }
+    if (this.registrations.size >= 128) throw new ApplicationError('RESOURCE_BUSY', '原生消息来源登记已满');
+    const remove = () => { this.registrations.get(runId)?.detach(); this.registrations.delete(runId); for (const message of this.proofs.keys()) if (message.runId === runId) this.proofs.delete(message); };
+    this.registrations.set(runId, { version, signal, detach: () => signal.removeEventListener('abort', remove) });
+    signal.addEventListener('abort', remove, { once: true });
+  }
+  private context(runId: string, need: 'L2' | 'L3' = 'L3'): { context: RunContext; registration: Registration } {
+    const registration = this.registrations.get(runId), context = this.current(runId);
+    if (this.closed || !registration || registration.signal.aborted || context.signal.aborted || context.run.state !== 'active' || context.run.runId !== runId || context.signal !== registration.signal || !context.snapshot.native.sessionId || !/^[A-Za-z0-9_-]{1,128}$/.test(context.snapshot.native.sessionId)) throw new ApplicationError('SOURCE_UNAVAILABLE', '没有本次运行的可核验原生用户消息来源');
+    if (!this.supportsMessages(context.snapshot.adapterBinding.hash, context.snapshot.runner, registration.version).includes(need)) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '当前原生消息格式尚未验证');
+    if (need === 'L3' && !this.formats.get(context.snapshot.runner).parseUserMessage) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '当前Agent未实现原话证据解析');
+    return { context, registration };
+  }
+  private prune(): void { for (const [message, proof] of this.proofs) if (proof.expiresAt <= this.now() || !this.registrations.has(message.runId)) this.proofs.delete(message); }
+  private async names(dir: string, budget: { left: number }): Promise<string[]> {
+    const info = await lstat(dir); if (!info.isDirectory() || info.isSymbolicLink()) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生消息目录不是普通目录');
+    const names: string[] = [];
+    for await (const entry of await opendir(dir)) { if (--budget.left < 0) throw new ApplicationError('TOO_LARGE', '原生消息目录超过本轮查找预算'); names.push(entry.name); }
+    return names.sort().reverse();
+  }
+  private async locate(context: RunContext): Promise<{ root: string; file: string }> {
+    const root = await realpath(context.snapshot.native.stateRoot), native = context.snapshot.native;
+    const identity = { root, sessionId: native.sessionId!, cwd: native.cwd, realCwd: await realpath(native.cwd) };
+    const budget = { left: LIMIT.entries };
+    const checkedPath = async (path: string) => {
+      const part = relative(root, path);
+      if (!isAbsolute(path) || part.startsWith('..') || isAbsolute(part) || await realpath(path) !== path) throw new ApplicationError('SCOPE_DENIED', '原生证据查找越过固定数据根或使用链接');
+    };
+    const file = await this.formats.get(context.snapshot.runner).locate(identity, {
+      names: async path => { await checkedPath(path); return this.names(path, budget); },
+      directory: async path => { await checkedPath(path); await this.directory(path); },
+      isFile: async path => { await checkedPath(path); return (await lstat(path)).isFile(); },
+    });
+    return { root, file };
+  }
+  private async directory(path: string): Promise<void> { const stat = await lstat(path); if (!stat.isDirectory() || stat.isSymbolicLink()) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生消息目录不能使用链接'); }
+  private async openFile(root: string, file: string) {
+    const actual = await realpath(file), rel = relative(root, actual);
+    if (actual !== file || !rel || rel.startsWith('..') || isAbsolute(rel)) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生消息文件不属于固定数据根');
+    for (let dir = root, i = 0, parts = rel.split('/'); i < parts.length - 1; i++) { dir = join(dir, parts[i]); await this.directory(dir); }
+    const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try { if (!(await handle.stat()).isFile()) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生消息来源不是普通文件'); return handle; } catch (error) { await handle.close(); throw error; }
+  }
+  private async header(handle: Awaited<ReturnType<typeof open>>, context: RunContext): Promise<string | null> {
+    const format = this.formats.get(context.snapshot.runner);
+    if (!format.validateHeader) return null;
+    const bytes = Buffer.alloc(LIMIT.head), read = await handle.read(bytes, 0, bytes.length, 0), end = bytes.subarray(0, read.bytesRead).indexOf(10);
+    if (end < 0) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生会话元信息尚未完整写入');
+    const line = bytes.subarray(0, end), native = context.snapshot.native;
+    if (!format.validateHeader(json(line), { root: native.stateRoot, sessionId: native.sessionId!, cwd: native.cwd, realCwd: await realpath(native.cwd) })) throw new ApplicationError('SCOPE_DENIED', '原生会话身份或目录不符');
+    return digest(line);
+  }
+  private message(line: Buffer, context: RunContext, cwd: string): { text: string; timestamp: number } | null {
+    const value = json(line); if (!value) return null;
+    const format = this.formats.get(context.snapshot.runner);
+    const parsed = format.parseUserMessage?.(value, { root: context.snapshot.native.stateRoot, sessionId: context.snapshot.native.sessionId!, cwd: context.snapshot.native.cwd, realCwd: cwd });
+    return parsed && typeof parsed.text === 'string' && Buffer.byteLength(parsed.text) <= LIMIT.line && Number.isFinite(parsed.timestamp) ? parsed : null;
+  }
+  async read(runId: string): Promise<NativeUserMessageResult> {
+    this.prune();
+    try {
+      const { context, registration } = this.context(runId), located = await this.locate(context), file = await this.openFile(located.root, located.file);
+      try {
+        const before = await file.stat(), headerHash = await this.header(file, context), cwd = await realpath(context.snapshot.native.cwd), start = Math.max(0, before.size - LIMIT.tail), bytes = Buffer.alloc(before.size - start), read = await file.read(bytes, 0, bytes.length, start), data = bytes.subarray(0, read.bytesRead), messages: NativeUserMessage[] = [];
+        let begin = start ? data.indexOf(10) + 1 : 0;
+        if (start && begin === 0) return { status: 'no-match', messages: [], issueCode: null };
+        let records = 0;
+        while (begin < data.length) {
+          if (++records > LIMIT.records) throw new ApplicationError('TOO_LARGE', '原生消息记录超过本轮解析预算');
+          const end = data.indexOf(10, begin); if (end < 0) break;
+          const raw = data.subarray(begin, end), parsed = raw.length <= LIMIT.line ? this.message(raw, context, cwd) : null;
+          if (parsed) {
+            const receipt = this.inputs.match(context, parsed.text, parsed.timestamp);
+            if (receipt) {
+              const message: NativeUserMessage = Object.freeze({ id: randomUUID(), runId, runner: context.snapshot.runner, cliVersion: registration.version, nativeSessionId: context.snapshot.native.sessionId!, timestamp: parsed.timestamp, text: parsed.text.replace(/\r\n?/g, '\n'), recordHash: digest(raw), receipt });
+              messages.push(message); this.proofs.set(message, { ...located, offset: start + begin, length: raw.length, device: before.dev, inode: before.ino, headerHash, cwd, expiresAt: Math.min(this.now() + 600000, receipt.observedAt + 600000) });
+              while (this.proofs.size > LIMIT.proofs || [...this.proofs.keys()].reduce((n, value) => n + Buffer.byteLength(value.text), 0) > LIMIT.tail) this.proofs.delete(this.proofs.keys().next().value!);
+              if (messages.length > LIMIT.proofs) messages.shift();
+            }
+          }
+          begin = end + 1;
+        }
+        const after = await file.stat(), pathState = await lstat(located.file), again = Buffer.alloc(data.length), reread = await file.read(again, 0, again.length, start);
+        if (after.size < before.size || !pathState.isFile() || pathState.isSymbolicLink() || pathState.dev !== before.dev || pathState.ino !== before.ino || before.dev !== after.dev || before.ino !== after.ino || reread.bytesRead !== data.length || !again.equals(data) || await this.header(file, context) !== headerHash || await realpath(context.snapshot.native.stateRoot) !== located.root || await realpath(context.snapshot.native.cwd) !== cwd) throw new ApplicationError('SOURCE_UNAVAILABLE', '原生消息文件在读取时被替换或截断');
+        // Revalidate the owned process once after asynchronous IO, then use that same
+        // snapshot for all results. The later claim still reopens/rechecks its exact row.
+        const fresh = this.context(runId).context;
+        if (fresh.snapshot.native.sessionId !== context.snapshot.native.sessionId) throw new ApplicationError('SCOPE_DENIED', '本次原生会话身份已改变');
+        const verified: NativeUserMessage[] = [];
+        for (const message of messages.reverse()) {
+          if (this.proofs.has(message) && this.inputs.match(fresh, message.text, message.timestamp) === message.receipt) verified.push(message);
+          else this.proofs.delete(message);
+        }
+        return { status: verified.length ? 'matched' : 'no-match', messages: Object.freeze(verified), issueCode: null };
+      } finally { await file.close(); }
+    } catch (error) {
+      for (const message of this.proofs.keys()) if (message.runId === runId) this.proofs.delete(message);
+      return { status: error instanceof ApplicationError && error.code === 'AGENT_ADAPTER_UNSUPPORTED' ? 'unsupported' : 'unavailable', messages: [], issueCode: error instanceof ApplicationError ? error.code : 'SOURCE_UNAVAILABLE' };
+    }
+  }
+  /** Host-only diagnostic observation. Does not create or consume user-input receipts. */
+  async skillReads(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'read');}
+  async skillDiscoveries(runId:string,targets:readonly SkillReadTarget[]):Promise<SkillReadObservation[]>{return this.skillObservations(runId,targets,'discovery');}
+  /** Seal a display-only stop read while the run is still owned. The returned
+   * one-shot reader works only after revocation and never creates input receipts.
+   * Its time range ends at capture, so later runs cannot extend this evidence. */
+  prepareStoppedSkillRead(runId:string,targets:readonly SkillReadTarget[]):()=>Promise<{reads:SkillReadObservation[];discoveries:SkillReadObservation[]}>{
+    const empty=()=>({reads:[],discoveries:[]});
+    try{
+      const {context,registration}=this.context(runId,'L2');
+      if(!this.formats.get(context.snapshot.runner).observeSkillReads&&!this.formats.get(context.snapshot.runner).observeSkillDiscoveries)return async()=>empty();
+      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
+      if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return async()=>empty();
+      const frozen:RunContext={...context,run:structuredClone(context.run),snapshot:structuredClone(context.snapshot),bindings:[],applicationScope:context.applicationScope?.slice()},fixed=structuredClone(targets),through=this.now();
+      let consumed=false;
+      return async()=>{
+        if(consumed)return empty();consumed=true;
+        if(this.closed||!registration.signal.aborted)return empty();
+        const valid=()=>!this.closed&&registration.signal.aborted;
+        const reads=await this.readSkillObservations(frozen,fixed,'read',through,valid);
+        const discoveries=await this.readSkillObservations(frozen,fixed,'discovery',through,valid);
+        return valid()?{reads,discoveries}:empty();
+      };
+    }catch{return async()=>empty();}
+  }
+  private async skillObservations(runId:string,targets:readonly SkillReadTarget[],kind:'read'|'discovery'):Promise<SkillReadObservation[]>{
+    try{
+      const {context}=this.context(runId,'L2');
+      if(!this.formats.get(context.snapshot.runner)[kind==='read'?'observeSkillReads':'observeSkillDiscoveries'])return [];
+      const allowed=runPlanSkillView(context.snapshot,context.plan).packages.filter(p=>!context.applicationScope||context.applicationScope.includes(p.appId)).flatMap(p=>p.skills);
+      if(targets.some(t=>!allowed.some(s=>s.skillId===t.id&&s.projectionPath===t.path&&(!t.nativeName||s.nativeName===t.nativeName))))return [];
+      return await this.readSkillObservations(context,targets,kind,this.now(),()=>{const fresh=this.context(runId,'L2').context;return fresh.snapshot.native.sessionId===context.snapshot.native.sessionId&&fresh.run.startedAt===context.run.startedAt;});
+    }catch{return [];}
+  }
+  private async readSkillObservations(context:RunContext,targets:readonly SkillReadTarget[],kind:'read'|'discovery',through:number,validate:()=>boolean):Promise<SkillReadObservation[]>{
+    try{
+      const located=await this.locate(context),file=await this.openFile(located.root,located.file);
+      try{
+        const before=await file.stat(),header=await this.header(file,context),cwd=await realpath(context.snapshot.native.cwd);
+        const start=Math.max(0,before.size-LIMIT.tail),data=Buffer.alloc(before.size-start),read=await file.read(data,0,data.length,start);
+        if(read.bytesRead!==data.length)return [];
+        const first=start?data.indexOf(10)+1:0;if(start&&first===0)return [];
+        const last=data.lastIndexOf(10);if(last<first)return [];
+        const lines=utf8(data.subarray(first,last)).split('\n');
+        // Budgets belong to the host, including for a newly registered format.
+        // Preserve the normal bounded tail of large histories, and ignore only
+        // oversized individual records when the record-count budget is valid.
+        if(lines.length>LIMIT.records)return [];
+        const boundedLines=lines.filter(line=>Buffer.byteLength(line)<=LIMIT.line);
+        const format=this.formats.get(context.snapshot.runner),parser=format[kind==='read'?'observeSkillReads':'observeSkillDiscoveries'];
+        if(!parser)return [];
+        const observations=parser.call(format,boundedLines,targets,Date.parse(context.run.startedAt),through);
+        if(!validSkillObservations(observations,targets,Date.parse(context.run.startedAt),through))return [];
+        const after=await file.stat(),pathState=await lstat(located.file),again=Buffer.alloc(data.length),reread=await file.read(again,0,again.length,start);
+        if(after.size<before.size||!pathState.isFile()||pathState.isSymbolicLink()||pathState.dev!==before.dev||pathState.ino!==before.ino||after.dev!==before.dev||after.ino!==before.ino||reread.bytesRead!==data.length||!again.equals(data)||await this.header(file,context)!==header||await realpath(context.snapshot.native.stateRoot)!==located.root||await realpath(context.snapshot.native.cwd)!==cwd)return [];
+        if(!validate())return [];
+        return observations;
+      }finally{await file.close();}
+    }catch{return [];}
+  }
+  async verify(message: NativeUserMessage): Promise<boolean> {
+    this.prune(); const proof = this.proofs.get(message); if (!proof) return false;
+    try {
+      const { context, registration } = this.context(message.runId);
+      if (await realpath(context.snapshot.native.stateRoot) !== proof.root || await realpath(context.snapshot.native.cwd) !== proof.cwd || registration.version !== message.cliVersion || context.snapshot.native.sessionId !== message.nativeSessionId || this.inputs.match(context, message.text, message.timestamp) !== message.receipt) return false;
+      const file = await this.openFile(proof.root, proof.file);
+      try {
+        const stat = await file.stat(); if (stat.dev !== proof.device || stat.ino !== proof.inode || stat.size < proof.offset + proof.length + 1 || await this.header(file, context) !== proof.headerHash) return false;
+        const bytes = Buffer.alloc(proof.length + 1), read = await file.read(bytes, 0, bytes.length, proof.offset);
+        if (read.bytesRead !== bytes.length || bytes.at(-1) !== 10 || digest(bytes.subarray(0, -1)) !== message.recordHash) return false;
+        const fresh = this.context(message.runId).context;
+        return this.inputs.match(fresh, message.text, message.timestamp) === message.receipt;
+      } finally { await file.close(); }
+    } catch { return false; }
+  }
+  /** Historical origin remains branded and bounded; it is never latest-turn authority by itself. */
+  isRetained(message: NativeUserMessage): boolean {
+    this.prune();const proof=this.proofs.get(message),registration=this.registrations.get(message.runId);
+    return !this.closed&&!!proof&&!!registration&&!registration.signal.aborted&&registration.version===message.cliVersion&&this.inputs.isRetained(message.receipt);
+  }
+  /** Pure RAM liveness/ordering guard. Full file/process verification remains asynchronous. */
+  isLive(message: NativeUserMessage): boolean {return this.isRetained(message)&&this.inputs.isLatest(message.receipt);}
+
+  async claim(message: NativeUserMessage, intentId: string): Promise<void> {
+    if (!z.uuid().safeParse(intentId).success) throw new ApplicationError('INVALID_INPUT', '具体发送意图编号无效');
+    if (!await this.verify(message)) throw new ApplicationError('AUTHORIZATION_REQUIRED', '原生用户消息来源已变化或失效');
+    this.inputs.claim(message.receipt, this.context(message.runId).context, intentId);
+  }
+  dispose(): void { this.closed = true; for (const registration of this.registrations.values()) registration.detach(); this.registrations.clear(); this.proofs.clear(); }
+}

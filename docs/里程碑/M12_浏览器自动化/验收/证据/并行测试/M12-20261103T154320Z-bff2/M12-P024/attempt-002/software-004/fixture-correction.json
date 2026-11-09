@@ -1,0 +1,6 @@
+{
+  "previous": "software-003 5 passed / 1 failed retained",
+  "cause": "Old unit fixture called .opaque.example.test an affected target, but qa.example.test import scope does not include that sibling host.",
+  "correction": "Affected target fixture now uses the parent domain cookie .example.test, which really applies to qa.example.test. The new explicit unrelated-target test continues to require qa import succeeds while sibling remains untouched.",
+  "expectations": "No original formal case modified; family-preservation expected values unchanged for truly affected target"
+}

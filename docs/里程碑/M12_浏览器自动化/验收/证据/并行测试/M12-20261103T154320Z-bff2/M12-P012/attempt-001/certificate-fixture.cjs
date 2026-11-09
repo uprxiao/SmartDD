@@ -1,0 +1,2 @@
+exports.HOST='m12-cert.test';exports.RULE='MAP m12-cert.test 127.0.0.1';
+exports.html=function({step,seed=false}){const script='(()=>{if('+JSON.stringify(seed)+')localStorage.setItem("p012-marker","p012-login-A");window.p012Step='+JSON.stringify(step)+';})();';return'<!doctype html><meta charset="utf-8"><title>[I] P012 actual network policy</title><p>Private component integration</p><script>'+script+'</script>'};

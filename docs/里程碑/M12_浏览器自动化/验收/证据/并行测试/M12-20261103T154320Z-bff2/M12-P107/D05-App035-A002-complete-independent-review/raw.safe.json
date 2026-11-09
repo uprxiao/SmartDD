@@ -1,0 +1,5525 @@
+{
+  "case": "M12-T130/D05",
+  "layer": "A",
+  "status": "executed-unjudged",
+  "startedAt": "2026-11-07T18:11:15.983Z",
+  "finishedAt": "2026-11-07T18:12:22.405Z",
+  "driverPid": 52353,
+  "sourceManifestSHA256": "ea6e1b428064ffb4a761b1f5693ff3a1f47772dfdf27977b5715c706d2511202",
+  "asarSHA256": "9f6f8308a411d36f89b5fea38b73e0d5a01843e52d3dc5a38901f69d6f1c5916",
+  "originalMatrixUnchanged": true,
+  "cleanupErrors": [],
+  "formalIncrement": 0,
+  "modelCalls": 0,
+  "authReads": 0,
+  "environment": {
+    "at": "2026-11-07T18:11:15.984Z",
+    "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes",
+    "volumes": [
+      {
+        "kind": "insensitive",
+        "format": "APFS",
+        "sensitive": false,
+        "mount": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive",
+        "image": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive.dmg",
+        "device": "/dev/disk5s1",
+        "mountedDevice": 16777239,
+        "detached": true,
+        "capacityBytes": 67067904,
+        "actualProbe": {
+          "lowerCreate": "EEXIST",
+          "upperInode": "16",
+          "lowerInode": "16",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79"
+        }
+      },
+      {
+        "kind": "sensitive",
+        "format": "Case-sensitive APFS",
+        "sensitive": true,
+        "mount": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive",
+        "image": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive.dmg",
+        "device": "/dev/disk7s1",
+        "mountedDevice": 16777243,
+        "detached": true,
+        "capacityBytes": 67067904,
+        "actualProbe": {
+          "lowerCreate": "created",
+          "upperInode": "16",
+          "lowerInode": "17",
+          "upperHash": "8f3e6811600114ff25f4cf250fd083ece7ce2bfdd1a3218364493801b9c10f79",
+          "lowerHash": "61413ee5c361db405097a5ead22801f6f5be1a957867c3ae1543ea04ed89c5b3"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "APFS",
+          "-volname",
+          "WillYou-D05-insensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:11:15.984Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:17.005Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:11:17.005Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:17.188Z"
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive-attach.plist"
+        ],
+        "startedAt": "2026-11-07T18:11:17.188Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:17.217Z"
+      },
+      {
+        "args": [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive"
+        ],
+        "startedAt": "2026-11-07T18:11:17.219Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:17.328Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "create",
+          "-size",
+          "64m",
+          "-fs",
+          "Case-sensitive APFS",
+          "-volname",
+          "WillYou-D05-sensitive",
+          "-type",
+          "UDIF",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:11:17.329Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:18.347Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "attach",
+          "-nobrowse",
+          "-noautoopen",
+          "-mountpoint",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive.dmg"
+        ],
+        "startedAt": "2026-11-07T18:11:18.349Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:18.596Z"
+      },
+      {
+        "args": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,plistlib,sys;print(json.dumps(plistlib.load(open(sys.argv[1],\"rb\"))))",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive-attach.plist"
+        ],
+        "startedAt": "2026-11-07T18:11:18.597Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:18.637Z"
+      },
+      {
+        "args": [
+          "/usr/sbin/diskutil",
+          "info",
+          "-plist",
+          "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive"
+        ],
+        "startedAt": "2026-11-07T18:11:18.639Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:11:18.791Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "detach",
+          "/dev/disk7s1"
+        ],
+        "startedAt": "2026-11-07T18:12:22.057Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:12:22.250Z"
+      },
+      {
+        "args": [
+          "/usr/bin/hdiutil",
+          "detach",
+          "/dev/disk5s1"
+        ],
+        "startedAt": "2026-11-07T18:12:22.260Z",
+        "code": 0,
+        "stderr": "",
+        "finishedAt": "2026-11-07T18:12:22.395Z"
+      }
+    ],
+    "cases": [
+      {
+        "kind": "insensitive",
+        "slot": "d05-light-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive-d05-light-insensitive-root-alias"
+      },
+      {
+        "kind": "sensitive",
+        "slot": "d05-light-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive-d05-light-sensitive-root-alias"
+      },
+      {
+        "kind": "insensitive",
+        "slot": "d05-dark-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive-d05-dark-insensitive-root-alias"
+      },
+      {
+        "kind": "sensitive",
+        "slot": "d05-dark-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive-d05-dark-sensitive-root-alias"
+      }
+    ],
+    "boundary": "Original readonly D05: own two64MiBAPFS/APFSX only; actual EEXIST/inode/bytes decide semantics, not labels. No system/user volume modification.",
+    "finishedAt": "2026-11-07T18:12:22.402Z"
+  },
+  "modes": [
+    {
+      "kind": "d05-light-insensitive",
+      "theme": "light",
+      "volumeKind": "insensitive",
+      "paths": {
+        "kind": "insensitive",
+        "slot": "d05-light-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive-d05-light-insensitive-root-alias"
+      },
+      "startedAt": "2026-11-07T18:11:18.793Z",
+      "finishedAt": "2026-11-07T18:11:34.104Z",
+      "status": "executed-unjudged",
+      "complete": true,
+      "appPid": 52413,
+      "projectId": "0e4d11ea-5800-4a5a-a317-d45bb5e17af8",
+      "setupReloadCount": 1,
+      "actualTheme": "ylight",
+      "window": {
+        "id": 1,
+        "title": "[A] T130 D05 App035 d05-light-insensitive"
+      },
+      "before": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794075078793071629",
+          "ctimeNs": "1794075078793071629",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794075078793071629",
+          "ctimeNs": "1794075078793071629",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "20",
+          "mode": 384,
+          "size": "44",
+          "mtimeNs": "1794075078793200047",
+          "ctimeNs": "1794075078793200047",
+          "sha256": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "21",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075078793286547",
+          "ctimeNs": "1794075078793286547",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "22",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075078793328881",
+          "ctimeNs": "1794075078793328881",
+          "target": "inner"
+        }
+      },
+      "after": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794075078793071629",
+          "ctimeNs": "1794075078793071629",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "19",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794075078793071629",
+          "ctimeNs": "1794075078793071629",
+          "sha256": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "20",
+          "mode": 384,
+          "size": "44",
+          "mtimeNs": "1794075078793200047",
+          "ctimeNs": "1794075078793200047",
+          "sha256": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "21",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075078793286547",
+          "ctimeNs": "1794075078793286547",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "22",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075078793328881",
+          "ctimeNs": "1794075078793328881",
+          "target": "inner"
+        }
+      },
+      "initial": {
+        "at": "2026-11-07T18:11:28.218Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 1,
+        "viewId": 2,
+        "text": "BASE d05-light-insensitive data 中文🙂\n",
+        "selection": {
+          "anchor": 37,
+          "head": 37
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "routes": [
+        {
+          "label": "name search same file",
+          "state": {
+            "at": "2026-11-07T18:11:28.800Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-light-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 37,
+              "head": 37
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+            "search": {
+              "busy": "false",
+              "paths": [
+                "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt"
+              ]
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "breadcrumb same file",
+          "state": {
+            "at": "2026-11-07T18:11:29.805Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-light-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 37,
+              "head": 37
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained file symlink",
+          "state": {
+            "at": "2026-11-07T18:11:30.096Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 4,
+            "text": "BASE d05-light-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 37,
+              "head": 37
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained directory symlink",
+          "state": {
+            "at": "2026-11-07T18:11:30.687Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 6,
+            "text": "BASE d05-light-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 37,
+              "head": 37
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "nested root relative alias",
+          "state": {
+            "at": "2026-11-07T18:11:31.635Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 8,
+            "text": "BASE d05-light-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 37,
+              "head": 37
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "original tree again",
+          "state": {
+            "at": "2026-11-07T18:11:32.511Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 8,
+            "text": "BASE d05-light-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 37,
+              "head": 37
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        }
+      ],
+      "sameCanonicalTabNodeRetained": true,
+      "caseState": {
+        "at": "2026-11-07T18:11:33.432Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 9,
+        "viewId": 10,
+        "text": "BASE d05-light-insensitive A 中文🙂\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/A.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "caseIds": [
+        {
+          "method": "open",
+          "at": 1794075093130,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "A.txt"
+            }
+          ],
+          "input": "62fec8a37acfd1dcb95acf342feaa4ae0960257b423b8a3bbcf8c812626827db",
+          "output": {
+            "ref": {
+              "id": "f8d68dc8-b3f3-49e5-820d-96e5e0f37628",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:19",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/A.txt",
+            "revision": {
+              "size": 41,
+              "inode": "19",
+              "device": "16777239",
+              "changedNs": "1794075078793071629",
+              "modifiedNs": "1794075078793071629",
+              "hash": "715a604d1635713cd073790419efb67ae0bc7fc480994bad256528ddac229c8f"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "0b8672ba7ad91d27d16e6b5b1621f8c7cad3f7ca83f3073da26d5c81342c1893",
+          "after": "0b8672ba7ad91d27d16e6b5b1621f8c7cad3f7ca83f3073da26d5c81342c1893",
+          "inputAfter": "62fec8a37acfd1dcb95acf342feaa4ae0960257b423b8a3bbcf8c812626827db",
+          "delivered": true
+        }
+      ],
+      "physicalCase": {
+        "upperInode": "19",
+        "lowerInode": "19",
+        "different": false
+      },
+      "aliases": [
+        {
+          "method": "open",
+          "at": 1794075087666,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "inner/data.txt"
+            }
+          ],
+          "input": "0019f9d3f1c21684bceddb9352b6dd8ada4f1cbcd1584e2e24bce4e44f8b3dc2",
+          "output": {
+            "ref": {
+              "id": "e4c068bc-e302-4068-ba0f-5069ea07ac69",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:20",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+            "revision": {
+              "size": 44,
+              "inode": "20",
+              "device": "16777239",
+              "changedNs": "1794075078793200047",
+              "modifiedNs": "1794075078793200047",
+              "hash": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "8caee95e0b75459bd22e7e839228623c5a44553429731c1a8d35588dec29b716",
+          "after": "8caee95e0b75459bd22e7e839228623c5a44553429731c1a8d35588dec29b716",
+          "inputAfter": "0019f9d3f1c21684bceddb9352b6dd8ada4f1cbcd1584e2e24bce4e44f8b3dc2",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075090032,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link.txt"
+            }
+          ],
+          "input": "3008000b87af20249ba1441d9fd7b3470d3d133d5b34ad60a712772529569ecb",
+          "output": {
+            "ref": {
+              "id": "7b11928d-dbb8-4e10-9682-ff9e42ff23fc",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:20",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+            "revision": {
+              "size": 44,
+              "inode": "20",
+              "device": "16777239",
+              "changedNs": "1794075078793200047",
+              "modifiedNs": "1794075078793200047",
+              "hash": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "fe0f2f05e320c807122c0467c91731cf42974890b9da94d777968e2e3dc44410",
+          "after": "fe0f2f05e320c807122c0467c91731cf42974890b9da94d777968e2e3dc44410",
+          "inputAfter": "3008000b87af20249ba1441d9fd7b3470d3d133d5b34ad60a712772529569ecb",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075090623,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link-dir/data.txt"
+            }
+          ],
+          "input": "ab64ed7facf1497dffa19799b418d3d56dd94adb43935cd0b409775915857be6",
+          "output": {
+            "ref": {
+              "id": "5a45b552-48b4-432c-b4c7-8cd18d7ba8db",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:20",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+            "revision": {
+              "size": 44,
+              "inode": "20",
+              "device": "16777239",
+              "changedNs": "1794075078793200047",
+              "modifiedNs": "1794075078793200047",
+              "hash": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "ad0bd928f0137e6eab1b56d4a94ca358feb61d3066babb587f84375f51a01fae",
+          "after": "ad0bd928f0137e6eab1b56d4a94ca358feb61d3066babb587f84375f51a01fae",
+          "inputAfter": "ab64ed7facf1497dffa19799b418d3d56dd94adb43935cd0b409775915857be6",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075091576,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "data.txt"
+            }
+          ],
+          "input": "922d13fc1ab79f3d3e942b063a05f93c2d356eb3a84bec496f27ebf524c28cae",
+          "output": {
+            "ref": {
+              "id": "ea6951e4-6bf4-47ac-8605-51254ddd633e",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:20",
+            "name": "data.txt",
+            "relativePath": "data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner/data.txt",
+            "revision": {
+              "size": 44,
+              "inode": "20",
+              "device": "16777239",
+              "changedNs": "1794075078793200047",
+              "modifiedNs": "1794075078793200047",
+              "hash": "d5c93acad2be197e9b112cf726110613e33045bf908fd71294567be86df9c520"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "7d64c02cac0f9f7ac40ea6ef76a447d4625fc9b4d649034a04213b1f0bd523f2",
+          "after": "7d64c02cac0f9f7ac40ea6ef76a447d4625fc9b4d649034a04213b1f0bd523f2",
+          "inputAfter": "922d13fc1ab79f3d3e942b063a05f93c2d356eb3a84bec496f27ebf524c28cae",
+          "delivered": true
+        }
+      ],
+      "restored": {
+        "files.open": true,
+        "files.read": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "tasksBefore": [],
+      "tasksAfter": [],
+      "rendererErrors": [],
+      "appCleanup": {
+        "normalQuitRequested": true,
+        "normalWaitExit": {
+          "pid": 52413,
+          "code": 0,
+          "signal": null
+        },
+        "normalExitConfirmed": true,
+        "finalWaitExit": {
+          "pid": 52413,
+          "code": 0,
+          "signal": null
+        },
+        "observedProcess": {
+          "pid": 52413,
+          "spawnedAtMs": 1794075078798,
+          "exit": {
+            "atMs": 1794075094103,
+            "code": 0,
+            "signal": null
+          },
+          "signals": [],
+          "inspectorCloseRequests": [
+            {
+              "atMs": 1794075093889
+            },
+            {
+              "atMs": 1794075094103
+            },
+            {
+              "atMs": 1794075094103
+            }
+          ],
+          "currentCode": 0,
+          "currentSignal": null
+        },
+        "steps": [
+          {
+            "label": "request-own-normal-quit",
+            "at": "2026-11-07T18:11:33.889Z",
+            "ok": true
+          },
+          {
+            "label": "wait-own-normal-exit",
+            "at": "2026-11-07T18:11:33.889Z",
+            "ok": true
+          },
+          {
+            "label": "save-own-private-app-logs",
+            "at": "2026-11-07T18:11:34.103Z",
+            "ok": true
+          },
+          {
+            "label": "close-exact-owned-harness",
+            "at": "2026-11-07T18:11:34.103Z",
+            "ok": true
+          },
+          {
+            "label": "wait-final-owned-process-exit",
+            "at": "2026-11-07T18:11:34.103Z",
+            "ok": true
+          },
+          {
+            "label": "capture-final-owned-process-observation",
+            "at": "2026-11-07T18:11:34.103Z",
+            "ok": true
+          }
+        ]
+      },
+      "observedProcess": {
+        "pid": 52413,
+        "spawnedAtMs": 1794075078798,
+        "exit": {
+          "atMs": 1794075094103,
+          "code": 0,
+          "signal": null
+        },
+        "signals": [],
+        "inspectorCloseRequests": [
+          {
+            "atMs": 1794075093889
+          },
+          {
+            "atMs": 1794075094103
+          },
+          {
+            "atMs": 1794075094103
+          }
+        ],
+        "currentCode": 0,
+        "currentSignal": null
+      },
+      "appExit": {
+        "pid": 52413,
+        "code": 0,
+        "signal": null
+      },
+      "cleanupErrors": [],
+      "treeCandidateSelections": [
+        {
+          "at": "2026-11-07T18:11:27.384Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:11:27.438Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:29.811Z",
+          "relative": "link.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "link.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 287,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 301,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:30.338Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:11:30.392Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 259,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 273,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:31.340Z",
+          "relative": "data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive/inner",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 175,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 189,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:32.284Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:32.896Z",
+          "relative": "A.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-light-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "A.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 287,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 301,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        }
+      ],
+      "initialForeground": {
+        "at": "2026-11-07T18:11:22.309Z",
+        "pid": 52413,
+        "scope": "M12-isolated-initial-foreground-only",
+        "userAuthorization": "call_7fa2b9ae68354542a7dcf11b953aeea9/0",
+        "scriptSHA256": "481e2888fa1a4c8e24aa47ae44613ff1ab2ad94b780f3e508f984b91521b8d96",
+        "attempts": 1,
+        "guardNotInstalledYet": true,
+        "requestSent": true,
+        "focusSuccess": "unverified-until-real-Native-DOM-stable3s"
+      },
+      "initialFocus": {
+        "samples": [
+          {
+            "at": "2026-11-07T18:11:22.661Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:22.715Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:22.767Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:22.822Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:22.875Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:22.933Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:22.987Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.044Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.099Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.157Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.211Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.265Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.319Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.372Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.425Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.478Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.533Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.587Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.641Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.695Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.749Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.804Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.860Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.914Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:23.968Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.027Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.081Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.136Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.190Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.244Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.299Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.354Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.410Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.470Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.524Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.578Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.632Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.686Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.745Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.799Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.859Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.913Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:24.967Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.021Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.074Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.129Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.183Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.237Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.291Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.344Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.398Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.452Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.506Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.560Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.621Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:25.675Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          }
+        ],
+        "actualStableMs": 3014
+      },
+      "focusGuard": {
+        "enabled": true,
+        "appPid": 52413,
+        "checkedInputs": 94
+      },
+      "focusGuards": [
+        {
+          "enabled": true,
+          "appPid": 52413,
+          "checkedInputs": 94
+        }
+      ],
+      "traceIntegrity": {
+        "rows": 9,
+        "allOriginalReturnedDeliveredUnchanged": true,
+        "noSaveOrCheckpoint": true,
+        "privateModeSHA256": "802af45784edc5fd091222dcd9a9f5ed2c8234c63ffcbcdaa9e372106e7ddc5d"
+      },
+      "screenshots": [
+        {
+          "path": "images/d05-light-insensitive-aliases.png",
+          "sha256": "579a78119267133a3401a52c41c93cc132ca84de765532cfcf27749f51b14c2f",
+          "bytes": 233658
+        },
+        {
+          "path": "images/d05-light-insensitive-physical-case.png",
+          "sha256": "ec95bf73d2d118eb6c2112d2a27000df03369884adef1650dce0d159fa96064d",
+          "bytes": 231547
+        }
+      ]
+    },
+    {
+      "kind": "d05-light-sensitive",
+      "theme": "light",
+      "volumeKind": "sensitive",
+      "paths": {
+        "kind": "sensitive",
+        "slot": "d05-light-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive-d05-light-sensitive-root-alias"
+      },
+      "startedAt": "2026-11-07T18:11:34.107Z",
+      "finishedAt": "2026-11-07T18:11:50.213Z",
+      "status": "executed-unjudged",
+      "complete": true,
+      "appPid": 52636,
+      "projectId": "64806e46-8489-4cd1-98f1-00aadad9a66c",
+      "setupReloadCount": 1,
+      "actualTheme": "ylight",
+      "window": {
+        "id": 1,
+        "title": "[A] T130 D05 App035 d05-light-sensitive"
+      },
+      "before": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "20",
+          "mode": 384,
+          "size": "39",
+          "mtimeNs": "1794075094106307650",
+          "ctimeNs": "1794075094106307650",
+          "sha256": "3042466e590e778f4181ddfb1bb389e63f1d15b6113b27db78b25fad6c882867"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "21",
+          "mode": 384,
+          "size": "39",
+          "mtimeNs": "1794075094106394485",
+          "ctimeNs": "1794075094106394485",
+          "sha256": "2189e2dad9ccc560c6a2c2a82076c74bc80a77ebc8c38461e88948bf30dab5a5"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "22",
+          "mode": 384,
+          "size": "42",
+          "mtimeNs": "1794075094106466277",
+          "ctimeNs": "1794075094106466277",
+          "sha256": "8b9dcaaaedfe49b9c3601e87748bbf033662c403645b80bfd7aa67f80a5b2ba2"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "23",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075094106508277",
+          "ctimeNs": "1794075094106508277",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "24",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075094106542736",
+          "ctimeNs": "1794075094106542736",
+          "target": "inner"
+        }
+      },
+      "after": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "20",
+          "mode": 384,
+          "size": "39",
+          "mtimeNs": "1794075094106307650",
+          "ctimeNs": "1794075094106307650",
+          "sha256": "3042466e590e778f4181ddfb1bb389e63f1d15b6113b27db78b25fad6c882867"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "21",
+          "mode": 384,
+          "size": "39",
+          "mtimeNs": "1794075094106394485",
+          "ctimeNs": "1794075094106394485",
+          "sha256": "2189e2dad9ccc560c6a2c2a82076c74bc80a77ebc8c38461e88948bf30dab5a5"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "22",
+          "mode": 384,
+          "size": "42",
+          "mtimeNs": "1794075094106466277",
+          "ctimeNs": "1794075094106466277",
+          "sha256": "8b9dcaaaedfe49b9c3601e87748bbf033662c403645b80bfd7aa67f80a5b2ba2"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "23",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075094106508277",
+          "ctimeNs": "1794075094106508277",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "24",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075094106542736",
+          "ctimeNs": "1794075094106542736",
+          "target": "inner"
+        }
+      },
+      "initial": {
+        "at": "2026-11-07T18:11:43.459Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 1,
+        "viewId": 2,
+        "text": "BASE d05-light-sensitive data 中文🙂\n",
+        "selection": {
+          "anchor": 35,
+          "head": 35
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "routes": [
+        {
+          "label": "name search same file",
+          "state": {
+            "at": "2026-11-07T18:11:44.049Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-light-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 35,
+              "head": 35
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+            "search": {
+              "busy": "false",
+              "paths": [
+                "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt"
+              ]
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "breadcrumb same file",
+          "state": {
+            "at": "2026-11-07T18:11:44.970Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-light-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 35,
+              "head": 35
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained file symlink",
+          "state": {
+            "at": "2026-11-07T18:11:45.274Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 4,
+            "text": "BASE d05-light-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 35,
+              "head": 35
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained directory symlink",
+          "state": {
+            "at": "2026-11-07T18:11:45.883Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 6,
+            "text": "BASE d05-light-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 35,
+              "head": 35
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "nested root relative alias",
+          "state": {
+            "at": "2026-11-07T18:11:46.842Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 8,
+            "text": "BASE d05-light-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 35,
+              "head": 35
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "original tree again",
+          "state": {
+            "at": "2026-11-07T18:11:47.750Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 8,
+            "text": "BASE d05-light-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 35,
+              "head": 35
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        }
+      ],
+      "sameCanonicalTabNodeRetained": true,
+      "caseState": {
+        "at": "2026-11-07T18:11:49.268Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 11,
+        "viewId": 12,
+        "text": "BASE d05-light-sensitive a 中文🙂\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/A.txt",
+            "selected": "false"
+          },
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/a.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "caseIds": [
+        {
+          "method": "open",
+          "at": 1794075108391,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "A.txt"
+            }
+          ],
+          "input": "3db26aeff126b1a44c1ebd76bcac343448a2c4e896d1b6f446e9ec4a86f93f35",
+          "output": {
+            "ref": {
+              "id": "9002fb16-d6db-4a8d-8573-b603d04014eb",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:20",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/A.txt",
+            "revision": {
+              "size": 39,
+              "inode": "20",
+              "device": "16777243",
+              "changedNs": "1794075094106307650",
+              "modifiedNs": "1794075094106307650",
+              "hash": "3042466e590e778f4181ddfb1bb389e63f1d15b6113b27db78b25fad6c882867"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "2ca4e459a121312c4074e39df519da7244a7a2839753364de791ec45e185fcb1",
+          "after": "2ca4e459a121312c4074e39df519da7244a7a2839753364de791ec45e185fcb1",
+          "inputAfter": "3db26aeff126b1a44c1ebd76bcac343448a2c4e896d1b6f446e9ec4a86f93f35",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075108954,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "a.txt"
+            }
+          ],
+          "input": "b4d76f8222fa41676c6732bdb50f5e555859744bc4bddc9210f9cc679d740c8b",
+          "output": {
+            "ref": {
+              "id": "7be95043-a6cb-480b-9529-effed472dbe2",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:21",
+            "name": "a.txt",
+            "relativePath": "a.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/a.txt",
+            "revision": {
+              "size": 39,
+              "inode": "21",
+              "device": "16777243",
+              "changedNs": "1794075094106394485",
+              "modifiedNs": "1794075094106394485",
+              "hash": "2189e2dad9ccc560c6a2c2a82076c74bc80a77ebc8c38461e88948bf30dab5a5"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "a7e6623dbcc6172e10a4611c5b65c1dd4d510ada38941eef6ba28dee4e892394",
+          "after": "a7e6623dbcc6172e10a4611c5b65c1dd4d510ada38941eef6ba28dee4e892394",
+          "inputAfter": "b4d76f8222fa41676c6732bdb50f5e555859744bc4bddc9210f9cc679d740c8b",
+          "delivered": true
+        }
+      ],
+      "physicalCase": {
+        "upperInode": "20",
+        "lowerInode": "21",
+        "different": true
+      },
+      "aliases": [
+        {
+          "method": "open",
+          "at": 1794075102886,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "inner/data.txt"
+            }
+          ],
+          "input": "f26e5dec1981e042e4ea7d50ce8aa618b3d75a928b9d855261bc34c3d7ad03f2",
+          "output": {
+            "ref": {
+              "id": "198e8814-6733-4bfe-b12c-1b19fc4a0abe",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:22",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+            "revision": {
+              "size": 42,
+              "inode": "22",
+              "device": "16777243",
+              "changedNs": "1794075094106466277",
+              "modifiedNs": "1794075094106466277",
+              "hash": "8b9dcaaaedfe49b9c3601e87748bbf033662c403645b80bfd7aa67f80a5b2ba2"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "c8e1bd5a15513738ecab8f8c4616aa5aadbff5d510a5b8e1b2e818199bf77511",
+          "after": "c8e1bd5a15513738ecab8f8c4616aa5aadbff5d510a5b8e1b2e818199bf77511",
+          "inputAfter": "f26e5dec1981e042e4ea7d50ce8aa618b3d75a928b9d855261bc34c3d7ad03f2",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075105214,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link.txt"
+            }
+          ],
+          "input": "59b299f10e4fb7465dff67363b8621e04ea92e2c6010e9fc427d44797d8e902a",
+          "output": {
+            "ref": {
+              "id": "2a5db37b-d1f8-484a-bfe7-6e388a9fad48",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:22",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+            "revision": {
+              "size": 42,
+              "inode": "22",
+              "device": "16777243",
+              "changedNs": "1794075094106466277",
+              "modifiedNs": "1794075094106466277",
+              "hash": "8b9dcaaaedfe49b9c3601e87748bbf033662c403645b80bfd7aa67f80a5b2ba2"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "9c32fcbae25f5631236a82d9de0bc95af249c4c28efd991cc2f80fd0ea138054",
+          "after": "9c32fcbae25f5631236a82d9de0bc95af249c4c28efd991cc2f80fd0ea138054",
+          "inputAfter": "59b299f10e4fb7465dff67363b8621e04ea92e2c6010e9fc427d44797d8e902a",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075105817,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link-dir/data.txt"
+            }
+          ],
+          "input": "1119dd9d0526510485544737a8af5ca7b586dc4a4deb090d87d0d43699d6fc53",
+          "output": {
+            "ref": {
+              "id": "6d3a9acc-e454-4e05-88ef-30a8fb8be251",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:22",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+            "revision": {
+              "size": 42,
+              "inode": "22",
+              "device": "16777243",
+              "changedNs": "1794075094106466277",
+              "modifiedNs": "1794075094106466277",
+              "hash": "8b9dcaaaedfe49b9c3601e87748bbf033662c403645b80bfd7aa67f80a5b2ba2"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "c80b9b5f452f4fab2a0840c092475645597ab18d0cd9894723fde30b7d909e17",
+          "after": "c80b9b5f452f4fab2a0840c092475645597ab18d0cd9894723fde30b7d909e17",
+          "inputAfter": "1119dd9d0526510485544737a8af5ca7b586dc4a4deb090d87d0d43699d6fc53",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075106779,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "data.txt"
+            }
+          ],
+          "input": "46306890d905a857588339c6fec91f8e032a6b5bffc4fbf41a3f04dcb9693a58",
+          "output": {
+            "ref": {
+              "id": "216d18de-4d15-48dc-84cb-4361c62ba960",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:22",
+            "name": "data.txt",
+            "relativePath": "data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner/data.txt",
+            "revision": {
+              "size": 42,
+              "inode": "22",
+              "device": "16777243",
+              "changedNs": "1794075094106466277",
+              "modifiedNs": "1794075094106466277",
+              "hash": "8b9dcaaaedfe49b9c3601e87748bbf033662c403645b80bfd7aa67f80a5b2ba2"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "851b8ae337524002e92f25ba3d9ca1ab00e447c7c5227db9de159ed65ba9b01a",
+          "after": "851b8ae337524002e92f25ba3d9ca1ab00e447c7c5227db9de159ed65ba9b01a",
+          "inputAfter": "46306890d905a857588339c6fec91f8e032a6b5bffc4fbf41a3f04dcb9693a58",
+          "delivered": true
+        }
+      ],
+      "restored": {
+        "files.open": true,
+        "files.read": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "tasksBefore": [],
+      "tasksAfter": [],
+      "rendererErrors": [],
+      "appCleanup": {
+        "normalQuitRequested": true,
+        "normalWaitExit": {
+          "pid": 52636,
+          "code": 0,
+          "signal": null
+        },
+        "normalExitConfirmed": true,
+        "finalWaitExit": {
+          "pid": 52636,
+          "code": 0,
+          "signal": null
+        },
+        "observedProcess": {
+          "pid": 52636,
+          "spawnedAtMs": 1794075094110,
+          "exit": {
+            "atMs": 1794075110212,
+            "code": 0,
+            "signal": null
+          },
+          "signals": [],
+          "inspectorCloseRequests": [
+            {
+              "atMs": 1794075109981
+            },
+            {
+              "atMs": 1794075110213
+            },
+            {
+              "atMs": 1794075110213
+            }
+          ],
+          "currentCode": 0,
+          "currentSignal": null
+        },
+        "steps": [
+          {
+            "label": "request-own-normal-quit",
+            "at": "2026-11-07T18:11:49.981Z",
+            "ok": true
+          },
+          {
+            "label": "wait-own-normal-exit",
+            "at": "2026-11-07T18:11:49.981Z",
+            "ok": true
+          },
+          {
+            "label": "save-own-private-app-logs",
+            "at": "2026-11-07T18:11:50.212Z",
+            "ok": true
+          },
+          {
+            "label": "close-exact-owned-harness",
+            "at": "2026-11-07T18:11:50.213Z",
+            "ok": true
+          },
+          {
+            "label": "wait-final-owned-process-exit",
+            "at": "2026-11-07T18:11:50.213Z",
+            "ok": true
+          },
+          {
+            "label": "capture-final-owned-process-observation",
+            "at": "2026-11-07T18:11:50.213Z",
+            "ok": true
+          }
+        ]
+      },
+      "observedProcess": {
+        "pid": 52636,
+        "spawnedAtMs": 1794075094110,
+        "exit": {
+          "atMs": 1794075110212,
+          "code": 0,
+          "signal": null
+        },
+        "signals": [],
+        "inspectorCloseRequests": [
+          {
+            "atMs": 1794075109981
+          },
+          {
+            "atMs": 1794075110213
+          },
+          {
+            "atMs": 1794075110213
+          }
+        ],
+        "currentCode": 0,
+        "currentSignal": null
+      },
+      "appExit": {
+        "pid": 52636,
+        "code": 0,
+        "signal": null
+      },
+      "cleanupErrors": [],
+      "treeCandidateSelections": [
+        {
+          "at": "2026-11-07T18:11:42.605Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:11:42.659Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:44.985Z",
+          "relative": "link.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "link.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 315,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 329,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:45.527Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:11:45.582Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 259,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 273,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:46.542Z",
+          "relative": "data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive/inner",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 175,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 189,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:47.509Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:48.139Z",
+          "relative": "A.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "A.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 315,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 329,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:11:48.712Z",
+          "relative": "a.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-light-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "a.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 287,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 301,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        }
+      ],
+      "initialForeground": {
+        "at": "2026-11-07T18:11:37.571Z",
+        "pid": 52636,
+        "scope": "M12-isolated-initial-foreground-only",
+        "userAuthorization": "call_7fa2b9ae68354542a7dcf11b953aeea9/0",
+        "scriptSHA256": "481e2888fa1a4c8e24aa47ae44613ff1ab2ad94b780f3e508f984b91521b8d96",
+        "attempts": 1,
+        "guardNotInstalledYet": true,
+        "requestSent": true,
+        "focusSuccess": "unverified-until-real-Native-DOM-stable3s"
+      },
+      "initialFocus": {
+        "samples": [
+          {
+            "at": "2026-11-07T18:11:37.783Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:37.835Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:37.888Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:37.942Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:37.996Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.050Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.104Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.157Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.211Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.266Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.320Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.373Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.429Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.483Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.537Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.591Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.646Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.701Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.755Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.809Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.863Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.919Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:38.974Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.028Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.083Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.137Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.191Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.249Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.304Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.359Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.413Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.467Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.522Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.576Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.636Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.690Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.745Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.798Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.852Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.906Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:39.967Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.042Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.095Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.149Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.204Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.261Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.315Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.369Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.427Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.481Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.536Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.590Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.644Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.698Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.752Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:40.806Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          }
+        ],
+        "actualStableMs": 3023
+      },
+      "focusGuard": {
+        "enabled": true,
+        "appPid": 52636,
+        "checkedInputs": 106
+      },
+      "focusGuards": [
+        {
+          "enabled": true,
+          "appPid": 52636,
+          "checkedInputs": 106
+        }
+      ],
+      "traceIntegrity": {
+        "rows": 12,
+        "allOriginalReturnedDeliveredUnchanged": true,
+        "noSaveOrCheckpoint": true,
+        "privateModeSHA256": "c67a342e18b1b33b7bb750f124d4ab81d532ae309a8a6c520c18f0998bde7653"
+      },
+      "screenshots": [
+        {
+          "path": "images/d05-light-sensitive-aliases.png",
+          "sha256": "eda128be87f4db97662fab498551d1fd15d970107a668d5ca09cbf9f5efa6e71",
+          "bytes": 234391
+        },
+        {
+          "path": "images/d05-light-sensitive-physical-case.png",
+          "sha256": "15303709fa81f9d01b38bc2c163782fa14d1a204012327e7573407416b68c0b8",
+          "bytes": 233551
+        }
+      ]
+    },
+    {
+      "kind": "d05-dark-insensitive",
+      "theme": "dark",
+      "volumeKind": "insensitive",
+      "paths": {
+        "kind": "insensitive",
+        "slot": "d05-dark-insensitive",
+        "sensitive": false,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive-d05-dark-insensitive-root-alias"
+      },
+      "startedAt": "2026-11-07T18:11:50.219Z",
+      "finishedAt": "2026-11-07T18:12:05.745Z",
+      "status": "executed-unjudged",
+      "complete": true,
+      "appPid": 52922,
+      "projectId": "0e3b8ab5-6a6f-45e6-96ea-f85f28c68228",
+      "setupReloadCount": 1,
+      "actualTheme": "ydark",
+      "window": {
+        "id": 1,
+        "title": "[A] T130 D05 App035 d05-dark-insensitive"
+      },
+      "before": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "25",
+          "mode": 384,
+          "size": "40",
+          "mtimeNs": "1794075110216787852",
+          "ctimeNs": "1794075110216787852",
+          "sha256": "6161f9a60fb3ea140465fe2a843915a2d25ad56d7e7106840f994194194c3842"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "25",
+          "mode": 384,
+          "size": "40",
+          "mtimeNs": "1794075110216787852",
+          "ctimeNs": "1794075110216787852",
+          "sha256": "6161f9a60fb3ea140465fe2a843915a2d25ad56d7e7106840f994194194c3842"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "26",
+          "mode": 384,
+          "size": "43",
+          "mtimeNs": "1794075110217102938",
+          "ctimeNs": "1794075110217102938",
+          "sha256": "e4759da9ff92ad1aa94d9103365cf0c3a6423916b25ab8e55970dd888cd89a65"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "27",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075110217258314",
+          "ctimeNs": "1794075110217258314",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "28",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075110217321565",
+          "ctimeNs": "1794075110217321565",
+          "target": "inner"
+        }
+      },
+      "after": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "25",
+          "mode": 384,
+          "size": "40",
+          "mtimeNs": "1794075110216787852",
+          "ctimeNs": "1794075110216787852",
+          "sha256": "6161f9a60fb3ea140465fe2a843915a2d25ad56d7e7106840f994194194c3842"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "25",
+          "mode": 384,
+          "size": "40",
+          "mtimeNs": "1794075110216787852",
+          "ctimeNs": "1794075110216787852",
+          "sha256": "6161f9a60fb3ea140465fe2a843915a2d25ad56d7e7106840f994194194c3842"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777239",
+          "inode": "26",
+          "mode": 384,
+          "size": "43",
+          "mtimeNs": "1794075110217102938",
+          "ctimeNs": "1794075110217102938",
+          "sha256": "e4759da9ff92ad1aa94d9103365cf0c3a6423916b25ab8e55970dd888cd89a65"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "27",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075110217258314",
+          "ctimeNs": "1794075110217258314",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777239",
+          "inode": "28",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075110217321565",
+          "ctimeNs": "1794075110217321565",
+          "target": "inner"
+        }
+      },
+      "initial": {
+        "at": "2026-11-07T18:11:59.661Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 1,
+        "viewId": 2,
+        "text": "BASE d05-dark-insensitive data 中文🙂\n",
+        "selection": {
+          "anchor": 36,
+          "head": 36
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "routes": [
+        {
+          "label": "name search same file",
+          "state": {
+            "at": "2026-11-07T18:12:00.288Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-dark-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 36,
+              "head": 36
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+            "search": {
+              "busy": "false",
+              "paths": [
+                "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt"
+              ]
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "breadcrumb same file",
+          "state": {
+            "at": "2026-11-07T18:12:01.285Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-dark-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 36,
+              "head": 36
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained file symlink",
+          "state": {
+            "at": "2026-11-07T18:12:01.600Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 4,
+            "text": "BASE d05-dark-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 36,
+              "head": 36
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained directory symlink",
+          "state": {
+            "at": "2026-11-07T18:12:02.204Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 6,
+            "text": "BASE d05-dark-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 36,
+              "head": 36
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "nested root relative alias",
+          "state": {
+            "at": "2026-11-07T18:12:03.179Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 8,
+            "text": "BASE d05-dark-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 36,
+              "head": 36
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "original tree again",
+          "state": {
+            "at": "2026-11-07T18:12:04.113Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 8,
+            "text": "BASE d05-dark-insensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 36,
+              "head": 36
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        }
+      ],
+      "sameCanonicalTabNodeRetained": true,
+      "caseState": {
+        "at": "2026-11-07T18:12:05.073Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 9,
+        "viewId": 10,
+        "text": "BASE d05-dark-insensitive A 中文🙂\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/A.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "caseIds": [
+        {
+          "method": "open",
+          "at": 1794075124760,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "A.txt"
+            }
+          ],
+          "input": "2c783c919742b8a09de6cc1a33a4ae2a93974831f92f67ba1cb6bbb30c2d1147",
+          "output": {
+            "ref": {
+              "id": "1b4ec9b1-9fb1-4b7a-98a5-f2fe1bc7bf84",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:25",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/A.txt",
+            "revision": {
+              "size": 40,
+              "inode": "25",
+              "device": "16777239",
+              "changedNs": "1794075110216787852",
+              "modifiedNs": "1794075110216787852",
+              "hash": "6161f9a60fb3ea140465fe2a843915a2d25ad56d7e7106840f994194194c3842"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "e8f0aa380e84cb558db3db6ce72566c55a6287417a4afbed56bf9e626b210453",
+          "after": "e8f0aa380e84cb558db3db6ce72566c55a6287417a4afbed56bf9e626b210453",
+          "inputAfter": "2c783c919742b8a09de6cc1a33a4ae2a93974831f92f67ba1cb6bbb30c2d1147",
+          "delivered": true
+        }
+      ],
+      "physicalCase": {
+        "upperInode": "25",
+        "lowerInode": "25",
+        "different": false
+      },
+      "aliases": [
+        {
+          "method": "open",
+          "at": 1794075119081,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "inner/data.txt"
+            }
+          ],
+          "input": "180c06f4eb3509ab3a95d9ca6dd42e59a0c5711a0516870fcf299702fb0a86f7",
+          "output": {
+            "ref": {
+              "id": "4dcad02e-4603-45e4-ac16-366a21144913",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:26",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+            "revision": {
+              "size": 43,
+              "inode": "26",
+              "device": "16777239",
+              "changedNs": "1794075110217102938",
+              "modifiedNs": "1794075110217102938",
+              "hash": "e4759da9ff92ad1aa94d9103365cf0c3a6423916b25ab8e55970dd888cd89a65"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "bf5d970fb55baefeb562e697232970d6f96980fe64d41f468c2093de8bd7fc61",
+          "after": "bf5d970fb55baefeb562e697232970d6f96980fe64d41f468c2093de8bd7fc61",
+          "inputAfter": "180c06f4eb3509ab3a95d9ca6dd42e59a0c5711a0516870fcf299702fb0a86f7",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075121536,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link.txt"
+            }
+          ],
+          "input": "b39fdd6a33df5d9c2eb53723dbddea6e93c411751e4bb526509a58718aa23811",
+          "output": {
+            "ref": {
+              "id": "c1a5cbc2-d48e-49e5-83e4-3e6813c44c34",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:26",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+            "revision": {
+              "size": 43,
+              "inode": "26",
+              "device": "16777239",
+              "changedNs": "1794075110217102938",
+              "modifiedNs": "1794075110217102938",
+              "hash": "e4759da9ff92ad1aa94d9103365cf0c3a6423916b25ab8e55970dd888cd89a65"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "028d0ce9e82d8548c299b5b05a545faba70e66179417e13abf159bafa2b04392",
+          "after": "028d0ce9e82d8548c299b5b05a545faba70e66179417e13abf159bafa2b04392",
+          "inputAfter": "b39fdd6a33df5d9c2eb53723dbddea6e93c411751e4bb526509a58718aa23811",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075122138,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link-dir/data.txt"
+            }
+          ],
+          "input": "b937908673e5eeae30eabb813ada0289cc5ccdfd66dee95ca49a64c2c062e1c0",
+          "output": {
+            "ref": {
+              "id": "37ec9f53-11b2-412a-bb21-d73bf976771a",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:26",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+            "revision": {
+              "size": 43,
+              "inode": "26",
+              "device": "16777239",
+              "changedNs": "1794075110217102938",
+              "modifiedNs": "1794075110217102938",
+              "hash": "e4759da9ff92ad1aa94d9103365cf0c3a6423916b25ab8e55970dd888cd89a65"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "dc6217067ea15db069a376039e8ecf2a5007d7673df94939a02eafedf7b73802",
+          "after": "dc6217067ea15db069a376039e8ecf2a5007d7673df94939a02eafedf7b73802",
+          "inputAfter": "b937908673e5eeae30eabb813ada0289cc5ccdfd66dee95ca49a64c2c062e1c0",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075123115,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "data.txt"
+            }
+          ],
+          "input": "0ad87500544beaabf4cd8d0ea946db81eb96297ac9e489e658ad4a7634ff1027",
+          "output": {
+            "ref": {
+              "id": "55121551-e081-4013-a905-e495a9419386",
+              "generation": 1
+            },
+            "documentKey": "local:16777239:26",
+            "name": "data.txt",
+            "relativePath": "data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner/data.txt",
+            "revision": {
+              "size": 43,
+              "inode": "26",
+              "device": "16777239",
+              "changedNs": "1794075110217102938",
+              "modifiedNs": "1794075110217102938",
+              "hash": "e4759da9ff92ad1aa94d9103365cf0c3a6423916b25ab8e55970dd888cd89a65"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "cb93e5d81c8ca44dd5a5b355a35e054adfb5a5943db8e9ebba0c476933b8a862",
+          "after": "cb93e5d81c8ca44dd5a5b355a35e054adfb5a5943db8e9ebba0c476933b8a862",
+          "inputAfter": "0ad87500544beaabf4cd8d0ea946db81eb96297ac9e489e658ad4a7634ff1027",
+          "delivered": true
+        }
+      ],
+      "restored": {
+        "files.open": true,
+        "files.read": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "tasksBefore": [],
+      "tasksAfter": [],
+      "rendererErrors": [],
+      "appCleanup": {
+        "normalQuitRequested": true,
+        "normalWaitExit": {
+          "pid": 52922,
+          "code": 0,
+          "signal": null
+        },
+        "normalExitConfirmed": true,
+        "finalWaitExit": {
+          "pid": 52922,
+          "code": 0,
+          "signal": null
+        },
+        "observedProcess": {
+          "pid": 52922,
+          "spawnedAtMs": 1794075110222,
+          "exit": {
+            "atMs": 1794075125743,
+            "code": 0,
+            "signal": null
+          },
+          "signals": [],
+          "inspectorCloseRequests": [
+            {
+              "atMs": 1794075125530
+            },
+            {
+              "atMs": 1794075125743
+            },
+            {
+              "atMs": 1794075125743
+            }
+          ],
+          "currentCode": 0,
+          "currentSignal": null
+        },
+        "steps": [
+          {
+            "label": "request-own-normal-quit",
+            "at": "2026-11-07T18:12:05.530Z",
+            "ok": true
+          },
+          {
+            "label": "wait-own-normal-exit",
+            "at": "2026-11-07T18:12:05.530Z",
+            "ok": true
+          },
+          {
+            "label": "save-own-private-app-logs",
+            "at": "2026-11-07T18:12:05.743Z",
+            "ok": true
+          },
+          {
+            "label": "close-exact-owned-harness",
+            "at": "2026-11-07T18:12:05.743Z",
+            "ok": true
+          },
+          {
+            "label": "wait-final-owned-process-exit",
+            "at": "2026-11-07T18:12:05.743Z",
+            "ok": true
+          },
+          {
+            "label": "capture-final-owned-process-observation",
+            "at": "2026-11-07T18:12:05.743Z",
+            "ok": true
+          }
+        ]
+      },
+      "observedProcess": {
+        "pid": 52922,
+        "spawnedAtMs": 1794075110222,
+        "exit": {
+          "atMs": 1794075125743,
+          "code": 0,
+          "signal": null
+        },
+        "signals": [],
+        "inspectorCloseRequests": [
+          {
+            "atMs": 1794075125530
+          },
+          {
+            "atMs": 1794075125743
+          },
+          {
+            "atMs": 1794075125743
+          }
+        ],
+        "currentCode": 0,
+        "currentSignal": null
+      },
+      "appExit": {
+        "pid": 52922,
+        "code": 0,
+        "signal": null
+      },
+      "cleanupErrors": [],
+      "treeCandidateSelections": [
+        {
+          "at": "2026-11-07T18:11:58.779Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:11:58.835Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:01.297Z",
+          "relative": "link.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "link.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 287,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 301,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:01.849Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:12:01.905Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 259,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 273,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:02.874Z",
+          "relative": "data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive/inner",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 175,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 189,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:03.863Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:04.507Z",
+          "relative": "A.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/insensitive/d05-dark-insensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "A.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 287,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 301,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        }
+      ],
+      "initialForeground": {
+        "at": "2026-11-07T18:11:53.668Z",
+        "pid": 52922,
+        "scope": "M12-isolated-initial-foreground-only",
+        "userAuthorization": "call_7fa2b9ae68354542a7dcf11b953aeea9/0",
+        "scriptSHA256": "481e2888fa1a4c8e24aa47ae44613ff1ab2ad94b780f3e508f984b91521b8d96",
+        "attempts": 1,
+        "guardNotInstalledYet": true,
+        "requestSent": true,
+        "focusSuccess": "unverified-until-real-Native-DOM-stable3s"
+      },
+      "initialFocus": {
+        "samples": [
+          {
+            "at": "2026-11-07T18:11:53.871Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:53.924Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:53.978Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.030Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.084Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.138Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.192Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.246Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.299Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.353Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.410Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.463Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.517Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.570Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.624Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.680Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.734Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.788Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.842Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.896Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:54.950Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.004Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.058Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.116Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.176Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.230Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.283Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.337Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.391Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.444Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.498Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.552Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.606Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.660Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.714Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.770Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.825Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.878Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.932Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:55.990Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.056Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.109Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.163Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.217Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.271Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.325Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.379Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.433Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.485Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.539Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.593Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.649Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.702Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.756Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.810Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.864Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:11:56.918Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          }
+        ],
+        "actualStableMs": 3047
+      },
+      "focusGuard": {
+        "enabled": true,
+        "appPid": 52922,
+        "checkedInputs": 94
+      },
+      "focusGuards": [
+        {
+          "enabled": true,
+          "appPid": 52922,
+          "checkedInputs": 94
+        }
+      ],
+      "traceIntegrity": {
+        "rows": 9,
+        "allOriginalReturnedDeliveredUnchanged": true,
+        "noSaveOrCheckpoint": true,
+        "privateModeSHA256": "2cca376fd16a1736881d080ad40be5ece7ad351ea7801d18d5ce235a9a0cc2cf"
+      },
+      "screenshots": [
+        {
+          "path": "images/d05-dark-insensitive-aliases.png",
+          "sha256": "83d6f79b9da49d8b0b64e228e5664e413b08ee0d30ff36f90e9eff2f9ef52a91",
+          "bytes": 235605
+        },
+        {
+          "path": "images/d05-dark-insensitive-physical-case.png",
+          "sha256": "ab46e352bbff685361d0a471593de51d1d828aec3554fd7b39640b506e449b14",
+          "bytes": 233711
+        }
+      ]
+    },
+    {
+      "kind": "d05-dark-sensitive",
+      "theme": "dark",
+      "volumeKind": "sensitive",
+      "paths": {
+        "kind": "sensitive",
+        "slot": "d05-dark-sensitive",
+        "sensitive": true,
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+        "inner": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner",
+        "alias": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive-d05-dark-sensitive-root-alias"
+      },
+      "startedAt": "2026-11-07T18:12:05.752Z",
+      "finishedAt": "2026-11-07T18:12:22.052Z",
+      "status": "executed-unjudged",
+      "complete": true,
+      "appPid": 53143,
+      "projectId": "e918ddc6-972e-4e27-b368-6bbe61e50b0a",
+      "setupReloadCount": 1,
+      "actualTheme": "ydark",
+      "window": {
+        "id": 1,
+        "title": "[A] T130 D05 App035 d05-dark-sensitive"
+      },
+      "before": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "27",
+          "mode": 384,
+          "size": "38",
+          "mtimeNs": "1794075125749265541",
+          "ctimeNs": "1794075125749265541",
+          "sha256": "81aee79eb58d4ebb481486d8c73a49abaf055a48fe6ca67e99e2deff9773149a"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "28",
+          "mode": 384,
+          "size": "38",
+          "mtimeNs": "1794075125749356750",
+          "ctimeNs": "1794075125749356750",
+          "sha256": "356ac0339a3c7c25405f6b0f1fc828712bba6f1089ac9c85a5725d0376bc7cc6"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "29",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794075125749449251",
+          "ctimeNs": "1794075125749449251",
+          "sha256": "84d6679e4cf48e63ad7c1688f21f88876a6127e8364fa8953328377a95d2ed13"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "30",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075125749507626",
+          "ctimeNs": "1794075125749507626",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "31",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075125749555752",
+          "ctimeNs": "1794075125749555752",
+          "target": "inner"
+        }
+      },
+      "after": {
+        "A.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "27",
+          "mode": 384,
+          "size": "38",
+          "mtimeNs": "1794075125749265541",
+          "ctimeNs": "1794075125749265541",
+          "sha256": "81aee79eb58d4ebb481486d8c73a49abaf055a48fe6ca67e99e2deff9773149a"
+        },
+        "a.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "28",
+          "mode": 384,
+          "size": "38",
+          "mtimeNs": "1794075125749356750",
+          "ctimeNs": "1794075125749356750",
+          "sha256": "356ac0339a3c7c25405f6b0f1fc828712bba6f1089ac9c85a5725d0376bc7cc6"
+        },
+        "inner/data.txt": {
+          "type": "file",
+          "device": "16777243",
+          "inode": "29",
+          "mode": 384,
+          "size": "41",
+          "mtimeNs": "1794075125749449251",
+          "ctimeNs": "1794075125749449251",
+          "sha256": "84d6679e4cf48e63ad7c1688f21f88876a6127e8364fa8953328377a95d2ed13"
+        },
+        "link.txt": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "30",
+          "mode": 493,
+          "size": "14",
+          "mtimeNs": "1794075125749507626",
+          "ctimeNs": "1794075125749507626",
+          "target": "inner/data.txt"
+        },
+        "link-dir": {
+          "type": "symlink",
+          "device": "16777243",
+          "inode": "31",
+          "mode": 493,
+          "size": "5",
+          "mtimeNs": "1794075125749555752",
+          "ctimeNs": "1794075125749555752",
+          "target": "inner"
+        }
+      },
+      "initial": {
+        "at": "2026-11-07T18:12:15.132Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 1,
+        "viewId": 2,
+        "text": "BASE d05-dark-sensitive data 中文🙂\n",
+        "selection": {
+          "anchor": 34,
+          "head": 34
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "routes": [
+        {
+          "label": "name search same file",
+          "state": {
+            "at": "2026-11-07T18:12:15.716Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-dark-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 34,
+              "head": 34
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+            "search": {
+              "busy": "false",
+              "paths": [
+                "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt"
+              ]
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "breadcrumb same file",
+          "state": {
+            "at": "2026-11-07T18:12:16.732Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 2,
+            "text": "BASE d05-dark-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 34,
+              "head": 34
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained file symlink",
+          "state": {
+            "at": "2026-11-07T18:12:17.047Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 3,
+            "text": "BASE d05-dark-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 34,
+              "head": 34
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "contained directory symlink",
+          "state": {
+            "at": "2026-11-07T18:12:17.675Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 5,
+            "text": "BASE d05-dark-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 34,
+              "head": 34
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "nested root relative alias",
+          "state": {
+            "at": "2026-11-07T18:12:18.675Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 7,
+            "text": "BASE d05-dark-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 34,
+              "head": 34
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        },
+        {
+          "label": "original tree again",
+          "state": {
+            "at": "2026-11-07T18:12:19.596Z",
+            "focused": true,
+            "visibility": "visible",
+            "tabId": 1,
+            "viewId": 7,
+            "text": "BASE d05-dark-sensitive data 中文🙂\n",
+            "selection": {
+              "anchor": 34,
+              "head": 34
+            },
+            "cmCount": 1,
+            "contentEditable": "true",
+            "tabs": [
+              {
+                "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+                "selected": "true"
+              }
+            ],
+            "dirty": 0,
+            "loading": false,
+            "alerts": [],
+            "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+            "treeBusy": "false",
+            "search": {
+              "paths": []
+            },
+            "footer": ""
+          },
+          "pass": true
+        }
+      ],
+      "sameCanonicalTabNodeRetained": true,
+      "caseState": {
+        "at": "2026-11-07T18:12:21.105Z",
+        "focused": true,
+        "visibility": "visible",
+        "tabId": 10,
+        "viewId": 11,
+        "text": "BASE d05-dark-sensitive a 中文🙂\n",
+        "selection": {
+          "anchor": 0,
+          "head": 0
+        },
+        "cmCount": 1,
+        "contentEditable": "true",
+        "tabs": [
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/A.txt",
+            "selected": "false"
+          },
+          {
+            "path": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/a.txt",
+            "selected": "true"
+          }
+        ],
+        "dirty": 0,
+        "loading": false,
+        "alerts": [],
+        "root": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+        "treeBusy": "false",
+        "search": {
+          "paths": []
+        },
+        "footer": ""
+      },
+      "caseIds": [
+        {
+          "method": "open",
+          "at": 1794075140185,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "A.txt"
+            }
+          ],
+          "input": "d9256beece6e674e1fd14de9d8a21a5fb696cdff8c272ca5e3604a5cbc729653",
+          "output": {
+            "ref": {
+              "id": "017f7c59-2260-499e-8a9b-2d2d43f89c8d",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:27",
+            "name": "A.txt",
+            "relativePath": "A.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/A.txt",
+            "revision": {
+              "size": 38,
+              "inode": "27",
+              "device": "16777243",
+              "changedNs": "1794075125749265541",
+              "modifiedNs": "1794075125749265541",
+              "hash": "81aee79eb58d4ebb481486d8c73a49abaf055a48fe6ca67e99e2deff9773149a"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "5951544e306460c05047a85bd7b9fd0b8d523771c41966dac01ad8a4f0b64064",
+          "after": "5951544e306460c05047a85bd7b9fd0b8d523771c41966dac01ad8a4f0b64064",
+          "inputAfter": "d9256beece6e674e1fd14de9d8a21a5fb696cdff8c272ca5e3604a5cbc729653",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075140761,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "a.txt"
+            }
+          ],
+          "input": "7276f26b338725e73330246901cb78278059f1d43eb41fb666d1d3f3df396fd4",
+          "output": {
+            "ref": {
+              "id": "ea738e60-7d84-4b8d-8140-cc320865f26a",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:28",
+            "name": "a.txt",
+            "relativePath": "a.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/a.txt",
+            "revision": {
+              "size": 38,
+              "inode": "28",
+              "device": "16777243",
+              "changedNs": "1794075125749356750",
+              "modifiedNs": "1794075125749356750",
+              "hash": "356ac0339a3c7c25405f6b0f1fc828712bba6f1089ac9c85a5725d0376bc7cc6"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "9d90c64edeefe3ee4895eafb63e603e1c25c76e7bdb05d5a02ab671bf2e49e48",
+          "after": "9d90c64edeefe3ee4895eafb63e603e1c25c76e7bdb05d5a02ab671bf2e49e48",
+          "inputAfter": "7276f26b338725e73330246901cb78278059f1d43eb41fb666d1d3f3df396fd4",
+          "delivered": true
+        }
+      ],
+      "physicalCase": {
+        "upperInode": "27",
+        "lowerInode": "28",
+        "different": true
+      },
+      "aliases": [
+        {
+          "method": "open",
+          "at": 1794075134535,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "inner/data.txt"
+            }
+          ],
+          "input": "32867694fcb0ff5c01954e74ad29c862dd650ebc0b3031c485d4bbfb15f6f262",
+          "output": {
+            "ref": {
+              "id": "089b7a95-2559-4b45-a90e-468a64a5668a",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:29",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+            "revision": {
+              "size": 41,
+              "inode": "29",
+              "device": "16777243",
+              "changedNs": "1794075125749449251",
+              "modifiedNs": "1794075125749449251",
+              "hash": "84d6679e4cf48e63ad7c1688f21f88876a6127e8364fa8953328377a95d2ed13"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "b1786564fcbbd8a5701839fd26ec445923897a6ced3e1e0859310c8934955338",
+          "after": "b1786564fcbbd8a5701839fd26ec445923897a6ced3e1e0859310c8934955338",
+          "inputAfter": "32867694fcb0ff5c01954e74ad29c862dd650ebc0b3031c485d4bbfb15f6f262",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075137022,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link.txt"
+            }
+          ],
+          "input": "9f6796ba54c1f4cddf55f7974de3888385a4422c3c78e3fece821fa4b310af9a",
+          "output": {
+            "ref": {
+              "id": "d1dd61c5-48b7-40fd-93c3-93a2f50e92d9",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:29",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+            "revision": {
+              "size": 41,
+              "inode": "29",
+              "device": "16777243",
+              "changedNs": "1794075125749449251",
+              "modifiedNs": "1794075125749449251",
+              "hash": "84d6679e4cf48e63ad7c1688f21f88876a6127e8364fa8953328377a95d2ed13"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "195c23e68899e08256515a6fe9b0cc958ffe22036f2122c097231660d2313829",
+          "after": "195c23e68899e08256515a6fe9b0cc958ffe22036f2122c097231660d2313829",
+          "inputAfter": "9f6796ba54c1f4cddf55f7974de3888385a4422c3c78e3fece821fa4b310af9a",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075137612,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "link-dir/data.txt"
+            }
+          ],
+          "input": "cf2cac2ee2a83633d6315038dd738cffb00974ddff0ad75cfe8e2cdfecfb0a79",
+          "output": {
+            "ref": {
+              "id": "3e6c1e0e-d9d0-42bb-a1ad-7a76f150169d",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:29",
+            "name": "data.txt",
+            "relativePath": "inner/data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+            "revision": {
+              "size": 41,
+              "inode": "29",
+              "device": "16777243",
+              "changedNs": "1794075125749449251",
+              "modifiedNs": "1794075125749449251",
+              "hash": "84d6679e4cf48e63ad7c1688f21f88876a6127e8364fa8953328377a95d2ed13"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "133dd8b78bf8c83ae6480da57917c06bd1542b10ccc9e124f8c07a705f332a0c",
+          "after": "133dd8b78bf8c83ae6480da57917c06bd1542b10ccc9e124f8c07a705f332a0c",
+          "inputAfter": "cf2cac2ee2a83633d6315038dd738cffb00974ddff0ad75cfe8e2cdfecfb0a79",
+          "delivered": true
+        },
+        {
+          "method": "open",
+          "at": 1794075138611,
+          "sender": 1,
+          "args": [
+            {
+              "generation": 1,
+              "relativePath": "data.txt"
+            }
+          ],
+          "input": "5e0727c8f456da60a914c0abca8dea172a4d16311da8a9fdf053af85d2c73e08",
+          "output": {
+            "ref": {
+              "id": "982066be-a265-429f-9987-c02906385808",
+              "generation": 1
+            },
+            "documentKey": "local:16777243:29",
+            "name": "data.txt",
+            "relativePath": "data.txt",
+            "absolutePath": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner/data.txt",
+            "revision": {
+              "size": 41,
+              "inode": "29",
+              "device": "16777243",
+              "changedNs": "1794075125749449251",
+              "modifiedNs": "1794075125749449251",
+              "hash": "84d6679e4cf48e63ad7c1688f21f88876a6127e8364fa8953328377a95d2ed13"
+            },
+            "writable": true,
+            "sourceReadOnly": false,
+            "content": {
+              "kind": "text",
+              "format": "txt",
+              "basis": "sample"
+            }
+          },
+          "before": "0b059fa298ad491eedc728c049f889725a4f3445663c676b00fa72bdf4f9fd82",
+          "after": "0b059fa298ad491eedc728c049f889725a4f3445663c676b00fa72bdf4f9fd82",
+          "inputAfter": "5e0727c8f456da60a914c0abca8dea172a4d16311da8a9fdf053af85d2c73e08",
+          "delivered": true
+        }
+      ],
+      "restored": {
+        "files.open": true,
+        "files.read": true,
+        "files.save": true,
+        "files.checkpoint": true
+      },
+      "tasksBefore": [],
+      "tasksAfter": [],
+      "rendererErrors": [],
+      "appCleanup": {
+        "normalQuitRequested": true,
+        "normalWaitExit": {
+          "pid": 53143,
+          "code": 0,
+          "signal": null
+        },
+        "normalExitConfirmed": true,
+        "finalWaitExit": {
+          "pid": 53143,
+          "code": 0,
+          "signal": null
+        },
+        "observedProcess": {
+          "pid": 53143,
+          "spawnedAtMs": 1794075125756,
+          "exit": {
+            "atMs": 1794075142051,
+            "code": 0,
+            "signal": null
+          },
+          "signals": [],
+          "inspectorCloseRequests": [
+            {
+              "atMs": 1794075141840
+            },
+            {
+              "atMs": 1794075142052
+            },
+            {
+              "atMs": 1794075142052
+            }
+          ],
+          "currentCode": 0,
+          "currentSignal": null
+        },
+        "steps": [
+          {
+            "label": "request-own-normal-quit",
+            "at": "2026-11-07T18:12:21.839Z",
+            "ok": true
+          },
+          {
+            "label": "wait-own-normal-exit",
+            "at": "2026-11-07T18:12:21.840Z",
+            "ok": true
+          },
+          {
+            "label": "save-own-private-app-logs",
+            "at": "2026-11-07T18:12:22.051Z",
+            "ok": true
+          },
+          {
+            "label": "close-exact-owned-harness",
+            "at": "2026-11-07T18:12:22.052Z",
+            "ok": true
+          },
+          {
+            "label": "wait-final-owned-process-exit",
+            "at": "2026-11-07T18:12:22.052Z",
+            "ok": true
+          },
+          {
+            "label": "capture-final-owned-process-observation",
+            "at": "2026-11-07T18:12:22.052Z",
+            "ok": true
+          }
+        ]
+      },
+      "observedProcess": {
+        "pid": 53143,
+        "spawnedAtMs": 1794075125756,
+        "exit": {
+          "atMs": 1794075142051,
+          "code": 0,
+          "signal": null
+        },
+        "signals": [],
+        "inspectorCloseRequests": [
+          {
+            "atMs": 1794075141840
+          },
+          {
+            "atMs": 1794075142052
+          },
+          {
+            "atMs": 1794075142052
+          }
+        ],
+        "currentCode": 0,
+        "currentSignal": null
+      },
+      "appExit": {
+        "pid": 53143,
+        "code": 0,
+        "signal": null
+      },
+      "cleanupErrors": [],
+      "treeCandidateSelections": [
+        {
+          "at": "2026-11-07T18:12:14.234Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:12:14.291Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:16.746Z",
+          "relative": "link.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "link.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 315,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 329,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:17.309Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 0,
+          "descriptors": []
+        },
+        {
+          "at": "2026-11-07T18:12:17.367Z",
+          "relative": "link-dir/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 259,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 273,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:18.369Z",
+          "relative": "data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive/inner",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 175,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 189,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:19.355Z",
+          "relative": "inner/data.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "data.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 203,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 217,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row selected select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:19.982Z",
+          "relative": "A.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "A.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 315,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 329,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        },
+        {
+          "at": "2026-11-07T18:12:20.516Z",
+          "relative": "a.txt",
+          "base": "/private/tmp/willyou-m12-t130-D05-App035-A-cont-002/runtime-001/volumes/sensitive/d05-dark-sensitive",
+          "count": 1,
+          "descriptors": [
+            {
+              "text": "a.txt",
+              "tag": "BUTTON",
+              "disabled": false,
+              "rect": {
+                "x": 1150,
+                "y": 287,
+                "width": 242,
+                "height": 28
+              },
+              "x": 1271,
+              "y": 301,
+              "inViewport": true,
+              "centerOwned": true,
+              "hit": {
+                "tag": "BUTTON",
+                "role": "treeitem",
+                "label": null,
+                "className": "fw-tree-row fw-tree-virtual-row  select-none"
+              }
+            }
+          ]
+        }
+      ],
+      "initialForeground": {
+        "at": "2026-11-07T18:12:09.206Z",
+        "pid": 53143,
+        "scope": "M12-isolated-initial-foreground-only",
+        "userAuthorization": "call_7fa2b9ae68354542a7dcf11b953aeea9/0",
+        "scriptSHA256": "481e2888fa1a4c8e24aa47ae44613ff1ab2ad94b780f3e508f984b91521b8d96",
+        "attempts": 1,
+        "guardNotInstalledYet": true,
+        "requestSent": true,
+        "focusSuccess": "unverified-until-real-Native-DOM-stable3s"
+      },
+      "initialFocus": {
+        "samples": [
+          {
+            "at": "2026-11-07T18:12:09.426Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.480Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.534Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.587Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.641Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.694Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.748Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.802Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.856Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.909Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:09.963Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.026Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.080Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.134Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.191Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.245Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.300Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.354Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.408Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.462Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.515Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.568Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.621Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.675Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.730Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.782Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.835Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.889Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.944Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:10.999Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.053Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.107Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.166Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.229Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.285Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.339Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.392Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.447Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.501Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.557Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.611Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.669Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.723Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.777Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.831Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.885Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.940Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:11.996Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.050Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.116Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.170Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.223Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.277Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.331Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.384Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          },
+          {
+            "at": "2026-11-07T18:12:12.442Z",
+            "focused": true,
+            "visibility": "visible",
+            "native": true
+          }
+        ],
+        "actualStableMs": 3016
+      },
+      "focusGuard": {
+        "enabled": true,
+        "appPid": 53143,
+        "checkedInputs": 106
+      },
+      "focusGuards": [
+        {
+          "enabled": true,
+          "appPid": 53143,
+          "checkedInputs": 106
+        }
+      ],
+      "traceIntegrity": {
+        "rows": 12,
+        "allOriginalReturnedDeliveredUnchanged": true,
+        "noSaveOrCheckpoint": true,
+        "privateModeSHA256": "0fada3842db43e196f556182a3e3239e77b83b0a7b683ba7a90a9c21b6f37d75"
+      },
+      "screenshots": [
+        {
+          "path": "images/d05-dark-sensitive-aliases.png",
+          "sha256": "1ec9705da8a530500340dd828b44c41ce6e8e8b27d82da5488722e3e0d659fca",
+          "bytes": 236105
+        },
+        {
+          "path": "images/d05-dark-sensitive-physical-case.png",
+          "sha256": "4201df7bc2863d5e596386d2d6375927cdf52e915e94139c500a8855d59b1a3b",
+          "bytes": 235363
+        }
+      ]
+    }
+  ],
+  "sourcePrivateSHA256": "088ecd309cf9182273bc6aa424e09b6e6a800e94f818783947d73832898dd68e",
+  "projection": "Full public synthetic identity/model/selection/stat and original native result fields retained except lease capabilities; exact transport endpoints/complete runtime/Native/auth/DB absent."
+}

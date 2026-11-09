@@ -1,0 +1,12 @@
+[req]
+distinguished_name = dn
+x509_extensions = v3_req
+prompt = no
+[dn]
+CN = m12-cert.test
+O = M12 private synthetic certificate fixture
+[v3_req]
+subjectAltName = DNS:m12-cert.test
+basicConstraints = critical,CA:false
+keyUsage = critical,digitalSignature,keyEncipherment
+extendedKeyUsage = serverAuth

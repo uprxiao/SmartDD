@@ -1,7 +1,7 @@
 import {mkdtempSync,mkdirSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {afterEach,describe,expect,it} from 'vitest';
-import {inspectCodexCliSandbox,planCodexCliSandbox,readCodexRequirements,type CodexRequirementsProof} from '../codex-effective-sandbox';
+import {codexProfileArgsForCli,inspectCodexCliSandbox,planCodexCliSandbox,readCodexRequirements,type CodexRequirementsProof} from '../codex-effective-sandbox';
 import type {TaskLaunchInput,NativeLaunchContext} from '../native-launch-context';
 const requirements:CodexRequirementsProof={version:'0.166.0',known:true,empty:true,hash:'a'.repeat(64)};
 const plan=(config:Record<string,unknown>,args:string[]=[],proof=requirements)=>planCodexCliSandbox({version:'0.166.0',layers:[{source:'user',config,hash:'b'.repeat(64)}],args,requirements:proof});
@@ -9,6 +9,41 @@ const named=()=>({default_permissions:'userx',permissions:{userx:{extends:':work
 const roots:string[]=[];afterEach(()=>{for(const root of roots.splice(0))rmSync(root,{recursive:true,force:true});});
 
 describe('M11 exact Codex policy inheritance and fail-closed CLI delivery',()=>{
+ it.each(['read-only','workspace-write'] as const)('delivers explicit %s through the equivalent private policy while preserving original approval/profile args',mode=>{
+  for(const selector of [['--sandbox',mode],['--sandbox='+mode],['-s',mode],['-s'+mode],['-s='+mode]]){
+   const kept=['--profile','owned-profile','--model','owned-model','--ask-for-approval','never','-c','skills.config=[]'],args=[...kept,...selector],original=[...args];
+   const policy=plan({sandbox_mode:mode==='read-only'?'workspace-write':'read-only'},args);
+   expect(policy).toMatchObject({available:true,kind:'inherit',parent:mode==='read-only'?':read-only':':workspace'});
+   expect(codexProfileArgsForCli(args,policy)).toEqual([...kept,'--disable','shell_snapshot']);expect(args).toEqual(original);
+  }
+ });
+ it('leaves unverified argv alone and protects verified CLI runs without changing full-access or approval selectors',()=>{
+  const args=['--sandbox','read-only','--ask-for-approval','never'];
+  expect(codexProfileArgsForCli(args,{available:false,reason:'unverified',source:'test',digest:null})).toEqual(args);
+  const full=['--sandbox','danger-full-access'];expect(codexProfileArgsForCli(full,plan({},full))).toEqual([...full,'--disable','shell_snapshot']);
+  const automatic=['--approve-for-me'];expect(codexProfileArgsForCli(automatic,plan({},automatic))).toEqual([...automatic,'--disable','shell_snapshot']);
+  expect(()=>codexProfileArgsForCli(args,plan({sandbox_mode:'workspace-write'}))).toThrow('不等价');
+ });
+ it('adds the run-local snapshot protection after original feature arguments without mutating the profile',()=>{
+  const args=['--enable','shell_snapshot','-c','features.shell_snapshot=true','--ask-for-approval','on-request'],before=[...args];
+  const policy=plan({sandbox_mode:'workspace-write'},args);
+  expect(policy.available).toBe(true);
+  expect(codexProfileArgsForCli(args,policy)).toEqual([...args,'--disable','shell_snapshot']);
+  expect(args).toEqual(before);
+ });
+ it.each([
+  ['--sandbox','read-only','--sandbox','workspace-write'],
+  ['--sandbox','read-only','--approve-for-me'],
+  ['--not-so-yolo','-sread-only'],
+  ['--approve-for-me','--yolo'],
+  ['--','--sandbox','read-only'],
+ ])('does not turn a native-invalid selector combination into a runnable grant: %j',(...args)=>{
+  expect(plan({},args).available).toBe(false);
+ });
+ it('honors native bypass precedence in either argv order and hashes approval argv without changing it',()=>{
+  for(const args of [['--yolo','--sandbox','read-only'],['--sandbox','read-only','--yolo']])expect(plan({},args)).toMatchObject({available:true,kind:'unchanged'});
+  expect(plan({sandbox_mode:'read-only'},['--ask-for-approval','never']).digest).not.toBe(plan({sandbox_mode:'read-only'},['--ask-for-approval','on-request']).digest);
+ });
  it.each(['read-only','workspace-write'] as const)('maps only a simple explicit %s policy to its native baseline',mode=>{expect(plan({sandbox_mode:mode})).toMatchObject({available:true,kind:'inherit',parent:mode==='read-only'?':read-only':':workspace',networkProxy:true,enableNetwork:true});});
  it('keeps explicit full access unchanged instead of replacing its file or network policy',()=>{expect(plan({},['--dangerously-bypass-approvals-and-sandbox'])).toMatchObject({available:true,kind:'unchanged',parent:null,enableNetwork:false,networkProxy:false});});
  it('inherits the original named policy with deny-read and domain rules rather than reconstructing a baseline',()=>{const input=named(),before=structuredClone(input),result=plan(input);expect(result).toMatchObject({available:true,parent:'userx',source:'inherited-named-permissions',enableNetwork:false});expect(input).toEqual(before);expect(JSON.stringify(result)).not.toContain('/private/fixture-denied');expect(JSON.stringify(result)).not.toContain('allowed.example.test');const changed=named();changed.permissions.userx.filesystem.deny_read.push('/private/another');expect(plan(changed).digest).not.toBe(result.digest);});

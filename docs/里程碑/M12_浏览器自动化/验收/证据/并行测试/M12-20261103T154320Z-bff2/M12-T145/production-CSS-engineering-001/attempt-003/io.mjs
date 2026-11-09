@@ -1,0 +1,1 @@
+import{readFile,writeFile}from'node:fs/promises';import{createHash}from'node:crypto';export const ROOT='/private/tmp/willyou-m12-header-production-css-I-003';export const sha=x=>createHash('sha256').update(x).digest('hex');export async function save(p,d){await writeFile(ROOT+'/'+p,JSON.stringify(d,null,2)+'\n',{mode:0o600})}

@@ -1,0 +1,28 @@
+--- A002/io.mjs
++++ A003/io.mjs
+@@ -1,9 +1,9 @@
+ import assert from'node:assert/strict';
+ import{resolve,relative}from'node:path';
+-import{realpath,writeFile,mkdir,readFile,stat}from'node:fs/promises';
++import{realpath,readlink,writeFile,mkdir,readFile,stat}from'node:fs/promises';
+ import{createHash}from'node:crypto';
+ 
+-export const ROOT='/private/tmp/willyou-m12-t132-App024-A-002';
++export const ROOT='/private/tmp/willyou-m12-t132-App025-A-003';
+ 
+ export const sha=b=>createHash('sha256').update(b).digest('hex');
+ 
+@@ -17,8 +17,11 @@
+ await writeFile(p,JSON.stringify(value,null,2)+'\n',{flag:exclusive?'wx':'w',mode:0o600});
+ return p;
+ }
+-export async function verifyPin(pin){assert(pin.finalReady===true&&pin.role==='App024');
+-assert.equal(pin.app,'/private/tmp/willyou-m12-s2-package-024/mac-arm64/WillYou.app');
++export async function verifyPin(pin){const layout=JSON.parse(await readFile(ROOT+'/dependency-layout.json'));
++for(const x of layout.links){assert.equal(await readlink(ROOT+'/'+x.path),x.target);
++assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);
++assert(x.realTarget.startsWith(ROOT+'/deps/packages/'))}assert(pin.finalReady===true&&pin.role==='App025-installed');
++assert.equal(pin.app,'/private/tmp/willyou-m12-app025-installer-001/Installed Applications/WillYou.app');
+ assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);
+ assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,3684);
+ for(const key of['buildGate','nativeGate'])assert.equal(sha(await readFile(pin[key].path)),pin[key].sha256);

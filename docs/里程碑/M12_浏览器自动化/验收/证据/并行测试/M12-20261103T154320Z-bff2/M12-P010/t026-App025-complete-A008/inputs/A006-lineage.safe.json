@@ -1,0 +1,112 @@
+{
+  "fromAttempt": "A006",
+  "toAttempt": "A007",
+  "originalJudge": {
+    "passed": 21,
+    "total": 23,
+    "status": "failed-or-partial",
+    "sha256": "0014a1f4331b5fdb91702a5010c73f78d6d4f5df33675c2ac13c7529745aad8d"
+  },
+  "originalPointerSource": {
+    "path": "/private/tmp/willyou-m12-t026-App025-A-006/pointer-drag.private.json",
+    "sha256": "a9b92bfa049c12d5fa8c312b32c15d7d7dfa81be3ee0a273e07723fee9d201f4",
+    "events": 8,
+    "downAfterDispatchCapture": [
+      {
+        "pointerId": 1,
+        "captured": true
+      }
+    ],
+    "firstMoveAfterDispatchCapture": [
+      {
+        "pointerId": 1,
+        "captured": false
+      }
+    ],
+    "observedWidths": [
+      "629"
+    ]
+  },
+  "safe8Events": {
+    "path": "/private/tmp/willyou-m12-t026-App025-A-006/safe-delivery-001/pointer-events.safe.json",
+    "sha256": "9a52033930b2e6ff5a7bd5a4cac862ce833dadda164a7851ef6642ad2d23c276"
+  },
+  "safeManifest": {
+    "path": "/private/tmp/willyou-m12-t026-App025-A-006/safe-delivery-001/manifest.json",
+    "sha256": "b62df405bf3035f58e87367595c9cbd051280f9ebfdc29f04caa17aaf32e21ca"
+  },
+  "staticSourceReview": {
+    "path": "/private/tmp/willyou-m12-t026-App025-A-006/safe-delivery-001/static-cdp-review.safe.json",
+    "sha256": "d8665b06441de5815a408907eba1e71a6e4f9983e7e8e0587c35ed9fba538e46",
+    "sourceReferences": [
+      {
+        "path": "/Users/liubu/.npm/_npx/dea9475797100b20/node_modules/playwright-core/lib/server/input.js",
+        "sha256": "9bab3cbf128c2338d3eee76996ea9cd7044d27cd9b0c6bf7b1786669354e9d1a",
+        "lines": [
+          169,
+          174,
+          180
+        ],
+        "claim": "move receives lastButton; down sets left, up clears none"
+      },
+      {
+        "path": "/Users/liubu/.npm/_npx/dea9475797100b20/node_modules/playwright-core/lib/server/chromium/crInput.js",
+        "sha256": "3dcad19b8f52f3f1f9787c5fff350607e242cd0d0c6911223c9d44bed9a75432",
+        "lines": [
+          104,
+          105,
+          106,
+          107
+        ],
+        "claim": "mouseMoved includes button plus held-buttons mask"
+      },
+      {
+        "path": "/Users/liubu/.npm/_npx/15c61037b1978c83/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Input.js",
+        "sha256": "d303c624a8a6d7b7245b29ddadb895c96017f883968e95d68228d53189db1cab",
+        "lines": [
+          172,
+          174,
+          175,
+          278,
+          279,
+          281,
+          282
+        ],
+        "claim": "move derives primary button from buttons; bit1 maps Left"
+      },
+      {
+        "path": "/Users/liubu/.npm/_npx/15c61037b1978c83/node_modules/devtools-protocol/json/browser_protocol.json",
+        "sha256": "82dd1099df514a4d7fca17f1a9f258176ff9331b15d83dc0bc012bec7dc71366",
+        "lines": [],
+        "claim": "Input.dispatchMouseEvent button defaults none and buttons is separate mask"
+      },
+      {
+        "path": "/private/tmp/willyou-m12-t026-App025-A-006/driver-source/scripts/lib/electron-harness.mjs",
+        "sha256": "7ef727d23176a530625b80facaaf8f9712e27ab83d47082db8d0463cc8a46ab9",
+        "lines": [
+          169,
+          181
+        ],
+        "claim": "Harness serializes params directly without filling mouse button"
+      },
+      {
+        "path": "/private/tmp/willyou-m12-t026-App025-A-006/driver-source/scripts/lib/app-focus-guard.mjs",
+        "sha256": "08bf100ef39cb4e54d764bd52a3a2f70d4e793c1e0f0e342bc54228bcaae018c",
+        "lines": [
+          40,
+          41,
+          42
+        ],
+        "claim": "Guard checks focus then forwards method and original arguments"
+      }
+    ]
+  },
+  "newOnlyFunctionalChange": "five held CDP mouseMoved add button:'left' alongside original buttons1",
+  "originalFullRunExactAfterPrivateRootTitleRebind": true,
+  "originalJudgeExact": true,
+  "originalObservationsExactAfterEventGenerator": true,
+  "AppSourcePinsUnchanged": true,
+  "hypothesisBoundary": "Local implementations/schema justify input correction; no claim yet that omitted button caused Electron capture loss.",
+  "originalA006FilesUnchanged": true,
+  "formalNewPasses": 0
+}

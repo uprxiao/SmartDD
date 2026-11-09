@@ -1,0 +1,44 @@
+{
+  "kind": "post-failure-file-only-source-review",
+  "frozenSource": "/private/tmp/willyou-m12-header-source-031/source/src/renderer/features/browser/workspace.tsx",
+  "sha256": "b574b00e3d806c8dbb99eb8ceead98d2b83774c4d7ed19f8e804c06530ef2018",
+  "sourceLines": [
+    {
+      "line": 75,
+      "text": "  const closeMenu=(after?:()=>void)=>{settingsGeneration.current++;run(async()=>{await rpc.browser.overlay({taskId,tabId,open:false});setMenu(false);setPageImage(null);after?.();});};"
+    },
+    {
+      "line": 76,
+      "text": "  const toggleMenu=()=>{if(menu){closeMenu();return;}run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(image);setDownloadsOpen(false);setMenu(true);});};"
+    },
+    {
+      "line": 120,
+      "text": "      <>{!!state.downloads?.length&&<button className=\"fw-icon bw-download-trigger\" aria-label=\"下载\" aria-expanded={downloadsOpen} onClick={showDownloads}><Download size={16}/>{state.downloads.some(item=>item.state==='progress')&&<i aria-label=\"下载进行中\"/>}</button>}</><button className=\"fw-icon\" aria-label=\"浏览器菜单\" aria-expanded={menu} onClick={toggleMenu}><MoreHorizontal size={16}/></button>"
+    },
+    {
+      "line": 122,
+      "text": "    {menu&&<><button className=\"bw-dismiss\" aria-label=\"关闭菜单\" tabIndex={-1} onClick={()=>closeMenu()}/><div className=\"bw-menu\" role=\"menu\"><button role=\"menuitem\" onClick={()=>closeMenu(()=>setFind(true))}><Search size={14}/>页内查找<kbd>⌘F</kbd></button><>{!!state.downloads?.length&&<button role=\"menuitem\" onClick={showDownloads}><Download size={14}/>下载</button>}</><button role=\"menuitem\" onClick={()=>showProfiles()}><UserRound size={14}/>登录态管理</button><button role=\"menuitem\" disabled={tab.importState==='importing'||tab.importState==='needs-attention'} onClick={()=>showProfiles(true)}><UserRound size={14}/>导入 Chrome／Edge 登录态</button><button role=\"menuitem\" onClick={()=>closeMenu(browserAccess.openGrants)}><ShieldAlert size={14}/>跨任务授权（{access.state.grants.length}）</button><button role=\"menuitem\" onClick={showSettings}><Info size={14}/>浏览器设置</button><button role=\"menuitem\" onClick={()=>closeMenu(()=>action('hard-reload'))}><RotateCw size={14}/>强制刷新</button><button role=\"menuitem\" onClick={()=>closeMenu(()=>{void store.reopen();})}>重开关闭的标签</button></div></>}"
+    }
+  ],
+  "driverFacts": [
+    {
+      "path": "code/run.mjs",
+      "line": 28,
+      "fact": "Menu click is immediately followed by ui.click on .bw-menu [role=menuitem] text 导入 Chrome／Edge 登录态."
+    },
+    {
+      "path": "code/ui.mjs",
+      "line": 4,
+      "fact": "First geometry lookup throws immediately if no visible target; stable rAF loop starts only after first lookup succeeds."
+    }
+  ],
+  "confirmed": "Driver has no bounded existence/completion wait after asynchronous overlay-open. Frozen JSX selector and exact text match the intended menuitem.",
+  "actualScreenshot": "evidence/failure-ui.synthetic.png",
+  "screenshotObservation": "No browser menu rendered in the saved failure screenshot.",
+  "unknown": [
+    "No menu DOM descriptor was captured: original failureDialog is null.",
+    "Whether overlay request was still pending or failed at that instant is not established by saved evidence."
+  ],
+  "noRerun": true,
+  "noProductFailureClaim": true
+}

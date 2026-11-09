@@ -1,0 +1,77 @@
+{
+  "schema": "T124-R006-precondition-failure-safe-v1",
+  "status": "failed-before-any-new-model",
+  "session": 35420,
+  "driverPid": 89046,
+  "appPid": 89049,
+  "failure": {
+    "stage": "readonly-original-qa-Cookie-reuse-check",
+    "name": "AssertionError",
+    "errorSHA256": "57c1b78e1b6ec674742e5fe204e0cb766bde7428981fcb54727aaa61a1728691"
+  },
+  "actualNativeAccount": null,
+  "serverRequests": [
+    {
+      "at": "2026-11-06T14:09:38.884Z",
+      "method": "GET",
+      "path": "/site",
+      "status": 200,
+      "responseEvidence": null,
+      "businessWriteAttempt": false,
+      "scope": "site",
+      "account": null,
+      "requestIdentitySha256": "eb5950120904a65a18ab4b6fb63d3eda2d4f572fecab7eee96edd3341e50a4e6"
+    },
+    {
+      "at": "2026-11-06T14:09:38.922Z",
+      "method": "GET",
+      "path": "/favicon.ico",
+      "status": 404,
+      "responseEvidence": null,
+      "businessWriteAttempt": false,
+      "scope": "site",
+      "account": null,
+      "requestIdentitySha256": "1fd427e2237e695913ccb59176142f31c1bc85cfa0664ef10a8106ed0af3baa4"
+    }
+  ],
+  "initialFocusSatisfied": true,
+  "originalFiveBusinessPassed": 0,
+  "rawSHA256": "d62535409d934d04f7fc6913bd074e6330bee0311c403b3de1a76e4a947eea2e",
+  "privateFailureSHA256": "57c1b78e1b6ec674742e5fe204e0cb766bde7428981fcb54727aaa61a1728691",
+  "appExit": {
+    "pid": 89049,
+    "code": 0,
+    "signal": null
+  },
+  "observedProcess": {
+    "pid": 89049,
+    "spawnedAtMs": 1793974172115,
+    "exit": {
+      "atMs": 1793974191878,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "inspectorCloseRequests": [
+      {
+        "atMs": 1793974179021
+      },
+      {
+        "atMs": 1793974191878
+      },
+      {
+        "atMs": 1793974191878
+      }
+    ],
+    "currentCode": 0,
+    "currentSignal": null
+  },
+  "cleanupErrors": [],
+  "allClear": true,
+  "newModelTurns": 0,
+  "preconditionCause": "Current original page had no authenticated qa state; session cookie response has no persistence expiry; actual cookie storage cause not inferred",
+  "next": "R007 use real visible page UI qa login once to re-establish precondition, never Cookie injection; two model prompts and original five businesscriteria unchanged",
+  "automaticReviewRejectedInitially": true,
+  "explicitApprovalThenExecuted": "call_6c794924543446b388485e9f692ce73d/0",
+  "formalNewPasses": 0
+}

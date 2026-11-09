@@ -1,0 +1,208 @@
+{
+  "kind": "independent-controlled-rusage-characterization",
+  "checks": [
+    {
+      "id": "RAW-JSON",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "id": "COMPILE",
+      "passed": true,
+      "detail": {
+        "command": [
+          "/usr/bin/clang",
+          "-v",
+          "-std=c11",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-O1",
+          "-isysroot",
+          "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+          "-mmacosx-version-min=13.0",
+          "-MD",
+          "-MF",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-001/build/probe.d",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-001/probe.c",
+          "-o",
+          "/private/tmp/willyou-m12-p069-rusage-controlled-001/build/probe",
+          "-lproc"
+        ],
+        "pid": 15129,
+        "returnCode": 0,
+        "actualExitCode": 0,
+        "signal": null,
+        "binarySha256": "36be5a689e5e4e9387fe28e0d47b997530fc1ad88442da277830816c6159f9ea"
+      }
+    },
+    {
+      "id": "NATIVE-EXIT",
+      "passed": false,
+      "detail": {
+        "pid": 15142,
+        "command": [
+          "/private/tmp/willyou-m12-p069-rusage-controlled-001/build/probe"
+        ],
+        "startedMonotonic": 133318.488547416,
+        "returnCode": 1,
+        "actualExitCode": 1,
+        "signal": null,
+        "terminationByRunner": false,
+        "endedMonotonic": 133320.704074708
+      }
+    },
+    {
+      "id": "SIX-PHASE-COMPLETE",
+      "passed": false,
+      "detail": {
+        "complete": [],
+        "errors": [
+          {
+            "kind": "error",
+            "pid": 15142,
+            "where": "zombie-bound",
+            "errno": 60,
+            "signal": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "EXACT-CLEANUP",
+      "passed": true,
+      "detail": {
+        "kind": "actual-controlled-process-cleanup",
+        "knownIdentityCount": 2,
+        "runnerForcedTermination": false,
+        "nativeHooksInstalled": false,
+        "portsOpened": false,
+        "AppOrPTYStarted": false,
+        "checks": [
+          {
+            "command": [
+              "/private/tmp/willyou-m12-p069-rusage-controlled-001/build/probe",
+              "--verify-list",
+              "/private/tmp/willyou-m12-p069-rusage-controlled-001/owned-identities.tsv",
+              "--observe"
+            ],
+            "pid": 15175,
+            "returnCode": 0,
+            "signal": null,
+            "stdout": "cleanup-observe.jsonl"
+          }
+        ],
+        "errors": [],
+        "exactOwnedIdentitiesClear": true
+      }
+    },
+    {
+      "id": "ABI-AND-V1-V2",
+      "passed": true,
+      "detail": [
+        {
+          "kind": "abi",
+          "rusageV1Size": 144,
+          "rusageV2Size": 160,
+          "v1ChildUserOffset": 96,
+          "v2ChildUserOffset": 96,
+          "bsdInfoSize": 136,
+          "rusageSize": 144,
+          "timebaseRc": 0,
+          "timebaseNumer": 125,
+          "timebaseDenom": 3,
+          "zombieConstant": 5,
+          "cpuUnitsNotAssumed": true
+        }
+      ]
+    },
+    {
+      "id": "SELF-UNIT-CALIBRATION",
+      "passed": true,
+      "detail": {
+        "rawOwnDelta": 2040442,
+        "referenceOwnDeltaUs": 85019,
+        "compatibleCandidates": [
+          {
+            "name": "mach-absolute-ticks",
+            "rawUnitsPerSecond": 24000000.0,
+            "measuredSeconds": 0.08501841666666667,
+            "referenceSeconds": 0.085019
+          }
+        ],
+        "uniqueScaleEstablished": true,
+        "note": "Equivalent numeric Mach/nanosecond scales may remain named ambiguously; no API unit claim beyond the observed scale."
+      }
+    },
+    {
+      "id": "V1-V2-AGREEMENT",
+      "passed": true,
+      "detail": [
+        {
+          "label": "self-before-work",
+          "selfDifferenceSeconds": 4.25e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "self-after-work",
+          "selfDifferenceSeconds": 5.833333333333333e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-before-child",
+          "selfDifferenceSeconds": 2.9166666666666664e-07,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "parent-child-alive",
+          "selfDifferenceSeconds": 6.208333333333334e-06,
+          "childDifferenceSeconds": 0.0
+        },
+        {
+          "label": "child-alive",
+          "selfDifferenceSeconds": 0.0,
+          "childDifferenceSeconds": 0.0
+        }
+      ]
+    },
+    {
+      "id": "CHARACTERIZATION-CARRIER",
+      "passed": false,
+      "detail": {
+        "kind": "ValueError",
+        "message": "Expected unique snapshot parent-zombie-unwaited, got 0"
+      }
+    },
+    {
+      "id": "NORMAL-CONTROLLED-EXIT-NO-FALLBACK",
+      "passed": true,
+      "detail": {
+        "runnerErrors": [],
+        "normalCleanupNoSignals": true
+      }
+    }
+  ],
+  "allControlledChecksPassed": false,
+  "observations": {
+    "unitCalibration": {
+      "rawOwnDelta": 2040442,
+      "referenceOwnDeltaUs": 85019,
+      "compatibleCandidates": [
+        {
+          "name": "mach-absolute-ticks",
+          "rawUnitsPerSecond": 24000000.0,
+          "measuredSeconds": 0.08501841666666667,
+          "referenceSeconds": 0.085019
+        }
+      ],
+      "uniqueScaleEstablished": true,
+      "note": "Equivalent numeric Mach/nanosecond scales may remain named ambiguously; no API unit claim beyond the observed scale."
+    }
+  },
+  "fullAppLifetimeScopeAccountingApproved": false,
+  "productionSamplerChanged": false,
+  "originalT111FormalPassClaim": false,
+  "originalCpuPercentCriterion": 5,
+  "futureGate": "Characterization only. Review exact rollup/frontier/reparent semantics and implement/test a complete accounting ledger before allowing a future <5% full-scope pass. All original raw/curves/activity/peaks remain.",
+  "status": "controlled-characterization-failed-or-incomplete"
+}

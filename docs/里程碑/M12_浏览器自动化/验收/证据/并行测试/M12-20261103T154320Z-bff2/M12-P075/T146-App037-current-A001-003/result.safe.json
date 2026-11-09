@@ -1,0 +1,150 @@
+{
+  "case": "M12-T146",
+  "attempts": [
+    {
+      "attempt": "A001",
+      "classification": "Local listen EPERM before App/listener; precondition red, no App criterion executed",
+      "preAppFailure": {
+        "failure": "listen EPERM 127.0.0.1 in restricted sandbox",
+        "appLaunched": false,
+        "originalLogSHA256": "400a7517a391645d5a535850eeb1f7d8db9755dcee88e4737578511694e9af44",
+        "rootRuntimeDirsCreated": true,
+        "listenerStarted": false
+      },
+      "actualAppLaunched": false,
+      "actualListenerStarted": false,
+      "businessChecks": 0,
+      "preAppLogBoundary": "Explicit pre-App Node error only; not full Electron/private App log.",
+      "formalIncrement": 0
+    },
+    {
+      "attempt": "A002",
+      "status": "failed-or-partial",
+      "startedAt": "2026-11-08T01:21:18.400Z",
+      "finishedAt": "2026-11-08T01:21:24.815Z",
+      "checks": [],
+      "normalAppExit": {
+        "pid": 6225,
+        "code": 0,
+        "signal": null
+      },
+      "signals": [],
+      "observerRemoved": true,
+      "fixtureClosed": true,
+      "cleanup": {
+        "allClear": true,
+        "pids": 8,
+        "tcp": 3,
+        "unix": 2,
+        "helpers": 0
+      },
+      "screenshotRecords": [],
+      "nativeOSTooltipPassClaimed": false,
+      "formalIncrement": 0,
+      "classification": "Helper old privateRoot assertion before firstactivation, no real UI business; original red retained",
+      "failure": {
+        "stage": "setup",
+        "name": "AssertionError",
+        "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ '/private/tmp/willyou-m12-t146-App037-A002'\n- '/private/tmp/willyou-m12-t146-App036-human-003'\n"
+      }
+    },
+    {
+      "attempt": "A003",
+      "status": "executed-unjudged",
+      "startedAt": "2026-11-08T01:22:38.756Z",
+      "finishedAt": "2026-11-08T01:22:50.458Z",
+      "checks": [
+        {
+          "id": "actual-full-title-visible-in-owned-popup",
+          "passed": true
+        },
+        {
+          "id": "native-page-parked-with-own-page-image",
+          "passed": true
+        },
+        {
+          "id": "escape-dismiss-restores-exact-page",
+          "passed": true
+        },
+        {
+          "id": "menu-keeps-page-parked-until-closed",
+          "passed": true
+        },
+        {
+          "id": "current-title-ellipsis-address-scroll",
+          "passed": true
+        }
+      ],
+      "normalAppExit": {
+        "pid": 6762,
+        "code": 0,
+        "signal": null
+      },
+      "signals": [],
+      "observerRemoved": true,
+      "fixtureClosed": true,
+      "cleanup": {
+        "allClear": true,
+        "pids": 12,
+        "tcp": 4,
+        "unix": 2,
+        "helpers": 1
+      },
+      "screenshotRecords": [
+        {
+          "name": "current-long-title-address-A.png",
+          "sha256": "a6d1a5c8f6261d3eeb8c82218e789bb1751c7522f859b119b17e5294756acabc"
+        },
+        {
+          "name": "actual-full-title-tooltip.png",
+          "sha256": "edc11f7091a8d7d464fa1f9167be24d32aca017ce651c695b9ca427e0d62539d"
+        },
+        {
+          "name": "menu-retains-native-parking.png",
+          "sha256": "880077b71e9edd55f73792fb4ddf09695776b49b8a6abafa9ada12b7657cbcb5"
+        }
+      ],
+      "nativeOSTooltipPassClaimed": false,
+      "formalIncrement": 0,
+      "classification": "Actual App037 controlled fulltitle DOM popup + Nativepage park/restore green; Root9/9",
+      "adjudication": {
+        "case": "M12-T146",
+        "rawSHA256": "cd3b59bc815cef7558fe4d62429d0beca1cd6abfe721ef31a3fae4c051af4e0e",
+        "checks": {
+          "original-title-ellipsis-no-overflow": true,
+          "original-long-address-scroll": true,
+          "original-full-title-visible": true,
+          "actual-hover-and-500ms": true,
+          "native-page-ownership-restored": true,
+          "menu-parking-regression": true,
+          "screenshots-match-record": true,
+          "package-pins-intact": true,
+          "normal-exit-and-independent-clear": true
+        },
+        "passed": true,
+        "scope": "Original A behavioural criteria; actual App037 owned DOM popup and native parking, no native OS tooltip claim; Root separately viewed actual full-title and menu PNGs",
+        "wholeCaseCandidate": true,
+        "priorOriginalUserNegativeRetained": true
+      },
+      "originalAThreeCriteriaPassed": true,
+      "NativeOwnershipArraysRetained": [
+        "beforeHover",
+        "duringTooltip",
+        "afterTooltip",
+        "duringMenu",
+        "afterMenu"
+      ],
+      "URLUTF16Length": 2139,
+      "guardCheckedInputs": 44,
+      "screenshotReview": "Root independently viewed actual tooltip and menu PNGs. Original screenshotbytes retained; no full visual-parity or nativeOS tooltip claim."
+    }
+  ],
+  "originalAThreeCriteriaGreenInA003": true,
+  "RootIndependentAdjudication": "9/9 original A behavioural checks passed",
+  "nativeOSTooltipPassClaimed": false,
+  "wholeCaseAccounting": "Root reviews/accounts original contract; projector makes no publicledger changes.",
+  "formalIncrement": 0,
+  "resourcesHeldByProjector": false,
+  "prior036Negative": "/private/tmp/willyou-m12-t146-App036-human-safe-batch-001",
+  "softwareProjectionUnmodified": "/private/tmp/willyou-m12-t146-tooltip-software-App037-build-safe-001"
+}

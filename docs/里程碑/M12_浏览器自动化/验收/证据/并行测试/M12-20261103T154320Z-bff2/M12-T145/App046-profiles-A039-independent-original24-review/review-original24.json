@@ -1,0 +1,5540 @@
+{
+  "case": "M12-T145",
+  "scope": "A039 3 profile states x8 =24 original P/A image pairs only",
+  "sourceRoot": "/private/tmp/willyou-m12-t145-App046-profiles-A-039",
+  "reviewedAt": "2026-11-08T16:01:48.312901+00:00",
+  "reviewer": "/root/t125_resume_ready",
+  "actualOriginalPairsViewed": 24,
+  "actualOriginalPNGsViewed": 48,
+  "allOriginalSHAAndDimensionsAndMetadataVerified": true,
+  "originalSourceUntouched": true,
+  "actualAppNativeNodeOSHTTPJXAExecutionsByReviewer": 0,
+  "formalIncrement": 0,
+  "wholeT145": false,
+  "reviewStatus": "CONFIRMED-P-A-DIFFERENCES-ROOT-DECISION-REQUIRED",
+  "mechanicalOnlyPriorResult": {
+    "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/judgement.json",
+    "sha256": "8bac8a107437458f9e7940b88cfbb13da8c60e4b836e0fc435a956deb9cd3029",
+    "passed": 7,
+    "total": 7,
+    "doesNotImplyVisualPass": true
+  },
+  "priorCleanupFileOnly": {
+    "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/cleanup.json",
+    "sha256": "21b0b64941244d896f7d2776b5b8e186b5c4c3201160350ff99bd8e8a881e309",
+    "allClear": true,
+    "recordedChecks": 45,
+    "notANewOSProbe": true
+  },
+  "identity": {
+    "App046ASAR": "bee5247b7f2a99d0840e3e323dbc1e579536d92af51971633dfacafdea1ad1ac",
+    "source055ManifestSHA256": "fe31e0b9e148fe7cc6dcbcfbe3f690256b69dc6c65f7c96f4789a37ae4ba745f",
+    "rawPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/raw.json",
+    "rawSHA256": "b1343b4b69414b4c8f87030b78f8cc188098e2cecc1caa4483f8a2602fd675d7",
+    "rawInheritedLayerLabel": "A-App046-B12-normal24-A035",
+    "actualRootAuthoritative": "A039; inherited A035 layer string in unchanged raw not rewritten"
+  },
+  "findings": [
+    {
+      "id": "CLONE-AUTOMATIC-NEW-SELECTION",
+      "affectedPairs": 8,
+      "classification": "Confirmed prototype/App interaction-state and visual difference, not extra driver input",
+      "POriginalAction": "菜单登录态管理→点克隆；不选副本。原图保留项目默认selected。",
+      "ActualAction": "run42真实点击克隆后只等结果/采图，无新副本选项click。",
+      "actualCause": "BrowserProfileSiteStates clone passes selectNew=true to mutate; mutate line14 setsSelected(new result.id).",
+      "effects": [
+        "A副本selected与h3；P项目默认selected与h3",
+        "A用于当前页面enabled+删除；P用于当前页面disabled且不显示删除",
+        "A/P并非同名同语义截屏，不能机械7/7外推视觉绿"
+      ],
+      "sourceRefs": [
+        {
+          "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/run.mjs",
+          "sha256": "1f319a013822a189a677180826f72d770ca97f8940840ff82418487f538309cb",
+          "lines": [
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "fact": "Clone click only; no explicit post-clone option click. capture expects selectedLabel=clone label."
+        },
+        {
+          "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/original-state-catalog.json",
+          "sha256": "3ae717146f103aa75af209f1314795451af94bb1f58a38ac8a5cfa1446e47f65",
+          "fact": "Original clone P steps: menu Profiles then click 克隆; no select-copy step."
+        },
+        {
+          "path": "/private/tmp/willyou-m12-download-visual-source-055/source/src/renderer/features/browser/profile-site-states.tsx",
+          "sha256": "04d69f825df9188216d772d471ff4e14d83d615b4973a19b8e838c9edda76803",
+          "lines": [
+            12,
+            14,
+            17,
+            24,
+            28
+          ],
+          "fact": "Production clone passes selectNew=true; mutate changes selected to result.id. Notice is a real p role=status inside dialog body."
+        },
+        {
+          "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/BrowserPanels.jsx",
+          "sha256": "8484cff43235988f51a694e0e965f854f4bebe7988816b855f27eec38ef8342e",
+          "lines": [
+            124,
+            127,
+            134,
+            145,
+            146,
+            148,
+            149
+          ],
+          "fact": "Prototype local selected stays at original project after clone callback; use disabled for current project and delete omitted."
+        },
+        {
+          "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+          "sha256": "363854e9d8cf658da0c247f7de5a5d744ee8d9395adb86770b5a79697eb2f536",
+          "lines": [
+            288,
+            289
+          ],
+          "fact": "Prototype callbacks update store/status; clone does not set dialog selection. Actual source images show status at pane footer."
+        }
+      ]
+    },
+    {
+      "id": "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+      "affectedPairs": 24,
+      "classification": "Confirmed presentation/layout difference",
+      "observation": "A成功notice在dialog body顶部且长期留到删除确认；P状态信息在pane末尾，不占弹框body。两者Dialog外层共同computed完全相同，但A额外正文导致高度/内部gap不同。",
+      "scope": "所有独立/删除确认/克隆24对均见。宽态独立537.5 vs468、删除571.5 vs500、克隆537.5 vs468px；窄态精确值逐key记录，不用父壳偏移豁免。",
+      "sourceRefs": [
+        {
+          "path": "/private/tmp/willyou-m12-download-visual-source-055/source/src/renderer/features/browser/profile-site-states.tsx",
+          "sha256": "04d69f825df9188216d772d471ff4e14d83d615b4973a19b8e838c9edda76803",
+          "lines": [
+            12,
+            14,
+            17,
+            24,
+            28
+          ],
+          "fact": "Production clone passes selectNew=true; mutate changes selected to result.id. Notice is a real p role=status inside dialog body."
+        },
+        {
+          "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+          "sha256": "363854e9d8cf658da0c247f7de5a5d744ee8d9395adb86770b5a79697eb2f536",
+          "lines": [
+            288,
+            289
+          ],
+          "fact": "Prototype callbacks update store/status; clone does not set dialog selection. Actual source images show status at pane footer."
+        }
+      ]
+    }
+  ],
+  "observedMatchingParts": [
+    "全部P/A尺寸匹配对应1440×900或1920×1080，全部DPR1；无图像缩放/合成。",
+    "全部dialog宽447/760、outer font13/430/19.5、主题文字/背景/1px边框/16radius/双层阴影等共同记录字段完全一致。",
+    "actual所有action均位于detail/body/dialog，dialog位于own pane且终端不遮；dialog/body/detail横向scrollWidth均不超clientWidth。",
+    "actual窄import145×38换行；其余mini26px，宽态action同一行。Copy/Trash/User/Plus/X图标形状、13/14/16px原图可见，未见额外glyph差异。",
+    "独立与删除确认的目标、红色说明/取消/确认保原语义；clone例外如上。"
+  ],
+  "approvedHistoricalReferenceBoundary": {
+    "source046NarrowImportFix": "Root明确该窄按钮溢出已按原不溢出判据同步生产+原型；1440旧P仍越界，不能要求App回退。新1080P已换行。",
+    "noOldPBytesChanged": true,
+    "oldReferenceDifferenceNotNewAppFailure": true
+  },
+  "otherBoundaries": [
+    "P是演示终端/模拟站点，A是本机合成真实页面+8真实PTY；侧栏/终端/页面背景/地址数据不是同一fixture，不据其整图像素差分判断此profile弹框主题错误。特别darkA underlying页面白底是未主题化本机HTML，不是dialog dark失效。",
+    "4px旧P父壳、A32px底部RuntimeBar等既有shell差异造成父region不同；本报告逐key保精确坐标，不借它豁免本次notice所增加的dialog高度。",
+    "P子控件computed不足，不能给minibutton/selectedrow全computed一致声明；使用真实原图+实际A metadata及限定source核对。",
+    "主renderer截图含生产capturePage预览；不是跨Nativecompositor整图像素一致证明。",
+    "键盘focus-visible未在这三鼠标状态完整采集，不外推原keyboard状态；Clone P BUTTON/A BODY的activeElement差异逐key记录。",
+    "仅3状态24截图，不覆盖B12 sites/recovery/clear-confirm，不覆盖57×8全456；机械7/7、清场45与视觉通过分开。"
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/run.mjs",
+      "sha256": "1f319a013822a189a677180826f72d770ca97f8940840ff82418487f538309cb",
+      "lines": [
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "fact": "Clone click only; no explicit post-clone option click. capture expects selectedLabel=clone label."
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/original-state-catalog.json",
+      "sha256": "3ae717146f103aa75af209f1314795451af94bb1f58a38ac8a5cfa1446e47f65",
+      "fact": "Original clone P steps: menu Profiles then click 克隆; no select-copy step."
+    },
+    {
+      "path": "/private/tmp/willyou-m12-download-visual-source-055/source/src/renderer/features/browser/profile-site-states.tsx",
+      "sha256": "04d69f825df9188216d772d471ff4e14d83d615b4973a19b8e838c9edda76803",
+      "lines": [
+        12,
+        14,
+        17,
+        24,
+        28
+      ],
+      "fact": "Production clone passes selectNew=true; mutate changes selected to result.id. Notice is a real p role=status inside dialog body."
+    },
+    {
+      "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/BrowserPanels.jsx",
+      "sha256": "8484cff43235988f51a694e0e965f854f4bebe7988816b855f27eec38ef8342e",
+      "lines": [
+        124,
+        127,
+        134,
+        145,
+        146,
+        148,
+        149
+      ],
+      "fact": "Prototype local selected stays at original project after clone callback; use disabled for current project and delete omitted."
+    },
+    {
+      "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+      "sha256": "363854e9d8cf658da0c247f7de5a5d744ee8d9395adb86770b5a79697eb2f536",
+      "lines": [
+        288,
+        289
+      ],
+      "fact": "Prototype callbacks update store/status; clone does not set dialog selection. Actual source images show status at pane footer."
+    },
+    {
+      "path": "/private/tmp/willyou-m12-download-visual-source-055/source/src/renderer/features/browser/workspace.css",
+      "sha256": "e7984c074d29f07da6b1f85c278aa0b7eb2f0b6518ee734e601752871f248ffb",
+      "fact": "Current App046 inherits approved source046 .bw-profile-detail .bw-mini wrapping/max-width/min-height26 fix; no revert to old narrow P overflow."
+    },
+    {
+      "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/browser.css",
+      "sha256": "b5cf2b6bed6b2aa0bd8ce79c745e723f43afbbf2c61476ec9db35e46ef0fe2cd",
+      "fact": "Current matching prototype profile detail scoped wrapping fix applies; legacy1440 P PNG remains old preserved reference."
+    }
+  ],
+  "pairs": [
+    {
+      "index": 0,
+      "key": "light-rw480-win1440x900|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-profiles-independent.png",
+        "sha256": "d050b1a13078a0e9e1a4ca826aac68fc98dda970149ab60f49bf58e03606c080",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "60471e8613037f36b4f4da6212b33073d25280835da5fa3f504dfcbefeee9f60",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 168.5,
+          "width": 447,
+          "height": 603
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1440x900-B12-profiles-independent.png",
+        "sha256": "cd897308428fb82f2b4a07602f1bd5c47fbf5d6d62ce8a384665291fdaf1ce16",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "e0d2e49388797f906a4bca8684a568b8ddef05540eeebb75dd6ec61873f69e2f",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 106.75,
+          "width": 447,
+          "height": 690.5,
+          "right": 1420,
+          "bottom": 797.25
+        },
+        "bodyRect": {
+          "x": 974,
+          "y": 195.75,
+          "width": 445,
+          "height": 533.5,
+          "right": 1419,
+          "bottom": 729.25
+        },
+        "detailRect": {
+          "x": 1252,
+          "y": 271.25,
+          "width": 145,
+          "height": 444,
+          "right": 1397,
+          "bottom": 715.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 996,
+            "y": 325.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1236,
+            "bottom": 376.25
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 996,
+              "y": 213.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1397,
+              "bottom": 233.25
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 383.25,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 409.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 417.25,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 443.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 451.25,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 489.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 497.25,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 523.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 87.5,
+        "dialogTop": -61.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行旧1440P导入按钮越详情/右界是已批准source046修复的历史红，不应回退。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 1,
+      "key": "light-rw480-win1440x900|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "0c367525f4a4db7458ee49e029d3d87ac5e9cfaa7e433a0131faf8a55d0a371c",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "41180be87ce71eec2b066906a10a890277bd3906fa8134b3090a133529586787",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 138.5,
+          "width": 447,
+          "height": 663
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "b3e4a632bfaea0f69de889b22fed527d7f7073c6030848f86595ba228a98f7fe",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "6beb11bad63cf2ee79713e5c9c692404d3d22364c35d9f9204c5ceaf38dbc8ee",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 75.75,
+          "width": 447,
+          "height": 752.5,
+          "right": 1420,
+          "bottom": 828.25
+        },
+        "bodyRect": {
+          "x": 974,
+          "y": 164.75,
+          "width": 445,
+          "height": 595.5,
+          "right": 1419,
+          "bottom": 760.25
+        },
+        "detailRect": {
+          "x": 1252,
+          "y": 240.25,
+          "width": 145,
+          "height": 506,
+          "right": 1397,
+          "bottom": 746.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 996,
+            "y": 294.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1236,
+            "bottom": 345.25
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 996,
+              "y": 182.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1397,
+              "bottom": 202.25
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 352.25,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 378.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 386.25,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 412.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 420.25,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 458.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 528.25,
+              "width": 68,
+              "height": 26,
+              "right": 1320,
+              "bottom": 554.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1328,
+              "y": 528.25,
+              "width": 44,
+              "height": 26,
+              "right": 1372,
+              "bottom": 554.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 89.5,
+        "dialogTop": -62.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行旧1440P导入按钮越详情/右界是已批准source046修复的历史红，不应回退。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 2,
+      "key": "light-rw480-win1440x900|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-profiles-clone.png",
+        "sha256": "90f2b25bfff52b44864fe6b724c28c66c68429a7f0e68d2ea0157520918d40c9",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "0d3abb35bfa35ec6e44c95a0f1cf3c5a3e867ff2b53299f072262cba97ff3081",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 195,
+          "width": 447,
+          "height": 550
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1440x900-B12-profiles-clone.png",
+        "sha256": "129f7f738b30867f12690d3db5fdf16b0e6cf86eb5dcc935d040ff168a6e5bd9",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "7a593b04d1953132c2b5b8f12f6bc8d28a41cdb9416c5ccb1d188eb6cc0ae79b",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 117.25,
+          "width": 447,
+          "height": 669.5,
+          "right": 1420,
+          "bottom": 786.75
+        },
+        "bodyRect": {
+          "x": 974,
+          "y": 206.25,
+          "width": 445,
+          "height": 512.5,
+          "right": 1419,
+          "bottom": 718.75
+        },
+        "detailRect": {
+          "x": 1252,
+          "y": 281.75,
+          "width": 145,
+          "height": 423,
+          "right": 1397,
+          "bottom": 704.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 996,
+            "y": 336.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1236,
+            "bottom": 386.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 996,
+              "y": 224.25,
+              "width": 401,
+              "height": 19.5,
+              "right": 1397,
+              "bottom": 243.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 372.75,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 398.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 406.75,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 432.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 440.75,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 478.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 486.75,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 512.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 119.5,
+        "dialogTop": -77.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行旧1440P导入按钮越详情/右界是已批准source046修复的历史红，不应回退。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 3,
+      "key": "light-rw900-win1440x900|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-profiles-independent.png",
+        "sha256": "091e77a6164acbca7c89177a1d60166168c7c75e8742af425adcdd2c9910795a",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "8d9f6221168e3be5febcf617c4d779f7ad1cdb21fb74f15baf9db91e820939a8",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 236,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1440x900-B12-profiles-independent.png",
+        "sha256": "119012141eda4ef957c9dfb37c7be581d7078b2e86f445a3cbf0fd8d4dcef4c8",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "a504395eb9313781a585565aeca55b89f354d2a3631c3a4057a54759c2282d97",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 183.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1366.5,
+          "bottom": 720.75
+        },
+        "bodyRect": {
+          "x": 607.5,
+          "y": 254.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1365.5,
+          "bottom": 652.75
+        },
+        "detailRect": {
+          "x": 885.5,
+          "y": 329.75,
+          "width": 458,
+          "height": 309,
+          "right": 1343.5,
+          "bottom": 638.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 629.5,
+            "y": 384.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 869.5,
+            "bottom": 434.75
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 629.5,
+              "y": 272.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1343.5,
+              "bottom": 291.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 885.5,
+              "y": 420.75,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 985.5,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1054.5,
+              "y": 420.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1234.765625,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1295.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 4,
+      "key": "light-rw900-win1440x900|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "91e2b9b812d868d8bceb9d367d42af3a0bed7f39a5b4f43470631b661caa6799",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "4d82db1ced71253d7dc290a779f2419e2aa224c86a6e890bbb13b824437c15b0",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 220,
+          "width": 760,
+          "height": 500
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "c25448a94bb17caf2b5c862f1d9828751553764fffba2bc8396f47b66c3806ae",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "6c7e34b0d3bae55caadaf4d4876e46631489e11c26caf05dcfdbaa61543115fb",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 166.25,
+          "width": 760,
+          "height": 571.5,
+          "right": 1366.5,
+          "bottom": 737.75
+        },
+        "bodyRect": {
+          "x": 607.5,
+          "y": 237.25,
+          "width": 758,
+          "height": 432.5,
+          "right": 1365.5,
+          "bottom": 669.75
+        },
+        "detailRect": {
+          "x": 885.5,
+          "y": 312.75,
+          "width": 458,
+          "height": 343,
+          "right": 1343.5,
+          "bottom": 655.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 629.5,
+            "y": 367.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 869.5,
+            "bottom": 417.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 629.5,
+              "y": 255.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1343.5,
+              "bottom": 274.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 885.5,
+              "y": 403.75,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 429.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 985.5,
+              "y": 403.75,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 429.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1054.5,
+              "y": 403.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 429.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1205.5,
+              "y": 437.75,
+              "width": 68,
+              "height": 26,
+              "right": 1273.5,
+              "bottom": 463.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1281.5,
+              "y": 437.75,
+              "width": 44,
+              "height": 26,
+              "right": 1325.5,
+              "bottom": 463.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 71.5,
+        "dialogTop": -53.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 5,
+      "key": "light-rw900-win1440x900|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-profiles-clone.png",
+        "sha256": "a2fcd4eed7eec06cdb62a63ca055edae14844928707a1831abfd99bc1ee01dc3",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "b11ee40becc05fc4218bac22158a439da29578053e58df28d11525fd6177fe65",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 236,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1440x900-B12-profiles-clone.png",
+        "sha256": "f15a26520fbddd431b168a61d8aed6595782e9c7a7022e1fefde79daed03b5b2",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "9ae0e0a2a7459c2457b3badfbd87c4069639ad9c84a30d3b65a015ccf5bf450d",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 183.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1366.5,
+          "bottom": 720.75
+        },
+        "bodyRect": {
+          "x": 607.5,
+          "y": 254.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1365.5,
+          "bottom": 652.75
+        },
+        "detailRect": {
+          "x": 885.5,
+          "y": 329.75,
+          "width": 458,
+          "height": 309,
+          "right": 1343.5,
+          "bottom": 638.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 629.5,
+            "y": 384.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 869.5,
+            "bottom": 434.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 629.5,
+              "y": 272.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1343.5,
+              "bottom": 291.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 885.5,
+              "y": 420.75,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 985.5,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1054.5,
+              "y": 420.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1234.765625,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1295.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 6,
+      "key": "dark-rw480-win1440x900|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-profiles-independent.png",
+        "sha256": "0b469c77f90c03a3e11b9f53bd9afed16f18d9806635e0f307ca652dbe3f4494",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "0a48e3b5cd00f2aeb4a2e8101009a934a10128e566648fd2b4b0a22add9dae74",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 168.5,
+          "width": 447,
+          "height": 603
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1440x900-B12-profiles-independent.png",
+        "sha256": "a7ae9047209d83a561f05467fd0b9fe9b89d8078c9fe83f995cb76d2997c283d",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "53db2065c9642a58d66b214eab1be76c14e87847effed04eafbb1f2e452c69d9",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 106.75,
+          "width": 447,
+          "height": 690.5,
+          "right": 1420,
+          "bottom": 797.25
+        },
+        "bodyRect": {
+          "x": 974,
+          "y": 195.75,
+          "width": 445,
+          "height": 533.5,
+          "right": 1419,
+          "bottom": 729.25
+        },
+        "detailRect": {
+          "x": 1252,
+          "y": 271.25,
+          "width": 145,
+          "height": 444,
+          "right": 1397,
+          "bottom": 715.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 996,
+            "y": 325.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1236,
+            "bottom": 376.25
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 996,
+              "y": 213.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1397,
+              "bottom": 233.25
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 383.25,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 409.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 417.25,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 443.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 451.25,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 489.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 497.25,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 523.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 87.5,
+        "dialogTop": -61.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行旧1440P导入按钮越详情/右界是已批准source046修复的历史红，不应回退。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 7,
+      "key": "dark-rw480-win1440x900|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "376f748eb7871f15bf53a83dadc47b70810bb359bafaade2f0b7c72d9d0dc5b3",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "61bfd8ce68bc38052ac9ffdeba9bbdfa86c937def18a0e6900a5798f721709d2",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 138.5,
+          "width": 447,
+          "height": 663
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "26fbfbea5e229a389eac0c58278798fd5e7d19847800314a456bee799991fee5",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "a59f92a46b91713aa94ef0262e99c56b65030d58c58b6c2b8d8cfbf67082cb21",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 75.75,
+          "width": 447,
+          "height": 752.5,
+          "right": 1420,
+          "bottom": 828.25
+        },
+        "bodyRect": {
+          "x": 974,
+          "y": 164.75,
+          "width": 445,
+          "height": 595.5,
+          "right": 1419,
+          "bottom": 760.25
+        },
+        "detailRect": {
+          "x": 1252,
+          "y": 240.25,
+          "width": 145,
+          "height": 506,
+          "right": 1397,
+          "bottom": 746.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 996,
+            "y": 294.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1236,
+            "bottom": 345.25
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 996,
+              "y": 182.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1397,
+              "bottom": 202.25
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 352.25,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 378.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 386.25,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 412.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 420.25,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 458.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 528.25,
+              "width": 68,
+              "height": 26,
+              "right": 1320,
+              "bottom": 554.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1328,
+              "y": 528.25,
+              "width": 44,
+              "height": 26,
+              "right": 1372,
+              "bottom": 554.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 89.5,
+        "dialogTop": -62.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行旧1440P导入按钮越详情/右界是已批准source046修复的历史红，不应回退。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 8,
+      "key": "dark-rw480-win1440x900|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-profiles-clone.png",
+        "sha256": "57add1a9cf413f45625bcdad5483dfb879a7dd9965216f6e2ebf7f63f3b78fbd",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "033491cdc23ae2b3a6d07bf5bd79961ca9fe6fedacba731baa1597b0d0f5ad51",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 195,
+          "width": 447,
+          "height": 550
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1440x900-B12-profiles-clone.png",
+        "sha256": "47e2f6c706a286283442c9773b7b3d150724dd47bae90444835bf7c8cb96ace1",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "1cff755ffee739ac5182fc3d9965f8f2da5360c851cd982e7309141427cfda6a",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 973,
+          "y": 117.25,
+          "width": 447,
+          "height": 669.5,
+          "right": 1420,
+          "bottom": 786.75
+        },
+        "bodyRect": {
+          "x": 974,
+          "y": 206.25,
+          "width": 445,
+          "height": 512.5,
+          "right": 1419,
+          "bottom": 718.75
+        },
+        "detailRect": {
+          "x": 1252,
+          "y": 281.75,
+          "width": 145,
+          "height": 423,
+          "right": 1397,
+          "bottom": 704.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 996,
+            "y": 336.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1236,
+            "bottom": 386.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 996,
+              "y": 224.25,
+              "width": 401,
+              "height": 19.5,
+              "right": 1397,
+              "bottom": 243.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 372.75,
+              "width": 92,
+              "height": 26,
+              "right": 1344,
+              "bottom": 398.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 406.75,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 432.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 440.75,
+              "width": 145,
+              "height": 38,
+              "right": 1397,
+              "bottom": 478.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 486.75,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 512.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 119.5,
+        "dialogTop": -77.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行旧1440P导入按钮越详情/右界是已批准source046修复的历史红，不应回退。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 9,
+      "key": "dark-rw900-win1440x900|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-profiles-independent.png",
+        "sha256": "4f833f8c42f4671c109d2f136303b391f2a6982dfaf37d40a1df4d6272b0f2bf",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "8785d07a1abd7824f36c877815e74f1b1d7586d71ce4968124be6f2559ee570f",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 236,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1440x900-B12-profiles-independent.png",
+        "sha256": "8abe8035e07d00dd8f335ef9884d9ce1c1a6d449329c656d11eaa6f1f2e1ca36",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1440x900-B12-profiles-independent.json",
+        "metadataSHA256": "ab192675b489d60b9d4bdb5f06f1189a9891c37d3387c6e0b48acbbf20e2f4d9",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 183.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1366.5,
+          "bottom": 720.75
+        },
+        "bodyRect": {
+          "x": 607.5,
+          "y": 254.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1365.5,
+          "bottom": 652.75
+        },
+        "detailRect": {
+          "x": 885.5,
+          "y": 329.75,
+          "width": 458,
+          "height": 309,
+          "right": 1343.5,
+          "bottom": 638.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 629.5,
+            "y": 384.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 869.5,
+            "bottom": 434.75
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 629.5,
+              "y": 272.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1343.5,
+              "bottom": 291.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 885.5,
+              "y": 420.75,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 985.5,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1054.5,
+              "y": 420.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1234.765625,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1295.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 10,
+      "key": "dark-rw900-win1440x900|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "41de4789f5416b8b2a4ed99d4191c43609a9a35ffd0c417b0d407b6bf57aa213",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "4688ad0d9e1318197ef3c9adc590a35d16b6bad4031a27bf82432fe1d4216b59",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 220,
+          "width": 760,
+          "height": 500
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1440x900-B12-profiles-delete-confirm.png",
+        "sha256": "409937d763d54f60bb3a2ffb3cdfed486ebabc7e29c003970a8df468a683b55e",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1440x900-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "05edd247ee7b8a0db9b554483b3315838ed20fcb0a511974a3519d76d0af7b8b",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 166.25,
+          "width": 760,
+          "height": 571.5,
+          "right": 1366.5,
+          "bottom": 737.75
+        },
+        "bodyRect": {
+          "x": 607.5,
+          "y": 237.25,
+          "width": 758,
+          "height": 432.5,
+          "right": 1365.5,
+          "bottom": 669.75
+        },
+        "detailRect": {
+          "x": 885.5,
+          "y": 312.75,
+          "width": 458,
+          "height": 343,
+          "right": 1343.5,
+          "bottom": 655.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 629.5,
+            "y": 367.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 869.5,
+            "bottom": 417.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 629.5,
+              "y": 255.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1343.5,
+              "bottom": 274.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 885.5,
+              "y": 403.75,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 429.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 985.5,
+              "y": 403.75,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 429.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1054.5,
+              "y": 403.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 429.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1205.5,
+              "y": 437.75,
+              "width": 68,
+              "height": 26,
+              "right": 1273.5,
+              "bottom": 463.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1281.5,
+              "y": 437.75,
+              "width": 44,
+              "height": 26,
+              "right": 1325.5,
+              "bottom": 463.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 71.5,
+        "dialogTop": -53.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 11,
+      "key": "dark-rw900-win1440x900|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-profiles-clone.png",
+        "sha256": "106e1b6720f6d1b04ac3fe40008a11909de4d7b7f85b37544c2e6c6851cff62d",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "c4fb762c1ebc9fce9fcde10423214a1ddc78f0fda2ffbb9a465cf0d2b659d055",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 236,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1440x900-B12-profiles-clone.png",
+        "sha256": "0f57ec142a773ddec6d4fecacf7d031c5d4aa24333447949820053e94ac97c68",
+        "dimensions": [
+          1440,
+          900
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1440x900-B12-profiles-clone.json",
+        "metadataSHA256": "092f20d0648a5e8a65534dda5e7b2f7d5cea91da7d1d542a1a6208b46f0429f9",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 606.5,
+          "y": 183.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1366.5,
+          "bottom": 720.75
+        },
+        "bodyRect": {
+          "x": 607.5,
+          "y": 254.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1365.5,
+          "bottom": 652.75
+        },
+        "detailRect": {
+          "x": 885.5,
+          "y": 329.75,
+          "width": 458,
+          "height": 309,
+          "right": 1343.5,
+          "bottom": 638.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 629.5,
+            "y": 384.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 869.5,
+            "bottom": 434.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 629.5,
+              "y": 272.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1343.5,
+              "bottom": 291.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 885.5,
+              "y": 420.75,
+              "width": 92,
+              "height": 26,
+              "right": 977.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 985.5,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1046.5,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1054.5,
+              "y": 420.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1226.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1234.765625,
+              "y": 420.75,
+              "width": 61,
+              "height": 26,
+              "right": 1295.765625,
+              "bottom": 446.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 12,
+      "key": "light-rw480-win1920x1080|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-profiles-independent.png",
+        "sha256": "02f0f86017b4b6cd48c111398f10d228d4f081bb780fab77ed4056e61563b196",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "12df92a5ae08bf5cb8ce46c5d52663e4a5e64aecbebb8223ba76fcdb5495992e",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 252.5,
+          "width": 447,
+          "height": 615
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1920x1080-B12-profiles-independent.png",
+        "sha256": "2d8708773be864abcadedf6ae0e6a80b31e183f8805099be150d69b0c394a8f1",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "810b9360f45d945e8ffe30b1cd7e8f744b38469a2274fade046225e29cb7dccd",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 196.75,
+          "width": 447,
+          "height": 690.5,
+          "right": 1900,
+          "bottom": 887.25
+        },
+        "bodyRect": {
+          "x": 1454,
+          "y": 285.75,
+          "width": 445,
+          "height": 533.5,
+          "right": 1899,
+          "bottom": 819.25
+        },
+        "detailRect": {
+          "x": 1732,
+          "y": 361.25,
+          "width": 145,
+          "height": 444,
+          "right": 1877,
+          "bottom": 805.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1476,
+            "y": 415.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1716,
+            "bottom": 466.25
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1476,
+              "y": 303.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1877,
+              "bottom": 323.25
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 473.25,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 499.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 507.25,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 533.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 541.25,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 579.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 587.25,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 613.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 75.5,
+        "dialogTop": -55.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行新1080P同样已有换行防溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 13,
+      "key": "light-rw480-win1920x1080|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "4523aaa490b0b88696e4c95d2f4a88ef88a26057b7497cc053be9538e9e76a00",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "89acf7d69d896581d888f88eedc5674e57082154e03802acdcb54ed9d6474810",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 222.5,
+          "width": 447,
+          "height": 675
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "a19701c7ecaf64618a0bea631c20bac9ace22d9ea013c51321da20a36c9f55a6",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "e79cf365c7fd4878c782fe4fbffea800be07d140635c2caadf118d460ecde5b1",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 165.75,
+          "width": 447,
+          "height": 752.5,
+          "right": 1900,
+          "bottom": 918.25
+        },
+        "bodyRect": {
+          "x": 1454,
+          "y": 254.75,
+          "width": 445,
+          "height": 595.5,
+          "right": 1899,
+          "bottom": 850.25
+        },
+        "detailRect": {
+          "x": 1732,
+          "y": 330.25,
+          "width": 145,
+          "height": 506,
+          "right": 1877,
+          "bottom": 836.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1476,
+            "y": 384.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1716,
+            "bottom": 435.25
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1476,
+              "y": 272.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1877,
+              "bottom": 292.25
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 442.25,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 468.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 476.25,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 502.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 510.25,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 548.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 618.25,
+              "width": 68,
+              "height": 26,
+              "right": 1800,
+              "bottom": 644.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1808,
+              "y": 618.25,
+              "width": 44,
+              "height": 26,
+              "right": 1852,
+              "bottom": 644.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 77.5,
+        "dialogTop": -56.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行新1080P同样已有换行防溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 14,
+      "key": "light-rw480-win1920x1080|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-profiles-clone.png",
+        "sha256": "0343d47f8f973319216641a49390994ebab54dde9ee042c0f386c0ddd4e07bda",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "e9cc813e30810b25c8a69d55f291d2454491ce7b26fe9d22108fd0392e2ae050",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 279,
+          "width": 447,
+          "height": 562
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1920x1080-B12-profiles-clone.png",
+        "sha256": "1e0f8133f861d279592a2a4fbd522107444662f9ad63edd93754cd09b8a2422f",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw480-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "8d92a2457fdb1d97952aeeb693c874f7b18c4cf7d99ab979749c8ce65c258637",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 207.25,
+          "width": 447,
+          "height": 669.5,
+          "right": 1900,
+          "bottom": 876.75
+        },
+        "bodyRect": {
+          "x": 1454,
+          "y": 296.25,
+          "width": 445,
+          "height": 512.5,
+          "right": 1899,
+          "bottom": 808.75
+        },
+        "detailRect": {
+          "x": 1732,
+          "y": 371.75,
+          "width": 145,
+          "height": 423,
+          "right": 1877,
+          "bottom": 794.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1476,
+            "y": 426.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1716,
+            "bottom": 476.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 1476,
+              "y": 314.25,
+              "width": 401,
+              "height": 19.5,
+              "right": 1877,
+              "bottom": 333.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 462.75,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 488.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 496.75,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 522.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 530.75,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 568.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 576.75,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 602.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 107.5,
+        "dialogTop": -71.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行新1080P同样已有换行防溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 15,
+      "key": "light-rw900-win1920x1080|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-profiles-independent.png",
+        "sha256": "e717851aadfe7e67f8c51cf92b650f28772bdd454ede850048cd01c5cf672da2",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "b75f456b24a1ad3d10b6837d10620e8510b52dd04463081ca0b9910aede2004d",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 326,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1920x1080-B12-profiles-independent.png",
+        "sha256": "857bb50554a2f5bd090fbbea17171ca562d65278b19d472436af31258afe2394",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "9000aa07c130eaecc9bed9cb6d1755e8323b4fbe409993929075c7c650bf6718",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 273.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1846.5,
+          "bottom": 810.75
+        },
+        "bodyRect": {
+          "x": 1087.5,
+          "y": 344.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1845.5,
+          "bottom": 742.75
+        },
+        "detailRect": {
+          "x": 1365.5,
+          "y": 419.75,
+          "width": 458,
+          "height": 309,
+          "right": 1823.5,
+          "bottom": 728.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1109.5,
+            "y": 474.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1349.5,
+            "bottom": 524.75
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1109.5,
+              "y": 362.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1823.5,
+              "bottom": 381.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1365.5,
+              "y": 510.75,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1465.5,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1534.5,
+              "y": 510.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1714.765625,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1775.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 16,
+      "key": "light-rw900-win1920x1080|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "48132968bfc8db04cc28f0a9eac1b6cacf7a90d75fb00e2674ec098ceaef2a0e",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "55d9a3f7d74de4d31f3da8c8a7f9351a1706148a2d11c857b61671e6554a2353",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 310,
+          "width": 760,
+          "height": 500
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "ce17a4bc68ed6425e12095a6ff415225210ef4c191e66427da0073ad330ca4da",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "2d83ddfa80a505bc67778fe24c1bda259aac543e4c1b74874ba733e21c5c009c",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 256.25,
+          "width": 760,
+          "height": 571.5,
+          "right": 1846.5,
+          "bottom": 827.75
+        },
+        "bodyRect": {
+          "x": 1087.5,
+          "y": 327.25,
+          "width": 758,
+          "height": 432.5,
+          "right": 1845.5,
+          "bottom": 759.75
+        },
+        "detailRect": {
+          "x": 1365.5,
+          "y": 402.75,
+          "width": 458,
+          "height": 343,
+          "right": 1823.5,
+          "bottom": 745.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1109.5,
+            "y": 457.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1349.5,
+            "bottom": 507.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1109.5,
+              "y": 345.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1823.5,
+              "bottom": 364.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1365.5,
+              "y": 493.75,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 519.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1465.5,
+              "y": 493.75,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 519.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1534.5,
+              "y": 493.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 519.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1685.5,
+              "y": 527.75,
+              "width": 68,
+              "height": 26,
+              "right": 1753.5,
+              "bottom": 553.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1761.5,
+              "y": 527.75,
+              "width": 44,
+              "height": 26,
+              "right": 1805.5,
+              "bottom": 553.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 71.5,
+        "dialogTop": -53.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 17,
+      "key": "light-rw900-win1920x1080|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-profiles-clone.png",
+        "sha256": "65f2449fd85c7c554f7629a9aa8fcefed3fb8642ec424172b27a94078dc1a0b5",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "a1e397965e38fcb96b20b448b2c3a5d942146a96990250f1b8b935f0c739971e",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 326,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1920x1080-B12-profiles-clone.png",
+        "sha256": "1359a1e08e74b61140e4dbc446dd3d08180bf6019c381c570af1959be6e66e4a",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-light-rw900-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "15008692b4f723e3090669f98a7eb8f4739d874735168b18465059006c619786",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 273.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1846.5,
+          "bottom": 810.75
+        },
+        "bodyRect": {
+          "x": 1087.5,
+          "y": 344.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1845.5,
+          "bottom": 742.75
+        },
+        "detailRect": {
+          "x": 1365.5,
+          "y": 419.75,
+          "width": 458,
+          "height": 309,
+          "right": 1823.5,
+          "bottom": 728.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1109.5,
+            "y": 474.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1349.5,
+            "bottom": 524.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 1109.5,
+              "y": 362.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1823.5,
+              "bottom": 381.75
+            },
+            "color": "rgb(112, 112, 112)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1365.5,
+              "y": 510.75,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1465.5,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1534.5,
+              "y": 510.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1714.765625,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1775.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(41, 41, 41)",
+            "borderColor": "rgb(233, 233, 233)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 18,
+      "key": "dark-rw480-win1920x1080|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-profiles-independent.png",
+        "sha256": "92f2fdf40bd96ce04c4c2988f40f2820e171f58872e03a51814bec18cfdc819b",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "77b5b1aa65274c13e36a3480b6c9d2ab853aa1df30f62ec9d1def3379ee1ad34",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 252.5,
+          "width": 447,
+          "height": 615
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1920x1080-B12-profiles-independent.png",
+        "sha256": "db26f3ab680663b86be3c6ac21b1c19f61c3f192cfa1372cce6e8ccbf48d2a57",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "c4fa24069453e048a0553847126d20c42202394a6df2bca126dc8b4e0139c73b",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 196.75,
+          "width": 447,
+          "height": 690.5,
+          "right": 1900,
+          "bottom": 887.25
+        },
+        "bodyRect": {
+          "x": 1454,
+          "y": 285.75,
+          "width": 445,
+          "height": 533.5,
+          "right": 1899,
+          "bottom": 819.25
+        },
+        "detailRect": {
+          "x": 1732,
+          "y": 361.25,
+          "width": 145,
+          "height": 444,
+          "right": 1877,
+          "bottom": 805.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1476,
+            "y": 415.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1716,
+            "bottom": 466.25
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1476,
+              "y": 303.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1877,
+              "bottom": 323.25
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 473.25,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 499.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 507.25,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 533.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 541.25,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 579.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 587.25,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 613.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 75.5,
+        "dialogTop": -55.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行新1080P同样已有换行防溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 19,
+      "key": "dark-rw480-win1920x1080|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "b95a7f4f1e676b6ceb108f4761ddb8aef44b2c64fc6088115a6a9a297fbcb34c",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "7bc070f6e94ee7f87874b912872d27f6cc5caa51ad2d6a27cbb360a00228fe4b",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 222.5,
+          "width": 447,
+          "height": 675
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "c132771b62d2e12a7c1a5a615f3fb330bbee499827e45bc68e4abd82c418a66f",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "13c9a0807c88fe1d06ba58adfbbcf87398c9329e18a7e7f690abc6d76362561b",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 165.75,
+          "width": 447,
+          "height": 752.5,
+          "right": 1900,
+          "bottom": 918.25
+        },
+        "bodyRect": {
+          "x": 1454,
+          "y": 254.75,
+          "width": 445,
+          "height": 595.5,
+          "right": 1899,
+          "bottom": 850.25
+        },
+        "detailRect": {
+          "x": 1732,
+          "y": 330.25,
+          "width": 145,
+          "height": 506,
+          "right": 1877,
+          "bottom": 836.25
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1476,
+            "y": 384.75,
+            "width": 240,
+            "height": 50.5,
+            "right": 1716,
+            "bottom": 435.25
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1476,
+              "y": 272.75,
+              "width": 401,
+              "height": 19.5,
+              "right": 1877,
+              "bottom": 292.25
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 442.25,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 468.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 476.25,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 502.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 510.25,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 548.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 618.25,
+              "width": 68,
+              "height": 26,
+              "right": 1800,
+              "bottom": 644.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1808,
+              "y": 618.25,
+              "width": 44,
+              "height": 26,
+              "right": 1852,
+              "bottom": 644.25
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 77.5,
+        "dialogTop": -56.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行新1080P同样已有换行防溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 20,
+      "key": "dark-rw480-win1920x1080|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-profiles-clone.png",
+        "sha256": "75def95c1fa3e1ec26a3e99c15ad74d9f763dc1d15a42a9601198bb41233f71b",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "84c6123e2efaca575c51f45a1305b8cb6f48e5eb373fb41c331f19073ad567c0",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 279,
+          "width": 447,
+          "height": 562
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1920x1080-B12-profiles-clone.png",
+        "sha256": "f50c968523ec686409f210129dcb4dfddd7f2d4387cf2d54ada16fb048f45088",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw480-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "cdfc05074259672c70404e4f921c1a4aa7c261160eb95398fb8f5c736413c5cb",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1453,
+          "y": 207.25,
+          "width": 447,
+          "height": 669.5,
+          "right": 1900,
+          "bottom": 876.75
+        },
+        "bodyRect": {
+          "x": 1454,
+          "y": 296.25,
+          "width": 445,
+          "height": 512.5,
+          "right": 1899,
+          "bottom": 808.75
+        },
+        "detailRect": {
+          "x": 1732,
+          "y": 371.75,
+          "width": 145,
+          "height": 423,
+          "right": 1877,
+          "bottom": 794.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1476,
+            "y": 426.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1716,
+            "bottom": 476.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 1476,
+              "y": 314.25,
+              "width": 401,
+              "height": 19.5,
+              "right": 1877,
+              "bottom": 333.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 462.75,
+              "width": 92,
+              "height": 26,
+              "right": 1824,
+              "bottom": 488.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 496.75,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 522.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 530.75,
+              "width": 145,
+              "height": 38,
+              "right": 1877,
+              "bottom": 568.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 576.75,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 602.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 107.5,
+        "dialogTop": -71.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A导入按钮145×38、换行保在详情/正文/弹框内；其它action均26px高。本行新1080P同样已有换行防溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 21,
+      "key": "dark-rw900-win1920x1080|B12-profiles-independent",
+      "state": "B12-profiles-independent",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-profiles-independent.png",
+        "sha256": "8b17f168dfb420fa0715b6e201a887d055e779d55178a5c57ccf52e6a023ddb8",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "03127c29348d3c748f5da0281bbc90225bfe795ec8e596d8472ece121999c3e4",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 326,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1920x1080-B12-profiles-independent.png",
+        "sha256": "93c7aba7d72db9552d7a62876f58dab1d92f26f817254bcb0803a1086d1c794b",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1920x1080-B12-profiles-independent.json",
+        "metadataSHA256": "75bd5cc0db34d89fa59fcbd7b8c032c523cbb91df19c8892d062cd79188d6907",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 273.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1846.5,
+          "bottom": 810.75
+        },
+        "bodyRect": {
+          "x": 1087.5,
+          "y": 344.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1845.5,
+          "bottom": 742.75
+        },
+        "detailRect": {
+          "x": 1365.5,
+          "y": 419.75,
+          "width": 458,
+          "height": 309,
+          "right": 1823.5,
+          "bottom": 728.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1109.5,
+            "y": 474.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1349.5,
+            "bottom": 524.75
+          }
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": "option",
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1109.5,
+              "y": 362.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1823.5,
+              "bottom": 381.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1365.5,
+              "y": 510.75,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1465.5,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1534.5,
+              "y": 510.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1714.765625,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1775.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 22,
+      "key": "dark-rw900-win1920x1080|B12-profiles-delete-confirm",
+      "state": "B12-profiles-delete-confirm",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "2a7bf23ca17b19c4f862f50d4560f9439e05b587c2ce1487fc411412c96034c7",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "bf0ad038bab6f65404aa01f740c8900093759b97be04c634bdbd1cfedb7c1e33",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 310,
+          "width": 760,
+          "height": 500
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "检查多平台安装包 独立登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1920x1080-B12-profiles-delete-confirm.png",
+        "sha256": "ab0e2b537d3f1b432d9995ddd58e469f4ac0de930d2339f125f4835912990f7f",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1920x1080-B12-profiles-delete-confirm.json",
+        "metadataSHA256": "0d09a31b37bc26c092ffff9d29c3e25645af1934f176d0aaf24440247e00b361",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 256.25,
+          "width": 760,
+          "height": 571.5,
+          "right": 1846.5,
+          "bottom": 827.75
+        },
+        "bodyRect": {
+          "x": 1087.5,
+          "y": 327.25,
+          "width": 758,
+          "height": 432.5,
+          "right": 1845.5,
+          "bottom": 759.75
+        },
+        "detailRect": {
+          "x": 1365.5,
+          "y": 402.75,
+          "width": 458,
+          "height": 343,
+          "right": 1823.5,
+          "bottom": 745.75
+        },
+        "selectedProfile": "检查多平台安装包 独立登录态",
+        "selectedOption": {
+          "label": "检查多平台安装包 独立登录态",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1109.5,
+            "y": 457.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1349.5,
+            "bottom": 507.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已新建独立登录态",
+            "rect": {
+              "x": 1109.5,
+              "y": 345.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1823.5,
+              "bottom": 364.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1365.5,
+              "y": 493.75,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 519.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1465.5,
+              "y": 493.75,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 519.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1534.5,
+              "y": 493.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 519.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "确认删除",
+            "disabled": false,
+            "rect": {
+              "x": 1685.5,
+              "y": 527.75,
+              "width": 68,
+              "height": 26,
+              "right": 1753.5,
+              "bottom": 553.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(192, 57, 43)",
+            "borderColor": "rgb(230, 176, 170)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "取消",
+            "disabled": false,
+            "rect": {
+              "x": 1761.5,
+              "y": 527.75,
+              "width": 44,
+              "height": 26,
+              "right": 1805.5,
+              "bottom": 553.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 71.5,
+        "dialogTop": -53.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "独立登录态/删除确认的选中对象与原P相同；删除确认红说明、确认/取消与原语义一致。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    },
+    {
+      "index": 23,
+      "key": "dark-rw900-win1920x1080|B12-profiles-clone",
+      "state": "B12-profiles-clone",
+      "originalImagesActuallyViewed": {
+        "P": true,
+        "A": true,
+        "method": "individual tools.view_image detail=original calls, paired index order0..23"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-profiles-clone.png",
+        "sha256": "8122b27e9d74278cc9563bd564c6cb958d9237f20b33e1f905499c49213a8090",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "635972f66d3449ef71f371faadd328baf0b46fab49b27733bbddbce78f544a0f",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 326,
+          "width": 760,
+          "height": 468
+        },
+        "activeElement": {
+          "tag": "BUTTON",
+          "role": null,
+          "label": null,
+          "focusVisible": false
+        },
+        "selectedProfileFromOriginalImage": "WillYou 项目登录态"
+      },
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1920x1080-B12-profiles-clone.png",
+        "sha256": "5dd9277dbc149fd15d30cc11c24767c1514e2f4c0a60247dc84224307439639e",
+        "dimensions": [
+          1920,
+          1080
+        ],
+        "metadataPath": "/private/tmp/willyou-m12-t145-App046-profiles-A-039/A-dark-rw900-win1920x1080-B12-profiles-clone.json",
+        "metadataSHA256": "42b87e215d6f07677719ccd909d05087c67b9a901276b21fbad72f400e5d3ace",
+        "dpr": 1,
+        "dialogRect": {
+          "x": 1086.5,
+          "y": 273.25,
+          "width": 760,
+          "height": 537.5,
+          "right": 1846.5,
+          "bottom": 810.75
+        },
+        "bodyRect": {
+          "x": 1087.5,
+          "y": 344.25,
+          "width": 758,
+          "height": 398.5,
+          "right": 1845.5,
+          "bottom": 742.75
+        },
+        "detailRect": {
+          "x": 1365.5,
+          "y": 419.75,
+          "width": 458,
+          "height": 309,
+          "right": 1823.5,
+          "bottom": 728.75
+        },
+        "selectedProfile": "项目登录态（副本）",
+        "selectedOption": {
+          "label": "项目登录态（副本）",
+          "scope": "任务独立",
+          "rect": {
+            "x": 1109.5,
+            "y": 474.25,
+            "width": 240,
+            "height": 50.5,
+            "right": 1349.5,
+            "bottom": 524.75
+          }
+        },
+        "activeElement": {
+          "tag": "BODY",
+          "role": null,
+          "label": null
+        },
+        "statuses": [
+          {
+            "text": "已克隆登录态",
+            "rect": {
+              "x": 1109.5,
+              "y": 362.25,
+              "width": 714,
+              "height": 19.5,
+              "right": 1823.5,
+              "bottom": 381.75
+            },
+            "color": "rgb(204, 204, 204)",
+            "fontSize": "13px"
+          }
+        ],
+        "actions": [
+          {
+            "text": "用于当前页面",
+            "disabled": false,
+            "rect": {
+              "x": 1365.5,
+              "y": 510.75,
+              "width": 92,
+              "height": 26,
+              "right": 1457.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "克隆",
+            "disabled": false,
+            "rect": {
+              "x": 1465.5,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1526.5,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "导入 Chrome／Edge 登录态",
+            "disabled": false,
+            "rect": {
+              "x": 1534.5,
+              "y": 510.75,
+              "width": 172.265625,
+              "height": 26,
+              "right": 1706.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          },
+          {
+            "text": "删除",
+            "disabled": false,
+            "rect": {
+              "x": 1714.765625,
+              "y": 510.75,
+              "width": 61,
+              "height": 26,
+              "right": 1775.765625,
+              "bottom": 536.75
+            },
+            "fontSize": "12px",
+            "lineHeight": "18px",
+            "color": "rgb(241, 241, 241)",
+            "borderColor": "rgb(48, 48, 48)",
+            "whiteSpace": "normal",
+            "overflowWrap": "anywhere",
+            "insideDetail": true,
+            "insideBody": true,
+            "insideDialog": true
+          }
+        ],
+        "horizontalOverflow": {
+          "dialog": 0,
+          "body": 0,
+          "detail": 0
+        },
+        "modalWithinOwnPane": true,
+        "terminalUncovered": true
+      },
+      "actualRecordedDelta": {
+        "dialogHeight": 69.5,
+        "dialogTop": -52.75,
+        "dialogCenterY": -18.0,
+        "dialogWidth": 0,
+        "sharedRecordedDialogStyleDifferences": {}
+      },
+      "confirmedDifferenceIDs": [
+        "PROFILE-NOTICE-IN-DIALOG-LAYOUT",
+        "CLONE-AUTOMATIC-NEW-SELECTION"
+      ],
+      "focusBoundary": "P metadata records focusVisible false; A metadata stores activeElement but not focusVisible. Clone is P button vs A BODY after async busy disable. This is a mouse-driven state, not keyboard focus acceptance.",
+      "notes": [
+        "已逐对查看本行P/A原PNG(detail=original)，图中文字/边界实际可见；未修改、缩放重存或合成原图。",
+        "App顶部body成功提示与P底部status位置不同，弹框高度和内部空白显著不同。",
+        "弹框外层已记录共同computed样式逐字段相同；这不覆盖未记录的P子控件computed。",
+        "P仍选当前项目默认项，使用按钮禁用、无删除；A自动选新副本，使用按钮启用且显示删除。生产mutate(selectNew=true)所致；driver没有额外点击副本。",
+        "A actions均26px高，使用/克隆/导入/删除在同一行；删除确认时确认/取消在完整红说明右侧，无横溢出。"
+      ],
+      "visualParityAccepted": false
+    }
+  ],
+  "resources": {
+    "NativeUI": 0,
+    "Node": 0,
+    "readOnlyImageFilesAndPythonProjectionOnly": true,
+    "released": true
+  }
+}

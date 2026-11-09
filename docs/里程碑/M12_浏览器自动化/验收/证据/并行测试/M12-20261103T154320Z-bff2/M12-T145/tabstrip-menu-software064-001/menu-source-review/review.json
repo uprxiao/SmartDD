@@ -1,0 +1,165 @@
+{
+  "scope": "一次限定源码核对；未运行App/Node/Native/OS，未修改生产、原型或公共账；不新增测试结论",
+  "createdAt": "2026-11-09T04:30:41.680651+00:00",
+  "sources": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/src/BrowserWorkspace.jsx",
+      "sha256": "363854e9d8cf658da0c247f7de5a5d744ee8d9395adb86770b5a79697eb2f536",
+      "readScope": "imports/props/shortcuts/reload/menu/download入口"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/src/App.jsx",
+      "sha256": "c1d7a57b4c8680cfe5e37f634b50e8eecdc5f5864df8f5e40eac3ef1432fb183",
+      "readScope": "browser imports/state/persistence/keyboard/task handlers/FileWorkspace-BrowserWorkspace binding"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/src/browser-prototype-model.mjs",
+      "sha256": "9d5887f3a587f75f02d4b931b732ecc5d4355d0952a5dc36215a6542784454c6",
+      "readScope": "tab creation/navigation/open/close/serialization/restore; named callback scoped absence"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "sha256": "26f128b67b04c3e69c7959174c4abe80b3d8dba66181463376e3a364b6268d33",
+      "readScope": "R01.2 175–181/R01.7 220–227/R01.9 238–242"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-import-source-success-source-063/source/src/renderer/features/browser/workspace.tsx",
+      "sha256": "840c038d04033438b8a9f0323757fd0c0da73af7a5b1b0c570f41e44c9f4d6d5",
+      "readScope": "action88–91/shortcut100–103/keyboard164–167/toolbar-menu169–176"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R01.2",
+      "lines": [
+        175,
+        180
+      ],
+      "facts": [
+        "强制刷新（绕过缓存）是现有需求",
+        "加载中刷新变停止，加载失败可重试",
+        "⇧⌘T重开最近关闭标签；焦点不在网页时不改变App菜单行为"
+      ]
+    },
+    {
+      "id": "R01.7",
+      "lines": [
+        220,
+        227
+      ],
+      "facts": [
+        "有记录才显示工具栏下载入口",
+        "新下载/再次打开使用覆盖网页的浮层",
+        "未要求独立下载页面；保留既有取消/打开/显示/移除操作"
+      ]
+    },
+    {
+      "id": "R01.9",
+      "lines": [
+        238,
+        242
+      ],
+      "facts": [
+        "任务网页恢复列表/顺序/地址/当前页",
+        "关闭标签可重开，最近10个",
+        "不得影响M9文件标签或终端"
+      ]
+    }
+  ],
+  "verifiedCurrentPrototype": [
+    {
+      "path": "prototypes/m6-codex/src/BrowserWorkspace.jsx",
+      "lines": [
+        31,
+        63,
+        68,
+        86,
+        119,
+        123,
+        239,
+        251
+      ],
+      "finding": "props无reopen/hard-reload；shortcut只F/L；reload是停止/普通重试共用动作；菜单两项均缺。无下载时toolbar隐藏，但menu246仍显示下载（0）。无active tab时86返回空态。"
+    },
+    {
+      "path": "prototypes/m6-codex/src/App.jsx",
+      "lines": [
+        18,
+        233,
+        243,
+        331,
+        333,
+        366,
+        371,
+        444
+      ],
+      "finding": "task级浏览器更新/新建/关闭已存在；444只传onChange等，没有reopen回调。closeWebTab直接提交model结果，最后标签关闭会隐藏webShown。已有全局快捷键仅此相关新建⇧⌘B，无reopen。"
+    },
+    {
+      "path": "prototypes/m6-codex/src/browser-prototype-model.mjs",
+      "lines": [
+        152,
+        189,
+        254,
+        270
+      ],
+      "finding": "create/open/close模型已存在；closeTab丢弃关闭记录，无最近关闭栈/重开函数。serialize/restore仅保存打开页。三个限定文件中hard-reload/reopen/closedTabs/onReopen/onHardReload逐字出现次数均0；不声称整个仓库均无实现。"
+    }
+  ],
+  "currentActualMenu": {
+    "path": "/private/tmp/willyou-m12-import-source-success-source-063/source/src/renderer/features/browser/workspace.tsx",
+    "lines": [
+      88,
+      91,
+      101,
+      166,
+      172,
+      176
+    ],
+    "finding": "A063菜单真实调用browser.action hard-reload和store.reopen，下载menu及toolbar均仅有记录时显示；实际功能符合所核需求，不应为旧P删除这两项或增加空下载页。此项是冻结源码核对，非054新UI执行。"
+  },
+  "minimalPrototypeCorrection": [
+    {
+      "files": [
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:119",
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:244"
+      ],
+      "change": "保留toolbar reload停止/重试语义；增加明确hardReload演示handler并在菜单末尾补RotateCw14“强制刷新”。从loading状态调用也应发起新的演示加载，不能直接复用会走stop分支的reload()；不新增历史项/空标签。原型只模拟加载，不把650ms计时冒称真实绕缓存。"
+    },
+    {
+      "files": [
+        "prototypes/m6-codex/src/browser-prototype-model.mjs:173",
+        "prototypes/m6-codex/src/browser-prototype-model.mjs:182",
+        "prototypes/m6-codex/src/App.jsx:367",
+        "prototypes/m6-codex/src/App.jsx:444",
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:31",
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:250"
+      ],
+      "change": "现有回调不存在，需最小实现task级最近关闭10条（URL/profile等可恢复信息）、close入栈及reopen消费最新一条。经App同一updateTaskBrowser更新并恢复webShown/fileWorkspace可见，传onReopen给子菜单“重开关闭的标签”；无关闭记录安全无动作，不能openWebTab默认空白页冒充reopen。新建页身份，不恢复agent/运行中瞬态；不改M9/终端。"
+    },
+    {
+      "files": [
+        "prototypes/m6-codex/src/App.jsx:331",
+        "prototypes/m6-codex/src/App.jsx:370",
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:63"
+      ],
+      "change": "菜单和⇧⌘T共用同一reopen handler；最后一个网页关闭后仍须有父层可达的任务浏览器重开路径，不能只绑在已隐藏/无tab的子层。保持网页作用域/focus边界，不全局吞掉终端或文件快捷键；本建议不扩展为全面快捷键重构。"
+    },
+    {
+      "files": [
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:239",
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:246"
+      ],
+      "change": "将menu下载入口同toolbar/A一样限制downloads.length>0；有记录仍打开既有DownloadBar浮层。保留新下载自动打开、原6秒/外点/Esc等现有行为；不建空下载页面、不造下载记录。"
+    }
+  ],
+  "nonRequiredExpansion": "最近关闭栈跨重启持久化未由R01.9本条明确要求；本次不建议扩大该范围。任何原型改动由Root实施/验证，本报告未修改实现。",
+  "resources": {
+    "app": 0,
+    "native": 0,
+    "ui": 0,
+    "http": 0,
+    "pty": 0,
+    "backgroundProcess": 0
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-04T18:44:19.588398+00:00",
+  "case": "M12-T005",
+  "layer": "U",
+  "status": "passed-candidate-pending-root",
+  "classification": null,
+  "executed": 57,
+  "passed": 57,
+  "failed": 0,
+  "exactOriginalExamples": {
+    "total": 15,
+    "passed": 15
+  },
+  "failures": [],
+  "referenceDifferences": [
+    {
+      "id": "E01",
+      "input": "",
+      "contract": "about:blank",
+      "reference": "data:text/html,",
+      "classification": "ExplicitM12newtabmarker"
+    },
+    {
+      "id": "E02",
+      "input": "about:blank",
+      "contract": "about:blank",
+      "reference": "data:text/html,",
+      "classification": "ExplicitM12newtabmarker"
+    },
+    {
+      "id": "E07",
+      "input": "a.localhost",
+      "contract": "http://a.localhost/",
+      "reference": "https://a.localhost/",
+      "classification": "ExplicitR01.1localhostHTTP"
+    },
+    {
+      "id": "E15",
+      "input": "http://[bad",
+      "contract": null,
+      "reference": "https://http//[bad",
+      "classification": "R01.1invalidinputcontract-over-reference-fallback"
+    },
+    {
+      "id": "R13",
+      "input": "127.999.0.1",
+      "contract": null,
+      "reference": "https://www.bing.com/search?q=127.999.0.1",
+      "classification": "R01.1invalidinputcontract-over-reference-fallback"
+    },
+    {
+      "id": "R14",
+      "input": "bad\u0000input",
+      "contract": null,
+      "reference": "https://www.bing.com/search?q=bad%00input",
+      "classification": "R01.1invalidinputcontract-over-reference-fallback"
+    }
+  ],
+  "source": "source012 87578f68362fe65d96d6c35649df5d7d5a991e7bd7eca2af6ad43be40cb240e3",
+  "formalCaseIncrement": 0,
+  "boundary": "Pure normalization function and fixed reference comparisons only; no App navigation/renderer invalidmessage/settings persistence/URLloading/filesystemaccess claimed."
+}

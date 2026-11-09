@@ -1,0 +1,5 @@
+# Current App031 PDF/media actual A safe delivery
+
+F14cont005 original8/8 and media004 original15samples/9checks actualgreen only. Originalredattempts remain in the separatehistoricalpack and originalroots. Rawsafe retains every originaljudge field and fullpassivePDFgeometry/events, excluding dailycredentials/DB/fullNative/runtime/debugendpoints. All30 actualPNG bytes are unchanged:3F14UI +15mediaUI +12compositorPNGs. Compositorclip is1x1CSS; actual2x2PNGdimensionsarepreserved, notconverted.
+
+Recoverableprivate testsource/fixturesoracles and fullinputhash references included; noApp/nativebinary/dependencytree or encodedfixtureduplicate copied. Appnormal0/null/signals[] separate from ownawakehelperstop/reaping. F15publicaccepted23states/314ownedfiles+1log zerohits are referenced, notrerun. ParentT130remains partial;0formalincrement. Onlyfilesread/written for thisprojection, noNative/OS/App execution. Offlineassemblydimensionaudit correction is retained separately, without alteringoriginalraw/judge/images.

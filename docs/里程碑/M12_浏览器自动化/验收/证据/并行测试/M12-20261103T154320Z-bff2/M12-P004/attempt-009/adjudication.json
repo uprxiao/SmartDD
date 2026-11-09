@@ -1,0 +1,53 @@
+{
+  "at": "2026-11-03T20:10:30.729Z",
+  "sourceSha256": "97d8e213b7c7494b412056f330ff1d6cde67ddeb452e65ab94982fca65c75be7",
+  "caseResults": {
+    "M12-T066": {
+      "checks": {
+        "cleanup": true,
+        "allConditions": true,
+        "combinedNegative": true,
+        "readScriptRejected": true,
+        "scriptExecuted": true,
+        "oneNativeInvocation": true,
+        "unknown": true,
+        "receipt": true,
+        "persistedOnce": true
+      },
+      "status": "passed"
+    },
+    "M12-T070": {
+      "checks": {
+        "cleanup": true,
+        "fileHash": true,
+        "har12": true,
+        "fiveRequests": true,
+        "pageActuallyReceived": true
+      },
+      "status": "passed"
+    },
+    "M12-T072": {
+      "checks": {
+        "cleanup": true,
+        "sequence": true,
+        "reloadRequest": true,
+        "provisionalReload": false,
+        "localFile": true,
+        "invalidRejected": true
+      },
+      "scope": "reload during an in-progress navigation must keep the provisional target, not reload the previous committed page",
+      "status": "failed"
+    },
+    "M12-T057": {
+      "checks": {
+        "partial": true
+      },
+      "missing": [
+        "remaining exact-source eval inputs, navigation during Promise and cancellation of an observed running loop"
+      ],
+      "scope": "first two values completed; double-quoted string passed as a field was JSON-decoded by the M11 CLI before eval; use --stdin expression for literal source; original driver error retained",
+      "status": "passed"
+    }
+  },
+  "runFailure": "Error: Command failed browser eval --expression: {\"effectState\":\"unknown\",\"code\":\"BROWSER_EVAL_ERROR\",\"layer\":\"provider\",\"message\":\"Uncaught\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false}\n    at assert (file:///Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/s3-command-tail.mjs:49:58)\n    at success (file:///Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/s3-command-tail.mjs:50:67)\n    at async file:///Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/s3-command-tail.mjs:148:168"
+}

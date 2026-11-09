@@ -1,0 +1,113 @@
+{
+  "at": "2026-11-07T19:39:51.220000+00:00",
+  "case": "M12-T146 native visibly readable full tooltip supplement only",
+  "status": "deferred-tool-identity-limit-no-new-retry",
+  "decision": "Current metadata describes the exact capability already attempted. No evidence that the launch-time identity limitation has changed; do not retry solely with App036/newPID. No new driver/call.",
+  "priorActual": {
+    "request": {
+      "path": "/private/tmp/willyou-m12-t146-App031-native-tooltip-002/native-observation-request.json",
+      "sha256": "495f32773f0239a30f306c7a65d15a8b54678bed3bdda2001eba8f4f0ab04be9"
+    },
+    "pid": 63676,
+    "cgWindowId": 66585,
+    "mediaSourceId": "window:66585:0",
+    "toolResult": {
+      "path": "/private/tmp/willyou-m12-t146-App031-native-tooltip-002/rea-observation.original.json",
+      "sha256": "05baa0bd10726b19e90f8413366f9fb70e3d46de1e3aa9acb211080c61f4f3b2"
+    },
+    "response": {
+      "path": "/private/tmp/willyou-m12-t146-App031-native-tooltip-002/native-observation-response.json",
+      "sha256": "0ad38ba63701f51140daa773871020e1b1201a0fa6846974e890ff9076210485"
+    },
+    "errorCode": "capability_unavailable",
+    "reason": "process-identity-unavailable: Selected application does not expose a launch time; stable PID reuse checks are unavailable",
+    "notPermissionDenial": true,
+    "noScreenshotAcquired": true,
+    "normalExitAndIndependentClear": {
+      "raw": {
+        "path": "/private/tmp/willyou-m12-t146-App031-native-tooltip-002/raw.json",
+        "sha256": "80d61ff11db2a541b31c21504887dd9519c21b6fab903860b16a3014d7dfb3ca"
+      },
+      "cleanup": {
+        "path": "/private/tmp/willyou-m12-t146-App031-native-tooltip-002/cleanup.json",
+        "sha256": "eed85d04f2d16fbe97de33846ba2bc5ebf865998f2d4ceafbcda4b9bffbbcf13"
+      }
+    },
+    "originalJudge": {
+      "path": "/private/tmp/willyou-m12-t146-App031-native-tooltip-002/judgement.json",
+      "sha256": "6f85360342b8aeb485108e3d01de0e94baeb9c7e06cf0d442fc92204e6e635f3"
+    },
+    "originalResult": "5/6; geometry/address retained; actual native tooltip image still missing"
+  },
+  "currentMetadataInspectedWithoutCalling": {
+    "tool": "mcp__rea__observe_native_ui",
+    "args": {
+      "pid": "number",
+      "window_id": "number",
+      "accessibility": "optional boolean",
+      "screenshot": "optional boolean",
+      "max_nodes": "optional number"
+    },
+    "documentedScope": "Already-running exactPID+selectedwindow, activeMachO-bound, no launch/broad capture; OSpermission failure stops",
+    "remainingIdentityRequirement": "Returned window schema still includes executable/launch_time/pid/title/window_id. Metadata alone does not prove a provider implementation/version change or removal of original launch-time check.",
+    "openBinary": "mcp__rea__open_binary({path:absolute executable}) is artifact validation/binding, not App launch; not invoked now"
+  },
+  "windowIdRule": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/electron/electron.d.ts",
+    "sha256": "b49df464b8d90e2f2ba9b42f4a68d5c4fe655f92219f009ffcaf8bd2745627b9",
+    "lines": [
+      5534,
+      5535,
+      5537,
+      5538,
+      5540,
+      5542
+    ],
+    "exactMapping": "BrowserWindow.getMediaSourceId() = window:id:other_id; id is macOS CGWindowID. Parse positive safe integer from actual owned window. BrowserWindow.id is internal and not the capture window_id.",
+    "actualOldProducer": {
+      "path": "/private/tmp/willyou-m12-t146-App031-native-tooltip-002/run.mjs",
+      "sha256": "091348548b94d30c626777098effbdbee84b1a0ce7bc2895cc15c8904384f49f",
+      "lines": [
+        20,
+        21,
+        22,
+        23
+      ]
+    },
+    "scope": "Own PID/exe/private userData/unique main BrowserWindow identity, visible/focused; same onceactivation+guard; request180s; passive capture-only response never proves visible tooltip"
+  },
+  "futureMinimumOnlyIfNewDiagnosticEvidence": {
+    "condition": "Root confirms tool/provider identity behavior changed or another concrete supported cause resolved; a new PID/package alone is insufficient. New whole resource grant after S6 required.",
+    "method": "Reuse original002 exact owned window getMediaSourceId and single actual hover, bind current exact MachO/exeSHA, then at most one observe_native_ui(pid,currentCGWindowID,screenshot=true,accessibility=false). No getApp(path), duplicate instance, activation, broad screenshot or own OS capture. No call is scheduled by this file.",
+    "selectedWindowLimitation": "Only selected main-window screenshot is promised. A Cocoa tooltip may be a separate panel; whether included is unknown. Main screenshot without tooltip cannot pass. No native-window enumeration via this tool is documented; no speculative second strategy.",
+    "acceptance": "Root must directly review original native PNG showing full original title; DOMtitle/CSShover/AXHelp/capture-completed alone not enough. OriginalnoCapture/5of6 remain immutable."
+  },
+  "currentAppReferenceNotUsed": {
+    "build": {
+      "path": "/private/tmp/willyou-m12-title-viewer-App036-build-001/result.json",
+      "sha256": "76e4df7f5e3b1bd366a2c3cf7f312ae355bbfd3f5a97b65571b32720c8c80d71"
+    },
+    "app": "/private/tmp/willyou-m12-s2-package-036/mac-arm64/WillYou.app",
+    "pins": {
+      "app.asar": "0160af576332dade251b3a6c4135b4db946554c00230e6fd19f1b6f26c794edb",
+      "executable": "2b7bea8247f18f76cf33b3a9973ed8c4ceae4d41f79e6cf6619ade3e488a9e23"
+    },
+    "sourceManifestSHA256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e"
+  },
+  "executionCounts": {
+    "REA": 0,
+    "open_binary": 0,
+    "Node": 0,
+    "Native": 0,
+    "App": 0,
+    "OS": 0,
+    "HTTP": 0,
+    "compiler": 0
+  },
+  "newDriver": false,
+  "publicWrites": 0,
+  "formalIncrement": 0,
+  "wholeT146Passed": false,
+  "resourcesHeld": [],
+  "handoff": "File-only review complete; T146 remains deferred, no automatic tomorrow retry without new evidence."
+}

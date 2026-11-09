@@ -1,0 +1,120 @@
+{
+  "at": "2026-11-04T17:09:39.541Z",
+  "group": "M12-P070-P",
+  "layer": "P only",
+  "summaries": {
+    "main": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "component": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "infrastructure": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0
+    }
+  },
+  "checks": [
+    {
+      "id": "P-M01-main-existing-entries",
+      "part": "main",
+      "expected": "Existing M12 entry and all existing demo controls preserved; R01.11 new tab tools only Files, close returns original",
+      "status": "passed"
+    },
+    {
+      "id": "P-M02-alert",
+      "part": "main",
+      "expected": "Alert has no input/cancel, focus confirm, real accept closes; Escape also closes in dark",
+      "status": "passed"
+    },
+    {
+      "id": "P-M03-confirm",
+      "part": "main",
+      "expected": "Confirm actual accept/cancel/Escape outcomes and no text field",
+      "status": "passed"
+    },
+    {
+      "id": "P-M04-prompt-default",
+      "part": "main",
+      "expected": "Prompt default selected/focused and actual Enter submits exact default",
+      "status": "passed"
+    },
+    {
+      "id": "P-M05-empty-not-undefined",
+      "part": "main",
+      "expected": "Real input deletion submits empty string, no default/undefined substitution",
+      "status": "passed"
+    },
+    {
+      "id": "P-M06-unicode-and-cancel",
+      "part": "main",
+      "expected": "Chinese/emoji/quotes/backslash retained; explicit cancel/Escape never submits text",
+      "status": "passed"
+    },
+    {
+      "id": "P-M07-response-error-retains",
+      "part": "main",
+      "expected": "Failure leaves dialog/input intact, shows actual error, re-enables controls; cancel works",
+      "status": "passed"
+    },
+    {
+      "id": "P-M08-theme-and-pane-geometry",
+      "part": "main",
+      "expected": "Both real theme states have alert/confirm/prompt/error screenshots, scrim/dialog stay in browser pane",
+      "status": "passed"
+    },
+    {
+      "id": "P-M09-long-value-and-compact",
+      "part": "main",
+      "expected": "Real long text stays exact without expanding dialog; 1280x800 remains within browser pane",
+      "status": "passed"
+    },
+    {
+      "id": "P-M10-no-main-runtime-error",
+      "part": "main",
+      "expected": "Main built prototype has no uncaught runtime/console error",
+      "status": "passed"
+    },
+    {
+      "id": "P-C01-frozen-component-long-message",
+      "part": "component",
+      "expected": "Private real component long-message word wrap/scroll; no claim as main dist or App",
+      "status": "passed"
+    },
+    {
+      "id": "P-C02-compact-and-dark-error",
+      "part": "component",
+      "expected": "320 browser-pane component error/input remain accessible in light/dark with correct preserved value",
+      "status": "passed"
+    },
+    {
+      "id": "P-C03-busy-no-duplicate-close",
+      "part": "component",
+      "expected": "Declared synthetic pending callback disables input/actions, Escape keeps pending, real fixture release accepts once",
+      "status": "passed"
+    },
+    {
+      "id": "P-C04-no-component-runtime-error",
+      "part": "component",
+      "expected": "Private frozen component has no uncaught error",
+      "status": "passed"
+    },
+    {
+      "id": "P-INFRA01-normal-cleanup",
+      "part": "infrastructure",
+      "expected": "Actual browser closes normally0/null with no fallback; own static server closed and no cleanup errors",
+      "status": "passed"
+    }
+  ],
+  "status": "P-observed-checks-green-pending-root-contract-and-visibility-review",
+  "formalCaseIncrement": 0,
+  "evidenceLimits": [
+    "Compact error text exists in actual dialog DOM and body has scroll range; screenshots show the actual input and footer, but do not directly show error below current scroll position. No claim that error visibility after further scroll was executed."
+  ],
+  "boundary": "Main dist real demo controls and private frozen real component fixture are separate P results. No actual App/native CLI/real webpage semantics/AgentR/system/x64 or exact Codex browser visual claim. Component failure does not rewrite completed main P results."
+}

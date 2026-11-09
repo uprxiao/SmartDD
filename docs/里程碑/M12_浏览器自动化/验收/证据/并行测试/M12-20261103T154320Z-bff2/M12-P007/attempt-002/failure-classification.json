@@ -1,0 +1,29 @@
+{
+  "caseId": "M12-T065",
+  "status": "failed",
+  "failures": [
+    {
+      "id": "text-fill",
+      "category": "product-kernel-contenteditable-fill-does-not-replace",
+      "cliReturnsSuccess": true,
+      "evidence": "text-fill.case.raw.json",
+      "nativeStdout": "text-fill-helper-native.raw.json"
+    },
+    {
+      "id": "literal-text-name",
+      "category": "product-kernel-contenteditable-fill-does-not-replace",
+      "cliReturnsSuccess": true,
+      "evidence": "literal-text-name.case.raw.json",
+      "nativeStdout": "literal-text-name-helper-native.raw.json"
+    },
+    {
+      "id": "literal-text-exact",
+      "category": "product-kernel-contenteditable-fill-does-not-replace",
+      "cliReturnsSuccess": true,
+      "evidence": "literal-text-exact.case.raw.json",
+      "nativeStdout": "literal-text-exact-helper-native.raw.json"
+    }
+  ],
+  "rootCauseScope": "Native fill inserts requested text before old contenteditable content; site input events and separate actual CLI readback agree. No expectation change or retry.",
+  "fixtureFailureFromAttempt001": "placeholder-click corrected to native text input in this attempt; now passes"
+}

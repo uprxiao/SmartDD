@@ -1,0 +1,388 @@
+{
+  "at": "2026-11-04T19:23:02.824Z",
+  "group": "M12-P074",
+  "attempt": "002",
+  "status": "static-argv-schemas-green",
+  "scope": "All browser argv array expressions in actual driver extracted through TypeScript AST, dynamic values replaced only with explicit representative strings. Static source/bundle input validation and reviewed native CLI JSON-fragment parse semantics; does not claim actual native parser execution.",
+  "nativeParser": {
+    "path": "/private/tmp/willyou-m12-p072-source-013/source/native/applications/cli.mm",
+    "sha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861",
+    "lines": "48-56"
+  },
+  "source": {
+    "path": "/private/tmp/willyou-m12-p072-source-013/source/src/shared/browser-commands.generated.json",
+    "sha256": "aa8a3f4eca4e0dde1d23e949d07159d199149adb3aed406ca71116a0e9fe41b7"
+  },
+  "bundle": {
+    "path": "/private/tmp/willyou-m12-p074-cli-contract-002/resources/capability-bundles/apps/browser/0.1.0/542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658/manifest.json",
+    "sha256": "95cf8ff581036a23f7834937f9bab8380c6ceff8a4975de12a00e8af46a94b83"
+  },
+  "schemaInputs": [
+    {
+      "id": "browser.nav.snapshot",
+      "bundleSchema": "schemas/capabilities/browser.nav.snapshot.input.json",
+      "sha256": "e9d58f89072e300e848d344d85a99f744c03856c4cf9eafb6084868297707668"
+    },
+    {
+      "id": "browser.tab.create",
+      "bundleSchema": "schemas/capabilities/browser.tab.create.input.json",
+      "sha256": "8fb0480c6ff9761ca6028082542d6036c9009093d268389bfd96375b1718b10e"
+    },
+    {
+      "id": "browser.tab.list",
+      "bundleSchema": "schemas/capabilities/browser.tab.list.input.json",
+      "sha256": "592617c5a83555a3a95903e62987da53005e1415066d19eba9f6ca71d06df900"
+    },
+    {
+      "id": "browser.tab.switch",
+      "bundleSchema": "schemas/capabilities/browser.tab.switch.input.json",
+      "sha256": "36262fca52f4ace789173dfe4edd7c61d18a1348191f6cfc436ef5a3dc775445"
+    },
+    {
+      "id": "browser.interact.eval",
+      "bundleSchema": "schemas/capabilities/browser.interact.eval.input.json",
+      "sha256": "8b781376e0703f9006b72f2ddcb27d17271a7a2b3af89edea2d704544e8e3ad4"
+    },
+    {
+      "id": "browser.tab.close",
+      "bundleSchema": "schemas/capabilities/browser.tab.close.input.json",
+      "sha256": "90ea2b20f1a3074cde46a9eca893e9d51158a91c9c8556bf86ebaaf139297853"
+    },
+    {
+      "id": "browser.interact.click",
+      "bundleSchema": "schemas/capabilities/browser.interact.click.input.json",
+      "sha256": "0e5d44a1fb723e95ffb20051529216aa0f2410795db5f311ee4b0e866a60b6ca"
+    },
+    {
+      "id": "browser.interact.find",
+      "bundleSchema": "schemas/capabilities/browser.interact.find.input.json",
+      "sha256": "2c084dea1a6a1a781e9a22a8953ed0979c022837bf8553f04c79828ab8b5064d"
+    },
+    {
+      "id": "browser.operation.get",
+      "bundleSchema": "schemas/capabilities/browser.operation.get.input.json",
+      "sha256": "48dbc8551311ce514dfb2da148ea9940d2fadd82425cd237c30d05851e935986"
+    }
+  ],
+  "sampleCount": 19,
+  "uniqueCommands": [
+    "browser.interact.click",
+    "browser.interact.eval",
+    "browser.interact.find",
+    "browser.nav.snapshot",
+    "browser.operation.get",
+    "browser.tab.close",
+    "browser.tab.create",
+    "browser.tab.list",
+    "browser.tab.switch"
+  ],
+  "samples": [
+    {
+      "line": 13,
+      "expression": "['browser','snapshot']",
+      "argv": [
+        "browser",
+        "snapshot"
+      ],
+      "commandId": "browser.nav.snapshot",
+      "arguments": {},
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','tab','create','--url',cfg.origin+'/page/a']",
+      "argv": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:12345/page/a"
+      ],
+      "commandId": "browser.tab.create",
+      "arguments": {
+        "url": "http://127.0.0.1:12345/page/a"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','tab','create','--url',cfg.origin+'/page/b']",
+      "argv": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:12345/page/b"
+      ],
+      "commandId": "browser.tab.create",
+      "arguments": {
+        "url": "http://127.0.0.1:12345/page/b"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','tab','list']",
+      "argv": [
+        "browser",
+        "tab",
+        "list"
+      ],
+      "commandId": "browser.tab.list",
+      "arguments": {},
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','tab','switch','--page',r.pageB]",
+      "argv": [
+        "browser",
+        "tab",
+        "switch",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.tab.switch",
+      "arguments": {
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','tab','list']",
+      "argv": [
+        "browser",
+        "tab",
+        "list"
+      ],
+      "commandId": "browser.tab.list",
+      "arguments": {},
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','snapshot']",
+      "argv": [
+        "browser",
+        "snapshot"
+      ],
+      "commandId": "browser.nav.snapshot",
+      "arguments": {},
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','snapshot','--page',r.pageA]",
+      "argv": [
+        "browser",
+        "snapshot",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.nav.snapshot",
+      "arguments": {
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','snapshot','--page',r.missingPageId]",
+      "argv": [
+        "browser",
+        "snapshot",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.nav.snapshot",
+      "arguments": {
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','eval','--expression',\"(()=>{window.open(\"+JSON.stringify(cfg.origin+'/page/popup')+\",'p074-popup');return 'popup-prepared';})()\",'--page',r.pageA]",
+      "argv": [
+        "browser",
+        "eval",
+        "--expression",
+        "(()=>{window.open('http://127.0.0.1:12345/page/popup','p074-popup');return 'popup-prepared';})()",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.interact.eval",
+      "arguments": {
+        "expression": "(()=>{window.open('http://127.0.0.1:12345/page/popup','p074-popup');return 'popup-prepared';})()",
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','tab','list']",
+      "argv": [
+        "browser",
+        "tab",
+        "list"
+      ],
+      "commandId": "browser.tab.list",
+      "arguments": {},
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 14,
+      "expression": "['browser','tab','close','--page',r.popupId]",
+      "argv": [
+        "browser",
+        "tab",
+        "close",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.tab.close",
+      "arguments": {
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 15,
+      "expression": "['browser','snapshot','--page',r.pageA]",
+      "argv": [
+        "browser",
+        "snapshot",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.nav.snapshot",
+      "arguments": {
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 15,
+      "expression": "['browser','click','--element',ref(r.precheckSnapshot),'--page',r.pageA]",
+      "argv": [
+        "browser",
+        "click",
+        "--element",
+        "@e1",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.interact.click",
+      "arguments": {
+        "element": "@e1",
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 16,
+      "expression": "['browser','snapshot','--page',r.pageA]",
+      "argv": [
+        "browser",
+        "snapshot",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.nav.snapshot",
+      "arguments": {
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 16,
+      "expression": "['browser','click','--element',ref(snap),'--page',r.pageA]",
+      "argv": [
+        "browser",
+        "click",
+        "--element",
+        "@e1",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.interact.click",
+      "arguments": {
+        "element": "@e1",
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 17,
+      "expression": "['browser','find','--locator','testid','--value','once-submit','--action','click','--page',r.pageA]",
+      "argv": [
+        "browser",
+        "find",
+        "--locator",
+        "testid",
+        "--value",
+        "once-submit",
+        "--action",
+        "click",
+        "--page",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.interact.find",
+      "arguments": {
+        "locator": "testid",
+        "value": "once-submit",
+        "action": "click",
+        "page": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 17,
+      "expression": "['browser','operation','get','--request',r.nativeRequestId]",
+      "argv": [
+        "browser",
+        "operation",
+        "get",
+        "--request",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.operation.get",
+      "arguments": {
+        "request": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    },
+    {
+      "line": 17,
+      "expression": "['browser','operation','get','--request',r.nativeRequestId]",
+      "argv": [
+        "browser",
+        "operation",
+        "get",
+        "--request",
+        "11111111-1111-4111-8111-111111111111"
+      ],
+      "commandId": "browser.operation.get",
+      "arguments": {
+        "request": "11111111-1111-4111-8111-111111111111"
+      },
+      "status": "passed-both-schemas"
+    }
+  ],
+  "oldInvalidCreateNegativeControl": {
+    "argv": [
+      "browser",
+      "tab",
+      "create",
+      "--url",
+      "http://127.0.0.1:12345/page/a",
+      "--focus",
+      "true"
+    ],
+    "status": "rejected",
+    "reason": "AssertionError [ERR_ASSERTION]: arguments unsupported focus"
+  },
+  "nativeStarted": false,
+  "listenersStarted": false
+}

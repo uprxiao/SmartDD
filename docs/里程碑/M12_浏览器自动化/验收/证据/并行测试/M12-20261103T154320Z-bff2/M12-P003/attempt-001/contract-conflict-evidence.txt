@@ -1,0 +1,17 @@
+Frozen src/main/core/tasks/task-service.test.ts:618
+  it('deleting the project deletes its tasks', async () => {
+    const p = project();
+    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
+    ptys.emit('exit', 'pty-1', 0);
+    projects.deleteProject(p.id, { deleteSecrets: true });
+    expect(svc.list({ includeArchived: true })).toEqual([]);
+  });
+});
+
+
+describe('project-scoped application connection stop',()=>{
+ it('stops only tasks belonging to the selected project and keeps another project running',async()=>{
+  const firstProject=project(),secondProject=projects.createProject({name:'Independent M9 fixture',aliases:[],description:'',rulesPath:null},[{label:'other',path:mk('independent-code')}]),profile=claudeProfile();
+
+Actual migrated schema and FK are in raw-result.json afterDelete.taskSchema/foreignKeys.
+Current M12-T004 original expectation is preserved in source/test-contract.md.

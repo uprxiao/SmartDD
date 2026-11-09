@@ -1,0 +1,22 @@
+{
+  "sourcePath": "/private/tmp/willyou-m12-t145-missing-source-P-004/run.mjs",
+  "sourceSHA256": "19a4c754535917cecf12c930fcec7a2e10175382e7b705ba2950bca59bb48f45",
+  "originalCloseAndConnectExcerpt": "async function closeOwned(item,normalClose){if(!item)return;try{if(!item.row.exit&&normalClose)await Promise.race([normalClose(),exited(item,5000)]);await exited(item,5000)}catch(error){r.cleanupErrors.push({stage:'normal-close-'+item.row.kind,name:error.name,messageSHA256:sha(String(error.stack??error))})}finally{if(!item.row.exit){item.row.signals.push({atMs:Date.now(),signal:'SIGTERM',accepted:item.child.kill('SIGTERM')});await exited(item,3000)}if(!item.row.exit){item.row.signals.push({atMs:Date.now(),signal:'SIGKILL',accepted:item.child.kill('SIGKILL')});await exited(item,3000)}await writeFile(runtime+'/'+item.row.kind+'-'+item.child.pid+'.private.log',item.logs(),{mode:0o600})}}\nasync function connect(url){const ws=new WebSocket(url);await new Promise((ok,no)=>{ws.addEventListener('open',ok,{once:true});ws.addEventListener('error',no,{once:true})});let id=0;const pending=new Map(),listeners=[];ws.addEventListener('message',({data})=>{const v=JSON.parse(data);if(v.id&&pending.has(v.id)){const p=pending.get(v.id);pending.delete(v.id);clearTimeout(p.timer);v.error?p.no(Error(v.error.message)):p.ok(v.result)}else if(v.method)for(const cb of listeners)cb(v)});ws.addEventListener('close',()=>{for(const p of pending.values()){clearTimeout(p.timer);p.no(Error('Owned CDP closed'))}pending.clear()});return{call:(method,params={})=>new Promise((ok,no)=>{const key=++id,timer=setTimeout(()=>{pending.delete(key);no(Error('Bounded CDP '+method))},10000);pending.set(key,{ok,no,timer});ws.send(JSON.stringify({id:key,method,params}))}),on:cb=>listeners.push(cb),close:()=>ws.close()}}\n",
+  "originalRawPath": "/private/tmp/willyou-m12-t145-missing-source-P-004/raw.json",
+  "originalRawSHA256": "5dad8c4a1c1185bfccfe50a6f7beb6e262c2cfa4ab6b336092f8fd09979f90f0",
+  "actualOriginalCleanupErrors": [
+    {
+      "stage": "normal-close-chromium-light-rw480-win1920x1200",
+      "name": "Error",
+      "messageSHA256": "5feac70b0d518709d8f4e1483926e1bee7684bac635e881e8f143a870a0ab8aa"
+    },
+    {
+      "stage": "normal-close-chromium-dark-rw480-win1920x1200",
+      "name": "Error",
+      "messageSHA256": "5feac70b0d518709d8f4e1483926e1bee7684bac635e881e8f143a870a0ab8aa"
+    }
+  ],
+  "original004Cause": "unknown: originalcatch retained name/hash only; no fullclose-error stack",
+  "diagnosticBoundary": "Futureprobe cannot establish originalcause without original fulltrace; two-phase proposedobserver is engineering evidence only, no P/A pass increment",
+  "legacyImmediateFallbackNotExecuted": "Do not run originalimmediatecatch-to-finallySIGTERM in thisprobe; allfallback requires5000ms independentchildobservation"
+}

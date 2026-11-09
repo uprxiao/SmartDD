@@ -1,0 +1,59 @@
+{
+  "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/用例覆盖索引.json",
+  "sourceSHA256AtRead": "c6e241d28fcfaaa5354d18e6f69d687ff4b684c660a5ebef399aa085a7a2ccdd",
+  "notANewResultLedger": true,
+  "cases": [
+    {
+      "id": "M9-T-F14",
+      "group": "F",
+      "title": "PDF独立viewer",
+      "requirements": [
+        "M9-R06.5"
+      ],
+      "level": "单元／集成／安装端到端",
+      "environments": [
+        "I",
+        "A"
+      ],
+      "data": [
+        "D06"
+      ],
+      "steps": "打开多页PDF、跳页、缩放、选中文本、关闭重开。",
+      "expected": "页面/总数/缩放/文本层按批准功能正确；无完整浏览器依赖；page状态可恢复。",
+      "source": "V F06",
+      "prototype": "PS-viewer",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-pdf-tex-dev067-r20-20261018.json"
+      ],
+      "actual_result": "r20真实三页PDF总数、原生鼠标选中文本、150%实际画布尺寸、缩略页跳第3页/正文marker通过。DEV067旧包关闭恢复退回1页/适宽已修复：重新打开关闭文件后仍3页/150%，主进程workspaceSnapshot落盘后重载工作区再次显示第3页正文/画布和150%。真实store/FileService/包内broker/SQLite独立连接I证明旧能力失效、新能力和新session读取、阅读提示持久化；组件夹限999→实际1页，旧route无pdf字段仍可恢复。源身份/bytes不变。",
+      "defects": [
+        "M9-DEV-067（已修复并r20关闭恢复/工作区重载复验）"
+      ],
+      "legacy_parent_requirements": [
+        "M9-R06",
+        "M9-R05"
+      ],
+      "prototype_pages": [
+        "P11"
+      ],
+      "prototype_status": "本条I/A完整通过；原型模型/构建与P界面结论分开",
+      "prototype_note": "PDF阅读提示已同步共享原型；本轮浏览器工具不可用，未新增P/主题/像素通过。无新页面或工具。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R06.5"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ]
+}

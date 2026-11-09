@@ -1,0 +1,44 @@
+{
+  "conclusion": "Scoped existing-evidence reuse is applicable to original T113 fixture; no remaining substantive original criterion gap identified.",
+  "ordinaryFixture": {
+    "source": "/private/tmp/willyou-m12-p067-pause-stop-app-001/run.mjs:28",
+    "topDocumentButtons": true,
+    "noIframeOrShadowRoot": true,
+    "noJavascriptDialogCalls": true,
+    "commands": "host refs to ordinary top-document buttons; ordinary Helper click/snapshot/wait, not explicit mouse commands",
+    "realObservation": "actual original Agent/manual trusted click counters and same document checks are in A03/A06/A08/A09"
+  },
+  "changedInputsAndScope": [
+    {
+      "path": "browser/references.ts + deferred-reference.ts",
+      "assessment": "New pointer continuation is used for shadow/iframe hostClick or actual synchronous dialogs; top-document ordinary click uses Helper. With no dialog, referenceDeferral returns undefined, finish delegates same disarm; accepted-click guard remains required. Additional context invalidation cannot activate in preserved-document fixture."
+    },
+    {
+      "path": "browser/cdp-proxy.ts",
+      "assessment": "Mouse promise tracking observes native requests; waitForInputCompletion called only dialog cancellation path. Added AX frameId fallback is iframe-only; ordinary top-document exact target unchanged."
+    },
+    {
+      "path": "browser/service.ts",
+      "assessment": "pause/admit/pauseFromUi/respondAccess/accessState exact bytes equal. For ordinary no-dialog command, new pending flag stays false; same queue admission, helper command, disarm, audit success, finally activity finish. Dialog-specific entry/routes inactive for this fixture."
+    },
+    {
+      "path": "agent-browser .4→.6 patch",
+      "assessment": "Binary changed and not claimed equivalent globally. Ordinary click call remains interaction::click; dispatch_mouse_or_dialog normal ack return changed false→None, both bypass same dialog branch. Added deferred releases require actual dialog; new explicit mouse tracked-button/number/clickcount code is not one of these T113 commands. Same ordinary click still must return original real effect before held callback. SOURCE+patch SHA and exact same .6 across App020/21/22 separately pinned."
+    },
+    {
+      "path": "browser workspace UI/CSS/page registry",
+      "assessment": "Added JS-dialog state and overlay only active for dialog, normal pause/resume handler byte-identical; CSS adds hover/pressed/focus to web tabs/toolbar without pause logic. Existing fixture has no dialog. New title includes title+URL changes selectors in drivers, not product pause semantics. Current A12 actual UI pause/start/restart used correct selector."
+    },
+    {
+      "path": "task-capability-launcher / package-registry / tool-service",
+      "assessment": "Launcher change is Skill observation collection; current fixed plan/run-lifetime and UI task service remain. source024→025 list parse/cache changes do not alter queued BrowserPageQueue. App021 A12 performs real own CLI success and old-cross denial through changed dispatch; A11 UI/run fields share same source."
+    }
+  ],
+  "safeReuseBoundary": "Only original finite T113 top-document/no-dialog fixture and requirements, not arbitrary dialogs/OOPIF/new pointer commands, no whole-runtime binary equivalence assertion.",
+  "historicalErrorsPreserved": [
+    "P067001 original final raw missing/recovered prefix, geometry/lifecycle interface and C01 failure; root independently cleaned known42PID/6TCP; native exit signal remains unknown",
+    "P067003 original A12/cleanup driver errors retained, both App actualnormal0/null/signals[] correction preserved",
+    "P067006 original T114S03/S05 errors unrelated to T113A12 remain historical; separate accepted timing review is not needed to change T113 contract"
+  ],
+  "NativeExecuted": false
+}

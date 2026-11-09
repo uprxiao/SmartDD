@@ -1,0 +1,85 @@
+{
+  "attempt": "001",
+  "originalLog": {
+    "path": "/private/tmp/willyou-m12-tab-tooltip-App037-build-001/official-App037-directory.private.log",
+    "sha256": "2dac33bd75849826f884bc4fa5600f7a45aa72cdf4901193c49dd2e0cbcbb7bf",
+    "bytes": 8576,
+    "fullLogPublic": false
+  },
+  "actualBuildCwd": "/Users/liubu/hx/4.uprxiao/SmartDD",
+  "exitCode": 1,
+  "startedAt": "2026-11-08T01:17:29.940833+00:00",
+  "finishedAt": "2026-11-08T01:18:02.220826+00:00",
+  "elapsedTotalSeconds": 32.279993,
+  "phases": [
+    {
+      "label": "official-App037-directory",
+      "command": [
+        "/Users/liubu/.hermes/node/bin/node",
+        "scripts/release/build.mjs",
+        "--dir",
+        "--platform",
+        "mac",
+        "--arch",
+        "arm64",
+        "--output-dir",
+        "/private/tmp/willyou-m12-s2-package-037"
+      ],
+      "startedAt": "2026-11-08T01:17:30.028685+00:00",
+      "pid": 88693,
+      "exitCode": 1,
+      "seconds": 32.10757808299968,
+      "finishedAt": "2026-11-08T01:18:02.132711+00:00",
+      "sourceAfter": {
+        "files": 3691,
+        "mismatches": []
+      }
+    }
+  ],
+  "actualFailureSignatureLines": [
+    {
+      "line": 67,
+      "text": "/Users/liubu/hx/4.uprxiao/SmartDD/out/native/libreoffice/LibreOffice.app: invalid signature (code or signature have been modified)"
+    },
+    {
+      "line": 82,
+      "text": "subprocess.CalledProcessError: Command '['/usr/bin/codesign', '--verify', '--deep', '--strict', '-R', '=anchor apple generic and identifier \"org.libreoffice.script\" and certificate leaf[subject.OU] = \"7P5S3ZLCN7\"', '/Users/liubu/hx/4.uprxiao/SmartDD/out/native/libreoffice/LibreOffice.app']' returned non-zero exit status 1."
+    },
+    {
+      "line": 102,
+      "text": "✗ Build failed in 13.86s"
+    },
+    {
+      "line": 103,
+      "text": "error during build:"
+    },
+    {
+      "line": 104,
+      "text": "[smartdd-native-bridges] Command failed: python3 scripts/files/prepare-libreoffice.py --node-executable /Users/liubu/.hermes/node/bin/node"
+    },
+    {
+      "line": 119,
+      "text": "Error: /Users/liubu/.hermes/node/bin/node exited with 1"
+    }
+  ],
+  "nativeSmokeJSONRows": [],
+  "sourceBeforeAfterEvidence": {
+    "before": {
+      "files": 3691,
+      "mismatches": []
+    },
+    "phaseSourceAfter": [
+      {
+        "files": 3691,
+        "mismatches": []
+      }
+    ],
+    "sourceShaModeBeforeAfterMatched": null
+  },
+  "pins": null,
+  "inputManifest": "source044/source-inputs.original.json",
+  "sourceManifestSHA256": "8043ded1ca880410f64d8acd243d17191069abd82452f4635ddf0afaa198001b",
+  "noSeparateBuildManifestInvented": true,
+  "causalBoundary": "Original vendor codesign signature failure line recorded in001;002lease reports exact same verify passed outside restricted sandbox and signature requirement unchanged. This archive preserves receipt/source/signature evidence, does not establish a broader product or OS root cause.",
+  "scope": "Official arm64 directory build/native smoke only; no App A/installed S6/x64/release/wholeT146 pass."
+}

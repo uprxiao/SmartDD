@@ -1,0 +1,125 @@
+{
+  "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/用例覆盖索引.json",
+  "sha256": "c6e241d28fcfaaa5354d18e6f69d687ff4b684c660a5ebef399aa085a7a2ccdd",
+  "notAResultLedger": true,
+  "cases": [
+    {
+      "id": "M9-T-D04",
+      "group": "D",
+      "title": "跨根同名",
+      "requirements": [
+        "M9-R04.4"
+      ],
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "rootA/a.txt和rootB/a.txt交替开。",
+      "expected": "两个独立标签，标题/tooltip可区分根；内容和草稿不串。",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.4"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D06",
+      "group": "D",
+      "title": "dirty预览保护",
+      "requirements": [
+        "M9-R04.2",
+        "M9-R07.9"
+      ],
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "预览A修改未存，再单击B。",
+      "expected": "A不会被静默丢弃；按批准策略固定A或先处理保存/关闭；B可独立查看。",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.2",
+          "M9-R07.9"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D12",
+      "group": "D",
+      "title": "撤销关闭顺序",
+      "requirements": [
+        "M9-R04.6"
+      ],
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "关闭A/B后逐次撤销；观察位置与激活项。",
+      "expected": "按栈顺序恢复原索引/route；不重复已开的同文件；失败保持可追踪条目。",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.6"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D13",
+      "group": "D",
+      "title": "撤销关闭上限",
+      "requirements": [
+        "M9-R04.6"
+      ],
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "关闭26个可恢复固定文件再连续撤销。",
+      "expected": "参考最多25项；产品按批准上限；不把已被淘汰项伪装可恢复。",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.6"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ]
+}

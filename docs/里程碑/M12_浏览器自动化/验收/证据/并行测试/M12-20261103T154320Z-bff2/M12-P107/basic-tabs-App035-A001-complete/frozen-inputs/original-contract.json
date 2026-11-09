@@ -1,0 +1,286 @@
+{
+  "cases": [
+    {
+      "id": "M9-T-D01",
+      "group": "D",
+      "title": "预览替换",
+      "requirements": [
+        "M9-R04.2"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "单击A后单击B，均无修改。",
+      "expected": "只有一个预览位；B替换A并释放A状态；不是不断追加斜体标签。",
+      "source": "L§3",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-d01-20261018.json"
+      ],
+      "actual_result": "P/I/A：单击A再B只替换同一preview位，真实内容随目标切换；生产store释放旧实例，真实SQLite仅持久合法route。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+      "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.2"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D02",
+      "group": "D",
+      "title": "双击固定",
+      "requirements": [
+        "M9-R04.3"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "单击A再双击A，然后单击B。",
+      "expected": "A固定且保留，B占预览位；不生成第二个A。",
+      "source": "L§3",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-d02-20261018.json"
+      ],
+      "actual_result": "P/I/A：单击A后双击同一A，A固定且不重复；下一次单击B独占预览，A仍保留。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+      "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.3"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D03",
+      "group": "D",
+      "title": "固定标签不降级",
+      "requirements": [
+        "M9-R04.2"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "固定A后再从树单击A。",
+      "expected": "激活原A，保持固定，不被下一预览替换。",
+      "source": "L§3",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-d03-20261018.json"
+      ],
+      "actual_result": "P/I/A：树单击已固定A仅激活，随后C替换B预览而不替换A；重启固定route正确恢复。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+      "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.2"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D09",
+      "group": "D",
+      "title": "关闭活动",
+      "requirements": [
+        "M9-R04.5"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "打开A/B/C激活B；关闭B。",
+      "expected": "按已批准邻接/opener规则激活目标；不存在悬空activeId。",
+      "source": "L§3",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-d09-20261018.json"
+      ],
+      "actual_result": "P/I/A：A/B/C中关闭活动B后右邻C成为唯一active，B移除且无悬空active；焦点附带缺陷另按DEV037复验。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+      "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.5"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-D14",
+      "group": "D",
+      "title": "恢复排除preview",
+      "requirements": [
+        "M9-R04.7"
+      ],
+      "level": "组件／集成／安装端到端",
+      "environments": [
+        "P",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D01",
+        "D04"
+      ],
+      "steps": "固定A，预览B；重启。",
+      "expected": "仅可持久route按规则恢复；参考preview排除；不把B草稿丢失与route排除混为一谈。",
+      "source": "L§4",
+      "prototype": "PS-tabs",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-d14-20261018.json",
+        "证据/m9-acceptance-prototype-actions-20261018.json"
+      ],
+      "actual_result": "P/I/A完整通过：独立原型固定A/预览B刷新后仅A恢复；真实App同包正常重启排除clean preview B，已有固定A保留。再编辑B自动固定并autosave后重启，B及内容恢复。真实SQLite/分离草稿与route服务证据已关联；不声称这次dirty流程覆盖断电或崩溃。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R04",
+        "M9-R08"
+      ],
+      "prototype_pages": [
+        "P06"
+      ],
+      "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+      "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R04.7"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ],
+  "currentLayer": "A only",
+  "currentExecuted": false,
+  "plannedAppProcesses": 3,
+  "originalObservations": 6,
+  "businessSequence": "D01 replacement -> D02 actualdoublepin -> D03 no downgrade -> D09 activeB close rightC -> D14 cleanpreview normalrestart -> dirtyB autosave/pinned normalrestart",
+  "notRepeatedCurrentGreens": [
+    "D04",
+    "D06",
+    "D07",
+    "D12",
+    "D13",
+    "D15",
+    "D16",
+    "D17"
+  ],
+  "separateOriginalGroups": [
+    "D05 APFS/APFSX",
+    "D08/D10/D11/D18 actualtaskPTY"
+  ],
+  "fixtureByteBoundary": "Explicitv2 public3textdata from originalobserved TabA/B/C baseline labels. Historicalr1 SHA notclaimedrecovered/notaddedasnewrequirement. Originalallsteps/expectations retained.",
+  "nativeBoundary": "PublicAPIproject prep only. SixoriginalIPCmethods passiveReflect.apply input/outputunchanged andrestore; closeDocument postcondition proves oldA released; UI steps neverreplacedbyRPC."
+}

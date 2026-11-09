@@ -1,0 +1,147 @@
+{
+  "at": "2026-11-05T12:42:54.719Z",
+  "status": "original-T042-predicates-proven-from-existing-R010-pending-root-review",
+  "originalCase": "Real Codex0.166.0/default sandbox executes literal willyou-app browser tab list; child reads two env and call succeeds without escalation.",
+  "R010": {
+    "taskId": "4b832e49-30b9-4ccb-b70a-0d4a0e3699b5",
+    "runId": "811e12e6-c42e-49ff-97a8-4dddbf49d83a",
+    "nativeSessionId": "01a1ab89-72d5-7121-a4f9-d054b679cb59",
+    "rawSha256": "c4e3277e289b0b633c1deb9184f8de4a1fb7c211c6d36b1b348ada411be46156",
+    "source": {
+      "path": "/private/tmp/willyou-m12-t041-t042-real-codex-010/runtime-001/codex/sessions/2026/11/05/rollout-2026-11-05T19-47-54-01a1ab89-72d5-7121-a4f9-d054b679cb59.jsonl",
+      "sha256": "c57dbfa12535961c489ce98a5487db40826728d9eef0c379e7bbd224a5cb1793",
+      "bytes": 160798
+    },
+    "list": {
+      "requestLine": 21,
+      "outputLine": 24,
+      "outerCallId": "call_d0a0a5c3019a48ddb49ad15621ae393a",
+      "commandLiteral": "willyou-app browser tab list",
+      "parameterKeys": [
+        "cmd",
+        "max_output_tokens"
+      ],
+      "inputSha256": "4a1573ffcedcee07fc98118b24d6cbb29f19d0f1d040bc79bd259f6223514b2d",
+      "outputSha256": "0050bd7e59c9357a6d30c09103fa46dc77ec6dacf2a699083ab8b986747730f6",
+      "childExitCodeObserved": null,
+      "hostEvidence": {
+        "capabilityId": "browser.tab.list",
+        "status": "ok",
+        "operationId": "f25947f7-b1ff-4be7-9863-951f00beed26",
+        "requestId": "4c1d2b4d-4461-417b-b7da-5419879eb215",
+        "effectState": "read-only",
+        "pageId": null,
+        "url": null,
+        "markerInSnapshot": false,
+        "snapshotSha256": null,
+        "hostState": "succeeded",
+        "hostAttemptCount": 1,
+        "hostStartedAt": "2026-11-05T11:48:06.966Z",
+        "hostEndedAt": "2026-11-05T11:48:07.154Z"
+      }
+    },
+    "contexts": [
+      {
+        "line": 10,
+        "at": "2026-11-05T11:47:57.713Z",
+        "approvalPolicy": "on-request",
+        "sandboxType": "workspace-write"
+      }
+    ],
+    "testProfileArgs": [],
+    "defaultPolicy": true,
+    "noModelCallEnvironmentPathSandboxOverride": true,
+    "envInheritance": "Inference in the SAME actual native CLI child: literal list Host succeeded through hash+kernel-peer checked binary; this source must getenv both values before auth/socket and has no fallback."
+  },
+  "cliProvenance": {
+    "app": "/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app",
+    "binaryPath": "/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app/Contents/Resources/native/willyou-app",
+    "binarySha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+    "binaryMode": "0755",
+    "runtimePreflightSameSha": true,
+    "officialBuildGate": {
+      "path": "/private/tmp/willyou-m12-p102-app021-build-001/RESULT.json",
+      "sha256": "e7d876ac69add043f9c58487a0e11958d7c5570d47d155eb96417dabbd1bb433",
+      "sourceShaModeBeforeAfterMatched": true,
+      "sourceFiles": 3682
+    },
+    "sourceRoot": "/private/tmp/willyou-m12-p101-source-025/source",
+    "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+    "sources": [
+      {
+        "path": "native/applications/cli.mm",
+        "sha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861"
+      },
+      {
+        "path": "scripts/applications/build.mjs",
+        "sha256": "b76de64009209e0fadb451f0b9d5a2104473747c6245ee0bf2ebc5f59b5e7f95"
+      },
+      {
+        "path": "electron.vite.config.ts",
+        "sha256": "02192a07f5ddca3f6946af26ad32f608ac6c95cd7f58ecab4515b1143798a73e"
+      },
+      {
+        "path": "electron-builder.config.cjs",
+        "sha256": "eb86688fb3dc6ad9cd58cdfc3f6a934a7cacf2cd769ea05b8a875e70748af7d3"
+      },
+      {
+        "path": "src/main/index.ts",
+        "sha256": "3883f926cd473726bff24b0fc204154ebbce48e9b4f3bdeaa05fde4e1b1c9b03"
+      },
+      {
+        "path": "src/main/core/applications/task-capability-launcher.ts",
+        "sha256": "7b8182e0e9895c8e60dfd36bc4eb57fc4a579ad2f50bf87f26f003d081368b50"
+      },
+      {
+        "path": "src/main/core/applications/cli-gateway.ts",
+        "sha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef"
+      }
+    ],
+    "chain": [
+      "vite writeBundle invokes applications/build.mjs",
+      "buildApplicationCli always compiles native/applications/cli.mm on darwin",
+      "electron-builder copies out/native/willyou-app to Resources/native/willyou-app",
+      "App main supplies that packaged path",
+      "ManagedTaskCapabilities pins canonical path+read SHA; prepends its directory to PATH and injects issued token/endpoint",
+      "Gateway checks current file SHA and kernel peer executable before authenticated run Host call",
+      "Native cli.mm45–46 getenv both; invalid/missing fails before socket (except --help, which this command is not)"
+    ]
+  },
+  "R012Supplement": {
+    "taskId": "14da7ec8-b30d-4398-9720-a7a759509016",
+    "runId": "62518d08-e30a-4d76-b4d3-69249a24df83",
+    "rawSha256": "8188478e1b639762b93945c92c8f95c562236854f43153cfbc23191dfdb74a45",
+    "source": {
+      "path": "/private/tmp/willyou-m12-t042-real-codex-012/runtime-001/codex/sessions/2026/11/05/rollout-2026-11-05T20-29-09-01a1abaf-3780-7bf3-936f-52d3717cc210.jsonl",
+      "sha256": "70cdf9d03c739a94d45c50d6bd061e8e36f7d0a3cf4ae1971c2820413e067667",
+      "bytes": 143892
+    },
+    "outerCallId": "call_735ed570cf124c0999dbb0c2ee1b9233",
+    "requestLine": 16,
+    "outputLine": 20,
+    "astForm": "two sequential text(await tools.exec_command(literalObject)) statements; forwarded complete tool result, no eval",
+    "inputSha256": "d77be700899bc53558d4388cc5ac9e41567a67b93ce8978170fdad7bb337474e",
+    "env": {
+      "markerMatched": true,
+      "token_present": true,
+      "endpoint_present": true,
+      "childExitCodeObserved": 0
+    },
+    "skillReadChildExitCodeObserved": 0,
+    "tabListExecuted": false,
+    "sameRunAsR010": false,
+    "scope": "Extra direct readability proof from a DIFFERENT run; never merged as if same R010 child."
+  },
+  "notRequiredByOriginal": [
+    "new secondPrompt or another model call",
+    "same-run T041 followup marker",
+    "explicit Boolean-print output",
+    "DONE marker",
+    "numeric CLI exit observation",
+    "complete Skill read for T042"
+  ],
+  "newModelCalls": 0,
+  "NativeCalls": 0,
+  "authReads": 0,
+  "formalWholeCaseCount": 0
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "m12-S6-background-firstfive-bound-v1",
+  "group": "M12-App056-S6-background",
+  "status": "READY_PURE_STATIC_BOUND_BACKGROUND01_05_ONLY_NOT_EXECUTED",
+  "root": "/private/tmp/willyou-m12-app056-installer-001",
+  "bindingComplete": true,
+  "currentApp": "/private/tmp/willyou-m12-s2-package-056/mac-arm64/WillYou.app",
+  "sourceManifest": "/private/tmp/willyou-m12-certificate-style-source-067/source-inputs.json",
+  "sourceManifestSha256": "ec143ff67131566940fca7f42c5f80ed4a828ab2270993157a5f487cbae475d1",
+  "asarSha256": "30e3e5ec1dfe962e901f270845cd2b112c9e451e6a70691435552299fadfa412",
+  "executableSha256": "9449b044b4d0b88ece5786a12d18ef33948b69f739e216948241e6a909b4594b",
+  "preparedInputs": {
+    "path": "/private/tmp/willyou-m12-app056-installer-001/prepared-inputs.json",
+    "sha256": "1376ccff377a94c7f768b87ca7426fa2386e1c58af6bec2412c8ad8ac19b7444",
+    "files": 4673
+  },
+  "commandsSequential": [
+    {
+      "id": "P127-01-private-copy",
+      "shell": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app056-installer-001/cache WILLYOU_P111_PREPARED_SHA=1376ccff377a94c7f768b87ca7426fa2386e1c58af6bec2412c8ad8ac19b7444 /usr/bin/python3 /private/tmp/willyou-m12-app056-installer-001/prepare-native-input.py --execute",
+      "mustProduce": "evidence/private-copy-result.json; current176pins/private distinctinode; cachedtrusted baselinecopy; no sharedwriter"
+    },
+    {
+      "id": "P127-02-prepackaged-dmg",
+      "shell": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app056-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app056-installer-001/build-installer-002.py --execute",
+      "mustProduce": "evidence/attempt-002/candidate-installer.json; explicitElectron42.11.14/publishnever/originalinputpreservationtrue"
+    },
+    {
+      "id": "P127-03-existing-gate-path-copy",
+      "shell": "/bin/cp -p /private/tmp/willyou-m12-app056-installer-001/evidence/attempt-002/candidate-installer.json /private/tmp/willyou-m12-app056-installer-001/evidence/candidate-installer.json",
+      "mustProduce": "exact candidateJSON copied to originalinstall driverexpectedpath; retainedattempt2logs unchanged"
+    },
+    {
+      "id": "P127-04-install-payload-size",
+      "shell": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app056-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app056-installer-001/install-and-compare.py --execute",
+      "mustProduce": "input=readonlyDMG=privateinstalled complete bytes/modes/symlinks; ownmountsdetached; fulltwoinventories/changedentrysizeaccounting"
+    },
+    {
+      "id": "P127-05-actual-installed-native",
+      "shell": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app056-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app056-installer-001/check-installed-native.py --execute",
+      "mustProduce": "actualinstalledhelper signature/version/arm64/hash and6nativepassed"
+    }
+  ],
+  "firstFiveExecute": "WILLYOU_P127_ROOT_LEASE=Root-App056-exclusive WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app056-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app056-installer-001/run-background-first-five.py",
+  "independentResourceCheck": "/usr/bin/python3 /private/tmp/willyou-m12-app056-installer-001/check-final-resources.py",
+  "independentSizeRecheck": "/usr/bin/python3 /private/tmp/willyou-m12-app056-installer-001/recheck-size.py",
+  "originalNineStagesRetained": true,
+  "onlyStages01to05Templated": true,
+  "06to09ExplicitPending": true,
+  "formalCaseIncrement": 0,
+  "noSourceRebuild": true,
+  "noAppOrDmgCopied": true,
+  "NativeAppOSPTYModelHTTP": 0,
+  "resourcesHeld": false,
+  "RootFinalBindingRequired": false,
+  "precreatedParentsOnly": [
+    "mounts",
+    "installer-input",
+    "baseline-download/stored-auth-attempt-002",
+    "cache",
+    "evidence/attempt-002"
+  ],
+  "frozenAt": "2026-11-09T08:19:25.969797+00:00",
+  "pureStaticReport": "/private/tmp/willyou-m12-app056-installer-001/template-static-result.json",
+  "resourceReceipt": {
+    "activeOwnedPIDs": [],
+    "resourcesHeld": [],
+    "NativeAppOS": 0
+  },
+  "minimumFreeBytesBeforePhase01": 12884901888,
+  "actualStaticReceipt": "/private/tmp/willyou-m12-app056-installer-001/pure-static-receipt.json",
+  "rootLeaseRequired": "Root-App056-exclusive"
+}

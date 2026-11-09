@@ -1,0 +1,53 @@
+{
+  "at": "2026-11-03T08:46:37.497Z",
+  "boundary": "E4e: local Electron 42 page, agent-browser 0.27.3 over the global CDP port, host guard over a direct CDP client; no per-page proxy, no WillYou gateway",
+  "raw": {
+    "environment": "window on screen (E4_ONSCREEN=1), background throttling off",
+    "untouchedClick": {
+      "ok": true,
+      "error": null,
+      "hits": [
+        "original"
+      ],
+      "blocked": []
+    },
+    "clonedClick": {
+      "before": 12,
+      "after": 33,
+      "ok": true,
+      "error": null,
+      "hits": [],
+      "blocked": [
+        "pointerdown",
+        "pointerup",
+        "click"
+      ]
+    },
+    "clonedFill": {
+      "ok": true,
+      "error": null,
+      "cloneValue": "",
+      "blocked": [
+        "focusin",
+        "input",
+        "beforeinput"
+      ]
+    },
+    "freeze": {
+      "beforeFreeze": "cw=19",
+      "frozenAt": 21,
+      "cookieAfter1sFrozen": "121",
+      "resumedAfter300ms": 151,
+      "resumedValue": 251,
+      "writesPerSecondAfterResume": 101
+    }
+  },
+  "verdicts": {
+    "G01_untouchedStillClicksOriginal": true,
+    "G01_cloneCarriesTagAndNewId": true,
+    "G01_guardBlocksClickOnClone": true,
+    "G01_guardBlocksFillOnClone": true,
+    "G02_freezeStopsPageCookieWrites": false,
+    "G02_resumesAfterFreeze": true
+  }
+}

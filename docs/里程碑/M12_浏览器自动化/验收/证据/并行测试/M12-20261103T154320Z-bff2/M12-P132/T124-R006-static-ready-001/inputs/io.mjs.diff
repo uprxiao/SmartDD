@@ -1,0 +1,9 @@
+--- /private/tmp/willyou-m12-t124-real-R-cont-005/io.mjs
++++ /private/tmp/willyou-m12-t124-real-R-cont-006/io.mjs
+@@ -1,5 +1,5 @@
+ import assert from'node:assert/strict';import{resolve,relative}from'node:path';import{realpath,writeFile,mkdir,readFile,stat}from'node:fs/promises';import{createHash}from'node:crypto';
+-export const ROOT='/private/tmp/willyou-m12-t124-real-R-cont-005';
++export const ROOT='/private/tmp/willyou-m12-t124-real-R-cont-006';
+ export const sha=b=>createHash('sha256').update(b).digest('hex');
+ export async function privatePath(name){assert(typeof name==='string'&&!name.startsWith('/')&&!name.split('/').includes('..'));const p=resolve(ROOT,name);assert(relative(ROOT,p)&&!relative(ROOT,p).startsWith('..'));assert.equal(await realpath(ROOT),ROOT);return p;}
+ export async function save(name,value,{exclusive=false}={}){const p=await privatePath(name);await writeFile(p,JSON.stringify(value,null,2)+'\n',{flag:exclusive?'wx':'w',mode:0o600});return p;}

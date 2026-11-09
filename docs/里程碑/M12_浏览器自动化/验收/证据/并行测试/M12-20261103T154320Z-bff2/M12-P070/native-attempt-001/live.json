@@ -1,0 +1,655 @@
+{
+  "group": "M12-P070",
+  "case": "M12-T068",
+  "layer": "I only; actualNative/M11/v2/CLI/fixedHelper; notA/modelR",
+  "driverPid": 80254,
+  "startedAt": "2026-11-04T15:55:49.525Z",
+  "stage": "T068-alert-accept",
+  "steps": [
+    {
+      "label": "warm-fixed-helper-before-first-dialog",
+      "args": [
+        "browser",
+        "get",
+        "--what",
+        "title",
+        "--page",
+        "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+      ],
+      "startedAtMs": 1793807754230,
+      "raw": {
+        "kind": "cli-result",
+        "id": 1,
+        "pid": 80335,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"result\":\"[I] P070 dialog\"},\"resources\":[],\"operation\":{\"id\":\"63ecc8a6-1621-4ddd-bdef-4030f709f101\",\"requestId\":\"84179c09-7496-40c9-b5e3-01003fbe9cfb\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "finishedAtMs": 1793807755355,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+          "connections": []
+        },
+        "data": {
+          "result": "[I] P070 dialog"
+        },
+        "resources": [],
+        "operation": {
+          "id": "63ecc8a6-1621-4ddd-bdef-4030f709f101",
+          "requestId": "84179c09-7496-40c9-b5e3-01003fbe9cfb",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.get"
+      }
+    },
+    {
+      "label": "answer-alert-accept",
+      "args": [
+        "browser",
+        "dialog",
+        "accept",
+        "--page",
+        "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+      ],
+      "startedAtMs": 1793807755398,
+      "raw": {
+        "kind": "cli-result",
+        "id": 2,
+        "pid": 80402,
+        "code": 5,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_ERROR\",\"layer\":\"provider\",\"message\":\"agent-browser 执行失败，未返回有效结果\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"e6847f05-ef40-4a55-80df-a048fae9d4ef\",\"requestId\":\"11ac723c-551e-4ac9-93e4-b47cddfcb157\"}\n",
+        "stderr": "willyou-app: BROWSER_ERROR\n",
+        "timedOut": false
+      },
+      "finishedAtMs": 1793807766609,
+      "parsed": {
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_ERROR",
+          "layer": "provider",
+          "message": "agent-browser 执行失败，未返回有效结果",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        },
+        "operationId": "e6847f05-ef40-4a55-80df-a048fae9d4ef",
+        "requestId": "11ac723c-551e-4ac9-93e4-b47cddfcb157"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "p070-alert-accept",
+      "kind": "alert",
+      "action": "accept",
+      "text": null,
+      "expectedType": "undefined",
+      "expectedValue": null,
+      "message": "M12 p070-alert-accept",
+      "startedAtMs": 1793807755360,
+      "beforeEventCount": 0,
+      "opening": {
+        "at": 1793807755366,
+        "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+        "contentsId": 1,
+        "method": "Page.javascriptDialogOpening",
+        "params": {
+          "defaultPrompt": "",
+          "frameId": "F060DB4D5130D707BCA7D92EAD01378E",
+          "hasBrowserHandler": true,
+          "message": "M12 p070-alert-accept",
+          "type": "alert",
+          "url": "http://127.0.0.1:58236/dialog"
+        }
+      },
+      "response": {
+        "label": "answer-alert-accept",
+        "args": [
+          "browser",
+          "dialog",
+          "accept",
+          "--page",
+          "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+        ],
+        "startedAtMs": 1793807755398,
+        "raw": {
+          "kind": "cli-result",
+          "id": 2,
+          "pid": 80402,
+          "code": 5,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_ERROR\",\"layer\":\"provider\",\"message\":\"agent-browser 执行失败，未返回有效结果\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"e6847f05-ef40-4a55-80df-a048fae9d4ef\",\"requestId\":\"11ac723c-551e-4ac9-93e4-b47cddfcb157\"}\n",
+          "stderr": "willyou-app: BROWSER_ERROR\n",
+          "timedOut": false
+        },
+        "finishedAtMs": 1793807766609,
+        "parsed": {
+          "error": {
+            "effectState": "unknown",
+            "code": "BROWSER_ERROR",
+            "layer": "provider",
+            "message": "agent-browser 执行失败，未返回有效结果",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+            "retryExhausted": false
+          },
+          "operationId": "e6847f05-ef40-4a55-80df-a048fae9d4ef",
+          "requestId": "11ac723c-551e-4ac9-93e4-b47cddfcb157"
+        }
+      }
+    }
+  ],
+  "messages": [
+    {
+      "stage": "setup-M11",
+      "pid": 80256,
+      "phase": "initial",
+      "driverAtMs": 1793807750065
+    },
+    {
+      "nativeEvent": {
+        "kind": "root-ready",
+        "pid": 80306,
+        "role": "t1",
+        "runId": "13278adb-dcd6-4f9b-b2c2-17a0f94c4317"
+      },
+      "driverAtMs": 1793807753697
+    },
+    {
+      "nativeEvent": {
+        "kind": "root-configured",
+        "pid": 80306,
+        "environmentValuesLogged": false,
+        "role": "t1",
+        "runId": "13278adb-dcd6-4f9b-b2c2-17a0f94c4317"
+      },
+      "driverAtMs": 1793807753748
+    },
+    {
+      "stage": "ready",
+      "pid": 80256,
+      "phase": "initial",
+      "driverAtMs": 1793807754126
+    },
+    {
+      "ready": true,
+      "pid": 80256,
+      "phase": "initial",
+      "runs": [
+        {
+          "role": "t1",
+          "runId": "13278adb-dcd6-4f9b-b2c2-17a0f94c4317",
+          "pid": 80306
+        }
+      ],
+      "pages": [
+        {
+          "id": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+          "contentsId": 1,
+          "url": "http://127.0.0.1:58236/dialog",
+          "pending": 0,
+          "helperActivePid": null,
+          "helperDaemonPid": null,
+          "proxyPort": 58313
+        }
+      ],
+      "workspace": {
+        "taskId": "61c7beb6-7006-423a-9ed5-c3f944543ab8",
+        "projectId": "4b95683f-642e-4b38-a0c8-324ec1c9f2ea",
+        "tabs": [
+          {
+            "id": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+            "url": "http://127.0.0.1:58236/dialog",
+            "title": "[I] P070 dialog",
+            "favicon": null,
+            "profileId": "project-2ce5875e933644e245fb0229",
+            "loading": true,
+            "canGoBack": true,
+            "canGoForward": false,
+            "failure": null,
+            "agentActive": false,
+            "agentRunning": false,
+            "importState": "ready",
+            "certificate": null
+          }
+        ],
+        "activeId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+        "recent": [
+          {
+            "url": "http://127.0.0.1:58236/dialog",
+            "title": "[I] P070 dialog",
+            "host": "127.0.0.1:58236",
+            "visitedAt": 1793807754088
+          }
+        ],
+        "notice": null,
+        "external": null,
+        "find": {
+          "active": 0,
+          "total": 0
+        },
+        "paused": false,
+        "permission": null,
+        "downloads": [],
+        "auth": null,
+        "authCancelled": null,
+        "javascriptDialog": null
+      },
+      "driverAtMs": 1793807754126
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 1,
+        "pid": 80335,
+        "args": [
+          "browser",
+          "get",
+          "--what",
+          "title",
+          "--page",
+          "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+        ],
+        "role": "t1",
+        "runId": "13278adb-dcd6-4f9b-b2c2-17a0f94c4317"
+      },
+      "driverAtMs": 1793807754238
+    },
+    {
+      "nativeDialogEvent": {
+        "at": 1793807755366,
+        "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+        "contentsId": 1,
+        "method": "Page.javascriptDialogOpening",
+        "params": {
+          "defaultPrompt": "",
+          "frameId": "F060DB4D5130D707BCA7D92EAD01378E",
+          "hasBrowserHandler": true,
+          "message": "M12 p070-alert-accept",
+          "type": "alert",
+          "url": "http://127.0.0.1:58236/dialog"
+        }
+      },
+      "driverAtMs": 1793807755366
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 2,
+        "pid": 80402,
+        "args": [
+          "browser",
+          "dialog",
+          "accept",
+          "--page",
+          "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+        ],
+        "role": "t1",
+        "runId": "13278adb-dcd6-4f9b-b2c2-17a0f94c4317"
+      },
+      "driverAtMs": 1793807755400
+    },
+    {
+      "stage": "cleanup",
+      "pid": 80256,
+      "phase": "initial",
+      "driverAtMs": 1793807766715
+    },
+    {
+      "nativeDialogEvent": {
+        "at": 1793807766857,
+        "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+        "contentsId": 1,
+        "method": "Page.javascriptDialogClosed",
+        "params": {
+          "frameId": "F060DB4D5130D707BCA7D92EAD01378E",
+          "result": false,
+          "userInput": ""
+        }
+      },
+      "driverAtMs": 1793807766857
+    },
+    {
+      "stage": "done",
+      "pid": 80256,
+      "phase": "initial",
+      "driverAtMs": 1793807766911
+    },
+    {
+      "willQuit": true,
+      "phase": "initial",
+      "driverAtMs": 1793807766915
+    }
+  ],
+  "resources": [
+    {
+      "stage": "fixture-server",
+      "atMs": 1793807754224,
+      "processes": [
+        {
+          "pid": 80256,
+          "ppid": 80254,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 80264,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 80265,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 80306,
+          "ppid": 80256,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 80323,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 80324,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 80256 liubu   78u  IPv4 0x30de2510ceeb0f8c      0t0  TCP 127.0.0.1:58313 (LISTEN)\n"
+    },
+    {
+      "stage": "T068-alert-accept",
+      "atMs": 1793807766703,
+      "processes": [
+        {
+          "pid": 80256,
+          "ppid": 80254,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 80264,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 80265,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 80306,
+          "ppid": 80256,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 80323,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 80324,
+          "ppid": 80256,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 80256 liubu   78u  IPv4 0x30de2510ceeb0f8c      0t0  TCP 127.0.0.1:58313 (LISTEN)\n"
+    },
+    {
+      "stage": "T068-alert-accept",
+      "atMs": 1793807767055,
+      "processes": [],
+      "listeners": ""
+    }
+  ],
+  "cleanupSignals": [],
+  "quitObservations": [
+    {
+      "limitMs": 1000,
+      "elapsedMs": 286,
+      "exit": {
+        "atMs": 1793807766958,
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "userData": "/private/tmp/willyou-m12-p070-js-dialog-native-001/runtime-001/userdata",
+  "hostPid": 80256,
+  "ready": {
+    "ready": true,
+    "pid": 80256,
+    "phase": "initial",
+    "runs": [
+      {
+        "role": "t1",
+        "runId": "13278adb-dcd6-4f9b-b2c2-17a0f94c4317",
+        "pid": 80306
+      }
+    ],
+    "pages": [
+      {
+        "id": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+        "contentsId": 1,
+        "url": "http://127.0.0.1:58236/dialog",
+        "pending": 0,
+        "helperActivePid": null,
+        "helperDaemonPid": null,
+        "proxyPort": 58313
+      }
+    ],
+    "workspace": {
+      "taskId": "61c7beb6-7006-423a-9ed5-c3f944543ab8",
+      "projectId": "4b95683f-642e-4b38-a0c8-324ec1c9f2ea",
+      "tabs": [
+        {
+          "id": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+          "url": "http://127.0.0.1:58236/dialog",
+          "title": "[I] P070 dialog",
+          "favicon": null,
+          "profileId": "project-2ce5875e933644e245fb0229",
+          "loading": true,
+          "canGoBack": true,
+          "canGoForward": false,
+          "failure": null,
+          "agentActive": false,
+          "agentRunning": false,
+          "importState": "ready",
+          "certificate": null
+        }
+      ],
+      "activeId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+      "recent": [
+        {
+          "url": "http://127.0.0.1:58236/dialog",
+          "title": "[I] P070 dialog",
+          "host": "127.0.0.1:58236",
+          "visitedAt": 1793807754088
+        }
+      ],
+      "notice": null,
+      "external": null,
+      "find": {
+        "active": 0,
+        "total": 0
+      },
+      "paused": false,
+      "permission": null,
+      "downloads": [],
+      "auth": null,
+      "authCancelled": null,
+      "javascriptDialog": null
+    }
+  },
+  "page": {
+    "id": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+    "contentsId": 1,
+    "url": "http://127.0.0.1:58236/dialog",
+    "pending": 0,
+    "helperActivePid": null,
+    "helperDaemonPid": null,
+    "proxyPort": 58313
+  },
+  "warmup": {
+    "label": "warm-fixed-helper-before-first-dialog",
+    "args": [
+      "browser",
+      "get",
+      "--what",
+      "title",
+      "--page",
+      "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+    ],
+    "startedAtMs": 1793807754230,
+    "raw": {
+      "kind": "cli-result",
+      "id": 1,
+      "pid": 80335,
+      "code": 0,
+      "signal": null,
+      "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"result\":\"[I] P070 dialog\"},\"resources\":[],\"operation\":{\"id\":\"63ecc8a6-1621-4ddd-bdef-4030f709f101\",\"requestId\":\"84179c09-7496-40c9-b5e3-01003fbe9cfb\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.get\"}\n",
+      "stderr": "",
+      "timedOut": false
+    },
+    "finishedAtMs": 1793807755355,
+    "parsed": {
+      "schema": "willyou-app-result-v2",
+      "status": "ok",
+      "source": {
+        "appId": "browser",
+        "revision": null,
+        "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+        "connections": []
+      },
+      "data": {
+        "result": "[I] P070 dialog"
+      },
+      "resources": [],
+      "operation": {
+        "id": "63ecc8a6-1621-4ddd-bdef-4030f709f101",
+        "requestId": "84179c09-7496-40c9-b5e3-01003fbe9cfb",
+        "effectState": "read-only",
+        "origin": "cli"
+      },
+      "pagination": null,
+      "completeness": {
+        "missing": [],
+        "complete": true
+      },
+      "contractMajor": 2,
+      "capabilityId": "browser.interact.get"
+    }
+  },
+  "status": "failed-or-partial",
+  "errorStage": "T068-alert-accept",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n5 !== 0\n\n    at file:///private/tmp/willyou-m12-p070-js-dialog-native-001/run.mjs:27:178",
+  "quitRequestedAtMs": 1793807766707,
+  "hostCleanup": {
+    "cleanup": {
+      "windows": [],
+      "contents": [
+        {
+          "id": 1,
+          "destroyed": true,
+          "debuggerAttached": false
+        },
+        {
+          "id": 2,
+          "destroyed": true,
+          "debuggerAttached": false
+        }
+      ],
+      "remaining": [],
+      "dialogObserversRemoved": true
+    }
+  },
+  "hostExit": {
+    "atMs": 1793807766958,
+    "code": 0,
+    "signal": null
+  },
+  "serverClosed": true,
+  "requests": [
+    {
+      "atMs": 1793807754066,
+      "path": "/dialog",
+      "method": "GET"
+    },
+    {
+      "atMs": 1793807754109,
+      "path": "/events",
+      "method": "GET"
+    },
+    {
+      "atMs": 1793807754109,
+      "path": "/favicon.ico",
+      "method": "GET"
+    },
+    {
+      "atMs": 1793807754121,
+      "path": "/ready",
+      "method": "GET"
+    },
+    {
+      "atMs": 1793807755365,
+      "kind": "synthetic-fixture-sse-trigger",
+      "message": {
+        "id": "p070-alert-accept",
+        "kind": "alert",
+        "message": "M12 p070-alert-accept",
+        "defaultValue": "initial"
+      }
+    },
+    {
+      "atMs": 1793807766861,
+      "path": "/result",
+      "method": "POST"
+    }
+  ],
+  "siteResults": [
+    {
+      "id": "p070-alert-accept",
+      "kind": "alert",
+      "type": "undefined",
+      "value": null,
+      "atMs": 1793807766861
+    }
+  ],
+  "knownPids": [
+    80254,
+    80256,
+    80306,
+    80264,
+    80265,
+    80323,
+    80324,
+    80335,
+    80402
+  ],
+  "knownPorts": [
+    58236,
+    58313
+  ],
+  "knownPageIds": [
+    "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+  ],
+  "finishedAt": "2026-11-04T15:56:07.068Z"
+}

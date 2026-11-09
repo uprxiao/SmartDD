@@ -1,0 +1,21 @@
+{
+  "caseId": "M12-T079",
+  "requiredFormalLayer": "A",
+  "scope": "I task/project-owner deletion engineering subset only, not whole case pass",
+  "branches": [
+    "owners present including synthetic archived Tkeep: preserve all profile data",
+    "real TaskService.delete loaded Tdelete: clear task profile, page+named popup, dormant/closed/workspace; preserve project state",
+    "real TaskService.delete persisted-but-unloaded Tunloaded: clear profile and persisted workspace record",
+    "real ProjectService.deleteProject P2 cascading T3: clear project+task profile partitions, page+named popup/workspace/profile-state/recent"
+  ],
+  "profiles": 6,
+  "seededLivePages": 7,
+  "seededPopups": 2,
+  "unloadedTaskIsNotInWorkspaceMemory": true,
+  "syntheticArchivedOwner": "not actual terminal completion",
+  "knownStaticRisks": [
+    "browserRecent.v1:P2 not explicitly removed by frozen source",
+    "persisted unloaded workspace key not traversed by frozen workspace.reconcile"
+  ],
+  "businessReplayOrAutomaticRetries": 0
+}

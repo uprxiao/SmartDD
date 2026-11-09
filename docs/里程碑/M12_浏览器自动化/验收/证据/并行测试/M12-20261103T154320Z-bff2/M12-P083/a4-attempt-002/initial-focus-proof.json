@@ -1,0 +1,38 @@
+{
+  "sourceProbe": "/private/tmp/willyou-m12-p099-owned-app-focus-002",
+  "result": {
+    "at": "2026-11-05T09:13:02.503Z",
+    "group": "M12-P099",
+    "status": "passed-probe-only",
+    "checks": [
+      {
+        "name": "Native helper actually compiled normally",
+        "status": "passed"
+      },
+      {
+        "name": "One exact strong-owned app.focus steal:true after setup reload",
+        "status": "passed"
+      },
+      {
+        "name": "Actual OS frontmost+DOM+native window continuously stable1s then onceguard",
+        "status": "passed"
+      },
+      {
+        "name": "One real UI action has actual business result",
+        "status": "passed"
+      },
+      {
+        "name": "Direct child retains real normal exit code0/null without fallback",
+        "status": "passed"
+      }
+    ],
+    "rawSha256": "00520db22f40837ccb5257a4df0b530c62180e19079b89b2711a96da7c9925ca",
+    "actualForegroundTransition": false,
+    "causalityBoundary": "If already frontmost before activation, this probe proves one normal request plus real initial setup/UI, not that activation caused a missing-focus transition.",
+    "formalWholeCaseCount": 0
+  },
+  "cleanup": {
+    "allClear": true
+  },
+  "boundary": "Same supported exactowned once app.focus steal:true after desktopunlock, no nativeactivate; actualOS+DOMstable1s required. Probe App was alreadyfrontmost beforecall so no claimcaused missingfocus transition. No priorguard replay or laterreactivation."
+}

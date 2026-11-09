@@ -5,6 +5,7 @@ import {parse as parseToml} from 'smol-toml';
 import {boundedJson} from '@shared/application-bridge';
 import {codexConfigurationArgs,projectLayers} from '../capabilities/discovery';
 import {canonicalJson,digest} from './manifest';
+import {ApplicationError} from '@shared/applications';
 import type {TaskLaunchInput,NativeLaunchContext} from './native-launch-context';
 
 type ObjectValue=Record<string,unknown>;
@@ -22,6 +23,39 @@ export type CodexCliSandboxPlan={available:false;reason:string;source:string;dig
 const unsupported=(reason:string,digest:string|null=null):CodexCliSandboxPlan=>({available:false,reason,source:'unverified-effective-policy',digest});
 const merge=(first:ObjectValue,second:ObjectValue):ObjectValue=>{const result=structuredClone(first);for(const[key,value]of Object.entries(second))result[key]=object(value)&&object(result[key])?merge(result[key],value):structuredClone(value);return result;};
 
+const valueFlags=new Set(['--config','-c','--profile','-p','--model','-m','--ask-for-approval','-a','--local-provider']);
+function sandboxArgument(args:readonly string[],index:number):{mode:string|undefined;width:1|2}|null{
+  const arg=args[index];
+  if(arg==='--sandbox'||arg==='-s')return{mode:args[index+1],width:2};
+  if(arg.startsWith('--sandbox='))return{mode:arg.slice(10),width:1};
+  if(arg.startsWith('-s')&&arg.length>2)return{mode:arg.slice(2).replace(/^=/,''),width:1};
+  return null;
+}
+
+/** Remove only a proved equivalent legacy selector while the private named policy is delivered.
+ * Codex 0.166.0's ConfigOverrides.sandbox_mode otherwise overrides default_permissions.
+ * Approval flags (including --approve-for-me) retain their native semantics and order.
+ * Called only for a CLI-bearing run: disable native shell snapshots for that run so
+ * its environment-only authorization cannot be copied into the shell snapshot cache.
+ */
+export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSandboxPlan):string[]{
+  if(!policy.available)return [...args];
+  if(policy.kind!=='inherit')return [...args,'--disable','shell_snapshot'];
+  const output:string[]=[];let selectors=0;
+  for(let i=0;i<args.length;i++){
+    const arg=args[i];
+    if(valueFlags.has(arg)){output.push(arg);if(i+1<args.length)output.push(args[++i]);continue;}
+    const selector=sandboxArgument(args,i);
+    if(!selector){output.push(arg);continue;}
+    const expected=selector.mode==='read-only'?':read-only':selector.mode==='workspace-write'?':workspace':null;
+    if(!expected||policy.parent!==expected||++selectors>1)throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','显式sandbox参数与已核验的临时权限不等价');
+    i+=selector.width-1;
+  }
+  if(selectors&&args.some(arg=>['--approve-for-me','--not-so-yolo','--full-auto','--dangerously-bypass-approvals-and-sandbox','--yolo','--'].includes(arg)))
+    throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生参数组合尚未核验，不能改写sandbox参数');
+  return [...output,'--disable','shell_snapshot'];
+}
+
 /** Hash the complete security input. Named rules are inherited, never rebuilt from a mode label. */
 export function planCodexCliSandbox(input:{version:string;layers:readonly {source:string;config:ObjectValue;hash:string}[];args:readonly string[];requirements:CodexRequirementsProof}):CodexCliSandboxPlan{
   if(input.version!=='0.166.0')return unsupported('cli-version-unverified');
@@ -29,17 +63,23 @@ export function planCodexCliSandbox(input:{version:string;layers:readonly {sourc
   let valid=true,settings:ObjectValue={};const parsed=codexConfigurationArgs([...input.args],()=>{valid=false;});
   for(const layer of input.layers){if(!boundedJson(layer.config))return unsupported('configuration-budget');const selected=Object.fromEntries(keys.filter(k=>Object.hasOwn(layer.config,k)).map(k=>[k,layer.config[k]]));if(layer.source==='system'&&Object.keys(selected).length)return unsupported('system-policy-unverified');settings=merge(settings,selected);}
   for(const raw of parsed.overrides){let override:ObjectValue;try{override=plainJson(raw) as ObjectValue;}catch{return unsupported('configuration-budget');}settings=merge(settings,Object.fromEntries(keys.filter(k=>Object.hasOwn(override,k)).map(k=>[k,override[k]])));}
-  let extraDirectories=false;
+  let extraDirectories=false,explicitMode:string|undefined,selectors=0,bypass=false,autoReview=false;
   for(let i=0;i<input.args.length;i++){
-    const arg=input.args[i];let mode:string|undefined;
-    if(arg==='--sandbox'||arg==='-s')mode=input.args[++i];else if(arg.startsWith('--sandbox='))mode=arg.slice(10);else if(arg.startsWith('-s')&&arg.length>2)mode=arg.slice(2).replace(/^=/,'');
-    else if(arg==='--dangerously-bypass-approvals-and-sandbox'||arg==='--yolo')mode='danger-full-access';else if(arg==='--approve-for-me'||arg==='--full-auto')mode='workspace-write';
-    if(mode!==undefined)settings.sandbox_mode=mode;else if(arg==='--sandbox'||arg==='-s')valid=false;
+    const arg=input.args[i];
+    if(valueFlags.has(arg)){if(++i>=input.args.length)valid=false;continue;}
+    if(arg==='--'){valid=false;break;}
+    const selector=sandboxArgument(input.args,i);
+    if(selector){explicitMode=selector.mode;selectors++;i+=selector.width-1;if(!['read-only','workspace-write','danger-full-access'].includes(explicitMode??''))valid=false;}
+    if(arg==='--dangerously-bypass-approvals-and-sandbox'||arg==='--yolo')bypass=true;
+    if(arg==='--approve-for-me'||arg==='--not-so-yolo'||arg==='--full-auto')autoReview=true;
     if(arg==='--add-dir'||arg.startsWith('--add-dir=')||arg==='--cd'||arg.startsWith('--cd=')||arg==='-C')extraDirectories=true;
     if(arg==='--enable'||arg==='--disable'||arg.startsWith('--enable=')||arg.startsWith('--disable=')){const enabled=arg==='--enable'||arg.startsWith('--enable='),feature=arg.includes('=')?arg.slice(arg.indexOf('=')+1):input.args[++i];if(!feature){valid=false;break;}const features=object(settings.features)?settings.features:{};settings.features={...features,[feature]:enabled};}
   }
+  // The fixed native CLI rejects auto-review mixed with a sandbox/bypass selector.
+  if(selectors>1||autoReview&&(selectors>0||bypass))valid=false;
+  if(bypass)settings.sandbox_mode='danger-full-access';else if(explicitMode!==undefined)settings.sandbox_mode=explicitMode;else if(autoReview)settings.sandbox_mode='workspace-write';
   if(!valid||extraDirectories)return unsupported('effective-arguments-unverified');
-  const hash=digest(canonicalJson({version:input.version,settings,sources:input.layers.map(l=>({source:l.source,hash:l.hash})),requirements:input.requirements.hash}));
+  const hash=digest(canonicalJson({version:input.version,settings,args:input.args,sources:input.layers.map(l=>({source:l.source,hash:l.hash})),requirements:input.requirements.hash}));
   const mode=settings.sandbox_mode,permissions=object(settings.permissions)?settings.permissions:{},names=Object.keys(permissions);
   if(mode==='danger-full-access'&&!settings.default_permissions)return{available:true,kind:'unchanged',parent:null,networkProxy:false,enableNetwork:false,existingNames:names,source:'explicit-full-access',digest:hash};
   if(settings.sandbox_workspace_write!==undefined&&(!object(settings.sandbox_workspace_write)||Object.keys(settings.sandbox_workspace_write).length))return unsupported('legacy-workspace-rules-unverified',hash);

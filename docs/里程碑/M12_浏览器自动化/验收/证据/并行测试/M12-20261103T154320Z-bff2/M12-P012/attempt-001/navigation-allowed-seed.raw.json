@@ -1,0 +1,76 @@
+{
+  "step": "allowed-seed",
+  "profileId": "profile-A",
+  "protocol": "https",
+  "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+  "wcId": 1,
+  "startedAt": "2026-11-04T01:57:15.415Z",
+  "failureStart": 1,
+  "eventStart": 2,
+  "outcome": "loaded",
+  "document": {
+    "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+    "local": "p012-login-A",
+    "step": "allowed-seed"
+  },
+  "finishedAt": "2026-11-04T01:57:15.465Z",
+  "failed": [],
+  "events": [
+    {
+      "at": "2026-11-04T01:57:15.418Z",
+      "kind": "server-tls-error",
+      "error": "1151052285984:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+    },
+    {
+      "at": "2026-11-04T01:57:15.418Z",
+      "kind": "certificate-error-observed-only",
+      "profileId": "profile-A",
+      "wcId": 1,
+      "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+      "error": "net::ERR_CERT_AUTHORITY_INVALID",
+      "fingerprint": "0A:00:EC:60:11:3B:9C:50:F1:5C:2D:13:0A:74:58:2E:90:D4:3F:A0:66:93:AB:C8:07:8A:4C:D9:FB:42:23:56",
+      "isMainFrame": true
+    }
+  ],
+  "serverRequests": [
+    {
+      "at": "2026-11-04T01:57:15.419Z",
+      "protocol": "https",
+      "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+      "cookie": "",
+      "remoteAddress": "127.0.0.1",
+      "sni": "m12-cert.test"
+    }
+  ],
+  "saved": {
+    "memoryA": {
+      "schemaVersion": 1,
+      "certificates": [
+        {
+          "host": "m12-cert.test",
+          "createdAt": 1793757435413
+        }
+      ],
+      "permissions": []
+    },
+    "memoryB": {
+      "schemaVersion": 1,
+      "certificates": [],
+      "permissions": []
+    },
+    "persisted": [
+      {
+        "key": "browserProfileState.v1:profile-A",
+        "value": "{\"schemaVersion\":1,\"certificates\":[{\"host\":\"m12-cert.test\",\"createdAt\":1793757435413}],\"permissions\":[]}",
+        "updated_at": 1793757435414
+      }
+    ],
+    "reloadedTrustedA": true,
+    "reloadedTrustedB": false
+  },
+  "certificateStatus": {
+    "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+    "host": "m12-cert.test",
+    "error": "net::ERR_CERT_AUTHORITY_INVALID"
+  }
+}

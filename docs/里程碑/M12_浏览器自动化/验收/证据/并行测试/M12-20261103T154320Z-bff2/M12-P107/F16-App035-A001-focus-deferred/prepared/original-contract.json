@@ -1,0 +1,70 @@
+{
+  "at": "2026-11-07T15:04:53.255353+00:00",
+  "parent": "M12-T130",
+  "M12Level": "Original U+A; M9 I label provenance, no new I/R scope",
+  "originalCase": "M9-T-F16",
+  "originalRow": "| **M9-T-F16 TeX源码与编译**<br>M9-R06.6 | 本期本机 | 单元／集成／安装端到端<br>I+A / D07 | 普通打开tex；显式富预览成功/失败/无结果各一次。 | 源码可看；编译provider不可用时入口明确状态；可用时，生成PDF或源码fallback；不偷偷运行任意shell。<br>依据：V F07 | P08/P11；本条I/A完整通过；原型模型/构建与P界面结论分开；工程依赖：D02<br>实际：r20实际App三份TeX均默认源码，显式编译成功生成一页PDF、缺包失败、空document无页面失败各一次，均返回完整源码；原hash/inode/mtime/ctime不变，无项目输出且私有job清空。另以独立私有克隆App仅移开其TeX目录，验证资源不可用的ENOENT明确错误、无PDF、源码返回；原包完整保留，克隆不重签名。I实际包内broker/Tectonic/系统沙箱并由pdf-lib/PDF.js独立核对结果，未配置provider明确UNSUPPORTED、错误/无页不签发结果。无页是Tectonic报告No pages of output后失败，不误写exit0。11项相关代码通过，未宣称全部宏包/预算/长期生命周期。 | 通过 | [记录](证据/m9-acceptance-pdf-tex-dev067-r20-20261018.json) |",
+  "mapping": {
+    "case": "M9-T-F16",
+    "title": "TeX源码与编译",
+    "category": "viewer-dispatch-and-preview",
+    "originalEnvironments": [
+      "I",
+      "A"
+    ],
+    "originalSteps": "普通打开tex；显式富预览成功/失败/无结果各一次。",
+    "originalExpected": "源码可看；编译provider不可用时入口明确状态；可用时，生成PDF或源码fallback；不偷偷运行任意shell。",
+    "oldOriginalDriversToReuse": [
+      "static-viewers-ui.mjs",
+      "viewer-navigation-ui.mjs"
+    ],
+    "currentU": "Prepared selected pure source suites only; covers modeled/store/component predicates where mapped, not a complete original I/P/A case.",
+    "currentA": "Not executed / focus-safe current App driver adaptation remaining.",
+    "currentT130Credit": 0
+  },
+  "requiredA": [
+    {
+      "id": "F16-A1",
+      "criterion": "All three original .tex open by real file UI as complete exact CodeMirror source; explicit compile only."
+    },
+    {
+      "id": "F16-A2",
+      "criterion": "Real packaged offline provider success yields PDF with TEXF16SUCCESS and positive real canvas; source roundtrip exact."
+    },
+    {
+      "id": "F16-A3",
+      "criterion": "Original missing-package failure diagnostic retains willyoumissingpackagef16; no PDF; recompile entry; source roundtrip exact."
+    },
+    {
+      "id": "F16-A4",
+      "criterion": "Original emptydocument gets distinct No pages of output failure, not exit0/noemptyPDF; source exact."
+    },
+    {
+      "id": "F16-A5",
+      "criterion": "Exact private clone only TeX resources absent shows explicit provider unavailable error/noPDF/source return; original App unmodified, no resign; FI separate."
+    },
+    {
+      "id": "F16-A6",
+      "criterion": "For these fixed public fixtures, record real compile receipts and package/broker identity; fixed source requires sandbox-exec/--untrusted/--only-cached exactbundle. Source policy and actual-run observations are separate; no universal arbitrary-input shell/network claim."
+    },
+    {
+      "id": "F16-A7",
+      "criterion": "Three sources full sha/size/dev/inode/mode/mtime/ctime identical; no project outputs; private jobs empty after normal App exit."
+    },
+    {
+      "id": "F16-A8",
+      "criterion": "Current once exact PID activation/nativeDOM stable3s/strictguard per instance; immediate percase evidence/observer restored/normal0null/noSignals/independent exact cleanup."
+    }
+  ],
+  "existingValidEvidence": [
+    "Current253pureU general file/classification/store retained; not rerun",
+    "Completed other A do not cover F16",
+    "M9 F16 r20 I/A original contract/fixture/driver provenance only, not current A"
+  ],
+  "currentEvidenceGap": "No F16 current A in authoritative T130/P107 accepted groups. F18 original fixture directory absent, not chosen.",
+  "fixtureGenerator": "/private/tmp/willyou-m12-browser-code-style-source-039/source/scripts/files/tex-acceptance-fixtures.py",
+  "fixtureGeneratorSHA256": "f01e856fa0c579702fcab3b1e9fdcff23729953ef79f4b683405e6f891ba48cf",
+  "actualExecution": 0,
+  "formalIncrement": 0,
+  "fullT130Passed": false
+}

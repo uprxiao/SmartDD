@@ -1,0 +1,79 @@
+{
+  "arm": "certificate-event",
+  "tag": "allow-seed",
+  "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+  "wcId": 10,
+  "startedAt": "2026-11-04T01:36:33.328Z",
+  "eventsStart": 19,
+  "requestsStart": 12,
+  "outcome": "loaded",
+  "document": {
+    "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+    "local": "p011-certificate-event",
+    "document": {
+      "arm": "certificate-event",
+      "tag": "allow-seed",
+      "seed": true,
+      "marker": "p011-certificate-event"
+    }
+  },
+  "finishedAt": "2026-11-04T01:36:33.377Z",
+  "events": [
+    {
+      "at": "2026-11-04T01:36:33.336Z",
+      "arm": "certificate-event",
+      "stage": "allow-seed",
+      "kind": "onBeforeRequest",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+      "resourceType": "mainFrame",
+      "wcId": 10,
+      "own": true,
+      "guardBlocked": false,
+      "blocked": false
+    },
+    {
+      "at": "2026-11-04T01:36:33.339Z",
+      "kind": "server-tlsClientError",
+      "error": "1116692547616:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+    },
+    {
+      "at": "2026-11-04T01:36:33.339Z",
+      "arm": "certificate-event",
+      "stage": "allow-seed",
+      "kind": "certificate-error",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+      "error": "net::ERR_CERT_AUTHORITY_INVALID",
+      "pin": "18a6fa841b1c11f9b18f68be2f1b19f74adeb8378b29cd640dc84697cd93182c",
+      "pinMatched": true,
+      "isMainFrame": true,
+      "trusted": true,
+      "wcId": 10
+    }
+  ],
+  "exactServerRequests": [
+    {
+      "at": "2026-11-04T01:36:33.340Z",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+      "method": "GET",
+      "cookie": "",
+      "arm": "certificate-event",
+      "tag": "allow-seed",
+      "connectionId": 7,
+      "remoteAddress": "127.0.0.1",
+      "sni": "m12-cert.test"
+    }
+  ],
+  "allRequestsAfterStart": [
+    {
+      "at": "2026-11-04T01:36:33.340Z",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+      "method": "GET",
+      "cookie": "",
+      "arm": "certificate-event",
+      "tag": "allow-seed",
+      "connectionId": 7,
+      "remoteAddress": "127.0.0.1",
+      "sni": "m12-cert.test"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-04T03:49:12.437Z",
+  "originalResult": "result.initial.json",
+  "originalAdjudicator": "adjudicate.mjs",
+  "originalSha256": "e8dfaba0567cf576a37dff181284fb09a86eaa47cdc96c987fb33d2d06fa3716",
+  "correctedSha256": "1f8715e5a3cdc0c5789d4a42bf5e3426837e3257a24df4d8841f3e0d885a2044",
+  "corrections": [
+    {
+      "id": "viewport-desktop-scale",
+      "classification": "independent-checker",
+      "detail": "Original T086/environment fixture defines width as innerWidth. Recorded innerWidth912,height684,DPR1.5 match. Extra visualViewport.width===912 predicate improperly forbade ordinary vertical scrollbar space (actual897). Retain original viewport dimensions/scale and mobile visualViewport checks; remove only extra desktop visualWidth equality."
+    },
+    {
+      "ids": [
+        "geolocation-pending-uses-real-production-user-precondition",
+        "geolocation-real-page-coordinates-match-cli"
+      ],
+      "classification": "fixture-observer",
+      "detail": "CLI tab creation correctly leaves workspace.activeId null. workspace.permission addresses active UI tab, not the specific CLI target. Raw beforeGrant activeId null proves observer is wrong for this branch; lack of target prompt/coords evidence is incomplete I, not product failure. No retry/permission approval was sent."
+    }
+  ],
+  "retainedProductFailure": "media dark/reduce native command exit0 but actual matchMedia reduced=false; fixed .4 commands.rs uses bare reduced-motion marker whereas host sends --reduced-motion reduce",
+  "businessReplayed": false,
+  "productionChanged": false
+}

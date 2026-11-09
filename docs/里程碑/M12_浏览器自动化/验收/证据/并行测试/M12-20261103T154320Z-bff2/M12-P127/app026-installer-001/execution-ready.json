@@ -1,0 +1,152 @@
+{
+  "schema": "m12-app026-installer-affected-ready-v1",
+  "at": "2026-11-06T08:00:24.036336+00:00",
+  "group": "M12-App026-S6-affected",
+  "cases": [
+    "M12-T140",
+    "M12-T143"
+  ],
+  "status": "READY-App026-bound-inputs-await-Root-full-installer-lease",
+  "root": "/private/tmp/willyou-m12-app026-installer-001",
+  "role": "File preparation only; actual complete resource lease and execution assigned by Root",
+  "currentApp": "/private/tmp/willyou-m12-s2-package-026/mac-arm64/WillYou.app",
+  "asarSha256": "49c38b61f6ed48eddf79aa639af881d7bba7e9eaf881950ffd70f2a76ded5c73",
+  "executableSha256": "cdabf32bfb03c44e55c356b86a314d5b01dee2baa9d82be095ace02987e1ba04",
+  "sourceManifest": "/private/tmp/willyou-m12-t091-source-030/source-inputs.json",
+  "sourceManifestSha256": "6bef94caf3a7ceb9b7bbcc7061e66ef8693f5065849302382bd8ea0266085af7",
+  "Electron": "42.11.14 verifiedactualCFBundleVersion; acceptedexplicitBuilderFlag retained",
+  "preparedInputs": {
+    "path": "/private/tmp/willyou-m12-app026-installer-001/prepared-inputs.json",
+    "sha256": "c20071e4d86042f1edda815fd344cefd2a4db1c8be535956298a35d98a7a8c42",
+    "files": 217
+  },
+  "originalContract": {
+    "T140": {
+      "originalLayer": "A",
+      "precondition": "macOS arm64打包",
+      "steps": "检查包内agent-browser二进制路径/签名/sha256/原生模块；安装后启动并执行一条命令",
+      "expected": "版本/hash与登记一致，原生通过，命令成功"
+    },
+    "T143": {
+      "originalLayer": "A",
+      "precondition": "上一版本包与M12包",
+      "steps": "比较同平台同格式包大小",
+      "expected": "记录增量并按agent-browser二进制/全部资源/其他应用资源分账，压缩DMG差不冒充内核大小"
+    }
+  },
+  "reuse": [
+    {
+      "path": "/private/tmp/willyou-m12-app025-installer-001/execution-ready.json",
+      "sha256": "272096f3125f3535b14c6fed9c49d10a9c4603760c7ea98f65ad774e11d27d8c",
+      "applies": "Accepted exact nine-stage workflow and original contracts, not current App026 execution proof"
+    }
+  ],
+  "mustNewExecute": [
+    "Privateprepackagedwrapping with actualApp026ASAR/exe and exactElectron42.11.14, sourceinputsunchanged",
+    "Read-onlyownDMGmounts/privateinstall, compareallpayloadentriesbytes/modes/symlinksinput=DMG=installed then detachowneddevices",
+    "Actualinstalledbinary signature/hash/version/arm64 and6native smoke checks",
+    "Actualinstalledexec/resources/userData/DOM and original3stockmanagedCLI commands plusnormalexit/exactindependentcleanup",
+    "Freshsame-formatDMGanduncompressedtwoinventory/perfiledelta/kernel+allengineResources+otherresourceT143accounting, Rootindependentsumreview"
+  ],
+  "commandsSequential": [
+    {
+      "id": "P127-01-private-copy",
+      "shell": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/cache WILLYOU_P111_PREPARED_SHA=c20071e4d86042f1edda815fd344cefd2a4db1c8be535956298a35d98a7a8c42 /usr/bin/python3 /private/tmp/willyou-m12-app026-installer-001/prepare-native-input.py --execute",
+      "mustProduce": "evidence/private-copy-result.json; current176pins/private distinctinode; cachedtrusted baselinecopy; no sharedwriter"
+    },
+    {
+      "id": "P127-02-prepackaged-dmg",
+      "shell": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app026-installer-001/build-installer-002.py --execute",
+      "mustProduce": "evidence/attempt-002/candidate-installer.json; explicitElectron42.11.14/publishnever/originalinputpreservationtrue"
+    },
+    {
+      "id": "P127-03-existing-gate-path-copy",
+      "shell": "/bin/cp -p /private/tmp/willyou-m12-app026-installer-001/evidence/attempt-002/candidate-installer.json /private/tmp/willyou-m12-app026-installer-001/evidence/candidate-installer.json",
+      "mustProduce": "exact candidateJSON copied to originalinstall driverexpectedpath; retainedattempt2logs unchanged"
+    },
+    {
+      "id": "P127-04-install-payload-size",
+      "shell": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app026-installer-001/install-and-compare.py --execute",
+      "mustProduce": "input=readonlyDMG=privateinstalled complete bytes/modes/symlinks; ownmountsdetached; fulltwoinventories/changedentrysizeaccounting"
+    },
+    {
+      "id": "P127-05-actual-installed-native",
+      "shell": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app026-installer-001/check-installed-native.py --execute",
+      "mustProduce": "actualinstalledhelper signature/version/arm64/hash and6nativepassed"
+    },
+    {
+      "id": "P127-06-bind-current-startup-pins",
+      "shell": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 /usr/bin/python3 /private/tmp/willyou-m12-app026-installer-001/bind-installed-pins.py --execute",
+      "mustProduce": "currentrootactualinstall/nativeproofSHA and installedfile criticalpins verified; pinfinalReadytrue and startupreadyrehashed; evidence/startup-pin-binding.json"
+    },
+    {
+      "id": "P127-07-actual-installed-startup",
+      "shell": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-app026-installer-001/installed-startup-001/run.mjs --execute",
+      "mustProduce": "actualApp026installedexec/resources/userData/DOM; stockmanagedCLI identity/create/snapshot exactlyonce; normal0/null/signals[]"
+    },
+    {
+      "id": "P127-08-independent-startup-cleanup",
+      "shell": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cleanup.mjs --verify",
+      "mustProduce": "onlythisrunPID/ports/Unix/helper absence/allClear"
+    },
+    {
+      "id": "P127-09-original-startup-adjudication",
+      "shell": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-app026-installer-001/installed-startup-001/judge.mjs",
+      "mustProduce": "original8criteria,acceptedexactrootuserdatafixturecorrection; no newformalcasecount"
+    }
+  ],
+  "executionPolicy": "Stop at firstfailedphase; preserveactualPID/stage/logs, diagnosebeforeanyretry. No blindrebuild/restart, no unknownkill. Never overlapRootorotherNative/build lease. Packaging/install/native are heavyexclusive; startupnoUI/modelmatrix. Onlyownmountdevicesmaydetach.",
+  "startupPinPolicy": "App026 identity must first bind from actual source030/build result; phase06 still requires this root actual installation/native evidence, then Root reviews new startup ready SHA.",
+  "verification": {
+    "inheritedFrozenStartupInputs": 186,
+    "currentAppBinding": true,
+    "staticASTOnly": true,
+    "noFreshStaticOrRuntimeTestClaim": true
+  },
+  "boundary": "Current App026/source030 pending exact binding. Original App025 result stays referenced, never current-green. No Native/App/OS/CLI/HTTP/tests/build/model execution. No visual/focus or external system-input claim.",
+  "Native": 0,
+  "App": 0,
+  "OSProbes": 0,
+  "PTY": 0,
+  "CLI": 0,
+  "HTTP": 0,
+  "wrapperBuilds": 0,
+  "compile": 0,
+  "modelCalls": 0,
+  "resourcesHeld": false,
+  "formalCaseIncrement": 0,
+  "firstSixExecute": "WILLYOU_P127_ROOT_LEASE=Root-App026-exclusive WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app026-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app026-installer-001/run-first-six.py",
+  "finalResourceCheck": "/usr/bin/python3 /private/tmp/willyou-m12-app026-installer-001/check-final-resources.py",
+  "noCurrentPayloadCopied": true,
+  "privateOutputs": {
+    "DMG": "/private/tmp/willyou-m12-app026-installer-001/installer-output-002",
+    "privateInstalledApp": "/private/tmp/willyou-m12-app026-installer-001/Installed Applications/WillYou.app",
+    "prepackagedCopy": "/private/tmp/willyou-m12-app026-installer-001/installer-input/WillYou.app",
+    "sourceRebuild": false
+  },
+  "pureChecks": {
+    "at": "2026-11-06T08:00:24.036336+00:00",
+    "status": "pure-file-prechecks-passed",
+    "PythonAST": 8,
+    "NodeSyntax": 8,
+    "generatedExpressionAndOriginalJudgeControls": "installed-startup-001/static-check.json",
+    "positiveJudgeGates": 8,
+    "negativeJudgeControls": 8,
+    "positiveInstallationGate": 1,
+    "negativeInstallationControls": 8,
+    "Native": 0,
+    "App": 0,
+    "modelRequests": 0,
+    "wrapperBuilds": 0,
+    "mounts": 0,
+    "installs": 0,
+    "sourceRebuild": 0,
+    "privateCache": "/private/tmp/willyou-m12-app026-installer-001/cache",
+    "startupPrivateCache": "/private/tmp/willyou-m12-app026-installer-001/installed-startup-001/cache",
+    "currentAppNotCopied": true,
+    "futureInstalledPathRead": false
+  },
+  "rootOriginalP127Unchanged": true,
+  "nativeExecuted": false,
+  "currentCriticalPins": 176
+}

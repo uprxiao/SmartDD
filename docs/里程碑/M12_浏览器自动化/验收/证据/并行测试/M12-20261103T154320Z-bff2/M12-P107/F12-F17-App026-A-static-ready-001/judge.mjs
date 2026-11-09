@@ -1,0 +1,12 @@
+import assert from'node:assert/strict';import{readFile}from'node:fs/promises';import{ROOT,save}from'./io.mjs';
+const r=JSON.parse(await readFile(ROOT+'/raw.json')),cleanup=JSON.parse(await readFile(ROOT+'/cleanup.json'));
+const checks={
+ original18Raster:r.raster.length===18&&r.raster.every(c=>c.openedBy==='real-ui-name-filter-option'&&c.noTextEditor&&c.sourceUnchanged&&(c.expected.decodeFailure?c.explicitDecodeFailure&&c.retryEntry&&c.retryClicked&&c.beforeRetry?.message.includes('无法解码此图像文件')&&c.afterRetry?.message.includes('无法解码此图像文件'):c.decoded?.complete&&c.decoded?.visible&&c.decoded.width===c.expected.width&&c.decoded.height===c.expected.height)),
+ compositorGif:r.raster.find(c=>c.expected.animation)?.animation?.samples.length===16&&r.raster.find(c=>c.expected.animation)?.animation?.red===true&&r.raster.find(c=>c.expected.animation)?.animation?.green===true,
+ transparentPng:JSON.stringify(r.raster.find(c=>c.expected.transparent)?.alpha)==='[0,255]',
+ originalFiveCsv:r.csv.length===5&&r.csv.every(c=>c.defaultSource&&c.sourceBefore.normalizedExact&&c.sourceAfter.normalizedExact&&c.sourceBytesAndIdentityExact&&c.tableSourceRoundtrip&&(c.file==='unclosed.tsv'?c.explicitError?.includes('引号未闭合'):c.file==='empty.csv'?c.emptyNotice==='空表格':c.grid.readonly==='true'&&c.grid.rowcount===5&&c.cells.length===20)),
+ exact60Cells:r.csv.flatMap(c=>c.cells).length===60&&r.csv.flatMap(c=>c.cells).every(c=>c.activeGrid&&c.readonly&&c.noExecutablePreview&&c.full===c.expected&&c.value===c.expected.replace(/[\r\n]/g,'')),
+ originalFilesUnchanged:JSON.stringify(r.before)===JSON.stringify(r.after)&&Object.keys(r.after??{}).length===23,
+ originalUiAndIsolation:r.status==='executed-unjudged'&&r.reloadCount===1&&r.initialFocus.status==='focused'&&r.initialFocus.actualStableMs>=3000&&r.focusGuards.length===1&&!r.focusGuard.yieldedAt&&r.tasksBefore.length===0&&r.tasksAfter.length===0&&r.actions.filter(x=>x.kind==='real-ui-file-open').length===23&&r.rendererErrors.length===0,
+ normalExitAndCleanup:r.appCleanup?.normalExitConfirmed===true&&r.appExit?.code===0&&r.appExit?.signal===null&&r.observedProcess?.signals.length===0&&r.cleanupErrors.length===0&&cleanup.allClear===true
+};const result={case:r.case,checks,passed:Object.values(checks).every(Boolean),formalIncrement:0,boundary:'Only original F12+F17 A sublayers. Does not close original whole T130/66 mappings, Native I or other formats.'};await save('judgement.json',result);console.log(JSON.stringify(result));if(!result.passed)process.exitCode=1;

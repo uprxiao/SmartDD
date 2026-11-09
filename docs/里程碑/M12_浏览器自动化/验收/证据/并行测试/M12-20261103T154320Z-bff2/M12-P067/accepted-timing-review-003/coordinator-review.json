@@ -1,0 +1,76 @@
+{
+  "at": "2026-11-05T15:56:33.841172+00:00",
+  "case": "M12-T114",
+  "status": "passed under explicitly accepted 19s/21s timing; coordinator final ledger pending",
+  "authorizationReference": "request_user_input_async/call_7fed2d48565448f4a77825d8dd8b74b3/0; actual user answer: 统一为第 19 秒显示、第 21 秒清除",
+  "oldStrictTimingRecordRetained": true,
+  "criteria": {
+    "S01/S02/S04/S06": "original actual App021 A passed",
+    "S03": "previous independent20/20 closes actual canceled browser.nav.wait alias",
+    "S05Accepted19/21": {
+      "taskId": "a3222f86-3781-44e1-b613-bac6d5d163a9",
+      "pageId": "01887dbc-7517-4bb0-80b4-869fca539e22",
+      "producerEndAtMs": 1793882993275,
+      "activeObservedMs": 19037,
+      "clearObservedMs": 20053,
+      "activeDots": 1,
+      "activeGlow": 1,
+      "clearDots": 0,
+      "clearGlow": 0
+    },
+    "normalCleanup": "both exact actual App0/null/signals[];34PID11TCP3Helper/Unix clear; previous current source025 review unchanged"
+  },
+  "negativeControls": [
+    {
+      "id": "no-active",
+      "rejected": true
+    },
+    {
+      "id": "no-clear",
+      "rejected": true
+    },
+    {
+      "id": "wrong-page",
+      "rejected": true
+    },
+    {
+      "id": "wrong-task",
+      "rejected": true
+    },
+    {
+      "id": "early-only",
+      "rejected": true
+    },
+    {
+      "id": "late-clear",
+      "rejected": true
+    },
+    {
+      "id": "active-workspace-mismatch",
+      "rejected": true
+    },
+    {
+      "id": "wrong-deadline",
+      "rejected": true
+    }
+  ],
+  "inputs": [
+    {
+      "path": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/raw.json",
+      "sha256": "95089836221648c7c98003c0181397669da8fe1c2a276f08b6488c5d13973fb1"
+    },
+    {
+      "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P067/cancel-review-001/result.json",
+      "sha256": "f06742c23a672b6db22b8334ace2369bce9370fe7356dba72e112484baaab35b"
+    },
+    {
+      "path": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P067/coordinator-review-006/coordinator-review.json",
+      "sha256": "eac929069e330575383d8d9ea645e4eba936a7334db45b307c08ab65ca3d3508"
+    },
+    {
+      "path": "src/main/core/browser/automation.ts",
+      "sha256": "32e461338e9fa1d24b2bde04d86c5d4c754428812c4c57b5c388c8704a0c9c43"
+    }
+  ],
+  "boundary": "Original actual raw not changed or rerun. New explicit user contract applied now; no claim original strict<=20s proved or failed. No production change, Native, new UI or clock override."
+}

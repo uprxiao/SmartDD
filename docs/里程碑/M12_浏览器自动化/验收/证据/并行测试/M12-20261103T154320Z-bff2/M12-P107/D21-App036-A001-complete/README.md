@@ -1,0 +1,4 @@
+Original D21 App036/source040 complete A only. Three exact original PNGs, three original synthetic fixtures, frozen local driver closure and external hash-only references are retained.
+raw.safe.json preserves all ten original judge predicates, real undo/redo/save/reopen/reference effects and source-protection facts. Native opaque root lease/ref authority fields are excluded; original private raw SHA retains provenance. Cleanup endpoints are hash-projected; original normal exit and independent resource absence remain distinct.
+The previous App035 geometry failure remains unchanged and is hash-referenced. The UI helper is exact-byte reused from the actual D11 pass; no original D21 business assertion was changed.
+No new Node/App/Native/OS run was performed for this projection; no public ledger modification or whole-T130 pass is asserted. Resources were already released.

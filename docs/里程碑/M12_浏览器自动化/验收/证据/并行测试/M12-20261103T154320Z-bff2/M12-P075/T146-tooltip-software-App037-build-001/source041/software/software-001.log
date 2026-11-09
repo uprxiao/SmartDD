@@ -1,0 +1,50 @@
+
+> smartdd@0.1.1 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs --maxWorkers=1 src/renderer/features/browser/tab-tooltip.test.tsx src/renderer/features/browser/workspace.test.tsx src/renderer/features/files/tree-path-tooltip.test.tsx src/main/core/browser/__tests__/workspace.test.ts
+
+[1108/091353.576265:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1108/091353.942883:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1108/091354.828556:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1108/091355.034950:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1108/091355.434858:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/renderer/features/browser/tab-tooltip.test.tsx (5 tests | 1 failed) 65ms
+   × does not reopen from an obsolete acknowledgement after switching tabs 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/browser/tab-tooltip.test.tsx > does not reopen from an obsolete acknowledgement after switching tabs
+AssertionError: expected last "vi.fn()" call to have been called with [ ObjectContaining{…} ]
+
+- Expected
++ Received
+
+  [
+    {
+      "open": false,
+-     "tabId": "page1",
++     "owner": "tab-tooltip:_r_9_:2",
++     "tabId": "page2",
++     "taskId": "t1",
+    },
+  ]
+
+ ❯ src/renderer/features/browser/tab-tooltip.test.tsx:62:23
+     60|   const view = render(<Fixture />); hover(); await tick(500); view.rer…
+     61|   await act(async () => capture(null)); expect(screen.queryByRole('too…
+     62|   expect(api.overlay).toHaveBeenLastCalledWith(expect.objectContaining…
+       |                       ^
+     63| });
+     64|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 31 passed (32)
+   Start at  09:13:53
+   Duration  1.85s (transform 170ms, setup 0ms, import 445ms, tests 351ms, environment 753ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

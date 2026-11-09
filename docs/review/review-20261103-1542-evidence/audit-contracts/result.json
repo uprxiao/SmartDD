@@ -1,0 +1,124 @@
+{
+  "at": "2026-11-03T07:39:02.227439+00:00",
+  "scope": "frozen R0.9 docs and necessary M11 source, static only",
+  "findings": [
+    {
+      "id": "C01",
+      "priority": "medium",
+      "title": "Known-not-started browser write errors become unknown writes in existing M11 path",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/需求.md:200",
+        "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:73",
+        "src/main/core/applications/tool-service.ts:165",
+        "src/main/core/applications/tool-service.ts:195",
+        "src/main/core/applications/capability-execution.ts:87",
+        "src/main/core/applications/capability-execution.ts:94",
+        "src/main/core/applications/execution-context.ts:315"
+      ],
+      "detail": "设计把BROWSER_PAUSED/STALE_REF等常规错误直接抛ApplicationError并预期退出2；M11在调用模块前将write effect设unknown，只有host-only applicationPreflightFailure标记可回到not-started；模块内业务前置检查已处于dispatched=true。按现稿接入将保持unknown，CLI退出5。需定义模块前置标记/调度边界，不仅改错误码大小写。",
+      "boundary": "static source chain, not production runtime reproduction"
+    },
+    {
+      "id": "C02",
+      "priority": "high",
+      "title": "observe grant can execute page-mutating JavaScript through read-classified wait --fn",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/需求.md:267",
+        "docs/里程碑/M12_浏览器自动化/需求.md:330",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:227",
+        "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:147"
+      ],
+      "detail": "P4 observe仅拒绝write能力，但wait --fn接受页面JS，仍是read；表达式(()=>{document.querySelector(\"button\").click();return true})()可执行点击。无需eval/exec即可违反observe不能写的承诺。这个问题不能靠exec白名单解决。",
+      "boundary": "design contradiction; coordinator asked to verify on controlled real page"
+    },
+    {
+      "id": "C03",
+      "priority": "medium",
+      "title": "Cookie journal rollback algorithm does not undo new cookie keys and races page writes",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/需求.md:351",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:179",
+        "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:129"
+      ],
+      "detail": "仅备份将替换域名的旧Cookie，再恢复备份，无法删除导入中新name/path的已写Cookie；页面同时写不加锁，还可能回滚覆盖并发登录或登出。纯字典反例已保存static-probes.json。需记录完整变更集合/原有不存在的条目并做补偿删除，定义并发策略。",
+      "boundary": "counterexample to documented algorithm; browser importer not implemented"
+    },
+    {
+      "id": "C04",
+      "priority": "medium",
+      "title": "T037 expects same run query after restart despite run-bound-only query policy",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:75",
+        "docs/里程碑/M12_浏览器自动化/需求.md:334",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:241",
+        "src/main/core/applications/cli-gateway.ts:80"
+      ],
+      "detail": "T037要求App重启后同一运行仍可查；需求限定本次运行并明确运行已结束返回not-found。真实App退出会撤销run/token，不能用原身份做此查询。需拆为同运行断连查询和重启后历史记录/新运行权限边界。",
+      "boundary": "document/identity-contract contradiction"
+    },
+    {
+      "id": "C05",
+      "priority": "medium",
+      "title": "No-migration statement conflicts with new browser_operations table",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:192",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:240"
+      ],
+      "detail": "持久化章节说只新增键、不改表、没有数据迁移，但回执章节新增browser_operations表。需列schema/迁移版本/索引/运行恢复/7天清理及升级回归。",
+      "boundary": "document contradiction; no production table added yet"
+    },
+    {
+      "id": "C06",
+      "priority": "medium",
+      "title": "Authoritative manifest acceptance case still requires 80 capabilities / 20 reads",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:145",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:219",
+        "docs/里程碑/M12_浏览器自动化/需求.md:173"
+      ],
+      "detail": "R0.9为81能力/21读/60写，T093仍检查80条和20读。另T089仍以set --reset裸开关操作，未与原生CLI显式值规则同步。",
+      "boundary": "document/test inconsistency"
+    },
+    {
+      "id": "C07",
+      "priority": "low",
+      "title": "Generator checks a Python mirror of argument rules, not the compiled native CLI",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/技研/命令映射/gen_command_map.py:89",
+        "docs/里程碑/M12_浏览器自动化/技研/命令映射/gen_command_map.py:175",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:221"
+      ],
+      "detail": "已验证的是native_parse Python mirror形态，并非原生执行；coverage检查仅映射字典key，不读取测试用例文件和步骤。应把证据说成静态格式检查，真实CLI解析/schema验证仍待S1。",
+      "boundary": "evidence wording and test limitation"
+    },
+    {
+      "id": "C08",
+      "priority": "low",
+      "title": "Rollback journal persists plaintext session values outside encrypted cookie storage",
+      "evidence": [
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:173",
+        "docs/里程碑/M12_浏览器自动化/技研/技术方案.md:179"
+      ],
+      "detail": "原分区Cookie宣称Safe Storage加密，新恢复日志却含原值JSON；未说明加密、文件权限、原子落盘/fsync和崩溃恢复前阻止页面访问。O11接受Agent读明文不等于明确接受磁盘明文备份。",
+      "boundary": "missing storage/atomicity design, not observed secret leak"
+    }
+  ],
+  "priorIssueStatus": {
+    "R01": "design changed, new C01 remains",
+    "R02": "top-level bypass fixed by explicit allowlist in design; no runtime policy implementation yet",
+    "R03": "design corrected",
+    "R04": "partial, C04 remains; D03 explicitly deferred",
+    "R05": "mapping corrected; T089 bare reset remains",
+    "R06": "design corrected via input union then normalization",
+    "R07": "design corrected incl queued cancellation",
+    "R10": "mostly corrected; C06 remains and several historical adjacent paragraphs stale",
+    "R11": "profile owner scope added in design; actual enforcement unverified",
+    "R13": "partial, C03/C08 remain",
+    "R15": "design corrected with three hash phases",
+    "R17": "popup lifecycle design added; runtime unverified"
+  },
+  "evidence": [
+    "static-probes.json"
+  ],
+  "runtimeTestsExecuted": false
+}

@@ -1,0 +1,225 @@
+{
+  "at": "2026-11-05T15:41:18.904Z",
+  "scope": "T043-local-probe-engineering-I-only",
+  "originalResult": {
+    "at": "2026-11-05T15:32:53.476Z",
+    "scope": "M12-T043-local-probe-engineering-I",
+    "checks": [
+      {
+        "id": "I01-real-immutable-current-run-plan",
+        "passed": true
+      },
+      {
+        "id": "I02-exact-one-local-synthetic-native-call",
+        "passed": true
+      },
+      {
+        "id": "I03-real-before-positive-same-stock-peer-host",
+        "passed": true
+      },
+      {
+        "id": "C01-normal-exit-exact-cleanup",
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "T043RPassed": false,
+    "actual35min": false,
+    "externalModelCalls": 0,
+    "UI_A_Claim": false,
+    "formalNewPasses": 0,
+    "boundary": "Only local synthetic-provider engineering feasibility. It does not authorize or replace original T043R new payload/real2100s."
+  },
+  "startedAt": "2026-11-05T15:32:10.179Z",
+  "finishedAt": "2026-11-05T15:32:20.565Z",
+  "actual35min": false,
+  "realExternalModel": false,
+  "formalNewPasses": 0,
+  "actor": {
+    "taskId": "12d2aea5-579a-4947-9441-e203f730b4c8",
+    "runId": "9b5ae587-7d3c-4157-9138-b9162b6b2a80",
+    "projectId": "8b65a695-cca0-4707-9696-ac2dcf45059a",
+    "planHash": "b383bf4a5244d7c884cf92dbe45f43327d272e6183e33e8768f8a74a452dce6c"
+  },
+  "engine": {
+    "version": "codex-cli 0.166.0",
+    "sha256": "39acf979729dd290f9a24ee38b2914e036c91b65952872e28ae2a6b88a7db7c1"
+  },
+  "provider": {
+    "host": "127.0.0.1",
+    "requestCount": 2,
+    "authorizationHeaders": 0,
+    "issuedCount": 1,
+    "errors": 0,
+    "declaredNativeCalls": [
+      {
+        "type": "function_call",
+        "name": "exec_command",
+        "callId": "t043_local_probe_only",
+        "arguments": "{\"cmd\":\"python3 .t043-fixtures/revocation_probe.py --start\",\"max_output_tokens\":5000,\"yield_time_ms\":1000}"
+      }
+    ]
+  },
+  "contexts": [
+    {
+      "approval": "on-request",
+      "sandbox": "workspace-write"
+    }
+  ],
+  "preHost": {
+    "operation_id": "67765c39-2a37-4c2c-9a88-0ce86916f413",
+    "request_id": "68f479ba-24be-4355-b48d-54761d8ced00",
+    "run_id": "9b5ae587-7d3c-4157-9138-b9162b6b2a80",
+    "task_id": "12d2aea5-579a-4947-9441-e203f730b4c8",
+    "project_id": "8b65a695-cca0-4707-9696-ac2dcf45059a",
+    "app_id": "browser",
+    "package_hash": "eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140",
+    "tool_name": "browser.tab.list",
+    "state": "succeeded",
+    "effect_state": "read-only",
+    "attempt_count": 1,
+    "started_at": "2026-11-05T15:32:18.539Z",
+    "ended_at": "2026-11-05T15:32:18.753Z"
+  },
+  "worker": {
+    "pid": 86663,
+    "birth": "darwin-proc-v1:1793892738:325262",
+    "sessionId": 86663,
+    "processGroup": 86663,
+    "parentBefore": 86662,
+    "parentAfter": 86662,
+    "sameCredentialUsed": true,
+    "sameEndpointUsed": true,
+    "bridgeStillSame": true,
+    "storage": "worker-memory-and-env-only",
+    "pre": {
+      "pid": 86667,
+      "tag": "probe-pre",
+      "identity": {
+        "pid": 86667,
+        "startedAt": "darwin-proc-v1:1793892738:349999"
+      },
+      "returncode": 0,
+      "completedMonotonicNs": 187763847734625,
+      "stdoutSha256": "0557dda61fb3b2d617d5296676013027b53d85c8a2a91ad5f1eeaf6e7d3dec14",
+      "summary": {
+        "protocolParsed": true,
+        "returncode": 0,
+        "success": true,
+        "capabilityId": "browser.tab.list",
+        "operationId": "67765c39-2a37-4c2c-9a88-0ce86916f413",
+        "requestId": "68f479ba-24be-4355-b48d-54761d8ced00",
+        "errorCode": null,
+        "effectState": "read-only",
+        "hostAuthRejected": false,
+        "businessOperationIdRequiredForDenial": false
+      }
+    },
+    "post": {
+      "pid": 86715,
+      "tag": "probe-post",
+      "identity": {
+        "pid": 86715,
+        "startedAt": "darwin-proc-v1:1793892739:556108"
+      },
+      "returncode": 2,
+      "completedMonotonicNs": 187764611652458,
+      "stdoutSha256": "4ef1013549d14920825e18d313b17b6d044c49bfc2b6e78a067ffa300b8cdf06",
+      "summary": {
+        "protocolParsed": true,
+        "returncode": 2,
+        "success": false,
+        "capabilityId": null,
+        "operationId": null,
+        "requestId": "3c74cce7-b213-4cc5-ba72-4eca55aa7a55",
+        "errorCode": "AUTH_REQUIRED",
+        "effectState": "not-started",
+        "hostAuthRejected": true,
+        "businessOperationIdRequiredForDenial": false
+      }
+    }
+  },
+  "stop": {
+    "issuedAt": "2026-11-05T15:32:19.174Z",
+    "currentRunAfter": null,
+    "ptyBefore": "c752a9ef-05ae-40ea-9a2f-25c5880cca25"
+  },
+  "windowBoundary": {
+    "initialWindowMayPresent": true,
+    "before": [
+      {
+        "id": 1,
+        "visible": true,
+        "focused": false
+      }
+    ],
+    "after": [
+      {
+        "id": 1,
+        "visible": false,
+        "focused": false
+      }
+    ],
+    "UIInputs": 0
+  },
+  "accountAuthFilePresent": false,
+  "cleanup": {
+    "at": "2026-11-05T15:33:57.491Z",
+    "allClear": true,
+    "pidCount": 14,
+    "pids": [
+      86348,
+      86363,
+      86371,
+      86372,
+      86474,
+      86569,
+      86637,
+      86638,
+      86639,
+      86646,
+      86662,
+      86663,
+      86667,
+      86715
+    ],
+    "portCount": 8,
+    "ports": [
+      49791,
+      49794,
+      49792,
+      49955,
+      49958,
+      49957,
+      49964,
+      49965
+    ],
+    "UnixSocketAndDirectoryCount": 2,
+    "allUnixAbsent": true,
+    "normalAppExit": {
+      "pid": 86363,
+      "code": 0,
+      "signal": null
+    },
+    "signalsSent": [],
+    "workerBirth": {
+      "pid": 86663,
+      "startedAt": "darwin-proc-v1:1793892738:325262"
+    },
+    "driverSession": {
+      "id": 20327,
+      "actualTerminalExitCode": 0,
+      "source": "tools.write_stdin terminal result original session, no signal reported"
+    },
+    "privateExactEvidence": "independent-cleanup.private.json",
+    "boundary": "Token/endpoint values or hashes are excluded from safe metadata; exact private path proof stays private."
+  },
+  "privateOriginalEvidence": [
+    "raw.private.json",
+    "cleanup.private.json",
+    "independent-cleanup.private.json",
+    "runtime-001/codex/sessions/",
+    "runtime-001/project/.t043-fixtures/"
+  ],
+  "boundary": "Private exact endpoint paths and values/hashes are not published here. App/worker before-positive→stop→old-token AUTH_REQUIRED is observed; original OpenAI real2100s R is independent."
+}

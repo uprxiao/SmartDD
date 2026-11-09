@@ -1,0 +1,598 @@
+{
+  "at": "2026-11-04T13:53:36.671Z",
+  "classification": "product-v2-facade-loses-authenticated-stable-run-lifetime-fail-closed",
+  "rootVerified": true,
+  "observedCLI": {
+    "label": "initial-control-actual-request",
+    "role": "t2",
+    "args": [
+      "browser",
+      "access",
+      "request",
+      "--task",
+      "c441a13a-0652-43e6-a7bf-da2d655f2034",
+      "--mode",
+      "control"
+    ],
+    "phase": "initial",
+    "startedAtMs": 1793800139322,
+    "raw": {
+      "kind": "cli-result",
+      "id": 1,
+      "pid": 19403,
+      "code": 2,
+      "signal": null,
+      "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"跨任务授权需要宿主签发的完整运行生命周期\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"f7f7f828-5c61-49fd-88ca-bc490691e90d\",\"requestId\":\"c7f5dfb6-a52a-4a84-b9ea-9e3f262c30a2\"}\n",
+      "stderr": "willyou-app: SCOPE_DENIED\n",
+      "timedOut": false
+    },
+    "finishedAtMs": 1793800140510,
+    "parsed": {
+      "error": {
+        "effectState": "not-started",
+        "code": "SCOPE_DENIED",
+        "layer": "auth",
+        "message": "跨任务授权需要宿主签发的完整运行生命周期",
+        "retryable": false,
+        "attemptCount": 1,
+        "nextAction": "核对本次错误后重新明确操作",
+        "retryExhausted": false
+      },
+      "operationId": "f7f7f828-5c61-49fd-88ca-bc490691e90d",
+      "requestId": "c7f5dfb6-a52a-4a84-b9ea-9e3f262c30a2"
+    }
+  },
+  "actualRunBindings": [
+    {
+      "role": "t1",
+      "taskId": "c441a13a-0652-43e6-a7bf-da2d655f2034",
+      "runId": "220ebb76-5668-4611-9258-acda3ab9d3e5",
+      "pid": 19317,
+      "snapshotHash": "67a67500e77e70dfd92f1dfd177de507d167b617ea26e3548ab465b005075b47",
+      "environmentKeys": [
+        "WILLYOU_RUN_TOKEN",
+        "WILLYOU_ENDPOINT"
+      ],
+      "at": 1793800137327
+    },
+    {
+      "role": "t2",
+      "taskId": "e0a81696-f3ed-43a3-980c-5351298731ad",
+      "runId": "98df097c-47c5-46d4-94a0-26362e18ac2e",
+      "pid": 19353,
+      "snapshotHash": "c9d56e86df59b5e64a8265fa5392c0a269372d6f21d28a73a80a7fb9741bcda5",
+      "environmentKeys": [
+        "WILLYOU_RUN_TOKEN",
+        "WILLYOU_ENDPOINT"
+      ],
+      "at": 1793800138751
+    }
+  ],
+  "sourceProof": [
+    {
+      "path": "src/main/core/applications/business-data-service.ts",
+      "sha256": "9813e108257303a25ea67c9dac2324b8925a85003d4e77b544d0f9db7023efd2",
+      "from": 46,
+      "to": 62,
+      "lines": [
+        {
+          "line": 46,
+          "text": "  resolve(version:1,method:string,binding:Readonly<ApplicationDataBinding>){"
+        },
+        {
+          "line": 47,
+          "text": "    const host=this.hosts.get(binding.appId);if(!host||!method.startsWith(binding.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');"
+        },
+        {
+          "line": 48,
+          "text": "    const handler=host.resolve(version,method,binding),execution=this.capabilities,contexts=this.contexts;"
+        },
+        {
+          "line": 49,
+          "text": "    if(!execution||!contexts)return handler;"
+        },
+        {
+          "line": 50,
+          "text": "    return{...handler,execute:(run,args,operation)=>{"
+        },
+        {
+          "line": 51,
+          "text": "      handler.authorize(run,operation.connectionId);"
+        },
+        {
+          "line": 52,
+          "text": "      const capability=execution.forMethod(binding,method,operation.contractMajor);"
+        },
+        {
+          "line": 53,
+          "text": "      return contexts.withAgent(run,binding,operation,handler.semantics,context=>execution.execute(contexts.caller(context),capability.id,operation.contractMajor,args,operation.signal));"
+        },
+        {
+          "line": 54,
+          "text": "    }} satisfies ReturnType<ApplicationDataHost['resolve']>;"
+        },
+        {
+          "line": 55,
+          "text": "  }"
+        },
+        {
+          "line": 56,
+          "text": "  resolveCapability(packageHash:string,toolName:string,contractMajor:number,entry:'mcp'|'cli'='mcp'){"
+        },
+        {
+          "line": 57,
+          "text": "    if(!this.capabilities)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有统一能力执行器');"
+        },
+        {
+          "line": 58,
+          "text": "    const route=this.capabilities.tool(packageHash,toolName,contractMajor,entry);return this.resolve(1,route.method,route.binding);"
+        },
+        {
+          "line": 59,
+          "text": "  }"
+        },
+        {
+          "line": 60,
+          "text": "  execute(context:ApplicationExecutionContext,method:string,input:unknown){"
+        },
+        {
+          "line": 61,
+          "text": "    const host=this.hosts.get(context.appId);if(!host?.execute||!method.startsWith(context.appId+'.'))throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前宿主没有该应用Data API');return host.execute(context,method,input);"
+        },
+        {
+          "line": 62,
+          "text": "  }"
+        }
+      ]
+    },
+    {
+      "path": "src/main/core/applications/capability-execution.ts",
+      "sha256": "7cedb899579c1141a7a0e08bc728e8728dadb1eeab6ca12e963db5c5a8fc2019",
+      "from": 63,
+      "to": 90,
+      "lines": [
+        {
+          "line": 63,
+          "text": "  async execute(caller:CallerContext,capabilityId:string,contractMajor:number,args:unknown,signal?:AbortSignal):Promise<unknown>{"
+        },
+        {
+          "line": 64,
+          "text": "    // Authentication precedes argument interpretation, slot/credential resolution and business work."
+        },
+        {
+          "line": 65,
+          "text": "    const context=this.contexts.contextFor(caller);"
+        },
+        {
+          "line": 66,
+          "text": "    let dispatched=false;"
+        },
+        {
+          "line": 67,
+          "text": "    try{"
+        },
+        {
+          "line": 68,
+          "text": "    if(caller.kind==='management'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','连接管理身份不能读取项目业务数据');"
+        },
+        {
+          "line": 69,
+          "text": "    const capability=this.declaration(context.packageHash,capabilityId,contractMajor);"
+        },
+        {
+          "line": 70,
+          "text": "    this.contexts.require(context,capability.permission);"
+        },
+        {
+          "line": 71,
+          "text": "    if(!capability.id.startsWith(context.appId+'.')||capability.semantics!=='read'&&(context.semantics!=='write'||caller.kind==='internal'))throw new ApplicationError('SCOPE_DENIED','本次调用上下文未授权该业务动作');"
+        },
+        {
+          "line": 72,
+          "text": "    if(caller.kind==='agent'&&(caller.entry==='cli'?capability.id!==context.action:capability.binding.mcp?.tool!==context.action&&!(capability.binding.fallback&&'mcp'in capability.binding.fallback&&capability.binding.fallback.mcp.tool===context.action)))throw new ApplicationError('SCOPE_DENIED','网关签发身份只允许当前固定能力');"
+        },
+        {
+          "line": 73,
+          "text": "    if(!boundedJson(args)||!args||typeof args!=='object'||Array.isArray(args))throw new ApplicationError('INVALID_INPUT','能力参数必须是有界对象');"
+        },
+        {
+          "line": 74,
+          "text": "    const key=context.packageHash+':'+capability.id;"
+        },
+        {
+          "line": 75,
+          "text": "    let contract=this.contracts.get(key);"
+        },
+        {
+          "line": 76,
+          "text": "    if(contractMajor===2&&!contract){"
+        },
+        {
+          "line": 77,
+          "text": "      const name=capability.binding.cli?capability.id:capability.binding.mcp?.tool??(capability.binding.fallback&&'mcp'in capability.binding.fallback?capability.binding.fallback.mcp.tool:capability.id),source=this.packages.packages.toolContractSources(context.packageHash,name);"
+        },
+        {
+          "line": 78,
+          "text": "      contract={input:this.validator.getValidator(JSON.parse(source.input) as JsonSchemaType),output:this.validator.getValidator(JSON.parse(source.output) as JsonSchemaType)};this.contracts.set(key,contract);"
+        },
+        {
+          "line": 79,
+          "text": "    }"
+        },
+        {
+          "line": 80,
+          "text": "    if(contract&&!contract.input(args).valid)throw new ApplicationError('INVALID_INPUT','能力参数不符合固定输入契约');"
+        },
+        {
+          "line": 81,
+          "text": "    const implementation=this.modules.capability(context.appId,capabilityId,contractMajor);"
+        },
+        {
+          "line": 82,
+          "text": "    return await this.contexts.withSignal(context,signal,async()=>{"
+        },
+        {
+          "line": 83,
+          "text": "      // A retained v1 external-write call can return an already claimed receipt without re-entering its provider."
+        },
+        {
+          "line": 84,
+          "text": "      // Only a compiled module can attest this; v2 callers use the dependency-free result capability."
+        },
+        {
+          "line": 85,
+          "text": "      const receiptOnly=capability.semantics==='external-write'&&this.packages.packages.get(context.packageHash).manifest.schema==='smartdd-app-package-v1'&&this.data.receiptOnly?.(context,implementation.method,args);"
+        },
+        {
+          "line": 86,
+          "text": "      if(!receiptOnly)await this.contexts.requireSlots(context,capability.slots.required);"
+        },
+        {
+          "line": 87,
+          "text": "      dispatched=true;"
+        },
+        {
+          "line": 88,
+          "text": "      const result=await this.data.execute(context,implementation.method,args);"
+        },
+        {
+          "line": 89,
+          "text": "      this.contexts.require(context,capability.permission);"
+        },
+        {
+          "line": 90,
+          "text": "      const value=contractMajor===2?this.result(caller,context,capability,result):result;"
+        }
+      ]
+    },
+    {
+      "path": "src/main/core/applications/modules/browser/index.ts",
+      "sha256": "516358130678b4191c5c44d35a4e846c43df5cc2ea72a2524986f3b035d9e998",
+      "from": 19,
+      "to": 46,
+      "lines": [
+        {
+          "line": 19,
+          "text": "    const rule=rules[method];"
+        },
+        {
+          "line": 20,
+          "text": "    if(version!==1||!rule||binding.appId!=='browser'||binding.entry!=='cli')"
+        },
+        {
+          "line": 21,
+          "text": "      throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器只接受已登记的CLI能力');"
+        },
+        {
+          "line": 22,
+          "text": "    return {"
+        },
+        {
+          "line": 23,
+          "text": "      semantics:rule.semantics,retry:rule.retry,timeoutMs:110000,"
+        },
+        {
+          "line": 24,
+          "text": "      authorize:(run:RunContext)=>{"
+        },
+        {
+          "line": 25,
+          "text": "        this.services.selections.requireApplicationEnabled(run.run.projectId,'browser');"
+        },
+        {
+          "line": 26,
+          "text": "        if(!run.snapshot.packages.some(item=>item.appId==='browser'&&item.packageHash===binding.packageHash&&item.allowedOperations.includes(rule.permission)))"
+        },
+        {
+          "line": 27,
+          "text": "          throw new ApplicationError('SCOPE_DENIED','本次运行未选用此浏览器能力');"
+        },
+        {
+          "line": 28,
+          "text": "      },"
+        },
+        {
+          "line": 29,
+          "text": "      execute:(run:RunContext,args:Record<string,unknown>,operation:ApplicationOperationContext)=>"
+        },
+        {
+          "line": 30,
+          "text": "        this.services.contexts.withAgent(run,binding,operation,rule.semantics,context=>this.execute(context,method,args,run.signal)),"
+        },
+        {
+          "line": 31,
+          "text": "    };"
+        },
+        {
+          "line": 32,
+          "text": "  }"
+        },
+        {
+          "line": 33,
+          "text": "  async execute(context:ApplicationExecutionContext,method:string,input:unknown,runSignal?:AbortSignal):Promise<unknown>{"
+        },
+        {
+          "line": 34,
+          "text": "    const rule=rules[method],command=commands.find(item=>item.id===method);"
+        },
+        {
+          "line": 35,
+          "text": "    if(!rule||!command)throw new ApplicationError('CAPABILITY_UNAVAILABLE','此浏览器命令尚未登记');"
+        },
+        {
+          "line": 36,
+          "text": "    this.services.contexts.require(context,rule.permission);"
+        },
+        {
+          "line": 37,
+          "text": "    const caller=this.services.contexts.caller(context);"
+        },
+        {
+          "line": 38,
+          "text": "    if(caller.kind!=='agent'||caller.entry!=='cli'||!context.projectId||!context.taskId||!context.runId)"
+        },
+        {
+          "line": 39,
+          "text": "      throw new ApplicationError('SCOPE_DENIED','浏览器需要宿主签发的项目任务CLI运行身份');"
+        },
+        {
+          "line": 40,
+          "text": "    this.services.selections.requireApplicationEnabled(context.projectId,'browser');"
+        },
+        {
+          "line": 41,
+          "text": "    if(!input||typeof input!=='object'||Array.isArray(input))throw new ApplicationError('INVALID_INPUT','浏览器参数必须为对象');"
+        },
+        {
+          "line": 42,
+          "text": "    const service=this.services.retained.get('browser') as BrowserService|undefined;"
+        },
+        {
+          "line": 43,
+          "text": "    if(!service)throw new ApplicationError('BROWSER_UNAVAILABLE','浏览器主进程服务尚未就绪');"
+        },
+        {
+          "line": 44,
+          "text": "    return service.execute({projectId:context.projectId,taskId:context.taskId,runId:context.runId,requestId:caller.requestId,"
+        },
+        {
+          "line": 45,
+          "text": "      operationId:context.operationId,signal:context.signal,runSignal,assertActive:()=>this.services.contexts.require(context,rule.permission)},"
+        },
+        {
+          "line": 46,
+          "text": "      command.command.slice(1).join(' '),input as Record<string,unknown>);"
+        }
+      ]
+    },
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "sha256": "1c913479f12e861ca50a223c6f9c577bdd3495cf0a38b08e89a2a20c6d80da54",
+      "from": 268,
+      "to": 282,
+      "lines": [
+        {
+          "line": 268,
+          "text": "    const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);"
+        },
+        {
+          "line": 269,
+          "text": "    const entry=binding.entry??'mcp';"
+        },
+        {
+          "line": 270,
+          "text": "    if(known.plan){const allowed=known.plan.allowed.find(c=>(entry==='cli'?c.capabilityId:c.mcpTool)===binding.toolName&&c.contractMajor===operation.contractMajor&&c.packageHash===binding.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','固定能力不在运行允许表中');requirePlanEntry(known.plan,allowed.capabilityId,operation.contractMajor,entry);}"
+        },
+        {
+          "line": 271,
+          "text": "    else if(entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');"
+        },
+        {
+          "line": 272,
+          "text": "    const selectedMajor=entry==='cli'&&known.snapshot.schema===3?known.snapshot.packages.find(p=>p.packageHash===binding.packageHash)?.capabilityContractMajors[binding.toolName]:entry==='mcp'?selected?.toolContractMajors[binding.toolName]:undefined;"
+        },
+        {
+          "line": 273,
+          "text": "    if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selectedMajor!==operation.contractMajor||(operation.entry??'mcp')!==entry||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');"
+        },
+        {
+          "line": 274,
+          "text": "    const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),stamp=this.selections.policyStamp(known.run.projectId,appId);"
+        },
+        {
+          "line": 275,
+          "text": "    const check=()=>{const current=this.deps.assertRun(known.run.runId);assertRunApplication(current,binding.appId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};"
+        },
+        {
+          "line": 276,
+          "text": "    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{"
+        },
+        {
+          "line": 277,
+          "text": "      this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry,requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));"
+        },
+        {
+          "line": 278,
+          "text": "      return work(context);"
+        },
+        {
+          "line": 279,
+          "text": "    },false);"
+        },
+        {
+          "line": 280,
+          "text": "  }"
+        },
+        {
+          "line": 281,
+          "text": "  withIndex<T>(parent:ApplicationExecutionContext<A>,permission:'mail.read'|'zentao.read',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{"
+        },
+        {
+          "line": 282,
+          "text": "    this.require(parent,permission);if(parent.scopeKind!=='project'||!parent.projectId)throw new ApplicationError('SCOPE_DENIED','来源刷新需要有效项目触发');const application=this.builtin.assertTrusted(parent.packageHash),id=randomUUID();"
+        }
+      ]
+    },
+    {
+      "path": "src/main/core/applications/run-registry.ts",
+      "sha256": "20268a5caea8cae63fa5edef97a41ef053ed4f6d5c32ad4f3d3ba02c08d545c9",
+      "from": 379,
+      "to": 397,
+      "lines": [
+        {
+          "line": 379,
+          "text": "    if(!child||child.state!=='active'||child.pid!==row.pid||child.process_started_at!==row.process_started_at||identity?.pid!==row.pid||identity.startedAt!==row.process_started_at)return null;"
+        },
+        {
+          "line": 380,
+          "text": "    return this.view(row);"
+        },
+        {
+          "line": 381,
+          "text": "  }"
+        },
+        {
+          "line": 382,
+          "text": "  /** Input provenance may only join an actual owned task/PTY, never renderer run claims. */"
+        },
+        {
+          "line": 383,
+          "text": "  inputContext(taskId:string,ptyId:string):RunContext|null{"
+        },
+        {
+          "line": 384,
+          "text": "    const rows=this.store.sqlite.prepare(\"SELECT run_id FROM capability_runs WHERE task_id=? AND pty_id=? AND owner_instance_id=? AND state='active'\").all(taskId,ptyId,this.instanceId) as {run_id:string}[];"
+        },
+        {
+          "line": 385,
+          "text": "    if(rows.length!==1||this.owned.get(rows[0].run_id)?.guard)return null;const context=this.assertActive(rows[0].run_id);return context.run.taskId===taskId?context:null;"
+        },
+        {
+          "line": 386,
+          "text": "  }"
+        },
+        {
+          "line": 387,
+          "text": "  /** Synchronous host policy hook; tools never choose their project/task/package context. */"
+        },
+        {
+          "line": 388,
+          "text": "  assertActive(runId: string): RunContext {"
+        },
+        {
+          "line": 389,
+          "text": "    const { row,owned,session,plan } = this.mine(runId);"
+        },
+        {
+          "line": 390,
+          "text": "    if (owned.abort.signal.aborted || row.state !== 'active' || row.revocation_state !== 'open') throw new ApplicationError('SCOPE_DENIED','当前运行已停止或尚未激活');"
+        },
+        {
+          "line": 391,
+          "text": "    const bindings = this.current(row,session); this.checkProtection(row,owned);"
+        },
+        {
+          "line": 392,
+          "text": "    return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };"
+        },
+        {
+          "line": 393,
+          "text": "  }"
+        },
+        {
+          "line": 394,
+          "text": "  bridgePreparation(runId: string): RunContext {"
+        },
+        {
+          "line": 395,
+          "text": "    const { row,owned,session,plan } = this.mine(runId);"
+        },
+        {
+          "line": 396,
+          "text": "    if (owned.abort.signal.aborted || !['prepared','active'].includes(row.state)) throw new ApplicationError('SCOPE_DENIED','当前运行不能准备工具桥');"
+        },
+        {
+          "line": 397,
+          "text": "    const bindings = this.current(row,session); this.checkProtection(row,owned); return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal,...(owned.scope?{applicationScope:owned.scope.applications.map(p=>p.appId),...(owned.scope.excludedApplications?{excludedApplications:owned.scope.excludedApplications.map(p=>({...p}))}:{})}:{}) };"
+        }
+      ]
+    },
+    {
+      "path": "src/main/core/browser/service.ts",
+      "sha256": "80155d7403ab7d66ad5ee0adf38c7025df3ca03bfe5dbf24618f85234e9856c9",
+      "from": 155,
+      "to": 164,
+      "lines": [
+        {
+          "line": 155,
+          "text": "  private admit(scope:BrowserScope,args:Record<string,unknown>,read=false,request=false,runningWrite=false):string{"
+        },
+        {
+          "line": 156,
+          "text": "    scope.assertActive();"
+        },
+        {
+          "line": 157,
+          "text": "    if(this.closed)throw new BrowserError('BROWSER_UNAVAILABLE','浏览器服务已关闭');"
+        },
+        {
+          "line": 158,
+          "text": "    if(this.options.taskProject(scope.taskId)!==scope.projectId)throw new ApplicationError('SCOPE_DENIED','当前运行没有这个任务的浏览器授权');"
+        },
+        {
+          "line": 159,
+          "text": "    if(scope.signal.aborted)throw scope.signal.reason??new ApplicationError('CANCELED','浏览器操作已取消');"
+        },
+        {
+          "line": 160,
+          "text": "    if(scope.runSignal){const binding={runId:scope.runId,taskId:scope.taskId,projectId:scope.projectId,signal:scope.runSignal};this.access.track(binding);this.automation.track(binding);}"
+        },
+        {
+          "line": 161,
+          "text": "    const taskId=args.task===undefined?scope.taskId:text(args.task);"
+        },
+        {
+          "line": 162,
+          "text": "    if(this.options.taskProject(taskId)!==scope.projectId||request&&taskId===scope.taskId)throw new ApplicationError('SCOPE_DENIED','只能访问本项目允许的浏览器任务');"
+        },
+        {
+          "line": 163,
+          "text": "    if(request){if(!scope.runSignal)throw new ApplicationError('SCOPE_DENIED','跨任务授权需要宿主签发的完整运行生命周期');return taskId;}"
+        },
+        {
+          "line": 164,
+          "text": "    if(taskId!==scope.taskId)this.access.require(scope.runId,taskId,read?'read':'write');"
+        }
+      ]
+    }
+  ],
+  "chain": [
+    "RunRegistry.assertActive returns genuine stable owned.abort.signal.",
+    "BrowserModuleData.resolve.execute can pass run.signal as fourth argument, but BusinessDataService v2 resolve replaces this executor with unified capability execution.",
+    "ApplicationCapabilityExecution calls data.execute(context,method,args); BusinessDataService.execute delegates only these three arguments.",
+    "BrowserModuleData.execute optional runSignal therefore remains undefined; BrowserService.admit rejects same-project access request before any grant prompt."
+  ],
+  "notFixtureSignalMissing": "Private host created/attached actual native managed run roots, same production ApplicationToolService/AdapterRegistry/ApplicationService data facade; no BrowserScope or runSignal injected by fixture.",
+  "safetyBoundary": "Request failed closed SCOPE_DENIED/not-started; no grant or target action. This does not overturn T096 cross-project rejection which occurs earlier in admit.",
+  "scope": "Only the first actual same-project grant request executed. No snapshot/click/gate/pause/manual/new-run/restart acceptance was reached."
+}

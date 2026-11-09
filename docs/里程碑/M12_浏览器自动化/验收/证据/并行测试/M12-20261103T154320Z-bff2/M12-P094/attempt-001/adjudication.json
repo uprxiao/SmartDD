@@ -1,0 +1,81 @@
+{
+  "at": "2026-11-05T07:31:11.376173+00:00",
+  "rows": [
+    {
+      "mode": "original",
+      "measured": 10000,
+      "warm": 1000,
+      "primaryNoForcedGcDelta": {
+        "rss": 49610752,
+        "heapUsed": 32607036,
+        "heapTotal": 40222720,
+        "external": -36,
+        "observedGcCount": 19
+      },
+      "separateLabPostGc": {
+        "rss": 84066304,
+        "heapUsed": 2786384,
+        "heapTotal": 9175040,
+        "external": 2561711
+      },
+      "checks": {
+        "pendingPromiseMapEmpty": true,
+        "allSyntheticValuesCorrect": true,
+        "sessionDisconnected": true,
+        "noListeningInspector": true
+      }
+    },
+    {
+      "mode": "stable",
+      "measured": 10000,
+      "warm": 1000,
+      "primaryNoForcedGcDelta": {
+        "rss": 24346624,
+        "heapUsed": 11481244,
+        "heapTotal": 17137664,
+        "external": -36,
+        "observedGcCount": 28
+      },
+      "separateLabPostGc": {
+        "rss": 73220096,
+        "heapUsed": 2754820,
+        "heapTotal": 3932160,
+        "external": 2561711
+      },
+      "checks": {
+        "pendingPromiseMapEmpty": true,
+        "allSyntheticValuesCorrect": true,
+        "sessionDisconnected": true,
+        "noListeningInspector": true
+      }
+    },
+    {
+      "mode": "direct",
+      "measured": 10000,
+      "warm": 1000,
+      "primaryNoForcedGcDelta": {
+        "rss": 2801664,
+        "heapUsed": 741148,
+        "heapTotal": 1310720,
+        "external": 0,
+        "observedGcCount": 10
+      },
+      "separateLabPostGc": {
+        "rss": 65961984,
+        "heapUsed": 2661180,
+        "heapTotal": 4194304,
+        "external": 2561711
+      },
+      "checks": {
+        "pendingPromiseMapEmpty": true,
+        "allSyntheticValuesCorrect": true,
+        "sessionDisconnected": true,
+        "noListeningInspector": true
+      }
+    }
+  ],
+  "scope": "Exact App020 executable/framework used only as fresh RunAsNode self-inspector lab; inspector driver+target share this lab process, differing from actual browserMain+externalWS harness. No model/browserApp/nativeCLI/userdata/clipboard/network/listener. P092 had ended/cleaned before this lab.",
+  "conclusion": "Unique-source pattern shows more primary transient heap/RSS allocation than stable argument/direct controls; after separate diagnostic GC heaps are close. Does not demonstrate permanent retention or prove how much original product RSS comes from observer. Next actual browser App control uses existing synchronous readonly mainEvaluate mode only for truly synchronous getter, preserves every original sampling/case criterion.",
+  "forcedGcBoundary": "Only after primary-end in these separate lab workers; original performance App never GC-forced or driver-mutated.",
+  "formalCaseCredit": 0
+}

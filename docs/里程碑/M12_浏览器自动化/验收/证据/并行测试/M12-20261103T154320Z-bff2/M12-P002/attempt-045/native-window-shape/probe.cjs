@@ -1,0 +1,2 @@
+const {app,BrowserWindow,WebContentsView}=require('electron');
+app.whenReady().then(()=>{const w=new BrowserWindow({show:false,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});console.log(JSON.stringify({electron:process.versions.electron,rootType:w.contentView.constructor.name,isWebContentsView:w.contentView instanceof WebContentsView,sameContents:w.contentView.webContents===w.webContents,children:w.contentView.children.length}));w.destroy();app.quit();});

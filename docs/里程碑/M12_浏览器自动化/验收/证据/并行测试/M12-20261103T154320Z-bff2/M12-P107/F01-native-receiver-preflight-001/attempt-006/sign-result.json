@@ -1,0 +1,30 @@
+{
+  "steps": [
+    {
+      "name": "sign-agent",
+      "command": [
+        "/usr/bin/codesign",
+        "--force",
+        "--sign",
+        "-",
+        "--timestamp=none",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "verify-agent",
+      "command": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--deep",
+        "--strict",
+        "--verbose=2",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "actualExecutableSHA256": "ba1301199523f879273597dcc93b95dc0935e236f8e0ef0bacdd6dc5a9ad073a",
+  "infoSHA256": "b62bba878047d70cdbc475bb8e3a7fb25d8e62d8331f05620f78f65349c1b4ca"
+}

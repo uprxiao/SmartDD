@@ -1,0 +1,266 @@
+{
+  "case": "T145",
+  "originalStates": [
+    {
+      "id": "B12-profiles-independent",
+      "source": "B12",
+      "title": "任务独立登录态",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "新建独立登录态",
+            "contains": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-profile-list [role=option]",
+            "text": "任务独立",
+            "contains": true
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "可信UI创建本次合成独立profile，真实列表/选中"
+      }
+    },
+    {
+      "id": "B12-profiles-clone",
+      "source": "B12",
+      "title": "克隆后登录态列表",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "克隆"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "可信UI克隆本次合成profile，真实列表"
+      }
+    },
+    {
+      "id": "B12-profiles-delete-confirm",
+      "source": "B12",
+      "title": "删除确认/长说明",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "新建独立登录态",
+            "contains": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-profile-list [role=option]",
+            "text": "任务独立",
+            "contains": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "删除"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI独立profile删除确认，不碰日常"
+      }
+    },
+    {
+      "id": "B12-profiles-sites",
+      "source": "B12",
+      "title": "站点权限与证书例外列表",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "address",
+            "value": "https://selfsigned.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-danger-link",
+            "text": "我了解风险，继续访问"
+          },
+          {
+            "kind": "address",
+            "value": "https://qa.example.test/",
+            "waitLoaded": true
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟站点申请位置"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-prompt button",
+            "text": "允许"
+          },
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "本机合成站点的真实UI例外与权限记忆，仅本profile"
+      }
+    },
+    {
+      "id": "B12-recovery-failed",
+      "source": "B12/R1.1",
+      "title": "登录态恢复失败提示/处理入口",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟导入恢复失败"
+          },
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "受控自有profile恢复失败故障前置；真实UI展示，原I隔离边界明示"
+      }
+    },
+    {
+      "id": "B12-recovery-clear-confirm",
+      "source": "B12/R1.1",
+      "title": "清空登录态确认长说明",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟导入恢复失败"
+          },
+          {
+            "kind": "menu",
+            "text": "登录态管理"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog button",
+            "text": "清空该登录态"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "真实UI清空确认，仅自有合成profile"
+      }
+    }
+  ],
+  "originalCombinations": [
+    {
+      "id": "light-rw480-win1440x900",
+      "theme": "light",
+      "rightWidth": 480,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw900-win1440x900",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1440x900",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1440x900",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw480-win1920x1080",
+      "theme": "light",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw900-win1920x1080",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    }
+  ],
+  "defaultExcludedAlreadyCovered": true,
+  "all48Preserved": true,
+  "layerContract": "All original P visual criteria/themes/window/rightwidth preserved. Mechanical pass cannot substitute original PNG review.",
+  "normal24UI": "Create and select independent, delete confirmation, actual confirmed own deletion, then default clone and actual selection; no profile mutation RPC.",
+  "sites8": "Requires local certificate exception and real geolocation Allow remembered then manager. Root identified T012 App025 TLS fixture. Real OS Allow may require explicit system precondition. No state/RPC faking.",
+  "recovery16": "Reuse original T081 G3 actual NativeStore write+rollback fault through true UI import. Do not write importState or Hoststore. Precise constructor/key/journal input pins and restoration required.",
+  "pending": "This executable subgroup covers normal24 only. Sites8 and recovery16 remain assigned and unexecuted."
+}

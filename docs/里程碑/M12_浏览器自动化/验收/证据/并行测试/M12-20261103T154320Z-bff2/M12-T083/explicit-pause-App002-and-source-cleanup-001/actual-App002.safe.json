@@ -1,0 +1,69 @@
+{
+  "at": "2026-11-08T05:51:48.195387+00:00",
+  "case": "M12-T083",
+  "status": "not-complete-user-paused",
+  "formalIncrement": 0,
+  "actualApp": "App038/source045",
+  "actualSession": 81475,
+  "originalRawPrivateSHA256": "bddac2a491b1b21d02cfc614bb80ed76fe1e6ad956d87be4cbf0a2cdf1d957bf",
+  "step": {
+    "family": "chrome",
+    "decision": "deny",
+    "confirmedAt": "2026-11-08T05:44:15.085Z",
+    "resultUI": {
+      "title": "导入未完成",
+      "text": "导入未完成\n\n系统加密存储不可用，恢复记录暂时不可读写\n\n完成"
+    },
+    "userDecision": {
+      "at": "2026-11-08T05:44:51.332003+00:00",
+      "observedBy": "user-live",
+      "promptShown": true,
+      "service": "Chrome Safe Storage",
+      "decision": "deny",
+      "statement": "已在 Chrome Safe Storage 弹窗点拒绝"
+    },
+    "before": {
+      "canonicalHash": "6a0aa602b0a30996c66bac86f37e77602e039d344715d349dc7a64132f0cebec",
+      "count": 1,
+      "names": [
+        "m12_t083_target_chrome"
+      ],
+      "controlledMatches": false,
+      "valuesArchived": false
+    },
+    "after": {
+      "canonicalHash": "6a0aa602b0a30996c66bac86f37e77602e039d344715d349dc7a64132f0cebec",
+      "count": 1,
+      "names": [
+        "m12_t083_target_chrome"
+      ],
+      "controlledMatches": false,
+      "valuesArchived": false
+    }
+  },
+  "failure": {
+    "stage": "WAIT-ACTUAL-USER-DECISION-RECEIPT-01",
+    "name": "AssertionError",
+    "message": "The expression evaluated to a falsy value:\n\n  assert(/钥匙串/.test(result.text)&&!/等待钥匙串授权超时/.test(result.text))\n",
+    "code": "ERR_ASSERTION"
+  },
+  "appExit": {
+    "pid": 18894,
+    "code": 0,
+    "signal": null
+  },
+  "cleanupErrors": [],
+  "corrections": [
+    "Source read/validation precedes journal cipher check in coordinator; native host keychain error -128 observed. User cannot recall actual item label. Do not claim source-denial pass or infer actual source-deny action from receipt wording.",
+    "RealHOME default keychain metadata available; privateHOME exit1. User reported system login-keychain reset flow, not an Allow dialog. Do not infer credential-item effects from path metadata.",
+    "Two real-browser persistent v10 encrypted synthetic sources were generated and normal-CDP closed after HOME correction; this is setup only."
+  ],
+  "nativeHostKeychainDiagnostic": {
+    "code": -128,
+    "name": "userCanceledErr",
+    "component": "components/os_crypt/common/keychain_password_mac.mm",
+    "actualLogAt": "2026-11-08 13:44:22.931138 local",
+    "sourceServiceIdentityNotProvenByThisLog": true
+  },
+  "next": "Review/finish independent host safeStorage preparation gate, allow correct SmartDD Safe Storage before source four-branch tests. Current four original S branches remain uncompleted. Do not replay old inputs."
+}

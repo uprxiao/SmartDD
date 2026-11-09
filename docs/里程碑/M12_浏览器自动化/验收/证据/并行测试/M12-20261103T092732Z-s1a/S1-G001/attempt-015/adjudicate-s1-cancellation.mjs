@@ -1,0 +1,7 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
+const [directory]=process.argv.slice(2),raw=JSON.parse(await readFile(join(directory,'result.json'),'utf8'));
+const stopped=helper=>helper&&['stopped','absent'].includes(helper.daemonState)&&helper.clientStopped&&helper.socketFilesRemoved;
+const checks={waitStarted:raw.waitBefore?.waits===1&&raw.waitBefore?.helperClientPid>1,actualSigterm:raw.waitSignal?.sent&&raw.waitRaw?.signal==='SIGTERM',waitStoppedBeforeLeaseRelease:raw.waitAfter?.waits===0&&raw.waitAfter?.helperClientPid===null&&raw.waitAfter?.activeLeases?.n===0&&stopped(raw.waitAfter?.helperCleanup),writeUnknownRequestId:raw.writeRaw?.code===5&&raw.writeParsed?.error?.effectState==='unknown'&&raw.writeParsed?.requestId===raw.disconnected?.requestId,sameRunQuery:[raw.queryImmediate,raw.queryFinal].every(x=>x?.raw.code===0&&['unknown','succeeded','failed'].includes(x.parsed.data?.state)),oneActualFormPost:raw.writeAfter?.commits?.length===1&&raw.writeAfter.commits[0].bytes===20&&raw.writeAfter.commits[0].sha256==='adb7f8ae81e3f0aa1ec0c1bbbb6c3a4d8f71e975e9ebd78b7afdc9617760db39',cleanup:raw.hostExit?.code===0&&raw.cleanup?.helpers?.every(stopped)};
+const verdict={at:new Date().toISOString(),case:'T037',layer:'I partial',checks,passed:Object.values(checks).every(Boolean)&&!raw.failure,fullCase:false,remaining:'Restart real App/new run not-found and actual activity UI'};
+await writeFile(join(directory,'adjudication.json'),JSON.stringify(verdict,null,2)+'\n');console.log(JSON.stringify(verdict));

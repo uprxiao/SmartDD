@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-07T06:17:30.332302+00:00",
+  "case": "M12-T095",
+  "status": "passed",
+  "requiredLayers": [
+    "A",
+    "R"
+  ],
+  "originalCriteriaSHA256": "81318d428df465a0a081f252c8271f97fe262a287167c7f33499a62795ee22c1",
+  "requirementUnchanged": true,
+  "originalCLICount": 17,
+  "originalCLIReuse": "Actual0048+7 and0062; no replay to completeUI",
+  "extra005SetupCLI": 1,
+  "actualModel": "gpt-6.1-sol",
+  "actualCLI": "Codex0.166.0 / stockwillyou-app",
+  "sandboxApproval": "workspace-write/on-request unchanged",
+  "acceptedCriteria": {
+    "ownAndUnauthorisedList": "Original004 actual own0/crossScope2; uniqueHost/typed/native outputs",
+    "observe": "ActualUIgrant/read0/writeScope2/waitFnScope2/counterunchanged",
+    "control": "ActualUIgrant/trustedwrite0/counter1",
+    "revokeQueued": "ActualUIrevoke3queuedwritesScope2/site0execution; declaredreadgatefixture retained",
+    "rejectAndTimeout": "ActualUIreject andunhandled60s Scope2/createdexpires audit proof",
+    "newRun": "005livegrant/realUIstopB-reopenC revocation/pagecontinuity;006newD originalown0/crossScope2",
+    "audit": "008actualtwooriginaloperationIDs details,visibleobserve/controlsource andtraceoperation/request/run/task; Rootread2PNG/actualraw"
+  },
+  "sources": [
+    {
+      "manifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T095/App027-fifteen-offline-001/manifest.json",
+      "sha256": "f40d18a46b85aabb888fca915f96e680af33873375f138048cdc050cc49f8e8a"
+    },
+    {
+      "manifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T095/C9-C10-cont005-setup-stop-partial/manifest.json",
+      "sha256": "0ce17dddb21e6bcc3e7cbab76eb40fbb897be75c23479c67d3991609332ebc9a"
+    },
+    {
+      "manifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T095/C9-C10-cont006-D2-complete-audit-pending/manifest.json",
+      "sha256": "33b1b00705996cde7bba452b45e5cf3d335051ba2c7e370acfdc6ed9c35790dd"
+    },
+    {
+      "manifest": "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T095/audit-UI008-complete/manifest.json",
+      "sha256": "75ce4cc3d8ca08cfdde6b5e8df6e926a6df5b7b113ccbea901c7716a05eb1b34"
+    }
+  ],
+  "actualFinalJudge": "10/10 business,5/5 admission",
+  "actualFinalSession": 83460,
+  "originalRedsPreserved": true,
+  "currentUIOnlyCalls": {
+    "newCLI": 0,
+    "newModel": 0,
+    "setup": 0,
+    "taskResume": 0
+  },
+  "cleanup": "All producerAppnormal0/null/noSignals; final5PID2TCP2Unix0helper+Rootawake reaped. Earlierexactcleanup immutable.",
+  "baseline": "App027/source031 fixed actual; source034 currentauth+activity implementation unchanged, scopeddownload/CSS deltas separate.",
+  "newCompleteUniqueCase": 1,
+  "previousAuthorityRow": "| M12-T095 | R06.3、P4、B11、review R03、review2 D02 | A＋R | P1 的 T1、T2，T2 开着网页标签；点击计数接口 | T1 的 Agent：`tab list --task T1`（自己）；`tab list --task T2`（未授权）；`access request --task T2 --mode observe` 用户允许后执行一次读、一次写、一次 `wait fn`；再申请 control 并允许后写一次；排入 3 条跨任务写命令时用户撤销；另申请一次让用户拒绝、一次 60 秒不处理；结束运行后新运行再执行 | `--task` 自己不需要授权；未授权 `SCOPE_DENIED`；申请在没有任何授权时也能弹窗；observe 能读，写与 `wait fn` 都被拒且计数不变；control 能写；撤销后排队命令全部 `SCOPE_DENIED`、站点零执行；拒绝与超时返回 `SCOPE_DENIED`；新运行不能沿用旧授权；审计标明授权来源 | M12-S5-RUN-SIGNAL已修复：P065真实v2软件115绿，P064002真实M11/nativeCLI正向pending/用户允许control、跨命令授权保持及run结束/新run不继承均复验。原001红保留；observe/control切换、撤销排队3条、拒绝/60秒超时的原A/R仍待，不能据补充I计整条通过。 | 部分通过 | [原生修复复验](证据/并行测试/M12-20261103T154320Z-bff2/M12-P064/coordinator-review-green.json)；[软件回归](证据/并行测试/M12-20261103T154320Z-bff2/M12-P065/attempt-002/RESULT.md) |"
+}

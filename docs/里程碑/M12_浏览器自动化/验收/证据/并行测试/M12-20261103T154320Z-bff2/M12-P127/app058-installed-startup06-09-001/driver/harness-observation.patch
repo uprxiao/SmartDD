@@ -1,0 +1,40 @@
+--- source025/electron-harness.mjs
++++ private/passive-observation-only/electron-harness.mjs
+@@ -77,6 +77,8 @@
+     ],
+     { cwd, env, stdio: ["ignore", "pipe", "pipe"] },
+   );
++  const observed = {pid:child.pid,spawnedAtMs:Date.now(),exit:null,signals:[],inspectorCloseRequests:[]};
++  child.once("exit",(code,signal)=>{observed.exit={atMs:Date.now(),code,signal};});
+   let logs = "";
+   child.stdout.on("data", (b) => {
+     logs += b;
+@@ -86,6 +88,7 @@
+   });
+   let ws, mainSession;
+   const closeMainInspection = () => {
++    observed.inspectorCloseRequests.push({atMs:Date.now()});
+     mainSession?.then(
+       (session) => session.close(),
+       () => {},
+@@ -510,6 +513,7 @@
+         };
+       },
+       processId: child.pid,
++      observedProcess: () => JSON.parse(JSON.stringify({...observed,currentCode:child.exitCode,currentSignal:child.signalCode})),
+       waitForExit: (timeoutMs = 15_000) => {
+         closeMainInspection();
+         return new Promise((resolve, reject) => {
+@@ -575,10 +579,10 @@
+         cdpListeners.clear();
+         if (child.exitCode === null && child.signalCode === null) {
+           const done = new Promise((r) => child.once("exit", r));
+-          child.kill("SIGTERM");
++          observed.signals.push({atMs:Date.now(),method:"close",signal:"SIGTERM",accepted:child.kill("SIGTERM")});
+           await Promise.race([done, pause(3000)]);
+           if (child.exitCode === null && child.signalCode === null)
+-            child.kill("SIGKILL");
++            observed.signals.push({atMs:Date.now(),method:"close",signal:"SIGKILL",accepted:child.kill("SIGKILL")});
+         }
+       },
+     };

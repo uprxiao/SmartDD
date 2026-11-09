@@ -1,0 +1,1 @@
+import{createHash}from'node:crypto';import{writeFile}from'node:fs/promises';export const ROOT="/private/tmp/willyou-m12-viewer-menu-App036-A-prep-003";export const sha=x=>createHash('sha256').update(x).digest('hex');export const save=(name,data)=>writeFile(ROOT+'/'+name,JSON.stringify(data,null,2)+'\n',{mode:0o600});

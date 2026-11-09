@@ -1,0 +1,365 @@
+{
+  "id": "certificate-event",
+  "mechanism": "event",
+  "revoke": [],
+  "freshAfter": true,
+  "mode": "event",
+  "partition": "persist:p011-certificate-event-0d627129-1d2d-4205-9333-367699594fa7",
+  "allowed": false,
+  "accepted": true,
+  "installations": 0,
+  "stage": "revoked-after-close",
+  "windows": [
+    {
+      "id": 10,
+      "wcId": 10,
+      "label": "navigation"
+    },
+    {
+      "id": 11,
+      "wcId": 11,
+      "label": "state-readback"
+    }
+  ],
+  "operations": [
+    {
+      "at": "2026-11-04T01:36:33.426Z",
+      "operation": "dynamic allow-set removal",
+      "allowed": false
+    },
+    {
+      "at": "2026-11-04T01:36:33.431Z",
+      "operation": "closeAllConnections for independent fresh-connection observation"
+    }
+  ],
+  "navigations": [
+    {
+      "arm": "certificate-event",
+      "tag": "allow-seed",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+      "wcId": 10,
+      "startedAt": "2026-11-04T01:36:33.328Z",
+      "eventsStart": 19,
+      "requestsStart": 12,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+        "local": "p011-certificate-event",
+        "document": {
+          "arm": "certificate-event",
+          "tag": "allow-seed",
+          "seed": true,
+          "marker": "p011-certificate-event"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.377Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.336Z",
+          "arm": "certificate-event",
+          "stage": "allow-seed",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+          "resourceType": "mainFrame",
+          "wcId": 10,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        },
+        {
+          "at": "2026-11-04T01:36:33.339Z",
+          "kind": "server-tlsClientError",
+          "error": "1116692547616:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+        },
+        {
+          "at": "2026-11-04T01:36:33.339Z",
+          "arm": "certificate-event",
+          "stage": "allow-seed",
+          "kind": "certificate-error",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID",
+          "pin": "18a6fa841b1c11f9b18f68be2f1b19f74adeb8378b29cd640dc84697cd93182c",
+          "pinMatched": true,
+          "isMainFrame": true,
+          "trusted": true,
+          "wcId": 10
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.340Z",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+          "method": "GET",
+          "cookie": "",
+          "arm": "certificate-event",
+          "tag": "allow-seed",
+          "connectionId": 7,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.340Z",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-seed&seed=1",
+          "method": "GET",
+          "cookie": "",
+          "arm": "certificate-event",
+          "tag": "allow-seed",
+          "connectionId": 7,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "arm": "certificate-event",
+      "tag": "allow-state-view",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+      "wcId": 11,
+      "startedAt": "2026-11-04T01:36:33.377Z",
+      "eventsStart": 22,
+      "requestsStart": 13,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+        "local": "p011-certificate-event",
+        "document": {
+          "arm": "certificate-event",
+          "tag": "allow-state-view",
+          "seed": false,
+          "marker": "p011-certificate-event"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.425Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.378Z",
+          "arm": "certificate-event",
+          "stage": "allow-state-view",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+          "resourceType": "mainFrame",
+          "wcId": 11,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.379Z",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+          "method": "GET",
+          "cookie": "p011_marker=p011-certificate-event",
+          "arm": "certificate-event",
+          "tag": "allow-state-view",
+          "connectionId": 7,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.379Z",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+          "method": "GET",
+          "cookie": "p011_marker=p011-certificate-event",
+          "arm": "certificate-event",
+          "tag": "allow-state-view",
+          "connectionId": 7,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "arm": "certificate-event",
+      "tag": "revoked-next-navigation",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-next-navigation",
+      "wcId": 10,
+      "startedAt": "2026-11-04T01:36:33.426Z",
+      "eventsStart": 23,
+      "requestsStart": 14,
+      "outcome": "loaded",
+      "document": {
+        "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-next-navigation",
+        "local": "p011-certificate-event",
+        "document": {
+          "arm": "certificate-event",
+          "tag": "revoked-next-navigation",
+          "seed": false,
+          "marker": "p011-certificate-event"
+        }
+      },
+      "finishedAt": "2026-11-04T01:36:33.430Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.427Z",
+          "arm": "certificate-event",
+          "stage": "revoked-next-navigation",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-next-navigation",
+          "resourceType": "mainFrame",
+          "wcId": 10,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        }
+      ],
+      "exactServerRequests": [
+        {
+          "at": "2026-11-04T01:36:33.427Z",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-next-navigation",
+          "method": "GET",
+          "cookie": "p011_marker=p011-certificate-event",
+          "arm": "certificate-event",
+          "tag": "revoked-next-navigation",
+          "connectionId": 7,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ],
+      "allRequestsAfterStart": [
+        {
+          "at": "2026-11-04T01:36:33.427Z",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-next-navigation",
+          "method": "GET",
+          "cookie": "p011_marker=p011-certificate-event",
+          "arm": "certificate-event",
+          "tag": "revoked-next-navigation",
+          "connectionId": 7,
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "arm": "certificate-event",
+      "tag": "revoked-after-close",
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-after-close",
+      "wcId": 10,
+      "startedAt": "2026-11-04T01:36:33.431Z",
+      "eventsStart": 24,
+      "requestsStart": 15,
+      "outcome": "blocked-or-failed",
+      "error": {
+        "message": "ERR_CERT_AUTHORITY_INVALID (-202) loading 'https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-after-close'",
+        "code": "ERR_CERT_AUTHORITY_INVALID",
+        "errno": -202
+      },
+      "currentUrl": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-after-close",
+      "finishedAt": "2026-11-04T01:36:33.475Z",
+      "events": [
+        {
+          "at": "2026-11-04T01:36:33.432Z",
+          "arm": "certificate-event",
+          "stage": "revoked-after-close",
+          "kind": "onBeforeRequest",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-after-close",
+          "resourceType": "mainFrame",
+          "wcId": 10,
+          "own": true,
+          "guardBlocked": false,
+          "blocked": false
+        },
+        {
+          "at": "2026-11-04T01:36:33.433Z",
+          "kind": "server-tlsClientError",
+          "error": "1116692547616:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+        },
+        {
+          "at": "2026-11-04T01:36:33.433Z",
+          "arm": "certificate-event",
+          "stage": "revoked-after-close",
+          "kind": "certificate-error",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-after-close",
+          "error": "net::ERR_CERT_AUTHORITY_INVALID",
+          "pin": "18a6fa841b1c11f9b18f68be2f1b19f74adeb8378b29cd640dc84697cd93182c",
+          "pinMatched": true,
+          "isMainFrame": true,
+          "trusted": false,
+          "wcId": 10
+        },
+        {
+          "at": "2026-11-04T01:36:33.472Z",
+          "arm": "certificate-event",
+          "stage": "revoked-after-close",
+          "kind": "did-fail-load",
+          "code": -202,
+          "description": "ERR_CERT_AUTHORITY_INVALID",
+          "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=revoked-after-close",
+          "isMainFrame": true
+        }
+      ],
+      "exactServerRequests": [],
+      "allRequestsAfterStart": []
+    }
+  ],
+  "proxyFixture": "direct only in this private Session",
+  "marker": "p011-certificate-event",
+  "before": {
+    "at": "2026-11-04T01:36:33.426Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+      "local": "p011-certificate-event"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-certificate-event",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-certificate-event-0d627129-1d2d-4205-9333-367699594fa7"
+  },
+  "after": {
+    "at": "2026-11-04T01:36:33.430Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+      "local": "p011-certificate-event"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-certificate-event",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-certificate-event-0d627129-1d2d-4205-9333-367699594fa7"
+  },
+  "afterFresh": {
+    "at": "2026-11-04T01:36:33.475Z",
+    "local": {
+      "url": "https://m12-cert.test:49622/doc?arm=certificate-event&tag=allow-state-view",
+      "local": "p011-certificate-event"
+    },
+    "cookies": [
+      {
+        "name": "p011_marker",
+        "value": "p011-certificate-event",
+        "domain": "m12-cert.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "partition": "persist:p011-certificate-event-0d627129-1d2d-4205-9333-367699594fa7"
+  },
+  "status": "executed"
+}

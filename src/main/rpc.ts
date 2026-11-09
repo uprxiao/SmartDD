@@ -29,6 +29,8 @@ import type { FileService } from './core/files/file-service';
 import { FileWorkspacePersistence } from './core/files/workspace-persistence';
 import { FileTerminalService } from './core/files/terminal-context';
 import { TerminalImageCache } from './core/files/terminal-image-cache';
+import {createBrowserController} from './core/browser/controller';
+import type {BrowserService} from './core/browser/service';
 
 export interface RpcDeps {
   files: FileService;
@@ -45,6 +47,8 @@ export interface RpcDeps {
   capabilities: CapabilityService;
   agentSupport?: AgentSupportService;
   applications?: ApplicationService;
+  browser?:BrowserService;
+  onProjectDeleted?:()=>void;
   ptys: PtyManager;
   ptyAccess: PtyAccess;
   baseEnv: () => Record<string, string>;
@@ -77,10 +81,11 @@ export function createRpcRouter(d: RpcDeps) {
     }),
     agentSupport: createScopedRPCController({ status: (event) => { d.ptyAccess.requireSender(event); return d.agentSupport?.status() ?? { state: 'unavailable',errorCode: 'CAPABILITY_UNAVAILABLE',legacyResourceCount: 0,runtimeHash: null,adapters: [],applications: [] } as AgentSupportState; } }),
     applications: createApplicationController(d.applications,event=>d.ptyAccess.requireSender(event)),
+    browser:createBrowserController(d.browser,d.trustedRenderer),
     voice: createVoiceController(d.voice),
     projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
-    ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id) }),
+    ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id),deleted:()=>d.onProjectDeleted?.() }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
     ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event)),
     ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv),

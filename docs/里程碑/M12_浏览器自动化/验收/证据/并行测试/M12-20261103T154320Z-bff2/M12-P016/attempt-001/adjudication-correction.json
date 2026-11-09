@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-04T02:49:22.670Z",
+  "classification": "independent-checker-correction",
+  "initialResult": "result.initial.json",
+  "initialCleanup": "cleanup.initial.json",
+  "initialAdjudicatorSha256": "60a3a8d4d1554d4f67f7a2c980d34a3cfbfbfd897dc82992e860f878dc86efb8",
+  "correctedAdjudicatorSha256": "462a20a08534fb224eb147302f59603264830643cb0614b2f8abf462609e9bc3",
+  "cause": "Initial cleanup predicate accepted daemonState absent only; frozen actual helper cleanup contract accepts stopped or absent, lines171-176 of agent-browser.ts. Actual returned stopped/clientStopped=true/socketFilesRemoved=true.",
+  "additionalVerification": "Actual raw cleanup returned detached daemonPid39043 not captured in process parent tree; corrected independent ps/lsof includes explicit helper cleanup PIDs as well as all previously observed native CLI/host PIDs.",
+  "scope": "Only post-execution evidence interpretation and owned process verification. No driver, fixture, production source, raw CLI, predicate of original T067 or any business replay changed."
+}

@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-04T00:49:41.808924+00:00",
+  "group": "M12-P009",
+  "attempt": "attempt-003",
+  "caseId": "M12-T079",
+  "formalRequiredLayer": "A",
+  "coveredLayer": "I engineering owner-deletion subset only",
+  "status": "passed-subset",
+  "checks": 19,
+  "passedChecks": 19,
+  "resolvedPriorProductFailures": [
+    {
+      "check": "persisted-unloaded-task-workspace-cleared",
+      "status": "passed",
+      "actual": {
+        "before": {
+          "key": "browserWorkspace.v1:p009-Tunloaded",
+          "value": "{\"version\":1,\"tabs\":[{\"id\":\"be235414-f107-49e1-b9a2-8b729f09323a\",\"url\":\"about:blank\",\"title\":\"[I] persisted but never loaded\",\"favicon\":null,\"profileId\":\"201d3897-bebe-4cbb-9efe-5506fc4ae798\"}],\"activeId\":\"be235414-f107-49e1-b9a2-8b729f09323a\",\"closed\":[]}"
+        }
+      }
+    },
+    {
+      "check": "deleted-project-recent-cleared",
+      "status": "passed",
+      "actual": {
+        "before": {
+          "key": "browserRecent.v1:p009-P2",
+          "value": "[{\"url\":\"http://127.0.0.1:50205/seed?token=p009-drop-project-task\",\"title\":\"[I] P009 synthetic profile state\",\"host\":\"127.0.0.1:50205\",\"visitedAt\":1793753306721}]"
+        }
+      }
+    }
+  ],
+  "original19Criteria": "Identical to attempt002 after private/source path normalization, proven in static-preflight.json; no expectation changed",
+  "frozenBaseline": "/private/tmp/willyou-m12-p009-fix-baseline-001",
+  "fixManifestSha256": "7ada079a7c3667653895318016c4fd4bbde25f9df0bcf67d2284d66aceeb438d",
+  "sourceFixFilesSnapshotted": 51,
+  "productionInputsVerified": 2454,
+  "resourceFiles": 457,
+  "samePrivateExternalDependencies": 416,
+  "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p009-executor-001/attempt-003/cache node /private/tmp/willyou-m12-p009-executor-001/attempt-003/p009.mjs --execute",
+  "execSession": 47228,
+  "driverPid": 57988,
+  "hostPid": 57989,
+  "hostSha256": "041f2b2b137400e886b13c0f111bb57683b7f963bc0bc15555efb65fbefbf099",
+  "actualExitCode": 0,
+  "startedAt": "2026-11-04T00:48:24.980Z",
+  "finishedAt": "2026-11-04T00:48:29.486Z",
+  "actualSeconds": 4.506,
+  "resourcesReleased": true,
+  "privateHooksAndWindows": "TaskService EventEmitter0,31readback probe windows destroyed,noPTYspawn/kill,no new import probe",
+  "formalCaseStatus": "partial: I subset passed, packaged A/restart/real terminal-ended acceptance still required; do not count whole T079 through this group",
+  "businessRetries": 0,
+  "productionPublicLedgerGitChanges": false
+}

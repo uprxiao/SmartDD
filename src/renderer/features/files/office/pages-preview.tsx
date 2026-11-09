@@ -150,7 +150,7 @@ export function FileOfficePagesPreview({buffer}:{buffer:FileBuffer}){
       <button title={item.title} aria-label={`${inGrid?'网格':''}幻灯片 ${number}`} aria-current={number===page?'page':undefined} onClick={()=>navigate(number)} onDoubleClick={inGrid?()=>{navigate(number);setGrid(false);}:undefined}>{paint(number,true)}{inGrid?<span>{number}{item.hidden?' · 隐藏':''}</span>:<small>{number}{item.hidden?' · 隐藏':''}</small>}</button>
     </PptxSlideMenu>;
   };
-  return <section ref={root} tabIndex={0} className="fw-pdf fw-office fw-office-pages" aria-label={`${presentation?'PPTX':'DOCX'} 文档预览`} onKeyDown={keydown}>
+  return <section ref={root} tabIndex={0} data-browser-shortcut-owner={editing?'pages':undefined} className="fw-pdf fw-office fw-office-pages" aria-label={`${presentation?'PPTX':'DOCX'} 文档预览`} onKeyDown={keydown}>
     <div className="fw-office-header">
       {presentation&&<><button aria-label="切换幻灯片缩略图" aria-pressed={thumbs} disabled={!pdf} onClick={()=>setThumbs(value=>!value)}><List size={15}/></button><button aria-label="网格视图" aria-pressed={grid} disabled={!pdf} onClick={gridToggle}><Grid2X2 size={15}/></button></>}
       <strong>{presentation?'PPTX':'DOCX'}</strong><span className="fw-office-state">{editing?'编辑中':'只读预览'}{pptx?.dirty?' · 已修改':''}</span><span className="fw-office-spacer"/>

@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-04T19:35:29.014Z",
+  "group": "M12-P074",
+  "layer": "Actual Native/M11/CLI I only; notA/modelR",
+  "checks": [
+    {
+      "id": "M12-T033",
+      "status": "passed"
+    },
+    {
+      "id": "M12-T034",
+      "status": "passed"
+    },
+    {
+      "id": "M12-T094",
+      "status": "failed-or-partial",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(row?.raw&&!row.parseError)\n"
+    },
+    {
+      "id": "M12-T044",
+      "status": "passed"
+    },
+    {
+      "id": "cleanup-and-scope",
+      "status": "passed"
+    }
+  ],
+  "caseResults": {
+    "M12-T033": "passed",
+    "M12-T034": "passed",
+    "M12-T094": "failed-or-partial",
+    "M12-T044": "passed"
+  },
+  "performance": {
+    "snapshot": {
+      "count": 50,
+      "medianMs": 808.6998329999999,
+      "p90Ms": 831.111208,
+      "minMs": 764.900167,
+      "maxMs": 875.00675,
+      "driverRoundTripMedianMs": 813.840083,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    },
+    "click": {
+      "count": 50,
+      "medianMs": 816.1368335,
+      "p90Ms": 842.657833,
+      "minMs": 780.142083,
+      "maxMs": 868.057875,
+      "driverRoundTripMedianMs": 822.3096255,
+      "method": "50samples median mean middle2, p90nearest-rankceil(.9n); actualPopen-before throughcommunicate-after, no deductions"
+    }
+  },
+  "performanceTimingBoundary": "Actualmanagedcaller justbeforePopen throughcommunicate terminalexit includinglaunch/discovery/gateway/identity/helper/output; driverwholeIPCroundtrip retained separately. No costs deducted.",
+  "status": "failed-or-partial",
+  "formalCaseIncrement": 0,
+  "correction": {
+    "original": "adjudication.json",
+    "actualRerun": false,
+    "T033": "Original contract concerns successful snapshot/tab list and failed command; later T094 cleanup SIGTERM has no JSON and must not invalidate already completed T033 commands. All executed non-T094 commands remain one-object checked.",
+    "cleanup": "Original aggregate scope assertion equated driver completion with cleanup; scoped result independently checks actual host0/null, no fallback, cleanup steps/hooks/WC. T094 remains partial."
+  },
+  "boundaries": [
+    "T094actualsocketEOF is transportfault injection, not naturaluserclose demonstration",
+    "T094SQLid only crosscheck and exactfaulttarget; getinput fromactualNativeCLIstdoutrequestId",
+    "No packagedApp/modelR or timingthresholdchange"
+  ]
+}

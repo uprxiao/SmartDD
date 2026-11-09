@@ -1,0 +1,329 @@
+diff --git a/resources/applications/browser/output-schemas.mjs b/resources/applications/browser/output-schemas.mjs
+index 71d74677..6f000e61 100644
+--- a/resources/applications/browser/output-schemas.mjs
++++ b/resources/applications/browser/output-schemas.mjs
+@@ -7,8 +7,9 @@ const file=object({path:string,bytes:integer,sha256:hash});
+ const artifact=object({file,truncatedPreview:{type:'string',maxLength:4096}});
+ const progress=object({confirmedChars:integer,inFlight:object({offset:integer,length:integer}),observed:object({at:string,length:integer,sha256:hash})},['confirmedChars']);
+ const receipt=object({requestId:string,pageId:nullable(string),command:string,state:{enum:['succeeded','failed','unknown']},effectState:{enum:['completed','not-started','unknown']},progress:nullable(progress),summary:{},errorCode:nullable(string),createdAt:integer,updatedAt:integer});
++const page={pageId:string,browserPageId:string,title:string,url:string,profileId:string};
+ const outputs={
+- 'tab list':object({tabs:array(object({pageId:string,title:string,url:string,profileId:string}))}),
++ 'tab list':object({tabs:array({anyOf:[object({...page,kind:{const:'tab'}}),object({...page,kind:{const:'popup'},openerPageId:string})]})}),
+  'tab create':object({pageId:string,url:string}),goto:object({navigated:{const:true}}),
+  snapshot:{anyOf:[artifact,object({origin:string,snapshot:string,refs:array(object({ref:string,role:string,name:string,available:boolean},['ref','role','name'])),browserPageId:string,url:string,title:string},['snapshot','refs','browserPageId','url','title'])]},
+  click:object({clicked:string,path:{const:'cdp'},newTab:boolean,url:string,dialogOpened:boolean},['clicked']),fill:object({filled:string}),
+diff --git a/scripts/browser/s1-service-host.ts b/scripts/browser/s1-service-host.ts
+index 7eb2c8ff..1e8ca327 100644
+--- a/scripts/browser/s1-service-host.ts
++++ b/scripts/browser/s1-service-host.ts
+@@ -50,6 +50,8 @@ let clearInputFault:(()=>void)|undefined;
+ const proxyForwarded=new Map<string,{method:string;sessionId?:string}[]>();
+ let errorHits=0,errorClose:Promise<void>|undefined,errorNavigation:Promise<void>|undefined;
+ const errorEvents:unknown[]=[];
++const popupDestroyedEvents:{pageId:string;at:number}[]=[];
++const retiredHelperCleanups:{pageId:string;cleanup:unknown}[]=[];
+ type CliResult={code:number|null;signal:NodeJS.Signals|null;stdout:string;stderr:string;timedOut:boolean};
+ const cliJobs=new Map<number,{child:ReturnType<typeof spawn>;done:Promise<CliResult>}>();
+ const commits:{key:string;bytes:number;sha256:string;at:string}[]=[];
+@@ -76,6 +78,13 @@ const respond = (request:IncomingMessage,response:ServerResponse) => {
+   const url=new URL(request.url??'/','http://127.0.0.1');
+   if(url.pathname==='/s2-file-script'){response.setHeader('content-type','text/html');response.end('<title>S2 blocked file script</title><script>location.href="file:///etc/hosts"</script>');return;}
+   if(url.pathname==='/s2-file-redirect'){response.writeHead(302,{location:'file:///etc/hosts'});response.end();return;}
++  if(url.pathname==='/s2-popups'){
++    response.setHeader('content-type','text/html');response.end(`<!doctype html><title>S2 popup opener</title><a href="/s2-child" target="_blank">Ordinary tab</a><a href="/s2-child" target="m12-named">Named popup</a><button onclick="window.open('/s2-oauth','m12-oauth','width=480,height=360')">OAuth login</button><p id="oauth-result">not logged in</p><script>window.oauthResult=null;addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='s2-oauth'){window.oauthResult=e.data.account;document.getElementById('oauth-result').textContent=e.data.account;}});window.s2Burst=()=>{const opened=Array.from({length:20},(_,i)=>window.open('/s2-child?i='+i,'_blank'));return{attempted:20,opened:opened.filter(Boolean).length};};</script>`);return;
++  }
++  if(url.pathname==='/s2-oauth'){
++    response.setHeader('content-type','text/html');response.end(`<!doctype html><title>S2 OAuth fixture</title><script>window.s2Errors=[];addEventListener('error',e=>s2Errors.push(e.message));</script><input id="account" aria-label="Account"><button onclick="opener.postMessage({type:'s2-oauth',account:document.getElementById('account').value},location.origin);window.close()">Authorize</button>`);return;
++  }
++  if(url.pathname==='/s2-child'){response.setHeader('content-type','text/html');response.end('<title>S2 popup child</title><h1>Child page</h1>');return;}
+   if(url.pathname==='/commit'){
+     const chunks:Buffer[]=[];request.on('data',chunk=>chunks.push(chunk));request.on('end',()=>{
+       const body=Buffer.concat(chunks);commits.push({key:url.searchParams.get('key')??'',bytes:body.length,sha256:digest(body),at:new Date().toISOString()});
+@@ -131,6 +140,7 @@ app.whenReady().then(async () => {
+     const row = fixture.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string}|undefined;
+     return row?.project_id ?? null;
+   }});
++  browser.pages.observe(event=>{if(event.type==='created')event.page.contents.on('destroyed',()=>popupDestroyedEvents.push({pageId:event.page.id,at:Date.now()}));else retiredHelperCleanups.push({pageId:event.page.id,cleanup:event.page.helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true}});});
+   const createPage=browser.pages.create.bind(browser.pages);
+   browser.pages.create=async(task,project,savedId)=>{
+     const page=await createPage(task,project,savedId);
+@@ -176,6 +186,17 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+   try {
+     let value:unknown;
+     if (message.command === 'cli') value = await launchCli(message.args!,message.input).done;
++    else if(message.command==='s2-security-info'){
++      const page=browser.pages.get(taskId),prefs=page.contents.getLastWebPreferences();
++      value={pageId:page.id,profileId:page.profileId,pageIds:browser.pages.list(taskId).map(p=>p.id),preferences:{sandbox:prefs.sandbox,contextIsolation:prefs.contextIsolation,nodeIntegration:prefs.nodeIntegration,partition:prefs.partition}};
++    }
++    else if(message.command==='s2-popup-state'){
++      const pages=browser.pages.list(taskId),page=message.pageId?pages.find(p=>p.id===message.pageId):undefined;
++      const states=await Promise.all(pages.map(async p=>{try{return{pageId:p.id,...(await p.proxy.send<{result:{value:Record<string,unknown>}}>('Runtime.evaluate',{expression:'({url:location.href,hasOpener:!!window.opener,account:document.getElementById("account")?.value??null,errors:window.s2Errors??null})',returnByValue:true})).result.value};}catch{return{pageId:p.id,unavailable:true};}}));
++      value={workspace:browser.workspace.snapshot(taskId),destroyedEvents:popupDestroyedEvents,retiredHelperCleanups,states,pages:pages.map(p=>({pageId:p.id,kind:p.kind,profileId:p.profileId,openerPageId:p.openerPageId,url:p.contents.getURL(),hasNativeWindow:!!p.popupWindow,sameSessionAsOpener:p.openerPageId?pages.find(parent=>parent.id===p.openerPageId)?.contents.session===p.contents.session:true})),...(page?{opener:(await page.proxy.send<{result:{value:unknown}}>('Runtime.evaluate',{expression:'({url:location.href,result:window.oauthResult??null,text:document.getElementById("oauth-result")?.textContent})',returnByValue:true})).result.value}:{})};
++    }
++    else if(message.command==='s2-close-page'){await browser.pages.close(taskId,message.pageId!);value={closed:message.pageId};}
++    else if(message.command==='s2-close-all-pages'){for(const page of browser.pages.list(taskId))if(browser.pages.list(taskId).some(p=>p.id===page.id))await browser.pages.close(taskId,page.id);value={remaining:browser.pages.list(taskId).length};}
+     else if(message.command==='s2-file-start'){
+       const route={source:'task-cwd',sourceId:taskId,sourcePath:fixture.cwd,relativePath:'legacy.txt',mode:'document'};
+       const old={schemaVersion:1,routes:[route],active:route,treeSource:null,expanded:{},collapsedRoots:[],filters:{},treeWidth:250};
+@@ -217,7 +238,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+     }
+     else if (message.command === 'observe') {
+       const page=browser.pages.get(taskId,message.pageId);
+-      value={...(await page.proxy.send<{result:{value:{hits:string[];value:string;url:string}}}>('Runtime.evaluate',{expression:'({hits:window.hits,instances:window.hitInstances,inputEvents:window.inputEvents,value:document.getElementById("field")?.value??null,url:location.href})',returnByValue:true})).result.value,rect:page.view.getBounds(),guardResponse:guardResponses.get(page.id)};
++      value={...(await page.proxy.send<{result:{value:{hits:string[];value:string;url:string}}}>('Runtime.evaluate',{expression:'({hits:window.hits,instances:window.hitInstances,inputEvents:window.inputEvents,value:document.getElementById("field")?.value??null,url:location.href})',returnByValue:true})).result.value,rect:page.kind==='tab'?page.view.getBounds():page.rect,guardResponse:guardResponses.get(page.id)};
+     }
+     else if(message.command==='nested-observe'){
+       const page=browser.pages.get(taskId);
+@@ -274,7 +295,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+         while(helper.options.processes.state(identity)==='running'&&performance.now()<deadline)await new Promise(ok=>setTimeout(ok,20));
+         if(helper.options.processes.state(identity)!=='stopped')throw Error('Killed private helper has not stopped');
+       }
+-      value={pageId:page.id,pid,identity,state:identity?helper.options.processes?.state(identity):'absent',url:page.view.webContents.getURL(),observed:(await page.proxy.send<{result:{value:unknown}}>('Runtime.evaluate',{expression:'({hits:window.hits,value:document.getElementById("field")?.value})',returnByValue:true})).result.value};
++      value={pageId:page.id,pid,identity,state:identity?helper.options.processes?.state(identity):'absent',url:page.contents.getURL(),observed:(await page.proxy.send<{result:{value:unknown}}>('Runtime.evaluate',{expression:'({hits:window.hits,value:document.getElementById("field")?.value})',returnByValue:true})).result.value};
+     }
+     else if(message.command==='input-observe'||message.command==='input-select'){
+       const page=browser.pages.get(taskId);
+@@ -327,10 +348,10 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+     else if(message.command==='proxy-inspect'){
+       const page=browser.pages.get(taskId,message.pageId);
+       if(!proxyForwarded.has(page.id)){
+-        const calls:{method:string;sessionId?:string}[]=[],original=page.view.webContents.debugger.sendCommand.bind(page.view.webContents.debugger);proxyForwarded.set(page.id,calls);
+-        page.view.webContents.debugger.sendCommand=(method,params,sessionId)=>{calls.push({method,sessionId});return sessionId?original(method,params,sessionId):original(method,params);};
++        const calls:{method:string;sessionId?:string}[]=[],original=page.contents.debugger.sendCommand.bind(page.contents.debugger);proxyForwarded.set(page.id,calls);
++        page.contents.debugger.sendCommand=(method,params,sessionId)=>{calls.push({method,sessionId});return sessionId?original(method,params,sessionId):original(method,params);};
+       }
+-      value={pageId:page.id,endpoint:page.proxy.endpoint,discoveryEndpoint:page.proxy.discoveryEndpoint,parked:!host.contentView.children.includes(page.view),host:{id:host.id,title:host.getTitle(),url:host.webContents.getURL(),destroyed:host.isDestroyed()},pages:browser.pages.list(taskId).map(item=>({id:item.id,url:item.view.webContents.getURL(),destroyed:item.view.webContents.isDestroyed(),bounds:item.view.getBounds()})),forwarded:proxyForwarded.get(page.id)};
++      value={pageId:page.id,endpoint:page.proxy.endpoint,discoveryEndpoint:page.proxy.discoveryEndpoint,parked:!host.contentView.children.includes(page.view),host:{id:host.id,title:host.getTitle(),url:host.webContents.getURL(),destroyed:host.isDestroyed()},pages:browser.pages.list(taskId).map(item=>({id:item.id,url:item.contents.getURL(),destroyed:item.contents.isDestroyed(),bounds:item.view.getBounds()})),forwarded:proxyForwarded.get(page.id)};
+     }
+     else if(message.command==='error-wrong-helper-sha'){
+       const page=browser.pages.get(taskId,message.pageId);page.helper.options.sha256='0'.repeat(64);
+@@ -353,7 +374,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+         if(method==='Runtime.evaluate'&&params.awaitPromise===true){
+           page.proxy.send=original;
+           const work=original(method,params,sessionId);
+-          setTimeout(()=>{errorNavigation=browser.pages.navigate(page,page.view.webContents.getURL());errorNavigation.catch(error=>errorEvents.push({event:'navigation-failed',error:String(error)}));},30);
++          setTimeout(()=>{errorNavigation=browser.pages.navigate(page,page.contents.getURL());errorNavigation.catch(error=>errorEvents.push({event:'navigation-failed',error:String(error)}));},30);
+           return work;
+         }
+         return original(method,params,sessionId);
+@@ -362,7 +383,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+     }
+     else if(message.command==='error-status'){
+       await errorNavigation;await errorClose;
+-      value={hits:errorHits,events:errorEvents,pages:browser.pages.list(taskId).map(page=>({id:page.id,url:page.view.webContents.getURL(),closed:page.closed}))};
++      value={hits:errorHits,events:errorEvents,pages:browser.pages.list(taskId).map(page=>({id:page.id,url:page.contents.getURL(),closed:page.closed}))};
+     }
+     else if(message.command==='identity-mutate'){
+       const page=browser.pages.get(taskId,message.pageId),scripts:Record<string,string>={
+@@ -428,17 +449,17 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+     }
+     else if (message.command === 'placement') {
+       const page=browser.pages.get(taskId);
+-      if(!observedContents.has(page.view.webContents.id)){
+-        observedContents.add(page.view.webContents.id);
++      if(!observedContents.has(page.contents.id)){
++        observedContents.add(page.contents.id);
+         // Read-only observation of the exact guard response. No commands, events or business outputs are changed.
+-        const original=page.view.webContents.debugger.sendCommand.bind(page.view.webContents.debugger);
+-        page.view.webContents.debugger.sendCommand=(method,params,sessionId)=>(sessionId?original(method,params,sessionId):original(method,params)).then(result=>{
++        const original=page.contents.debugger.sendCommand.bind(page.contents.debugger);
++        page.contents.debugger.sendCommand=(method,params,sessionId)=>(sessionId?original(method,params,sessionId):original(method,params)).then(result=>{
+           if(method==='Runtime.evaluate'&&params?.expression==='globalThis.__wyBrowserGuard.disarm()')guardResponses.set(page.id,result);
+           return result;
+         });
+       }
+       if(message.args?.[0]==='secondary'){
+-        if(!secondary){const otherTask=randomUUID();fixture.sqlite.prepare('INSERT INTO tasks(id,project_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(otherTask,'p1',fixture.cwd,'codex','[I] secondary task',1,1);const other=await browser.pages.create(otherTask,'p1');await browser.pages.navigate(other,page.view.webContents.getURL());secondary={taskId:otherTask,pageId:other.id};}
++        if(!secondary){const otherTask=randomUUID();fixture.sqlite.prepare('INSERT INTO tasks(id,project_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(otherTask,'p1',fixture.cwd,'codex','[I] secondary task',1,1);const other=await browser.pages.create(otherTask,'p1');await browser.pages.navigate(other,page.contents.getURL());secondary={taskId:otherTask,pageId:other.id};}
+         await browser.pages.placement(secondary.taskId,secondary.pageId,{x:0,y:0,width:1000,height:700});
+       }else await browser.pages.placement(taskId,page.id,{x:0,y:0,width:1000,height:700});
+       value={placement:message.args?.[0]==='secondary'?'secondary-task-visible-primary-parked':'primary-mounted',primaryInMain:host.contentView.children.includes(page.view),primaryPageId:page.id,secondary};
+@@ -454,7 +475,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+       // Fault/diagnostic configuration only, never used as acceptance of the unchanged production environment.
+       value={opacity:park.getOpacity(),ignoreMouse:message.ignoreMouse!==false,focusEmulation:message.focusEmulation===true};
+     }
+-    else if (message.command === 'reset') { const page=browser.pages.get(taskId);await browser.pages.navigate(page,page.view.webContents.getURL());value={reset:true}; }
++    else if (message.command === 'reset') { const page=browser.pages.get(taskId);await browser.pages.navigate(page,page.contents.getURL());value={reset:true}; }
+     else if (message.command === 'replace-next-arm') {
+       const page=browser.pages.get(taskId),original=page.references.arm.bind(page.references);
+       // Explicit race latch: replace the field after host identity check/arming, before the native fill path.
+@@ -474,7 +495,7 @@ process.on('message',async (message:{id:number;command:string;args?:string[];inp
+       console.error('[S1 cleanup] gateway');await gateway.close(); console.error('[S1 cleanup] run');await run.cli.exited();
+       const helpers=browser.pages.list(taskId).map(page=>page.helper);
+       console.error('[S1 cleanup] applications');await applications.dispose(); await browser.dispose();console.error('[S1 cleanup] helpers '+JSON.stringify(helpers.map(helper=>helper.cleanup)));
+-      value={closed:true,helpers:helpers.map(helper=>helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true})};
++      value={closed:true,retiredHelperCleanups,helpers:helpers.map(helper=>helper.cleanup??{daemonState:'absent',clientStopped:true,socketFilesRemoved:true})};
+       fixture.cleanup();server.closeAllConnections();ipv6Server.closeAllConnections(); await Promise.all([new Promise<void>(ok=>server.close(()=>ok())),new Promise<void>(ok=>ipv6Server.close(()=>ok()))]); host.destroy();
+     }
+     else throw Error('Unknown fixture command');
+diff --git a/src/main/core/browser/page-registry.ts b/src/main/core/browser/page-registry.ts
+index 27877409..ca3d89c2 100644
+--- a/src/main/core/browser/page-registry.ts
++++ b/src/main/core/browser/page-registry.ts
+@@ -10,11 +10,12 @@ import { browserDigest } from './artifacts';
+ import { BrowserError } from './errors';
+ 
+ export interface BrowserPage {
+-  id:string;short:string;taskId:string;projectId:string;profileId:string;view:WebContentsView;
++  id:string;short:string;taskId:string;projectId:string;profileId:string;view:WebContentsView;contents:WebContents;
+   proxy:BrowserCdpProxy;helper:BrowserHelper;references:BrowserReferences;queue:BrowserPageQueue;
+   rect:Rectangle;closed:boolean;abort:AbortController;hostNavigation:string|null;
+   kind:'tab'|'popup';openerPageId?:string;popupWindow?:BaseWindow;
+ }
++type BrowserPopupOptions=BrowserWindowConstructorOptions&{webContents?:WebContents};
+ export type BrowserPageEvent={type:'created'|'closed';page:BrowserPage};
+ export const browserProjectProfile=(projectId:string)=>'project-'+browserDigest(projectId).slice(0,24);
+ export class BrowserPageRegistry {
+@@ -30,7 +31,7 @@ export class BrowserPageRegistry {
+   list(taskId:string){return [...this.pages.values()].filter(page=>page.taskId===taskId&&!page.closed);}
+   get(taskId:string,id?:string):BrowserPage {
+     const page=this.pages.get(id??this.active.get(taskId)??'');
+-    if(!page||page.closed||page.view.webContents.isDestroyed()||page.taskId!==taskId)throw new BrowserError(id?'BROWSER_TAB_NOT_FOUND':'BROWSER_NO_TAB','本任务没有这个网页标签');
++    if(!page||page.closed||page.contents.isDestroyed()||page.taskId!==taskId)throw new BrowserError(id?'BROWSER_TAB_NOT_FOUND':'BROWSER_NO_TAB','本任务没有这个网页标签');
+     return page;
+   }
+   async create(taskId:string,projectId:string,savedId?:string):Promise<BrowserPage>{
+@@ -40,7 +41,7 @@ export class BrowserPageRegistry {
+     if(this.pages.has(id))throw new BrowserError('BROWSER_ERROR','网页身份已经存在');
+     const view=new WebContentsView({webPreferences:{partition:'persist:wy-browser-'+profileId,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
+     const proxy=new BrowserCdpProxy(view.webContents),references=new BrowserReferences(proxy,short);
+-    const page:BrowserPage={id,short,taskId,projectId,profileId,view,proxy,references,helper:undefined!,queue:new BrowserPageQueue(),rect:{x:0,y:0,width:1000,height:700},closed:false,abort:new AbortController(),hostNavigation:null,kind:'tab'};
++    const page:BrowserPage={id,short,taskId,projectId,profileId,view,contents:view.webContents,proxy,references,helper:undefined!,queue:new BrowserPageQueue(),rect:{x:0,y:0,width:1000,height:700},closed:false,abort:new AbortController(),hostNavigation:null,kind:'tab'};
+     view.webContents.setWindowOpenHandler(()=>({action:'deny'})); // Popup UI/lifecycle is implemented in S2.
+     const denyUnsafeNavigation=(event:Electron.Event,url:string)=>{
+       try{const protocol=new URL(url).protocol;if(protocol==='javascript:')return;const localLink=protocol==='file:'&&view.webContents.getURL().startsWith('file:');if(!['http:','https:','about:'].includes(protocol)&&url!==page.hostNavigation&&!localLink)event.preventDefault();}catch{event.preventDefault();}
+@@ -61,35 +62,37 @@ export class BrowserPageRegistry {
+   }
+   /** Electron binds the opener to the returned WebContents. The child uses its
+    * own native window and the opener's exact session, never an App preload. */
+-  createPopup(opener:BrowserPage,options:BrowserWindowConstructorOptions,asTab=false):WebContents{
++  createPopup(opener:BrowserPage,options:BrowserPopupOptions,asTab=false):WebContents{
+     const id=randomUUID(),short='k'+randomUUID().replaceAll('-','');
+-    const view=new WebContentsView({webPreferences:{session:opener.view.webContents.session,sandbox:true,contextIsolation:true,nodeIntegration:false,webSecurity:true,backgroundThrottling:false}});
++    // Adopt Electron's supplied contents to preserve the native opener identity.
++    const view=new WebContentsView({...(options.webContents===undefined?{}:{webContents:options.webContents}),webPreferences:{...options.webPreferences,session:opener.contents.session,sandbox:true,contextIsolation:true,nodeIntegration:false,webSecurity:true,backgroundThrottling:false}});
++    const contents=view.webContents;
+     const window=asTab?undefined:new BaseWindow({width:Math.max(320,Math.min(options.width??800,1400)),height:Math.max(240,Math.min(options.height??600,1000)),show:false,title:'WillYou · 网页登录'});
+     const bounds=window?.getContentBounds()??{width:1000,height:700};window?.contentView.addChildView(view);view.setBounds({x:0,y:0,width:bounds.width,height:bounds.height});
+-    const proxy=new BrowserCdpProxy(view.webContents),references=new BrowserReferences(proxy,short);
+-    const page:BrowserPage={id,short,taskId:opener.taskId,projectId:opener.projectId,profileId:opener.profileId,view,proxy,references,helper:undefined!,queue:new BrowserPageQueue(),rect:{x:0,y:0,width:bounds.width,height:bounds.height},closed:false,abort:new AbortController(),hostNavigation:null,kind:asTab?'tab':'popup',openerPageId:opener.id,popupWindow:window};
+-    view.webContents.setWindowOpenHandler(()=>({action:'deny'}));
++    const proxy=new BrowserCdpProxy(contents),references=new BrowserReferences(proxy,short);
++    const page:BrowserPage={id,short,taskId:opener.taskId,projectId:opener.projectId,profileId:opener.profileId,view,contents,proxy,references,helper:undefined!,queue:new BrowserPageQueue(),rect:{x:0,y:0,width:bounds.width,height:bounds.height},closed:false,abort:new AbortController(),hostNavigation:null,kind:asTab?'tab':'popup',openerPageId:opener.id,popupWindow:window};
++    contents.setWindowOpenHandler(()=>({action:'deny'}));
+     const guard=(event:Electron.Event,url:string)=>{try{if(!['http:','https:','about:','javascript:'].includes(new URL(url).protocol))event.preventDefault();}catch{event.preventDefault();}};
+-    view.webContents.on('will-navigate',guard);view.webContents.on('will-redirect',guard);
+-    window?.on('resize',()=>{if(!view.webContents.isDestroyed()){const r=window.getContentBounds();view.setBounds({x:0,y:0,width:r.width,height:r.height});}});
+-    window?.on('closed',()=>{if(this.pages.has(id))void this.close(page.taskId,id);else if(!view.webContents.isDestroyed())view.webContents.close();});
+-    view.webContents.on('destroyed',()=>{if(this.pages.has(id))void this.close(page.taskId,id);});
++    contents.on('will-navigate',guard);contents.on('will-redirect',guard);
++    window?.on('resize',()=>{if(!contents.isDestroyed()){const r=window.getContentBounds();view.setBounds({x:0,y:0,width:r.width,height:r.height});}});
++    window?.on('closed',()=>{if(this.pages.has(id))void this.close(page.taskId,id);else if(!contents.isDestroyed())contents.close();});
++    contents.on('destroyed',()=>{if(this.pages.has(id))void this.close(page.taskId,id);});
+     void(async()=>{
+       try{
+         if(asTab)await this.park.park(view,page.rect);
+         await proxy.start();await references.initialize();
+-        if(view.webContents.isDestroyed()||opener.closed)throw new BrowserError('BROWSER_TAB_CLOSED','来源页面已关闭');
++        if(contents.isDestroyed()||opener.closed)throw new BrowserError('BROWSER_TAB_CLOSED','来源页面已关闭');
+         page.helper=new BrowserHelper({...this.options.helper,home:join(this.options.userData,'browser/agent-browser-home',id),sockets:join('/private/tmp','wy-ab-'+browserDigest(this.options.userData+id).slice(0,24)),session:'wy-'+short,endpoint:proxy.endpoint},()=>references.invalidate());
+         this.pages.set(id,page);this.publish('created',page);if(this.mounted?.taskId===page.taskId)window?.showInactive();
+-      }catch{await proxy.stop();this.park.remove(view);if(window&&!window.isDestroyed())window.close();if(!view.webContents.isDestroyed())view.webContents.close();}
++      }catch{await proxy.stop();this.park.remove(view);if(window&&!window.isDestroyed())window.close();if(!contents.isDestroyed())contents.close();}
+     })();
+-    return view.webContents;
++    return contents;
+   }
+   async navigate(page:BrowserPage,url:string):Promise<void>{
+     let normalized:string;
+     try{const parsed=new URL(url);if(!['http:','https:','file:','about:'].includes(parsed.protocol)||parsed.protocol==='about:'&&url!=='about:blank')throw Error();normalized=parsed.href;}catch{throw new BrowserError('BROWSER_ERROR','请输入有效的 http(s)、file 或 about:blank 地址');}
+     page.references.invalidate();page.hostNavigation=normalized;
+-    try{await page.view.webContents.loadURL(normalized);}finally{page.hostNavigation=null;}
++    try{await page.contents.loadURL(normalized);}finally{page.hostNavigation=null;}
+   }
+   async placement(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{
+     const page=this.get(taskId,pageId),window=this.options.window?.();
+@@ -120,7 +123,7 @@ export class BrowserPageRegistry {
+     for(const child of this.list(taskId).filter(p=>p.kind==='popup'&&p.openerPageId===pageId))await this.close(taskId,child.id);
+     await page.helper.close();await page.queue.settled();await page.proxy.stop();
+     const window=this.options.window?.();if(this.mounted===page&&window&&!window.isDestroyed()){window.contentView.removeChildView(page.view);this.mounted=undefined;}
+-    this.park.remove(page.view);if(!page.view.webContents.isDestroyed())page.view.webContents.close();if(page.popupWindow&&!page.popupWindow.isDestroyed())page.popupWindow.close();this.pages.delete(pageId);this.publish('closed',page);
++    this.park.remove(page.view);if(!page.contents.isDestroyed())page.contents.close();if(page.popupWindow&&!page.popupWindow.isDestroyed())page.popupWindow.close();this.pages.delete(pageId);this.publish('closed',page);
+     if(this.active.get(taskId)===pageId){const next=this.list(taskId)[0];if(next)this.active.set(taskId,next.id);else this.active.delete(taskId);}
+   }
+   async dispose():Promise<void>{for(const page of [...this.pages.values()])if(this.pages.has(page.id))await this.close(page.taskId,page.id);this.park.dispose();}
+diff --git a/src/main/core/browser/service.ts b/src/main/core/browser/service.ts
+index 7aa6e3c1..ae723e64 100644
+--- a/src/main/core/browser/service.ts
++++ b/src/main/core/browser/service.ts
+@@ -75,7 +75,7 @@ export class BrowserService {
+         if(args.profile!==undefined)throw new ApplicationError('INVALID_INPUT','S1只使用项目默认登录态');
+         send();page=await this.pages.create(scope.taskId,scope.projectId);
+         if(navigation!==undefined)await this.pages.navigate(page,navigation);
+-        result={pageId:page.id,url:page.view.webContents.getURL()};
++        result={pageId:page.id,url:page.contents.getURL()};
+       }else{
+         const target=page!;
+         result=await target.queue.run(()=>this.admit(scope,args),async()=>{
+@@ -90,7 +90,7 @@ export class BrowserService {
+             send();await this.pages.navigate(target,url);return{navigated:true};
+           }
+           if(command==='snapshot')return this.artifacts.result(scope.taskId,'snapshot',{
+-            ...await target.references.snapshot(target.helper,signal),browserPageId:target.id,url:target.view.webContents.getURL(),title:target.view.webContents.getTitle(),
++            ...await target.references.snapshot(target.helper,signal),browserPageId:target.id,url:target.contents.getURL(),title:target.contents.getTitle(),
+           });
+           if(command==='console'||command==='network')return this.artifacts.result(scope.taskId,command,await target.helper.command(command==='console'?['console']:['network','requests'],{signal}));
+           if(command==='exec'){
+@@ -124,9 +124,9 @@ export class BrowserService {
+               if(evaluated.exceptionDetails)throw new BrowserError('BROWSER_EVAL_ERROR',evaluated.exceptionDetails.text);
+               if(signal.aborted)throw signal.reason??new ApplicationError('CANCELED','脚本已取消');
+               const value=evaluated.result.type==='undefined'?'没有返回值':typeof evaluated.result.value==='object'?JSON.stringify(evaluated.result.value):String(evaluated.result.value);
+-              return this.artifacts.result(scope.taskId,'eval',{value,origin:target.view.webContents.getURL()});
++              return this.artifacts.result(scope.taskId,'eval',{value,origin:target.contents.getURL()});
+             }catch(error){
+-              if(target.closed||target.view.webContents.isDestroyed())throw new BrowserError('BROWSER_TAB_CLOSED','执行脚本期间网页已关闭，结果未知');
++              if(target.closed||target.contents.isDestroyed())throw new BrowserError('BROWSER_TAB_CLOSED','执行脚本期间网页已关闭，结果未知');
+               // Chromium can reject Runtime.evaluate before delivering frameNavigated.
+               if(changed||error instanceof Error&&/inspected target navigated|execution context.*destroyed/i.test(error.message))throw new BrowserError('BROWSER_TAB_CHANGED','执行脚本期间页面已替换');
+               throw error;
+diff --git a/src/main/core/browser/workspace.ts b/src/main/core/browser/workspace.ts
+index 99212c12..f804b5fe 100644
+--- a/src/main/core/browser/workspace.ts
++++ b/src/main/core/browser/workspace.ts
+@@ -81,7 +81,7 @@ export class BrowserWorkspace {
+     throw new BrowserError('BROWSER_NO_TAB','本任务没有网页标签');
+   }
+   list(taskId:string){
+-    const state=this.load(taskId);return[...state.tabs.map(t=>({pageId:t.id,browserPageId:t.id,title:t.title,url:t.url,profileId:t.profileId,kind:'tab' as const})),...this.options.pages.list(taskId).filter(p=>p.kind==='popup').map(p=>({pageId:p.id,browserPageId:p.id,title:p.view.webContents.getTitle(),url:p.view.webContents.getURL(),profileId:p.profileId,kind:'popup' as const,openerPageId:p.openerPageId}))];
++    const state=this.load(taskId);return[...state.tabs.map(t=>({pageId:t.id,browserPageId:t.id,title:t.title,url:t.url,profileId:t.profileId,kind:'tab' as const})),...this.options.pages.list(taskId).filter(p=>p.kind==='popup').map(p=>({pageId:p.id,browserPageId:p.id,title:p.contents.getTitle(),url:p.contents.getURL(),profileId:p.profileId,kind:'popup' as const,openerPageId:p.openerPageId}))];
+   }
+   async navigate(taskId:string,id:string,address:string,engine:BrowserSearchEngine='bing'):Promise<BrowserWorkspaceState>{
+     const url=normalizeBrowserNavigationUrl(address,engine);if(url===null){this.notices.set(taskId,'请输入有效的 http(s) 或 localhost 地址');this.changed(taskId);return this.snapshot(taskId);}
+@@ -97,7 +97,7 @@ export class BrowserWorkspace {
+     finally{if(this.navigations.get(page.id)===request)this.navigations.delete(page.id);}
+   }
+   async action(taskId:string,id:string,action:'reload'|'hard-reload'|'stop'|'back'|'forward'|'focus'):Promise<void>{
+-    const page=await this.target(taskId,id),wc=page.view.webContents;
++    const page=await this.target(taskId,id),wc=page.contents;
+     if(action==='focus'){wc.focus();return;}if(action==='stop'){const request=this.navigations.get(id);if(request)request.stopped=true;wc.stop();this.cancelRecovery(id);return;}
+     const failure=this.runtime.get(id)?.failure;
+     if(failure&&(action==='reload'||action==='hard-reload')){await this.loadUrl(page,failure.url);return;}
+@@ -112,7 +112,7 @@ export class BrowserWorkspace {
+     const page=await this.ensure(taskId,id);if(version!==this.placementVersion)return;await this.options.pages.placement(taskId,page.id,rect);
+   }
+   async find(taskId:string,id:string,text:string,forward:boolean,next:boolean){
+-    this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}const wc=page.view.webContents;
++    this.load(taskId);const page=this.options.pages.list(taskId).find(p=>p.id===id);if(!page){this.finds.delete(id);this.changed(taskId);return;}const wc=page.contents;
+     if(!text){wc.stopFindInPage('clearSelection');this.finds.delete(id);this.changed(taskId);return;}
+     const requestId=wc.findInPage(text,{forward,findNext:next});this.finds.set(id,{requestId,active:0,total:0});
+   }
+@@ -130,7 +130,7 @@ export class BrowserWorkspace {
+     const timer=setTimeout(()=>{this.recovering.delete(page.id);if(!page.closed&&!this.shuttingDown)void this.loadUrl(page,failure.url);},failure.recovery==='poll'?2000:5000);timer.unref();this.recovering.set(page.id,timer);
+   }
+   private attached(page:BrowserPage){
+-    const state=this.load(page.taskId),wc=page.view.webContents;
++    const state=this.load(page.taskId),wc=page.contents;
+     if(page.kind==='tab'&&!state.tabs.some(t=>t.id===page.id)){state.tabs.push({id:page.id,url:wc.getURL()||BROWSER_BLANK_URL,title:wc.getTitle()||'新标签页',favicon:null,profileId:page.profileId});if(page.openerPageId)state.activeId=page.id;this.save(page.taskId);}
+     const runtime=idle();this.runtime.set(page.id,runtime);
+     const update=()=>{if(page.closed||wc.isDestroyed()||this.shuttingDown)return;runtime.loading=wc.isLoading();runtime.canGoBack=wc.navigationHistory.canGoBack();runtime.canGoForward=wc.navigationHistory.canGoForward();this.changed(page.taskId);};

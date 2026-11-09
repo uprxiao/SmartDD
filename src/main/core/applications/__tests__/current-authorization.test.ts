@@ -54,6 +54,20 @@ describe('M11 R17 per-call authorization from current project settings',()=>{
   expect(cli.status).toBe(2);expect(JSON.parse(cli.stdout).error).toMatchObject({code:'APP_NOT_ENABLED',message:guidance});expect(count()).toBe(0);
   await setMail(true);expect((await send({method:'capabilities/list',call:undefined}) as {value:{notEnabled:unknown[]}}).value.notEnabled).toEqual([]);
  });
+ it('renews a long-running identity without freezing or widening the current application authorization',async()=>{
+  await gateway.close();let time=Date.now();
+  gateway=new ApplicationCliGateway(f.runs,f.cli,{read:async()=>identity},{executable:{path:f.executable,sha256:f.executableHash},now:()=>time,tokenTtlMs:30000});
+  await gateway.start();issued=gateway.issue(f.run);
+  expect(await send()).toMatchObject({status:'ok'});
+  time+=36*60*1000;
+  await setMail(false);const execute=vi.spyOn(f.applications.data,'execute');
+  expect(await send()).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});
+  expect(execute).not.toHaveBeenCalled();expect(count()).toBe(1);
+  await setMail(true);
+  expect(await send()).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list'}});expect(count()).toBe(2);
+  await f.run.cli.exited();time+=36*60*1000;
+  expect(await send()).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});expect(count()).toBe(2);
+ });
  it('applies the same current view to the MCP entry and the tool list',async()=>{
   await setMail(false);
   expect((await f.cli.list(f.run.runId)).tools).toEqual([]);

@@ -1,0 +1,135 @@
+--- a/cli/Cargo.toml
++++ b/cli/Cargo.toml
+@@ -1,6 +1,6 @@
+ [package]
+ name = "agent-browser"
+-version = "0.27.3"
++version = "0.27.3-willyou.1"
+ edition = "2021"
+ description = "Fast browser automation CLI for AI agents"
+ license = "Apache-2.0"
+--- a/cli/Cargo.lock
++++ b/cli/Cargo.lock
+@@ -45,7 +45,7 @@
+ 
+ [[package]]
+ name = "agent-browser"
+-version = "0.27.3"
++version = "0.27.3-willyou.1"
+ dependencies = [
+  "aes-gcm",
+  "async-trait",
+--- a/cli/src/connection.rs
++++ b/cli/src/connection.rs
+@@ -776,35 +776,10 @@
+     }
+ }
+ 
++// WillYou S1: a lost reply is not proof that a browser write did not run.
++// Exactly one IPC send, including EOF/EAGAIN; recovery belongs to the host.
+ pub fn send_command(cmd: Value, session: &str) -> Result<Response, String> {
+-    // Retry logic for transient errors (EAGAIN/EWOULDBLOCK/connection issues)
+-    const MAX_RETRIES: u32 = 5;
+-    const RETRY_DELAY_MS: u64 = 200;
+-
+-    let mut last_error = String::new();
+-
+-    for attempt in 0..MAX_RETRIES {
+-        if attempt > 0 {
+-            thread::sleep(Duration::from_millis(RETRY_DELAY_MS * (attempt as u64)));
+-        }
+-
+-        match send_command_once(&cmd, session) {
+-            Ok(response) => return Ok(response),
+-            Err(e) => {
+-                if is_transient_error(&e) {
+-                    last_error = e;
+-                    continue;
+-                }
+-                // Non-transient error, fail immediately
+-                return Err(e);
+-            }
+-        }
+-    }
+-
+-    Err(format!(
+-        "{} (after {} retries - daemon may be busy or unresponsive)",
+-        last_error, MAX_RETRIES
+-    ))
++    send_command_once(&cmd, session)
+ }
+ 
+ /// Check if an error is transient and worth retrying against the SAME daemon.
+--- a/cli/src/main.rs
++++ b/cli/src/main.rs
+@@ -25,7 +25,7 @@
+ 
+ use commands::{gen_id, parse_command, ParseError};
+ use connection::{
+-    cleanup_stale_files, daemon_unreachable, ensure_daemon, get_socket_dir, is_pid_alive,
++    cleanup_stale_files, ensure_daemon, get_socket_dir, is_pid_alive,
+     send_command, walk_daemons, DaemonOptions,
+ };
+ use flags::{clean_args, parse_flags, Flags};
+@@ -1302,23 +1302,14 @@
+     }
+ }
+ 
+-/// send_command plus the daemon-shutdown-race recovery: ensure_daemon no
+-/// longer pays a settle-sleep on every invocation, so a daemon that exited
+-/// right after its liveness check surfaces as an unreachable socket on the
+-/// request itself. Respawn once and retry before reporting failure.
++// WillYou S1: never respawn and replay a submitted command. The host can
++// rebuild the session with a separate read after reporting an unknown write.
+ fn send_command_with_respawn(
+     cmd: serde_json::Value,
+     session: &str,
+-    daemon_opts: &DaemonOptions,
++    _daemon_opts: &DaemonOptions,
+ ) -> Result<connection::Response, String> {
+-    let first_attempt = send_command(cmd.clone(), session);
+-    match first_attempt {
+-        Err(ref e) if daemon_unreachable(e) => match ensure_daemon(session, daemon_opts) {
+-            Ok(_) => send_command(cmd, session),
+-            Err(_) => first_attempt,
+-        },
+-        other => other,
+-    }
++    send_command(cmd, session)
+ }
+ 
+ fn run_batch(
+--- a/cli/src/native/browser.rs
++++ b/cli/src/native/browser.rs
+@@ -432,7 +432,7 @@
+     }
+ 
+     pub async fn connect_cdp(url: &str) -> Result<Self, String> {
+-        Self::connect_cdp_inner(url, false, None).await
++        Self::connect_cdp_inner(url, true, None).await
+     }
+ 
+     /// Connect to a provider CDP proxy where the WebSocket IS the page session.
+@@ -445,7 +445,7 @@
+         url: &str,
+         headers: Option<Vec<(String, String)>>,
+     ) -> Result<Self, String> {
+-        Self::connect_cdp_inner(url, false, headers).await
++        Self::connect_cdp_inner(url, true, headers).await
+     }
+ 
+     async fn connect_cdp_inner(
+@@ -639,6 +639,13 @@
+         self.client
+             .send_command_no_params("Network.enable", None)
+             .await?;
++        // WillYou only exposes this page and its own iframe sessions. Subscribe
++        // without browser discovery, including frames attached before connect.
++        self.client.send_command(
++            "Target.setAutoAttach",
++            Some(json!({"autoAttach":true,"waitForDebuggerOnStart":false,"flatten":true})),
++            None,
++        ).await?;
+         Ok(())
+     }
+ 

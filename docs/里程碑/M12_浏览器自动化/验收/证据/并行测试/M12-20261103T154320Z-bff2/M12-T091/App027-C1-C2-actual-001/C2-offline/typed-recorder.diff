@@ -1,0 +1,11 @@
+--- original/typed-primary-recorder.mjs
++++ offline/typed-primary-recorder.mjs
+@@ -47,7 +47,7 @@
+ }
+ function directCliCommand(item, expected) {
+   const command = item.command;
+-  assert(Array.isArray(command) && command.length === 3 && ['/bin/zsh', '/bin/bash'].includes(command[0]) && command[1] === '-lc' && typeof command[2] === 'string', 'not a supported direct CLI shell argv');
++  assert(Array.isArray(command) && command.length === 3 && ['/bin/zsh', '/bin/bash'].includes(command[0]) && ['-lc', '-c'].includes(command[1]) && typeof command[2] === 'string', 'not a supported direct CLI shell argv');
+   const argv = literalWords(command[2]);
+   assert(argv[0] === 'willyou-app' || (nonempty(expected.cliExecutable) && argv[0] === expected.cliExecutable), 'typed command is not the actual direct willyou-app invocation');
+   return {command: command[2], shellArgv: copy(command), cliArgv: argv};

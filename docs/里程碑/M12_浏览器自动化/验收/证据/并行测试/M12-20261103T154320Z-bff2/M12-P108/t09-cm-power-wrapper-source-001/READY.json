@@ -1,0 +1,71 @@
+{
+  "at": "2026-11-05T23:03:33.890711+00:00",
+  "status": "frozen-check-only-passed-not-executed",
+  "root": "/private/tmp/willyou-m12-t09-cm-power-wrapper-001",
+  "files": [
+    {
+      "path": "run.py",
+      "sha256": "9020d0c8f7a2bcdcdab900c895037b109df8923cddd2c61b038e4a2ffc401aa2",
+      "bytes": 20292,
+      "mode": 420
+    },
+    {
+      "path": "check-only.py",
+      "sha256": "3688a9c2d3c89232af67fe0c9cf76ae723aac454a2231c18413e17dd4b249dd2",
+      "bytes": 2110,
+      "mode": 420
+    },
+    {
+      "path": "handoff.md",
+      "sha256": "94ca0be749eabcaddfdbca78556720dd3d278bb45d0a778d5c10360be59364ca",
+      "bytes": 2453,
+      "mode": 420
+    },
+    {
+      "path": "binding.json",
+      "sha256": "a0f4239a0bcc2b915fea7852a2e1aa4cd19d642555817312f8e17f7982d582db",
+      "bytes": 1049,
+      "mode": 420
+    },
+    {
+      "path": "check-only-result.json",
+      "sha256": "e6149f96325789d610798e1ca7aaabdb1d7c2b45750c591c4b3f22d3a454b6bc",
+      "bytes": 971,
+      "mode": 420
+    }
+  ],
+  "runSHA": "9020d0c8f7a2bcdcdab900c895037b109df8923cddd2c61b038e4a2ffc401aa2",
+  "bindingSHA": "a0f4239a0bcc2b915fea7852a2e1aa4cd19d642555817312f8e17f7982d582db",
+  "targetRoot": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003",
+  "targetInputCount": 256,
+  "targetDependencyFiles": 170,
+  "targetReadySHA": "555b7d58fb2fa7fda847fcc78cb4f6700b93f468b58d240598a3ac91ce063c13",
+  "targetExecutionReadySHA": "2fcbd50fd8f455fbebeec2759694ee6199fbdaafa1fb76a9ebbef91f49335ee8",
+  "check": "PYTHONPYCACHEPREFIX=/private/tmp/willyou-m12-t09-cm-power-wrapper-001/cache/python /usr/bin/python3 /private/tmp/willyou-m12-t09-cm-power-wrapper-001/run.py --check",
+  "execute": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 PYTHONPYCACHEPREFIX=/private/tmp/willyou-m12-t09-cm-power-wrapper-001/cache/python /usr/bin/python3 /private/tmp/willyou-m12-t09-cm-power-wrapper-001/run.py --execute",
+  "afterWrapperToolTerminal": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 PYTHONPYCACHEPREFIX=/private/tmp/willyou-m12-t09-cm-power-wrapper-001/cache/python /usr/bin/python3 /private/tmp/willyou-m12-t09-cm-power-wrapper-001/run.py --verify-wrapper-exit",
+  "toolSandboxPermissions": "require_escalated for execute and afterWrapperToolTerminal, normal tool approval; --check pure read-only default environment",
+  "requestedResources": [
+    "Native",
+    "App",
+    "managedPTY",
+    "localHTTP",
+    "TCP",
+    "Unix",
+    "own-temporary-power-assertions"
+  ],
+  "executionLeasePending": true,
+  "onlyRequestedPowerFlags": [
+    "-i",
+    "-s"
+  ],
+  "actualACCheck": "Before original driver launch, pmset -g batt parsed to bool only; old report not reused",
+  "phaseSequence": "caffeinate originalNode/driver -> regardless driver outcome caffeinate originalNode/independentverify -> original purejudge; post-wrapper extra own process/assertion verifier required before release",
+  "lifecycleBoundary": "Original App verifier excludes wrapper/currentverifier; historical wrapper+utility+guard+purejudge PIDs separately checked after parent toolterminal, current verifier not checked as historicalself",
+  "heartbeat": "250ms independentPython-thread wall/monotonic heartbeat only; not Node event-loop; gap>750ms flagged environment-review, not a rewrite of business oracle",
+  "knownPowerLimit": "No display/useractive assertion, permanent settings, login/session changes; does not guarantee all clamshell sleep prevented. UI gates untouched.",
+  "checkOnlyResult": "passed 256frozen file SHA/mode + exact commands + AST/identity small controls; 0 Native/App/ports",
+  "actualExecution": false,
+  "resourcesHeld": false,
+  "formalCaseIncrement": 0
+}

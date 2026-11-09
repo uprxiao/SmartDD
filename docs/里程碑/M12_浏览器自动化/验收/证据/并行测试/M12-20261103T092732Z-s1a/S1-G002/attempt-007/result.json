@@ -1,0 +1,495 @@
+{
+  "at": "2026-11-03T09:45:30.189Z",
+  "steps": [
+    {
+      "args": [
+        "tab",
+        "list"
+      ],
+      "value": {
+        "tabs": [
+          {
+            "active": true,
+            "label": null,
+            "tabId": "t1",
+            "title": "[I] M12 S1 proxy",
+            "type": "page",
+            "url": "http://127.0.0.1:58785/"
+          }
+        ]
+      },
+      "ms": 124
+    },
+    {
+      "args": [
+        "snapshot"
+      ],
+      "value": {
+        "origin": "http://127.0.0.1:58785/",
+        "refs": {
+          "e1": {
+            "name": "S1 synthetic page",
+            "role": "heading"
+          },
+          "e2": {
+            "name": "Action",
+            "role": "button"
+          },
+          "e3": {
+            "name": "Input",
+            "role": "textbox"
+          }
+        },
+        "snapshot": "- heading \"S1 synthetic page\" [level=1, ref=e1]\n- button \"Action\" [ref=e2]\n- textbox \"Input\" [ref=e3]\n- paragraph"
+      },
+      "ms": 18
+    },
+    {
+      "args": [
+        "click",
+        "#action"
+      ],
+      "value": {
+        "clicked": "#action"
+      },
+      "ms": 19
+    },
+    {
+      "args": [
+        "fill",
+        "#field",
+        "S1-through-per-page-proxy"
+      ],
+      "value": {
+        "filled": "#field"
+      },
+      "ms": 10
+    }
+  ],
+  "stages": [
+    {
+      "stage": "cdp",
+      "method": "Page.enable"
+    },
+    {
+      "stage": "cdp",
+      "method": "Target.setAutoAttach"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "upgrade",
+        "host": "127.0.0.1:58787",
+        "origin": null,
+        "allowed": true
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "connected"
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "socket-close",
+        "code": 1005
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "upgrade",
+        "host": "127.0.0.1:58787",
+        "origin": null,
+        "allowed": true
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "connected"
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.setDiscoverTargets",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.getTargets",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.attachToTarget",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Page.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Page.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.runIfWaitingForDebugger",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.runIfWaitingForDebugger"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Network.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Network.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Target.setAutoAttach",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Target.setAutoAttach"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "DOM.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "DOM.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.enable",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.enable"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Accessibility.getFullAXTree",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Accessibility.getFullAXTree"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.dispatchMouseEvent",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Browser.getVersion",
+        "sessionId": null
+      }
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.evaluate",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.callFunctionOn",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Runtime.callFunctionOn",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.callFunctionOn"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "command",
+        "method": "Input.insertText",
+        "sessionId": "wy-session-1"
+      }
+    },
+    {
+      "stage": "cdp",
+      "method": "Input.insertText"
+    },
+    {
+      "stage": "cdp",
+      "method": "Runtime.evaluate"
+    },
+    {
+      "stage": "proxy",
+      "traffic": {
+        "kind": "socket-close",
+        "code": 1006
+      }
+    }
+  ],
+  "hostPid": 64400,
+  "ready": {
+    "ready": true,
+    "pid": 64400,
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    },
+    "boundary": "I: real production proxy and fixed helper, synthetic page, no global debug port, not packaged App",
+    "endpoint": "ws://127.0.0.1:58787/1022fb06e37aa3dc1a80b594ef559c16c592d2f57d62be6450d946ef74c7b752"
+  },
+  "direct": {
+    "id": 1,
+    "result": {
+      "protocolVersion": "1.3",
+      "product": "Chrome/148.0.7778.280",
+      "revision": "",
+      "userAgent": "",
+      "jsVersion": ""
+    }
+  },
+  "observed": {
+    "state": {
+      "hits": [
+        "action"
+      ],
+      "value": "S1-through-per-page-proxy"
+    },
+    "methods": [
+      "Page.enable",
+      "Target.setAutoAttach",
+      "Page.enable",
+      "Runtime.enable",
+      "Runtime.runIfWaitingForDebugger",
+      "Network.enable",
+      "Target.setAutoAttach",
+      "DOM.enable",
+      "Accessibility.enable",
+      "Accessibility.getFullAXTree",
+      "Runtime.evaluate",
+      "Runtime.evaluate",
+      "Runtime.evaluate",
+      "Input.dispatchMouseEvent",
+      "Input.dispatchMouseEvent",
+      "Input.dispatchMouseEvent",
+      "Runtime.evaluate",
+      "Runtime.callFunctionOn",
+      "Runtime.callFunctionOn",
+      "Input.insertText",
+      "Runtime.evaluate"
+    ]
+  },
+  "cleanup": {
+    "closed": true
+  },
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  }
+}

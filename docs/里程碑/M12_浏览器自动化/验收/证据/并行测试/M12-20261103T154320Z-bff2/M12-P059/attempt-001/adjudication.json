@@ -1,0 +1,95 @@
+{
+  "at": "2026-11-04T12:32:02.363Z",
+  "group": "M12-P059",
+  "layer": "Exit-only App015 diagnostic, not original T115 replay or new formal case",
+  "status": "partial-diagnostic",
+  "checks": [
+    {
+      "name": "Exit-only UI precondition actually reached",
+      "pass": false
+    },
+    {
+      "name": "Both real PTYs and both exact roots stopped before normal quit",
+      "pass": false,
+      "actual": []
+    },
+    {
+      "name": "No original T115 CLI replay",
+      "pass": true,
+      "actual": []
+    },
+    {
+      "name": "Fresh focus guard never yielded",
+      "pass": false
+    },
+    {
+      "name": "Actual normal app.quit lifecycle observed",
+      "pass": false,
+      "actual": []
+    },
+    {
+      "name": "Exit or 45-second bounded observation retained",
+      "pass": false,
+      "actual": {
+        "observations": []
+      }
+    },
+    {
+      "name": "Actual child exit code/signal receipt retained",
+      "pass": true,
+      "actual": {
+        "pid": 18119,
+        "spawnedAtMs": 1793795462106,
+        "exit": {
+          "atMs": 1793795471026,
+          "code": 0,
+          "signal": null
+        },
+        "signals": [
+          {
+            "atMs": 1793795470840,
+            "method": "close",
+            "signal": "SIGTERM",
+            "accepted": true
+          }
+        ],
+        "inspectorCloseRequests": [
+          {
+            "atMs": 1793795470839
+          }
+        ],
+        "currentCode": 0,
+        "currentSignal": null
+      }
+    }
+  ],
+  "findings": {
+    "normalExitObserved": false,
+    "timeout20": null,
+    "timeout45": false,
+    "fileClose": [],
+    "saveReady": false,
+    "commitReady": false,
+    "willQuit": [],
+    "quit": [],
+    "lateContents": [],
+    "lateWindows": [],
+    "destroyed": [],
+    "forcedSignals": [
+      {
+        "atMs": 1793795470840,
+        "method": "close",
+        "signal": "SIGTERM",
+        "accepted": true
+      }
+    ]
+  },
+  "boundaries": [
+    "Synthetic wait-only profile version/health/config protocol, actual TaskService and two PTYs.",
+    "Pages prepared through actual UI; no original CLI, activity/timer or Agent-focus route conditioning.",
+    "Passive listeners, original WC.send and files.answerClose delegates, exact original Promise/throw/auth behavior; version-specific internal IPC Map disclosed.",
+    "100ms unref BaseWindow inventory is first-seen timing, not constructor timestamp. WC creation events include synchronous actual stack.",
+    "Node inspector closed by upstream waitForExit before waiting; JSONL sync logging may affect timing.",
+    "Normal exit and eventual forced process cleanup are separate. No causal conclusion from only a renderer appearing."
+  ]
+}

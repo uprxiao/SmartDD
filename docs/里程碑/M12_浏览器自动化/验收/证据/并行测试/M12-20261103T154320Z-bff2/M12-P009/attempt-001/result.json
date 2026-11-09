@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-04T00:41:17.779683+00:00",
+  "group": "M12-P009",
+  "attempt": "attempt-001",
+  "caseId": "M12-T079",
+  "layer": "I engineering subset",
+  "status": "not-executed",
+  "failureClass": "private-driver-dependency-bundling",
+  "failedStage": "host module import before readiness and before synthetic setup/business dispatch",
+  "error": "App threw an error during load\nError: Failed to load native module: pty.node, checked: build/Release, build/Debug, prebuilds/darwin-arm64: Error: Could not dynamically require \"./prebuilds/darwin-arm64//pty.node\". Please configure the dynamicRequireTargets or/and ignoreDynamicRequires option of @rollup/plugin-commonjs appropriately for this require call to work.\n    at Object.loadNativeModule (/private/tmp/willyou-m12-p009-executor-001/build/host.cjs:55975:11)\n    at requireUnixTerminal (/private/tmp/willyou-m12-p009-executor-001/build/host.cjs:56923:24)\n    at requireLib (/private/tmp/willyou-m12-p009-executor-001/build/host.cjs:57216:20)\n    at Object.<anonymous> (/private/tmp/willyou-m12-p009-executor-001/build/host.cjs:57237:1)\n    at Module._compile (node:internal/modules/cjs/loader:1880:14)\n    at Object..js (node:internal/modules/cjs/loader:2013:10)\n    at Module.load (node:internal/modules/cjs/loader:1601:32)\n    at node:internal/modules/cjs/loader:1403:12\n    at Module._load (node:electron/js2c/node_init:2:18159)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:262:19)\n",
+  "businessSetupSent": false,
+  "businessDeletionOrReconcileSent": false,
+  "formalCaseStatus": "unchanged partial A; this failed startup is not a product lifecycle result",
+  "cleanup": {
+    "allPidsAbsent": true,
+    "allPortsClosed": true,
+    "noFixtureHooksInstalled": true
+  },
+  "next": "Attempt002 externalizes and privately copies unchanged frozen node-pty dependency; no previously sent business is replayed"
+}

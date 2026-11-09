@@ -508,3 +508,25 @@ describe('M11 confirmed sender identity and conditional mail slots',()=>{
   await confirmSenderIdentity();f.sqlite.prepare("UPDATE mail_sender_confirmations SET receipt_id=? WHERE project_id='p1'").run(randomUUID());await expect(identity()).rejects.toMatchObject({code:'HASH_MISMATCH'});
  });
 });
+
+
+it('keeps stable run lifetimes restricted to live opaque Agent contexts',async()=>{
+  await ui(async context=>{
+    expect(()=>app.contexts.agentRunSignal(context)).toThrowError(expect.objectContaining({code:'SCOPE_DENIED'}));
+    return null;
+  });
+  const seen:{context:ApplicationExecutionContext;signal:AbortSignal}[]=[],requireOriginal=app.contexts.require.bind(app.contexts);
+  vi.spyOn(app.contexts,'require').mockImplementation((context,permission)=>{
+    requireOriginal(context,permission);
+    if(context.callerKind!=='agent-run'||seen.length)return;
+    const signal=app.contexts.agentRunSignal(context);
+    expect(()=>app.contexts.agentRunSignal({...context})).toThrowError(expect.objectContaining({code:'SCOPE_DENIED'}));
+    expect(signal).toBe(runs.assertActive(cc.runId).signal);
+    expect(signal).not.toBe(context.signal);
+    seen.push({context,signal});
+  });
+  await draft();
+  const captured=seen[0];if(!captured)throw new Error('Authenticated Agent context was not exercised');
+  expect(captured.signal.aborted).toBe(false);
+  expect(()=>app.contexts.agentRunSignal(captured.context)).toThrowError(expect.objectContaining({code:'SCOPE_DENIED'}));
+});

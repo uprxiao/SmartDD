@@ -1,0 +1,427 @@
+{
+  "notAGenericScanner": true,
+  "actualFileAccessCalls": [
+    {
+      "file": "activate-initial-exact-pid.mjs",
+      "line": 14,
+      "call": "readFile",
+      "lineCode": " const script=await readFile(scriptPath);assert.equal(sha(script),authorization.scriptSHA256);",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "activate-initial-exact-pid.mjs",
+      "line": 18,
+      "call": "writeFile",
+      "lineCode": " await writeFile(privateRoot+'/initial-foreground-attempt-'+app.processId+'.json',JSON.stringify(record,null,2)+'\\n',{flag:'wx',mode:0o600});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 7,
+      "call": "readFile",
+      "lineCode": "const sha=x=>createHash('sha256').update(x).digest('hex'),read=async n=>JSON.parse(await readFile(ROOT+'/'+n,'utf8')),ready=await read('READY.candidate.json'),oracle=await read('oracle.json'),contract=await read('original-contract.json'),checks=[],negative=[];const check=(id,fn)=>{fn();checks.push({id,passed:true})};",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 8,
+      "call": "readdir",
+      "lineCode": "const files=[];async function walk(p){for(const d of await readdir(p,{withFileTypes:true})){if(['history','static-cache','runtime-001','cache'].includes(d.name))continue;const n=p+'/'+d.name;if(d.isDirectory())await walk(n);else if(d.isFile()&&d.name.endsWith('.mjs'))files.push(n);}}await walk(ROOT);",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 9,
+      "call": "readFile",
+      "lineCode": "const asts=new Map();check('all-private-mjs-syntax',()=>{});for(const p of files){const code=await readFile(p,'utf8'),ast=ts.createSourceFile(p,code,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);assert.deepEqual(ast.parseDiagnostics,[],p);asts.set(p,ast);}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 10,
+      "call": "lstat",
+      "lineCode": "const imports=[];for(const[p,ast]of asts){function visit(n){if((ts.isImportDeclaration(n)||ts.isExportDeclaration(n))&&n.moduleSpecifier&&ts.isStringLiteral(n.moduleSpecifier)){const spec=n.moduleSpecifier.text;if(spec.startsWith('.'))imports.push({from:p,to:resolve(dirname(p),spec)});}ts.forEachChild(n,visit);}visit(ast);}for(const x of imports)assert((await lstat(x.to)).isFile(),x.to);checks.push({id:'complete-private-relative-import-closure',passed:true,edges:imports.length});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 14,
+      "call": "readFile",
+      "lineCode": "const controller=await readFile(ready.sourceRoot+'/src/main/core/files/controller.ts','utf8'),methods=['open','chunk','save','checkpoint','cancelResource'];for(const method of methods)assert(new RegExp('(?:^|\\\\n)\\\\s*'+method+'\\\\s*:').test(controller),method);assert(!/(?:^|\\n)\\s*close\\s*:/.test(controller));checks.push({id:'five-actual-files-ipc-contracts',passed:true,methods});negative.push({id:'invented-generic-close-handler-rejected',passed:true});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 18,
+      "call": "readFile",
+      "lineCode": "for(const x of ready.inputs){const b=await readFile(x.path);assert.equal(sha(b),x.sha256,x.path);assert.equal((await lstat(x.path)).mode&511,x.mode,x.path);}for(const path of ready.outputsMustBeAbsent)assert(!(await lstat(path).then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;})),path);checks.push({id:'complete-frozen-inputs-and-output-shape',passed:true,inputs:ready.inputs.length});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 18,
+      "call": "lstat",
+      "lineCode": "for(const x of ready.inputs){const b=await readFile(x.path);assert.equal(sha(b),x.sha256,x.path);assert.equal((await lstat(x.path)).mode&511,x.mode,x.path);}for(const path of ready.outputsMustBeAbsent)assert(!(await lstat(path).then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;})),path);checks.push({id:'complete-frozen-inputs-and-output-shape',passed:true,inputs:ready.inputs.length});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 18,
+      "call": "lstat",
+      "lineCode": "for(const x of ready.inputs){const b=await readFile(x.path);assert.equal(sha(b),x.sha256,x.path);assert.equal((await lstat(x.path)).mode&511,x.mode,x.path);}for(const path of ready.outputsMustBeAbsent)assert(!(await lstat(path).then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;})),path);checks.push({id:'complete-frozen-inputs-and-output-shape',passed:true,inputs:ready.inputs.length});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 19,
+      "call": "mkdir",
+      "lineCode": "const result={at:new Date().toISOString(),scope:'Pure FS/AST/finite predicate controls only; no producer/UI factory import/body execution,App,Native,OS,HTTP,auth ormodel',pid:process.pid,checks,negative,passed:true,modules:files.length,formalIncrement:0};await mkdir(ROOT+'/static-cache',{recursive:true});await writeFile(ROOT+'/static-result.json',JSON.stringify(result,null,2)+'\\n');console.log(JSON.stringify({passed:true,checks:checks.length,negative:negative.length,modules:files.length}));",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "check-static.mjs",
+      "line": 19,
+      "call": "writeFile",
+      "lineCode": "const result={at:new Date().toISOString(),scope:'Pure FS/AST/finite predicate controls only; no producer/UI factory import/body execution,App,Native,OS,HTTP,auth ormodel',pid:process.pid,checks,negative,passed:true,modules:files.length,formalIncrement:0};await mkdir(ROOT+'/static-cache',{recursive:true});await writeFile(ROOT+'/static-result.json',JSON.stringify(result,null,2)+'\\n');console.log(JSON.stringify({passed:true,checks:checks.length,negative:negative.length,modules:files.length}));",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "driver/electron-harness.upstream.mjs",
+      "line": 567,
+      "call": "writeFile",
+      "lineCode": "        await writeFile(path, Buffer.from(data, \"base64\"), { mode: 0o600 });",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "io.mjs",
+      "line": 1,
+      "call": "writeFile",
+      "lineCode": "import{createHash}from'node:crypto';import{writeFile}from'node:fs/promises';export const ROOT=\"/private/tmp/willyou-m12-t130-F21-App035-A-cont-003\";export const sha=x=>createHash('sha256').update(x).digest('hex');export const save=(name,data)=>writeFile(ROOT+'/'+name,JSON.stringify(data,null,2)+'\\n',{mode:0o600});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "judge.mjs",
+      "line": 5,
+      "call": "readFile",
+      "lineCode": "const read=async name=>JSON.parse(await readFile(ROOT+'/'+name,'utf8')),r=await read('raw.json'),cleanup=await read('cleanup.json'),oracle=await read('oracle.json'),contract=await read('original-contract.json');",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "judge.mjs",
+      "line": 16,
+      "call": "readFile",
+      "lineCode": "const result={at:new Date().toISOString(),case:r.case,checks,passed:checks.every(x=>x.passed),rawSHA256:sha(await readFile(ROOT+'/raw.json')),cleanupSHA256:sha(await readFile(ROOT+'/cleanup.json')),attachmentBoundary:'Original approved business-host condition retained; no fabricated attachmentA execution. Root reviews source/old applicableI independently.',formalIncrement:0,fullT130Passed:false};await save('judgement.json',result);console.log(JSON.stringify({passed:result.passed,checks:checks.length}));if(!result.passed)process.exitCode=1;",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "judge.mjs",
+      "line": 16,
+      "call": "readFile",
+      "lineCode": "const result={at:new Date().toISOString(),case:r.case,checks,passed:checks.every(x=>x.passed),rawSHA256:sha(await readFile(ROOT+'/raw.json')),cleanupSHA256:sha(await readFile(ROOT+'/cleanup.json')),attachmentBoundary:'Original approved business-host condition retained; no fabricated attachmentA execution. Root reviews source/old applicableI independently.',formalIncrement:0,fullT130Passed:false};await save('judgement.json',result);console.log(JSON.stringify({passed:result.passed,checks:checks.length}));if(!result.passed)process.exitCode=1;",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "notebook-flow.mjs",
+      "line": 23,
+      "call": "readFile",
+      "lineCode": "     c.html=await ready.wait(item,'html-frame-ready',x=>!!x.frame?.visible&&x.frame.sandbox==='',20000);assert.equal(c.html.parentSentinel,null);c.frameProof=await observeOriginalNotebookFrame(app,poll);await persist();await notebookClick('.fa-notebook-raw','Raw output');const attack=JSON.parse(await readFile(item.path,'utf8')).cells[0].outputs[0].data['text/html'];c.rawHTML=await ready.wait(item,'raw-html-actual',x=>x.text.includes(attack),15000);assert.equal(c.rawHTML.parentSentinel,null);assert.deepEqual(requests,[]);c.opaqueSandboxActual=true;c.noTrapRequestsAtCompletion=true;",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "notebook-flow.mjs",
+      "line": 27,
+      "call": "access",
+      "lineCode": "     c.afterRunInput=await app.evaluate(notebookReadinessExpression);assert.equal((await app.invoke('tasks.list')).length,0);await assert.rejects(access(canary),e=>e.code==='ENOENT');c.actualClickAndKeysNoKernelCanary=true;",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "notebook-flow.mjs",
+      "line": 30,
+      "call": "readFile",
+      "lineCode": "   const rows=(await trace()).slice(start),chunks=rows.filter(x=>x.method==='chunk'&&x.delivered);assert(chunks.length>=1,'Actual bounded native chunk must be saved');const expected=await readFile(item.path);c.actualInputRead=chunks.map(x=>({offset:x.args[1],size:x.args[2],revisionHash:x.args[3],base64:x.output,delivered:x.delivered,sourceBefore:x.before,sourceAfter:x.after,input:x.input,inputAfter:x.inputAfter}));assert(chunks.some(x=>x.args[1]===0&&x.args[2]===expected.length&&x.args[3]===mode.before[item.name].sha256&&Buffer.from(x.output,'base64').equals(expected)),'Actual revision-bound complete input chunk must match the original generator output');assert(!rows.some(x=>x.method==='save'||x.method==='checkpoint'));c.noSaveOrCheckpoint=true;c.after=await fingerprints();assert.deepEqual(c.after,mode.before);assert.deepEqual(requests,[]);await assert.rejects(access(canary),e=>e.code==='ENOENT');",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "notebook-flow.mjs",
+      "line": 30,
+      "call": "access",
+      "lineCode": "   const rows=(await trace()).slice(start),chunks=rows.filter(x=>x.method==='chunk'&&x.delivered);assert(chunks.length>=1,'Actual bounded native chunk must be saved');const expected=await readFile(item.path);c.actualInputRead=chunks.map(x=>({offset:x.args[1],size:x.args[2],revisionHash:x.args[3],base64:x.output,delivered:x.delivered,sourceBefore:x.before,sourceAfter:x.after,input:x.input,inputAfter:x.inputAfter}));assert(chunks.some(x=>x.args[1]===0&&x.args[2]===expected.length&&x.args[3]===mode.before[item.name].sha256&&Buffer.from(x.output,'base64').equals(expected)),'Actual revision-bound complete input chunk must match the original generator output');assert(!rows.some(x=>x.method==='save'||x.method==='checkpoint'));c.noSaveOrCheckpoint=true;c.after=await fingerprints();assert.deepEqual(c.after,mode.before);assert.deepEqual(requests,[]);await assert.rejects(access(canary),e=>e.code==='ENOENT');",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "resources.mjs",
+      "line": 2,
+      "call": "readdir",
+      "lineCode": "export function resourceRecorder({userData,driverPid}){const pids=new Set([driverPid]),ports=new Set(),history=[];return{pids,ports,history,async capture(app,pageIds){const rows=execFileSync('/bin/ps',['-ww','-axo','pid=,ppid=,lstart=,comm='],{encoding:'utf8'}).split('\\n').map(line=>{const m=line.trim().match(/^(\\d+)\\s+(\\d+)\\s+(.{24})\\s+(.*)$/);return m?{pid:+m[1],ppid:+m[2],birth:m[3],executable:m[4]}:null}).filter(Boolean),ids=new Set([app.processId]);let changed=true;while(changed){changed=false;for(const row of rows)if(ids.has(row.ppid)&&!ids.has(row.pid)){ids.add(row.pid);changed=true}}const helpers=[];for(const pageId of pageIds){const directory='/private/tmp/wy-ab-'+sha(userData+pageId).slice(0,24);let names=[];try{names=await readdir(directory)}catch(e){if(e.code!=='ENOENT')throw e}const helperPids=[];for(const name of names.filter(n=>n.endsWith('.pid'))){const pid=Number(await readFile(directory+'/'+name,'utf8'));if(Number.isSafeInteger(pid)&&pid>1){ids.add(pid);helperPids.push(pid)}}helpers.push({pageId,directory,pids:helperPids,names})}for(const pid of ids)pids.add(pid);let listeners='';try{listeners=execFileSync('/usr/sbin/lsof',['-nP','-a','-p',[...ids].join(','),'-iTCP','-sTCP:LISTEN'],{encoding:'utf8',timeout:5000})}catch(error){if(error.status!==1)throw error;listeners=String(error.stdout??'')}for(const line of listeners.split('\\n')){const m=line.match(/:(\\d+) \\(LISTEN\\)$/);if(m)ports.add(+m[1])}const row={at:new Date().toISOString(),processes:rows.filter(x=>ids.has(x.pid)),helpers,listeners};history.push(row);return row}}}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "resources.mjs",
+      "line": 2,
+      "call": "readFile",
+      "lineCode": "export function resourceRecorder({userData,driverPid}){const pids=new Set([driverPid]),ports=new Set(),history=[];return{pids,ports,history,async capture(app,pageIds){const rows=execFileSync('/bin/ps',['-ww','-axo','pid=,ppid=,lstart=,comm='],{encoding:'utf8'}).split('\\n').map(line=>{const m=line.trim().match(/^(\\d+)\\s+(\\d+)\\s+(.{24})\\s+(.*)$/);return m?{pid:+m[1],ppid:+m[2],birth:m[3],executable:m[4]}:null}).filter(Boolean),ids=new Set([app.processId]);let changed=true;while(changed){changed=false;for(const row of rows)if(ids.has(row.ppid)&&!ids.has(row.pid)){ids.add(row.pid);changed=true}}const helpers=[];for(const pageId of pageIds){const directory='/private/tmp/wy-ab-'+sha(userData+pageId).slice(0,24);let names=[];try{names=await readdir(directory)}catch(e){if(e.code!=='ENOENT')throw e}const helperPids=[];for(const name of names.filter(n=>n.endsWith('.pid'))){const pid=Number(await readFile(directory+'/'+name,'utf8'));if(Number.isSafeInteger(pid)&&pid>1){ids.add(pid);helperPids.push(pid)}}helpers.push({pageId,directory,pids:helperPids,names})}for(const pid of ids)pids.add(pid);let listeners='';try{listeners=execFileSync('/usr/sbin/lsof',['-nP','-a','-p',[...ids].join(','),'-iTCP','-sTCP:LISTEN'],{encoding:'utf8',timeout:5000})}catch(error){if(error.status!==1)throw error;listeners=String(error.stdout??'')}for(const line of listeners.split('\\n')){const m=line.match(/:(\\d+) \\(LISTEN\\)$/);if(m)ports.add(+m[1])}const row={at:new Date().toISOString(),processes:rows.filter(x=>ids.has(x.pid)),helpers,listeners};history.push(row);return row}}}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 18,
+      "call": "readFile",
+      "lineCode": "const readyBytes=await readFile(ROOT+'/READY.json'),ready=JSON.parse(readyBytes),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json')),oracle=JSON.parse(await readFile(ROOT+'/oracle.json')),project=ROOT+'/runtime-001/normal/project',runtime=ROOT+'/runtime-001';",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 18,
+      "call": "readFile",
+      "lineCode": "const readyBytes=await readFile(ROOT+'/READY.json'),ready=JSON.parse(readyBytes),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json')),oracle=JSON.parse(await readFile(ROOT+'/oracle.json')),project=ROOT+'/runtime-001/normal/project',runtime=ROOT+'/runtime-001';",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 18,
+      "call": "readFile",
+      "lineCode": "const readyBytes=await readFile(ROOT+'/READY.json'),ready=JSON.parse(readyBytes),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json')),oracle=JSON.parse(await readFile(ROOT+'/oracle.json')),project=ROOT+'/runtime-001/normal/project',runtime=ROOT+'/runtime-001';",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 18,
+      "call": "readFile",
+      "lineCode": "const readyBytes=await readFile(ROOT+'/READY.json'),ready=JSON.parse(readyBytes),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json')),oracle=JSON.parse(await readFile(ROOT+'/oracle.json')),project=ROOT+'/runtime-001/normal/project',runtime=ROOT+'/runtime-001';",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 20,
+      "call": "readFile",
+      "lineCode": "for(const x of ready.inputs){assert.equal(sha(await readFile(x.path)),x.sha256,x.path);assert.equal((await lstat(x.path)).mode&511,x.mode,x.path);}assert.equal(pin.status,'bound-actual-App035-source039');",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 20,
+      "call": "lstat",
+      "lineCode": "for(const x of ready.inputs){assert.equal(sha(await readFile(x.path)),x.sha256,x.path);assert.equal((await lstat(x.path)).mode&511,x.mode,x.path);}assert.equal(pin.status,'bound-actual-App035-source039');",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 21,
+      "call": "lstat",
+      "lineCode": "assert(!(await lstat(runtime).then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;})));",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 26,
+      "call": "stat",
+      "lineCode": "async function fingerprints(){const out={};for(const x of oracle.cases){const p=project+'/'+x.name,s=await stat(p,{bigint:true});out[x.name]={sha256:sha(await readFile(p)),size:String(s.size),device:String(s.dev),inode:String(s.ino),mode:Number(s.mode&511n),mtimeNs:String(s.mtimeNs),ctimeNs:String(s.ctimeNs)};}return out;}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 26,
+      "call": "readFile",
+      "lineCode": "async function fingerprints(){const out={};for(const x of oracle.cases){const p=project+'/'+x.name,s=await stat(p,{bigint:true});out[x.name]={sha256:sha(await readFile(p)),size:String(s.size),device:String(s.dev),inode:String(s.ino),mode:Number(s.mode&511n),mtimeNs:String(s.mtimeNs),ctimeNs:String(s.ctimeNs)};}return out;}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 27,
+      "call": "writeFile",
+      "lineCode": "async function stack(mode,label,error){const value=String(error.stack??error),path=mode.runtime+'/'+label+'.private.log';await writeFile(path,value,{mode:0o600});return{label,path,name:error.name,code:error.code??null,message:error.message,sha256:sha(value)};}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 30,
+      "call": "mkdir",
+      "lineCode": " await mkdir(runtime+'/normal/project',{recursive:true,mode:0o700});canary=runtime+'/must-not-execute';",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 33,
+      "call": "writeFile",
+      "lineCode": " for(const item of oracle.cases){const bytes=generated.fixtures[item.name];assert.equal(typeof bytes,'string');assert(Buffer.byteLength(bytes)<262144,'Original fixtures fit one bounded chunk');await writeFile(project+'/'+item.name,bytes,{mode:0o600});item.sha256=sha(bytes);rows.push({name:item.name,kind:item.kind,sha256:item.sha256,bytes:Buffer.byteLength(bytes)});}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 34,
+      "call": "readFile",
+      "lineCode": " r.fixtureMaterialization={generatorSHA256:sha(await readFile(ROOT+'/notebook-fixtures.upstream.mjs')),rows,canary,trapPort:server.address().port,onlyOriginalSelectedNine:true};await save('fixture-materialization.private.json',r.fixtureMaterialization);await persist();",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 38,
+      "call": "mkdir",
+      "lineCode": " const mode={kind,runtime:runtime+'/'+kind,userData:runtime+'/'+kind+'/userdata',executable:pin.executable,startedAt:new Date().toISOString(),status:'running-unjudged',checks:[],actions:[],screenshots:[],cleanupErrors:[]};r.modes.push(mode);await mkdir(mode.runtime,{recursive:true,mode:0o700});for(const n of['home','tmp','work','codex'])await mkdir(mode.runtime+'/'+n,{mode:0o700});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 38,
+      "call": "mkdir",
+      "lineCode": " const mode={kind,runtime:runtime+'/'+kind,userData:runtime+'/'+kind+'/userdata',executable:pin.executable,startedAt:new Date().toISOString(),status:'running-unjudged',checks:[],actions:[],screenshots:[],cleanupErrors:[]};r.modes.push(mode);await mkdir(mode.runtime,{recursive:true,mode:0o700});for(const n of['home','tmp','work','codex'])await mkdir(mode.runtime+'/'+n,{mode:0o700});",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 47,
+      "call": "readFile",
+      "lineCode": "  mode.initialForeground=await activateInitialExactTestPid({app,pin:{...pin,executable:mode.executable},userData:mode.userData,privateRoot:ROOT,authorization:JSON.parse(await readFile(ROOT+'/initial-activation-authorization.json')),scriptPath:ROOT+'/activate-initial-exact-pid.applescript'});mode.initialFocus={samples:[]};let since,hadOwnedFocus=false,initialLossCaptured=false;",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 48,
+      "call": "readFile",
+      "lineCode": "  await poll(async()=>{const d=await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native=await own('return E.BrowserWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused());','readonly-owned-f21-initial-focus');mode.initialFocus.samples.push({at:new Date().toISOString(),...d,native});if(d.focused&&d.visibility==='visible'&&native){hadOwnedFocus=true;since??=Date.now();mode.initialFocus.actualStableMs=Date.now()-since;return mode.initialFocus.actualStableMs>=3000?true:null;}if(hadOwnedFocus&&!initialLossCaptured){initialLossCaptured=true;const observedAt=new Date().toISOString();try{const script=ROOT+'/frontmost.jxa';assert.equal(sha(await readFile(script)),ready.foregroundObserverSHA256);const v=await runFile('/usr/bin/osascript',['-l','JavaScript',script],{timeout:5000,maxBuffer:8192});const data=JSON.parse(v.stdout);assert.deepEqual(Object.keys(data).sort(),['name','pid']);mode.initialFocus.firstLossForeground={detectedAt:observedAt,observedAt:new Date().toISOString(),data,exitCode:0};}catch(error){mode.initialFocus.firstLossForeground={detectedAt:observedAt,error:{name:error.name,message:error.message,code:error.code??null}};}await persist();}since=null;return null;},90000);installAppFocusGuard(app,mode);",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 55,
+      "call": "readFile",
+      "lineCode": "  if(error.code==='APP_FOCUS_YIELDED'||mode.initialFocus){const at=Date.now();try{const script=ROOT+'/frontmost.jxa';assert.equal(sha(await readFile(script)),ready.foregroundObserverSHA256);const v=await runFile('/usr/bin/osascript',['-l','JavaScript',script],{timeout:5000,maxBuffer:8192});const data=JSON.parse(v.stdout);assert.deepEqual(Object.keys(data).sort(),['name','pid']);mode.foregroundAtCatch={at:new Date().toISOString(),sampleStartedMs:at,yieldAt:mode.focusGuard?.yieldedAt??null,data,exitCode:0};}catch(e){mode.foregroundAtCatch={at:new Date().toISOString(),sampleStartedMs:at,error:{name:e.name,message:e.message,code:e.code??null}};}}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 60,
+      "call": "writeFile",
+      "lineCode": "   mode.appCleanup=await settleOwnedApp({app,requestNormalQuit:()=>own('globalThis.__f21RestoreTitle?.();setTimeout(()=>E.app.quit(),20);return true;','quit-owned-f21-app'),writePrivateLogs:()=>writeFile(mode.runtime+'/electron.private.log',app.logs(),{mode:0o600}),onError:async(label,e)=>{mode.cleanupErrors.push(await stack(mode,'cleanup-'+label,e));}});mode.observedProcess=app.observedProcess();mode.appExit=mode.appCleanup.finalWaitExit;",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 62,
+      "call": "readdir",
+      "lineCode": "  mode.projectEntries=(await readdir(project)).sort();mode.after=await fingerprints();mode.knownPids=[...resources.pids];mode.knownPorts=[...resources.ports];mode.resourceHistory=resources.history;r.knownPids=[...new Set([...r.knownPids,...mode.knownPids])];r.knownPorts=[...new Set([...r.knownPorts,...mode.knownPorts])];r.exactGatewayPaths.push(...mode.exactGatewayPaths??[]);r.resourceHistory.push(...mode.resourceHistory);mode.finishedAt=new Date().toISOString();await persist();await save('mode-'+kind+'.json',mode);",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 67,
+      "call": "mkdir",
+      "lineCode": "try{await mkdir(runtime,{mode:0o700});await save('execution-started.json',{at:r.startedAt,driverPid:process.pid});await materializeOriginalFixtures();await runMode('normal');assert.deepEqual(requests,[]);r.status='executed-unjudged';}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    },
+    {
+      "file": "run.mjs",
+      "line": 68,
+      "call": "writeFile",
+      "lineCode": "catch(error){r.status='failed-or-deferred';r.failure={stage,name:error.name,message:error.message,code:error.code??null};await writeFile(runtime+'/group-failure.private.log',String(error.stack??error),{mode:0o600});process.exitCode=1;}",
+      "phase": "static-admission / own-runtime / exact-resource-observation per branch",
+      "classificationRule": "ROOT READY/pin/oracle/authorization/frontmost are frozen inputs; lease.receipt isRoot generated. runtime/project nineoracle filenames, userdata,logs/cache/receipts are ownoutputs. resourceRecorder helper dirs onlyempty pageIds; exactApp ps/lsof are futureleasedOS observation, not static preparation."
+    }
+  ],
+  "staticReads": [
+    "READY.json",
+    "pin.json",
+    "oracle.json",
+    "initial-activation-authorization.json",
+    "activate-initial-exact-pid.applescript",
+    "frontmost.jxa",
+    "everyREADY.inputs.path",
+    "check-static: exact Root001cleanup-current.py reference",
+    "lineage/sourceCSS/Root001diagnosis asfrozenhash inputs",
+    "decorative-run-input.mjs andcleanup-root-binding.mjs relativeimports"
+  ],
+  "RootGenerated": [
+    "lease.receipt.json"
+  ],
+  "runtimeReads": [
+    "runtime-001/normal/project/{nine exactoracle names}",
+    "sameactualApp logs/recordedselfPID/listeners",
+    "raw.json/cleanup.json byofflinejudge"
+  ],
+  "outputsMustStartAbsent": [
+    "runtime-001",
+    "raw.json",
+    "cleanup.json",
+    "judgement.json",
+    "execution-started.json",
+    "cache"
+  ],
+  "originalTemplateReadRoot": "F16cont002 mature shared lifetime/hash reused; no oldruntime or lease copied",
+  "002Scope": "SameoneApp, all18casesfresh because001complete0; nooldruntime/lease/data. Actualdecorative helperhasnoFSorNativecode.",
+  "staticFileAccessSupplement": [
+    {
+      "file": "check-static.mjs",
+      "call": "readFile",
+      "path": "/private/tmp/willyou-m12-f21-coordinator-actual-001/cleanup-current.py",
+      "class": "frozen static reference",
+      "sha256": "438e8379bb1632c4cacd7535c2780e9852bbfb4762220ecb45f64f5e09a30d76"
+    },
+    {
+      "file": "cleanup.py",
+      "call": "Path(argv[1]).resolve+assert",
+      "path": "/private/tmp/willyou-m12-t130-F21-App035-A-cont-003",
+      "class": "exactgeneratedrunroot; raw/outputatfutureverification only"
+    }
+  ],
+  "003StaticReads": {
+    "RootCurrent": [
+      "READY",
+      "pin",
+      "oracle",
+      "reuse-admission",
+      "frozenmoduleinputs",
+      "Rootgeneratedlease"
+    ],
+    "priorOwnedReadOnly": [
+      "002/raw.json exactSHA",
+      "002/cleanup.json exactSHA",
+      "002/runtime-001/normal/project/{nine exactoracle files} withfullstat"
+    ],
+    "noPriorDBAuthRead": true
+  },
+  "003Outputs": "Only003runtime/userData/logs/cache/raw/cleanup/judge; localtrap rebindsoriginalport. No writes into002project. Existingcanary path isread-onlyassertion; unexpectedkernelwrite wouldfail originalrequirement."
+}

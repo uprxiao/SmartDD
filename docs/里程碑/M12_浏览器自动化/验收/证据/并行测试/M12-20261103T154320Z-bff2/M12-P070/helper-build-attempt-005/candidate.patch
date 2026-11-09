@@ -1,0 +1,940 @@
+--- a/cli/Cargo.lock
++++ b/cli/Cargo.lock
+@@ -45,7 +45,7 @@
+ 
+ [[package]]
+ name = "agent-browser"
+-version = "0.27.3"
++version = "0.27.3-willyou.5"
+ dependencies = [
+  "aes-gcm",
+  "async-trait",
+--- a/cli/Cargo.toml
++++ b/cli/Cargo.toml
+@@ -1,6 +1,6 @@
+ [package]
+ name = "agent-browser"
+-version = "0.27.3"
++version = "0.27.3-willyou.5"
+ edition = "2021"
+ description = "Fast browser automation CLI for AI agents"
+ license = "Apache-2.0"
+--- a/cli/src/commands.rs
++++ b/cli/src/commands.rs
+@@ -2246,7 +2246,13 @@
+             let mut fill_parts: Vec<&str> = Vec::new();
+ 
+             if rest.len() > 3 {
++                // WillYou: the first payload is literal, including "--name" or
++                // "--exact". Remaining tokens are locator options.
+                 let mut i = 3;
++                if matches!(*subaction, "fill" | "type") {
++                    fill_parts.push(rest[3]);
++                    i = 4;
++                }
+                 while i < rest.len() {
+                     match rest[i] {
+                         "--exact" => {
+@@ -2286,9 +2292,13 @@
+                     }
+                     Ok(cmd)
+                 }
+-                "text" => Ok(
+-                    json!({ "id": id, "action": "getbytext", "text": value, "subaction": subaction, "exact": exact }),
+-                ),
++                "text" => {
++                    let mut cmd = json!({ "id": id, "action": "getbytext", "text": value, "subaction": subaction, "exact": exact });
++                    if let Some(v) = fill_value {
++                        cmd["value"] = json!(v);
++                    }
++                    Ok(cmd)
++                }
+                 "label" => {
+                     let mut cmd = json!({ "id": id, "action": "getbylabel", "label": value, "subaction": subaction, "exact": exact });
+                     if let Some(v) = fill_value {
+@@ -2306,9 +2316,13 @@
+                 "alt" => Ok(
+                     json!({ "id": id, "action": "getbyalttext", "text": value, "subaction": subaction, "exact": exact }),
+                 ),
+-                "title" => Ok(
+-                    json!({ "id": id, "action": "getbytitle", "text": value, "subaction": subaction, "exact": exact }),
+-                ),
++                "title" => {
++                    let mut cmd = json!({ "id": id, "action": "getbytitle", "text": value, "subaction": subaction, "exact": exact });
++                    if let Some(v) = fill_value {
++                        cmd["value"] = json!(v);
++                    }
++                    Ok(cmd)
++                }
+                 "testid" => {
+                     let mut cmd = json!({ "id": id, "action": "getbytestid", "testId": value, "subaction": subaction });
+                     if let Some(v) = fill_value {
+@@ -2369,6 +2383,16 @@
+ 
+ fn parse_mouse(rest: &[&str], id: &str) -> Result<Value, ParseError> {
+     const VALID: &[&str] = &["move", "down", "up", "wheel"];
++    let finite_number = |value: &str, usage| {
++        value
++            .parse::<f64>()
++            .ok()
++            .filter(|value| value.is_finite())
++            .ok_or_else(|| ParseError::InvalidValue {
++                message: format!("mouse input requires finite numbers, got: {}", value),
++                usage,
++            })
++    };
+ 
+     match rest.first().copied() {
+         Some("move") => {
+@@ -2380,18 +2404,8 @@
+                 context: "mouse move".to_string(),
+                 usage: "mouse move <x> <y>",
+             })?;
+-            let x = x_str
+-                .parse::<i32>()
+-                .map_err(|_| ParseError::MissingArguments {
+-                    context: "mouse move".to_string(),
+-                    usage: "mouse move <x> <y>",
+-                })?;
+-            let y = y_str
+-                .parse::<i32>()
+-                .map_err(|_| ParseError::MissingArguments {
+-                    context: "mouse move".to_string(),
+-                    usage: "mouse move <x> <y>",
+-                })?;
++            let x = finite_number(x_str, "mouse move <x> <y>")?;
++            let y = finite_number(y_str, "mouse move <x> <y>")?;
+             Ok(json!({ "id": id, "action": "mousemove", "x": x, "y": y }))
+         }
+         Some("down") => {
+@@ -2403,9 +2417,14 @@
+         Some("wheel") => {
+             let dy = rest
+                 .get(1)
+-                .and_then(|s| s.parse::<i32>().ok())
+-                .unwrap_or(100);
+-            let dx = rest.get(2).and_then(|s| s.parse::<i32>().ok()).unwrap_or(0);
++                .map(|value| finite_number(value, "mouse wheel [dy] [dx]"))
++                .transpose()?
++                .unwrap_or(100.0);
++            let dx = rest
++                .get(2)
++                .map(|value| finite_number(value, "mouse wheel [dy] [dx]"))
++                .transpose()?
++                .unwrap_or(0.0);
+             Ok(json!({ "id": id, "action": "wheel", "deltaX": dx, "deltaY": dy }))
+         }
+         Some(sub) => Err(ParseError::UnknownSubcommand {
+@@ -4201,8 +4220,36 @@
+     fn test_mouse_wheel() {
+         let cmd = parse_command(&args("mouse wheel 100 50"), &default_flags()).unwrap();
+         assert_eq!(cmd["action"], "wheel");
+-        assert_eq!(cmd["deltaY"], 100);
+-        assert_eq!(cmd["deltaX"], 50);
++        assert_eq!(cmd["deltaY"].as_f64(), Some(100.0));
++        assert_eq!(cmd["deltaX"].as_f64(), Some(50.0));
++    }
++
++    #[test]
++    fn test_m12_mouse_numbers_preserve_finite_fractional_values() {
++        let cmd = parse_command(&args("mouse move 122.04296875 -0.5"), &default_flags()).unwrap();
++        assert_eq!(cmd["x"].as_f64(), Some(122.04296875));
++        assert_eq!(cmd["y"].as_f64(), Some(-0.5));
++        let cmd = parse_command(&args("mouse wheel -0.25 1.5"), &default_flags()).unwrap();
++        assert_eq!(cmd["deltaY"].as_f64(), Some(-0.25));
++        assert_eq!(cmd["deltaX"].as_f64(), Some(1.5));
++        let cmd = parse_command(&args("mouse wheel"), &default_flags()).unwrap();
++        assert_eq!(cmd["deltaY"].as_f64(), Some(100.0));
++        assert_eq!(cmd["deltaX"].as_f64(), Some(0.0));
++    }
++
++    #[test]
++    fn test_m12_mouse_numbers_reject_invalid_or_nonfinite_values() {
++        for input in ["NaN", "inf", "-inf", "1e999", "12pixels"] {
++            for command in [
++                format!("mouse move {} 0", input),
++                format!("mouse wheel {}", input),
++            ] {
++                assert!(matches!(
++                    parse_command(&args(&command), &default_flags()),
++                    Err(ParseError::InvalidValue { .. })
++                ));
++            }
++        }
+     }
+ 
+     #[test]
+@@ -4297,6 +4344,39 @@
+         assert_eq!(cmd["name"], "username");
+         assert_eq!(cmd["exact"], true);
+         assert_eq!(cmd["value"], "hello");
++    }
++
++    #[test]
++    fn test_willyou_semantic_find_keeps_literal_payload() {
++        for locator in [
++            "role",
++            "text",
++            "label",
++            "placeholder",
++            "title",
++            "testid",
++            "first",
++            "last",
++        ] {
++            for payload in ["--name", "--exact", "", "quoted \"value\"\n中文"] {
++                let input: Vec<String> = [
++                    "find",
++                    locator,
++                    "target",
++                    "fill",
++                    payload,
++                    "--name",
++                    "Actual name",
++                    "--exact",
++                ]
++                .iter()
++                .map(|value| value.to_string())
++                .collect();
++                let cmd = parse_command(&input, &default_flags()).unwrap();
++                assert_eq!(cmd["value"], payload, "locator {locator}");
++                assert_eq!(cmd["subaction"], "fill");
++            }
++        }
+     }
+ 
+     // === Download Tests ===
+--- a/cli/src/connection.rs
++++ b/cli/src/connection.rs
+@@ -776,35 +776,10 @@
+     }
+ }
+ 
++// WillYou S1: a lost reply is not proof that a browser write did not run.
++// Exactly one IPC send, including EOF/EAGAIN; recovery belongs to the host.
+ pub fn send_command(cmd: Value, session: &str) -> Result<Response, String> {
+-    // Retry logic for transient errors (EAGAIN/EWOULDBLOCK/connection issues)
+-    const MAX_RETRIES: u32 = 5;
+-    const RETRY_DELAY_MS: u64 = 200;
+-
+-    let mut last_error = String::new();
+-
+-    for attempt in 0..MAX_RETRIES {
+-        if attempt > 0 {
+-            thread::sleep(Duration::from_millis(RETRY_DELAY_MS * (attempt as u64)));
+-        }
+-
+-        match send_command_once(&cmd, session) {
+-            Ok(response) => return Ok(response),
+-            Err(e) => {
+-                if is_transient_error(&e) {
+-                    last_error = e;
+-                    continue;
+-                }
+-                // Non-transient error, fail immediately
+-                return Err(e);
+-            }
+-        }
+-    }
+-
+-    Err(format!(
+-        "{} (after {} retries - daemon may be busy or unresponsive)",
+-        last_error, MAX_RETRIES
+-    ))
++    send_command_once(&cmd, session)
+ }
+ 
+ /// Check if an error is transient and worth retrying against the SAME daemon.
+--- a/cli/src/main.rs
++++ b/cli/src/main.rs
+@@ -25,7 +25,7 @@
+ 
+ use commands::{gen_id, parse_command, ParseError};
+ use connection::{
+-    cleanup_stale_files, daemon_unreachable, ensure_daemon, get_socket_dir, is_pid_alive,
++    cleanup_stale_files, ensure_daemon, get_socket_dir, is_pid_alive,
+     send_command, walk_daemons, DaemonOptions,
+ };
+ use flags::{clean_args, parse_flags, Flags};
+@@ -1302,23 +1302,14 @@
+     }
+ }
+ 
+-/// send_command plus the daemon-shutdown-race recovery: ensure_daemon no
+-/// longer pays a settle-sleep on every invocation, so a daemon that exited
+-/// right after its liveness check surfaces as an unreachable socket on the
+-/// request itself. Respawn once and retry before reporting failure.
++// WillYou S1: never respawn and replay a submitted command. The host can
++// rebuild the session with a separate read after reporting an unknown write.
+ fn send_command_with_respawn(
+     cmd: serde_json::Value,
+     session: &str,
+-    daemon_opts: &DaemonOptions,
++    _daemon_opts: &DaemonOptions,
+ ) -> Result<connection::Response, String> {
+-    let first_attempt = send_command(cmd.clone(), session);
+-    match first_attempt {
+-        Err(ref e) if daemon_unreachable(e) => match ensure_daemon(session, daemon_opts) {
+-            Ok(_) => send_command(cmd, session),
+-            Err(_) => first_attempt,
+-        },
+-        other => other,
+-    }
++    send_command(cmd, session)
+ }
+ 
+ fn run_batch(
+--- a/cli/src/native/actions.rs
++++ b/cli/src/native/actions.rs
+@@ -164,6 +164,7 @@
+ 
+ #[derive(Default)]
+ struct DrainedEvents {
++    pending_pointer_releases: Vec<super::interaction::PendingRelease>,
+     pending_acks: Vec<i64>,
+     new_targets: Vec<TargetCreatedEvent>,
+     changed_targets: Vec<TargetInfoChangedEvent>,
+@@ -340,6 +341,7 @@
+ 
+     fn reset_input_state(&mut self) {
+         self.mouse_state = MouseState::default();
++        self.pending_pointer_release = None;
+     }
+ 
+     /// Create state with an optional stream client slot and server instance
+@@ -597,6 +599,17 @@
+     }
+ 
+     async fn apply_drained_events(&mut self, drained: DrainedEvents) {
++        // Complete an already dispatched synthetic click after its own dialog
++        // closes, including a real user or host reply. This is not a retry.
++        for release in drained.pending_pointer_releases {
++            if let Some(ref browser) = self.browser {
++                if let Err(error) =
++                    interaction::dispatch_pending_release(&browser.client, &release).await
++                {
++                    eprintln!("[agent-browser] deferred mouse release failed: {}", error);
++                }
++            }
++        }
+         // ACK screencast frames
+         if !drained.pending_acks.is_empty() {
+             if let Some(ref browser) = self.browser {
+@@ -707,6 +720,7 @@
+         };
+ 
+         let mut pending_acks: Vec<i64> = Vec::new();
++        let mut pending_pointer_releases: Vec<interaction::PendingRelease> = Vec::new();
+         let mut new_targets: Vec<TargetCreatedEvent> = Vec::new();
+         let mut new_target_ids: HashSet<String> = HashSet::new();
+         let mut changed_targets: Vec<TargetInfoChangedEvent> = Vec::new();
+@@ -797,11 +811,55 @@
+                             if let Some(sid) =
+                                 event.params.get("sessionId").and_then(|v| v.as_str())
+                             {
++                                if self
++                                    .pending_pointer_release
++                                    .as_ref()
++                                    .is_some_and(|release| {
++                                        release.session_id == sid
++                                            || release.dialog_session_id.as_deref() == Some(sid)
++                                    })
++                                {
++                                    self.pending_pointer_release = None;
++                                }
++                                pending_pointer_releases.retain(|release| {
++                                    release.session_id != sid
++                                        && release.dialog_session_id.as_deref() != Some(sid)
++                                });
+                                 detached_iframe_sessions.push(sid.to_string());
+                             }
+                             continue;
+                         }
+                         _ => {}
++                    }
++
++                    if matches!(
++                        event.method.as_str(),
++                        "Page.frameNavigated" | "Page.frameDetached"
++                    ) {
++                        let frame_id = if event.method == "Page.frameNavigated" {
++                            event
++                                .params
++                                .get("frame")
++                                .and_then(|frame| frame.get("id"))
++                                .and_then(|id| id.as_str())
++                        } else {
++                            event.params.get("frameId").and_then(|id| id.as_str())
++                        };
++                        if let Some(frame_id) = frame_id {
++                            if self
++                                .pending_pointer_release
++                                .as_ref()
++                                .is_some_and(|release| {
++                                    release
++                                        .matches_dialog(event.session_id.as_deref(), Some(frame_id))
++                                })
++                            {
++                                self.pending_pointer_release = None;
++                            }
++                            pending_pointer_releases.retain(|release| {
++                                !release.matches_dialog(event.session_id.as_deref(), Some(frame_id))
++                            });
++                        }
+                     }
+ 
+                     let session_matches = if let Some(ref browser) = self.browser {
+@@ -820,7 +878,18 @@
+                             .as_ref()
+                             .is_some_and(|sid| self.iframe_sessions.values().any(|v| v == sid));
+ 
+-                    if !session_matches && !iframe_network_event {
++                    let pending_click_dialog_closed = event.method == "Page.javascriptDialogClosed"
++                        && self
++                            .pending_pointer_release
++                            .as_ref()
++                            .is_some_and(|release| {
++                                release.matches_dialog(
++                                    event.session_id.as_deref(),
++                                    event.params.get("frameId").and_then(|value| value.as_str()),
++                                )
++                            });
++
++                    if !session_matches && !iframe_network_event && !pending_click_dialog_closed {
+                         continue;
+                     }
+ 
+@@ -1119,7 +1188,17 @@
+                             }
+                         }
+                         "Page.javascriptDialogClosed" => {
+-                            self.pending_dialog = None;
++                            if self
++                                .pending_dialog
++                                .as_ref()
++                                .is_some_and(|dialog| dialog.session_id == event.session_id)
++                            {
++                                self.pending_dialog = None;
++                            }
++                            if pending_click_dialog_closed {
++                                pending_pointer_releases
++                                    .extend(self.pending_pointer_release.take());
++                            }
+                         }
+                         // Fetch.requestPaused is handled by the background
+                         // fetch_handler_task — no need to collect here.
+@@ -1139,6 +1218,7 @@
+         }
+ 
+         DrainedEvents {
++            pending_pointer_releases,
+             pending_acks,
+             new_targets,
+             changed_targets,
+@@ -5819,6 +5899,48 @@
+     let session_id = mgr.active_session_id()?.to_string();
+ 
+     match subaction {
++        // WillYou S3: every semantic locator exposes the documented seven
++        // actions through the same implementation (including nth/first/last).
++        "type" => {
++            let value = cmd
++                .get("value")
++                .and_then(|v| v.as_str())
++                .ok_or("Missing 'value' for type subaction")?;
++            interaction::type_text(
++                &mgr.client,
++                &session_id,
++                &state.ref_map,
++                selector,
++                value,
++                false,
++                None,
++                &state.iframe_sessions,
++            )
++            .await?;
++            Ok(json!({ "typed": selector }))
++        }
++        "focus" => {
++            interaction::focus(
++                &mgr.client,
++                &session_id,
++                &state.ref_map,
++                selector,
++                &state.iframe_sessions,
++            )
++            .await?;
++            Ok(json!({ "focused": selector }))
++        }
++        "uncheck" => {
++            interaction::uncheck(
++                &mgr.client,
++                &session_id,
++                &state.ref_map,
++                selector,
++                &state.iframe_sessions,
++            )
++            .await?;
++            Ok(json!({ "unchecked": selector }))
++        }
+         "click" => {
+             let result = interaction::click(
+                 &mgr.client,
+@@ -5913,13 +6035,12 @@
+         .map(|n| {
+             if exact {
+                 format!(
+-                    "el.getAttribute('aria-label') === {} || el.textContent.trim() === {}",
+-                    serde_json::to_string(n).unwrap_or_default(),
++                    "accessibleName(el) === {}",
+                     serde_json::to_string(n).unwrap_or_default()
+                 )
+             } else {
+                 format!(
+-                    "(el.getAttribute('aria-label') || '').includes({n}) || el.textContent.includes({n})",
++                    "accessibleName(el).includes({n})",
+                     n = serde_json::to_string(n).unwrap_or_default()
+                 )
+             }
+@@ -5928,7 +6049,24 @@
+ 
+     let js = format!(
+         r#"(() => {{
+-            const els = document.querySelectorAll('[role="{role}"], {role}');
++            const role = {role_json};
++            const implicit = {{
++                button:'button,input[type="button"],input[type="submit"],input[type="reset"]',
++                textbox:'textarea,input:not([type]),input[type="text"],input[type="email"],input[type="tel"],input[type="url"],input[type="password"],[contenteditable="true"]',
++                searchbox:'input[type="search"]', checkbox:'input[type="checkbox"]', radio:'input[type="radio"]',
++                combobox:'select:not([multiple])', listbox:'select[multiple]', option:'option', link:'a[href],area[href]',
++                img:'img', heading:'h1,h2,h3,h4,h5,h6', slider:'input[type="range"]', spinbutton:'input[type="number"]',
++                list:'ul,ol', listitem:'li', table:'table', row:'tr', cell:'td', columnheader:'th', progressbar:'progress'
++            }};
++            const selector = '[role="' + CSS.escape(role) + '"]' + (implicit[role] ? ', ' + implicit[role] : '');
++            const accessibleName = el => {{
++                const aria = el.getAttribute('aria-label'); if (aria !== null) return aria;
++                const ids = el.getAttribute('aria-labelledby');
++                if (ids) return ids.split(/\s+/).map(id => document.getElementById(id)?.textContent || '').join(' ').trim();
++                const labels = Array.from(el.labels || []).map(label => label.textContent.trim()).join(' ');
++                return labels || el.getAttribute('alt') || el.getAttribute('title') || el.textContent.trim();
++            }};
++            const els = document.querySelectorAll(selector);
+             for (const el of els) {{
+                 if ({name_match}) {{
+                     el.setAttribute('data-agent-browser-located', 'true');
+@@ -5937,7 +6075,7 @@
+             }}
+             return false;
+         }})()"#,
+-        role = role,
++        role_json = serde_json::to_string(role).unwrap_or_default(),
+         name_match = name_match,
+     );
+ 
+@@ -5983,6 +6121,22 @@
+     result
+ }
+ 
++// Literal values must stay JavaScript data, never be interpolated inside a
++// quoted CSS selector. Apostrophes/quotes/Unicode are ordinary attribute text.
++fn literal_attribute_query(selector: &str, attribute: &str, value: &str) -> String {
++    format!(
++        r#"(() => {{
++        const el = Array.from(document.querySelectorAll({selector}))
++            .find(el => el.getAttribute({attribute}) === {value});
++        if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
++        return false;
++    }})()"#,
++        selector = serde_json::to_string(selector).unwrap_or_default(),
++        attribute = serde_json::to_string(attribute).unwrap_or_default(),
++        value = serde_json::to_string(value).unwrap_or_default()
++    )
++}
++
+ async fn handle_semantic_locator(
+     cmd: &Value,
+     state: &mut DaemonState,
+@@ -5999,12 +6153,12 @@
+ 
+     let match_fn = if exact {
+         format!(
+-            "el.textContent.trim() === {}",
++            "textOf(el).trim() === {}",
+             serde_json::to_string(value).unwrap_or_default()
+         )
+     } else {
+         format!(
+-            "el.textContent.includes({})",
++            "textOf(el).includes({})",
+             serde_json::to_string(value).unwrap_or_default()
+         )
+     };
+@@ -6042,45 +6196,31 @@
+             }})()"#,
+             )
+         }
+-        "placeholder" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('input[placeholder={val}], textarea[placeholder={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
++        "placeholder" => literal_attribute_query(
++            "input[placeholder],textarea[placeholder]",
++            "placeholder",
++            value,
+         ),
+-        "alttext" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('img[alt={val}], [alt={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
+-        ),
+-        "title" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('[title={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
+-        ),
+-        "testid" => format!(
+-            r#"(() => {{
+-                const el = document.querySelector('[data-testid={val}]');
+-                if (el) {{ el.setAttribute('data-agent-browser-located', 'true'); return true; }}
+-                return false;
+-            }})()"#,
+-            val = serde_json::to_string(value).unwrap_or_default(),
+-        ),
++        "alttext" => literal_attribute_query("[alt]", "alt", value),
++        "title" => literal_attribute_query("[title]", "title", value),
++        "testid" => literal_attribute_query("[data-testid]", "data-testid", value),
+         _ => {
+             // "text" strategy
+             format!(
+                 r#"(() => {{
+-                    const all = document.querySelectorAll('*');
++                    const all = Array.from(document.querySelectorAll('*'));
++                    const excluded = new Set(['HEAD','TITLE','SCRIPT','STYLE','NOSCRIPT','TEMPLATE']);
++                    const text = new WeakMap();
++                    // Post-order avoids recursive traversal and retains inline
++                    // text across sibling nodes without matching script/style.
++                    for (const el of [...all].reverse()) {{
++                        text.set(el, excluded.has(el.tagName) ? '' : Array.from(el.childNodes)
++                            .map(node => node.nodeType === 3 ? node.textContent : text.get(node) || '').join(''));
++                    }}
++                    const textOf = el => text.get(el) || '';
++                    const matches = el => !excluded.has(el.tagName) && ({match_fn});
+                     for (const el of all) {{
+-                        if (el.children.length === 0 && {match_fn}) {{
++                        if (matches(el) && !Array.from(el.children).some(matches)) {{
+                             el.setAttribute('data-agent-browser-located', 'true');
+                             return true;
+                         }}
+@@ -8717,6 +8857,92 @@
+         assert_eq!(state.mouse_state.buttons, 0);
+     }
+ 
++    fn m12_pending_click() -> interaction::PendingRelease {
++        interaction::PendingRelease {
++            session_id: "input-session".into(),
++            dialog_session_id: Some("dialog-session".into()),
++            dialog_frame_id: Some("dialog-frame".into()),
++            x: 122.04296875,
++            y: 64.0,
++            button: "left".into(),
++            click_count: 2,
++        }
++    }
++
++    fn m12_dialog_closed(session: &str, frame: &str) -> CdpEvent {
++        CdpEvent {
++            method: "Page.javascriptDialogClosed".into(),
++            params: json!({"frameId": frame, "result": true}),
++            session_id: Some(session.into()),
++        }
++    }
++
++    #[test]
++    fn test_m12_external_dialog_close_completes_only_its_pending_click_once() {
++        let mut state = DaemonState::new();
++        let (sender, receiver) = broadcast::channel(8);
++        state.event_rx = Some(receiver);
++        state.pending_pointer_release = Some(m12_pending_click());
++        sender
++            .send(m12_dialog_closed("other-session", "dialog-frame"))
++            .unwrap();
++        sender
++            .send(m12_dialog_closed("dialog-session", "other-frame"))
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++        assert!(state.pending_pointer_release.is_some());
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        let drained = state.drain_cdp_events();
++        assert_eq!(drained.pending_pointer_releases.len(), 1);
++        let release = &drained.pending_pointer_releases[0];
++        assert_eq!(release.session_id, "input-session");
++        assert_eq!(release.x, 122.04296875);
++        assert_eq!(release.click_count, 2);
++        assert!(state.pending_pointer_release.is_none());
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++    }
++
++    #[test]
++    fn test_m12_dialog_close_does_not_release_an_explicit_mouse_down() {
++        let mut state = DaemonState::new();
++        let (sender, receiver) = broadcast::channel(8);
++        state.event_rx = Some(receiver);
++        state.mouse_state.buttons = 1;
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++        assert_eq!(state.mouse_state.buttons, 1);
++    }
++
++    #[test]
++    fn test_m12_frame_navigation_discards_an_old_deferred_release() {
++        let mut state = DaemonState::new();
++        let (sender, receiver) = broadcast::channel(8);
++        state.event_rx = Some(receiver);
++        state.pending_pointer_release = Some(m12_pending_click());
++        sender
++            .send(m12_dialog_closed("dialog-session", "dialog-frame"))
++            .unwrap();
++        sender
++            .send(CdpEvent {
++                method: "Page.frameNavigated".into(),
++                params: json!({"frame":{"id":"dialog-frame"}}),
++                session_id: Some("dialog-session".into()),
++            })
++            .unwrap();
++        assert!(state.drain_cdp_events().pending_pointer_releases.is_empty());
++        assert!(state.pending_pointer_release.is_none());
++        state.pending_pointer_release = Some(m12_pending_click());
++        state.reset_input_state();
++        assert!(state.pending_pointer_release.is_none());
++    }
++
+     #[test]
+     fn test_launch_options_from_env_defaults() {
+         let guard = EnvGuard::new(&["AGENT_BROWSER_HEADED", "AGENT_BROWSER_HIDE_SCROLLBARS"]);
+--- a/cli/src/native/browser.rs
++++ b/cli/src/native/browser.rs
+@@ -432,7 +432,7 @@
+     }
+ 
+     pub async fn connect_cdp(url: &str) -> Result<Self, String> {
+-        Self::connect_cdp_inner(url, false, None).await
++        Self::connect_cdp_inner(url, true, None).await
+     }
+ 
+     /// Connect to a provider CDP proxy where the WebSocket IS the page session.
+@@ -445,7 +445,7 @@
+         url: &str,
+         headers: Option<Vec<(String, String)>>,
+     ) -> Result<Self, String> {
+-        Self::connect_cdp_inner(url, false, headers).await
++        Self::connect_cdp_inner(url, true, headers).await
+     }
+ 
+     async fn connect_cdp_inner(
+@@ -639,6 +639,13 @@
+         self.client
+             .send_command_no_params("Network.enable", None)
+             .await?;
++        // WillYou only exposes this page and its own iframe sessions. Subscribe
++        // without browser discovery, including frames attached before connect.
++        self.client.send_command(
++            "Target.setAutoAttach",
++            Some(json!({"autoAttach":true,"waitForDebuggerOnStart":false,"flatten":true})),
++            None,
++        ).await?;
+         Ok(())
+     }
+ 
+--- a/cli/src/native/interaction.rs
++++ b/cli/src/native/interaction.rs
+@@ -20,9 +20,19 @@
+ 
+ pub struct PendingRelease {
+     pub session_id: String,
++    pub dialog_session_id: Option<String>,
++    pub dialog_frame_id: Option<String>,
+     pub x: f64,
+     pub y: f64,
+     pub button: String,
++    pub click_count: i32,
++}
++
++impl PendingRelease {
++    pub fn matches_dialog(&self, session_id: Option<&str>, frame_id: Option<&str>) -> bool {
++        self.dialog_session_id.as_deref() == session_id
++            && self.dialog_frame_id.as_deref() == frame_id
++    }
+ }
+ 
+ pub async fn click(
+@@ -143,15 +153,26 @@
+         )
+         .await?;
+ 
+-    // Select all + delete to clear
+-    client
++    // WillYou: select the retained target's contents; native insertText performs
++    // the replacement and emits real editing events, including contenteditable.
++    let selected = client
+         .send_command_typed::<_, Value>(
+             "Runtime.callFunctionOn",
+             &CallFunctionOnParams {
+                 function_declaration: r#"function() {
+-                    this.select && this.select();
+-                    this.value = '';
+-                    this.dispatchEvent(new Event('input', { bubbles: true }));
++                    if (!this.isConnected) return false;
++                    const input = this instanceof HTMLInputElement || this instanceof HTMLTextAreaElement;
++                    if ((!input && !this.isContentEditable) || this.disabled || this.readOnly) return false;
++                    const root = this.getRootNode(), focused = root.activeElement || this.ownerDocument.activeElement;
++                    if (focused !== this && !this.contains(focused)) return false;
++                    if (input) this.select();
++                    else {
++                        const selection = typeof root.getSelection === 'function' ? root.getSelection() : this.ownerDocument.getSelection();
++                        if (!selection) return false;
++                        const range = this.ownerDocument.createRange();
++                        range.selectNodeContents(this); selection.removeAllRanges(); selection.addRange(range);
++                    }
++                    return this.isConnected;
+                 }"#
+                 .to_string(),
+                 object_id: Some(object_id),
+@@ -162,6 +183,14 @@
+             Some(&effective_session_id),
+         )
+         .await?;
++    if selected
++        .get("result")
++        .and_then(|value| value.get("value"))
++        .and_then(|value| value.as_bool())
++        != Some(true)
++    {
++        return Err("Element is not an editable focused text target".to_string());
++    }
+ 
+     // Insert text (keyboard input dispatched at page level, use parent session_id)
+     client
+@@ -935,7 +964,7 @@
+ }
+ 
+ /// Dispatches one mouse event and waits for the browser to ack it, but
+-/// returns Ok(true) if a JavaScript dialog opens first. A synchronous dialog
++/// returns its session/frame identity if a JavaScript dialog opens first. A synchronous dialog
+ /// (confirm/prompt/alert in the event handler) blocks the renderer's main
+ /// thread, so the input ack cannot arrive until the dialog is resolved;
+ /// without this the command hangs until the client read timeout and the agent
+@@ -945,7 +974,7 @@
+     session_id: &str,
+     accept_sessions: &[&str],
+     params: &DispatchMouseEventParams,
+-) -> Result<bool, String> {
++) -> Result<Option<(Option<String>, Option<String>)>, String> {
+     use tokio::sync::broadcast::error::RecvError;
+ 
+     // Subscribe before sending so the dialog event cannot slip past us.
+@@ -957,7 +986,7 @@
+         tokio::select! {
+             res = &mut send => {
+                 res?;
+-                return Ok(false);
++                return Ok(None);
+             }
+             event = events.recv() => {
+                 match event {
+@@ -971,7 +1000,10 @@
+                             None => true,
+                         };
+                         if ours {
+-                            return Ok(true);
++                            return Ok(Some((
++                                e.session_id,
++                                e.params.get("frameId").and_then(|v| v.as_str()).map(str::to_owned),
++                            )));
+                         }
+                         continue;
+                     }
+@@ -979,7 +1011,7 @@
+                     Err(RecvError::Lagged(_)) => continue,
+                     Err(RecvError::Closed) => {
+                         (&mut send).await?;
+-                        return Ok(false);
++                        return Ok(None);
+                     }
+                 }
+             }
+@@ -1014,6 +1046,7 @@
+         },
+     )
+     .await?
++    .is_some()
+     {
+         // No button was pressed yet, nothing to release.
+         return Ok(ClickResult {
+@@ -1029,7 +1062,7 @@
+     };
+ 
+     // Press
+-    if dispatch_mouse_or_dialog(
++    let dialog = dispatch_mouse_or_dialog(
+         client,
+         session_id,
+         accept_sessions,
+@@ -1045,8 +1078,8 @@
+             modifiers: None,
+         },
+     )
+-    .await?
+-    {
++    .await?;
++    if let Some((dialog_session_id, dialog_frame_id)) = dialog {
+         // Dialog opened from the mousedown handler: the button is held and the
+         // release will never arrive on its own. Hand the caller what it needs
+         // to release once the dialog is resolved.
+@@ -1054,9 +1087,12 @@
+             dialog_opened: true,
+             pending_release: Some(PendingRelease {
+                 session_id: session_id.to_string(),
++                dialog_session_id,
++                dialog_frame_id,
+                 x,
+                 y,
+                 button: button.to_string(),
++                click_count,
+             }),
+         });
+     }
+@@ -1079,7 +1115,8 @@
+             modifiers: None,
+         },
+     )
+-    .await?;
++    .await?
++    .is_some();
+     Ok(ClickResult {
+         dialog_opened,
+         pending_release: None,
+@@ -1101,7 +1138,7 @@
+                 y: release.y,
+                 button: Some(release.button.clone()),
+                 buttons: Some(0),
+-                click_count: Some(1),
++                click_count: Some(release.click_count),
+                 delta_x: None,
+                 delta_y: None,
+                 modifiers: None,

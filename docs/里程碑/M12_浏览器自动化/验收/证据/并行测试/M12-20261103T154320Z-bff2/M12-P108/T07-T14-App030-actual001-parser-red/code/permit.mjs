@@ -1,0 +1,5 @@
+import assert from'node:assert/strict';import{readFile,lstat}from'node:fs/promises';import{ROOT,sha}from'./io.mjs';
+export async function gate({staticOnly=false}={}){const readyBytes=await readFile(ROOT+'/READY.json'),ready=JSON.parse(readyBytes),scope=staticOnly?'M12-T131-T07-T14-static':'M12-T131-T07-T14-AR-AX',lease=JSON.parse(await readFile(ROOT+(staticOnly?'/static-lease.receipt.json':'/lease.receipt.json')));assert.equal(lease.coordinator,'root');assert.equal(lease.scope,scope);assert.equal(lease.readySHA256,sha(readyBytes));assert(Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt));if(!staticOnly){assert.equal(process.env.WILLYOU_M12_NATIVE_LEASE_CONFIRMED,'1');assert(ready.pureChecks?.actualPassed===true,'Execute the frozen finite static checker first; no assumed green');}
+ for(const file of ready.inputs){const bytes=await readFile(file.path);assert.equal(sha(bytes),file.sha256,file.path);assert.equal((await lstat(file.path)).mode&511,file.mode,file.path)}
+ return{ready,lease,readySHA256:sha(readyBytes)};
+}

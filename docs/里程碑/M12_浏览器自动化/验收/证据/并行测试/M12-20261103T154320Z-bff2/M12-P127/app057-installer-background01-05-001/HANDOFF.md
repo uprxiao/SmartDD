@@ -1,0 +1,1 @@
+App057 S6 original01-05 only. Pure file binding/static; no App/DMG/cache copy or Native execution by preparer. Root must provide exclusive lease and retain original12GiB freegate. Canonical baseline and builder cache remain OLD p125-app023. Stage06-09/pins are pending actual installed output; no new accepted formal case. Exact commands in execution-ready.json.

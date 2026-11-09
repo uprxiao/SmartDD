@@ -1,0 +1,5 @@
+# P063002 初始化前置失败
+
+固定Electron实际默认-run-dialog仅一个handler、arity2、源hash6ca5d7e7…已观测，但没有HTTP请求、没有prompt事件或实际CDP处理，原生renderer尚未形成。调试器初始化命令先于第一次loadURL，等待阶段18秒自有watchdog使App exit7；缺每条初始化阶段日志，不能确定卡在Page／Runtime／autoattach哪条。严格judge0/9保留，不当作九项产品失败。
+
+根据实际生产registry先load about:blank再启动proxy的顺序，下一attempt修正此夹具前置并加逐CDP有界记录，不能据本轮否定兼容方案。无fallback信号，但不是正常退出；三个精确已知PID已缺席，wrapper显式恢复未执行，私有进程退出后钩子才消失。未修改生产或原T068，不新增正式通过。

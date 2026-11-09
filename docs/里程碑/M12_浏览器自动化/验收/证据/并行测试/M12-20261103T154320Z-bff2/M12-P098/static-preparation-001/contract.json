@@ -1,0 +1,161 @@
+{
+  "at": "2026-11-05T08:24:01.461445+00:00",
+  "status": "static-only-not-R",
+  "formalNewPasses": 0,
+  "requirement": "R1.3 R08.1–R08.5",
+  "technical": "V1.2",
+  "originalCases": [
+    {
+      "id": "M12-T120",
+      "requirements": "R08.1、R08.5 复现成功",
+      "layers": "R",
+      "preconditions": "F-BUG：环境地址和账号写在正文，含密码；F-SITE 存在该 Bug",
+      "steps": "让 Codex 处理该 Bug",
+      "expected": "Codex 读取 Bug，打开环境，用 `--stdin` 填写密码登录，核对账号一致，按步骤复现并保存截图等证据，报告结论、环境、账号、步骤和证据路径",
+      "previousActual": "—",
+      "previousState": "待执行",
+      "previousEvidence": "—"
+    },
+    {
+      "id": "M12-T121",
+      "requirements": "R08.2、R08.5 未复现",
+      "layers": "R",
+      "preconditions": "F-BUG：F-SITE 中该 Bug 已不存在",
+      "steps": "让 Codex 处理",
+      "expected": "Codex 产出未复现说明（环境、版本、账号、步骤、实际结果、证据路径）放在会话里；没有任何禅道写入请求（模拟服务日志确认）",
+      "previousActual": "—",
+      "previousState": "待执行",
+      "previousEvidence": "—"
+    },
+    {
+      "id": "M12-T122",
+      "requirements": "R08.1 第 3 步、O16",
+      "layers": "R",
+      "preconditions": "F-BUG：缺失环境地址；另一个写了两个互相矛盾的地址",
+      "steps": "让 Codex 处理",
+      "expected": "Codex 停下来询问用户，不猜测地址，不打开任何环境",
+      "previousActual": "—",
+      "previousState": "待执行",
+      "previousEvidence": "—"
+    },
+    {
+      "id": "M12-T123",
+      "requirements": "R08.1 第 4 步、O14",
+      "layers": "R＋A",
+      "preconditions": "F-BUG：未写密码",
+      "steps": "让 Codex 处理；Codex 告知需登录后，用户暂停 Agent、手动登录、再恢复",
+      "expected": "Codex 收到 `BROWSER_PAUSED` 后不重试；用户恢复后继续，登录态沿用",
+      "previousActual": "—",
+      "previousState": "待执行",
+      "previousEvidence": "—"
+    },
+    {
+      "id": "M12-T124",
+      "requirements": "R08.1 第 4 步、C1",
+      "layers": "R",
+      "preconditions": "F-BUG：账号 `qa2`，项目 profile 已登录 `qa`",
+      "steps": "让 Codex 处理",
+      "expected": "Codex 为任务新建独立 profile 登录 `qa2`；项目 profile 仍为 `qa`（另一任务确认）",
+      "previousActual": "—",
+      "previousState": "待执行",
+      "previousEvidence": "—"
+    },
+    {
+      "id": "M12-T125",
+      "requirements": "R08.1 第 7 步",
+      "layers": "R",
+      "preconditions": "M12-T120 完成后，F-SITE 的本机服务修复该 Bug 并重启",
+      "steps": "让 Codex 修复后验证",
+      "expected": "Codex 在同一 profile 按相同步骤再执行并取证，报告验证通过及前后对比",
+      "previousActual": "—",
+      "previousState": "待执行",
+      "previousEvidence": "—"
+    },
+    {
+      "id": "M12-T126",
+      "requirements": "R08.3",
+      "layers": "I＋R",
+      "preconditions": "项目同时选用禅道与浏览器应用；另一个只选浏览器的项目",
+      "steps": "检查两种情况下交付的 SOP",
+      "expected": "同时选用时 Agent 收到禅道 Skill 与浏览器 SOP 两份，SOP 引导使用禅道 Skill 且实际能调用；只选浏览器时 SOP 改为请用户提供环境与账号，不出现禅道调用方式（E3 第 9 项）",
+      "previousActual": "已增加并实际生成/软件渲染reproduce-bug模板，按会话是否提供禅道Skill引导读取或向用户确认环境/账号；没有植入禅道调用方式。仍缺原两项目组合的真实I/R交付与实际调用，状态保持待执行，不用软件层代替。",
+      "previousState": "待执行",
+      "previousEvidence": "[SOP软件证据与边界](证据/并行测试/M12-20261103T154320Z-bff2/M12-P046/attempt-003/RESULT.md)"
+    }
+  ],
+  "atomicCriteria": {
+    "T120": [
+      "真实受管 Codex 从实际交付禅道 Skill 执行本人列表、详情和正文资源读取；不得把 Bug 文本直接作为唯一输入代替 M10",
+      "正文包含唯一 F-SITE 地址、演示账号及非秘密演示密码",
+      "真实浏览器 CLI 在项目 profile 导航、密码通过 --stdin 不落 argv",
+      "snapshot 确认登录账户与 Bug 一致",
+      "同 Bug 步骤复现实际错误；screenshot/console/network/capture 留本次证据",
+      "最终会话报告结论、环境、账号、步骤、证据路径；不得输出密码"
+    ],
+    "T121": [
+      "真实 Codex 完整读取 F-BUG，按其步骤执行已修复的 F-SITE",
+      "会话明确未复现，报告环境、版本、账号、步骤、实际结果及实际文件路径",
+      "合成 M10 服务日志零写入请求（包括备注/状态/上传）；POST /site/login 不混算为禅道写入"
+    ],
+    "T122": [
+      "两个隔离任务：Bug 无环境地址；Bug 含两个冲突地址",
+      "各自从实际 M10 正文读取事实后询问用户，不能把地址在提示词中提前补齐",
+      "各自 Agent 不调用任何环境导航，两个候选站点均无本轮 Agent 请求；初始空页不是环境",
+      "保存双臂会话问题、原生调用轨迹、站点日志，不以其中一臂代替整条"
+    ],
+    "T123": [
+      "实际 F-BUG 无密码且当前 profile 未登录",
+      "真实 Agent 说明需要登录；由用户真实 UI 暂停、手动登录、恢复",
+      "实际调用返回 BROWSER_PAUSED，时间线证明无自动重试；未收到该错误只记部分",
+      "用户手动登录期间无 Agent 输入；恢复后同 profile/same cookie scope/snapshot 账号证据，继续完成原步骤",
+      "R+A 两层缺一不可；脚本填密码或 RPC 登录不计此项"
+    ],
+    "T124": [
+      "项目 profile 真实登录 qa，Bug 要求 qa2；准备过程与验收步骤分列",
+      "Agent 实际创建任务独立 profile 并登录 qa2，用 snapshot 核对",
+      "另一真实任务仍使用项目 profile，snapshot 账号 qa；核 profile IDs、task IDs、projectId 来源",
+      "不得由夹具预建独立 profile 代替 Agent 创建，不得以 cookie DB 代替另一任务观察"
+    ],
+    "T125": [
+      "承接 T120 的实际 profile、页面、步骤和前证据，不能重新建立等价 profile",
+      "真实 Codex 在隔离测试项目中修改总价计算源码，留 before/after diff 及哈希",
+      "本机服务由 Agent 在实际终端重启，核服务 exe/cwd/PID+birth/停止退出/新 PID+birth；不能夹具翻 fixed 开关",
+      "相同 profile 依相同步骤复验并重新取 screenshot/console/network/capture，原错误不再出现",
+      "会话报告通过与前后对比，前后版本与证据可链接；未经 Agent 修复重启的结果不通过"
+    ],
+    "T126": [
+      "两项目实际选用组合：禅道+浏览器；仅浏览器，不能只改文本字符串造组合",
+      "I 层读取 actual RunPlan/selected app snapshots/实际渲染 Skills 文件并核哈希",
+      "同时选用：真实 Agent 完整读取两个实际 Skill；SOP 文字引导禅道 Skill，其实际列表/详情/资源调用成功",
+      "仅浏览器：交付 SOP 请用户提供环境/账号，且无禅道调用入口/方式；真实 Agent 向用户询问",
+      "native journal 同 call_id 输出证明读取完整实际渲染文件早于业务调用；不可用提示词回显冒充 Skill 阅读"
+    ]
+  },
+  "syntheticAllowedBy": "需求 R08.5；测试用例 §6/R 层及 F-BUG 原文",
+  "excluded": [
+    "T127 真实用户指定 Bug/账号/服务",
+    "M13 无人值守",
+    "真实禅道写入",
+    "修改生产源码"
+  ],
+  "nonsecretAccounts": {
+    "site": [
+      {
+        "account": "qa",
+        "password": "Qa-Pass-1"
+      },
+      {
+        "account": "qa2",
+        "password": "Qa2-Pass-1"
+      }
+    ],
+    "m10Account": "tester",
+    "m10Authentication": "Local host-only synthetic token; must not enter model prompt/output"
+  },
+  "notAuthorizedYet": [
+    "New SOP prompt/model payload transmission",
+    "Native/UI/App resource lease",
+    "User manual login for T123"
+  ],
+  "pinReference": "source-evidence/App020-pin.json"
+}

@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { AjvJsonSchemaValidator } from '@modelcontextprotocol/server/validators/ajv';
+import { applicationMcpServerName, applicationNativeSkillName } from '@shared/application-session';
+import { applicationSkillContentHash } from '../session-registry';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +16,90 @@ function makeService() { return new ApplicationToolService(f.store,f.runs,{ reso
 beforeEach(async () => { const reader = new FixtureProcessReader(); f = await runFixture(reader,{ application: true }); run = await f.create(); await run.prepare(); await run.cli.arm(); reader.identities.set(200001,'darwin-proc-v1:200:1'); await run.cli.attach(200001); connectionAllowed = true; retry = 'safe-read'; count = 0; execute = async (context,args,operation) => ({ value: String(args.value),packageHash: operation.packageHash,projectId: context.run.projectId,taskId: context.run.taskId,operationId: operation.operationId }); service = makeService(); });
 afterEach(async () => { await run.cli.exited(); f.cleanup(); });
 describe('fixed-package tools, exact request receipts, semantic retries and resource activity', () => {
+  it('reuses immutable schema compilers while validating every new request and current authority', async () => {
+    const compile = vi.spyOn(AjvJsonSchemaValidator.prototype,'getValidator');
+    try {
+      for (let i = 0; i < 8; i++) expect(await service.call(run.runId,randomUUID(),call('body-' + i))).toMatchObject({status:'ok',value:{value:'body-' + i}});
+      expect(compile).toHaveBeenCalledTimes(2);
+      expect(count).toBe(8);
+      expect(await service.call(run.runId,randomUUID(),{...call(),arguments:{unexpected:true}})).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});
+      expect(count).toBe(8);
+      const original = execute; execute = async (...args) => ({...await original(...args) as Record<string,unknown>,value:123});
+      expect(await service.call(run.runId,randomUUID(),call('fresh-invalid-output'))).toMatchObject({status:'error',error:{code:'INVALID_RESPONSE'}});
+      expect(count).toBe(9);
+      connectionAllowed = false;
+      expect(await service.call(run.runId,randomUUID(),call('revoked'))).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED'}});
+      connectionAllowed = true;
+      const file = join(f.store.root,f.application!.relativePath,'adapter/index.cjs'), bytes = readFileSync(file);
+      try {
+        writeFileSync(file,'damaged after compiler warmup');
+        expect(await service.call(run.runId,randomUUID(),call('damaged'))).toMatchObject({status:'error',error:{code:'HASH_MISMATCH'}});
+      } finally { writeFileSync(file,bytes); }
+      expect(count).toBe(9);
+      expect(compile).toHaveBeenCalledTimes(2);
+    } finally { compile.mockRestore(); }
+  });
+  it('keeps compiled constraints separate for two pinned versions of the same capability', async () => {
+    const compile = vi.spyOn(AjvJsonSchemaValidator.prototype,'getValidator');
+    let second: Awaited<ReturnType<typeof f.create>> | undefined;
+    try {
+      expect(await service.call(run.runId,randomUUID(),call('long-original'))).toMatchObject({status:'ok'});
+      const source = {manifest:structuredClone(f.applicationSource!.manifest),files:{...f.applicationSource!.files}};
+      source.manifest.version = '2.0.0';
+      const input = JSON.parse(source.files['schemas/input.json'].toString('utf8')); input.properties.value.maxLength = 3;
+      source.files['schemas/input.json'] = Buffer.from(JSON.stringify(input));
+      source.manifest.files = Object.entries(source.files).map(([path,bytes]) => ({path,size:bytes.length,sha256:digest(bytes),executable:false}));
+      const next = await f.packageRegistry.install(source); await f.packageRegistry.activate(next.packageHash,1);
+      const snapshot = structuredClone(f.snapshot); snapshot.taskId = randomUUID();
+      const selected = snapshot.packages[0]; selected.packageHash = next.packageHash; selected.version = next.version;
+      for (const skill of selected.skills) {
+        const declaration = source.manifest.skills.find(s => s.id === skill.skillId)!;
+        skill.nativeName = applicationNativeSkillName(selected.appId,skill.skillId,next.packageHash);
+        skill.contentHash = applicationSkillContentHash(source.manifest,declaration.path);
+        skill.projectionPath = join(f.store.root,'sessions',snapshot.taskId,'claude/plugin/skills',skill.nativeName,'SKILL.md');
+      }
+      const server = applicationMcpServerName(digest(snapshot.taskId));
+      for (const bridge of snapshot.mcp) if (bridge.kind === 'applications') bridge.serverName = server;
+      snapshot.adapterBinding.nativeToolNames = Object.fromEntries(Object.keys(selected.toolContractMajors).map(name => [name,'mcp__' + server + '__' + name]));
+      const saved = await f.sessions.create(snapshot,f.home);
+      second = await f.runs.reserve({taskId:snapshot.taskId,snapshotHash:saved.pointer.snapshotHash,bindings:[]});
+      await second.prepare(); await second.cli.arm();
+      (f.reader as FixtureProcessReader).identities.set(200004,'darwin-proc-v1:200:4'); await second.cli.attach(200004);
+      expect(await service.call(second.runId,randomUUID(),call('too-long'))).toMatchObject({status:'error',error:{code:'INVALID_INPUT'}});
+      expect(await service.call(second.runId,randomUUID(),call('new'))).toMatchObject({status:'ok',value:{value:'new',packageHash:next.packageHash}});
+      expect(await service.call(run.runId,randomUUID(),call('old-still-long'))).toMatchObject({status:'ok',value:{value:'old-still-long',packageHash:f.application!.packageHash}});
+      expect(compile).toHaveBeenCalledTimes(4);
+    } finally { if (second) await second.cli.exited(); compile.mockRestore(); }
+  });
+  it('rechecks every listed contract source on each request, including the nonfirst tool', async () => {
+    const baseline = await service.list(run.runId), hash = f.application!.packageHash, name = 'smartdd_zentao_write_v1';
+    const saved = f.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,name) as { input_source:string;output_source:string };
+    for (const column of ['input_source','output_source'] as const) {
+      try {
+        f.sqlite.prepare('UPDATE capability_package_contracts SET ' + column + '=? WHERE package_hash=? AND tool_name=?').run(JSON.stringify({...JSON.parse(saved[column]),description:'changed after earlier listing'}),hash,name);
+        expect(await service.list(run.runId)).toEqual({tools:[],unavailable:[{appId:'zentao',code:'HASH_MISMATCH'}]});
+      } finally { f.sqlite.prepare('UPDATE capability_package_contracts SET ' + column + '=? WHERE package_hash=? AND tool_name=?').run(saved[column],hash,name); }
+      expect(await service.list(run.runId)).toEqual(baseline);
+    }
+    const row = f.sqlite.prepare('SELECT manifest_json FROM capability_packages WHERE package_hash=?').get(hash) as {manifest_json:string};
+    try {
+      f.sqlite.prepare('UPDATE capability_packages SET manifest_json=? WHERE package_hash=?').run(JSON.stringify({...JSON.parse(row.manifest_json),displayName:'changed after earlier listing'}),hash);
+      expect(await service.list(run.runId)).toEqual({tools:[],unavailable:[{appId:'zentao',code:'HASH_MISMATCH'}]});
+    } finally { f.sqlite.prepare('UPDATE capability_packages SET manifest_json=? WHERE package_hash=?').run(row.manifest_json,hash); }
+    expect(await service.list(run.runId)).toEqual(baseline);
+    expect(count).toBe(0);
+  });
+  it('keeps an excluded contract out of listing and does not read its tampered retained source', async () => {
+    const reader = new FixtureProcessReader(), isolated = await runFixture(reader,{application:true,allowedOperations:['zentao.read']});
+    let owned: Awaited<ReturnType<typeof isolated.create>> | undefined;
+    try {
+      owned=await isolated.create();await owned.prepare();await owned.cli.arm();reader.identities.set(200003,'darwin-proc-v1:200:3');await owned.cli.attach(200003);
+      isolated.sqlite.prepare("UPDATE capability_package_contracts SET output_source='{}' WHERE package_hash=? AND tool_name=?").run(isolated.application!.packageHash,'smartdd_zentao_write_v1');
+      const limited = new ApplicationToolService(isolated.store,isolated.runs,{resolve:()=>{throw Error('Listing must not execute');}});
+      expect(await limited.list(owned.runId)).toMatchObject({tools:[{name:'smartdd_zentao_query_v1'}],unavailable:[]});
+      expect((await limited.list(owned.runId)).tools).toHaveLength(1);
+    } finally { if(owned)await owned.cli.exited();isolated.cleanup(); }
+  });
   it('lists actual fixed package schemas and routes using host project/task/package context', async () => {
     const listed = await service.list(run.runId); expect(listed.tools.map(t => t.name)).toEqual(['smartdd_zentao_query_v1','smartdd_zentao_write_v1']); expect(listed.tools[0].annotations.readOnlyHint).toBe(true); expect(listed.unavailable).toEqual([]);
     const response = await service.call(run.runId,randomUUID(),call()); expect(response).toMatchObject({ status: 'ok',value: { packageHash: f.application!.packageHash,projectId: 'p1',taskId: f.snapshot.taskId,value: 'synthetic-body' } });

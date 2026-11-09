@@ -1,0 +1,1 @@
+ActualApp058/source069 original01-05 only. Pure file binding/static; no App/DMG/cache copy or Native operation. Root exclusivelease and12GiB entrygate required. OLD023 trustedbaseline+buildercache unchanged. Original06-09 explicitlypending actualinstalled pins. Exactcommands in execution-ready.json.

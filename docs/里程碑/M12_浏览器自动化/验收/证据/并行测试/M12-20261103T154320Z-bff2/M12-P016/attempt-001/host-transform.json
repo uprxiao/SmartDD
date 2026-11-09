@@ -1,0 +1,7 @@
+{
+  "purpose": "Only passive native CLI PID/args notification for cleanup; no change to permission, command, result or retry semantics",
+  "beforeSha256": "6c4f2ac704382ef272aa16aeff3b6c9b9d63eebb2780657fde6cbaeacecb2b35",
+  "afterSha256": "066d8924be6215a96e469f06b2003e430169b6bf1dcaa7cb4bdf01c0ab588ee6",
+  "marker": "if(!child.pid)throw Error('Private native CLI did not launch');",
+  "appended": "process.send?.({p016Process:{kind:'native-cli',pid:child.pid,args}});"
+}

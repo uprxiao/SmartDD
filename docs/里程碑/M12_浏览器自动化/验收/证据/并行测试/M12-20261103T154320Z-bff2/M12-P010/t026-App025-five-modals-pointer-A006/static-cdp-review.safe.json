@@ -1,0 +1,113 @@
+{
+  "scope": "Static local-source review only, no import execution, no HTTP/App/Native/OS probe",
+  "versions": [
+    {
+      "name": "playwright-core",
+      "version": "1.58.2",
+      "packageJSONSHA256": "16a25dbd7368a87af8b58a45c6216b9cec5a91a72cf704533344701997ebde22"
+    },
+    {
+      "name": "puppeteer-core",
+      "version": "24.22.3",
+      "packageJSONSHA256": "b7a38267c4eb87de79839766566dee41a8b514b220f5140825698e8dd11bbd5b"
+    },
+    {
+      "name": "devtools-protocol",
+      "version": "0.0.1495869",
+      "packageJSONSHA256": "44fa2e8231e16b96dc8213ba4852cbf8d5e956cf5d029e6352ab345c37dc3e21"
+    }
+  ],
+  "sources": [
+    {
+      "path": "/Users/liubu/.npm/_npx/dea9475797100b20/node_modules/playwright-core/lib/server/input.js",
+      "sha256": "9bab3cbf128c2338d3eee76996ea9cd7044d27cd9b0c6bf7b1786669354e9d1a",
+      "lines": [
+        169,
+        174,
+        180
+      ],
+      "claim": "move receives lastButton; down sets left, up clears none"
+    },
+    {
+      "path": "/Users/liubu/.npm/_npx/dea9475797100b20/node_modules/playwright-core/lib/server/chromium/crInput.js",
+      "sha256": "3dcad19b8f52f3f1f9787c5fff350607e242cd0d0c6911223c9d44bed9a75432",
+      "lines": [
+        104,
+        105,
+        106,
+        107
+      ],
+      "claim": "mouseMoved includes button plus held-buttons mask"
+    },
+    {
+      "path": "/Users/liubu/.npm/_npx/15c61037b1978c83/node_modules/puppeteer-core/lib/cjs/puppeteer/cdp/Input.js",
+      "sha256": "d303c624a8a6d7b7245b29ddadb895c96017f883968e95d68228d53189db1cab",
+      "lines": [
+        172,
+        174,
+        175,
+        278,
+        279,
+        281,
+        282
+      ],
+      "claim": "move derives primary button from buttons; bit1 maps Left"
+    },
+    {
+      "path": "/Users/liubu/.npm/_npx/15c61037b1978c83/node_modules/devtools-protocol/json/browser_protocol.json",
+      "sha256": "82dd1099df514a4d7fca17f1a9f258176ff9331b15d83dc0bc012bec7dc71366",
+      "lines": [],
+      "claim": "Input.dispatchMouseEvent button defaults none and buttons is separate mask"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t026-App025-A-006/driver-source/scripts/lib/electron-harness.mjs",
+      "sha256": "7ef727d23176a530625b80facaaf8f9712e27ab83d47082db8d0463cc8a46ab9",
+      "lines": [
+        169,
+        181
+      ],
+      "claim": "Harness serializes params directly without filling mouse button"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t026-App025-A-006/driver-source/scripts/lib/app-focus-guard.mjs",
+      "sha256": "08bf100ef39cb4e54d764bd52a3a2f70d4e793c1e0f0e342bc54228bcaae018c",
+      "lines": [
+        40,
+        41,
+        42
+      ],
+      "claim": "Guard checks focus then forwards method and original arguments"
+    }
+  ],
+  "protocolFields": [
+    {
+      "name": "button",
+      "description": "Mouse button (default: \"none\").",
+      "optional": true,
+      "$ref": "MouseButton"
+    },
+    {
+      "name": "buttons",
+      "description": "A number indicating which buttons are pressed on the mouse when a mouse event is triggered.\nLeft=1, Right=2, Middle=4, Back=8, Forward=16, None=0.",
+      "optional": true,
+      "type": "integer"
+    },
+    {
+      "name": "pointerType",
+      "description": "Pointer type (default: \"mouse\").",
+      "optional": true,
+      "type": "string",
+      "enum": [
+        "mouse",
+        "pen"
+      ]
+    }
+  ],
+  "actualA006Discrepancy": "Held five mouseMoved params carry buttons1 and omit button; local protocol default is none. Both Playwright/Puppeteer supply buttonleft while held.",
+  "proposedMinimalChange": "In five held mouseMoved only, add button:'left'; retain buttons1, downleft1, upleft0, same5moves/coords/passiveobservations/all original judges.",
+  "known": "A006 down acquired capture; first move lost capture; all widths629; no observed got/lostcapture event.",
+  "inferenceBoundary": "Local protocol schema+library implementations support correcting omitted move button. They do not prove Chrome/Electron capture-loss causality or exclude Native-view routing. New actual evidence required before a root-cause claim.",
+  "executed": false,
+  "newAppRootPrepared": false,
+  "formalNewPasses": 0
+}

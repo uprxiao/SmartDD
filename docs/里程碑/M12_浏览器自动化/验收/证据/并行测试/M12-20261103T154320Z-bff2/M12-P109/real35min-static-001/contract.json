@@ -1,0 +1,51 @@
+{
+  "case": "M12-T043",
+  "layer": "U+R",
+  "authority": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+  "originalRow": "| M12-T043 | M12-D01、K10 | U＋R | U 层已有 cli-gateway 用例；R 层为真实 Codex 长任务 | R 层让 Codex 先调用一次，等待 35 分钟后再调用；然后停止任务，用原令牌再调用 | 35 分钟后的调用仍成功；任务停止后原令牌被拒（`AUTH_REQUIRED`）。需要等待真实时长，不用改时钟代替 R 层 | — | 待执行 | — |",
+  "originalRowSha256": "edb73c353899d62c85d28e059c8e0e81ae2ca522508d44d6aa6380ca85faaae1",
+  "originalCriteria": [
+    {
+      "id": "U",
+      "criterion": "既有 cli-gateway U 层",
+      "status": "reuse-candidate-only",
+      "source": "source-evidence/cli-gateway.test.ts",
+      "boundary": "本稿不重跑U；协调者需选择已有实际通过gate并核源作用域，不能以本稿纯控制充U/R。"
+    },
+    {
+      "id": "R1",
+      "criterion": "真实Codex运行先实际调用一次CLI",
+      "futureEvidence": "Actual UI Home launch, real0.166 journal AST stdout + exact currentrun/task/project/package Host binding."
+    },
+    {
+      "id": "R2",
+      "criterion": "等待真实35分钟后同一run再调用仍成功",
+      "futureEvidence": "Reviewed monotonic wait-start/done>=2100s + first/second native call timestamps + controller within-clock elapsed, unchanged immutable run/plan. No fakeclock."
+    },
+    {
+      "id": "R3",
+      "criterion": "停止任务后原令牌AUTH_REQUIRED",
+      "futureEvidence": "Actual TaskService stop/currentrun-null/pty-null. Explicit detached reviewed managed-origin worker before positive and after negative same pinned stockCLI with same credential in memory; unchanged socket inode/ownUID and real response requestId. No business operation.id or fixed child numeric exit demanded."
+    }
+  ],
+  "notOriginalBusinessGates": [
+    "No DONE marker required",
+    "No same CLI process PID requirement",
+    "No arbitrary new response gate",
+    "No complete35minute statement from partial session handle or cached observer",
+    "No UI stop/T114 A claim"
+  ],
+  "failureHandling": "Unknown carrier raw retained/unverified, not an observer-triggered early kill. Task run/scope/real35min/Auth remain strict; survival/endpoint/authorization failures partial, no rerun.",
+  "resources": [
+    "Native",
+    "UI-initial",
+    "App",
+    "PTY",
+    "local Unix/TCP debug",
+    "same pinned CLI and identity helper",
+    "owned caffeinate"
+  ],
+  "frontTimes": 1,
+  "runtimeVerified": false,
+  "formalNewPasses": 0
+}

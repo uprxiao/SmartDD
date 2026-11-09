@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {ROOT,BROKER,json,save,sha} from './io.mjs';
+const checks=[];const check=(name,fn)=>{try{fn();checks.push({name,pass:true});}catch(e){checks.push({name,pass:false,message:e.message});}};
+const loadErrors=[],load=leaf=>{try{return json(path.join(ROOT,leaf));}catch(e){loadErrors.push({leaf,name:e.name,message:e.message});return null;}};
+const ex=load('execution.json'),report=load('output/vitest.json'),evidence=load('output/native-evidence.json'),cleanup=load('cleanup.json'),oracle=load('fixture/fixtures.json');
+const events=fs.readdirSync(path.join(ROOT,'output')).filter(x=>/^process-\d+\.jsonl$/.test(x)).flatMap(x=>fs.readFileSync(path.join(ROOT,'output',x),'utf8').trim().split('\n').filter(Boolean).map(JSON.parse));
+check('all original output artifacts present and valid JSON',()=>assert.deepEqual(loadErrors,[]));
+check('actual original test process zero/no signal',()=>assert.deepEqual(ex.terminal,{code:0,signal:null}));
+check('exactly one original I test, no skipped/todo/failed',()=>{assert.equal(report.numTotalTests,1);assert.equal(report.numPassedTests,1);assert.equal(report.numFailedTests,0);assert.equal(report.numPendingTests,0);assert.equal(report.numTodoTests,0);assert.equal(report.testResults.length,1);assert(report.testResults[0].name.endsWith('/src/renderer/features/files/csv/acceptance.test.ts'));});
+check('all five original fixtures observed once with exact source SHA',()=>{assert.equal(evidence.observations.length,5);assert.deepEqual(evidence.observations.map(x=>x.file),oracle.cases.map(x=>x.name));for(const o of evidence.observations){assert.equal(o.originalBytesPreserved,true);assert.equal(o.sourceSha256,ex.before.find(x=>x.name===o.file).sha256);}});
+check('source bytes/inode/mtime/ctime unchanged',()=>assert.deepEqual(ex.after,ex.before));
+check('source/package frozen inputs unchanged',()=>assert.deepEqual(ex.postflight,ex.preflight));
+check('actual exact App026 broker ran and all recorded children closed zero',()=>{const spawns=events.filter(e=>e.event==='spawn'&&e.isExactBroker);assert(spawns.length>0);for(const s of spawns){assert.equal(s.executable,BROKER);const closed=events.filter(e=>e.event==='child-close'&&e.pid===s.pid&&e.childPID===s.childPID);assert.equal(closed.length,1);assert.equal(closed[0].code,0);assert.equal(closed[0].signal,null);}});
+check('current App026 watcher native loaded; no other .node dependencies',()=>{const expected=json(path.join(ROOT,'pin.json')).watcher;const nodes=events.filter(e=>e.event==='native-addon-loaded');assert(nodes.length>0);for(const n of nodes){assert.equal(n.filename,expected.path);assert.equal(n.sha256,expected.sha256);}});
+check('independent exact resource check all clear',()=>{assert.equal(cleanup.allClear,true);assert.equal(cleanup.resourcesHeld,false);assert.deepEqual(cleanup.signalsSent,[]);});
+const result={at:new Date().toISOString(),case:'M12-T130/F17',level:'engineering I only, not App A',checks,passed:checks.every(x=>x.pass),formalNewPasses:0,originalTestUnmodified:true,originalTestSHA256:sha(path.join(ROOT,'inputs/src/renderer/features/files/csv/acceptance.test.ts')),remaining:'Original T130 full A/P remains unexecuted; neither old 7-suite remark nor this I closes T130.'};save('judge.json',result);console.log(JSON.stringify({passed:result.passed,checks:checks.length,failed:checks.filter(x=>!x.pass).map(x=>x.name)}));if(!result.passed)process.exitCode=1;

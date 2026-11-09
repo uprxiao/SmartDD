@@ -1,0 +1,13 @@
+Original mistaken ad-hoc preparation excerpt (never run this):
+
+p = root / "pin.json"
+...
+for prefix in ["agent-browser", "native", "capability-bundles"]:
+    for p in (app / "Contents/Resources" / prefix).rglob("*"):
+        if p.is_file():
+            # read-only fingerprint gathering
+            ...
+x["packageFiles"] = list(...)
+p.write_text(json.dumps(x, ...))  # BUG: p now last resource, not private pin
+
+Correction: separate read-only collector returns data only; private writer constructs its own privatePinPath and accepts no output-file argument. Exact allowlist limits output directories. Do not write shared App resources.

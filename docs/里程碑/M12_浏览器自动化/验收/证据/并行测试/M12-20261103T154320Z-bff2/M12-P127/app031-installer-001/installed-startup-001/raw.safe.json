@@ -1,0 +1,1136 @@
+{
+  "group": "T140-realCLI-I",
+  "case": "M12-T140",
+  "layer": "A (installed startup) + I (managed CLI)",
+  "startedAt": "2026-11-07T10:37:01.125Z",
+  "driverPid": 30749,
+  "sourceManifestSha256": "88dfe535e049ce40211777014a1829deee8d295b9c452ffb82b87cd46e42b6da",
+  "asarSha256": "cadb8e9944cfddb86ce7055de8064c6069e794843024eadc5275e4a4e848dbea",
+  "userData": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/userdata",
+  "tasks": [
+    {
+      "role": "t1",
+      "taskId": "34890214-1185-419d-9467-e41bb83b12b0",
+      "ptyId": "348eff17-5256-4501-a2aa-dc9cfb174a9d",
+      "aiProfileId": "9ebf2f29-7dfe-4c46-b600-42c6fa1dc3b0",
+      "health": {
+        "id": "9ebf2f29-7dfe-4c46-b600-42c6fa1dc3b0",
+        "name": "T140 t1 blocking synthetic caller",
+        "runner": "codex",
+        "executable": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/receiver.py",
+        "env": [
+          {
+            "name": "HOME",
+            "secret": false,
+            "value": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/home-t1",
+            "hasValue": true
+          },
+          {
+            "name": "CODEX_HOME",
+            "secret": false,
+            "value": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/codex-t1",
+            "hasValue": true
+          },
+          {
+            "name": "T140_ROOT",
+            "secret": false,
+            "value": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001",
+            "hasValue": true
+          },
+          {
+            "name": "T140_ROLE",
+            "secret": false,
+            "value": "t1",
+            "hasValue": true
+          }
+        ],
+        "args": [],
+        "color": null,
+        "isDefault": true,
+        "check": {
+          "status": "ok",
+          "category": "ok",
+          "source": "auto",
+          "message": "",
+          "ms": 374,
+          "at": 1794047825788
+        },
+        "checking": false,
+        "createdAt": 1794047825412,
+        "updatedAt": 1794047825412
+      },
+      "url": "http://127.0.0.1:49590/account?role=t1",
+      "readinessSamples": [
+        {
+          "at": "2026-11-07T10:37:07.501Z",
+          "ptyId": "348eff17-5256-4501-a2aa-dc9cfb174a9d",
+          "agentState": "running",
+          "issues": [],
+          "run": {
+            "id": "c3967da1-c1f9-486d-9be1-3a316011268d",
+            "state": "active",
+            "current": true
+          }
+        }
+      ],
+      "runId": "c3967da1-c1f9-486d-9be1-3a316011268d",
+      "cliPlan": {
+        "appId": "browser",
+        "primaryEntry": "cli",
+        "effectiveEntry": "cli",
+        "fallback": false,
+        "reason": null
+      },
+      "planEvidence": {
+        "nativeSendEvidence": false
+      },
+      "receiver": {
+        "kind": "receiver-ready",
+        "pid": 30812,
+        "binary": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Resources/native/willyou-app",
+        "binarySha256": "3e1d05008077dd0495ca65d6f063469121e95e7bd87aaa3114504c2f9b7af2cf",
+        "hasCliToken": true,
+        "hasCliEndpoint": true,
+        "endpointPath": "[own private endpoint path omitted]",
+        "boundary": "Real TaskService managed PTY/nativeCLI/M11; synthetic health/config only, no real model R.",
+        "role": "t1",
+        "atMs": 1794047827232
+      },
+      "pageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+    }
+  ],
+  "commands": [
+    {
+      "role": "t1",
+      "tag": "identity-preflight",
+      "argv": [
+        "browser",
+        "identity",
+        "get"
+      ],
+      "taskId": "34890214-1185-419d-9467-e41bb83b12b0",
+      "runId": "c3967da1-c1f9-486d-9be1-3a316011268d",
+      "scheduledAt": "2026-11-07T10:37:07.731Z",
+      "actual": {
+        "kind": "cli-result",
+        "pid": 30850,
+        "tag": "identity-preflight",
+        "argv": [
+          "browser",
+          "identity",
+          "get"
+        ],
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"result\":{\"mode\":\"clean\",\"pendingMode\":null,\"restartRequired\":false}},\"resources\":[],\"operation\":{\"id\":\"a477cf5d-d686-4fce-8bed-d1b2b039fa6e\",\"requestId\":\"4532dcfc-0636-4858-afe3-cb20bb8af091\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.identity.get\"}\n",
+        "stderr": "",
+        "code": 0,
+        "signal": null,
+        "timedOut": false,
+        "cleanupSignals": [],
+        "startMonoNs": "529643458",
+        "finishMonoNs": "905017291",
+        "role": "t1",
+        "atMs": 1794047828120
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "mode": "clean",
+            "pendingMode": null,
+            "restartRequired": false
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "a477cf5d-d686-4fce-8bed-d1b2b039fa6e",
+          "requestId": "4532dcfc-0636-4858-afe3-cb20bb8af091",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.identity.get"
+      },
+      "extracted": {
+        "mode": "clean",
+        "pendingMode": null,
+        "restartRequired": false
+      }
+    },
+    {
+      "role": "t1",
+      "tag": "installed-create-page",
+      "argv": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:49590/account?role=t1"
+      ],
+      "taskId": "34890214-1185-419d-9467-e41bb83b12b0",
+      "runId": "c3967da1-c1f9-486d-9be1-3a316011268d",
+      "scheduledAt": "2026-11-07T10:37:08.158Z",
+      "actual": {
+        "kind": "cli-result",
+        "pid": 30854,
+        "tag": "installed-create-page",
+        "argv": [
+          "browser",
+          "tab",
+          "create",
+          "--url",
+          "http://127.0.0.1:49590/account?role=t1"
+        ],
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"pageId\":\"45f4f8bd-e84a-409e-b68b-d38f637e9d8b\"},\"resources\":[],\"operation\":{\"id\":\"03ce62ae-bbe6-484e-bb01-0b68b4017032\",\"requestId\":\"8090fe7d-fcb0-44f0-ac29-ff92c4d19277\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "code": 0,
+        "signal": null,
+        "timedOut": false,
+        "cleanupSignals": [],
+        "startMonoNs": "943086666",
+        "finishMonoNs": "1441084333",
+        "role": "t1",
+        "atMs": 1794047828656
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:49590/account?role=t1",
+          "pageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+        },
+        "resources": [],
+        "operation": {
+          "id": "03ce62ae-bbe6-484e-bb01-0b68b4017032",
+          "requestId": "8090fe7d-fcb0-44f0-ac29-ff92c4d19277",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      },
+      "extracted": {
+        "url": "http://127.0.0.1:49590/account?role=t1",
+        "pageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+      }
+    },
+    {
+      "role": "t1",
+      "tag": "installed-snapshot",
+      "argv": [
+        "browser",
+        "snapshot",
+        "--page",
+        "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+      ],
+      "taskId": "34890214-1185-419d-9467-e41bb83b12b0",
+      "runId": "c3967da1-c1f9-486d-9be1-3a316011268d",
+      "scheduledAt": "2026-11-07T10:37:08.673Z",
+      "actual": {
+        "kind": "cli-result",
+        "pid": 30859,
+        "tag": "installed-snapshot",
+        "argv": [
+          "browser",
+          "snapshot",
+          "--page",
+          "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+        ],
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"title\":\"T140 t1 account\",\"snapshot\":\"- heading \\\"Signed in: anonymous\\\" [level=1, ref=@k930e0541c86145a9b3f52645eca5fe1fs5e1]\\n- generic\\n  - LabelText\\n    - StaticText \\\"Account\\\"\\n  - textbox \\\"Account\\\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e2]\\n  - button \\\"Login\\\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e3]\\n- paragraph\",\"browserPageId\":\"45f4f8bd-e84a-409e-b68b-d38f637e9d8b\",\"origin\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"refs\":[{\"available\":true,\"name\":\"Signed in: anonymous\",\"role\":\"heading\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e1\"},{\"available\":true,\"name\":\"Account\",\"role\":\"textbox\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e2\"},{\"available\":true,\"name\":\"Login\",\"role\":\"button\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e3\"}]},\"resources\":[],\"operation\":{\"id\":\"499d7054-5275-4532-9984-e9677ae6a996\",\"requestId\":\"9e06e3f3-bb95-495a-b064-29b82b004eba\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.snapshot\"}\n",
+        "stderr": "",
+        "code": 0,
+        "signal": null,
+        "timedOut": false,
+        "cleanupSignals": [],
+        "startMonoNs": "1457966500",
+        "finishMonoNs": "1982011791",
+        "role": "t1",
+        "atMs": 1794047829197
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:49590/account?role=t1",
+          "title": "T140 t1 account",
+          "snapshot": "- heading \"Signed in: anonymous\" [level=1, ref=@k930e0541c86145a9b3f52645eca5fe1fs5e1]\n- generic\n  - LabelText\n    - StaticText \"Account\"\n  - textbox \"Account\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e2]\n  - button \"Login\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e3]\n- paragraph",
+          "browserPageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b",
+          "origin": "http://127.0.0.1:49590/account?role=t1",
+          "refs": [
+            {
+              "available": true,
+              "name": "Signed in: anonymous",
+              "role": "heading",
+              "ref": "@k930e0541c86145a9b3f52645eca5fe1fs5e1"
+            },
+            {
+              "available": true,
+              "name": "Account",
+              "role": "textbox",
+              "ref": "@k930e0541c86145a9b3f52645eca5fe1fs5e2"
+            },
+            {
+              "available": true,
+              "name": "Login",
+              "role": "button",
+              "ref": "@k930e0541c86145a9b3f52645eca5fe1fs5e3"
+            }
+          ]
+        },
+        "resources": [],
+        "operation": {
+          "id": "499d7054-5275-4532-9984-e9677ae6a996",
+          "requestId": "9e06e3f3-bb95-495a-b064-29b82b004eba",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.nav.snapshot"
+      },
+      "extracted": {
+        "url": "http://127.0.0.1:49590/account?role=t1",
+        "title": "T140 t1 account",
+        "snapshot": "- heading \"Signed in: anonymous\" [level=1, ref=@k930e0541c86145a9b3f52645eca5fe1fs5e1]\n- generic\n  - LabelText\n    - StaticText \"Account\"\n  - textbox \"Account\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e2]\n  - button \"Login\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e3]\n- paragraph",
+        "browserPageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b",
+        "origin": "http://127.0.0.1:49590/account?role=t1",
+        "refs": [
+          {
+            "available": true,
+            "name": "Signed in: anonymous",
+            "role": "heading",
+            "ref": "@k930e0541c86145a9b3f52645eca5fe1fs5e1"
+          },
+          {
+            "available": true,
+            "name": "Account",
+            "role": "textbox",
+            "ref": "@k930e0541c86145a9b3f52645eca5fe1fs5e2"
+          },
+          {
+            "available": true,
+            "name": "Login",
+            "role": "button",
+            "ref": "@k930e0541c86145a9b3f52645eca5fe1fs5e3"
+          }
+        ]
+      }
+    }
+  ],
+  "observations": [],
+  "resources": [
+    {
+      "at": "2026-11-07T10:37:09.329Z",
+      "processes": [
+        {
+          "pid": 30753,
+          "ppid": 30749,
+          "birth": "Sat Nov  7 18:37:01 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou"
+        },
+        {
+          "pid": 30755,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:01 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+        },
+        {
+          "pid": 30756,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:01 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+        },
+        {
+          "pid": 30789,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:04 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+        },
+        {
+          "pid": 30857,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:08 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+        },
+        {
+          "pid": 30858,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:08 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+        },
+        {
+          "pid": 30872,
+          "ppid": 1,
+          "birth": "Sat Nov  7 18:37:09 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Resources/agent-browser/arm64/agent-browser"
+        },
+        {
+          "pid": 30812,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:07 2026",
+          "executable": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "helpers": [
+        {
+          "pageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b",
+          "directory": "/private/tmp/wy-ab-380c0af0471ebb393ea910c8",
+          "names": [
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.pid",
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.sock",
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.stream",
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.version"
+          ],
+          "pids": [
+            30872
+          ]
+        }
+      ],
+      "listeners": "COMMAND     PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nWillYou   30753 liubu   17u  IPv4 0x313e6feee3d77ea4      0t0  TCP 127.0.0.1:49612 (LISTEN)\nWillYou   30753 liubu   34u  IPv4 0x2c76b7bfa31df09f      0t0  TCP 127.0.0.1:49591 (LISTEN)\nWillYou   30753 liubu   92u  IPv4 0x7e1ddfef7072974a      0t0  TCP 127.0.0.1:49965 (LISTEN)\nagent-bro 30872 liubu    9u  IPv4 0x97f2e757b5c5a6d3      0t0  TCP 127.0.0.1:49977 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-07T10:37:09.417Z",
+      "processes": [
+        {
+          "pid": 30753,
+          "ppid": 30749,
+          "birth": "Sat Nov  7 18:37:01 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou"
+        },
+        {
+          "pid": 30755,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:01 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+        },
+        {
+          "pid": 30756,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:01 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+        },
+        {
+          "pid": 30789,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:04 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+        },
+        {
+          "pid": 30857,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:08 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+        },
+        {
+          "pid": 30858,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:08 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+        },
+        {
+          "pid": 30872,
+          "ppid": 1,
+          "birth": "Sat Nov  7 18:37:09 2026",
+          "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Resources/agent-browser/arm64/agent-browser"
+        },
+        {
+          "pid": 30812,
+          "ppid": 30753,
+          "birth": "Sat Nov  7 18:37:07 2026",
+          "executable": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "helpers": [
+        {
+          "pageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b",
+          "directory": "/private/tmp/wy-ab-380c0af0471ebb393ea910c8",
+          "names": [
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.pid",
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.sock",
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.stream",
+            "wy-k930e0541c86145a9b3f52645eca5fe1f.version"
+          ],
+          "pids": [
+            30872
+          ]
+        }
+      ],
+      "listeners": "COMMAND     PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nWillYou   30753 liubu   17u  IPv4 0x313e6feee3d77ea4      0t0  TCP 127.0.0.1:49612 (LISTEN)\nWillYou   30753 liubu   34u  IPv4 0x2c76b7bfa31df09f      0t0  TCP 127.0.0.1:49591 (LISTEN)\nWillYou   30753 liubu   92u  IPv4 0x7e1ddfef7072974a      0t0  TCP 127.0.0.1:49965 (LISTEN)\nagent-bro 30872 liubu    9u  IPv4 0x97f2e757b5c5a6d3      0t0  TCP 127.0.0.1:49977 (LISTEN)\n"
+    }
+  ],
+  "cleanupSteps": [
+    {
+      "label": "final-resource-inventory",
+      "at": "2026-11-07T10:37:09.332Z",
+      "value": {
+        "at": "2026-11-07T10:37:09.417Z",
+        "processes": [
+          {
+            "pid": 30753,
+            "ppid": 30749,
+            "birth": "Sat Nov  7 18:37:01 2026",
+            "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou"
+          },
+          {
+            "pid": 30755,
+            "ppid": 30753,
+            "birth": "Sat Nov  7 18:37:01 2026",
+            "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+          },
+          {
+            "pid": 30756,
+            "ppid": 30753,
+            "birth": "Sat Nov  7 18:37:01 2026",
+            "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+          },
+          {
+            "pid": 30789,
+            "ppid": 30753,
+            "birth": "Sat Nov  7 18:37:04 2026",
+            "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+          },
+          {
+            "pid": 30857,
+            "ppid": 30753,
+            "birth": "Sat Nov  7 18:37:08 2026",
+            "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+          },
+          {
+            "pid": 30858,
+            "ppid": 30753,
+            "birth": "Sat Nov  7 18:37:08 2026",
+            "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+          },
+          {
+            "pid": 30872,
+            "ppid": 1,
+            "birth": "Sat Nov  7 18:37:09 2026",
+            "executable": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Resources/agent-browser/arm64/agent-browser"
+          },
+          {
+            "pid": 30812,
+            "ppid": 30753,
+            "birth": "Sat Nov  7 18:37:07 2026",
+            "executable": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+          }
+        ],
+        "helpers": [
+          {
+            "pageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b",
+            "directory": "/private/tmp/wy-ab-380c0af0471ebb393ea910c8",
+            "names": [
+              "wy-k930e0541c86145a9b3f52645eca5fe1f.pid",
+              "wy-k930e0541c86145a9b3f52645eca5fe1f.sock",
+              "wy-k930e0541c86145a9b3f52645eca5fe1f.stream",
+              "wy-k930e0541c86145a9b3f52645eca5fe1f.version"
+            ],
+            "pids": [
+              30872
+            ]
+          }
+        ],
+        "listeners": "COMMAND     PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nWillYou   30753 liubu   17u  IPv4 0x313e6feee3d77ea4      0t0  TCP 127.0.0.1:49612 (LISTEN)\nWillYou   30753 liubu   34u  IPv4 0x2c76b7bfa31df09f      0t0  TCP 127.0.0.1:49591 (LISTEN)\nWillYou   30753 liubu   92u  IPv4 0x7e1ddfef7072974a      0t0  TCP 127.0.0.1:49965 (LISTEN)\nagent-bro 30872 liubu    9u  IPv4 0x97f2e757b5c5a6d3      0t0  TCP 127.0.0.1:49977 (LISTEN)\n"
+      },
+      "status": "fulfilled"
+    },
+    {
+      "label": "readonly-exact-owned-gateway-paths",
+      "at": "2026-11-07T10:37:09.418Z",
+      "value": [
+        "/private/tmp/wy-cli-501-5li5R1/cli.sock"
+      ],
+      "status": "fulfilled"
+    },
+    {
+      "label": "stop-own-task-t1",
+      "at": "2026-11-07T10:37:09.420Z",
+      "value": {
+        "id": "34890214-1185-419d-9467-e41bb83b12b0",
+        "projectId": "28f79610-03ee-4508-8c3d-7b8d71b7c7e9",
+        "projectName": "[I] T140 managed CLI profile isolation",
+        "dirId": "8b3239d8-4b29-4d22-ba50-fa8d7ab0ac58",
+        "cwd": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/project",
+        "aiProfileId": "9ebf2f29-7dfe-4c46-b600-42c6fa1dc3b0",
+        "aiProfileName": "T140 t1 blocking synthetic caller",
+        "aiProfileColor": null,
+        "runner": "codex",
+        "nativeSessionId": null,
+        "title": "[I] T140 t1",
+        "firstMessage": "T140 controlled blocking caller",
+        "injectedEnvNames": [
+          "CODEX_HOME",
+          "HOME",
+          "PATH",
+          "PROJECT_DB_CONFIG",
+          "REMOTE_SERVERS_CONFIG",
+          "SMARTDD_CONFIG_VERSION",
+          "SMARTDD_PROJECT_CONTEXT",
+          "SMARTDD_PROJECT_ID",
+          "SMARTDD_RESOURCE_AUDIT",
+          "T140_ROLE",
+          "T140_ROOT",
+          "WILLYOU_ENDPOINT",
+          "WILLYOU_RUN_TOKEN"
+        ],
+        "runtimeSnapshot": {
+          "runId": "c3967da1-c1f9-486d-9be1-3a316011268d",
+          "projectId": "28f79610-03ee-4508-8c3d-7b8d71b7c7e9",
+          "configVersion": 1,
+          "configHash": "cc14a5e8229a31b71ea1b3b0c2bd76868257176ff69217bc60a1207d043f3e25",
+          "manifestPath": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/userdata/capabilities/runs/28f79610-03ee-4508-8c3d-7b8d71b7c7e9/34890214-1185-419d-9467-e41bb83b12b0/c3967da1-c1f9-486d-9be1-3a316011268d/manifest.json",
+          "auditPath": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/userdata/capabilities/resource-audit/28f79610-03ee-4508-8c3d-7b8d71b7c7e9/34890214-1185-419d-9467-e41bb83b12b0.jsonl",
+          "skills": [
+            {
+              "skillId": "project-db-diagnostics",
+              "versionId": "project-db-diagnostics:e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+              "name": "smartdd-s-project-db-diagnostics-e35d11cc0f88",
+              "version": "1.0.0",
+              "hash": "e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91",
+              "path": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/home-t1/.agents/skills/smartdd-s-project-db-diagnostics-e35d11cc0f88/SKILL.md",
+              "loaded": "unverified",
+              "enabled": true
+            },
+            {
+              "skillId": "remote-password-ssh",
+              "versionId": "remote-password-ssh:77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+              "name": "smartdd-s-remote-password-ssh-77df74e9de1a",
+              "version": "1.0.0",
+              "hash": "77df74e9de1a0cc7ccb19d4f421f3819d8f3f6c4e01706e34795ccaadb288294",
+              "path": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/home-t1/.agents/skills/smartdd-s-remote-password-ssh-77df74e9de1a/SKILL.md",
+              "loaded": "unverified",
+              "enabled": true
+            }
+          ],
+          "mcp": [
+            {
+              "name": "smartdd_project_da919ad47f83",
+              "loaded": "unverified"
+            }
+          ],
+          "selfCheck": {
+            "status": "passed",
+            "issues": [],
+            "at": 1794047827203
+          },
+          "sessionCapabilities": {
+            "schema": 3,
+            "taskId": "34890214-1185-419d-9467-e41bb83b12b0",
+            "snapshotHash": "09cb888b3498cff8aabfd3a8e9e0c00f8c1282c03d64eca18413f46b72636b9f"
+          }
+        },
+        "configVersion": 1,
+        "projectConfigVersion": 1,
+        "archivedAt": null,
+        "createdAt": 1794047825837,
+        "updatedAt": 1794047827143,
+        "lastLaunchedAt": 1794047827116,
+        "ptyId": null,
+        "recovery": "not-started",
+        "recoveryReason": "还没有发过消息，Codex 未生成会话；打开时会新开一个"
+      },
+      "status": "fulfilled"
+    },
+    {
+      "label": "normal-own-app-quit",
+      "at": "2026-11-07T10:37:09.593Z",
+      "value": {
+        "pid": 30753,
+        "code": 0,
+        "signal": null
+      },
+      "status": "fulfilled"
+    },
+    {
+      "label": "save-own-electron-log",
+      "at": "2026-11-07T10:37:09.808Z",
+      "status": "fulfilled"
+    },
+    {
+      "label": "close-owned-harness",
+      "at": "2026-11-07T10:37:09.808Z",
+      "status": "fulfilled"
+    },
+    {
+      "label": "observe-owned-child-exit",
+      "at": "2026-11-07T10:37:09.809Z",
+      "value": {
+        "pid": 30753,
+        "spawnedAtMs": 1794047821133,
+        "exit": {
+          "atMs": 1794047829807,
+          "code": 0,
+          "signal": null
+        },
+        "signals": [],
+        "inspectorCloseRequests": [
+          {
+            "atMs": 1794047829594
+          },
+          {
+            "atMs": 1794047829808
+          }
+        ],
+        "currentCode": 0,
+        "currentSignal": null
+      },
+      "status": "fulfilled"
+    },
+    {
+      "label": "close-own-HTTP",
+      "at": "2026-11-07T10:37:09.809Z",
+      "value": true,
+      "status": "fulfilled"
+    },
+    {
+      "label": "read-final-caller-events",
+      "at": "2026-11-07T10:37:09.810Z",
+      "value": [
+        {
+          "kind": "receiver-ready",
+          "pid": 30812,
+          "binary": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Resources/native/willyou-app",
+          "binarySha256": "3e1d05008077dd0495ca65d6f063469121e95e7bd87aaa3114504c2f9b7af2cf",
+          "hasCliToken": true,
+          "hasCliEndpoint": true,
+          "endpointPath": "[own private endpoint path omitted]",
+          "boundary": "Real TaskService managed PTY/nativeCLI/M11; synthetic health/config only, no real model R.",
+          "role": "t1",
+          "atMs": 1794047827232
+        },
+        {
+          "kind": "cli-start",
+          "pid": 30850,
+          "tag": "identity-preflight",
+          "argv": [
+            "browser",
+            "identity",
+            "get"
+          ],
+          "startMonoNs": "529643458",
+          "role": "t1",
+          "atMs": 1794047827747
+        },
+        {
+          "kind": "cli-result",
+          "pid": 30850,
+          "tag": "identity-preflight",
+          "argv": [
+            "browser",
+            "identity",
+            "get"
+          ],
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"result\":{\"mode\":\"clean\",\"pendingMode\":null,\"restartRequired\":false}},\"resources\":[],\"operation\":{\"id\":\"a477cf5d-d686-4fce-8bed-d1b2b039fa6e\",\"requestId\":\"4532dcfc-0636-4858-afe3-cb20bb8af091\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.identity.get\"}\n",
+          "stderr": "",
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "cleanupSignals": [],
+          "startMonoNs": "529643458",
+          "finishMonoNs": "905017291",
+          "role": "t1",
+          "atMs": 1794047828120
+        },
+        {
+          "kind": "cli-start",
+          "pid": 30854,
+          "tag": "installed-create-page",
+          "argv": [
+            "browser",
+            "tab",
+            "create",
+            "--url",
+            "http://127.0.0.1:49590/account?role=t1"
+          ],
+          "startMonoNs": "943086666",
+          "role": "t1",
+          "atMs": 1794047828160
+        },
+        {
+          "kind": "cli-result",
+          "pid": 30854,
+          "tag": "installed-create-page",
+          "argv": [
+            "browser",
+            "tab",
+            "create",
+            "--url",
+            "http://127.0.0.1:49590/account?role=t1"
+          ],
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"pageId\":\"45f4f8bd-e84a-409e-b68b-d38f637e9d8b\"},\"resources\":[],\"operation\":{\"id\":\"03ce62ae-bbe6-484e-bb01-0b68b4017032\",\"requestId\":\"8090fe7d-fcb0-44f0-ac29-ff92c4d19277\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+          "stderr": "",
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "cleanupSignals": [],
+          "startMonoNs": "943086666",
+          "finishMonoNs": "1441084333",
+          "role": "t1",
+          "atMs": 1794047828656
+        },
+        {
+          "kind": "cli-start",
+          "pid": 30859,
+          "tag": "installed-snapshot",
+          "argv": [
+            "browser",
+            "snapshot",
+            "--page",
+            "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+          ],
+          "startMonoNs": "1457966500",
+          "role": "t1",
+          "atMs": 1794047828674
+        },
+        {
+          "kind": "cli-result",
+          "pid": 30859,
+          "tag": "installed-snapshot",
+          "argv": [
+            "browser",
+            "snapshot",
+            "--page",
+            "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+          ],
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"title\":\"T140 t1 account\",\"snapshot\":\"- heading \\\"Signed in: anonymous\\\" [level=1, ref=@k930e0541c86145a9b3f52645eca5fe1fs5e1]\\n- generic\\n  - LabelText\\n    - StaticText \\\"Account\\\"\\n  - textbox \\\"Account\\\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e2]\\n  - button \\\"Login\\\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e3]\\n- paragraph\",\"browserPageId\":\"45f4f8bd-e84a-409e-b68b-d38f637e9d8b\",\"origin\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"refs\":[{\"available\":true,\"name\":\"Signed in: anonymous\",\"role\":\"heading\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e1\"},{\"available\":true,\"name\":\"Account\",\"role\":\"textbox\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e2\"},{\"available\":true,\"name\":\"Login\",\"role\":\"button\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e3\"}]},\"resources\":[],\"operation\":{\"id\":\"499d7054-5275-4532-9984-e9677ae6a996\",\"requestId\":\"9e06e3f3-bb95-495a-b064-29b82b004eba\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.snapshot\"}\n",
+          "stderr": "",
+          "code": 0,
+          "signal": null,
+          "timedOut": false,
+          "cleanupSignals": [],
+          "startMonoNs": "1457966500",
+          "finishMonoNs": "1982011791",
+          "role": "t1",
+          "atMs": 1794047829197
+        }
+      ],
+      "status": "fulfilled"
+    }
+  ],
+  "cleanupErrors": [],
+  "boundary": "Actual private installation copied from readonly candidate DMG, identical App031/source035 payload; installed App starts and actual managed nativeCLI creates/snapshots local synthetic page. Synthetic health/caller only, no model R/daily data/foreground UI input. No notarization, release or x64 claim.",
+  "origin": "http://127.0.0.1:49590",
+  "appPid": 30753,
+  "actualVersions": {
+    "node": "24.19.0",
+    "acorn": "8.17.0",
+    "ada": "3.4.4",
+    "amaro": "1.1.10",
+    "ares": "1.34.6",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "146",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.69.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.4",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.3",
+    "tz": "2025c",
+    "undici": "7.29.0",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "14.8.178.38-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "42.11.14",
+    "chrome": "148.0.7778.280"
+  },
+  "mainWindow": [
+    {
+      "id": 1,
+      "title": "[I] T140 CLI profile isolation - private",
+      "visible": false
+    }
+  ],
+  "projectId": "28f79610-03ee-4508-8c3d-7b8d71b7c7e9",
+  "setupReload": {
+    "before": 1794047824771.7,
+    "after": 1794047827509.5
+  },
+  "installedCliProof": {
+    "actualPageId": "45f4f8bd-e84a-409e-b68b-d38f637e9d8b",
+    "actualSnapshotOperation": {
+      "id": "499d7054-5275-4532-9984-e9677ae6a996",
+      "requestId": "9e06e3f3-bb95-495a-b064-29b82b004eba",
+      "effectState": "read-only",
+      "origin": "cli"
+    },
+    "actualUrl": "http://127.0.0.1:49590/account?role=t1"
+  },
+  "actualInstalledRuntime": {
+    "execPath": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
+    "resourcesPath": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Resources",
+    "userData": "/private/tmp/willyou-m12-app031-installer-001/installed-startup-001/runtime-001/userdata",
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    }
+  },
+  "actualStartupUi": {
+    "ready": "complete",
+    "title": "WillYou",
+    "hasHome": true,
+    "origin": "file:"
+  },
+  "status": "executed-unjudged",
+  "exactGatewayPaths": [
+    "/private/tmp/wy-cli-501-5li5R1/cli.sock"
+  ],
+  "appExit": {
+    "pid": 30753,
+    "code": 0,
+    "signal": null
+  },
+  "observedProcess": {
+    "pid": 30753,
+    "spawnedAtMs": 1794047821133,
+    "exit": {
+      "atMs": 1794047829807,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "inspectorCloseRequests": [
+      {
+        "atMs": 1794047829594
+      },
+      {
+        "atMs": 1794047829808
+      }
+    ],
+    "currentCode": 0,
+    "currentSignal": null
+  },
+  "httpClosed": true,
+  "requests": [
+    {
+      "at": "2026-11-07T10:37:08.586Z",
+      "method": "GET",
+      "path": "/account",
+      "role": "t1",
+      "account": null,
+      "cookieDigest": null
+    },
+    {
+      "at": "2026-11-07T10:37:08.664Z",
+      "method": "GET",
+      "path": "/favicon.ico",
+      "role": null,
+      "account": null,
+      "cookieDigest": null
+    }
+  ],
+  "agentEvents": [
+    {
+      "kind": "receiver-ready",
+      "pid": 30812,
+      "binary": "/private/tmp/willyou-m12-app031-installer-001/Installed Applications/WillYou.app/Contents/Resources/native/willyou-app",
+      "binarySha256": "3e1d05008077dd0495ca65d6f063469121e95e7bd87aaa3114504c2f9b7af2cf",
+      "hasCliToken": true,
+      "hasCliEndpoint": true,
+      "endpointPath": "[own private endpoint path omitted]",
+      "boundary": "Real TaskService managed PTY/nativeCLI/M11; synthetic health/config only, no real model R.",
+      "role": "t1",
+      "atMs": 1794047827232
+    },
+    {
+      "kind": "cli-start",
+      "pid": 30850,
+      "tag": "identity-preflight",
+      "argv": [
+        "browser",
+        "identity",
+        "get"
+      ],
+      "startMonoNs": "529643458",
+      "role": "t1",
+      "atMs": 1794047827747
+    },
+    {
+      "kind": "cli-result",
+      "pid": 30850,
+      "tag": "identity-preflight",
+      "argv": [
+        "browser",
+        "identity",
+        "get"
+      ],
+      "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"result\":{\"mode\":\"clean\",\"pendingMode\":null,\"restartRequired\":false}},\"resources\":[],\"operation\":{\"id\":\"a477cf5d-d686-4fce-8bed-d1b2b039fa6e\",\"requestId\":\"4532dcfc-0636-4858-afe3-cb20bb8af091\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.identity.get\"}\n",
+      "stderr": "",
+      "code": 0,
+      "signal": null,
+      "timedOut": false,
+      "cleanupSignals": [],
+      "startMonoNs": "529643458",
+      "finishMonoNs": "905017291",
+      "role": "t1",
+      "atMs": 1794047828120
+    },
+    {
+      "kind": "cli-start",
+      "pid": 30854,
+      "tag": "installed-create-page",
+      "argv": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:49590/account?role=t1"
+      ],
+      "startMonoNs": "943086666",
+      "role": "t1",
+      "atMs": 1794047828160
+    },
+    {
+      "kind": "cli-result",
+      "pid": 30854,
+      "tag": "installed-create-page",
+      "argv": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:49590/account?role=t1"
+      ],
+      "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"pageId\":\"45f4f8bd-e84a-409e-b68b-d38f637e9d8b\"},\"resources\":[],\"operation\":{\"id\":\"03ce62ae-bbe6-484e-bb01-0b68b4017032\",\"requestId\":\"8090fe7d-fcb0-44f0-ac29-ff92c4d19277\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+      "stderr": "",
+      "code": 0,
+      "signal": null,
+      "timedOut": false,
+      "cleanupSignals": [],
+      "startMonoNs": "943086666",
+      "finishMonoNs": "1441084333",
+      "role": "t1",
+      "atMs": 1794047828656
+    },
+    {
+      "kind": "cli-start",
+      "pid": 30859,
+      "tag": "installed-snapshot",
+      "argv": [
+        "browser",
+        "snapshot",
+        "--page",
+        "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+      ],
+      "startMonoNs": "1457966500",
+      "role": "t1",
+      "atMs": 1794047828674
+    },
+    {
+      "kind": "cli-result",
+      "pid": 30859,
+      "tag": "installed-snapshot",
+      "argv": [
+        "browser",
+        "snapshot",
+        "--page",
+        "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+      ],
+      "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"title\":\"T140 t1 account\",\"snapshot\":\"- heading \\\"Signed in: anonymous\\\" [level=1, ref=@k930e0541c86145a9b3f52645eca5fe1fs5e1]\\n- generic\\n  - LabelText\\n    - StaticText \\\"Account\\\"\\n  - textbox \\\"Account\\\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e2]\\n  - button \\\"Login\\\" [ref=@k930e0541c86145a9b3f52645eca5fe1fs5e3]\\n- paragraph\",\"browserPageId\":\"45f4f8bd-e84a-409e-b68b-d38f637e9d8b\",\"origin\":\"http:\\/\\/127.0.0.1:49590\\/account?role=t1\",\"refs\":[{\"available\":true,\"name\":\"Signed in: anonymous\",\"role\":\"heading\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e1\"},{\"available\":true,\"name\":\"Account\",\"role\":\"textbox\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e2\"},{\"available\":true,\"name\":\"Login\",\"role\":\"button\",\"ref\":\"@k930e0541c86145a9b3f52645eca5fe1fs5e3\"}]},\"resources\":[],\"operation\":{\"id\":\"499d7054-5275-4532-9984-e9677ae6a996\",\"requestId\":\"9e06e3f3-bb95-495a-b064-29b82b004eba\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.snapshot\"}\n",
+      "stderr": "",
+      "code": 0,
+      "signal": null,
+      "timedOut": false,
+      "cleanupSignals": [],
+      "startMonoNs": "1457966500",
+      "finishMonoNs": "1982011791",
+      "role": "t1",
+      "atMs": 1794047829197
+    }
+  ],
+  "knownPids": [
+    30749,
+    30753,
+    30812,
+    30850,
+    30854,
+    30859,
+    30755,
+    30756,
+    30789,
+    30857,
+    30858,
+    30872
+  ],
+  "knownPorts": [
+    49590,
+    49612,
+    49591,
+    49965,
+    49977
+  ],
+  "knownPageIds": [
+    "45f4f8bd-e84a-409e-b68b-d38f637e9d8b"
+  ],
+  "finishedAt": "2026-11-07T10:37:09.810Z"
+}

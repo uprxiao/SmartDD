@@ -30,7 +30,7 @@ export class UpstreamSessionPool {
   private verify(definition:UpstreamDefinition){
     if(definition.isolation!=='private-home-xdg'||!isAbsolute(definition.command)||!definition.versions.length||!definition.resources.some(r=>r.path===definition.command))throw new ApplicationError('HOST_INCOMPATIBLE','上游工具不支持私有配置或缺少固定版本资源');
     for(const resource of definition.resources){const stat=lstatSync(resource.path);if(!stat.isFile()||stat.isSymbolicLink()||realpathSync(resource.path)!==resource.path||stat.size>128*1024*1024||digest(readFileSync(resource.path))!==resource.sha256)throw new ApplicationError('EXECUTABLE_MISMATCH','上游工具资源身份变化');}
-    if(definition.args.some(arg=>arg.includes('\0'))||Object.keys(definition.environment??{}).some(name=>!/^[A-Z][A-Z0-9_]{0,63}$/.test(name)||['HOME','XDG_CONFIG_HOME','XDG_CACHE_HOME','TMPDIR','WILLYOU_RUN_TOKEN','WILLYOU_ENDPOINT','NODE_OPTIONS','NODE_PATH','DYLD_INSERT_LIBRARIES'].includes(name)))throw new ApplicationError('INVALID_INPUT','上游环境声明无效');
+    if(definition.args.some(arg=>arg.includes('\0'))||Object.keys(definition.environment??{}).some(name=>!/^[A-Z][A-Z0-9_]{0,63}$/.test(name)||['HOME','XDG_CONFIG_HOME','XDG_CACHE_HOME','TMPDIR','WILLYOU_RUN_TOKEN','WILLYOU_ENDPOINT','WILLYOU_CLI_INACTIVE','NODE_OPTIONS','NODE_PATH','DYLD_INSERT_LIBRARIES'].includes(name)))throw new ApplicationError('INVALID_INPUT','上游环境声明无效');
   }
   async acquire(definition:UpstreamDefinition,connection:UpstreamConnection){
     if(this.closed)throw new ApplicationError('CANCELED','上游会话池已停止');this.verify(definition);

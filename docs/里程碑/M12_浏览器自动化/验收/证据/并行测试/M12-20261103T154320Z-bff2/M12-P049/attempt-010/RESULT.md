@@ -1,0 +1,1 @@
+New exec positional policy, compatibility result masking and source trust tests. 329/330 software green: old summary recovery failed. Catalogue3 and both typechecks green. Product red preserved; no native run.

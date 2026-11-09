@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-05T01:49:01.006193+00:00",
+  "case": "M12-T089",
+  "layer": "I original nativeCLI realApp only; no A or modelR claim",
+  "originalLine": "| M12-T089 | R05.8、O12 | I＋A | 默认身份 | `browser identity get`；`set --mode native`；重启 App；再 `get`；`set --mode clean --reset true` | 设置后提示需重启；重启后页面 UA 含 Electron 标记且 `get` 返回 native；`--reset true` 恢复默认 | — | 待执行 | — |",
+  "requirement": "**R05.8 浏览器身份**\n- `browser identity get|set --mode clean|native [--reset true]`，作用于整个应用，重启后生效。\n- `clean`：兼容导入的登录态。\n- `native`：部分 Cloudflare 保护的站点需要，但 Google 登录不可用。\n\n",
+  "criteria": [
+    "Default identity get clean/pendingnull/noRestart",
+    "Original native CLI identity set --mode native reports clean/pendingnative/restartRequiredtrue; existing page UA unchanged before restart",
+    "Same userData normal App restart; real CLI get native/pendingnull/noRestart and actual native page/HTTP UA contains Electron",
+    "Original native CLI identity set --mode clean --reset true schedules clean/restart; existing nativeUA unchanged until restart",
+    "Second same-userData normal restart; actualCLI get clean/pendingnull/noRestart; nativeDOM and HTTP UA return exact original clean default"
+  ],
+  "trustedPrep": "RPC project/task/AI/capabilities only; original CLI performs all browser creation and identity changes. No settings/store/DOM mutations.",
+  "R041042Pending": {
+    "originalLines": [
+      "| M12-T041 | R02.2、K19、P1 | I＋R | 打包 App，P1 已选用浏览器应用 | 由真实 UI 启动 Codex 任务；要求 Codex 读 Skill 并打开测试站点做一次 `snapshot` | 运行计划记录的 Skill 哈希与实际交付的文件一致；Codex 从 Skill 得知用法并实际调用成功；宿主活动记录有对应的 CLI 调用 | — | 待执行 | — |",
+      "| M12-T042 | P1 补充 | R | 真实 Codex 0.166.0，默认沙箱 | Codex 在会话中执行 `willyou-app browser tab list` | Codex 子进程能读到 `WILLYOU_RUN_TOKEN` 与 `WILLYOU_ENDPOINT`，调用成功，不需要提权 | — | 待执行 | — |"
+    ],
+    "knownEvidence": "S1 attempt020 and P001007/008 explicitly use synthetic loopback Responses; not real model reasoning. Known private CODEX_HOME roots have config.toml but no auth.json. No delivered authorized real-provider/account private profile for this group. Did not read daily credentials or invoke model. T041 also requires fresh actualUI start/focus; therefore R deferred, fallback originalT089 I prepared per coordinator.",
+    "evidenceFiles": [
+      "docs/里程碑/M12_浏览器自动化/验收/执行与缺陷记录.md:201",
+      "docs/里程碑/M12_浏览器自动化/验收/执行与缺陷记录.md:244",
+      "docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T092732Z-s1a/S1-G001/attempt-020/s1-packaged-agent.mjs"
+    ],
+    "boundary": "No global claim about daily account availability; no private auth contents read. Exact authorized real-provider profile plus UI lease/freshfocus needed before full R preparation/execution."
+  },
+  "A": "Still separate original contract; no simulated UI/prompt visual claim",
+  "formalWholeCaseCount": 0
+}

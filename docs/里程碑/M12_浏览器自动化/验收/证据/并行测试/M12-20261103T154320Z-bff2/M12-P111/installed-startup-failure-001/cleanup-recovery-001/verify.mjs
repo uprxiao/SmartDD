@@ -1,0 +1,14 @@
+import assert from'node:assert/strict';
+import{readFile,writeFile,lstat,readdir}from'node:fs/promises';
+import{spawnSync}from'node:child_process';
+import{dirname}from'node:path';
+import{createHash}from'node:crypto';
+const ROOT='/private/tmp/willyou-m12-p111-app021-installer-001/installed-startup-001',HERE=ROOT+'/cleanup-recovery-001';assert(process.argv.includes('--verify'));assert.equal(process.env.WILLYOU_M12_NATIVE_LEASE_CONFIRMED,'1');
+const s=JSON.parse(await readFile(HERE+'/scope.json')),hash=b=>createHash('sha256').update(b).digest('hex');assert.equal(s.root,ROOT);assert.equal(hash(await readFile(ROOT+'/live.json')),s.sourceLiveSha256);assert.equal(hash(await readFile(ROOT+'/execution-started.json')),s.sourceStartedSha256);assert.equal(hash(await readFile(ROOT+'/runtime-001/agent-events.jsonl')),s.eventsSha256);
+const processes=s.pids.map(pid=>{assert(Number.isSafeInteger(pid)&&pid>1);const x=spawnSync('/bin/ps',['-p',String(pid),'-o','pid=,ppid=,uid=,lstart=,comm='],{encoding:'utf8'});assert(!x.error);return{pid,status:x.status,stdout:x.stdout,stderr:x.stderr,absent:x.status===1&&!x.stdout.trim()}});
+const ports=s.ports.map(port=>{assert(Number.isInteger(port)&&port>0&&port<65536);const x=spawnSync('/usr/sbin/lsof',['-nP','-iTCP:'+port,'-sTCP:LISTEN'],{encoding:'utf8'});assert(!x.error);return{port,status:x.status,stdout:x.stdout,stderr:x.stderr,absent:x.status===1&&!x.stdout.trim()}});
+const absent=async path=>{try{await lstat(path);return false}catch(e){if(e.code!=='ENOENT')throw e;return true}},unix=[];
+for(const path of s.endpoints){assert(path.startsWith('/private/tmp/wy-cli-501-')&&path.endsWith('/cli.sock')&&!path.includes('/../'));unix.push({path,socketAbsent:await absent(path),parentAbsent:await absent(dirname(path))});}
+const helpers=[];for(const h of s.helpers){assert.equal(h.directory,'/private/tmp/wy-ab-'+hash(ROOT+'/runtime-001/userdata'+h.pageId).slice(0,24));let names=[];try{names=await readdir(h.directory)}catch(e){if(e.code!=='ENOENT')throw e}helpers.push({pageId:h.pageId,directory:h.directory,remainingRuntimeFiles:names.filter(x=>/\.(?:pid|sock|port)$/.test(x)),clear:!names.some(x=>/\.(?:pid|sock|port)$/.test(x))});}
+const result={at:new Date().toISOString(),scope:'Derived read-only exact actual001 resource checks after recorder TypeError. No signal/delete, no fabricated originalnormalExit/raw.',processes,ports,unix,helpers,signalsSent:[],allClear:processes.every(x=>x.absent)&&ports.every(x=>x.absent)&&unix.every(x=>x.socketAbsent&&x.parentAbsent)&&helpers.every(x=>x.clear)};
+await writeFile(HERE+'/cleanup.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({allClear:result.allClear,pids:processes.length,ports:ports.length,unix:unix.length,helpers:helpers.length,signalsSent:[]}));assert(result.allClear,'Recorded resources remain, preserve diagnosis and do not release');

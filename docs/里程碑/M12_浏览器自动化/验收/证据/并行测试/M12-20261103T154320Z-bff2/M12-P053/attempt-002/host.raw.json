@@ -1,0 +1,856 @@
+{
+  "group": "M12-P053",
+  "case": "M12-T116",
+  "pid": 17195,
+  "startedAt": "2026-11-04T11:25:57.954Z",
+  "versions": {
+    "node": "24.19.0",
+    "acorn": "8.17.0",
+    "ada": "3.4.4",
+    "amaro": "1.1.10",
+    "ares": "1.34.6",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "146",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.69.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.4",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.3",
+    "tz": "2025c",
+    "undici": "7.29.0",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "14.8.178.38-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "42.11.14",
+    "chrome": "148.0.7778.280"
+  },
+  "stage": "done",
+  "events": [
+    {
+      "kind": "root-ready",
+      "pid": 17236,
+      "at": 1793791559567
+    },
+    {
+      "kind": "root-configured",
+      "pid": 17236,
+      "environmentValuesLogged": false,
+      "at": 1793791559595
+    },
+    {
+      "kind": "cli-spawn",
+      "id": 1,
+      "pid": 17267,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:61450/blank?certificate"
+      ],
+      "at": 1793791559956
+    },
+    {
+      "kind": "native-window",
+      "id": 1
+    },
+    {
+      "kind": "page-created",
+      "id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+      "contentsId": 1
+    },
+    {
+      "kind": "cli-spawn",
+      "id": 2,
+      "pid": 17299,
+      "args": [
+        "browser",
+        "goto",
+        "--url",
+        "https://p053-cert.invalid:61453/certificate",
+        "--page",
+        "b3a7b887-a97c-4c31-a067-d2eca0c75088"
+      ],
+      "at": 1793791561172
+    },
+    {
+      "kind": "cli-spawn",
+      "id": 3,
+      "pid": 17325,
+      "args": [
+        "browser",
+        "wait",
+        "--text",
+        "成功",
+        "--timeout",
+        "500",
+        "--page",
+        "b3a7b887-a97c-4c31-a067-d2eca0c75088"
+      ],
+      "at": 1793791562088
+    },
+    {
+      "kind": "cli-spawn",
+      "id": 4,
+      "pid": 17368,
+      "args": [
+        "browser",
+        "tab",
+        "close",
+        "--page",
+        "b3a7b887-a97c-4c31-a067-d2eca0c75088"
+      ],
+      "at": 1793791563659
+    },
+    {
+      "kind": "page-closed",
+      "id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+      "contentsId": 1,
+      "helperCleanup": {
+        "daemonPid": 17348,
+        "daemonState": "stopped",
+        "clientStopped": true,
+        "socketFilesRemoved": true
+      }
+    },
+    {
+      "kind": "owned-windows-all-closed"
+    }
+  ],
+  "cli": [
+    {
+      "id": 1,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:61450/blank?certificate"
+      ],
+      "at": 1793791559953,
+      "result": {
+        "kind": "cli-result",
+        "id": 1,
+        "pid": 17267,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:61450\\/blank?certificate\",\"pageId\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\"},\"resources\":[],\"operation\":{\"id\":\"39ffbd73-4905-4092-b181-9d8bb70af028\",\"requestId\":\"50f068c8-acd9-4cbd-a668-823996008bc6\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      }
+    },
+    {
+      "id": 2,
+      "args": [
+        "browser",
+        "goto",
+        "--url",
+        "https://p053-cert.invalid:61453/certificate",
+        "--page",
+        "b3a7b887-a97c-4c31-a067-d2eca0c75088"
+      ],
+      "at": 1793791561170,
+      "result": {
+        "kind": "cli-result",
+        "id": 2,
+        "pid": 17299,
+        "code": 5,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_ERROR\",\"layer\":\"provider\",\"message\":\"ERR_CERT_AUTHORITY_INVALID (-202) loading 'https:\\/\\/p053-cert.invalid:61453\\/certificate'\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"ece2cc0d-fb24-458b-8368-99c67d6fc730\",\"requestId\":\"94b7b93d-4e2f-4c07-8edd-e3972843962e\"}\n",
+        "stderr": "willyou-app: BROWSER_ERROR\n",
+        "timedOut": false
+      }
+    },
+    {
+      "id": 3,
+      "args": [
+        "browser",
+        "wait",
+        "--text",
+        "成功",
+        "--timeout",
+        "500",
+        "--page",
+        "b3a7b887-a97c-4c31-a067-d2eca0c75088"
+      ],
+      "at": 1793791562085,
+      "result": {
+        "kind": "cli-result",
+        "id": 3,
+        "pid": 17325,
+        "code": 2,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"Wait timed out after 500ms\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"6e5ba83e-53bd-4004-b3dd-02fbae224f3e\",\"requestId\":\"d9a19514-1a92-44c9-9833-55b8218ca3ca\"}\n",
+        "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+        "timedOut": false
+      }
+    },
+    {
+      "id": 4,
+      "args": [
+        "browser",
+        "tab",
+        "close",
+        "--page",
+        "b3a7b887-a97c-4c31-a067-d2eca0c75088"
+      ],
+      "at": 1793791563656,
+      "result": {
+        "kind": "cli-result",
+        "id": 4,
+        "pid": 17368,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"result\":{\"closed\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\"}},\"resources\":[],\"operation\":{\"id\":\"88af6205-cb7d-4322-9032-9f96f417a64f\",\"requestId\":\"398e87af-f6ad-44bb-a3eb-c8ebef4b5a53\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.close\"}\n",
+        "stderr": "",
+        "timedOut": false
+      }
+    }
+  ],
+  "cleanupSteps": [
+    {
+      "name": "restore-owned-network-proxy",
+      "startedAt": "2026-11-04T11:26:04.659Z",
+      "timeoutMs": 5000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.659Z"
+    },
+    {
+      "name": "close-real-gateway",
+      "startedAt": "2026-11-04T11:26:04.659Z",
+      "timeoutMs": 5000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.660Z"
+    },
+    {
+      "name": "stop-owned-run-root",
+      "startedAt": "2026-11-04T11:26:04.660Z",
+      "timeoutMs": 5000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.710Z"
+    },
+    {
+      "name": "stop-finished-run",
+      "startedAt": "2026-11-04T11:26:04.711Z",
+      "timeoutMs": 5000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.721Z"
+    },
+    {
+      "name": "dispose-real-browser-pages-helpers-park",
+      "startedAt": "2026-11-04T11:26:04.721Z",
+      "timeoutMs": 10000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.725Z"
+    },
+    {
+      "name": "dispose-applications",
+      "startedAt": "2026-11-04T11:26:04.727Z",
+      "timeoutMs": 8000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.727Z"
+    },
+    {
+      "name": "dispose-runs",
+      "startedAt": "2026-11-04T11:26:04.728Z",
+      "timeoutMs": 5000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.728Z"
+    },
+    {
+      "name": "final-owned-WC",
+      "startedAt": "2026-11-04T11:26:04.728Z",
+      "timeoutMs": 5000,
+      "status": "fulfilled",
+      "finishedAt": "2026-11-04T11:26:04.729Z"
+    }
+  ],
+  "boundaries": {
+    "layer": "RealnativeCLI/M11 gateway/token+kernel peer/run registry/BrowserModule/BrowserService/SQLite, controlled Python run root notAgentR",
+    "native": "prohibited, actualproduction alpha0 nonfocus park showInactive, no desktopinput or visibleUI/PTY, mockkeychain",
+    "tokens": "Gateway token memory/owned stdio only; environment values never logged",
+    "fixtures": "Retained unused synthetic Cookie source/cipher helpers, no import invoked. Original T116 native Basic/permission raw retained; current certificate-only actual CLI. Private direct Session transport plus exact hostname map, no certificate trust/callback substitutes. Auth fixture user cancellation occurred only after prior wait/pending observation for cleanup."
+  },
+  "precondition": {
+    "policy": "prohibited",
+    "beforeReady": true,
+    "mockKeychain": true
+  },
+  "migrations": [
+    {
+      "id": 1,
+      "hash": "be40f3d6257fdef5a7217b17944be56a5bdcd9f85ba54a6b05027ac901869abc",
+      "created_at": 1791978722839
+    },
+    {
+      "id": 2,
+      "hash": "4bab5cf57bdceb9c06fc57e0038813e0d9ed46a2abb49047c2e3d9719158663a",
+      "created_at": 1791988005282
+    },
+    {
+      "id": 3,
+      "hash": "904773c9e8b4da27b9353ab94fecabffedfe735c32f677183fd8d04d78f559ab",
+      "created_at": 1791992183018
+    },
+    {
+      "id": 4,
+      "hash": "6bfc36642b0c06118be8832b4934495f52ce55d033d23f86d1e0c054a0c9ca07",
+      "created_at": 1792026072572
+    },
+    {
+      "id": 5,
+      "hash": "f2bc3557385f76b4e477f37d7b851139be27da379101fb79393073a87e774cea",
+      "created_at": 1792035171435
+    },
+    {
+      "id": 6,
+      "hash": "fdaed3e47b42942aacdb9819c21f781d69516a721d66d802f3aca210a34090e8",
+      "created_at": 1792140000000
+    },
+    {
+      "id": 7,
+      "hash": "1caf98558cb1df6019377944cdce8331ffb8835cd817091bf3be468e3cc3cd85",
+      "created_at": 1792461246000
+    },
+    {
+      "id": 8,
+      "hash": "9380e0ef13b50a2746ab230d5356ceff496a5c73ed7635f6e5cffad9565fa981",
+      "created_at": 1792462400000
+    },
+    {
+      "id": 9,
+      "hash": "9a5fdd76319ed7142bb28297ca1da2b7bbaad9f4c8254b5db4592f070e768afd",
+      "created_at": 1792464000000
+    },
+    {
+      "id": 10,
+      "hash": "6a384b27bc72c2929a66033f32aaa8d3e4e1526192606fe98cf91f00566bc92f",
+      "created_at": 1792464600000
+    },
+    {
+      "id": 11,
+      "hash": "fdff765aab04d6690b5ab16ad0c7fc6d66719f29824bc23f1c4642184405de64",
+      "created_at": 1792465800000
+    },
+    {
+      "id": 12,
+      "hash": "8870b5206914cf411863e7fe60c48eaf5250233be97a9367bc0532c9564ab461",
+      "created_at": 1792466400000
+    },
+    {
+      "id": 13,
+      "hash": "af86db1bccbb4ae4bf177f381def368089a481c725050a85748de2040d86a707",
+      "created_at": 1792467000000
+    },
+    {
+      "id": 14,
+      "hash": "41c0ad4c019e54ac464f608dd5520569ab11b52aab18d3bf029446a5a101e1ba",
+      "created_at": 1792467600000
+    },
+    {
+      "id": 15,
+      "hash": "7045ad7d93f78906170d249cce7e1a4f828af07dad9d66e31ae96cdfa21ebd4b",
+      "created_at": 1792468200000
+    },
+    {
+      "id": 16,
+      "hash": "9ab0392e2b85a38631dfbb0c1bd394553f9e500b19c31d05abafab8bc4fc973f",
+      "created_at": 1792468800000
+    },
+    {
+      "id": 17,
+      "hash": "53f4acac1b3fd243baac7f78b10ca361dd9264fb6a242a8547f08fb5bcc01f47",
+      "created_at": 1792469400000
+    },
+    {
+      "id": 18,
+      "hash": "90b45345febe2d1a18c9c35678b7c898e739f5a8220973e0976bdeae15f6f747",
+      "created_at": 1792470000000
+    },
+    {
+      "id": 19,
+      "hash": "1803f48431be0895b648697d5b052bfc5560fe3a6dd7cd633c461da718ab93c6",
+      "created_at": 1792470600000
+    },
+    {
+      "id": 20,
+      "hash": "d7426823d98863dd1f1ced3dc2c4b553838ea5f722241a4c731068a3f33e78fe",
+      "created_at": 1792471200000
+    },
+    {
+      "id": 21,
+      "hash": "9b48a5f6a3718088932ee066b296d5d03267ea240a0d72568fc7d07692b54193",
+      "created_at": 1792498800000
+    },
+    {
+      "id": 22,
+      "hash": "9246563053b650cf21d92136d35fb6d434c49baa0d259049d86eb5c770091a9e",
+      "created_at": 1792506000000
+    },
+    {
+      "id": 23,
+      "hash": "d22eb6341c34e42fca2c41a11c616732e8c42a47ba90464e45df791551a03613",
+      "created_at": 1792521000000
+    },
+    {
+      "id": 24,
+      "hash": "f2d5672bd1ef4518c1168a31da2043f350db27857649f9e6f897da66d3effd38",
+      "created_at": 1792546200000
+    },
+    {
+      "id": 25,
+      "hash": "49df754443ae88bfafdaed9c6f9db97e8691c0d08a2e310b4eda8e401b98beeb",
+      "created_at": 1792563000000
+    },
+    {
+      "id": 26,
+      "hash": "f5a49f39cdb3649ee4031cf31475180267f6435d229a9b0cb85e55b8f2eac257",
+      "created_at": 1792571040000
+    },
+    {
+      "id": 27,
+      "hash": "3bdf781a665fde585a452b2c94e3ef8437449cd673304742d7ce31cb3d3a8918",
+      "created_at": 1792744200000
+    },
+    {
+      "id": 28,
+      "hash": "0d594d25a2bcb542b160a342538774b1d9e5be12f305e6859150d6d1a2a767d5",
+      "created_at": 1792782000000
+    },
+    {
+      "id": 29,
+      "hash": "6bf80e62b46289877ea457758ea6bbb825968ef903b6f58c3907dd52e44af8b7",
+      "created_at": 1792785600000
+    },
+    {
+      "id": 30,
+      "hash": "376aec9d05539593311b6c4dfd816a11b4694d9f9c92618b3eb2a7e9ba761dec",
+      "created_at": 1793507771201
+    },
+    {
+      "id": 31,
+      "hash": "4a24c1123d81dea27e1c3cd185c5ada6a7bc593f5f7626a8dd366ceab7599a70",
+      "created_at": 1793697600000
+    }
+  ],
+  "sourceFixture": {
+    "schema": 24,
+    "selected": "Default",
+    "rows": [
+      {
+        "domain": "qa.example.test",
+        "name": "X",
+        "value": "P045-new-X"
+      },
+      {
+        "domain": "qa.example.test",
+        "name": "W",
+        "value": "P045-new-W"
+      },
+      {
+        "domain": "google.com",
+        "name": "G",
+        "value": "P045-excluded-G"
+      },
+      {
+        "domain": "youtube.com",
+        "name": "YT",
+        "value": "P045-new-YT"
+      }
+    ],
+    "unselectedBadRows": [
+      {
+        "domain": "broken.example.test",
+        "name": "bad",
+        "value": "unused",
+        "bad": true
+      }
+    ],
+    "boundary": "ActualsyntheticChromeSQLite encryptedv10+v24hosthash, keychainonly DI; bad profileexists but notimported or countedT081"
+  },
+  "fixtureProfiles": {
+    "p1": {
+      "id": "project-f64551fcd6f07823cb87971c",
+      "scope": "project",
+      "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+      "label": "项目登录态",
+      "owner": {
+        "kind": "project",
+        "id": "p1"
+      },
+      "source": null
+    },
+    "p2": {
+      "id": "project-3946ca64ff78d93ca61090a4",
+      "scope": "project",
+      "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+      "label": "项目登录态",
+      "owner": {
+        "kind": "project",
+        "id": "p2"
+      },
+      "source": null
+    },
+    "t2": {
+      "id": "8e082706-1276-4659-9c0b-2732c0f6f410",
+      "scope": "isolated",
+      "partition": "persist:wy-browser-8e082706-1276-4659-9c0b-2732c0f6f410",
+      "label": "P045 hidden T2",
+      "owner": {
+        "kind": "task",
+        "id": "298f49f6-4ab3-4171-a841-38845a85f70f"
+      },
+      "source": null
+    }
+  },
+  "discovered": {
+    "browsers": [
+      {
+        "family": "chrome",
+        "label": "Google Chrome",
+        "installed": true,
+        "profiles": [
+          {
+            "id": "bcb8f1ca88d5599e93dc475a3545f43b670903f3d360184564031fc4b5c946d2",
+            "family": "chrome",
+            "browserLabel": "Google Chrome",
+            "profileName": "P045 success source",
+            "profileDirectory": "Default",
+            "hasCookies": true
+          },
+          {
+            "id": "c86e3260ed34cf822ad252489bf983989b27667e0533a8fc7e96c50a714c2e31",
+            "family": "chrome",
+            "browserLabel": "Google Chrome",
+            "profileName": "P045 bad source notexecuted",
+            "profileDirectory": "Profile 1",
+            "hasCookies": true
+          }
+        ]
+      },
+      {
+        "family": "edge",
+        "label": "Microsoft Edge",
+        "installed": false,
+        "profiles": []
+      }
+    ]
+  },
+  "selectedSourceId": "bcb8f1ca88d5599e93dc475a3545f43b670903f3d360184564031fc4b5c946d2",
+  "targetPreseed": {
+    "profileId": "project-f64551fcd6f07823cb87971c",
+    "importState": "ready",
+    "cookies": [
+      {
+        "name": "X",
+        "value": "P045-old-X",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Y",
+        "value": "P045-old-Y",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Z",
+        "value": "P045-keep-Z",
+        "domain": "other.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "G",
+        "value": "P045-keep-G",
+        "domain": "google.com",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "keyCalls": 0,
+    "nativeTrace": [],
+    "maxMutations": 0,
+    "activeMutations": 0,
+    "hooksInstalled": false,
+    "keyTransfersErased": [],
+    "journalExists": false,
+    "profiles": [
+      {
+        "id": "project-f64551fcd6f07823cb87971c",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p1"
+        },
+        "source": null
+      },
+      {
+        "id": "project-3946ca64ff78d93ca61090a4",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p2"
+        },
+        "source": null
+      },
+      {
+        "id": "8e082706-1276-4659-9c0b-2732c0f6f410",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-8e082706-1276-4659-9c0b-2732c0f6f410",
+        "label": "P045 hidden T2",
+        "owner": {
+          "kind": "task",
+          "id": "298f49f6-4ab3-4171-a841-38845a85f70f"
+        },
+        "source": null
+      }
+    ]
+  },
+  "runRootPid": 17236,
+  "run": {
+    "runId": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+    "taskId": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+    "rootPid": 17236,
+    "snapshotHash": "7704cf86c8e105b1d83af752241644b7efc773029b2561fe852b1f6c3b10fc4a",
+    "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+    "adapterHash": "8145898dc3ba2b292694ca999cae39911954ef256617ed5bb9df119050c9ec5d",
+    "environmentKeys": [
+      "WILLYOU_RUN_TOKEN",
+      "WILLYOU_ENDPOINT"
+    ]
+  },
+  "fixtureNetwork": {
+    "profileId": "project-f64551fcd6f07823cb87971c",
+    "before": "PROXY 127.0.0.1:7897",
+    "after": "DIRECT",
+    "hostRule": "MAP p053-cert.invalid 127.0.0.1",
+    "scope": "Private synthetic F-TLS session only, transport fixture; certificate handlers/trust unchanged"
+  },
+  "hooksRestored": true,
+  "cleanupBefore": {
+    "metrics": [
+      {
+        "pid": 17195,
+        "type": "Browser"
+      },
+      {
+        "pid": 17197,
+        "type": "GPU"
+      },
+      {
+        "pid": 17198,
+        "type": "Utility"
+      },
+      {
+        "pid": 17292,
+        "type": "Tab"
+      }
+    ],
+    "state": {
+      "profiles": [
+        {
+          "id": "project-f64551fcd6f07823cb87971c",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p1"
+          },
+          "source": null
+        },
+        {
+          "id": "project-3946ca64ff78d93ca61090a4",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p2"
+          },
+          "source": null
+        },
+        {
+          "id": "8e082706-1276-4659-9c0b-2732c0f6f410",
+          "scope": "isolated",
+          "partition": "persist:wy-browser-8e082706-1276-4659-9c0b-2732c0f6f410",
+          "label": "P045 hidden T2",
+          "owner": {
+            "kind": "task",
+            "id": "298f49f6-4ab3-4171-a841-38845a85f70f"
+          },
+          "source": null
+        }
+      ],
+      "workspace": [],
+      "pages": [],
+      "windows": [
+        {
+          "id": 1,
+          "title": "WillYou browser background",
+          "visible": true,
+          "focused": false,
+          "focusable": false,
+          "opacity": 0
+        }
+      ],
+      "browserOperations": [
+        {
+          "run_id": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+          "request_id": "audit:50f068c8-acd9-4cbd-a668-823996008bc6",
+          "task_id": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+          "page_id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+          "command": "tab create",
+          "state": "succeeded",
+          "effect_state": "completed",
+          "progress": null,
+          "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"9647ab0a-4525-49b0-b2a5-59904c9b7522\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:61450/blank?certificate\"},\"result\":{\"pageId\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\",\"url\":\"http://127.0.0.1:61450/blank?certificate\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+          "error_code": null,
+          "created_at": 1793791560856,
+          "updated_at": 1793791561091
+        },
+        {
+          "run_id": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+          "request_id": "50f068c8-acd9-4cbd-a668-823996008bc6",
+          "task_id": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+          "page_id": null,
+          "command": "tab create",
+          "state": "succeeded",
+          "effect_state": "completed",
+          "progress": null,
+          "summary": "{\"pageId\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\",\"url\":\"http://127.0.0.1:61450/blank?certificate\"}",
+          "error_code": null,
+          "created_at": 1793791560859,
+          "updated_at": 1793791561091
+        },
+        {
+          "run_id": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+          "request_id": "audit:94b7b93d-4e2f-4c07-8edd-e3972843962e",
+          "task_id": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+          "page_id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+          "command": "goto",
+          "state": "unknown",
+          "effect_state": "unknown",
+          "progress": null,
+          "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"9647ab0a-4525-49b0-b2a5-59904c9b7522\",\"semantics\":\"write\",\"arguments\":{\"url\":\"https://p053-cert.invalid:61453/certificate\",\"page\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+          "error_code": "BROWSER_ERROR",
+          "created_at": 1793791562026,
+          "updated_at": 1793791562669
+        },
+        {
+          "run_id": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+          "request_id": "94b7b93d-4e2f-4c07-8edd-e3972843962e",
+          "task_id": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+          "page_id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+          "command": "goto",
+          "state": "unknown",
+          "effect_state": "unknown",
+          "progress": null,
+          "summary": null,
+          "error_code": "BROWSER_ERROR",
+          "created_at": 1793791562029,
+          "updated_at": 1793791562669
+        },
+        {
+          "run_id": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+          "request_id": "audit:d9a19514-1a92-44c9-9833-55b8218ca3ca",
+          "task_id": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+          "page_id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+          "command": "wait",
+          "state": "failed",
+          "effect_state": "read-only",
+          "progress": null,
+          "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"9647ab0a-4525-49b0-b2a5-59904c9b7522\",\"semantics\":\"read\",\"arguments\":{\"timeout\":500,\"text\":\"成功\",\"page\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+          "error_code": "BROWSER_TIMEOUT",
+          "created_at": 1793791562963,
+          "updated_at": 1793791563603
+        },
+        {
+          "run_id": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+          "request_id": "audit:398e87af-f6ad-44bb-a3eb-c8ebef4b5a53",
+          "task_id": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+          "page_id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+          "command": "tab close",
+          "state": "succeeded",
+          "effect_state": "completed",
+          "progress": null,
+          "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"9647ab0a-4525-49b0-b2a5-59904c9b7522\",\"semantics\":\"write\",\"arguments\":{\"page\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\"},\"result\":{\"result\":{\"closed\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\"}},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+          "error_code": null,
+          "created_at": 1793791564511,
+          "updated_at": 1793791564531
+        },
+        {
+          "run_id": "943cd8a3-bf42-4d9b-bc8b-9b5306eb85c9",
+          "request_id": "398e87af-f6ad-44bb-a3eb-c8ebef4b5a53",
+          "task_id": "9647ab0a-4525-49b0-b2a5-59904c9b7522",
+          "page_id": "b3a7b887-a97c-4c31-a067-d2eca0c75088",
+          "command": "tab close",
+          "state": "succeeded",
+          "effect_state": "completed",
+          "progress": null,
+          "summary": "{\"result\":{\"closed\":\"b3a7b887-a97c-4c31-a067-d2eca0c75088\"}}",
+          "error_code": null,
+          "created_at": 1793791564513,
+          "updated_at": 1793791564531
+        }
+      ],
+      "cloneIntents": []
+    }
+  },
+  "rootExit": {
+    "code": 0,
+    "signal": null
+  },
+  "cleanupAfter": {
+    "windows": [],
+    "contents": [
+      {
+        "id": 1,
+        "destroyed": true,
+        "debuggerAttached": false
+      },
+      {
+        "id": 2,
+        "destroyed": true,
+        "debuggerAttached": false
+      }
+    ],
+    "allRemaining": []
+  },
+  "finishedAt": "2026-11-04T11:26:04.729Z"
+}

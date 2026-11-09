@@ -1,0 +1,161 @@
+{
+  "schema": "m12-t092-safe-delivery-v1",
+  "at": "2026-11-06T02:58:53Z",
+  "caseId": "M12-T092",
+  "layers": [
+    "A"
+  ],
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "requirements": "R1.5 / technicalV1.4 / testV1.3 originalT092 O13",
+  "original": {
+    "id": "M12-T092",
+    "association": "O13 / R06.1",
+    "layers": [
+      "A"
+    ],
+    "preconditions": "用不含浏览器应用的旧版本数据目录升级",
+    "steps": "启动新版本，查看已有项目的选用状态",
+    "expected": "已有项目不自动开启浏览器，界面提示用户可自行开启"
+  },
+  "status": "originalA-complete-observed-await-Root-accounting",
+  "authority": "No public result account modified. Root reviews/archives and credits originalT092 once only.",
+  "criterionResults": [
+    {
+      "criterion": "Real pre-browser oldApp creates this run private existing-project data",
+      "actual": "Old copied App actual catalog contains no browser; two original projects created as allowed prerequisite RPC, 0tasks. OldApp normal0/null, no daily data.",
+      "evidence": [
+        "attempt-001/result.json",
+        "old-db-checkpoint-diagnosis.json",
+        "preparation.json"
+      ]
+    },
+    {
+      "criterion": "Start current version on the same old directory, preserve original projects",
+      "actual": "App022 actual first start in002 against original same userdata; exact two project identities preserved, current catalog browser present. Initial upgrade evidence reused. Later003/004 only resume viewing, no migration or oldApp repeat.",
+      "evidence": [
+        "attempt-002/result.json",
+        "upgraded-db-checkpoint-002.json",
+        "attempt-003/result.json"
+      ]
+    },
+    {
+      "criterion": "Existing projects do not automatically enable browser",
+      "actual": "Both UI switches aria-checked=false; each actual trusted readonly projectSettings enabledfalse/revision0; final privateSQLite has no browser selection rows.",
+      "evidence": [
+        "attempt-003/result.json",
+        "attempt-004/result.json"
+      ]
+    },
+    {
+      "criterion": "Visible UI tells user how to self-enable",
+      "actual": "004 real wheel makes whole browser card/status/unselected switch/enabled 先添加浏览器应用 button visible and hit-tested in viewport for each original project. Original003/004 intro screenshot visibly says 启用应用后，配套Skill与工具一起提供给本项目的新会话。 No invented special old-project wording requirement. Did not change selections or test add/enable behavior.",
+      "evidence": [
+        "attempt-004/upgraded-fea77884-d07d-480d-a575-9d0fb716510b.png",
+        "attempt-004/upgraded-df51c8a0-89b4-463a-893e-5dbbde1a0897.png",
+        "attempt-004/intro-fea77884-d07d-480d-a575-9d0fb716510b.png",
+        "attempt-004/intro-df51c8a0-89b4-463a-893e-5dbbde1a0897.png",
+        "attempt-004/result.json"
+      ]
+    },
+    {
+      "criterion": "Normal quit and exact own cleanup",
+      "actual": "OldApp96406 and newApp97678/99811/2394 all0/null; 16exactbirthPIDs gone,3known drivers gone,8ports no listeners,private socket/openUnix0. No kill needed; resourcesreleased.",
+      "evidence": [
+        "independent-cleanup-final.json"
+      ]
+    }
+  ],
+  "preservedFailures": [
+    {
+      "attempt": "environment-before-app-001",
+      "classification": "Sandbox rejected local CDP reservation listen127.0.0.1 EPERM before anyApp spawn. System executor proceeded under actual authorization; original dirs/log retained."
+    },
+    {
+      "attempt": "attempt-001",
+      "classification": "Driver readonly PythonSQLite observation could not open existing DB immediately after oldApp normalexit. Same exact Node→Python/path/mode=ro later succeeded, dbSHA unchanged; rootcause unproven. Originalred retained, original oldApp/project precondition reused, never rerun."
+    },
+    {
+      "attempt": "attempt-002",
+      "classification": "Driver stopped before secondclick because popover entering animation changed geometry; firstsidebar-more click delivered. Actual firstupgrade and normalquit retained. Fixed boundedunique-visible-interactable-uncovered/3geometry samples; no forcedclick."
+    },
+    {
+      "attempt": "attempt-003",
+      "classification": "UI/IPC/layout/disk greens valid; screenshot viewport showed only topcards. OriginalsectionVisible width/height check proved layout only; cannot prove browserhint visible. 004 only realwheel/view screenshots close that gap; original003 unchanged."
+    }
+  ],
+  "packageBoundary": {
+    "old": {
+      "app": "/private/tmp/willyou-m12-t092-upgrade-001/old-app/WillYou.app",
+      "version": "0.1.1",
+      "asarSha256": "f1b2c0ec1bc65a37c44c6ae51f70d33503321c78b7cd1d123f0fdb17d53b80cc"
+    },
+    "current": {
+      "app": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app",
+      "version": "0.1.1",
+      "asarSha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f"
+    },
+    "oldResourceBuild": {
+      "appVersion": "0.1.1",
+      "commit": "a64e751d1eff6a4dedfa571fae2e90369415c752",
+      "dirty": true,
+      "resourceSetHash": "408fbe36456ddb988ff67aa141720a3cf5592b8184cfaac7e44b75832789ea32"
+    },
+    "oldResourceApps": [
+      "zentao",
+      "mail",
+      "sample-kv"
+    ],
+    "oldCopyExactPayloadEntries": 20060,
+    "oldPackageNotClaimed": "Installed source is dirty a64e751 0.1.1, not public44b M11 release. Actual browser absence verified. No whole typecheck or unrelated testgreen claim.",
+    "newBuild": "No production/native/old package input changes or new build. App022/source026 reused."
+  },
+  "safety": {
+    "appOrDataIncluded": false,
+    "dailyUserDataOrAuthRead": false,
+    "clipboardUsed": false,
+    "tasksCLIModelPTYUsed": false,
+    "sqlWrites": false,
+    "selectionChanged": false,
+    "focus": "New current instance only: health/prerequisites→one setupreload→exactnative titlelabel→stable passiveNative+DOM→oneguard. No activation/rearm/CUA.003guard18inputs/004guard26inputs,no yield.",
+    "included": "Safe JSON/rawlogs/ownUI screenshots/driver sources/resource file inventories only. No App payload, userData or privateSQLite included."
+  },
+  "efficiency": {
+    "newWholeUniqueCaseCandidate": 1,
+    "newBuilds": 0,
+    "oldAppStarts": 1,
+    "currentAppStarts": 3,
+    "copiedOldPayloadSeconds": 8.663,
+    "actualAttempts": [
+      {
+        "attempt": "attempt-001",
+        "start": "2026-11-06T02:47:46.022Z",
+        "finish": "2026-11-06T02:47:50.370Z",
+        "status": "failed"
+      },
+      {
+        "attempt": "attempt-002",
+        "start": "2026-11-06T02:50:42.897Z",
+        "finish": "2026-11-06T02:50:48.002Z",
+        "status": "failed"
+      },
+      {
+        "attempt": "attempt-003",
+        "start": "2026-11-06T02:52:54.726Z",
+        "finish": "2026-11-06T02:52:59.900Z",
+        "status": "original-a-observed-await-root-review"
+      },
+      {
+        "attempt": "attempt-004",
+        "start": "2026-11-06T02:56:50.156Z",
+        "finish": "2026-11-06T02:56:55.990Z",
+        "status": "original-a-observed-await-root-review"
+      }
+    ],
+    "rework": "One environment preflight, one readonlyobserver failure, one popover-driver failure, one viewport screenshot supplement; all original evidence retained, no oldApp or migration replay."
+  },
+  "publicAccountingChanged": false,
+  "resourcesReleased": true
+}

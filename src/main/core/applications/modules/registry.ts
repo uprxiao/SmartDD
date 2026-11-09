@@ -45,6 +45,7 @@ export interface TrustedApplicationProvider extends HostProvider<HostedConfigura
 }
 export interface TrustedApplicationModule {
   appId: string; contractMajors: readonly number[]; slots: readonly string[]; stopBeforeSwitch: boolean;
+  connectionless?: true;
   presentation: ApplicationPresentation;
   providers: readonly TrustedApplicationProvider[];
   legacyPolicy: LegacyCapabilityResolver;
@@ -68,8 +69,8 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
     const invalid = () => new ApplicationError('INVALID_INPUT', '受信应用模块定义无效或重复');
     if (!registered.length || registered.length > 128) throw invalid();
     for (const module of registered) {
-      if (!/^[a-z][a-z0-9-]{0,19}$/.test(module.appId) || this.modules.has(module.appId) || !module.contractMajors.length || new Set(module.contractMajors).size !== module.contractMajors.length || module.contractMajors.some(n => !Number.isSafeInteger(n) || n < 1) || typeof module.createData !== 'function' || typeof module.legacyPolicy !== 'function' || !module.providers.length || new Set(module.slots).size !== module.slots.length) throw invalid();
-      if (!module.slots.includes(module.presentation.defaultProvider)) throw invalid();
+      if (!/^[a-z][a-z0-9-]{0,19}$/.test(module.appId) || this.modules.has(module.appId) || !module.contractMajors.length || new Set(module.contractMajors).size !== module.contractMajors.length || module.contractMajors.some(n => !Number.isSafeInteger(n) || n < 1) || typeof module.createData !== 'function' || typeof module.legacyPolicy !== 'function' || (!module.connectionless && !module.providers.length) || module.connectionless !== undefined && module.connectionless !== true || new Set(module.slots).size !== module.slots.length) throw invalid();
+      if (module.connectionless ? module.providers.length !== 0 || module.slots.length !== 0 || module.presentation.defaultProvider !== '' : !module.slots.includes(module.presentation.defaultProvider)) throw invalid();
       this.modules.set(module.appId, module);
       for(const [id,capability] of Object.entries(module.capabilities)){
         if(id!==capability.id||!id.startsWith(module.appId+'.')||!capability.method.startsWith(module.appId+'.')||!capability.permission.startsWith(module.appId+'.')||!capability.contractMajors.length||capability.contractMajors.some(major=>!Number.isSafeInteger(major)||major<1)||capability.semantics!=='read'&&(!capability.protection||capability.retry!=='never')||capability.semantics==='external-write'&&!capability.approval)throw invalid();
@@ -82,7 +83,7 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
     }
     this.definitions = {
       api: 1,
-      applications: registered.map(m => ({ id: m.appId, slots: [...m.slots], stopBeforeSwitch: m.stopBeforeSwitch })),
+      applications: registered.map(m => ({ id: m.appId, slots: [...m.slots], stopBeforeSwitch: m.stopBeforeSwitch, ...(m.connectionless ? {connectionless:true as const} : {}) })),
       providers: registered.flatMap(m => m.providers.map(({ presentation: _presentation, verify: _verify, configViews: _configViews, ...definition }) => definition)),
     // Flattening a heterogeneous readonly tuple loses its correlated literals in
     // TypeScript. Every definition above still comes from that same compiled tuple.
@@ -106,6 +107,7 @@ export class ApplicationModuleRegistry<const T extends readonly TrustedApplicati
     return provider;
   }
   supportsModule(id: string, appId: string, major: number): boolean { return id === appId && !!this.modules.get(id)?.contractMajors.includes(major); }
+  isConnectionless(id:string):boolean { return this.modules.get(id)?.connectionless===true; }
   legacyCapabilities(manifest: ApplicationManifestV1) { return applicationCapabilityViews(manifest, this.module(manifest.appId).legacyPolicy); }
   capabilityViews(manifest:ApplicationPackageManifest){return applicationCapabilityViews(manifest,this.module(manifest.appId).legacyPolicy);}
   capability(appId:string,id:string,contractMajor:number):ApplicationModuleCapability{

@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-06T15:55:51.162185+00:00",
+  "codesignReusedFromActualAttempt001": {
+    "exitCode": 0,
+    "deepStrict": true,
+    "samePackage": true
+  },
+  "packagedCLI": [
+    {
+      "name": "inactive-browser",
+      "argv": [
+        "browser",
+        "tab",
+        "list"
+      ],
+      "inactive": true,
+      "exitCode": 2,
+      "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"ENTRY_NOT_ACTIVE\",\"layer\":\"auth\",\"message\":\"本次运行未选用CLI应用\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+      "stderr": "willyou-app: ENTRY_NOT_ACTIVE\n",
+      "passed": true
+    },
+    {
+      "name": "public-help",
+      "argv": [
+        "--help"
+      ],
+      "inactive": true,
+      "exitCode": 0,
+      "stdout": "{\"command\":\"willyou-app\",\"resultContractMajor\":2,\"scope\":\"当前WillYou终端已启用的应用能力\",\"usage\":[\"willyou-app --list\",\"willyou-app <app> <command> [--field value]\",\"willyou-app <app> <command> --json '<JSON object>'\",\"printf '%s' \\\"$TEXT\\\" | willyou-app <app> <command> [--field value] --stdin <field>\"]}\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "name": "missing-auth",
+      "argv": [
+        "browser",
+        "tab",
+        "list"
+      ],
+      "inactive": false,
+      "exitCode": 3,
+      "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"AUTH_REQUIRED\",\"layer\":\"auth\",\"message\":\"请在WillYou受管终端中使用应用能力\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+      "stderr": "willyou-app: AUTH_REQUIRED\n",
+      "passed": true
+    }
+  ],
+  "boundary": "Packaged signedCLI local integration only; no App/GUI/model/Host token; not original T091 A/R",
+  "exactBuildProcesses": {
+    "pids": [
+      22122,
+      22124
+    ],
+    "psExit": 1,
+    "stdout": "",
+    "absent": true
+  },
+  "status": "passed"
+}

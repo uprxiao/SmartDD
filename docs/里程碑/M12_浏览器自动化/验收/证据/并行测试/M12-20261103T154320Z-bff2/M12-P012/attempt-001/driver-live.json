@@ -1,0 +1,488 @@
+{
+  "group": "M12-P012",
+  "root": "/private/tmp/willyou-m12-p012-executor-001",
+  "driverPid": 23609,
+  "startedAt": "2026-11-04T01:57:14.913Z",
+  "mode": "Technical API probe only; no product/App UI approval or T012 A claim",
+  "stages": [
+    {
+      "at": "2026-11-04T01:57:15.185Z",
+      "ready": true,
+      "pid": 23611,
+      "port": 57025,
+      "ports": {
+        "https": 57025,
+        "http": 57026
+      },
+      "versions": {
+        "node": "24.19.0",
+        "acorn": "8.17.0",
+        "ada": "3.4.4",
+        "amaro": "1.1.10",
+        "ares": "1.34.6",
+        "brotli": "1.2.0",
+        "cldr": "48.0",
+        "icu": "78.2",
+        "llhttp": "9.4.3",
+        "merve": "1.2.2",
+        "modules": "146",
+        "napi": "10",
+        "nbytes": "0.1.4",
+        "ncrypto": "0.0.1",
+        "nghttp2": "1.69.0",
+        "nghttp3": "",
+        "ngtcp2": "",
+        "openssl": "0.0.0",
+        "simdjson": "4.6.4",
+        "simdutf": "7.7.0",
+        "sqlite": "3.53.3",
+        "tz": "2025c",
+        "undici": "7.29.0",
+        "unicode": "17.0",
+        "uv": "1.52.1",
+        "uvwasi": "0.0.23",
+        "v8": "14.8.178.38-electron.0",
+        "zlib": "1.3.2.1-motley",
+        "zstd": "1.6.0",
+        "electron": "42.11.14",
+        "chrome": "148.0.7778.280"
+      },
+      "dns": {
+        "host": "m12-cert.test",
+        "rule": "MAP m12-cert.test 127.0.0.1",
+        "switch": "MAP m12-cert.test 127.0.0.1"
+      }
+    },
+    {
+      "at": "2026-11-04T01:57:15.413Z",
+      "stage": "navigation",
+      "step": "default-denied",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.493Z",
+      "stage": "navigation",
+      "step": "allowed-seed",
+      "outcome": "loaded"
+    },
+    {
+      "at": "2026-11-04T01:57:15.573Z",
+      "stage": "navigation",
+      "step": "allowed-state-view",
+      "outcome": "loaded"
+    },
+    {
+      "at": "2026-11-04T01:57:15.573Z",
+      "stage": "navigation",
+      "step": "isolated-B-while-A-trusted",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.655Z",
+      "stage": "navigation",
+      "step": "revoked-warm",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.655Z",
+      "stage": "navigation",
+      "step": "revoked-fresh",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.655Z",
+      "stage": "navigation",
+      "step": "nested-two-https",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.655Z",
+      "stage": "navigation",
+      "step": "nested-two-http",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.655Z",
+      "stage": "navigation",
+      "step": "nested-one-https",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.735Z",
+      "stage": "navigation",
+      "step": "nested-one-http",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.735Z",
+      "stage": "navigation",
+      "step": "all-released-http",
+      "outcome": "loaded"
+    },
+    {
+      "at": "2026-11-04T01:57:15.735Z",
+      "stage": "navigation",
+      "step": "all-released-still-revoked",
+      "outcome": "blocked-or-failed"
+    },
+    {
+      "at": "2026-11-04T01:57:15.817Z",
+      "stage": "navigation",
+      "step": "retrusted",
+      "outcome": "loaded"
+    },
+    {
+      "at": "2026-11-04T01:57:15.817Z",
+      "complete": true,
+      "status": "executed"
+    }
+  ],
+  "openssl": {
+    "args": [
+      "req",
+      "-x509",
+      "-newkey",
+      "rsa:2048",
+      "-nodes",
+      "-sha256",
+      "-days",
+      "1",
+      "-config",
+      "/private/tmp/willyou-m12-p012-executor-001/openssl.cnf",
+      "-keyout",
+      "/private/tmp/willyou-m12-p012-executor-001/runtime-001/tls/key.pem",
+      "-out",
+      "/private/tmp/willyou-m12-p012-executor-001/runtime-001/tls/cert.pem"
+    ],
+    "stdout": "",
+    "stderr": "Generating a 2048 bit RSA private key\n.....................................................................................................................+++++\n............+++++\nwriting new private key to '/private/tmp/willyou-m12-p012-executor-001/runtime-001/tls/key.pem'\n-----\n",
+    "code": 0,
+    "privateKeyMode": 384
+  },
+  "hostPid": 23611,
+  "ready": {
+    "ready": true,
+    "pid": 23611,
+    "port": 57025,
+    "ports": {
+      "https": 57025,
+      "http": 57026
+    },
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    },
+    "dns": {
+      "host": "m12-cert.test",
+      "rule": "MAP m12-cert.test 127.0.0.1",
+      "switch": "MAP m12-cert.test 127.0.0.1"
+    }
+  },
+  "resourceSnapshots": [
+    {
+      "at": "2026-11-04T01:57:15.265Z",
+      "processes": [
+        {
+          "pid": 23611,
+          "ppid": 23609,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 23612,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23613,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        }
+      ],
+      "listeners": [
+        "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+        "Electron 23611 liubu   31u  IPv4 0xeb48d48f320a9e8a      0t0  TCP 127.0.0.1:57025 (LISTEN)",
+        "Electron 23611 liubu   32u  IPv4 0x97d274ff0bc91c23      0t0  TCP 127.0.0.1:57026 (LISTEN)"
+      ]
+    },
+    {
+      "at": "2026-11-04T01:57:15.493Z",
+      "processes": [
+        {
+          "pid": 23611,
+          "ppid": 23609,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 23612,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23613,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23618,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23620,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": [
+        "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+        "Electron 23611 liubu   31u  IPv4 0xeb48d48f320a9e8a      0t0  TCP 127.0.0.1:57025 (LISTEN)",
+        "Electron 23611 liubu   32u  IPv4 0x97d274ff0bc91c23      0t0  TCP 127.0.0.1:57026 (LISTEN)"
+      ]
+    },
+    {
+      "at": "2026-11-04T01:57:15.573Z",
+      "processes": [
+        {
+          "pid": 23611,
+          "ppid": 23609,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 23612,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23613,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23620,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23622,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": [
+        "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+        "Electron 23611 liubu   31u  IPv4 0xeb48d48f320a9e8a      0t0  TCP 127.0.0.1:57025 (LISTEN)",
+        "Electron 23611 liubu   32u  IPv4 0x97d274ff0bc91c23      0t0  TCP 127.0.0.1:57026 (LISTEN)"
+      ]
+    },
+    {
+      "at": "2026-11-04T01:57:15.654Z",
+      "processes": [
+        {
+          "pid": 23611,
+          "ppid": 23609,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 23612,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23613,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23620,
+          "ppid": 23611,
+          "comm": "(Electron Helper )"
+        },
+        {
+          "pid": 23622,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23626,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23629,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": [
+        "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+        "Electron 23611 liubu   31u  IPv4 0xeb48d48f320a9e8a      0t0  TCP 127.0.0.1:57025 (LISTEN)",
+        "Electron 23611 liubu   32u  IPv4 0x97d274ff0bc91c23      0t0  TCP 127.0.0.1:57026 (LISTEN)"
+      ]
+    },
+    {
+      "at": "2026-11-04T01:57:15.735Z",
+      "processes": [
+        {
+          "pid": 23611,
+          "ppid": 23609,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 23612,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23613,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23622,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23626,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23629,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23636,
+          "ppid": 23611,
+          "comm": "(Electron Helper )"
+        },
+        {
+          "pid": 23640,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": [
+        "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+        "Electron 23611 liubu   31u  IPv4 0xeb48d48f320a9e8a      0t0  TCP 127.0.0.1:57025 (LISTEN)",
+        "Electron 23611 liubu   32u  IPv4 0x97d274ff0bc91c23      0t0  TCP 127.0.0.1:57026 (LISTEN)"
+      ]
+    },
+    {
+      "at": "2026-11-04T01:57:15.816Z",
+      "processes": [
+        {
+          "pid": 23611,
+          "ppid": 23609,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 23612,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23613,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 23622,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23626,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23629,
+          "ppid": 23611,
+          "comm": "(Electron Helper )"
+        },
+        {
+          "pid": 23640,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 23650,
+          "ppid": 23611,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": []
+    },
+    {
+      "at": "2026-11-04T01:57:15.872Z",
+      "processes": [
+        {
+          "pid": 23611,
+          "ppid": 23609,
+          "comm": "(Electron)"
+        }
+      ],
+      "listeners": []
+    }
+  ],
+  "activeResources": {
+    "at": "2026-11-04T01:57:15.265Z",
+    "processes": [
+      {
+        "pid": 23611,
+        "ppid": 23609,
+        "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+      },
+      {
+        "pid": 23612,
+        "ppid": 23611,
+        "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+      },
+      {
+        "pid": 23613,
+        "ppid": 23611,
+        "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+      }
+    ],
+    "listeners": [
+      "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME",
+      "Electron 23611 liubu   31u  IPv4 0xeb48d48f320a9e8a      0t0  TCP 127.0.0.1:57025 (LISTEN)",
+      "Electron 23611 liubu   32u  IPv4 0x97d274ff0bc91c23      0t0  TCP 127.0.0.1:57026 (LISTEN)"
+    ]
+  },
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  }
+}

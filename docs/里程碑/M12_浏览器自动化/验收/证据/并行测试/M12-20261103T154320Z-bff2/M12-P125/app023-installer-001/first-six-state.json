@@ -1,0 +1,69 @@
+{
+  "scope": "Root actual existing P125 phases01-06 only; no source rebuild/publish/model; stop on first failure. Startup07 requires separate Root current-pin review.",
+  "driverPid": 62991,
+  "startedAt": "2026-11-06T03:58:26.649740+00:00",
+  "phases": [
+    {
+      "id": "P125-01-private-copy",
+      "command": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p125-app023-installer-001/cache WILLYOU_P111_PREPARED_SHA=ea587fab6229512fb1d8b1c308e33cf568cbf8905470baefdd6198e3aa9ee47b /usr/bin/python3 /private/tmp/willyou-m12-p125-app023-installer-001/prepare-native-input.py --execute",
+      "startedAt": "2026-11-06T03:58:26.650035+00:00",
+      "pid": 62993,
+      "exitCode": 0,
+      "finishedAt": "2026-11-06T03:58:36.430283+00:00",
+      "stdout": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-01-private-copy.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-01-private-copy.stderr.log"
+    },
+    {
+      "id": "P125-02-prepackaged-dmg",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p125-app023-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-p125-app023-installer-001/build-installer-002.py --execute",
+      "startedAt": "2026-11-06T03:58:36.430499+00:00",
+      "pid": 63055,
+      "exitCode": 0,
+      "finishedAt": "2026-11-06T03:59:17.069469+00:00",
+      "stdout": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-02-prepackaged-dmg.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-02-prepackaged-dmg.stderr.log"
+    },
+    {
+      "id": "P125-03-existing-gate-path-copy",
+      "command": "/bin/cp -p /private/tmp/willyou-m12-p125-app023-installer-001/evidence/attempt-002/candidate-installer.json /private/tmp/willyou-m12-p125-app023-installer-001/evidence/candidate-installer.json",
+      "startedAt": "2026-11-06T03:59:17.069780+00:00",
+      "pid": 63465,
+      "exitCode": 0,
+      "finishedAt": "2026-11-06T03:59:17.116318+00:00",
+      "stdout": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-03-existing-gate-path-copy.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-03-existing-gate-path-copy.stderr.log"
+    },
+    {
+      "id": "P125-04-install-payload-size",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p125-app023-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-p125-app023-installer-001/install-and-compare.py --execute",
+      "startedAt": "2026-11-06T03:59:17.116505+00:00",
+      "pid": 63467,
+      "exitCode": 0,
+      "finishedAt": "2026-11-06T03:59:52.546874+00:00",
+      "stdout": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-04-install-payload-size.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-04-install-payload-size.stderr.log"
+    },
+    {
+      "id": "P125-05-actual-installed-native",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p125-app023-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-p125-app023-installer-001/check-installed-native.py --execute",
+      "startedAt": "2026-11-06T03:59:52.547779+00:00",
+      "pid": 63810,
+      "exitCode": 0,
+      "finishedAt": "2026-11-06T03:59:56.778490+00:00",
+      "stdout": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-05-actual-installed-native.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-05-actual-installed-native.stderr.log"
+    },
+    {
+      "id": "P125-06-bind-current-startup-pins",
+      "command": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 /usr/bin/python3 /private/tmp/willyou-m12-p125-app023-installer-001/bind-installed-pins.py --execute",
+      "startedAt": "2026-11-06T03:59:56.778924+00:00",
+      "pid": 63863,
+      "exitCode": 0,
+      "finishedAt": "2026-11-06T03:59:57.332122+00:00",
+      "stdout": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-06-bind-current-startup-pins.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-p125-app023-installer-001/P125-06-bind-current-startup-pins.stderr.log"
+    }
+  ],
+  "status": "first-six-complete-pending-Root-startup-pin-review",
+  "finishedAt": "2026-11-06T03:59:57.334337+00:00"
+}

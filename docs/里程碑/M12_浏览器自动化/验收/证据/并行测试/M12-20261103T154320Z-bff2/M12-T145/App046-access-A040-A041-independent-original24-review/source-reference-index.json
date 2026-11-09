@@ -1,0 +1,122 @@
+[
+  {
+    "path": "/private/tmp/willyou-m12-download-visual-source-055/source/src/renderer/features/browser/access-dialog.tsx",
+    "sha256": "97ad350bb6ee363cc142c919bd1c4477174a9fc3717a76539a7d7b7981bde7dc",
+    "lines": [
+      {
+        "line": 27,
+        "text": "    <div className=\"bw-dialog-body\">{value.error&&<p role=\"alert\" className=\"bw-danger-text\">{value.error}</p>}{value.state.grants.length?<ul className=\"bw-list\">{value.state.grants.map(grant=><li key={grant.id}><span><strong>{grant.requesterTitle} → {grant.targetTitle}</strong><small>{grant.projectName} · {grant.mode==='control'?'可以操作':'仅观察'} · 仅本次运行</small></span><button className=\"bw-mini\" disabled={value.busy} onClick={()=>void store.revoke(grant.id)}>撤销</button></li>)}</ul>:<p className=\"bw-empty-note\">本次运行没有授予任何跨任务访问。</p>}</div><div className=\"bw-dialog-actions\"><button disabled={value.busy} onClick={store.closeGrants}>完成</button></div>"
+      },
+      {
+        "line": 33,
+        "text": "  const seconds=Math.max(0,Math.ceil((request.expiresAt-now)/1000)),decide=(allow:boolean)=>{if(!busy)void store.decide(request.id,allow,mode);};"
+      },
+      {
+        "line": 38,
+        "text": "      <p className=\"bw-hint\"><ShieldAlert size={13}/>授权只在本次运行内有效，运行结束、终端退出或你撤销后立即失效；跨项目请求一律拒绝。</p><p className=\"bw-hint\" role=\"status\">{seconds} 秒内未处理将自动拒绝。{remaining>0?`另有 ${remaining} 项请求等待处理。`:''}</p>"
+      },
+      {
+        "line": 39,
+        "text": "    </div><div className=\"bw-dialog-actions\"><button type=\"button\" disabled={busy} onClick={()=>decide(false)}>拒绝</button><button type=\"button\" disabled={busy||seconds===0} onClick={()=>decide(true)}>允许本次运行</button></div>"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-download-visual-source-055/source/src/renderer/features/browser/workspace.css",
+    "sha256": "e7984c074d29f07da6b1f85c278aa0b7eb2f0b6518ee734e601752871f248ffb",
+    "lines": [
+      {
+        "line": 42,
+        "text": ".bw-dialog p{color:var(--secondary);margin:12px 0 24px}"
+      },
+      {
+        "line": 44,
+        "text": ".bw-dialog-body{padding:6px 22px 14px;overflow:auto;display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--text)}.bw-dialog-actions{display:flex;justify-content:flex-end;gap:12px;padding:12px 18px 18px;border-top:1px solid var(--border);flex-wrap:wrap}.bw-dialog-actions button{font-size:12px;padding:8px 12px;border:1px solid var(--border);border-radius:8px}.bw-dialog-actions button:last-child{background:var(--primary);color:var(--on-primary)}"
+      },
+      {
+        "line": 45,
+        "text": ".bw-hint{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:18px;color:var(--secondary);margin:0}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/BrowserPanels.jsx",
+    "sha256": "8484cff43235988f51a694e0e965f854f4bebe7988816b855f27eec38ef8342e",
+    "lines": [
+      {
+        "line": 8,
+        "text": "export function PanelDialog({ title, subtitle, onClose, children, footer, wide, dismissOnBackdrop = true, closeDisabled = false }) {"
+      },
+      {
+        "line": 12,
+        "text": "    <div ref={ref} role=\"dialog\" aria-modal=\"true\" aria-label={title} className={'fw-dialog bw-dialog' + (wide ? ' bw-dialog-wide' : '')} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } }}>"
+      },
+      {
+        "line": 15,
+        "text": "      {footer && <div className=\"fw-dialog-actions bw-dialog-actions\">{footer}</div>}"
+      },
+      {
+        "line": 105,
+        "text": "  return <PanelDialog title=\"Agent 请求访问其他任务的网页\" subtitle={`当前运行：${request.fromTitle}`} onClose={() => onDecide(null)}"
+      },
+      {
+        "line": 107,
+        "text": "    <div className=\"bw-kv\"><span>目标任务</span><strong>{request.targetTitle}</strong><span>所属项目</span><strong>{request.projectName}（与当前任务相同）</strong></div>"
+      },
+      {
+        "line": 112,
+        "text": "    <p className=\"bw-hint\"><ShieldAlert size={13} />授权只在本次运行内有效，运行结束、终端退出或你撤销后立即失效；跨项目请求一律拒绝。两个任务共用同一项目登录态。</p>"
+      },
+      {
+        "line": 117,
+        "text": "  return <PanelDialog title=\"跨任务授权\" subtitle=\"本次运行中你已允许的访问\" onClose={onClose} footer={<button type=\"button\" onClick={onClose}>完成</button>}>"
+      },
+      {
+        "line": 118,
+        "text": "    {grants.length ? <ul className=\"bw-list\">{grants.map(item => <li key={item.taskId}><span><strong>{item.title}</strong><small>{item.mode === 'control' ? '可以操作' : '仅观察'} · 仅本次运行</small></span><button type=\"button\" className=\"bw-mini\" onClick={() => onRevoke(item.taskId)}>撤销</button></li>)}</ul> : <p className=\"bw-empty-note\">本次运行没有授予任何跨任务访问。</p>}"
+      }
+    ]
+  },
+  {
+    "path": "/private/tmp/willyou-m12-download-visual-source-055/source/prototypes/m6-codex/src/browser.css",
+    "sha256": "b5cf2b6bed6b2aa0bd8ce79c745e723f43afbbf2c61476ec9db35e46ef0fe2cd",
+    "lines": [
+      {
+        "line": 113,
+        "text": ".bw-hint{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:18px;color:var(--secondary);margin:0}"
+      },
+      {
+        "line": 118,
+        "text": ".bw-scrim{position:absolute;inset:0;z-index:60;border-radius:inherit}"
+      },
+      {
+        "line": 119,
+        "text": ".bw-dialog{width:min(480px,calc(100% - 32px));padding:0;display:flex;flex-direction:column;max-height:calc(100% - 32px)}"
+      },
+      {
+        "line": 121,
+        "text": ".bw-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 8px 22px}"
+      },
+      {
+        "line": 122,
+        "text": ".bw-dialog-head h2{font-size:16px;line-height:22px;font-weight:600;margin:0;color:var(--text)}"
+      },
+      {
+        "line": 123,
+        "text": ".bw-dialog-head p{margin:4px 0 0;font-size:12px;line-height:18px;color:var(--secondary)}"
+      },
+      {
+        "line": 124,
+        "text": ".bw-dialog-body{padding:6px 22px 14px;overflow:auto;display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--text)}"
+      },
+      {
+        "line": 125,
+        "text": ".bw-dialog-actions{padding:12px 18px 18px;border-top:1px solid var(--border);flex-wrap:wrap}"
+      },
+      {
+        "line": 126,
+        "text": ".bw-dialog-actions button{font-size:12px}"
+      }
+    ]
+  }
+]

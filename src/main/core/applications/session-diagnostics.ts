@@ -60,10 +60,28 @@ const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_
  * from a tool call, and no current grants inferred from an older run. */
 export class ApplicationSessionDiagnostics {
  private readonly sessions:CapabilitySessionRegistry;private readonly packages:PackageRegistry;private inspector?:Inspector;
- constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;prepareStoppedSkillRead?:NativeUserMessages['prepareStoppedSkillRead'];skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillDiscoveries?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>}){
+ private readonly observationPolls=new Map<string,{taskId:string;snapshotHash:string;revision:string|null}>();
+ constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;prepareStoppedSkillRead?:NativeUserMessages['prepareStoppedSkillRead'];skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillDiscoveries?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillObservationRevision?:NativeUserMessages['skillObservationRevision']}){
   this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw new Error('read only');},verifyExtraResource:()=>{throw new Error('read only');}});this.packages=new PackageRegistry(store,'diagnostic-reader');
  }
  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}
+ /** Background polling writes nothing until native evidence can have changed.
+  * SQL/native hints only suppress redundant work; inspect() still independently
+  * checks current ownership, resources and evidence before and after native IO. */
+ async collectSkillObservations(taskId:string,runId:string):Promise<void>{
+  const hint=this.store.sqlite.prepare("SELECT r.snapshot_hash AS snapshotHash,i.session_id AS sessionId FROM capability_runs r JOIN capability_session_identities i ON i.task_id=r.task_id WHERE r.run_id=? AND r.task_id=? AND r.state='active' AND r.revocation_state='open'").get(runId,taskId) as {snapshotHash:string;sessionId:string|null}|undefined;
+  if(!hint?.sessionId){this.forgetSkillObservations(runId);return;}
+  let state=this.observationPolls.get(runId);
+  if(!state||state.taskId!==taskId||state.snapshotHash!==hint.snapshotHash){
+   if(this.observationPolls.size>=128)this.observationPolls.delete(this.observationPolls.keys().next().value!);
+   state={taskId,snapshotHash:hint.snapshotHash,revision:null};this.observationPolls.set(runId,state);
+  }
+  const revision=this.deps.skillObservationRevision?await this.deps.skillObservationRevision(runId,hint.snapshotHash):null;
+  if(this.deps.skillObservationRevision&&(!revision||revision===state.revision))return;
+  const value=await this.inspect(taskId,runId);
+  if(this.observationPolls.get(runId)===state&&value.snapshotHash===hint.snapshotHash&&value.currentRun?.id===runId&&value.currentRun.preparation?.state==='prepared'&&!value.currentRun.preparationIssue&&!value.currentRun.skillObservationIssue&&value.applications.every(app=>!app.packageHash||app.resourceState==='verified'))state.revision=revision;
+ }
+ forgetSkillObservations(runId:string):void{this.observationPolls.delete(runId);}
  async prepared(value:SessionPreparationEvidence):Promise<void>{
   const evidence=preparationSchema.parse(value),text=canonicalJson(evidence);
   await withResourceLock(this.store.root,()=>{const run=this.store.sqlite.prepare('SELECT task_id FROM capability_runs WHERE run_id=?').get(evidence.runId) as {task_id:string}|undefined;if(!run)throw new ApplicationError('NOT_FOUND','运行记录不存在');const session=this.sessions.inspectCoordinated(run.task_id);if(session.selectionHash!==evidence.selectionHash||session.snapshot.adapterBinding.hash!==evidence.adapterHash)throw new ApplicationError('SCOPE_DENIED','准备证据不属于固定会话');

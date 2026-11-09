@@ -1,0 +1,6 @@
+import assert from'node:assert/strict';import{resolve,relative}from'node:path';import{realpath,writeFile,mkdir,readFile,stat}from'node:fs/promises';import{createHash}from'node:crypto';
+export const ROOT='/private/tmp/willyou-m12-t083-real-keychain-prep-003';
+export const sha=b=>createHash('sha256').update(b).digest('hex');
+export async function privatePath(name){assert(typeof name==='string'&&!name.startsWith('/')&&!name.split('/').includes('..'));const p=resolve(ROOT,name);assert(relative(ROOT,p)&&!relative(ROOT,p).startsWith('..'));assert.equal(await realpath(ROOT),ROOT);return p;}
+export async function save(name,value,{exclusive=false}={}){const p=await privatePath(name);await writeFile(p,JSON.stringify(value,null,2)+'\n',{flag:exclusive?'wx':'w',mode:0o600});return p;}
+export async function verifyPin(pin){assert(pin.finalReady===true&&pin.role==='App038-packaged');assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(pin.sourceManifest)).files).length,3691);assert.equal(sha(await readFile(pin.buildResult)),pin.buildResultSha256);for(const f of pin.files){assert.equal(sha(await readFile(f.path)),f.sha256,f.path);assert.equal((await stat(f.path)).mode&511,f.mode,f.path)}return{verified:true,app:pin.app};}

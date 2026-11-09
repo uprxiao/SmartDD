@@ -1,0 +1,91 @@
+{
+  "source": "lib/electron-harness.mjs",
+  "predicate": "label === undefined || /^[a-z0-9-]{1,64}$/.test(label)",
+  "gateLine": 410,
+  "actualLabels": [
+    {
+      "file": "file-app-adapter.mjs",
+      "line": 19,
+      "label": "t130-exact-private-app-read"
+    },
+    {
+      "file": "lib/app-focus-guard.mjs",
+      "line": 11,
+      "label": "verify-own-initial-focus-wait"
+    },
+    {
+      "file": "lib/app-focus-guard.mjs",
+      "line": 30,
+      "label": null
+    }
+  ],
+  "controls": [
+    {
+      "name": "omitted",
+      "value": null,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "current-fixed",
+      "value": "t130-exact-private-app-read",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "max64",
+      "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "old-uppercase",
+      "value": "T130-exact-private-App-read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "empty",
+      "value": "",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "too-long",
+      "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "space",
+      "value": "private read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "slash",
+      "value": "private/read",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "newline",
+      "value": "private\nread",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "unicode",
+      "value": "private读取",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "non-string",
+      "value": {},
+      "expected": false,
+      "actual": false
+    }
+  ],
+  "executedNative": false
+}

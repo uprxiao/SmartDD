@@ -1,0 +1,101 @@
+{
+  "case": "M12-T145",
+  "source": "contract/测试用例.md",
+  "selectedStates": [
+    {
+      "id": "B11-access-observe",
+      "source": "B11/R01.12",
+      "title": "跨任务授权申请：observe",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟跨任务请求（同项目）"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用P010真实synthetic receiver+stockCLI access request，同项目第二任务，真实UI选择权限"
+      },
+      "mode": "observe"
+    },
+    {
+      "id": "B11-access-control",
+      "source": "B11/R01.12",
+      "title": "跨任务授权申请：control",
+      "required": true,
+      "P": {
+        "steps": [
+          {
+            "kind": "click",
+            "selector": ".bw-demo button",
+            "text": "模拟跨任务请求（同项目）"
+          },
+          {
+            "kind": "wait",
+            "selector": "[role=dialog]"
+          },
+          {
+            "kind": "click",
+            "selector": ".bw-dialog label",
+            "text": "可以操作",
+            "contains": true
+          }
+        ],
+        "expect": "[role=dialog]"
+      },
+      "A": {
+        "status": "UNBOUND_PENDING_APP026_DRIVER",
+        "trigger": "复用P010真实synthetic receiver+stockCLI access request，同项目第二任务，真实UI选择权限"
+      },
+      "mode": "control"
+    }
+  ],
+  "comparisonCriteria": [
+    "布局/尺寸/间距/对齐",
+    "图标形状/描边及状态",
+    "同语义文字/字体/字号/字重/行高",
+    "主题颜色/透明度/边框/圆角/阴影",
+    "长标题/地址/说明截断与滚动且不溢出",
+    "每个弹框/遮罩在浏览器区域内且左终端不遮挡",
+    "逐同名P/A原图对照，未审阅不判一致"
+  ],
+  "requiredKeys": [
+    "light-rw480-win1440x900|B11-access-observe",
+    "light-rw480-win1440x900|B11-access-control",
+    "light-rw900-win1440x900|B11-access-observe",
+    "light-rw900-win1440x900|B11-access-control",
+    "dark-rw480-win1440x900|B11-access-observe",
+    "dark-rw480-win1440x900|B11-access-control",
+    "dark-rw900-win1440x900|B11-access-observe",
+    "dark-rw900-win1440x900|B11-access-control",
+    "light-rw480-win1920x1080|B11-access-observe",
+    "light-rw480-win1920x1080|B11-access-control",
+    "light-rw900-win1920x1080|B11-access-observe",
+    "light-rw900-win1920x1080|B11-access-control",
+    "dark-rw480-win1920x1080|B11-access-observe",
+    "dark-rw480-win1920x1080|B11-access-control",
+    "dark-rw900-win1920x1080|B11-access-observe",
+    "dark-rw900-win1920x1080|B11-access-control"
+  ],
+  "behavior": [
+    "Managed stockCLI access request --task target --mode observe from caller real scoped run",
+    "Capture original observe radio; click real control radio then capture control",
+    "Real allow UI; exact same run/target single control grant; stockCLI exit0 true v2 source/current package",
+    "Real menu grants1; capture populated row, real revoke then close",
+    "Two same-project own tasks retain original caller run/PTY/PID; no model/OS permission/credentials",
+    "Original UI file pin uses click(selector,undefined,2); helper unchanged",
+    "Normal App quit then independent exactPID/TCP/Unix/helper verification"
+  ],
+  "nonTestedSetup": "Private projects/profiles/tasks/target page may use RPC before single setup reload; tested request only real managed CLI, decisions and grants menu/revoke only actual UI.",
+  "visualBoundary": "Original P preserved. Countdown, requester/title/project synthetic values and additional current hint are observed differences for Root review, not auto accepted. Renderer PNG omits Native page pixels; access overlay itself is real renderer UI.",
+  "unexecuted": true
+}

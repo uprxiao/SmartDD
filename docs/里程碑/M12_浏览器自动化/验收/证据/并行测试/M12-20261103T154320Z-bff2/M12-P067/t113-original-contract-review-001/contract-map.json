@@ -1,0 +1,113 @@
+{
+  "originalCaseLine": "docs/里程碑/M12_浏览器自动化/验收/测试用例.md:167",
+  "originalRequirementLines": "docs/里程碑/M12_浏览器自动化/需求.md:573-583",
+  "criteria": [
+    {
+      "id": "P01",
+      "originalCriterion": "T1两个标签/T2真实control授权、工具栏暂停/恢复入口",
+      "actualChecks": [
+        "I01",
+        "I02",
+        "A01",
+        "A02",
+        "A05",
+        "A09"
+      ],
+      "evidenceSummary": "两页/两run/真实CLI授权请求；App UI允许，按钮真实点击和暂停/恢复RPC来自mainFrame",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P02",
+      "originalCriterion": "第1条写命令完成、4条排队立即BROWSER_PAUSED、暂停后零额外点击",
+      "actualChecks": [
+        "I03",
+        "I04",
+        "I06",
+        "I07",
+        "A03",
+        "A04",
+        "A05",
+        "A06"
+      ],
+      "evidenceSummary": "原Helper真实点击已生效后只扣原callback；4条真实queue及wait先于原callback释放终结，原result原样释放",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P03",
+      "originalCriterion": "正在进行的只读wait立即BROWSER_PAUSED",
+      "actualChecks": [
+        "I05",
+        "I06",
+        "A04",
+        "A05"
+      ],
+      "evidenceSummary": "第二标签真实Helper/readWaits中wait；真实UI pause后结束且早于首条callback释放",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P04",
+      "originalCriterion": "新命令含T2跨任务均拒绝，两个标签均暂停",
+      "actualChecks": [
+        "I08",
+        "A07"
+      ],
+      "evidenceSummary": "自己/跨任务×两标签×读写共8条真实调用均BROWSER_PAUSED，原grant仍在",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P05",
+      "originalCriterion": "暂停期间用户能手动操作页面",
+      "actualChecks": [
+        "I09",
+        "A08"
+      ],
+      "evidenceSummary": "真实native Input/站点isTrusted事件及manual计数，原document/WC/未保存值保持",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P06",
+      "originalCriterion": "恢复后命令正常",
+      "actualChecks": [
+        "I10",
+        "A09"
+      ],
+      "evidenceSummary": "真实UI恢复＋新snapshot/CLI click，实际agent计数递增、同原页面",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P07",
+      "originalCriterion": "运行结束/终端退出清除pause与旧grant",
+      "actualChecks": [
+        "I11",
+        "A10"
+      ],
+      "evidenceSummary": "真实terminal END→receiver-exit→RunRegistry结束；pause/grant清空、页面保留",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P08",
+      "originalCriterion": "新运行不继承pause或旧授权",
+      "actualChecks": [
+        "I12",
+        "A11"
+      ],
+      "evidenceSummary": "App020真实UI新run，own真实CLI成功/cross旧grant拒绝；不混同M12其它令牌场景",
+      "allOriginalRequiredLayersPresent": true
+    },
+    {
+      "id": "P09",
+      "originalCriterion": "正常App重启清除暂停状态并恢复持久页面",
+      "actualChecks": [
+        "I13",
+        "I14",
+        "A12"
+      ],
+      "evidenceSummary": "App021同userData两个实例正常0/null/signals[]，页面ID/URL恢复；无pause/grant，新run own成功/cross拒绝；不称原nativeWC跨重启保留",
+      "allOriginalRequiredLayersPresent": true
+    }
+  ],
+  "originalCaseStepsPreserved": true,
+  "scope": "A+I only; accepted synthetic managed caller, not model R",
+  "restartBoundary": "Original accepted restart clarification preserved: new native objects allowed; persistent IDs/URLs verified, run-end/restart not isolated causes",
+  "formalCaseIncrement": 0
+}

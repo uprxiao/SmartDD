@@ -1,0 +1,180 @@
+--- 004-root-normalized/run.mjs
++++ 005/run.mjs
+@@ -6,7 +6,7 @@
+ const ROOT='/private/tmp/willyou-m12-t130-app022-tabs-005',sha=b=>createHash('sha256').update(b).digest('hex');
+ assert.deepEqual(process.argv.slice(2),['--execute']);assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');assert.equal(await realpath(ROOT),ROOT);
+ const ready=JSON.parse(await readFile(ROOT+'/execution-ready.json'));for(const f of ready.inputs)assert.equal(sha(await readFile(ROOT+'/'+f.path)),f.sha256,f.path);
+-const p=JSON.parse(await readFile(ROOT+'/pin.json'));assert.equal(p.role,'App021');assert.equal(p.sourceManifestSha256,'fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9');assert.equal(sha(await readFile(p.sourceManifest)),p.sourceManifestSha256);assert.equal(sha(await readFile(p.executable)),p.executableSha256);assert.equal((await stat(p.executable)).mode&511,0o755);
++const p=JSON.parse(await readFile(ROOT+'/pin.json'));assert.equal(p.role,'App022');assert.equal(p.sourceManifestSha256,'345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9');assert.equal(sha(await readFile(p.sourceManifest)),p.sourceManifestSha256);assert.equal(Object.keys(JSON.parse(await readFile(p.sourceManifest)).files).length,3684);assert.equal(sha(await readFile(p.executable)),p.executableSha256);assert.equal((await stat(p.executable)).mode&511,0o755);
+ for(const f of p.packageFiles){const path=p.app+'/Contents/Resources/'+f.path;assert.equal(sha(await readFile(path)),f.sha256,path);assert.equal((await stat(path)).mode&511,f.mode,path)}for(const f of p.runtimeCoreFiles){const path=p.app+'/'+f.path;assert.equal(sha(await readFile(path)),f.sha256,path);assert.equal((await stat(path)).mode&511,f.mode,path)}
+ await writeFile(ROOT+'/execution-started.json',JSON.stringify({startedAt:new Date().toISOString(),pid:process.pid})+'\n',{flag:'wx',mode:0o600});
+ await mkdir(ROOT+'/runtime-001',{mode:0o700});for(const name of['home','codex','tmp'])await mkdir(ROOT+'/runtime-001/'+name,{mode:0o700});process.env.WILLYOU_FILES_APP=p.executable;
+--- 004-root-normalized/scenario.mjs
++++ 005/scenario.mjs
+@@ -21,7 +21,7 @@
+ async function open(name,fixed=true){await field(name);const selector='.fw-name-results [role=option][title='+JSON.stringify(join(root,name))+']';await wait(s=>!!document.querySelector(s),selector);await app.click(selector);await wait(text=>document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()===text,source.get(join(root,name)));if(fixed)await pin()}
+ 
+ try{
+- app=await openFileAcceptanceApp({executable,projectPath:root,userData,name:'[A] T130 App021 D04-D06 004',record:r,prepare:async({app,project})=>{await app.invoke('projectDirs.update',project.dirs[0].id,{label:'Root A',path:root});await app.invoke('projectDirs.add',project.id,{label:'Root B',path:other})}});await wait(s=>!!document.querySelector(s),app.tree('a.txt'));
++ app=await openFileAcceptanceApp({executable,projectPath:root,userData,name:'[A] T130 App022 D04-D06 005',record:r,prepare:async({app,project})=>{await app.invoke('projectDirs.update',project.dirs[0].id,{label:'Root A',path:root});await app.invoke('projectDirs.add',project.id,{label:'Root B',path:other})}});await wait(s=>!!document.querySelector(s),app.tree('a.txt'));
+   stage='D04-roots';await open('same.txt');await app.click('[aria-label="文件目录来源"]');await app.click(`[role=menuitem][title=${JSON.stringify(other)}]`);await wait(path=>!!document.querySelector(`[role=treeitem][data-file-path=${JSON.stringify(path)}]`),join(other,'same.txt'));await app.click(`[role=treeitem][data-file-path=${JSON.stringify(join(other,'same.txt'))}]`);await wait(()=>document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()==='Root B same.txt\n');await pin();for(const p of[join(root,'same.txt'),join(other,'same.txt')]){await app.click(`.fw-tab [role=tab][title=${JSON.stringify(p)}]`);await wait(text=>document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()===text,source.get(p));assert.equal((await order()).filter(x=>x===p).length,1)}const drafts={};for(const [p,text]of [[join(root,'same.txt'),'Local A separate draft\n'],[join(other,'same.txt'),'Local B separate draft\n']]){await app.click(`.fw-tab [role=tab][title=${JSON.stringify(p)}]`);await replaceDoc(text);drafts[p]=text;}for(const[p,text]of Object.entries(drafts)){await app.click(`.fw-tab [role=tab][title=${JSON.stringify(p)}]`);assert.equal(await doc(),text)}r.checks.push({caseId:'M9-T-D04',routes:[join(root,'same.txt'),join(other,'same.txt')],contents:['Root A same.txt\n','Root B same.txt\n'],titlesDistinct:true,tabsActual:await ev(()=>[...document.querySelectorAll('.fw-tab [role=tab]')].map(e=>({title:e.title,text:e.textContent}))),drafts});
+   stage='D06-dirty-preview';await app.click('[aria-label="文件目录来源"]');await app.click(`[role=menuitem][title=${JSON.stringify(root)}]`);await open('dirty.txt',false);await app.click('.cm-content');await app.cdp('Input.dispatchKeyEvent',{type:'keyDown',key:'End',code:'End',modifiers:4,commands:['moveToEndOfDocument']});await app.cdp('Input.dispatchKeyEvent',{type:'keyUp',key:'End',code:'End',modifiers:4});await app.cdp('Input.insertText',{text:'Retained local edit'});const edited=await doc();assert(edited.includes('Retained local edit'));await wait(()=>!!document.querySelector('.fw-tab [aria-selected=true] .fw-dirty'));await field('next.txt');await wait(path=>!!document.querySelector('.fw-name-results [role=option][title="'+path+'"]'),join(root,'next.txt'));await app.click('.fw-name-results [role=option][title='+JSON.stringify(join(root,'next.txt'))+']');await wait(()=>document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString()==='Root A next.txt\n');assert((await order()).includes(join(root,'dirty.txt')));await app.click(`.fw-tab [role=tab][title=${JSON.stringify(join(root,'dirty.txt'))}]`);assert.equal(await doc(),edited);r.checks.push({caseId:'M9-T-D06',edited,retainedRoute:join(root,'dirty.txt'),nextRoute:join(root,'next.txt')});
+  assert.deepEqual(app.rendererErrors,[]);r.status='passed';
+--- 004-root-normalized/file-app-adapter.mjs
++++ 005/file-app-adapter.mjs
+@@ -1,4 +1,4 @@
+-// Private adaptation of the source025 M9 file-acceptance driver. No business RPC replaces accepted UI.
++// Private adaptation of the source026 M9 file-acceptance driver. No business RPC replaces accepted UI.
+ import assert from 'node:assert/strict';
+ import {readFile,writeFile,realpath} from 'node:fs/promises';
+ import {join} from 'node:path';
+@@ -46,11 +46,11 @@
+  try{
+   r.ownIdentity=await own('return{pid:process.pid,exe:process.execPath,userData:E.app.getPath("userData"),ready:E.app.isReady()}');assert(r.ownIdentity.ready);
+   await own(lifecycleCode(ROOT+'/lifecycle.jsonl'));
+-  const project=await app.invoke('projects.create',{name,aliases:[],description:'Isolated T130 source025 regression; synthetic files only',rulesPath:null},[{label:'Synthetic file tabs',path:projectPath}]);r.projectId=project.id;
++  const project=await app.invoke('projects.create',{name,aliases:[],description:'Isolated T130 source026 regression; synthetic files only',rulesPath:null},[{label:'Synthetic file tabs',path:projectPath}]);r.projectId=project.id;
+   if(prepare)await prepare({app,project});
+   const oldOrigin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor(`performance.timeOrigin!==${oldOrigin}&&document.readyState==='complete'&&!!document.querySelector(${JSON.stringify('[data-project-id="'+project.id+'"]')})`,20000,{navigation:true});r.setupReload={before:oldOrigin,after:await app.evaluate('performance.timeOrigin'),atMs:Date.now()};
+-  await own('const ws=E.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.webContents.getURL().startsWith("file:"));if(ws.length!==1)throw Error("Unique private file window required");ws[0].setTitle("[A] T130 App021 D04-D06 004");return true');
+-  r.initialFocus={status:'awaiting-native-dom-stable',appPid:app.processId,userData,executable,title:'[A] T130 App021 D04-D06 004'};
++  await own('const ws=E.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.webContents.getURL().startsWith("file:"));if(ws.length!==1)throw Error("Unique private file window required");ws[0].setTitle("[A] T130 App022 D04-D06 005");return true');
++  r.initialFocus={status:'awaiting-native-dom-stable',appPid:app.processId,userData,executable,title:'[A] T130 App022 D04-D06 005'};
+   console.log(JSON.stringify({stage:'awaiting-user-initial-focus',root:ROOT,appPid:app.processId,driverPid:process.pid,userData,title:r.initialFocus.title}));await collect('setup-before-focus');
+   await waitPassiveInitialFocus({record:r.initialFocus,read:async()=>{const dom=await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native=await own('const ws=E.BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.webContents.getURL().startsWith("file:"));return{native:ws.length===1&&ws[0].isFocused()&&ws[0].isVisible(),windowId:ws[0]?.id,pid:process.pid,userData:E.app.getPath("userData"),executable:process.execPath}');return{...dom,...native};}});
+   assert(!app.checkInputFocus);installAppFocusGuard(app,r,{allowOwnedViews:false});r.guardInstalledAtMs=Date.now();await persist();
+--- 004-root-normalized/preflight.mjs
++++ 005/preflight.mjs
+@@ -1,6 +1,6 @@
+ import assert from 'node:assert/strict';import {readFile,writeFile,readdir,stat,realpath}from'node:fs/promises';import{createHash}from'node:crypto';import{execFileSync}from'node:child_process';import{createRequire}from'node:module';import ts from'typescript';
+ const root='/private/tmp/willyou-m12-t130-app022-tabs-005',sha=b=>createHash('sha256').update(b).digest('hex'),require=createRequire(import.meta.url);assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,root+'/cache');assert.equal(process.env.NODE_COMPILE_CACHE,root+'/cache/node');assert.equal(await realpath(root),root);
+-const pin=JSON.parse(await readFile(root+'/pin.json')),source=JSON.parse(await readFile(root+'/source-evidence/source025-inputs.json'));assert.equal(sha(await readFile(root+'/source-evidence/source025-inputs.json')),pin.sourceManifestSha256);assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);
++const pin=JSON.parse(await readFile(root+'/pin.json')),source=JSON.parse(await readFile(root+'/source-evidence/source026-inputs.json'));assert.equal(sha(await readFile(root+'/source-evidence/source026-inputs.json')),pin.sourceManifestSha256);assert.equal(sha(await readFile(pin.sourceManifest)),pin.sourceManifestSha256);
+ assert.equal(sha(await readFile(pin.buildGate.path)),pin.buildGate.sha256);const build=JSON.parse(await readFile(pin.buildGate.path));assert.equal(build.status,'official-build-passed');assert.equal(build.exitCode,0);assert.equal(build.sourceManifestSha256,pin.sourceManifestSha256);assert(build.sourceShaModeBeforeAfterMatched);for(const k of['sqlite','pty','voiceBridge','fileBroker','officeRenderer','fileWatcher'])assert.equal(build.nativeSmoke[k],'passed');
+ const actualPackage=[];for(const f of[{path:'EXECUTABLE',sha256:pin.executableSha256,mode:0o755,actual:pin.executable},...pin.packageFiles.map(x=>({...x,actual:pin.app+'/Contents/Resources/'+x.path})),...pin.runtimeCoreFiles.map(x=>({...x,actual:pin.app+'/'+x.path}))]){assert.equal(sha(await readFile(f.actual)),f.sha256,f.actual);assert.equal((await stat(f.actual)).mode&511,f.mode,f.actual);actualPackage.push(f);}
+ const comparedSources=[];for(const name of['workspace-panel.tsx','workspace-store.ts','workspace-tree.tsx','workspace.css']){const rel='src/renderer/features/files/'+name,p=root+'/source-evidence/'+name;assert.equal(sha(await readFile(p)),source.files[rel],rel);comparedSources.push({relativePath:rel,sha256:source.files[rel]});}
+@@ -14,7 +14,7 @@
+ const scenario=await readFile(root+'/scenario.mjs','utf8'),adapter=await readFile(root+'/file-app-adapter.mjs','utf8');assert(!/Page\.bringToFront|\.focus\(\)|\.show\(\)|activateWithOptions/.test(scenario+adapter));assert(!/app\.invoke\(['"]files\./.test(scenario+adapter));assert(!scenario.includes('WILLYOU_TABS_ONLY_D12'));assert(adapter.indexOf("await app.cdp('Page.reload')")<adapter.indexOf('await waitPassiveInitialFocus'));assert(adapter.indexOf('await waitPassiveInitialFocus')<adapter.indexOf('installAppFocusGuard(app,r'));
+ const imports=[];for(const file of executableFiles.filter(x=>!['check-pure.mjs','preflight.mjs','lib/check-cdp-expressions.mjs'].includes(x))){const sf=ts.createSourceFile(file,await readFile(root+'/'+file,'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);for(const n of sf.statements)if(ts.isImportDeclaration(n)){const spec=n.moduleSpecifier.text;assert(spec.startsWith('node:')||spec.startsWith('.'),'Unexpected runtime external dependency:'+spec);imports.push({file,specifier:spec});}}
+ const privateDeps=JSON.parse(await readFile(root+'/private-dependencies.json'));assert((await stat(root+'/node_modules')).isDirectory());assert.equal(await realpath(root+'/node_modules'),root+'/node_modules');for(const f of privateDeps.links)assert.equal(await realpath(root+'/'+f.path),f.target);assert.equal(await realpath(root+'/cache'),root+'/cache');assert.equal(await realpath(root+'/cache/node'),root+'/cache/node');
+-const inputs=[];for(const name of[...executableFiles,'pin.json','contract.json','source-evidence/source025-inputs.json','source-evidence/package.json','source-evidence/pnpm-lock.yaml','source-evidence/workspace-panel.tsx','source-evidence/workspace-store.ts','source-evidence/workspace-tree.tsx','source-evidence/workspace.css','upstream/tab-lifecycle-ui.mjs','upstream/file-acceptance-ui.mjs','upstream/electron-harness.mjs','original-four-contracts.json','lineage.json','private-dependencies.json']){const path=root+'/'+name;inputs.push({path:name,sha256:sha(await readFile(path)),size:(await stat(path)).size,mode:(await stat(path)).mode&511});}
++const inputs=[];for(const name of[...executableFiles,'pin.json','contract.json','source-evidence/source026-inputs.json','source-evidence/package.json','source-evidence/pnpm-lock.yaml','source-evidence/workspace-panel.tsx','source-evidence/workspace-store.ts','source-evidence/workspace-tree.tsx','source-evidence/workspace.css','upstream/tab-lifecycle-ui.mjs','upstream/file-acceptance-ui.mjs','upstream/electron-harness.mjs','original-four-contracts.json','current-package-compatibility.json','lineage.json','private-dependencies.json']){const path=root+'/'+name;inputs.push({path:name,sha256:sha(await readFile(path)),size:(await stat(path)).size,mode:(await stat(path)).mode&511});}
+ const tsFiles=[require.resolve('typescript'),require.resolve('typescript/package.json')];const dependencies=[];for(const path of tsFiles)dependencies.push({path,sha256:sha(await readFile(path))});
+-const record={at:new Date().toISOString(),scope:'M12-T130 App021 A continuation only M9-T-D04/D06; D12/D13 valid prior green is not replayed',AppExecuted:false,formalCaseIncrement:0,resourcesHeld:[],sourceManifestSha256:pin.sourceManifestSha256,actualPackage,officialBuildGate:{path:pin.buildGate.path,sha256:sha(await readFile(pin.buildGate.path))},comparedSources,syntax,literalCdpExitCode:0,callbackExpressionCount:callbackCount,semanticUnbound:0,semanticOtherDiagnosticCount:diagnostics.length,controls:controls.checks.length,runtimeImports:imports,staticToolDependencies:dependencies,inputs,command:'WILLYOU_TEST_CACHE_DIR='+root+'/cache NODE_COMPILE_CACHE='+root+'/cache/node node '+root+'/run.mjs --execute',focusRequired:1,expectedActiveMinutes:'1–2 excluding passive first-focus wait≤300s and cleanup≤45s',remaining:'D12/D13 prior002 green is reused separately; all other original T130 mappings unchanged, no wholeT130/T145 pass'};
++const record={at:new Date().toISOString(),scope:'M12-T130 App022 A continuation only M9-T-D04/D06; D12/D13 valid prior green is not replayed',AppExecuted:false,formalCaseIncrement:0,resourcesHeld:[],sourceManifestSha256:pin.sourceManifestSha256,actualPackage,officialBuildGate:{path:pin.buildGate.path,sha256:sha(await readFile(pin.buildGate.path))},comparedSources,syntax,literalCdpExitCode:0,callbackExpressionCount:callbackCount,semanticUnbound:0,semanticOtherDiagnosticCount:diagnostics.length,controls:controls.checks.length,runtimeImports:imports,staticToolDependencies:dependencies,inputs,command:'WILLYOU_TEST_CACHE_DIR='+root+'/cache NODE_COMPILE_CACHE='+root+'/cache/node node '+root+'/run.mjs --execute',focusRequired:1,expectedActiveMinutes:'1–2 excluding passive first-focus wait≤300s and cleanup≤45s',remaining:'D12/D13 prior002 green is reused separately; all other original T130 mappings unchanged, no wholeT130/T145 pass'};
+ await writeFile(root+'/execution-ready.json',JSON.stringify(record,null,2)+'\n');console.log(JSON.stringify({ready:true,inputs:inputs.length,syntax:syntax.length,callbackExpressionCount:callbackCount,semanticUnbound:0,semanticOtherDiagnostics:diagnostics.length,controls:controls.checks.length,AppExecuted:false}));
+--- 004-root-normalized/check-pure.mjs
++++ 005/check-pure.mjs
+@@ -24,5 +24,5 @@
+ const actualLabels=[];for(const file of['file-app-adapter.mjs','scenario.mjs','lib/app-focus-guard.mjs']){const sf=ts.createSourceFile(file,await readFile(root+'/'+file,'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);function walk(node){if(ts.isCallExpression(node)&&ts.isPropertyAccessExpression(node.expression)&&node.expression.name.text==='mainEvaluate'){let label;const options=node.arguments[1];if(options){assert(ts.isObjectLiteralExpression(options),'Inspection options must be statically reviewable');const property=options.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(sf).replace(/^['"]|['"]$/g,'')==='label');if(property){assert(ts.isStringLiteral(property.initializer)||ts.isNoSubstitutionTemplateLiteral(property.initializer),'Inspection label must be a fixed literal');label=property.initializer.text;}}assert(labelAccepts(label),'Actual mainEvaluate label rejected:'+label);actualLabels.push({file,line:sf.getLineAndCharacterOfPosition(node.getStart(sf)).line+1,label:label??null});}ts.forEachChild(node,walk);}walk(sf);}check('all-main-inspection-labels-match-real-harness',()=>{assert(actualLabels.some(x=>x.label==='t130-exact-private-app-read'));assert(actualLabels.every(x=>labelAccepts(x.label===null?undefined:x.label)))});
+ await writeFile(root+'/inspection-label-controls.json',JSON.stringify({source:'lib/electron-harness.mjs',predicate:predicateText,gateLine:harnessAst.getLineAndCharacterOfPosition(gateNode.getStart(harnessAst)).line+1,actualLabels,controls:labelControls.map(([name,value,expected])=>({name,value:value??null,expected,actual:labelAccepts(value)})),executedNative:false},null,2)+'\n');
+ const scenario=await readFile(root+'/scenario.mjs','utf8'),upstream=await readFile(root+'/upstream/tab-lifecycle-ui.mjs','utf8');check('all-original-D04-D06-business-assertions-retained',()=>{const start=upstream.indexOf("stage='D04-roots';"),end=upstream.indexOf("\n }",start);assert(start>=0&&end>start);const source=ts.createSourceFile('upstream-scoped.mjs','async function scoped(){'+upstream.slice(start,end)+'}',ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);let count=0;function walk(node){if(ts.isCallExpression(node)&&(/^assert(?:\.[A-Za-z]+)?$/.test(node.expression.getText(source)))){count++;assert(scenario.includes(node.getText(source)),'Lost original D04/D06 assertion:'+node.getText(source));}ts.forEachChild(node,walk);}walk(source);assert(count>0);assertionCount=count;assert(!scenario.includes("stage='D12-")&&!scenario.includes("stage='D13-"));});
+-check('selector-matches-current-source025-contract',()=>{assert(scenario.includes('document.querySelector(`[role=treeitem][data-file-path=${JSON.stringify(path)}]`)'));assert(scenario.includes("`[role=treeitem][data-file-path=${JSON.stringify(join(other,'same.txt'))}]`"));});
++check('selector-matches-current-source026-contract',()=>{assert(scenario.includes('document.querySelector(`[role=treeitem][data-file-path=${JSON.stringify(path)}]`)'));assert(scenario.includes("`[role=treeitem][data-file-path=${JSON.stringify(join(other,'same.txt'))}]`"));});
+ await writeFile(root+'/dynamic-expressions.json',JSON.stringify({expressions,executedBrowserExpressions:false},null,2)+'\n');await writeFile(root+'/pure-controls.json',JSON.stringify({syntheticOnly:true,checks:results,NativeAppModelOsStarted:false},null,2)+'\n');console.log(JSON.stringify({checks:results.length,dynamicExpressions:expressions.length,retainedAssertions:assertionCount,Native:false}));
+--- 004-root-normalized/pin.json
++++ 005/pin.json
+@@ -1,26 +1,19 @@
+ {
+   "finalReady": true,
+-  "role": "App021",
+-  "app": "/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app",
+-  "executable": "/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+-  "sourceRoot": "/private/tmp/willyou-m12-p101-source-025/source",
+-  "sourceManifest": "/private/tmp/willyou-m12-p101-source-025/source-inputs.json",
+-  "sourceManifestSha256": "fc0804c493320514f4938d76755c6d0bdc9aa42adb41c30813ffedafaa74b6c9",
+-  "asarSha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
+-  "buildGate": {
+-    "path": "/private/tmp/willyou-m12-p102-app021-build-001/RESULT.json",
+-    "sha256": "e7d876ac69add043f9c58487a0e11958d7c5570d47d155eb96417dabbd1bb433",
+-    "scope": "OfficialApp02171s exit0/sixNativegreen/source025stable;162software/node0/web0 and packedmain only delta/strictadhocsignature verified"
+-  },
+-  "nativeGate": {
+-    "path": "/private/tmp/willyou-m12-p102-app021-build-001/RESULT.json",
+-    "sha256": "e7d876ac69add043f9c58487a0e11958d7c5570d47d155eb96417dabbd1bb433",
+-    "scope": "OfficialApp02171s exit0/sixNativegreen/source025stable;162software/node0/web0 and packedmain only delta/strictadhocsignature verified"
+-  },
++  "role": "App022",
++  "app": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app",
++  "executable": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
++  "sourceRoot": "/private/tmp/willyou-m12-p114-source-026/source",
++  "sourceManifest": "/private/tmp/willyou-m12-p114-source-026/source-inputs.json",
++  "sourceManifestSha256": "345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9",
++  "sourceFileCount": 3684,
++  "asarSha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
++  "executableSha256": "be34f89ccc89304acfd828fba9413eb43eda3d6d6ce82f5bff257d1c2abe894d",
++  "frameworkSha256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709",
+   "packageFiles": [
+     {
+       "path": "app.asar",
+-      "sha256": "7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6",
++      "sha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
+       "mode": 420
+     },
+     {
+@@ -44,8 +37,23 @@
+       "mode": 493
+     },
+     {
+-      "path": "capability-bundles/apps/browser/0.1.0/eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140/skills/browser/SKILL.md",
++      "path": "capability-bundles/index.json",
++      "sha256": "f5e8b628523efde90628a5a94f5c6c9a6bf71927141e77ec89954fc1cd4c2f5c",
++      "mode": 420
++    },
++    {
++      "path": "capability-bundles/apps/browser/0.1.1/d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6/manifest.json",
++      "sha256": "bbb594fc6e8defc850ab2f59ac9a1ce1867cd0341071712968542f91aad83df1",
++      "mode": 420
++    },
++    {
++      "path": "capability-bundles/apps/browser/0.1.1/d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6/skills/browser/SKILL.md",
+       "sha256": "933fb325f6a78633b1806365c6a71b2a281e3b78bda82eb978885befe1e203f7",
++      "mode": 420
++    },
++    {
++      "path": "capability-bundles/apps/browser/0.1.1/d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6/skills/reproduce-bug/SKILL.md",
++      "sha256": "26917bfc2bc4b1c9bed2e1799f288e6f5014c05281a34a6feaa10cdf66562dd3",
+       "mode": 420
+     },
+     {
+@@ -54,10 +62,6 @@
+       "mode": 493
+     }
+   ],
+-  "pending": [],
+-  "nativeTooltipStrategy": "deferred-no-extra-OS-tool",
+-  "executableSha256": "8c97f40438314d8aada634de9f52e6f11177bc97cbc4bf1b41a3f8d664efb7f7",
+-  "frameworkSha256": "e354ad8607445ebe1d9e603d9ab14b681c52990fdf4a17f76f8d69ea2ef2c709",
+   "runtimeCoreFiles": [
+     {
+       "path": "Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework",
+@@ -65,8 +69,25 @@
+       "mode": 493
+     }
+   ],
+-  "finalPinVerifiedAt": "2026-11-05T06:53:01.512795+00:00",
+-  "packageRole": "App021 real packaged A",
+-  "reusedPackagePinSource": "/private/tmp/willyou-m12-p067-pause-stop-app021-006/package-pin.json",
+-  "testRole": "M12-T130 first actual A batch only"
++  "buildGate": {
++    "path": "/private/tmp/willyou-m12-p115-app022-build-001/RESULT.json",
++    "sha256": "8058ba05c21584c459a5cc8c8c3b52377192270b93c7c583aafc187dd70658e0"
++  },
++  "nativeGate": {
++    "path": "/private/tmp/willyou-m12-p115-app022-build-001/RESULT.json",
++    "sha256": "8058ba05c21584c459a5cc8c8c3b52377192270b93c7c583aafc187dd70658e0"
++  },
++  "resourceGate": {
++    "path": "/private/tmp/willyou-m12-p115-app022-build-001/package-resource-gates.json",
++    "sha256": "28a0b91a7ff48c2c6567522f5269d38b049dea61ccb70eaf808506aa273284b9"
++  },
++  "browserPackageHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
++  "browserVersion": "0.1.1",
++  "newSopSha256": "26917bfc2bc4b1c9bed2e1799f288e6f5014c05281a34a6feaa10cdf66562dd3",
++  "pending": null,
++  "basis": "Root actual officialbuild/native6/verifier0/source3684 beforeafter, not executor self-approval",
++  "finalPinVerifiedAt": "2026-11-05T19:18:19.678711+00:00",
++  "packageRole": "App022",
++  "testRole": "T130 D04-D06 A-only current App022 continuation",
++  "nativeTooltipStrategy": "deferred-no-extra-OS-tool"
+ }

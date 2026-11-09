@@ -1,0 +1,20 @@
+--- I002/run.mjs
++++ I003/run.mjs
+@@ -4,7 +4,7 @@
+ import{dirname}from'node:path';
+ import{ROOT,save,permit}from'./io.mjs';
+ import{openElectron}from'./driver-source/scripts/lib/electron-harness.mjs';
+-import{captureBudgetService}from'./capture-main.mjs';
++import{prepareBackgroundMain}from'./capture-main.mjs';
+ import{loadHostBody}from'./load-host.mjs';
+ import{resourceRecorder}from'./resources.mjs';
+ import{saveStartupError}from'./startup-error.mjs';
+@@ -23,7 +23,7 @@
+ app=await openElectron({executable:pin.executable,userData,cwd:runtime+'/project',inspectMain:true,env:{HOME:runtime+'/home',ZDOTDIR:runtime+'/home',CODEX_HOME:runtime+'/codex',TMPDIR:runtime+'/tmp',PATH:'/usr/bin:/bin:/usr/sbin:/sbin',XDG_CACHE_HOME:ROOT+'/cache/xdg',WILLYOU_TEST_CACHE_DIR:ROOT+'/cache',NODE_COMPILE_CACHE:ROOT+'/cache/node'},startupMainHook:async info=>{r.appPid=info.processId;
+ resources.pids.add(info.processId);
+ await save('live.json',r);
+-r.startup=await captureBudgetService({...info,target:'history',userData,mainFile:pin.app+'/Contents/Resources/app.asar/out/main/index.js',expectedMainSha256:pin.packedMainSha256,expectedLine:pin.constructorLine0,checkpoint:runtime+'/constructor.private.json'});
++r.startup=await prepareBackgroundMain({...info,userData,mainFile:pin.app+'/Contents/Resources/app.asar/out/main/index.js',expectedMainSha256:pin.packedMainSha256,checkpoint:runtime+'/background-startup.private.json'});
+ return r.startup}});
+ r.appPid=app.processId;
+ resources.pids.add(app.processId);

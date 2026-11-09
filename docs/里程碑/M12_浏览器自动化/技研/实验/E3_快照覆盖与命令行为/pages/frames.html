@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>E3 覆盖页</title>
+<h1>E3 覆盖页</h1>
+<label>主页面输入 <input id="main" placeholder="主页面占位"></label>
+<button data-testid="main-btn" onclick="document.getElementById('log').textContent='主按钮'">主按钮</button>
+<p id="log">无</p>
+<iframe id="same" src="/inner.html" style="width:500px;height:120px"></iframe>
+<iframe id="cross" src="http://127.0.0.1:__B__/cross.html" style="width:500px;height:120px"></iframe>
+<div id="open-host"></div><div id="closed-host"></div>
+<script>
+  const o = document.getElementById('open-host').attachShadow({ mode: 'open' });
+  o.innerHTML = '<label>开放影子输入 <input id="so"></label><button onclick="this.textContent=\'开放影子已点\'">开放影子按钮</button>';
+  const c = document.getElementById('closed-host').attachShadow({ mode: 'closed' });
+  c.innerHTML = '<label>封闭影子输入 <input id="sc"></label><button onclick="this.textContent=\'封闭影子已点\'">封闭影子按钮</button>';
+  window.__closed = c;
+  async function load() { const r = await fetch('/api/data'); document.getElementById('net').textContent = await r.text(); }
+</script>
+<button onclick="load().catch(e=>document.getElementById('net').textContent='失败:'+e)">加载数据</button>
+<p id="net">未加载</p>
+<textarea id="long" style="width:400px;height:60px"></textarea>

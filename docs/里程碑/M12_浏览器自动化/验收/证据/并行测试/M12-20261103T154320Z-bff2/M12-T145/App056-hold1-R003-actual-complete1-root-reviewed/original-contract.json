@@ -1,0 +1,87 @@
+{
+  "case": "M12-T145",
+  "originalMatrix": 456,
+  "states": [
+    "B09-agent-hold",
+    "B10-resumed",
+    "B10-paused"
+  ],
+  "slotCount": 21,
+  "combinations": [
+    {
+      "id": "light-rw900-win1440x900",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1440x900",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1440x900",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1440,
+      "windowHeight": 900,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw480-win1920x1080",
+      "theme": "light",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "light-rw900-win1920x1080",
+      "theme": "light",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw480-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 480,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    },
+    {
+      "id": "dark-rw900-win1920x1080",
+      "theme": "dark",
+      "rightWidth": 900,
+      "windowWidth": 1920,
+      "windowHeight": 1080,
+      "PDeviceScaleFactor": 1
+    }
+  ],
+  "actualManagedCLI": 14,
+  "sequence": [
+    "Necessary original realCLIactive precondition readback only/noactivePNG",
+    "Real pause→CLI2 BROWSER_PAUSED→B10paused capture including code secondarycolor",
+    "Real resume→B10resumed countdown capture before newCLI",
+    "Actual tab switch and return retains same Hostdeadline",
+    "NewreadonlyCLI in-flight observation→HTTPrelease/CLI0→B09hold countdowncapture",
+    "Firstcombo only original19s visible/21s clear, thenoriginalsource/task/normalcleanup"
+  ],
+  "countdownRule": "Fresh rendererDate.now/read of visible digits must exactly match ceil(max(0,publicTab.agentHoldUntil-now)/1000); bounded polling resolves render-tick boundary without numeric tolerance.",
+  "reloadBoundary": "One original setupreload beforeonceactivation/guard only. No renderer reload afterguard, no rearm. Real tabswitch provesdeadlinecontinuity.",
+  "oldP21Boundary": "OldP21 PNG unchanged; do not add1, changeHost20s policy, or declarefullvisualpass from mechanical16. Root independentreview required.",
+  "formalIncrement": 0,
+  "pausedCodeColor": "Each actual code element computed color equals canonical value of its own inherited computed --secondary (per-element, not root; raw and resolved values recorded)",
+  "linkedPriorCombo": "light-rw480-win1440x900",
+  "linkedPriorEffectiveSlots": 3,
+  "originalUnionTarget": 24,
+  "authorityTiming": "No timing rerun; originalA02919/21 verified by oldraw/hash and linked only.",
+  "wholeT145": false
+}

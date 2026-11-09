@@ -1,0 +1,177 @@
+{
+  "at": "2026-11-07T19:34:48.153969+00:00",
+  "case": "M12-T130 / original M9-T-P05",
+  "status": "pending-system-restore-condition-no-trial-driver",
+  "originalContract": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/测试用例.md",
+    "sha256": "e6a49c9d2e9705548ddf7af3f151777abf48144b80625a0861348305920a018a",
+    "line": 404,
+    "originalFirstFiveCells": [
+      "**M9-T-P05 焦点不被终端抢回**<br>M9-R01.6",
+      "本期本机",
+      "安装端到端<br>A / D14",
+      "在搜索框/编辑器/确认弹层输入时切换布局可见性。",
+      "TaskTerminal visible effect不抢焦点；字符只进入目标控件。<br>依据：L§7"
+    ]
+  },
+  "originalBusinessAssertionsPreserved": {
+    "source": {
+      "path": "/private/tmp/willyou-m12-title-viewer-source-040/source/scripts/files/terminal-coexistence-ui.mjs",
+      "sha256": "1b229dec1b1383885dc1c465a756e35c0b71eb0a28f69868c8bf2d3f93368cbf",
+      "lines": [
+        60,
+        61,
+        64,
+        65,
+        66,
+        75
+      ]
+    },
+    "exactLines": [
+      {
+        "line": 60,
+        "source": " const keepFocus=async(selector,text,label)=>{"
+      },
+      {
+        "line": 61,
+        "source": "  await click(selector);const before=await receiver('T1');stage='P05-'+label;await ownWindow('const b=w.getBounds();w.setSize(b.width===1400?1450:1400,900,false);return w.getBounds()');await pause(70);await ownWindow('w.hide();return w.isVisible()');assert.equal(await ownWindow('return w.isVisible()'),false);await ownWindow('w.show();w.focus();return w.isVisible()');await cdp('Page.bringToFront');await waitFor(\"document.visibilityState==='visible'\");await waitFor(`document.activeElement?.matches(${JSON.stringify(selector)})`);await input(text);await pause(80);const after=await receiver('T1');assert.equal(after.rawHex,before.rawHex);const observation=await evaluate(`({active:document.activeElement?.outerHTML,doc:document.querySelector('.cm-content')?.cmTile?.root?.view?.state.doc.toString(),value:document.querySelector(${JSON.stringify(selector)})?.value})`);p05.push({label,before,after,observation});return observation;"
+      },
+      {
+        "line": 64,
+        "source": "  stage='P05-filter-editor-search-focus';await app.open('layout.txt');await keepFocus('[aria-label=\"筛选文件\"]','layout','file filter');await field('[aria-label=\"筛选文件\"]','');"
+      },
+      {
+        "line": 65,
+        "source": "  await click('.cm-content');await app.key('End','End',4);const old=await currentDoc();const editor=await keepFocus('.cm-content','Editor focus survives 中文🙂','CodeMirror');assert.equal(editor.doc,old+'Editor focus survives 中文🙂');r.expectedEdits['layout.txt']=source['layout.txt']+'Editor focus survives 中文🙂';"
+      },
+      {
+        "line": 66,
+        "source": "  await click('[aria-label=\"在文件中搜索\"]');await waitFor(exists('[aria-label=\"全文搜索内容\"]'));const search=await keepFocus('[aria-label=\"全文搜索内容\"]','Terminal','search dialog');assert.equal(search.value,'Terminal');await app.key('Escape','Escape');await waitFor('!document.querySelector(\"[aria-label=全文搜索内容]\")');"
+      },
+      {
+        "line": 75,
+        "source": "  if(cases.includes('P05')){stage='P05-confirmation-focus';const before=await receiver('T1');await click('.transfer-discard-dialog button','继续编辑');await waitFor('!document.querySelector(\".transfer-discard-dialog\")');await click('[aria-label=\"关闭项目迁移\"]');await waitFor(exists('.transfer-discard-dialog'));await waitFor(\"document.activeElement?.textContent==='继续编辑'\");await ownWindow('w.hide();return w.isVisible()');assert.equal(await ownWindow('return w.isVisible()'),false);await ownWindow('w.show();w.focus();return w.isVisible()');await cdp('Page.bringToFront');await waitFor(\"document.visibilityState==='visible'\");assert(await evaluate(\"document.activeElement?.textContent==='继续编辑'\"));stage='P05-confirmation-space';await app.key(' ','Space');await waitFor('!document.querySelector(\".transfer-discard-dialog\")');assert.equal(await evaluate(\"document.querySelector('[aria-label=设置导出口令]').value\"),'Own-test-passphrase');const after=await receiver('T1');assert.equal(after.rawHex,before.rawHex);p05.push({label:'M8 real confirmation keyboard',before,after});await click('[aria-label=\"关闭项目迁移\"]');await waitFor(exists('.transfer-discard-dialog'));}"
+      }
+    ],
+    "meaning": [
+      "Actual BrowserWindow.isVisible false then true, not just document.visibilityState with backgroundThrottling=false",
+      "File filter, CodeMirror and fulltext search retain their own exact active element; typed text only reaches intended owner",
+      "CodeMirror full model appends the exact expected text; search actual input value matches",
+      "Real export discard confirmation retains Continue Editing focus; real Space resumes editing and passphrase stays",
+      "Receiver rawHex unchanged for every focus scenario; no terminal misdelivery, no reset of task/PTY/run identities"
+    ]
+  },
+  "concreteGap": {
+    "originalIllegalRecovery": "Window.hide -> Window.show+focus -> Page.bringToFront at original61/75",
+    "showIsNotFocusNeutral": "Electron BrowserWindow.show documentation says shows and gives focus; merely removing explicit w.focus is insufficient",
+    "showInactiveBoundary": "Shows without focusing, but no demonstrated Native+DOM restoration and does not satisfy current guarded input by source intent alone",
+    "guard": "Original single guard becomes sticky APP_FOCUS_YIELDED on absent document focus/visibility. No guard rearm, direct DOM focus or runtime activation allowed.",
+    "disposition": "Do not create speculative showInactive driver. Genuine hide/show continuation needs an OS/user restore condition in a later coordinated slot; no question or execution now. Do not replace real visibility with store/DOM toggles or count component U as A."
+  },
+  "existingAdaptations": [
+    {
+      "path": "/private/tmp/willyou-m12-t130-terminal-coexistence-App035-A-prep-001/coexistence-flow.mjs",
+      "sha256": "4ab599ddfbd285e93bd6d782951e2ea49288700d79e1ce3707e89f72a7e01308",
+      "lines": [
+        4,
+        5
+      ],
+      "scope": "Already passed P01/P02/P06 explicitly exclude P05; do not replay"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t130-terminal-coexistence-App035-A-prep-001/judgement.json",
+      "sha256": "c37eff40d66f70f6160dceba7959bf9f6c9204d3a01fcf56edd45ae9e2c096d6",
+      "scope": "Actual three-case accepted result, not P05"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t130-P08-App035-A-prep-001/P08-flow.mjs",
+      "sha256": "81262f1cb392c29286e18182da0952d4c5ec66e7932b9bd33192cc94fc230459",
+      "lines": [
+        2,
+        12
+      ],
+      "scope": "Real export unsaved/discard form available, but no P05 visibility cycle; do not replay P08 completed group"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t130-P08-App035-A-prep-001/judgement.json",
+      "sha256": "52af2940ccb495fe1c652bf8d2cdae89875f1641205206fd2eb52bfd88f1f286",
+      "scope": "Actual P08 accepted result, not P05"
+    }
+  ],
+  "sourceProof": [
+    {
+      "path": "/private/tmp/willyou-m12-t130-terminal-coexistence-App035-A-prep-001/driver-source/scripts/lib/app-focus-guard.mjs",
+      "sha256": "08bf100ef39cb4e54d764bd52a3a2f70d4e793c1e0f0e342bc54228bcaae018c",
+      "lines": [
+        26,
+        38,
+        46,
+        47
+      ],
+      "fact": "Single input-time guard sticky yield; current guard is not a visibility-transition controller"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/electron/electron.d.ts",
+      "sha256": "b49df464b8d90e2f2ba9b42f4a68d5c4fe655f92219f009ffcaf8bd2745627b9",
+      "lines": [
+        6387,
+        6389,
+        6403,
+        6407
+      ],
+      "fact": "BrowserWindow.show gives focus; showInactive does not focus"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-title-viewer-source-040/source/src/renderer/views/task-view.tsx",
+      "sha256": "dee32af9874ab3cceaf85f57d96a899bba8e1bc0f777476119385bf35f60434f",
+      "lines": [
+        56,
+        236,
+        245,
+        246
+      ],
+      "fact": "Visible terminal effect protects editable/file/popup focus owner; actual React visible is current view/task. No DOM/store substitution for A"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-title-viewer-source-040/source/src/renderer/views/task-terminal-focus.test.tsx",
+      "sha256": "2da9420cab8838e99f2754b96372a208ddb5e5258521185f4da7de22e8f735e9",
+      "lines": [
+        29,
+        36
+      ],
+      "fact": "Existing component proof/test preserves protected focus on visible transition; not a new execution or P05 A replacement"
+    }
+  ],
+  "currentCandidatePins": {
+    "build": {
+      "path": "/private/tmp/willyou-m12-title-viewer-App036-build-001/result.json",
+      "sha256": "76e4df7f5e3b1bd366a2c3cf7f312ae355bbfd3f5a97b65571b32720c8c80d71"
+    },
+    "sourceManifest": {
+      "path": "/private/tmp/willyou-m12-title-viewer-source-040/source-inputs.json",
+      "sha256": "8830a91d43658a69273ce6ae71f4d87993c143c625e7aa39230ede7b8781fb8e"
+    },
+    "actualApp": "/private/tmp/willyou-m12-s2-package-036/mac-arm64/WillYou.app",
+    "pins": {
+      "app.asar": "0160af576332dade251b3a6c4135b4db946554c00230e6fd19f1b6f26c794edb",
+      "executable": "2b7bea8247f18f76cf33b3a9973ed8c4ceae4d41f79e6cf6619ade3e488a9e23"
+    },
+    "usedForExecution": false
+  },
+  "createdDriver": false,
+  "newControlsOrMatrix": false,
+  "replayedCompletedCases": [],
+  "executionCounts": {
+    "Node": 0,
+    "Native": 0,
+    "App": 0,
+    "OS": 0,
+    "compiler": 0,
+    "model": 0
+  },
+  "resourcesHeld": [],
+  "resourcesReleased": "No resources acquired; file-only task ends",
+  "wholeP05Passed": false,
+  "formalIncrement": 0,
+  "publicWrites": 0
+}

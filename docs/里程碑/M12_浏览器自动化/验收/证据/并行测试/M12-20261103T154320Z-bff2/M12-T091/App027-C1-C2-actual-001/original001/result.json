@@ -1,0 +1,41 @@
+{
+  "case": "M12-T091",
+  "layers": [
+    "A",
+    "R"
+  ],
+  "status": "failed-or-partial",
+  "checks": [
+    {
+      "id": "C1-real-UI-new-P3-default-browser-only",
+      "passed": true
+    },
+    {
+      "id": "C2-real-UI-OpenAI-full-Skills-and-one-real-Host-CLI0",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n0 !== 1\n"
+    },
+    {
+      "id": "C3-real-UI-cancel-browser-no-other-application",
+      "passed": false,
+      "error": "The expression evaluated to a falsy value:\n\n  assert(r.cancelledThroughUI&&r.cancelledSelectionDOM.checked===false&&r.cancelledSelectionDOM.inViewport)\n"
+    },
+    {
+      "id": "C4-distinct-new-UI-run-no-browser-Skill",
+      "passed": false,
+      "error": "Cannot read properties of undefined (reading 'startedThroughUI')"
+    },
+    {
+      "id": "C5-real-OpenAI-one-Native-denial2-no-fake-Host",
+      "passed": false,
+      "error": "Cannot read properties of undefined (reading 'phase')"
+    },
+    {
+      "id": "Global-raw-safety-normal-exit-independent-cleanup",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'failed-or-partial'\n- 'executed-unjudged'\n"
+    }
+  ],
+  "formalIncrement": 0,
+  "scope": "Original five criteria plus inherited safety/cleanup; unknown outer carriers remain pending Root offline review"
+}

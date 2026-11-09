@@ -1,0 +1,411 @@
+diff --git a/src/main/core/browser/__tests__/automation.test.ts b/src/main/core/browser/__tests__/automation.test.ts
+index c1ae8212..6ec2b151 100644
+--- a/src/main/core/browser/__tests__/automation.test.ts
++++ b/src/main/core/browser/__tests__/automation.test.ts
+@@ -6,13 +6,24 @@ afterEach(()=>{fixtures.splice(0).forEach(value=>value.dispose());vi.useRealTime
+ function fixture(){const changed=vi.fn(),ended=vi.fn(),automation=new BrowserAutomation({changed,ended}),run=new AbortController(),binding={runId:'R1',taskId:'T1',projectId:'P1',signal:run.signal};fixtures.push(automation);automation.track(binding);return{automation,changed,ended,run,binding};}
+ it('keeps activity through concurrent commands and exactly20seconds after the last completion',()=>{
+   vi.useFakeTimers();const f=fixture(),first=f.automation.begin('R1','T1','page'),last=f.automation.begin('R1','T1','page');
+-  first();vi.advanceTimersByTime(21000);expect(f.automation.activity('page')).toEqual({active:true,running:true});last();last();
+-  vi.advanceTimersByTime(19999);expect(f.automation.activity('page')).toEqual({active:true,running:false});vi.advanceTimersByTime(1);expect(f.automation.activity('page')).toEqual({active:false,running:false});expect(vi.getTimerCount()).toBe(0);
++  first();vi.advanceTimersByTime(21000);expect(f.automation.activity('page')).toEqual({active:true,running:true,holdUntil:null});last();last();const deadline=Date.now()+20000;
++  vi.advanceTimersByTime(19999);expect(f.automation.activity('page')).toEqual({active:true,running:false,holdUntil:deadline});vi.advanceTimersByTime(1);expect(f.automation.activity('page')).toEqual({active:false,running:false,holdUntil:null});expect(vi.getTimerCount()).toBe(0);
+ });
+ it('ending a run clears its pause and in-flight activity, with a bounded tail and no inheritance',()=>{
+-  vi.useFakeTimers();const f=fixture();f.automation.begin('R1','T1','page');f.automation.pause('T1',true);f.run.abort();expect(f.ended).toHaveBeenCalledExactlyOnceWith('R1');expect(f.automation.paused('T1')).toBe(false);expect(f.automation.activity('page')).toEqual({active:true,running:false});
++  vi.useFakeTimers();const f=fixture();f.automation.begin('R1','T1','page');f.automation.pause('T1',true);f.run.abort();expect(f.ended).toHaveBeenCalledExactlyOnceWith('R1');expect(f.automation.paused('T1')).toBe(false);expect(f.automation.activity('page')).toEqual({active:true,running:false,holdUntil:Date.now()+20000});
+   f.automation.track({...f.binding,runId:'R2',signal:new AbortController().signal});expect(f.automation.paused('T1')).toBe(false);vi.advanceTimersByTime(20000);expect(f.automation.activity('page').active).toBe(false);
+ });
++it('replaces a completed command deadline only after the next command actually finishes',()=>{
++  vi.useFakeTimers();vi.setSystemTime(10000);const f=fixture();
++  f.automation.begin('R1','T1','page')();expect(f.automation.activity('page').holdUntil).toBe(30000);
++  vi.advanceTimersByTime(19000);const finish=f.automation.begin('R1','T1','page');
++  expect(f.automation.activity('page')).toEqual({active:true,running:true,holdUntil:null});
++  vi.advanceTimersByTime(2000);expect(f.automation.activity('page').active).toBe(true);
++  finish();expect(f.automation.activity('page').holdUntil).toBe(51000);
++  f.automation.pause('T1',true);expect(f.automation.activity('page').holdUntil).toBe(51000);
++  vi.advanceTimersByTime(19000);expect(f.automation.activity('page').holdUntil).toBe(51000);
++  vi.advanceTimersByTime(1000);expect(f.automation.activity('page')).toEqual({active:false,running:false,holdUntil:null});
++});
+ it('binds a target pause to its own run when present, otherwise to incoming driver runs',()=>{
+   const f=fixture(),other=new AbortController();f.automation.target('R1','T2');f.automation.pause('T2',true);f.run.abort();expect(f.automation.paused('T2')).toBe(false);
+   const caller=new AbortController();f.automation.track({...f.binding,runId:'R3',signal:caller.signal});f.automation.track({...f.binding,runId:'R2',taskId:'T2',signal:other.signal});f.automation.target('R3','T2');f.automation.pause('T2',true);caller.abort();expect(f.automation.paused('T2')).toBe(true);expect(f.automation.paused('T1')).toBe(false);other.abort();expect(f.automation.paused('T2')).toBe(false);
+diff --git a/src/main/core/browser/__tests__/workspace.test.ts b/src/main/core/browser/__tests__/workspace.test.ts
+index 06ed8801..b68444f2 100644
+--- a/src/main/core/browser/__tests__/workspace.test.ts
++++ b/src/main/core/browser/__tests__/workspace.test.ts
+@@ -14,6 +14,19 @@ describe('browser workspace persistence and startup pages (software only)',()=>{
+   it('retains exactly the last ten closed tabs and refuses tasks without projects',async()=>{
+     const f=fixture();for(let i=0;i<12;i++)f.workspace.create('t1');const ids=f.workspace.snapshot('t1').tabs.map(t=>t.id);for(const id of ids)await f.workspace.close('t1',id);for(let i=0;i<11;i++)f.workspace.reopen('t1');expect(f.workspace.snapshot('t1').tabs).toHaveLength(10);expect(f.create).not.toHaveBeenCalled();expect(()=>f.workspace.create('no-project')).toThrow('项目');f.workspace.dispose();
+   });
++  it('publishes each live activity deadline once per snapshot and never restores it from persisted tabs',async()=>{
++    const f=fixture(),activity=vi.fn(()=>({active:true,running:false,holdUntil:42000})),live=new BrowserWorkspace({...f.options,activity});
++    try{
++      live.create('t1');activity.mockClear();
++      expect(live.snapshot('t1').tabs[0]).toMatchObject({agentActive:true,agentRunning:false,agentHoldUntil:42000});
++      expect(activity).toHaveBeenCalledTimes(1);
++      const saved=f.sqlite.prepare('SELECT value FROM app_settings WHERE key=?').get('browserWorkspace.v1:t1') as {value:string};
++      expect(JSON.parse(saved.value).tabs[0]).not.toHaveProperty('agentHoldUntil');
++      expect(JSON.parse(saved.value).tabs[0]).not.toHaveProperty('agentActive');
++      await live.dispose();const restored=new BrowserWorkspace(f.options);
++      try{expect(restored.snapshot('t1').tabs[0].agentHoldUntil).toBeUndefined();expect(f.create).not.toHaveBeenCalled();}finally{await restored.dispose();}
++    }finally{await live.dispose();await f.workspace.dispose();}
++  });
+   it('changes unloaded bindings without allocating an engine and removes deleted profiles from reopen/restart records',async()=>{
+     const f=fixture();try{
+       f.workspace.create('t1');f.workspace.create('t1');const ids=f.workspace.snapshot('t1').tabs.map(tab=>tab.id),profile='11111111-1111-4111-8111-111111111111';let writes=0;
+diff --git a/src/main/core/browser/automation.ts b/src/main/core/browser/automation.ts
+index 2b4b26ef..a72c786c 100644
+--- a/src/main/core/browser/automation.ts
++++ b/src/main/core/browser/automation.ts
+@@ -31,7 +31,7 @@ export class BrowserAutomation {
+     }
+     this.changed(taskId);
+   }
+-  activity(pageId:string){const value=this.activities.get(pageId);return{active:!!value&&(value.running.size>0||Date.now()-value.endedAt<20000),running:!!value?.running.size};}
++  activity(pageId:string){const value=this.activities.get(pageId);return{active:!!value&&(value.running.size>0||Date.now()-value.endedAt<20000),running:!!value?.running.size,holdUntil:value&&!value.running.size?value.endedAt+20000:null};}
+   begin(runId:string,taskId:string,pageId:string):()=>void{
+     if(this.closed)return()=>{};this.target(runId,taskId);
+     let value=this.activities.get(pageId);if(value&&value.taskId!==taskId)throw new ApplicationError('RESOURCE_STATE_CHANGED','页面活动归属不符');
+diff --git a/src/main/core/browser/workspace.ts b/src/main/core/browser/workspace.ts
+index 90c6f097..8d451fde 100644
+--- a/src/main/core/browser/workspace.ts
++++ b/src/main/core/browser/workspace.ts
+@@ -33,7 +33,7 @@ export class BrowserWorkspace {
+   private readonly profileChanges=new Map<string,Promise<BrowserPage|undefined>>();
+   private readonly overlays=new Map<string,Set<string>>();
+   private reconciling?:Promise<void>;
+-  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;activity?:(pageId:string)=>{active:boolean;running:boolean};paused?:(taskId:string)=>boolean;profileState?:(profileId:string)=>'ready'|'importing'|'needs-attention';available?:(profileId:string)=>void;authentication?:(taskId:string,pageId:string)=>{prompt:BrowserAuthPrompt|null;cancelled:BrowserAuthCancelled|null};javascriptDialog?:(taskId:string,pageId:string)=>BrowserJavascriptDialog|null;downloads?:(taskId:string)=>BrowserDownload[];permission?:(taskId:string,pageId:string)=>BrowserPermissionPrompt|null;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
++  constructor(private readonly options:{sqlite:Database.Database;pages:BrowserPageRegistry;taskProject:(id:string)=>string|null;searchEngine?:()=>BrowserSearchEngine;activity?:(pageId:string)=>{active:boolean;running:boolean;holdUntil?:number|null};paused?:(taskId:string)=>boolean;profileState?:(profileId:string)=>'ready'|'importing'|'needs-attention';available?:(profileId:string)=>void;authentication?:(taskId:string,pageId:string)=>{prompt:BrowserAuthPrompt|null;cancelled:BrowserAuthCancelled|null};javascriptDialog?:(taskId:string,pageId:string)=>BrowserJavascriptDialog|null;downloads?:(taskId:string)=>BrowserDownload[];permission?:(taskId:string,pageId:string)=>BrowserPermissionPrompt|null;certificate?:(pageId:string,url:string)=>BrowserCertificateState|null;changed?:(taskId:string)=>void;shortcut?:(taskId:string,action:BrowserShortcut)=>void}){
+     this.unobserve=options.pages.observe(event=>{
+       if(event.type==='created')this.attached(event.page);
+       else if(!this.shuttingDown){
+@@ -67,7 +67,7 @@ export class BrowserWorkspace {
+     let recent:BrowserWorkspaceState['recent']=[];
+     if(row)try{const values:unknown=JSON.parse(row.value);if(Array.isArray(values))recent=values.filter((r):r is BrowserWorkspaceState['recent'][number]=>!!r&&typeof r==='object'&&typeof r.url==='string'&&typeof r.title==='string'&&typeof r.host==='string'&&typeof r.visitedAt==='number').slice(0,8);}catch{/* A bad recent list must not destroy valid tabs. */}
+     const found=state.activeId?this.finds.get(state.activeId):undefined,auth=state.activeId?this.options.authentication?.(taskId,state.activeId):undefined;
+-    return{taskId,projectId,tabs:state.tabs.map(tab=>({...tab,...(this.runtime.get(tab.id)??idle()),...(this.options.activity?{agentActive:this.options.activity(tab.id).active,agentRunning:this.options.activity(tab.id).running}:{}),...(this.options.profileState?{importState:this.options.profileState(tab.profileId)}:{}),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})})),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0},...(this.options.paused?{paused:this.options.paused(taskId)}:{}),...(this.options.permission?{permission:state.activeId?this.options.permission(taskId,state.activeId):null}:{}),...(this.options.downloads?{downloads:this.options.downloads(taskId)}:{}),...(this.options.authentication?{auth:auth?.prompt??null,authCancelled:auth?.cancelled??null}:{}),...(this.options.javascriptDialog?{javascriptDialog:state.activeId?this.options.javascriptDialog(taskId,state.activeId):null}:{})};
++    return{taskId,projectId,tabs:state.tabs.map(tab=>{const activity=this.options.activity?.(tab.id);return({...tab,...(this.runtime.get(tab.id)??idle()),...(activity?{agentActive:activity.active,agentRunning:activity.running,agentHoldUntil:activity.holdUntil??null}:{}),...(this.options.profileState?{importState:this.options.profileState(tab.profileId)}:{}),...(this.options.certificate?{certificate:this.options.certificate(tab.id,(this.runtime.get(tab.id)?.failure?.url??tab.url))}:{})});}),activeId:state.activeId,recent,notice:this.notices.get(taskId)??null,external:this.external.get(taskId)??null,find:{active:found?.active??0,total:found?.total??0},...(this.options.paused?{paused:this.options.paused(taskId)}:{}),...(this.options.permission?{permission:state.activeId?this.options.permission(taskId,state.activeId):null}:{}),...(this.options.downloads?{downloads:this.options.downloads(taskId)}:{}),...(this.options.authentication?{auth:auth?.prompt??null,authCancelled:auth?.cancelled??null}:{}),...(this.options.javascriptDialog?{javascriptDialog:state.activeId?this.options.javascriptDialog(taskId,state.activeId):null}:{})};
+   }
+   certificateFailed(page:BrowserPage,url:string,error:string):void{
+     if(page.closed||page.importPaused||this.shuttingDown)return;
+diff --git a/src/renderer/features/browser/download-panel.test.tsx b/src/renderer/features/browser/download-panel.test.tsx
+index fa31ab9e..ccd7ccd2 100644
+--- a/src/renderer/features/browser/download-panel.test.tsx
++++ b/src/renderer/features/browser/download-panel.test.tsx
+@@ -20,3 +20,10 @@ it('keeps old completed downloads available for six seconds after reopening',()=
+ it('routes cancel and completed-file actions with the record identity, and closes on Escape',async()=>{
+   const close=vi.fn(),action=vi.fn(async()=>{}),row=item(),view=render(<BrowserDownloadPanel items={[row]} onAction={action} onClose={close}/>);expect(screen.queryByRole('button',{name:'打开'})).toBeNull();await act(async()=>fireEvent.click(screen.getByRole('button',{name:'取消'})));expect(action).toHaveBeenLastCalledWith('d1','cancel');view.rerender(<BrowserDownloadPanel items={[{...row,state:'done'}]} onAction={action} onClose={close}/>);await act(async()=>fireEvent.click(screen.getByRole('button',{name:'打开'})));expect(action).toHaveBeenLastCalledWith('d1','open');await act(async()=>fireEvent.click(screen.getByRole('button',{name:'在文件夹中显示'})));expect(action).toHaveBeenLastCalledWith('d1','reveal');await act(async()=>fireEvent.click(screen.getByRole('button',{name:'移除下载记录 订单.csv'})));expect(action).toHaveBeenLastCalledWith('d1','remove');fireEvent.keyDown(screen.getByRole('region',{name:'下载'}),{key:'Escape'});expect(close).toHaveBeenCalledOnce();
+ });
++it('keeps the full saved path and failure detail available when the compact row truncates them',()=>{
++  const path='/synthetic/Downloads/很长的目录与文件名/订单导出.csv',row={...item(),state:'done' as const,path};
++  const view=render(<BrowserDownloadPanel items={[row]} onAction={vi.fn()} onClose={vi.fn()}/>);
++  expect(screen.getByTitle(path).textContent).toBe('已保存到 '+path);
++  const error='连接被中断，请稍后重新下载';view.rerender(<BrowserDownloadPanel items={[{...row,state:'failed',error}]} onAction={vi.fn()} onClose={vi.fn()}/>);
++  expect(screen.getByTitle(error).textContent).toBe('下载失败：'+error);
++});
+diff --git a/src/renderer/features/browser/download-panel.tsx b/src/renderer/features/browser/download-panel.tsx
+index 3e543928..e23e483f 100644
+--- a/src/renderer/features/browser/download-panel.tsx
++++ b/src/renderer/features/browser/download-panel.tsx
+@@ -11,7 +11,7 @@ export function BrowserDownloadPanel({items,onAction,onClose}:{items:BrowserDown
+   return <div className="bw-downloads" role="region" aria-label="下载" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();onClose();}}}>
+     <div className="bw-downloads-head"><strong>下载</strong><span>{items.some(item=>item.destination==='explicit')?'包含指定保存位置':'系统下载目录'}</span><button type="button" className="fw-icon bw-mini-icon" aria-label="收起下载列表" onClick={onClose}><X size={14}/></button></div>
+     {error&&<p role="alert" className="bw-danger-text">{error}</p>}
+-    {items.map(item=><div key={item.id} className={'bw-download bw-download-'+item.state}><FileDown size={15}/><div className="bw-download-text"><strong title={item.name}>{item.name}</strong><span>{item.state==='progress'?`正在下载 · ${item.totalBytes?Math.min(100,Math.round(item.receivedBytes/item.totalBytes*100))+'%':item.receivedBytes+' 字节'}`:item.state==='done'?'已保存到 '+(item.path??'系统下载目录'):item.state==='failed'?'下载失败：'+(item.error??'连接被中断'):'已取消'}</span>{item.state==='progress'&&<span className="bw-download-meter"><span style={{width:(item.totalBytes?Math.min(100,item.receivedBytes/item.totalBytes*100):0)+'%'}}/></span>}</div>
++    {items.map(item=><div key={item.id} className={'bw-download bw-download-'+item.state}><FileDown size={15}/><div className="bw-download-text"><strong title={item.name}>{item.name}</strong><span title={item.state==='done'?item.path??'系统下载目录':item.state==='failed'?item.error??'连接被中断':undefined}>{item.state==='progress'?`正在下载 · ${item.totalBytes?Math.min(100,Math.round(item.receivedBytes/item.totalBytes*100))+'%':item.receivedBytes+' 字节'}`:item.state==='done'?'已保存到 '+(item.path??'系统下载目录'):item.state==='failed'?'下载失败：'+(item.error??'连接被中断'):'已取消'}</span>{item.state==='progress'&&<span className="bw-download-meter"><span style={{width:(item.totalBytes?Math.min(100,item.receivedBytes/item.totalBytes*100):0)+'%'}}/></span>}</div>
+       {item.state==='progress'&&<button type="button" className="bw-mini" disabled={busy===item.id} onClick={()=>void action(item.id,'cancel')}><Ban size={13}/>取消</button>}
+       {item.state==='done'&&<><button type="button" className="bw-mini" disabled={busy===item.id} onClick={()=>void action(item.id,'open')}><Download size={13}/>打开</button><button type="button" className="bw-mini" disabled={busy===item.id} onClick={()=>void action(item.id,'reveal')}><FolderOpen size={13}/>在文件夹中显示</button></>}
+       {item.state!=='progress'&&<button type="button" className="fw-icon bw-mini-icon" disabled={busy===item.id} aria-label={'移除下载记录 '+item.name} onClick={()=>void action(item.id,'remove')}><X size={14}/></button>}
+diff --git a/src/renderer/features/browser/profile-site-states.test.tsx b/src/renderer/features/browser/profile-site-states.test.tsx
+index 830ea876..7989162e 100644
+--- a/src/renderer/features/browser/profile-site-states.test.tsx
++++ b/src/renderer/features/browser/profile-site-states.test.tsx
+@@ -3,6 +3,7 @@ import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+ import {BrowserProfileSiteStates,type ProfileSiteStates} from './profile-site-states';
+ const api=vi.hoisted(()=>({revokeCertificate:vi.fn(),recoverCookies:vi.fn(),clearCookies:vi.fn(),createProfile:vi.fn(),cloneProfile:vi.fn(),useProfile:vi.fn(),deleteProfile:vi.fn()}));vi.mock('@renderer/lib/ipc',()=>({rpc:{browser:api}}));
++const notices=vi.hoisted(()=>({success:vi.fn()}));vi.mock('sonner',()=>({toast:notices}));
+ const initial:ProfileSiteStates=[{importState:'ready',profile:{id:'project-p1',label:'项目登录态',scope:'project',owner:{kind:'project',id:'p1'},partition:'persist:wy-browser-project-p1',source:null},state:{schemaVersion:1,certificates:[{host:'outside.example.test',createdAt:1}],permissions:[]}}];
+ beforeEach(()=>vi.resetAllMocks());afterEach(cleanup);
+ it('retains a certificate record on host failure and removes it only after a successful scoped revocation',async()=>{
+@@ -13,17 +14,21 @@ it('keeps import disabled while attention is outstanding, and enables it only af
+   api.recoverCookies.mockResolvedValueOnce(initial);render(<BrowserProfileSiteStates taskId="t1" currentProfile="project-p1" initial={[{...initial[0],importState:'needs-attention'}]} onClose={()=>{}}/>);expect((screen.getByRole('button',{name:'导入 Chrome／Edge 登录态'}) as HTMLButtonElement).disabled).toBe(true);fireEvent.click(screen.getByRole('button',{name:'重试恢复'}));await waitFor(()=>expect((screen.getByRole('button',{name:'导入 Chrome／Edge 登录态'}) as HTMLButtonElement).disabled).toBe(false));expect(api.recoverCookies).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1'});
+ });
+ it('requires a separate clear confirmation and keeps attention on host failure without automatic retry',async()=>{
+-  api.clearCookies.mockRejectedValueOnce(Error('clear interrupted'));render(<BrowserProfileSiteStates taskId="t1" currentProfile="project-p1" initial={[{...initial[0],importState:'needs-attention'}]} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'清空登录态'}));expect(api.clearCookies).not.toHaveBeenCalled();expect(screen.getByText(/将清空此登录态的全部/)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'确认清空'}));await screen.findByText('clear interrupted');expect(api.clearCookies).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1',confirmed:true});expect((screen.getByRole('button',{name:'导入 Chrome／Edge 登录态'}) as HTMLButtonElement).disabled).toBe(true);
++  api.clearCookies.mockRejectedValueOnce(Error('clear interrupted'));render(<BrowserProfileSiteStates taskId="t1" currentProfile="project-p1" initial={[{...initial[0],importState:'needs-attention'}]} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'清空该登录态'}));expect(api.clearCookies).not.toHaveBeenCalled();expect(screen.getByText(/将清空此登录态的全部/)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'确认清空'}));await screen.findByText('clear interrupted');expect(api.clearCookies).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1',confirmed:true});expect((screen.getByRole('button',{name:'导入 Chrome／Edge 登录态'}) as HTMLButtonElement).disabled).toBe(true);
+ });
+ const copy:ProfileSiteStates[number]={...initial[0],profile:{...initial[0].profile,id:'copy',label:'项目登录态（副本）',scope:'isolated',owner:{kind:'task',id:'t1'}},state:{schemaVersion:1,certificates:[],permissions:[]}};
+ it('selects a host-confirmed new profile without switching the current page, then switches only on explicit use',async()=>{
+   api.createProfile.mockResolvedValueOnce({records:[...initial,copy],result:copy.profile});api.useProfile.mockResolvedValueOnce({records:[...initial,copy],result:copy.profile});render(<BrowserProfileSiteStates taskId="t1" tabId="page1" taskTitle="任务一" currentProfile="project-p1" initial={initial} onClose={()=>{}}/>);
+-  fireEvent.click(screen.getByRole('button',{name:'为「任务一」新建独立登录态'}));await screen.findByText('已新建独立登录态');expect(api.createProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',label:'任务一 独立登录态'});expect(screen.getByRole('option',{name:/项目登录态（副本）/}).getAttribute('aria-selected')).toBe('true');expect(api.useProfile).not.toHaveBeenCalled();
+-  fireEvent.click(screen.getByRole('button',{name:'用于当前页面'}));await screen.findByText('已用于当前页面');expect(api.useProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',tabId:'page1',profileId:'copy'});
++  fireEvent.click(screen.getByRole('button',{name:'为「任务一」新建独立登录态'}));await waitFor(()=>expect(notices.success).toHaveBeenCalledWith('已新建独立登录态'));expect(api.createProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',label:'任务一 独立登录态'});expect(screen.getByRole('option',{name:/项目登录态（副本）/}).getAttribute('aria-selected')).toBe('true');expect(api.useProfile).not.toHaveBeenCalled();
++  fireEvent.click(screen.getByRole('button',{name:'用于当前页面'}));await waitFor(()=>expect(notices.success).toHaveBeenCalledWith('已用于当前页面'));expect(api.useProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',tabId:'page1',profileId:'copy'});
++});
++it('publishes a successful clone without changing the selected source or the page profile',async()=>{
++  api.cloneProfile.mockResolvedValueOnce({records:[...initial,copy],result:copy.profile});render(<BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="project-p1" initial={initial} onClose={()=>{}}/>);
++  fireEvent.click(screen.getByRole('button',{name:'克隆'}));await screen.findByRole('option',{name:/项目登录态（副本）/});expect(screen.getByRole('option',{name:/项目登录态项目默认/}).getAttribute('aria-selected')).toBe('true');expect(screen.getByRole('option',{name:/项目登录态（副本）/}).getAttribute('aria-selected')).toBe('false');expect(api.cloneProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1'});expect(api.useProfile).not.toHaveBeenCalled();expect(notices.success).toHaveBeenCalledWith('已克隆登录态');
+ });
+ it('retains the selected source after clone failure and sends no retry or page switch',async()=>{
+   api.cloneProfile.mockRejectedValueOnce(Error('原登录态持续变化'));render(<BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="project-p1" initial={initial} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'克隆'}));await screen.findByText('原登录态持续变化');expect(api.cloneProfile).toHaveBeenCalledExactlyOnceWith({taskId:'t1',profileId:'project-p1'});expect(api.useProfile).not.toHaveBeenCalled();expect(screen.getAllByRole('option')).toHaveLength(1);expect(screen.queryByRole('button',{name:'删除'})).toBeNull();
+ });
+ it('requires delete confirmation, preserves data on failure, and updates the list only after explicit successful retry',async()=>{
+-  api.deleteProfile.mockRejectedValueOnce(Error('删除未确认')).mockResolvedValueOnce({records:initial,result:'copy'});render(<BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="copy" initial={[...initial,copy]} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'删除'}));expect(api.deleteProfile).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await screen.findByText('删除未确认');expect(screen.getByRole('option',{name:/项目登录态（副本）/})).toBeTruthy();expect(api.deleteProfile).toHaveBeenCalledTimes(1);fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await screen.findByText('已删除登录态，使用它的页面改用项目登录态');expect(screen.getAllByRole('option')).toHaveLength(1);expect(api.deleteProfile).toHaveBeenLastCalledWith({taskId:'t1',profileId:'copy',confirmed:true});
++  api.deleteProfile.mockRejectedValueOnce(Error('删除未确认')).mockResolvedValueOnce({records:initial,result:'copy'});render(<BrowserProfileSiteStates taskId="t1" tabId="page1" currentProfile="copy" initial={[...initial,copy]} onClose={()=>{}}/>);fireEvent.click(screen.getByRole('button',{name:'删除'}));expect(api.deleteProfile).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await screen.findByText('删除未确认');expect(screen.getByRole('option',{name:/项目登录态（副本）/})).toBeTruthy();expect(api.deleteProfile).toHaveBeenCalledTimes(1);fireEvent.click(screen.getByRole('button',{name:'确认删除'}));await waitFor(()=>expect(notices.success).toHaveBeenCalledWith('已删除登录态，使用它的页面改用项目登录态'));expect(screen.getAllByRole('option')).toHaveLength(1);expect(api.deleteProfile).toHaveBeenLastCalledWith({taskId:'t1',profileId:'copy',confirmed:true});
+ });
+diff --git a/src/renderer/features/browser/profile-site-states.tsx b/src/renderer/features/browser/profile-site-states.tsx
+index 120b27bd..6960c2ba 100644
+--- a/src/renderer/features/browser/profile-site-states.tsx
++++ b/src/renderer/features/browser/profile-site-states.tsx
+@@ -1,5 +1,6 @@
+ import {useRef,useEffect,useState} from 'react';
+-import {UserRound,X,Plus,Copy,Trash2} from 'lucide-react';
++import {UserRound,X,Plus,Copy,Trash2,ShieldAlert} from 'lucide-react';
++import {toast} from 'sonner';
+ import {BrowserCookieImportDialog} from './cookie-import-dialog';
+ import {rpc} from '@renderer/lib/ipc';
+ export type ProfileSiteStates=Awaited<ReturnType<typeof rpc.browser.profileSiteStates>>;
+@@ -8,10 +9,10 @@ export function BrowserProfileSiteStates({taskId,tabId,taskTitle='当前任务',
+   const [records,setRecords]=useState(initial),[selected,setSelected]=useState(currentProfile),[busy,setBusy]=useState(false),[error,setError]=useState(''),[importTarget,setImportTarget]=useState<string|null>(initialImport?(initial.find(v=>v.profile.scope==='project')?.profile.id??currentProfile):null),[confirmClear,setConfirmClear]=useState(false),root=useRef<HTMLDivElement>(null);
+   useEffect(()=>{root.current?.querySelector<HTMLButtonElement>('[role=option][aria-selected=true]')?.focus();},[]);
+   const value=records.find(value=>value.profile.id===selected)??records[0];
+-  const [confirmDelete,setConfirmDelete]=useState(false),[notice,setNotice]=useState('');
++  const [confirmDelete,setConfirmDelete]=useState(false);
+   const mutate=async(work:()=>Promise<{records:ProfileSiteStates;result:unknown}>,message:string,selectNew=false)=>{
+-    setBusy(true);setError('');setNotice('');
+-    try{const changed=await work();setRecords(changed.records);setConfirmDelete(false);setNotice(message);if(selectNew&&changed.result&&typeof changed.result==='object'&&'id'in changed.result&&typeof changed.result.id==='string')setSelected(changed.result.id);}
++    setBusy(true);setError('');
++    try{const changed=await work();setRecords(changed.records);setConfirmDelete(false);toast.success(message);if(selectNew&&changed.result&&typeof changed.result==='object'&&'id'in changed.result&&typeof changed.result.id==='string')setSelected(changed.result.id);}
+     catch(error){setError(error instanceof Error?error.message:String(error));}finally{setBusy(false);}
+   };
+   const create=()=>{let label=taskTitle;while((label+' 独立登录态').length>120)label=Array.from(label).slice(0,-1).join('');return mutate(()=>rpc.browser.createProfile({taskId,label:label+' 独立登录态'}),'已新建独立登录态',true);};
+@@ -21,11 +22,10 @@ export function BrowserProfileSiteStates({taskId,tabId,taskTitle='当前任务',
+   return <div className="bw-scrim" onMouseDown={event=>{if(event.target===event.currentTarget&&!busy)onClose();}}><div ref={root} className="bw-dialog bw-dialog-wide" role="dialog" aria-modal="true" aria-label="登录态管理" data-browser-panel="profiles" onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();if(!busy)onClose();}}}>
+     <div className="bw-dialog-head"><div><h2>登录态管理</h2><p>每个 profile 独立保存 Cookie、本地存储与缓存。默认使用项目登录态；任务需要不同账号时新建独立登录态。</p></div><button type="button" className="fw-icon" aria-label="关闭" disabled={busy} onClick={onClose}><X size={16}/></button></div>
+     <div className="bw-dialog-body">{error&&<p role="alert" className="bw-danger-text">{error}</p>}
+-      {notice&&<p role="status">{notice}</p>}
+       <div className="bw-profiles"><ul className="bw-profile-list" role="listbox" aria-label="登录态列表">{records.map(({profile})=><li key={profile.id}><button type="button" role="option" disabled={busy} aria-selected={profile.id===value?.profile.id} className={profile.id===value?.profile.id?'selected':''} onClick={()=>{setSelected(profile.id);setConfirmClear(false);setConfirmDelete(false);}}><UserRound size={14}/><span><strong>{profile.label}</strong><small>{profile.scope==='project'?'项目默认':'任务独立'}{profile.id===currentProfile?' · 当前页面使用中':''}</small></span></button></li>)}<li><button type="button" className="bw-add" disabled={busy} onClick={()=>void create()}><Plus size={14}/>为「{taskTitle}」新建独立登录态</button></li></ul>
+-        {value&&<div className="bw-profile-detail"><h3>{value.profile.label}</h3><p className="bw-hint">{value.profile.source?`已从 ${value.profile.source.family==='chrome'?'Chrome':'Edge'} · ${value.profile.source.profile} 导入 Cookie`:'没有导入记录'}</p>{value.importState==='needs-attention'&&<div className="bw-attention" role="alert"><strong>需要处理：上次导入的恢复没有完成</strong><p>使用此登录态的页面暂时不可用。可以重试恢复，或清空 Cookie、存储与缓存后继续使用。</p><button type="button" className="bw-mini" disabled={busy} onClick={()=>void change(()=>rpc.browser.recoverCookies({taskId,profileId:value.profile.id}))}>重试恢复</button>{confirmClear?<><p className="bw-danger-text">将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。</p><button type="button" className="bw-mini" disabled={busy} onClick={()=>void change(()=>rpc.browser.clearCookies({taskId,profileId:value.profile.id,confirmed:true}))}>确认清空</button><button type="button" className="bw-mini" disabled={busy} onClick={()=>setConfirmClear(false)}>取消</button></>:<button type="button" className="bw-mini" disabled={busy} onClick={()=>setConfirmClear(true)}>清空登录态</button>}</div>}<div className="bw-row-actions">
++        {value&&<div className="bw-profile-detail"><h3>{value.profile.label}</h3><p className="bw-hint">{value.profile.source?`已从 ${value.profile.source.family==='chrome'?'Chrome':'Edge'} · ${value.profile.source.profile} 导入 Cookie`:'没有导入记录'}</p>{value.importState==='needs-attention'&&<div className="bw-attention" role="alert"><ShieldAlert size={15}/><div><strong>需要处理：上次导入的恢复没有完成</strong><p>使用这个登录态的页面暂时不可用，Agent 的浏览器命令会返回 <code>BROWSER_UNAVAILABLE</code>。可以重试恢复，或清空这个登录态的 Cookie、存储与缓存后继续使用。</p><div className="bw-row-actions"><button type="button" className="bw-mini" disabled={busy} onClick={()=>void change(()=>rpc.browser.recoverCookies({taskId,profileId:value.profile.id}))}>重试恢复</button>{confirmClear?<><span className="bw-danger-text">将清空此登录态的全部 Cookie、存储与缓存，需要重新登录。</span><button type="button" className="bw-mini bw-mini-danger" disabled={busy} onClick={()=>void change(()=>rpc.browser.clearCookies({taskId,profileId:value.profile.id,confirmed:true}))}>确认清空</button><button type="button" className="bw-mini" disabled={busy} onClick={()=>setConfirmClear(false)}>取消</button></>:<button type="button" className="bw-mini" disabled={busy} onClick={()=>setConfirmClear(true)}>清空该登录态</button>}</div></div></div>}<div className="bw-row-actions">
+           <button type="button" className="bw-mini" disabled={busy||!tabId||value.profile.id===currentProfile||value.importState!=='ready'} onClick={()=>{if(tabId)void mutate(()=>rpc.browser.useProfile({taskId,tabId,profileId:value.profile.id}),'已用于当前页面');}}>用于当前页面</button>
+-          <button type="button" className="bw-mini" disabled={busy||value.importState!=='ready'} onClick={()=>void mutate(()=>rpc.browser.cloneProfile({taskId,profileId:value.profile.id}),'已克隆登录态',true)}><Copy size={13}/>克隆</button>
++          <button type="button" className="bw-mini" disabled={busy||value.importState!=='ready'} onClick={()=>void mutate(()=>rpc.browser.cloneProfile({taskId,profileId:value.profile.id}),'已克隆登录态')}><Copy size={13}/>克隆</button>
+           <button type="button" className="bw-mini" disabled={busy||value.importState!=='ready'} onClick={()=>setImportTarget(value.profile.id)}>导入 Chrome／Edge 登录态</button>
+           {value.profile.scope!=='project'&&(confirmDelete?<><span className="bw-danger-text">删除后其登录态一并清除，使用它的页面改用项目登录态。</span><button type="button" className="bw-mini bw-mini-danger" disabled={busy} onClick={()=>void mutate(()=>rpc.browser.deleteProfile({taskId,profileId:value.profile.id,confirmed:true}),'已删除登录态，使用它的页面改用项目登录态')}>确认删除</button><button type="button" className="bw-mini" disabled={busy} onClick={()=>setConfirmDelete(false)}>取消</button></>:<button type="button" className="bw-mini" disabled={busy||value.importState!=='ready'} onClick={()=>setConfirmDelete(true)}><Trash2 size={13}/>删除</button>)}
+         </div><h4>证书例外</h4>{value.state.certificates.length?<ul className="bw-list">{value.state.certificates.map(({host})=><li key={host}><span><strong>{host}</strong><small>你曾选择继续访问</small></span><button type="button" className="bw-mini" disabled={busy} onClick={()=>void revoke(host)}>撤销</button></li>)}</ul>:<p className="bw-empty-note">无</p>}<h4>站点权限</h4>{value.state.permissions.length?<ul className="bw-list">{value.state.permissions.map(item=><li key={item.origin+item.permission}><span><strong>{item.origin}</strong><small>{item.permission==='geolocation'?'位置':item.permission} · {item.decision==='allow'?'允许':'拒绝'}</small></span><button type="button" className="bw-mini" disabled={busy} onClick={()=>void change(()=>rpc.browser.revokePermission({taskId,profileId:value.profile.id,origin:item.origin,permission:item.permission}))}>撤销</button></li>)}</ul>:<p className="bw-empty-note">无</p>}</div>}
+diff --git a/src/renderer/features/browser/workspace.css b/src/renderer/features/browser/workspace.css
+index 06aecd19..00f1afd2 100644
+--- a/src/renderer/features/browser/workspace.css
++++ b/src/renderer/features/browser/workspace.css
+@@ -92,7 +92,7 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
+ .bw-mini-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+ .bw-mini-primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+ .bw-danger-link{font-size:12px;color:#c0392b;text-decoration:underline}
+-:root[data-theme="dark"] .bw-danger-link{color:#ef8f84}
++:root.ydark .bw-danger-link{color:#ef8f84}
+ 
+ /* B07 overlay geometry and item states from the approved shared prototype. */
+ .bw-downloads{position:absolute;top:48px;right:10px;z-index:40;width:min(400px,calc(100% - 20px));display:flex;flex-direction:column;gap:6px;padding:8px 10px 10px;border:1px solid var(--border);border-radius:12px;background:var(--bg);box-shadow:0 10px 30px rgba(0,0,0,.14);max-height:min(320px,calc(100% - 60px));overflow:auto}
+@@ -104,6 +104,9 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
+ .bw-download-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+ .bw-download-text strong{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .bw-download-text span{font-size:11px;color:var(--secondary)}
++.bw-download-text>span:not(.bw-download-meter){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.bw-downloads .bw-mini-icon{width:26px;height:26px}
++.bw-download-failed .bw-download-text span{color:#c0392b}
+ .bw-download-meter{display:block;height:3px;border-radius:2px;background:var(--hover);overflow:hidden;margin-top:2px}
+ .bw-download-meter>span{display:block;height:100%;background:var(--accent);transition:width .25s}
+ .bw-downloads{z-index:59}
+@@ -116,13 +119,19 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
+ .bw-form input{height:32px;border:1px solid var(--border-strong);border-radius:7px;padding:0 10px;font-size:13px;background:var(--surface);color:var(--text)}
+ [data-browser-panel=authentication] .bw-form input:focus{outline:none;border-color:var(--secondary)}
+ .bw-warn-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:20px}
+-.bw-attention{margin:10px 0;padding:10px 12px;border:1px solid #e3a008;border-radius:10px;background:color-mix(in srgb,#e3a008 10%,var(--bg));color:var(--text);font-size:12px;line-height:18px}
++.bw-attention{display:flex;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #e3a008;border-radius:10px;background:color-mix(in srgb,#e3a008 10%,var(--bg));color:var(--text);font-size:12px;line-height:18px}
++.bw-attention>svg{color:#b7791f;flex-shrink:0;margin-top:1px}
++[data-browser-panel=profiles] .bw-row-actions{gap:6px}
+ .bw-attention p{margin:4px 0 8px;color:var(--secondary)}
+ .bw-agent{background:color-mix(in srgb,var(--accent) 8%,var(--bg));color:var(--text)}.bw-agent svg{color:var(--accent)}
+-.bw-paused{background:#fdf4e3;color:#6b4500}:root[data-theme="dark"] .bw-paused{background:#3a2e17;color:#f0d29a}
+-.bw-pause,.bw-resume{display:flex;align-items:center;gap:5px;white-space:nowrap}.bw-resume{color:var(--accent)}
++.bw-agent,.bw-paused{align-items:flex-start;padding:7px 14px;border-top:1px solid var(--border)}
++.bw-agent svg,.bw-paused svg{flex-shrink:0;margin-top:2px}
++.bw-agent code,.bw-paused code{font:11px var(--mono);color:var(--secondary)}
++.bw-paused{background:#fdf4e3;color:#6b4500}:root.ydark .bw-paused{background:#3a2e17;color:#f0d29a}
++.bw-pause,.bw-resume{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px}.bw-resume{color:#9a6200;border-color:#e3b55a}
+ .bw-agent-glow::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 22px color-mix(in srgb,var(--accent) 35%,transparent)}
+-.bw-agent-dot{display:block;width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--accent)}
++.bw-agent-dot{display:block;width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
++.bw-agent-dot.paused{background:#d08a00;box-shadow:0 0 0 3px #d08a0033}
+ .bw-access-floating{position:fixed;z-index:90;right:10px;top:52px;bottom:10px;width:min(52vw,660px);min-width:min(300px,50vw);pointer-events:none;border-radius:12px}.bw-access-floating>.bw-scrim{pointer-events:auto}
+ 
+ /* Native WebContentsView is inset inside this border; renderer pseudo-elements
+@@ -140,3 +149,14 @@ button.bw-profile:hover{color:var(--text);background:var(--selected)}
+ 
+ /* Keep the complete tab title readable, with selectable URL text below it. */
+ .bw-tab-tooltip .fw-path-tooltip { max-height: min(60vh, 480px); white-space: pre-wrap; }
++
++/* B04 navigation failure content follows the confirmed prototype. */
++.bw-navigation-failure h2{margin:4px 0 0}
++.bw-navigation-failure p{max-width:420px;font-size:13px;line-height:20px;margin:0;overflow-wrap:anywhere}
++.bw-navigation-failure .bw-recovery{display:flex;align-items:center;gap:8px}
++.bw-navigation-failure .bw-recovery .fw-loading{width:13px;height:13px}
++.bw-navigation-failure .bw-error-name{font:11px var(--mono);color:var(--muted)}
++.bw-navigation-failure .fw-pill{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;border-radius:22px;white-space:nowrap;font-weight:500}
++
++/* Keep the required authorization deadline compact inside its actual dialog. */
++[data-browser-panel=access-request] .bw-dialog-body>.bw-hint{margin:0}
+diff --git a/src/renderer/features/browser/workspace.test.tsx b/src/renderer/features/browser/workspace.test.tsx
+index c710035f..0f7ec7fa 100644
+--- a/src/renderer/features/browser/workspace.test.tsx
++++ b/src/renderer/features/browser/workspace.test.tsx
+@@ -11,7 +11,7 @@ vi.mock('@renderer/features/files/workspace-panel',()=>({FileWorkspacePanel:({we
+ vi.mock('@renderer/core/navigation',()=>({navigation:{}}));
+ vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{}}));
+ beforeEach(()=>{vi.clearAllMocks();f.api.profileSiteStates.mockResolvedValue([{importState:"ready",profile:{id:"project-p1",scope:"project",label:"项目登录态",source:null,owner:{kind:"project",id:"p1"},partition:"persist:wy-browser-project-p1"},state:{schemaVersion:1,certificates:[],permissions:[]}}]);f.api.placement.mockResolvedValue(null);f.api.overlay.mockResolvedValue(null);f.api.focusChrome.mockResolvedValue(null);f.value={error:'',state:{taskId:'t1',projectId:'p1',activeId:'page1',recent:[],notice:null,external:null,find:{active:0,total:0},tabs:[{id:'page1',url:'about:blank',title:'新标签页',profileId:'project-p1',favicon:null,loading:false,canGoBack:false,canGoForward:false,failure:{kind:'other',url:'https://outside.example.test/',host:'outside.example.test',title:'无法访问 outside.example.test',errorName:'ERR_CERT_AUTHORITY_INVALID',recovery:null},certificate:{url:'https://outside.example.test/',host:'outside.example.test',error:'ERR_CERT_AUTHORITY_INVALID',challengeId:'nonce1'}}]}};});
+-afterEach(async()=>{cleanup();vi.unstubAllGlobals();vi.restoreAllMocks();f.api.accessState.mockResolvedValue({requests:[],grants:[]});await browserAccess.refresh();browserAccess.closeGrants();});
++afterEach(async()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals();vi.restoreAllMocks();f.api.accessState.mockResolvedValue({requests:[],grants:[]});await browserAccess.refresh();browserAccess.closeGrants();});
+ it('shows an initial failed navigation rather than hiding it behind the blank startup page, and binds approval to its nonce',async()=>{
+   render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.queryByRole('heading',{name:'新标签页'})).toBeNull();expect(screen.getByRole('heading',{name:'此连接不受信任'})).toBeTruthy();expect((screen.getByLabelText('网页地址') as HTMLInputElement).value).toBe('https://outside.example.test/');
+   fireEvent.click(screen.getByRole('button',{name:'我了解风险，继续访问'}));await waitFor(()=>expect(f.api.continueCertificate).toHaveBeenCalledWith({taskId:'t1',tabId:'page1',challengeId:'nonce1'}));expect(f.api.placement).not.toHaveBeenCalledWith(expect.objectContaining({rect:expect.any(Object)}));
+@@ -35,6 +35,29 @@ it('renders activity and routes pause/resume as trusted user actions without blo
+   f.value.state.tabs[0].agentActive=true;f.value.state.tabs[0].agentRunning=true;const view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByText('Agent 正在操作此页面')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'暂停 Agent'}));expect(f.api.pause).toHaveBeenCalledWith({taskId:'t1',paused:true});
+   f.value={...f.value,state:{...f.value.state,paused:true}};view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);expect(screen.getByText(/已暂停 Agent 的浏览器操作/)).toBeTruthy();expect(screen.queryByRole('button',{name:'暂停 Agent'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'恢复 Agent'}));expect(f.api.pause).toHaveBeenLastCalledWith({taskId:'t1',paused:false});expect((screen.getByLabelText('网页地址') as HTMLInputElement).disabled).toBe(false);
+ });
++it('displays the host activity deadline across remounts and tab switches without extending its lifetime',async()=>{
++  vi.useFakeTimers();vi.setSystemTime(10000);
++  f.value.state.tabs[0]={...f.value.state.tabs[0],agentActive:true,agentRunning:false,agentHoldUntil:30000};
++  let view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
++  expect(screen.getByText('Agent 最近操作过此页面 · 20 秒后清除标记')).toBeTruthy();
++  await act(async()=>vi.advanceTimersByTime(7400));
++  expect(screen.getByText('Agent 最近操作过此页面 · 13 秒后清除标记')).toBeTruthy();
++  view.unmount();await act(async()=>vi.advanceTimersByTime(3000));
++  view=render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
++  expect(screen.getByText('Agent 最近操作过此页面 · 10 秒后清除标记')).toBeTruthy();
++  f.value={...f.value,state:{...f.value.state,activeId:'page2',tabs:[...f.value.state.tabs,{...f.value.state.tabs[0],id:'page2',agentHoldUntil:60000}]}};
++  view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
++  expect(screen.getByText('Agent 最近操作过此页面 · 40 秒后清除标记')).toBeTruthy();
++  f.value={...f.value,state:{...f.value.state,activeId:'page1'}};
++  view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
++  expect(screen.getByText('Agent 最近操作过此页面 · 10 秒后清除标记')).toBeTruthy();
++  await act(async()=>vi.advanceTimersByTime(10000));
++  expect(screen.getByText('Agent 最近操作过此页面 · 0 秒后清除标记')).toBeTruthy();
++  expect(f.value.state.tabs[0].agentActive).toBe(true);
++  f.value={...f.value,state:{...f.value.state,tabs:[{...f.value.state.tabs[0],agentActive:false,agentHoldUntil:null}]}};
++  view.rerender(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);
++  expect(screen.queryByText(/Agent 最近操作过此页面/)).toBeNull();
++});
+ it('waits for native overlay parking acknowledgement before exposing a scoped authorization dialog',async()=>{
+   render(<TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/>);let parked!:(value:null)=>void;f.api.overlay.mockImplementationOnce(()=>new Promise(resolve=>{parked=resolve;}));f.api.accessState.mockResolvedValue({requests:[{id:'r1',runId:'run1',projectId:'p1',requesterTaskId:'t2',targetTaskId:'t1',requesterTitle:'Caller',targetTitle:'Target',projectName:'Project',mode:'observe',requestedMode:'observe',createdAt:Date.now(),expiresAt:Date.now()+60000}],grants:[]});
+   await act(async()=>browserAccess.refresh());expect(screen.queryByRole('dialog',{name:'Agent 请求访问其他任务的网页'})).toBeNull();expect(f.api.overlay).toHaveBeenCalledWith({taskId:'t1',tabId:'page1',open:true});await act(async()=>parked(null));expect(screen.getByRole('dialog',{name:'Agent 请求访问其他任务的网页'})).toBeTruthy();expect(f.api.focusChrome).not.toHaveBeenCalled();
+diff --git a/src/renderer/features/browser/workspace.tsx b/src/renderer/features/browser/workspace.tsx
+index 53714ca6..06e1accd 100644
+--- a/src/renderer/features/browser/workspace.tsx
++++ b/src/renderer/features/browser/workspace.tsx
+@@ -2,7 +2,7 @@ import {useTreePathTooltip} from '@renderer/features/files/tree-path-tooltip';
+ import {useBrowserTabTooltip,type BrowserTabTooltip} from './tab-tooltip';
+ import {BrowserJavascriptDialogView} from './javascript-dialog';
+ import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
+-import {ArrowLeft,ArrowRight,RotateCw,X,Search,Files,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,UserRound,Download,KeyRound,Pause,Play,Bot,ExternalLink} from 'lucide-react';
++import {ArrowLeft,ArrowRight,RotateCw,X,Search,Files,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,AlertTriangle,WifiOff,UserRound,Download,KeyRound,Pause,Play,Bot,ExternalLink} from 'lucide-react';
+ import {browserChangedEvent,browserShortcutEvent} from '@shared/events';
+ import type {BrowserWorkspaceState,BrowserShortcut} from '@shared/browser-workspace';
+ import type {BrowserProfile} from '@shared/browser-profiles';
+@@ -53,7 +53,7 @@ export function TaskBrowserWorkspace({taskId,onClose}:{taskId:string;onClose:()=
+   useEffect(()=>{void store.refresh();return events.on(browserChangedEvent,event=>{if(event.taskId===taskId)void store.refresh();});},[store,taskId]);
+   const titleTip=useTreePathTooltip(JSON.stringify([taskId,state?.activeId,state?.tabs.map(tab=>[tab.id,tab.title,tab.url])]));
+   const titleTooltip:BrowserTabTooltip|null=titleTip.target?{target:titleTip.target,element:titleTip.element,dismiss:titleTip.dismiss}:null;
+-  const web={tabTooltip:titleTip.bind,inactiveTooltip:titleTooltip&&<div className="bw-tab-tooltip">{titleTooltip.element}</div>,tabs:state?.tabs??[],activeId:state?.activeId??null,onSelect:(id:string)=>void store.select(id),onFiles:()=>void store.select(null),onClose:(id:string)=>void store.close(id),onNew:()=>openNewBrowserTab(taskId),view:state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={titleTooltip}/>:null};
++  const web={tabTooltip:titleTip.bind,inactiveTooltip:titleTooltip&&<div className="bw-tab-tooltip">{titleTooltip.element}</div>,tabs:state?.tabs??[],paused:state?.paused??false,activeId:state?.activeId??null,onSelect:(id:string)=>void store.select(id),onFiles:()=>void store.select(null),onClose:(id:string)=>void store.close(id),onNew:()=>openNewBrowserTab(taskId),view:state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={titleTooltip}/>:null};
+   return <FileWorkspacePanel scope={{kind:'task',taskId}} onClose={onClose} web={web}/>;
+ }
+ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string;titleTooltip:BrowserTabTooltip|null}){
+@@ -62,6 +62,15 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
+   const input=useRef<HTMLInputElement>(null),searchInput=useRef<HTMLInputElement>(null),viewport=useRef<HTMLDivElement>(null),[query,setQuery]=useState('');
+   const [preferences,setPreferences]=useState<BrowserPreferences|null>(null),[pageImage,setPageImage]=useState<string|null>(null),[initialImport,setInitialImport]=useState(false),[profileRecords,setProfileRecords]=useState<ProfileSiteStates|null>(null),[downloadsOpen,setDownloadsOpen]=useState(false),[authOpenId,setAuthOpenId]=useState<string|null>(null),[javascriptOpenId,setJavascriptOpenId]=useState<string|null>(null),seenDownload=useRef(state.downloads?.[0]?.id),settingsGeneration=useRef(0);
+   const taskId=state.taskId,tabId=tab.id;
++  const [,tickActivity]=useState(0),holdUntil=tab.agentHoldUntil;
++  useEffect(()=>{
++    if(state.paused||!tab.agentActive||tab.agentRunning||holdUntil==null)return;
++    // The host owns the deadline. Switching tabs or remounting only resumes
++    // displaying its remaining time; it must never start another 20 seconds.
++    const timer=setInterval(()=>tickActivity(value=>value+1),250);
++    return()=>clearInterval(timer);
++  },[taskId,tabId,state.paused,tab.agentActive,tab.agentRunning,holdUntil]);
++  const holdSeconds=holdUntil==null?null:Math.ceil(Math.max(0,holdUntil-Date.now())/1000);
+   const [badgeProfile,setBadgeProfile]=useState<BrowserProfile|null>(null),[badgeLoading,setBadgeLoading]=useState(true);
+   useEffect(()=>{
+     let active=true;setBadgeProfile(null);setBadgeLoading(true);
+@@ -146,20 +155,20 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
+     <div className="fw-toolbar bw-toolbar"><div className="bw-nav"><button className="fw-icon" aria-label="后退" disabled={!tab.canGoBack} onClick={()=>action('back')}><ArrowLeft size={16}/></button><button className="fw-icon" aria-label="前进" disabled={!tab.canGoForward} onClick={()=>action('forward')}><ArrowRight size={16}/></button><button className="fw-icon" aria-label={tab.loading?'停止加载':'刷新网页'} onClick={()=>action(tab.loading?'stop':'reload')}>{tab.loading?<X size={16}/>:<RotateCw size={16}/>}</button></div>
+       <form className="fw-breadcrumb bw-address" onSubmit={event=>{event.preventDefault();run(()=>rpc.browser.navigate({taskId,tabId,address}));input.current?.blur();}}><span className={tab.certificate?'bw-security bw-certificate':'bw-security'} title={tab.certificate?'证书不受信任':undefined}>{tab.certificate?<ShieldAlert size={14} aria-label="证书不受信任"/>:<Globe size={14}/>}</span><input ref={input} aria-label="网页地址" value={address} placeholder="输入网址或搜索内容" spellCheck={false} onChange={event=>setAddress(event.target.value)} onFocus={event=>event.currentTarget.select()} onKeyDown={event=>{if(event.key==='Escape'){setAddress(blank?'':tab.url);event.currentTarget.blur();}}}/><button type="button" className="bw-profile" title={badgeTitle} aria-busy={badgeLoading} onClick={()=>showProfiles(false,true)}><UserRound size={12}/>{badgeLabel}</button></form>
+       {state.paused?<button type="button" className="fw-pill bw-resume" onClick={()=>run(()=>rpc.browser.pause({taskId,paused:false}))}><Play size={13}/>恢复 Agent</button>:state.tabs.some(item=>item.agentActive)&&<button type="button" className="fw-pill bw-pause" onClick={()=>run(()=>rpc.browser.pause({taskId,paused:true}))}><Pause size={13}/>暂停 Agent</button>}
+-      <>{!!state.downloads?.length&&<button className="fw-icon bw-download-trigger" aria-label="下载" aria-expanded={downloadsOpen} onClick={showDownloads}><Download size={16}/>{state.downloads.some(item=>item.state==='progress')&&<i aria-label="下载进行中"/>}</button>}</><button className="fw-icon" aria-label="浏览器菜单" aria-expanded={menu} onClick={toggleMenu}><MoreHorizontal size={16}/></button>
++      <>{!!state.downloads?.length&&<button className={'fw-icon bw-download-trigger'+(downloadsOpen?' active':'')} aria-label="下载" aria-expanded={downloadsOpen} onClick={showDownloads}><Download size={17} strokeWidth={1.65}/>{state.downloads.some(item=>item.state==='progress')&&<i aria-label="下载进行中"/>}</button>}</><button className="fw-icon" aria-label="浏览器菜单" aria-expanded={menu} onClick={toggleMenu}><MoreHorizontal size={16}/></button>
+     </div>
+     {titleOverlay.element}
+     {menu&&<><button className="bw-dismiss" aria-label="关闭菜单" tabIndex={-1} onClick={()=>closeMenu()}/><div className="bw-menu" role="menu"><button role="menuitem" onClick={()=>closeMenu(()=>setFind(true))}><Search size={14}/>页内查找<kbd>⌘F</kbd></button><>{!!state.downloads?.length&&<button role="menuitem" onClick={showDownloads}><Download size={14}/>下载</button>}</><button role="menuitem" onClick={()=>showProfiles()}><UserRound size={14}/>登录态管理</button><button role="menuitem" disabled={tab.importState==='importing'||tab.importState==='needs-attention'} onClick={()=>showProfiles(true)}><UserRound size={14}/>导入 Chrome／Edge 登录态</button><button role="menuitem" onClick={()=>closeMenu(browserAccess.openGrants)}><ShieldAlert size={14}/>跨任务授权（{access.state.grants.length}）</button><button role="menuitem" onClick={showSettings}><Info size={14}/>浏览器设置</button><button role="menuitem" onClick={()=>closeMenu(()=>action('hard-reload'))}><RotateCw size={14}/>强制刷新</button><button role="menuitem" onClick={()=>closeMenu(()=>{void store.reopen();})}>重开关闭的标签</button></div></>}
+     {downloadsOpen&&<><button className="bw-dismiss" aria-label="关闭下载浮层" tabIndex={-1} onClick={closeSettings}/><BrowserDownloadPanel items={state.downloads??[]} onClose={closeSettings} onAction={async(id,action)=>{await rpc.browser.downloadAction({taskId,id,action});await store.refresh();}}/></>}
+     {(error||state.notice)&&<div className="bw-banner" role="alert">{error||state.notice}</div>}
+-    {state.paused?<div className="bw-banner bw-paused" role="status"><Pause size={14}/><span>已暂停 Agent 的浏览器操作。暂停期间命令返回 <code>BROWSER_PAUSED</code>；你可以手动操作页面，完成后点“恢复 Agent”。</span></div>:tab.agentActive&&<div className="bw-banner bw-agent" role="status"><Bot size={14}/><span>{tab.agentRunning?'Agent 正在操作此页面':'Agent 最近操作过此页面 · 最后一条命令结束约 20 秒后清除标记'}</span></div>}
++    {state.paused?<div className="bw-banner bw-paused" role="status"><Pause size={14}/><span>已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 <code>BROWSER_PAUSED</code>；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。</span></div>:tab.agentActive&&<div className="bw-banner bw-agent" role="status"><Bot size={14}/><span>{tab.agentRunning?'Agent 正在操作此页面':holdSeconds==null?'Agent 最近操作过此页面':`Agent 最近操作过此页面 · ${holdSeconds} 秒后清除标记`}</span></div>}
+     {state.external&&<div className="bw-prompt" role="alertdialog" aria-label="外部应用请求"><ExternalLink size={15}/><span>此页面想用外部应用打开 <code>{state.external.url}</code>。</span><button type="button" className="bw-mini" onClick={()=>run(()=>rpc.browser.external({taskId,id:state.external!.id,allow:false}))}>取消</button><button type="button" className="bw-mini bw-mini-primary" onClick={()=>run(()=>rpc.browser.external({taskId,id:state.external!.id,allow:true}))}>打开</button></div>}
+     {state.permission&&<BrowserPermissionBar key={state.permission.id} prompt={state.permission} onResolve={async allow=>{await rpc.browser.respondPermission({taskId,id:state.permission!.id,allow});await store.refresh();}}/>}
+     {find&&<div className="bw-find" role="search" aria-label="页内查找"><input ref={searchInput} aria-label="页内查找" placeholder="在页面中查找" value={query} onChange={event=>{setQuery(event.target.value);search(event.target.value);}} onKeyDown={event=>{if(event.key==='Escape')closeFind();else if(event.key==='Enter'){event.preventDefault();search(query,true,!event.shiftKey);}}}/><span className="bw-find-count" role="status" aria-live="polite">{query?(state.find.total?`第 ${state.find.active} / ${state.find.total} 个`:'无结果'):''}</span><button className="fw-icon" aria-label="上一个" disabled={!state.find.total} onClick={()=>search(query,true,false)}><ChevronUp size={15}/></button><button className="fw-icon" aria-label="下一个" disabled={!state.find.total} onClick={()=>search(query,true,true)}><ChevronDown size={15}/></button><button className="fw-icon" aria-label="关闭页内查找" onClick={closeFind}><X size={15}/></button></div>}
+     {tab.loading&&!blocked&&<div className="bw-progress" role="status" aria-label="网页正在加载"/>}
+     <div className={'bw-page'+(tab.agentActive&&!state.paused?' bw-agent-glow':'')} ref={viewport} data-testid="browser-viewport">
+       {(pageImage||titleOverlay.image)&&<img className="bw-page-snapshot" src={(pageImage||titleOverlay.image)!} alt="网页预览"/>}
+-      {tab.importState==='importing'?<div className="bw-failure" role="status"><UserRound size={26}/><h2>正在导入登录态</h2><p>完成后将按原地址重新加载此页面。</p></div>:tab.importState==='needs-attention'?<div className="bw-failure" role="alert"><ShieldAlert size={26}/><h2>登录态需要处理</h2><p>上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。</p><button type="button" onClick={()=>showProfiles()}>登录态管理</button></div>:blank?<div className="bw-launcher" aria-label="新标签页"><section><h2>工具</h2><div className="bw-launcher-tools"><button type="button" className="bw-launcher-tool" onClick={()=>{void store.select(null);}}><Files size={17} strokeWidth={1.65}/><span>文件</span><kbd>⌘P</kbd></button></div></section><section><h2>推荐</h2>{state.recent.length?<div className="bw-launcher-sites">{state.recent.map(site=><button key={site.host} type="button" className="bw-launcher-site" title={site.title+' · '+site.host} onClick={()=>run(()=>rpc.browser.navigate({taskId,tabId,address:site.url}))}><span className="bw-launcher-icon"><Globe size={26} strokeWidth={1.4}/></span><span className="bw-launcher-name">{site.title}</span></button>)}</div>:<p className="bw-launcher-empty">本项目还没有访问记录。在上方地址栏输入网址或搜索内容，访问过的网站会出现在这里。</p>}</section></div>:state.authCancelled?<div className="bw-failure" role="alert"><KeyRound size={26}/><h2>401 · 需要认证</h2><p>你取消了 {state.authCancelled.host} 的登录。</p><button type="button" onClick={()=>run(()=>rpc.browser.retryAuthentication({taskId,tabId:state.authCancelled!.pageId}))}>重新登录</button></div>:tab.failure?<div className={'bw-failure'+(tab.certificate?.challengeId?' bw-cert':'')} role="alert">{tab.certificate?.challengeId?<><ShieldAlert size={26}/><h2>此连接不受信任</h2><p><strong>{tab.certificate.host}</strong> 的证书不是由受信任的机构签发的（常见于内网测试环境的自签名证书）。继续访问时，你与该站点之间的通信可能被他人读取或篡改。</p><small className="bw-error-name">{tab.failure.errorName}</small><div className="bw-failure-actions"><button type="button" className="fw-pill" disabled={!tab.canGoBack} onClick={()=>action('back')}>返回</button><button type="button" className="bw-danger-link" onClick={()=>run(()=>rpc.browser.continueCertificate({taskId,tabId,challengeId:tab.certificate!.challengeId!}))}>我了解风险，继续访问</button></div><p className="bw-hint">只有你可以在这里放行；Agent 命令无法添加证书例外。例外按主机记在当前登录态中，可在登录态管理里撤销。</p></>:<><Globe size={30}/><h2>{tab.failure.title}</h2><code>{tab.failure.errorName}</code>{tab.failure.recovery&&<p>{tab.failure.recovery==='poll'?'服务启动后会自动重新加载':'网络恢复后会自动重新加载'}</p>}<button onClick={()=>action('reload')}>重试</button></>}</div>:null}
++      {tab.importState==='importing'?<div className="bw-failure" role="status"><UserRound size={26}/><h2>正在导入登录态</h2><p>完成后将按原地址重新加载此页面。</p></div>:tab.importState==='needs-attention'?<div className="bw-failure" role="alert"><ShieldAlert size={26}/><h2>登录态需要处理</h2><p>上次导入或恢复没有完成，请在登录态管理里重试恢复或清空登录态。</p><button type="button" onClick={()=>showProfiles()}>登录态管理</button></div>:blank?<div className="bw-launcher" aria-label="新标签页"><section><h2>工具</h2><div className="bw-launcher-tools"><button type="button" className="bw-launcher-tool" onClick={()=>{void store.select(null);}}><Files size={17} strokeWidth={1.65}/><span>文件</span><kbd>⌘P</kbd></button></div></section><section><h2>推荐</h2>{state.recent.length?<div className="bw-launcher-sites">{state.recent.map(site=><button key={site.host} type="button" className="bw-launcher-site" title={site.title+' · '+site.host} onClick={()=>run(()=>rpc.browser.navigate({taskId,tabId,address:site.url}))}><span className="bw-launcher-icon"><Globe size={26} strokeWidth={1.4}/></span><span className="bw-launcher-name">{site.title}</span></button>)}</div>:<p className="bw-launcher-empty">本项目还没有访问记录。在上方地址栏输入网址或搜索内容，访问过的网站会出现在这里。</p>}</section></div>:state.authCancelled?<div className="bw-failure" role="alert"><KeyRound size={26}/><h2>401 · 需要认证</h2><p>你取消了 {state.authCancelled.host} 的登录。</p><button type="button" onClick={()=>run(()=>rpc.browser.retryAuthentication({taskId,tabId:state.authCancelled!.pageId}))}>重新登录</button></div>:tab.failure?<div className={'bw-failure'+(tab.certificate?.challengeId?' bw-cert':' bw-navigation-failure')} role="alert">{tab.certificate?.challengeId?<><ShieldAlert size={26}/><h2>此连接不受信任</h2><p><strong>{tab.certificate.host}</strong> 的证书不是由受信任的机构签发的（常见于内网测试环境的自签名证书）。继续访问时，你与该站点之间的通信可能被他人读取或篡改。</p><small className="bw-error-name">{tab.failure.errorName}</small><div className="bw-failure-actions"><button type="button" className="fw-pill" disabled={!tab.canGoBack} onClick={()=>action('back')}>返回</button><button type="button" className="bw-danger-link" onClick={()=>run(()=>rpc.browser.continueCertificate({taskId,tabId,challengeId:tab.certificate!.challengeId!}))}>我了解风险，继续访问</button></div><p className="bw-hint">只有你可以在这里放行；Agent 命令无法添加证书例外。例外按主机记在当前登录态中，可在登录态管理里撤销。</p></>:<>{tab.failure.kind==='offline'?<WifiOff size={26}/>:<AlertTriangle size={26}/>}<h2>{tab.failure.title}</h2>{tab.failure.kind==='not-running'?<p>请先启动这个地址的开发服务。</p>:tab.failure.kind==='refused'?<p>站点可能已停止，或者地址有误。</p>:tab.failure.kind==='dns'?<p>请检查地址拼写。</p>:null}{tab.failure.recovery&&<p className="bw-recovery"><span className="fw-loading"/>{tab.failure.recovery==='poll'?'服务启动后会自动重新加载':'网络恢复后会自动重新加载'}</p>}<small className="bw-error-name">{tab.failure.errorName}</small><div className="bw-failure-actions"><button type="button" className="fw-pill" onClick={()=>action('reload')}><RotateCw size={13}/>重试</button></div></>}</div>:null}
+     </div>
+     {state.javascriptDialog&&javascriptOpenId===state.javascriptDialog.id&&<BrowserJavascriptDialogView key={state.javascriptDialog.id} dialog={state.javascriptDialog} onRespond={async(accept,text)=>{await rpc.browser.respondJavascriptDialog({taskId,id:state.javascriptDialog!.id,accept,text});await store.refresh();}}/>}
+     {state.auth&&authOpenId===state.auth.id&&<BrowserAuthDialog key={state.auth.id} prompt={state.auth} onRespond={async credentials=>{await rpc.browser.respondAuthentication({taskId,id:state.auth!.id,credentials});await store.refresh();}}/>}
+diff --git a/src/renderer/features/files/workspace-panel.tsx b/src/renderer/features/files/workspace-panel.tsx
+index 8b34d811..513b3cc1 100644
+--- a/src/renderer/features/files/workspace-panel.tsx
++++ b/src/renderer/features/files/workspace-panel.tsx
+@@ -45,7 +45,7 @@ function Tool({ label, children, active, disabled, preserveEditorFocus = false,
+     if (event.button === 0 && preserveEditorFocus && document.activeElement?.closest('.cm-editor')) event.preventDefault();
+   }} onClick={onClick}>{children}</button>;
+ }
+-export interface WebWorkspaceExtension {tabs:{id:string;title:string;url:string;favicon:string|null;agentActive?:boolean}[];activeId:string|null;onSelect:(id:string)=>void;onFiles:()=>void;onClose:(id:string)=>void;onNew:()=>void;tabTooltip?:ReturnType<typeof useTreePathTooltip>['bind'];inactiveTooltip?:ReactNode;view:ReactNode}
++export interface WebWorkspaceExtension {tabs:{id:string;title:string;url:string;favicon:string|null;agentActive?:boolean}[];paused?:boolean;activeId:string|null;onSelect:(id:string)=>void;onFiles:()=>void;onClose:(id:string)=>void;onNew:()=>void;tabTooltip?:ReturnType<typeof useTreePathTooltip>['bind'];inactiveTooltip?:ReactNode;view:ReactNode}
+ export function FileWorkspacePanel({ scope, onClose,web }: { scope: FileScope; onClose: () => void;web?:WebWorkspaceExtension }) {
+   const key = fileScopeKey(scope), store = useMemo(() => fileWorkspaceFor(scope), [key]);
+   useSyncExternalStore(store.subscribe, store.snapshot);
+@@ -135,7 +135,7 @@ function WorkspaceContents({ store, onClose,web }: { store: ReturnType<typeof fi
+       {store.tabs.map((tab) => <div key={tab.id} className={`fw-tab ${!web?.activeId&&tab.id === store.activeId ? 'selected' : ''} ${tab.pinned ? '' : 'preview'}`} draggable onDragStart={(event) => { event.dataTransfer.setData('application/x-willyou-file-tab', tab.id); const file = tab.buffer?.file; const drag = file && terminal?.startDrag({ lease: file.ref.lease, generation: file.ref.generation, relativePath: file.relativePath }, file.revision); if (drag) event.dataTransfer.setData(FILE_TERMINAL_DRAG_TYPE, drag.token); event.dataTransfer.effectAllowed = 'copyMove'; }} onDragEnd={() => endFileDrag()} onDragOver={(event) => { if (event.dataTransfer.types.includes('application/x-willyou-file-tab')) event.preventDefault(); }} onDrop={(event) => { const from = event.dataTransfer.getData('application/x-willyou-file-tab'); if (from) { event.preventDefault(); store.reorder(from, tab.id); } }}>
+         <button role="tab" aria-selected={!web?.activeId&&tab.id === store.activeId} title={`${tab.route.sourcePath}/${tab.route.relativePath}`} onClick={() => {web?.onFiles();store.activate(tab.id);}} onDoubleClick={() => store.pin(tab.id)}><FileTreeIcon path={tab.route.relativePath} /><span>{tab.route.relativePath.split('/').at(-1)}</span>{tab.buffer?.dirty && <i className="fw-dirty" aria-label="未保存" />}</button><button className="fw-tab-close" aria-label={`关闭 ${tab.route.relativePath.split('/').at(-1)}`} onMouseDown={(event) => { if (event.button === 0) event.preventDefault(); }} onClick={(event) => void close(tab.id, event.currentTarget)}><X size={13} /></button>
+       </div>)}
+-      {web?.tabs.map(tab=><div key={tab.id} className={`fw-tab fw-web-tab ${tab.id===web.activeId?'selected':''}`}><button role="tab" aria-selected={tab.id===web.activeId} {...web.tabTooltip?.([tab.title||'新标签页',tab.url].filter(Boolean).join('\n'))} onClick={()=>web.onSelect(tab.id)}>{tab.favicon?<img className="bw-tab-icon" src={tab.favicon} alt=""/>:<Globe size={14}/>}<span>{tab.title||'新标签页'}</span>{tab.agentActive&&<i className="bw-agent-dot" aria-label="Agent 活动"/>}</button><button className="fw-tab-close" aria-label={`关闭网页 ${tab.title||'新标签页'}`} onClick={()=>web.onClose(tab.id)}><X size={13}/></button></div>)}
++      {web?.tabs.map(tab=><div key={tab.id} className={`fw-tab fw-web-tab ${tab.id===web.activeId?'selected':''}`}><button role="tab" aria-selected={tab.id===web.activeId} {...web.tabTooltip?.([tab.title||'新标签页',tab.url].filter(Boolean).join('\n'))} onClick={()=>web.onSelect(tab.id)}>{tab.favicon?<img className="bw-tab-icon" src={tab.favicon} alt=""/>:<Globe size={14}/>}<span>{tab.title||'新标签页'}</span>{tab.agentActive&&<i className={'bw-agent-dot'+(web.paused?' paused':'')} aria-label={web.paused?'Agent 已暂停':'Agent 活动'}/>}</button><button className="fw-tab-close" aria-label={`关闭网页 ${tab.title||'新标签页'}`} onClick={()=>web.onClose(tab.id)}><X size={13}/></button></div>)}
+       <Tool label="查找并打开文件" onClick={() => {web?.onFiles();setTreeVisible(true); requestAnimationFrame(() => panel.current?.querySelector<HTMLInputElement>('[aria-label="筛选文件"]')?.focus()); }}><Plus size={16} /></Tool>{web&&<Tool label="新建网页标签" onClick={web.onNew}><Plus size={16}/></Tool>}<span className="fw-push" /><Tool label={full ? '退出文件全屏' : '文件全屏'} onClick={() => setFull((value) => !value)}>{full ? <Minimize2 size={16} /> : <Maximize2 size={16} />}</Tool><Tool label="隐藏文件区域" onClick={onClose}><PanelRight size={16} /></Tool>
+     </div>
+     {!web?.activeId&&web?.inactiveTooltip}
+diff --git a/src/shared/browser-navigation.ts b/src/shared/browser-navigation.ts
+index 764cc81d..6308a7ea 100644
+--- a/src/shared/browser-navigation.ts
++++ b/src/shared/browser-navigation.ts
+@@ -60,6 +60,6 @@ export function describeBrowserLoadFailure(code:number,description:string,url:st
+   let host='',localHost=false;
+   try{const u=new URL(url);host=u.host;localHost=u.hostname==='localhost'||u.hostname.endsWith('.localhost')||/^127\./.test(u.hostname)||['[::1]','0.0.0.0','[::]'].includes(u.hostname);}catch{/* Invalid destinations use a generic message. */}
+   const kind:BrowserFailureKind=code===-102?(localHost?'not-running':'refused'):code===-106?'offline':[-105,-137].includes(code)?'dns':[-7,-118].includes(code)?'timeout':[-100,-101,-103,-324].includes(code)?'reset':'other';
+-  const titles:Record<BrowserFailureKind,string>={'not-running':`${host} 上还没有服务在运行`,refused:`${host} 拒绝连接`,dns:`找不到 ${host}`,offline:'当前处于离线',timeout:`${host} 响应太久`,reset:`${host} 连接被中断`,other:host?`无法访问 ${host}`:'无法加载此页面'};
++  const titles:Record<BrowserFailureKind,string>={'not-running':`${host} 上还没有服务在运行`,refused:`${host} 拒绝连接`,dns:`找不到 ${host}`,offline:'当前处于离线状态',timeout:`${host} 响应时间过长`,reset:`与 ${host} 的连接被中断`,other:host?`无法访问 ${host}`:'无法加载此页面'};
+   return{kind,url,host,title:titles[kind],errorName:/^(?:net::)?(ERR_[A-Z0-9_]+)$/.exec(description)?.[1]??description,recovery:kind==='not-running'?'poll':kind==='offline'?'online':null};
+ }
+diff --git a/src/shared/browser-workspace.ts b/src/shared/browser-workspace.ts
+index ae823f07..77dc8a69 100644
+--- a/src/shared/browser-workspace.ts
++++ b/src/shared/browser-workspace.ts
+@@ -11,7 +11,7 @@ export const browserWorkspaceSchema=z.object({version:z.literal(1),tabs:z.array(
+ export type SavedBrowserTab=z.infer<typeof browserTabSchema>;
+ export type SavedBrowserWorkspace=z.infer<typeof browserWorkspaceSchema>;
+ export interface BrowserCertificateState {url:string;host:string;error:string;challengeId:string|null}
+-export interface BrowserTabState extends SavedBrowserTab {loading:boolean;canGoBack:boolean;canGoForward:boolean;failure:BrowserLoadFailure|null;certificate?:BrowserCertificateState|null;importState?:'ready'|'importing'|'needs-attention';agentActive?:boolean;agentRunning?:boolean}
++export interface BrowserTabState extends SavedBrowserTab {loading:boolean;canGoBack:boolean;canGoForward:boolean;failure:BrowserLoadFailure|null;certificate?:BrowserCertificateState|null;importState?:'ready'|'importing'|'needs-attention';agentActive?:boolean;agentRunning?:boolean;agentHoldUntil?:number|null}
+ export type BrowserShortcut='new'|'reopen'|'close'|'reload'|'hard-reload'|'back'|'forward'|'address'|'find'|'show';
+ export interface BrowserWorkspaceState {taskId:string;projectId:string;tabs:BrowserTabState[];activeId:string|null;recent:{url:string;title:string;host:string;visitedAt:number}[];notice:string|null;external:{id:string;url:string}|null;find:{active:number;total:number};permission?:BrowserPermissionPrompt|null;downloads?:BrowserDownload[];auth?:BrowserAuthPrompt|null;authCancelled?:BrowserAuthCancelled|null;javascriptDialog?:BrowserJavascriptDialog|null;paused?:boolean}
+ const id=z.string().uuid();

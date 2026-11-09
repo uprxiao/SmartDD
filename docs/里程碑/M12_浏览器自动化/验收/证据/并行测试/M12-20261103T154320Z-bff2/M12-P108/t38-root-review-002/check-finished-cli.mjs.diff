@@ -1,0 +1,17 @@
+--- /private/tmp/willyou-m12-t131-t38-peer-ar-001/supplemental-review-001/check-finished-cli.mjs
++++ /private/tmp/willyou-m12-t131-t38-root-review-002/check-finished-cli.mjs
+@@ -1,6 +1,6 @@
+ import assert from 'node:assert/strict';
+ import {readFile,writeFile} from 'node:fs/promises';
+-import {finishedCliText} from './finished-cli-text.mjs';
++import {finishedCliText} from 'file:///private/tmp/willyou-m12-t131-t38-peer-ar-001/supplemental-review-001/finished-cli-text.mjs';
+ const ROOT='/private/tmp/willyou-m12-t131-t38-peer-ar-001';
+ assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');
+ const r=JSON.parse(await readFile(ROOT+'/raw.private.json'));
+@@ -21,5 +21,5 @@
+  ['wrong-json-code',x=>x.replace('"code":"PEER_MISMATCH"','"code":"AUTH_REQUIRED"')],
+  ['leading-extra-body',x=>x.replace('Output:\n','Output:\nextra\n')]
+ ])pass(name,()=>assert.throws(()=>parse(change(after))));
+-await writeFile(ROOT+'/supplemental-review-001/finite-decoder-controls.json',JSON.stringify({at:new Date().toISOString(),passed:tests.length,tests,Native:0,model:0,boundary:'Finite observed terminal stdout/stderr order only; original request/call/source/time binding unchanged; strict one JSON object; no running inference or child exit fabrication.'},null,2)+'\n',{mode:0o600});
++await writeFile("/private/tmp/willyou-m12-t131-t38-root-review-002/finite-decoder-controls.json",JSON.stringify({at:new Date().toISOString(),passed:tests.length,tests,Native:0,model:0,boundary:'Finite observed terminal stdout/stderr order only; original request/call/source/time binding unchanged; strict one JSON object; no running inference or child exit fabrication.'},null,2)+'\n',{mode:0o600});
+ console.log(JSON.stringify({passed:tests.length,Native:0}));

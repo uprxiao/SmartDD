@@ -1,0 +1,7 @@
+T004真正续接003：沿原T0/task/profile/userData/已登录CODEX_HOME，原公开payload SHA3ed45b05…及call_6301dc0564964aeab9e05bffd01005cc/0不变，无新health/authcopy/A重跑。当前仍固定App024/source028，生产managed shell_snapshot修改由Root另行负责，本组不改生产。
+
+插入前只读实际xterm disableStdin/screenReaderMode/readOnly/keydownSeen/keyPressHandled/IME与焦点。被动onData观察经本机probe验证；Input.insertText仅一次。插入后最多15秒等待：当前Codex composer区按实际行分隔解析可见marker，placeholder消失，onData长度/hash与原payload完全一致，actual model/cursor及input idle状态连续稳定250ms，再只按一次Enter。没有rawPTY全文连续echo或GPT/footer门槛。250ms是实际状态稳定观察，不作为paste engine时限或根因证明。
+
+完整canonical Native user全文ACK仍是唯一送达判据；无ACK/消费不满足不Enter/不重发。完整屏/配额只存本轮private runtime，公开只必要composer行、输入长度/hash/状态、实际Native身份和命令exit，不归档认证/全屏/配额。原002单次insert/Enter无ACK及原003probe的screenSHA restore红均保留；显式空格语义擦除仅作独立更正，未再跑char/probe。
+
+Root先将cont002独立cleanup16项allClear的实际SHA绑定新lease，再复核新授权receipt执行。当前仅文件准备，无Native/App/OS/模型执行，正式新增0。

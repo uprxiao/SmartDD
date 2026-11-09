@@ -1,0 +1,32 @@
+.fw-editor-status {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  max-width: calc(100% - 32px);
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: .625rem;
+  background: var(--bg);
+  box-shadow: 0 1px 2px -1px #00000014;
+  color: var(--secondary);
+  font-size: 12px;
+}
+.fw-editor-status .fw-icon { width: 26px; height: 26px; }
+.fw-editor-status-redo svg { transform: scaleX(-1); }
+.fw-editor-status-mode { padding: 0 6px; white-space: nowrap; }
+.fw-editor-status-saving { display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; line-height: 1; }
+.fw-editor-status-saving .fw-loading { width: 14px; height: 14px; flex-shrink: 0; }
+.fw-editor-status-error { display: inline-flex; align-items: center; gap: 4px; color: var(--danger, #d14343); padding: 0 8px; line-height: 1; }
+.fw-editor-status-error svg { flex-shrink: 0; }
+
+/* Match the reference declarations without assuming its host palette or rem. */
+@supports (color: color-mix(in lab, red, red)) {
+  .fw-editor-status { background: color-mix(in oklab, var(--bg) 90%, transparent); }
+}
+@supports (corner-shape: superellipse(1.5)) {
+  .fw-editor-status { border-radius: calc(.625rem * 1.25); }
+}

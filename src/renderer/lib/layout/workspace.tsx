@@ -20,6 +20,7 @@ import { SettingsView } from '@renderer/views/settings-view';
 import { RuntimeBar, TaskHeader } from '@renderer/views/task-chrome';
 import { TaskView } from '@renderer/views/task-view';
 import { FileWorkspacePanel } from '@renderer/features/files/workspace-panel';
+import {TaskBrowserWorkspace,useBrowserShortcuts} from '@renderer/features/browser/workspace';
 import appIcon from '../../../assets/branding/app-icon.png';
 
 export const Workspace = observer(function Workspace() {
@@ -29,6 +30,7 @@ export const Workspace = observer(function Workspace() {
   useEffect(() => events.on(menuToggleLeftSidebarEvent, () => setIsLeftOpen((v) => !v)), []);
   const view = navigation.currentViewId;
   useApplicationEvents();
+  useBrowserShortcuts();
   const apps=view==='apps';
   const settings = view === 'settings';
   const scheduled = view === 'scheduled';
@@ -103,7 +105,7 @@ const MainContent = observer(function MainContent() {
     {navigation.filePanelOpen && fileScope && <><div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
       onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) navigation.setFilePanelWidth((split.current?.getBoundingClientRect().right ?? 0) - event.clientX, available); }}
       onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available); } }} />
-      <FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} /></>}
+      {fileScope.kind==='task'&&task?.projectId?<TaskBrowserWorkspace key={fileScope.taskId} taskId={fileScope.taskId} onClose={()=>navigation.toggleFilePanel()}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
     </div>
     {task && <RuntimeBar task={task} />}
   </main>;

@@ -1,0 +1,461 @@
+{
+  "at": "2026-11-05T21:05:26.597Z",
+  "passed": true,
+  "phaseCount": 4,
+  "phases": [
+    {
+      "role": "default-base",
+      "workspaceWrite": true,
+      "deniedRead": "original-default-readable",
+      "outsideWriteDenied": true,
+      "mcp": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "mcp",
+          "role": "default-base"
+        },
+        "elapsedMs": 1,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "decoy": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "decoy",
+          "role": "default-base"
+        },
+        "elapsedMs": 1,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "deniedDomain": {
+        "schema": "t29-network-proof-v1",
+        "kind": "domain",
+        "target": {
+          "host": "denied.localhost",
+          "port": 49374,
+          "role": "default-base",
+          "name": "denied"
+        },
+        "curlExitObserved": 7,
+        "curlSignal": null,
+        "spawnErrorCode": null,
+        "httpStatus": 0,
+        "bodyCanaryObserved": false,
+        "reached": false,
+        "classification": "policy-denied",
+        "reason": "operation-not-permitted",
+        "errnoObserved": null,
+        "errnoNameDerived": "EPERM",
+        "rawCapturedOnlyInChildMemory": true,
+        "rawPrinted": false
+      },
+      "allowedDomain": {
+        "reached": false,
+        "probeExitObserved": 7,
+        "childExitObserved": 0,
+        "reason": "operation-not-permitted",
+        "acceptedNarrowingOnly": false
+      }
+    },
+    {
+      "role": "default-cli",
+      "workspaceWrite": true,
+      "deniedRead": "original-default-readable",
+      "outsideWriteDenied": true,
+      "mcp": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "mcp",
+          "role": "default-cli"
+        },
+        "elapsedMs": 0,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "decoy": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "decoy",
+          "role": "default-cli"
+        },
+        "elapsedMs": 1,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "deniedDomain": {
+        "schema": "t29-native-tool-policy-proof-v1",
+        "kind": "domain",
+        "target": {
+          "host": "denied.localhost",
+          "port": 49374,
+          "role": "default-cli",
+          "name": "denied"
+        },
+        "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+        "curlExitObserved": null,
+        "childExitObserved": null,
+        "httpStatus": null,
+        "bodyCanaryObserved": false,
+        "reached": false,
+        "classification": "policy-denied",
+        "reason": "domain-not-allowlisted",
+        "errnoObserved": null,
+        "errnoNameDerived": null,
+        "rawPrinted": false,
+        "helperExecutedNotClaimed": true
+      },
+      "allowedDomain": {
+        "reached": false,
+        "probeExitObserved": null,
+        "childExitObserved": null,
+        "reason": "domain-not-allowlisted",
+        "acceptedNarrowingOnly": false
+      }
+    },
+    {
+      "role": "named-base",
+      "workspaceWrite": true,
+      "deniedRead": "denied",
+      "outsideWriteDenied": true,
+      "mcp": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "mcp",
+          "role": "named-base"
+        },
+        "elapsedMs": 0,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "decoy": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "decoy",
+          "role": "named-base"
+        },
+        "elapsedMs": 0,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "deniedDomain": {
+        "schema": "t29-native-tool-policy-proof-v1",
+        "kind": "domain",
+        "target": {
+          "host": "denied.localhost",
+          "port": 49374,
+          "role": "named-base",
+          "name": "denied"
+        },
+        "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+        "curlExitObserved": null,
+        "childExitObserved": null,
+        "httpStatus": null,
+        "bodyCanaryObserved": false,
+        "reached": false,
+        "classification": "policy-denied",
+        "reason": "domain-not-allowlisted",
+        "errnoObserved": null,
+        "errnoNameDerived": null,
+        "rawPrinted": false,
+        "helperExecutedNotClaimed": true
+      },
+      "allowedDomain": {
+        "reached": false,
+        "probeExitObserved": null,
+        "childExitObserved": null,
+        "reason": "domain-not-allowlisted",
+        "acceptedNarrowingOnly": true
+      }
+    },
+    {
+      "role": "named-cli",
+      "workspaceWrite": true,
+      "deniedRead": "denied",
+      "outsideWriteDenied": true,
+      "mcp": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "mcp",
+          "role": "named-cli"
+        },
+        "elapsedMs": 0,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "decoy": {
+        "schema": "t29-network-proof-v1",
+        "kind": "unix",
+        "target": {
+          "alias": "decoy",
+          "role": "named-cli"
+        },
+        "elapsedMs": 1,
+        "rawPrinted": false,
+        "classification": "policy-denied",
+        "reason": "actual-os-permission-denial",
+        "code": "EPERM",
+        "errnoObserved": -1,
+        "syscall": "connect",
+        "reached": false
+      },
+      "deniedDomain": {
+        "schema": "t29-native-tool-policy-proof-v1",
+        "kind": "domain",
+        "target": {
+          "host": "denied.localhost",
+          "port": 49374,
+          "role": "named-cli",
+          "name": "denied"
+        },
+        "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+        "curlExitObserved": null,
+        "childExitObserved": null,
+        "httpStatus": null,
+        "bodyCanaryObserved": false,
+        "reached": false,
+        "classification": "policy-denied",
+        "reason": "domain-not-allowlisted",
+        "errnoObserved": null,
+        "errnoNameDerived": null,
+        "rawPrinted": false,
+        "helperExecutedNotClaimed": true
+      },
+      "allowedDomain": {
+        "reached": false,
+        "probeExitObserved": null,
+        "childExitObserved": null,
+        "reason": "domain-not-allowlisted",
+        "acceptedNarrowingOnly": true
+      }
+    }
+  ],
+  "proofs": [
+    "actual committed own-store plans independently hash-checked",
+    "exact current Codex native calls/output/identity/order replayed",
+    "before/after original default and named filesystem/network policy behavior",
+    "real CLI Host operation once per selected run, no MCP/decoy or baseline CLI connection",
+    "all private policy/provider/project bytes and modes preserved; only exact Codex TUI counters advance1-to2, original full-file SHA differences retained",
+    "normal own App exit and independently exact resources clear"
+  ],
+  "boundaries": [
+    "RPC TaskService start is explicit non-UI preparation; no composer/UI interaction claim",
+    "Local synthetic model is permitted M11 R scope; no external model or autonomous model discovery claim",
+    "Named allowed-domain narrowing may be accepted only under prior C22 user decision; unreachable loopback does not prove public Internet access",
+    "Cross-run token B evidence is separately attributed by coordinator; this group is not named-policy concurrent B evidence",
+    "Unprovable-policy fail-closed is separately attributed current I; no fabricated unsupported native policy execution",
+    "T38 private shell_snapshots run-token persistence remains separately reported; no absence-from-private-cache claim"
+  ],
+  "formalCaseIncrement": 0,
+  "status": "strict-derived-native-policy-carrier-review-passed-root-review-required",
+  "originalJudgePreservedFailed": true,
+  "originalJudgeResultSHA": "cb0236e3d3148cca2fc3e07e070f5b2e07d69e8f345ff12c59cfe9f939bc7f29",
+  "exactNativePolicyDenials": [
+    {
+      "target": {
+        "host": "denied.localhost",
+        "port": 49374,
+        "role": "default-cli",
+        "name": "denied"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/default/codex/sessions/2026/11/06/rollout-2026-11-06T04-55-52-01a1ad7f-221b-7081-935b-9120d1806eee.jsonl",
+        "callId": "t29_default-cli_9",
+        "callLine": 55,
+        "outputLine": 58,
+        "callAt": "2026-11-05T20:55:54.142Z",
+        "at": "2026-11-05T20:55:54.224Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    },
+    {
+      "target": {
+        "host": "allowed.localhost",
+        "port": 49374,
+        "role": "default-cli",
+        "name": "allowed"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/default/codex/sessions/2026/11/06/rollout-2026-11-06T04-55-52-01a1ad7f-221b-7081-935b-9120d1806eee.jsonl",
+        "callId": "t29_default-cli_8",
+        "callLine": 50,
+        "outputLine": 53,
+        "callAt": "2026-11-05T20:55:54.050Z",
+        "at": "2026-11-05T20:55:54.131Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    },
+    {
+      "target": {
+        "host": "denied.localhost",
+        "port": 49374,
+        "role": "named-base",
+        "name": "denied"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/named/codex/sessions/2026/11/06/rollout-2026-11-06T04-55-56-01a1ad7f-31dd-77b2-81d0-bd1f860a022a.jsonl",
+        "callId": "t29_named-base_7",
+        "callLine": 45,
+        "outputLine": 48,
+        "callAt": "2026-11-05T20:55:57.915Z",
+        "at": "2026-11-05T20:55:57.995Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    },
+    {
+      "target": {
+        "host": "allowed.localhost",
+        "port": 49374,
+        "role": "named-base",
+        "name": "allowed"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/named/codex/sessions/2026/11/06/rollout-2026-11-06T04-55-56-01a1ad7f-31dd-77b2-81d0-bd1f860a022a.jsonl",
+        "callId": "t29_named-base_6",
+        "callLine": 40,
+        "outputLine": 43,
+        "callAt": "2026-11-05T20:55:57.817Z",
+        "at": "2026-11-05T20:55:57.904Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    },
+    {
+      "target": {
+        "host": "denied.localhost",
+        "port": 49374,
+        "role": "named-cli",
+        "name": "denied"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/named/codex/sessions/2026/11/06/rollout-2026-11-06T04-56-00-01a1ad7f-4058-71f0-a842-46e93cfc7e7c.jsonl",
+        "callId": "t29_named-cli_9",
+        "callLine": 55,
+        "outputLine": 58,
+        "callAt": "2026-11-05T20:56:01.998Z",
+        "at": "2026-11-05T20:56:02.075Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    },
+    {
+      "target": {
+        "host": "allowed.localhost",
+        "port": 49374,
+        "role": "named-cli",
+        "name": "allowed"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/named/codex/sessions/2026/11/06/rollout-2026-11-06T04-56-00-01a1ad7f-4058-71f0-a842-46e93cfc7e7c.jsonl",
+        "callId": "t29_named-cli_8",
+        "callLine": 50,
+        "outputLine": 53,
+        "callAt": "2026-11-05T20:56:01.901Z",
+        "at": "2026-11-05T20:56:01.984Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    }
+  ],
+  "negativeControls": 13,
+  "exactPrivateConfigurationFacts": [
+    {
+      "role": "default-cli",
+      "path": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/default/codex/config.toml",
+      "entireFileUnchanged": false,
+      "onlyField": "tui.model_availability_nux.gpt-6.1-sol",
+      "beforeCounter": 1,
+      "afterCounter": 2,
+      "beforeSHA": "6e651bdb08c059d25a758c9c7abc0c8a026ab7013b314cf16b8f03ea69d01872",
+      "afterSHA": "a2635fea962d4d774c601cb86246123818476108aae1b081a2404851f93dce65",
+      "bytes": 591,
+      "mode": 384,
+      "exactMatchingBeforeHashReconstruction": true,
+      "everyOtherByteIdentical": true,
+      "differenceOffset": 589,
+      "actorBoundary": "Codex-owned TUI notification field; OS file-writer tracing was not recorded; no general ignore-TUI exception"
+    },
+    {
+      "role": "named-cli",
+      "path": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/named/codex/config.toml",
+      "entireFileUnchanged": true,
+      "beforeSHA": "aa27ba5e000d61e34a025395ebdb57bf5ebb037d346d286663954fd107817420",
+      "afterSHA": "aa27ba5e000d61e34a025395ebdb57bf5ebb037d346d286663954fd107817420",
+      "bytes": 510,
+      "mode": 384
+    },
+    {
+      "role": "named-cli",
+      "path": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/named/codex/wy_t29.config.toml",
+      "entireFileUnchanged": false,
+      "onlyField": "tui.model_availability_nux.gpt-6.1-sol",
+      "beforeCounter": 1,
+      "afterCounter": 2,
+      "beforeSHA": "622163bda29052e4ece3433f69545888d765b481d2111f2dfe4b250cb8ae7823",
+      "afterSHA": "b977fabfe50091b1e14455b2430a69a3df1596f8070e7fbb17dc683ce66a208d",
+      "bytes": 356,
+      "mode": 384,
+      "exactMatchingBeforeHashReconstruction": true,
+      "everyOtherByteIdentical": true,
+      "differenceOffset": 354,
+      "actorBoundary": "Codex-owned TUI notification field; OS file-writer tracing was not recorded; no general ignore-TUI exception"
+    }
+  ],
+  "configNegativeControls": 15,
+  "originalFullFileSHADifferencesRetained": true,
+  "inputCountUnchanged": 213,
+  "noActualRerun": true,
+  "Native": 0,
+  "resourcesHeld": false
+}

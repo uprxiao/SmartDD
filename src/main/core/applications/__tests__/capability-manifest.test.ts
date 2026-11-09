@@ -46,6 +46,18 @@ describe('v2 capability manifests and retained v1 views', () => {
     expect(digest(canonicalJson(parsePackageManifest(b.manifest, { supportsModule: () => { throw Error('must not call'); } })))).toBe(originalIdentity);
     expect(canonicalJson(b.manifest)).toBe(bytes);
   });
+  it('allows an empty connection contract only with explicit trusted-module support', () => {
+    const b = v2Bundle();
+    b.manifest.connectionContracts = [];
+    b.manifest.connectionSlots = [];
+    b.manifest.capabilities[0].slots = { required: [], conditional: [] };
+    expect(() => parsePackageManifest(b.manifest, modules)).toThrow(expect.objectContaining({ code: 'INVALID_PACKAGE' }));
+    expect(() => parsePackageManifest(b.manifest, { ...modules, isConnectionless: () => false })).toThrow(ApplicationError);
+    expect(parsePackageManifest(b.manifest, { ...modules, isConnectionless: id => id === 'zentao' }).connectionContracts).toEqual([]);
+    // A v2 addition does not relax the retained v1 package contract.
+    const old = fixtureBundle();
+    expect(() => parsePackageManifest({ ...old.manifest, connectionContracts: [] }, { ...modules, isConnectionless: () => true })).toThrow(ApplicationError);
+  });
   it('projects a v1 tool through trusted business policy without renaming its tool or mutating bytes', () => {
     const b = fixtureBundle(), before = canonicalJson(b.manifest);
     const views = applicationCapabilityViews(b.manifest, () => ({ id: 'zentao.object.list', semantics: 'read', retry: 'safe-read', slots: { required: ['zentao'], conditional: [] } }));

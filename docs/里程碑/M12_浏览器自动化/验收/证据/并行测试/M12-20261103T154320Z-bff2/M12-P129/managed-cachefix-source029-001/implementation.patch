@@ -1,0 +1,102 @@
+diff --git a/src/main/core/applications/__tests__/codex-effective-sandbox.test.ts b/src/main/core/applications/__tests__/codex-effective-sandbox.test.ts
+index 0c1f030c..86a3e1a8 100644
+--- a/src/main/core/applications/__tests__/codex-effective-sandbox.test.ts
++++ b/src/main/core/applications/__tests__/codex-effective-sandbox.test.ts
+@@ -14,16 +14,23 @@ describe('M11 exact Codex policy inheritance and fail-closed CLI delivery',()=>{
+    const kept=['--profile','owned-profile','--model','owned-model','--ask-for-approval','never','-c','skills.config=[]'],args=[...kept,...selector],original=[...args];
+    const policy=plan({sandbox_mode:mode==='read-only'?'workspace-write':'read-only'},args);
+    expect(policy).toMatchObject({available:true,kind:'inherit',parent:mode==='read-only'?':read-only':':workspace'});
+-   expect(codexProfileArgsForCli(args,policy)).toEqual(kept);expect(args).toEqual(original);
++   expect(codexProfileArgsForCli(args,policy)).toEqual([...kept,'--disable','shell_snapshot']);expect(args).toEqual(original);
+   }
+  });
+- it('does not rewrite unverified/full-access argv, preserves approval shortcuts and rejects a mismatched policy proof',()=>{
++ it('leaves unverified argv alone and protects verified CLI runs without changing full-access or approval selectors',()=>{
+   const args=['--sandbox','read-only','--ask-for-approval','never'];
+   expect(codexProfileArgsForCli(args,{available:false,reason:'unverified',source:'test',digest:null})).toEqual(args);
+-  const full=['--sandbox','danger-full-access'];expect(codexProfileArgsForCli(full,plan({},full))).toEqual(full);
+-  const automatic=['--approve-for-me'];expect(codexProfileArgsForCli(automatic,plan({},automatic))).toEqual(automatic);
++  const full=['--sandbox','danger-full-access'];expect(codexProfileArgsForCli(full,plan({},full))).toEqual([...full,'--disable','shell_snapshot']);
++  const automatic=['--approve-for-me'];expect(codexProfileArgsForCli(automatic,plan({},automatic))).toEqual([...automatic,'--disable','shell_snapshot']);
+   expect(()=>codexProfileArgsForCli(args,plan({sandbox_mode:'workspace-write'}))).toThrow('不等价');
+  });
++ it('adds the run-local snapshot protection after original feature arguments without mutating the profile',()=>{
++  const args=['--enable','shell_snapshot','-c','features.shell_snapshot=true','--ask-for-approval','on-request'],before=[...args];
++  const policy=plan({sandbox_mode:'workspace-write'},args);
++  expect(policy.available).toBe(true);
++  expect(codexProfileArgsForCli(args,policy)).toEqual([...args,'--disable','shell_snapshot']);
++  expect(args).toEqual(before);
++ });
+  it.each([
+   ['--sandbox','read-only','--sandbox','workspace-write'],
+   ['--sandbox','read-only','--approve-for-me'],
+diff --git a/src/main/core/applications/__tests__/task-capability-launcher.test.ts b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+index 52fb301f..2e8d1a36 100644
+--- a/src/main/core/applications/__tests__/task-capability-launcher.test.ts
++++ b/src/main/core/applications/__tests__/task-capability-launcher.test.ts
+@@ -118,6 +118,7 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
+   expect(fixed.schema).toBe(3);expect(fixed.adapterBinding.version).toBe('1.3.0');expect(plan.allowed).toMatchObject([{appId:'mail',capabilityId:'mail.draft.list',entry:'cli'}]);expect(plan.sandbox).toEqual({source:policy.source,digest:policy.digest});
+   const token=launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN']!;expect(token).toMatch(/^[a-f0-9]{64}$/);expect(launch.env![VALUE_PREFIX+'WILLYOU_ENDPOINT']).toBe(managed.cli!.endpoint);expect(launch.env![VALUE_PREFIX+'PATH']).toContain(dirname(realpathSync(resolve('out/native/willyou-app'))));
+   expect(JSON.stringify(runtime)).not.toContain(token);expect(readFileSync(runtime.manifestPath,'utf8')).not.toContain(token);expect(JSON.stringify(launch.args)).not.toContain(token);
++  expect(launch.args).toEqual(expect.arrayContaining(['--disable','shell_snapshot']));expect(profiles.get(codexId).args).not.toContain('shell_snapshot');
+   const skill=plan.skills[0];expect(skill.nativeName).not.toBe(fixed.packages[0].skills[0].nativeName);const text=readFileSync(join(home,'.agents/skills',skill.nativeName,'SKILL.md'),'utf8');expect(text).toContain('willyou-app mail draft list');expect(text).not.toContain('smartdd_mail_draft_list_v2');expect(text).not.toContain(token);
+   expect(launch.args).toContain('permissions.wy_cli_'+digest(managed.cli!.endpoint).slice(0,12)+'.extends=":read-only"');expect(launch.args!.join(' ')).toContain(managed.cli!.endpoint);expect(launch.args!.join(' ')).not.toContain('pending-bootstrap.json');
+   expect(await request(token)).toMatchObject({status:'ok',value:{capabilityId:'mail.draft.list',data:{items:[]},operation:{origin:'cli'}}});
+@@ -127,6 +128,7 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
+   cliPolicyAvailable=false;const running=await create(),launch=ptys.launches[0],plan=managed.runs.bridgePreparation(running.task.runtimeSnapshot!.runId).plan!;
+   expect(plan.allowed).toMatchObject([{entry:'mcp'}]);expect(plan.applications[0]).toMatchObject({fallback:true});expect(launch.env).not.toHaveProperty(VALUE_PREFIX+'WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_RUN_TOKEN');expect(launch.env).not.toHaveProperty('WILLYOU_ENDPOINT');expect(launch.args!.join(' ')).not.toContain('wy_cli_');
+   const text=readFileSync(join(home,'.agents/skills',plan.skills[0].nativeName,'SKILL.md'),'utf8');expect(text).toContain('smartdd_mail_draft_list_v2');expect(text).not.toContain('willyou-app mail draft list');
++  expect(launch.args).not.toContain('shell_snapshot');
+  });
+ 
+  it.each([['--sandbox','read-only'],['--sandbox=read-only'],['-sread-only']])('replaces only the proved legacy selector at the actual task fork: %j',async(...selector)=>{
+@@ -147,7 +149,7 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
+   profiles.update(codexId,{name:profile.name,runner:'codex',executable:profiles.resolve(codexId).command,args,env:[],color:null,isDefault:true});
+   const original=managed.prepare.bind(managed);
+   vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{
+-   const launch=await original(input);expect(launch.profileArgs).toEqual(['--ask-for-approval','never']);
++   const launch=await original(input);expect(launch.profileArgs).toEqual(['--ask-for-approval','never','--disable','shell_snapshot']);
+    return launch.nativeOnly!('managed_launch_payload_too_large');
+   });
+   const running=await create(),launch=ptys.launches[0];
+diff --git a/src/main/core/applications/cli-gateway.ts b/src/main/core/applications/cli-gateway.ts
+index 9e84cb44..85fb30bc 100644
+--- a/src/main/core/applications/cli-gateway.ts
++++ b/src/main/core/applications/cli-gateway.ts
+@@ -15,7 +15,8 @@ interface Binding {runId:string;planHash:string;authorizationStamp:string|null;t
+ interface Peer {socket:Socket;buffer:Buffer;controllers:Map<string,{runId:string;abort:AbortController}>;inFlight:number;authenticatedRun?:string}
+ const rejected=(id:string,error:unknown):BridgeResponse=>({schema:1,id,status:'error',error:{code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:error instanceof ApplicationError?error.message:'本次应用调用未完成',layer:'auth',retryable:false,attemptCount:0,retryExhausted:false,effectState:'not-started',nextAction:'核对本次运行与应用状态；不要自动重发写操作'}});
+ 
+-/** Independent host endpoint. Tokens never enter disk, argv, Skill or diagnostics. */
++/** Independent host endpoint. This gateway keeps tokens in memory and out of argv,
++ * Skill and diagnostics. Native CLI caches require their own launch-time protection. */
+ export class ApplicationCliGateway {
+   readonly generation=randomUUID();
+   private server?:Server;
+diff --git a/src/main/core/applications/codex-effective-sandbox.ts b/src/main/core/applications/codex-effective-sandbox.ts
+index a50c7a8b..83b88b0f 100644
+--- a/src/main/core/applications/codex-effective-sandbox.ts
++++ b/src/main/core/applications/codex-effective-sandbox.ts
+@@ -35,9 +35,12 @@ function sandboxArgument(args:readonly string[],index:number):{mode:string|undef
+ /** Remove only a proved equivalent legacy selector while the private named policy is delivered.
+  * Codex 0.166.0's ConfigOverrides.sandbox_mode otherwise overrides default_permissions.
+  * Approval flags (including --approve-for-me) retain their native semantics and order.
++ * Called only for a CLI-bearing run: disable native shell snapshots for that run so
++ * its environment-only authorization cannot be copied into the shell snapshot cache.
+  */
+ export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSandboxPlan):string[]{
+-  if(!policy.available||policy.kind!=='inherit')return [...args];
++  if(!policy.available)return [...args];
++  if(policy.kind!=='inherit')return [...args,'--disable','shell_snapshot'];
+   const output:string[]=[];let selectors=0;
+   for(let i=0;i<args.length;i++){
+     const arg=args[i];
+@@ -50,7 +53,7 @@ export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSan
+   }
+   if(selectors&&args.some(arg=>['--approve-for-me','--not-so-yolo','--full-auto','--dangerously-bypass-approvals-and-sandbox','--yolo','--'].includes(arg)))
+     throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生参数组合尚未核验，不能改写sandbox参数');
+-  return output;
++  return [...output,'--disable','shell_snapshot'];
+ }
+ 
+ /** Hash the complete security input. Named rules are inherited, never rebuilt from a mode label. */

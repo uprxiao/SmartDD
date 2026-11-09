@@ -1,0 +1,118 @@
+{
+  "schema": "T124-R007-main-and-peer-fixture-failure-safe-v1",
+  "session": 20297,
+  "driverPid": 90119,
+  "AppPid": 90125,
+  "rawSHA256": "6451ca76f537f6cc5fa577146cd1123e5e341c47814370932db1889aecea3417",
+  "nativeOriginal": {
+    "path": "/private/tmp/willyou-m12-t124-real-R-cont-007/runtime-001/T124-main-isolated-qa2-full-native.private.jsonl",
+    "bytes": 353092,
+    "sha256": "abb8e8581aec0616f4755d4f9d2097316640ed71e2778a1d7729ed7c21fbe6b9",
+    "savedBeforeParsers": true
+  },
+  "failure": {
+    "stage": "T124-peer-new-real-UI-start",
+    "name": "AssertionError",
+    "errorSHA256": "6c24937c6d4f6528105a26af936c6f7d19a0480ea7fc16e1bb986d171a45e583"
+  },
+  "mainModelCompleted": true,
+  "mainReceipts": 19,
+  "HostOperations": 24,
+  "originalChecks": [
+    {
+      "caseId": "continuation-integrity",
+      "name": "exact-previous-qa-source-new-App-guard-real-UI-current-runs-and-cleanup",
+      "pass": false,
+      "reason": "Expected values to be strictly equal:"
+    },
+    {
+      "caseId": "M12-T124",
+      "name": "real-Bug-qa2-and-existing-default-project-profile-qa-precondition",
+      "pass": false,
+      "reason": "Expected values to be strictly equal:"
+    },
+    {
+      "caseId": "M12-T124",
+      "name": "actual-Agent-reads-Bug-and-related-Skills",
+      "pass": true
+    },
+    {
+      "caseId": "M12-T124",
+      "name": "real-CLI-creates-task-owned-isolated-profile-and-logs-qa2-via-stdin",
+      "pass": false,
+      "reason": "The expression evaluated to a falsy value:"
+    },
+    {
+      "caseId": "M12-T124",
+      "name": "another-real-task-confirms-original-project-profile-remains-qa",
+      "pass": false,
+      "reason": "Expected values to be strictly equal:"
+    },
+    {
+      "caseId": "M12-T124",
+      "name": "default-and-task-profile-identities-and-partitions-remain-distinct",
+      "pass": false,
+      "reason": "Expected values to be strictly equal:"
+    }
+  ],
+  "parserBoundary": {
+    "unknownCarriers": 2,
+    "unknownOutputs": 2,
+    "stdinProofs": 0,
+    "requiresIndependentFiniteFullCarrierAudit": true
+  },
+  "actualRuntime": {
+    "normal": false,
+    "observed": {
+      "pid": 90125,
+      "spawnedAtMs": 1793974381489,
+      "exit": {
+        "atMs": 1793974628017,
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "signals": [
+        {
+          "atMs": 1793974624993,
+          "method": "close",
+          "signal": "SIGTERM",
+          "accepted": true
+        },
+        {
+          "atMs": 1793974627995,
+          "method": "close",
+          "signal": "SIGKILL",
+          "accepted": true
+        }
+      ],
+      "inspectorCloseRequests": [
+        {
+          "atMs": 1793974579990
+        },
+        {
+          "atMs": 1793974624993
+        },
+        {
+          "atMs": 1793974627995
+        }
+      ],
+      "currentCode": null,
+      "currentSignal": "SIGKILL"
+    },
+    "cleanupErrors": [
+      {
+        "label": "wait-own-normal-exit",
+        "at": "2026-11-06T14:17:04.992Z",
+        "name": "Error",
+        "errorSHA256": "9ed306b0d9fe06c9c57c884677abe7fcd92bbb9f9ad1cd91cb9353031b2bf8b5",
+        "privateStackPath": "/private/tmp/willyou-m12-t124-real-R-cont-007/runtime-001/error-002-wait-own-normal-exit.private.log",
+        "privateStackSaved": true
+      }
+    ]
+  },
+  "independentFinalClear": true,
+  "rootCauseOfDriverAssertion": "tasksStore.show->autoResume can yield actualPTY on sidebar navigation; incorrect driver nullPTY expectation",
+  "originalBusinessNotPassed": true,
+  "formalNewPasses": 0,
+  "sourceAndPackageUnchanged": true
+}

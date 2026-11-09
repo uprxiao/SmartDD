@@ -111,9 +111,9 @@ const StoppedPanel = observer(function StoppedPanel({ task }: { task: Task }) {
         <p className="text-foreground-muted">{task.recoveryReason || t('task.resumeHint')}</p>
         {task.recovery !== 'unrecoverable' && (
           <>
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Select value={profileId} onValueChange={(v) => setProfileId(v as string | null)}>
-                <SelectTrigger className="w-56" data-testid="task-resume-profile">
+                <SelectTrigger className="w-56 min-w-0 max-w-full" data-testid="task-resume-profile">
                   <SelectValue placeholder={t('task.pickProfile')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,8 +205,9 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
     document.addEventListener('visibilitychange', visibility);
     const send = (data: string) => events.emit(ptyInputEvent, { taskId, ptyId, data });
     term.attachCustomKeyEventHandler((e) => {
-      // A dialog over the terminal keeps its keys.
-      if (document.querySelector('[role="dialog"]')) return false;
+      // Browser dialogs cover only the workspace beside the terminal. Keep
+      // keys with a dialog only when that dialog owns the input event.
+      if (e.target instanceof Element && e.target.closest('[role="dialog"]')) return false;
       const action = terminalKeyAction(e, term.hasSelection());
       if (!action) return true;
       e.preventDefault();

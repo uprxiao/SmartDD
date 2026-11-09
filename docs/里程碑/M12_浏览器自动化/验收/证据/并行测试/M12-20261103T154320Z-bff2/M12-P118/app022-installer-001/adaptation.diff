@@ -1,0 +1,80 @@
+--- P111/prepare-native-input.py
++++ P118/prepare-native-input.py
+@@ -1,6 +1,6 @@
+ from pathlib import Path
+ import os,json,hashlib,subprocess,shutil,datetime,sys
+-ROOT=Path('/private/tmp/willyou-m12-p111-app021-installer-001');SHARED=Path('/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app');PRIVATE=ROOT/'installer-input/WillYou.app';OLD=Path('/private/tmp/willyou-m12-p085-arm64-installer-001')
++ROOT=Path('/private/tmp/willyou-m12-p118-app022-installer-001');SHARED=Path('/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app');PRIVATE=ROOT/'installer-input/WillYou.app';OLD=Path('/private/tmp/willyou-m12-p085-arm64-installer-001')
+ assert sys.argv[1:]==['--execute'] and os.environ.get('WILLYOU_M12_NATIVE_LEASE_CONFIRMED')=='1'
+ sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+ prepared=ROOT/'prepared-inputs.json';assert sha(prepared)==os.environ['WILLYOU_P111_PREPARED_SHA']
+--- P111/build-installer.py
++++ P118/build-installer.py
+@@ -6,9 +6,9 @@
+ import subprocess
+ import sys
+ 
+-ROOT = Path('/private/tmp/willyou-m12-p111-app021-installer-001')
+-SOURCE = Path('/private/tmp/willyou-m12-p101-source-025/source')
+-SHARED = Path('/private/tmp/willyou-m12-s2-package-021/mac-arm64/WillYou.app')
++ROOT = Path('/private/tmp/willyou-m12-p118-app022-installer-001')
++SOURCE = Path('/private/tmp/willyou-m12-p114-source-026/source')
++SHARED = Path('/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app')
+ PRIVATE = ROOT / 'installer-input/WillYou.app'
+ NODE = Path('/Users/liubu/.hermes/node/bin/node')
+ BUILDER = Path('/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/electron-builder/cli.js')
+@@ -27,9 +27,9 @@
+ 
+ assert sys.argv[1:] == ['--execute']
+ assert os.environ['WILLYOU_TEST_CACHE_DIR'] == str(ROOT / 'cache')
+-source_manifest = json.loads(Path('/private/tmp/willyou-m12-p101-source-025/source-inputs.json').read_text())
++source_manifest = json.loads(Path('/private/tmp/willyou-m12-p114-source-026/source-inputs.json').read_text())
+ assert digest(SOURCE / 'electron-builder.config.cjs') == source_manifest['files']['electron-builder.config.cjs']
+-assert digest(PRIVATE / 'Contents/Resources/app.asar') == '7b63bb817a9047656f4fe268fae4a4ea20d2f17b472c6dce417dccad837d0fd6'
++assert digest(PRIVATE / 'Contents/Resources/app.asar') == '52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f'
+ pins = json.loads((ROOT / 'evidence/prepackaged-input-pins.json').read_text())['files']
+ for row in pins:
+     assert digest(SHARED / row['path']) == row['sha256']
+@@ -54,7 +54,7 @@
+            '--config.directories.output=' + str(ROOT / 'installer-output'), '--publish', 'never']
+ record = {'startedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+           'driverPid': os.getpid(), 'command': command, 'cwd': str(SOURCE),
+-          'scope': 'Local ad-hoc arm64 preview installer from private copy of exact tested App021; no source rebuild, publishing, daily app/data, model or credentials.',
++          'scope': 'Local ad-hoc arm64 preview installer from private copy of exact tested App022; no source rebuild, publishing, daily app/data, model or credentials.',
+           'envNames': sorted(env), 'nativeStarted': False}
+ save('installer-build-start.json', record)
+ with (ROOT / 'evidence/installer-build.stdout').open('wb') as stdout, (ROOT / 'evidence/installer-build.stderr').open('wb') as stderr:
+--- P111/install-and-compare.py
++++ P118/install-and-compare.py
+@@ -8,7 +8,7 @@
+ import subprocess
+ import sys
+ 
+-ROOT = Path('/private/tmp/willyou-m12-p111-app021-installer-001')
++ROOT = Path('/private/tmp/willyou-m12-p118-app022-installer-001')
+ assert sys.argv[1:] == ['--execute']
+ assert os.environ['WILLYOU_TEST_CACHE_DIR'] == str(ROOT / 'cache')
+ PLAN = json.loads((ROOT / 'plan.json').read_text())
+@@ -77,7 +77,7 @@
+     assert sha(candidate_app / 'Contents/Resources/app.asar') == PLAN['currentAsarSha256']
+     before = inventory(ROOT / 'installer-input/WillYou.app')
+     payload = inventory(candidate_app)
+-    assert payload == before, 'DMG payload differs from exact tested private App021 input'
++    assert payload == before, 'DMG payload differs from exact tested private App022 input'
+     destination = ROOT / 'Installed Applications'
+     destination.mkdir(mode=0o700)
+     installed = destination / 'WillYou.app'
+--- P111/check-installed-native.py
++++ P118/check-installed-native.py
+@@ -7,9 +7,9 @@
+ import subprocess
+ import sys
+ 
+-ROOT = Path('/private/tmp/willyou-m12-p111-app021-installer-001')
++ROOT = Path('/private/tmp/willyou-m12-p118-app022-installer-001')
+ APP = ROOT / 'Installed Applications/WillYou.app'
+-SOURCE = Path('/private/tmp/willyou-m12-p101-source-025/source')
++SOURCE = Path('/private/tmp/willyou-m12-p114-source-026/source')
+ assert sys.argv[1:] == ['--execute']
+ assert os.environ['WILLYOU_TEST_CACHE_DIR'] == str(ROOT / 'cache')
+ installed = json.loads((ROOT / 'evidence/install-and-compare-result.json').read_text())

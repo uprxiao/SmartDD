@@ -1,0 +1,47 @@
+--- original-attempt001
++++ attempt002
+@@ -21,8 +21,8 @@
+     return value.hexdigest()
+ 
+ def save(name, value):
+-    path = ROOT / 'evidence' / name
+-    assert path.parent == ROOT / 'evidence'
++    path = ROOT / 'evidence/attempt-002' / name
++    assert path.parent == ROOT / 'evidence/attempt-002'
+     path.write_text(json.dumps(value, indent=2) + '\n')
+ 
+ assert sys.argv[1:] == ['--execute']
+@@ -30,7 +30,7 @@
+ source_manifest = json.loads(Path('/private/tmp/willyou-m12-p114-source-026/source-inputs.json').read_text())
+ assert digest(SOURCE / 'electron-builder.config.cjs') == source_manifest['files']['electron-builder.config.cjs']
+ assert digest(PRIVATE / 'Contents/Resources/app.asar') == '52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f'
+-pins = json.loads((ROOT / 'evidence/prepackaged-input-pins.json').read_text())['files']
++pins = json.loads((ROOT / 'evidence/attempt-002/prepackaged-input-pins.json').read_text())['files']
+ for row in pins:
+     assert digest(SHARED / row['path']) == row['sha256']
+     assert digest(PRIVATE / row['path']) == row['sha256']
+@@ -51,13 +51,13 @@
+            NODE_COMPILE_CACHE=str(ROOT / 'cache/node'),npm_config_cache=str(ROOT / 'cache/npm'))
+ command = [str(NODE), str(BUILDER), '--mac', 'dmg', '--arm64', '--prepackaged', str(PRIVATE),
+            '--projectDir', str(SOURCE), '--config', str(SOURCE / 'electron-builder.config.cjs'),
+-           '--config.directories.output=' + str(ROOT / 'installer-output'), '--publish', 'never']
++           '--config.directories.output=' + str(ROOT / 'installer-output-002'), '--config.electronVersion=42.11.14', '--publish', 'never']
+ record = {'startedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+           'driverPid': os.getpid(), 'command': command, 'cwd': str(SOURCE),
+           'scope': 'Local ad-hoc arm64 preview installer from private copy of exact tested App022; no source rebuild, publishing, daily app/data, model or credentials.',
+           'envNames': sorted(env), 'nativeStarted': False}
+ save('installer-build-start.json', record)
+-with (ROOT / 'evidence/installer-build.stdout').open('wb') as stdout, (ROOT / 'evidence/installer-build.stderr').open('wb') as stderr:
++with (ROOT / 'evidence/attempt-002/installer-build.stdout').open('wb') as stdout, (ROOT / 'evidence/attempt-002/installer-build.stderr').open('wb') as stderr:
+     child = subprocess.Popen(command, cwd=SOURCE, env=env, stdout=stdout, stderr=stderr)
+     record['builderPid'] = child.pid
+     record['nativeStarted'] = True
+@@ -79,7 +79,7 @@
+ assert all(x['sharedUnchanged'] and x['privateUnchanged'] for x in unchanged)
+ assert code == 0, f'Builder exit {code}; original stdout/stderr retained'
+ artifacts = [{'path': str(p), 'bytes': p.stat().st_size, 'sha256': digest(p)}
+-             for p in sorted((ROOT / 'installer-output').glob('*.dmg'))]
++             for p in sorted((ROOT / 'installer-output-002').glob('*.dmg'))]
+ assert len(artifacts) == 1
+ save('candidate-installer.json', {'artifacts': artifacts, 'prepackagedInputUnchanged': True,
+                                 'published': False, 'installedOrAccepted': False})

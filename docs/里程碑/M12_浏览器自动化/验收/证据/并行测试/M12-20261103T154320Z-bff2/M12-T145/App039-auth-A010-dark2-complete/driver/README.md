@@ -1,0 +1,1 @@
+A010仅接续原B06 Basic Auth dark480/dark900两个1440槽，A009 light2已完成按独立hash引用、不重放/不注入本raw。原4auth组合与456总矩阵保留；当前机械/视觉计数2/14只是本次领取子集。原oncePID3s/single stickyguard、401合成fixture、真实字段登录、同PTY/native恢复/正常清场均不变；A009 dark前失焦的原因不归用户或产品，不修/rearm/refocus。执行须Root新静态和租约。

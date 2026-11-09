@@ -1,0 +1,74 @@
+{
+  "at": "2026-11-05T20:54:12.247705+00:00",
+  "repository": "openai/codex",
+  "ref": "rust-v0.166.0",
+  "lineNumberConvention": "Displayed upstream source lines are zero-based; links point at exact tag, not main.",
+  "observations": [
+    {
+      "path": "core/src/shell_snapshot.rs",
+      "lines": "99-101,234-314,503-545,547-591,987-1049,1083-1139",
+      "facts": [
+        "Private per-session snapshot names under Codex home and a temporary file are created; write uses fs::write then rename.",
+        "Without broker, captured script uses render_script(shell_environment_policy).",
+        "Drop attempts removal; later stale cleanup excludes active session and checks rollout retention. These do not prove all kill paths execute cleanup.",
+        "Capture can inherit original environment; broker changes capture and restores credential context."
+      ],
+      "limitation": "Upstream tagged source read via web tool; not a complete local source-blob hash or reproducible build attestation.",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/core/src/shell_snapshot.rs"
+    },
+    {
+      "path": "shell-command/src/shell_snapshot_render.rs",
+      "lines": "7-30",
+      "facts": [
+        "Export names are selected with the same create_env_from_vars policy; explicit set keys omit captured values.",
+        "This does not supply an independent snapshot-only exclude option."
+      ],
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/shell-command/src/shell_snapshot_render.rs"
+    },
+    {
+      "path": "protocol/src/shell_environment.rs",
+      "lines": "59-75,94-158",
+      "facts": [
+        "Child environment and export filtering share policy machinery: inheritance, excludes, explicit set, include-only.",
+        "Removing a name with exclude also removes it from normal CLI command environment unless a later override changes it."
+      ],
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/protocol/src/shell_environment.rs"
+    },
+    {
+      "path": "protocol/src/config_types.rs",
+      "lines": "204-251",
+      "facts": [
+        "Policy includes inherit, ignore_default_excludes, exclude, set, include_only and profile use; default ignore_default_excludes is true."
+      ],
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/protocol/src/config_types.rs"
+    },
+    {
+      "path": "config/src/shell_environment_policy.rs",
+      "lines": "10-31",
+      "facts": [
+        "Config fields include ordinary exclude/set/include-only/filters; no independently scoped snapshot-only field is declared here."
+      ],
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/config/src/shell_environment_policy.rs"
+    },
+    {
+      "path": "core/config.schema.json",
+      "lines": "1596-1650,3460-3516,4673-4733,7951-7956",
+      "facts": [
+        "Schema exposes ordinary shell policy and separate full shell_snapshot feature toggle.",
+        "A declarative network credential provider accepts env names and HTTP URL/auth configuration; this is a possible research path, not proof of support for WillYou Unix-socket run tokens."
+      ],
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/core/config.schema.json"
+    },
+    {
+      "path": "network-proxy/src/credential_broker.rs",
+      "lines": "0-43",
+      "facts": [
+        "Credential handling is network-proxy provider/registry based, not an identified generic snapshot-only exclusion API."
+      ],
+      "limitation": "Only relevant entry/schema and core restore path reviewed; custom WILLYOU provider and actual binary behavior untested.",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/network-proxy/src/credential_broker.rs"
+    }
+  ],
+  "officialDirectFetch": "Sandbox network prevented Python full-blob downloads (original official-sources.json retained). Official tagged source was accessible read-only via web tool; no escalation or CLI used.",
+  "sameBinaryClaim": "Installed npm/native layout identify0.166.0, and T38 fixed actual binary SHA is retained; no source-to-binary reproducibility proof is asserted."
+}

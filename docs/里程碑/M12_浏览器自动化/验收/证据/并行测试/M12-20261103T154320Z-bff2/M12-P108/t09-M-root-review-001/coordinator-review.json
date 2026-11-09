@@ -1,0 +1,93 @@
+{
+  "at": "2026-11-05T23:28:53.767768+00:00",
+  "safeForRepo": true,
+  "scope": "T09 M005 independent readonly actual DB/native/fault/cleanup review",
+  "status": "M-original-contract-verified;T09-I-and-all-A-C-M-slices-complete",
+  "actualRunId": "24d781ec-b05e-44b1-9d63-a309b70e89c1",
+  "actualTaskId": "bb14ce8b-ad53-4ee5-8ff0-4ede78a8c2fd",
+  "actualOperations": [
+    {
+      "id": "cc3ee9f1-0da9-485d-acd5-f205dd621064",
+      "requestId": "6fdf92a7-98d6-4b28-b149-77883e05d3a1",
+      "state": "succeeded",
+      "code": null
+    },
+    {
+      "id": "d3757849-9e40-4c54-a1fa-8b82f9952a24",
+      "requestId": "9ef8d43e-2a88-4146-8dc7-dbacd3fbbb02",
+      "state": "failed",
+      "code": "INVALID_RESPONSE"
+    }
+  ],
+  "database": {
+    "readOnly": true,
+    "immutable": true,
+    "queryOnly": true,
+    "exactFullRows": 2,
+    "hashUnchanged": true,
+    "sha256": "70bf5fb17e9323fac774af322432b24714d4e6f820eb8a088cdb8be8e118ad03",
+    "authTablesRead": false
+  },
+  "native": {
+    "exactPrefix": true,
+    "calls": 3,
+    "matchingOutputs": 3,
+    "originalSourceSha256": "f23609340605037c0db9331badb18ee076832cfbff4b647a6d7fd2e4f817fb5a"
+  },
+  "actualMCP": {
+    "pid": 58947,
+    "birth": "darwin-proc-v1:1793921205:847127",
+    "sequence": [
+      "initialize",
+      "normal tools/call",
+      "disconnect tools/call",
+      "owned SIGTERM",
+      "closed before Host terminal"
+    ],
+    "toolsListAbsent": true
+  },
+  "originalJudge": {
+    "passed": 4,
+    "total": 5,
+    "redPreserved": true,
+    "extraAssumption": "tools/list required before mapped call; source/contract independently to verify"
+  },
+  "normalAppExit": {
+    "pid": 58655,
+    "code": 0,
+    "signal": null
+  },
+  "signals": [],
+  "independentCleanupChecks": 27,
+  "formalWholeCaseCount": 0,
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/raw.private.json",
+      "sha256": "e76c4e56b4975a63b3b4301d45ec9ff5b5230023d120601fb0828614d6702a28"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/judgement.json",
+      "sha256": "317219ee305960be3c5c50e2739e19279471080cdc0f705be4029cca7c9ca68b"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/cleanup-verification.json",
+      "sha256": "088eff309a568ff60d817fd42f5936196a4a3ae1ba49dcb15577e06b20631618"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-005/execution-ready.json",
+      "sha256": "99cf3279375ad8bb234c57af8a2d1124af299789ce62721951d877d4ea2bfedb"
+    }
+  ],
+  "independentOriginalContractJudgement": {
+    "passed": 5,
+    "total": 5,
+    "originalFourOfFivePreserved": true,
+    "onlyChangedAssumption": "tools/list not required by originalT09 or production mapped call; strict init→normal→target→TERM preserved",
+    "actualProductionSourceSha256": "d08de82ac89f757cf99fe0358b0b90f9b3f299805b064591caae8052ae3f4d64",
+    "oracleOriginal": "e7a530b139b43d6aa7d92772fc17b814616b204ca291c4e1b3055e95564d70c5",
+    "oracleContractCorrected": "460e4bd9268dae6737055995853bbcfcb3d647af9353ffe448ce51b16d619dc9",
+    "pureReplayExitCode": 0,
+    "businessReexecuted": false
+  },
+  "parentBoundary": "M12-T131 remains partial until original T07/T14 UI criteria; extra Native cache finding stays open"
+}

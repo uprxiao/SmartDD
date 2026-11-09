@@ -1,0 +1,195 @@
+{
+  "group": "M12-P087",
+  "scope": "One initial native activation probe; no original formal case",
+  "startedAt": "2026-11-05T05:12:55.909Z",
+  "driverPid": 53205,
+  "userData": "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/userdata",
+  "sourceManifestSha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
+  "asarSha256": "f1995c81a490d3c7e899e1e94358402d863b4cff8fef20f4eab10d5cb0727868",
+  "actions": [],
+  "cleanupErrors": [],
+  "formalWholeCaseCount": 0,
+  "compile": {
+    "pid": 53218,
+    "program": "/usr/bin/clang",
+    "args": [
+      "-fobjc-arc",
+      "-fmodules-cache-path=/private/tmp/willyou-m12-p087-initial-focus-001/cache/clang-module",
+      "-framework",
+      "AppKit",
+      "-framework",
+      "Foundation",
+      "-lproc",
+      "/private/tmp/willyou-m12-p087-initial-focus-001/owned-activation.m",
+      "-o",
+      "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/owned-activation"
+    ],
+    "code": 0,
+    "signal": null,
+    "signals": [],
+    "timedOut": false,
+    "stdout": "",
+    "stderr": "",
+    "startError": null
+  },
+  "nativeHelperSha256": "5418f7be2a253085008b7719d96e08bb39387a4d10be8cab851db31c33954f51",
+  "appPid": 53247,
+  "before": {
+    "pid": 53247,
+    "userData": "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/userdata",
+    "title": "[A] P087 initial native activation probe",
+    "visible": true,
+    "focused": false,
+    "bounds": {
+      "x": 56,
+      "y": 33,
+      "width": 1400,
+      "height": 900
+    }
+  },
+  "setupReload": {
+    "before": 1793855581224,
+    "after": 1793855581533.4
+  },
+  "initialActivation": {
+    "status": "identifying-exact-direct-child",
+    "requestCount": 1,
+    "observations": [
+      {
+        "atMs": 1793855581654,
+        "pid": 53346,
+        "program": "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/owned-activation",
+        "args": [
+          "--identify",
+          "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/initial-focus-identify.private.json"
+        ],
+        "code": 0,
+        "signal": null,
+        "signals": [],
+        "timedOut": false,
+        "stdout": "{\"activationCalled\":false,\"activationSent\":false,\"frontmostBeforePID\":401,\"frontmostPID\":401,\"identity\":{\"activationPolicy\":0,\"bundleCanonical\":\"\\/private\\/tmp\\/willyou-m12-s2-package-019\\/mac-arm64\\/WillYou.app\",\"bundleIdentifier\":\"com.smartdd.desktop\",\"driverPid\":53205,\"executableCanonical\":\"\\/private\\/tmp\\/willyou-m12-s2-package-019\\/mac-arm64\\/WillYou.app\\/Contents\\/MacOS\\/WillYou\",\"finishedLaunching\":true,\"pid\":53247,\"startSec\":1793855576,\"startUsec\":841838,\"uid\":501},\"mode\":\"--identify\",\"ok\":true,\"options\":0}\n",
+        "stderr": "",
+        "startError": null
+      },
+      {
+        "atMs": 1793855581685,
+        "pid": 53347,
+        "program": "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/owned-activation",
+        "args": [
+          "--activate-once",
+          "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/initial-focus-request.private.json"
+        ],
+        "code": 0,
+        "signal": null,
+        "signals": [],
+        "timedOut": false,
+        "stdout": "{\"activationCalled\":true,\"activationSent\":false,\"frontmostBeforePID\":401,\"frontmostPID\":401,\"identity\":{\"activationPolicy\":0,\"bundleCanonical\":\"\\/private\\/tmp\\/willyou-m12-s2-package-019\\/mac-arm64\\/WillYou.app\",\"bundleIdentifier\":\"com.smartdd.desktop\",\"driverPid\":53205,\"executableCanonical\":\"\\/private\\/tmp\\/willyou-m12-s2-package-019\\/mac-arm64\\/WillYou.app\\/Contents\\/MacOS\\/WillYou\",\"finishedLaunching\":true,\"pid\":53247,\"startSec\":1793855576,\"startUsec\":841838,\"uid\":501},\"mode\":\"--activate-once\",\"ok\":true,\"options\":0}\n",
+        "stderr": "",
+        "startError": null
+      }
+    ],
+    "nativeTool": "/private/tmp/willyou-m12-p087-initial-focus-001/runtime-001/owned-activation",
+    "request": {
+      "activationCalled": true,
+      "activationSent": false,
+      "frontmostBeforePID": 401,
+      "frontmostPID": 401,
+      "identity": {
+        "activationPolicy": 0,
+        "bundleCanonical": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app",
+        "bundleIdentifier": "com.smartdd.desktop",
+        "driverPid": 53205,
+        "executableCanonical": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        "finishedLaunching": true,
+        "pid": 53247,
+        "startSec": 1793855576,
+        "startUsec": 841838,
+        "uid": 501
+      },
+      "mode": "--activate-once",
+      "ok": true,
+      "options": 0
+    }
+  },
+  "status": "failed-or-partial",
+  "failure": {
+    "stage": "one-normal-native-activation",
+    "error": "AssertionError [ERR_ASSERTION]: OS did not accept the single normal activation request\n\nfalse !== true\n\n    at activateOwnedInitial (file:///private/tmp/willyou-m12-p087-initial-focus-001/initial-activation.mjs:13:404)\n    at async file:///private/tmp/willyou-m12-p087-initial-focus-001/run.mjs:7:39"
+  },
+  "exactGatewayPaths": [
+    "/private/tmp/wy-cli-501-Nz9gI2/cli.sock"
+  ],
+  "appExit": {
+    "pid": 53247,
+    "code": 0,
+    "signal": null
+  },
+  "observedProcess": {
+    "pid": 53247,
+    "spawnedAtMs": 1793855576842,
+    "exit": {
+      "atMs": 1793855582032,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "inspectorCloseRequests": [
+      {
+        "atMs": 1793855581765
+      },
+      {
+        "atMs": 1793855582032
+      }
+    ],
+    "currentCode": 0,
+    "currentSignal": null
+  },
+  "resources": [
+    {
+      "at": "2026-11-05T05:13:01.763Z",
+      "processes": [
+        {
+          "pid": 53247,
+          "ppid": 53205,
+          "birth": "Thu Nov  5 13:12:56 2026",
+          "executable": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+        },
+        {
+          "pid": 53249,
+          "ppid": 53247,
+          "birth": "Thu Nov  5 13:12:57 2026",
+          "executable": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+        },
+        {
+          "pid": 53250,
+          "ppid": 53247,
+          "birth": "Thu Nov  5 13:12:57 2026",
+          "executable": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app/Contents/Frameworks/WillYou Helper.app/Contents/MacOS/WillYou Helper"
+        },
+        {
+          "pid": 53341,
+          "ppid": 53247,
+          "birth": "Thu Nov  5 13:13:01 2026",
+          "executable": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app/Contents/Frameworks/WillYou Helper (Renderer).app/Contents/MacOS/WillYou Helper (Renderer)"
+        }
+      ],
+      "helpers": [],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nWillYou 53247 liubu   17u  IPv4 0x5864c0c7699fc72a      0t0  TCP 127.0.0.1:62820 (LISTEN)\nWillYou 53247 liubu   34u  IPv4 0x762351d978f0aecd      0t0  TCP 127.0.0.1:62818 (LISTEN)\n"
+    }
+  ],
+  "knownPids": [
+    53205,
+    53218,
+    53247,
+    53346,
+    53347,
+    53249,
+    53250,
+    53341
+  ],
+  "knownPorts": [
+    62820,
+    62818
+  ],
+  "finishedAt": "2026-11-05T05:13:02.032Z"
+}

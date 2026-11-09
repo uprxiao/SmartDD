@@ -1,0 +1,51 @@
+{
+  "scope": "Original4A observations, not reduced to XLSX alone",
+  "predicates": [
+    {
+      "id": "A01",
+      "theme": [
+        "light",
+        "dark"
+      ],
+      "file": "rich-merged.xlsx",
+      "actions": "Real file-tree open; real doubleclick pin; switch Calc/Spare/Data; select B2",
+      "expected": [
+        "No unsupported fallback",
+        "Data/Calc/Spare 3 sheets",
+        "A5:B5 merge with exact MERGED_PREVIEW_中文 and colspan2",
+        "B2 exact formula =Data!$B$2+Data!B3 and address B2",
+        "No dirty write state"
+      ]
+    },
+    {
+      "id": "A02",
+      "theme": [
+        "light",
+        "dark"
+      ],
+      "file": "SimpleMacro.xlsm",
+      "actions": "Real open/select A1/formula input/F2/switch Sheet2/Sheet3/Sheet1/close both files",
+      "expected": [
+        "A1 This is a macro workbook",
+        "Read-only/no macro execution notice",
+        "Disabled fx/no save workbook",
+        "Formula is readonly and real typed M9_MUST_NOT_WRITE/F2 does not edit",
+        "All3 sheets reachable",
+        "Original macro part/source retained; no XLSM writeback claim"
+      ]
+    },
+    {
+      "id": "A03",
+      "allCases": 4,
+      "expected": [
+        "Original7 RPC delegates exact before/after inputs and successful results",
+        "0 editOffice/saveOffice/officeSheet write calls",
+        "Both original sources SHA/bytes/inode/mtimeNs/ctimeNs unchanged",
+        "Observer restore every handler",
+        "Actual packaged App normal0/null and independent own resources all clear"
+      ]
+    }
+  ],
+  "historicalI": "2 original native FileService/Worker tests cited by DEV184; current AppA absent, no I claim based on old version alone",
+  "requiredHarnessAdaptation": "After exact original fixture recovery only: reuse current App035 mature file lifecycle/exactPID initial activation+3s nonrearm guard, current lowercase labels and independent cleanup. Original source UI is source-of-business-flow, not yet safe current executable."
+}

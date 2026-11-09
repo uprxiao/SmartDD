@@ -1,0 +1,43 @@
+{
+  "at": "2026-11-05T04:12:52.935555+00:00",
+  "case": "M12-T088",
+  "scope": "Only native-gates-only, no App/general/model",
+  "classification": "private-driver-path-validation-precondition-failure",
+  "SwiftCompile": {
+    "code": 0,
+    "signal": null,
+    "signals": [],
+    "stdoutEmpty": true,
+    "stderrEmpty": true
+  },
+  "namedGate": {
+    "code": 2,
+    "signal": null,
+    "firstFailure": "private-runtime-symlink-rejected",
+    "actualNamedTestsExecuted": 0,
+    "namedPasteboardCreated": false,
+    "sourceBoundary": "namedTests calls checkPrivateDirectory before NSPasteboard.withUniqueName(); the first guard failed. No cleanup/release needed for a board never created."
+  },
+  "generalAccessed": false,
+  "AppStarted": false,
+  "modelCalled": false,
+  "privateOriginalBackupCreated": false,
+  "knownPids": [
+    79982,
+    79984,
+    80118
+  ],
+  "knownPorts": [],
+  "cleanupAllClear": true,
+  "formalWholeCaseCount": 0,
+  "staticPathDiagnostic": {
+    "requestedRuntime": "/private/tmp/willyou-m12-t088-system-clipboard-001/runtime-001",
+    "filesystemRealpath": "/private/tmp/willyou-m12-t088-system-clipboard-001/runtime-001",
+    "rootIsSymlink": false,
+    "runtimeIsSymlink": false,
+    "runtimeMode": "0o700",
+    "FoundationResolvedPathValue": "not recorded by original source; no new Swift/OS probe performed",
+    "inference": "Filesystem canonical path matches expected, but Foundation URL.resolvingSymlinksInPath().path string comparison rejected. Exact returned representation remains unobserved; no evidence of product clipboard failure."
+  },
+  "next": "New private attempt may replace only private path guard with Darwin realpath/lstat canonical comparison, retain same8 safety expectations, compile/run only after new READY+coordinator lease. Original source/raw/judge remain frozen."
+}

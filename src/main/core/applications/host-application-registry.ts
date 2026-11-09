@@ -21,7 +21,7 @@ export interface HostProvider<C extends HostedConfiguration,A extends string>{
  validateCandidate?:(config:C,previous:C|null,secretSupplied:boolean)=>void;
 }
 export interface HostApplicationDefinitions<C extends HostedConfiguration,A extends string>{
- api:1;applications:readonly {id:A;slots:readonly C['kind'][];stopBeforeSwitch:boolean}[];
+ api:1;applications:readonly {id:A;slots:readonly C['kind'][];stopBeforeSwitch:boolean;connectionless?:true}[];
  providers:readonly HostProvider<C,A>[];
 }
 const id=z.string().regex(/^[a-z][a-z0-9-]{0,63}$/);
@@ -38,9 +38,9 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
  private readonly providers=new Map<string,HostProvider<C,A>>();
  constructor(definitions:HostApplicationDefinitions<C,A>){
   const invalid=()=>new ApplicationError('INVALID_INPUT','受信宿主应用定义无效、重复或版本不支持');
-  if(!exactKeys(definitions,['api','applications','providers'])||definitions.api!==1||!Array.isArray(definitions.applications)||!definitions.applications.length||definitions.applications.length>128||!Array.isArray(definitions.providers)||!definitions.providers.length||definitions.providers.length>256)throw invalid();
+  if(!exactKeys(definitions,['api','applications','providers'])||definitions.api!==1||!Array.isArray(definitions.applications)||!definitions.applications.length||definitions.applications.length>128||!Array.isArray(definitions.providers)||definitions.providers.length>256)throw invalid();
   for(const application of definitions.applications){
-   if(!exactKeys(application,['id','slots','stopBeforeSwitch'])||!id.safeParse(application.id).success||this.applications.has(application.id)||typeof application.stopBeforeSwitch!=='boolean'||!Array.isArray(application.slots)||!application.slots.length||application.slots.length>32||new Set(application.slots).size!==application.slots.length)throw invalid();
+   if(!exactKeys(application,['id','slots','stopBeforeSwitch','connectionless'])||!id.safeParse(application.id).success||this.applications.has(application.id)||typeof application.stopBeforeSwitch!=='boolean'||!Array.isArray(application.slots)||(!application.connectionless&&!application.slots.length)||application.connectionless!==undefined&&application.connectionless!==true||application.connectionless&&application.slots.length!==0||application.slots.length>32||new Set(application.slots).size!==application.slots.length)throw invalid();
    this.applications.set(application.id,Object.freeze({...application,slots:Object.freeze([...application.slots])}));
   }
   for(const provider of definitions.providers){

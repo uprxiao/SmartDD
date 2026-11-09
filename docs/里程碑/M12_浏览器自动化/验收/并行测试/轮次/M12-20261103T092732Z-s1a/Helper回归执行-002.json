@@ -1,0 +1,84 @@
+{
+  "at": "2026-11-03T14:22:00.114Z",
+  "selectedGroups": [
+    "lifecycle",
+    "recovery",
+    "queue"
+  ],
+  "resumeAfter": "native-ref",
+  "boundary": "I only, fixed patched helper, private fresh profile for every group; no packaged App or real Agent",
+  "baseline": "/private/tmp/willyou-m12-s1-helper-regression-002/baseline.json",
+  "groups": [
+    {
+      "name": "lifecycle",
+      "directory": "/private/tmp/willyou-m12-s1-helper-regression-002-lifecycle",
+      "driver": "s1-lifecycle-probe.mjs",
+      "adjudicator": "adjudicate-s1-lifecycle.mjs",
+      "ms": 13284,
+      "passed": true,
+      "cleanup": {
+        "closed": true,
+        "helpers": [
+          {
+            "daemonPid": 62343,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "recovery",
+      "directory": "/private/tmp/willyou-m12-s1-helper-regression-002-recovery",
+      "driver": "s1-recovery-probe.mjs",
+      "adjudicator": "adjudicate-s1-recovery.mjs",
+      "ms": 7462,
+      "passed": true,
+      "cleanup": {
+        "closed": true,
+        "helpers": [
+          {
+            "daemonPid": 62746,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          },
+          {
+            "daemonPid": 62685,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "queue",
+      "directory": "/private/tmp/willyou-m12-s1-helper-regression-002-queue",
+      "driver": "s1-queue-probe.mjs",
+      "adjudicator": "adjudicate-s1-queue.mjs",
+      "ms": 13412,
+      "passed": true,
+      "cleanup": {
+        "closed": true,
+        "helpers": [
+          {
+            "daemonPid": 62823,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          },
+          {
+            "daemonPid": 62829,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          }
+        ]
+      }
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-11-03T14:22:34.483Z"
+}

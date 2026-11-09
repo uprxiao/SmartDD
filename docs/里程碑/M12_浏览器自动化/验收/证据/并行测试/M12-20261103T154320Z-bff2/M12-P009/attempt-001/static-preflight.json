@@ -1,0 +1,75 @@
+{
+  "at": "2026-11-04T00:38:40.782Z",
+  "privateCache": "/private/tmp/willyou-m12-p009-executor-001/cache",
+  "syntaxChecked": [
+    "adjudicate.mjs",
+    "html-fixture.mjs",
+    "make-host.mjs",
+    "manifest.mjs",
+    "p009.mjs",
+    "prepare.mjs",
+    "verify-cleanup.mjs"
+  ],
+  "html": [
+    {
+      "token": null,
+      "sha256": "5f958f59781545aa6a0111d09bc2e8a7d9c61e42db7de0de2e652129a0fecf43",
+      "scriptsCompiled": 1
+    },
+    {
+      "token": "p009-keep-project",
+      "sha256": "309889103439854f334c08cc9873e0a18becc40c8b76620eab25488096bdb377",
+      "scriptsCompiled": 1
+    },
+    {
+      "token": "p009-drop-project-task",
+      "sha256": "11c59647410c21db0fb7b46dd132adbc3b742a23fab327f88d30539e32d79083",
+      "scriptsCompiled": 1
+    },
+    {
+      "token": "p009-drop-unloaded-task",
+      "sha256": "b7f506ed056c6955ac1581fcb3864412fb15a6b6df5a3f665d749d13913990e0",
+      "scriptsCompiled": 1
+    },
+    {
+      "token": "quote'\"中文🙂",
+      "sha256": "50676e09ef13e3b5613183209a643b88b4a21b7288f766dce4ce58ce0f36dfa5",
+      "scriptsCompiled": 1
+    }
+  ],
+  "cdp": {
+    "paths": 2,
+    "literalExpressions": 37,
+    "failures": 0,
+    "executed": false,
+    "dynamicTemplates": "not covered"
+  },
+  "hostSha256": "d648ba6c2a77f939d99ed49756998f19c7231fdde390b77a0c74f0050fa30997",
+  "driverSha256": "6833385dac764d9e2220e0388f7498915519e993de96a5aaa683eb31b7571546",
+  "adjudicatorSha256": "3715e2c798a9020c08b56fa206a83107f29b4054996bcd547e14ffb52c9b67f6",
+  "fixtureSha256": "42163c3a531f6ce64e2ae431faf8fe1190d8021076e7fe4093e83fc6f7d7dfeb",
+  "frozenSourceFiles": 2451,
+  "plan": {
+    "caseId": "M12-T079",
+    "requiredFormalLayer": "A",
+    "scope": "I task/project-owner deletion engineering subset only, not whole case pass",
+    "branches": [
+      "owners present including synthetic archived Tkeep: preserve all profile data",
+      "real TaskService.delete loaded Tdelete: clear task profile, page+named popup, dormant/closed/workspace; preserve project state",
+      "real TaskService.delete persisted-but-unloaded Tunloaded: clear profile and persisted workspace record",
+      "real ProjectService.deleteProject P2 cascading T3: clear project+task profile partitions, page+named popup/workspace/profile-state/recent"
+    ],
+    "profiles": 6,
+    "seededLivePages": 7,
+    "seededPopups": 2,
+    "unloadedTaskIsNotInWorkspaceMemory": true,
+    "syntheticArchivedOwner": "not actual terminal completion",
+    "knownStaticRisks": [
+      "browserRecent.v1:P2 not explicitly removed by frozen source",
+      "persisted unloaded workspace key not traversed by frozen workspace.reconcile"
+    ],
+    "businessReplayOrAutomaticRetries": 0
+  },
+  "nativeStarted": false,
+  "requiresExplicitNativeLease": true
+}

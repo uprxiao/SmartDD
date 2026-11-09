@@ -1,0 +1,93 @@
+{
+  "case": "M12-T095",
+  "originalLayers": [
+    "A",
+    "R"
+  ],
+  "originalRow": "| M12-T095 | R06.3、P4、B11、review R03、review2 D02 | A＋R | P1 的 T1、T2，T2 开着网页标签；点击计数接口 | T1 的 Agent：`tab list --task T1`（自己）；`tab list --task T2`（未授权）；`access request --task T2 --mode observe` 用户允许后执行一次读、一次写、一次 `wait fn`；再申请 control 并允许后写一次；排入 3 条跨任务写命令时用户撤销；另申请一次让用户拒绝、一次 60 秒不处理；结束运行后新运行再执行 | `--task` 自己不需要授权；未授权 `SCOPE_DENIED`；申请在没有任何授权时也能弹窗；observe 能读，写与 `wait fn` 都被拒且计数不变；control 能写；撤销后排队命令全部 `SCOPE_DENIED`、站点零执行；拒绝与超时返回 `SCOPE_DENIED`；新运行不能沿用旧授权；审计标明授权来源 | M12-S5-RUN-SIGNAL已修复：P065真实v2软件115绿，P064002真实M11/nativeCLI正向pending/用户允许control、跨命令授权保持及run结束/新run不继承均复验。原001红保留；observe/control切换、撤销排队3条、拒绝/60秒超时的原A/R仍待，不能据补充I计整条通过。 | 部分通过 | [原生修复复验](证据/并行测试/M12-20261103T154320Z-bff2/M12-P064/coordinator-review-green.json)；[软件回归](证据/并行测试/M12-20261103T154320Z-bff2/M12-P065/attempt-002/RESULT.md) |",
+  "sourceCase": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+    "sha256": "c12900d37248c4fc6e25921e011dc118984ef46785e679f89ec3707150105e83"
+  },
+  "requirements": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+    "sha256": "a5758c4eae85ca13351267aa9e34cc4dbfb9c4bc773d5d44e93243e4c57a4513",
+    "R06.3Exact": "**R06.3 跨任务授权**\n- 默认只能操作调用方自己任务的页面。`--task` 等于自己的任务时，视同省略。\n- **申请**：`access request --task <任务> --mode observe|control`。\n  - 宿主只检查：目标任务存在、与调用方同项目、不是调用方自己；不要求已有授权。检查通过后在界面弹窗，由用户允许或拒绝。\n  - 60 秒无人处理按拒绝处理。跨项目申请直接返回 `SCOPE_DENIED`，不弹窗。\n- **授权范围**：绑定当前运行，限定目标任务与模式；运行结束、终端退出、用户撤销时立即失效，不持久化，新运行不能沿用。\n- **使用**：\n  - 带 `--task` 的命令需要持有该任务的授权，否则返回 `SCOPE_DENIED`；\n  - observe 只放行读命令，写命令和 `wait fn` 都拒绝；\n  - 命令执行前再检查一次授权，撤销后已排队的命令返回 `SCOPE_DENIED`；\n  - 审计记录标明授权来源。"
+  },
+  "criteria": [
+    {
+      "id": "C01",
+      "layers": "R",
+      "expected": "Own T1 --task list succeeds without grant, actual current run/task/Host identity.",
+      "executed": false
+    },
+    {
+      "id": "C02",
+      "layers": "R",
+      "expected": "Unapproved T2 tab list numeric2/SCOPE_DENIED; no grant exists.",
+      "executed": false
+    },
+    {
+      "id": "C03",
+      "layers": "A+R",
+      "expected": "Observe request really opens original UI with no prior authorization; real UI allows observe, exact target/run/mode.",
+      "executed": false
+    },
+    {
+      "id": "C04",
+      "layers": "R",
+      "expected": "Observe snapshot succeeds; actual opaque full Host ref is preserved; write and wait fn each numeric2/SCOPE_DENIED; no site counter change.",
+      "executed": false
+    },
+    {
+      "id": "C05",
+      "layers": "A+R",
+      "expected": "Second actual control request; real UI allows control; one real Agent click increments exact target counter once.",
+      "executed": false
+    },
+    {
+      "id": "C06",
+      "layers": "A+R",
+      "expected": "Hold only original fulfilled readonly Helper snapshot return as declared queue fixture. Three actual real-Agent write processes enter same production target page queue/current run, pending exactly3. Real UI revokes exact grant before gate release; all3 numeric2/SCOPE_DENIED, all site counter samples unchanged from baseline1.",
+      "executed": false
+    },
+    {
+      "id": "C07",
+      "layers": "A+R",
+      "expected": "Further actual access request; real UI refuses; numeric2/SCOPE_DENIED and no active grant.",
+      "executed": false
+    },
+    {
+      "id": "C08",
+      "layers": "A+R",
+      "expected": "Further request untouched for original60sec; actual time/source timeout; numeric2/SCOPE_DENIED, no grant.",
+      "executed": false
+    },
+    {
+      "id": "C09",
+      "layers": "A+R",
+      "expected": "Regrant control as explicit inheritance precondition only, then real UI ends T1 run while grant is live. New actual run of same task/target must have new runId and no old grant; own list succeeds, cross list numeric2/SCOPE_DENIED.",
+      "executed": false
+    },
+    {
+      "id": "C10",
+      "layers": "A+R",
+      "expected": "Actual access operation audit snapshots distinguish agent requested/user allowed or refused/user revoked/timeout/run-end, correct source/request/run/project/task/grant/mode.",
+      "executed": false
+    },
+    {
+      "id": "C11",
+      "layers": "R",
+      "expected": "Every original actual Native outer/call audited; full public Skill cat numeric0/no truncation; current gpt-6.1-sol/openai/on-request/workspace-write contexts; exact canonical full user ACK after once insert+one Enter. Both runs uniquely bound to actual immutable plan/package/task/run/Host, denial actual numeric2/sessionChains, unknown/unsafe/duplicate/unmatched arrays0.",
+      "executed": false
+    },
+    {
+      "id": "C12",
+      "layers": "A+R",
+      "expected": "All setup/health before once reload, exact existingPTY bind verified, one authorized exactPID initial activation+stable3s+nonrearm guard; preserve private original errors and all signals; original method/Map/Worker refs restored, accurate normal App exit and independent own PID/ports/Unix/helper clear.",
+      "executed": false
+    }
+  ],
+  "formalNewPasses": 0,
+  "oldIOnly": "P064002/P065 are historical valid I/fixture references, not current App A/real Agent R closure."
+}

@@ -1,0 +1,2 @@
+import assert from'node:assert/strict';import{writeFile}from'node:fs/promises';import{createHash}from'node:crypto';
+export const ROOT='/private/tmp/willyou-m12-t145-close-probe-001';export const sha=b=>createHash('sha256').update(b).digest('hex');export async function save(name,value){assert(['execution-started.json','live.json','raw.json','cleanup.json','result.json'].includes(name));await writeFile(ROOT+'/'+name,JSON.stringify(value,null,2)+'\n',{mode:0o600})}

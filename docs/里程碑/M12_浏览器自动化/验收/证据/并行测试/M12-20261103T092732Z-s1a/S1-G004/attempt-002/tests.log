@@ -1,0 +1,69 @@
+
+> smartdd@0.1.1 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/browser/__tests__/input-limits.test.ts src/main/core/applications/__tests__/native-cli.test.ts --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/applications/__tests__/native-cli.test.ts (8 tests | 1 failed) 12365ms
+     × keeps the exact request id on a host error so a failed browser write can be queried without resending 1305ms
+ ❯ src/main/core/browser/__tests__/input-limits.test.ts (1 test | 1 failed) 4ms
+     × rejects 16MiB plus one byte at the executor boundary before prepare/dispatch 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/browser/__tests__/input-limits.test.ts > host browser clipboard byte limit > rejects 16MiB plus one byte at the executor boundary before prepare/dispatch
+AssertionError: expected Error: ENOENT: no such file or directory,… { …(4) } to match object { code: 'INVALID_INPUT' }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "INVALID_INPUT",
++ Error {
++   "code": "ENOENT",
+  }
+
+ ❯ src/main/core/browser/__tests__/input-limits.test.ts:15:7
+     13|     await expect(helper.command(['clipboard', 'write', 'x'.repeat(16 *…
+     14|       dispatched: () => { dispatched = true; },
+     15|     })).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+       |       ^
+     16|     expect(dispatched).toBe(false);
+     17|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/native-cli.test.ts > M11 native standalone CLI with real kernel peer identification (controlled Agent root) > keeps the exact request id on a host error so a failed browser write can be queried without resending
+AssertionError: expected { error: { …(8) }, …(1) } to match object { …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "error": {
+      "code": "BROWSER_ERROR",
+      "effectState": "read-only",
+    },
+-   "requestId": "848085e1-1871-4803-9a15-f7973299786f",
+  }
+
+ ❯ src/main/core/applications/__tests__/native-cli.test.ts:60:37
+     58|   expect(result).toMatchObject({code:2,timedOut:false});
+     59|   const row=f.sqlite.prepare('SELECT request_id FROM application_invoc…
+     60|   expect(JSON.parse(result.stdout)).toMatchObject({requestId:row.reque…
+       |                                     ^
+     61|  });
+     62|  it('cancels the owned operation when its actual CLI process exits and…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 7 passed (9)
+   Start at  22:04:27
+   Duration  13.26s (transform 528ms, setup 0ms, import 758ms, tests 12.37s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

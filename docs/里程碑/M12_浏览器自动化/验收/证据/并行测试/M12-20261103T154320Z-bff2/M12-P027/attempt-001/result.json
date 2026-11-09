@@ -1,0 +1,4747 @@
+{
+  "at": "2026-11-04T05:06:37.585Z",
+  "group": "M12-P027",
+  "scope": "Actual native cookie transaction/journal component I with explicit private fault wrappers and synthetic AES, not full T081",
+  "status": "passed-component-I",
+  "fullT081Passed": false,
+  "checks": [
+    {
+      "id": "five-real-no-activation-zero-window-processes",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "phases": [
+          {
+            "phase": "live",
+            "pid": 92827,
+            "exit": {
+              "code": 0,
+              "signal": null
+            },
+            "ready": {
+              "ready": true,
+              "pid": 92827,
+              "phase": "live",
+              "windows": 0,
+              "policy": {
+                "requested": "prohibited",
+                "fulfilled": true,
+                "beforeReady": true
+              }
+            }
+          },
+          {
+            "phase": "prepared-partial",
+            "pid": 92851,
+            "exit": {
+              "code": 17,
+              "signal": null
+            },
+            "ready": {
+              "ready": true,
+              "pid": 92851,
+              "phase": "prepared-partial",
+              "windows": 0,
+              "policy": {
+                "requested": "prohibited",
+                "fulfilled": true,
+                "beforeReady": true
+              }
+            }
+          },
+          {
+            "phase": "recover-prepared",
+            "pid": 92861,
+            "exit": {
+              "code": 0,
+              "signal": null
+            },
+            "ready": {
+              "ready": true,
+              "pid": 92861,
+              "phase": "recover-prepared",
+              "windows": 0,
+              "policy": {
+                "requested": "prohibited",
+                "fulfilled": true,
+                "beforeReady": true
+              }
+            }
+          },
+          {
+            "phase": "committed-cleanup-pending",
+            "pid": 92871,
+            "exit": {
+              "code": 0,
+              "signal": null
+            },
+            "ready": {
+              "ready": true,
+              "pid": 92871,
+              "phase": "committed-cleanup-pending",
+              "windows": 0,
+              "policy": {
+                "requested": "prohibited",
+                "fulfilled": true,
+                "beforeReady": true
+              }
+            }
+          },
+          {
+            "phase": "recover-committed",
+            "pid": 92883,
+            "exit": {
+              "code": 0,
+              "signal": null
+            },
+            "ready": {
+              "ready": true,
+              "pid": 92883,
+              "phase": "recover-committed",
+              "windows": 0,
+              "policy": {
+                "requested": "prohibited",
+                "fulfilled": true,
+                "beforeReady": true
+              }
+            }
+          }
+        ],
+        "activation": [
+          {
+            "requested": "prohibited",
+            "fulfilled": true,
+            "beforeReady": true
+          },
+          {
+            "requested": "prohibited",
+            "fulfilled": true,
+            "beforeReady": true
+          },
+          {
+            "requested": "prohibited",
+            "fulfilled": true,
+            "beforeReady": true
+          },
+          {
+            "requested": "prohibited",
+            "fulfilled": true,
+            "beforeReady": true
+          },
+          {
+            "requested": "prohibited",
+            "fulfilled": true,
+            "beforeReady": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "actual-normal-transaction-complete-replacement",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "name": "normal-transaction-XW-Y-removed-Z-preserved",
+        "startedAt": "2026-11-04T05:05:51.682Z",
+        "expected": [
+          {
+            "name": "X",
+            "value": "P027-old-X",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-A-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-B-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-A-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "Y",
+            "value": "P027-old-Y",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "strict",
+            "expirationDate": 1793772351,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 9443
+          },
+          {
+            "name": "DomainAttr",
+            "value": "P027-domain-before",
+            "domain": ".qa.example.test",
+            "path": "/",
+            "hostOnly": false,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "Z",
+            "value": "P027-keep-Z",
+            "domain": "other.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793772351,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          }
+        ],
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "source": {
+          "cookies": [
+            {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          ],
+          "preserveDomains": [],
+          "sourceCount": 2,
+          "googleSkipped": 0,
+          "partitionSkipped": 0
+        },
+        "plan": {
+          "changes": [
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "Y",
+                "value": "P027-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 9443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "DomainAttr",
+                "value": "P027-domain-before",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              },
+              "after": null
+            },
+            {
+              "before": null,
+              "after": {
+                "name": "W",
+                "value": "P027-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ],
+          "domains": [
+            "qa.example.test"
+          ],
+          "totalCookies": 2,
+          "importedCookies": 2,
+          "skippedCookies": 0,
+          "googleCookiesSkipped": 0,
+          "partitionSkippedCookies": 0,
+          "preservedTargetCookies": 1
+        },
+        "profileId": "5013ad17-bf47-4036-bcce-5140fa031121",
+        "trace": [
+          {
+            "method": "snapshot"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"DomainAttr\",\".qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "set",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-new-X"
+          },
+          {
+            "method": "set",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-new-W"
+          },
+          {
+            "method": "flush"
+          }
+        ],
+        "apply": {
+          "transactionId": "cf589793-cd7a-4668-9eab-1d9046463379"
+        },
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "journal": null,
+        "pending": [],
+        "status": "executed",
+        "finishedAt": "2026-11-04T05:05:51.813Z",
+        "windows": 0
+      }
+    },
+    {
+      "id": "lost-ack-injected-only-after-real-native-W-written",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "fault": {
+          "point": "after actual NativeBrowserCookieStore.set(W) fulfilled, before acknowledgment returned to Transactions",
+          "kind": "synthetic lost-ack"
+        },
+        "nativePartial": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "journal": {
+          "schemaVersion": 1,
+          "transactionId": "85d011a3-2b59-413f-8587-c5236175cb5b",
+          "profileId": "84979148-a8a3-4c94-996e-8039244d96d5",
+          "createdAt": 1793768751869,
+          "phase": "prepared",
+          "changes": [
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "Y",
+                "value": "P027-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 9443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "DomainAttr",
+                "value": "P027-domain-before",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              },
+              "after": null
+            },
+            {
+              "before": null,
+              "after": {
+                "name": "W",
+                "value": "P027-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ]
+        },
+        "file": {
+          "exists": true,
+          "bytes": 2608,
+          "mode": 384,
+          "directoryMode": 448,
+          "sha256": "ac973e92970757563537ad7907f2ee4b3ed257f7641e77a309234e60f5a77e9a",
+          "containsPlainCookieMarkers": false
+        }
+      }
+    },
+    {
+      "id": "lost-ack-rolls-back-full-schema-and-removes-absent-W",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          }
+        ],
+        "error": {
+          "name": "ApplicationError",
+          "code": "BROWSER_ERROR",
+          "stage": null,
+          "message": "导入未完成，原登录态已恢复"
+        },
+        "journal": null
+      }
+    },
+    {
+      "id": "same-profile-active-transaction-refuses-concurrency",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "name": "same-profile-concurrent-apply-is-refused",
+        "startedAt": "2026-11-04T05:05:51.913Z",
+        "expected": [
+          {
+            "name": "X",
+            "value": "P027-old-X",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-A-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-B-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-A-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "Y",
+            "value": "P027-old-Y",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "strict",
+            "expirationDate": 1793772351,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 9443
+          },
+          {
+            "name": "DomainAttr",
+            "value": "P027-domain-before",
+            "domain": ".qa.example.test",
+            "path": "/",
+            "hostOnly": false,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772351,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "Z",
+            "value": "P027-keep-Z",
+            "domain": "other.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793772351,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          }
+        ],
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "source": {
+          "cookies": [
+            {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          ],
+          "preserveDomains": [],
+          "sourceCount": 2,
+          "googleSkipped": 0,
+          "partitionSkipped": 0
+        },
+        "plan": {
+          "changes": [
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "Y",
+                "value": "P027-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 9443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "DomainAttr",
+                "value": "P027-domain-before",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              },
+              "after": null
+            },
+            {
+              "before": null,
+              "after": {
+                "name": "W",
+                "value": "P027-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772351,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ],
+          "domains": [
+            "qa.example.test"
+          ],
+          "totalCookies": 2,
+          "importedCookies": 2,
+          "skippedCookies": 0,
+          "googleCookiesSkipped": 0,
+          "partitionSkippedCookies": 0,
+          "preservedTargetCookies": 1
+        },
+        "profileId": "f97be27a-74ff-4595-8063-0e95e90d14ea",
+        "trace": [
+          {
+            "method": "snapshot"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"DomainAttr\",\".qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "set",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-new-X"
+          },
+          {
+            "method": "set",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-new-W"
+          },
+          {
+            "method": "flush"
+          }
+        ],
+        "gate": {
+          "point": "after actual NativeStore snapshot, before assertBefore returns or prepared journal is written",
+          "kind": "private latency latch"
+        },
+        "journalAtGate": null,
+        "callsBeforeSecond": 1,
+        "secondError": {
+          "name": "ApplicationError",
+          "code": "RESOURCE_BUSY",
+          "stage": null,
+          "message": "该登录态正在导入或恢复"
+        },
+        "callsAfterSecond": 1,
+        "first": {
+          "value": {
+            "transactionId": "3fe14e2d-db12-4c93-92fb-c84243de7a2b"
+          }
+        },
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772351,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "journal": null,
+        "status": "executed",
+        "finishedAt": "2026-11-04T05:05:52.026Z",
+        "windows": 0
+      }
+    },
+    {
+      "id": "prepared-real-journal-and-durable-native-partial-before-exit",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "partial": {
+          "name": "prepared-journal-native-partial-write-abrupt-exit",
+          "profileId": "229fc7f8-736a-4c5b-a069-9c862f7d0f6b",
+          "expected": [
+            {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            },
+            {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "hostOnly": false,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            },
+            {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          ],
+          "before": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P027-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P027-old-part-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P027-old-part-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P027-old-part-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Y",
+                "value": "P027-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 9443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "DomainAttr",
+                "value": "P027-domain-before",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P027-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ],
+          "source": {
+            "cookies": [
+              {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "hostOnly": true,
+                "secure": true,
+                "httpOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              {
+                "name": "W",
+                "value": "P027-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "hostOnly": true,
+                "secure": true,
+                "httpOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            ],
+            "preserveDomains": [],
+            "sourceCount": 2,
+            "googleSkipped": 0,
+            "partitionSkipped": 0
+          },
+          "plan": {
+            "changes": [
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": null,
+                  "partitionKey": null,
+                  "priority": "High",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": {
+                  "name": "X",
+                  "value": "P027-new-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "High",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                }
+              },
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-part-A-cross",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": {
+                    "topLevelSite": "https://top-a.test",
+                    "hasCrossSiteAncestor": true
+                  },
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-part-B-cross",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": {
+                    "topLevelSite": "https://top-b.test",
+                    "hasCrossSiteAncestor": true
+                  },
+                  "priority": "Low",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-part-A-same",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": {
+                    "topLevelSite": "https://top-a.test",
+                    "hasCrossSiteAncestor": false
+                  },
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "Y",
+                  "value": "P027-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "strict",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 9443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "DomainAttr",
+                  "value": "P027-domain-before",
+                  "domain": ".qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": false,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "High",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 443
+                },
+                "after": null
+              },
+              {
+                "before": null,
+                "after": {
+                  "name": "W",
+                  "value": "P027-new-W",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                }
+              }
+            ],
+            "domains": [
+              "qa.example.test"
+            ],
+            "totalCookies": 2,
+            "importedCookies": 2,
+            "skippedCookies": 0,
+            "googleCookiesSkipped": 0,
+            "partitionSkippedCookies": 0,
+            "preservedTargetCookies": 1
+          },
+          "trace": [
+            {
+              "method": "snapshot"
+            },
+            {
+              "method": "remove",
+              "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+            },
+            {
+              "method": "remove",
+              "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+            },
+            {
+              "method": "remove",
+              "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+            },
+            {
+              "method": "remove",
+              "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+            },
+            {
+              "method": "remove",
+              "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+            },
+            {
+              "method": "remove",
+              "identity": "[\"DomainAttr\",\".qa.example.test\",\"/\",null,null]"
+            },
+            {
+              "method": "remove",
+              "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+            },
+            {
+              "method": "set",
+              "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]",
+              "value": "P027-new-X"
+            }
+          ],
+          "partial": [
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "Z",
+                "value": "P027-keep-Z",
+                "domain": "other.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "kind": "readable",
+              "cookie": {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ],
+          "journal": {
+            "schemaVersion": 1,
+            "transactionId": "7ca7688d-7f86-478d-9857-4406136ff4cd",
+            "profileId": "229fc7f8-736a-4c5b-a069-9c862f7d0f6b",
+            "createdAt": 1793768752300,
+            "phase": "prepared",
+            "changes": [
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": null,
+                  "partitionKey": null,
+                  "priority": "High",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": {
+                  "name": "X",
+                  "value": "P027-new-X",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "High",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                }
+              },
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-part-A-cross",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": {
+                    "topLevelSite": "https://top-a.test",
+                    "hasCrossSiteAncestor": true
+                  },
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-part-B-cross",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": {
+                    "topLevelSite": "https://top-b.test",
+                    "hasCrossSiteAncestor": true
+                  },
+                  "priority": "Low",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "X",
+                  "value": "P027-old-part-A-same",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": {
+                    "topLevelSite": "https://top-a.test",
+                    "hasCrossSiteAncestor": false
+                  },
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "Y",
+                  "value": "P027-old-Y",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "strict",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 9443
+                },
+                "after": null
+              },
+              {
+                "before": {
+                  "name": "DomainAttr",
+                  "value": "P027-domain-before",
+                  "domain": ".qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": false,
+                  "sameSite": "no_restriction",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "High",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 443
+                },
+                "after": null
+              },
+              {
+                "before": null,
+                "after": {
+                  "name": "W",
+                  "value": "P027-new-W",
+                  "domain": "qa.example.test",
+                  "path": "/",
+                  "secure": true,
+                  "httpOnly": true,
+                  "hostOnly": true,
+                  "sameSite": "lax",
+                  "expirationDate": 1793772352,
+                  "partitionKey": null,
+                  "priority": "Medium",
+                  "sourceScheme": "Secure",
+                  "sourcePort": 8443
+                }
+              }
+            ]
+          },
+          "journalFile": {
+            "exists": true,
+            "bytes": 2608,
+            "mode": 384,
+            "directoryMode": 448,
+            "sha256": "f5ab6961933befa26ae74991ca851d9f3fba389255b6efb94c23de5dcaa7d8e5",
+            "containsPlainCookieMarkers": false
+          },
+          "fault": {
+            "point": "actual Transactions prepared journal plus first actual after set+flush; W not sent",
+            "kind": "controlled abrupt app.exit17, no transaction catch/rollback"
+          },
+          "status": "prepared-partial-durable",
+          "windowsAtFault": 0
+        },
+        "exit": {
+          "code": 17,
+          "signal": null
+        }
+      }
+    },
+    {
+      "id": "new-process-sees-prepared-journal-and-real-partial-state",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "journal": {
+          "schemaVersion": 1,
+          "transactionId": "7ca7688d-7f86-478d-9857-4406136ff4cd",
+          "profileId": "229fc7f8-736a-4c5b-a069-9c862f7d0f6b",
+          "createdAt": 1793768752300,
+          "phase": "prepared",
+          "changes": [
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "Y",
+                "value": "P027-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 9443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "DomainAttr",
+                "value": "P027-domain-before",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              },
+              "after": null
+            },
+            {
+              "before": null,
+              "after": {
+                "name": "W",
+                "value": "P027-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ]
+        },
+        "sites": [
+          "about:blank"
+        ],
+        "originalPid": 92851,
+        "recoveryPid": 92861
+      }
+    },
+    {
+      "id": "prepared-recover-restores-all-before-attributes-CHIPS",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "expected": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "actual": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          }
+        ],
+        "result": "restored",
+        "trace": [
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"DomainAttr\",\".qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "set",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-old-X"
+          },
+          {
+            "method": "set",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]",
+            "value": "P027-old-part-A-cross"
+          },
+          {
+            "method": "set",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]",
+            "value": "P027-old-part-B-cross"
+          },
+          {
+            "method": "set",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]",
+            "value": "P027-old-part-A-same"
+          },
+          {
+            "method": "set",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-old-Y"
+          },
+          {
+            "method": "set",
+            "identity": "[\"DomainAttr\",\".qa.example.test\",\"/\",null,null]",
+            "value": "P027-domain-before"
+          },
+          {
+            "method": "flush"
+          }
+        ],
+        "journal": null
+      }
+    },
+    {
+      "id": "real-commit-persists-committed-before-cleanup-failure",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "name": "real-commit-then-journal-cleanup-failure",
+        "startedAt": "2026-11-04T05:05:52.779Z",
+        "profileId": "e3fc6a81-2a22-4110-9716-801305c9dc8e",
+        "expected": [
+          {
+            "name": "X",
+            "value": "P027-old-X",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-A-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772352,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-B-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772352,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "P027-old-part-A-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772352,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "Y",
+            "value": "P027-old-Y",
+            "domain": "qa.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "strict",
+            "expirationDate": 1793772352,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 9443
+          },
+          {
+            "name": "DomainAttr",
+            "value": "P027-domain-before",
+            "domain": ".qa.example.test",
+            "path": "/",
+            "hostOnly": false,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793772352,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "Z",
+            "value": "P027-keep-Z",
+            "domain": "other.example.test",
+            "path": "/",
+            "hostOnly": true,
+            "secure": true,
+            "httpOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793772352,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          }
+        ],
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-old-part-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "P027-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainAttr",
+              "value": "P027-domain-before",
+              "domain": ".qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "source": {
+          "cookies": [
+            {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "hostOnly": true,
+              "secure": true,
+              "httpOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          ],
+          "preserveDomains": [],
+          "sourceCount": 2,
+          "googleSkipped": 0,
+          "partitionSkipped": 0
+        },
+        "plan": {
+          "changes": [
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "Y",
+                "value": "P027-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 9443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "DomainAttr",
+                "value": "P027-domain-before",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              },
+              "after": null
+            },
+            {
+              "before": null,
+              "after": {
+                "name": "W",
+                "value": "P027-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ],
+          "domains": [
+            "qa.example.test"
+          ],
+          "totalCookies": 2,
+          "importedCookies": 2,
+          "skippedCookies": 0,
+          "googleCookiesSkipped": 0,
+          "partitionSkippedCookies": 0,
+          "preservedTargetCookies": 1
+        },
+        "trace": [
+          {
+            "method": "snapshot"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"DomainAttr\",\".qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "remove",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "method": "set",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-new-X"
+          },
+          {
+            "method": "set",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]",
+            "value": "P027-new-W"
+          },
+          {
+            "method": "flush"
+          }
+        ],
+        "cleanupFault": {
+          "point": "after actual BrowserImportJournals.commit, before actual remove",
+          "kind": "private journal remove failure",
+          "phase": "committed",
+          "transactionId": "8bccf0b0-6d9b-4497-bfc7-ee5ae44a693d"
+        },
+        "applyError": {
+          "name": "BrowserCookieRecoveryRequired",
+          "code": "BROWSER_UNAVAILABLE",
+          "stage": "cleanup",
+          "message": "登录态处理尚未完成，请先重试恢复或清空该登录态"
+        },
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "journal": {
+          "schemaVersion": 1,
+          "transactionId": "8bccf0b0-6d9b-4497-bfc7-ee5ae44a693d",
+          "profileId": "e3fc6a81-2a22-4110-9716-801305c9dc8e",
+          "createdAt": 1793768752868,
+          "phase": "committed",
+          "changes": [
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": {
+                "name": "X",
+                "value": "P027-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "P027-old-part-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "Y",
+                "value": "P027-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "strict",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 9443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "DomainAttr",
+                "value": "P027-domain-before",
+                "domain": ".qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": false,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 443
+              },
+              "after": null
+            },
+            {
+              "before": null,
+              "after": {
+                "name": "W",
+                "value": "P027-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793772352,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ]
+        },
+        "journalFile": {
+          "exists": true,
+          "bytes": 2609,
+          "mode": 384,
+          "directoryMode": 448,
+          "sha256": "d4c319e22f0169419f8f03dd6103399e3de72bf7358f019192f89129cbd2b073",
+          "containsPlainCookieMarkers": false
+        },
+        "status": "executed",
+        "finishedAt": "2026-11-04T05:05:52.903Z",
+        "windows": 0
+      }
+    },
+    {
+      "id": "new-process-committed-recovery-only-cleans-no-rollback",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "expected": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "P027-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "P027-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "P027-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793772352,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "result": "committed",
+        "trace": [],
+        "journal": null
+      }
+    },
+    {
+      "id": "all-normal-native-views-debuggers-hooks-and-processes-clean",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "cleanup": {
+          "at": "2026-11-04T05:06:31.202Z",
+          "group": "M12-P027",
+          "processes": [
+            {
+              "pid": 92824,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92827,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92828,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92829,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92831,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92836,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92842,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92851,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92853,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92854,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92856,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92861,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92862,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92863,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92865,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92871,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92874,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92875,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92877,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92883,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92884,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92885,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 92887,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            }
+          ],
+          "ports": [],
+          "allAbsent": true,
+          "allPortsClosed": true,
+          "betweenPhase": [
+            {
+              "phase": "live",
+              "hostPid": 92827,
+              "exit": {
+                "code": 0,
+                "signal": null
+              },
+              "allOwnedPidsAbsent": true,
+              "observed": [
+                {
+                  "pid": 92827,
+                  "absent": true
+                },
+                {
+                  "pid": 92828,
+                  "absent": true
+                },
+                {
+                  "pid": 92829,
+                  "absent": true
+                },
+                {
+                  "pid": 92831,
+                  "absent": true
+                },
+                {
+                  "pid": 92836,
+                  "absent": true
+                },
+                {
+                  "pid": 92842,
+                  "absent": true
+                }
+              ]
+            },
+            {
+              "phase": "prepared-partial",
+              "hostPid": 92851,
+              "exit": {
+                "code": 17,
+                "signal": null
+              },
+              "allOwnedPidsAbsent": true,
+              "observed": [
+                {
+                  "pid": 92851,
+                  "absent": true
+                },
+                {
+                  "pid": 92853,
+                  "absent": true
+                },
+                {
+                  "pid": 92854,
+                  "absent": true
+                },
+                {
+                  "pid": 92856,
+                  "absent": true
+                }
+              ]
+            },
+            {
+              "phase": "recover-prepared",
+              "hostPid": 92861,
+              "exit": {
+                "code": 0,
+                "signal": null
+              },
+              "allOwnedPidsAbsent": true,
+              "observed": [
+                {
+                  "pid": 92861,
+                  "absent": true
+                },
+                {
+                  "pid": 92862,
+                  "absent": true
+                },
+                {
+                  "pid": 92863,
+                  "absent": true
+                },
+                {
+                  "pid": 92865,
+                  "absent": true
+                }
+              ]
+            },
+            {
+              "phase": "committed-cleanup-pending",
+              "hostPid": 92871,
+              "exit": {
+                "code": 0,
+                "signal": null
+              },
+              "allOwnedPidsAbsent": true,
+              "observed": [
+                {
+                  "pid": 92871,
+                  "absent": true
+                },
+                {
+                  "pid": 92874,
+                  "absent": true
+                },
+                {
+                  "pid": 92875,
+                  "absent": true
+                },
+                {
+                  "pid": 92877,
+                  "absent": true
+                }
+              ]
+            },
+            {
+              "phase": "recover-committed",
+              "hostPid": 92883,
+              "exit": {
+                "code": 0,
+                "signal": null
+              },
+              "allOwnedPidsAbsent": true,
+              "observed": [
+                {
+                  "pid": 92883,
+                  "absent": true
+                },
+                {
+                  "pid": 92884,
+                  "absent": true
+                },
+                {
+                  "pid": 92885,
+                  "absent": true
+                },
+                {
+                  "pid": 92887,
+                  "absent": true
+                }
+              ]
+            }
+          ],
+          "syntheticKeyExists": false,
+          "syntheticKeyRemoved": true,
+          "boundary": "One deliberate abrupt exit17 does not claim explicit store.close; whole original phase process tree absent before subsequent recovery process, final all-PID check retained. Other phases actual store close/debugger/observer cleanup recorded in phase raw."
+        },
+        "phaseCleanups": [
+          {
+            "phase": "live",
+            "cleanup": {
+              "stores": [
+                {
+                  "id": 1,
+                  "closed": true,
+                  "destroyed": true
+                },
+                {
+                  "id": 2,
+                  "closed": true,
+                  "destroyed": true
+                },
+                {
+                  "id": 3,
+                  "closed": true,
+                  "destroyed": true
+                }
+              ],
+              "hooks": [
+                {
+                  "id": 1,
+                  "removed": true
+                },
+                {
+                  "id": 2,
+                  "removed": true
+                },
+                {
+                  "id": 3,
+                  "removed": true
+                }
+              ],
+              "connections": [
+                {
+                  "id": 1,
+                  "closed": true
+                },
+                {
+                  "id": 2,
+                  "closed": true
+                },
+                {
+                  "id": 3,
+                  "closed": true
+                }
+              ],
+              "remainingWebContents": [],
+              "windows": 0
+            },
+            "events": [
+              {
+                "kind": "navigate",
+                "id": 1,
+                "url": "about:blank"
+              },
+              {
+                "kind": "navigate",
+                "id": 2,
+                "url": "about:blank"
+              },
+              {
+                "kind": "navigate",
+                "id": 3,
+                "url": "about:blank"
+              },
+              {
+                "kind": "debugger-detached",
+                "id": 1,
+                "reason": "target closed"
+              },
+              {
+                "kind": "destroyed",
+                "id": 1
+              },
+              {
+                "kind": "debugger-detached",
+                "id": 2,
+                "reason": "target closed"
+              },
+              {
+                "kind": "destroyed",
+                "id": 2
+              },
+              {
+                "kind": "debugger-detached",
+                "id": 3,
+                "reason": "target closed"
+              },
+              {
+                "kind": "destroyed",
+                "id": 3
+              }
+            ]
+          },
+          {
+            "phase": "prepared-partial",
+            "events": [
+              {
+                "kind": "navigate",
+                "id": 1,
+                "url": "about:blank"
+              }
+            ]
+          },
+          {
+            "phase": "recover-prepared",
+            "cleanup": {
+              "stores": [
+                {
+                  "id": 1,
+                  "closed": true,
+                  "destroyed": true
+                }
+              ],
+              "hooks": [
+                {
+                  "id": 1,
+                  "removed": true
+                }
+              ],
+              "connections": [
+                {
+                  "id": 1,
+                  "closed": true
+                }
+              ],
+              "remainingWebContents": [],
+              "windows": 0
+            },
+            "events": [
+              {
+                "kind": "navigate",
+                "id": 1,
+                "url": "about:blank"
+              },
+              {
+                "kind": "debugger-detached",
+                "id": 1,
+                "reason": "target closed"
+              },
+              {
+                "kind": "destroyed",
+                "id": 1
+              }
+            ]
+          },
+          {
+            "phase": "committed-cleanup-pending",
+            "cleanup": {
+              "stores": [
+                {
+                  "id": 1,
+                  "closed": true,
+                  "destroyed": true
+                }
+              ],
+              "hooks": [
+                {
+                  "id": 1,
+                  "removed": true
+                }
+              ],
+              "connections": [
+                {
+                  "id": 1,
+                  "closed": true
+                }
+              ],
+              "remainingWebContents": [],
+              "windows": 0
+            },
+            "events": [
+              {
+                "kind": "navigate",
+                "id": 1,
+                "url": "about:blank"
+              },
+              {
+                "kind": "debugger-detached",
+                "id": 1,
+                "reason": "target closed"
+              },
+              {
+                "kind": "destroyed",
+                "id": 1
+              }
+            ]
+          },
+          {
+            "phase": "recover-committed",
+            "cleanup": {
+              "stores": [
+                {
+                  "id": 1,
+                  "closed": true,
+                  "destroyed": true
+                }
+              ],
+              "hooks": [
+                {
+                  "id": 1,
+                  "removed": true
+                }
+              ],
+              "connections": [
+                {
+                  "id": 1,
+                  "closed": true
+                }
+              ],
+              "remainingWebContents": [],
+              "windows": 0
+            },
+            "events": [
+              {
+                "kind": "navigate",
+                "id": 1,
+                "url": "about:blank"
+              },
+              {
+                "kind": "debugger-detached",
+                "id": 1,
+                "reason": "target closed"
+              },
+              {
+                "kind": "destroyed",
+                "id": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "frozen-source-and-native-inputs-unchanged",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "inputs": 1516,
+        "sourceFiles": 14,
+        "dependencies": 49,
+        "hostSha256": "4fab536708d6e709119653e0883def3216a9344db74051f1abbff1ca3de44345"
+      }
+    }
+  ],
+  "boundary": "No site/UI/OS safeStorage/Keychain/Chrome/Edge. app.exit17 is deliberate abrupt process fault after actual prepared journal/native flush, not a normal store-close claim. Cipher key private0600 then removed. User approval/network gating/startup registry composition remain outside this engine I."
+}

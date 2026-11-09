@@ -1,0 +1,75 @@
+{
+  "at": "2026-11-05T22:54:15.463897+00:00",
+  "root": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003",
+  "scope": "M12-T131-T09-CM-AR",
+  "status": "READY-static-only-await-coordinator-Native-lease",
+  "execute": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/run.mjs --execute --t09-cm",
+  "afterActualExit": [
+    "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/verify-cleanup.mjs --verify",
+    "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/cache NODE_COMPILE_CACHE=/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/cache/node /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/judge.mjs --judge"
+  ],
+  "inputCount": 256,
+  "dependencyFiles": 170,
+  "namedSha256": {
+    "run.mjs": "0c2f041b18510d26ced9ade02785f09e8af3ac2f20d7ec1d172f02adfa003605",
+    "judge.mjs": "d0c75ce1a4671b370f6d77345eadcc4819251f7c8012172cb8b3a19eb09c61a5",
+    "cm-oracle.mjs": "72716f6bbae38d6abfe6ff5c83eca8a9ec48aef2d8d46809946082fa6ed87c95",
+    "provider.mjs": "42b6617544fdd56f9d44549ee544ed14610209d37060e27c7d41905e0da4f382",
+    "t09-carriers.mjs": "9b449db9d0e35ef9b25ec46db24f76e96c5060424b4dd7c1fbce5540b81dda9c",
+    "mcp-terminal-text.mjs": "aad9fc54d53fb185639645f80a0171f0562c726d40c0b4afdad77ed8987db61b",
+    "upstream-fault.mjs": "eea726bd131a17f24dd4411833b1e5363464091da980418ff54b63c2ed84f820",
+    "capture-main.mjs": "34312c0290986b6d367542e5a75fcbc50b8fa023b642801a9a9b177d78506158",
+    "driver-source/scripts/lib/electron-harness.mjs": "36bf44369998c0ba994ccb68dcbf34f5c7dafcaca8192041672af5dc1b5c83e3",
+    "startup-hook-guard.proposed.diff": "cd5fc42e326318cd0f71554f44ed7e33c827a186fff93714bfd0acd0ad2eac9d",
+    "startup-hook-guard-review.json": "9f45170b67a25c17bfe3b52a13e513e8c4d583a67407d7bacccedea8b1718a4c",
+    "pin.json": "ba1534632965304f1255fa789475deae6c12b7051f64348f4dac1a817eb47811",
+    "contract-t09.json": "8fe7d4c5e5b38b990add0ecee759d0b518525420086fdb441dc70b5959b2481f",
+    "i63-source-compatibility.json": "feaad17258f5f6199188b1c81ae9fea52ba0bd1d3945d28d00baef35dc3e8f29",
+    "prior-evidence/lineage.json": "2d58ff2a5dcc4283a87d5b3fd6ccc286f1fe26665c51b4d110aefca2a8c1ccde",
+    "static-preflight.json": "71273f99768c2e2d3b70bc5c5a1b02dc67bdf5b3e953cd2834c997809c7165bc",
+    "execution-ready.json": "2fcbd50fd8f455fbebeec2759694ee6199fbdaafa1fb76a9ebbef91f49335ee8",
+    "receipt-completion.mjs": "bcde3876a8237bc13760cc73014fa8b958f6a8ccce4382447b4fe3f20e46a905",
+    "check-receipt-completion.mjs": "6a0c06945d0ed462aa9811946784655960f572c7fc22a8f4b11b888148743f78",
+    "completion-only.diff": "1f6bbf3bc729c9b8cabe07fb9710f65b5a43f0d9ceb51da0c9b5c67dc4d5fa58",
+    "preparation-lineage.json": "b2cf6f285bc23e703070799f5b124117101377007a9db553d469fd1a172e581d"
+  },
+  "expectedResources": [
+    "one owned App022+new userdata",
+    "two actualCodex runs+actualMCP bridges/PTY",
+    "one loopback synthetic Responses HTTP listener",
+    "only exact owned upstream CLI/MCP faults",
+    "ephemeral Node inspector removed before business",
+    "actual owned TCP and Unix gateways"
+  ],
+  "maximumBudgetSeconds": 285,
+  "resourcesHeld": [],
+  "actualSenderFaultUntested": true,
+  "policy": {
+    "sandbox": "workspace-write",
+    "approval": "on-request",
+    "provider": "loopback synthetic",
+    "OpenAI": false,
+    "UI": false
+  },
+  "staticChecks": {
+    "syntax": 38,
+    "generatedExpressions": 18,
+    "captureExpressions": 4,
+    "realHarnessAPIUses": 31,
+    "missingAPI": 0,
+    "carrierOwnedObserverPure": 13,
+    "CMOraclePure": 9,
+    "receiptCompletionPure": 5
+  },
+  "remainingRuntimeGate": [
+    "Root new real0600 exact lease",
+    "Root external power/awake guard",
+    "original constructor capture",
+    "real default policy/approvals",
+    "actual CLI hang/MCP faults and replies + original row completion",
+    "independent cleanup"
+  ],
+  "formalWholeCaseCount": 0,
+  "minimalDiff": "completion-only.diff",
+  "onlyBehaviorChange": "10s read-only exact-original operation final-state wait; initial row/poll times/timeout persisted, unchanged original final assertions"
+}

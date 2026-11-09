@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-05T11:35:21.691321+00:00",
+  "parent": "M12-T131",
+  "sourceRequirements": "M11 R0.9 incl documented user evidence decisions",
+  "originalM12Line": "| M12-T131 | U3、M12-D01／D02 | I＋A＋R | M11 权威账中受网关改动影响的用例：T01、T06、T07、T08、T09、T14、T29、T37、T38 | 在 M12 包上按原步骤重跑 | 全部保持原通过结论；结果记在 M12 执行记录，不回写 M11 账 | — | 待执行 | — |",
+  "cases": [
+    {
+      "id": "M11-T06",
+      "originalAuthoritativeLine": "| M11-T06／R07／I＋A＋R | A／B 项目、不同连接；A 仅有有限动作 | 在 A 会话提交 B 的项目／连接标识、额外动作和自报审批参数，再正常查询 A | 越权请求拒绝且无外部副作用；合法 A 查询仍可用，参数不产生授权 | **通过（I＋A＋R）**；当前冻结I合同实跑7越权＋最后合法A；最终包真实UI选择A→Codex→包内CLI，5类伪B项目/B真实连接/approved/额外写命令/保留身份参数逐项拒绝（INVALID_INPUT或SCOPE_DENIED），每次HTTP计数保持2个连接前置测试、业务增量0，最后A合法查询才增加身份/列表两次且仅用A连接。B无业务请求。模型合成按确认计R，无真实三方外发。[I七拒绝](证据/并行测试/M11-C4-20261101T170131Z-1e39/M11-C4-I-SCOPE/attempt-001/result.json)、[真实A/R五类](证据/并行测试/M11-C4-20261101T170131Z-1e39/M11-C4-A-SCOPE/attempt-001/result.json)。 |",
+      "requirementAndLayers": "M11-T06／R07／I＋A＋R",
+      "prerequisite": "A／B 项目、不同连接；A 仅有有限动作",
+      "steps": "在 A 会话提交 B 的项目／连接标识、额外动作和自报审批参数，再正常查询 A",
+      "expected": "越权请求拒绝且无外部副作用；合法 A 查询仍可用，参数不产生授权",
+      "historicalActual": "**通过（I＋A＋R）**；当前冻结I合同实跑7越权＋最后合法A；最终包真实UI选择A→Codex→包内CLI，5类伪B项目/B真实连接/approved/额外写命令/保留身份参数逐项拒绝（INVALID_INPUT或SCOPE_DENIED），每次HTTP计数保持2个连接前置测试、业务增量0，最后A合法查询才增加身份/列表两次且仅用A连接。B无业务请求。模型合成按确认计R，无真实三方外发。[I七拒绝](证据/并行测试/M11-C4-20261101T170131Z-1e39/M11-C4-I-SCOPE/attempt-001/result.json)、[真实A/R五类](证据/并行测试/M11-C4-20261101T170131Z-1e39/M11-C4-A-SCOPE/attempt-001/result.json)。"
+    },
+    {
+      "id": "M11-T38",
+      "originalAuthoritativeLine": "| M11-T38／R07／I＋A | WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写 | 分别发起调用并统计业务执行次数 | 全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过） | **通过（I＋A）**；独立I18唯一软件场景，含真实registry另一合法run/token与直接host合法写拒绝；另有命名夹具红保留。C7实际App/Codex六负例业务0、恢复合法CLI读成功；另一真实并发Task拿仍active原Task token→PEER_MISMATCH。三身份故障只替换原native读出的事实、不改认证规则，原native10次身份均存在。A未选写在原CLI命令发现阶段SCOPE拒绝，I直接call另证宿主拒绝，层级不混。App/两Codex/3端口关闭，276私有文件约14.8MB明文token0。[A审查](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T38/attempt-001/review.json)、[I](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-I-T38/attempt-001/result.json)。 |",
+      "requirementAndLayers": "M11-T38／R07／I＋A",
+      "prerequisite": "WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写",
+      "steps": "分别发起调用并统计业务执行次数",
+      "expected": "全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过）",
+      "historicalActual": "**通过（I＋A）**；独立I18唯一软件场景，含真实registry另一合法run/token与直接host合法写拒绝；另有命名夹具红保留。C7实际App/Codex六负例业务0、恢复合法CLI读成功；另一真实并发Task拿仍active原Task token→PEER_MISMATCH。三身份故障只替换原native读出的事实、不改认证规则，原native10次身份均存在。A未选写在原CLI命令发现阶段SCOPE拒绝，I直接call另证宿主拒绝，层级不混。App/两Codex/3端口关闭，276私有文件约14.8MB明文token0。[A审查](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T38/attempt-001/review.json)、[I](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-I-T38/attempt-001/result.json)。"
+    }
+  ],
+  "RBoundary": "M11 approved synthetic local Responses model + real Codex/App/tool/identity/business/diagnostics; not real model autonomy or external business data",
+  "externalOpenAIData": [],
+  "newExternalModelAuthorization": false,
+  "newFormalPasses": 0,
+  "scope": "Only original I contributions; T06 A/R and T38 A remain missing; wholeT131 remainspartial",
+  "businessScenarios": 19
+}

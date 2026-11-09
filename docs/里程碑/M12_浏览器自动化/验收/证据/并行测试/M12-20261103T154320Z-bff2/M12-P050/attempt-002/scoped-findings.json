@@ -1,0 +1,159 @@
+{
+  "at": "2026-11-04T10:09:43.697626+00:00",
+  "originalJudgePreserved": "adjudication.json",
+  "originalSixCommandsBeforeExec": {
+    "commands": [
+      "set credentials",
+      "cookie set",
+      "storage local set",
+      "fill",
+      "set headers",
+      "cookie get"
+    ],
+    "operationRows": 11,
+    "historyDetails": 6,
+    "canaryRedaction": {
+      "credentials": {
+        "operations": true,
+        "history": true
+      },
+      "cookie": {
+        "operations": true,
+        "history": true
+      },
+      "storage": {
+        "operations": true,
+        "history": true
+      },
+      "password": {
+        "operations": true,
+        "history": true
+      },
+      "authorization": {
+        "operations": true,
+        "history": true
+      }
+    },
+    "allCanariesAbsentFromSixCommandPersistentHistory": true
+  },
+  "realProductRegressionAfterExec": {
+    "leaks": [
+      {
+        "sink": "browser_operations",
+        "kind": "cookie",
+        "requestId": "audit:17d71b7c-58f9-475b-ab1a-8d3e5af9aca5",
+        "command": "exec"
+      },
+      {
+        "sink": "browser_operations",
+        "kind": "cookie",
+        "requestId": "17d71b7c-58f9-475b-ab1a-8d3e5af9aca5",
+        "command": "exec"
+      },
+      {
+        "sink": "activity-history",
+        "kind": "cookie",
+        "requestId": "17d71b7c-58f9-475b-ab1a-8d3e5af9aca5",
+        "command": "exec"
+      }
+    ],
+    "negativeOutcomes": [
+      {
+        "input": "cookies import /private/tmp/p050-does-not-exist.json",
+        "exit": 0,
+        "timedOut": false,
+        "status": "ok",
+        "error": null
+      },
+      {
+        "input": "state load /private/tmp/p050-does-not-exist.json",
+        "exit": 2,
+        "timedOut": false,
+        "status": null,
+        "error": {
+          "effectState": "not-started",
+          "code": "INVALID_INPUT",
+          "layer": "config",
+          "message": "exec子命令不在固定白名单中",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        }
+      },
+      {
+        "input": "set ignore-https-errors true",
+        "exit": 5,
+        "timedOut": false,
+        "status": null,
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_ERROR",
+          "layer": "provider",
+          "message": "Unknown subcommand: ignore-https-errors\nValid options: viewport, device, geo, geolocation, offline, headers, credentials, auth, media",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        }
+      },
+      {
+        "input": "set permissions geolocation",
+        "exit": 5,
+        "timedOut": false,
+        "status": null,
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_ERROR",
+          "layer": "provider",
+          "message": "Unknown subcommand: permissions\nValid options: viewport, device, geo, geolocation, offline, headers, credentials, auth, media",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        }
+      },
+      {
+        "input": "permissions grant geolocation",
+        "exit": 2,
+        "timedOut": false,
+        "status": null,
+        "error": {
+          "effectState": "not-started",
+          "code": "INVALID_INPUT",
+          "layer": "config",
+          "message": "exec子命令不在固定白名单中",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        }
+      },
+      {
+        "input": "Browser.grantPermissions",
+        "exit": 2,
+        "timedOut": false,
+        "status": null,
+        "error": {
+          "effectState": "not-started",
+          "code": "INVALID_INPUT",
+          "layer": "config",
+          "message": "exec子命令不在固定白名单中",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        }
+      }
+    ],
+    "scope": "NoactualprivilegedCookieimportorpermissiongrantproven; keyCalls0/siteStateunchanged. Invalidcookiesimportwasacceptedascookieread, withactualpersistentCookievalueleak. Do notturnoriginaljudgegreenbydiscardingthis."
+  },
+  "sourceCause": {
+    "execPolicy": "Frozen009exec-policy.ts17-21 onlyvalidatesflagsforarrayrules, notpositionalsubcommands",
+    "audit": "Frozen009audit.ts12/25 masks exactcookie get/set results butexecresult.value remainsraw"
+  },
+  "sources": {
+    "inputs": 3451,
+    "allMatched": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-04T08:08:52.191082+00:00",
+  "classification": "test driver dependency/preflight ordering",
+  "compilerError": "MODULE_NOT_FOUND: esbuild is not a direct project dependency; compiler stderr was returned by tool, not redirected to a file",
+  "observedDependency": "vite resolves locked esbuild0.25.12; vitest resolves another transitive0.19.12 and is not chosen",
+  "dependentStep": "same shell incorrectly continued to Vitest without renderer; raw JSON failed suite retained; not a product result",
+  "fix": "use project Vite resolver and separate compiler/test calls; reuse successful actual bundle output unchanged"
+}

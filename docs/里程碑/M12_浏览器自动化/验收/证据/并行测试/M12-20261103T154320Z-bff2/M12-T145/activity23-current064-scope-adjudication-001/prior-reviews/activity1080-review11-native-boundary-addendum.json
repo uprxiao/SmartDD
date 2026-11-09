@@ -1,0 +1,61 @@
+{
+  "schema": "private-scoped-review-addendum",
+  "createdAt": "2026-11-08T15:19:37.934686+00:00",
+  "case": "M12-T145",
+  "attempt": "App045-countdown-A032",
+  "reviewer": "t145_download_visual_prep",
+  "originalReport": {
+    "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/activity1080-review11.json",
+    "sha256": "3b45f15abe9d34b3163b8cd4a96ca05d08e19f9b866bf368147d55c18087dc73",
+    "preservedUnchanged": true
+  },
+  "reason": "Root supplied independent Native placement/occlusion boundary after the original image review. Keep original conclusion as history; narrow its evidence layer and defer product classification.",
+  "supersedesCurrentInterpretation": {
+    "originalFindingId": "A032-ACTIVE-DOUBLE-OUTLINE",
+    "affectedIndices": [
+      10,
+      11,
+      13,
+      14,
+      16,
+      17,
+      19
+    ],
+    "originalHistoricalWording": "The original report classified the double outline as a product visual parity defect. That classification exceeded what the main-renderer PNG evidence alone can establish.",
+    "confirmedRendererFinding": "The unchanged main-renderer PNGs visibly show a 4px solid blue edge versus the original P 2px edge. This observation remains valid for that capture layer.",
+    "confirmedStaticFacts": [
+      "Frozen source054 workspace.css:127 contains ::after inset2px accent plus inner glow.",
+      "Frozen source054 workspace.css:134 contains an outer2px element border with active accent color.",
+      "Affected A metadata records the element borderWidth2px.",
+      "Frozen P browser.css:34 contains the pseudo2px edge; its .bw-page:32 has no equivalent element border."
+    ],
+    "nativeBoundaryReportedByCoordinator": {
+      "provenance": "Root message in this session, corroborated by Root and the other reviewer; this addendum performs no independent Native or system observation.",
+      "placement": "Live WCV placement begins at page border-box x+2,y+2.",
+      "occlusion": "The independently composited Native layer can cover the inner ::after2px region. main-renderer PNG omits live Native pixels, so the renderer-only image can expose outer border2px plus inner pseudo2px together.",
+      "alternativeExplanation": "The outer border may intentionally compensate for WCV occlusion; deleting it solely to match a renderer PNG could remove the visible real App frame."
+    },
+    "currentClassification": "Confirmed main-renderer capture difference; actual live-compositor edge thickness and product defect classification unknown/pending system-layer evidence.",
+    "requires": "Root will obtain actual Native+host whole-window/system screenshot or genuine manual evidence before deciding product defect or CSS changes.",
+    "productionDecision": "No recommendation to remove the outer border. Root currently leaves production CSS unchanged.",
+    "scopedVisualPass": false,
+    "productRedEstablished": false,
+    "reviewerDisagreementHandling": "Retain the original observation and static facts together with the Native occlusion explanation; do not merge the two review layers into a definite product red."
+  },
+  "unaffectedScope": "Original11pair review/viewed identities, individual hashes, paused/banner/button/dot observations, countdown/pointer/shell/sample-data boundaries stay historical evidence. This addendum grants no new pass.",
+  "execution": {
+    "newTests": 0,
+    "App": 0,
+    "Native": 0,
+    "Node": 0,
+    "OS": 0,
+    "systemScreenshots": 0,
+    "publicChanges": 0,
+    "formalIncrement": 0
+  },
+  "preservation": {
+    "rawSHA256": "927b6f7b01a0d6a6339713a5d69644f823ae658b6ef55913011daeab3ddc1f92",
+    "all44PNGAndMetadataFilesUnchanged": true,
+    "originalReportUnchanged": true
+  }
+}

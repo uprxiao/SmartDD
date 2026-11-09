@@ -152,3 +152,24 @@ M9 legacy DOCX rendering uses docx-preview 0.3.7 by Volodymyr Baydalka (Apache-2
 Upstream: https://github.com/VolodymyrBaydalka/docxjs; license retained at
 licenses/M9/docx-preview@0.3.7__LICENSE. It is used in a scriptless frame with
 external resources and HTML altChunks disabled; no Office file write API.
+
+M12 browser CDP discovery/session translation, address normalization and load-failure
+classification reference Orca commit bd9455b6165 (adapted to the confirmed WillYou rules).
+Cookie import SQLite/WAL snapshots and macOS Chromium decryption also reference
+that commit; WillYou validates schema-24 host hashes without heuristic stripping
+and prepares all eligible rows before any target mutation.
+Copyright (c) 2026 Lovecast Inc. MIT License: licenses/M12/Orca-MIT.txt.
+Cookie replacement scopes use tldts and tldts-core 7.4.18 (MIT), with private
+public suffixes enabled. License: licenses/M12/tldts-MIT.txt.
+
+M12 fixed browser execution helper:
+- agent-browser upstream, Apache-2.0. Original text: licenses/M12/agent-browser-Apache-2.0.txt.
+- WillYou modifications dated 2026-11-03/04 disable transport retries/respawn replay,
+  use the existing direct-page CDP connection with owned iframe subscription, and
+  correct semantic find action coverage, implicit roles and literal payload parsing.
+  Later corrections replace contenteditable selections through native input,
+  match nested text, and serialize literal attribute locator values as data.
+- Immutable upstream source, patch, lockfile and toolchain provenance:
+  resources/agent-browser/SOURCE.json and resources/agent-browser/patches/willyou-s3.patch
+  (includes the original S1 transport fixes plus S3 semantic find corrections).
+- The original npm binary provenance is retained only as historical experimental input.

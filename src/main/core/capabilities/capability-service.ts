@@ -22,7 +22,7 @@ import { registerOriginalRun,type OriginalRunCleanup } from './original-run-life
 import { CLAUDE_PNG_ADAPTER, imageInputLaunchSchema, imageInputMode, type ImageInputLaunch } from '@shared/terminal-image';
 
 export const MCP_CAPABILITY = 'smartdd-project-context';
-export const RUNTIME_ISOLATION = ['SMARTDD_', 'PROJECT_DB_CONFIG', 'REMOTE_SERVERS_CONFIG', 'WILLYOU_RUN_TOKEN', 'WILLYOU_ENDPOINT'];
+export const RUNTIME_ISOLATION = ['SMARTDD_', 'PROJECT_DB_CONFIG', 'REMOTE_SERVERS_CONFIG', 'WILLYOU_RUN_TOKEN', 'WILLYOU_ENDPOINT', 'WILLYOU_CLI_INACTIVE'];
 
 export interface PreparedRuntime {
   /** Native-only historical runs must retain the original task evidence verbatim. */

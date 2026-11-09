@@ -1,0 +1,349 @@
+{
+  "at": "2026-11-04T18:50:48.356763+00:00",
+  "pid": 50541,
+  "layer": "M12-T142 U read-only source provenance",
+  "sourceManifestSha256": "87578f68362fe65d96d6c35649df5d7d5a991e7bd7eca2af6ad43be40cb240e3",
+  "archives": {
+    "archive": {
+      "path": "/private/tmp/willyou-agent-browser-2c7991c9.tar.gz",
+      "sha256": "8fb43156f2a3889d563292b1ccd1fcfba677c32147cbacb542952fd964eb6aa2"
+    },
+    "buildArchive": {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/out/agent-browser-build/2c7991c9eccca1c9db6eee1a26a713414778de5a-979bc1d82b6aae6f/upstream.tar.gz",
+      "sha256": "8fb43156f2a3889d563292b1ccd1fcfba677c32147cbacb542952fd964eb6aa2"
+    }
+  },
+  "upstreamMembers": {
+    "LICENSE": {
+      "sha256": "014bb31e83d5c2e76aea1cc6e82217346ab41362f32cb355ad0f5c10aa0aeaff",
+      "bytes": 10931,
+      "saved": "upstream-original/LICENSE"
+    },
+    "package.json": {
+      "sha256": "1ea3e1908776a1845cc4f81cc20bb9ac708f4cfc7cb9eb78bb01da56cf20ca81",
+      "bytes": 2106,
+      "saved": "upstream-original/package.json"
+    },
+    "cli/Cargo.toml": {
+      "sha256": "9acd5e6e8a01e7bd01a78b5f5ee8b87f52bdb716da922f0e7335e80e9d15191e",
+      "bytes": 1672,
+      "saved": "upstream-original/cli/Cargo.toml"
+    },
+    "cli/Cargo.lock": {
+      "sha256": "fac25b7bc352926eb767ea5ae6760a3c6b203ecdbc8a78e07a5bcecef6587ccb",
+      "bytes": 80121,
+      "saved": "upstream-original/cli/Cargo.lock"
+    }
+  },
+  "upstreamPackage": {
+    "name": "agent-browser",
+    "version": "0.27.3",
+    "description": "Browser automation CLI for AI agents",
+    "type": "module",
+    "packageManager": "pnpm@11.1.3",
+    "engines": {
+      "node": ">=24.0.0",
+      "pnpm": ">=11.0.0"
+    },
+    "files": [
+      "bin",
+      "scripts",
+      "skill-data",
+      "skills"
+    ],
+    "bin": {
+      "agent-browser": "./bin/agent-browser.js"
+    },
+    "scripts": {
+      "version:sync": "node scripts/sync-version.js",
+      "version": "npm run version:sync && git add cli/Cargo.toml",
+      "build:native": "npm run version:sync && cargo build --release --manifest-path cli/Cargo.toml && node scripts/copy-native.js",
+      "build:linux": "npm run version:sync && docker compose -f docker/docker-compose.yml run --rm build-linux",
+      "build:macos": "npm run version:sync && (cargo build --release --manifest-path cli/Cargo.toml --target aarch64-apple-darwin & cargo build --release --manifest-path cli/Cargo.toml --target x86_64-apple-darwin & wait) && cp cli/target/aarch64-apple-darwin/release/agent-browser bin/agent-browser-darwin-arm64 && cp cli/target/x86_64-apple-darwin/release/agent-browser bin/agent-browser-darwin-x64",
+      "build:windows": "npm run version:sync && docker compose -f docker/docker-compose.yml run --rm build-windows",
+      "build:all-platforms": "npm run version:sync && (npm run build:linux & npm run build:windows & wait) && npm run build:macos",
+      "build:docker": "docker build --platform linux/amd64 -t agent-browser-builder -f docker/Dockerfile.build .",
+      "release": "npm run version:sync && npm run build:all-platforms && npm publish",
+      "postinstall": "node scripts/postinstall.js",
+      "build:dashboard": "cd packages/dashboard && pnpm build"
+    },
+    "keywords": [
+      "browser",
+      "automation",
+      "headless",
+      "chrome",
+      "cdp",
+      "cli",
+      "agent"
+    ],
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/vercel-labs/agent-browser.git"
+    },
+    "bugs": {
+      "url": "https://github.com/vercel-labs/agent-browser/issues"
+    },
+    "homepage": "https://agent-browser.dev",
+    "devDependencies": {}
+  },
+  "upstreamCargoPackage": {
+    "name": "agent-browser",
+    "version": "0.27.3",
+    "edition": "2021",
+    "description": "Fast browser automation CLI for AI agents",
+    "license": "Apache-2.0",
+    "repository": "https://github.com/vercel-labs/agent-browser",
+    "homepage": "https://agent-browser.dev",
+    "readme": "../README.md",
+    "keywords": [
+      "browser",
+      "automation",
+      "ai",
+      "cdp",
+      "chrome"
+    ],
+    "categories": [
+      "command-line-utilities",
+      "web-programming"
+    ]
+  },
+  "actualCargoPackage": {
+    "name": "agent-browser",
+    "version": "0.27.3-willyou.6",
+    "edition": "2021",
+    "description": "Fast browser automation CLI for AI agents",
+    "license": "Apache-2.0",
+    "repository": "https://github.com/vercel-labs/agent-browser",
+    "homepage": "https://agent-browser.dev",
+    "readme": "../README.md",
+    "keywords": [
+      "browser",
+      "automation",
+      "ai",
+      "cdp",
+      "chrome"
+    ],
+    "categories": [
+      "command-line-utilities",
+      "web-programming"
+    ]
+  },
+  "sourceSpecification": {
+    "schema": 2,
+    "package": "agent-browser",
+    "version": "0.27.3-willyou.6",
+    "upstream": {
+      "version": "0.27.3",
+      "commit": "2c7991c9eccca1c9db6eee1a26a713414778de5a",
+      "url": "https://codeload.github.com/vercel-labs/agent-browser/tar.gz/2c7991c9eccca1c9db6eee1a26a713414778de5a",
+      "archiveSha256": "8fb43156f2a3889d563292b1ccd1fcfba677c32147cbacb542952fd964eb6aa2"
+    },
+    "patch": {
+      "path": "patches/willyou-s3.patch",
+      "sha256": "979bc1d82b6aae6f5b81154df247642df44dbb5b17e00a7731583ae67266431f"
+    },
+    "features": [
+      "single-send-no-respawn-replay",
+      "direct-page-cdp-with-owned-iframes",
+      "semantic-find-seven-actions-and-implicit-roles",
+      "literal-find-input-payload",
+      "native-editing-replaces-contenteditable-fill",
+      "nested-text-and-literal-attribute-locators",
+      "external-dialog-closes-complete-owned-synthetic-clicks",
+      "finite-mouse-move-and-wheel-numbers",
+      "dialog-aware-explicit-pointer-dispatch",
+      "tracked-wheel-coordinates-and-held-buttons",
+      "implicit-release-of-tracked-held-button",
+      "reference-pointer-click-count-window",
+      "pointer-state-committed-after-acknowledged-dispatch"
+    ],
+    "build": {
+      "rustVersion": "1.92.0",
+      "profile": "ci",
+      "upstreamCargoLockSha256": "fac25b7bc352926eb767ea5ae6760a3c6b203ecdbc8a78e07a5bcecef6587ccb",
+      "cargoLockSha256": "9bda43a85d7c2f60fcab949b7d939f2e427ebe7680bf311db2fc11875f4bb1aa"
+    }
+  },
+  "runtimeSpecification": {
+    "schema": 2,
+    "package": "agent-browser",
+    "version": "0.27.3-willyou.6",
+    "upstream": {
+      "version": "0.27.3",
+      "commit": "2c7991c9eccca1c9db6eee1a26a713414778de5a",
+      "url": "https://codeload.github.com/vercel-labs/agent-browser/tar.gz/2c7991c9eccca1c9db6eee1a26a713414778de5a",
+      "archiveSha256": "8fb43156f2a3889d563292b1ccd1fcfba677c32147cbacb542952fd964eb6aa2"
+    },
+    "patch": {
+      "path": "patches/willyou-s3.patch",
+      "sha256": "979bc1d82b6aae6f5b81154df247642df44dbb5b17e00a7731583ae67266431f"
+    },
+    "features": [
+      "single-send-no-respawn-replay",
+      "direct-page-cdp-with-owned-iframes",
+      "semantic-find-seven-actions-and-implicit-roles",
+      "literal-find-input-payload",
+      "native-editing-replaces-contenteditable-fill",
+      "nested-text-and-literal-attribute-locators",
+      "external-dialog-closes-complete-owned-synthetic-clicks",
+      "finite-mouse-move-and-wheel-numbers",
+      "dialog-aware-explicit-pointer-dispatch",
+      "tracked-wheel-coordinates-and-held-buttons",
+      "implicit-release-of-tracked-held-button",
+      "reference-pointer-click-count-window",
+      "pointer-state-committed-after-acknowledged-dispatch"
+    ],
+    "build": {
+      "rustVersion": "1.92.0",
+      "profile": "ci",
+      "upstreamCargoLockSha256": "fac25b7bc352926eb767ea5ae6760a3c6b203ecdbc8a78e07a5bcecef6587ccb",
+      "cargoLockSha256": "9bda43a85d7c2f60fcab949b7d939f2e427ebe7680bf311db2fc11875f4bb1aa",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "files": [
+      {
+        "arch": "arm64",
+        "target": "aarch64-apple-darwin",
+        "path": "arm64/agent-browser",
+        "sha256": "1d6a2fd32b2afda66e57af8658496a415b7650132d2a708405cac77bed75aa19",
+        "bytes": 15836368
+      }
+    ]
+  },
+  "actualBinary": {
+    "path": "/private/tmp/willyou-m12-p070-helper-006-build-002/runtime-agent-browser/arm64/agent-browser",
+    "sha256": "1d6a2fd32b2afda66e57af8658496a415b7650132d2a708405cac77bed75aa19",
+    "bytes": 15836368
+  },
+  "fileIdentities": {
+    "collect.py": {
+      "sha256": "26801d555816da64a74477dd7bd19de8b61e70d755f005737cad34600bdf9965",
+      "bytes": 2413
+    },
+    "fixed-orca-identity.json": {
+      "sha256": "20f1f83c3b007abf68430fd17d96937b30e2010f92d04007eb9ae572d37634d4",
+      "bytes": 338
+    },
+    "fixed-orca-LICENSE": {
+      "sha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
+      "bytes": 1070
+    },
+    "paths.json": {
+      "sha256": "aaed12b6c6e0745a7a91cf1d9c01eaa6d5e1f80762a9171f7eaefe493cc56098",
+      "bytes": 512
+    },
+    "inputs.json": {
+      "sha256": "31d5df5a50139e8cc149280e9643a61ba4b35a11657e01422a5a30eb4887a44e",
+      "bytes": 7099
+    },
+    "judge.py": {
+      "sha256": "73c547495de4fee29e737ebb571c998f742ff169fb5a634445ed2f7dab38dcf6",
+      "bytes": 5711
+    },
+    "source-inputs.json": {
+      "sha256": "87578f68362fe65d96d6c35649df5d7d5a991e7bd7eca2af6ad43be40cb240e3",
+      "bytes": 722456
+    },
+    "contract.json": {
+      "sha256": "1164a5817f4aa2c9ec8c576e134f9014972b7deffc159b551ba25e7bda2efe75",
+      "bytes": 1032
+    },
+    "actual-build-source/LICENSE": {
+      "sha256": "014bb31e83d5c2e76aea1cc6e82217346ab41362f32cb355ad0f5c10aa0aeaff",
+      "bytes": 10931
+    },
+    "actual-build-source/cli/Cargo.toml": {
+      "sha256": "3f8cd179f7ae56f27f2614a6c7f81421b353b433a15eb7790902edbd0d876994",
+      "bytes": 1682
+    },
+    "actual-build-source/cli/Cargo.lock": {
+      "sha256": "9bda43a85d7c2f60fcab949b7d939f2e427ebe7680bf311db2fc11875f4bb1aa",
+      "bytes": 80131
+    },
+    "upstream-original/LICENSE": {
+      "sha256": "014bb31e83d5c2e76aea1cc6e82217346ab41362f32cb355ad0f5c10aa0aeaff",
+      "bytes": 10931
+    },
+    "upstream-original/package.json": {
+      "sha256": "1ea3e1908776a1845cc4f81cc20bb9ac708f4cfc7cb9eb78bb01da56cf20ca81",
+      "bytes": 2106
+    },
+    "upstream-original/cli/Cargo.toml": {
+      "sha256": "9acd5e6e8a01e7bd01a78b5f5ee8b87f52bdb716da922f0e7335e80e9d15191e",
+      "bytes": 1672
+    },
+    "upstream-original/cli/Cargo.lock": {
+      "sha256": "fac25b7bc352926eb767ea5ae6760a3c6b203ecdbc8a78e07a5bcecef6587ccb",
+      "bytes": 80121
+    },
+    "actual-build-006b/result.json": {
+      "sha256": "388f62301b423eb4f84dd23aacdf4656cfda34d2553f9eab8dd50232c1f6256c",
+      "bytes": 927
+    },
+    "actual-build-006b/runtime-agent-browser/LICENSE": {
+      "sha256": "014bb31e83d5c2e76aea1cc6e82217346ab41362f32cb355ad0f5c10aa0aeaff",
+      "bytes": 10931
+    },
+    "actual-build-006b/runtime-agent-browser/SOURCE.json": {
+      "sha256": "532628366523c3c9de87edd6c111a8ef3d5273b8b64687cb9652cda101537289",
+      "bytes": 1715
+    },
+    "contracts/需求.md": {
+      "sha256": "9ffaf04811b7ed10947c28cf70e433f9971b95dc88e11e33bcd713e22a829d59",
+      "bytes": 66342
+    },
+    "contracts/验收/测试用例.md": {
+      "sha256": "fd4dab938323c1f23fe878cb6237d34b042f76d0dc06f2de1fd7ce5a08e52ddc",
+      "bytes": 88922
+    },
+    "source012/NOTICE": {
+      "sha256": "b4fd16bf4559f39bf9d28745e895d83eb304cf9cad5459e55408c057a819fcc6",
+      "bytes": 12063
+    },
+    "source012/licenses/M12/agent-browser-Apache-2.0.txt": {
+      "sha256": "014bb31e83d5c2e76aea1cc6e82217346ab41362f32cb355ad0f5c10aa0aeaff",
+      "bytes": 10931
+    },
+    "source012/licenses/M12/Orca-MIT.txt": {
+      "sha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
+      "bytes": 1070
+    },
+    "source012/resources/agent-browser/SOURCE.json": {
+      "sha256": "385e26551f579de3dddb7d9b18854baa37edd21ab19a7850558cd7fa94a0a227",
+      "bytes": 1425
+    },
+    "source012/resources/agent-browser/README.md": {
+      "sha256": "d8ffc121558e4d0f7dde318d1774079b0bc44b12f03e412eaefd2aaf1e197f9b",
+      "bytes": 3071
+    },
+    "source012/resources/agent-browser/patches/willyou-s3.patch": {
+      "sha256": "979bc1d82b6aae6f5b81154df247642df44dbb5b17e00a7731583ae67266431f",
+      "bytes": 54788
+    },
+    "source012/src/shared/browser-navigation.ts": {
+      "sha256": "cbd913eeeee3b9850e7375690afb9b3053bd9b960c544705082ce53c32a919e9",
+      "bytes": 4576
+    },
+    "source012/src/main/core/browser/cdp-proxy.ts": {
+      "sha256": "96cd889e7c19d6905b5691baa0428c311fb0dd64ef4dd7e7384b7876d383b59f",
+      "bytes": 14631
+    },
+    "source012/src/main/core/browser/page-commands.ts": {
+      "sha256": "20672c7579dd1c58ce4d1604cf2f65c5c16ca24d28f0e333c0d51652cc26b80e",
+      "bytes": 10078
+    },
+    "source012/src/main/core/browser/cookies.ts": {
+      "sha256": "f889596ae36405087631c5cd15ef3e78d729128fbacfa75f19112214d157a0ea",
+      "bytes": 3541
+    }
+  },
+  "fixedOrca": {
+    "repository": "/Users/liubu/hx/3.GitHubProject/orca",
+    "fixedCommit": "bd9455b61655b9e76504349a6c8571f74f14954f",
+    "resolvedNoticePrefix": "bd9455b61655b9e76504349a6c8571f74f14954f",
+    "licenseBlob": "fbf46fc17dacb1f65e03e2b6290eb53ba94b149d",
+    "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3"
+  },
+  "executionBoundary": "Onlyread/hash/tar extraction of selected sourcefiles; no binaryexecution, no network, no subprocess, no compile/build/listener/App, no crossplatform packageclaim."
+}

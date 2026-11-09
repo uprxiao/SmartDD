@@ -1,3 +1,4 @@
+import {browserDefinition} from './browser/definition.mjs';
 import {sampleKvDefinition} from './sample-kv/definition.mjs';
 import moduleCatalog from '../../src/shared/application-module-catalog.json' with {type: 'json'};
 // Trusted built-in package sources. Package versions are independent from the App version.
@@ -158,3 +159,5 @@ const zentaoV110Definition = {
 definitions[definitions.findIndex(definition => definition.appId === 'zentao')] = zentaoV110Definition;
 
 definitions.push(sampleKvDefinition(runtime,applicationResultV2));
+
+definitions.push(browserDefinition(runtime,applicationResultV2));

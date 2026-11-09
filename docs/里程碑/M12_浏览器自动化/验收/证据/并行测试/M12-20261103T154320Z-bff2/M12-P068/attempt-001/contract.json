@@ -1,0 +1,16 @@
+{
+  "case": "M12-T108",
+  "layer": "A",
+  "originalRow": "| M12-T108 | R07.5、K1、K3 | A | T1 网页标签正在被 Agent 使用 | 收起右侧工作区；关闭文件面板；再重新打开 | 页面不被销毁（页面内计时器持续运行、`browserPageId` 不变），Agent 命令不中断 | — | 待执行 | — |",
+  "requirementsRevision": "R1.3",
+  "requirementsSection": "**R07.5 切换任务与后台页面**\n- 页面由主进程持有，按任务常驻。切换任务、收起工作区、关闭文件面板都不销毁页面，也不中断在途命令。\n- 任务切到后台时，页面移入停放窗口：已显示但完全透明、不可聚焦、不接收鼠标、不出现在任务栏和窗口菜单。页面保持原尺寸继续绘制，切回时再挂回右侧工作区。这样做是因为页面不绘制时点击会变慢、截图会卡住。\n- 用户看不到、也点不到停放窗口。Agent 只能看到目标页面，看不到停放窗口和 WillYou 界面。\n\n",
+  "caseSource": "docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+  "requirementSource": "docs/里程碑/M12_浏览器自动化/需求.md",
+  "criteria": [
+    "actual managed CLI wait in-flight while UI hides workspace via task-files",
+    "actual managed CLI wait in-flight while UI closes panel via 隐藏文件区域",
+    "same browserPageId/native WC/document, timer keeps increasing, no navigation or destruction",
+    "actual CLI commands succeed while hidden and after real UI reopen, no cancellation or replay"
+  ],
+  "supplement": "Task switch is separate R07.5 positive supplement; no T107 performance credit and not a change to original T108."
+}

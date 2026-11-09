@@ -1,0 +1,60 @@
+{
+  "case": "M12-T121",
+  "requirements": [
+    "R08.2",
+    "R08.5",
+    "R08.1 evidence acquisition used by this SOP"
+  ],
+  "originalCriteria": [
+    {
+      "id": "O1",
+      "rule": "Local synthetic F-SITE bug no longer present; real reproduction attempt",
+      "passed": true,
+      "evidence": "actual screenshot qa/fixed20.00 + Host browser actions + fixture /site/api/total20.00; original 20.01 not observed"
+    },
+    {
+      "id": "O2",
+      "rule": "Conversation not-reproduced description contains environment/version/account/steps/actual result/evidence paths",
+      "passed": true,
+      "evidence": "final-session-proof.json fields, line196, five real links"
+    },
+    {
+      "id": "O3",
+      "rule": "No ZenTao remote write request or attempt",
+      "passed": true,
+      "evidence": {
+        "M10HTTPRequests": 9,
+        "allGETorHEAD": true,
+        "allBusinessWriteAttemptFalse": true,
+        "M10HostInvocations": 4,
+        "allSemanticsRead": true
+      }
+    },
+    {
+      "id": "O4",
+      "rule": "Relevant SOP and app Skills read before related business; complete original Bug body/history acquired",
+      "passed": true,
+      "evidence": "skill-proof.json exact output29/35; first Host business41; private body.steps/history exactly equal original supplied scenario, values/SHA not printed"
+    },
+    {
+      "id": "O5",
+      "rule": "Actual screenshot/console/network/capture evidence acquired and linked",
+      "passed": true,
+      "evidence": "artifact-proof.json original unique Host receipts and real file bytes; five artifacts real"
+    },
+    {
+      "id": "O6",
+      "rule": "No sensitive values published into final report/diagnostic evidence",
+      "passed": true,
+      "evidence": "privacy-proof.json original native/public/final zero known-secret matches, sensitive header/key masks, file image checked"
+    }
+  ],
+  "originalJudgementKept": {
+    "path": "/private/tmp/willyou-m12-t121-app022-retest-001/judgement.json",
+    "sha256": "e099339cb099a097abadea86fd20e140c1378cf7453c001ceb5b568f24d308ab",
+    "businessPassed": 5,
+    "businessTotal": 12
+  },
+  "runtimeCarrierAndStdinProof": "S2 parallel review; this contract/artifact result does not pretend to close their unknown-carrier proof",
+  "formalCaseIncrement": 0
+}

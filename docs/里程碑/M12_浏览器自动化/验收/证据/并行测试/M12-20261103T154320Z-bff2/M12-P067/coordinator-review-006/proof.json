@@ -1,0 +1,231 @@
+{
+  "reviewedAt": "2026-11-05T13:01:24.060794+00:00",
+  "mode": "file-only derived review; no original mutation, no SQLite needed",
+  "classification": "driver/schema mismatch: old short action wait versus unified capability action browser.nav.wait",
+  "original": {
+    "root": "/private/tmp/willyou-m12-p067-pause-stop-app021-006",
+    "hashes": {
+      "raw.json": "95089836221648c7c98003c0181397669da8fe1c2a276f08b6488c5d13973fb1",
+      "result.json": "018cac60e0a5a013e1c0c9e30131f09b627041cec150e641e417f0f4726557ae",
+      "judge.mjs": "5f86b51fcc4c79825c6e3e6e56a136d94f84e0baf10a1062b23405c6b73a7a06"
+    },
+    "S03": {
+      "id": "S03",
+      "caseId": "M12-T114",
+      "expected": "Actualstop cancels hostwait; no fabricated killedCLI stdout",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(actual.some(x=>!['running','accepted'].includes(x.state)&&x.endedAt))\n"
+    },
+    "oldFilterMatchedCount": 0
+  },
+  "scope": {
+    "projectId": "f86b4634-f573-4f1d-9590-4c0f1c8b46c4",
+    "taskId": "a3222f86-3781-44e1-b613-bac6d5d163a9",
+    "runId": "ecb2fdc0-6654-4509-9df1-9a34a63a956a",
+    "pageId": "01887dbc-7517-4bb0-80b4-869fca539e22"
+  },
+  "realHostItem": {
+    "id": "074f9d95-9656-492b-922a-d0e0b4b18721",
+    "kind": "operation",
+    "appId": "browser",
+    "projectId": "f86b4634-f573-4f1d-9590-4c0f1c8b46c4",
+    "projectName": "[A] P067 same project",
+    "taskId": "a3222f86-3781-44e1-b613-bac6d5d163a9",
+    "taskTitle": "[A] P067 T1",
+    "runId": "ecb2fdc0-6654-4509-9df1-9a34a63a956a",
+    "jobId": null,
+    "parentOperationId": null,
+    "callerKind": "agent-run",
+    "action": "browser.nav.wait",
+    "semantics": "read",
+    "state": "failed",
+    "attemptCount": 1,
+    "errorCode": "BROWSER_ERROR",
+    "effectState": "read-only",
+    "requestId": "15e7b90f-58fb-4308-9f03-72bcd66b0ae2",
+    "startedAt": "2026-11-05T12:49:52.082Z",
+    "endedAt": "2026-11-05T12:49:53.416Z",
+    "browser": {
+      "pageId": "01887dbc-7517-4bb0-80b4-869fca539e22",
+      "targetTaskId": "a3222f86-3781-44e1-b613-bac6d5d163a9",
+      "durationMs": 1074
+    },
+    "connections": [],
+    "subjects": [],
+    "send": null
+  },
+  "realBrowserDetails": {
+    "command": "wait",
+    "pageId": "01887dbc-7517-4bb0-80b4-869fca539e22",
+    "targetTaskId": "a3222f86-3781-44e1-b613-bac6d5d163a9",
+    "durationMs": 1074,
+    "arguments": {
+      "timeout": 90000,
+      "text": "P067StopNeverAppears",
+      "page": "01887dbc-7517-4bb0-80b4-869fca539e22"
+    },
+    "result": null,
+    "authorization": null,
+    "authorizations": [],
+    "passwordFill": null
+  },
+  "timeline": {
+    "uiStopClickedAtMs": 1793882993073,
+    "uiKillHandlerAtMs": 1793882993215,
+    "logicalRunCommandCancelledAtMs": 1793882993275,
+    "helperWaitCallbackAtMs": 1793882993364,
+    "helperSignal": "SIGTERM",
+    "hostActivityEndedAt": "2026-11-05T12:49:53.416Z",
+    "firstFinalReadWaitEmptyAtMs": 1793882993446,
+    "hostActivityDelayFromLogicalCancelMs": 141
+  },
+  "cliObservation": {
+    "reportedByCli": false,
+    "stdout": "",
+    "stderr": "",
+    "numericExitObserved": null,
+    "note": "receiver stopped on task kill; no synthesized CLI completion/error result"
+  },
+  "activity": {
+    "sampleCount": 251,
+    "activeSamples": 250,
+    "maxGapMs": 88,
+    "logicalEndAtMs": 1793882993275,
+    "deadlineMs": 1793883013275,
+    "deadlineUtc": "2026-11-05T12:50:13.275+00:00",
+    "lastActiveAtMs": 1793883013253,
+    "firstAbsentAtMs": 1793883013329,
+    "firstAbsentUiAtMs": 1793883013328,
+    "firstAbsentDelayMs": 54,
+    "activeDots": 0,
+    "activeGlow": 0,
+    "boundary": "20s measured from actual main-process logical cancellation/endRun; Helper callback and M11 audit persistence complete 89ms/141ms later, not asserted identical. Timer expiry observed within original 88ms sample spacing."
+  },
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/execution-context.ts",
+      "sha256": "bb30e26aa393f30315dc2069826673c04e68dc6a0a90055da44be9b286e8a31f",
+      "lineStart": 280,
+      "lineEnd": 290,
+      "text": "  withAgent<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operation:ApplicationOperationContext,semantics:'read'|'write',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{\n    const known=this.deps.assertRun(claim.run.runId);assertRunApplication(known,binding.appId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);\n    const entry=binding.entry??'mcp';\n    if(known.plan){const allowed=known.plan.allowed.find(c=>(entry==='cli'?c.capabilityId:c.mcpTool)===binding.toolName&&c.contractMajor===operation.contractMajor&&c.packageHash===binding.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','固定能力不在运行允许表中');requirePlanEntry(known.plan,allowed.capabilityId,operation.contractMajor,entry);}\n    else if(entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');\n    const selectedMajor=entry==='cli'&&known.snapshot.schema===3?known.snapshot.packages.find(p=>p.packageHash===binding.packageHash)?.capabilityContractMajors[binding.toolName]:entry==='mcp'?selected?.toolContractMajors[binding.toolName]:undefined;\n    if(known.run.taskId!==claim.run.taskId||known.run.projectId!==claim.run.projectId||!selected||!selected.allowedOperations.includes(binding.permission)||selectedMajor!==operation.contractMajor||(operation.entry??'mcp')!==entry||operation.packageHash!==binding.packageHash||operation.appId!==binding.appId||operation.toolName!==binding.toolName)throw new ApplicationError('SCOPE_DENIED','工具上下文不能替换真实运行、原包或动作');\n    const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),stamp=this.selections.policyStamp(known.run.projectId,appId);\n    const check=()=>{const current=this.deps.assertRun(known.run.runId);assertRunApplication(current,binding.appId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};\n    return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{\n      this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry,requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/activity-service.ts",
+      "sha256": "969966e6bfe837538f52b42efc64eeb8ee264b4549585083b15617c9397026d0",
+      "lineStart": 39,
+      "lineEnd": 45,
+      "text": "  // remain independently queryable. M11 operations retain their original ID and\n  // are never counted twice. Standalone UI records use the complete PK as an\n  // opaque identity, so a recycled rowid/request UUID cannot open another run.\n  const identity=\"lower(hex(b.run_id))||'_'||lower(hex(b.request_id))\",summary=\"CASE WHEN json_valid(b.summary) THEN b.summary ELSE '{}' END\",request=\"CASE WHEN b.request_id LIKE 'audit:%' THEN substr(b.request_id,7) ELSE b.request_id END\";\n  const trustedMetadata=\"(b.request_id LIKE 'audit:%' OR b.command LIKE 'ui %' OR b.command='access decision')\";\n  const fields:Record<keyof Row,string>={key:\"'browser:'||\"+identity,kind:\"'browser'\",id:identity,app_id:\"'browser'\",project_id:`COALESCE(CASE WHEN ${trustedMetadata} THEN json_extract(${summary},'$.projectId') END,(SELECT project_id FROM capability_runs WHERE run_id=b.run_id))`,task_id:'b.task_id',run_id:'b.run_id',job_id:'NULL',parent_operation_id:'NULL',caller_kind:`CASE WHEN b.command LIKE 'ui %' AND json_extract(${summary},'$.actor')='user' THEN 'ui' ELSE 'agent-run' END`,action:'b.command',semantics:`CASE WHEN b.request_id LIKE 'audit:%' THEN COALESCE(json_extract(${summary},'$.semantics'),'write') ELSE 'write' END`,state:\"CASE WHEN b.state='accepted' THEN 'running' ELSE b.state END\",attempt_count:'1',error_code:'b.error_code',effect_state:'b.effect_state',request_id:request,started_at:\"strftime('%Y-%m-%dT%H:%M:%fZ',b.created_at/1000.0,'unixepoch')\",ended_at:\"CASE WHEN b.state IN ('accepted','running') THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%fZ',b.updated_at/1000.0,'unixepoch') END\",targets_json:\"'[]'\",connection_id:'NULL',subjects_json:\"'[]'\",draft_id:'NULL',draft_revision:'NULL',execution_id:'NULL',execution_state:'NULL',authorization_source:'NULL',grant_state:'NULL',updated_at:\"strftime('%Y-%m-%dT%H:%M:%fZ',b.updated_at/1000.0,'unixepoch')\"};\n  return ledger+' UNION ALL SELECT '+Object.entries(fields).map(([name,value])=>value+' AS '+name).join(',')+` FROM browser_operations b LEFT JOIN tasks t ON t.id=b.task_id"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/applications/activity-service.ts",
+      "sha256": "969966e6bfe837538f52b42efc64eeb8ee264b4549585083b15617c9397026d0",
+      "lineStart": 59,
+      "lineEnd": 65,
+      "text": "  }\n  const targets=stored(row.targets_json,targetSchema),subjects=stored(row.subjects_json,subjectSchema),ids=new Set([...targets.map(x=>x.id),...subjects.filter(s=>s.kind==='connection').map(s=>s.id),...(row.connection_id?[row.connection_id]:[])]);\n  const project=row.project_id?this.store.sqlite.prepare('SELECT name FROM projects WHERE id=?').get(row.project_id) as {name:string}|undefined:undefined;\n  const task=row.task_id?this.store.sqlite.prepare('SELECT title FROM tasks WHERE id=? AND project_id=?').get(row.task_id,row.project_id) as {title:string}|undefined:undefined;\n  const browser=this.browser(row),metadata=browser?browserActivityDetails(browser):undefined;\n  return {id:row.id,kind:row.kind,appId:row.app_id,projectId:row.project_id,projectName:project?.name??null,taskId:row.task_id,taskTitle:task?.title??null,runId:row.run_id,jobId:row.job_id,parentOperationId:row.parent_operation_id,callerKind:row.caller_kind,action:row.action,semantics:row.semantics,state:row.state,attemptCount:row.attempt_count,errorCode:row.error_code,effectState:row.effect_state,requestId:row.request_id,startedAt:row.started_at,endedAt:row.ended_at,\n   ...(metadata?{browser:{pageId:metadata.pageId,targetTaskId:metadata.targetTaskId,durationMs:metadata.durationMs}}:{}),"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/browser/audit.ts",
+      "sha256": "797dbbc2d0111854bc9e74218773a339d5294e040249dd1970cbf5e8fd32bc00",
+      "lineStart": 55,
+      "lineEnd": 79,
+      "text": "export class BrowserAudit {\n  constructor(private readonly operations:BrowserOperations){}\n  start(scope:{runId:string;requestId:string;taskId:string;projectId:string},command:string,args:Record<string,unknown>,read:boolean){\n    const key='audit:'+scope.requestId,record=this.operations.begin(scope.runId,key,scope.taskId,null,command);\n    let summary:BrowserCommandAudit={schema:'browser-audit-v1',actor:'agent',projectId:scope.projectId,targetTaskId:typeof args.task==='string'?args.task:scope.taskId,semantics:read?'read':'write',arguments:browserAuditValue(command,args,'arguments'),result:null,authorization:null,authorizations:[],passwordFill:null};\n    const save=(state:BrowserOperation['state'],effect:string,code?:string)=>{if(!record.replay)this.operations.update(scope.runId,key,state,effect,{summary,code});};\n    save('running',read?'read-only':'not-started');\n    return{\n      page:(pageId:string)=>{if(!record.replay)this.operations.page(scope.runId,key,pageId);},\n      grant:(grant:NonNullable<BrowserCommandAudit['authorization']>,targetTaskId=summary.targetTaskId)=>{summary={...summary,authorization:{...grant},authorizations:[...summary.authorizations.filter(item=>item.grantId!==grant.grantId),{...grant,targetTaskId}]};save('running',read?'read-only':'not-started');},\n      passwordFill:(value:boolean)=>{summary={...summary,passwordFill:value};save('running','not-started');},\n      pending:(value:unknown)=>{summary={...summary,result:browserAuditValue(command,value,'result')};save('running','unknown');},\n      success:(value:unknown)=>{summary={...summary,result:browserAuditValue(command,value,'result')};save('succeeded',read?'read-only':'completed');},\n      failure:(error:unknown,dispatched:boolean)=>save(dispatched&&!read?'unknown':'failed',read?'read-only':dispatched?'unknown':'not-started',error instanceof ApplicationError?error.code:'BROWSER_ERROR'),\n    };\n  }\n}\nexport function browserActivityDetails(row:BrowserOperation):BrowserActivityDetails{\n  let summary:unknown=null;try{summary=row.summary===null?null:JSON.parse(row.summary);}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原浏览器审计摘要损坏，未替换为当前结果');}\n  if(row.request_id.startsWith('audit:'))summary=protectBrowserSummary(row.command,summary,true);\n  const parsed=row.request_id.startsWith('audit:')?browserCommandAuditSchema.safeParse(summary):null;\n  if(parsed?.success)return{command:row.command,pageId:row.page_id,targetTaskId:parsed.data.targetTaskId,durationMs:Math.max(0,row.updated_at-row.created_at),arguments:parsed.data.arguments,result:parsed.data.result,authorization:parsed.data.authorization,authorizations:parsed.data.authorizations,passwordFill:parsed.data.passwordFill};\n  // Legacy write receipts and trusted UI events have no argument history. A\n  // reader still projects their results through the current redaction policy.\n  return{command:row.command,pageId:row.page_id,targetTaskId:row.task_id,durationMs:Math.max(0,row.updated_at-row.created_at),arguments:null,result:browserAuditValue(row.command,summary,'result'),authorization:null,passwordFill:null};"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p101-source-025/source/src/main/core/browser/automation.ts",
+      "sha256": "32e461338e9fa1d24b2bde04d86c5d4c754428812c4c57b5c388c8704a0c9c43",
+      "lineStart": 34,
+      "lineEnd": 53,
+      "text": "  activity(pageId:string){const value=this.activities.get(pageId);return{active:!!value&&(value.running.size>0||Date.now()-value.endedAt<20000),running:!!value?.running.size};}\n  begin(runId:string,taskId:string,pageId:string):()=>void{\n    if(this.closed)return()=>{};this.target(runId,taskId);\n    let value=this.activities.get(pageId);if(value&&value.taskId!==taskId)throw new ApplicationError('RESOURCE_STATE_CHANGED','页面活动归属不符');\n    if(!value){value={taskId,running:new Set(),endedAt:0};this.activities.set(pageId,value);}clearTimeout(value.timer);\n    const item=value;let finished=false;\n    const token:{runId:string;finish:()=>void}={runId,finish:()=>{\n      if(finished)return;finished=true;item.running.delete(token);\n      if(this.activities.get(pageId)!==item)return;\n      if(!item.running.size){item.endedAt=Date.now();item.timer=setTimeout(()=>{if(this.activities.get(pageId)===item&&!item.running.size){this.activities.delete(pageId);this.changed(taskId);}},20000);item.timer.unref?.();}\n      this.changed(taskId);\n    }};\n    item.running.add(token);this.changed(taskId);return token.finish;\n  }\n  forget(pageId:string):void{const value=this.activities.get(pageId);if(!value)return;clearTimeout(value.timer);this.activities.delete(pageId);for(const token of [...value.running])token.finish();this.changed(value.taskId);}\n  endRun(runId:string):void{\n    const run=this.runs.get(runId);if(!run)return;run.binding.signal.removeEventListener('abort',run.stop);this.runs.delete(runId);\n    for(const [taskId,ids]of this.pauses)if(ids.delete(runId)&&!ids.size){this.pauses.delete(taskId);this.changed(taskId);}\n    for(const value of this.activities.values())for(const token of [...value.running])if(token.runId===runId)token.finish();\n    this.options.ended?.(runId);"
+    }
+  ],
+  "checks": [
+    {
+      "id": "original-empty-filter-reproduced",
+      "passed": true
+    },
+    {
+      "id": "real-current-scope-wait-detail",
+      "passed": true
+    },
+    {
+      "id": "original-item-matches-detail",
+      "passed": true
+    },
+    {
+      "id": "before-stop-one-real-readwait",
+      "passed": true
+    },
+    {
+      "id": "after-stop-no-readwait",
+      "passed": true
+    },
+    {
+      "id": "real-run-ended",
+      "passed": true
+    },
+    {
+      "id": "actual-trusted-ui-kill",
+      "passed": true
+    },
+    {
+      "id": "one-original-wait-callback",
+      "passed": true
+    },
+    {
+      "id": "real-helper-cancel-after-ui-stop",
+      "passed": true
+    },
+    {
+      "id": "real-terminal-host-result",
+      "passed": true
+    },
+    {
+      "id": "no-fabricated-cli-result",
+      "passed": true
+    },
+    {
+      "id": "negative-run_id",
+      "passed": true
+    },
+    {
+      "id": "negative-task_id",
+      "passed": true
+    },
+    {
+      "id": "negative-page_id",
+      "passed": true
+    },
+    {
+      "id": "negative-command",
+      "passed": true
+    },
+    {
+      "id": "activity-original-host-deadlines",
+      "passed": true
+    },
+    {
+      "id": "activity-samples-bracket-deadline",
+      "passed": true
+    },
+    {
+      "id": "actual-ui-and-workspace-cleared",
+      "passed": true
+    },
+    {
+      "id": "all-original-other-checks-green",
+      "passed": true
+    },
+    {
+      "id": "original-evidence-byte-unchanged",
+      "passed": true
+    }
+  ],
+  "conclusion": {
+    "S03Original": "failed, retained",
+    "S03Independent": "passed: original UI-stop cancellation requirement supported by raw real Helper callback, current scoped Host item and empty readwait/run state",
+    "productDefectFound": false,
+    "formalCaseIncrement": 0,
+    "coordinatorDecisionRequired": true,
+    "boundary": "No new Native/App/model/SQLite run; other original case checks remain their original evidence and applicability."
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "at": "2026-11-04T05:28:58.621Z",
+  "group": "M12-P029",
+  "attempt": "003-minimal-execute-gap",
+  "inputs": [
+    {
+      "path": "adjudicate.mjs",
+      "sha256": "ea7e7708ead3669d60aec6d63d36b34964c60185c3d23a8e6f3fa10b39f22a37",
+      "bytes": 3644
+    },
+    {
+      "path": "app-settings.sql",
+      "sha256": "1f39775cb2a490d4579f43e807632de9fd2fa57da4d1dfac73e4163bc0361dc4",
+      "bytes": 198
+    },
+    {
+      "path": "command-input.json",
+      "sha256": "38211e88e57497c3e76e8b5c53124136afe11577e9195889185e0d911744b7bd",
+      "bytes": 66
+    },
+    {
+      "path": "compile.mjs",
+      "sha256": "e36f63014986295b819b5eef9091b097593eb8d6cec4c991a2b5bceaed852407",
+      "bytes": 2704
+    },
+    {
+      "path": "host.source.ts",
+      "sha256": "44a46026955d0a18d5a7f00295f3661e47ac31592b02ca8c286595441dba88ae",
+      "bytes": 9763
+    },
+    {
+      "path": "preflight.mjs",
+      "sha256": "bbd83ed2ab1d44b74320d3e481cb1035ce958c86defe57ed0bbf0df4cc2a1808",
+      "bytes": 4541
+    },
+    {
+      "path": "prepared.json",
+      "sha256": "6ab5e7d0fd27a9bb2f70b4a39f0834213e7b1d6f579c23b1edd7c03a52cd9848",
+      "bytes": 52620
+    },
+    {
+      "path": "run.mjs",
+      "sha256": "fc4c489d53b24c8392429384cb5c5d9dd842c4a79e65c20ac08231f76a972704",
+      "bytes": 4686
+    },
+    {
+      "path": "source-inputs.json",
+      "sha256": "ad9a91919aa3c96cd96f1442bbea5c153423d1396ba872bf40a6fa65276c6693",
+      "bytes": 444522
+    },
+    {
+      "path": "verify-cleanup.mjs",
+      "sha256": "99e5e2a3d252fcae43d3daad65c609fd62697aecc07a695781fadc455f336e88",
+      "bytes": 1992
+    },
+    {
+      "path": "build/host.cjs",
+      "sha256": "46a533f55ec42fe9f21c856cd7fee8e2a1212a2868cdc773b1199b685695daed",
+      "bytes": 856038
+    }
+  ],
+  "productionInputs": 1526,
+  "catalogVerified": {
+    "command": "get",
+    "args": {
+      "what": "title",
+      "page": "preflight-page"
+    },
+    "exactCommand": [
+      "browser",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "what": {
+          "enum": [
+            "text",
+            "html",
+            "value",
+            "url",
+            "title",
+            "count",
+            "box"
+          ]
+        },
+        "element": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "what"
+      ],
+      "additionalProperties": false
+    },
+    "sha256": "0b389f57dcb5cfea0a0064d50da9e0b9ba4ee21544848ae19089eba50d5511ab"
+  },
+  "sqlStatic": {
+    "fields": 15,
+    "placeholders": 15,
+    "arguments": 15
+  },
+  "syntax": [
+    "adjudicate.mjs",
+    "compile.mjs",
+    "preflight.mjs",
+    "run.mjs",
+    "verify-cleanup.mjs"
+  ],
+  "cdpExpressions": {
+    "ownDriver": 0,
+    "reason": "No driver JavaScript evaluation, actual frozenService/PageRegistry internal protocol unchanged"
+  },
+  "hostSha256": "46a533f55ec42fe9f21c856cd7fee8e2a1212a2868cdc773b1199b685695daed",
+  "runtime": {
+    "version": "0.27.3-willyou.4",
+    "sourceSha256": "db70a8ec3d28919c7bf9ba1ff300c570838aa35f482c48bf39af5ffad940759a",
+    "files": [
+      {
+        "path": "agent-browser/arm64/agent-browser",
+        "sha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+        "mode": 493
+      },
+      {
+        "path": "native/willyou-app",
+        "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+        "mode": 493
+      },
+      {
+        "path": "native/willyou-process-identity",
+        "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+        "mode": 493
+      }
+    ]
+  },
+  "privateCache": "/private/tmp/willyou-m12-p029-executor-001/attempt-003/cache",
+  "boundary": "Single page newrealimport postsetlatch only missingUNAVAILABLE; prior18green facts reused by frozen productionSHA, no full matrix repeated",
+  "nativeStarted": false
+}

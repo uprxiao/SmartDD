@@ -1,0 +1,165 @@
+{
+  "at": "2026-11-07T02:33:36.735644+00:00",
+  "case": "M12-T095",
+  "original003BusinessFailure": {
+    "root": "/private/tmp/willyou-m12-t095-App027-A-R-prep-003",
+    "rawSHA256": "85696d3dcb6bd787aa2077a698149ef756fb1c2144ce0f443bb5bcd46977876e",
+    "errorSHA256": "b7a1c4a98d75b2e27500862a65cb9eb1e14746dae423a32f84890862068b65d0",
+    "actualBusinessCLI": 8,
+    "actualUIAllows": 2,
+    "fullSkillReads": 2,
+    "finalCounter": 1,
+    "runAlreadyEnded": true
+  },
+  "actualReadDenial": {
+    "line": 38,
+    "command": "browser tab list --task <other-owned-task>",
+    "numericExit": 2,
+    "actualStatus": "failed",
+    "originalErrorEffect": "read-only",
+    "HostState": "failed",
+    "errorCode": "SCOPE_DENIED"
+  },
+  "writeDenials": {
+    "lines": [
+      53,
+      58
+    ],
+    "commands": [
+      "browser click",
+      "browser wait fn"
+    ],
+    "numericExit": 2,
+    "errorAndHostEffect": "not-started"
+  },
+  "source": {
+    "path": "/private/tmp/willyou-m12-header-source-031/source/src/main/core/applications/tool-service.ts",
+    "sha256": "6e5f7509e5278112e0ec25a5ad5f2e86566bc10d5259f543e425dcdfc0ceab7f",
+    "lines": [
+      {
+        "line": 163,
+        "text": "        if (handler.semantics === 'write' && (handler.retry !== 'never' || selected.declaration.annotations.readOnlyHint)) throw new ApplicationError('HOST_INCOMPATIBLE','写操作不能使用通用自动重试');"
+      },
+      {
+        "line": 164,
+        "text": "        if (handler.semantics === 'read' && !selected.declaration.annotations.readOnlyHint) throw new ApplicationError('HOST_INCOMPATIBLE','宿主执行语义与固定工具契约不同');"
+      },
+      {
+        "line": 172,
+        "text": "          this.store.sqlite.prepare(\"INSERT INTO application_invocations(operation_id,run_id,request_id,request_hash,project_id,task_id,app_id,package_hash,tool_name,contract_major,connection_id,semantics,state,effect_state,started_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,'running','not-started',?)\").run(operationId,runId,requestId,hash,context.run.projectId,context.run.taskId,selected.application.appId,selected.application.packageHash,call.operation,call.contractMajor,call.connectionId,handler.semantics,new Date(this.clock()).toISOString()); return null;"
+      },
+      {
+        "line": 179,
+        "text": "          const fresh = this.runs.assertActive(runId); handler.authorize(fresh,call.connectionId); attempts++;"
+      },
+      {
+        "line": 180,
+        "text": "          effect = handler.semantics === 'read' ? 'read-only' : 'unknown';"
+      },
+      {
+        "line": 181,
+        "text": "          await withResourceLock(this.store.root,() => { this.store.sqlite.prepare('UPDATE application_invocations SET attempt_count=?,effect_state=? WHERE operation_id=?').run(attempts,effect,operationId); });"
+      },
+      {
+        "line": 192,
+        "text": "            effect = handler.semantics === 'read' ? 'read-only' : unified?.success&&unified.data.operation.effectState==='unknown'?'unknown':'completed'; await this.end(operationId!,'succeeded',attempts,effect,null);"
+      },
+      {
+        "line": 210,
+        "text": "      if((effect as BridgeFailure['effectState'])==='unknown'&&isApplicationPreflightFailure(error,operationId))effect='not-started';"
+      },
+      {
+        "line": 211,
+        "text": "      if (operationId && !(cause instanceof ApplicationError && cause.code === 'REPLAY_UNAVAILABLE')) await this.end(operationId,(effect as BridgeFailure['effectState']) === 'unknown' ? 'unknown' : 'failed',attempts,effect,cause instanceof ApplicationError ? cause.code : 'CAPABILITY_UNAVAILABLE');"
+      },
+      {
+        "line": 212,
+        "text": "      const detail=failure(cause,attempts,effect,exhausted);if(write)detail.retryable=false;"
+      },
+      {
+        "line": 213,
+        "text": "      return { schema: 1,id: requestId,status: 'error',error: detail,...(operationId ? { operationId } : {}) };"
+      }
+    ]
+  },
+  "actualManifest": {
+    "path": "/private/tmp/willyou-m12-s2-package-027/mac-arm64/WillYou.app/Contents/Resources/capability-bundles/apps/browser/0.1.1/d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6/manifest.json",
+    "fileSHA256": "bbb594fc6e8defc850ab2f59ac9a1ce1867cd0341071712968542f91aad83df1",
+    "packageHash": "d160b699f23c03712297ec6a2025e8898abacc36a4febf6d6229e8beea2b3fd6",
+    "capabilities": [
+      {
+        "id": "browser.nav.snapshot",
+        "semantics": "read",
+        "retry": "safe-read",
+        "cliCommand": [
+          "browser",
+          "snapshot"
+        ]
+      },
+      {
+        "id": "browser.interact.click",
+        "semantics": "write",
+        "retry": "never",
+        "cliCommand": [
+          "browser",
+          "click"
+        ]
+      },
+      {
+        "id": "browser.tab.list",
+        "semantics": "read",
+        "retry": "safe-read",
+        "cliCommand": [
+          "browser",
+          "tab",
+          "list"
+        ]
+      },
+      {
+        "id": "browser.nav.wait-fn",
+        "semantics": "write",
+        "retry": "never",
+        "cliCommand": [
+          "browser",
+          "wait",
+          "fn"
+        ]
+      },
+      {
+        "id": "browser.access.request",
+        "semantics": "write",
+        "retry": "never",
+        "cliCommand": [
+          "browser",
+          "access",
+          "request"
+        ]
+      }
+    ]
+  },
+  "onlyBusinessDelta": [
+    "scope-native-proof reads actual immutable manifest semantics and binds canonical packageHash/real byteSHA + exact Host/tool/literalCLI/plan",
+    "native-phase passes same fixed manifest bytes/fileSHA; no other business flow or prompt changed"
+  ],
+  "currentActualPureNode": {
+    "toolChunk": "a9539c",
+    "pid": 23258,
+    "exit": 0,
+    "syntax": 45,
+    "labels": 17,
+    "controls": 40,
+    "actualEightCLI": 8,
+    "UI": 2,
+    "skills": 2,
+    "resultSHA256": "ea44ed7c01fd9c067c15491e2016adfd44c965bf7cf617278499b8ef87b7fd2d"
+  },
+  "previousStaticFailure": {
+    "path": "effect-static-attempt-001/result.json",
+    "sha256": "785fb6696a27c04d85fa1d7e53d6f82160d92799e2e7bc0808f472bc9b196d1a",
+    "sourceSnapshot": "effect-static-attempt-001/scope-native-proof.before-bytehash.mjs",
+    "reason": "Object-hash helper JSON-serialized manifest Buffer; corrected to raw byte hash, no product change"
+  },
+  "fresh004Cost": "Original003 first8 and twoUI are valid evidence but old run/grants ended. Full original17 state-dependent flow must run fresh with independent project/counter/pages/run, not replay old target or treat old click as pending.",
+  "newNativeAppModelExecuted": false,
+  "formalIncrement": 0
+}

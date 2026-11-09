@@ -1,0 +1,28 @@
+{
+  "originalCase": "T122 requires actual missing/ambiguous environment question, no guess/open; R08.1step2readBug thenstep3confirm; no all-Skill-before-first-list business clause",
+  "extraPromptAndJudgeOrder": [
+    {
+      "arm": "T122.missing",
+      "promptSha256": "aceb8d43b937b27ddf06005e3d60ab8c9ef2fdf238d386dde454e294349452ca",
+      "promptOrderText": "请完整读取本次会话实际交付的相关 Skill 后按其中的实际入口处理",
+      "firstActualM10ListRequestLine": 35,
+      "firstActualM10ListRequestAt": "2026-11-05T13:18:09.452Z",
+      "SOPExplicitCatRequestLine": 25,
+      "SOPExplicitCatFullOutputLine": 31,
+      "SOPExplicitCatFullOutputAt": "2026-11-05T13:18:06.179Z",
+      "strictAllRelatedSkillBeforeFirstList": true
+    },
+    {
+      "arm": "T122.ambiguous",
+      "promptSha256": "a7720ac7da967985dbe653a14325229b087f64589f9f897d5fa9018a947a66ce",
+      "promptOrderText": "请完整读取本次会话实际交付的相关 Skill 后按其中的实际入口处理",
+      "firstActualM10ListRequestLine": 22,
+      "firstActualM10ListRequestAt": "2026-11-05T13:21:26.487Z",
+      "SOPExplicitCatRequestLine": 31,
+      "SOPExplicitCatFullOutputLine": 35,
+      "SOPExplicitCatFullOutputAt": "2026-11-05T13:21:36.777Z",
+      "strictAllRelatedSkillBeforeFirstList": false
+    }
+  ],
+  "classification": "Ambiguous strict all-related-Skill-before-first-list predicate is not met; actual Bug-analysis was fully read first. Preserve original005red and record payload-order execution difference separately. Do not turn it into an original T122 business gate."
+}

@@ -1,0 +1,13 @@
+# Original T042 existing-data closure
+
+All original predicates are proven from **R010** existing actual data, pending root independent review/ledger. No prompt/model/native replay and no old raw/result change. criterion-map.json quotes the original row and maps each predicate. A new supplementary prompt, same followup stage, explicit Boolean-print output, DONE or numeric list-exit observation were extra driver assumptions, not original requirements.
+
+R010 real Codex0.166 session (current task/run/nativeSession bound in prior T041 proof) used literal `willyou-app browser tab list` at original lines21/24. AST proves only literal cmd/max_output_tokens and direct original stdout forwarding, no model env/PATH/sandbox override or other JS. Actual v2ok/read-only result matches exact current Host succeeded/attempt1 request/op/package/actor. Default workspace-write/on-request contexts and empty profile args are actual.
+
+The same child necessarily read both env: fixed packaged CLI SHA2da7, official App021 build/source025 all3682 source/modes stable, source cli.mm SHA4a7270, explicit compile and packaging path, managed launch prepended exact native directory and issued both env, Gateway checked live fileSHA and kernel peer executable before Host call. Source45–46 calls getenv both and immediately fails missing/invalid values before any socket, without fallback. Thus successful authenticated same-child list establishes readability. It is a **source-backed inference**, not a fabricated bool/exit observation; list child numeric exit stays null.
+
+R012 independently has direct extra proof, in a DIFFERENT task/run: one custom exec with two sequential `text(await tools.exec_command(literalObject))` statements. Ordered complete tool-result blocks include Python exit_code0 and exact two true Boolean keys. Pure AST proves membership tests against os.environ, not constant true or secret-value output. Second command read Skill, no tab list/DONE. This is supplemental only; not mixed into R010 as one run. Unsupported observer form caused premature driver cleanup and is preserved.
+
+Root's optional missing-token probe stdout AUTH_REQUIRED/not-started is separately hashed with numeric exit unknown because its helper checker failed on an assumed status field. It is not required for closure and is not falsely counted as a complete negative case.
+
+Only safe metadata/hash/mapping/scripts are in manifest. No actual model JS/stdout/journal/auth or private env-command body copied into it. Original actual files are referenced by SHA. T130 frozen results remain untouched. formal新增0 here; only root may archive/credit originalT042 once reviewed.

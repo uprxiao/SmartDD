@@ -1,0 +1,20 @@
+import assert from'node:assert/strict';
+// Reuses notebook-content-ui.mjs42-50: readonly same-App frame observation.
+export async function observeOriginalNotebookFrame(app,poll){
+ const frame=await app.evaluate(`(()=>{const f=document.querySelector('iframe[title="Notebook HTML output"]');return f?{sandbox:f.getAttribute('sandbox'),referrerPolicy:f.referrerPolicy,srcdoc:f.srcdoc,parentCanRead:f.contentDocument!==null,mainSentinel:window.__notebookAttack??null}:null})()`);
+ assert(frame);assert.equal(frame.sandbox,'');assert.equal(frame.referrerPolicy,'no-referrer');assert.equal(frame.parentCanRead,false);assert.equal(frame.mainSentinel,null);for(const policy of["script-src 'none'","connect-src 'none'","frame-src 'none'","object-src 'none'","form-action 'none'"])assert(frame.srcdoc.includes(policy));assert(!/<script|<iframe|<form|onerror=|onload=|<foreignObject|127\.0\.0\.1/i.test(frame.srcdoc));assert(frame.srcdoc.includes('SAFE_HTML_'));
+ const tree=(await app.cdp('Page.getFrameTree')).frameTree,find=node=>node.frame.url==='about:srcdoc'?node.frame:(node.childFrames??[]).map(find).find(Boolean),child=find(tree);
+ const expression="(()=>{let parentBlocked=false;try{parent.document.body}catch{parentBlocked=true}return{images:[...document.images].filter(e=>e.hasAttribute('src')).map(e=>({complete:e.complete,width:e.naturalWidth,height:e.naturalHeight,src:e.getAttribute('src')})),electronAPI:typeof window.electronAPI,require:typeof require,process:typeof process,parentBlocked}})()";
+ let inspect,detach=async()=>{};
+ if(child){const world=await app.cdp('Page.createIsolatedWorld',{frameId:child.id,worldName:'notebook-read-only-observation'});inspect=async()=>((await app.cdp('Runtime.evaluate',{contextId:world.executionContextId,expression,returnByValue:true})).result.value);}
+ else{
+  const endpoint=/DevTools listening on (ws:\/\/127\.0\.0\.1:[^\s]+)/.exec(app.logs())?.[1];assert(endpoint,'Same ownedApp inspector missing');const socket=new WebSocket(endpoint);await new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});});let serial=0,sessionId;const pending=new Map();
+  socket.addEventListener('message',({data})=>{const m=JSON.parse(data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);clearTimeout(p.timer);m.error?p.reject(new Error(m.error.message)):p.resolve(m.result);}});
+  const request=(method,params={},sid)=>new Promise((resolve,reject)=>{const id=++serial,timer=setTimeout(()=>{pending.delete(id);reject(new Error('Bounded sameApp frame observation'));},5000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params,...(sid?{sessionId:sid}:{})}));});
+  detach=async()=>{try{if(sessionId)await request('Target.detachFromTarget',{sessionId});}finally{socket.close();}};
+  try{const target=await poll(async()=>{const rows=(await request('Target.getTargets')).targetInfos.filter(t=>t.type==='iframe'&&t.url==='about:srcdoc');assert(rows.length<=1,'Only one ownNotebook iframe target');return rows[0]??null;},5000);({sessionId}=await request('Target.attachToTarget',{targetId:target.targetId,flatten:true}));inspect=async()=>((await request('Runtime.evaluate',{expression,returnByValue:true},sessionId)).result.value);}
+  catch(error){await detach();throw error;}
+ }
+ let actual;try{actual=await poll(async()=>{const value=await inspect();return value?.images.length===1&&value.images[0].complete&&value.images[0].width>0?value:null;},10000);}finally{await detach();}
+ assert(actual.parentBlocked);for(const k of['electronAPI','require','process'])assert.equal(actual[k],'undefined');return{frame,childObservation:actual,observationBoundary:child?'Read-only isolatedworld, no page-world bridge claim':'Read-only exact ownApp OOPIF context',transportDetached:true};
+}

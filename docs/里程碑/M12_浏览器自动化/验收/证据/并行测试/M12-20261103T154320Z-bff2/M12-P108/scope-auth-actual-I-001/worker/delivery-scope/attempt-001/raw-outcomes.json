@@ -1,0 +1,383 @@
+[
+  {
+    "precondition": {
+      "projectA": "p1",
+      "projectB": "6655d87f-afe9-4e6b-b741-5f6d640e1e6d",
+      "connectionA": "0c1a5c1d-4610-40b8-96c7-3bff1f6b32c3",
+      "connectionB": "9dd0179e-9d71-4325-9c0e-4836a5fea607",
+      "allowed": [
+        {
+          "capabilityId": "zentao.object.list",
+          "contractMajor": 2,
+          "appId": "zentao",
+          "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+          "entry": "cli",
+          "mcpTool": "smartdd_zentao_work_list_v2",
+          "cliCommand": [
+            "zentao",
+            "object",
+            "list"
+          ]
+        }
+      ],
+      "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+      "setupHttpWasExcluded": true,
+      "initialBusiness": {
+        "objects": 0,
+        "drafts": 0
+      }
+    },
+    "publicInputSchema": {
+      "additionalProperties": false,
+      "description": "分页查询当前连接账号被指派的 Bug 或研发需求；完整性与空结果分开返回。",
+      "properties": {
+        "connectionId": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "maxLength": 8192,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "bug",
+            "story"
+          ],
+          "type": "string"
+        },
+        "limit": {
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "scenario": "forged-call-project",
+    "input": {
+      "operation": "zentao.object.list",
+      "contractMajor": 2,
+      "connectionId": null,
+      "arguments": {
+        "kind": "bug"
+      },
+      "projectId": "6655d87f-afe9-4e6b-b741-5f6d640e1e6d"
+    },
+    "schemaAccepts": false,
+    "response": {
+      "schema": 1,
+      "id": "d2aa01ca-f01c-4bd3-bbe9-ddcd00afe998",
+      "status": "error",
+      "error": {
+        "code": "INVALID_INPUT",
+        "message": "能力调用包含未允许字段或契约无效",
+        "layer": "config",
+        "retryable": false,
+        "attemptCount": 0,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      }
+    },
+    "httpRequests": [],
+    "business": {
+      "objects": 0,
+      "drafts": 0
+    }
+  },
+  {
+    "scenario": "forged-argument-project",
+    "input": {
+      "operation": "zentao.object.list",
+      "contractMajor": 2,
+      "connectionId": null,
+      "arguments": {
+        "kind": "bug",
+        "projectId": "6655d87f-afe9-4e6b-b741-5f6d640e1e6d"
+      }
+    },
+    "schemaAccepts": true,
+    "response": {
+      "schema": 1,
+      "id": "39773482-d1fd-4fb2-8ea5-abaf4c2af8bd",
+      "status": "error",
+      "error": {
+        "code": "INVALID_INPUT",
+        "message": "参数不符合原工具输入契约",
+        "layer": "config",
+        "retryable": false,
+        "attemptCount": 0,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      }
+    },
+    "httpRequests": [],
+    "business": {
+      "objects": 0,
+      "drafts": 0
+    }
+  },
+  {
+    "scenario": "foreign-call-connection",
+    "input": {
+      "operation": "zentao.object.list",
+      "contractMajor": 2,
+      "connectionId": "9dd0179e-9d71-4325-9c0e-4836a5fea607",
+      "arguments": {
+        "kind": "bug"
+      }
+    },
+    "schemaAccepts": false,
+    "response": {
+      "schema": 1,
+      "id": "c18d9677-0c0f-4e96-8edb-5a5edd360a60",
+      "status": "error",
+      "error": {
+        "code": "INVALID_INPUT",
+        "message": "能力调用包含未允许字段或契约无效",
+        "layer": "config",
+        "retryable": false,
+        "attemptCount": 0,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      }
+    },
+    "httpRequests": [],
+    "business": {
+      "objects": 0,
+      "drafts": 0
+    }
+  },
+  {
+    "scenario": "foreign-business-connection",
+    "input": {
+      "operation": "zentao.object.list",
+      "contractMajor": 2,
+      "connectionId": null,
+      "arguments": {
+        "kind": "bug",
+        "connectionId": "9dd0179e-9d71-4325-9c0e-4836a5fea607"
+      }
+    },
+    "schemaAccepts": true,
+    "response": {
+      "schema": 1,
+      "id": "aead5ac9-a727-4747-ba61-23e7dfa416ab",
+      "status": "error",
+      "error": {
+        "code": "SCOPE_DENIED",
+        "message": "请求的连接不是当前项目明确选用的连接",
+        "layer": "auth",
+        "retryable": false,
+        "attemptCount": 1,
+        "retryExhausted": false,
+        "effectState": "read-only",
+        "nextAction": "核对本次错误后重新明确操作"
+      },
+      "operationId": "5f3db586-c68f-4588-bbeb-22217f04740d"
+    },
+    "httpRequests": [],
+    "business": {
+      "objects": 0,
+      "drafts": 0
+    }
+  },
+  {
+    "scenario": "extra-real-capability",
+    "input": {
+      "operation": "zentao.object.get",
+      "contractMajor": 2,
+      "connectionId": null,
+      "arguments": {
+        "kind": "bug",
+        "reference": {}
+      }
+    },
+    "schemaAccepts": true,
+    "response": {
+      "schema": 1,
+      "id": "ea81f603-221a-4dc0-af72-fdb67eac6284",
+      "status": "error",
+      "error": {
+        "code": "SCOPE_DENIED",
+        "message": "能力不在本次运行允许表中",
+        "layer": "auth",
+        "retryable": false,
+        "attemptCount": 0,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      }
+    },
+    "httpRequests": [],
+    "business": {
+      "objects": 0,
+      "drafts": 0
+    }
+  },
+  {
+    "scenario": "self-approved-call",
+    "input": {
+      "operation": "zentao.object.list",
+      "contractMajor": 2,
+      "connectionId": null,
+      "arguments": {
+        "kind": "bug"
+      },
+      "approved": true
+    },
+    "schemaAccepts": false,
+    "response": {
+      "schema": 1,
+      "id": "447aa811-b2bc-416d-9eae-a2adbdd335d0",
+      "status": "error",
+      "error": {
+        "code": "INVALID_INPUT",
+        "message": "能力调用包含未允许字段或契约无效",
+        "layer": "config",
+        "retryable": false,
+        "attemptCount": 0,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      }
+    },
+    "httpRequests": [],
+    "business": {
+      "objects": 0,
+      "drafts": 0
+    }
+  },
+  {
+    "scenario": "self-approved-argument",
+    "input": {
+      "operation": "zentao.object.list",
+      "contractMajor": 2,
+      "connectionId": null,
+      "arguments": {
+        "kind": "bug",
+        "approved": true
+      }
+    },
+    "schemaAccepts": true,
+    "response": {
+      "schema": 1,
+      "id": "887b22f6-4371-4eb2-9d1c-e3c63f38c379",
+      "status": "error",
+      "error": {
+        "code": "INVALID_INPUT",
+        "message": "参数不符合原工具输入契约",
+        "layer": "config",
+        "retryable": false,
+        "attemptCount": 0,
+        "retryExhausted": false,
+        "effectState": "not-started",
+        "nextAction": "核对本次错误后重新明确操作"
+      }
+    },
+    "httpRequests": [],
+    "business": {
+      "objects": 0,
+      "drafts": 0
+    }
+  },
+  {
+    "scenario": "legal-A-after-all-denials",
+    "response": {
+      "schema": 1,
+      "id": "7ab9acf3-e7ab-4975-ac53-7cbe3e93e6bf",
+      "status": "ok",
+      "value": {
+        "schema": "willyou-app-result-v2",
+        "contractMajor": 2,
+        "status": "ok",
+        "capabilityId": "zentao.object.list",
+        "data": {
+          "kind": "bug",
+          "items": [
+            {
+              "id": "101",
+              "title": "owned A only",
+              "status": "active",
+              "assignedTo": "tester",
+              "reference": {
+                "connectionId": "0c1a5c1d-4610-40b8-96c7-3bff1f6b32c3",
+                "identityRevision": 1,
+                "nativeId": "101",
+                "contentRevision": "6862f71d6e5a10942ef2ebabfb446db879683d3495d61e6c8beba2c787149b1f"
+              }
+            }
+          ],
+          "total": 1,
+          "nextCursor": null,
+          "complete": true,
+          "checkedAt": "2026-11-05T14:40:26.704Z",
+          "problems": []
+        },
+        "source": {
+          "appId": "zentao",
+          "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a",
+          "revision": null,
+          "connections": [
+            {
+              "slot": "zentao",
+              "connectionId": "0c1a5c1d-4610-40b8-96c7-3bff1f6b32c3",
+              "identityRevision": 1,
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 1
+            }
+          ]
+        },
+        "completeness": {
+          "complete": true,
+          "missing": []
+        },
+        "pagination": {
+          "nextCursor": null,
+          "total": 1
+        },
+        "resources": [],
+        "operation": {
+          "id": "e075d0a5-d3bf-4d40-8f89-062eacfbca11",
+          "requestId": "7ab9acf3-e7ab-4975-ac53-7cbe3e93e6bf",
+          "origin": "cli",
+          "effectState": "read-only"
+        }
+      },
+      "operationId": "e075d0a5-d3bf-4d40-8f89-062eacfbca11",
+      "effectState": "read-only"
+    },
+    "httpRequests": [
+      "/a/api.php/v1/user",
+      "/a/api.php/v2/my/work?mode=bug&type=assignedTo&param=0&orderBy=id_desc&recTotal=0&recPerPage=50&pageID=1"
+    ],
+    "business": {
+      "objects": 1,
+      "drafts": 0
+    },
+    "activeProject": "p1"
+  }
+]

@@ -1,0 +1,6 @@
+import {readFile,writeFile,readdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {join} from 'node:path';
+const root='/private/tmp/willyou-m12-t036-executor-001',exclude=new Set(['runtime-002','resources','build','home','tmp','userdata','cache']),files=[];
+for(const name of (await readdir(root,{recursive:true})).sort()){if(name==='manifest.json'||exclude.has(name.split('/')[0]))continue;try{const b=await readFile(join(root,name));files.push({path:name,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')})}catch(e){if(e.code!=='EISDIR')throw e}}
+await writeFile(join(root,'manifest.json'),JSON.stringify({at:new Date().toISOString(),caseId:'M12-T036',files},null,2)+'\n');const b=await readFile(join(root,'manifest.json'));console.log(JSON.stringify({files:files.length,manifestSha256:createHash('sha256').update(b).digest('hex')}));

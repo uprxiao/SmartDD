@@ -1,0 +1,63 @@
+{
+  "schema": "m12-t092-upgrade-ready-v1",
+  "at": "2026-11-06T02:50:19Z",
+  "status": "ready-await-root-full-resource-lease",
+  "caseId": "M12-T092",
+  "layers": [
+    "A"
+  ],
+  "privateRoot": "/private/tmp/willyou-m12-t092-upgrade-001",
+  "preparation": {
+    "path": "/private/tmp/willyou-m12-t092-upgrade-001/preparation.json",
+    "sha256": "e77e1930071f5111dc96f859104012773fdcec4f1c7887e306381cc000e6dfe7"
+  },
+  "driver": {
+    "path": "/private/tmp/willyou-m12-t092-upgrade-001/run.mjs",
+    "sha256": "aa963ff841b76555d743b31de0400e221c9a3a3570f27c7253c5a006978c04c5",
+    "node": "/Users/liubu/.hermes/node/bin/node",
+    "syntaxCheck": "node --check exit0; static only"
+  },
+  "oldPackage": {
+    "app": "/private/tmp/willyou-m12-t092-upgrade-001/old-app/WillYou.app",
+    "executable": "/private/tmp/willyou-m12-t092-upgrade-001/old-app/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "f1b2c0ec1bc65a37c44c6ae51f70d33503321c78b7cd1d123f0fdb17d53b80cc",
+    "version": "0.1.1"
+  },
+  "currentPackage": {
+    "app": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app",
+    "executable": "/private/tmp/willyou-m12-s2-package-022/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "asarSha256": "52c21851a8b3475c2fb613eb0f3e49aced8dbbb0f59fba255c0a91f28eac755f",
+    "version": "0.1.1"
+  },
+  "sourceManifest": {
+    "path": "/private/tmp/willyou-m12-p114-source-026/source-inputs.json",
+    "sha256": "345596e3684e84dfc0d92e4c1f2dc83de8bcb3b3f419d28d37a6480dd17e3ed9"
+  },
+  "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-t092-upgrade-001/cache WILLYOU_T092_ROOT_LEASE=M12-T092-NATIVE-SERIAL /Users/liubu/.hermes/node/bin/node /private/tmp/willyou-m12-t092-upgrade-001/run.mjs --execute --resume-old-checkpoint",
+  "resources": [
+    "Native",
+    "App",
+    "sharedUIFocus",
+    "OSExactOwnedProcessAndPortObservation"
+  ],
+  "exclusive": "Two App instances serial only; old must normal exit0/null and no owned process/port remains before new launch. No CLI/PTY/model/site required. No new package build.",
+  "notStarted": false,
+  "coverage": "Original T092 only. Two old project prereqs through oldApp RPC allowed. NewApp navigation and selection observation through real UI. No SQL writes; raw private SQLite read after normal quit corroborates project IDs and browser disabled. Capture visible enabling description/label/switch or explicit add-first path, no invented old-project text requirement.",
+  "focus": "All read health/prereqs→one setup reload on new instance→label exact owned Native window [A] M12 T092 App022 旧项目升级→passive bounded90s focus wait→3 stable exact owned Native+DOM samples→single guard. No focus activation request, no CUA, no rearm; focus absence yields environment result.",
+  "artifacts": [
+    "attempt-001/result.json",
+    "attempt-001/upgraded-<projectId>.png",
+    "attempt-001/{old,current}-electron.log"
+  ],
+  "scopeLimits": [
+    "Old installed source is a64e751 dirty resource build, not released44b; no claim its whole types/tests green",
+    "No formal pass before Root semantic/cleanup/hash review",
+    "No public docs/plan/result account modified; no daily userData/auth read"
+  ],
+  "currentAppNotStarted": true,
+  "oldCheckpoint": {
+    "path": "/private/tmp/willyou-m12-t092-upgrade-001/old-db-checkpoint-diagnosis.json",
+    "sha256": "b6fc9b40cd0b997c3b735f9a6bc9fd5bce6451a6cc3d8aeb0ed202eaf9a200b5",
+    "dbSha256": "3ef39d8932949b3dd75900c2a75d4cbb8c4d01196d811f2bc18ae437b799aad9"
+  }
+}

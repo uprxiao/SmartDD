@@ -1,0 +1,94 @@
+{
+  "at": "2026-11-05T03:34:55.538Z",
+  "perCase": [
+    {
+      "case": "M12-T041",
+      "layer": "I+R",
+      "status": "failed-or-partial"
+    },
+    {
+      "case": "M12-T042",
+      "layer": "R",
+      "status": "failed-or-partial"
+    }
+  ],
+  "checks": [
+    {
+      "cases": [
+        "M12-T041",
+        "M12-T042"
+      ],
+      "name": "Real executable/model/session and original runtime source PIN",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(native.sessions.some(s=>s.cliVersion==='0.166.0'&&s.modelProvider==='openai'))\n"
+    },
+    {
+      "cases": [
+        "M12-T041"
+      ],
+      "name": "Actual UI created task, first prompt gave no CLI command name",
+      "status": "failed",
+      "error": "TypeError: Cannot read properties of undefined (reading 'includes')"
+    },
+    {
+      "cases": [
+        "M12-T041"
+      ],
+      "name": "Exact delivered Skill hash and independent same-call read-output proof before browser CLI",
+      "status": "failed",
+      "error": "TypeError: Cannot read properties of undefined (reading 'currentRun')"
+    },
+    {
+      "cases": [
+        "M12-T041"
+      ],
+      "name": "Real model CLI opens own page and snapshots unique fixture marker",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(native.assistantDone.some(x=>x.case==='T041'))\n"
+    },
+    {
+      "cases": [
+        "M12-T042"
+      ],
+      "name": "Followup actual terminal input occurs after first model turn, same task/run",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(r.phase1EndedAt<=r.followupAt)\n"
+    },
+    {
+      "cases": [
+        "M12-T042"
+      ],
+      "name": "Real model child sees token/endpoint booleans and original tab list succeeds without elevation",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(native.envPresence.some(x=>x.at>=r.followupAt&&x.token_present===true&&x.endpoint_present===true))\n"
+    },
+    {
+      "cases": [
+        "M12-T041",
+        "M12-T042"
+      ],
+      "name": "Raw native sources remain private and match final source SHA",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(native.sources.length)\n"
+    },
+    {
+      "cases": [
+        "M12-T041",
+        "M12-T042"
+      ],
+      "name": "Normal own App exit and owned cleanup",
+      "status": "passed"
+    },
+    {
+      "cases": [
+        "M12-T041"
+      ],
+      "name": "Saved actual delivered Skill bytes",
+      "status": "failed",
+      "error": "Error: ENOENT: no such file or directory, open '/private/tmp/willyou-m12-t041-t042-real-codex-004/actual-delivered-browser-SKILL.md'"
+    }
+  ],
+  "rawSha256": "a8560d3bb581894354a98663a68b054ef665bc86a7c420d47d1bc89d678e1bc7",
+  "formalWholeCaseCount": 0,
+  "boundary": "Actual real model only if all per-case original checks pass; final coordinator independently reviews/records. No synthetic provider or prefilled success."
+}

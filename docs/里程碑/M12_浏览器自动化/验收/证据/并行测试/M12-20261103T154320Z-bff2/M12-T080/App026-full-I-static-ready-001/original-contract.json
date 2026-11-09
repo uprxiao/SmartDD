@@ -1,0 +1,69 @@
+{
+  "case": "M12-T080",
+  "requirements": "R1.6 R05.4/R06.4/D2/O11/B13",
+  "originalLayer": "I (original tested UI actions remain actual UI, not RPC)",
+  "originalFullRow": "| M12-T080 | R05.4、R06.4、D2、O11、B13 | I | F-COOKIE（Chrome），钥匙串替身返回已知口令（故障注入，记录作用点）；目标 profile 预先有 `qa.example.test` 的 X、Y 两个 Cookie 和 `other.example.test` 的 Z，导入来源有 `qa.example.test` 的 X、W | 在界面完成导入：选 Chrome 及其 profile、目标 profile，确认风险对话框 | 风险对话框写明全部 Cookie（Google 除外）与“Agent 可读会话令牌”；`qa.example.test` 按域名整体替换：结果为 X（新值）、W，原有的 Y 被移除；`other.example.test` 的 Z 不变；`google.com` 被排除；结果摘要各项与夹具一致；完成后有通知 | 来源/完整变更集/真实Cookie协议与事务、跨进程恢复、实际Service两页＋popup暂停/网络门闩/同身份重载已有U及工程I证据；尚缺原完整I（真实CLI及界面操作）及界面风险确认/结果通知；不计整条通过 | 部分通过 | [P029工程I与边界](证据/并行测试/M12-20261103T154320Z-bff2/M12-P029/attempt-003/handoff.md)、[P027真实事务](证据/并行测试/M12-20261103T154320Z-bff2/M12-P027/attempt-001/handoff.md) |",
+  "F_COOKIE": "| F-COOKIE | 合成 Chrome／Edge 用户目录：已知口令加密的 Cookie 库，含 `qa.example.test`、`google.com`、`youtube.com` 三类 Cookie，以及一个不可解密的条目 |",
+  "authority": [
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+      "sha256": "fd08cfebbb562454fd25c7752f152c159b11b411721d31743ebaa1a03df0eebe"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+      "sha256": "a5758c4eae85ca13351267aa9e34cc4dbfb9c4bc773d5d44e93243e4c57a4513"
+    },
+    {
+      "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/原型/原型说明与变更.md",
+      "sha256": "d41fc044ff510f2e6b780d3feec0a9fb1ac5438c4a93b3ec4eb0304db0cefcb3"
+    }
+  ],
+  "steps": [
+    "Non-tested isolated project/managed blocking I task/AI config health/actual CLI page, F-COOKIE DB and originalXYZ native Cookie baselines; no actual import",
+    "One setup reload, exact window title, authorized481e exact-PID activation once, original Native+DOM stable3s and one focusguard",
+    "Actual UI task binding and right browser workspace/page, browser menu import, sourceChrome/Profile1→Default and targetdecoy→originalXYZ profile through real clicks",
+    "Actual UI Next, risk shows allCookie exceptGoogle/Agent readable token/Keychain request/unload loss; actual confirm once, no key provider call before confirm",
+    "Actual visible result, original summary/role=status/ARIA/screenshot; real stockCLI4-domain after read tied to same actualrun/PTY/project/package",
+    "Stop only own synthetic caller, revoke/scrub process local dependencies, remove own hooks, normal quit observed, ownHTTP close, independent exactPID/port/socket/helper absence"
+  ],
+  "data": {
+    "targetBefore": {
+      "qa.example.test": [
+        "Xold",
+        "Yold"
+      ],
+      "other.example.test": [
+        "Z"
+      ]
+    },
+    "selectedChromeDefault": {
+      "qa.example.test": [
+        "Xnew",
+        "W"
+      ],
+      "google.com": [
+        "excludedG"
+      ],
+      "youtube.com": [
+        "YT"
+      ]
+    },
+    "unselectedProfile1": "bad encrypted row, original F-COOKIE normal fixture; selected but not imported, never decrypt",
+    "expectedSummary": {
+      "总数": 4,
+      "已导入": 3,
+      "已跳过": 1,
+      "其中 Google": 1,
+      "因分区不可读而保留": 0,
+      "目标原有保留": 1,
+      "重新加载的页面": 1
+    }
+  },
+  "notificationInterpretation": {
+    "fact": "R06.4.8 says completion notification; original B13 describes result summary, no additional toast/OS notification surface specified. Current renderer has visible role=status completion.",
+    "requiredEvidence": "Actual DOM visible completion plus role/ARIA, optional AX and screenshot retained for Root semantic judgement. No assertion based only on current implementation; no statically declared pass.",
+    "noExpansion": "Do not invent Google/Youtube exclusion or OS notification requirements; T083 real Keychain remains separate."
+  },
+  "formalIncrement": 0,
+  "execution": "not executed"
+}

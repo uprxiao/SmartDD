@@ -1,0 +1,44 @@
+{
+  "previousRoot": "/private/tmp/willyou-m12-t145-App046-download-A-027",
+  "rawSHA256": "31da9b365460b29d4d09a832526d63564f3afe503683c3ee207d6b2776095367",
+  "previousFailure": {
+    "stage": "light-rw480-win1440x900:real-address",
+    "name": "AssertionError",
+    "message": "The expression evaluated to a falsy value:\n\n  assert(row.progress.receivedBytes>0&&row.progress.totalBytes===totalBytes)\n",
+    "code": "ERR_ASSERTION"
+  },
+  "actualProgress": {
+    "id": "6299c28a-aa69-4942-9486-0768b3e4edbc",
+    "taskId": "c5338439-d51c-482b-8275-13da15756e9b",
+    "pageId": "294c2654-0e5b-420c-bed8-a94bb0477852",
+    "name": "T145-A027-light-rw480-win1440x900-normal.bin",
+    "path": "/Users/liubu/Downloads/T145-A027-light-rw480-win1440x900-normal.bin",
+    "destination": "downloads",
+    "url": "http://127.0.0.1:50169/normal?combo=light-rw480-win1440x900",
+    "state": "progress",
+    "receivedBytes": 0,
+    "totalBytes": 1048576,
+    "updatedAt": 1794146966788,
+    "error": null
+  },
+  "HTTP": [
+    {
+      "path": "/normal",
+      "combo": "light-rw480-win1440x900",
+      "at": 1794146966766,
+      "bytesSent": 1024,
+      "heldAt": 1794146966766,
+      "closedAt": 1794146968451,
+      "completed": false
+    }
+  ],
+  "nativeObservationInstalled": {
+    "contentsId": 2,
+    "installed": true,
+    "passThroughNoMutation": true
+  },
+  "savedNativeDownloadObservations": [],
+  "conclusion": "HTTP sent1024 and held; first original progress record had0 received. Native updated not saved in A027, unknown whether1KiB would emit it. This is not evidence of product failure.",
+  "fix": "Same original bounded20s poll now requires state progress, receivedBytes>0 and exact1MiB before returning. Original assert retained, precise download-progress stage. Before final observer restore, save readonly original Native events even on failure.",
+  "modelAppNativeOSExecutedByPreparer": 0
+}

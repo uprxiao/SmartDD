@@ -1,0 +1,4641 @@
+{
+  "case": "M12-T145",
+  "group": "B13 errors32",
+  "reviewedAt": "2026-11-08T23:31:25.477962+00:00",
+  "currentApp": "App047",
+  "frozenSource": "source056",
+  "sourceManifestSHA256": "a6e32780c93c3d6509a3ef9f5d625952398397dc77de991ed976a93694300132",
+  "asarSHA256": "0eaca6a27b3ff995765fe9d69efda6828716125d7382bddd102a9e9973bf1a42",
+  "pairsActuallyViewed": 32,
+  "imagesActuallyViewed": 64,
+  "uniqueKeys": 32,
+  "wholeT145VisualPass": false,
+  "formalCountIncrement": 0,
+  "result": "24拒绝/超时/来源缺失图的核心错误框、可读性及容纳关系在本组范围内通过，文案差异保留；8无法解密图结构/阶段不等价，不判完整视觉通过。所有32图均为明确DI，不替代系统钥匙串验收。",
+  "confirmedDifferences": [
+    {
+      "id": "IMPORT-UNDECRYPTABLE-STRUCTURE",
+      "keys": [
+        "light-rw480-win1440x900|B13-import-undecryptable",
+        "light-rw900-win1440x900|B13-import-undecryptable",
+        "dark-rw480-win1440x900|B13-import-undecryptable",
+        "dark-rw900-win1440x900|B13-import-undecryptable",
+        "light-rw480-win1920x1080|B13-import-undecryptable",
+        "light-rw900-win1920x1080|B13-import-undecryptable",
+        "dark-rw480-win1920x1080|B13-import-undecryptable",
+        "dark-rw900-win1920x1080|B13-import-undecryptable"
+      ],
+      "fact": "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。",
+      "originalGeometry": "P modal height353；A201。每key原rect见items；不可仅按同名状态或机械绿判等价。"
+    },
+    {
+      "id": "IMPORT-ERROR-COPY",
+      "keys": [
+        "light-rw480-win1440x900|B13-import-denied",
+        "light-rw480-win1440x900|B13-import-timeout",
+        "light-rw480-win1440x900|B13-import-missing-browser",
+        "light-rw900-win1440x900|B13-import-denied",
+        "light-rw900-win1440x900|B13-import-timeout",
+        "light-rw900-win1440x900|B13-import-missing-browser",
+        "dark-rw480-win1440x900|B13-import-denied",
+        "dark-rw480-win1440x900|B13-import-timeout",
+        "dark-rw480-win1440x900|B13-import-missing-browser",
+        "dark-rw900-win1440x900|B13-import-denied",
+        "dark-rw900-win1440x900|B13-import-timeout",
+        "dark-rw900-win1440x900|B13-import-missing-browser",
+        "light-rw480-win1920x1080|B13-import-denied",
+        "light-rw480-win1920x1080|B13-import-timeout",
+        "light-rw480-win1920x1080|B13-import-missing-browser",
+        "light-rw900-win1920x1080|B13-import-denied",
+        "light-rw900-win1920x1080|B13-import-timeout",
+        "light-rw900-win1920x1080|B13-import-missing-browser",
+        "dark-rw480-win1920x1080|B13-import-denied",
+        "dark-rw480-win1920x1080|B13-import-timeout",
+        "dark-rw480-win1920x1080|B13-import-missing-browser",
+        "dark-rw900-win1920x1080|B13-import-denied",
+        "dark-rw900-win1920x1080|B13-import-timeout",
+        "dark-rw900-win1920x1080|B13-import-missing-browser"
+      ],
+      "facts": [
+        {
+          "P": "钥匙串访问被拒绝，没有写入任何 Cookie。",
+          "A": "钥匙串授权被拒绝或不可用；未写入Cookie",
+          "difference": "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。",
+          "fault": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+        },
+        {
+          "P": "等待钥匙串授权超时（30 秒），没有写入任何 Cookie。",
+          "A": "等待钥匙串授权超时；未写入Cookie",
+          "difference": "A未显示P的（30 秒）；同为超时/未写入说明。",
+          "fault": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+        },
+        {
+          "P": "找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。",
+          "A": "所选浏览器或profile已不存在，请重新选择",
+          "difference": "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。",
+          "fault": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+        }
+      ],
+      "classification": "精确文字呈现差异，不从截图推定新的业务失败。"
+    }
+  ],
+  "boundaries": [
+    "全部图为原始PNG实际逐张查看；数量/hash/机械判据不代替视觉检查。",
+    "图片支持host modal表现，不证明真实macOS钥匙串弹窗、30秒等待或任何日常profile读取。",
+    "A背后是本轮白色本机Native页面，深色下也为灰白遮罩；P为主题化演示登录页。背景像素不属于相同测试数据，未把它单独定为modal CSS缺陷。",
+    "P4px shell/footer 与 A真实RuntimeBar使绝对垂直中心不同；报告保留原rect，不伪造相同坐标。",
+    "A无完整outer-dialog computed快照，只有实际rect/head/body/error/control证据；未编造outer computed相等。",
+    "App048已修共同toolbar图标但本组仍App047；不把新包修复外推旧图视觉通过，也不将已知共享差异重复当新缺陷。",
+    "004八图有效但原old-label收尾红保留；005原机械结果仍不是视觉判定。",
+    "只读原图、metadata、冻结源并新写私有报告；未执行Node/App/Native/HTTP/JXA，未改public/raw/P/A。"
+  ],
+  "priorCorrections": [
+    {
+      "report": "/private/tmp/willyou-m12-t145-App047-import64-review-001/source-confirm-success24-review.json",
+      "sha256": "a68fae4c441dbc34d74e3bbd4f347659e95004b64c746efaf9f003592f323ac5",
+      "fact": "确认页实际已有UL/四LI，缺的是可见marker与cookie get code包装；早先无UL说法撤回，strong范围未证实不外推。"
+    }
+  ],
+  "sourceReferences": [
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/cookie-import-dialog.tsx",
+      "sha256": "d1b92ffe3f2eda8b7ae755878061c32ad53fb6085d157c812ef6c6e704e12917"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/workspace.css",
+      "sha256": "b83484042a6febc61846bd3d80e68bcbe44892682b64d0a79d528a3e7934dd7a"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/prototypes/m6-codex/src/BrowserPanels.jsx",
+      "sha256": "8484cff43235988f51a694e0e965f854f4bebe7988816b855f27eec38ef8342e"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/prototypes/m6-codex/src/browser.css",
+      "sha256": "b5cf2b6bed6b2aa0bd8ce79c745e723f43afbbf2c61476ec9db35e46ef0fe2cd"
+    }
+  ],
+  "originalExecutionReferences": [
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-004/READY.json",
+      "sha256": "f33c8cb5118bf1a54cf5a19b258e62e8251f7d7cdbf783e920608172bb87e649"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-005/READY.json",
+      "sha256": "15fcc280f44341b543f594fa574f286f45de8b2aa4065cab25c4b04e8fcc1e9b"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-004/raw.json",
+      "sha256": "c6c7d472557a40f7d202bb11f4b481aacd4dde10f4c90212e11f2ec4723887a4"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-005/raw.json",
+      "sha256": "cc4791d2da80ea21f8b97880f963d530a43f5bb89cdab8017f4860b8d3fed164"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-004/cleanup.json",
+      "sha256": "fde217b7eb3ff0c33aea679d7816d742d876ad8df26a5b8bf0e46acfd3c86499"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-005/cleanup.json",
+      "sha256": "9ca8ca006873db03c68148cf0590736209e08eb3f0621d8c5f7c4f561cfe8165"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-004/fault-boundary.json",
+      "sha256": "12b9a184c2781fd0b95e4e23b8ec91570486d7e9487524083325762aa8d009b2"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-import72-prep-005/fault-boundary.json",
+      "sha256": "12b9a184c2781fd0b95e4e23b8ec91570486d7e9487524083325762aa8d009b2"
+    }
+  ],
+  "items": [
+    {
+      "attempt": "004",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-004",
+      "key": "light-rw480-win1440x900|B13-import-denied",
+      "combo": "light-rw480-win1440x900",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-denied.png",
+        "sha256": "882a31b5d73f9edbfd648276cdf24f86a6536af3002fffacafcf8238c73633cf"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-denied.png",
+        "sha256": "d805b7b1dbd0c92e08495bca4b913b7c266c2d04d062da98c6bf1210fdbd06c2"
+      },
+      "Asha": "882a31b5d73f9edbfd648276cdf24f86a6536af3002fffacafcf8238c73633cf",
+      "Psha": "d805b7b1dbd0c92e08495bca4b913b7c266c2d04d062da98c6bf1210fdbd06c2",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-denied.json",
+      "AmetaSHA": "3a3d5c2dd5c60323d10cb552efa63f4357c0289e7cf5365fd6a3525150e8e863",
+      "PmetaSHA": "8bcda34f24a3001561fb4ee5f4fa052d600fb830b92bc5fc1b948ecc495cb6f0",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 369.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "004",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-004",
+      "key": "light-rw480-win1440x900|B13-import-timeout",
+      "combo": "light-rw480-win1440x900",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-timeout.png",
+        "sha256": "7cde95581320c3a7b30efcc19eade86c0a34d6c06dcf002815be186a05ce834f"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-timeout.png",
+        "sha256": "4b4d02695c2f553d66334d4530344d4631c219262d230025be9ad0f288217d6d"
+      },
+      "Asha": "7cde95581320c3a7b30efcc19eade86c0a34d6c06dcf002815be186a05ce834f",
+      "Psha": "4b4d02695c2f553d66334d4530344d4631c219262d230025be9ad0f288217d6d",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-timeout.json",
+      "AmetaSHA": "16b143e0a138a88f4bab5611c9b1e0ca62f0233a90ef831bce8cb065cae88f98",
+      "PmetaSHA": "10708dfebca4fc93f1ded4da394c38ebb9575d1da49a7cb70313002dd5b7bf58",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 369.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "004",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-004",
+      "key": "light-rw480-win1440x900|B13-import-undecryptable",
+      "combo": "light-rw480-win1440x900",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-undecryptable.png",
+        "sha256": "30fd8f17104d26309a579873accc53b27ecbeb446da0c393c56fc60c760c7f22"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-undecryptable.png",
+        "sha256": "8a5d6e8e5aa70521057f78a6531f73c84950e15267ea645359f254b90ca1859e"
+      },
+      "Asha": "30fd8f17104d26309a579873accc53b27ecbeb446da0c393c56fc60c760c7f22",
+      "Psha": "8a5d6e8e5aa70521057f78a6531f73c84950e15267ea645359f254b90ca1859e",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-007-images/P-light-rw480-win1440x900-B13-import-undecryptable.json",
+      "AmetaSHA": "82be7a0af0f5f3f43745488d055f57584a3079b226e980b0ef8f5cd6bbea295b",
+      "PmetaSHA": "f0eb85ad8f5d6479a427468db6113041f7f2712d77d0732847eb9831a0c04851",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 293.5,
+          "width": 447,
+          "height": 353
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "004",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-004",
+      "key": "light-rw480-win1440x900|B13-import-missing-browser",
+      "combo": "light-rw480-win1440x900",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-missing-browser.png",
+        "sha256": "e5dff9231d8c439815a2e491cd85f1c74e4e0d523f22653ba9dad2e716edd222"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-light-rw480-win1440x900-B13-import-missing-browser.png",
+        "sha256": "a1dcb9c160e20efb270b9b910394d8d4f2f7ed02b895676d6dcce866fd892bba"
+      },
+      "Asha": "e5dff9231d8c439815a2e491cd85f1c74e4e0d523f22653ba9dad2e716edd222",
+      "Psha": "a1dcb9c160e20efb270b9b910394d8d4f2f7ed02b895676d6dcce866fd892bba",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-004/A-light-rw480-win1440x900-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-light-rw480-win1440x900-B13-import-missing-browser.json",
+      "AmetaSHA": "d3aed9483f3c1dff6c3b78c395f5a2ea9b6c88244aa44e43162db2628f2b000a",
+      "PmetaSHA": "b3e02427eba6410680d6da8cea8225cb08bf30f51c0b954fda46b13d30e64e95",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 369.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1440x900|B13-import-denied",
+      "combo": "light-rw900-win1440x900",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-denied.png",
+        "sha256": "95109226c949347a3f09cc394b369eabdc8f8aff2e75c88d4db984bb75d08eb1"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-denied.png",
+        "sha256": "ee23aaf9e67283fa14cf6bfed23aab2b5042fc8e52f3f88b14f29805d93455b5"
+      },
+      "Asha": "95109226c949347a3f09cc394b369eabdc8f8aff2e75c88d4db984bb75d08eb1",
+      "Psha": "ee23aaf9e67283fa14cf6bfed23aab2b5042fc8e52f3f88b14f29805d93455b5",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-denied.json",
+      "AmetaSHA": "98c65c1fae0333332fa102c379225393f21555f73a59e8a5e2e8bbc9c2cfd922",
+      "PmetaSHA": "c478094002f7aafb3a01bbfd982ce0a565b04d46cd8c6fbbafdf3bc1f868047d",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 369.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1440x900|B13-import-timeout",
+      "combo": "light-rw900-win1440x900",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-timeout.png",
+        "sha256": "aac7c09cb5d0d4f46b74bda67834b9989abbd90e6c9489b4d275dfc552ce21c0"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-timeout.png",
+        "sha256": "57774dbce083f904a42a3b2bc4dffa3fbf4b33a4589189d54fe03ac268385980"
+      },
+      "Asha": "aac7c09cb5d0d4f46b74bda67834b9989abbd90e6c9489b4d275dfc552ce21c0",
+      "Psha": "57774dbce083f904a42a3b2bc4dffa3fbf4b33a4589189d54fe03ac268385980",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-timeout.json",
+      "AmetaSHA": "2bad303d8512cabc3eb6b1610bbfee84c821cde8b7ba5c73693c0407dffe1f04",
+      "PmetaSHA": "b9631153d27bf4091a10c176da86b3af3623e02f31fc8656e652d9f4fd40e81a",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 369.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1440x900|B13-import-undecryptable",
+      "combo": "light-rw900-win1440x900",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-undecryptable.png",
+        "sha256": "b61566bd887d7ab0fc37044ee09d98c6eb911ae5311ca3a6aed17c73cefacc06"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-undecryptable.png",
+        "sha256": "b917640a41aec194cf544a266d3c9db8f3f1badcbe0d30365654280045e8bed6"
+      },
+      "Asha": "b61566bd887d7ab0fc37044ee09d98c6eb911ae5311ca3a6aed17c73cefacc06",
+      "Psha": "b917640a41aec194cf544a266d3c9db8f3f1badcbe0d30365654280045e8bed6",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-light-rw900-win1440x900-B13-import-undecryptable.json",
+      "AmetaSHA": "eff715dcc244d0ea2718de8a1c4cd33890a958aa132ebbff9d0639a362ed044d",
+      "PmetaSHA": "3385fb540ac5b607dc8d4fdfefddfe7ea961f5104ed3d5980a9e799394c84439",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 293.5,
+          "width": 480,
+          "height": 353
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1440x900|B13-import-missing-browser",
+      "combo": "light-rw900-win1440x900",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-missing-browser.png",
+        "sha256": "01e3fff0e649c452e7e20ad9ac72e5e0299874190faab9c2a1784c0bc627be29"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-light-rw900-win1440x900-B13-import-missing-browser.png",
+        "sha256": "65c5e2a27986eba09847b43c3faefb59756eeff07706b10c9b2bb9728274d6f3"
+      },
+      "Asha": "01e3fff0e649c452e7e20ad9ac72e5e0299874190faab9c2a1784c0bc627be29",
+      "Psha": "65c5e2a27986eba09847b43c3faefb59756eeff07706b10c9b2bb9728274d6f3",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1440x900-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-light-rw900-win1440x900-B13-import-missing-browser.json",
+      "AmetaSHA": "d4d936727e7e33ee12e24d5fe30ae9a44b2904bcf4a2680b178000a879aac6dc",
+      "PmetaSHA": "99544281fb733792021d7253dbaca2836dabbb5409a2ae7fa8705dd51c7fb531",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 369.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1440x900|B13-import-denied",
+      "combo": "dark-rw480-win1440x900",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-denied.png",
+        "sha256": "daf9c9280189b76e79b7183a042901970ae506840f95269c78dcf097e76cc770"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-denied.png",
+        "sha256": "93b56a7f7adb502bbced69e43c1870396808543cd2b937f8efdcc3cd7561eb7f"
+      },
+      "Asha": "daf9c9280189b76e79b7183a042901970ae506840f95269c78dcf097e76cc770",
+      "Psha": "93b56a7f7adb502bbced69e43c1870396808543cd2b937f8efdcc3cd7561eb7f",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-denied.json",
+      "AmetaSHA": "feecf82e85a58c3af31490453dcf9e475416883aacbe9c043f6323c22a99a7ea",
+      "PmetaSHA": "3e6765de5e5337be792bd2cbb775a7eada7d74e7fa0410e9385255ce43c714b5",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 369.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1440x900|B13-import-timeout",
+      "combo": "dark-rw480-win1440x900",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-timeout.png",
+        "sha256": "b9a1492ca7b4833dae75a87c2df49eb9c5465c1392e7fb4a0930f96d24af96a6"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-timeout.png",
+        "sha256": "557387e11772f503c5dcf93389ea8ef3cb0ac20f269ff1f6382e7c556a4e72d0"
+      },
+      "Asha": "b9a1492ca7b4833dae75a87c2df49eb9c5465c1392e7fb4a0930f96d24af96a6",
+      "Psha": "557387e11772f503c5dcf93389ea8ef3cb0ac20f269ff1f6382e7c556a4e72d0",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-timeout.json",
+      "AmetaSHA": "2e1d093b7856b37ff34da622b38690d9ab23605aaa48d9264ef8037a9e873270",
+      "PmetaSHA": "97f11f9cd98593acf1ffe78dbb61fcdd8c0855580725b5d03f8083db19574bd5",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 369.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1440x900|B13-import-undecryptable",
+      "combo": "dark-rw480-win1440x900",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-undecryptable.png",
+        "sha256": "512ddf7c9897815c22b1a3ea16ebafd7272022e5d87020eabfb75dacce0fca1f"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-undecryptable.png",
+        "sha256": "9b3a3862949f5614aab7a151033ee6f84eee4d32f1d08029b028fc46eb2873d2"
+      },
+      "Asha": "512ddf7c9897815c22b1a3ea16ebafd7272022e5d87020eabfb75dacce0fca1f",
+      "Psha": "9b3a3862949f5614aab7a151033ee6f84eee4d32f1d08029b028fc46eb2873d2",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-008-images/P-dark-rw480-win1440x900-B13-import-undecryptable.json",
+      "AmetaSHA": "0c25395d4063b871908594b5fe8767dbc6e307b00e37f93af7689091fea6c6f9",
+      "PmetaSHA": "62a20e9d926c8eed9e91466d0457468b32c1f629cfa172c6a9a37d13bc68cb80",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 293.5,
+          "width": 447,
+          "height": 353
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1440x900|B13-import-missing-browser",
+      "combo": "dark-rw480-win1440x900",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-missing-browser.png",
+        "sha256": "589c634bcba3aa9347f52da7017d08a51fbbce25b7daee97ce19630b16f91d26"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-dark-rw480-win1440x900-B13-import-missing-browser.png",
+        "sha256": "b1e070745baa76b0b48ff9dccb50dbadc335e653e2da8397642051b684688339"
+      },
+      "Asha": "589c634bcba3aa9347f52da7017d08a51fbbce25b7daee97ce19630b16f91d26",
+      "Psha": "b1e070745baa76b0b48ff9dccb50dbadc335e653e2da8397642051b684688339",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1440x900-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-dark-rw480-win1440x900-B13-import-missing-browser.json",
+      "AmetaSHA": "be53cdd2a65e3e41a013b26dc7837868e0fc0a804622e58660ff15961d5b2a25",
+      "PmetaSHA": "adabd6386b5ff28f28dc932d2d67eae0a3da5d3a065a430801c4d573606c9de9",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 351.5,
+          "width": 447,
+          "height": 201,
+          "right": 1420,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 974,
+            "y": 410.5,
+            "width": 445,
+            "height": 74,
+            "right": 1419,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1369,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1401,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1351,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1401,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 973,
+          "y": 369.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 996,
+          "y": 428.5,
+          "width": 401,
+          "height": 18,
+          "right": 1397,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1440x900|B13-import-denied",
+      "combo": "dark-rw900-win1440x900",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-denied.png",
+        "sha256": "1f3f6badb14a059657e1b90325cd4a49f0463cda0ce45ecbe3aa7283a268dff6"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-denied.png",
+        "sha256": "f3058041dc8f5f7ef7648f57dfd05055eac5824bcbdc28e1ccac0d9e2baa6648"
+      },
+      "Asha": "1f3f6badb14a059657e1b90325cd4a49f0463cda0ce45ecbe3aa7283a268dff6",
+      "Psha": "f3058041dc8f5f7ef7648f57dfd05055eac5824bcbdc28e1ccac0d9e2baa6648",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-denied.json",
+      "AmetaSHA": "f2ff048bf3f83cb25a4cde01e07895d034efbe679289435167182fcbdb4c1045",
+      "PmetaSHA": "3b4a2216878615331273bfba66750f92c441b9c768e4c89ab2b0331ff3ba710b",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 369.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1440x900|B13-import-timeout",
+      "combo": "dark-rw900-win1440x900",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-timeout.png",
+        "sha256": "8d0f95b384cb6303d18a9e44a6c028b9ecf4f4436bb7964a753e08b33285fa7e"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-timeout.png",
+        "sha256": "34b6a66619ef8601b7a89bac4673da45ce5b32177288dbcbd0e359357cb79789"
+      },
+      "Asha": "8d0f95b384cb6303d18a9e44a6c028b9ecf4f4436bb7964a753e08b33285fa7e",
+      "Psha": "34b6a66619ef8601b7a89bac4673da45ce5b32177288dbcbd0e359357cb79789",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-timeout.json",
+      "AmetaSHA": "6cdc34d0394d3ba28c6d30938656732c9b8bb7d3e1bb80d8a2dd72b58f272a5d",
+      "PmetaSHA": "20d390b7842322d1c8fd74e81072339f21fa54d69067e9c6508c25e066a891d7",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 369.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1440x900|B13-import-undecryptable",
+      "combo": "dark-rw900-win1440x900",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-undecryptable.png",
+        "sha256": "fb67f949d526e2f708498eaa68ede4e75452a6db9249ccfb551f16fe42330868"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-undecryptable.png",
+        "sha256": "f909b81feae7a05878e6116b29524fc4a34c8ef33de0bdfeb2fc821df4f02075"
+      },
+      "Asha": "fb67f949d526e2f708498eaa68ede4e75452a6db9249ccfb551f16fe42330868",
+      "Psha": "f909b81feae7a05878e6116b29524fc4a34c8ef33de0bdfeb2fc821df4f02075",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-visual-matrix-prep-001/P-attempt-009-images/P-dark-rw900-win1440x900-B13-import-undecryptable.json",
+      "AmetaSHA": "3f87f60b25ea84e5e158e5a0433327ca28ceb4b6b6e94cefaea1417a56b575da",
+      "PmetaSHA": "05430e1495fc019198e6cc281dec3d8cde52b7bd31b78bb795c8bbe34c22f5dc",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 293.5,
+          "width": 480,
+          "height": 353
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1440x900|B13-import-missing-browser",
+      "combo": "dark-rw900-win1440x900",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-missing-browser.png",
+        "sha256": "e8ebe6911b6093a6164f70d907a453ca552f9d8e12c32c476da7abdcd0d76d9a"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-dark-rw900-win1440x900-B13-import-missing-browser.png",
+        "sha256": "e434a9b47d976f2ef20856869869cb428ebb9529f6290dcf06a03c1de96eddee"
+      },
+      "Asha": "e8ebe6911b6093a6164f70d907a453ca552f9d8e12c32c476da7abdcd0d76d9a",
+      "Psha": "e434a9b47d976f2ef20856869869cb428ebb9529f6290dcf06a03c1de96eddee",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1440x900-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-missing-source-P-004/images/P-dark-rw900-win1440x900-B13-import-missing-browser.json",
+      "AmetaSHA": "0f0dd340816eb75da5c49a955f131f82928716012fd76cf21db71fddc356f25a",
+      "PmetaSHA": "79e74144f3d8726a4efa31b62240fd47e872cd976ab9d2c8c540dcb1a93f8da7",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 351.5,
+          "width": 480,
+          "height": 201,
+          "right": 1226.5,
+          "bottom": 552.5
+        },
+        "body": {
+          "rect": {
+            "x": 747.5,
+            "y": 410.5,
+            "width": 478,
+            "height": 74,
+            "right": 1225.5,
+            "bottom": 484.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1175.5,
+              "y": 370.5,
+              "width": 32,
+              "height": 32,
+              "right": 1207.5,
+              "bottom": 402.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1157.5,
+              "y": 497.5,
+              "width": 50,
+              "height": 36,
+              "right": 1207.5,
+              "bottom": 533.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 746.5,
+          "y": 369.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 769.5,
+          "y": 428.5,
+          "width": 434,
+          "height": 18,
+          "right": 1203.5,
+          "bottom": 446.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw480-win1920x1080|B13-import-denied",
+      "combo": "light-rw480-win1920x1080",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-denied.png",
+        "sha256": "7fb3104fe8c8bc6d692d09d3d34b232b57af57fad246834727de9edd847a95b8"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-denied.png",
+        "sha256": "63aef15a90d3d79a80111dfbd51afb9b43bbc55725b8c017364271f64f72b524"
+      },
+      "Asha": "7fb3104fe8c8bc6d692d09d3d34b232b57af57fad246834727de9edd847a95b8",
+      "Psha": "63aef15a90d3d79a80111dfbd51afb9b43bbc55725b8c017364271f64f72b524",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-denied.json",
+      "AmetaSHA": "00015937415746c396fd5f0702ad18c4d5cf9dd13bc76f3f53b77e6dfd36fb27",
+      "PmetaSHA": "9d4253033f9ff677e59e8fbf627050fe2ee628bf423a522f1ee26e0ac870f41f",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 459.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw480-win1920x1080|B13-import-timeout",
+      "combo": "light-rw480-win1920x1080",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-timeout.png",
+        "sha256": "316f46493526768e130ef23aa35595b07e4faf13579812607efd85fe2ba3954b"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-timeout.png",
+        "sha256": "2f92bddd530f54bbb1f7c08100ea7f90489de823f6e3bcebd9030d2e2e90b93d"
+      },
+      "Asha": "316f46493526768e130ef23aa35595b07e4faf13579812607efd85fe2ba3954b",
+      "Psha": "2f92bddd530f54bbb1f7c08100ea7f90489de823f6e3bcebd9030d2e2e90b93d",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-timeout.json",
+      "AmetaSHA": "f7955f583bc197fbff6be955780f7395ea515fde607feda11deffa2654e4d346",
+      "PmetaSHA": "13ccb14de5f9736c92482326108e3f797be3f75c62406ad09d59b5e2cf457c59",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 459.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw480-win1920x1080|B13-import-undecryptable",
+      "combo": "light-rw480-win1920x1080",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "e8b56e2086698ab2a14d749fc4e167e706e2ee5d919f367b63c361bb44b60fe0"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "5fe214340ffbe11ce1e6c9ba4136ba3b84bf657c22fc0063eacc2382def8b829"
+      },
+      "Asha": "e8b56e2086698ab2a14d749fc4e167e706e2ee5d919f367b63c361bb44b60fe0",
+      "Psha": "5fe214340ffbe11ce1e6c9ba4136ba3b84bf657c22fc0063eacc2382def8b829",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-undecryptable.json",
+      "AmetaSHA": "d225df4455626fb0419ddd283d5e043239a1eb0ccd716c2d26b49b55bcfc32c3",
+      "PmetaSHA": "93944e8bd7a733719634020dec4bc4ce3d91f1e6b5f8e333a2e2a72418c95be1",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 383.5,
+          "width": 447,
+          "height": 353
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw480-win1920x1080|B13-import-missing-browser",
+      "combo": "light-rw480-win1920x1080",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "23a53062a0da5ea4e56c35b1f4819c598b12aeda743419f404d070a537db1ce0"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "3153cf42cbbb91c3a2adf1b837f67fcc4301f8fad17739aab635730192a56c83"
+      },
+      "Asha": "23a53062a0da5ea4e56c35b1f4819c598b12aeda743419f404d070a537db1ce0",
+      "Psha": "3153cf42cbbb91c3a2adf1b837f67fcc4301f8fad17739aab635730192a56c83",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw480-win1920x1080-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw480-win1920x1080-B13-import-missing-browser.json",
+      "AmetaSHA": "90b86db8693142baf4be3d194b5d44e7815f02a2f269b9614762f93484ab7f5a",
+      "PmetaSHA": "d45b4c8012bccb6557b5ef80955cddce8cd3e023df43aa91bbbd1f9819b1f79a",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 459.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1920x1080|B13-import-denied",
+      "combo": "light-rw900-win1920x1080",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-denied.png",
+        "sha256": "9dceb6fc2ec48bda0c699530bea87d703bb5458903d2a92abe8d70e28b1a99fd"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-denied.png",
+        "sha256": "e3e6c25f5e11a9e957a8d22799ef4400d9f6a1738791808981424db0bdc87f29"
+      },
+      "Asha": "9dceb6fc2ec48bda0c699530bea87d703bb5458903d2a92abe8d70e28b1a99fd",
+      "Psha": "e3e6c25f5e11a9e957a8d22799ef4400d9f6a1738791808981424db0bdc87f29",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-denied.json",
+      "AmetaSHA": "2128f381c6db6a898a3196ae21184e224bb93820db11a7e2ac45af3141e3f565",
+      "PmetaSHA": "053c61932aab625763a29dce5d5fb293911408f30e156e34b9cb17dc41915ee4",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 459.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1920x1080|B13-import-timeout",
+      "combo": "light-rw900-win1920x1080",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-timeout.png",
+        "sha256": "29f8e89a342f785cc08105c373e7419710fc697b26c334e54a19318361d63592"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-timeout.png",
+        "sha256": "816c12c6b18ddf036443956813e204acfeee468f299d99f947943771c459dfd5"
+      },
+      "Asha": "29f8e89a342f785cc08105c373e7419710fc697b26c334e54a19318361d63592",
+      "Psha": "816c12c6b18ddf036443956813e204acfeee468f299d99f947943771c459dfd5",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-timeout.json",
+      "AmetaSHA": "a0802d4d4ac472e2dc6f2d7e4afedf8027d338e37a40851627eb9f078869c50f",
+      "PmetaSHA": "3da6bbc3f65dd6572a6345928125c8c31319f40c5b2cc8b12edc2dc1e5e850c3",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 459.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1920x1080|B13-import-undecryptable",
+      "combo": "light-rw900-win1920x1080",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "0040aead4cacbcc45af5b9b6cbf8170745c64ec3865532a5e1d1c5eaf720f925"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "05f5be7e86025e63902a7a3b643a4d12f415205f16f163eea87cce866ed8b9df"
+      },
+      "Asha": "0040aead4cacbcc45af5b9b6cbf8170745c64ec3865532a5e1d1c5eaf720f925",
+      "Psha": "05f5be7e86025e63902a7a3b643a4d12f415205f16f163eea87cce866ed8b9df",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-undecryptable.json",
+      "AmetaSHA": "2576ddd74c87e61be5fec681472bc4dc98d45b488064d6b5ade0348923919d64",
+      "PmetaSHA": "5059c1bf0a3df6f5f942c371243bd1360c5b51513f4e46e204f9d1446b2e4f75",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 383.5,
+          "width": 480,
+          "height": 353
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "light-rw900-win1920x1080|B13-import-missing-browser",
+      "combo": "light-rw900-win1920x1080",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "7640892e9c32eab0c5bdfe9ff4f87656ef3fc0cedef931a029c163977acbc2b3"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "ea00db3903182cf1912669ee420346970460775c0152de66034e0e28221071bd"
+      },
+      "Asha": "7640892e9c32eab0c5bdfe9ff4f87656ef3fc0cedef931a029c163977acbc2b3",
+      "Psha": "ea00db3903182cf1912669ee420346970460775c0152de66034e0e28221071bd",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-light-rw900-win1920x1080-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-light-rw900-win1920x1080-B13-import-missing-browser.json",
+      "AmetaSHA": "3db49bc919b647b6ccb918b3b731d471c477c182bc86669cd26e456543aeb62d",
+      "PmetaSHA": "2ba4b30c43e4108005523ed88b170945174a249c305498dbdc4630d743bc329a",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 459.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(112, 112, 112)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1920x1080|B13-import-denied",
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-denied.png",
+        "sha256": "c24aec8f7cfe2f8ef79609366c1a5f270506697b4b2a168c09d46f581cd1a8b2"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-denied.png",
+        "sha256": "9c7fdc0badbdd4280acef748e79a2f6f1f5b6300df10b6aa1b8648ecca176486"
+      },
+      "Asha": "c24aec8f7cfe2f8ef79609366c1a5f270506697b4b2a168c09d46f581cd1a8b2",
+      "Psha": "9c7fdc0badbdd4280acef748e79a2f6f1f5b6300df10b6aa1b8648ecca176486",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-denied.json",
+      "AmetaSHA": "f9818e3898fdf8108096d826fe019fc47b65a1f90e7e5fee9d970483af9e1ead",
+      "PmetaSHA": "8b89bf8e6bf530352478cc33701094d3e56957c2a1bb48383893581fc4b35cff",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 459.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1920x1080|B13-import-timeout",
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-timeout.png",
+        "sha256": "2666fd176698ec994cea715c3a778f947606cef7e5bbeef2f4eceb89a9414f2e"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-timeout.png",
+        "sha256": "55db4a39c09afcdf675136f842f20a761b243e59c4441086073678f944a5c0f8"
+      },
+      "Asha": "2666fd176698ec994cea715c3a778f947606cef7e5bbeef2f4eceb89a9414f2e",
+      "Psha": "55db4a39c09afcdf675136f842f20a761b243e59c4441086073678f944a5c0f8",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-timeout.json",
+      "AmetaSHA": "5156cbc2d541b19d7bc045086169b18514740d50e198c9398657863efcd544f3",
+      "PmetaSHA": "7e7d3656e9ca4a06e919aeccc984e7d1ff747f22307ecdbd8e35bf31ef5261b2",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 459.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1920x1080|B13-import-undecryptable",
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "a70c695d9aa6d7eea97fbe40c7a5265e3bd4d4998ee85626a9424a3ed5b78f85"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "49e2cb9e0af6cbc09920fd3ab3de99407cda089e4c60a65de21bd39288bcf0e2"
+      },
+      "Asha": "a70c695d9aa6d7eea97fbe40c7a5265e3bd4d4998ee85626a9424a3ed5b78f85",
+      "Psha": "49e2cb9e0af6cbc09920fd3ab3de99407cda089e4c60a65de21bd39288bcf0e2",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-undecryptable.json",
+      "AmetaSHA": "60752b50b37b4a178fded74c8c1c283c531bd3552a43521a5899efe44c081bec",
+      "PmetaSHA": "833ce538185232926b5b10b3a565e2614e43a541a97dd52ed617dffe4dafe865",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 383.5,
+          "width": 447,
+          "height": 353
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw480-win1920x1080|B13-import-missing-browser",
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "b3cdab39a4f544477dc009113e58d21be2ddd6f2df8c0d49d7becdd2e8a46d90"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "e37db52c76a2d0c601ea5cc87194ec8d3500e0ee7cf9d4bdd4de1c989d9aac1a"
+      },
+      "Asha": "b3cdab39a4f544477dc009113e58d21be2ddd6f2df8c0d49d7becdd2e8a46d90",
+      "Psha": "e37db52c76a2d0c601ea5cc87194ec8d3500e0ee7cf9d4bdd4de1c989d9aac1a",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw480-win1920x1080-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw480-win1920x1080-B13-import-missing-browser.json",
+      "AmetaSHA": "c65478dcb4157d8e0d44cf86369cc6f4afaef4160f2fa820c0e6649fbab2dd96",
+      "PmetaSHA": "183de80d3705caa4e64892c1f264010f4c6e88c1b875f1cdd0140506c65c763c",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 441.5,
+          "width": 447,
+          "height": 201,
+          "right": 1900,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1454,
+            "y": 500.5,
+            "width": 445,
+            "height": 74,
+            "right": 1899,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 445,
+          "clientWidth": 445
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1849,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1881,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1831,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1881,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1453,
+          "y": 459.5,
+          "width": 447,
+          "height": 201
+        },
+        "clientWidth": 445,
+        "scrollWidth": 445,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1476,
+          "y": 518.5,
+          "width": 401,
+          "height": 18,
+          "right": 1877,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1920x1080|B13-import-denied",
+      "combo": "dark-rw900-win1920x1080",
+      "state": "B13-import-denied",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-denied.png",
+        "sha256": "857bac19ff40b5930ded45cb553d34f7dda6312c53e177283be0a33be7a566ab"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-denied.png",
+        "sha256": "23bd70aba40ec142af2e04148c5e9e2b81eb11ff565641a3cf52d178bda2265a"
+      },
+      "Asha": "857bac19ff40b5930ded45cb553d34f7dda6312c53e177283be0a33be7a566ab",
+      "Psha": "23bd70aba40ec142af2e04148c5e9e2b81eb11ff565641a3cf52d178bda2265a",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-denied.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-denied.json",
+      "AmetaSHA": "a22ba522bd5c7a45f2edb5b87f81293c436f822c5f4ff2b7d67a49c95603f53f",
+      "PmetaSHA": "de3da25fc68547b4159bcedb5c6c8fa31bed331e44c01e308a1a8443db6ba94d",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "同为失败说明；A合并拒绝或不可用措辞，和P拒绝文案不逐字相同。"
+      ],
+      "actualText": "导入未完成\n\n钥匙串授权被拒绝或不可用；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成钥匙串访问被拒绝，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 459.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-denied；非真实钥匙串拒绝。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1920x1080|B13-import-timeout",
+      "combo": "dark-rw900-win1920x1080",
+      "state": "B13-import-timeout",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-timeout.png",
+        "sha256": "858664d8cb2213d33d3dcfce45835ce08cc8bd4b4e16dd218c450df4dd18fdae"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-timeout.png",
+        "sha256": "528956b9eea852e1663061c6e0812c7814f507145249c6f445956f94efdf5168"
+      },
+      "Asha": "858664d8cb2213d33d3dcfce45835ce08cc8bd4b4e16dd218c450df4dd18fdae",
+      "Psha": "528956b9eea852e1663061c6e0812c7814f507145249c6f445956f94efdf5168",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-timeout.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-timeout.json",
+      "AmetaSHA": "e39babe05ff88e055df641396e3d49790a828fc3c47fb7dd2757b53351c38551",
+      "PmetaSHA": "b874c0c20dacfc84ea2ccf8b99ba557648c67fc45565415e344daa25edcde1a1",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A未显示P的（30 秒）；同为超时/未写入说明。"
+      ],
+      "actualText": "导入未完成\n\n等待钥匙串授权超时；未写入Cookie\n\n完成",
+      "PDialogText": "导入未完成等待钥匙串授权超时（30 秒），没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 459.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "合成 keyProvider 抛 keychain-timeout；非实际等待30秒的系统弹窗。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1920x1080|B13-import-undecryptable",
+      "combo": "dark-rw900-win1920x1080",
+      "state": "B13-import-undecryptable",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "1c2c3179528d9bef2d6b72a3cec5a7daf5a696116b1bef436c689f3566b37e9e"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-undecryptable.png",
+        "sha256": "9c31328dc3b0e9f69d64f487119524fb6920819976d2322a417ef722f7aeacbb"
+      },
+      "Asha": "1c2c3179528d9bef2d6b72a3cec5a7daf5a696116b1bef436c689f3566b37e9e",
+      "Psha": "9c31328dc3b0e9f69d64f487119524fb6920819976d2322a417ef722f7aeacbb",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-undecryptable.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-undecryptable.json",
+      "AmetaSHA": "fa8f59e0d129603edf166141ab3f085afe4766242615fba26977a165b05fdbd7",
+      "PmetaSHA": "31eb20b2db6c9173c9fb3af689b4ac248aad9f1dd75e6f3fc78a5803de244619",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "STATE_STRUCTURE_NOT_EQUIVALENT",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "P含六行统计，A仅错误段落；不是只把412换成合成计数，当前截图结构/错误阶段不等价。"
+      ],
+      "actualText": "导入未完成\n\n无法解密来源Cookie；目标登录态尚未写入\n\n完成",
+      "PDialogText": "导入未完成总数412已导入0已跳过412其中 Google0因分区不可读而保留0重新加载的页面0全部 Cookie 无法解密（cookies-undecryptable），原有登录态未改动。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 383.5,
+          "width": 480,
+          "height": 353
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 351,
+        "scrollHeight": 351
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "本轮合成来源使用错误派生key，生产解密失败；并非真实浏览器keychain来源。"
+    },
+    {
+      "attempt": "005",
+      "root": "/private/tmp/willyou-m12-t145-import72-prep-005",
+      "key": "dark-rw900-win1920x1080|B13-import-missing-browser",
+      "combo": "dark-rw900-win1920x1080",
+      "state": "B13-import-missing-browser",
+      "A": {
+        "path": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "115ae097d708a21c4c6ee91ada21c9d95544edc608e81e315db2ce98d75758d5"
+      },
+      "P": {
+        "path": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-missing-browser.png",
+        "sha256": "e466cb8ee368619fb011e9b85d991410a01e9c7ddbc0832b088171dbd9b8df8c"
+      },
+      "Asha": "115ae097d708a21c4c6ee91ada21c9d95544edc608e81e315db2ce98d75758d5",
+      "Psha": "e466cb8ee368619fb011e9b85d991410a01e9c7ddbc0832b088171dbd9b8df8c",
+      "Ameta": "/private/tmp/willyou-m12-t145-import72-prep-005/A-dark-rw900-win1920x1080-B13-import-missing-browser.json",
+      "Pmeta": "/private/tmp/willyou-m12-t145-P1080-reference-prep-001/images/P-dark-rw900-win1920x1080-B13-import-missing-browser.json",
+      "AmetaSHA": "3d818adb218e68a4adf115a3f1f8c9986f2ec70d885891eb115b17a347a01cb0",
+      "PmetaSHA": "8f9fdf95d4f00c792f6a3af60f290756162438e4348fe7ccc564736c7076883f",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "actuallyViewedOriginalPAndA": true,
+      "viewMethod": "view_image(detail=original), each P and A separately; no contact sheet or generated substitute",
+      "scopeResult": "CORE_ERROR_MODAL_VISUAL_PASS_WITH_COPY_DIFFERENCE",
+      "visualPassWithinScope": [
+        "错误标题、单段说明、右上关闭与右下完成按钮实际可见",
+        "浅/深主题modal和按钮可辨；当前原图没有文字/控件裁切",
+        "metadata全部controls位于dialog内，dialog/body无横向或纵向溢出"
+      ],
+      "notPassedAsEquivalent": [
+        "A改为重新选择提示，未在该行显示P未写入说明；截图不能独证完整零写入。"
+      ],
+      "actualText": "导入未完成\n\n所选浏览器或profile已不存在，请重新选择\n\n完成",
+      "PDialogText": "导入未完成找不到所选浏览器或浏览器 profile，没有写入任何 Cookie。完成",
+      "actualGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 441.5,
+          "width": 480,
+          "height": 201,
+          "right": 1706.5,
+          "bottom": 642.5
+        },
+        "body": {
+          "rect": {
+            "x": 1227.5,
+            "y": 500.5,
+            "width": 478,
+            "height": 74,
+            "right": 1705.5,
+            "bottom": 574.5
+          },
+          "scrollHeight": 74,
+          "clientHeight": 74,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        "controls": [
+          {
+            "tag": "BUTTON",
+            "text": "",
+            "label": "关闭",
+            "disabled": false,
+            "rect": {
+              "x": 1655.5,
+              "y": 460.5,
+              "width": 32,
+              "height": 32,
+              "right": 1687.5,
+              "bottom": 492.5
+            }
+          },
+          {
+            "tag": "BUTTON",
+            "text": "完成",
+            "label": null,
+            "disabled": false,
+            "rect": {
+              "x": 1637.5,
+              "y": 587.5,
+              "width": 50,
+              "height": 36,
+              "right": 1687.5,
+              "bottom": 623.5
+            }
+          }
+        ],
+        "controlsContained": true,
+        "noOverflow": true
+      },
+      "PGeometry": {
+        "dialog": {
+          "x": 1226.5,
+          "y": 459.5,
+          "width": 480,
+          "height": 201
+        },
+        "clientWidth": 478,
+        "scrollWidth": 478,
+        "clientHeight": 199,
+        "scrollHeight": 199
+      },
+      "errorStyleActual": {
+        "rect": {
+          "x": 1249.5,
+          "y": 518.5,
+          "width": 434,
+          "height": 18,
+          "right": 1683.5,
+          "bottom": 536.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(239, 143, 132)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "12px 0px 24px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        }
+      },
+      "systemBoundary": "真实UI选择后只重命名本轮自己的Default来源目录，finally恢复；不移动日常profile。"
+    }
+  ],
+  "resources": {
+    "Native": 0,
+    "UI": 0,
+    "HTTP": 0,
+    "JXA": 0,
+    "App": 0,
+    "persistentChildProcesses": 0
+  }
+}

@@ -1,0 +1,2633 @@
+{
+  "at": "2026-11-05T15:34:27.365Z",
+  "status": "passed-static-only",
+  "checks": [
+    {
+      "id": "Original-nine-scenes-all-assertions-business-calls-identical",
+      "status": "passed"
+    },
+    {
+      "id": "Frozen-production-mail-ToolService-imports-and-explicit-isolated-fixture",
+      "status": "passed"
+    },
+    {
+      "id": "Eight-independent-judge-positives-and-corresponding-negatives",
+      "status": "passed"
+    }
+  ],
+  "originalAssertionCalls": 45,
+  "originalBusinessCalls": 47,
+  "staticProjectImports": [
+    {
+      "path": "src/shared/application-capabilities.ts",
+      "sha256": "11572460a40fc3c4dab26bc6425b00976fdc0c96a8fda51ced5d18a6dbc72f26"
+    },
+    {
+      "path": "src/shared/applications.ts",
+      "sha256": "4e5ec742c9fab1fe68429bddcf4e496a12ab2d9f9b9576d019a43128b1a62bd5"
+    },
+    {
+      "path": "src/shared/application-result.ts",
+      "sha256": "c60fb34d4d464ae1f7b5b4c9b0964f547dc5e90876c52d6b27378c716edd1a94"
+    },
+    {
+      "path": "src/shared/application-data.ts",
+      "sha256": "9bcec1b29c9fff7c12da60751e3884e10041f699675325e4f463cc61934f323d"
+    },
+    {
+      "path": "src/shared/mail-drafts.ts",
+      "sha256": "d0e60c11f02236a8aefacf32c3b806e7d6320f8c71b634782cb5d96999408682"
+    },
+    {
+      "path": "src/shared/application-session.ts",
+      "sha256": "4bb934945711dea983a5dd23283fba2840a9613cdbe41f9f6d9c4e0e543a46e2"
+    },
+    {
+      "path": "src/shared/agent-id.ts",
+      "sha256": "ddc888a811e7a90c0a37f6a1a1fe274d9caaa5ee8001590a96e989b90a1f5e91"
+    },
+    {
+      "path": "src/main/core/applications/run-plan.ts",
+      "sha256": "224ea175f40e0c4523b65f5ee646f1d9e4eb875d4506f0acbbc690ed214c3b0a"
+    },
+    {
+      "path": "src/shared/application-run-plan.ts",
+      "sha256": "c25fdd1b3fe453a3a15e970214a8357aeb12e9abe4a80883bef8393f48bb05d0"
+    },
+    {
+      "path": "src/shared/application-session-v3.ts",
+      "sha256": "e69fb1c748f54b251574c7e723235db2af54fad5436cb121cf3a993ac37f3a3c"
+    },
+    {
+      "path": "src/main/core/applications/resource-store.ts",
+      "sha256": "010eed72f125289dd78b8d715c2ba97d73c47021469d46c0d0e9680647c2e6af"
+    },
+    {
+      "path": "src/main/db/database-access-gate.ts",
+      "sha256": "19a4693567b0b9c3db0d7599b136349f11b1c1b99ba7832e3d195ef20b2524fd"
+    },
+    {
+      "path": "src/main/core/applications/claude-delivery-state.ts",
+      "sha256": "ec398355de9d545dec5bb790f9b1209b40dc523e176a27ee91e137c3ef7e59e1"
+    },
+    {
+      "path": "src/main/core/applications/claude-projection-selection.ts",
+      "sha256": "4c65c8d813268b00005e43fa1f3bd3c9cadb3e0a26155f8c5013d0b303b2ef9f"
+    },
+    {
+      "path": "src/main/core/applications/owned-bundle.ts",
+      "sha256": "ddf353f14cdee9682a24079445826d8ea8b860325ba0f14a825ca0e3829e108c"
+    },
+    {
+      "path": "src/shared/application-bridge.ts",
+      "sha256": "3afe44e29c235a2532e9e31bfea347743cb566866556e11fbafa74700ad6f460"
+    },
+    {
+      "path": "src/main/core/applications/manifest.ts",
+      "sha256": "da8edb3f9c92b263eb83454a702ceb460710eced8c2a92539698a917131e6f41"
+    },
+    {
+      "path": "src/main/core/applications/package-files.ts",
+      "sha256": "fdb9c39ff97a094b3aea0f33a249f10d9ae3490f3fcf323b3d0dfa2b9b693972"
+    },
+    {
+      "path": "src/shared/claude-delivery.ts",
+      "sha256": "8d72fcb2094339ad7823659ac6f270d640c05e97cda0b0445320129c8ba15d0f"
+    },
+    {
+      "path": "src/main/core/applications/resource-lock.ts",
+      "sha256": "d1570a83fbd57db35c8caa1e6ec91b207952884bf4a0bd93a73d7a1495dc569b"
+    },
+    {
+      "path": "src/main/core/applications/coordinator-lock.ts",
+      "sha256": "60a02f98ec095b5e18d6c65824ff71b8e1f76eef426f3460455ba2aeab10a9d0"
+    },
+    {
+      "path": "src/main/core/applications/process-identity.ts",
+      "sha256": "dd9e4080843739ec20b5cb54b3bd80d2864d0e051cad21280854612598f00f0b"
+    },
+    {
+      "path": "src/main/db/schema.ts",
+      "sha256": "06c862251b7e2ba60cb99bfbb365681833d89bd0e68ec783dc433122713bb878"
+    },
+    {
+      "path": "src/main/secrets.ts",
+      "sha256": "e2c8e99dcd0f11dfbfca2218977cc9bf2c99115ed6c08455ebb79510d23f54be"
+    },
+    {
+      "path": "src/main/db/client.ts",
+      "sha256": "13007a0bdef9cae1a9ab33b8e7bf865a2e90d11972d7a2fabda2aaeb6b4d2b8d"
+    },
+    {
+      "path": "src/main/pty-access.ts",
+      "sha256": "608b7ebf4604744fd4241ee8e0ec0ae82dfe2d4d1ab73e36b0b97a980622de72"
+    },
+    {
+      "path": "src/shared/events.ts",
+      "sha256": "5e2d530cce947167944009bf1f3ced64da633a500fa9c2bca9cd09d0e32172f9"
+    },
+    {
+      "path": "src/shared/application-maintenance.ts",
+      "sha256": "fa2c9a5f8101d3b20904188301f9f244ed454bbb6312895ce6c26b9f86f77ed1"
+    },
+    {
+      "path": "src/shared/application-connections.ts",
+      "sha256": "0ad5ca918c45606cea3b63166562550eedeac9761519312437045809bbc24b8d"
+    },
+    {
+      "path": "src/main/core/applications/modules/index.ts",
+      "sha256": "19df9905a6a598beaee17d1d8caefe5ac212086d72fe92593fc37861800cc767"
+    },
+    {
+      "path": "src/main/core/applications/modules/registry.ts",
+      "sha256": "b85e87232fc1b8f0ebb6301610497f503d3fe36a805a2a87e61a5650259e099a"
+    },
+    {
+      "path": "src/shared/application-presentation.ts",
+      "sha256": "10d3a0d0de2103f5757ddf222cdeac1b0cf1b65f8353e7ea86977848e84b06b7"
+    },
+    {
+      "path": "src/main/core/applications/host-application-registry.ts",
+      "sha256": "df6c7604bac2ebf8385188bbb8171708c01e91e7b4d07f5d108246d0d04cfe36"
+    },
+    {
+      "path": "src/main/core/applications/application-adapter-registry.ts",
+      "sha256": "b73157273802eb80bc7e6aaa9b971491295a1af5bd0e51a0a81cbe72528621f0"
+    },
+    {
+      "path": "src/main/core/applications/builtin-package-registry.ts",
+      "sha256": "4f58fcaec4f6c400a2c196be12e4e2e3e445fe7b2fe7db20a5590b5e7474e251"
+    },
+    {
+      "path": "src/shared/capability-bundles.ts",
+      "sha256": "51ea51e5c0bfd20c4fc84ff0e9e4e6d94706bb0dbee0b5632644f0686cd8f16d"
+    },
+    {
+      "path": "src/main/core/applications/bundle-source.ts",
+      "sha256": "7974c1764c7d99f4aeff7b5648c27811700b4e23c1fc32e0c8857c027df93338"
+    },
+    {
+      "path": "src/shared/agent-adapters.ts",
+      "sha256": "fcac2c8689dfd65e0a55a6008d21f46552f0746ab65205e8365764c9b3970054"
+    },
+    {
+      "path": "src/main/core/applications/runtime-registry.ts",
+      "sha256": "4327e8a3136070a9b4ed07a0906aaf3de817c45d05018352938c457f8296fe23"
+    },
+    {
+      "path": "src/main/core/applications/package-registry.ts",
+      "sha256": "3b954d26cd74d94dfa39611c93d07b90c006dccafd6cf7b8c5b9d0c467bf600e"
+    },
+    {
+      "path": "src/main/core/applications/run-registry.ts",
+      "sha256": "20268a5caea8cae63fa5edef97a41ef053ed4f6d5c32ad4f3d3ba02c08d545c9"
+    },
+    {
+      "path": "src/main/core/applications/run-recovery.ts",
+      "sha256": "f3fd283544902264b7766487dc3ca5f7641e553588d27b545de3561468d125cc"
+    },
+    {
+      "path": "src/main/core/applications/native-discovery-exclusions.ts",
+      "sha256": "e7c27eaf5c4b16623f59dc14e82ee5f8b5e7050db14d4afef309eae54c6ab9e1"
+    },
+    {
+      "path": "src/main/core/applications/legacy-discovery.ts",
+      "sha256": "820c54de15b3385486e006c2bc7ccc28cf25e618f8dd61e86e44c3d239eba58e"
+    },
+    {
+      "path": "src/main/core/applications/legacy-resource-adopter.ts",
+      "sha256": "58ef69c2855e2c07413924e6860da7f14120702f42da2df53b8b025b07c29cb0"
+    },
+    {
+      "path": "src/main/core/capabilities/assets.ts",
+      "sha256": "c09c6d72497ab2b7afa90dd067fb6c8dfc212a67b7a3c4184dd809a930067daa"
+    },
+    {
+      "path": "src/main/core/capabilities/files.ts",
+      "sha256": "1fab2e731a476a4ad0067fb2583478253dc9d3eadb69af94a2a9b7c2827aa99a"
+    },
+    {
+      "path": "src/main/core/applications/native-static-roots.ts",
+      "sha256": "78d7d7140d9a33c576a555566ad02e15fb2ae96e7212c22732dd7a8d6eaeabdc"
+    },
+    {
+      "path": "src/main/core/applications/application-run-scope.ts",
+      "sha256": "16d1e6e722bf57c2f521ee63c159ca63ddaf15cd38ece996cb19a7ae10e47537"
+    },
+    {
+      "path": "src/main/core/applications/session-registry.ts",
+      "sha256": "c9e4382d8f4ec3a0894825328f8bb50f5fc695b793e691f780ca6200060ff434"
+    },
+    {
+      "path": "src/main/core/applications/legacy-session-source.ts",
+      "sha256": "0bec3ed1c6e40e6f79f6ebfa0a9d64af247edbc2f195d280dd8f149ff4afe346"
+    },
+    {
+      "path": "src/main/core/applications/legacy-task-evidence.ts",
+      "sha256": "082d0b249a7d5a94026af28a506ff79c3536c057955188c78b6574f78089d9d4"
+    },
+    {
+      "path": "src/main/core/applications/legacy-plugin-source.ts",
+      "sha256": "0270112991903b80fc909776b2948551fce48a886769f1d406ae9bfe4682d328"
+    },
+    {
+      "path": "src/main/core/applications/legacy-h-binding.ts",
+      "sha256": "0fa293a18410f00b349e0904c6a73992de23a3aa42a73a99cda30ca0ab89af53"
+    },
+    {
+      "path": "src/main/core/applications/launch-restriction.ts",
+      "sha256": "b45a88094fed2e9810e4c4c1eb4cb785f8cd5d2ba3cad1fd0f56a8272b0c7cb3"
+    },
+    {
+      "path": "src/shared/application-session-diagnostics.ts",
+      "sha256": "391303da323dd7bc64ae520c3628204a51b3355d3a43b5ed81d66d1ce0e5646c"
+    },
+    {
+      "path": "src/main/core/applications/tool-service.ts",
+      "sha256": "6e5f7509e5278112e0ec25a5ad5f2e86566bc10d5259f543e425dcdfc0ceab7f"
+    },
+    {
+      "path": "src/shared/application-cli.ts",
+      "sha256": "a211b894eaf356670f415c4730c260ad2bd12bea8c91256e6b9ecbd4f8adfb6c"
+    },
+    {
+      "path": "src/main/core/applications/application-run-policy.ts",
+      "sha256": "a0a7fc66c964432bba4bd47ef9f232490025e4da4de4ebf7d495e75dc23277ac"
+    },
+    {
+      "path": "src/main/core/applications/retry-after.ts",
+      "sha256": "ea894dd0781bc0bd76b5677a4016138d4f5f7a187e06703948d72c1eb24c935a"
+    },
+    {
+      "path": "src/main/core/applications/capability-preflight.ts",
+      "sha256": "5a71e682a61fe15b947e04b3f6e153ca6461779ebc3662396d1e2a49d4b49a74"
+    },
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "sha256": "bb30e26aa393f30315dc2069826673c04e68dc6a0a90055da44be9b286e8a31f"
+    },
+    {
+      "path": "src/main/core/applications/selection-precondition-error.ts",
+      "sha256": "a3a362bb1d81e76aeb1795311716eecba7b86b422ee6b3c3ef6e092f39778c1b"
+    },
+    {
+      "path": "src/main/core/applications/credential-handles.ts",
+      "sha256": "a303153e0cfb40c4556b8ef08fe405393ce6095f43cc255d8e569a9b4c182d92"
+    },
+    {
+      "path": "src/shared/mail-execution.ts",
+      "sha256": "ebd6a3905068a699e6f7c0bac7df1bbc9f51e75cd8ac446946993f9fed3d8627"
+    },
+    {
+      "path": "src/main/core/applications/connection-service.ts",
+      "sha256": "55d6ab046c1c6e1657bab2ca9f8b5c95c3cfb7a382f8a9c23400ec254fdc6069"
+    },
+    {
+      "path": "src/main/core/applications/config-view-registry.ts",
+      "sha256": "4659920c7d5a167b302078c433993ce5f9b76c0bbb1ef4ed7ca0688755533892"
+    },
+    {
+      "path": "src/main/core/applications/config-view-schema.ts",
+      "sha256": "2e494f351695b1f6e3729dded8416775b68a47a2cb7d89b2c06ef4d23b34693d"
+    },
+    {
+      "path": "src/main/core/applications/selection-service.ts",
+      "sha256": "5060089431f916160b790a1aed172126b6e45c3e1877dc2ae1999584622a1d12"
+    },
+    {
+      "path": "src/main/core/applications/caller-context.ts",
+      "sha256": "8097800c241a33c48c304342652362b7c38be1b97573ec22d1f14725ff84d9c3"
+    },
+    {
+      "path": "src/main/core/applications/data-resources.ts",
+      "sha256": "8d55499911c3c7928d2297936b7e3ca7d67b5f582b78c7b1212a534c72aba312"
+    },
+    {
+      "path": "src/main/core/applications/modules/zentao/index.ts",
+      "sha256": "6fc4e0ca2938eb94cd14fc2208e025a22cc25b25334e4206f839c8f5c08fc9bf"
+    },
+    {
+      "path": "src/main/core/applications/zentao-data-service.ts",
+      "sha256": "bbb01f98e8d34aca6f40a486518533c1f0ddaf87900850325939db3ca5c36d2d"
+    },
+    {
+      "path": "src/shared/application-zentao.ts",
+      "sha256": "dd3e2efe9751b456994c3c17e927c287dceb9001952531561bac855a0914c6d5"
+    },
+    {
+      "path": "src/main/core/applications/providers/zentao.ts",
+      "sha256": "9a1c6ccd879a5812ff92dac654da00029d2dddc801a0a1e4a14a721aa8c283b8"
+    },
+    {
+      "path": "src/main/core/applications/providers/json-http.ts",
+      "sha256": "e234dd8b09685b1d5573a377c5670e93ecc20a53c2670c1553a36f6481cf7066"
+    },
+    {
+      "path": "src/shared/zentao-presentation.ts",
+      "sha256": "df5f1eafecc44ed621b9c127355e203f50de824371ccaef2ef8c592e7a30e611"
+    },
+    {
+      "path": "src/main/core/applications/modules/retained-config-views.ts",
+      "sha256": "bc396de641154810d32b617b66f1c69a3fa95a368c228ec404595fad2ec283fb"
+    },
+    {
+      "path": "src/main/core/applications/modules/zentao/run-policy.ts",
+      "sha256": "b374f4dd0932dee56c601bb4696365228afa235c829f184517279ec2c3f76557"
+    },
+    {
+      "path": "src/main/core/applications/modules/mail/index.ts",
+      "sha256": "13c79b0fcad4fc40750a194f955c10b52559eee526c8d005f10cace08556471e"
+    },
+    {
+      "path": "src/main/core/applications/draft-data-service.ts",
+      "sha256": "273d258b1b9ebba71a3a59047030cd3577cf3f728fc4ef744fb09b61c558a4db"
+    },
+    {
+      "path": "src/shared/application-mail.ts",
+      "sha256": "6a0da317d502150f98c29c7b21bb426f7e3c411cd1f7346133a24b8fc841728c"
+    },
+    {
+      "path": "src/shared/application-mail-data.ts",
+      "sha256": "bab3dba979e1043f98e7db365cfef2f9aa4bbb410d39abd2f13cdd1019fe007f"
+    },
+    {
+      "path": "src/main/core/applications/workspace-attachment-references.ts",
+      "sha256": "e8839a653718fec0b2f9cc4f207eeeeb580ac06c4899daababd1bfaa619b3314"
+    },
+    {
+      "path": "src/shared/files.ts",
+      "sha256": "d5d8a2aefe2081c6dedcd75a3aea012e2666b37c9d34051ea9944c26f1e634e8"
+    },
+    {
+      "path": "src/shared/file-classification.ts",
+      "sha256": "2fd138ea66f4449d001d79d0a7c1d7e4faae6e4500d683e1f4f76a8d62f45134"
+    },
+    {
+      "path": "src/shared/file-attachment.mjs",
+      "sha256": "c3fb47537cc87e52ae00839ccbed222f817ea94768cd0706e87bf63a8c529a4e"
+    },
+    {
+      "path": "src/shared/file-search-input.mjs",
+      "sha256": "3cd22da2e808cf0e404a78be01d92fb71f64070d9453e4e9197a2257b4e0da23"
+    },
+    {
+      "path": "src/main/core/files/file-service.ts",
+      "sha256": "93002e4a61e19e39ed3dc02c52931edce2bbbdd715b43147d2cb4e2f38b3752b"
+    },
+    {
+      "path": "src/shared/file-languages.mjs",
+      "sha256": "dae79365e6fce1f83d778f7e8af642e2b0559884a75ceb99d7b9b42630839e56"
+    },
+    {
+      "path": "src/shared/file-source-boundary.mjs",
+      "sha256": "6304644f743143c0ae4fbc9207b6d911a8c0a44cfad3b7645c91586ca6405792"
+    },
+    {
+      "path": "src/main/core/files/lsp/service.ts",
+      "sha256": "468de3c03bfdbe8e8c674e6a2d87813fd5938f191d042474b374b1f228af502f"
+    },
+    {
+      "path": "src/shared/file-lsp.ts",
+      "sha256": "91587d7dc244d38260aac8b0d061e927bb8d6a839aa6c926b252fceee4e2d0c7"
+    },
+    {
+      "path": "src/main/core/files/lsp/client.ts",
+      "sha256": "7bd88c76f960c8ac31395de75728bbd31e52c10c1807982f349c0edbfdfe33b7"
+    },
+    {
+      "path": "src/main/core/files/lsp/reader.ts",
+      "sha256": "deb3936f6676565852c13aa9f811b7fd9ed050dbdcffeaf9d0d6757a67adf8f4"
+    },
+    {
+      "path": "src/main/core/files/mcp/service.ts",
+      "sha256": "ac443098db55ad545a7d10e8d8e0c6bf7dd103abfb5ee33a5ea50c12ac1c5ea0"
+    },
+    {
+      "path": "src/shared/file-viewer.ts",
+      "sha256": "e90fd98f39e9a1eede6939cd6aefbeb71287b3d3c975e753907cbc8d277bb6f0"
+    },
+    {
+      "path": "src/main/core/files/mcp/local-provider.ts",
+      "sha256": "1e9a876e4b903ded8100b06a9c889d1441279f81c50ed4d52d58500c1c0cabca"
+    },
+    {
+      "path": "src/main/core/files/mcp/policy.ts",
+      "sha256": "1a72b9eb06ec818994af14b14010ae6457d438b90cecfaba72ff192b68a9a1a8"
+    },
+    {
+      "path": "src/main/core/files/mcp/stdio-provider.ts",
+      "sha256": "2ee8ad480156e3a0e2060851178701381e67b997a4a1897c53caeab283b79798"
+    },
+    {
+      "path": "src/main/core/files/mcp/ui-view.ts",
+      "sha256": "1a55e2085e54ef0007638a1f9b59a1fcbeb17c834198f604ba22589794b45914"
+    },
+    {
+      "path": "src/shared/file-html.ts",
+      "sha256": "63a583e9b85cf301c76f84d028abb45470d8a94845454beb1a8f8db14857ea24"
+    },
+    {
+      "path": "src/main/core/files/html/policy.ts",
+      "sha256": "1b052bcdf651722968ce593f2d83af7549a8988bc6150d59f0cdc9d3b8f56563"
+    },
+    {
+      "path": "src/main/core/files/media-service.ts",
+      "sha256": "0bbe61fe3b1d8091086608ffc5c195d63f878b57c0d74801a19533a47aeea993"
+    },
+    {
+      "path": "src/shared/file-media.ts",
+      "sha256": "51f9ddbe1445bb9a13599f37350de2264663495314e6f746a3193cbcb827114b"
+    },
+    {
+      "path": "src/main/core/files/html/resources.ts",
+      "sha256": "9d236e85b17c50117bc19fdb1ed5ec41f8225feeaa9742e14c7a3c5317206e1d"
+    },
+    {
+      "path": "src/main/core/files/html/references.ts",
+      "sha256": "4317edc54f75fc4e4668ede158250b258d8f9665b25ba6d6c961847359a95696"
+    },
+    {
+      "path": "src/main/core/files/mcp/ui-document.ts",
+      "sha256": "83881a51451c2af35ed854767e99c85e9c9e1c1a109fb55d994d7d4ccff93bce"
+    },
+    {
+      "path": "src/main/core/files/office/pages-service.ts",
+      "sha256": "754ce711e8a78349416223d483ffc88944093674e7e225cf0c2ac16c4fdf7a45"
+    },
+    {
+      "path": "src/shared/file-office.ts",
+      "sha256": "c0ac03d1044a6299de160e24bf3ffda9f04ecf2db76b70add8a055ec3e3ac4e1"
+    },
+    {
+      "path": "src/shared/file-workbook-drawing.ts",
+      "sha256": "8e83b0b9866477913f2af6843a7f3cd7b7d63337cd7844640fb67ae4c54b390b"
+    },
+    {
+      "path": "src/shared/file-pptx-image.ts",
+      "sha256": "e6e4d5e828a436832bc6cc673b12e62f4faf190fe10ccd6caaab9c2238600f4c"
+    },
+    {
+      "path": "src/shared/file-office-fidelity.ts",
+      "sha256": "8275805296f7bac0c6aef9d4e0ee50f3db787150dfddd99beefb5512d548e92c"
+    },
+    {
+      "path": "src/shared/office-measure.ts",
+      "sha256": "7f36e81488d649f5f49eb66cb7b0afb331161e243642e66235b5e2170bb260e7"
+    },
+    {
+      "path": "src/shared/file-office-pages.ts",
+      "sha256": "9d8e7c9ee6816d79c4f0746814c8e728ef0c3a4e92454d6162d283dd5bac315b"
+    },
+    {
+      "path": "src/shared/file-pptx-elements.ts",
+      "sha256": "3eb556f9ae7d477111fd6e06f92cf820df7a4fdc4149b1672fd4edafb2d0f5a5"
+    },
+    {
+      "path": "src/shared/file-pptx-table.ts",
+      "sha256": "5e65384d0929988bcfb7dabf0edd6056f98f9e77ecde94f8539e1c21374c1972"
+    },
+    {
+      "path": "src/shared/file-pptx-format.ts",
+      "sha256": "e3fbde7816d17dddb88084ad1b61df1b5f3b753ddaea11451d522bb0c379aa78"
+    },
+    {
+      "path": "src/shared/file-pptx-appearance.ts",
+      "sha256": "09c082b72a523ceacc78650695135ad69a1b2c4934607b6087be7b2332235811"
+    },
+    {
+      "path": "src/shared/file-pptx-chart.ts",
+      "sha256": "bf29ae7781701932d5ac5cb71967dbd0398a98a77a21de52fd7be1c693449d22"
+    },
+    {
+      "path": "src/main/core/files/office/service.ts",
+      "sha256": "00f740f569bba88acd9f8c7341515a7b65da008fba6e1d4c290891d34c675698"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-image.ts",
+      "sha256": "c87f0b87ec8084a8a92253cb9f752ac22447edaaaca2d199dd39f544ee401af4"
+    },
+    {
+      "path": "src/shared/file-pptx.ts",
+      "sha256": "5eafc0dfb5960d134a15e0d9ff28751ec14e120d781746d809f7ae620c521043"
+    },
+    {
+      "path": "src/main/core/files/office/pages-model.ts",
+      "sha256": "f241ae14941d86a0303c0cf4171716b06faaecdcab66eadd62c595372bd81127"
+    },
+    {
+      "path": "src/main/core/files/office/package.ts",
+      "sha256": "39ee90c53efa354cf0ddda09883dc17a7822dc97be041ed9ebd6b1cc6e4049a5"
+    },
+    {
+      "path": "src/main/core/files/office/relationships.ts",
+      "sha256": "d76b7a9c0c402e3367fcee436a9c36034bd71dc114abd70ab8af43f20fa7016f"
+    },
+    {
+      "path": "src/main/core/files/office/xml.ts",
+      "sha256": "96d9f52d6ae42d2a5c03fbbb414433386c7abf95c74eadeabb1f37972dd5cd14"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-elements.ts",
+      "sha256": "9d2e97eb50df28a2efd22134d97859b235a4e9ee303a9555eda769629169a31c"
+    },
+    {
+      "path": "src/shared/file-pptx-placeholder.ts",
+      "sha256": "f22ffd4d32d72b6637b19317afda73f561f73bb6f10df310f78152f765adad51"
+    },
+    {
+      "path": "src/shared/file-pptx-geometry.ts",
+      "sha256": "b842a4c1db4f797efbcaad98d8971d8eab35bd4ef6234bf84c140817b9cfada3"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-table.ts",
+      "sha256": "fdc5da041700946ae092f9e6c3db9541cd98ef8528ab8145e51527e4e0d8852d"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-format.ts",
+      "sha256": "a0d38a3fa2744685d24f04c2f834857524fa0da353fc0d358212cfb44ac626ef"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-text-edit.ts",
+      "sha256": "0e56dfa95a9e199cbe3433bacc9eb3a45e8cda961cf3092cc39ffca08bd06a5b"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-appearance.ts",
+      "sha256": "e7c4f60d6caff9d2ae740717c20460155015dc24b1ef466fb63095dc256d727d"
+    },
+    {
+      "path": "src/main/core/files/office/preview-capabilities.ts",
+      "sha256": "31b417b63709407ea6c65f105e7835aab4d8d8df705a4271514e931e6429cd16"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-geometry.ts",
+      "sha256": "20173a4de325e39d7571fe89992fe9c347eaaf53252c7439076f3c3dfaa2cee8"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chart.ts",
+      "sha256": "f97ab2a38603ec94a3842530e512456a3f759a4f31c1e99907986ff24e53838d"
+    },
+    {
+      "path": "src/main/core/files/office/workbook.ts",
+      "sha256": "cde534b0f92ade6c5f6e68eb3790e6d9114b44d0f60bec109e79729499451dfe"
+    },
+    {
+      "path": "src/main/core/files/office/styles.ts",
+      "sha256": "e0556ec3ce47b08c64d50a23cdcbfeb75562426a56a6bf92a317791e3fb0caa7"
+    },
+    {
+      "path": "src/main/core/files/office/formula.ts",
+      "sha256": "6397360ad1d9a2da8888188db065c9bad948f75a5548e144d45ae191a34667ec"
+    },
+    {
+      "path": "src/main/core/files/office/xstring.ts",
+      "sha256": "8a2c650a31d7be76e563de99d67c4d54d4fc1d3021287721de7804c726c550a2"
+    },
+    {
+      "path": "src/main/core/files/office/validation.ts",
+      "sha256": "060a684d3d0e968c3647d465304e0d49807b66bf53016ba888a7c2fc2b7884d7"
+    },
+    {
+      "path": "src/main/core/files/office/range.ts",
+      "sha256": "5adf29a9b008905cbee246a53b45c3a7e24453c4a7fad85fe321619c8c29b150"
+    },
+    {
+      "path": "src/main/core/files/office/calculation.ts",
+      "sha256": "4b14cab65a2d656fcd8f0d1a60a68a2cb139647c07846c712b6fd594cb25a0d4"
+    },
+    {
+      "path": "src/main/core/files/office/worksheet-edits.ts",
+      "sha256": "22fd0cda08ee5e27ecc6b939d6abede686ff510262bbbf98b0a367de545d3b41"
+    },
+    {
+      "path": "src/main/core/files/office/conditional.ts",
+      "sha256": "a8b12c8ddbd5f04df8065d0a243e5d8e2633c42e6f9f62235768ffa3b8d94453"
+    },
+    {
+      "path": "src/main/core/files/office/format-edit.ts",
+      "sha256": "8bb3e8c129d5ec9f87977245b4ec3afead3420f53705dd190a3e1223a2b4ae56"
+    },
+    {
+      "path": "src/shared/office-number-format.ts",
+      "sha256": "da6f25096d095aa39fd3cf6b191eddf5f1a424c3f322b8ca72f6c3be2100541a"
+    },
+    {
+      "path": "src/main/core/files/office/checkbox.ts",
+      "sha256": "d1f43972accc25ed45101be6b6470a3c527a47b939d3aae33419438daf82b16e"
+    },
+    {
+      "path": "src/main/core/files/office/drawing-preview.ts",
+      "sha256": "027ad4c8a143fe30e11aee9148c8bac8be57951d1180614e386dfdfe26aeafc3"
+    },
+    {
+      "path": "src/main/core/files/office/drawing-images.ts",
+      "sha256": "0d49cfd398a91a1ade5e38df0890f77de92b9a6b66993c45d14c845ca8a7effc"
+    },
+    {
+      "path": "src/main/core/files/office/drawing-vectors.ts",
+      "sha256": "1a9b3668348534a9bd82677e2102093bfea676b2bedc4df14d2a648ff05a5b0a"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-image-container.ts",
+      "sha256": "7e0bcc71a7448c202d0866a29a8f701f02936c634c6ae51ea29faf4bb4b13ee0"
+    },
+    {
+      "path": "src/shared/office-preview-notices.mjs",
+      "sha256": "fbebb59f881e5e6d5a35d9dafa12c5e7dd64762cf733a05b519bb75e57f4aa96"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chart-create.ts",
+      "sha256": "8c3dff349796694408945df7734a382329229dfc2f7c461d24d4a14103517d73"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chartex-create.ts",
+      "sha256": "f2249e00c88e53983e41e698ee32822cc4a1a83a1ac7f66a6047e00e6fbeb2f8"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chart-area.ts",
+      "sha256": "ae213a3d5fdf0cac81ad8c54e7e89a1d05ab9d3603ffe5361af42b933216f29d"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chartex-data.ts",
+      "sha256": "5055cb874b693e05956b26e98de5bfdda363d6f0f64e1003ae25c3153fd01fec"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chartex-display.ts",
+      "sha256": "0e36f9418afb26c37dd6359b012d305de45975e2f2c0909fe7ae0ea7ae343c1d"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chartex-geometry.ts",
+      "sha256": "af4ee7798e7c7a8008aff482f20fe75206009377d38519f13dce83a944960d63"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chart-convert.ts",
+      "sha256": "caa0a58c4fa7895d263359deea9370db3a6a3b2809d046a7a6697b7a042e5f92"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chart-workbook.ts",
+      "sha256": "62df84972ea099ef63a7c9f08a787771d5c1b8ed2e391021a60e28f4fdbf46e9"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-chart-resize.ts",
+      "sha256": "2d1b7097bba586deabe04070dddef649ee47c04dfb4d86b7e039597f703d7def"
+    },
+    {
+      "path": "src/main/core/files/office/sheet-edit.ts",
+      "sha256": "f33193ed9df39cb0941b011a9b334b1dfc5edf44e565769be3717a2e834c3f23"
+    },
+    {
+      "path": "src/main/core/files/office/workbook-edits.ts",
+      "sha256": "a0ecdf64e6c906c93fb253cecc4706f274a25fd8ba13472f4953d91473d36150"
+    },
+    {
+      "path": "src/main/core/files/office/sheet-rename.ts",
+      "sha256": "210cd6178ab541ea5598710c8c50a69ce5dc2843a2b53e867df8068e43690384"
+    },
+    {
+      "path": "src/main/core/files/office/mutation.ts",
+      "sha256": "dc75623650c0ff09680a8be22c69c3a6fd0f08f6726736cd6820245c943303a1"
+    },
+    {
+      "path": "src/main/core/files/office/sheet-dependencies.ts",
+      "sha256": "6aef224e2f6ee5b8a7599a7f0b5747f9e8f9ef5bcf21f51a0a1c05c51e662117"
+    },
+    {
+      "path": "src/main/core/files/office/sheet-references.ts",
+      "sha256": "46e1a3018edd044283f10617fb8858e65ccbdf0dd9b8477d0ad5d7276e054139"
+    },
+    {
+      "path": "src/main/core/files/office/sheet-delete.ts",
+      "sha256": "68a360e79eb7e5f24a1629b70fee2d125801186a572c1d71a42c0d66d39632c3"
+    },
+    {
+      "path": "src/main/core/files/heavy-jobs.ts",
+      "sha256": "70af37b81f1692ad7266f90f248c838a4d1c313bdbedb1b2298a776ab59c8f75"
+    },
+    {
+      "path": "src/main/core/files/office/parser.ts",
+      "sha256": "adea79ffbe9d7bde995c12767ad4efd4cf30d2dea37f19e096f2576536d153e2"
+    },
+    {
+      "path": "src/main/core/files/office/worker-client.ts",
+      "sha256": "fe0d92481d03e1c6ef8efb7fb9d23ea94fcc028a60423c79c50a1dd3d7560591"
+    },
+    {
+      "path": "src/main/core/files/office/engine.ts",
+      "sha256": "043517bd72b785880a1fbeb0e316926e2a4a04739c7727596694b04e287a9be5"
+    },
+    {
+      "path": "src/main/core/files/native-broker.ts",
+      "sha256": "ce5e430f001e8a15a23d81d58ed538bc57b373ef7f6d6ff41a4668cded684aae"
+    },
+    {
+      "path": "src/main/core/files/write-confinement.ts",
+      "sha256": "ef3c5c9480400e71ffb03ad0607dd7441be7304d1078cbcec970dc4b82a65b35"
+    },
+    {
+      "path": "src/main/core/files/engine-workspaces.ts",
+      "sha256": "fb49b71fb13937356a465bb7f8f904cb78444fb78adc147b417d3e8894210ef6"
+    },
+    {
+      "path": "src/main/core/files/office/engine-resources.ts",
+      "sha256": "00d817e8c184491f38fbbc8d32eece9cab9c6487cface4fe03f5c2430340c77f"
+    },
+    {
+      "path": "src/main/core/files/office/draft.ts",
+      "sha256": "0f143f02724796c86b9edcd56a0edc0242c3f7a7e6b4da842624dcf314299476"
+    },
+    {
+      "path": "src/main/core/files/office/cell-edit.ts",
+      "sha256": "69b3396dab03d0e2b50794adbdcab2d995a0f72b8c0665df8749b2b30f791fef"
+    },
+    {
+      "path": "src/main/core/files/office/save-replay.ts",
+      "sha256": "56a1b34ac72177abf810d2734d353e05d62d14032d514d82b3448cb65f863326"
+    },
+    {
+      "path": "src/main/core/files/office/blocked-candidate.ts",
+      "sha256": "92a731b7a52700d83d0c76e4bd10e251215c4d7685b73c8594ad36ac0ade886b"
+    },
+    {
+      "path": "src/main/core/files/office/pages-parser.ts",
+      "sha256": "623a6624808a7f722590c309119866db0667e954133651cfa4d398cbc925ef6c"
+    },
+    {
+      "path": "src/main/core/files/office/libreoffice-engine.ts",
+      "sha256": "8a16b80d4f30952ce8d449b096f0045d3de22966c2705a4c5abd8984ae7c82d5"
+    },
+    {
+      "path": "src/main/core/files/office/libreoffice-resources.ts",
+      "sha256": "2e9a732658e59fe8f76f480341aadc564bd911455b786a8dc972aedf060b5466"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-service.ts",
+      "sha256": "fc7e6329c0ca1e5065a7c3686075e14b1a34b14e12d82b0a51c69f8f9a9bcd72"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-parser.ts",
+      "sha256": "7e97e4ca8b285c233140e996fe71402bc81be5d76ddce8eb06bae4849f74c4b5"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-draft.ts",
+      "sha256": "6542c2cc7fb3389599437771b7912b378f0dc2425b4e8e8c7e787196dbf92fdb"
+    },
+    {
+      "path": "src/main/core/files/office/pptx-placeholder.ts",
+      "sha256": "f6ac0dc109501bb5fd11d07ef54e604bc7fde14ea58a6e34e76ad37d21a268c8"
+    },
+    {
+      "path": "src/main/core/files/roots.ts",
+      "sha256": "dc3fe40ddf6d8b483a490b5d14caf7bdbd80caea052f5ffae38ad89f48dc6535"
+    },
+    {
+      "path": "src/main/core/files/recovery-store.ts",
+      "sha256": "cca78c954d9247c47e4fafa40db6ca6186a19f8a4e4f6090e097701572d452ac"
+    },
+    {
+      "path": "src/shared/file-recovery.ts",
+      "sha256": "226cacab586aa1117457c1beb2da8930e14e716618b9873bd8989c8951f34b5a"
+    },
+    {
+      "path": "src/main/core/files/watch-service.ts",
+      "sha256": "38358f8ba0ae4c2d7db6c58775f0076ad224b1c4bb96959ad28d4eed4b58d061"
+    },
+    {
+      "path": "src/main/core/files/watch-budget.ts",
+      "sha256": "6c8bd7ba2b311c453bf2ad5f5b14bc26046d8f53c3a7fcbb7066c32fb12c3a07"
+    },
+    {
+      "path": "src/main/core/files/search-service.ts",
+      "sha256": "a793efe90bf1cf6d614c442a0161c31e6225c342dc90cae85038774d168f5c3d"
+    },
+    {
+      "path": "src/shared/file-search-priority.mjs",
+      "sha256": "31a3f2b076c3c23aff759aa25551e4f3ab7855d2b672e1bec549736491fe3939"
+    },
+    {
+      "path": "src/main/core/files/close-coordinator.ts",
+      "sha256": "66d63f953540a892dbd2cb26c1cb15653dcf826a3981f7d1227a0756cab53c5e"
+    },
+    {
+      "path": "src/main/core/files/diagram-renderer.ts",
+      "sha256": "99271cbefe2156133ffc5613b14d978aa752ab95ed99be333c8c19b50f31e112"
+    },
+    {
+      "path": "src/main/core/files/actions.ts",
+      "sha256": "3a47c1c85e8435e48a7947757b7337d8692d52dc1b991307269fbe3c4016676a"
+    },
+    {
+      "path": "src/main/core/files/git-metadata.ts",
+      "sha256": "8f1495cb42c29eeccbd29a764c57e9f3bab85303bc62da33d65a73bcaa304c19"
+    },
+    {
+      "path": "src/shared/file-git.ts",
+      "sha256": "955df839486807d8acef5585ce6a0e168457863ade67f77da2f8887e1a3afeb2"
+    },
+    {
+      "path": "src/main/core/files/git-blame-details.ts",
+      "sha256": "3ee60b95053bd8023ab9e28a6355701d99aa1683462cfd1a79fd0c34c784e2b6"
+    },
+    {
+      "path": "src/main/core/files/resource-service.ts",
+      "sha256": "1767f9ead0a5a0191ac8350c5ef5464ce366a96e761f5e8df6e63a65ee02e385"
+    },
+    {
+      "path": "src/shared/file-resource.ts",
+      "sha256": "d0a6e59dd1f9484de267933ed4577f5fc421f1c30d7832654441f525ece81e9b"
+    },
+    {
+      "path": "src/main/core/files/html/service.ts",
+      "sha256": "bb0e488443c9a6c4c3451e55b1e234f80fc7a4f146da415663100d1125992527"
+    },
+    {
+      "path": "src/main/core/files/html/parser.ts",
+      "sha256": "47958be535ffe31ac3d7015ca0b44387394bd5a50fd43349518a5987c59b86f6"
+    },
+    {
+      "path": "src/main/core/files/tex/service.ts",
+      "sha256": "c8f5e94e5ddb6c9edf074b5f33c5491e2a5f56d6f331f48e3d0c1bf344d151fa"
+    },
+    {
+      "path": "src/shared/file-tex.ts",
+      "sha256": "d90ea6d5a5865d0f8bde8e4882812522ac14d44f3d13f3b59a39d776926c050f"
+    },
+    {
+      "path": "src/main/core/files/tex/engine-resources.ts",
+      "sha256": "e3d2b281a86b0063e69481a004a37b330c8da33026d737c42c43ff3b970cda84"
+    },
+    {
+      "path": "src/main/core/files/tex/parser.ts",
+      "sha256": "e447d8a210976d449054070c2d7a09c71c4cc9a5c3adce51f7b6aeed76ce311c"
+    },
+    {
+      "path": "src/main/core/files/tex/references.ts",
+      "sha256": "f114e1808e976413fd88e2fceb55bef7558ab531e56c7cd7fc2f7a3786db242f"
+    },
+    {
+      "path": "src/main/core/files/tex/resources.ts",
+      "sha256": "935a504b7fc9f197bebc041243170daf33d500b72913eb7b9cca0aabbd79d438"
+    },
+    {
+      "path": "src/main/core/files/tex/workspaces.ts",
+      "sha256": "b4f5c36bb77a5cd9b318e99d8bcd844471acfbece03ece503c89da02cb6f7526"
+    },
+    {
+      "path": "src/main/core/files/terminal-context.ts",
+      "sha256": "9a732e33f4b27741beabdf20d874f5fa435d93a2e69e78c7226fec5e7265368b"
+    },
+    {
+      "path": "src/shared/file-terminal.ts",
+      "sha256": "0507cede31c5b18a77b1c3607c89bdf52f407b7be954c960922886a3df370992"
+    },
+    {
+      "path": "src/shared/pdf-comment-context.mjs",
+      "sha256": "384ec05fed6d6ded113cb8de95b0d162de5b8dceaf8fd714f5a2400434b527c6"
+    },
+    {
+      "path": "src/shared/terminal-image.ts",
+      "sha256": "cc88f616a3caa021bd0dc8410136490adb132e23602d672b2e6644819cd0a685"
+    },
+    {
+      "path": "src/main/core/files/terminal-image-cache.ts",
+      "sha256": "996b2aafe8b6fd3890058389d1fa5d3a56d88c33eed3a38295d053469e9336b5"
+    },
+    {
+      "path": "src/main/core/applications/mail-reply-content.ts",
+      "sha256": "1072ca2217a08833227b53b56d89ce81ef9607a96157413f29c4a2ec1bd11951"
+    },
+    {
+      "path": "src/main/core/applications/mail-draft-service.ts",
+      "sha256": "0a2faea0676e2633866d96a345fe309e6ee2bafe22bb283ffdee8f1226b1c229"
+    },
+    {
+      "path": "src/main/core/applications/mail-blob-store.ts",
+      "sha256": "a048aa73610a665270f89af7b9b286dbef556c73d1acbaf50fc5e34b56d1ffaa"
+    },
+    {
+      "path": "src/main/core/applications/package-config-views.ts",
+      "sha256": "f8947bec47a15e46461aab190f792308a50895ecae277f399807f82323fd3cbc"
+    },
+    {
+      "path": "src/main/core/applications/mail-read-data-service.ts",
+      "sha256": "54c0600d12cb74af20a9da69548fbe8cf89965b8c8627e3dd67306e1306f615a"
+    },
+    {
+      "path": "src/main/core/applications/mail-cache.ts",
+      "sha256": "3242146782817695e7fef1cbe6a11d09f443040943c28ac034afb4ade41e9a6d"
+    },
+    {
+      "path": "src/main/core/applications/mail-cache-access.ts",
+      "sha256": "a95185410f34c2cab6d402a101aab45fe2fbd92eeff6301a4e44001c8ee721f5"
+    },
+    {
+      "path": "src/main/core/applications/mail-cache-recovery.ts",
+      "sha256": "6d994b2a2d6c85a7af12e185b5e76e53758c0255d69ce0df0fb22c0d641cc517"
+    },
+    {
+      "path": "src/main/core/applications/restore-owned-directory.ts",
+      "sha256": "8340bba7ae4f8d72f3cf7b861fb03e9c613a36e92e50c2420be3504fc6f0a015"
+    },
+    {
+      "path": "src/main/core/applications/mail-query-service.ts",
+      "sha256": "7c73f7923f2ee75d8e4ab5a2ac796ee67a6b5c5b24c13c189220d43d2b5b850f"
+    },
+    {
+      "path": "src/main/core/applications/mail-cache-values.ts",
+      "sha256": "80562a11a94e86ab5328ce90a54bdbb6bad7b6ae4ae87396f390e21d8d2dfad4"
+    },
+    {
+      "path": "src/main/core/applications/mail-message-index.ts",
+      "sha256": "6c2422dafac75f90a215daef1a9f58bae721d8057e470abcc90f15b68a580290"
+    },
+    {
+      "path": "src/main/core/applications/providers/mail-worker-client.ts",
+      "sha256": "58cc174c70f5618d6dc5afe9f3b164f589d97f976dd1308eba41c50301c9f87f"
+    },
+    {
+      "path": "src/main/core/applications/providers/foxmail-source.ts",
+      "sha256": "6d66da45f2e50f597a2280df0fc480082330fbad753ba63eebbe2f133cca93cf"
+    },
+    {
+      "path": "src/main/core/applications/mail-send-data-service.ts",
+      "sha256": "e2bcc5a9cd3c773a6fa24382124bd5a6a329c37b140ff21ec6c7cd2b98fac288"
+    },
+    {
+      "path": "src/main/core/applications/mail-user-authorizations.ts",
+      "sha256": "92176289926cf5a17a18a69ddabb7f60051d11d3794443383985aa532bce0453"
+    },
+    {
+      "path": "src/main/core/applications/native-user-messages.ts",
+      "sha256": "202a32700a4cddee0a6da8ab7bbaf81689ab8521e93d85d999af9435c245b67c"
+    },
+    {
+      "path": "src/main/core/applications/codex-skill-read-evidence.ts",
+      "sha256": "2cb85afb85d219ae6025c4b2effa6e9e7fd475dda990ae31a0a6265a1f3adab6"
+    },
+    {
+      "path": "src/main/core/applications/skill-observation-contract.ts",
+      "sha256": "27610771b9d1f6463c97bbf270c3a443d8ded72c823d6d8614d8a2515af02862"
+    },
+    {
+      "path": "src/main/core/applications/native-evidence-adapters.ts",
+      "sha256": "c61de40b5d02c35c0e81618798ac499a50117e67ec7d2f60f00a41113fd44861"
+    },
+    {
+      "path": "src/main/core/tasks/native-sessions.ts",
+      "sha256": "9f70d5caffaf4eb7db90386c9bbe99d6efb67812d236d4c529eac050ddfea809"
+    },
+    {
+      "path": "src/shared/codex-session.ts",
+      "sha256": "4559246d396882991bfef7f72a1bc1395601f3c3afc6dbcb8cfe7e9ec086fdd0"
+    },
+    {
+      "path": "src/shared/types.ts",
+      "sha256": "158cd9f12b5f973cf7f06b495deb9f03e892c8dbec43d5076131bf9bcb28463e"
+    },
+    {
+      "path": "src/main/core/applications/codex-skill-discovery-evidence.ts",
+      "sha256": "a3c654f45d4c1dc26ac59995fe72c27bc1038d5a4e3ae479513429baafc4b5cc"
+    },
+    {
+      "path": "src/main/core/applications/native-user-inputs.ts",
+      "sha256": "31e5d91ddd7cd3349d6a17a17c430f93b28d1baa720be5728d6b27d8abf1f838"
+    },
+    {
+      "path": "src/main/core/applications/native-mail-intent.ts",
+      "sha256": "e547d7e599a306f36b39c8d299d3d544a63997f9a7b438cf9530f6fdec6b6b28"
+    },
+    {
+      "path": "src/shared/application-terminal.ts",
+      "sha256": "2eacba22390d598e1e7d1acb12ac67d119851ea8a38dbc17ff698cfa17d1609d"
+    },
+    {
+      "path": "src/main/core/applications/application-skill-view.ts",
+      "sha256": "34f963c706150b7aabebaa092b0594872c8f0bcb33b3c98884c1cd17bd0c45b9"
+    },
+    {
+      "path": "src/main/core/applications/ordered-native-mail-context.ts",
+      "sha256": "8ff9bec9235a473e8c049b85ba9de5fe061a13953d1d3b29c492db70cf2946c0"
+    },
+    {
+      "path": "src/main/core/applications/native-literal-mail-intent.ts",
+      "sha256": "e6815126744e636ce545b24b8fc1e39d107f60927ae99794dec437ddcb20cc61"
+    },
+    {
+      "path": "src/main/core/applications/mail-execution-service.ts",
+      "sha256": "0d568376054e7074d92d14282956a1d350b5b64c36a902beb464c9e5d67f795a"
+    },
+    {
+      "path": "src/main/core/applications/providers/smtp.ts",
+      "sha256": "6e66fa24e699219d2196310bd35c44015a7ac19511ada25d16ae05490edad1d8"
+    },
+    {
+      "path": "src/main/core/applications/modules/mail/sender-identity.ts",
+      "sha256": "9186a08d90560d31425b7fa58cda593c6c8f4f0b096d4a3e0f385169daf6a1c2"
+    },
+    {
+      "path": "src/shared/mail-sender-identity.ts",
+      "sha256": "fc402e99a49e8afaa5c2f47966f10dcde9debf65434e3ad844d123a2f74d466d"
+    },
+    {
+      "path": "src/main/core/applications/modules/sample-kv/index.ts",
+      "sha256": "aedda2ea55c3245c92b1ee74a6b4a8d4a98d89d4b86848ffd7463dc6e7bc93c5"
+    },
+    {
+      "path": "src/main/core/applications/upstream/session-pool.ts",
+      "sha256": "d08de82ac89f757cf99fe0358b0b90f9b3f299805b064591caae8052ae3f4d64"
+    },
+    {
+      "path": "src/main/core/applications/modules/browser/index.ts",
+      "sha256": "5f42e36bec727627b804ef008d4412ac7405a52d2c52b3240632f62ea66974ae"
+    },
+    {
+      "path": "src/main/core/browser/service.ts",
+      "sha256": "62966e1b2ffbb91c2ab74aec57e2982e5e981c7b6237c00fc0d59efd418d856f"
+    },
+    {
+      "path": "src/main/core/browser/javascript-dialogs.ts",
+      "sha256": "6e3b3c69a469ffe3a153540e325472fdc29cbc49e924028c05b30f1938d54fdf"
+    },
+    {
+      "path": "src/main/core/browser/errors.ts",
+      "sha256": "05dc34a8a06802da9f4ad8d701dced4d0a0f0dfe4f872c07f1c53606076d4f9a"
+    },
+    {
+      "path": "src/shared/browser-javascript-dialog.ts",
+      "sha256": "aa497534098c8ce8d105f98d64e42142e342ec27c0c59b8cc5d6d818414259f0"
+    },
+    {
+      "path": "src/main/core/browser/cdp-proxy.ts",
+      "sha256": "c95617008218f83d25e1257fd6760166a549bb1717f12f8043577633d0e487d1"
+    },
+    {
+      "path": "src/main/core/browser/page-registry.ts",
+      "sha256": "73edbef9d2e4adf44dba06424ed78f777f211689c7122b2d9218b3569a6845a2"
+    },
+    {
+      "path": "src/main/core/browser/agent-browser.ts",
+      "sha256": "c3157ecd70834f62d2a98f7998864ee807088132d2de75e9bf01c1171b173c77"
+    },
+    {
+      "path": "src/main/core/browser/artifacts.ts",
+      "sha256": "66e510b849703d6f4e99922f08c6ae6b890698b98ebe7d6ec84c94693e881d11"
+    },
+    {
+      "path": "src/main/core/browser/references.ts",
+      "sha256": "c3ced875a05ffd677a51c39f661592408bbec79637b2081273cbb5368f286d80"
+    },
+    {
+      "path": "src/main/core/browser/action-guard.ts",
+      "sha256": "fe3ba426424d696381e93f3baf9d5d3a1f5cba81d2ec4af4358c91ef91ab36a2"
+    },
+    {
+      "path": "src/main/core/browser/deferred-reference.ts",
+      "sha256": "73ef6e3bcdb95f572bac1bfda225cb7cc2b55c63afc20ab140ba125e837a34fa"
+    },
+    {
+      "path": "src/main/core/browser/ax-identity.ts",
+      "sha256": "e30b92c4e87e691753252612ed4e8f0548aa07d54d8f521367a09bc4f49d43c7"
+    },
+    {
+      "path": "src/main/core/browser/queue.ts",
+      "sha256": "28c825ee4cb468bbb55d9bf0860d21c82f7eb4ccfec3f71a8c2e83ccf80f3222"
+    },
+    {
+      "path": "src/main/core/browser/park-window.ts",
+      "sha256": "e8b1b9a04985ee80aaa7a31a7e337bb2b4421cd908605402f1bbf54ab95069bb"
+    },
+    {
+      "path": "src/main/core/browser/profiles.ts",
+      "sha256": "cbe871a71b9c51816105641c77090aab97f3b802a631c21fabf2c04d9456eb17"
+    },
+    {
+      "path": "src/shared/browser-profiles.ts",
+      "sha256": "9c08b4b375d3d1454de2502fe7f57789bd72b0cd0f77b2d9ba97df2ab5375183"
+    },
+    {
+      "path": "src/main/core/browser/navigation-wait.ts",
+      "sha256": "75d57aa812dde42df51524ad9cf6479e65fbd979ce7d415785132d3d3a3beebe"
+    },
+    {
+      "path": "src/main/core/browser/operations.ts",
+      "sha256": "d9b2b4b846949af99426abb294f2c67ef0982a596915c886ce26377ebd9cfbf8"
+    },
+    {
+      "path": "src/main/core/browser/input-progress.ts",
+      "sha256": "a14b888262d0e1fb71191fc42c7c4f803d81fb1294a6e3250c8e9985744d177f"
+    },
+    {
+      "path": "src/main/core/browser/audit.ts",
+      "sha256": "797dbbc2d0111854bc9e74218773a339d5294e040249dd1970cbf5e8fd32bc00"
+    },
+    {
+      "path": "src/shared/browser-audit.ts",
+      "sha256": "df925e743dc4a24649dbeeb65823e791dd92d7000358a79d2526d893d3a3524d"
+    },
+    {
+      "path": "src/main/core/browser/headers.ts",
+      "sha256": "3c2dcf3be65e8eda36b87f825db7bd13004a4c1dbd2f060c4b86cdbf15f8e7dd"
+    },
+    {
+      "path": "src/main/core/browser/exec-policy.ts",
+      "sha256": "5afb3c38bd70470bdc0d12ea7155ce0442ea0a70ada4ce6b2c91d62e2cd9ec1e"
+    },
+    {
+      "path": "src/main/core/browser/workspace.ts",
+      "sha256": "2da04d30c6d6d4a18b31e838eb770be17558e8ed6e58bf4b75230bdf9aceb6e9"
+    },
+    {
+      "path": "src/shared/browser-navigation.ts",
+      "sha256": "cbd913eeeee3b9850e7375690afb9b3053bd9b960c544705082ce53c32a919e9"
+    },
+    {
+      "path": "src/shared/browser-workspace.ts",
+      "sha256": "29751c45969adb64915e64c166c6a1dc2d689725205fef446a9bcf9ca2b93c2c"
+    },
+    {
+      "path": "src/shared/browser-site-state.ts",
+      "sha256": "e0328a18191dee1d92b9c2f48c3a96fbfa91141a3fb5068bbaa10e5c05748e20"
+    },
+    {
+      "path": "src/shared/browser-downloads.ts",
+      "sha256": "35bbe5cd9c48e729fe36f1a8dfe9668e8905e13f4654631018ed4324c281b978"
+    },
+    {
+      "path": "src/shared/browser-auth.ts",
+      "sha256": "e38ec833e69d2324915fcf0c32e876c68764153cbead16a0780acb8597da1953"
+    },
+    {
+      "path": "src/main/core/browser/favicon.ts",
+      "sha256": "f0dcc869bdc01c700c26d690b906b0f98d7544693c4d3ee4a620b7c11d6e3308"
+    },
+    {
+      "path": "src/main/core/browser/recent-sites.ts",
+      "sha256": "87eabd718c7d2527a9e2e8ec59d95e64c691d5d03a2229ceb6e96ae6a04b6e40"
+    },
+    {
+      "path": "src/main/core/browser/page-commands.ts",
+      "sha256": "20672c7579dd1c58ce4d1604cf2f65c5c16ca24d28f0e333c0d51652cc26b80e"
+    },
+    {
+      "path": "src/main/core/browser/wait.ts",
+      "sha256": "ee4e40747d2ba051b98bc2d8e42a1b5a4cca34f0e152cba52c66075ada8a0989"
+    },
+    {
+      "path": "src/main/core/browser/recorder.ts",
+      "sha256": "6b9d6f004125faf4db84c7b685d76965ca4c37a609914a8cd184b425c4096475"
+    },
+    {
+      "path": "src/main/core/browser/cookies.ts",
+      "sha256": "f889596ae36405087631c5cd15ef3e78d729128fbacfa75f19112214d157a0ea"
+    },
+    {
+      "path": "src/main/core/browser/settings.ts",
+      "sha256": "50c38d8f42fb9f79c2a8fc251d96978fe3915900a361b44196e0928e5b4e527f"
+    },
+    {
+      "path": "src/shared/browser-settings.ts",
+      "sha256": "33c6a558af870a265a510975e88935ecb3496dff330aa04bad86eae89b23d477"
+    },
+    {
+      "path": "src/main/core/browser/site-state.ts",
+      "sha256": "b8de8f08995b35bb8c534bb60583bbfa1846429fc4610d47d36478401ccc599e"
+    },
+    {
+      "path": "src/main/core/browser/network-policy.ts",
+      "sha256": "8149aa0ca01d331e1d825b2ff36bdbadd2e7da4a04359d51a9ae59efe3e5ba68"
+    },
+    {
+      "path": "src/main/core/browser/permissions.ts",
+      "sha256": "d13190be72fe7039f87061678212576759a20d6c2d09c9ef5fc32f53bec51c6a"
+    },
+    {
+      "path": "src/main/core/browser/downloads.ts",
+      "sha256": "a0472792a345b514eb641e7c4fee3cf6ae0a263618bbb8a1d53684258abf0869"
+    },
+    {
+      "path": "src/main/core/browser/authentication.ts",
+      "sha256": "dbe73878796891e0ab4f1ed3d4ce21b317c03c198f3636af2085d3557112d492"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/journal.ts",
+      "sha256": "936a01cbed158451fcb4cd2ec36fa5fd1d885d1f734b8ab3bd0ea1e05f60fa65"
+    },
+    {
+      "path": "src/main/core/projects/transfer-files.ts",
+      "sha256": "730371e62e912c913565e97dda6a11545a8daa85c05d4925d45a124b13dc152d"
+    },
+    {
+      "path": "src/shared/project-transfer.ts",
+      "sha256": "b573767f7b69e13b8b78e6c3c0d8afe6ee79493737a342decbfba22456e1907b"
+    },
+    {
+      "path": "src/shared/projects.ts",
+      "sha256": "7e336923d94bb2c83d51162e7b6bf298c29037c8c370bdbe74e733dc69dcb46f"
+    },
+    {
+      "path": "src/main/core/projects/transfer-format.ts",
+      "sha256": "3340424f58da0d760891dec11f79aac87ed3cc621db99c0a638716d6af0f8c03"
+    },
+    {
+      "path": "src/shared/ai-profiles.ts",
+      "sha256": "96d647b00757d7fbac5546bdbff50062223fe5a9479e03ad62c0b4f1253fa518"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/sources.ts",
+      "sha256": "c3b074c20149d72d7f767e81279a1866629fab96a19d5bf428d4dcdd7a873194"
+    },
+    {
+      "path": "src/shared/browser-cookie-import.ts",
+      "sha256": "6f48e3cf0e1673557f6683c6e1712540574739a24a64bcdfcb36f1e7c59ef073"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/chromium-source.ts",
+      "sha256": "37bc4e329f945a11685fe3e6b5f2adda9516a6a823b6d487c02636d8c46db0fd"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/source-rows.ts",
+      "sha256": "41920e1358ac3dd98ea889ed6a7b2b013efe501ba2b440c7daee2cd9cf1a8f7d"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/domain-policy.ts",
+      "sha256": "b5f5d5f3cf0aad1ad9b807d854dcec5a641cd0e7cbfd22b855633d7cfd1fb96d"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/native-store.ts",
+      "sha256": "b2eff2150ad0647f5b5fbc2c91fe23054ab3b90e86a73f1722192fddd5cfdfa3"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/plan.ts",
+      "sha256": "a48e9a1bcb891f5cacbbc2e8178c9e5ee0f5951002ea2dcec6d7ea1b345f2db0"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/coordinator.ts",
+      "sha256": "1b57777247c09504e274ab16dd7e339e31fc42d3808689649e97a99c3c9248df"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/transactions.ts",
+      "sha256": "98455c8ca4d670f6dda898d9a29a4e3108b7e96d0547b801bcdb1fcb0fe1caff"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/page-pause.ts",
+      "sha256": "1c8b6b20985769abb9ca234a58263bbafb330350fc6a0e409c45ab0824df26b7"
+    },
+    {
+      "path": "src/main/safe-storage-cipher.ts",
+      "sha256": "38b44f447297a5db1d4f100fe9202343bdb426d2657eb0a39c71f2790ed76aae"
+    },
+    {
+      "path": "src/main/core/browser/cookie-import/audit.ts",
+      "sha256": "18e0add6c2584b1ccb6e274e38a5e4cb72463840ae745ff3b6954cf8990d723f"
+    },
+    {
+      "path": "src/main/core/browser/profile-clones.ts",
+      "sha256": "a0e2313397a01db3a443dfa43edee6aac505c442a0f62fdd22a0276a17567257"
+    },
+    {
+      "path": "src/main/core/browser/clone-journal.ts",
+      "sha256": "acb6b7705305ab48db917acb9a1fa42814a63e19b83729873e6140daefba199b"
+    },
+    {
+      "path": "src/main/core/browser/profile-snapshot.ts",
+      "sha256": "1376ba0a43fe09259e0676d0ad7531dbbb13faa489b60dc531e6b9980103208f"
+    },
+    {
+      "path": "src/main/core/browser/clone-session.ts",
+      "sha256": "bb2212680852f1f8165339befd9db919449bd404f88da501e4100a2b9c241406"
+    },
+    {
+      "path": "src/main/core/browser/access.ts",
+      "sha256": "349f600c688541111e3fe00967ec02d32dca4afce2443af10b08528ab2dac6a8"
+    },
+    {
+      "path": "src/shared/browser-access.ts",
+      "sha256": "01ca473bc28e59ded88a46bb339c38ed81eb8273cda882a32a29f67fbc3539e3"
+    },
+    {
+      "path": "src/main/core/browser/automation.ts",
+      "sha256": "32e461338e9fa1d24b2bde04d86c5d4c754428812c4c57b5c388c8704a0c9c43"
+    },
+    {
+      "path": "src/shared/application-provider-metadata.ts",
+      "sha256": "9aaeeb8f2810aeabe27467d6692bfd2cdbaecdfa07c9e7c94720a1c442ceb85b"
+    },
+    {
+      "path": "src/shared/ipc/events.ts",
+      "sha256": "d521440076cb9662c7b6802d5d648db00fc8065cf3023ce261c25008cd5bb986"
+    },
+    {
+      "path": "src/shared/voice.ts",
+      "sha256": "a562bcb5dbc0ad63ee0288af0d02d92af669ce21bdca6eaa257d1a2bc9bd7f89"
+    },
+    {
+      "path": "src/shared/app-settings.ts",
+      "sha256": "14efc81cfd5dd901089bd4d096343d586968d484fa2f5e90bab716f1f1d6d549"
+    },
+    {
+      "path": "src/shared/file-workspace.ts",
+      "sha256": "900cf62bc0d879edb6d48168df075437544d1781b56c41ea7e712469486b3be6"
+    },
+    {
+      "path": "src/shared/ipc/rpc.ts",
+      "sha256": "09935acdc39de546d283bb540999e47b7d696a62a361ed4a1d504e266dd711ac"
+    },
+    {
+      "path": "src/main/core/projects/project-service.ts",
+      "sha256": "6d7aa36ac4d3ea6a0570ed17bbea404a18d5c19132aa6e893bb0815e2a78847d"
+    },
+    {
+      "path": "src/main/core/projects/dir-status.ts",
+      "sha256": "f4c6bef8553000dcd248da93ea8b88f673026f1c22b5a7fd37dc7eaf1fa407e3"
+    },
+    {
+      "path": "src/main/core/projects/secret-keys.ts",
+      "sha256": "65b28ecf3d8168a36946ea74e68e97fc8da526ef338fba83c4e918bd7db5927e"
+    },
+    {
+      "path": "src/main/core/applications/application-service.ts",
+      "sha256": "904328b40b1f8d4e84694312cd55e6efce2f88abdffff259ae8e9a6e844be692"
+    },
+    {
+      "path": "src/main/core/applications/agent-adapter-registry.ts",
+      "sha256": "476d8fd6d6a733a1eba4f18004e40996cc16a742f64170c7daf2a0f29e59c4fc"
+    },
+    {
+      "path": "src/main/core/applications/agent-levels.ts",
+      "sha256": "dfc07448a7c52d7c89beeb253585b434942079c80868a8493259dec3e3d05225"
+    },
+    {
+      "path": "src/main/core/applications/agent-format-self-check.ts",
+      "sha256": "c26f26c77d5b2a4fb01971b88c566eb9ec9aca19ff9d0f74388503e186dca1fd"
+    },
+    {
+      "path": "src/main/core/applications/capability-delivery-adapters.ts",
+      "sha256": "1ac5e2e7a975863d87a9bba4ff346ac5745e644a5e3b00b9cf2086c3149ce722"
+    },
+    {
+      "path": "src/main/core/applications/native-launch-context.ts",
+      "sha256": "90a873e7cd0e0962359946724f3cedb6cd09245d490976355078dc0e4776d8ec"
+    },
+    {
+      "path": "src/main/core/capabilities/discovery.ts",
+      "sha256": "67d34efdcac7d806aab14b17907b9ade7bbfa2752bb3764686905b56fb6dee9a"
+    },
+    {
+      "path": "src/shared/capabilities.ts",
+      "sha256": "9e0a25fb6d39792c12fd0102fd301b72c13b15180d89a6b9a9d32572c90875ad"
+    },
+    {
+      "path": "src/main/core/tasks/capability-lifecycle.ts",
+      "sha256": "1ddd44d6fc0967d58aac180a87d307c7d1e73e804b34993e9f329311281b2f43"
+    },
+    {
+      "path": "src/shared/runner-args.ts",
+      "sha256": "41dca94ab6efdfadaf9b4a909e090b7f2db7ef9088f1d7f1a8907f2b482dae67"
+    },
+    {
+      "path": "src/main/core/capabilities/capability-service.ts",
+      "sha256": "d8545ff19d35512918393372b2762bda75b9d5e9fb18de8688ef389e85813440"
+    },
+    {
+      "path": "src/main/core/ai/ai-profile-service.ts",
+      "sha256": "6943da36c20e2aa1751c16d9293ba876c6a045918a6df56a37bb1fb7ed0b0086"
+    },
+    {
+      "path": "src/main/core/ai/zshrc-import.ts",
+      "sha256": "588d98b80401427fbb24adb7ab7b789b55305579f4edb2559d7beaa27e88348b"
+    },
+    {
+      "path": "src/main/core/connections/redact.ts",
+      "sha256": "0cba10bccaa544bfd47fd87e252c3d5db851b71e6ee036d7ea28f0d91431442a"
+    },
+    {
+      "path": "src/main/core/tasks/runner-adapters.ts",
+      "sha256": "6b3bc208ddccb8184c262c8bb6811c855dc34f91695cd260e6fa6704ce9007e0"
+    },
+    {
+      "path": "src/main/core/ai/runner-detect.ts",
+      "sha256": "a6e2309dd42d3de0ac253c381b1901c11ef919cdacb28209f60483ecc11dff57"
+    },
+    {
+      "path": "src/main/pty-manager.ts",
+      "sha256": "da12449e592d94fa723e7f2a6b83f9996d9e529e54b805d4b67501f0a08c4327"
+    },
+    {
+      "path": "src/main/launch-env.ts",
+      "sha256": "113e49d58b46d47f967a33c77bbbabf1bec444cf249457ed615e6589605eeb06"
+    },
+    {
+      "path": "src/main/terminal-modes.ts",
+      "sha256": "bffa14f3acea399f3974e81d6258c55a6f81b09ec04aabb23362f232ae2ee9e4"
+    },
+    {
+      "path": "src/main/core/projects/project-capability-setting.ts",
+      "sha256": "0bcfb2d0293a83a1e273d5bb1c1d0c4ee7b0be2584618fb716f67d636dc883ba"
+    },
+    {
+      "path": "src/main/core/applications/session-projector.ts",
+      "sha256": "8ab5dd7d4524220b0d9bc5f161797b34624ba66a8cf3124f04876963a06f5e71"
+    },
+    {
+      "path": "src/main/core/applications/application-skill-template.ts",
+      "sha256": "5394151a3a862e7c057393ef4ec203f94e7ef2197452eaa11ad0c391d4b311ef"
+    },
+    {
+      "path": "src/main/core/capabilities/original-run-lifetime.ts",
+      "sha256": "2bcc4e327f5d5a948b032d27a156182363926fc4394b368fbf42875ca021faf2"
+    },
+    {
+      "path": "src/main/core/applications/codex-effective-sandbox.ts",
+      "sha256": "149f73d1761171359ed4358a8240ef1a8e2badc26c0fe51b0fb0693cbbcfd01f"
+    },
+    {
+      "path": "src/main/core/applications/legacy-agent-load.ts",
+      "sha256": "e37d9d7d31a49c91e32afbb9dfb3545ef75a1cdaa1a9aeb350016d3b36476476"
+    },
+    {
+      "path": "src/main/core/applications/legacy-session-files.ts",
+      "sha256": "55025873438508180788bcaba34bfe7962e26d2e7386cb7b3c7fc6e9d3147b9e"
+    },
+    {
+      "path": "src/main/core/applications/capability-execution.ts",
+      "sha256": "7cedb899579c1141a7a0e08bc728e8728dadb1eeab6ca12e963db5c5a8fc2019"
+    },
+    {
+      "path": "src/main/core/applications/mail-draft-send-history.ts",
+      "sha256": "e9a0d3d2a404838d15318378f2499000a2a02d36d8c616196543cd88dc5e422d"
+    },
+    {
+      "path": "src/shared/application-activity.ts",
+      "sha256": "dc03e886e4ced107dd2d5c2d4735f5f656eea7abb156154fc6b08ce218c327e1"
+    },
+    {
+      "path": "src/shared/application-attachments.ts",
+      "sha256": "972218140fb75b2ba0bf579921a9259aa844e1e897bff72c32eac7f68b2f6baf"
+    },
+    {
+      "path": "src/main/core/applications/activity-service.ts",
+      "sha256": "969966e6bfe837538f52b42efc64eeb8ee264b4549585083b15617c9397026d0"
+    },
+    {
+      "path": "src/main/core/applications/ui-read-requests.ts",
+      "sha256": "a7150d209c8b507f60b41f459302ad53693f7ef2de94f7692ecb9103af2913da"
+    },
+    {
+      "path": "src/main/core/applications/attachment-export-store.ts",
+      "sha256": "3f2a6fc1d9cba01a4064ac5bb331d97839c8e3b20301245209f655894b165a0e"
+    },
+    {
+      "path": "src/main/core/applications/mail-attachment-views.ts",
+      "sha256": "e0287b763ea0dad553281d439521581eee53a540049531b920e9b6607f26e3a1"
+    },
+    {
+      "path": "src/main/core/applications/saved-attachment-openers.ts",
+      "sha256": "43f817da58f701feac7be4213a0375dff59ede249e5db73fc03ef2cc764de0df"
+    },
+    {
+      "path": "src/main/db/database-holder-preflight.ts",
+      "sha256": "f5612b4fcef138215789260ed59a645e2650f76122d34d8f112db22d8402e07a"
+    },
+    {
+      "path": "src/main/core/applications/resource-graph-maintenance.ts",
+      "sha256": "09823a4ee7bd69eae3d9cc52aa2c2bbfe47e516ca34907b80e6205ae6793c8c7"
+    },
+    {
+      "path": "src/main/core/applications/discovery-catalog.ts",
+      "sha256": "52f18f56b94f7bb8007b6989b27c040f73fa4a78aef6dfb720d89d7e3887e12e"
+    },
+    {
+      "path": "src/main/core/applications/discovery-catalog-lock.ts",
+      "sha256": "47d4519c3b0ecbac10f551d540304d7b52a815ab5117a205f07630af60d809e1"
+    },
+    {
+      "path": "src/main/core/applications/resource-gc-plan.ts",
+      "sha256": "2e279cf6799971d6b9b492ce49c382cf501108084496ad664afe6bde1372c444"
+    },
+    {
+      "path": "src/main/core/applications/resource-gc-claude.ts",
+      "sha256": "07b6fd32fd40ed205bd0f8e75897237fac528cd94a001913243a97ea0db834bc"
+    },
+    {
+      "path": "src/main/core/applications/resource-gc-tree.ts",
+      "sha256": "2b7a69f94516c3450354041b3e4e212236dd7662daa6b239ee97b9c0097101eb"
+    },
+    {
+      "path": "src/main/core/applications/maintenance-waits.ts",
+      "sha256": "63328e9fbfabfd9a173fe29ac90b15e1df3216462d820203fec79de91d28277f"
+    },
+    {
+      "path": "src/main/core/applications/activation-startup.ts",
+      "sha256": "53e957dcac34aa605da6a2d08d617e58296ca603f7470eeb08ec6a5ab4279811"
+    },
+    {
+      "path": "src/main/core/applications/activation-preflight.ts",
+      "sha256": "24c605ddaa4ce7ddae505d55f1cb45c592b2dd7b9c3d53f9d0fe9a8e0909528a"
+    },
+    {
+      "path": "src/main/core/applications/activation-maintenance.ts",
+      "sha256": "e08e2ea99ed70c9986c88cf916960af5f782424a572d3f1d62778d7f16490b3b"
+    },
+    {
+      "path": "src/main/db/migration-backup.ts",
+      "sha256": "457de0cd40d9fb242000ee38d00a3bab5d2df41ebecdc9af9cf7b97e09e2a023"
+    },
+    {
+      "path": "src/main/core/applications/upgrade-impact-report.ts",
+      "sha256": "69707c3d8709962ee823fcdb21ec3751ad84d4b2dbc92d9091ef77f0aa43292f"
+    },
+    {
+      "path": "src/main/core/applications/application-impact.ts",
+      "sha256": "a30e4869fb506e2b247a26187d3bc4f51874e06cdb0eba92154825c5dd48b642"
+    },
+    {
+      "path": "src/shared/application-impact.ts",
+      "sha256": "499a338f1e371b198c55cdffc9240270d3b5be6905c55be186a0c60f4991e2fc"
+    },
+    {
+      "path": "src/main/core/applications/terminal-insertion.ts",
+      "sha256": "9a8a8d29d369a85ac7326cbea04486cd31e066465e04466cbe6354e5d7caddfc"
+    },
+    {
+      "path": "src/main/core/applications/terminal-sources.ts",
+      "sha256": "a06da602fe8782e395959607850f139681a004859431b4065edaa969bbf4cef3"
+    },
+    {
+      "path": "src/main/core/applications/session-diagnostics.ts",
+      "sha256": "318f6b48ce02abb0f7c62cfde195dee064ecd0b6ffd95ff32e157ba4b43b7754"
+    },
+    {
+      "path": "src/shared/application-call-feedback.ts",
+      "sha256": "ec86a2789eafdaa493e63ffbc9f9cc3560fe93c8d8cc8333324724ab0071f72a"
+    },
+    {
+      "path": "src/main/core/applications/native-preparation-diagnostics.ts",
+      "sha256": "47c13e95758a39bb5467bc992ab8fb4f8530e979f00ff881ff283a76d0305df2"
+    },
+    {
+      "path": "src/main/core/applications/native-application-conflicts.ts",
+      "sha256": "820edb89866385ed0bf8c1cbf237ef20644dd0d1f878cfbc9aad2e73ac0b20b7"
+    },
+    {
+      "path": "src/main/core/applications/claude-delivery-copies.ts",
+      "sha256": "e00dc9048101f7272e95e0aff35da4603014cee37faa654473d4ef1648900626"
+    },
+    {
+      "path": "src/main/core/applications/version-maintenance.ts",
+      "sha256": "d13185d1e6abd0a31f510d34566dbf957bac8ff946b617daee8b004f1b66c9ff"
+    },
+    {
+      "path": "src/main/core/tasks/task-service.ts",
+      "sha256": "d405685fa9714de2ff9aa0ae5f955ade44d8b43ed2ea70a52b816cf1c0a709da"
+    },
+    {
+      "path": "src/shared/tasks.ts",
+      "sha256": "fda7f219f8376530b5c518598231f834cbc71ec8faab471adc90eeb835147427"
+    },
+    {
+      "path": "src/main/launch-budget.ts",
+      "sha256": "77bc0185e29723c59e481f8bb1d26d25a9663f6fd80110704e7b4c5734ed10ca"
+    },
+    {
+      "path": "src/main/core/ai/profile-health.ts",
+      "sha256": "834028dc5893e48bdcc55c270d89199d8135d5954cde13476beea3cfac00b3a9"
+    },
+    {
+      "path": "src/main/core/ai/health-classify.ts",
+      "sha256": "aba2a239af573c0a03d4d1b6ca36f216d69dee1277ce92399a7eb5e24275ad54"
+    },
+    {
+      "path": "src/main/core/ai/profile-tester.ts",
+      "sha256": "3565b91f5134c0f6aa12e2122f7ce676409b9222cea34963af175f03feac3de2"
+    },
+    {
+      "path": "src/main/core/tasks/session-health.ts",
+      "sha256": "13ac0a21e81bc287290b72dc8604b7253aee9c12fa103404a81281ee85076c20"
+    },
+    {
+      "path": "src/main/core/applications/providers/connection-verifier.ts",
+      "sha256": "31989b323095ea9ea10e01456edad6ae37c1ee85ea61a9f11e0287f2789e99e5"
+    },
+    {
+      "path": "src/main/core/applications/mail-storage-usage.ts",
+      "sha256": "d315c324dabc958fe8aeabeabe7f8b317c6c1082841f2c8e2cf2e78b0f06b739"
+    },
+    {
+      "path": "src/main/core/applications/read-context-recovery.ts",
+      "sha256": "d6c646b58bb1298028a769eb020306e70213b17410b3833af6d8fe71a6359c9b"
+    },
+    {
+      "path": "src/main/core/applications/cache-context-recovery.ts",
+      "sha256": "f6d985f2ba4bf9a8c1a3c2baef8ddce96a2a9f3c93b07ca808920f491111bd28"
+    },
+    {
+      "path": "src/main/core/applications/business-data-service.ts",
+      "sha256": "9813e108257303a25ea67c9dac2324b8925a85003d4e77b544d0f9db7023efd2"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/agent-fixture.ts",
+      "sha256": "7a576c0937a0fbad95c18418d5981b14c817e38daa4ff501af1c9e47a226c183"
+    },
+    {
+      "path": "src/main/db/migrations.ts",
+      "sha256": "962e595db53032594c3d0d9a00c166d00e6d259ac0eecada0d7fbc9da263bc93"
+    },
+    {
+      "path": "src/main/core/applications/agent-assets.ts",
+      "sha256": "26091a15ba6b56784bc7bb64afbf1d493ece57d0ae3c6d86e982cf965043e136"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/fixtures.ts",
+      "sha256": "d795d713c34183a19385912ef18c520ca715634795c901ebbfd3e7614f64e9ea"
+    },
+    {
+      "path": "src/main/core/applications/__tests__/run-fixture.ts",
+      "sha256": "0b403ecace17e10453f11ef1766a4062fbb0abd75fc0e7b53b66fb69f2d307b4"
+    }
+  ],
+  "externalResolutions": [
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "drizzle-orm/better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/better-sqlite3/index.cjs"
+    },
+    {
+      "specifier": "vitest",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/vitest@4.1.11_@types+node@22.20.5_jsdom@30.1.3_@noble+hashes@2.4.0__vite@6.4.4_@types+n_17faef52d621732777e46e83475344fc/node_modules/vitest/index.cjs"
+    },
+    {
+      "specifier": "drizzle-orm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/index.cjs"
+    },
+    {
+      "specifier": "drizzle-orm/sqlite-core",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/sqlite-core/index.cjs"
+    },
+    {
+      "specifier": "drizzle-orm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "drizzle-orm/better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/better-sqlite3/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "yaml",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server/validators/ajv",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/validators/ajv.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server/validators/ajv",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/validators/ajv.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "vscode-jsonrpc/node",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/vscode-jsonrpc@8.2.0/node_modules/vscode-jsonrpc/node.js"
+    },
+    {
+      "specifier": "vscode-jsonrpc/node",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/vscode-jsonrpc@8.2.0/node_modules/vscode-jsonrpc/node.js"
+    },
+    {
+      "specifier": "@modelcontextprotocol/client",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+client@2.0.0/node_modules/@modelcontextprotocol/client/dist/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/client",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+client@2.0.0/node_modules/@modelcontextprotocol/client/dist/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/client/stdio",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+client@2.0.0/node_modules/@modelcontextprotocol/client/dist/stdio.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "parse5-sax-parser",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/parse5-sax-parser@8.0.0/node_modules/parse5-sax-parser/dist/index.js"
+    },
+    {
+      "specifier": "postcss",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/postcss@8.5.30/node_modules/postcss/lib/postcss.js"
+    },
+    {
+      "specifier": "postcss-value-parser",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/postcss-value-parser@4.2.0/node_modules/postcss-value-parser/lib/index.js"
+    },
+    {
+      "specifier": "es-module-lexer/js",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/es-module-lexer@2.3.2/node_modules/es-module-lexer/dist/lexer.asm.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "yauzl",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yauzl@3.4.0/node_modules/yauzl/index.js"
+    },
+    {
+      "specifier": "yazl",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yazl@3.3.1/node_modules/yazl/index.js"
+    },
+    {
+      "specifier": "saxes",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/saxes@6.0.0/node_modules/saxes/saxes.js"
+    },
+    {
+      "specifier": "ssf",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/ssf@0.11.2/node_modules/ssf/ssf.js"
+    },
+    {
+      "specifier": "ssf",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/ssf@0.11.2/node_modules/ssf/ssf.js"
+    },
+    {
+      "specifier": "ssf",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/ssf@0.11.2/node_modules/ssf/ssf.js"
+    },
+    {
+      "specifier": "yazl",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yazl@3.3.1/node_modules/yazl/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "@parcel/watcher",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@parcel+watcher@2.5.6/node_modules/@parcel/watcher/index.js"
+    },
+    {
+      "specifier": "picomatch",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/picomatch@4.0.4/node_modules/picomatch/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "postal-mime",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/postal-mime@4.0.11/node_modules/postal-mime/dist/cjs/postal-mime.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "nodemailer",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/nodemailer@10.1.7/node_modules/nodemailer/dist/cjs/nodemailer.js"
+    },
+    {
+      "specifier": "nodemailer/lib/mail-composer",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/nodemailer@10.1.7/node_modules/nodemailer/dist/cjs/mail-composer/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/client",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+client@2.0.0/node_modules/@modelcontextprotocol/client/dist/index.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/client/stdio",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+client@2.0.0/node_modules/@modelcontextprotocol/client/dist/stdio.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "ws",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/ws@8.22.1/node_modules/ws/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "picomatch",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/picomatch@4.0.4/node_modules/picomatch/index.js"
+    },
+    {
+      "specifier": "picomatch",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/picomatch@4.0.4/node_modules/picomatch/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "drizzle-orm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "tldts",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/tldts@7.4.18/node_modules/tldts/dist/cjs/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "drizzle-orm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "smol-toml",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/smol-toml@1.9.1/node_modules/smol-toml/dist/index.cjs"
+    },
+    {
+      "specifier": "yaml",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/index.js"
+    },
+    {
+      "specifier": "electron",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/index.js"
+    },
+    {
+      "specifier": "yaml",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/index.js"
+    },
+    {
+      "specifier": "drizzle-orm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/index.cjs"
+    },
+    {
+      "specifier": "drizzle-orm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "node-pty",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/index.js"
+    },
+    {
+      "specifier": "@xterm/xterm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@xterm+xterm@6.0.0/node_modules/@xterm/xterm/lib/xterm.js"
+    },
+    {
+      "specifier": "yaml",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "smol-toml",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/smol-toml@1.9.1/node_modules/smol-toml/dist/index.cjs"
+    },
+    {
+      "specifier": "yaml",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/index.js"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server/validators/ajv",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/validators/ajv.cjs"
+    },
+    {
+      "specifier": "@modelcontextprotocol/server",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server/dist/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "drizzle-orm",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/drizzle-orm@0.32.2_@types+better-sqlite3@7.6.13_@types+pg@8.23.1_@types+react@19.3.0_be_ca60273ff9fcd50cae0ecc7f540b5754/node_modules/drizzle-orm/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "zod",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/index.cjs"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    },
+    {
+      "specifier": "better-sqlite3",
+      "resolved": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/lib/index.js"
+    }
+  ],
+  "Native": 0,
+  "Socket": 0,
+  "SQLite": 0,
+  "collect": 0,
+  "formalNewPasses": 0
+}

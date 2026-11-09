@@ -1,0 +1,11 @@
+--- accepted-private-harness
++++ T091-private-harness
+@@ -25,7 +25,7 @@
+   await new Promise((r) => listener.listen(0, "127.0.0.1", r));
+   const port = listener.address().port;
+   await new Promise((r) => listener.close(r));
+-  const env = { ...process.env, SMARTDD_USER_DATA: userData, ...extraEnv };
++  const env = { ...Object.fromEntries(['PATH','LANG','LC_ALL','LC_CTYPE','USER','LOGNAME','SHELL','TERM','__CF_USER_TEXT_ENCODING'].filter(key=>process.env[key]!==undefined).map(key=>[key,process.env[key]])), SMARTDD_USER_DATA: userData, ...extraEnv };
+   if (nodeModeNegative) {
+     assert(
+       executable?.startsWith("/private/tmp/willyou-m10-") &&

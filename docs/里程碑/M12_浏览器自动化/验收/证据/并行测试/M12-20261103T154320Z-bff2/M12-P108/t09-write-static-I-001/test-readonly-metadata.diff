@@ -1,0 +1,24 @@
+--- historical-original
++++ private-readonly-observations
+@@ -63,10 +63,10 @@
+  const mcp=snapshot.mcp.find(m=>m.kind==='applications')!;mcp.runtimeHash=manifest.runtime.hash;snapshot.adapterBinding.nativeToolNames=Object.fromEntries(applicationToolDeclarations(manifest).map(t=>[t.name,'mcp__'+mcp.serverName+'__'+t.name]));
+  runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{},createPlan:(selected,hash,runId)=>createApplicationRunPlan({runId,snapshot:selected,snapshotHash:hash,applications:[{manifest,packageHash:pack.packageHash,capabilities:manifest.capabilities}],skills:[],available:{mcp:true,cli:false}})});app.attachRuns(runs);tools=new ApplicationToolService(f.store,runs,new ApplicationAdapterRegistry(f.store,app.data),{retryDelays:[0,0]});const session=await f.sessions.create(snapshot,f.home);run=await runs.reserve({taskId:snapshot.taskId,snapshotHash:session.pointer.snapshotHash,bindings:[]});await run.prepare();await run.cli.arm();reader.identities.set(50311,'darwin-proc-v1:2026:50311');await run.cli.attach(50311);
+ });
+-afterEach(async()=>{await app?.dispose();if(run)await run.cli.exited();vi.restoreAllMocks();f?.cleanup();record('fixture-cleanup',{at:new Date().toISOString(),lastCase:activeCase,removedRoots:capturedRoots,noAppOrPtyStarted:true,noHelperStarted:true,noListenerStarted:true,noBuildStarted:true});});
++afterEach(async()=>{await app?.dispose();if(run)await run.cli.exited();vi.restoreAllMocks();f?.cleanup();record('fixture-cleanup',{workerPid:process.pid,at:new Date().toISOString(),lastCase:activeCase,removedRoots:capturedRoots,noAppOrPtyStarted:true,noHelperStarted:true,noListenerStarted:true,noBuildStarted:true});});
+ 
+ describe('D11 v2 authenticated ToolService write effect boundary',()=>{
+- it('D11 preflight installs frozen v2 and creates a local draft through the full ToolService chain',async()=>{const created=await draft();expect(created.revision).toBe(1);expect(counts()).toEqual({intents:0,executions:0});record('preflight',{root:f.root,package:app.builtin.packages.active('mail')!.packageHash,draft:created.id,run:run.runId});});
++ it('D11 preflight installs frozen v2 and creates a local draft through the full ToolService chain',async()=>{const created=await draft();expect(created.revision).toBe(1);expect(counts()).toEqual({intents:0,executions:0});record('preflight',{counts:counts(),root:f.root,package:app.builtin.packages.active('mail')!.packageHash,draft:created.id,run:run.runId});});
+  for(const mode of ['missing-smtp','unconfirmed-smtp','mismatch'] as const)it('D11 known precondition '+mode+' remains not-started and failed with zero side effects',async()=>{
+   const privateConnections=connections();
+   if(mode==='missing-smtp'){const fox=await privateConnections.save({name:'D11 Foxmail-only',expectedRevision:0,config:{kind:'foxmail',sourcePath:join(f.root,'opaque-account','messages.db'),account:'opaque-account',queryDays:30}});await select(fox.id,null);}
+@@ -90,7 +90,7 @@
+   const smtp=await connections().save({name:'D11 proof-scope sender',expectedRevision:0,config:smtpConfig(),secret:'D11-SYNTHETIC-SECRET'});await select(null,smtp.id);await confirm();const created=await draft();
+   postWriteFault=applicationPreflightFailure(new ApplicationError('AUTH_REQUIRED','copied old preflight proof'),randomUUID()) as ApplicationError;
+   const response=await call('send_prepare',{draftId:created.id,expectedRevision:created.revision,expectedContentHash:created.contentHash}),actual=ledger(response.operationId!);
+-  expect(response).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED',effectState:'unknown',retryable:false}});expect(actual.invocation).toMatchObject({state:'unknown',effect_state:'unknown'});expect(actual.data).toMatchObject({state:'unknown'});expect(counts()).toEqual({intents:1,executions:0});expect(postWriteEntries).toBe(1);expect(syntheticProviderCount).toBe(0);
++  expect(response).toMatchObject({status:'error',error:{code:'AUTH_REQUIRED',effectState:'unknown',retryable:false}});expect(actual.invocation).toMatchObject({state:'unknown',effect_state:'unknown'});expect(actual.data).toMatchObject({state:'unknown'});expect(counts()).toEqual({intents:1,executions:0});expect(postWriteEntries).toBe(1);expect(syntheticProviderCount).toBe(0);record('copied-preflight-proof',{response,ledger:actual,counts:counts(),postWriteEntries,syntheticProviderCount});
+  });
+  it('D11 real v2 send_execute unknown result stays unknown in bridge and invocation ledger without replay',async()=>{
+   const smtp=await connections().save({name:'D11 controlled outcome sender',expectedRevision:0,config:smtpConfig(),secret:'D11-SYNTHETIC-SECRET'});await select(null,smtp.id);await confirm();const created=await draft();

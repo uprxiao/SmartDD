@@ -1,0 +1,9 @@
+# P068 attempt-001 — original T108 real App A
+
+Actual single execution 22.449s. Original nine independent A criteria9/9green, separate R07.5 task-switch supplement also green. Actual task-files collapse/reopen and toolbar hide/close/reopen both retained browserPageId381b7ae2-9ef1-4b5b-876d-f843984d29a3, WC2, document ec1907e2-b0bf-4309-8c67-4e3dd013da66, performance origin, URL and unsaved value. Timer18→86 and each hidden interval increased. Three genuine managed nativeCLI waits1.813s/2.076s/1.945s all exit0 while page hidden. No CLI replay; sole external HTTP fixture release lets the page condition finish naturally.
+
+70 freshguard checks, no yield. RPC preparation then one reload then actual new native+DOM focus (1ms readonly wait); no forced focus or re-arm. Actual UI task-resume bound existing PTYs/PIDs/runs unchanged. Synthetic controlled caller is not a real modelR. Main renderer screenshots and separate baseline-native.png are distinct evidence; no pixel-perfect design claim.
+
+Helper observation only delegates actual original execFile/stdin/callback and observes exit; no held response/result or endpoint logging. Original execFile and passive monitor explicitly restored before normal quit. Actual App normalexit0/null in 561ms, no fallback, cleanup errors empty.17 exact PID/four TCP50855,50859,50856,51036 plus helper pid/sock/stream and Unix all absent/closed. Lease explicitly released before static finalization.
+
+Full3671 frozen source SHA/modes,44 private driver/source files,151 dependencies and5 exact App017 resource hashes/modes reverified. App ASAR unchanged d6d82db473d5550c7b9a69d0d4412e38ce1120c95816d6c81e08b5fc4626407b. No public source/ledger modified, no build. Raw saved before independent judge. Coordinator alone archives/accounts original T108. No T107 performance/system/x64/modelR credit.

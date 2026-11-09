@@ -1,0 +1,4723 @@
+{
+  "createdAt": "2026-11-09T02:44:31.657070+00:00",
+  "case": "M12-T145",
+  "layer": "read-only actual original P/A image review",
+  "scope": "App051 R004 recovery16 and supplemental confirmation8 against fresh source060 P48 corresponding24 only",
+  "actualViewed": {
+    "pairs": 24,
+    "originalPNGs": 48,
+    "method": "view_image(detail=original), each original individually"
+  },
+  "wholeT145Pass": false,
+  "formalIncrement": 0,
+  "wholeSlotVisualPassNotAsserted": true,
+  "summary": {
+    "recoveryScopedFixVisible": 16,
+    "recoveryCloneStateDifference": 16,
+    "cloneButtonPaintedBoth": 14,
+    "confirmationBulletsAndBackgroundVisible": 8,
+    "confirmationCodeForegroundDifferences": 8,
+    "PAndABodyHorizontalOverflowObserved": 0
+  },
+  "findings": [
+    {
+      "id": "CONFIRM-CODE-FOREGROUND",
+      "status": "CONFIRMED_DIFFERENCE",
+      "keys": [
+        "light-rw480-win1440x900|B13-import-confirm",
+        "light-rw900-win1440x900|B13-import-confirm",
+        "dark-rw480-win1440x900|B13-import-confirm",
+        "dark-rw900-win1440x900|B13-import-confirm",
+        "light-rw480-win1920x1080|B13-import-confirm",
+        "light-rw900-win1920x1080|B13-import-confirm",
+        "dark-rw480-win1920x1080|B13-import-confirm",
+        "dark-rw900-win1920x1080|B13-import-confirm"
+      ],
+      "light": {
+        "P": "rgb(112, 112, 112)",
+        "A": "rgb(41, 41, 41)"
+      },
+      "dark": {
+        "P": "rgb(204, 204, 204)",
+        "A": "rgb(241, 241, 241)"
+      },
+      "causeScope": "P global code sets secondary; A warning code scoped rule sets background/font but no color. No production edit made."
+    },
+    {
+      "id": "RECOVERY-CLONE-STATE",
+      "status": "CONTRACT_ADJUDICATION_REQUIRED",
+      "scope": "all16 state metadata, fourteen buttons painted; two narrow1440 clear-confirm buttons fully clipped",
+      "note": "A original needsattention business assertion disables clone/import, whereas P enables clone. Not a reason to loosen business behavior."
+    },
+    {
+      "id": "RECOVERY-LINEBOX-AND-SCROLL-GUTTER",
+      "status": "MEASURED_RESIDUAL",
+      "note": "Warning h is A-P -2.390625px wide / -4.78125px narrow; narrow scrolling body P430/A434; exact metrics per key. P inline code20.4px known, A inline code computed style unknown. Source inference is not proof of all causation."
+    },
+    {
+      "id": "KNOWN-SHELL-AND-FIXTURE",
+      "status": "BOUNDARY",
+      "note": "P4px shell and different available host center, synthetic source/target names, page/task content and DI boundary retained. No complete screenshot/Native-page equivalence."
+    }
+  ],
+  "perKey": [
+    {
+      "key": "light-rw480-win1440x900|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 0,
+        "key": "light-rw480-win1440x900|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "099d222cb58ed331482ba56cdf7fa5a6b7761b4a62901f4f23c4e27530988bea",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "5b6e0e11a5f71f3fc11359a642dc3bf3e27ee0d8cb3c912b4291893016deacf9"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "a654fbb6bbb841967cd5120521428e99867ab35e92f08792089340dda46003fa",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "127af6ed338de8a981f018ea2624c3055eca765bcbc925980895de83a14fdc81"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 396.78125,
+          "Aheight": 392,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 0,
+        "key": "light-rw480-win1440x900|B12-recovery-failed",
+        "Pdialog": [
+          973,
+          60,
+          447,
+          820
+        ],
+        "Adialog": [
+          973,
+          56,
+          447,
+          792
+        ],
+        "Pbody": [
+          430,
+          430,
+          663,
+          816
+        ],
+        "Abody": [
+          434,
+          434,
+          635,
+          811
+        ],
+        "Pattention": {
+          "x": 1252,
+          "y": 256,
+          "width": 130,
+          "height": 396.78125,
+          "right": 1382,
+          "bottom": 652.78125
+        },
+        "Aattention": {
+          "x": 1252,
+          "y": 252,
+          "width": 134,
+          "height": 392,
+          "right": 1386,
+          "bottom": 644
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 702.78125,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1312.84375,
+              "bottom": 728.78125
+            },
+            "paintedRect": {
+              "x": 1252,
+              "y": 702.78125,
+              "right": 1312.84375,
+              "bottom": 728.78125,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 694,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 720
+            },
+            "paintedRect": {
+              "x": 1252,
+              "y": 694,
+              "right": 1313,
+              "bottom": 720,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw480-win1440x900|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 1,
+        "key": "light-rw480-win1440x900|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "4f557ed510d11170fcbd9ac0ac8f9ae2edaabc60ae52dc88ae0826dda0450725",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "a457dab1ae943fc410e2841a435ac04c1dd574085a5583245f318f12b50d750c"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "a22d3af69306067804d8c5d885472f1942ca3a8953d0fb0baf5f58e451c91616",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "651abec0e08e58532cd43ee0406397fdebc2b6c3adb19f7caa9baaf98dc1d30d"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": false,
+          "Apainted": false
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 512.78125,
+          "Aheight": 508,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 1,
+        "key": "light-rw480-win1440x900|B12-recovery-clear-confirm",
+        "Pdialog": [
+          973,
+          60,
+          447,
+          820
+        ],
+        "Adialog": [
+          973,
+          56,
+          447,
+          792
+        ],
+        "Pbody": [
+          430,
+          430,
+          663,
+          932
+        ],
+        "Abody": [
+          434,
+          434,
+          635,
+          927
+        ],
+        "Pattention": {
+          "x": 1252,
+          "y": 256,
+          "width": 130,
+          "height": 512.78125,
+          "right": 1382,
+          "bottom": 768.78125
+        },
+        "Aattention": {
+          "x": 1252,
+          "y": 252,
+          "width": 134,
+          "height": 508,
+          "right": 1386,
+          "bottom": 760
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 818.78125,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1312.84375,
+              "bottom": 844.78125
+            },
+            "paintedRect": null
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 810,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 836
+            },
+            "paintedRect": null
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw900-win1440x900|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 2,
+        "key": "light-rw900-win1440x900|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "e959357b724305bc6cf5d5daa451600868aa4aa0db6e20826f626487fd686a24",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "275768936321a0f7e4428cee0193ada93f7c34e876dc0180c35fb71d57f69474"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "38fcd7852b9336df75435e0ff5839d686ede6261ce6fa42e678ae30f27a03a14",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "cad76b7df6c4ea27a704279334999abb9da6d3b0491ff4eb9649b42310ae8d83"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 134.390625,
+          "Aheight": 132,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 2,
+        "key": "light-rw900-win1440x900|B12-recovery-failed",
+        "Pdialog": [
+          606.5,
+          154.796875,
+          760,
+          630.390625
+        ],
+        "Adialog": [
+          606.5,
+          138,
+          760,
+          628
+        ],
+        "Pbody": [
+          758,
+          758,
+          491,
+          491
+        ],
+        "Abody": [
+          758,
+          758,
+          489,
+          489
+        ],
+        "Pattention": {
+          "x": 885.5,
+          "y": 332.796875,
+          "width": 458,
+          "height": 134.390625,
+          "right": 1343.5,
+          "bottom": 467.1875
+        },
+        "Aattention": {
+          "x": 885.5,
+          "y": 316,
+          "width": 458,
+          "height": 132,
+          "right": 1343.5,
+          "bottom": 448
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 983.015625,
+              "y": 485.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1043.859375,
+              "bottom": 511.1875
+            },
+            "paintedRect": {
+              "x": 983.015625,
+              "y": 485.1875,
+              "right": 1043.859375,
+              "bottom": 511.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 983.5,
+              "y": 466,
+              "width": 61,
+              "height": 26,
+              "right": 1044.5,
+              "bottom": 492
+            },
+            "paintedRect": {
+              "x": 983.5,
+              "y": 466,
+              "right": 1044.5,
+              "bottom": 492,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw900-win1440x900|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 3,
+        "key": "light-rw900-win1440x900|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "de78304f404058f9385bf5fa762a131ce4f2622e785f3edcdfee259e6718080e",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "58bdec745214e0d7e5ba5f92b6b13c8524496173843cff55a8bf2c212d2a7566"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "a1b8f20e1361c2fe8316a55677e2cfe0861c02ca6639aebb4ca8e01ad58a6e66",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "495f45657918a718ca8ac9a686cbee223d55318a049908f62fc6425fb55c28c2"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 166.390625,
+          "Aheight": 164,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 3,
+        "key": "light-rw900-win1440x900|B12-recovery-clear-confirm",
+        "Pdialog": [
+          606.5,
+          138.796875,
+          760,
+          662.390625
+        ],
+        "Adialog": [
+          606.5,
+          122,
+          760,
+          660
+        ],
+        "Pbody": [
+          758,
+          758,
+          523,
+          523
+        ],
+        "Abody": [
+          758,
+          758,
+          521,
+          521
+        ],
+        "Pattention": {
+          "x": 885.5,
+          "y": 316.796875,
+          "width": 458,
+          "height": 166.390625,
+          "right": 1343.5,
+          "bottom": 483.1875
+        },
+        "Aattention": {
+          "x": 885.5,
+          "y": 300,
+          "width": 458,
+          "height": 164,
+          "right": 1343.5,
+          "bottom": 464
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 983.015625,
+              "y": 501.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1043.859375,
+              "bottom": 527.1875
+            },
+            "paintedRect": {
+              "x": 983.015625,
+              "y": 501.1875,
+              "right": 1043.859375,
+              "bottom": 527.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 983.5,
+              "y": 482,
+              "width": 61,
+              "height": 26,
+              "right": 1044.5,
+              "bottom": 508
+            },
+            "paintedRect": {
+              "x": 983.5,
+              "y": 482,
+              "right": 1044.5,
+              "bottom": 508,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw480-win1440x900|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 4,
+        "key": "dark-rw480-win1440x900|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "10c7e15573e4524d6809908efb32f4600f2bf25fbba43b4f8c74d3d4f7a6a308",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "46617d367c5185733ede2ea905d2be73313fa0e8f82059de4efb4fd8bcb6aa9e"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1440x900-B12-recovery-failed.png",
+          "sha256": "0216b7a2ec91306a0adb777b5635e7123f3aae74ec4a71272b2cc3847852f9e7",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "f8d8bf7d752f8bba6e73dae70e03d0033efcb807f66136933382f2400065fbee"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 396.78125,
+          "Aheight": 392,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 4,
+        "key": "dark-rw480-win1440x900|B12-recovery-failed",
+        "Pdialog": [
+          973,
+          60,
+          447,
+          820
+        ],
+        "Adialog": [
+          973,
+          56,
+          447,
+          792
+        ],
+        "Pbody": [
+          430,
+          430,
+          663,
+          816
+        ],
+        "Abody": [
+          434,
+          434,
+          635,
+          811
+        ],
+        "Pattention": {
+          "x": 1252,
+          "y": 256,
+          "width": 130,
+          "height": 396.78125,
+          "right": 1382,
+          "bottom": 652.78125
+        },
+        "Aattention": {
+          "x": 1252,
+          "y": 252,
+          "width": 134,
+          "height": 392,
+          "right": 1386,
+          "bottom": 644
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 702.78125,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1312.84375,
+              "bottom": 728.78125
+            },
+            "paintedRect": {
+              "x": 1252,
+              "y": 702.78125,
+              "right": 1312.84375,
+              "bottom": 728.78125,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 694,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 720
+            },
+            "paintedRect": {
+              "x": 1252,
+              "y": 694,
+              "right": 1313,
+              "bottom": 720,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw480-win1440x900|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 5,
+        "key": "dark-rw480-win1440x900|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "d820a8919571a8afa763fce9e4781826c9fa379201376316c8d1e6347f5f1793",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "89a3ad5f8b1b23a4d884dab40ec3c479b41aeeaa9441a1b48e35d65151c5b457"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "f2b1115954e58451e617ee11fa79efb907bd34a9930c0be64c0f214c3eb1e5d1",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "f584f75aa78abc8f560284ee233c3f1056139de411ed622f104f971a06d6627e"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": false,
+          "Apainted": false
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 512.78125,
+          "Aheight": 508,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 5,
+        "key": "dark-rw480-win1440x900|B12-recovery-clear-confirm",
+        "Pdialog": [
+          973,
+          60,
+          447,
+          820
+        ],
+        "Adialog": [
+          973,
+          56,
+          447,
+          792
+        ],
+        "Pbody": [
+          430,
+          430,
+          663,
+          932
+        ],
+        "Abody": [
+          434,
+          434,
+          635,
+          927
+        ],
+        "Pattention": {
+          "x": 1252,
+          "y": 256,
+          "width": 130,
+          "height": 512.78125,
+          "right": 1382,
+          "bottom": 768.78125
+        },
+        "Aattention": {
+          "x": 1252,
+          "y": 252,
+          "width": 134,
+          "height": 508,
+          "right": 1386,
+          "bottom": 760
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1252,
+              "y": 818.78125,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1312.84375,
+              "bottom": 844.78125
+            },
+            "paintedRect": null
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1252,
+              "y": 810,
+              "width": 61,
+              "height": 26,
+              "right": 1313,
+              "bottom": 836
+            },
+            "paintedRect": null
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw900-win1440x900|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 6,
+        "key": "dark-rw900-win1440x900|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "a782247622e01e63822ae5afef6e1d4d97d6f3266cdf8d38a870f83af6f2f76d",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "fdfc90b7810f60ff755f2170d47ea21796c4fe5e1ae3bc991efc290d31b7074a"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1440x900-B12-recovery-failed.png",
+          "sha256": "85f7ef6d2445a312e385dc2f109cf635cf33988db81fc8032d66d86e69218bdc",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1440x900-B12-recovery-failed.json",
+          "metadataSHA256": "518b7c0c7c5cf0fd94a6b4adda408fc8abf821660e14a03447fc068a573830f6"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 134.390625,
+          "Aheight": 132,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 6,
+        "key": "dark-rw900-win1440x900|B12-recovery-failed",
+        "Pdialog": [
+          606.5,
+          154.796875,
+          760,
+          630.390625
+        ],
+        "Adialog": [
+          606.5,
+          138,
+          760,
+          628
+        ],
+        "Pbody": [
+          758,
+          758,
+          491,
+          491
+        ],
+        "Abody": [
+          758,
+          758,
+          489,
+          489
+        ],
+        "Pattention": {
+          "x": 885.5,
+          "y": 332.796875,
+          "width": 458,
+          "height": 134.390625,
+          "right": 1343.5,
+          "bottom": 467.1875
+        },
+        "Aattention": {
+          "x": 885.5,
+          "y": 316,
+          "width": 458,
+          "height": 132,
+          "right": 1343.5,
+          "bottom": 448
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 983.015625,
+              "y": 485.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1043.859375,
+              "bottom": 511.1875
+            },
+            "paintedRect": {
+              "x": 983.015625,
+              "y": 485.1875,
+              "right": 1043.859375,
+              "bottom": 511.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 983.5,
+              "y": 466,
+              "width": 61,
+              "height": 26,
+              "right": 1044.5,
+              "bottom": 492
+            },
+            "paintedRect": {
+              "x": 983.5,
+              "y": 466,
+              "right": 1044.5,
+              "bottom": 492,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw900-win1440x900|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 7,
+        "key": "dark-rw900-win1440x900|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "230282f6fe267d852096daf9f399565f908f470b2f25ab6e15c00d62d1849fc9",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "eae6c0f7976042c4b4dcf9e306ca9afd2ecea7baf8e048e60c6ff050b01a7ce3"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1440x900-B12-recovery-clear-confirm.png",
+          "sha256": "5f8f4c7e5fc9fbbc5811de83058be97bd33d99698bac4466ab691783e8edcd73",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1440x900-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "e895b8992388a336ef59b11dbcbfd381482c83c0816aef9f8f75b7cf839903b2"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 166.390625,
+          "Aheight": 164,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 7,
+        "key": "dark-rw900-win1440x900|B12-recovery-clear-confirm",
+        "Pdialog": [
+          606.5,
+          138.796875,
+          760,
+          662.390625
+        ],
+        "Adialog": [
+          606.5,
+          122,
+          760,
+          660
+        ],
+        "Pbody": [
+          758,
+          758,
+          523,
+          523
+        ],
+        "Abody": [
+          758,
+          758,
+          521,
+          521
+        ],
+        "Pattention": {
+          "x": 885.5,
+          "y": 316.796875,
+          "width": 458,
+          "height": 166.390625,
+          "right": 1343.5,
+          "bottom": 483.1875
+        },
+        "Aattention": {
+          "x": 885.5,
+          "y": 300,
+          "width": 458,
+          "height": 164,
+          "right": 1343.5,
+          "bottom": 464
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 983.015625,
+              "y": 501.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1043.859375,
+              "bottom": 527.1875
+            },
+            "paintedRect": {
+              "x": 983.015625,
+              "y": 501.1875,
+              "right": 1043.859375,
+              "bottom": 527.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 983.5,
+              "y": 482,
+              "width": 61,
+              "height": 26,
+              "right": 1044.5,
+              "bottom": 508
+            },
+            "paintedRect": {
+              "x": 983.5,
+              "y": 482,
+              "right": 1044.5,
+              "bottom": 508,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw480-win1920x1080|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 8,
+        "key": "light-rw480-win1920x1080|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "af44e1b2a39b250b013501cd19eda2194774146b354eb788237dae0db0f9f242",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "3a8f704b87225371f8d6d24918dc031b9a0899c631f4f24cd4856e0d159dfb26"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "06c6aaff856381143a912fd65d3573cff6fcf39e0dc747b8542a83acab327f0e",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "827fae1eb620b9c14718a68cdb3c6e1aec2d5b3f34776799d03ac7ea33122205"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 348.78125,
+          "Aheight": 344,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 8,
+        "key": "light-rw480-win1920x1080|B12-recovery-failed",
+        "Pdialog": [
+          1453,
+          90.609375,
+          447,
+          938.78125
+        ],
+        "Adialog": [
+          1453,
+          75,
+          447,
+          934
+        ],
+        "Pbody": [
+          445,
+          445,
+          782,
+          782
+        ],
+        "Abody": [
+          445,
+          445,
+          777,
+          777
+        ],
+        "Pattention": {
+          "x": 1732,
+          "y": 286.609375,
+          "width": 145,
+          "height": 348.78125,
+          "right": 1877,
+          "bottom": 635.390625
+        },
+        "Aattention": {
+          "x": 1732,
+          "y": 271,
+          "width": 145,
+          "height": 344,
+          "right": 1877,
+          "bottom": 615
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 685.390625,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1792.84375,
+              "bottom": 711.390625
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 685.390625,
+              "right": 1792.84375,
+              "bottom": 711.390625,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 665,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 691
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 665,
+              "right": 1793,
+              "bottom": 691,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw480-win1920x1080|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 9,
+        "key": "light-rw480-win1920x1080|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "105a283b63288c12f1bddd92618be4cdf6cb64d1efb05bac19bfe457eb3dcb32",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "c2795d42acdee4be3e1d64c189d6e249f1b7fb36062fdaa851c5e2e4b2dfbafb"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "de527857fe690878b8721ca0862271072b4499a2ccb757d486efd4da04ccdd57",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "2b5e45f15c267754a027bfb5ad33bd1584574fa5fcb080baf4dadae83838053b"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 512.78125,
+          "Aheight": 508,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 9,
+        "key": "light-rw480-win1920x1080|B12-recovery-clear-confirm",
+        "Pdialog": [
+          1453,
+          60,
+          447,
+          1000
+        ],
+        "Adialog": [
+          1453,
+          56,
+          447,
+          972
+        ],
+        "Pbody": [
+          430,
+          430,
+          843,
+          932
+        ],
+        "Abody": [
+          434,
+          434,
+          815,
+          927
+        ],
+        "Pattention": {
+          "x": 1732,
+          "y": 256,
+          "width": 130,
+          "height": 512.78125,
+          "right": 1862,
+          "bottom": 768.78125
+        },
+        "Aattention": {
+          "x": 1732,
+          "y": 252,
+          "width": 134,
+          "height": 508,
+          "right": 1866,
+          "bottom": 760
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 818.78125,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1792.84375,
+              "bottom": 844.78125
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 818.78125,
+              "right": 1792.84375,
+              "bottom": 844.78125,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 810,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 836
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 810,
+              "right": 1793,
+              "bottom": 836,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw900-win1920x1080|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 10,
+        "key": "light-rw900-win1920x1080|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "c00c4462c4aef90865ea530da3cc1a52cecd1867eb882aea349f43c137e99986",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "01830a0b769f2a94358c07ed19908f63bb92e7a6e3a8e005be4a847422ceceed"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "f397fb7e040a46b4b0e5673caffba2e798e30bb9f5f2e4066f28ebc1487c9882",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "49f0a5719c90aaffc4494655814d7b5f832fb5ec5bac19efa5ca486595573813"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 134.390625,
+          "Aheight": 132,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 10,
+        "key": "light-rw900-win1920x1080|B12-recovery-failed",
+        "Pdialog": [
+          1086.5,
+          244.796875,
+          760,
+          630.390625
+        ],
+        "Adialog": [
+          1086.5,
+          228,
+          760,
+          628
+        ],
+        "Pbody": [
+          758,
+          758,
+          491,
+          491
+        ],
+        "Abody": [
+          758,
+          758,
+          489,
+          489
+        ],
+        "Pattention": {
+          "x": 1365.5,
+          "y": 422.796875,
+          "width": 458,
+          "height": 134.390625,
+          "right": 1823.5,
+          "bottom": 557.1875
+        },
+        "Aattention": {
+          "x": 1365.5,
+          "y": 406,
+          "width": 458,
+          "height": 132,
+          "right": 1823.5,
+          "bottom": 538
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1463.015625,
+              "y": 575.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1523.859375,
+              "bottom": 601.1875
+            },
+            "paintedRect": {
+              "x": 1463.015625,
+              "y": 575.1875,
+              "right": 1523.859375,
+              "bottom": 601.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1463.5,
+              "y": 556,
+              "width": 61,
+              "height": 26,
+              "right": 1524.5,
+              "bottom": 582
+            },
+            "paintedRect": {
+              "x": 1463.5,
+              "y": 556,
+              "right": 1524.5,
+              "bottom": 582,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw900-win1920x1080|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 11,
+        "key": "light-rw900-win1920x1080|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "aa8f5e59688e9f2ef35b71600a7af92824be720751a4a46fdf2d6b9dcc02d6a7",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-light-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "62a7fa67976d7e6c1ae85329d5984029425b705ec5b62c41da6eb49402dcd779"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "4c1ad190e7881b3bf161a10087f0cfe1a5071b870722bd4a481b4247c69bb0df",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "21a7ec6f4719b997a9860f071c154e16d8275e2d870654a1d35ddb849fc714f8"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 166.390625,
+          "Aheight": 164,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 11,
+        "key": "light-rw900-win1920x1080|B12-recovery-clear-confirm",
+        "Pdialog": [
+          1086.5,
+          228.796875,
+          760,
+          662.390625
+        ],
+        "Adialog": [
+          1086.5,
+          212,
+          760,
+          660
+        ],
+        "Pbody": [
+          758,
+          758,
+          523,
+          523
+        ],
+        "Abody": [
+          758,
+          758,
+          521,
+          521
+        ],
+        "Pattention": {
+          "x": 1365.5,
+          "y": 406.796875,
+          "width": 458,
+          "height": 166.390625,
+          "right": 1823.5,
+          "bottom": 573.1875
+        },
+        "Aattention": {
+          "x": 1365.5,
+          "y": 390,
+          "width": 458,
+          "height": 164,
+          "right": 1823.5,
+          "bottom": 554
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(112, 112, 112)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1463.015625,
+              "y": 591.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1523.859375,
+              "bottom": 617.1875
+            },
+            "paintedRect": {
+              "x": 1463.015625,
+              "y": 591.1875,
+              "right": 1523.859375,
+              "bottom": 617.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1463.5,
+              "y": 572,
+              "width": 61,
+              "height": 26,
+              "right": 1524.5,
+              "bottom": 598
+            },
+            "paintedRect": {
+              "x": 1463.5,
+              "y": 572,
+              "right": 1524.5,
+              "bottom": 598,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw480-win1920x1080|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 12,
+        "key": "dark-rw480-win1920x1080|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "e6b43f3e4838486ff4247fb5686039a7e9666821cc38f0e800afc4598cba3e1f",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "e3d1daa0e1ca9928f0b52195a15b71a657b8bc2f9be79d96940886882772d194"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1920x1080-B12-recovery-failed.png",
+          "sha256": "52190ec167d80e4a96892aab4cb3daf85f87276c33b0201978552213258264f3",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "55b31c7b2c5e000ae27c5cab6cef3bc80904ec3ca8fa243a6cdaaa0d1e47ad23"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 348.78125,
+          "Aheight": 344,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 12,
+        "key": "dark-rw480-win1920x1080|B12-recovery-failed",
+        "Pdialog": [
+          1453,
+          90.609375,
+          447,
+          938.78125
+        ],
+        "Adialog": [
+          1453,
+          75,
+          447,
+          934
+        ],
+        "Pbody": [
+          445,
+          445,
+          782,
+          782
+        ],
+        "Abody": [
+          445,
+          445,
+          777,
+          777
+        ],
+        "Pattention": {
+          "x": 1732,
+          "y": 286.609375,
+          "width": 145,
+          "height": 348.78125,
+          "right": 1877,
+          "bottom": 635.390625
+        },
+        "Aattention": {
+          "x": 1732,
+          "y": 271,
+          "width": 145,
+          "height": 344,
+          "right": 1877,
+          "bottom": 615
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 685.390625,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1792.84375,
+              "bottom": 711.390625
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 685.390625,
+              "right": 1792.84375,
+              "bottom": 711.390625,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 665,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 691
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 665,
+              "right": 1793,
+              "bottom": 691,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw480-win1920x1080|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 13,
+        "key": "dark-rw480-win1920x1080|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "4cff08fb67abae6719e4af6eceae43c9510cae94da40518c06b263a9942294cb",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "2b5b4ad44788646f11fae23227c5c4e9e433428b3e93f4329e31edd1a5d9fc2b"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "410c57a64c8bd62f3eae388d2d5dad8b2f2b584e5efedcbe1d2518754cf8b35b",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "b3f167c3d512664faa4d6ff3ef09250965741839bdac8a57f4f28c16ec73fc18"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 512.78125,
+          "Aheight": 508,
+          "deltaAminusP": -4.78125
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 13,
+        "key": "dark-rw480-win1920x1080|B12-recovery-clear-confirm",
+        "Pdialog": [
+          1453,
+          60,
+          447,
+          1000
+        ],
+        "Adialog": [
+          1453,
+          56,
+          447,
+          972
+        ],
+        "Pbody": [
+          430,
+          430,
+          843,
+          932
+        ],
+        "Abody": [
+          434,
+          434,
+          815,
+          927
+        ],
+        "Pattention": {
+          "x": 1732,
+          "y": 256,
+          "width": 130,
+          "height": 512.78125,
+          "right": 1862,
+          "bottom": 768.78125
+        },
+        "Aattention": {
+          "x": 1732,
+          "y": 252,
+          "width": 134,
+          "height": 508,
+          "right": 1866,
+          "bottom": 760
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1732,
+              "y": 818.78125,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1792.84375,
+              "bottom": 844.78125
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 818.78125,
+              "right": 1792.84375,
+              "bottom": 844.78125,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1732,
+              "y": 810,
+              "width": 61,
+              "height": 26,
+              "right": 1793,
+              "bottom": 836
+            },
+            "paintedRect": {
+              "x": 1732,
+              "y": 810,
+              "right": 1793,
+              "bottom": 836,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw900-win1920x1080|B12-recovery-failed",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 14,
+        "key": "dark-rw900-win1920x1080|B12-recovery-failed",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "ab6f32ae8422d1797e66fa2faca2fffa67e550eb25e93db26dcc9a3934d9a83b",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "e66e6baf796fff27ac66e033e78d4305a302ef6373fd06862667d8fc2dc73854"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1920x1080-B12-recovery-failed.png",
+          "sha256": "f7a9a70942f1aa6e7dc61b599d11beadf6b491a7340df426af5dbc5076dc59d6",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1920x1080-B12-recovery-failed.json",
+          "metadataSHA256": "a20cea0230ccb7c31c0e33cc6085db0109fec370775e8538a2dd3c9469661376"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 134.390625,
+          "Aheight": 132,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 14,
+        "key": "dark-rw900-win1920x1080|B12-recovery-failed",
+        "Pdialog": [
+          1086.5,
+          244.796875,
+          760,
+          630.390625
+        ],
+        "Adialog": [
+          1086.5,
+          228,
+          760,
+          628
+        ],
+        "Pbody": [
+          758,
+          758,
+          491,
+          491
+        ],
+        "Abody": [
+          758,
+          758,
+          489,
+          489
+        ],
+        "Pattention": {
+          "x": 1365.5,
+          "y": 422.796875,
+          "width": 458,
+          "height": 134.390625,
+          "right": 1823.5,
+          "bottom": 557.1875
+        },
+        "Aattention": {
+          "x": 1365.5,
+          "y": 406,
+          "width": 458,
+          "height": 132,
+          "right": 1823.5,
+          "bottom": 538
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1463.015625,
+              "y": 575.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1523.859375,
+              "bottom": 601.1875
+            },
+            "paintedRect": {
+              "x": 1463.015625,
+              "y": 575.1875,
+              "right": 1523.859375,
+              "bottom": 601.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1463.5,
+              "y": 556,
+              "width": 61,
+              "height": 26,
+              "right": 1524.5,
+              "bottom": 582
+            },
+            "paintedRect": {
+              "x": 1463.5,
+              "y": 556,
+              "right": 1524.5,
+              "bottom": 582,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw900-win1920x1080|B12-recovery-clear-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 15,
+        "key": "dark-rw900-win1920x1080|B12-recovery-clear-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "e9bf25bc0ad0b01ee3493c2c21fd3fdb0ab55dc2f7cbe893ffd321baf8c00244",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/A-dark-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "a2adee5680a750cfc729c91723529912d85d3971e27fe88dce3272519c6bca3c"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1920x1080-B12-recovery-clear-confirm.png",
+          "sha256": "1fbca86dac445450a9bcb20a202233c08e69a63f938fc0a661787f0173d35f65",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1920x1080-B12-recovery-clear-confirm.json",
+          "metadataSHA256": "669ccb699181681d87b39690744d943a50b946b5e8c176bfebfa295c940d85b2"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "warning and clear-confirm structure",
+          "result": "SCOPED_PASS",
+          "observation": "Shield-alert, inner flex/wrapping, warning text and recovery/clear controls visibly present; clear-confirm has destructive confirmation and cancel. Dark warning is theme-appropriate."
+        },
+        {
+          "criterion": "horizontal containment and actual clipping",
+          "result": "SCOPED_PASS",
+          "observation": "P and A body scrollWidth equals clientWidth; no painted button leakage visible. Offscreen buttons remain rendered but are clipped by overflow ancestors, not falsely counted as visible."
+        },
+        {
+          "criterion": "clone state",
+          "result": "STATE_DIFFERENCE_REQUIRES_CONTRACT_ADJUDICATION",
+          "observation": "P clone enabled, A clone disabled. The original A needsattention assertion intentionally requires clone/import disabled; do not enable clone solely to match P.",
+          "Pdisabled": false,
+          "Adisabled": true,
+          "Ppainted": true,
+          "Apainted": true
+        },
+        {
+          "criterion": "warning line box",
+          "result": "MEASURED_RESIDUAL",
+          "observation": "Warning box is shorter in A. P BROWSER_UNAVAILABLE is measured at 12px/20.4px; A inline code was not individually measured. Global P code rule is a source-backed possible cause, not a measured A computed-style fact.",
+          "Pheight": 166.390625,
+          "Aheight": 164,
+          "deltaAminusP": -2.390625
+        },
+        {
+          "criterion": "dialog/body available geometry",
+          "result": "MEASURED_RESIDUAL_AND_SHELL_BOUNDARY",
+          "observation": "Dialog and body measurements retained exactly. Narrow scrolling body has P430 vs A434 usable width; max-height/centering also differ. No blanket visual equivalence or causal environment diagnosis is claimed."
+        },
+        {
+          "criterion": "success notice",
+          "result": "SCOPED_PASS",
+          "observation": "No body success notice is visible in any of these sixteen recovery PNGs."
+        }
+      ],
+      "measurements": {
+        "i": 15,
+        "key": "dark-rw900-win1920x1080|B12-recovery-clear-confirm",
+        "Pdialog": [
+          1086.5,
+          228.796875,
+          760,
+          662.390625
+        ],
+        "Adialog": [
+          1086.5,
+          212,
+          760,
+          660
+        ],
+        "Pbody": [
+          758,
+          758,
+          523,
+          523
+        ],
+        "Abody": [
+          758,
+          758,
+          521,
+          521
+        ],
+        "Pattention": {
+          "x": 1365.5,
+          "y": 406.796875,
+          "width": 458,
+          "height": 166.390625,
+          "right": 1823.5,
+          "bottom": 573.1875
+        },
+        "Aattention": {
+          "x": 1365.5,
+          "y": 390,
+          "width": 458,
+          "height": 164,
+          "right": 1823.5,
+          "bottom": 554
+        },
+        "Pcode": [
+          {
+            "text": "BROWSER_UNAVAILABLE",
+            "fontSize": "12px",
+            "lineHeight": "20.4px",
+            "color": "rgb(204, 204, 204)",
+            "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace"
+          }
+        ],
+        "Pclone": [
+          {
+            "disabled": false,
+            "rect": {
+              "x": 1463.015625,
+              "y": 591.1875,
+              "width": 60.84375,
+              "height": 26,
+              "right": 1523.859375,
+              "bottom": 617.1875
+            },
+            "paintedRect": {
+              "x": 1463.015625,
+              "y": 591.1875,
+              "right": 1523.859375,
+              "bottom": 617.1875,
+              "width": 60.84375,
+              "height": 26
+            }
+          }
+        ],
+        "Aclone": [
+          {
+            "disabled": true,
+            "rect": {
+              "x": 1463.5,
+              "y": 572,
+              "width": 61,
+              "height": 26,
+              "right": 1524.5,
+              "bottom": 598
+            },
+            "paintedRect": {
+              "x": 1463.5,
+              "y": 572,
+              "right": 1524.5,
+              "bottom": 598,
+              "width": 61,
+              "height": 26
+            }
+          }
+        ]
+      },
+      "verdict": "SCOPED_RECOVERY_FIX_VISIBLE_WITH_RESIDUAL_GEOMETRY_AND_CLONE_STATE_DIFFERENCE",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw480-win1440x900|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 16,
+        "key": "light-rw480-win1440x900|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw480-win1440x900-B13-import-confirm.png",
+          "sha256": "b10977032e4073e7f62201d64e97645b96e400e7787d169d04c12f0ae40674aa",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw480-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "7652985cb1616a675b33e7bb088765329d4162d9367cfa4ffee158fe3d05b211"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1440x900-B13-import-confirm.png",
+          "sha256": "491aee6b0da3f1ded39120deef3326e9e94a51593f32c72e585f2aa5c992d81e",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "fdea9e176e31afb18875a0c9a645194c498d25a1ed84873c3aeb179fd84b7934"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(235, 235, 235)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(112, 112, 112)",
+          "Acolor": "rgb(41, 41, 41)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 16,
+        "key": "light-rw480-win1440x900|B13-import-confirm",
+        "Pdialog": [
+          973,
+          294.5,
+          447,
+          351
+        ],
+        "Adialog": [
+          973,
+          276.5,
+          447,
+          351
+        ],
+        "Pbody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "Abody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(41, 41, 41)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1236.359375,
+              "y": 431.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1316.609375,
+              "bottom": 445.5
+            },
+            "paintedRect": {
+              "x": 1236.359375,
+              "y": 431.5,
+              "right": 1316.609375,
+              "bottom": 445.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 974,
+                  "y": 353.5,
+                  "right": 1419,
+                  "bottom": 577.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 957,
+                  "y": 4,
+                  "right": 1436,
+                  "bottom": 896
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1440,
+                  "bottom": 900
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(235, 235, 235)",
+              "color": "rgb(112, 112, 112)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1237.765625,
+            "y": 413.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1318.015625,
+            "bottom": 427.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "color": "rgb(41, 41, 41)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw900-win1440x900|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 17,
+        "key": "light-rw900-win1440x900|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw900-win1440x900-B13-import-confirm.png",
+          "sha256": "92e50c109859ec5a246ffa8f6e73e0773705b12535051eb4c4c386d563b7253d",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw900-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "52ff50162c38b80714a5d6f36580505f674ed5950dcf39d9e745cbc410ba5757"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1440x900-B13-import-confirm.png",
+          "sha256": "73f10b5dd893c51846b952fd9f6c0e0be0e6a837d5411f682549df658bc9638b",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "bba69af66af70ee892f6c0e32bca1515d88ef45de2a785b7e96f4d807c182b02"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(235, 235, 235)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(112, 112, 112)",
+          "Acolor": "rgb(41, 41, 41)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 17,
+        "key": "light-rw900-win1440x900|B13-import-confirm",
+        "Pdialog": [
+          746.5,
+          294.5,
+          480,
+          351
+        ],
+        "Adialog": [
+          746.5,
+          276.5,
+          480,
+          351
+        ],
+        "Pbody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "Abody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(41, 41, 41)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1009.859375,
+              "y": 431.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1090.109375,
+              "bottom": 445.5
+            },
+            "paintedRect": {
+              "x": 1009.859375,
+              "y": 431.5,
+              "right": 1090.109375,
+              "bottom": 445.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 747.5,
+                  "y": 353.5,
+                  "right": 1225.5,
+                  "bottom": 577.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 537,
+                  "y": 4,
+                  "right": 1436,
+                  "bottom": 896
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1440,
+                  "bottom": 900
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(235, 235, 235)",
+              "color": "rgb(112, 112, 112)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1011.265625,
+            "y": 413.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1091.515625,
+            "bottom": 427.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "color": "rgb(41, 41, 41)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw480-win1440x900|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 18,
+        "key": "dark-rw480-win1440x900|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw480-win1440x900-B13-import-confirm.png",
+          "sha256": "35e12f3673a3da5c8cfc402672ce7d34b067060bf04d4dbc7127aff65ba155cd",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw480-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "99ec5bbb395420eae7aa248cfeb35d4f01c32a1eeea7ffe23b679307c2cf07a6"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1440x900-B13-import-confirm.png",
+          "sha256": "104c7d4f6ce56ec27af3e51f2457b3c577fa78bb4c558d984ad20f0c498bebda",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "7325f25e9068446daccb651c36ddaa60bd925479473e08c8069b1139acd96e2d"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(48, 48, 48)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(204, 204, 204)",
+          "Acolor": "rgb(241, 241, 241)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 18,
+        "key": "dark-rw480-win1440x900|B13-import-confirm",
+        "Pdialog": [
+          973,
+          294.5,
+          447,
+          351
+        ],
+        "Adialog": [
+          973,
+          276.5,
+          447,
+          351
+        ],
+        "Pbody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "Abody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(241, 241, 241)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1236.359375,
+              "y": 431.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1316.609375,
+              "bottom": 445.5
+            },
+            "paintedRect": {
+              "x": 1236.359375,
+              "y": 431.5,
+              "right": 1316.609375,
+              "bottom": 445.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 974,
+                  "y": 353.5,
+                  "right": 1419,
+                  "bottom": 577.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 957,
+                  "y": 4,
+                  "right": 1436,
+                  "bottom": 896
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1440,
+                  "bottom": 900
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(48, 48, 48)",
+              "color": "rgb(204, 204, 204)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1237.765625,
+            "y": 413.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1318.015625,
+            "bottom": 427.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "color": "rgb(241, 241, 241)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw900-win1440x900|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 19,
+        "key": "dark-rw900-win1440x900|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw900-win1440x900-B13-import-confirm.png",
+          "sha256": "bb228ec612799d77dd070216050b3630afb4cb57e55725622ea99e99fbe8a8f3",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw900-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "87ed02ae1d0919d72cbb0746ff9d37fb2532228b4ab3f735ff4b1300381c68e4"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1440x900-B13-import-confirm.png",
+          "sha256": "4cf6d4a6067f47130c44960266c51038659153f1b23dc983892db8c5130f33a3",
+          "dimensions": [
+            1440,
+            900
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1440x900-B13-import-confirm.json",
+          "metadataSHA256": "c03b307639db44d3bf86697191249c344eaa63ad2818886c774bd208fa9ef277"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(48, 48, 48)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(204, 204, 204)",
+          "Acolor": "rgb(241, 241, 241)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 19,
+        "key": "dark-rw900-win1440x900|B13-import-confirm",
+        "Pdialog": [
+          746.5,
+          294.5,
+          480,
+          351
+        ],
+        "Adialog": [
+          746.5,
+          276.5,
+          480,
+          351
+        ],
+        "Pbody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "Abody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(241, 241, 241)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1009.859375,
+              "y": 431.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1090.109375,
+              "bottom": 445.5
+            },
+            "paintedRect": {
+              "x": 1009.859375,
+              "y": 431.5,
+              "right": 1090.109375,
+              "bottom": 445.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 747.5,
+                  "y": 353.5,
+                  "right": 1225.5,
+                  "bottom": 577.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 537,
+                  "y": 4,
+                  "right": 1436,
+                  "bottom": 896
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1440,
+                  "bottom": 900
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(48, 48, 48)",
+              "color": "rgb(204, 204, 204)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1011.265625,
+            "y": 413.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1091.515625,
+            "bottom": 427.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "color": "rgb(241, 241, 241)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw480-win1920x1080|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 20,
+        "key": "light-rw480-win1920x1080|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw480-win1920x1080-B13-import-confirm.png",
+          "sha256": "6c7f1eca1132f971485c039f7db319baa52460f3918a1b0386667c16e1d5f89f",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw480-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "71138a6eb01b19eff75f374f893fd42b911ac845568e372fc79879445713499f"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1920x1080-B13-import-confirm.png",
+          "sha256": "64a244862491357248b13f8d9fe0f7f4863bf0e3f4bf77ee632666d88b97c71e",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw480-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "bb67bff08392bb6d4c3da3d7936206563c1df7c333534db67dc715f87e90aed0"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(235, 235, 235)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(112, 112, 112)",
+          "Acolor": "rgb(41, 41, 41)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 20,
+        "key": "light-rw480-win1920x1080|B13-import-confirm",
+        "Pdialog": [
+          1453,
+          384.5,
+          447,
+          351
+        ],
+        "Adialog": [
+          1453,
+          366.5,
+          447,
+          351
+        ],
+        "Pbody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "Abody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(41, 41, 41)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1716.359375,
+              "y": 521.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1796.609375,
+              "bottom": 535.5
+            },
+            "paintedRect": {
+              "x": 1716.359375,
+              "y": 521.5,
+              "right": 1796.609375,
+              "bottom": 535.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 1454,
+                  "y": 443.5,
+                  "right": 1899,
+                  "bottom": 667.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 1437,
+                  "y": 4,
+                  "right": 1916,
+                  "bottom": 1076
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1920,
+                  "bottom": 1080
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(235, 235, 235)",
+              "color": "rgb(112, 112, 112)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1717.765625,
+            "y": 503.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1798.015625,
+            "bottom": 517.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "color": "rgb(41, 41, 41)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "light-rw900-win1920x1080|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 21,
+        "key": "light-rw900-win1920x1080|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw900-win1920x1080-B13-import-confirm.png",
+          "sha256": "56d26be0cf2948f83dd78a4b13226e4f3cfb700d282b6c7c25f7ef77ef169ce9",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-light-rw900-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "2bd38e08ac557634b3b4fcaa1ca814fb97f513d3b3d90ed82dd1dddbf9d162a5"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1920x1080-B13-import-confirm.png",
+          "sha256": "c5fe36cad74bd392ec3c910c9f01b2e7db35e42eddfd72fe4efa5407e7df812c",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-light-rw900-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "43981245215622148f82217469e6278c96d73f90a091f27cfddd93a98f170cd5"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(235, 235, 235)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(112, 112, 112)",
+          "Acolor": "rgb(41, 41, 41)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 21,
+        "key": "light-rw900-win1920x1080|B13-import-confirm",
+        "Pdialog": [
+          1226.5,
+          384.5,
+          480,
+          351
+        ],
+        "Adialog": [
+          1226.5,
+          366.5,
+          480,
+          351
+        ],
+        "Pbody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "Abody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(41, 41, 41)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1489.859375,
+              "y": 521.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1570.109375,
+              "bottom": 535.5
+            },
+            "paintedRect": {
+              "x": 1489.859375,
+              "y": 521.5,
+              "right": 1570.109375,
+              "bottom": 535.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 1227.5,
+                  "y": 443.5,
+                  "right": 1705.5,
+                  "bottom": 667.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 1017,
+                  "y": 4,
+                  "right": 1916,
+                  "bottom": 1076
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1920,
+                  "bottom": 1080
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(235, 235, 235)",
+              "color": "rgb(112, 112, 112)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1491.265625,
+            "y": 503.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1571.515625,
+            "bottom": 517.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "color": "rgb(41, 41, 41)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw480-win1920x1080|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 22,
+        "key": "dark-rw480-win1920x1080|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw480-win1920x1080-B13-import-confirm.png",
+          "sha256": "6ba576db3791bfcd9eed6f41e4f05f25934e9f28ddca686d9a0e2a5d8eefb2ca",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw480-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "b41d7f00fb490e57170c51df9b4af66f622f56b4952f87a8039b2a82da48c71e"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1920x1080-B13-import-confirm.png",
+          "sha256": "031d6d800afb70bf0966c807c3a58f3af667e0da9a52590ed248df57b8819504",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw480-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "b0082382ed3d599223174f46afbc57f06e4d83970480ed887a6b6cea0898619c"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(48, 48, 48)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(204, 204, 204)",
+          "Acolor": "rgb(241, 241, 241)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 22,
+        "key": "dark-rw480-win1920x1080|B13-import-confirm",
+        "Pdialog": [
+          1453,
+          384.5,
+          447,
+          351
+        ],
+        "Adialog": [
+          1453,
+          366.5,
+          447,
+          351
+        ],
+        "Pbody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "Abody": [
+          445,
+          445,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(241, 241, 241)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1716.359375,
+              "y": 521.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1796.609375,
+              "bottom": 535.5
+            },
+            "paintedRect": {
+              "x": 1716.359375,
+              "y": 521.5,
+              "right": 1796.609375,
+              "bottom": 535.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 1454,
+                  "y": 443.5,
+                  "right": 1899,
+                  "bottom": 667.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 1437,
+                  "y": 4,
+                  "right": 1916,
+                  "bottom": 1076
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1920,
+                  "bottom": 1080
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(48, 48, 48)",
+              "color": "rgb(204, 204, 204)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1717.765625,
+            "y": 503.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1798.015625,
+            "bottom": 517.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "color": "rgb(241, 241, 241)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    },
+    {
+      "key": "dark-rw900-win1920x1080|B13-import-confirm",
+      "actualOriginalViewed": true,
+      "evidence": {
+        "index": 23,
+        "key": "dark-rw900-win1920x1080|B13-import-confirm",
+        "A": {
+          "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw900-win1920x1080-B13-import-confirm.png",
+          "sha256": "93cf8d79b5bd1ad870e676c0806dcb49b8739358917389a9584f8e551e40bb82",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/supplemental-A-dark-rw900-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "6d7c76b7aa599ca764d0098e155a429b97df0b163582e1b5099d110145eac966"
+        },
+        "P": {
+          "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1920x1080-B13-import-confirm.png",
+          "sha256": "154e00f7aaf20b47b621fee4fb1b2674ff481bb807cdfe9e3367f7a968aefcbd",
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "metadataPath": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/images/P-dark-rw900-win1920x1080-B13-import-confirm.json",
+          "metadataSHA256": "8ee4f32a1eca25881d3e7deca863e675bb741f35ca7ee65439b7f85a57aa80a1"
+        },
+        "actualOriginalViewed": true,
+        "viewMethod": "Individually viewed every P and A original PNG with view_image(detail=original); no cropped, resized or composite substitute."
+      },
+      "wholeSlotVisualPass": false,
+      "findings": [
+        {
+          "criterion": "four warning bullets",
+          "result": "SCOPED_PASS",
+          "observation": "Four visible bullet markers with actual UL/LI and list-style disc; previous no-UL wording is corrected. The structure was present; reset previously suppressed the markers."
+        },
+        {
+          "criterion": "cookie get code background",
+          "result": "SCOPED_PASS",
+          "observation": "Real code text, monospace, background, padding and radius visible; matching measured background.",
+          "background": "rgb(48, 48, 48)",
+          "padding": "0px 4px",
+          "radius": "4px"
+        },
+        {
+          "criterion": "cookie get code foreground",
+          "result": "CONFIRMED_VISUAL_DIFFERENCE",
+          "observation": "P uses secondary text; A inherits primary text. This persists in all eight light/dark combinations.",
+          "Pcolor": "rgb(204, 204, 204)",
+          "Acolor": "rgb(241, 241, 241)"
+        },
+        {
+          "criterion": "dialog size and horizontal containment",
+          "result": "SCOPED_PASS_WITH_POSITION_BOUNDARY",
+          "observation": "Dialog width/height and body width/height match; body has no horizontal overflow. A is centered 18px above P in the different host area; full screenshot identity is not claimed."
+        },
+        {
+          "criterion": "business copy and emphasis",
+          "result": "APPROVED_COPY_WITH_DATA_WRAP_BOUNDARY",
+          "observation": "R1.7 domain-whole replacement meaning is synchronized. Source-profile/target names differ as fixture data. No extra strong-range defect is asserted without exact character/paint evidence."
+        },
+        {
+          "criterion": "footer actions",
+          "result": "SCOPED_PASS",
+          "observation": "Back then primary Confirm Import order, actual button treatment and containment visibly correspond."
+        }
+      ],
+      "measurements": {
+        "i": 23,
+        "key": "dark-rw900-win1920x1080|B13-import-confirm",
+        "Pdialog": [
+          1226.5,
+          384.5,
+          480,
+          351
+        ],
+        "Adialog": [
+          1226.5,
+          366.5,
+          480,
+          351
+        ],
+        "Pbody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "Abody": [
+          478,
+          478,
+          224,
+          224
+        ],
+        "PulStyle": {
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "color": "rgb(241, 241, 241)",
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "lineHeight": "20px",
+          "padding": "0px 0px 0px 18px",
+          "gap": "8px"
+        },
+        "AulStyle": {
+          "font": "430 13px / 20px -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "listStyleType": "disc",
+          "padding": "0px 0px 0px 18px"
+        },
+        "Pcode": [
+          {
+            "text": "cookie get",
+            "rect": {
+              "x": 1489.859375,
+              "y": 521.5,
+              "width": 80.25,
+              "height": 14,
+              "right": 1570.109375,
+              "bottom": 535.5
+            },
+            "paintedRect": {
+              "x": 1489.859375,
+              "y": 521.5,
+              "right": 1570.109375,
+              "bottom": 535.5,
+              "width": 80.25,
+              "height": 14
+            },
+            "clippingAncestors": [
+              {
+                "tag": "DIV",
+                "className": "bw-dialog-body",
+                "overflowX": "auto",
+                "overflowY": "auto",
+                "rect": {
+                  "x": 1227.5,
+                  "y": 443.5,
+                  "right": 1705.5,
+                  "bottom": 667.5
+                }
+              },
+              {
+                "tag": "ASIDE",
+                "className": "file-workspace ",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 1017,
+                  "y": 4,
+                  "right": 1916,
+                  "bottom": 1076
+                }
+              },
+              {
+                "tag": "BODY",
+                "className": "",
+                "overflowX": "hidden",
+                "overflowY": "hidden",
+                "rect": {
+                  "x": 0,
+                  "y": 0,
+                  "right": 1920,
+                  "bottom": 1080
+                }
+              }
+            ],
+            "clientWidth": 0,
+            "scrollWidth": 0,
+            "clientHeight": 0,
+            "scrollHeight": 0,
+            "disabled": false,
+            "centerHit": true,
+            "style": {
+              "display": "inline",
+              "visibility": "visible",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "listStyleType": "disc",
+              "backgroundColor": "rgb(48, 48, 48)",
+              "color": "rgb(204, 204, 204)",
+              "fontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+              "fontSize": "12px",
+              "lineHeight": "normal",
+              "padding": "0px 4px",
+              "gap": "normal"
+            }
+          }
+        ],
+        "Acode": {
+          "rect": {
+            "x": 1491.265625,
+            "y": 503.5,
+            "width": 80.25,
+            "height": 14,
+            "right": 1571.515625,
+            "bottom": 517.5
+          },
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "clientHeight": 0,
+          "scrollHeight": 0,
+          "display": "inline",
+          "visibility": "visible",
+          "listStyleType": "disc",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "color": "rgb(241, 241, 241)",
+          "font": "12px SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+          "padding": "0px 4px",
+          "borderRadius": "4px",
+          "text": "cookie get"
+        }
+      },
+      "verdict": "BULLETS_AND_CODE_BACKGROUND_VISIBLE_PASS_CODE_FOREGROUND_DIFFERENCE_REMAINS",
+      "boundaries": [
+        "P shell begins at y4 versus A host y0; do not infer whole-app pixel equivalence.",
+        "P demo page and A real synthetic local page/task content differ; Native whole-page pixels are outside this modal review.",
+        "Explicit synthetic source/key/cipher and journal/NativeStore failure DI is not real Keychain, ordinary network or model execution."
+      ]
+    }
+  ],
+  "sourceFacts": [
+    {
+      "label": "P global code",
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/reference/source/prototypes/m6-codex/src/styles.css",
+      "sha256": "8a05f4f3ba7dd74427257edbc9cf4c5dc248c749d83c7c91a443087c73303cc4",
+      "bytes": 34002,
+      "lines": [
+        {
+          "line": 33,
+          "text": "code { font: 12px/1.7 var(--mono); color: var(--secondary); overflow-wrap: anywhere; }"
+        }
+      ]
+    },
+    {
+      "label": "P modal styles",
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/reference/source/prototypes/m6-codex/src/browser.css",
+      "sha256": "24a1d9463989f2e5fcc12f4162dec37e3f1e774b4cf59bd02415569c8fbe5d2e",
+      "bytes": 16702,
+      "lines": [
+        {
+          "line": 160,
+          "text": ".bw-warn-list code,.bw-hint code{font:12px var(--mono);background:var(--hover);border-radius:4px;padding:0 4px}"
+        },
+        {
+          "line": 181,
+          "text": ".bw-attention{display:flex;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #e3a008;border-radius:10px;background:color-mix(in srgb,#e3a008 10%,var(--bg));color:var(--text);font-size:12px;line-height:18px}"
+        },
+        {
+          "line": 182,
+          "text": ".bw-attention>svg{color:#b7791f;flex-shrink:0;margin-top:1px}"
+        },
+        {
+          "line": 183,
+          "text": ".bw-attention>div{flex:1;min-width:0;overflow-wrap:anywhere}"
+        },
+        {
+          "line": 184,
+          "text": ".bw-attention p{margin:4px 0 8px;color:var(--secondary)}"
+        }
+      ]
+    },
+    {
+      "label": "A frozen modal styles",
+      "path": "/private/tmp/willyou-m12-address-validation-source-060/source/src/renderer/features/browser/workspace.css",
+      "sha256": "3b419eec54aa746df33bdf2696e3b5372eba88e6b42d5915c189408978599a83",
+      "bytes": 17200,
+      "lines": [
+        {
+          "line": 47,
+          "text": ".bw-warn-list code,.bw-hint code{font:12px var(--mono);background:var(--hover);border-radius:4px;padding:0 4px}"
+        },
+        {
+          "line": 126,
+          "text": ".bw-attention{display:flex;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #e3a008;border-radius:10px;background:color-mix(in srgb,#e3a008 10%,var(--bg));color:var(--text);font-size:12px;line-height:18px}"
+        },
+        {
+          "line": 127,
+          "text": ".bw-attention>svg{color:#b7791f;flex-shrink:0;margin-top:1px}"
+        },
+        {
+          "line": 128,
+          "text": ".bw-attention>div{flex:1;min-width:0;overflow-wrap:anywhere}"
+        },
+        {
+          "line": 131,
+          "text": ".bw-attention p{margin:4px 0 8px;color:var(--secondary)}"
+        },
+        {
+          "line": 135,
+          "text": ".bw-agent code,.bw-paused code{font:11px var(--mono);color:var(--secondary)}"
+        }
+      ]
+    }
+  ],
+  "inputReferences": [
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/raw.json",
+      "sha256": "b1191054c76949d3f915d1eff9cfb687061c2bea8079f6b4755e54f32e7cc10d",
+      "bytes": 16001267
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/READY.json",
+      "sha256": "c7f74b15f94acc53ac0543a5db90fbffc4585d582d8e63b4d2780de0435bea10",
+      "bytes": 104713
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/manifest.json",
+      "sha256": "51c9bf86004e12445d62776637e176ed18aa7b1852b3cbbc2e0bdf95a203082f",
+      "bytes": 10083
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/judgement.json",
+      "sha256": "cc4c6438ba3c485805bfe72a53cc55d3c934826878fc215b81bc6ff34539e10a",
+      "bytes": 1041
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/cleanup.json",
+      "sha256": "754d0ccc973d18c2228c1a1fcb05f4207ea4780b89ddac5d788bf41878d15299",
+      "bytes": 6198
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/static-result.json",
+      "sha256": "76e8e3ebc93a4ae7c33707c6b52028e4b4e8897298ea88b0d26d259a733d0b6c",
+      "bytes": 3909
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/raw.json",
+      "sha256": "a6d7d1d9c8eab4959ab2ad556a33aee435323e89611e6dcc2ac76c7bfa9f69c6",
+      "bytes": 276703
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/READY.json",
+      "sha256": "32039aa91d8b9b8c0b2bc9860e88bd21920992c2caaa50c382eb2e849823d06b",
+      "bytes": 5803017
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/manifest.json",
+      "sha256": "fca18a95b2e2b2d81ca645d4d4f1b8373cb14f73013487cb8a35923459efbfb7",
+      "bytes": 5462
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/judgement.json",
+      "sha256": "c6e12d6e87f6a8543f71bc1752a591e1199d6a061d302d434380151fbc3426b2",
+      "bytes": 860
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/cleanup.json",
+      "sha256": "eb6156b12b65a17c72c64e714bf8eb0cdc5571dbcfc832341fe9a4d36e906bad",
+      "bytes": 15770
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-profile-confirm-source060-P48-001/static-result.json",
+      "sha256": "aa341c11d131091abf22afc3b15863b0d686f3c198f6ec325810aac83bf519ac",
+      "bytes": 502
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/source-proof.json",
+      "sha256": "5a6d0b86c89ed93c56aa8988e8b7ee48cc6f59c690ab79fc9151f9a9a7add55d",
+      "bytes": 7526
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/current-App051-binding.json",
+      "sha256": "655559567b38c1028feb44e78722b0bc92b34d1d41fd6375cd09e71b5cdd79f6",
+      "bytes": 1538
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/fault-boundary.json",
+      "sha256": "563fcd359b9413d36f5339da0c49eaffda1e37bb5eddac4f29feb4860c4755a0",
+      "bytes": 1388
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t145-App051-recovery16-R004/prior-R003-clipping-red-reference.json",
+      "sha256": "baa37e9393e1d6d4e01767711aedc2812a1efcd613c95681bd2d3978963b0fbe",
+      "bytes": 658
+    }
+  ],
+  "resources": {
+    "app": 0,
+    "native": 0,
+    "http": 0,
+    "osOrJXA": 0,
+    "node": 0,
+    "runningChildren": 0,
+    "work": "Python file reads/hash/private output only; image reads only",
+    "released": true
+  }
+}

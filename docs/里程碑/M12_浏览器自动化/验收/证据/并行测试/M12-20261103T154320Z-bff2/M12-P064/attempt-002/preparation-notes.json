@@ -1,0 +1,14 @@
+{
+  "nativeStarted": false,
+  "preparationFailures": [
+    {
+      "kind": "metadata-format-reader",
+      "message": "New source-inputs.json modes are octal strings0o644 instead of prior integer420. First prepare rejected strict mode equality before any bundle/native; old output retained."
+    },
+    {
+      "kind": "dependent-preflight-no-input",
+      "message": "Preflight was invoked before observing failed prepare and rejected missing prepared.json; did not start native. Subsequent stages are now invoked only after actual prerequisite exit0."
+    }
+  ],
+  "correction": "Parse pinned octal mode string via Number and keep exact actual FS mode check; store numeric modes in private prepared metadata. Original source-inputs bytes/SHA unchanged."
+}

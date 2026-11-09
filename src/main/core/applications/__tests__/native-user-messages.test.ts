@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, appendFileSync, renameSync, symlinkSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, appendFileSync, renameSync, symlinkSync, readFileSync,statSync,utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -38,6 +38,47 @@ function replaceFormat(overrides:Partial<NativeEvidenceAdapter>){
 }
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), 'willyou-native-user-messages-')); cwd = join(root, 'project'); nativeRoot = join(root, 'native'); mkdirSync(cwd); mkdirSync(nativeRoot); now = Date.now(); failRun = false; currentChecks = 0; });
 afterEach(() => { messages?.dispose(); inputs?.dispose(); vi.restoreAllMocks(); rmSync(root, { recursive: true, force: true }); });
+describe('background Skill change hints are never evidence or authority',()=>{
+ it('detects appended and equal-size rewritten bytes even with the original mtime restored',async()=>{
+  setup('codex');write(user('alpha'));const id=current.run.runId,hash=current.run.snapshotHash;
+  const first=await messages.skillObservationRevision(id,hash);expect(first).toMatch(/^[a-f0-9]{64}$/);
+  expect(await messages.skillObservationRevision(id,hash)).toBe(first);
+  const original=readFileSync(file,'utf8'),stat=statSync(file);writeFileSync(file,original.replace('alpha','bravo'));utimesSync(file,stat.atime,stat.mtime);
+  const rewritten=await messages.skillObservationRevision(id,hash);expect(rewritten).not.toBe(first);expect(rewritten).not.toBeNull();
+  write(user('later'));expect(await messages.skillObservationRevision(id,hash)).not.toBe(rewritten);
+ });
+ it('never lets a cached hint bypass the normal current-run checks or create user-input authority',async()=>{
+  setup('codex');write(user());const id=current.run.runId,hash=current.run.snapshotHash;
+  expect(await messages.skillObservationRevision(id,hash)).not.toBeNull();failRun=true;
+  const skill=current.snapshot.packages[0].skills[0];expect(await messages.skillReads(id,[{id:skill.skillId,path:skill.projectionPath,content:'fixed'}])).toEqual([]);
+  expect(await messages.read(id)).toMatchObject({status:'unavailable',messages:[]});
+  expect(await messages.skillObservationRevision(id,'b'.repeat(64))).toBeNull();
+ });
+ it('rejects replaced symlinks and revoked or disposed registrations',async()=>{
+  setup('codex');const id=current.run.runId,hash=current.run.snapshotHash;expect(await messages.skillObservationRevision(id,hash)).not.toBeNull();
+  const old=file+'.old';renameSync(file,old);symlinkSync(old,file);expect(await messages.skillObservationRevision(id,hash)).toBeNull();
+  abort.abort();expect(await messages.skillObservationRevision(id,hash)).toBeNull();messages.dispose();expect(await messages.skillObservationRevision(id,hash)).toBeNull();
+ });
+ it('does not retain a source captured while the run is being revoked',async()=>{
+  setup('codex');const original=builtinNativeEvidenceAdapters.get('codex');replaceFormat({locate:async(identity,lookup)=>{const found=await original.locate(identity,lookup);abort.abort();return found;}});
+  expect(await messages.skillObservationRevision(current.run.runId,current.run.snapshotHash)).toBeNull();
+ });
+ it('wakes again after a failed full read even when native log bytes have not changed',async()=>{
+  setup('codex');let unavailable=true;replaceFormat({observeSkillReads:()=>{if(unavailable)throw new Error('transient reader failure');return [];}});
+  const id=current.run.runId,hash=current.run.snapshotHash,skill=current.snapshot.packages[0].skills[0],targets=[{id:skill.skillId,path:skill.projectionPath,content:'fixed'}];
+  const before=await messages.skillObservationRevision(id,hash);expect(before).not.toBeNull();expect(await messages.skillReads(id,targets)).toEqual([]);
+  const retry=await messages.skillObservationRevision(id,hash);expect(retry).not.toBe(before);unavailable=false;expect(await messages.skillReads(id,targets)).toEqual([]);expect(await messages.skillObservationRevision(id,hash)).toBe(retry);
+ });
+ it('does not busy-retry an empty native log for an adapter with Skill observation support',async()=>{
+  setup('claude-code');const id=current.run.runId,hash=current.run.snapshotHash,skill=current.snapshot.packages[0].skills[0];
+  // The retained Claude adapter has no Skill parser. Use an explicitly
+  // registered parser to exercise an empty, headerless supported format.
+  expect(await messages.skillObservationRevision(id,hash)).toBeNull();
+  replaceFormat({observeSkillReads:()=>[]});
+  const revision=await messages.skillObservationRevision(id,hash);
+  expect(revision).not.toBeNull();expect(await messages.skillReads(id,[{id:skill.skillId,path:skill.projectionPath,content:'fixed'}])).toEqual([]);expect(await messages.skillObservationRevision(id,hash)).toBe(revision);
+ });
+});
 describe('M11 S10 pluggable evidence format host boundaries',()=>{
  it('rejects an unregistered format instead of falling through to the Codex parser',()=>{
   expect(()=>builtinNativeEvidenceAdapters.get('unregistered-agent')).toThrow('没有已登记');

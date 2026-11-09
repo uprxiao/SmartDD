@@ -1,0 +1,111 @@
+{
+  "at": "2026-11-05T08:43:40.299Z",
+  "group": "M12-P099",
+  "status": "READY-file-only-awaiting-Native-UI-lease",
+  "root": "/private/tmp/willyou-m12-p099-owned-app-focus-001",
+  "inputs": [
+    {
+      "path": "run.mjs",
+      "mode": 420,
+      "sha256": "45231e68c8afecc32adde5c71306a8be71abadd09e26bbfd2caec9bff375184c"
+    },
+    {
+      "path": "initial-activation.mjs",
+      "mode": 420,
+      "sha256": "049574506511ea58873d9686ae2dcb0d7170dfe00d95e4a7af09571ead3e40da"
+    },
+    {
+      "path": "process.mjs",
+      "mode": 420,
+      "sha256": "b33ac7039dd1783f2d123370747f0cfe57e1230cc4601661e881dfad9601bc4a"
+    },
+    {
+      "path": "resources.mjs",
+      "mode": 420,
+      "sha256": "b36a69cc937b6970cdfe454f97e4b4e3043849db805f8c328681d390cb01899b"
+    },
+    {
+      "path": "io.mjs",
+      "mode": 420,
+      "sha256": "0b89a46899f81fdef5226ed2283bc088897a3603b61c39c5008548897eae3335"
+    },
+    {
+      "path": "judge.mjs",
+      "mode": 420,
+      "sha256": "1d247f86f85059172d182e3a246309f2f77f788a86ef7b2afa1b35067550f007"
+    },
+    {
+      "path": "cleanup.mjs",
+      "mode": 420,
+      "sha256": "4bbcdff0f7f39b198f27c77e0d46b42ccf15954974eb576cc736f94007b9e67b"
+    },
+    {
+      "path": "manifest.mjs",
+      "mode": 420,
+      "sha256": "ff276a6316177af319151866c96b39ebf0675e0882bbe37f95f151350efcae8c"
+    },
+    {
+      "path": "prepare.mjs",
+      "mode": 420,
+      "sha256": "077e4487dfe023cff7e9158fec12b19406e7c3503b27fd452ccbc08eb7970ba7"
+    },
+    {
+      "path": "owned-activation.m",
+      "mode": 420,
+      "sha256": "21a7070e3a32998d797fce44951b87d92ed86b4a73074fb0acd8c5f768414e76"
+    },
+    {
+      "path": "pin.json",
+      "mode": 420,
+      "sha256": "5299bab51f0825c3fa5c82942c9e7414c2b3d2f7100762108ed15becefa126f1"
+    },
+    {
+      "path": "sdk-evidence.json",
+      "mode": 384,
+      "sha256": "48ebb4601a8b6632c99c136097a724bcaf7c1972f1d7d919a0ce63a1b26bde95"
+    },
+    {
+      "path": "preflight-commands.json",
+      "mode": 384,
+      "sha256": "f538dc4ab6985bff8176854d990536bcf89ef48354376ae31743a804715b6892"
+    },
+    {
+      "path": "static-preparation.json",
+      "mode": 384,
+      "sha256": "c653745a8a9c82d0b9bf5844f9c916360ade8c956e6badbbb21e309835fb872a"
+    },
+    {
+      "path": "driver-source/scripts/lib/electron-harness.mjs",
+      "mode": 420,
+      "sha256": "7ef727d23176a530625b80facaaf8f9712e27ab83d47082db8d0463cc8a46ab9"
+    },
+    {
+      "path": "driver-source/scripts/lib/app-focus-guard.mjs",
+      "mode": 420,
+      "sha256": "78b555426c3e340899c308f198937f4129318c7a10da144a7eb11e8439e251b7"
+    },
+    {
+      "path": "driver-source/scripts/lib/check-cdp-expressions.mjs",
+      "mode": 420,
+      "sha256": "2a9ef0b7c764ad1b816baa7d57fa922dd1a41172a14f5fb4b4424857cc2eca3f"
+    },
+    {
+      "path": "README.md",
+      "mode": 420,
+      "sha256": "63ce4b1dfc37f057d4bc8d614281a81bc71472a8f176c124af69cb1c09670cc6"
+    }
+  ],
+  "execute": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p099-owned-app-focus-001/cache node /private/tmp/willyou-m12-p099-owned-app-focus-001/run.mjs --execute",
+  "postRun": [
+    "node /private/tmp/willyou-m12-p099-owned-app-focus-001/judge.mjs",
+    "node /private/tmp/willyou-m12-p099-owned-app-focus-001/cleanup.mjs",
+    "node /private/tmp/willyou-m12-p099-owned-app-focus-001/manifest.mjs"
+  ],
+  "boundary": "Future one directly spawned App020 child; one E.app.focus({steal:true}) inside strongly identified exact owned PID only after setup reload/native strong identity. OS frontmost+DOM/native stable1s then onceguard and one settings UI click. No model/CLI/clipboard/daily data. Native compile/API behavior not yet verified.",
+  "reusableModules": [
+    "initial-activation.mjs",
+    "process.mjs",
+    "owned-activation.m"
+  ],
+  "formalWholeCaseCount": 0
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "REF-SNAPSHOT-BINDING",
+    "boundary": "contract interleaving, not executed production",
+    "steps": [
+      "helper snapshot returns ref e4 resolved to original A",
+      "page replaces A with same-name B",
+      "host AX lookup now resolves role/name/nth to B and stores backendB for e4",
+      "pre-action lookup sees backendB match",
+      "helper semantically resolves e4 to B and clicks B"
+    ],
+    "violatedRule": "R03.2 never click replacement"
+  },
+  {
+    "id": "REF-CHECK-ACTION",
+    "boundary": "contract interleaving, not executed production",
+    "steps": [
+      "snapshot/AX map e4→backendA",
+      "pre-action AX sees backendA, check passes",
+      "page replaces A with same-name B",
+      "helper semantic e4 role/name/nth resolves B and clicks B"
+    ],
+    "violatedRule": "R03.2 never click replacement"
+  },
+  {
+    "id": "REF-CROSS-PAGE",
+    "boundary": "wire-contract ambiguity, not native replay",
+    "validBWire": {
+      "page": "B",
+      "element": "@e4"
+    },
+    "invalidARefWire": {
+      "page": "B",
+      "element": "@e4"
+    },
+    "sameWire": true,
+    "requiredOutcomesDiffer": true
+  },
+  {
+    "id": "INPUT-PROGRESS",
+    "boundary": "chunk contract interleaving, not executed production",
+    "chunkSize": 2000,
+    "confirmedChunks": 1,
+    "partiallyTypedInFlightChunk": 333,
+    "receiptConfirmedChars": 2000,
+    "pageActualAddedChars": 2333,
+    "violatedCase": "T060 exact progress equality"
+  },
+  {
+    "id": "COOKIE-RESTORE",
+    "boundary": "optimistic compensation interleaving, not executed production",
+    "steps": [
+      "import changes cookie from old to imported",
+      "compensation reads current=imported and comparison passes",
+      "unlocked page writes cookie=userNewLogin",
+      "compensation restores old value"
+    ],
+    "finalCookie": "old",
+    "expectedCookie": "userNewLogin",
+    "violatedRule": "R06.4 preserve page-written cookies"
+  }
+]

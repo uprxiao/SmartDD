@@ -1,0 +1,104 @@
+{
+  "at": "2026-11-04T19:36:03.170136+00:00",
+  "classification": "driver-query-ambiguity-before-transport-fault",
+  "cause": "Private disconnectWrite selected both BrowserAudit audit:<requestId> and real write receipt rows by same run/page/find/running, then required length 1. Actual production intentionally stores both. No actual socket destroy executed. Cleanup released original gate and terminated owned CLI; its SIGTERM/empty stdout is cleanup, not required T094 EOF result.",
+  "actualRows": [
+    {
+      "run_id": "dbc24640-8b27-44e2-a923-1b31800cf855",
+      "request_id": "audit:582bd26b-c05b-49bf-8142-6986f40e45d4",
+      "task_id": "f026604f-7a5b-4ae5-a5ff-a0f3658913b2",
+      "page_id": "f29c7737-2e3d-498f-b7f9-3a1b6863323f",
+      "command": "find",
+      "state": "running",
+      "effect_state": "not-started",
+      "progress": null,
+      "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"d703a67b-c1c4-49f8-954b-09422be75dde\",\"targetTaskId\":\"f026604f-7a5b-4ae5-a5ff-a0f3658913b2\",\"semantics\":\"write\",\"arguments\":{\"action\":\"click\",\"value\":\"once-submit\",\"page\":\"f29c7737-2e3d-498f-b7f9-3a1b6863323f\",\"locator\":\"testid\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+      "error_code": null,
+      "created_at": 1793820864162,
+      "updated_at": 1793820864163
+    },
+    {
+      "run_id": "dbc24640-8b27-44e2-a923-1b31800cf855",
+      "request_id": "582bd26b-c05b-49bf-8142-6986f40e45d4",
+      "task_id": "f026604f-7a5b-4ae5-a5ff-a0f3658913b2",
+      "page_id": "f29c7737-2e3d-498f-b7f9-3a1b6863323f",
+      "command": "find",
+      "state": "running",
+      "effect_state": "unknown",
+      "progress": null,
+      "summary": null,
+      "error_code": null,
+      "created_at": 1793820864165,
+      "updated_at": 1793820864172
+    }
+  ],
+  "actualInvocation": [
+    {
+      "operation_id": "d16d4d48-ecf7-41eb-a7cb-9e5aca45f85d",
+      "run_id": "dbc24640-8b27-44e2-a923-1b31800cf855",
+      "request_id": "582bd26b-c05b-49bf-8142-6986f40e45d4",
+      "tool_name": "browser.interact.find",
+      "state": "running",
+      "attempt_count": 1,
+      "effect_state": "unknown",
+      "error_code": null
+    }
+  ],
+  "gate": [
+    {
+      "kind": "installed",
+      "at": 1793820863406,
+      "pageId": "f29c7737-2e3d-498f-b7f9-3a1b6863323f",
+      "boundary": "Original Helper find executes first with unchanged args/options/signal/result; only its fulfilled result delayed after actual site effect. Gate not installed during performance."
+    },
+    {
+      "kind": "original-fulfilled-helper-find-held",
+      "at": 1793820864179,
+      "command": [
+        "find",
+        "testid",
+        "once-submit",
+        "click"
+      ],
+      "result": {
+        "clicked": "[data-agent-browser-located='true']"
+      }
+    },
+    {
+      "kind": "released",
+      "at": 1793820864295
+    },
+    {
+      "kind": "original-result-released-unchanged",
+      "at": 1793820864297,
+      "result": {
+        "clicked": "[data-agent-browser-located='true']"
+      }
+    }
+  ],
+  "siteOnceCount": 1,
+  "rawCarrier": "raw.json gateBeforeDisconnect.operations + invocations; host-initial.raw.json gateEvents and events; raw.json effects and steps[-1]",
+  "sourceReferences": [
+    {
+      "path": "src/main/core/browser/audit.ts",
+      "sha256": "74e5f1169f73acfe3040714aea86cdb104bd4669427bc1a7717e3d1cbdcaf4bf",
+      "lines": "55-67: audit: prefix intentionally added"
+    },
+    {
+      "path": "src/main/core/browser/service.ts",
+      "sha256": "94a21b307d9550a52f48b9122c532934d2d8da6fb766f5bb49c9e75d35df8225",
+      "lines": "202-204, 228, 503-508: real scope.requestId operation receipt and get"
+    },
+    {
+      "path": "src/main/core/applications/cli-gateway.ts",
+      "sha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef",
+      "lines": "87-88, 115-116: per real requestId controller and socket close abort"
+    }
+  ],
+  "driverReference": {
+    "path": "host.body.ts",
+    "lines": "31",
+    "sha256": "20162756c8ca5742be411b95e061067aad55b5851887d8db6a04d3307e7b451b"
+  },
+  "nextMinimalFix": "Use read-only join of real browser_operations to matching current-run application_invocations request_id, tool_name browser.interact.find and running state; require one, then exact gateway peer. Never derive later operation get input from this SQL; must still use actual CLI EOF stdout requestId. New isolated T094-only attempt after explicit root lease; reuse valid 3 complete I results, do not rerun 100 timing samples."
+}

@@ -1,0 +1,2480 @@
+{
+  "group": "M12-P045",
+  "case": "M12-T082",
+  "driverPid": 22395,
+  "startedAt": "2026-11-04T07:54:32.188Z",
+  "stage": "final-single-result-youtube",
+  "steps": [
+    {
+      "label": "fixture-target-tab",
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:54221/app"
+      ],
+      "startedAt": "2026-11-04T07:54:34.811Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 1,
+        "pid": 22469,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:54221\\/app\",\"pageId\":\"3299c31b-e051-4812-b538-5e3b91d1576d\"},\"resources\":[],\"operation\":{\"id\":\"c91e2af4-d60f-456b-9eb7-53847e183440\",\"requestId\":\"fbf599e7-33ab-493b-ad1f-c1dce1fdb114\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:54221/app",
+          "pageId": "3299c31b-e051-4812-b538-5e3b91d1576d"
+        },
+        "resources": [],
+        "operation": {
+          "id": "c91e2af4-d60f-456b-9eb7-53847e183440",
+          "requestId": "fbf599e7-33ab-493b-ad1f-c1dce1fdb114",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      },
+      "finishedAt": "2026-11-04T07:54:36.189Z"
+    },
+    {
+      "label": "preseed-readback-qa",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://qa.example.test/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:36.189Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 2,
+        "pid": 22599,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"qa.example.test\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"qa.example.test\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-old-Y\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Y\"}]}},\"resources\":[],\"operation\":{\"id\":\"bfa757f3-1717-4c2c-a3ab-c0e1883a6ead\",\"requestId\":\"637e10c8-4a7b-482f-a0d4-65cb585100d6\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "qa.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 11,
+                "value": "P045-old-X",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "X"
+              },
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "qa.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 11,
+                "value": "P045-old-Y",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "Y"
+              }
+            ]
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "bfa757f3-1717-4c2c-a3ab-c0e1883a6ead",
+          "requestId": "637e10c8-4a7b-482f-a0d4-65cb585100d6",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:37.087Z"
+    },
+    {
+      "label": "preseed-readback-other",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://other.example.test/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:37.087Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 3,
+        "pid": 22724,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"other.example.test\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-Z\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Z\"}]}},\"resources\":[],\"operation\":{\"id\":\"7d6a76ba-cc12-472b-a0eb-862095158a9c\",\"requestId\":\"11bf7072-cc5a-4c53-aba6-d0bfe3b103f9\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "other.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 12,
+                "value": "P045-keep-Z",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "Z"
+              }
+            ]
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "7d6a76ba-cc12-472b-a0eb-862095158a9c",
+          "requestId": "11bf7072-cc5a-4c53-aba6-d0bfe3b103f9",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:37.966Z"
+    },
+    {
+      "label": "preseed-readback-google",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://google.com/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:37.966Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 4,
+        "pid": 22731,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"google.com\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-G\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"G\"}]}},\"resources\":[],\"operation\":{\"id\":\"8254bed6-a60f-4d9d-961c-50e2a19a3180\",\"requestId\":\"653f5665-051f-49f0-a7a9-6af569b810dc\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "google.com",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 12,
+                "value": "P045-keep-G",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "G"
+              }
+            ]
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "8254bed6-a60f-4d9d-961c-50e2a19a3180",
+          "requestId": "653f5665-051f-49f0-a7a9-6af569b810dc",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:38.873Z"
+    },
+    {
+      "label": "preseed-readback-youtube",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://youtube.com/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:38.873Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 5,
+        "pid": 22744,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[]}},\"resources\":[],\"operation\":{\"id\":\"4bd60315-abb2-425e-bc3d-a9cf55ddd2d9\",\"requestId\":\"ac64fcd1-1ce3-409b-b8f5-73bcabb5d970\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": []
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "4bd60315-abb2-425e-bc3d-a9cf55ddd2d9",
+          "requestId": "ac64fcd1-1ce3-409b-b8f5-73bcabb5d970",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:39.750Z"
+    },
+    {
+      "label": "final-single-result-qa",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://qa.example.test/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:39.862Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 6,
+        "pid": 22753,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"qa.example.test\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-new-W\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"W\"},{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"qa.example.test\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":11,\"value\":\"P045-new-X\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"X\"}]}},\"resources\":[],\"operation\":{\"id\":\"fcb0567c-e291-477d-b87b-909c8d91bdd4\",\"requestId\":\"c0323040-5769-4073-8f74-2b59ed4683d8\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "qa.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 11,
+                "value": "P045-new-W",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "W"
+              },
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "qa.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 11,
+                "value": "P045-new-X",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "X"
+              }
+            ]
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "fcb0567c-e291-477d-b87b-909c8d91bdd4",
+          "requestId": "c0323040-5769-4073-8f74-2b59ed4683d8",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:40.808Z"
+    },
+    {
+      "label": "final-single-result-other",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://other.example.test/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:40.808Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 7,
+        "pid": 22778,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"other.example.test\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-Z\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"Z\"}]}},\"resources\":[],\"operation\":{\"id\":\"1bd9226d-538b-4492-b8b9-ceb3d0cc2ab1\",\"requestId\":\"19eeb8c4-1cc8-4d4a-8271-f8761de47342\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "other.example.test",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 12,
+                "value": "P045-keep-Z",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "Z"
+              }
+            ]
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "1bd9226d-538b-4492-b8b9-ceb3d0cc2ab1",
+          "requestId": "19eeb8c4-1cc8-4d4a-8271-f8761de47342",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:41.754Z"
+    },
+    {
+      "label": "final-single-result-google",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://google.com/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:41.754Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 8,
+        "pid": 22786,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"google.com\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":12,\"value\":\"P045-keep-G\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"G\"}]}},\"resources\":[],\"operation\":{\"id\":\"671fec73-bd76-4114-a599-6192665988d7\",\"requestId\":\"edafce89-181a-4149-9172-2356eb3f0328\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "google.com",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 12,
+                "value": "P045-keep-G",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "G"
+              }
+            ]
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "671fec73-bd76-4114-a599-6192665988d7",
+          "requestId": "edafce89-181a-4149-9172-2356eb3f0328",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:42.707Z"
+    },
+    {
+      "label": "final-single-result-youtube",
+      "args": [
+        "browser",
+        "cookie",
+        "get",
+        "--url",
+        "http://youtube.com/",
+        "--page",
+        "3299c31b-e051-4812-b538-5e3b91d1576d"
+      ],
+      "startedAt": "2026-11-04T07:54:42.708Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 9,
+        "pid": 22802,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"cookies\":[{\"httpOnly\":true,\"sourcePort\":80,\"secure\":false,\"session\":true,\"domain\":\"youtube.com\",\"expires\":-1,\"path\":\"\\/\",\"priority\":\"Medium\",\"size\":13,\"value\":\"P045-new-YT\",\"sameSite\":\"Lax\",\"sourceScheme\":\"NonSecure\",\"name\":\"YT\"}]}},\"resources\":[],\"operation\":{\"id\":\"6e7367af-0c2c-4675-b7b3-cd15afd2d61a\",\"requestId\":\"160b7e22-8b17-4f8c-8215-f80124d87545\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.cookie.get\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "cookies": [
+              {
+                "httpOnly": true,
+                "sourcePort": 80,
+                "secure": false,
+                "session": true,
+                "domain": "youtube.com",
+                "expires": -1,
+                "path": "/",
+                "priority": "Medium",
+                "size": 13,
+                "value": "P045-new-YT",
+                "sameSite": "Lax",
+                "sourceScheme": "NonSecure",
+                "name": "YT"
+              }
+            ]
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "6e7367af-0c2c-4675-b7b3-cd15afd2d61a",
+          "requestId": "160b7e22-8b17-4f8c-8215-f80124d87545",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.cookie.get"
+      },
+      "finishedAt": "2026-11-04T07:54:43.742Z"
+    }
+  ],
+  "requests": [
+    {
+      "path": "/app",
+      "method": "GET",
+      "at": 1793778876105
+    },
+    {
+      "path": "/favicon.ico",
+      "method": "GET",
+      "at": 1793778876189
+    },
+    {
+      "path": "/app",
+      "method": "GET",
+      "at": 1793778879851
+    }
+  ],
+  "messages": [
+    {
+      "stage": "M11-setup",
+      "pid": 22397
+    },
+    {
+      "nativeEvent": {
+        "kind": "root-ready",
+        "pid": 22452
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "root-configured",
+        "pid": 22452,
+        "environmentValuesLogged": false
+      }
+    },
+    {
+      "stage": "ready",
+      "pid": 22397
+    },
+    {
+      "ready": true,
+      "pid": 22397,
+      "runRootPid": 22452,
+      "taskId": "171f3962-c742-44f0-b28b-1ba1647cf828",
+      "runId": "a3b04f68-61ff-445d-861a-cecbe613162f",
+      "fixtureProfiles": {
+        "p1": {
+          "id": "project-f64551fcd6f07823cb87971c",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p1"
+          },
+          "source": null
+        },
+        "p2": {
+          "id": "project-3946ca64ff78d93ca61090a4",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p2"
+          },
+          "source": null
+        },
+        "t2": {
+          "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "scope": "isolated",
+          "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "label": "P045 hidden T2",
+          "owner": {
+            "kind": "task",
+            "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+          },
+          "source": null
+        }
+      },
+      "sourceBundleHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a"
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 1,
+        "pid": 22469,
+        "args": [
+          "browser",
+          "tab",
+          "create",
+          "--url",
+          "http://127.0.0.1:54221/app"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 2,
+        "pid": 22599,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 3,
+        "pid": 22724,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://other.example.test/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 4,
+        "pid": 22731,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://google.com/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 5,
+        "pid": 22744,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://youtube.com/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 6,
+        "pid": 22753,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://qa.example.test/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 7,
+        "pid": 22778,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://other.example.test/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 8,
+        "pid": 22786,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://google.com/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 9,
+        "pid": 22802,
+        "args": [
+          "browser",
+          "cookie",
+          "get",
+          "--url",
+          "http://youtube.com/",
+          "--page",
+          "3299c31b-e051-4812-b538-5e3b91d1576d"
+        ]
+      }
+    },
+    {
+      "stage": "cleanup",
+      "pid": 22397
+    },
+    {
+      "stage": "done",
+      "pid": 22397
+    },
+    {
+      "willQuit": true
+    }
+  ],
+  "resources": [
+    {
+      "at": "2026-11-04T07:54:32.729Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:34.641Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:34.727Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:34.811Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:34.891Z",
+      "stage": "fixture-target-tab",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:34.970Z",
+      "stage": "fixture-target-tab",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22469,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:35.052Z",
+      "stage": "fixture-target-tab",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22469,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:36.278Z",
+      "stage": "preseed-readback-qa",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22599,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:37.170Z",
+      "stage": "preseed-readback-other",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22724,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:38.049Z",
+      "stage": "preseed-readback-google",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22731,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:38.956Z",
+      "stage": "preseed-readback-youtube",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22744,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:39.945Z",
+      "stage": "final-single-result-qa",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22753,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:40.892Z",
+      "stage": "final-single-result-other",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22778,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:41.838Z",
+      "stage": "final-single-result-google",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22786,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:42.794Z",
+      "stage": "final-single-result-youtube",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22802,
+          "ppid": 22452,
+          "comm": "/private/tmp/willyou-m12-p045-executor-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:43.827Z",
+      "stage": "final-single-result-youtube",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:43.915Z",
+      "stage": "final-single-result-youtube",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:43.999Z",
+      "stage": "final-single-result-youtube",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 22452,
+          "ppid": 22397,
+          "comm": "(Python)"
+        },
+        {
+          "pid": 22557,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 22558,
+          "ppid": 22397,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 22397 liubu   79u  IPv4 0x9626781ff99e8b8e      0t0  TCP 127.0.0.1:54238 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T07:54:44.096Z",
+      "stage": "final-single-result-youtube",
+      "processes": [
+        {
+          "pid": 22397,
+          "ppid": 22395,
+          "comm": "(Electron)"
+        },
+        {
+          "pid": 22400,
+          "ppid": 22397,
+          "comm": "(Electron Helper)"
+        },
+        {
+          "pid": 22401,
+          "ppid": 22397,
+          "comm": "(Electron Helper)"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T07:54:44.158Z",
+      "stage": "final-single-result-youtube",
+      "processes": [],
+      "listeners": ""
+    }
+  ],
+  "scope": "Actual T075 originalCLI I, syntheticcontrolled managedPython root notAgentR, actualnative peer auth/M11/service unchanged",
+  "config": {
+    "root": "/private/tmp/willyou-m12-p045-executor-001",
+    "resources": "/private/tmp/willyou-m12-p045-executor-001/resources",
+    "userData": "/private/tmp/willyou-m12-p045-executor-001/runtime-001/userdata",
+    "home": "/private/tmp/willyou-m12-p045-executor-001/runtime-001/home",
+    "tmp": "/private/tmp/willyou-m12-p045-executor-001/runtime-001/tmp",
+    "cwdP1": "/private/tmp/willyou-m12-p045-executor-001/runtime-001/project1",
+    "cwdP2": "/private/tmp/willyou-m12-p045-executor-001/runtime-001/project2",
+    "support": "/private/tmp/willyou-m12-p045-executor-001/runtime-001/application-support",
+    "projects": {
+      "p1": "p1",
+      "p2": "p2"
+    },
+    "tasks": {
+      "t1": "171f3962-c742-44f0-b28b-1ba1647cf828",
+      "t2": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3",
+      "t3": "ea81e68a-eb0b-4ee8-acce-c336e3cde1d4"
+    },
+    "origin": "http://127.0.0.1:54221"
+  },
+  "hostPid": 22397,
+  "ready": {
+    "ready": true,
+    "pid": 22397,
+    "runRootPid": 22452,
+    "taskId": "171f3962-c742-44f0-b28b-1ba1647cf828",
+    "runId": "a3b04f68-61ff-445d-861a-cecbe613162f",
+    "fixtureProfiles": {
+      "p1": {
+        "id": "project-f64551fcd6f07823cb87971c",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p1"
+        },
+        "source": null
+      },
+      "p2": {
+        "id": "project-3946ca64ff78d93ca61090a4",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p2"
+        },
+        "source": null
+      },
+      "t2": {
+        "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+        "label": "P045 hidden T2",
+        "owner": {
+          "kind": "task",
+          "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+        },
+        "source": null
+      }
+    },
+    "sourceBundleHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a"
+  },
+  "sourcePage": {
+    "url": "http://127.0.0.1:54221/app",
+    "pageId": "3299c31b-e051-4812-b538-5e3b91d1576d"
+  },
+  "pageId": "3299c31b-e051-4812-b538-5e3b91d1576d",
+  "initialCookies": {
+    "qa": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-old-X",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "X"
+          },
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-old-Y",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "Y"
+          }
+        ]
+      }
+    },
+    "other": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "other.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 12,
+            "value": "P045-keep-Z",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "Z"
+          }
+        ]
+      }
+    },
+    "google": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "google.com",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 12,
+            "value": "P045-keep-G",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "G"
+          }
+        ]
+      }
+    },
+    "youtube": {
+      "result": {
+        "cookies": []
+      }
+    }
+  },
+  "atKeyGate": {
+    "profileId": "project-f64551fcd6f07823cb87971c",
+    "importState": "importing",
+    "cookies": [
+      {
+        "name": "X",
+        "value": "P045-old-X",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Y",
+        "value": "P045-old-Y",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "Z",
+        "value": "P045-keep-Z",
+        "domain": "other.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "G",
+        "value": "P045-keep-G",
+        "domain": "google.com",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "keyCalls": 1,
+    "nativeTrace": [],
+    "maxMutations": 0,
+    "activeMutations": 0,
+    "hooksInstalled": true,
+    "keyTransfersErased": [],
+    "journalExists": false,
+    "profiles": [
+      {
+        "id": "project-f64551fcd6f07823cb87971c",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p1"
+        },
+        "source": null
+      },
+      {
+        "id": "project-3946ca64ff78d93ca61090a4",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p2"
+        },
+        "source": null
+      },
+      {
+        "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+        "label": "P045 hidden T2",
+        "owner": {
+          "kind": "task",
+          "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+        },
+        "source": null
+      }
+    ]
+  },
+  "concurrentSecond": {
+    "before": {
+      "profileId": "project-f64551fcd6f07823cb87971c",
+      "importState": "importing",
+      "cookies": [
+        {
+          "name": "X",
+          "value": "P045-old-X",
+          "domain": "qa.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "Y",
+          "value": "P045-old-Y",
+          "domain": "qa.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "Z",
+          "value": "P045-keep-Z",
+          "domain": "other.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "G",
+          "value": "P045-keep-G",
+          "domain": "google.com",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ],
+      "keyCalls": 1,
+      "nativeTrace": [],
+      "maxMutations": 0,
+      "activeMutations": 0,
+      "hooksInstalled": true,
+      "keyTransfersErased": [],
+      "journalExists": false,
+      "profiles": [
+        {
+          "id": "project-f64551fcd6f07823cb87971c",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p1"
+          },
+          "source": null
+        },
+        {
+          "id": "project-3946ca64ff78d93ca61090a4",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p2"
+          },
+          "source": null
+        },
+        {
+          "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "scope": "isolated",
+          "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "label": "P045 hidden T2",
+          "owner": {
+            "kind": "task",
+            "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+          },
+          "source": null
+        }
+      ]
+    },
+    "outcome": {
+      "status": "rejected",
+      "error": {
+        "name": "ApplicationError",
+        "code": "BROWSER_UNAVAILABLE",
+        "message": "请先处理该登录态的恢复记录",
+        "stack": "ApplicationError: 请先处理该登录态的恢复记录\n    at BrowserImportCoordinator.assertImportable (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:21446:73)\n    at BrowserService.importCookies (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:22573:18)\n    at secondImport (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:86004:69)\n    at async process.<anonymous> (/private/tmp/willyou-m12-p045-executor-001/build/host.cjs:86151:53)"
+      },
+      "finishedAt": 1793778879757
+    },
+    "after": {
+      "profileId": "project-f64551fcd6f07823cb87971c",
+      "importState": "importing",
+      "cookies": [
+        {
+          "name": "X",
+          "value": "P045-old-X",
+          "domain": "qa.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "Y",
+          "value": "P045-old-Y",
+          "domain": "qa.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "Z",
+          "value": "P045-keep-Z",
+          "domain": "other.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "G",
+          "value": "P045-keep-G",
+          "domain": "google.com",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ],
+      "keyCalls": 1,
+      "nativeTrace": [],
+      "maxMutations": 0,
+      "activeMutations": 0,
+      "hooksInstalled": true,
+      "keyTransfersErased": [],
+      "journalExists": false,
+      "profiles": [
+        {
+          "id": "project-f64551fcd6f07823cb87971c",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p1"
+          },
+          "source": null
+        },
+        {
+          "id": "project-3946ca64ff78d93ca61090a4",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p2"
+          },
+          "source": null
+        },
+        {
+          "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "scope": "isolated",
+          "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "label": "P045 hidden T2",
+          "owner": {
+            "kind": "task",
+            "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+          },
+          "source": null
+        }
+      ]
+    }
+  },
+  "firstCompleted": {
+    "outcome": {
+      "status": "fulfilled",
+      "result": {
+        "domains": [
+          "qa.example.test",
+          "youtube.com"
+        ],
+        "totalCookies": 4,
+        "importedCookies": 3,
+        "skippedCookies": 1,
+        "googleCookiesSkipped": 1,
+        "partitionSkippedCookies": 0,
+        "preservedTargetCookies": 2,
+        "reloadedPages": 1
+      },
+      "finishedAt": 1793778879859
+    },
+    "after": {
+      "profileId": "project-f64551fcd6f07823cb87971c",
+      "importState": "ready",
+      "cookies": [
+        {
+          "name": "Z",
+          "value": "P045-keep-Z",
+          "domain": "other.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "G",
+          "value": "P045-keep-G",
+          "domain": "google.com",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "X",
+          "value": "P045-new-X",
+          "domain": "qa.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "W",
+          "value": "P045-new-W",
+          "domain": "qa.example.test",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        },
+        {
+          "name": "YT",
+          "value": "P045-new-YT",
+          "domain": "youtube.com",
+          "hostOnly": true,
+          "path": "/",
+          "secure": false,
+          "httpOnly": true,
+          "session": true,
+          "sameSite": "lax"
+        }
+      ],
+      "keyCalls": 1,
+      "nativeTrace": [
+        {
+          "method": "remove",
+          "name": "X",
+          "domain": "qa.example.test",
+          "startedAt": 1793778879820,
+          "phase": "fulfilled",
+          "finishedAt": 1793778879822
+        },
+        {
+          "method": "remove",
+          "name": "Y",
+          "domain": "qa.example.test",
+          "startedAt": 1793778879822,
+          "phase": "fulfilled",
+          "finishedAt": 1793778879822
+        },
+        {
+          "method": "remove",
+          "name": "W",
+          "domain": "qa.example.test",
+          "startedAt": 1793778879822,
+          "phase": "fulfilled",
+          "finishedAt": 1793778879822
+        },
+        {
+          "method": "remove",
+          "name": "YT",
+          "domain": "youtube.com",
+          "startedAt": 1793778879822,
+          "phase": "fulfilled",
+          "finishedAt": 1793778879822
+        },
+        {
+          "method": "set",
+          "name": "X",
+          "domain": "qa.example.test",
+          "startedAt": 1793778879822,
+          "phase": "fulfilled",
+          "finishedAt": 1793778879823
+        },
+        {
+          "method": "set",
+          "name": "W",
+          "domain": "qa.example.test",
+          "startedAt": 1793778879823,
+          "phase": "fulfilled",
+          "finishedAt": 1793778879823
+        },
+        {
+          "method": "set",
+          "name": "YT",
+          "domain": "youtube.com",
+          "startedAt": 1793778879823,
+          "phase": "fulfilled",
+          "finishedAt": 1793778879823
+        }
+      ],
+      "maxMutations": 1,
+      "activeMutations": 0,
+      "hooksInstalled": true,
+      "keyTransfersErased": [
+        true
+      ],
+      "journalExists": false,
+      "profiles": [
+        {
+          "id": "project-f64551fcd6f07823cb87971c",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p1"
+          },
+          "source": {
+            "family": "chrome",
+            "profile": "P045 success source",
+            "importedAt": 1793778879842
+          }
+        },
+        {
+          "id": "project-3946ca64ff78d93ca61090a4",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p2"
+          },
+          "source": null
+        },
+        {
+          "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "scope": "isolated",
+          "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+          "label": "P045 hidden T2",
+          "owner": {
+            "kind": "task",
+            "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+          },
+          "source": null
+        }
+      ]
+    }
+  },
+  "finalCookies": {
+    "qa": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-new-W",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "W"
+          },
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "qa.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 11,
+            "value": "P045-new-X",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "X"
+          }
+        ]
+      }
+    },
+    "other": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "other.example.test",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 12,
+            "value": "P045-keep-Z",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "Z"
+          }
+        ]
+      }
+    },
+    "google": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "google.com",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 12,
+            "value": "P045-keep-G",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "G"
+          }
+        ]
+      }
+    },
+    "youtube": {
+      "result": {
+        "cookies": [
+          {
+            "httpOnly": true,
+            "sourcePort": 80,
+            "secure": false,
+            "session": true,
+            "domain": "youtube.com",
+            "expires": -1,
+            "path": "/",
+            "priority": "Medium",
+            "size": 13,
+            "value": "P045-new-YT",
+            "sameSite": "Lax",
+            "sourceScheme": "NonSecure",
+            "name": "YT"
+          }
+        ]
+      }
+    }
+  },
+  "after": {
+    "profileId": "project-f64551fcd6f07823cb87971c",
+    "importState": "ready",
+    "cookies": [
+      {
+        "name": "Z",
+        "value": "P045-keep-Z",
+        "domain": "other.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "G",
+        "value": "P045-keep-G",
+        "domain": "google.com",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "X",
+        "value": "P045-new-X",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "W",
+        "value": "P045-new-W",
+        "domain": "qa.example.test",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      },
+      {
+        "name": "YT",
+        "value": "P045-new-YT",
+        "domain": "youtube.com",
+        "hostOnly": true,
+        "path": "/",
+        "secure": false,
+        "httpOnly": true,
+        "session": true,
+        "sameSite": "lax"
+      }
+    ],
+    "keyCalls": 1,
+    "nativeTrace": [
+      {
+        "method": "remove",
+        "name": "X",
+        "domain": "qa.example.test",
+        "startedAt": 1793778879820,
+        "phase": "fulfilled",
+        "finishedAt": 1793778879822
+      },
+      {
+        "method": "remove",
+        "name": "Y",
+        "domain": "qa.example.test",
+        "startedAt": 1793778879822,
+        "phase": "fulfilled",
+        "finishedAt": 1793778879822
+      },
+      {
+        "method": "remove",
+        "name": "W",
+        "domain": "qa.example.test",
+        "startedAt": 1793778879822,
+        "phase": "fulfilled",
+        "finishedAt": 1793778879822
+      },
+      {
+        "method": "remove",
+        "name": "YT",
+        "domain": "youtube.com",
+        "startedAt": 1793778879822,
+        "phase": "fulfilled",
+        "finishedAt": 1793778879822
+      },
+      {
+        "method": "set",
+        "name": "X",
+        "domain": "qa.example.test",
+        "startedAt": 1793778879822,
+        "phase": "fulfilled",
+        "finishedAt": 1793778879823
+      },
+      {
+        "method": "set",
+        "name": "W",
+        "domain": "qa.example.test",
+        "startedAt": 1793778879823,
+        "phase": "fulfilled",
+        "finishedAt": 1793778879823
+      },
+      {
+        "method": "set",
+        "name": "YT",
+        "domain": "youtube.com",
+        "startedAt": 1793778879823,
+        "phase": "fulfilled",
+        "finishedAt": 1793778879823
+      }
+    ],
+    "maxMutations": 1,
+    "activeMutations": 0,
+    "hooksInstalled": false,
+    "keyTransfersErased": [
+      true
+    ],
+    "journalExists": false,
+    "profiles": [
+      {
+        "id": "project-f64551fcd6f07823cb87971c",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p1"
+        },
+        "source": {
+          "family": "chrome",
+          "profile": "P045 success source",
+          "importedAt": 1793778879842
+        }
+      },
+      {
+        "id": "project-3946ca64ff78d93ca61090a4",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p2"
+        },
+        "source": null
+      },
+      {
+        "id": "ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-ee791fe4-371b-4298-88b8-ed6eb90e0c10",
+        "label": "P045 hidden T2",
+        "owner": {
+          "kind": "task",
+          "id": "2027d515-b0b6-4c44-95cd-35e48bc1ddc3"
+        },
+        "source": null
+      }
+    ]
+  },
+  "status": "executed-unjudged",
+  "shutdown": {
+    "cleanup": {
+      "windows": [],
+      "contents": [
+        {
+          "id": 1,
+          "destroyed": true,
+          "debuggerAttached": false
+        },
+        {
+          "id": 2,
+          "destroyed": true,
+          "debuggerAttached": false
+        },
+        {
+          "id": 3,
+          "destroyed": true,
+          "debuggerAttached": false
+        }
+      ],
+      "allRemaining": []
+    }
+  },
+  "exit": {
+    "code": 0,
+    "signal": null
+  },
+  "hostResult": null,
+  "serverClosed": true,
+  "knownPids": [
+    22395,
+    22397,
+    22400,
+    22401,
+    22452,
+    22469,
+    22599,
+    22557,
+    22558,
+    22724,
+    22731,
+    22744,
+    22753,
+    22778,
+    22786,
+    22802
+  ],
+  "knownPorts": [
+    54221,
+    54238
+  ],
+  "finishedAt": "2026-11-04T07:54:44.159Z"
+}

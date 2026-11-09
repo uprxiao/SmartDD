@@ -6,7 +6,7 @@ module.exports = {
   productName: 'WillYou',
   directories: { output: 'release' },
   artifactName: 'WillYou-${version}-${os}-${arch}.${ext}',
-  files: ['out/**', '!out/native/**', '!out/capability-bundles/**', '!out/capability-bundles-compatibility-v1/**', 'NOTICE', 'licenses/**'],
+  files: ['out/**', '!out/native/**', '!out/agent-browser/**', '!out/agent-browser-build/**', '!out/capability-bundles/**', '!out/capability-bundles-compatibility-v1/**', 'NOTICE', 'licenses/**'],
   asarUnpack: ['node_modules/better-sqlite3/**', 'node_modules/node-pty/**', '**/*.node'],
   // Rebuild these two modules explicitly, using the target Electron ABI.
   npmRebuild: false,
@@ -22,6 +22,7 @@ module.exports = {
       { from: 'out/native/willyou-foxmail', to: 'native/willyou-foxmail' },
       { from: 'out/native/willyou-process-identity', to: 'native/willyou-process-identity' },
       { from: 'out/native/willyou-app', to: 'native/willyou-app' },
+      { from: 'out/agent-browser', to: 'agent-browser', filter: ['SOURCE.json', 'LICENSE', '${arch}/agent-browser'] },
       { from: 'out/capability-bundles', to: 'capability-bundles' },
       { from: 'out/native/tex', to: 'native/tex' },
       { from: 'out/native/office', to: 'native/office' },
@@ -31,7 +32,9 @@ module.exports = {
     // Preserve the complete vendor-signed LibreOffice bundle, including its
     // nested launch constraints. The enclosing WillYou signature still seals
     // this resource, and runtime verification checks both seals and file hashes.
-    signIgnore: ['[/\\\\]native[/\\\\]libreoffice[/\\\\]LibreOffice\\.app(?:[/\\\\]|$)'],
+    // Preserve the verified source-built helper's existing ad-hoc signature and byte hash.
+    // The enclosing application signature seals its binary and SOURCE metadata.
+    signIgnore: ['[/\\\\]agent-browser[/\\\\](arm64|x64)[/\\\\]agent-browser$', '[/\\\\]native[/\\\\]libreoffice[/\\\\]LibreOffice\\.app(?:[/\\\\]|$)'],
     target: [{ target: 'dmg', arch: ['arm64', 'x64'] }],
     category: 'public.app-category.developer-tools',
     hardenedRuntime: true,

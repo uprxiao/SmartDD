@@ -1,0 +1,26 @@
+--- A002/check-static.mjs
++++ A003/check-static.mjs
+@@ -1,9 +1,11 @@
++import{assertDriverLabels}from'./check-labels.mjs';
+ import assert from'node:assert/strict';
+ import{readFile,stat,realpath}from'node:fs/promises';
+ import{createRequire}from'node:module';
+ import{ROOT,sha,verifyPin,save}from'./io.mjs';
+ import{makeViewObservationBody}from'./view-observer.mjs';
+ 
++const labels=await assertDriverLabels(ROOT);
+ const req=createRequire(ROOT+'/package.json'),ts=req('typescript'),source=await readFile(ROOT+'/run.mjs','utf8'),ast=ts.createSourceFile('run.mjs',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
+ assert.equal(ast.parseDiagnostics.length,0);
+ let child,code;
+@@ -23,8 +25,8 @@
+ assert(h.includes('out\\/renderer\\/index\\.html')&&h.includes('target.id === page.id'));
+ const pinned=await verifyPin(JSON.parse(await readFile(ROOT+'/pin.json')));
+ const external=[];
+-for(const f of[harness,ROOT+'/driver-source/scripts/lib/app-focus-guard.mjs',req.resolve('typescript'),req.resolve('vite'),createRequire(req.resolve('vite')).resolve('esbuild'),req.resolve('@modelcontextprotocol/ext-apps'),req.resolve('@modelcontextprotocol/server'),await realpath('/Users/liubu/.hermes/node/bin/node')]){const p=await realpath(f);
+-external.push({path:p,external:true,sha256:sha(await readFile(p)),mode:(await stat(p)).mode&511})}await save('static-check.json',{status:'file-checks-passed',generatedNativeExpressionCompiled:true,actualChildExpressionCompiled:true,generatedLiteralExpressions:literals.length,mainTargetFilterAndNoReattach:true,oneGuardNoActivate:true,criticalPins:pinned.checkedCriticalFiles.length,external,boundary:'File/parser/hash checks only. No Native compiler/SDK bundle/provider/App/PTY/HTTP/OS/model execution. Node modules/harness referenced, not copied;
+- source028 lock+critical entry bytes frozen, no full transitive-byte claim.'});
++for(const f of[harness,ROOT+'/driver-source/scripts/lib/app-focus-guard.mjs',req.resolve('typescript'),req.resolve('esbuild'),req.resolve('@modelcontextprotocol/ext-apps'),req.resolve('@modelcontextprotocol/server'),await realpath('/Users/liubu/.hermes/node/bin/node')]){const p=await realpath(f);
++external.push({path:p,external:true,sha256:sha(await readFile(p)),mode:(await stat(p)).mode&511})}await save('static-check.json',{status:'file-checks-passed',generatedNativeExpressionCompiled:true,actualChildExpressionCompiled:true,generatedLiteralExpressions:literals.length,mainTargetFilterAndNoReattach:true,oneGuardNoRearmOneAuthorizedInitialActivation:true,labels,criticalPins:pinned.checkedCriticalFiles.length,external,boundary:'File/parser/hash checks only. No Native compiler/SDK bundle/provider/App/PTY/HTTP/OS/model execution. Selected public SDK/compiler/runtime packages copied privately;
++ every snapshot file/mode and link target is frozen in dependency-layout.json. No changing production workspace source used.'});
+ console.log(JSON.stringify({status:'file-checks-passed',literalExpressions:literals.length,external:external.length,criticalPins:pinned.checkedCriticalFiles.length}));
+ 

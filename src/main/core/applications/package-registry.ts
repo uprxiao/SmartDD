@@ -43,11 +43,21 @@ export class PackageRegistry {
   }
   /** Retained exact source text is independently bound to the original manifest file hashes. */
   toolContractSources(hash: string,toolName: string): { input: string;output: string } {
-    const application = this.get(hash), tool = [...applicationInvocationDeclarations(application.manifest,'mcp'),...applicationInvocationDeclarations(application.manifest,'cli')].find(t => t.name === toolName);
-    const row = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,toolName) as { input_source: string;output_source: string } | undefined;
-    if (!tool || !row) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
-    for (const [path,source] of [[tool.inputSchemaPath,row.input_source],[tool.outputSchemaPath,row.output_source]]) if (digest(source) !== application.manifest.files.find(f => f.path === path)?.sha256) throw new ApplicationError('HASH_MISMATCH','原工具契约记录摘要不符，保留现场');
-    return { input: row.input_source,output: row.output_source };
+    return this.toolContractSourcesBatch(hash,[toolName]).get(toolName)!;
+  }
+  /** One synchronous listing shares a freshly verified manifest, never a cache
+   * across requests. Every requested contract still checks its own source hash. */
+  toolContractSourcesBatch(hash: string,toolNames: readonly string[]): ReadonlyMap<string,{ input: string;output: string }> {
+    const application = this.get(hash), declarations = [...applicationInvocationDeclarations(application.manifest,'mcp'),...applicationInvocationDeclarations(application.manifest,'cli')];
+    const sources = new Map<string,{ input: string;output: string }>();
+    for (const toolName of toolNames) {
+      const tool = declarations.find(t => t.name === toolName);
+      const row = this.store.sqlite.prepare('SELECT input_source,output_source FROM capability_package_contracts WHERE package_hash=? AND tool_name=?').get(hash,toolName) as { input_source: string;output_source: string } | undefined;
+      if (!tool || !row) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
+      for (const [path,source] of [[tool.inputSchemaPath,row.input_source],[tool.outputSchemaPath,row.output_source]]) if (digest(source) !== application.manifest.files.find(f => f.path === path)?.sha256) throw new ApplicationError('HASH_MISMATCH','原工具契约记录摘要不符，保留现场');
+      sources.set(toolName,{ input: row.input_source,output: row.output_source });
+    }
+    return sources;
   }
   private specification(bundle: ValidatedPackageBundle): PublishResource {
     assertHostCompatible(bundle.manifest);

@@ -1,0 +1,404 @@
+{
+  "at": "2026-11-07T15:39:33.584565+00:00",
+  "readOnlyGapHandoffNotAResultLedger": true,
+  "originalCaseMap": {
+    "path": "/private/tmp/willyou-m12-m9-regression-static-001/case-map.json",
+    "sha256": "8cf48c9647e998d7b9b26f55cebc5af0999ce66a7a560f3b84f6a5b3268cb242",
+    "cases": 66
+  },
+  "originalLayer": "M12-T130 U＋A; M9原P/I/R为来源标签",
+  "directHistoricalAEnvironmentCases": 60,
+  "knownCompletedCurrentA": [
+    "M9-T-D04",
+    "M9-T-D06",
+    "M9-T-D12",
+    "M9-T-D13",
+    "M9-T-F11",
+    "M9-T-F12",
+    "M9-T-F13",
+    "M9-T-F14",
+    "M9-T-F15",
+    "M9-T-F16",
+    "M9-T-F17",
+    "M9-T-F18",
+    "M9-T-F19",
+    "M9-T-F20",
+    "M9-T-F22",
+    "M9-T-F23",
+    "M9-T-F24",
+    "M9-T-F26",
+    "M9-T-F27"
+  ],
+  "knownACompletionCount": 19,
+  "F18EvidenceBoundary": "Root actual e355d5/9judge/4A accepted; safe by otherexecutor pending hash, no replay",
+  "directHistoricalAUnclosedCount": 41,
+  "remainingDirectA": [
+    {
+      "case": "M9-T-A11",
+      "title": "面板尺寸恢复",
+      "originalSteps": "改变外层宽度和树宽度，退出后重新启动。",
+      "originalExpected": "分别恢复批准字段；旧像素值迁移与比例值兼容按方案；不持久化临时 lease。",
+      "nextAction": "真实调整面板/树宽，正常退出重启核批准持久字段与旧像素迁移/lease不持久；不外推T145几何。"
+    },
+    {
+      "case": "M9-T-D01",
+      "title": "预览替换",
+      "originalSteps": "单击A后单击B，均无修改。",
+      "originalExpected": "只有一个预览位；B替换A并释放A状态；不是不断追加斜体标签。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D02",
+      "title": "双击固定",
+      "originalSteps": "单击A再双击A，然后单击B。",
+      "originalExpected": "A固定且保留，B占预览位；不生成第二个A。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D03",
+      "title": "固定标签不降级",
+      "originalSteps": "固定A后再从树单击A。",
+      "originalExpected": "激活原A，保持固定，不被下一预览替换。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D05",
+      "title": "去重规范化",
+      "originalSteps": "同文件通过树、搜索、面包屑、合法相对路径别名打开。",
+      "originalExpected": "canonical文件身份按规则复用；大小写敏感主机不错误合并不同文件。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D07",
+      "title": "拖动重排",
+      "originalSteps": "将第1标签拖到末尾、拖回；刷新/重开。",
+      "originalExpected": "顺序准确持久化；active身份不变；拖动不会触发误关闭/误外开。",
+      "nextAction": "复用tab-restore-ui原四用例；真实拖动/正常重启、缺文件/根重试及晚到原生结果门闩；本轮once3s/guard/正常退出包装。"
+    },
+    {
+      "case": "M9-T-D08",
+      "title": "关闭非活动",
+      "originalSteps": "打开A/B/C并激活B；关闭C。",
+      "originalExpected": "B保持活动和焦点；C资源释放，不影响终端。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D09",
+      "title": "关闭活动",
+      "originalSteps": "打开A/B/C激活B；关闭B。",
+      "originalExpected": "按已批准邻接/opener规则激活目标；不存在悬空activeId。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D10",
+      "title": "关闭最后标签",
+      "originalSteps": "关闭最后文件标签。",
+      "originalExpected": "文件区按批准空态/隐藏处理；终端任务仍运行，主焦点合理恢复。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D11",
+      "title": "异步关闭实例竞态",
+      "originalSteps": "dirty A关闭等保存/确认；期间替换内容实例或关闭重开A；再完成旧Promise。",
+      "originalExpected": "旧contentInstance确认不能关闭新实例；旧回调不清掉新draft。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D14",
+      "title": "恢复排除preview",
+      "originalSteps": "固定A，预览B；重启。",
+      "originalExpected": "仅可持久route按规则恢复；参考preview排除；不把B草稿丢失与route排除混为一谈。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D15",
+      "title": "恢复顺序活动布局",
+      "originalSteps": "固定多标签、切active、改面板可见性后重启。",
+      "originalExpected": "恢复顺序/active/布局与批准checkpoint一致；无临时rootLease、BlobURL被直接复用。",
+      "nextAction": "复用tab-restore-ui原四用例；真实拖动/正常重启、缺文件/根重试及晚到原生结果门闩；本轮once3s/guard/正常退出包装。"
+    },
+    {
+      "case": "M9-T-D16",
+      "title": "unrestored-route",
+      "originalSteps": "持久标签指向已删除文件或失效根，再重启。",
+      "originalExpected": "保留可识别不可恢复状态/原route，提供重试/关闭；不静默丢记录或跳到别文件。",
+      "nextAction": "复用tab-restore-ui原四用例；真实拖动/正常重启、缺文件/根重试及晚到原生结果门闩；本轮once3s/guard/正常退出包装。"
+    },
+    {
+      "case": "M9-T-D17",
+      "title": "恢复期间用户选中",
+      "originalSteps": "延迟恢复A/B；用户先手动打开C，再完成恢复。",
+      "originalExpected": "selectionVersion保护用户C选择；后台恢复不抢焦点。",
+      "nextAction": "复用tab-restore-ui原四用例；真实拖动/正常重启、缺文件/根重试及晚到原生结果门闩；本轮once3s/guard/正常退出包装。"
+    },
+    {
+      "case": "M9-T-D18",
+      "title": "切任务恢复隔离",
+      "originalSteps": "恢复T1未完时切T2，再回T1。",
+      "originalExpected": "token/disconnect保护；T1迟到恢复不插入T2；任务自己的文件状态恢复。",
+      "nextAction": "原标签/关闭/恢复合同逐项真实UI补证；D04/D06/D12/D13旧绿不重跑；不得按旧通用driver名字假定已经包含当前case。"
+    },
+    {
+      "case": "M9-T-D19",
+      "title": "位置与模式",
+      "originalSteps": "A源码滚至200行，B Markdown预览滚动；切回/重启。",
+      "originalExpected": "分别保存滚动、mode、selection；内容已变化时按批准策略重定位，不强套旧snapshot。",
+      "nextAction": "复用reading-restart-ui原源码/Markdown滚动选择/模式/正常重启/同长度改源失效；完整CM model。"
+    },
+    {
+      "case": "M9-T-F01",
+      "title": "显式目标覆盖默认",
+      "originalSteps": "对.md/.html/.pdf指定外部target/workspace/default viewer，抓取分派结果。",
+      "originalExpected": "显式用户选择按批准优先级执行，不被扩展名默认覆盖；不触发M9内置浏览器。",
+      "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。"
+    },
+    {
+      "case": "M9-T-F02",
+      "title": "元数据非文件与失败",
+      "originalSteps": "对目录路径和metadata失败分别打开文件入口。",
+      "originalExpected": "目录按策略reveal；失败明确或按已批准fallback；不把异常猜成可编辑文本。",
+      "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。"
+    },
+    {
+      "case": "M9-T-F03",
+      "title": "已有tab先复用",
+      "originalSteps": "同路径已开普通tab，再以line/column/artifact目标打开。",
+      "originalExpected": "根据指定目标复用/定位，实例身份正确；不会仅按扩展名建重复标签。",
+      "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。"
+    },
+    {
+      "case": "M9-T-F04",
+      "title": "附件优先artifact",
+      "originalSteps": "同csv/tex从树、附件、显式artifactNavigationTarget各打开。",
+      "originalExpected": "树可源码；附件/显式artifact按相应富预览；可写性遵守来源；route差异有标识。",
+      "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。"
+    },
+    {
+      "case": "M9-T-F07",
+      "title": "Markdown扩展全集",
+      "originalSteps": "分别打开markdown/md/mdown/mdx/mkd，再作为文本附件。",
+      "originalExpected": "工作区五项识别；附件mdx与其余四项差异被覆盖；默认模式正确。",
+      "nextAction": "共用普通树格式前置：所有原后缀/字面文件、原完整CM模型/默认富文档或binary分派；F07附件依原已批准来源条件分层，不以API代受验打开。"
+    },
+    {
+      "case": "M9-T-F08",
+      "title": "txt与wasm",
+      "originalSteps": "打开UTF-8.txt和真实wasm。",
+      "originalExpected": "txt进文本；wasm不能因ASCII片段进入自由文本编辑；二进制提示或批准viewer。",
+      "nextAction": "共用普通树格式前置：所有原后缀/字面文件、原完整CM模型/默认富文档或binary分派；F07附件依原已批准来源条件分层，不以API代受验打开。"
+    },
+    {
+      "case": "M9-T-F09",
+      "title": "无扩展/未知文本",
+      "originalSteps": "打开Makefile、Dockerfile、空文件、unknown.ext纯文本。",
+      "originalExpected": "已注册名用对应语法；空text显示空编辑/预览；未知扩展不假称二进制，也不绕过内容检查。",
+      "nextAction": "共用普通树格式前置：所有原后缀/字面文件、原完整CM模型/默认富文档或binary分派；F07附件依原已批准来源条件分层，不以API代受验打开。"
+    },
+    {
+      "case": "M9-T-F21",
+      "title": "Notebook默认分派",
+      "originalSteps": "从普通树与附件打开有效ipynb。",
+      "originalExpected": "命中Notebook查看器或明确批准差异；不能无说明只显示JSON代码；不执行kernel。",
+      "nextAction": "优先当前App035真实树Notebook；沿原批准条件核附件业务host适用性、真实只读viewer/既有输出/无kernel及错误安全分支；不造附件入口。"
+    },
+    {
+      "case": "M9-T-F25",
+      "title": "全部不支持Office分支",
+      "originalSteps": "逐项打开doc/ppt/xls/key/numbers/pages/odp/ods/odt/rtf。",
+      "originalExpected": "每种展示对应清晰状态与合法外开；不能被通用乱码文本编辑器接管；不将docx等artifact支持误归否定。",
+      "nextAction": "保留已绿10不支持提示/14打开方式和副本入口；仅补原实际外开、选择记忆/实际副本保存的系统前置，不能把入口可见写成动作完成。"
+    },
+    {
+      "case": "M9-T-F29",
+      "title": "line/endLine/标题分支",
+      "originalSteps": "同一.md/.csv/.pdf分别携line、column、endLine、filePreviewTitle。",
+      "originalExpected": "逐一按R12/R13限制选择viewer；定位到正确行列；范围请求不误当默认artifact。",
+      "nextAction": "原导航/target矩阵逐项：显式外部/workspace/default、元数据失败/目录、artifact/同tab身份、line/column/endLine/filePreviewTitle；viewer-navigation-ui仅local部分，不计整条。"
+    },
+    {
+      "case": "M9-T-P01",
+      "title": "持续输出不重建",
+      "originalSteps": "PTY运行单调编号heartbeat；开关树/文件/面板并拖宽30次。",
+      "originalExpected": "ptyId/PID不变，输出序号连续；没有历史重放或缺失；文件操作不调用任务close。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P02",
+      "title": "输入等待不丢失",
+      "originalSteps": "终端等待read，输入半行，切文件搜索再回终端完成。",
+      "originalExpected": "半行内容与焦点恢复按原有行为；文件快捷键未注入终端；无重复提交。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P03",
+      "title": "零尺寸保护",
+      "originalSteps": "隐藏/最小化文件和终端区域，捕获resizeRPC。",
+      "originalExpected": "不发送0×0；再次显示按真实尺寸fit；不重建PTY。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P04",
+      "title": "高频拖动尺寸节流",
+      "originalSteps": "连续拖面板5秒并记录resize。",
+      "originalExpected": "按帧合并/未变尺寸跳过符合方案；最终尺寸正确；主进程无持续阻塞。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P05",
+      "title": "焦点不被终端抢回",
+      "originalSteps": "在搜索框/编辑器/确认弹层输入时切换布局可见性。",
+      "originalExpected": "TaskTerminal visible effect不抢焦点；字符只进入目标控件。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P06",
+      "title": "任务切换恢复",
+      "originalSteps": "T1输出，切T2编辑文件，再回T1。",
+      "originalExpected": "各任务终端与文件scope恢复正确；不会用文件tab激活替代任务激活。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P07",
+      "title": "终端停止恢复与文件浏览相互独立",
+      "originalSteps": "打开真实文件并展开目录；分别停止任务、恢复任务、让CLI持续运行；由外部程序修改/新增文件并在右侧打开、刷新。",
+      "originalExpected": "任务按既有规则停止/恢复，文件scope保持；有授权文件根时，打开/刷新/目录同步不依赖终端运行状态，不启动或结束PTY。缺失根仍明确报错；不得因为没有CLI任务就禁止普通文件浏览。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P08",
+      "title": "已有项目与M8入口",
+      "originalSteps": "建项目、编辑多目录配置、进入导入导出页面、返回任务和文件。",
+      "originalExpected": "原入口可达、数据不被文件根状态覆写；M9不新增数据库/服务器外部写。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-P09",
+      "title": "CLI/Skill与语音入口",
+      "originalSteps": "在隔离任务执行已授权CLI/Skill流程并使用既有语音唤起按钮。",
+      "originalExpected": "原有配置注入/快捷键入口仍可达；文件搜索/编辑快捷键不冲突；未运行的真实资源部分保持未执行。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    },
+    {
+      "case": "M9-T-S09",
+      "title": "右侧独立读取最新磁盘与终端状态无关",
+      "originalSteps": "准备磁盘A版本；分别在终端闲置、忙碌、停止、无投递记录时，由CLI或普通外部写入者将其改为B；从树打开、关闭后重开、重新激活或显式刷新文件。另替换文件后迟到返回旧读取结果。",
+      "originalExpected": "右侧按当前真实文件身份/revision读取最新B，clean buffer更新；磁盘未变化时不重复构造冲突。旧代际读取不能覆盖新内容。文件浏览/刷新不等CLI完成或投递回执，不推断改动由哪次指令产生，不出现CLI专门审批或自动还原；无终端时仍可浏览有授权的文件。",
+      "nextAction": "复用nested-root-ui与原独立磁盘读取driver；真实目录/根切换/alias编辑保存/恢复，原U与NativeI不替代A。"
+    },
+    {
+      "case": "M9-T-D21",
+      "title": "嵌套根别名复用文档",
+      "originalSteps": "同host登记/work/p与/work/p/docs；分别打开外根docs/a.md和内根a.md，编辑、保存、切回两个入口并重开。",
+      "originalExpected": "两个route指向同一main确认文件身份并复用buffer/保存版本；不会生成互相覆盖的两份dirty；树的导航根和显示路径仍可区分。",
+      "nextAction": "复用nested-root-ui与原独立磁盘读取driver；真实目录/根切换/alias编辑保存/恢复，原U与NativeI不替代A。"
+    },
+    {
+      "case": "M9-T-D22",
+      "title": "别名迁移冲突与host隔离",
+      "originalSteps": "准备旧checkpoint中两个同物理文件别名：内容相同/不同；再给不同host相同绝对路径。升级恢复。",
+      "originalExpected": "相同内容可确定性归一；不同内容保留冲突或人工恢复入口，不以最后写覆盖；不同host绝不合并；main校验root，不信renderer绝对路径。 本期对非本地host旧记录仅保留隔离不可用状态，不建立远程连接或验证远程恢复。",
+      "nextAction": "复用nested-root-ui与原独立磁盘读取driver；真实目录/根切换/alias编辑保存/恢复，原U与NativeI不替代A。"
+    },
+    {
+      "case": "M9-T-D23",
+      "title": "目录root与active文件root分别恢复",
+      "originalSteps": "在A根固定a.md，在B根固定b.md；active回A/a.md后树选B；保存checkpoint并重启，依次复制路径、编辑保存和外开active文件。",
+      "originalExpected": "active内容/路径/读写目标都属A/a.md，树仍可保留B选择；不会拼成B/a.md或误读同名文件；无错误根租约复用。",
+      "nextAction": "复用nested-root-ui与原独立磁盘读取driver；真实目录/根切换/alias编辑保存/恢复，原U与NativeI不替代A。"
+    },
+    {
+      "case": "M9-T-D24",
+      "title": "active根失效不静默换根",
+      "originalSteps": "按D23设置，移除A登记/令A不可用，保留B同名a.md后重启；再恢复A并重试；延迟回包时手动选择B/b.md。",
+      "originalExpected": "A原route保留不可用占位并禁止读写/外开到B同名路径；恢复A重新取得合法root；迟到恢复不抢用户B选择，不清其草稿。",
+      "nextAction": "复用nested-root-ui与原独立磁盘读取driver；真实目录/根切换/alias编辑保存/恢复，原U与NativeI不替代A。"
+    },
+    {
+      "case": "M9-T-Y40",
+      "title": "标签拖动重排与拖到终端互不干扰",
+      "originalSteps": "打开三个固定标签和一个预览标签，在标签条内拖动调整顺序并按原标签状态规则重开；再把一个真实文件标签拖到终端；重复一条dirty标签及一次取消拖动，核对标签顺序、激活项、buffer和PTY日志。",
+      "originalExpected": "标签条内拖动保持原重排/持久化规则且不插入终端；标签拖到终端只插入完整绝对路径，不误重排/关闭标签、不清dirty或保存状态、不丢buffer；取消拖动两边均不提交动作。预览/固定语义与活动标签保持符合R04.3，已有标签拖排序功能不回归。",
+      "nextAction": "原terminal-coexistence/layout及真实path-drop现成前置；真实PTY heartbeat/input/尺寸/焦点/切任务/停止恢复/拖放，零模型；原P编号是性能/终端组，不是P层。"
+    }
+  ],
+  "sixWithoutHistoricalA": [
+    {
+      "case": "M9-T-D20",
+      "originalEnvironments": [
+        "I"
+      ],
+      "steps": "构造有onDownload/onClose特殊业务回调的附件tab并重启。",
+      "expected": "只持久化可序列化合法descriptor；函数不进入JSON；不可恢复项有明确策略。"
+    },
+    {
+      "case": "M9-T-F05",
+      "originalEnvironments": [
+        "U",
+        "I"
+      ],
+      "steps": "按m9-viewers-source.json的345映射生成纯UTF-8样本，逐个调用classifier。",
+      "expected": "记录每个filename→languageId；覆盖无扩展、复合后缀、大小写；任何与基线差异有映射说明；不把识别等同编译。"
+    },
+    {
+      "case": "M9-T-F06",
+      "originalEnvironments": [
+        "U",
+        "I"
+      ],
+      "steps": "用一个已知后缀配置覆盖，再分别以完整名/复合后缀/末段调用。",
+      "expected": "若产品支持自定义，优先级符合批准规则；不支持时显式差异，不能静默声称等价。"
+    },
+    {
+      "case": "M9-T-F10",
+      "originalEnvironments": [
+        "U",
+        "I"
+      ],
+      "steps": "将PNG改.txt；text插入NUL；另造只含TAB/LF/CR与允许控制范围样本。",
+      "expected": "4096byte内容样本判定按批准算法；二进制不进入文本写回；允许字符不误判；记录与参考偏差。"
+    },
+    {
+      "case": "M9-T-F28",
+      "originalEnvironments": [
+        "U",
+        "I"
+      ],
+      "steps": "注册.foo与.bar.foo测试viewer，设preferred/explicit不存在项。",
+      "expected": "启用时最长后缀、显式无匹配null等优先级正确；宿主无该能力时保留明确差异与fallback。"
+    },
+    {
+      "case": "M9-T-F30",
+      "originalEnvironments": [
+        "R",
+        "I"
+      ],
+      "steps": "在支持/不支持handoff条件下打开pptx/xlsx；模拟handoff失败。",
+      "expected": "条件满足才尝试；失败仍可普通文件预览；没有空标签或误建浏览器。"
+    }
+  ],
+  "sixBoundary": "原66全部业务不删除；6条未标原A不自动增补原I/R，也不自动算已绿。按实际U/A可达性/已批准条件核适用证据，F30尤其不以I-only冒充A。",
+  "UStatus": "原253及后来确证补缺均沿有效hash复用。本次没有进行全U再审或新增测试；不因没有出现在examples就断言漏跑。F28当前43分类测试仅no-host，不能支持真正registry/longest分支；原M9已有真实27U/配置I事实，先核旧manifest/源码等价可否复用，再决定是否存在实际U缺项，不能盲重跑。",
+  "F28Sources": [
+    {
+      "path": "src/shared/file-viewer.ts",
+      "lines": "43-50",
+      "fact": "当前已实现explicit/longest/preferred选择"
+    },
+    {
+      "path": "src/renderer/features/files/classification-registry-acceptance.test.ts",
+      "lines": "94-102",
+      "fact": "旧fallback U明确不宣称真正注册/最长选择"
+    },
+    {
+      "path": "src/renderer/features/files/mcp/host-acceptance.test.ts",
+      "lines": "32,44",
+      "fact": "原实际Host选择正例，需broker；不是新增真实R，也不把整份称pureU"
+    }
+  ],
+  "F30Boundary": "原R+I，已有36组件I/真实模型/native有效；默认无共享业务host为批准分支。支持/拒绝/失败路径的App可达性和F18/F20当前正常预览证据须逐项关联，不能直接I=A，不新增模型R。",
+  "nextGroup": "F21 first; common F07-09 if original fixture/lifecycle ready without delayingF21",
+  "allPriorRedKept": true,
+  "newPasses": 0,
+  "publicFilesChanged": false,
+  "NativeNodeAppExecuted": false
+}

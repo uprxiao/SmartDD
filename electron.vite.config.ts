@@ -30,6 +30,7 @@ export default defineConfig({
       execFileSync(process.execPath, ['scripts/applications/build-runtime.mjs'], { stdio: 'inherit' });
       execFileSync(process.execPath, ['scripts/applications/build-bundles.mjs'], { stdio: 'inherit' });
       if (process.platform === 'darwin') {
+        execFileSync(process.execPath, ['scripts/browser/prepare-agent-browser.mjs'], { stdio: 'inherit' });
         execFileSync('python3', ['scripts/files/prepare-tex.py'], { stdio: 'inherit' });
         execFileSync('python3', ['scripts/files/prepare-office.py'], { stdio: 'inherit' });
         execFileSync('python3', ['scripts/files/prepare-libreoffice.py', '--node-executable', process.execPath], { stdio: 'inherit' });
@@ -41,7 +42,7 @@ export default defineConfig({
   preload: {
     plugins: [externalizeDepsPlugin()],
     resolve: { alias },
-    build: { rollupOptions: { input: { index: resolve('src/preload/index.ts'), 'm9-html-guard': resolve('src/preload/m9-html-guard.ts'), 'm9-mcp-ui': resolve('src/preload/m9-mcp-ui.ts') } } },
+    build: { rollupOptions: { input: { index: resolve('src/preload/index.ts'), 'm9-html-guard': resolve('src/preload/m9-html-guard.ts'), 'm9-mcp-ui': resolve('src/preload/m9-mcp-ui.ts'), 'browser-prompt': resolve('src/preload/browser-prompt.ts') } } },
   },
   renderer: {
     root: 'src/renderer',

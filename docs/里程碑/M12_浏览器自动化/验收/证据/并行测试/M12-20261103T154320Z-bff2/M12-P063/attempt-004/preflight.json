@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-04T13:39:26.953501+00:00",
+  "files": {
+    "main.cjs": "2de4933d0781798926eb684f9c865fa5300c0637481761de66e05cde56778e0b",
+    "preload.cjs": "5bb44ac156cefaa15612d4a36e689aa45ca537ddf0db0ee11a4ed1af5742343b",
+    "run.py": "c2c79bf87e14e995417989563b1a91e86f1cd94f3c2e71bff1541ac3ab7817f1",
+    "judge.py": "64b993bce6e34054755b589ff4a6f4e3b25d2f5390ef0333d3bedff145add236"
+  },
+  "syntaxGreen": true,
+  "scope": "native technical probe only, no production edits; originalT068 still not accepted",
+  "newDiagnosis": "003 preload global prompt is Electron stub; use fixed no-Node isolated world via public synchronous webFrame callback, as documented, still must prove actual behavior",
+  "references": [
+    "https://www.electronjs.org/docs/latest/api/web-frame",
+    "originalP004009 isolatedWorld native prompt raw",
+    "P063003 actual Runtime.exceptionThrown"
+  ],
+  "security": "sandbox/contextIsolation true; no Node or subframe integration, no App/IPC API exposed; hidden/prohibited",
+  "expectedUnchanged": "same9 original candidate checks, only fresh root and preload implementation differ",
+  "nativeStarted": false
+}

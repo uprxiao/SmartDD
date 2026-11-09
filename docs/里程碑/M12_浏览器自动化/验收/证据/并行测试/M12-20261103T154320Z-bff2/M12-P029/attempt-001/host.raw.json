@@ -1,0 +1,143 @@
+{
+  "group": "M12-P029",
+  "layer": "actual BrowserService/component I only",
+  "pid": 98017,
+  "startedAt": "2026-11-04T05:23:14.595Z",
+  "versions": {
+    "node": "24.19.0",
+    "acorn": "8.17.0",
+    "ada": "3.4.4",
+    "amaro": "1.1.10",
+    "ares": "1.34.6",
+    "brotli": "1.2.0",
+    "cldr": "48.0",
+    "icu": "78.2",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "146",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.69.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "0.0.0",
+    "simdjson": "4.6.4",
+    "simdutf": "7.7.0",
+    "sqlite": "3.53.3",
+    "tz": "2025c",
+    "undici": "7.29.0",
+    "unicode": "17.0",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "14.8.178.38-electron.0",
+    "zlib": "1.3.2.1-motley",
+    "zstd": "1.6.0",
+    "electron": "42.11.14",
+    "chrome": "148.0.7778.280"
+  },
+  "stage": "done",
+  "events": [],
+  "calls": [],
+  "requests": [],
+  "views": [],
+  "helperCalls": [],
+  "checks": {},
+  "boundaries": {
+    "cipher": "synthetic AES-256-GCM constructor DI; not OS safeStorage",
+    "source": "own synthetic Chrome v24 Cookies DB and keyProvider; no real Keychain/browser",
+    "native": "actual park window transparent/nonfocus showInactive; hidden real native-opener popup; no active focus or desktop input",
+    "latch": "single actual NativeBrowserCookieStore.set completes then pauses before returning, restored in finally",
+    "notCovered": [
+      "M11 real CLI",
+      "UI approval A",
+      "service-worker CookieStore residual",
+      "real Keychain"
+    ]
+  },
+  "activationPolicy": {
+    "requested": "prohibited",
+    "fulfilled": true,
+    "beforeReady": true
+  },
+  "initialWindows": 0,
+  "identity": {
+    "pid": 98017,
+    "startedAt": "darwin-proc-v1:1793769794:459334"
+  },
+  "actualSQLite": {
+    "version": {
+      "version": "3.53.2"
+    },
+    "schema": [
+      {
+        "name": "app_settings",
+        "sql": "CREATE TABLE app_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000))"
+      },
+      {
+        "name": "browser_operations",
+        "sql": "CREATE TABLE browser_operations (\n run_id TEXT NOT NULL, request_id TEXT NOT NULL, task_id TEXT NOT NULL, page_id TEXT,\n command TEXT NOT NULL, state TEXT NOT NULL CHECK(state IN ('accepted','running','succeeded','failed','unknown')),\n effect_state TEXT NOT NULL, progress TEXT, summary TEXT, error_code TEXT,\n created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,\n PRIMARY KEY(run_id, request_id)\n)"
+      },
+      {
+        "name": "browser_operations_created",
+        "sql": "CREATE INDEX browser_operations_created ON browser_operations(created_at)"
+      },
+      {
+        "name": "projects",
+        "sql": "CREATE TABLE projects(id TEXT PRIMARY KEY)"
+      },
+      {
+        "name": "sqlite_autoindex_app_settings_1",
+        "sql": null
+      },
+      {
+        "name": "sqlite_autoindex_browser_operations_1",
+        "sql": null
+      },
+      {
+        "name": "sqlite_autoindex_projects_1",
+        "sql": null
+      },
+      {
+        "name": "sqlite_autoindex_tasks_1",
+        "sql": null
+      },
+      {
+        "name": "tasks",
+        "sql": "CREATE TABLE tasks(id TEXT PRIMARY KEY, project_id TEXT NOT NULL,cwd TEXT NOT NULL)"
+      }
+    ]
+  },
+  "failure": {
+    "name": "SqliteError",
+    "code": "SQLITE_ERROR",
+    "message": "table cookies has 15 columns but 16 values were supplied",
+    "stack": "SqliteError: table cookies has 15 columns but 16 values were supplied\n    at Database.prepare (/private/tmp/willyou-m12-p029-executor-001/build/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)\n    at /private/tmp/willyou-m12-p029-executor-001/build/host.cjs:16031:35"
+  },
+  "hooksRestored": {
+    "set": true,
+    "ensure": true,
+    "command": true
+  },
+  "cleanupBefore": {
+    "metrics": [
+      {
+        "pid": 98017,
+        "type": "Browser"
+      },
+      {
+        "pid": 98019,
+        "type": "Utility"
+      }
+    ],
+    "windows": [],
+    "pages": []
+  },
+  "cleanupAfter": {
+    "windows": [],
+    "contents": [],
+    "allRemaining": [],
+    "serverListening": false
+  },
+  "finishedAt": "2026-11-04T05:23:14.651Z"
+}

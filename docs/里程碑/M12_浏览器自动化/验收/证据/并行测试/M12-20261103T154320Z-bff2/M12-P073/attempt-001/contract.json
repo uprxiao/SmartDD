@@ -1,0 +1,101 @@
+{
+  "group": "M12-P073",
+  "layer": "Native I technicalboundary supplement; noA/modelR/no originalT068basic rerun",
+  "requirements": {
+    "direct": [
+      "R04.6",
+      "R03 references/input",
+      "R02.10 samepagequeue"
+    ],
+    "background": "R01.12 regionalUI constraint only; no newearlyHTML/OOPIF/JSUI businessrequirement",
+    "lifecycle": "Native callback retained; exact actualCDP frame/session; navigation/framegone/close/profileunavailable/dispose invalidate priorresponse"
+  },
+  "cases": [
+    {
+      "id": "early-inline-cold",
+      "entry": "ActualCLI tab create --url /early-inline; keeporiginalPromise while readonlycreated/opening identifiesnewpage",
+      "answer": "ActualCLI dialog accept explicittext --page actualnewpageID",
+      "expected": [
+        "ActualPageCreated/preload beforeinlineprompt",
+        "realopening beforefirstHelperprocess",
+        "realclosed/truepage return/createCLI0completed/actualnewpageIDmatches",
+        "normalnextactualsnapshotrefclick effect once",
+        "no gotoextra scope"
+      ]
+    },
+    {
+      "id": "main-reference-mousedown",
+      "entry": "Topframe actualsnapshot hostref→normalCLI click --element @ref (notfind), real mousedownprompt",
+      "answer": "NormalactualCLI dialogaccept on samepage, noqueueexception",
+      "expected": [
+        "actualarmedhostClick=false",
+        "realHelper click result and exactoriginalfinish/disarmPromisein/out observedpassively",
+        "firstclickcompleted/effectonce afteranswer",
+        "differentnextinputonce"
+      ],
+      "boundary": "Maincontrol isolates serviceguardfinish layer from hostClickspecials; original5greenfind not rerun"
+    },
+    {
+      "id": "srcdoc-mousedown",
+      "entry": "ActualCLI tab create plainparent/srcdoc; actualsnapshotref normalclick onchildbutton mousedown prompt",
+      "answer": "ActualCLI dialogaccept --page parentpage",
+      "expected": [
+        "actualarmedreferencehostClick=true",
+        "sourcechildframeId/session preserved",
+        "originalactualclick completed/effectonce afteranswer",
+        "differentnextbutton snapshotrefclick succeedsonce"
+      ]
+    },
+    {
+      "id": "crosssite-oopif-mousedown",
+      "entry": "Sameport127.0.0.1 parent andlocalhost child, noextraChromiumflags/prefs; realNormalCLIclickchildsnapshotref",
+      "answer": "ActualCLI dialogaccept actualpageid",
+      "expected": [
+        "distinctactualsites/URLs",
+        "realiframeTarget/session/childframe, Nativechildprocess different",
+        "actualhostClick=true; opening/closed actualmatchingchildsession/frame",
+        "firstclickeffectonce and nextinputonce"
+      ],
+      "ifNoOopif": "classify missingactualOOPIF, neverclaimfromhostnames/ports alone"
+    },
+    {
+      "id": "shadow-mousedown",
+      "entry": "OpenShadowrootbutton actualsnapshotref→normalCLIclick; realmousedownprompt",
+      "answer": "ActualCLI dialogaccept explicittext",
+      "expected": [
+        "actualhostClick=true, shadowrootidentity",
+        "realmatchingpage/frame/session opening/closed",
+        "firstclickeffectonce then differentnextbuttonclick effectonce"
+      ]
+    }
+  ],
+  "bounds": {
+    "hostProxyCdpTimeoutMs": 10000,
+    "browserCommandBudgetMs": 90000,
+    "hostCliIPCDeadlineMs": 115000,
+    "openingWaitMs": 12000,
+    "cleanupStageWaitMs": [
+      1000,
+      5000,
+      10000,
+      20000,
+      30000,
+      45000
+    ]
+  },
+  "prohibitions": [
+    "noNativebeforelease",
+    "noPage.handle/testuserrespond answer",
+    "noqueueexception",
+    "no click/create write replay",
+    "no fake OOPIF viaflags/prefs",
+    "no default-preserve assumption",
+    "readonlyAPI not usedasinput",
+    "cleanupnotbusinesspass"
+  ],
+  "firstKnownRisk": "references.ts197-200 hostClick mousepress/release are directawait and lackmodaldialograce/pendingrelease; actualCLI mayunknown/queueblock; reportroot only",
+  "observations": [
+    "Passive arm/helper.command/disarm wrappers delegate identical this/args/originalPromise/result/error; ArmedRefobject/finishfunction not replaced. finish directlydelegates disarm at references.ts312.",
+    "Frame/native/CDP target/session read-only snapshots; no NativeframeToken/CDPframeId substitution"
+  ]
+}

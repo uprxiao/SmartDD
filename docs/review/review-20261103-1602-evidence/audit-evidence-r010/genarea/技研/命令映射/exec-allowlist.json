@@ -1,0 +1,83 @@
+{
+ "note": "R0.9 exec 白名单（review R02）。依据 agent-browser 0.27.3 `--help`。只放行页面内操作；带专用命令且需要宿主交付文件的（screenshot、pdf、download、network har）、改变连接或会话的（connect、close、tab、session、batch）、写磁盘或开服务的（record、trace、profiler、stream、auth、state、inspect、dashboard、chat、install、upgrade、doctor、profiles、skills）、导航（open，统一用 goto 以执行宿主地址规则）一律拒绝。任何以 - 开头、不在该子命令 options 中的参数都拒绝（含 --cdp、--session、--ignore-https-errors、--init-script、--extension、--proxy、--config）。",
+ "commands": {
+  "click": [],
+  "dblclick": [],
+  "type": [],
+  "fill": [],
+  "press": [],
+  "keyboard": [],
+  "hover": [],
+  "focus": [],
+  "check": [],
+  "uncheck": [],
+  "select": [],
+  "drag": [],
+  "upload": [],
+  "scroll": [],
+  "scrollintoview": [],
+  "wait": [],
+  "snapshot": [
+   "-i",
+   "--interactive",
+   "-c",
+   "--compact",
+   "-d",
+   "--depth",
+   "-s",
+   "--selector"
+  ],
+  "eval": [],
+  "back": [],
+  "forward": [],
+  "reload": [],
+  "get": [],
+  "is": [],
+  "find": [
+   "--name",
+   "--exact"
+  ],
+  "mouse": [],
+  "set": [],
+  "network": {
+   "route": [
+    "--abort",
+    "--body",
+    "--resource-type"
+   ],
+   "unroute": [],
+   "requests": [
+    "--clear",
+    "--filter",
+    "--type",
+    "--method",
+    "--status"
+   ],
+   "request": []
+  },
+  "cookies": [
+   "--url",
+   "--domain",
+   "--path",
+   "--httpOnly",
+   "--secure",
+   "--sameSite",
+   "--expires"
+  ],
+  "storage": [],
+  "console": [
+   "--clear"
+  ],
+  "errors": [
+   "--clear"
+  ],
+  "highlight": [],
+  "clipboard": [],
+  "dialog": [],
+  "diff": {
+   "snapshot": []
+  },
+  "vitals": [],
+  "pushstate": []
+ }
+}

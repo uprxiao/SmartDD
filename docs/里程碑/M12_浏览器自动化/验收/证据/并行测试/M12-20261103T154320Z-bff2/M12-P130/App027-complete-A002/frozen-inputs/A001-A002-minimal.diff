@@ -1,0 +1,586 @@
+--- A001/run.mjs
++++ A002/run.mjs
+@@ -1,3 +1,4 @@
++import{installProviderObserverBody,finishProviderObserverBody}from'./provider-observer.mjs';
+ import{assertDriverLabels}from'./check-labels.mjs';import{settleOwnedApp}from'./cleanup-owned-app.mjs';import{activateInitialExactTestPid}from'./activate-initial-exact-pid.mjs';import assert from'node:assert/strict';import{readFile,writeFile,mkdir,copyFile,stat,realpath}from'node:fs/promises';import{pathToFileURL}from'node:url';import{createRequire}from'node:module';import{ROOT,sha,save,verifyPin}from'./io.mjs';import{openElectron}from'./driver-source/scripts/lib/electron-harness.mjs';import{installAppFocusGuard}from'./driver-source/scripts/lib/app-focus-guard.mjs';import{waitPassiveInitialFocus}from'./initial-focus.mjs';import{saveStartupError}from'./startup-error.mjs';import{ui as makeUi}from'./ui.mjs';import{resourceRecorder}from'./resources.mjs';import{observeStableView}from'./view-observer.mjs';
+ await assertDriverLabels(ROOT);assert(process.argv.includes('--execute'));assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');const ready=JSON.parse(await readFile(ROOT+'/execution-ready.json')),pin=JSON.parse(await readFile(ROOT+'/pin.json')),lease=JSON.parse(await readFile(ROOT+'/lease.receipt.json'));
+ const check=()=>{assert(lease.status==='granted'&&lease.coordinator==='root'&&lease.privateRoot===ROOT&&lease.executable===pin.executable);assert(['Native','UI','App','PTY','HTTP','TCP','Unix','OS'].every(x=>lease.resources.includes(x)));assert(Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt)&&!lease.revoked)};check();assert.equal(lease.executionReadySHA256,sha(await readFile(ROOT+'/execution-ready.json')));for(const f of ready.inputs){const p=f.external?f.path:ROOT+'/'+f.path;assert.equal(sha(await readFile(p)),f.sha256);assert.equal((await stat(p)).mode&511,f.mode)}await verifyPin(pin);
+@@ -18,17 +19,18 @@
+  // Same existing M9 SDK fixture bundling, deferred until this full resource lease.
+  process.env.TMPDIR=runtime+'/tmp';const req=createRequire(ROOT+'/package.json'),modules=await realpath(ROOT+'/node_modules');esbuild=req('esbuild');const build=esbuild.buildSync({entryPoints:[ROOT+'/fixtures/manual-app-fixture.js'],bundle:true,nodePaths:[modules],platform:'browser',format:'iife',write:false});const html='<!doctype html><body><script>'+build.outputFiles[0].text.replaceAll('</script','<\\/script')+'</script>';await writeFile(runtime+'/assets/mcp.html',html,{mode:0o600});r.fixtureBundle={source:'existing M9 manual-app-fixture.js',sha256:sha(Buffer.from(html)),bytes:Buffer.byteLength(html)};await resources.capture({processId:process.pid},new Set());await esbuild.stop();r.fixtureBundle.compilerStopped=true;esbuild=null;
+  app=await openElectron({executable:pin.executable,userData,cwd:projectPath,inspectMain:true,env:{HOME:runtime+'/home',ZDOTDIR:runtime+'/home',CODEX_HOME:runtime+'/codex',TMPDIR:runtime+'/tmp',PATH:'/usr/bin:/bin:/usr/sbin:/sbin',WILLYOU_TEST_CACHE_DIR:ROOT+'/cache',NODE_COMPILE_CACHE:ROOT+'/cache/node',XDG_CACHE_HOME:ROOT+'/cache/xdg'}});r.appPid=app.processId;resources.pids.add(app.processId);const cat=await poll(async()=>unwrap(await app.invoke('applications.catalog')).find(x=>x.appId==='browser'));if(!cat.added)unwrap(await app.invoke('applications.setAdded','browser',true,cat.revision));const project=await app.invoke('projects.create',{name:'[A] T132 coexistence',aliases:[],description:'Original browser/HTML/MCP compatibility',rulesPath:null},[{label:'T132 fixture',path:projectPath}]);r.projectId=project.id;const selected=unwrap(await app.invoke('applications.projectSettings',project.id,'browser'));if(!selected.enabled)unwrap(await app.invoke('applications.select',{projectId:project.id,appId:'browser',enabled:true,expectedRevision:selected.revision,connections:{}}));const ai=await app.invoke('aiProfiles.create',{name:'T132 controlled idle task',runner:'codex',executable:ROOT+'/receiver.py',args:[],env:[{name:'HOME',value:runtime+'/home',secret:false},{name:'CODEX_HOME',value:runtime+'/codex',secret:false}],color:null,isDefault:true});await poll(async()=>{const x=await app.invoke('aiProfiles.get',ai.id);if(x.checking)return null;assert.equal(x.check.status,'ok');return x},45000);const made=await app.invoke('tasks.create',{projectId:project.id,dirId:null,aiProfileId:ai.id,firstMessage:'T132 local controlled idle fixture, no model'});await app.invoke('tasks.rename',made.task.id,'[A] T132 browser HTML MCP');r.task={taskId:made.task.id,ptyId:made.ptyId,runId:unwrap(await app.invoke('applications.session',made.task.id)).currentRun.id};
+- const configuration={adapters:[{id:'T132-app',name:'T132 MCP UI',enabled:true,suffixes:['.mcp.txt'],sources:['task-cwd','project-directory'],provider:{kind:'stdio',command:await realpath('/Users/liubu/.hermes/node/bin/node'),args:[ROOT+'/fixtures/provider.mjs','${file}','willyou-t132://${session}/resource',runtime+'/assets/mcp.html'],runtimePaths:[modules,ROOT+'/fixtures',runtime+'/assets'],resourceUri:'willyou-t132://${session}/resource',presentation:'mcp-app',uiResourceUri:'ui://fixture/view.html',initialTool:'initial',initialArguments:{uri:'willyou-t132://${session}/resource'},appTools:[{name:'slice',arguments:{uri:'willyou-t132://${session}/resource'},numericArguments:{offset:{min:0,max:1024,integer:true},length:{min:1,max:256,integer:true}}}]}}],preferred:{}};await app.invoke('files.configureViewers',configuration);assert.deepEqual(await app.invoke('files.viewerConfiguration'),configuration);r.viewerPrecondition={actualAPI:true,adapter:'T132-app',scope:'not-tested registered adapter setup; actual document opens remain UI'};
++ const configuration={adapters:[{id:'T132-app',name:'T132 MCP UI',enabled:true,suffixes:['.mcp.txt'],sources:['task-cwd','project-directory'],provider:{kind:'stdio',command:await realpath('/Users/liubu/.hermes/node/bin/node'),args:[ROOT+'/fixtures/provider.mjs','${file}','willyou-t132://${session}/resource',runtime+'/assets/mcp.html'],runtimePaths:[modules,ROOT+'/fixtures',runtime+'/assets',ROOT+'/deps/packages'],resourceUri:'willyou-t132://${session}/resource',presentation:'mcp-app',uiResourceUri:'ui://fixture/view.html',initialTool:'initial',initialArguments:{uri:'willyou-t132://${session}/resource'},appTools:[{name:'slice',arguments:{uri:'willyou-t132://${session}/resource'},numericArguments:{offset:{min:0,max:1024,integer:true},length:{min:1,max:256,integer:true}}}]}}],preferred:{}};await app.invoke('files.configureViewers',configuration);assert.deepEqual(await app.invoke('files.viewerConfiguration'),configuration);r.viewerPrecondition={actualAPI:true,adapter:'T132-app',scope:'not-tested registered adapter setup; actual document opens remain UI'};
+  const origin=await app.evaluate('performance.timeOrigin');await app.cdp('Page.reload');await app.waitFor('performance.timeOrigin!=='+origin+'&&document.readyState==="complete"&&Boolean(document.querySelector("[data-testid=nav-new-task]"))',20000,{navigation:true});r.reloadCount=1;await own('for(const w of E.BrowserWindow.getAllWindows())if(w.webContents.getURL().includes("/out/renderer/index.html"))w.setTitle("[A]T132 App027 网页 HTML MCP共存");return true;','set-t132-title');r.initialFocus={};await persist();r.initialFocusPreparation=await activateInitialExactTestPid({app,pin,userData,privateRoot:ROOT,authorization:JSON.parse(await readFile(ROOT+'/initial-foreground-authorization.receipt.json')),scriptPath:ROOT+'/activate-initial-exact-pid.applescript'});await persist();console.log(JSON.stringify({stage:'window-ready-passive-focus',pid:app.processId,userData,title:'[A]T132 App027 网页 HTML MCP共存'}));await waitPassiveInitialFocus({record:r.initialFocus,check,read:async()=>({...await app.evaluate('({focused:document.hasFocus(),visibility:document.visibilityState})'),native:await own('return E.BaseWindow.getAllWindows().some(w=>!w.isDestroyed()&&w.isFocused());','readonly-t132-native-focus')})});installAppFocusGuard(app,r,{allowOwnedViews:true});ui=makeUi(app,async x=>{r.actions.push({at:new Date().toISOString(),...x});await persist()});await ui.click('[data-testid=sidebar-task][data-task-id="'+r.task.taskId+'"]');await app.waitFor('document.querySelector("[data-testid=sidebar-task][aria-current=page]")?.dataset.taskId==='+JSON.stringify(r.task.taskId),10000);if(await app.evaluate('!!document.querySelector("[data-testid=task-resume]")&&!document.querySelector("[data-testid=task-resume]").disabled'))await ui.click('[data-testid=task-resume]');assert.equal((await app.invoke('tasks.get',r.task.taskId)).ptyId,r.task.ptyId);assert.equal(unwrap(await app.invoke('applications.session',r.task.taskId)).currentRun.id,r.task.runId);r.mainDocument=await app.evaluate('({url:location.href,timeOrigin:performance.timeOrigin})');
+  stage='browser-real-new-tab';await ui.click('[data-testid=task-new-browser]');await app.waitFor('Boolean(document.querySelector("[aria-label=网页地址]"))',10000);r.browserURL=pathToFileURL(projectPath+'/browser.html').href;await ui.click('[aria-label=网页地址]');await app.cdp('Input.insertText',{text:r.browserURL});for(const type of['keyDown','keyUp'])await app.cdp('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:36,...(type==='keyDown'?{text:'\r',unmodifiedText:'\r'}:{})});r.browser=await poll(async()=>{const w=await app.invoke('browser.snapshot',{taskId:r.task.taskId});return w.tabs.find(t=>t.url===r.browserURL)});pages.add(r.browser.id);await capture('browser','browser-initial');
+  stage='html-real-tree-and-document';await selectFile('doc.html');await app.waitFor('Boolean(document.querySelector(".cm-content"))',15000);await ui.click('[aria-label=查看文档]');await capture('html','html-initial');
+- stage='mcp-real-tree-and-SDK';await selectFile('panel.mcp.txt');await capture('mcp','mcp-three-open');r.threeOpen=true;
++ stage='mcp-real-tree-and-SDK';r.providerObserverPreparation=await own(installProviderObserverBody({pid:app.processId,executable:pin.executable,userData,command:await realpath('/Users/liubu/.hermes/node/bin/node'),provider:ROOT+'/fixtures/provider.mjs',asset:runtime+'/assets/mcp.html',tmp:runtime+'/tmp',protectedRoot:projectPath,runtimePaths:[modules,ROOT+'/fixtures',runtime+'/assets',ROOT+'/deps/packages']}),'t132-provider-observe');await selectFile('panel.mcp.txt');await capture('mcp','mcp-three-open');r.threeOpen=true;
+  stage='switch-three-existing-tabs';await ui.click('.fw-web-tab [role=tab]');await capture('browser','browser-return');await fileTab('doc.html');await capture('html','html-return');await fileTab('panel.mcp.txt');await capture('mcp','mcp-return');r.finalBrowser=await app.invoke('browser.snapshot',{taskId:r.task.taskId});assert(r.finalBrowser.tabs.some(t=>t.id===r.browser.id&&t.url===r.browserURL));r.after={};for(const f of Object.keys(r.before)){const p=projectPath+'/'+f,s=await stat(p,{bigint:true});r.after[f]={sha256:sha(await readFile(p)),inode:String(s.ino),mtimeNs:String(s.mtimeNs)}}assert.deepEqual(r.after,r.before);r.rendererErrors=app.rendererErrors;r.status='executed-unjudged';
+  }catch(e){r.status=e.code==='APP_FOCUS_YIELDED'?'deferred-focus-loss':'failed-or-partial';r.failure={stage,type:e.name,...await recordPrivateError('business-'+stage,e)};await mkdir(runtime,{recursive:true,mode:0o700});await writeFile(runtime+'/failure.private.log',String(e.stack??e),{mode:0o600});await persist();if(e.electronStartupLogs!==undefined||e.electronStartupProcess!==undefined){if(Number.isInteger(e.electronStartupProcess?.pid))resources.pids.add(e.electronStartupProcess.pid);r.startupFailure=await saveStartupError(runtime,e,{executable:pin.executable,userData});for(const p of r.startupFailure.observedLoopbackDebugPorts)resources.ports.add(p)}}
+ finally{
+  const clean=async(label,fn)=>{try{return await fn()}catch(error){r.cleanupErrors.push(await recordPrivateError(label,error));return null}};
+  if(esbuild)await clean('fixture-compiler-stop',()=>esbuild.stop());
+  if(app){
++  await clean('provider-observer-save-restore',async()=>{const observed=await own(finishProviderObserverBody(),'t132-provider-stop');await writeFile(runtime+'/provider-observer.private.json',JSON.stringify(observed,null,2)+'\n',{mode:0o600});r.providerObserver={installed:observed.installed,restored:observed.restored,ownListenersRemoved:observed.ownListenersRemoved,observerErrors:observed.observerErrors,records:observed.records.map(({stderrBase64,...row})=>({...row,stderrSHA256:sha(Buffer.from(stderrBase64,'base64'))}))};for(const record of observed.records)if(Number.isSafeInteger(record.pid)&&record.pid>1)resources.pids.add(record.pid);});
+   await clean('inventory-own-resources',()=>resources.capture(app,pages));
+   r.exactGatewayPaths=await clean('readonly-own-gateways',()=>own('return process._getActiveHandles().filter(h=>h?.constructor?.name==="Server"&&typeof h.address==="function"&&typeof h.address()==="string"&&["/private/tmp/wy-cli-","/tmp/wy-cli-","/private/tmp/wy-"+process.getuid()+"-","/tmp/wy-"+process.getuid()+"-"].some(prefix=>h.address().startsWith(prefix))).map(h=>h.address());','readonly-t132-unix'))??[];
+   if(r.task)await clean('stop-own-idle-task',async()=>{const view=await app.invoke('tasks.get',r.task.taskId);assert.equal(view.projectId,r.projectId);if(view.ptyId)await app.invoke('tasks.kill',r.task.taskId);const end=Date.now()+15000;while((await app.invoke('tasks.get',r.task.taskId)).ptyId){if(Date.now()>=end)throw Error('Own task stop deadline');await new Promise(ok=>setTimeout(ok,40))}});
+--- A001/activate-initial-exact-pid.mjs
++++ A002/activate-initial-exact-pid.mjs
+@@ -8,7 +8,7 @@
+ export async function activateInitialExactTestPid({app,pin,userData,privateRoot,authorization,scriptPath}){
+  assert.equal(process.platform,'darwin');
+  assert(authorization?.status==='explicitly-authorized'&&authorization.scope==='M12-isolated-initial-foreground-only'&&authorization.userMessageReference);
+- assert.equal(privateRoot,'/private/tmp/willyou-m12-t132-App027-A-001');assert.equal(userData,'/private/tmp/willyou-m12-t132-App027-A-001/runtime-001/userdata');
++ assert.equal(privateRoot,'/private/tmp/willyou-m12-t132-App027-A-002');assert.equal(userData,'/private/tmp/willyou-m12-t132-App027-A-002/runtime-001/userdata');
+  assert(pin.executable.startsWith('/private/tmp/willyou-m12-')&&pin.executable.endsWith('/WillYou.app/Contents/MacOS/WillYou'));
+  assert(Number.isInteger(app.processId)&&app.processId>1);
+  const script=await readFile(scriptPath);assert.equal(sha(script),authorization.scriptSHA256);
+--- A001/io.mjs
++++ A002/io.mjs
+@@ -1,5 +1,5 @@
+ import assert from'node:assert/strict';import{resolve,relative}from'node:path';import{realpath,readlink,writeFile,mkdir,readFile,stat}from'node:fs/promises';import{createHash}from'node:crypto';
+-export const ROOT='/private/tmp/willyou-m12-t132-App027-A-001';
++export const ROOT='/private/tmp/willyou-m12-t132-App027-A-002';
+ export const sha=b=>createHash('sha256').update(b).digest('hex');
+ export async function privatePath(name){assert(typeof name==='string'&&!name.startsWith('/')&&!name.split('/').includes('..'));const p=resolve(ROOT,name);assert(relative(ROOT,p)&&!relative(ROOT,p).startsWith('..'));assert.equal(await realpath(ROOT),ROOT);return p;}
+ export async function save(name,value,{exclusive=false}={}){const p=await privatePath(name);await writeFile(p,JSON.stringify(value,null,2)+'\n',{flag:exclusive?'wx':'w',mode:0o600});return p;}
+--- A001/freeze-dependencies.mjs
++++ A002/freeze-dependencies.mjs
+@@ -4,7 +4,7 @@
+ import {createRequire} from 'node:module';
+ import {dirname,join,relative,resolve} from 'node:path';
+ import {createHash} from 'node:crypto';
+-const root='/private/tmp/willyou-m12-t132-App027-A-001',old='/private/tmp/willyou-m12-t132-App024-A-002',req=createRequire(old+'/package.json'),sha=b=>createHash('sha256').update(b).digest('hex'),packages=new Map(),links=[],files=[],skipped=[];
++const root='/private/tmp/willyou-m12-t132-App027-A-002',old='/private/tmp/willyou-m12-t132-App024-A-002',req=createRequire(old+'/package.json'),sha=b=>createHash('sha256').update(b).digest('hex'),packages=new Map(),links=[],files=[],skipped=[];
+ async function locate(name,from){for(const base of createRequire(from+'/package.json').resolve.paths(name)??[]){const path=join(base,name,'package.json');try{await stat(path);return await realpath(dirname(path))}catch(error){if(error.code!=='ENOENT')throw error}}return null}
+ async function link(path,target){await mkdir(dirname(root+'/'+path),{recursive:true});const text=relative(dirname(root+'/'+path),target);await symlink(text,root+'/'+path);links.push({path,target:text,realTarget:target})}
+ async function copyTree(source,dest){await mkdir(dest,{recursive:true});for(const e of await readdir(source,{withFileTypes:true})){if(e.name==='node_modules')continue;const a=source+'/'+e.name,b=dest+'/'+e.name;if(e.isDirectory())await copyTree(a,b);else{const actual=await realpath(a),s=await stat(actual);if(!s.isFile())throw Error('Unexpected non-file dependency entry');await copyFile(actual,b);await chmod(b,s.mode&511);files.push({path:relative(root,b),sha256:sha(await readFile(b)),mode:s.mode&511,bytes:s.size})}}}
+--- A001/dependency-layout.json
++++ A002/dependency-layout.json
+@@ -5,25 +5,25 @@
+       "source": "/private/tmp/willyou-m12-t125-original-profile-continuation-003/node_modules/typescript",
+       "name": "typescript",
+       "version": "5.9.3",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/typescript-5.9.3-36942ab5",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/typescript-5.9.3-36942ab5",
+       "dependencies": []
+     },
+     {
+       "source": "/private/tmp/willyou-m12-t125-original-profile-continuation-003/node_modules/ws",
+       "name": "ws",
+       "version": "8.22.1",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/ws-8.22.1-0b688294",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/ws-8.22.1-0b688294",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild",
+       "name": "esbuild",
+       "version": "0.25.12",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/esbuild-0.25.12-fed91953",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/esbuild-0.25.12-fed91953",
+       "dependencies": [
+         {
+           "name": "@esbuild/darwin-arm64",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@esbuild_darwin-arm64-0.25.12-d8fbd5ce"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@esbuild_darwin-arm64-0.25.12-d8fbd5ce"
+         }
+       ]
+     },
+@@ -31,42 +31,42 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@esbuild+darwin-arm64@0.25.12/node_modules/@esbuild/darwin-arm64",
+       "name": "@esbuild/darwin-arm64",
+       "version": "0.25.12",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@esbuild_darwin-arm64-0.25.12-d8fbd5ce",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@esbuild_darwin-arm64-0.25.12-d8fbd5ce",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+ext-apps@2.0.3_@modelcontextprotocol+client@2.0.0_@modelcontextpr_ec2fcab4c9783f9db16dfce32d3df48d/node_modules/@modelcontextprotocol/ext-apps",
+       "name": "@modelcontextprotocol/ext-apps",
+       "version": "2.0.3",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc",
+       "dependencies": [
+         {
+           "name": "@modelcontextprotocol/client",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0"
+         },
+         {
+           "name": "@modelcontextprotocol/core",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
+         },
+         {
+           "name": "@modelcontextprotocol/server",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5"
+         },
+         {
+           "name": "@standard-schema/spec",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@standard-schema_spec-1.1.0-50a0e42d"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@standard-schema_spec-1.1.0-50a0e42d"
+         },
+         {
+           "name": "react",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-19.3.0-10b31f34"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-19.3.0-10b31f34"
+         },
+         {
+           "name": "react-dom",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-dom-19.3.0-1c9d6c86"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-dom-19.3.0-1c9d6c86"
+         },
+         {
+           "name": "zod",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+         }
+       ]
+     },
+@@ -74,35 +74,35 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+client@2.0.0/node_modules/@modelcontextprotocol/client",
+       "name": "@modelcontextprotocol/client",
+       "version": "2.0.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0",
+       "dependencies": [
+         {
+           "name": "@modelcontextprotocol/core",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
+         },
+         {
+           "name": "cross-spawn",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/cross-spawn-7.0.6-6acc6193"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/cross-spawn-7.0.6-6acc6193"
+         },
+         {
+           "name": "eventsource",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-3.0.7-367606f5"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-3.0.7-367606f5"
+         },
+         {
+           "name": "eventsource-parser",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
+         },
+         {
+           "name": "jose",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/jose-6.2.12-ad36f3e6"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/jose-6.2.12-ad36f3e6"
+         },
+         {
+           "name": "pkce-challenge",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/pkce-challenge-5.0.1-6dc73d7f"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/pkce-challenge-5.0.1-6dc73d7f"
+         },
+         {
+           "name": "zod",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+         }
+       ]
+     },
+@@ -110,11 +110,11 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+core@2.0.0/node_modules/@modelcontextprotocol/core",
+       "name": "@modelcontextprotocol/core",
+       "version": "2.0.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339",
+       "dependencies": [
+         {
+           "name": "zod",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+         }
+       ]
+     },
+@@ -122,26 +122,26 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod",
+       "name": "zod",
+       "version": "4.6.7",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/cross-spawn@7.0.6/node_modules/cross-spawn",
+       "name": "cross-spawn",
+       "version": "7.0.6",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/cross-spawn-7.0.6-6acc6193",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/cross-spawn-7.0.6-6acc6193",
+       "dependencies": [
+         {
+           "name": "path-key",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/path-key-3.1.1-01c0e717"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/path-key-3.1.1-01c0e717"
+         },
+         {
+           "name": "shebang-command",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/shebang-command-2.0.0-ae2c5165"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/shebang-command-2.0.0-ae2c5165"
+         },
+         {
+           "name": "which",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/which-2.0.2-b01c524f"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/which-2.0.2-b01c524f"
+         }
+       ]
+     },
+@@ -149,18 +149,18 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/path-key@3.1.1/node_modules/path-key",
+       "name": "path-key",
+       "version": "3.1.1",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/path-key-3.1.1-01c0e717",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/path-key-3.1.1-01c0e717",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/shebang-command@2.0.0/node_modules/shebang-command",
+       "name": "shebang-command",
+       "version": "2.0.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/shebang-command-2.0.0-ae2c5165",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/shebang-command-2.0.0-ae2c5165",
+       "dependencies": [
+         {
+           "name": "shebang-regex",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/shebang-regex-3.0.0-f3c23d54"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/shebang-regex-3.0.0-f3c23d54"
+         }
+       ]
+     },
+@@ -168,18 +168,18 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/shebang-regex@3.0.0/node_modules/shebang-regex",
+       "name": "shebang-regex",
+       "version": "3.0.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/shebang-regex-3.0.0-f3c23d54",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/shebang-regex-3.0.0-f3c23d54",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/which@2.0.2/node_modules/which",
+       "name": "which",
+       "version": "2.0.2",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/which-2.0.2-b01c524f",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/which-2.0.2-b01c524f",
+       "dependencies": [
+         {
+           "name": "isexe",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/isexe-2.0.0-de29eca0"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/isexe-2.0.0-de29eca0"
+         }
+       ]
+     },
+@@ -187,18 +187,18 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/isexe@2.0.0/node_modules/isexe",
+       "name": "isexe",
+       "version": "2.0.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/isexe-2.0.0-de29eca0",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/isexe-2.0.0-de29eca0",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/eventsource@3.0.7/node_modules/eventsource",
+       "name": "eventsource",
+       "version": "3.0.7",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-3.0.7-367606f5",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-3.0.7-367606f5",
+       "dependencies": [
+         {
+           "name": "eventsource-parser",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
+         }
+       ]
+     },
+@@ -206,36 +206,36 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/eventsource-parser@3.1.1/node_modules/eventsource-parser",
+       "name": "eventsource-parser",
+       "version": "3.1.1",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-parser-3.1.1-b7d7c9c5",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-parser-3.1.1-b7d7c9c5",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/jose@6.2.12/node_modules/jose",
+       "name": "jose",
+       "version": "6.2.12",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/jose-6.2.12-ad36f3e6",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/jose-6.2.12-ad36f3e6",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/pkce-challenge@5.0.1/node_modules/pkce-challenge",
+       "name": "pkce-challenge",
+       "version": "5.0.1",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/pkce-challenge-5.0.1-6dc73d7f",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/pkce-challenge-5.0.1-6dc73d7f",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@modelcontextprotocol+server@2.0.0/node_modules/@modelcontextprotocol/server",
+       "name": "@modelcontextprotocol/server",
+       "version": "2.0.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5",
+       "dependencies": [
+         {
+           "name": "@modelcontextprotocol/core",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
+         },
+         {
+           "name": "zod",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+         }
+       ]
+     },
+@@ -243,29 +243,29 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@standard-schema+spec@1.1.0/node_modules/@standard-schema/spec",
+       "name": "@standard-schema/spec",
+       "version": "1.1.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@standard-schema_spec-1.1.0-50a0e42d",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@standard-schema_spec-1.1.0-50a0e42d",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react@19.3.0/node_modules/react",
+       "name": "react",
+       "version": "19.3.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-19.3.0-10b31f34",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-19.3.0-10b31f34",
+       "dependencies": []
+     },
+     {
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom",
+       "name": "react-dom",
+       "version": "19.3.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-dom-19.3.0-1c9d6c86",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-dom-19.3.0-1c9d6c86",
+       "dependencies": [
+         {
+           "name": "react",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-19.3.0-10b31f34"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-19.3.0-10b31f34"
+         },
+         {
+           "name": "scheduler",
+-          "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/scheduler-0.28.0-60cf640e"
++          "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/scheduler-0.28.0-60cf640e"
+         }
+       ]
+     },
+@@ -273,7 +273,7 @@
+       "source": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/scheduler@0.28.0/node_modules/scheduler",
+       "name": "scheduler",
+       "version": "0.28.0",
+-      "destination": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/scheduler-0.28.0-60cf640e",
++      "destination": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/scheduler-0.28.0-60cf640e",
+       "dependencies": []
+     }
+   ],
+@@ -9235,157 +9235,157 @@
+     {
+       "path": "node_modules/typescript",
+       "target": "../deps/packages/typescript-5.9.3-36942ab5",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/typescript-5.9.3-36942ab5"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/typescript-5.9.3-36942ab5"
+     },
+     {
+       "path": "node_modules/ws",
+       "target": "../deps/packages/ws-8.22.1-0b688294",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/ws-8.22.1-0b688294"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/ws-8.22.1-0b688294"
+     },
+     {
+       "path": "deps/packages/esbuild-0.25.12-fed91953/node_modules/@esbuild/darwin-arm64",
+       "target": "../../../@esbuild_darwin-arm64-0.25.12-d8fbd5ce",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@esbuild_darwin-arm64-0.25.12-d8fbd5ce"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@esbuild_darwin-arm64-0.25.12-d8fbd5ce"
+     },
+     {
+       "path": "node_modules/esbuild",
+       "target": "../deps/packages/esbuild-0.25.12-fed91953",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/esbuild-0.25.12-fed91953"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/esbuild-0.25.12-fed91953"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_core-2.0.0-60e01339/node_modules/zod",
+       "target": "../../zod-4.6.7-efc59db3",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0/node_modules/@modelcontextprotocol/core",
+       "target": "../../../@modelcontextprotocol_core-2.0.0-60e01339",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
+     },
+     {
+       "path": "deps/packages/cross-spawn-7.0.6-6acc6193/node_modules/path-key",
+       "target": "../../path-key-3.1.1-01c0e717",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/path-key-3.1.1-01c0e717"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/path-key-3.1.1-01c0e717"
+     },
+     {
+       "path": "deps/packages/shebang-command-2.0.0-ae2c5165/node_modules/shebang-regex",
+       "target": "../../shebang-regex-3.0.0-f3c23d54",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/shebang-regex-3.0.0-f3c23d54"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/shebang-regex-3.0.0-f3c23d54"
+     },
+     {
+       "path": "deps/packages/cross-spawn-7.0.6-6acc6193/node_modules/shebang-command",
+       "target": "../../shebang-command-2.0.0-ae2c5165",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/shebang-command-2.0.0-ae2c5165"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/shebang-command-2.0.0-ae2c5165"
+     },
+     {
+       "path": "deps/packages/which-2.0.2-b01c524f/node_modules/isexe",
+       "target": "../../isexe-2.0.0-de29eca0",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/isexe-2.0.0-de29eca0"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/isexe-2.0.0-de29eca0"
+     },
+     {
+       "path": "deps/packages/cross-spawn-7.0.6-6acc6193/node_modules/which",
+       "target": "../../which-2.0.2-b01c524f",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/which-2.0.2-b01c524f"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/which-2.0.2-b01c524f"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0/node_modules/cross-spawn",
+       "target": "../../cross-spawn-7.0.6-6acc6193",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/cross-spawn-7.0.6-6acc6193"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/cross-spawn-7.0.6-6acc6193"
+     },
+     {
+       "path": "deps/packages/eventsource-3.0.7-367606f5/node_modules/eventsource-parser",
+       "target": "../../eventsource-parser-3.1.1-b7d7c9c5",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0/node_modules/eventsource",
+       "target": "../../eventsource-3.0.7-367606f5",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-3.0.7-367606f5"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-3.0.7-367606f5"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0/node_modules/eventsource-parser",
+       "target": "../../eventsource-parser-3.1.1-b7d7c9c5",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/eventsource-parser-3.1.1-b7d7c9c5"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0/node_modules/jose",
+       "target": "../../jose-6.2.12-ad36f3e6",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/jose-6.2.12-ad36f3e6"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/jose-6.2.12-ad36f3e6"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0/node_modules/pkce-challenge",
+       "target": "../../pkce-challenge-5.0.1-6dc73d7f",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/pkce-challenge-5.0.1-6dc73d7f"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/pkce-challenge-5.0.1-6dc73d7f"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0/node_modules/zod",
+       "target": "../../zod-4.6.7-efc59db3",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc/node_modules/@modelcontextprotocol/client",
+       "target": "../../../@modelcontextprotocol_client-2.0.0-beecb6c0",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_client-2.0.0-beecb6c0"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc/node_modules/@modelcontextprotocol/core",
+       "target": "../../../@modelcontextprotocol_core-2.0.0-60e01339",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5/node_modules/@modelcontextprotocol/core",
+       "target": "../../../@modelcontextprotocol_core-2.0.0-60e01339",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_core-2.0.0-60e01339"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5/node_modules/zod",
+       "target": "../../zod-4.6.7-efc59db3",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc/node_modules/@modelcontextprotocol/server",
+       "target": "../../../@modelcontextprotocol_server-2.0.0-3546f1f5",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc/node_modules/@standard-schema/spec",
+       "target": "../../../@standard-schema_spec-1.1.0-50a0e42d",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@standard-schema_spec-1.1.0-50a0e42d"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@standard-schema_spec-1.1.0-50a0e42d"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc/node_modules/react",
+       "target": "../../react-19.3.0-10b31f34",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-19.3.0-10b31f34"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-19.3.0-10b31f34"
+     },
+     {
+       "path": "deps/packages/react-dom-19.3.0-1c9d6c86/node_modules/react",
+       "target": "../../react-19.3.0-10b31f34",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-19.3.0-10b31f34"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-19.3.0-10b31f34"
+     },
+     {
+       "path": "deps/packages/react-dom-19.3.0-1c9d6c86/node_modules/scheduler",
+       "target": "../../scheduler-0.28.0-60cf640e",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/scheduler-0.28.0-60cf640e"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/scheduler-0.28.0-60cf640e"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc/node_modules/react-dom",
+       "target": "../../react-dom-19.3.0-1c9d6c86",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/react-dom-19.3.0-1c9d6c86"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/react-dom-19.3.0-1c9d6c86"
+     },
+     {
+       "path": "deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc/node_modules/zod",
+       "target": "../../zod-4.6.7-efc59db3",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/zod-4.6.7-efc59db3"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/zod-4.6.7-efc59db3"
+     },
+     {
+       "path": "node_modules/@modelcontextprotocol/ext-apps",
+       "target": "../../deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_ext-apps-2.0.3-6bba44cc"
+     },
+     {
+       "path": "node_modules/@modelcontextprotocol/server",
+       "target": "../../deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5",
+-      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-001/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5"
++      "realTarget": "/private/tmp/willyou-m12-t132-App027-A-002/deps/packages/@modelcontextprotocol_server-2.0.0-3546f1f5"
+     }
+   ],
+   "skipped": [
+--- A001/lease.template.json
++++ A002/lease.template.json
+@@ -1,7 +1,7 @@
+ {
+   "status": "pending-root-exclusive-resource-grant",
+   "coordinator": "root",
+-  "privateRoot": "/private/tmp/willyou-m12-t132-App027-A-001",
++  "privateRoot": "/private/tmp/willyou-m12-t132-App027-A-002",
+   "executable": "/private/tmp/willyou-m12-app027-installer-001/Installed Applications/WillYou.app/Contents/MacOS/WillYou",
+   "resources": [
+     "Native",

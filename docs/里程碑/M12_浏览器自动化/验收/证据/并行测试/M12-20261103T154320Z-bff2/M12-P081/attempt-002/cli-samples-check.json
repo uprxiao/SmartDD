@@ -1,0 +1,135 @@
+{
+  "at": "2026-11-05T01:59:30.130Z",
+  "status": "static-argv-green",
+  "sampleCount": 4,
+  "samples": [
+    {
+      "line": 2,
+      "expression": "['browser','identity','get']",
+      "argv": [
+        "browser",
+        "identity",
+        "get"
+      ],
+      "commandId": "browser.identity.get",
+      "status": "passed-source-and-actual-bundle-schema"
+    },
+    {
+      "line": 3,
+      "expression": "['browser','identity','set','--mode','native']",
+      "argv": [
+        "browser",
+        "identity",
+        "set",
+        "--mode",
+        "native"
+      ],
+      "commandId": "browser.identity.set",
+      "status": "passed-source-and-actual-bundle-schema"
+    },
+    {
+      "line": 4,
+      "expression": "['browser','identity','set','--mode','clean','--reset','true']",
+      "argv": [
+        "browser",
+        "identity",
+        "set",
+        "--mode",
+        "clean",
+        "--reset",
+        "true"
+      ],
+      "commandId": "browser.identity.set",
+      "status": "passed-source-and-actual-bundle-schema"
+    },
+    {
+      "line": 5,
+      "expression": "['browser','tab','create','--url',url]",
+      "argv": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:12345/account?role=t1"
+      ],
+      "commandId": "browser.tab.create",
+      "status": "passed-source-and-actual-bundle-schema"
+    }
+  ],
+  "schemaInputs": [
+    {
+      "id": "browser.identity.get",
+      "path": "schemas/capabilities/browser.identity.get.input.json",
+      "sha256": "81bf73c48e19502f2a8f5d71ca9785217a463d98adf6819d89f544d050ff14cc"
+    },
+    {
+      "id": "browser.identity.set",
+      "path": "schemas/capabilities/browser.identity.set.input.json",
+      "sha256": "a52c58f2cdc11de8a5f4fe6cd80a29cb5bc8000d3aed08f201cb025ee738cba0"
+    },
+    {
+      "id": "browser.identity.set",
+      "path": "schemas/capabilities/browser.identity.set.input.json",
+      "sha256": "a52c58f2cdc11de8a5f4fe6cd80a29cb5bc8000d3aed08f201cb025ee738cba0"
+    },
+    {
+      "id": "browser.tab.create",
+      "path": "schemas/capabilities/browser.tab.create.input.json",
+      "sha256": "8fb0480c6ff9761ca6028082542d6036c9009093d268389bfd96375b1718b10e"
+    }
+  ],
+  "negatives": [
+    {
+      "argv": [
+        "browser",
+        "identity",
+        "set",
+        "--mode",
+        "native",
+        "--reset",
+        "not-boolean"
+      ],
+      "rejected": true,
+      "error": "AssertionError [ERR_ASSERTION]: arguments.reset type"
+    },
+    {
+      "argv": [
+        "browser",
+        "identity",
+        "set",
+        "--mode",
+        "wrong"
+      ],
+      "rejected": true,
+      "error": "AssertionError [ERR_ASSERTION]: arguments.mode enum"
+    },
+    {
+      "argv": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:12345/account?role=t1",
+        "--focus",
+        "true"
+      ],
+      "rejected": true,
+      "error": "AssertionError [ERR_ASSERTION]: arguments unsupported focus"
+    }
+  ],
+  "nativeParser": {
+    "path": "/private/tmp/willyou-m12-p078-source-023/source/native/applications/cli.mm",
+    "sha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861",
+    "boundary": "Reviewed JSON-fragment argv mapping; native parser is not executed in static prep."
+  },
+  "source": {
+    "path": "/private/tmp/willyou-m12-p078-source-023/source/src/shared/browser-commands.generated.json",
+    "sha256": "aa8a3f4eca4e0dde1d23e949d07159d199149adb3aed406ca71116a0e9fe41b7"
+  },
+  "actualBundleManifest": {
+    "path": "/private/tmp/willyou-m12-s2-package-019/mac-arm64/WillYou.app/Contents/Resources/capability-bundles/apps/browser/0.1.0/eb7f1cbfad4f8d9246ff261f8b64b2d8d778d6c28ae551b9f926fb8998f86140/manifest.json",
+    "sha256": "f48a761fffa078f0a3d3f456347068883afa09e22c970cac425b6fb337493453"
+  },
+  "nativeStarted": false,
+  "listenersStarted": false
+}

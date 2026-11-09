@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-04T18:31:11.762125+00:00",
+  "sourceManifestSha256": "b685b836d184e0a88102cd02d26f0171a32987f2653767c0fee94fbaf4401d13",
+  "checks": [
+    {
+      "id": "F01-wheel",
+      "status": "static-matches",
+      "evidence": "actions5396-5431: wheel x/y fallback mouse_state, buttons Some(mask), dy/dx unchanged; fixedOrca pointer186-209."
+    },
+    {
+      "id": "F02-implicit-up-chord",
+      "status": "static-matches",
+      "evidence": "commands2414-2419 keeps missingbutton; actions8353-8386 uses active held then remaining priority; right->up:none and left+right->two implicitups match Orca."
+    },
+    {
+      "id": "F03-clickCount",
+      "status": "static-matches-success-path",
+      "evidence": "actions8311-8332 inclusive500ms/eachaxis2px, samebutton,1-2-3-1; failedpress still advances state, seeR01."
+    },
+    {
+      "id": "F04-host-up-omission",
+      "status": "static-matches",
+      "evidence": "page-commands33 no leftinjection on missing args.button; down stilldefaultsleft; generatedinput no default."
+    },
+    {
+      "id": "F05-results",
+      "status": "static-compatible",
+      "evidence": "handlers retain moved/pressed/released/scrolled/deltaX/deltaY; optionaldialogOpened extra fits generated output result:{}."
+    },
+    {
+      "id": "F06-explicit-modal-no-auto-release",
+      "status": "static-no-automatic-release-found",
+      "evidence": "dispatch_owned_mouse8409-8421 returns dialogbool only; explicithandlers do not assign pending_pointer_release. Only syntheticclick callers assign pending, close drain only takes registeredsyntheticrelease."
+    }
+  ],
+  "issues": [
+    {
+      "id": "R01-failed-dispatch-state",
+      "severity": "medium",
+      "status": "confirmed-static-reference-inconsistency-pending-root-fix",
+      "source": "source010 .6a",
+      "trigger": "Four mutable pointer handlers mutate current MouseState duringbuild beforeawaitdispatch; if dispatch returnsErr, result conversion does not restore state.",
+      "consequence": "Next wheel may use failed move coordinates; later move may carry phantomheld; next successfulpress may inherit failedpressclickCount.",
+      "evidence": [
+        "actions8348-8394 mutation",
+        "actions8424-8453 input_mouse",
+        "actions8552-8619 move/down/up",
+        "actions1612-1619 no error rollback",
+        "fixedOrca pointer49-65 snapshot/catchrestore",
+        "fixedOrca pointer-input.test343-377 explicit failedpress/move/count checks"
+      ],
+      "history": "dot5 already lacked rollback for send failures; dot6 extends trackedclickCount/wheel usage but does not close it. Not a hostclick/findsync requirement.",
+      "coordinatorDecision": "Parent acknowledged and will use temporary MouseState copy/build then commit only after successfuldispatch or actualdialogOpened, not onErr; not implemented or tested by this reviewer."
+    }
+  ],
+  "formalCaseIncrement": 0,
+  "execution": "No Native/UI/browser/listener/build/compilation or tests executed."
+}

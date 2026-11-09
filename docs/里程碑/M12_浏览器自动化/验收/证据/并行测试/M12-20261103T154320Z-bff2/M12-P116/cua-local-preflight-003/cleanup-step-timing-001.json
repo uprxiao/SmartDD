@@ -1,0 +1,164 @@
+{
+  "at": "2026-11-05T22:34:19.770141+00:00",
+  "scope": "Original raw/log/frozen-source file-only cleanup timing audit",
+  "steps": [
+    {
+      "label": "capture-owned-resource-identities",
+      "actualRecordedStartUtc": "2026-11-05T21:50:26.406Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T21:50:26.547Z",
+      "wallIntervalToNextObservationSeconds": 0.141,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "fulfilled",
+      "errorEvidence": null
+    },
+    {
+      "label": "stop-only-own-task",
+      "actualRecordedStartUtc": "2026-11-05T21:50:26.547Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T21:50:26.548Z",
+      "wallIntervalToNextObservationSeconds": 0.001,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "failed",
+      "errorEvidence": {
+        "path": "/private/tmp/willyou-m12-terminal-followup-local-preflight-003/runtime-001/stop-only-own-task.private.log",
+        "sha256": "d63861f122277b3fa158e82289be9b54598b479531979c4e6b9351b95aefb0c7",
+        "bytes": 929,
+        "mtimeUtc": "2026-11-05T21:50:26.547953+00:00",
+        "errorFirstLine": "Error: Isolated Electron target is closed",
+        "stackLocations": [
+          "at file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/driver-source/scripts/lib/electron-harness.mjs:172:18",
+          "at cdp (file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/driver-source/scripts/lib/electron-harness.mjs:170:7)",
+          "at evaluate (file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/driver-source/scripts/lib/electron-harness.mjs:186:28)",
+          "at Object.invoke (file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/driver-source/scripts/lib/electron-harness.mjs:281:7)",
+          "at file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/run.mjs:25:159",
+          "at Object.step (file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/cleanup-ledger.mjs:5:108)",
+          "at file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/run.mjs:25:105"
+        ]
+      }
+    },
+    {
+      "label": "capture-after-task-stop",
+      "actualRecordedStartUtc": "2026-11-05T21:50:26.548Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T21:50:26.680Z",
+      "wallIntervalToNextObservationSeconds": 0.132,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "fulfilled",
+      "errorEvidence": null
+    },
+    {
+      "label": "normal-app-quit",
+      "actualRecordedStartUtc": "2026-11-05T21:50:26.680Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T22:07:19.102Z",
+      "wallIntervalToNextObservationSeconds": 1012.422,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "failed",
+      "errorEvidence": {
+        "path": "/private/tmp/willyou-m12-terminal-followup-local-preflight-003/runtime-001/normal-app-quit.private.log",
+        "sha256": "2dcdf2befd2d43b1554590a45e95e47170e255c41c0d2632511d7bb2491fdc55",
+        "bytes": 293,
+        "mtimeUtc": "2026-11-05T22:07:19.098923+00:00",
+        "errorFirstLine": "Error: Main inspection timed out",
+        "stackLocations": [
+          "at Timeout._onTimeout (file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/driver-source/scripts/lib/electron-harness.mjs:375:22)"
+        ]
+      }
+    },
+    {
+      "label": "actual-app-exit",
+      "actualRecordedStartUtc": "2026-11-05T22:07:19.102Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T22:07:34.110Z",
+      "wallIntervalToNextObservationSeconds": 15.008,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "failed",
+      "errorEvidence": {
+        "path": "/private/tmp/willyou-m12-terminal-followup-local-preflight-003/runtime-001/actual-app-exit.private.log",
+        "sha256": "bb32244d5a3a7585aa7238889c74f0a79c100e0a158252dcde32810ec40fe2d0",
+        "bytes": 311,
+        "mtimeUtc": "2026-11-05T22:07:34.105213+00:00",
+        "errorFirstLine": "Error: Isolated App did not finish its normal exit",
+        "stackLocations": [
+          "at Timeout._onTimeout (file:///private/tmp/willyou-m12-terminal-followup-local-preflight-003/driver-source/scripts/lib/electron-harness.mjs:535:20)"
+        ]
+      }
+    },
+    {
+      "label": "write-own-app-log",
+      "actualRecordedStartUtc": "2026-11-05T22:07:34.110Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T22:07:34.113Z",
+      "wallIntervalToNextObservationSeconds": 0.003,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "fulfilled",
+      "errorEvidence": null
+    },
+    {
+      "label": "close-harness-handles",
+      "actualRecordedStartUtc": "2026-11-05T22:07:34.113Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T22:07:37.130Z",
+      "wallIntervalToNextObservationSeconds": 3.017,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "fulfilled",
+      "errorEvidence": null
+    },
+    {
+      "label": "close-local-sse",
+      "actualRecordedStartUtc": "2026-11-05T22:07:37.130Z",
+      "actualRecordedEndUtc": null,
+      "actualRecordedDurationMs": null,
+      "whyEndUnknown": "Original ledger records only at(start) and terminal status, no end or monotonic timestamps",
+      "nextObservedStepOrFinishedUtc": "2026-11-05T22:07:37.131Z",
+      "wallIntervalToNextObservationSeconds": 0.001,
+      "intervalBoundary": "Includes fn await, error logging and ledger snapshot writes; not an exact fn duration",
+      "status": "fulfilled",
+      "errorEvidence": null
+    }
+  ],
+  "allCleanupWallSeconds": 1030.725,
+  "dominantStep": "normal-app-quit",
+  "dominantRecordedWallIntervalSeconds": 1012.422,
+  "locatedHighLevelAwait": "await own mainEvaluate quit request and its own finally path; not tool-wait/approval time",
+  "actualCDPSubrequestUnknown": true,
+  "activeRuntimeVsSuspensionUnknown": true,
+  "monotonicTimesWereNotRecorded": true,
+  "cuaActualToolWallSecondsReportedByRoot": 6.0095,
+  "cuaToolStartUtc": null,
+  "cuaToolEndUtc": null,
+  "cuaReceiptAtIsOnlyRecordWriteTime": true,
+  "sourceEvidence": {
+    "harnessPath": "/private/tmp/willyou-m12-terminal-followup-local-preflight-003/driver-source/scripts/lib/electron-harness.mjs",
+    "harnessSHA": "7ef727d23176a530625b80facaaf8f9712e27ab83d47082db8d0463cc8a46ab9",
+    "driverRunPath": "/private/tmp/willyou-m12-terminal-followup-local-preflight-003/run.mjs",
+    "driverRunSHA": "22c35a5325b22e1ad8bb49c78452e1a33ff72e504d2862af215afc6e5874af78",
+    "ledgerPath": "/private/tmp/willyou-m12-terminal-followup-local-preflight-003/cleanup-ledger.mjs",
+    "ledgerSHA": "b856f08c2734bf4461fefe497fe4f7690c714431b1fb83f233e5b27a661650b6",
+    "driverNormalQuit": "run.mjs25 -> ledger.step(normal-app-quit, own(setImmediate(()=>E.app.quit()),label))",
+    "normalQuitOwnMode": "mainEvaluate invoked with label only; synchronous=false default; no explicit overall timeoutMs",
+    "harnessMainEvaluate": "394–497: cached exact mainSession; per-request default25000ms; async-rooted Runtime.evaluate then maybe Runtime.awaitPromise/callFunctionOn; finally clear promise1000ms then Runtime.releaseObjectGroup default25000ms",
+    "timeoutStack": "private normal-app-quit log points Timeout to harness375; actual request method/id not logged, no narrower attribution",
+    "nominalRequestTimers": "Existing per-request timer means this is not evidence of a deliberately1012s timeout; wallclock/OS suspension/event-loop delay not instrumented",
+    "notBoundedNormalExit": true
+  },
+  "classification": "Unclassified target-closed + inspector-cleanup delay, no product/tool causality conclusion, no normal-exit claim",
+  "futureDriverFixCandidateNotExecuted": "Record step start/end/wall+monotonic elapsed and method+label+request timing; bound complete main inspection and finally; use already-proven delayed normal quit request to avoid setImmediate shutdown/inspector-response race. Existing App/guard/business untouched; requires new derived driver and controls before any rerun.",
+  "Native": 0,
+  "actualRerun": false
+}

@@ -1,0 +1,1443 @@
+{
+  "group": "M12-P020",
+  "case": "M12-T086",
+  "scope": "Full original T086 I environment matrix, geo permission response explicit I precondition; no App/device A",
+  "startedAt": "2026-11-04T03:55:13.164Z",
+  "driverPid": 60065,
+  "steps": [
+    {
+      "id": 1,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:54141/s3-environment"
+      ],
+      "startedAt": "2026-11-04T03:55:14.647Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:54141\\/s3-environment\",\"pageId\":\"9bf42a81-76fc-4db7-8dd8-2945d3860ec6\"},\"resources\":[],\"operation\":{\"id\":\"2a2e6414-80b8-460b-9e01-4f3f08df5c4e\",\"requestId\":\"10793141-a894-4349-afe9-b34a5c4ac262\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 1090,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:54141/s3-environment",
+          "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6"
+        },
+        "resources": [],
+        "operation": {
+          "id": "2a2e6414-80b8-460b-9e01-4f3f08df5c4e",
+          "requestId": "10793141-a894-4349-afe9-b34a5c4ac262",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      }
+    },
+    {
+      "id": 2,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ],
+      "startedAt": "2026-11-04T03:55:15.742Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"dark\\\":false,\\\"height\\\":700,\\\"maxTouchPoints\\\":0,\\\"online\\\":true,\\\"reduced\\\":false,\\\"scale\\\":2,\\\"screenHeight\\\":982,\\\"screenWidth\\\":1512,\\\"secure\\\":true,\\\"ua\\\":\\\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/148.0.7778.280 Safari\\/537.36\\\",\\\"visualHeight\\\":700,\\\"visualWidth\\\":985,\\\"width\\\":1000}\",\"origin\":\"http:\\/\\/127.0.0.1:54141\\/s3-environment\"},\"resources\":[],\"operation\":{\"id\":\"26fc0c8f-cf2b-417a-aacd-b71cdda1668c\",\"requestId\":\"53dcd69f-c16f-43b9-9f4b-b23c867eef7b\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 891,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"dark\":false,\"height\":700,\"maxTouchPoints\":0,\"online\":true,\"reduced\":false,\"scale\":2,\"screenHeight\":982,\"screenWidth\":1512,\"secure\":true,\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36\",\"visualHeight\":700,\"visualWidth\":985,\"width\":1000}",
+          "origin": "http://127.0.0.1:54141/s3-environment"
+        },
+        "resources": [],
+        "operation": {
+          "id": "26fc0c8f-cf2b-417a-aacd-b71cdda1668c",
+          "requestId": "53dcd69f-c16f-43b9-9f4b-b23c867eef7b",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    },
+    {
+      "id": 3,
+      "args": [
+        "browser",
+        "geolocation",
+        "--latitude",
+        "1.2345",
+        "--longitude",
+        "2.3456",
+        "--accuracy",
+        "12"
+      ],
+      "startedAt": "2026-11-04T03:55:16.636Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"accuracy\":12,\"longitude\":2.3456000000000001,\"latitude\":1.2344999999999999}},\"resources\":[],\"operation\":{\"id\":\"21372877-4a35-4c6b-b4a0-2406322af1cf\",\"requestId\":\"f87c6179-3fcc-4c84-93d5-a173728f9b9f\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.geolocation\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 860,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "accuracy": 12,
+            "longitude": 2.3456,
+            "latitude": 1.2345
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "21372877-4a35-4c6b-b4a0-2406322af1cf",
+          "requestId": "f87c6179-3fcc-4c84-93d5-a173728f9b9f",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.env.geolocation"
+      }
+    },
+    {
+      "id": 4,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "(()=>{window.p020Geo={phase:\"pending\"};navigator.geolocation.getCurrentPosition(p=>window.p020Geo={phase:\"success\",latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy},e=>window.p020Geo={phase:\"error\",code:e.code,message:e.message},{maximumAge:0,timeout:8000});return{secure:isSecureContext,phase:window.p020Geo.phase}})()"
+      ],
+      "startedAt": "2026-11-04T03:55:17.496Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"phase\\\":\\\"pending\\\",\\\"secure\\\":true}\",\"origin\":\"http:\\/\\/127.0.0.1:54141\\/s3-environment\"},\"resources\":[],\"operation\":{\"id\":\"5dc71af9-cece-4c1a-8c4d-a491616f417e\",\"requestId\":\"d4e38a15-e185-4365-a102-9c58e9d2a602\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 905,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"phase\":\"pending\",\"secure\":true}",
+          "origin": "http://127.0.0.1:54141/s3-environment"
+        },
+        "resources": [],
+        "operation": {
+          "id": "5dc71af9-cece-4c1a-8c4d-a491616f417e",
+          "requestId": "d4e38a15-e185-4365-a102-9c58e9d2a602",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    },
+    {
+      "id": 5,
+      "args": [
+        "browser",
+        "set",
+        "media",
+        "--color-scheme",
+        "dark",
+        "--reduced-motion",
+        "reduce"
+      ],
+      "startedAt": "2026-11-04T03:55:18.488Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"b72790a6-e215-4afd-ba6a-62a3cff84b55\",\"requestId\":\"47d940a4-a0d9-4006-9193-72f3bcdc858f\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 985,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "set": true
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "b72790a6-e215-4afd-ba6a-62a3cff84b55",
+          "requestId": "47d940a4-a0d9-4006-9193-72f3bcdc858f",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.env.set-media"
+      }
+    },
+    {
+      "id": 6,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ],
+      "startedAt": "2026-11-04T03:55:19.474Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"dark\\\":true,\\\"height\\\":700,\\\"maxTouchPoints\\\":0,\\\"online\\\":true,\\\"reduced\\\":true,\\\"scale\\\":2,\\\"screenHeight\\\":982,\\\"screenWidth\\\":1512,\\\"secure\\\":true,\\\"ua\\\":\\\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/148.0.7778.280 Safari\\/537.36\\\",\\\"visualHeight\\\":700,\\\"visualWidth\\\":985,\\\"width\\\":1000}\",\"origin\":\"http:\\/\\/127.0.0.1:54141\\/s3-environment\"},\"resources\":[],\"operation\":{\"id\":\"e93602bf-37d1-45c8-b495-6288ef9022c8\",\"requestId\":\"eae9d1c9-7932-425b-b444-0c57cf1626d9\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 879,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"dark\":true,\"height\":700,\"maxTouchPoints\":0,\"online\":true,\"reduced\":true,\"scale\":2,\"screenHeight\":982,\"screenWidth\":1512,\"secure\":true,\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36\",\"visualHeight\":700,\"visualWidth\":985,\"width\":1000}",
+          "origin": "http://127.0.0.1:54141/s3-environment"
+        },
+        "resources": [],
+        "operation": {
+          "id": "e93602bf-37d1-45c8-b495-6288ef9022c8",
+          "requestId": "eae9d1c9-7932-425b-b444-0c57cf1626d9",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    },
+    {
+      "id": 7,
+      "args": [
+        "browser",
+        "set",
+        "media",
+        "--color-scheme",
+        "light",
+        "--reduced-motion",
+        "no-preference"
+      ],
+      "startedAt": "2026-11-04T03:55:20.354Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"fae7a1fb-c02d-43e0-a4d7-1acdb7969ee8\",\"requestId\":\"d10f6929-f37e-4ada-8545-200723fa0f1b\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 859,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "set": true
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "fae7a1fb-c02d-43e0-a4d7-1acdb7969ee8",
+          "requestId": "d10f6929-f37e-4ada-8545-200723fa0f1b",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.env.set-media"
+      }
+    },
+    {
+      "id": 8,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ],
+      "startedAt": "2026-11-04T03:55:21.214Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"dark\\\":false,\\\"height\\\":700,\\\"maxTouchPoints\\\":0,\\\"online\\\":true,\\\"reduced\\\":false,\\\"scale\\\":2,\\\"screenHeight\\\":982,\\\"screenWidth\\\":1512,\\\"secure\\\":true,\\\"ua\\\":\\\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/148.0.7778.280 Safari\\/537.36\\\",\\\"visualHeight\\\":700,\\\"visualWidth\\\":985,\\\"width\\\":1000}\",\"origin\":\"http:\\/\\/127.0.0.1:54141\\/s3-environment\"},\"resources\":[],\"operation\":{\"id\":\"f670d4c8-6f4d-44d4-b92f-6bccb39111d2\",\"requestId\":\"97c6fdbd-4b07-49e6-93ef-65b375fdf44b\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 856,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"dark\":false,\"height\":700,\"maxTouchPoints\":0,\"online\":true,\"reduced\":false,\"scale\":2,\"screenHeight\":982,\"screenWidth\":1512,\"secure\":true,\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36\",\"visualHeight\":700,\"visualWidth\":985,\"width\":1000}",
+          "origin": "http://127.0.0.1:54141/s3-environment"
+        },
+        "resources": [],
+        "operation": {
+          "id": "f670d4c8-6f4d-44d4-b92f-6bccb39111d2",
+          "requestId": "97c6fdbd-4b07-49e6-93ef-65b375fdf44b",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    },
+    {
+      "id": 9,
+      "args": [
+        "browser",
+        "set",
+        "media",
+        "--reduced-motion",
+        "reduce"
+      ],
+      "startedAt": "2026-11-04T03:55:22.070Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"2c94b285-b8c5-4bb4-a890-4e99eb5b6d6d\",\"requestId\":\"847b3524-f850-4e1d-a512-df6c3132b4e8\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 870,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "set": true
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "2c94b285-b8c5-4bb4-a890-4e99eb5b6d6d",
+          "requestId": "847b3524-f850-4e1d-a512-df6c3132b4e8",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.env.set-media"
+      }
+    },
+    {
+      "id": 10,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ],
+      "startedAt": "2026-11-04T03:55:22.941Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"dark\\\":false,\\\"height\\\":700,\\\"maxTouchPoints\\\":0,\\\"online\\\":true,\\\"reduced\\\":true,\\\"scale\\\":2,\\\"screenHeight\\\":982,\\\"screenWidth\\\":1512,\\\"secure\\\":true,\\\"ua\\\":\\\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/148.0.7778.280 Safari\\/537.36\\\",\\\"visualHeight\\\":700,\\\"visualWidth\\\":985,\\\"width\\\":1000}\",\"origin\":\"http:\\/\\/127.0.0.1:54141\\/s3-environment\"},\"resources\":[],\"operation\":{\"id\":\"e56c97c7-35fd-483c-bef1-9ba940636789\",\"requestId\":\"49f7aa18-56b7-4557-ae8d-245ae67321b2\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 860,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"dark\":false,\"height\":700,\"maxTouchPoints\":0,\"online\":true,\"reduced\":true,\"scale\":2,\"screenHeight\":982,\"screenWidth\":1512,\"secure\":true,\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36\",\"visualHeight\":700,\"visualWidth\":985,\"width\":1000}",
+          "origin": "http://127.0.0.1:54141/s3-environment"
+        },
+        "resources": [],
+        "operation": {
+          "id": "e56c97c7-35fd-483c-bef1-9ba940636789",
+          "requestId": "49f7aa18-56b7-4557-ae8d-245ae67321b2",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    },
+    {
+      "id": 11,
+      "args": [
+        "browser",
+        "set",
+        "media"
+      ],
+      "startedAt": "2026-11-04T03:55:23.802Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"9ee74ece-8496-4216-9882-943c69de135a\",\"requestId\":\"5f726ec1-3cfc-46f1-a99a-607661939994\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 860,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "set": true
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "9ee74ece-8496-4216-9882-943c69de135a",
+          "requestId": "5f726ec1-3cfc-46f1-a99a-607661939994",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.env.set-media"
+      }
+    },
+    {
+      "id": 12,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ],
+      "startedAt": "2026-11-04T03:55:24.663Z",
+      "raw": {
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"value\":\"{\\\"dark\\\":false,\\\"height\\\":700,\\\"maxTouchPoints\\\":0,\\\"online\\\":true,\\\"reduced\\\":false,\\\"scale\\\":2,\\\"screenHeight\\\":982,\\\"screenWidth\\\":1512,\\\"secure\\\":true,\\\"ua\\\":\\\"Mozilla\\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/148.0.7778.280 Safari\\/537.36\\\",\\\"visualHeight\\\":700,\\\"visualWidth\\\":985,\\\"width\\\":1000}\",\"origin\":\"http:\\/\\/127.0.0.1:54141\\/s3-environment\"},\"resources\":[],\"operation\":{\"id\":\"dcf6f938-d61f-43eb-abc1-1ce6b1928d62\",\"requestId\":\"19d54bc2-f149-4eb3-81e6-367e73f57298\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.interact.eval\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "ms": 853,
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+          "connections": []
+        },
+        "data": {
+          "value": "{\"dark\":false,\"height\":700,\"maxTouchPoints\":0,\"online\":true,\"reduced\":false,\"scale\":2,\"screenHeight\":982,\"screenWidth\":1512,\"secure\":true,\"ua\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36\",\"visualHeight\":700,\"visualWidth\":985,\"width\":1000}",
+          "origin": "http://127.0.0.1:54141/s3-environment"
+        },
+        "resources": [],
+        "operation": {
+          "id": "dcf6f938-d61f-43eb-abc1-1ce6b1928d62",
+          "requestId": "19d54bc2-f149-4eb3-81e6-367e73f57298",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.interact.eval"
+      }
+    }
+  ],
+  "segments": [
+    {
+      "name": "T086-geolocation-real-page-permission",
+      "startedAt": "2026-11-04T03:55:16.634Z",
+      "expected": {
+        "latitude": 1.2345,
+        "longitude": 2.3456,
+        "accuracy": 12
+      },
+      "presentation": {
+        "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+        "boundary": "I native display precondition on this isolated inactive host only; no UI acceptance, focus request, permission override or Agent command"
+      },
+      "initialTarget": {
+        "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+        "prompt": null,
+        "page": {
+          "result": {
+            "type": "object",
+            "value": {
+              "focused": true,
+              "geo": null,
+              "visibility": "visible"
+            }
+          }
+        },
+        "boundary": "I read-only observation of exact target page, independent of current UI selection"
+      },
+      "cli": {
+        "id": 3,
+        "args": [
+          "browser",
+          "geolocation",
+          "--latitude",
+          "1.2345",
+          "--longitude",
+          "2.3456",
+          "--accuracy",
+          "12"
+        ],
+        "startedAt": "2026-11-04T03:55:16.636Z",
+        "raw": {
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"accuracy\":12,\"longitude\":2.3456000000000001,\"latitude\":1.2344999999999999}},\"resources\":[],\"operation\":{\"id\":\"21372877-4a35-4c6b-b4a0-2406322af1cf\",\"requestId\":\"f87c6179-3fcc-4c84-93d5-a173728f9b9f\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.geolocation\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "ms": 860,
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "accuracy": 12,
+              "longitude": 2.3456,
+              "latitude": 1.2345
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "21372877-4a35-4c6b-b4a0-2406322af1cf",
+            "requestId": "f87c6179-3fcc-4c84-93d5-a173728f9b9f",
+            "effectState": "completed",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.env.geolocation"
+        }
+      },
+      "armed": {
+        "phase": "pending",
+        "secure": true
+      },
+      "beforeGrant": {
+        "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+        "prompt": {
+          "id": "c097cb7d-3f0f-40b1-8a55-a388ee74c132",
+          "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "origin": "http://127.0.0.1:54141",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "page": {
+          "result": {
+            "type": "object",
+            "value": {
+              "focused": true,
+              "geo": {
+                "phase": "pending"
+              },
+              "visibility": "visible"
+            }
+          }
+        },
+        "boundary": "I read-only observation of exact target page, independent of current UI selection"
+      },
+      "userDecisionPrecondition": {
+        "resolved": true,
+        "prompt": {
+          "id": "c097cb7d-3f0f-40b1-8a55-a388ee74c132",
+          "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "origin": "http://127.0.0.1:54141",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "boundary": "Explicit I user-decision precondition through actual permission handler; not Agent authorization or App UI acceptance"
+      },
+      "afterGrant": {
+        "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+        "prompt": null,
+        "page": {
+          "result": {
+            "type": "object",
+            "value": {
+              "focused": true,
+              "geo": {
+                "accuracy": 12,
+                "latitude": 1.2345,
+                "longitude": 2.3456,
+                "phase": "success"
+              },
+              "visibility": "visible"
+            }
+          }
+        },
+        "boundary": "I read-only observation of exact target page, independent of current UI selection"
+      },
+      "actual": {
+        "accuracy": 12,
+        "latitude": 1.2345,
+        "longitude": 2.3456,
+        "phase": "success"
+      },
+      "status": "executed",
+      "finishedAt": "2026-11-04T03:55:18.404Z"
+    },
+    {
+      "name": "T086-media-color-and-reduced-motion",
+      "startedAt": "2026-11-04T03:55:18.488Z",
+      "cases": [
+        {
+          "expected": {
+            "label": "dark-reduce",
+            "args": [
+              "--color-scheme",
+              "dark",
+              "--reduced-motion",
+              "reduce"
+            ],
+            "dark": true,
+            "reduced": true
+          },
+          "cli": {
+            "id": 5,
+            "args": [
+              "browser",
+              "set",
+              "media",
+              "--color-scheme",
+              "dark",
+              "--reduced-motion",
+              "reduce"
+            ],
+            "startedAt": "2026-11-04T03:55:18.488Z",
+            "raw": {
+              "code": 0,
+              "signal": null,
+              "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"b72790a6-e215-4afd-ba6a-62a3cff84b55\",\"requestId\":\"47d940a4-a0d9-4006-9193-72f3bcdc858f\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+              "stderr": "",
+              "timedOut": false
+            },
+            "ms": 985,
+            "parsed": {
+              "schema": "willyou-app-result-v2",
+              "status": "ok",
+              "source": {
+                "appId": "browser",
+                "revision": null,
+                "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+                "connections": []
+              },
+              "data": {
+                "result": {
+                  "set": true
+                }
+              },
+              "resources": [],
+              "operation": {
+                "id": "b72790a6-e215-4afd-ba6a-62a3cff84b55",
+                "requestId": "47d940a4-a0d9-4006-9193-72f3bcdc858f",
+                "effectState": "completed",
+                "origin": "cli"
+              },
+              "pagination": null,
+              "completeness": {
+                "missing": [],
+                "complete": true
+              },
+              "contractMajor": 2,
+              "capabilityId": "browser.env.set-media"
+            }
+          },
+          "actual": {
+            "dark": true,
+            "height": 700,
+            "maxTouchPoints": 0,
+            "online": true,
+            "reduced": true,
+            "scale": 2,
+            "screenHeight": 982,
+            "screenWidth": 1512,
+            "secure": true,
+            "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36",
+            "visualHeight": 700,
+            "visualWidth": 985,
+            "width": 1000
+          }
+        },
+        {
+          "expected": {
+            "label": "light-no-preference",
+            "args": [
+              "--color-scheme",
+              "light",
+              "--reduced-motion",
+              "no-preference"
+            ],
+            "dark": false,
+            "reduced": false
+          },
+          "cli": {
+            "id": 7,
+            "args": [
+              "browser",
+              "set",
+              "media",
+              "--color-scheme",
+              "light",
+              "--reduced-motion",
+              "no-preference"
+            ],
+            "startedAt": "2026-11-04T03:55:20.354Z",
+            "raw": {
+              "code": 0,
+              "signal": null,
+              "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"fae7a1fb-c02d-43e0-a4d7-1acdb7969ee8\",\"requestId\":\"d10f6929-f37e-4ada-8545-200723fa0f1b\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+              "stderr": "",
+              "timedOut": false
+            },
+            "ms": 859,
+            "parsed": {
+              "schema": "willyou-app-result-v2",
+              "status": "ok",
+              "source": {
+                "appId": "browser",
+                "revision": null,
+                "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+                "connections": []
+              },
+              "data": {
+                "result": {
+                  "set": true
+                }
+              },
+              "resources": [],
+              "operation": {
+                "id": "fae7a1fb-c02d-43e0-a4d7-1acdb7969ee8",
+                "requestId": "d10f6929-f37e-4ada-8545-200723fa0f1b",
+                "effectState": "completed",
+                "origin": "cli"
+              },
+              "pagination": null,
+              "completeness": {
+                "missing": [],
+                "complete": true
+              },
+              "contractMajor": 2,
+              "capabilityId": "browser.env.set-media"
+            }
+          },
+          "actual": {
+            "dark": false,
+            "height": 700,
+            "maxTouchPoints": 0,
+            "online": true,
+            "reduced": false,
+            "scale": 2,
+            "screenHeight": 982,
+            "screenWidth": 1512,
+            "secure": true,
+            "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36",
+            "visualHeight": 700,
+            "visualWidth": 985,
+            "width": 1000
+          }
+        },
+        {
+          "expected": {
+            "label": "motion-only-reduce",
+            "args": [
+              "--reduced-motion",
+              "reduce"
+            ],
+            "dark": false,
+            "reduced": true
+          },
+          "cli": {
+            "id": 9,
+            "args": [
+              "browser",
+              "set",
+              "media",
+              "--reduced-motion",
+              "reduce"
+            ],
+            "startedAt": "2026-11-04T03:55:22.070Z",
+            "raw": {
+              "code": 0,
+              "signal": null,
+              "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"2c94b285-b8c5-4bb4-a890-4e99eb5b6d6d\",\"requestId\":\"847b3524-f850-4e1d-a512-df6c3132b4e8\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+              "stderr": "",
+              "timedOut": false
+            },
+            "ms": 870,
+            "parsed": {
+              "schema": "willyou-app-result-v2",
+              "status": "ok",
+              "source": {
+                "appId": "browser",
+                "revision": null,
+                "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+                "connections": []
+              },
+              "data": {
+                "result": {
+                  "set": true
+                }
+              },
+              "resources": [],
+              "operation": {
+                "id": "2c94b285-b8c5-4bb4-a890-4e99eb5b6d6d",
+                "requestId": "847b3524-f850-4e1d-a512-df6c3132b4e8",
+                "effectState": "completed",
+                "origin": "cli"
+              },
+              "pagination": null,
+              "completeness": {
+                "missing": [],
+                "complete": true
+              },
+              "contractMajor": 2,
+              "capabilityId": "browser.env.set-media"
+            }
+          },
+          "actual": {
+            "dark": false,
+            "height": 700,
+            "maxTouchPoints": 0,
+            "online": true,
+            "reduced": true,
+            "scale": 2,
+            "screenHeight": 982,
+            "screenWidth": 1512,
+            "secure": true,
+            "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36",
+            "visualHeight": 700,
+            "visualWidth": 985,
+            "width": 1000
+          }
+        },
+        {
+          "expected": {
+            "label": "clear-media",
+            "args": [],
+            "dark": false,
+            "reduced": false
+          },
+          "cli": {
+            "id": 11,
+            "args": [
+              "browser",
+              "set",
+              "media"
+            ],
+            "startedAt": "2026-11-04T03:55:23.802Z",
+            "raw": {
+              "code": 0,
+              "signal": null,
+              "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a\",\"connections\":[]},\"data\":{\"result\":{\"set\":true}},\"resources\":[],\"operation\":{\"id\":\"9ee74ece-8496-4216-9882-943c69de135a\",\"requestId\":\"5f726ec1-3cfc-46f1-a99a-607661939994\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.env.set-media\"}\n",
+              "stderr": "",
+              "timedOut": false
+            },
+            "ms": 860,
+            "parsed": {
+              "schema": "willyou-app-result-v2",
+              "status": "ok",
+              "source": {
+                "appId": "browser",
+                "revision": null,
+                "packageHash": "eade338359724fa7cc85cd74e3a5e68fcd548e7f2d57b97ecb53dbbaad66708a",
+                "connections": []
+              },
+              "data": {
+                "result": {
+                  "set": true
+                }
+              },
+              "resources": [],
+              "operation": {
+                "id": "9ee74ece-8496-4216-9882-943c69de135a",
+                "requestId": "5f726ec1-3cfc-46f1-a99a-607661939994",
+                "effectState": "completed",
+                "origin": "cli"
+              },
+              "pagination": null,
+              "completeness": {
+                "missing": [],
+                "complete": true
+              },
+              "contractMajor": 2,
+              "capabilityId": "browser.env.set-media"
+            }
+          },
+          "actual": {
+            "dark": false,
+            "height": 700,
+            "maxTouchPoints": 0,
+            "online": true,
+            "reduced": false,
+            "scale": 2,
+            "screenHeight": 982,
+            "screenWidth": 1512,
+            "secure": true,
+            "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36",
+            "visualHeight": 700,
+            "visualWidth": 985,
+            "width": 1000
+          }
+        }
+      ],
+      "status": "executed",
+      "finishedAt": "2026-11-04T03:55:25.516Z"
+    }
+  ],
+  "processMessages": [
+    {
+      "at": "2026-11-04T03:55:14.649Z",
+      "kind": "native-cli",
+      "pid": 60077,
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:54141/s3-environment"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:15.742Z",
+      "kind": "native-cli",
+      "pid": 60089,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:16.636Z",
+      "kind": "native-cli",
+      "pid": 60094,
+      "args": [
+        "browser",
+        "geolocation",
+        "--latitude",
+        "1.2345",
+        "--longitude",
+        "2.3456",
+        "--accuracy",
+        "12"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:17.497Z",
+      "kind": "native-cli",
+      "pid": 60097,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "(()=>{window.p020Geo={phase:\"pending\"};navigator.geolocation.getCurrentPosition(p=>window.p020Geo={phase:\"success\",latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy},e=>window.p020Geo={phase:\"error\",code:e.code,message:e.message},{maximumAge:0,timeout:8000});return{secure:isSecureContext,phase:window.p020Geo.phase}})()"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:18.489Z",
+      "kind": "native-cli",
+      "pid": 60111,
+      "args": [
+        "browser",
+        "set",
+        "media",
+        "--color-scheme",
+        "dark",
+        "--reduced-motion",
+        "reduce"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:19.474Z",
+      "kind": "native-cli",
+      "pid": 60118,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:20.354Z",
+      "kind": "native-cli",
+      "pid": 60123,
+      "args": [
+        "browser",
+        "set",
+        "media",
+        "--color-scheme",
+        "light",
+        "--reduced-motion",
+        "no-preference"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:21.214Z",
+      "kind": "native-cli",
+      "pid": 60136,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:22.071Z",
+      "kind": "native-cli",
+      "pid": 60143,
+      "args": [
+        "browser",
+        "set",
+        "media",
+        "--reduced-motion",
+        "reduce"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:22.942Z",
+      "kind": "native-cli",
+      "pid": 60149,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:23.802Z",
+      "kind": "native-cli",
+      "pid": 60154,
+      "args": [
+        "browser",
+        "set",
+        "media"
+      ]
+    },
+    {
+      "at": "2026-11-04T03:55:24.663Z",
+      "kind": "native-cli",
+      "pid": 60168,
+      "args": [
+        "browser",
+        "eval",
+        "--expression",
+        "({...window.s3Environment(),visualWidth:visualViewport.width,visualHeight:visualViewport.height,screenWidth:screen.width,screenHeight:screen.height,maxTouchPoints:navigator.maxTouchPoints,secure:isSecureContext})"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "at": "2026-11-04T03:55:14.645Z",
+      "processes": [
+        {
+          "pid": 60067,
+          "ppid": 60065,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 60068,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 60069,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 60070,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 60067 liubu   54u  IPv4 0x45446f98f32504d1      0t0  TCP 127.0.0.1:54141 (LISTEN)\nElectron 60067 liubu   55u  IPv6 0xeda40d89b31e5e8c      0t0  TCP [::1]:54141 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T03:55:18.487Z",
+      "processes": [
+        {
+          "pid": 60067,
+          "ppid": 60065,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 60068,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 60069,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 60070,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 60087,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 60088,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 60067 liubu   54u  IPv4 0x45446f98f32504d1      0t0  TCP 127.0.0.1:54141 (LISTEN)\nElectron 60067 liubu   55u  IPv6 0xeda40d89b31e5e8c      0t0  TCP [::1]:54141 (LISTEN)\nElectron 60067 liubu   80u  IPv4 0xa9e448b8147f425a      0t0  TCP 127.0.0.1:54148 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T03:55:25.598Z",
+      "processes": [
+        {
+          "pid": 60067,
+          "ppid": 60065,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 60068,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 60069,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 60070,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 60087,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 60088,
+          "ppid": 60067,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND    PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 60067 liubu   54u  IPv4 0x45446f98f32504d1      0t0  TCP 127.0.0.1:54141 (LISTEN)\nElectron 60067 liubu   55u  IPv6 0xeda40d89b31e5e8c      0t0  TCP [::1]:54141 (LISTEN)\nElectron 60067 liubu   80u  IPv4 0xa9e448b8147f425a      0t0  TCP 127.0.0.1:54148 (LISTEN)\n"
+    }
+  ],
+  "hostPid": 60067,
+  "ready": {
+    "ready": true,
+    "pid": 60067,
+    "taskId": "0ed5c6e6-e7fc-421a-87e1-892e0562ced9",
+    "runId": "d5345e1f-d4a2-4a1c-9413-75693ad7d359",
+    "taskCwd": "/private/tmp/willyou-m12-p020-executor-001/attempt-002/runtime-001/tmp/willyou-m10-agent-bA40C8/project",
+    "downloadsDirectory": "/private/tmp/willyou-m12-p020-executor-001/attempt-002/downloads-fixture",
+    "url": "http://127.0.0.1:54141/",
+    "versions": {
+      "node": "24.19.0",
+      "acorn": "8.17.0",
+      "ada": "3.4.4",
+      "amaro": "1.1.10",
+      "ares": "1.34.6",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "146",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.69.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.4",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.3",
+      "tz": "2025c",
+      "undici": "7.29.0",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "14.8.178.38-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "42.11.14",
+      "chrome": "148.0.7778.280"
+    },
+    "boundary": "I: real BrowserService/M11 module/CLI/gateway/SQLite/kernel peers; controlled Electron process as run root; synthetic page; not packaged App or real Agent"
+  },
+  "page": {
+    "url": "http://127.0.0.1:54141/s3-environment",
+    "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6"
+  },
+  "security": {
+    "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+    "profileId": "project-f64551fcd6f07823cb87971c",
+    "pageIds": [
+      "9bf42a81-76fc-4db7-8dd8-2945d3860ec6"
+    ],
+    "preferences": {
+      "sandbox": true,
+      "contextIsolation": true,
+      "nodeIntegration": false
+    }
+  },
+  "initialEnvironment": {
+    "dark": false,
+    "height": 700,
+    "maxTouchPoints": 0,
+    "online": true,
+    "reduced": false,
+    "scale": 2,
+    "screenHeight": 982,
+    "screenWidth": 1512,
+    "secure": true,
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36",
+    "visualHeight": 700,
+    "visualWidth": 985,
+    "width": 1000
+  },
+  "stage": "complete",
+  "finalWorkspace": {
+    "workspace": {
+      "taskId": "0ed5c6e6-e7fc-421a-87e1-892e0562ced9",
+      "projectId": "p1",
+      "tabs": [
+        {
+          "id": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+          "url": "http://127.0.0.1:54141/s3-environment",
+          "title": "S3 native CLI fixture",
+          "favicon": null,
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "loading": false,
+          "canGoBack": true,
+          "canGoForward": false,
+          "failure": null,
+          "certificate": null
+        }
+      ],
+      "activeId": null,
+      "recent": [
+        {
+          "url": "http://127.0.0.1:54141/s3-environment",
+          "title": "S3 native CLI fixture",
+          "host": "127.0.0.1:54141",
+          "visitedAt": 1793764515669
+        }
+      ],
+      "notice": null,
+      "external": null,
+      "find": {
+        "active": 0,
+        "total": 0
+      },
+      "permission": null,
+      "downloads": [],
+      "auth": null,
+      "authCancelled": null
+    },
+    "destroyedEvents": [],
+    "retiredHelperCleanups": [],
+    "states": [
+      {
+        "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+        "account": null,
+        "errors": null,
+        "hasOpener": false,
+        "url": "http://127.0.0.1:54141/s3-environment"
+      }
+    ],
+    "pages": [
+      {
+        "pageId": "9bf42a81-76fc-4db7-8dd8-2945d3860ec6",
+        "kind": "tab",
+        "profileId": "project-f64551fcd6f07823cb87971c",
+        "url": "http://127.0.0.1:54141/s3-environment",
+        "hasNativeWindow": false,
+        "sameSessionAsOpener": true
+      }
+    ]
+  },
+  "finalServer": {
+    "requests": [
+      {
+        "path": "/s3-environment",
+        "method": "GET",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "headers": {
+          "host": "127.0.0.1:54141",
+          "connection": "keep-alive",
+          "upgrade-insecure-requests": "1",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Safari/537.36",
+          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "sec-fetch-site": "none",
+          "sec-fetch-mode": "navigate",
+          "sec-fetch-user": "?1",
+          "sec-fetch-dest": "document",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "zh-CN"
+        }
+      }
+    ]
+  }
+}

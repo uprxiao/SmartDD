@@ -1,0 +1,19 @@
+{
+  "basis": "/private/tmp/willyou-m12-p103-app021-long-001",
+  "root": "/private/tmp/willyou-m12-p103-app021-long-002",
+  "broker": {
+    "oldConfigLine": "    NSString *configPath = [NSString stringWithUTF8String:argv[1]];",
+    "newConfigBlock": "    NSString *configPath = [NSString stringWithUTF8String:argv[1]];\n    // P103-EXACT-CONFIG-GUARD\n    if (![configPath isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002/broker-config.private.json\"] || ![canonicalPath(configPath) isEqualToString:configPath]) return 3;",
+    "oldRootGuard": "    if (![root hasPrefix:@\"/private/tmp/willyou-m12-p096-sync-metrics-long-\"] || ![appPath isEqualToString:[root stringByAppendingPathComponent:@\"wrapper/M12AcceptanceRunner.app\"]]) return 3;",
+    "newRootGuard": "    if (![root isKindOfClass:NSString.class] || ![appPath isKindOfClass:NSString.class] || ![root isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002\"] || ![canonicalPath(root) isEqualToString:root] || ![appPath isEqualToString:[root stringByAppendingPathComponent:@\"wrapper/M12AcceptanceRunner.app\"]]) return 3;"
+  },
+  "wrapper": {
+    "insertAfter": "#include <unistd.h>\n",
+    "addedCanonicalHelper": "#include <stdlib.h>\n#include <limits.h>\n// P103-EXACT-CANONICAL-GUARD-HELPER\nstatic NSString *canonicalPath(NSString *path){if(!path)return nil;char resolved[PATH_MAX];if(!realpath(path.fileSystemRepresentation,resolved))return nil;return [NSString stringWithUTF8String:resolved];}\n",
+    "oldFileGuard": "if(![file hasPrefix:@\"/private/tmp/willyou-m12-p096-sync-metrics-long-\"]||![file hasSuffix:@\"/wrapper-config.private.json\"])return 3;",
+    "newFileGuard": "if(![file isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002/wrapper-config.private.json\"]||![canonicalPath(file) isEqualToString:file])return 3;",
+    "oldRootGuard": "if(![root isKindOfClass:NSString.class]||![payload isEqual:[root stringByAppendingString:@\"/payload\"]]||![file isEqual:[root stringByAppendingString:@\"/wrapper-config.private.json\"]])return 6;",
+    "newRootGuard": "if(![root isKindOfClass:NSString.class]||![root isEqualToString:@\"/private/tmp/willyou-m12-p103-app021-long-002\"]||![canonicalPath(root) isEqualToString:root]||![payload isEqual:[root stringByAppendingString:@\"/payload\"]]||![file isEqual:[root stringByAppendingString:@\"/wrapper-config.private.json\"]])return 6;"
+  },
+  "scope": "Exact ROOT/file binding and canonical denial only; UID/birth/path/cohort/API/launch behavior otherwise unchanged; no Native executed."
+}

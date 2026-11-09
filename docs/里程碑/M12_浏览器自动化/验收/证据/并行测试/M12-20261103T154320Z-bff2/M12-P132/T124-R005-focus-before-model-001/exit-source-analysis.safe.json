@@ -1,0 +1,13 @@
+{
+  "frozenHarnessSHA256": "7ef727d23176a530625b80facaaf8f9712e27ab83d47082db8d0463cc8a46ab9",
+  "frozenFocusGuardSHA256": "08bf100ef39cb4e54d764bd52a3a2f70d4e793c1e0f0e342bc54228bcaae018c",
+  "facts": [
+    "Guard wraps Input/CDP activation only; mainEvaluate quit is not guarded",
+    "waitForExit closes main inspector before observing exact spawned child exit",
+    "close sends/records SIGTERM to still-running original ChildProcess; may SIGKILL after3s",
+    "R005 placed quit,wait,logs,close,observed in one catchable step; throw skips subsequent calls"
+  ],
+  "unknown": "Only normal-own-app-quit error hash preserved. No private stack/event observation: cannot uniquely infer inspector loss/quit guard/exit timeout/crash/normal exit.",
+  "nextChange": "Per-step private error stacks; always exact owned harness close, bounded final exit observation and outermost observedProcess, normal/fallback kept distinct",
+  "NativeOSAppOrSecretExecution": false
+}

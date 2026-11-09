@@ -21,6 +21,21 @@ export interface ApplicationCatalogState<A extends string=ApplicationId> { appId
 export class ApplicationSelectionService<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
   constructor(readonly store: ResourceStore, private readonly connections: ApplicationConnectionService<C,A>, private readonly deps: ApplicationSelectionDeps) {}
   get registry(){return this.connections.registry;}
+  /** Called only inside the creation transaction of a genuinely new project. */
+  initializeProjectDefault(projectId:string,appId:A):HostedSelection<C,A>{
+    if(!this.store.sqlite.inTransaction)throw new ApplicationError('INVALID_INPUT','项目默认选用必须与新项目同时保存');
+    this.deps.requireProject(projectId);
+    const application=this.registry.application(appId);
+    if(application.slots.length)throw new ApplicationError('INVALID_INPUT','只有无连接的受信应用可作为新项目默认项');
+    if(this.store.sqlite.prepare('SELECT 1 FROM application_project_settings WHERE project_id=? AND app_id=?').get(projectId,appId))return this.projectSettings(projectId,appId);
+    const now=new Date().toISOString(),operationId=randomUUID();
+    // A prior global removal/disable remains authoritative. Only a missing catalogue row gets the default.
+    this.store.sqlite.prepare('INSERT INTO application_catalog_state(app_id,added,enabled,revision,updated_at) VALUES(?,1,1,1,?) ON CONFLICT(app_id) DO NOTHING').run(appId,now);
+    const value=this.registry.parseSelection({projectId,appId,enabled:true,expectedRevision:0,connections:{}}),previous=this.projectSettings(projectId,appId);
+    this.store.sqlite.prepare("INSERT INTO application_binding_changes(operation_id,project_id,app_id,from_revision,previous_json,next_json,state,created_at,updated_at) VALUES(?,?,?,?,?,?,'prepared',?,?)").run(operationId,projectId,appId,0,canonicalJson(previous),canonicalJson(value),now,now);
+    this.commitSelection(value,operationId);
+    return this.projectSettings(projectId,appId);
+  }
   catalogState(appId: A): ApplicationCatalogState<A> {
     this.registry.appId(appId);
     const row = this.store.sqlite.prepare('SELECT added,enabled,revision FROM application_catalog_state WHERE app_id=?').get(appId) as { added: number; enabled: number; revision: number } | undefined;

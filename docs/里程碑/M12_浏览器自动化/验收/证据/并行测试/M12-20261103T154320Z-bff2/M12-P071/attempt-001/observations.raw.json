@@ -1,0 +1,572 @@
+[
+  {
+    "id": "E01",
+    "input": "",
+    "expected": "about:blank",
+    "category": "blank",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "about:blank",
+    "reference": "data:text/html,"
+  },
+  {
+    "id": "E02",
+    "input": "about:blank",
+    "expected": "about:blank",
+    "category": "blank",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "about:blank",
+    "reference": "data:text/html,"
+  },
+  {
+    "id": "E03",
+    "input": "localhost:3000/a",
+    "expected": "http://localhost:3000/a",
+    "category": "local",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "http://localhost:3000/a",
+    "reference": "http://localhost:3000/a"
+  },
+  {
+    "id": "E04",
+    "input": "127.0.0.1",
+    "expected": "http://127.0.0.1/",
+    "category": "local",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "http://127.0.0.1/",
+    "reference": "http://127.0.0.1/"
+  },
+  {
+    "id": "E05",
+    "input": "[::1]:8080",
+    "expected": "http://[::1]:8080/",
+    "category": "local",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "http://[::1]:8080/",
+    "reference": "http://[::1]:8080/"
+  },
+  {
+    "id": "E06",
+    "input": "test.corp.com:8080",
+    "expected": "https://test.corp.com:8080/",
+    "category": "domainPort",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "https://test.corp.com:8080/",
+    "reference": "https://test.corp.com:8080/"
+  },
+  {
+    "id": "E07",
+    "input": "a.localhost",
+    "expected": "http://a.localhost/",
+    "category": "localhostSuffix",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "http://a.localhost/",
+    "reference": "https://a.localhost/"
+  },
+  {
+    "id": "E08",
+    "input": "https://x",
+    "expected": "https://x/",
+    "category": "completeHttps",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "https://x/",
+    "reference": "https://x/"
+  },
+  {
+    "id": "E09",
+    "input": "javascript:1",
+    "expected": null,
+    "category": "unsupported",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "E10",
+    "input": "data:,x",
+    "expected": null,
+    "category": "unsupported",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "E11",
+    "input": "/Users/x/a.html",
+    "expected": "file:///Users/x/a.html",
+    "category": "file",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "file:///Users/x/a.html",
+    "reference": "file:///Users/x/a.html"
+  },
+  {
+    "id": "E12",
+    "input": "react hooks",
+    "expected": "https://www.bing.com/search?q=react%20hooks",
+    "category": "search",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "https://www.bing.com/search?q=react%20hooks",
+    "reference": "https://www.bing.com/search?q=react%20hooks"
+  },
+  {
+    "id": "E13",
+    "input": "a.com",
+    "expected": "https://a.com/",
+    "category": "domain",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "https://a.com/",
+    "reference": "https://a.com/"
+  },
+  {
+    "id": "E14",
+    "input": "word",
+    "expected": "https://www.bing.com/search?q=word",
+    "category": "search",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": "https://www.bing.com/search?q=word",
+    "reference": "https://www.bing.com/search?q=word"
+  },
+  {
+    "id": "E15",
+    "input": "http://[bad",
+    "expected": null,
+    "category": "invalid",
+    "engine": "bing",
+    "basis": "T005 exact explicit example",
+    "actual": null,
+    "reference": "https://http//[bad"
+  },
+  {
+    "id": "R01",
+    "input": "localhost",
+    "expected": "http://localhost/",
+    "category": "local",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "http://localhost/",
+    "reference": "http://localhost/"
+  },
+  {
+    "id": "R02",
+    "input": "127.123.45.67:9000/a?q=1#x",
+    "expected": "http://127.123.45.67:9000/a?q=1#x",
+    "category": "local",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "http://127.123.45.67:9000/a?q=1#x",
+    "reference": "http://127.123.45.67:9000/a?q=1#x"
+  },
+  {
+    "id": "R03",
+    "input": "0.0.0.0:80/a",
+    "expected": "http://0.0.0.0/a",
+    "category": "local",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "http://0.0.0.0/a",
+    "reference": "http://0.0.0.0/a"
+  },
+  {
+    "id": "R04",
+    "input": "[2001:db8::1]:8080/path",
+    "expected": "http://[2001:db8::1]:8080/path",
+    "category": "local",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "http://[2001:db8::1]:8080/path",
+    "reference": "http://[2001:db8::1]:8080/path"
+  },
+  {
+    "id": "R05",
+    "input": "a.localhost:8080/path",
+    "expected": "http://a.localhost:8080/path",
+    "category": "domainPort",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "http://a.localhost:8080/path",
+    "reference": "http://a.localhost:8080/path"
+  },
+  {
+    "id": "R06",
+    "input": "http://example.test:8080/a?q=1#x",
+    "expected": "http://example.test:8080/a?q=1#x",
+    "category": "completeHttp",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "http://example.test:8080/a?q=1#x",
+    "reference": "http://example.test:8080/a?q=1#x"
+  },
+  {
+    "id": "R07",
+    "input": "file:///tmp/a.html",
+    "expected": "file:///tmp/a.html",
+    "category": "file",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "file:///tmp/a.html",
+    "reference": "file:///tmp/a.html"
+  },
+  {
+    "id": "R08",
+    "input": "/Users/x/a b#1.html",
+    "expected": "file:///Users/x/a%20b%231.html",
+    "category": "file",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "file:///Users/x/a%20b%231.html",
+    "reference": "file:///Users/x/a%20b%231.html"
+  },
+  {
+    "id": "R09",
+    "input": "  localhost:3000/a  ",
+    "expected": "http://localhost:3000/a",
+    "category": "trim",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": "http://localhost:3000/a",
+    "reference": "http://localhost:3000/a"
+  },
+  {
+    "id": "R10",
+    "input": "ftp://example.test/a",
+    "expected": null,
+    "category": "unsupported",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "R11",
+    "input": "mailto:person@example.test",
+    "expected": null,
+    "category": "unsupported",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "R12",
+    "input": "a.com:65536",
+    "expected": null,
+    "category": "invalid",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "R13",
+    "input": "127.999.0.1",
+    "expected": null,
+    "category": "invalid",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": null,
+    "reference": "https://www.bing.com/search?q=127.999.0.1"
+  },
+  {
+    "id": "R14",
+    "input": "bad\u0000input",
+    "expected": null,
+    "category": "invalid",
+    "engine": "bing",
+    "basis": "R01.1 class / existing U regression",
+    "actual": null,
+    "reference": "https://www.bing.com/search?q=bad%00input"
+  },
+  {
+    "id": "S1",
+    "input": "中文 & x=y?🙂",
+    "expected": "https://www.google.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "engine": "google",
+    "category": "searchEngineEncoding",
+    "basis": "R01.1 four engines + URLencoding",
+    "actual": "https://www.google.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "reference": "https://www.google.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82"
+  },
+  {
+    "id": "S2",
+    "input": "中文 & x=y?🙂",
+    "expected": "https://duckduckgo.com/?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "engine": "duckduckgo",
+    "category": "searchEngineEncoding",
+    "basis": "R01.1 four engines + URLencoding",
+    "actual": "https://duckduckgo.com/?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "reference": "https://duckduckgo.com/?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82"
+  },
+  {
+    "id": "S3",
+    "input": "中文 & x=y?🙂",
+    "expected": "https://www.bing.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "engine": "bing",
+    "category": "searchEngineEncoding",
+    "basis": "R01.1 four engines + URLencoding",
+    "actual": "https://www.bing.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "reference": "https://www.bing.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82"
+  },
+  {
+    "id": "S4",
+    "input": "中文 & x=y?🙂",
+    "expected": "https://kagi.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "engine": "kagi",
+    "category": "searchEngineEncoding",
+    "basis": "R01.1 four engines + URLencoding",
+    "actual": "https://kagi.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82",
+    "reference": "https://kagi.com/search?q=%E4%B8%AD%E6%96%87%20%26%20x%3Dy%3F%F0%9F%99%82"
+  },
+  {
+    "id": "P01",
+    "input": "example.com:8443/docs?q=one#section",
+    "expected": "https://example.com:8443/docs?q=one#section",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://example.com:8443/docs?q=one#section",
+    "reference": "https://example.com:8443/docs?q=one#section"
+  },
+  {
+    "id": "P02",
+    "input": "EXAMPLE.COM:443",
+    "expected": "https://example.com/",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://example.com/",
+    "reference": "https://example.com/"
+  },
+  {
+    "id": "P03",
+    "input": "example.com:80",
+    "expected": "https://example.com:80/",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://example.com:80/",
+    "reference": "https://example.com:80/"
+  },
+  {
+    "id": "P04",
+    "input": "app.localhost:3000",
+    "expected": "http://app.localhost:3000/",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "http://app.localhost:3000/",
+    "reference": "http://app.localhost:3000/"
+  },
+  {
+    "id": "P05",
+    "input": "app.localhost:443",
+    "expected": "http://app.localhost:443/",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "http://app.localhost/",
+    "reference": "http://app.localhost:443/"
+  },
+  {
+    "id": "P06",
+    "input": "app.localhost:80",
+    "expected": "http://app.localhost/",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "http://app.localhost/",
+    "reference": "http://app.localhost/"
+  },
+  {
+    "id": "P07",
+    "input": "deep.app.localhost:5173/path?x=1#preview",
+    "expected": "http://deep.app.localhost:5173/path?x=1#preview",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "http://deep.app.localhost:5173/path?x=1#preview",
+    "reference": "http://deep.app.localhost:5173/path?x=1#preview"
+  },
+  {
+    "id": "P08",
+    "input": "https://app.localhost:3000",
+    "expected": "https://app.localhost:3000/",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://app.localhost:3000/",
+    "reference": "https://app.localhost:3000/"
+  },
+  {
+    "id": "P09",
+    "input": "http://example.com:80/docs",
+    "expected": "http://example.com/docs",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "http://example.com/docs",
+    "reference": "http://example.com/docs"
+  },
+  {
+    "id": "P10",
+    "input": "example.com:65535/docs",
+    "expected": "https://example.com:65535/docs",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://example.com:65535/docs",
+    "reference": "https://example.com:65535/docs"
+  },
+  {
+    "id": "P11",
+    "input": "example.com:0",
+    "expected": "https://example.com:0/",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://example.com:0/",
+    "reference": "https://example.com:0/"
+  },
+  {
+    "id": "P12",
+    "input": "APP.LOCALHOST.:443/docs",
+    "expected": "http://app.localhost.:443/docs",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "http://app.localhost./docs",
+    "reference": "http://app.localhost.:443/docs"
+  },
+  {
+    "id": "P13",
+    "input": "[::1]:3000/docs",
+    "expected": "http://[::1]:3000/docs",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "http://[::1]:3000/docs",
+    "reference": "http://[::1]:3000/docs"
+  },
+  {
+    "id": "P14",
+    "input": "https://user:pass@example.com:8443/docs",
+    "expected": "https://user:pass@example.com:8443/docs",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://user:pass@example.com:8443/docs",
+    "reference": "https://user:pass@example.com:8443/docs"
+  },
+  {
+    "id": "P15",
+    "input": "example.com:8443/path@evil.test?next=:80#part",
+    "expected": "https://example.com:8443/path@evil.test?next=:80#part",
+    "engine": "bing",
+    "category": "fixedOrcaNamedPortCase",
+    "basis": "Fixed Orca same-name navigates domain with port it.each; R01.1 portpreservation",
+    "actual": "https://example.com:8443/path@evil.test?next=:80#part",
+    "reference": "https://example.com:8443/path@evil.test?next=:80#part"
+  },
+  {
+    "id": "Q01",
+    "input": "javascript:1234",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q02",
+    "input": "data:1234",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q03",
+    "input": "custom:3000",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q04",
+    "input": "example.com:65536",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q05",
+    "input": "example.com:8443@evil.test",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q06",
+    "input": "example.com:8443\\evil.test",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q07",
+    "input": "example.com:-1",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q08",
+    "input": "example.com:3.5",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  },
+  {
+    "id": "Q09",
+    "input": "example.com:8443evil.test",
+    "expected": null,
+    "engine": "bing",
+    "category": "fixedOrcaNamedInvalidCase",
+    "basis": "Fixed Orca same-name unsupported scheme or invalidport",
+    "actual": null,
+    "reference": null
+  }
+]

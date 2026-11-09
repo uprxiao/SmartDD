@@ -1,0 +1,59 @@
+{
+  "at": "2026-11-05T21:02:17.346057+00:00",
+  "scope": "file-only independent reparse; no business replay",
+  "originalInputsVerified": 230,
+  "safeDeliveryVerified": 27,
+  "sourceSafeManifestSha256": "41b1231c92d87dfcd37625cda0e4e29b30252ebdb8822a4d2ec70a77a8d38b1c",
+  "replayChanges": [
+    {
+      "file": "judge.mjs",
+      "originalSha256": "1c62e1543c8c71189b6c5b980eab7d2b89e50a38bd5f63a97609ba23523efdd1",
+      "replaySha256": "13029ede724856c34023d7717b2d389c6a91b928af0e672d4ce9a7f3c207f30a",
+      "scope": "absolute original imports and output target only; original input paths, expected values, predicates unchanged"
+    },
+    {
+      "file": "check-finished-cli.mjs",
+      "originalSha256": "05f6d0811fdc954952b41aab05c3083385f5a361e45be183aaa10f47fd4a9022",
+      "replaySha256": "2855fba25711e428aeb5f38384e5e5e330e956802de846fe7195969f23973069",
+      "scope": "absolute original imports and output target only; original input paths, expected values, predicates unchanged"
+    }
+  ],
+  "runs": [
+    {
+      "command": [
+        "/Users/liubu/.hermes/node/bin/node",
+        "/private/tmp/willyou-m12-t131-t38-root-review-002/judge.mjs",
+        "--judge"
+      ],
+      "actualExit": 1,
+      "expectedExit": 1
+    },
+    {
+      "command": [
+        "/Users/liubu/.hermes/node/bin/node",
+        "/private/tmp/willyou-m12-t131-t38-root-review-002/check-finished-cli.mjs",
+        "--judge"
+      ],
+      "actualExit": 0,
+      "expectedExit": 0
+    }
+  ],
+  "businessConditions": {
+    "passed": 8,
+    "total": 8
+  },
+  "originalSupplementalOracle": {
+    "passed": 8,
+    "total": 9,
+    "privacyRemainsRed": true
+  },
+  "decoderControls": 11,
+  "cleanupChecks": 49,
+  "formalParentIncrement": 0,
+  "notClaimed": [
+    "no private runtime token persistence",
+    "whole T131 passed",
+    "OpenAI R",
+    "all fault cases use unchanged OS facts"
+  ]
+}

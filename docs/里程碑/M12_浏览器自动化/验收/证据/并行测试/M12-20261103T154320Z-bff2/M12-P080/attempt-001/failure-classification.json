@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-05T01:39:19.871785+00:00",
+  "classification": "driver-response-shape-error",
+  "failure": "Driver assumed tab create data.result.pageId; actual fixed service returns raw {pageId,url} and actual CLI stdout is data.pageId. Other profile commands explicitly return {result:...}; those nested paths remain correct.",
+  "executed": [
+    "two original nativeCLI identity get",
+    "one original nativeCLI tab create with completed receipt"
+  ],
+  "notExecuted": [
+    "login input/POST",
+    "task profile create/set",
+    "final isolation checks"
+  ],
+  "productRed": false,
+  "formalWholeCaseCount": 0,
+  "retryBoundary": "Do not resend old write; new attempt/new runtime/new task data only after root lease.",
+  "cleanup": "Actual normal App0/null/signals[]; exact12PID4TCP/Unix socket+parent absence confirmed under authorized permissions; derived page Helper directory absent. First default-sandbox cleanup process probes had spawn EPERM and are retained in cleanup-default-sandbox.json."
+}

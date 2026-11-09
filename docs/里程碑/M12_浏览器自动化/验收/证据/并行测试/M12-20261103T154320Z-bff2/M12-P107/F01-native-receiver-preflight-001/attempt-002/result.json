@@ -1,0 +1,45 @@
+{
+  "startedAt": "2026-11-07T20:10:55.094307+00:00",
+  "driverPid": 6018,
+  "steps": [
+    {
+      "name": "compile",
+      "pid": 6019,
+      "command": [
+        "/usr/bin/xcrun",
+        "--sdk",
+        "macosx",
+        "clang++",
+        "-std=c++17",
+        "-fobjc-arc",
+        "-O2",
+        "-Wno-deprecated-declarations",
+        "-Werror=implicit-function-declaration",
+        "-Werror=return-type",
+        "-mmacosx-version-min=12.0",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-framework",
+        "Foundation",
+        "-framework",
+        "AppKit",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-002/receiver.mm",
+        "-o",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app/Contents/MacOS/F01ReceiverV2"
+      ],
+      "exitCode": 1,
+      "seconds": 0.2511909159948118
+    }
+  ],
+  "scope": "Fixture helper-only compile repair/sign/read-only defaults; not productA",
+  "sourceSHA256": "1dda53637139a2077e41ef52132505bfeaef87e37b1c66483adab7c32269d011",
+  "formalIncrement": 0,
+  "exitCode": 1,
+  "error": {
+    "class": "AssertionError",
+    "message": "('compile', 1, '/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-002/receiver.mm:103:244: error: expected property name\\n  103 |   NSData *data=[NSJSONSerialization dataWithJSONObject:@{@\"schema\":@\"M12-F01-defaults-v2\",@\"nonce\":binding[@\"nonce\"],@\"receiverPath\":binding[@\"appPath\"],@\"receiverBundleId\":binding[@\"bundleId\"],@\"pid\":@(getpid()),@\"at\":[NSISO8601DateFormatter.new stringFromDate:NSDate.date],@\"rows\":rows} options:NSJSONWritingPrettyPrinted error:nil];\\n      |                                                                                                                                                                                                                                                    ^\\n/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-002/receiver.mm:121:269: error: expected property name\\n  121 |     writeReceipt(@{@\"schema\":@\"M12-F01-AppKit-receipt-v2\",@\"nonce\":binding[@\"nonce\"],@\"bundleId\":binding[@\"bundleId\"],@\"bundlePath\":NSBundle.mainBundle.bundlePath,@\"executable\":NSBundle.mainBundle.executablePath,@\"pid\":@(getpid()),@\"enteredAt\":[NSISO8601DateFormatter.new stringFromDate:entered],@\"receivedAt\":[NSISO8601DateFormatter.new stringF')"
+  },
+  "finishedAt": "2026-11-07T20:10:55.345899+00:00"
+}

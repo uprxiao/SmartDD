@@ -1,0 +1,74 @@
+{
+  "compileCommand": [
+    "/usr/bin/xcrun",
+    "--sdk",
+    "macosx",
+    "clang",
+    "-fobjc-arc",
+    "-O2",
+    "-Wno-deprecated-declarations",
+    "-arch",
+    "arm64",
+    "-framework",
+    "Foundation",
+    "-framework",
+    "AppKit",
+    "-framework",
+    "CoreServices",
+    "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-010/register-probe.m",
+    "-o",
+    "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-010/register-probe"
+  ],
+  "compileExit": 0,
+  "steps": [
+    {
+      "name": "register-public-api",
+      "command": [
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-010/register-probe",
+        "--register"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "unregister-exact-own",
+      "command": [
+        "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+        "-u",
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "inspect-after-unregister",
+      "command": [
+        "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/attempt-010/register-probe"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "registered": {
+    "ownBundleQueryURLs": [],
+    "isApplication": true,
+    "scope": "exact synthetic receiver metadata and optional public LSRegisterURL only",
+    "executableFile": true,
+    "isPackage": true,
+    "bundleId": "com.willyou.m12.f01receiver.v2.d4c22afc21e54ee3aa09037a802b0a67",
+    "resourceError": "",
+    "registerCalled": true,
+    "appPath": "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app",
+    "executablePath": "/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app/Contents/MacOS/F01ReceiverV2",
+    "registerStatus": 0
+  },
+  "afterUnregister": {
+    "isApplication": true,
+    "scope": "exact synthetic receiver metadata and optional public LSRegisterURL only",
+    "executableFile": true,
+    "isPackage": true,
+    "bundleId": "com.willyou.m12.f01receiver.v2.d4c22afc21e54ee3aa09037a802b0a67",
+    "resourceError": "",
+    "registerCalled": false,
+    "appPath": "/private/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app",
+    "executablePath": "/tmp/willyou-m12-F01-appkit-opener-v2-001/runtime-001/test-opener.app/Contents/MacOS/F01ReceiverV2",
+    "ownBundleQueryURLs": []
+  }
+}

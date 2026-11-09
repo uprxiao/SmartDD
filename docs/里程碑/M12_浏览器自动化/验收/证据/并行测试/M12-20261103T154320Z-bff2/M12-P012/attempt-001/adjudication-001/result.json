@@ -1,0 +1,1506 @@
+{
+  "at": "2026-11-04T01:57:53.910Z",
+  "group": "M12-P012",
+  "layer": "Actual production component technical I only",
+  "status": "failed",
+  "checks": [
+    {
+      "id": "runtime-dns-and-scope",
+      "status": "passed",
+      "actual": {
+        "dns": {
+          "host": "m12-cert.test",
+          "rule": "MAP m12-cert.test 127.0.0.1",
+          "switch": "MAP m12-cert.test 127.0.0.1"
+        },
+        "partitions": [
+          {
+            "profileId": "profile-A",
+            "partition": "persist:p012-A-c7124c3e-18e2-427c-82fc-e3ea0a470c13"
+          },
+          {
+            "profileId": "profile-B",
+            "partition": "persist:p012-B-ab917114-7dc4-488d-ade0-efdfaccffee7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "default-trust-denied",
+      "status": "failed",
+      "actual": {
+        "step": "default-denied",
+        "profileId": "profile-A",
+        "protocol": "https",
+        "url": "https://m12-cert.test:57025/doc?step=default-denied",
+        "wcId": 1,
+        "startedAt": "2026-11-04T01:57:15.293Z",
+        "failureStart": 0,
+        "eventStart": 0,
+        "outcome": "blocked-or-failed",
+        "error": {
+          "message": "ERR_CERT_AUTHORITY_INVALID (-202) loading 'https://m12-cert.test:57025/doc?step=default-denied'",
+          "code": "ERR_CERT_AUTHORITY_INVALID",
+          "errno": -202
+        },
+        "finishedAt": "2026-11-04T01:57:15.413Z",
+        "failed": [
+          {
+            "at": "2026-11-04T01:57:15.372Z",
+            "wcId": 1,
+            "url": "https://m12-cert.test:57025/doc?step=default-denied",
+            "host": "m12-cert.test",
+            "error": "net::ERR_CERT_AUTHORITY_INVALID"
+          }
+        ],
+        "events": [
+          {
+            "at": "2026-11-04T01:57:15.372Z",
+            "kind": "server-tls-error",
+            "error": "1151052285984:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+          },
+          {
+            "at": "2026-11-04T01:57:15.372Z",
+            "kind": "certificate-error-observed-only",
+            "profileId": "profile-A",
+            "wcId": 1,
+            "url": "https://m12-cert.test:57025/doc?step=default-denied",
+            "error": "net::ERR_CERT_AUTHORITY_INVALID",
+            "fingerprint": "0A:00:EC:60:11:3B:9C:50:F1:5C:2D:13:0A:74:58:2E:90:D4:3F:A0:66:93:AB:C8:07:8A:4C:D9:FB:42:23:56",
+            "isMainFrame": true
+          }
+        ],
+        "serverRequests": [],
+        "saved": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "persisted": [],
+          "reloadedTrustedA": false,
+          "reloadedTrustedB": false
+        },
+        "certificateStatus": null
+      }
+    },
+    {
+      "id": "real-trust-persists-ui-precondition",
+      "status": "passed",
+      "actual": {
+        "boundary": "Actual states.trust is synthetic trusted-UI precondition; no user UI/A approval is inferred",
+        "row": {
+          "step": "trust-A",
+          "at": "2026-11-04T01:57:15.415Z",
+          "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [
+                {
+                  "host": "m12-cert.test",
+                  "createdAt": 1793757435413
+                }
+              ],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[{\"host\":\"m12-cert.test\",\"createdAt\":1793757435413}],\"permissions\":[]}",
+                "updated_at": 1793757435414
+              }
+            ],
+            "reloadedTrustedA": true,
+            "reloadedTrustedB": false
+          }
+        }
+      }
+    },
+    {
+      "id": "allowed-and-login-seeded",
+      "status": "passed",
+      "actual": {
+        "before": {
+          "at": "2026-11-04T01:57:15.514Z",
+          "local": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+            "local": "p012-login-A"
+          },
+          "cookies": [
+            {
+              "name": "p012_marker",
+              "value": "p012-login-A",
+              "domain": "m12-cert.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ]
+        },
+        "seed": {
+          "step": "allowed-seed",
+          "profileId": "profile-A",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+          "wcId": 1,
+          "startedAt": "2026-11-04T01:57:15.415Z",
+          "failureStart": 1,
+          "eventStart": 2,
+          "outcome": "loaded",
+          "document": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+            "local": "p012-login-A",
+            "step": "allowed-seed"
+          },
+          "finishedAt": "2026-11-04T01:57:15.465Z",
+          "failed": [],
+          "events": [
+            {
+              "at": "2026-11-04T01:57:15.418Z",
+              "kind": "server-tls-error",
+              "error": "1151052285984:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+            },
+            {
+              "at": "2026-11-04T01:57:15.418Z",
+              "kind": "certificate-error-observed-only",
+              "profileId": "profile-A",
+              "wcId": 1,
+              "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+              "error": "net::ERR_CERT_AUTHORITY_INVALID",
+              "fingerprint": "0A:00:EC:60:11:3B:9C:50:F1:5C:2D:13:0A:74:58:2E:90:D4:3F:A0:66:93:AB:C8:07:8A:4C:D9:FB:42:23:56",
+              "isMainFrame": true
+            }
+          ],
+          "serverRequests": [
+            {
+              "at": "2026-11-04T01:57:15.419Z",
+              "protocol": "https",
+              "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+              "cookie": "",
+              "remoteAddress": "127.0.0.1",
+              "sni": "m12-cert.test"
+            }
+          ],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [
+                {
+                  "host": "m12-cert.test",
+                  "createdAt": 1793757435413
+                }
+              ],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[{\"host\":\"m12-cert.test\",\"createdAt\":1793757435413}],\"permissions\":[]}",
+                "updated_at": 1793757435414
+              }
+            ],
+            "reloadedTrustedA": true,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+            "host": "m12-cert.test",
+            "error": "net::ERR_CERT_AUTHORITY_INVALID"
+          }
+        }
+      }
+    },
+    {
+      "id": "isolated-profile-does-not-inherit",
+      "status": "passed",
+      "actual": {
+        "row": {
+          "step": "isolated-B-while-A-trusted",
+          "profileId": "profile-B",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=isolated-B-while-A-trusted",
+          "wcId": 3,
+          "startedAt": "2026-11-04T01:57:15.514Z",
+          "failureStart": 1,
+          "eventStart": 4,
+          "outcome": "blocked-or-failed",
+          "error": {
+            "message": "ERR_CERT_AUTHORITY_INVALID (-202) loading 'https://m12-cert.test:57025/doc?step=isolated-B-while-A-trusted'",
+            "code": "ERR_CERT_AUTHORITY_INVALID",
+            "errno": -202
+          },
+          "finishedAt": "2026-11-04T01:57:15.560Z",
+          "failed": [
+            {
+              "at": "2026-11-04T01:57:15.519Z",
+              "wcId": 3,
+              "url": "https://m12-cert.test:57025/doc?step=isolated-B-while-A-trusted",
+              "host": "m12-cert.test",
+              "error": "net::ERR_CERT_AUTHORITY_INVALID"
+            }
+          ],
+          "events": [
+            {
+              "at": "2026-11-04T01:57:15.519Z",
+              "kind": "server-tls-error",
+              "error": "1151052285984:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+            },
+            {
+              "at": "2026-11-04T01:57:15.519Z",
+              "kind": "certificate-error-observed-only",
+              "profileId": "profile-B",
+              "wcId": 3,
+              "url": "https://m12-cert.test:57025/doc?step=isolated-B-while-A-trusted",
+              "error": "net::ERR_CERT_AUTHORITY_INVALID",
+              "fingerprint": "0A:00:EC:60:11:3B:9C:50:F1:5C:2D:13:0A:74:58:2E:90:D4:3F:A0:66:93:AB:C8:07:8A:4C:D9:FB:42:23:56",
+              "isMainFrame": true
+            }
+          ],
+          "serverRequests": [],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [
+                {
+                  "host": "m12-cert.test",
+                  "createdAt": 1793757435413
+                }
+              ],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[{\"host\":\"m12-cert.test\",\"createdAt\":1793757435413}],\"permissions\":[]}",
+                "updated_at": 1793757435414
+              }
+            ],
+            "reloadedTrustedA": true,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        },
+        "cookies": []
+      }
+    },
+    {
+      "id": "real-revocation-persists",
+      "status": "passed",
+      "actual": {
+        "step": "revoke-A",
+        "at": "2026-11-04T01:57:15.561Z",
+        "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+        "saved": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+              "updated_at": 1793757435560
+            }
+          ],
+          "reloadedTrustedA": false,
+          "reloadedTrustedB": false
+        }
+      }
+    },
+    {
+      "id": "revoked-warm-zero-http-certificate-failure",
+      "status": "failed",
+      "actual": {
+        "step": "revoked-warm",
+        "profileId": "profile-A",
+        "protocol": "https",
+        "url": "https://m12-cert.test:57025/doc?step=revoked-warm",
+        "wcId": 1,
+        "startedAt": "2026-11-04T01:57:15.561Z",
+        "failureStart": 2,
+        "eventStart": 6,
+        "outcome": "blocked-or-failed",
+        "error": {
+          "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=revoked-warm'",
+          "code": "ERR_BLOCKED_BY_CLIENT",
+          "errno": -20
+        },
+        "finishedAt": "2026-11-04T01:57:15.603Z",
+        "failed": [
+          {
+            "at": "2026-11-04T01:57:15.562Z",
+            "wcId": 1,
+            "url": "https://m12-cert.test:57025/doc?step=revoked-warm",
+            "host": "m12-cert.test",
+            "error": "net::ERR_CERT_AUTHORITY_INVALID"
+          }
+        ],
+        "events": [],
+        "serverRequests": [],
+        "saved": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+              "updated_at": 1793757435560
+            }
+          ],
+          "reloadedTrustedA": false,
+          "reloadedTrustedB": false
+        },
+        "certificateStatus": null
+      }
+    },
+    {
+      "id": "revoked-fresh-zero-http-certificate-failure",
+      "status": "failed",
+      "actual": {
+        "step": "revoked-fresh",
+        "profileId": "profile-A",
+        "protocol": "https",
+        "url": "https://m12-cert.test:57025/doc?step=revoked-fresh",
+        "wcId": 1,
+        "startedAt": "2026-11-04T01:57:15.604Z",
+        "failureStart": 3,
+        "eventStart": 6,
+        "outcome": "blocked-or-failed",
+        "error": {
+          "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=revoked-fresh'",
+          "code": "ERR_BLOCKED_BY_CLIENT",
+          "errno": -20
+        },
+        "finishedAt": "2026-11-04T01:57:15.610Z",
+        "failed": [
+          {
+            "at": "2026-11-04T01:57:15.606Z",
+            "wcId": 1,
+            "url": "https://m12-cert.test:57025/doc?step=revoked-fresh",
+            "host": "m12-cert.test",
+            "error": "net::ERR_CERT_AUTHORITY_INVALID"
+          }
+        ],
+        "events": [],
+        "serverRequests": [],
+        "saved": {
+          "memoryA": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "memoryB": {
+            "schemaVersion": 1,
+            "certificates": [],
+            "permissions": []
+          },
+          "persisted": [
+            {
+              "key": "browserProfileState.v1:profile-A",
+              "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+              "updated_at": 1793757435560
+            }
+          ],
+          "reloadedTrustedA": false,
+          "reloadedTrustedB": false
+        },
+        "certificateStatus": null
+      }
+    },
+    {
+      "id": "nested-two-blocks-http-https-and-session-fetch",
+      "status": "passed",
+      "actual": [
+        {
+          "step": "nested-two-https",
+          "profileId": "profile-A",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=nested-two-https",
+          "wcId": 1,
+          "startedAt": "2026-11-04T01:57:15.624Z",
+          "failureStart": 4,
+          "eventStart": 6,
+          "outcome": "blocked-or-failed",
+          "error": {
+            "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=nested-two-https'",
+            "code": "ERR_BLOCKED_BY_CLIENT",
+            "errno": -20
+          },
+          "finishedAt": "2026-11-04T01:57:15.634Z",
+          "failed": [],
+          "events": [],
+          "serverRequests": [],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        },
+        {
+          "step": "nested-two-http",
+          "profileId": "profile-A",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/doc?step=nested-two-http",
+          "wcId": 4,
+          "startedAt": "2026-11-04T01:57:15.635Z",
+          "failureStart": 4,
+          "eventStart": 6,
+          "outcome": "blocked-or-failed",
+          "error": {
+            "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'http://m12-cert.test:57026/doc?step=nested-two-http'",
+            "code": "ERR_BLOCKED_BY_CLIENT",
+            "errno": -20
+          },
+          "finishedAt": "2026-11-04T01:57:15.638Z",
+          "failed": [],
+          "events": [],
+          "serverRequests": [],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        },
+        {
+          "step": "nested-two-session-http",
+          "kind": "session-fetch-no-webcontents",
+          "url": "http://m12-cert.test:57026/fetch?step=nested-two-session-http",
+          "startedAt": "2026-11-04T01:57:15.639Z",
+          "outcome": "blocked-or-failed",
+          "error": "net::ERR_BLOCKED_BY_CLIENT",
+          "serverRequests": []
+        }
+      ]
+    },
+    {
+      "id": "one-release-still-blocks-all-covered-request-classes",
+      "status": "passed",
+      "actual": [
+        {
+          "step": "release-outer",
+          "at": "2026-11-04T01:57:15.646Z",
+          "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          }
+        },
+        {
+          "step": "nested-one-https",
+          "profileId": "profile-A",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=nested-one-https",
+          "wcId": 1,
+          "startedAt": "2026-11-04T01:57:15.646Z",
+          "failureStart": 4,
+          "eventStart": 6,
+          "outcome": "blocked-or-failed",
+          "error": {
+            "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=nested-one-https'",
+            "code": "ERR_BLOCKED_BY_CLIENT",
+            "errno": -20
+          },
+          "finishedAt": "2026-11-04T01:57:15.650Z",
+          "failed": [],
+          "events": [],
+          "serverRequests": [],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        },
+        {
+          "step": "nested-one-http",
+          "profileId": "profile-A",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/doc?step=nested-one-http",
+          "wcId": 4,
+          "startedAt": "2026-11-04T01:57:15.651Z",
+          "failureStart": 4,
+          "eventStart": 6,
+          "outcome": "blocked-or-failed",
+          "error": {
+            "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'http://m12-cert.test:57026/doc?step=nested-one-http'",
+            "code": "ERR_BLOCKED_BY_CLIENT",
+            "errno": -20
+          },
+          "finishedAt": "2026-11-04T01:57:15.655Z",
+          "failed": [],
+          "events": [],
+          "serverRequests": [],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        },
+        {
+          "step": "nested-one-session-http",
+          "kind": "session-fetch-no-webcontents",
+          "url": "http://m12-cert.test:57026/fetch?step=nested-one-session-http",
+          "startedAt": "2026-11-04T01:57:15.655Z",
+          "outcome": "blocked-or-failed",
+          "error": "net::ERR_BLOCKED_BY_CLIENT",
+          "serverRequests": []
+        }
+      ]
+    },
+    {
+      "id": "new-contents-during-suspension-covered",
+      "status": "passed",
+      "actual": {
+        "window": {
+          "at": "2026-11-04T01:57:15.624Z",
+          "id": 4,
+          "wcId": 4,
+          "profileId": "profile-A",
+          "label": "A new during suspension",
+          "baselineCertificateListeners": 0,
+          "baselineDestroyedListeners": 1
+        },
+        "firstBlocked": {
+          "step": "nested-two-http",
+          "profileId": "profile-A",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/doc?step=nested-two-http",
+          "wcId": 4,
+          "startedAt": "2026-11-04T01:57:15.635Z",
+          "failureStart": 4,
+          "eventStart": 6,
+          "outcome": "blocked-or-failed",
+          "error": {
+            "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'http://m12-cert.test:57026/doc?step=nested-two-http'",
+            "code": "ERR_BLOCKED_BY_CLIENT",
+            "errno": -20
+          },
+          "finishedAt": "2026-11-04T01:57:15.638Z",
+          "failed": [],
+          "events": [],
+          "serverRequests": [],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        }
+      }
+    },
+    {
+      "id": "full-release-restores-normal-http",
+      "status": "passed",
+      "actual": [
+        {
+          "step": "all-released-http",
+          "profileId": "profile-A",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/doc?step=all-released-http",
+          "wcId": 4,
+          "startedAt": "2026-11-04T01:57:15.656Z",
+          "failureStart": 4,
+          "eventStart": 6,
+          "outcome": "loaded",
+          "document": {
+            "url": "http://m12-cert.test:57026/doc?step=all-released-http",
+            "local": null,
+            "step": "all-released-http"
+          },
+          "finishedAt": "2026-11-04T01:57:15.704Z",
+          "failed": [],
+          "events": [],
+          "serverRequests": [
+            {
+              "at": "2026-11-04T01:57:15.658Z",
+              "protocol": "http",
+              "url": "http://m12-cert.test:57026/doc?step=all-released-http",
+              "cookie": "",
+              "remoteAddress": "127.0.0.1",
+              "sni": null
+            }
+          ],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        },
+        {
+          "step": "all-released-session-http",
+          "kind": "session-fetch-no-webcontents",
+          "url": "http://m12-cert.test:57026/fetch?step=all-released-session-http",
+          "startedAt": "2026-11-04T01:57:15.705Z",
+          "outcome": "loaded",
+          "status": 200,
+          "serverRequests": [
+            {
+              "at": "2026-11-04T01:57:15.705Z",
+              "protocol": "http",
+              "url": "http://m12-cert.test:57026/fetch?step=all-released-session-http",
+              "cookie": "",
+              "remoteAddress": "127.0.0.1",
+              "sni": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "full-release-retains-revoked-cert-gate",
+      "status": "passed",
+      "actual": [
+        {
+          "step": "all-released-still-revoked",
+          "profileId": "profile-A",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=all-released-still-revoked",
+          "wcId": 1,
+          "startedAt": "2026-11-04T01:57:15.707Z",
+          "failureStart": 4,
+          "eventStart": 6,
+          "outcome": "blocked-or-failed",
+          "error": {
+            "message": "ERR_BLOCKED_BY_CLIENT (-20) loading 'https://m12-cert.test:57025/doc?step=all-released-still-revoked'",
+            "code": "ERR_BLOCKED_BY_CLIENT",
+            "errno": -20
+          },
+          "finishedAt": "2026-11-04T01:57:15.711Z",
+          "failed": [
+            {
+              "at": "2026-11-04T01:57:15.708Z",
+              "wcId": 1,
+              "url": "https://m12-cert.test:57025/doc?step=all-released-still-revoked",
+              "host": "m12-cert.test",
+              "error": "net::ERR_CERT_AUTHORITY_INVALID"
+            }
+          ],
+          "events": [],
+          "serverRequests": [],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[],\"permissions\":[]}",
+                "updated_at": 1793757435560
+              }
+            ],
+            "reloadedTrustedA": false,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": null
+        },
+        {
+          "step": "all-released-renderer-still-revoked",
+          "kind": "same-origin-renderer-fetch",
+          "url": "https://m12-cert.test:57025/fetch?step=all-released-renderer-still-revoked",
+          "wcId": 2,
+          "value": {
+            "ok": false,
+            "error": "TypeError: Failed to fetch"
+          },
+          "serverRequests": []
+        }
+      ]
+    },
+    {
+      "id": "retrust-restores-real-network-and-status",
+      "status": "failed",
+      "actual": [
+        {
+          "step": "retrust-A",
+          "at": "2026-11-04T01:57:15.714Z",
+          "kind": "synthetic trusted-UI authorization precondition or actual policy lifecycle operation",
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [
+                {
+                  "host": "m12-cert.test",
+                  "createdAt": 1793757435713
+                }
+              ],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[{\"host\":\"m12-cert.test\",\"createdAt\":1793757435713}],\"permissions\":[]}",
+                "updated_at": 1793757435713
+              }
+            ],
+            "reloadedTrustedA": true,
+            "reloadedTrustedB": false
+          }
+        },
+        {
+          "step": "retrusted",
+          "profileId": "profile-A",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=retrusted",
+          "wcId": 1,
+          "startedAt": "2026-11-04T01:57:15.714Z",
+          "failureStart": 5,
+          "eventStart": 6,
+          "outcome": "loaded",
+          "document": {
+            "url": "https://m12-cert.test:57025/doc?step=retrusted",
+            "local": "p012-login-A",
+            "step": "retrusted"
+          },
+          "finishedAt": "2026-11-04T01:57:15.763Z",
+          "failed": [],
+          "events": [
+            {
+              "at": "2026-11-04T01:57:15.716Z",
+              "kind": "server-tls-error",
+              "error": "1151052285984:error:10000416:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN:../../third_party/boringssl/src/ssl/tls_record.cc:486:SSL alert number 46\n"
+            },
+            {
+              "at": "2026-11-04T01:57:15.716Z",
+              "kind": "certificate-error-observed-only",
+              "profileId": "profile-A",
+              "wcId": 1,
+              "url": "https://m12-cert.test:57025/doc?step=retrusted",
+              "error": "net::ERR_CERT_AUTHORITY_INVALID",
+              "fingerprint": "0A:00:EC:60:11:3B:9C:50:F1:5C:2D:13:0A:74:58:2E:90:D4:3F:A0:66:93:AB:C8:07:8A:4C:D9:FB:42:23:56",
+              "isMainFrame": true
+            }
+          ],
+          "serverRequests": [
+            {
+              "at": "2026-11-04T01:57:15.717Z",
+              "protocol": "https",
+              "url": "https://m12-cert.test:57025/doc?step=retrusted",
+              "cookie": "p012_marker=p012-login-A",
+              "remoteAddress": "127.0.0.1",
+              "sni": "m12-cert.test"
+            }
+          ],
+          "saved": {
+            "memoryA": {
+              "schemaVersion": 1,
+              "certificates": [
+                {
+                  "host": "m12-cert.test",
+                  "createdAt": 1793757435713
+                }
+              ],
+              "permissions": []
+            },
+            "memoryB": {
+              "schemaVersion": 1,
+              "certificates": [],
+              "permissions": []
+            },
+            "persisted": [
+              {
+                "key": "browserProfileState.v1:profile-A",
+                "value": "{\"schemaVersion\":1,\"certificates\":[{\"host\":\"m12-cert.test\",\"createdAt\":1793757435713}],\"permissions\":[]}",
+                "updated_at": 1793757435713
+              }
+            ],
+            "reloadedTrustedA": true,
+            "reloadedTrustedB": false
+          },
+          "certificateStatus": {
+            "url": "https://m12-cert.test:57025/doc?step=retrusted",
+            "host": "m12-cert.test",
+            "error": "net::ERR_CERT_AUTHORITY_INVALID"
+          }
+        },
+        {
+          "step": "retrusted-renderer",
+          "kind": "same-origin-renderer-fetch",
+          "url": "https://m12-cert.test:57025/fetch?step=retrusted-renderer",
+          "wcId": 2,
+          "value": {
+            "ok": true,
+            "status": 200
+          },
+          "serverRequests": [
+            {
+              "at": "2026-11-04T01:57:15.765Z",
+              "protocol": "https",
+              "url": "https://m12-cert.test:57025/fetch?step=retrusted-renderer",
+              "cookie": "p012_marker=p012-login-A",
+              "remoteAddress": "127.0.0.1",
+              "sni": "m12-cert.test"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cookie-and-localstorage-never-reseeded-or-cleared",
+      "status": "passed",
+      "actual": {
+        "before": {
+          "at": "2026-11-04T01:57:15.514Z",
+          "local": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+            "local": "p012-login-A"
+          },
+          "cookies": [
+            {
+              "name": "p012_marker",
+              "value": "p012-login-A",
+              "domain": "m12-cert.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ]
+        },
+        "afterWarm": {
+          "at": "2026-11-04T01:57:15.604Z",
+          "local": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+            "local": "p012-login-A"
+          },
+          "cookies": [
+            {
+              "name": "p012_marker",
+              "value": "p012-login-A",
+              "domain": "m12-cert.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ]
+        },
+        "afterFresh": {
+          "at": "2026-11-04T01:57:15.610Z",
+          "local": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+            "local": "p012-login-A"
+          },
+          "cookies": [
+            {
+              "name": "p012_marker",
+              "value": "p012-login-A",
+              "domain": "m12-cert.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ]
+        },
+        "afterSuspension": {
+          "at": "2026-11-04T01:57:15.713Z",
+          "local": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+            "local": "p012-login-A"
+          },
+          "cookies": [
+            {
+              "name": "p012_marker",
+              "value": "p012-login-A",
+              "domain": "m12-cert.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ]
+        },
+        "afterRetrust": {
+          "at": "2026-11-04T01:57:15.765Z",
+          "local": {
+            "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+            "local": "p012-login-A"
+          },
+          "cookies": [
+            {
+              "name": "p012_marker",
+              "value": "p012-login-A",
+              "domain": "m12-cert.test",
+              "hostOnly": true,
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "session": true,
+              "sameSite": "lax"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "server-requests-all-owned",
+      "status": "passed",
+      "actual": [
+        {
+          "at": "2026-11-04T01:57:15.419Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=allowed-seed&seed=1",
+          "cookie": "",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        },
+        {
+          "at": "2026-11-04T01:57:15.468Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=allowed-state-view",
+          "cookie": "p012_marker=p012-login-A",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        },
+        {
+          "at": "2026-11-04T01:57:15.658Z",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/doc?step=all-released-http",
+          "cookie": "",
+          "remoteAddress": "127.0.0.1",
+          "sni": null
+        },
+        {
+          "at": "2026-11-04T01:57:15.705Z",
+          "protocol": "http",
+          "url": "http://m12-cert.test:57026/fetch?step=all-released-session-http",
+          "cookie": "",
+          "remoteAddress": "127.0.0.1",
+          "sni": null
+        },
+        {
+          "at": "2026-11-04T01:57:15.717Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/doc?step=retrusted",
+          "cookie": "p012_marker=p012-login-A",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        },
+        {
+          "at": "2026-11-04T01:57:15.765Z",
+          "protocol": "https",
+          "url": "https://m12-cert.test:57025/fetch?step=retrusted-renderer",
+          "cookie": "p012_marker=p012-login-A",
+          "remoteAddress": "127.0.0.1",
+          "sni": "m12-cert.test"
+        }
+      ]
+    },
+    {
+      "id": "completed-and-cleaned",
+      "status": "passed",
+      "actual": {
+        "driverCleanup": {
+          "at": "2026-11-04T01:57:15.876Z",
+          "keyDeleted": true,
+          "keyPath": "/private/tmp/willyou-m12-p012-executor-001/runtime-001/tls/key.pem",
+          "knownPids": [
+            23609,
+            23610,
+            23611,
+            23612,
+            23613,
+            23618,
+            23620,
+            23622,
+            23626,
+            23629,
+            23636,
+            23640,
+            23650
+          ],
+          "port": 57025,
+          "ports": {
+            "https": 57025,
+            "http": 57026
+          },
+          "keyStillExists": false
+        },
+        "hostCleanup": {
+          "productionListenersAfterDispose": [
+            {
+              "windowId": 1,
+              "wcId": 1,
+              "certificateListeners": 0,
+              "destroyedListeners": 1,
+              "baseline": {
+                "at": "2026-11-04T01:57:15.267Z",
+                "id": 1,
+                "wcId": 1,
+                "profileId": "profile-A",
+                "label": "A navigation",
+                "baselineCertificateListeners": 0,
+                "baselineDestroyedListeners": 1
+              }
+            },
+            {
+              "windowId": 2,
+              "wcId": 2,
+              "certificateListeners": 0,
+              "destroyedListeners": 1,
+              "baseline": {
+                "at": "2026-11-04T01:57:15.281Z",
+                "id": 2,
+                "wcId": 2,
+                "profileId": "profile-A",
+                "label": "A state readback",
+                "baselineCertificateListeners": 0,
+                "baselineDestroyedListeners": 1
+              }
+            },
+            {
+              "windowId": 3,
+              "wcId": 3,
+              "certificateListeners": 0,
+              "destroyedListeners": 1,
+              "baseline": {
+                "at": "2026-11-04T01:57:15.292Z",
+                "id": 3,
+                "wcId": 3,
+                "profileId": "profile-B",
+                "label": "B isolated",
+                "baselineCertificateListeners": 0,
+                "baselineDestroyedListeners": 1
+              }
+            },
+            {
+              "windowId": 4,
+              "wcId": 4,
+              "certificateListeners": 0,
+              "destroyedListeners": 1,
+              "baseline": {
+                "at": "2026-11-04T01:57:15.624Z",
+                "id": 4,
+                "wcId": 4,
+                "profileId": "profile-A",
+                "label": "A new during suspension",
+                "baselineCertificateListeners": 0,
+                "baselineDestroyedListeners": 1
+              }
+            }
+          ],
+          "windows": [
+            {
+              "id": 1,
+              "destroyed": true
+            },
+            {
+              "id": 2,
+              "destroyed": true
+            },
+            {
+              "id": 3,
+              "destroyed": true
+            },
+            {
+              "id": 4,
+              "destroyed": true
+            }
+          ],
+          "servers": [
+            {
+              "closed": true
+            },
+            {
+              "closed": true
+            }
+          ],
+          "sqliteClosed": true,
+          "finishedAt": "2026-11-04T01:57:15.775Z"
+        },
+        "processes": {
+          "at": "2026-11-04T01:57:53.823Z",
+          "processes": [
+            {
+              "pid": 23609,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23610,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23611,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23612,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23613,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23618,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23620,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23622,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23626,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23629,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23636,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23640,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 23650,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            }
+          ],
+          "ports": [
+            {
+              "port": 57025,
+              "status": 1,
+              "stdout": "",
+              "stderr": "",
+              "closed": true
+            },
+            {
+              "port": 57026,
+              "status": 1,
+              "stdout": "",
+              "stderr": "",
+              "closed": true
+            }
+          ],
+          "allAbsent": true,
+          "allPortsClosed": true,
+          "privateTlsKeyAbsent": true
+        }
+      }
+    },
+    {
+      "id": "frozen-production-and-dependencies-unchanged",
+      "status": "passed",
+      "actual": {
+        "files": 7,
+        "privateDependencies": 93,
+        "hostSha256": "c2ae453978b77a012d1f058973244dda342338043e0b1330869c05dd9df14ffc"
+      }
+    }
+  ],
+  "boundary": "Actual frozen BrowserNetworkPolicy + BrowserSiteStates with real Electron Sessions, self-signed TLS, minimal real SQLite app_settings table. trust calls are UI-authorization preconditions. No native App assembly, user click, restart or Agent authorization acceptance, so this does not close T012 A.",
+  "raw": "probe.raw.json"
+}

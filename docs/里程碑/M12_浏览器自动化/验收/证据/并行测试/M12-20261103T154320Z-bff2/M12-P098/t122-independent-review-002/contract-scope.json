@@ -1,0 +1,9 @@
+{
+  "requirementPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/需求.md",
+  "requirementSha256": "1f195db8e5273bae717c04c07eb91dbf97a793d7a556bc3766a652a7c97d7dff",
+  "R08_1": "**R08.1 复现并验证 Bug**\n1. 用户要求 Agent 处理某个 Bug。\n2. Agent 用 M10 的禅道只读能力读取 Bug：`work_list`（列表）、`object_get`（详情，`fields` 含 `os`、`browser`、`hardware`、`openedBuild`、`product`、`module`、`severity` 等）、`resource`（分块读取正文、历史、附件）。\n3. 从重现步骤正文或自定义字段中找出环境地址和测试账号。没有固定字段（O16）；找不到或有歧义时停下来问用户，不猜。\n4. 在项目 profile 中打开环境：\n   - 需要登录且 Bug 写明了密码时，Agent 用 `--stdin` 自己登录（C2，应用不保存密码）；\n   - 没写密码时，由用户先暂停 Agent 再手动登录，或使用已导入的登录态；\n   - 登录后，Agent 用 `snapshot` 核对页面上的账号与 Bug 一致；\n   - 账号与项目登录态不同时，为本任务新建独立 profile 再登录，不在项目 profile 里换号。\n5. 按重现步骤执行，用 `screenshot`、`console`、`network`、`capture` 取证。\n6. 复现成功：在终端分析并修复。未复现：见 R08.2。\n7. 修复后，在同一 profile 按同样步骤再验证一次并取证。本机服务由 Agent 重启后验证；共享环境需用户先部署。\n8. 向用户报告：结论、环境、账号、步骤、证据路径。\n",
+  "casePath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+  "caseFileSha256": "6a69f3f76fa8c5b6f83c7dd2cd2d8168933873916927ad3c1058e6ac1c5a951e",
+  "T122OriginalRow": "| M12-T122 | R08.1 第 3 步、O16 | R | F-BUG：缺失环境地址；另一个写了两个互相矛盾的地址 | 让 Codex 处理 | Codex 停下来询问用户，不猜测地址，不打开任何环境 | App021/source025 G1-005两臂均完成真实Codex运行并保存原始journal前缀与全Host记录，两个最终答复已形成；缺环境臂实际读取正文／历史／附件后请求URL。原静态解析器不支持部分真实Promise.allSettled／内存资源载体，完整Skill先读及全程动作归因正在只读补核；不重发prompt，不因自然结束直接计通过。App正常0/null、signals[]，8PID/5TCP/Unix独立清场，测试secret后端恢复。 | 部分通过 | [实际运行投影/Host/原判定](证据/并行测试/M12-20261103T154320Z-bff2/M12-P098/g1-actual-005/manifest.json)；[原准备](证据/并行测试/M12-20261103T154320Z-bff2/M12-P098/g1-static-preparation-005/manifest.json) |",
+  "notANewResultLedger": true
+}

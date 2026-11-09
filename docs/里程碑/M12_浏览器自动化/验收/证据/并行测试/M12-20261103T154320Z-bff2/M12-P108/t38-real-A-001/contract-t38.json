@@ -1,0 +1,52 @@
+{
+  "case": {
+    "id": "M11-T38",
+    "originalAuthoritativeLine": "| M11-T38／R07／I＋A | WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写 | 分别发起调用并统计业务执行次数 | 全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过） | **通过（I＋A）**；独立I18唯一软件场景，含真实registry另一合法run/token与直接host合法写拒绝；另有命名夹具红保留。C7实际App/Codex六负例业务0、恢复合法CLI读成功；另一真实并发Task拿仍active原Task token→PEER_MISMATCH。三身份故障只替换原native读出的事实、不改认证规则，原native10次身份均存在。A未选写在原CLI命令发现阶段SCOPE拒绝，I直接call另证宿主拒绝，层级不混。App/两Codex/3端口关闭，276私有文件约14.8MB明文token0。[A审查](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T38/attempt-001/review.json)、[I](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-I-T38/attempt-001/result.json)。 |",
+    "requirementAndLayers": "M11-T38／R07／I＋A",
+    "prerequisite": "WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写",
+    "steps": "分别发起调用并统计业务执行次数",
+    "expected": "全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过）",
+    "historicalActual": "**通过（I＋A）**；独立I18唯一软件场景，含真实registry另一合法run/token与直接host合法写拒绝；另有命名夹具红保留。C7实际App/Codex六负例业务0、恢复合法CLI读成功；另一真实并发Task拿仍active原Task token→PEER_MISMATCH。三身份故障只替换原native读出的事实、不改认证规则，原native10次身份均存在。A未选写在原CLI命令发现阶段SCOPE拒绝，I直接call另证宿主拒绝，层级不混。App/两Codex/3端口关闭，276私有文件约14.8MB明文token0。[A审查](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-A-T38/attempt-001/review.json)、[I](证据/并行测试/M11-C7-20261101T191439Z-e388/M11-C7-I-T38/attempt-001/result.json)。"
+  },
+  "source": {
+    "path": "/private/tmp/willyou-m12-m11-regression-static-001/contracts/cases.json",
+    "sha256": "4ccb94e106faa9dcb0e2638377fb03cc88af46965fd4bf838a777b2c48a50726"
+  },
+  "scope": "Only original six T38 A cases and restored legitimate A, no T06/T07/35min rerun",
+  "homeUIRequired": false,
+  "matrix": [
+    {
+      "id": "tree-outsider",
+      "actual": "Exact stockCLI spawned by own App main outside managed Codex tree with original A token only in environment",
+      "code": "PEER_MISMATCH"
+    },
+    {
+      "id": "identity-unreadable",
+      "actual": "Original native read awaited/non-null, then only returned fact null",
+      "code": "PEER_UNVERIFIABLE"
+    },
+    {
+      "id": "wrong-start",
+      "actual": "Original native identity cloned; only exact A owner ancestor startedAt changed",
+      "code": "PEER_MISMATCH"
+    },
+    {
+      "id": "wrong-executable",
+      "actual": "Original native identity cloned; only peer.executable changed",
+      "code": "EXECUTABLE_MISMATCH"
+    },
+    {
+      "id": "unselected-write",
+      "actual": "Actual managed stockCLI discovers current commands then rejects unlisted zentao update; direct host-write refusal stays I layer",
+      "code": "SCOPE_DENIED"
+    },
+    {
+      "id": "other-active-run-token",
+      "actual": "Second real TaskService/Codex B in same project receives still-active A token only in its launch environment; minting/auth rules unchanged",
+      "code": "PEER_MISMATCH"
+    }
+  ],
+  "positive": "Original functions restored to normal between faults; final A actual list succeeds before B, with exact current Host/HTTP/receipt identity",
+  "count": "6 A-model tool calls +2 B-model tool calls, plus1 actual outsider stockCLI child; only1 successful business query",
+  "formalNewPasses": 0
+}

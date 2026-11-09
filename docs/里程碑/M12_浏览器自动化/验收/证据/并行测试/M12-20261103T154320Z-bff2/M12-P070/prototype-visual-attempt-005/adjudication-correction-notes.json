@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-04T17:09:39.494259+00:00",
+  "originalJudgeSha256": "ec9f405d5c9e91c84e2a7c74d19432c45df81ec31d8eec2db193ccdac49ffa03",
+  "correctedJudgeSha256": "1148ed26f8a4f00bc00b11bdbba5ca5dd799e334d0f01c56aba789af3b7f7ca5",
+  "rawSha256": "e6bc4d898da13a13c56f04ae082946578cef2470ad9eb41541c167565ed860ab",
+  "noBrowserRerun": true,
+  "noSourceDistChange": true,
+  "changes": [
+    {
+      "criterion": "P-M01",
+      "originalContract": "Original M12 controls/new-tab/header and toolbar entry, Tools contains Files only; existing synthetic demo entrances preserved. No full R01.11 completion claim.",
+      "originalOverconstraint": "All h2 headings must equal only Tools/Recommendations, incorrectly bans existing synthetic examples section.",
+      "corrected": "Exact existing three headings retained. All previous header/toolbar/new-close tab count/files-only/demos/initial-final comparisons unchanged.",
+      "carriers": [
+        "raw.launcher",
+        "raw.initialEntries",
+        "raw.finalEntries",
+        "source-snapshot/.../BrowserWorkspace.jsx lines327-341, unchanged prior004 same3 headings"
+      ]
+    },
+    {
+      "criterion": "P-C02",
+      "originalContract": "320 pane error/input retained and accessible through scroll, light/dark state and geometry; actual focus restoration at error occurrence.",
+      "originalOverconstraint": "Required INPUT focus even after a later intentional click on an external component theme button.",
+      "corrected": "Assert restored input focus in actual light error occurrence; assert later theme-button focus after actual click. Keep both themes error/value/enabled/geometry; add actual scrollTop and input-inside-visible-body assertions.",
+      "carriers": [
+        "raw.steps component-compact-error",
+        "raw.steps component-dark-compact-error",
+        "raw.actions private-component real-pointer 组件切换主题",
+        "P-component-02-compact-error.png",
+        "P-component-03-dark-compact.png"
+      ],
+      "remainingStrictVisibilityBoundary": "Error is present in DOM but below current body viewport in compact screenshot; further actual wheel-to-error visibility was not executed, so do not claim it was."
+    }
+  ],
+  "focusFixActualEvidence": [
+    "raw light-error-preserved active INPUT",
+    "raw light-error-cancel trusted Escape keydown target INPUT, dialog closed",
+    "raw dark-error-long-preserved active INPUT"
+  ]
+}

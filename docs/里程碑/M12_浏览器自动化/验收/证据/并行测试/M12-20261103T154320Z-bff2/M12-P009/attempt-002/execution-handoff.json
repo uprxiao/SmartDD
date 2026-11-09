@@ -1,0 +1,79 @@
+{
+  "at": "2026-11-04T00:45:21.831161+00:00",
+  "group": "M12-P009",
+  "attempt": "attempt-002",
+  "formalCaseId": "M12-T079",
+  "formalRequiredLayer": "A",
+  "coveredLayer": "I engineering owner-deletion subset only",
+  "formalStatus": "partial, not eligible for full-case pass",
+  "status": "failed",
+  "checks": 19,
+  "passedChecks": 17,
+  "productFailures": [
+    {
+      "check": "persisted-unloaded-task-workspace-cleared",
+      "failureClass": "product",
+      "actual": {
+        "before": {
+          "key": "browserWorkspace.v1:p009-Tunloaded",
+          "value": "{\"version\":1,\"tabs\":[{\"id\":\"6ab6f37a-d099-4d34-98ce-586a4366ca4e\",\"url\":\"about:blank\",\"title\":\"[I] persisted but never loaded\",\"favicon\":null,\"profileId\":\"f7172d7e-a57f-441d-b25f-6eb1e767067b\"}],\"activeId\":\"6ab6f37a-d099-4d34-98ce-586a4366ca4e\",\"closed\":[]}"
+        },
+        "after": {
+          "key": "browserWorkspace.v1:p009-Tunloaded",
+          "value": "{\"version\":1,\"tabs\":[{\"id\":\"6ab6f37a-d099-4d34-98ce-586a4366ca4e\",\"url\":\"about:blank\",\"title\":\"[I] persisted but never loaded\",\"favicon\":null,\"profileId\":\"f7172d7e-a57f-441d-b25f-6eb1e767067b\"}],\"activeId\":\"6ab6f37a-d099-4d34-98ce-586a4366ca4e\",\"closed\":[]}"
+        }
+      }
+    },
+    {
+      "check": "deleted-project-recent-cleared",
+      "failureClass": "product",
+      "actual": {
+        "before": {
+          "key": "browserRecent.v1:p009-P2",
+          "value": "[{\"url\":\"http://127.0.0.1:65397/seed?token=p009-drop-project-task\",\"title\":\"[I] P009 synthetic profile state\",\"host\":\"127.0.0.1:65397\",\"visitedAt\":1793753029189}]"
+        },
+        "after": {
+          "key": "browserRecent.v1:p009-P2",
+          "value": "[{\"url\":\"http://127.0.0.1:65397/seed?token=p009-drop-project-task\",\"title\":\"[I] P009 synthetic profile state\",\"host\":\"127.0.0.1:65397\",\"visitedAt\":1793753029189}]"
+        }
+      }
+    }
+  ],
+  "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p009-executor-001/attempt-002/cache node /private/tmp/willyou-m12-p009-executor-001/attempt-002/p009.mjs --execute",
+  "execSession": 36665,
+  "driverPid": 56516,
+  "hostPid": 56517,
+  "hostSha256": "ec2e9d7a166c5535c265238fad7e1a727ef44fc965b25a67f49942b99a1e7de9",
+  "actualExitCode": 0,
+  "startedAt": "2026-11-04T00:43:47.348Z",
+  "finishedAt": "2026-11-04T00:43:51.879Z",
+  "actualSeconds": 4.531,
+  "actualBusinessSteps": [
+    {
+      "name": "prepare",
+      "status": "executed"
+    },
+    {
+      "name": "owners-present-reconcile",
+      "status": "executed"
+    },
+    {
+      "name": "delete-loaded-task",
+      "status": "executed"
+    },
+    {
+      "name": "delete-unloaded-task",
+      "status": "executed"
+    },
+    {
+      "name": "delete-project",
+      "status": "executed"
+    }
+  ],
+  "priorFailure": "attempt001 native dependency bundling failed before ready/setup; all37 files remain frozen with manifestfa9341d57908f479d2df6ff7d73fb15c8ca4684dbbbf3e46d99cc6984d00d85e",
+  "nativeDependencyRepair": "node-pty@1.1.0 full304file private copy matched readonly frozen dependency; actual Electron42.11.14 ABI146 import preflight passed without spawn, nativeSHA6af52bd6b459ea4613cabb2fac1806fbf64cf8bb55f5d014bbe2d67573829706",
+  "resourcesReleased": true,
+  "noUnknownWriteReplay": true,
+  "privateFixtureHooks": "TaskService EventEmitter listener0, all31 readback probe windows destroyed; no prototype hooks or certificate overrides installed",
+  "productionPublicLedgerGitMutations": false
+}

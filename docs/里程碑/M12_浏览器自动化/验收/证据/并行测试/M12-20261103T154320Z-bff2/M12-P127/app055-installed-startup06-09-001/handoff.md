@@ -1,0 +1,1 @@
+Original S6 stages06-09 current App055 expected pins only; pin.finalReady=false and build/native gatesnull. After01-05, Root executes06 filebinder, reviews actualnewREADY, then07 real hiddenownApp +three managedstockCLI,08exactcleanup,09original8judge. No focus/rendererUIInput/model/daily credentials. No runtime/results copied.

@@ -1,0 +1,27 @@
+{
+  "actualWrapperCapturedPS": {
+    "pid": 29237,
+    "ppid": 8736,
+    "uid": 501,
+    "birth": "Fri Nov  6 07:05:29 2026",
+    "comm": "/Applications/Xc",
+    "argv": [
+      "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python",
+      "/private/tmp/willyou-m12-t09-cm-power-wrapper-001/run.py",
+      "--execute"
+    ]
+  },
+  "actualCommTruncated": true,
+  "frozenBindPredicate": "PPID==wrapperPID && UID==self && argv==exact utility && realpath(comm)==realpath(Node)",
+  "actualNodePollCandidateSaved": false,
+  "uniqueFailedFieldRetrospectivelyKnown": false,
+  "confirmedDefect": "mac PS comm field can truncate; complete executable cannot be proved using this field",
+  "driverActualExistenceProvenByCMRaw": true,
+  "driverAdoptedPPID1CapturedAfterWrapperExit": true,
+  "originalUnknownsRetained": [
+    "actual utility candidate row at each initial poll",
+    "cleanup guard historical PID and own start assertions",
+    "driver Popen numeric exit after wrapper early return"
+  ],
+  "nextMinimalFix": "libproc proc_pidpath for exact executable; preserve candidates; wait original Popen terminal before subsequent cleanup/judge if initial binding fails"
+}

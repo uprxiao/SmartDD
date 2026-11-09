@@ -1,0 +1,147 @@
+{
+  "case": "M12-T095",
+  "attempt": "C9C10-cont001",
+  "status": "driver-navigation-failed-no-new-prompt-or-CLI",
+  "execution": {
+    "tool": "70beb1",
+    "session": 21262,
+    "driverPID": 37074,
+    "appPID": 37076,
+    "exitCode": 1
+  },
+  "failure": {
+    "stage": "real-ui-open-b-extra-setup",
+    "label": "primary-failure",
+    "path": "/private/tmp/willyou-m12-t095-App027-C9-C10-cont-001/runtime-001/primary-failure.private.log",
+    "name": "Error",
+    "sha256": "4c6397d583e0146b04833f2fb7613bd0c807d2852c1a0f9db5088948ce4abef8"
+  },
+  "exactCall": "await ui.click([data-testid=task-resume])",
+  "beforeMouseDispatch": true,
+  "failurePredicate": "disabled OR center elementFromPoint not owned; failure descriptor absent, condition cannot be distinguished",
+  "failureDescriptorCaptured": false,
+  "failureScreenshotCaptured": false,
+  "lastActualClick": {
+    "at": "2026-11-07T03:17:18.839Z",
+    "kind": "click",
+    "selector": "[data-testid=sidebar-task][data-task-id=\"29602bde-f91b-45f8-80f4-623064ab414c\"]",
+    "point": {
+      "x": 171.5,
+      "y": 303
+    }
+  },
+  "initialFocus": {
+    "status": "focused",
+    "stableMs": 3035,
+    "activationAttempts": 1,
+    "guardCheckedInputs": 5
+  },
+  "actualNewRun": {
+    "run_id": "9f0eda08-fac6-4fff-831a-a79f44bd7de3",
+    "task_id": "29602bde-f91b-45f8-80f4-623064ab414c",
+    "project_id": "e6cbc3f8-a962-4c1d-83f6-198a05bd8fff",
+    "runner": "codex",
+    "state": "stopped",
+    "revocation_state": "revoked",
+    "started_at": "2026-11-07T03:17:19.421Z",
+    "ended_at": "2026-11-07T03:17:20.144Z",
+    "snapshot_hash": "c2c292dcdedc96cbbdbe5763a47fe0a74ac4804488430cb9fd7133cbd76b155f"
+  },
+  "actualNewRunHostInvocations": 0,
+  "nativeAfterAppStart": {
+    "source": "/private/tmp/willyou-m12-t095-App027-A-R-prep-004/runtime-001/codex/sessions/2026/11/07/rollout-2026-11-07T10-45-52-01a1b3e5-d9cf-7060-b83f-1f76141a7f93.jsonl",
+    "wholeFileSHA256": "52f22a2ec06f8b12fda2ef3c6926231144c9fb13e2161fc6a110c56da6cebdd3",
+    "after": "2026-11-07T03:17:11.740Z",
+    "rowCount": 0,
+    "userRows": 0,
+    "toolCalls": 0,
+    "typedCommandExecutions": 0,
+    "threadSettings": 0
+  },
+  "newPromptPhases": 0,
+  "original15Replayed": false,
+  "original15StillValid": true,
+  "newOriginalCommandsCompleted": 0,
+  "newSetupCommandsCompleted": 0,
+  "formalIncrement": 0,
+  "appExit": {
+    "pid": 37076,
+    "code": 0,
+    "signal": null
+  },
+  "observedProcess": {
+    "pid": 37076,
+    "spawnedAtMs": 1794021431907,
+    "exit": {
+      "atMs": 1794021440555,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "inspectorCloseRequests": [
+      {
+        "atMs": 1794021440352
+      },
+      {
+        "atMs": 1794021440555
+      },
+      {
+        "atMs": 1794021440555
+      }
+    ],
+    "currentCode": 0,
+    "currentSignal": null
+  },
+  "cleanupErrors": [],
+  "judge": {
+    "passed": false,
+    "business": "7/10",
+    "admission": "2/5",
+    "boundary": "C1 missing current baseline because failed before binding, C9/C10 incomplete; original first15 accepted independently. This red is retained."
+  },
+  "resourceRelease": {
+    "at": "2026-11-07T03:18:53.180929+00:00",
+    "scope": "M12-T095-C9-C10-continuation",
+    "status": "released",
+    "executionTool": "70beb1",
+    "actualSession": 21262,
+    "driverPID": 37074,
+    "appPID": 37076,
+    "executeExitCode": 1,
+    "independentCleanup": {
+      "tool": "29ac8d",
+      "exitCode": 0,
+      "allClear": true,
+      "PIDs": 11,
+      "TCP": 3,
+      "Unix": 2,
+      "helpers": 2
+    },
+    "judge": {
+      "tool": "26ce58",
+      "exitCode": 1,
+      "business": "7/10",
+      "admission": "2/5"
+    },
+    "appExit": {
+      "pid": 37076,
+      "code": 0,
+      "signal": null
+    },
+    "signals": [],
+    "cleanupErrors": [],
+    "newPhaseSubmissions": 0,
+    "resourcesReleased": [
+      "Native",
+      "UI",
+      "App",
+      "PTY",
+      "HTTP",
+      "TCP",
+      "Unix",
+      "OS"
+    ],
+    "boundary": "Current App normal exit and exact independent allClear. No rerun, guard rearm, further Native/OS checks or model submission."
+  },
+  "boundary": "Source031 sidebar show auto-resumes; actual B started then normal cleanup stopped it, Native no added records and Host0. Not 0run. No causal attribution to focus/user/disabled vs overlay. No DB/auth/Native/fullscreen copied."
+}

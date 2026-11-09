@@ -1,0 +1,41 @@
+import type { VoiceError } from './voice';
+export const voiceErrorsZh: Record<VoiceError, string> = {
+  "UNSUPPORTED_PLATFORM": "当前平台暂不支持，Typeless 语音接入先支持 macOS。",
+  "DISABLED": "语音输入已关闭，请在语音设置中开启。",
+  "NOT_INSTALLED": "未找到 Typeless，请先安装并完成首次设置。",
+  "ACCESSIBILITY_REQUIRED": "需要辅助功能权限，请在系统设置中允许 WillYou。",
+  "SHORTCUT_UNRESOLVED": "请确认 Typeless 听写键，在高级设置中指定后试用。",
+  "MODE_UNVERIFIED": "当前听写模式待确认，请先在 Typeless 中核对。",
+  "INVALID_SHORTCUT": "无法识别快捷键，请使用支持的按键组合。",
+  "GLOBAL_CONFLICT": "这个全局快捷键不可用，请换一个。原设置仍然保留。",
+  "SAME_SHORTCUT": "全局唤起键和 Typeless 听写键需要不同。",
+  "MODIFIERS_HELD": "请松开快捷键后再试，本次没有转发按键。",
+  "TARGET_CHANGED": "输入位置已变化，请在目标输入框中重试。",
+  "INPUT_FOCUS_UNAVAILABLE": "暂时无法确认输入位置。请点击目标输入框后重试。",
+  "SECURE_INPUT": "密码等受保护的输入框不支持语音唤起。请切换到普通输入框。",
+  "TASK_STOPPED": "任务已停止，请先恢复任务。",
+  "LAUNCH_FAILED": "无法后台启动 Typeless，请手动打开后重试。",
+  "TIMEOUT": "唤起超时，请检查 Typeless 后重试。",
+  "TRIGGER_FAILED": "暂时无法唤起 Typeless，请重新检测或重启应用。",
+  "BUSY": "正在处理上一次唤起，请稍后再试。"
+};
+export const voiceErrorsEn: Record<VoiceError, string> = {
+  "UNSUPPORTED_PLATFORM": "Typeless voice integration currently supports macOS only.",
+  "DISABLED": "Voice input is disabled. Enable it in voice settings.",
+  "NOT_INSTALLED": "Typeless was not found. Install it and complete setup first.",
+  "ACCESSIBILITY_REQUIRED": "Allow WillYou in macOS Accessibility settings.",
+  "SHORTCUT_UNRESOLVED": "Confirm the Typeless dictation key in advanced settings, then try it.",
+  "MODE_UNVERIFIED": "Confirm the dictation mode in Typeless first.",
+  "INVALID_SHORTCUT": "Unsupported shortcut. Use a supported key combination.",
+  "GLOBAL_CONFLICT": "This global shortcut is unavailable. The previous settings are unchanged.",
+  "SAME_SHORTCUT": "The global shortcut must differ from the Typeless dictation key.",
+  "MODIFIERS_HELD": "Release the shortcut and try again. No key was forwarded.",
+  "TARGET_CHANGED": "The input target changed. Try again in the intended field.",
+  "INPUT_FOCUS_UNAVAILABLE": "Could not confirm the input target. Click the intended field and try again.",
+  "SECURE_INPUT": "Voice activation is unavailable in protected fields such as passwords. Use a regular input field.",
+  "TASK_STOPPED": "The task has stopped. Resume it first.",
+  "LAUNCH_FAILED": "Could not launch Typeless in the background. Open it manually and retry.",
+  "TIMEOUT": "The request timed out. Check Typeless and try again.",
+  "TRIGGER_FAILED": "Could not invoke Typeless. Check again or restart the app.",
+  "BUSY": "A voice request is already in progress."
+};

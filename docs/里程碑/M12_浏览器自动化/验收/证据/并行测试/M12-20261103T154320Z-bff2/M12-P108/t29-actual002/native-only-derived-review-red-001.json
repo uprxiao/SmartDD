@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-05T20:59:33.022Z",
+  "passed": false,
+  "status": "strict-derived-review-still-red",
+  "error": {
+    "name": "AssertionError",
+    "message": "Application does not modify original full private config bytes/mode\n+ actual - expected\n\n  [\n    {\n      bytes: 591,\n      mode: 384,\n      name: 'config.toml',\n      path: '/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/default/codex/config.toml',\n+     sha256: '6e651bdb08c059d25a758c9c7abc0c8a026ab7013b314cf16b8f03ea69d01872'\n-     sha256: 'a2635fea962d4d774c601cb86246123818476108aae1b081a2404851f93dce65'\n    }\n  ]\n"
+  },
+  "negativeControls": 13,
+  "acceptedDenials": [
+    {
+      "target": {
+        "host": "denied.localhost",
+        "port": 49374,
+        "role": "default-cli",
+        "name": "denied"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/default/codex/sessions/2026/11/06/rollout-2026-11-06T04-55-52-01a1ad7f-221b-7081-935b-9120d1806eee.jsonl",
+        "callId": "t29_default-cli_9",
+        "callLine": 55,
+        "outputLine": 58,
+        "callAt": "2026-11-05T20:55:54.142Z",
+        "at": "2026-11-05T20:55:54.224Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    },
+    {
+      "target": {
+        "host": "allowed.localhost",
+        "port": 49374,
+        "role": "default-cli",
+        "name": "allowed"
+      },
+      "evidence": {
+        "source": "/private/tmp/willyou-m12-t131-t29-sandbox-app022-002/runtime-001/default/codex/sessions/2026/11/06/rollout-2026-11-06T04-55-52-01a1ad7f-221b-7081-935b-9120d1806eee.jsonl",
+        "callId": "t29_default-cli_8",
+        "callLine": 50,
+        "outputLine": 53,
+        "callAt": "2026-11-05T20:55:54.050Z",
+        "at": "2026-11-05T20:55:54.131Z"
+      },
+      "authority": "native-exec-ProcessFailed-domain-allowlist-policy",
+      "childExitObserved": null,
+      "rawVerbosePublished": false
+    }
+  ],
+  "originalJudgePreservedFailed": true,
+  "noActualRerun": true,
+  "Native": 0,
+  "formalCaseIncrement": 0
+}

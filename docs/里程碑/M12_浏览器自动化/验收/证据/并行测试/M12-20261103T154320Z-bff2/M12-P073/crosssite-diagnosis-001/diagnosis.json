@@ -1,0 +1,89 @@
+{
+  "status": "Static diagnosis only; unchanged 4green/1snapshotboundaryfailed",
+  "sourceManifest": {
+    "path": "/private/tmp/willyou-m12-p073-source-015/source-inputs.json",
+    "sha256": "beb858ca46df4dd12246969c0c435f54234afcb0cc52ad323188b55558460f5b"
+  },
+  "helper": {
+    "binarySha256": "1d6a2fd32b2afda66e57af8658496a415b7650132d2a708405cac77bed75aa19",
+    "runtimeSourceSha256": "532628366523c3c9de87edd6c111a8ef3d5273b8b64687cb9652cda101537289",
+    "sourceReconstructionExactlyProven": true
+  },
+  "sourceFiles": [
+    {
+      "path": "source/src/main/core/browser/cdp-proxy.ts",
+      "sha256": "23e539f5faf4a4225d115d96507f9cbb5369c7c4c60d75f12c6082c32cc3ddcf",
+      "original": "/private/tmp/willyou-m12-p073-source-015/source/src/main/core/browser/cdp-proxy.ts"
+    },
+    {
+      "path": "source/src/main/core/browser/references.ts",
+      "sha256": "c3ced875a05ffd677a51c39f661592408bbec79637b2081273cbb5368f286d80",
+      "original": "/private/tmp/willyou-m12-p073-source-015/source/src/main/core/browser/references.ts"
+    },
+    {
+      "path": "source/src/main/core/applications/cli-gateway.ts",
+      "sha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef",
+      "original": "/private/tmp/willyou-m12-p073-source-015/source/src/main/core/applications/cli-gateway.ts"
+    },
+    {
+      "path": "source/helper/cli/src/native/snapshot.rs",
+      "sha256": "8c4093256a191bd846ba7fe437a0e6cc9eddd84fac8728d3f9c09bd6cb3517b0",
+      "original": "/private/tmp/willyou-m12-p070-js-dialog-native-005-pointer6-001/helper-source-reconstructed/cli/src/native/snapshot.rs"
+    },
+    {
+      "path": "source/helper/cli/src/native/actions.rs",
+      "sha256": "07b002dc194e551a7fb29082bcc89bca3c70b3aed55769afac4eba3cec060d89",
+      "original": "/private/tmp/willyou-m12-p070-js-dialog-native-005-pointer6-001/helper-source-reconstructed/cli/src/native/actions.rs"
+    },
+    {
+      "path": "source/helper/cli/src/native/element.rs",
+      "sha256": "29caf99764ef3f6d1708650b603071b27b69b925d575b569c94bcbee8c29f840",
+      "original": "/private/tmp/willyou-m12-p070-js-dialog-native-005-pointer6-001/helper-source-reconstructed/cli/src/native/element.rs"
+    }
+  ],
+  "rootCauseEvidence": [
+    {
+      "source": "references.ts:85-106",
+      "fact": "Host identity pre/post explicitly queries each owned iframe session; actual child session AX calls fulfilled."
+    },
+    {
+      "source": "cdp-proxy.ts:204-215",
+      "fact": "Helper forwarding chooses effectiveSession only from message.sessionId, captures AX before send. Explicit child frameId on parent session is not rerouted."
+    },
+    {
+      "source": "snapshot.rs:490-516,575-607",
+      "fact": "Helper traverses iframe via DOM.describeNode(parent-owned iframebackend), then child take_snapshot; child errors silently ignored."
+    },
+    {
+      "source": "element.rs:595-609",
+      "fact": "Known iframe map -> child session+empty AXparams; missingmap -> parent session+explicit frameId."
+    },
+    {
+      "source": "actions.rs:1285,1380,1456,1619,658-682,813-831",
+      "fact": "Command drains events before first auto_launch/connect, snapshots then drains again; first attach events can remain unapplied during cold snapshot, so iframe map not yet available. Supported by real parent-session AX frameId error during first snapshot."
+    },
+    {
+      "source": "references.ts:130-151",
+      "fact": "Finalrefs are generated solely from parsed helper refs. Host successful identity tree cannot synthesize missing helpermetadata; one available Iframe causes no unavailable-ref retry."
+    }
+  ],
+  "candidateRepairBoundary": "Route only explicit AX child frameId to an exact currently-owned iframe session on this page; preserve client message reply session, no cross-page/browser target expansion. Root implements/validates; executor makes no production change.",
+  "additionalStaticLimits": [
+    {
+      "source": "snapshot.rs:353-355",
+      "fact": "Cursor-interactive enrichment still uses original parent session even in child recursion; could lose non-ARIA custom cursor refs. Not part of this button-matrix proof."
+    },
+    {
+      "source": "snapshot.rs:416-443",
+      "fact": "Optional urls branch resolves child link backend IDs on original session; URLs flag false and buttons here. No claim this broader DOM backend family verified."
+    },
+    {
+      "source": "element.rs:479-549",
+      "fact": "Helper ref resolver chooses session from same iframe map for backend fastpath/fallback. This test host actual child refs use hostClick path instead; unrelated helper action paths not verified."
+    }
+  ],
+  "expectedRemaining": "Only crosssite closure after fixed immutable source; four green closures reuse by affected-source scope, no blind repeat.",
+  "nativeStarted": false,
+  "productionModified": false,
+  "oldDeliveryModified": false
+}

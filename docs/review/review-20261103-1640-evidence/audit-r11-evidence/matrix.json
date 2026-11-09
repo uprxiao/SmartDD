@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-03T08:38:05.797487+00:00",
+  "baseline": "/private/tmp/m12-r11-review-20261103T083208Z",
+  "oldFindingStatus": [
+    {
+      "oldFinding": "F01",
+      "status": "partially_addressed_residual",
+      "refs": [
+        "需求.md:371-376",
+        "技研/技术方案.md:155-175",
+        "验收/测试用例.md:90"
+      ],
+      "closedPart": "Host marker selector demonstrably avoids replacement by a freshly created unmarked same-name button; two-sample AX and explicit S1 gates improve design.",
+      "residual": "A clone inherits data-willyou-ref and still matches selector; two AX samples can also see A while intervening helper snapshot sees temporary B (A→B→A). E4c only creates a new untagged node.",
+      "finding": "R11-E01"
+    },
+    {
+      "oldFinding": "F02",
+      "status": "addressed_in_design_and_cases",
+      "refs": [
+        "需求.md:368-369",
+        "技研/技术方案.md:157,166",
+        "验收/测试用例.md:89-90"
+      ],
+      "detail": "Host external ref includes page short code and snapshot generation, checked against target before translation; stale generations/cross-page collision cases explicit. Actual implementation still pending S1; E4c did not itself test page2."
+    },
+    {
+      "oldFinding": "F06",
+      "status": "addressed_in_PRD_and_case",
+      "refs": [
+        "需求.md:208-213",
+        "验收/测试用例.md:49"
+      ],
+      "detail": "Named window independently retained alongside opener-dependent OAuth; T013 covers named window plus OAuth lifecycle."
+    },
+    {
+      "oldFinding": "F07-output-metadata",
+      "status": "addressed_in_PRD_and_cases",
+      "refs": [
+        "需求.md:302-303,363,386,389,432,445,341,617-618",
+        "验收/测试用例.md:89,95-96,115,117,123"
+      ],
+      "detail": "refs[] and fields restored; eval conversion, clone login, tabcreate default nonactivation, unattended missing-password failure, PDF CSS size, first intercept pattern, and wait+5<=95<120 deadline stated. These are contractual fixes, not executed App tests."
+    },
+    {
+      "oldFinding": "F08",
+      "status": "addressed_in_plan_and_cases",
+      "refs": [
+        "技研/技术方案.md:345,352-365",
+        "验收/测试用例.md:92,98"
+      ],
+      "detail": "S1 table maps OOPIF/closed shadow, ref race, concurrency, connected park/reattach, cancellation, killed helper rebuild, full screenshot, proxy denial, CLI effect boundary, type progress. T053 now requires cross-site independent target/session; T059 explicitly kills helper and checks page continuity/ref invalidation."
+    },
+    {
+      "oldFinding": "F09",
+      "status": "partially_addressed_prototype_residual",
+      "refs": [
+        "需求.md:256,535-537",
+        "prototypes/m6-codex/src/BrowserPanels.jsx:120-127,175-179,183-200",
+        "prototypes/m6-codex/src/BrowserWorkspace.jsx:126-127,236,240,282",
+        "验收/测试用例.md:58,129"
+      ],
+      "closedPart": "Recovery failure banner, retry recovery, confirmed clear-login, disable profile-row import, artifacts space/confirmed cleanup UI, and recovery-failure acceptance steps added.",
+      "residual": "Toolbar import bypasses attention check, simulated Agent still starts while attention active; import summary still omits conflicts count.",
+      "finding": "R11-E02"
+    }
+  ]
+}

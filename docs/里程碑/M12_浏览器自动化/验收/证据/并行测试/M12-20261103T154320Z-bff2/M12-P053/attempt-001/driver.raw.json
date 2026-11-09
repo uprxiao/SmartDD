@@ -1,0 +1,2852 @@
+{
+  "group": "M12-P053",
+  "cases": [
+    "M12-T116"
+  ],
+  "driverPid": 6785,
+  "startedAt": "2026-11-04T11:12:41.067Z",
+  "stage": "certificate-agent-goto",
+  "steps": [
+    {
+      "label": "authentication-blank-tab",
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:55619/blank?authentication"
+      ],
+      "startedAt": "2026-11-04T11:12:42.929Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 1,
+        "pid": 6821,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:55619\\/blank?authentication\",\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"resources\":[],\"operation\":{\"id\":\"24b590ce-ab1a-4816-9b7d-83d282aaf949\",\"requestId\":\"c6c327ee-1a9c-41e4-a781-7bedc8efcf1d\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:55619/blank?authentication",
+          "pageId": "54de0736-a74a-4586-b034-24294ba9b2ed"
+        },
+        "resources": [],
+        "operation": {
+          "id": "24b590ce-ab1a-4816-9b7d-83d282aaf949",
+          "requestId": "c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      },
+      "finishedAt": "2026-11-04T11:12:44.082Z"
+    },
+    {
+      "label": "authentication-agent-goto",
+      "args": [
+        "browser",
+        "goto",
+        "--url",
+        "http://127.0.0.1:55619/basic",
+        "--page",
+        "54de0736-a74a-4586-b034-24294ba9b2ed"
+      ],
+      "startedAt": "2026-11-04T11:12:44.083Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 2,
+        "pid": 6832,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"navigated\":true},\"resources\":[],\"operation\":{\"id\":\"39f5b9f5-d374-4b00-a9ab-706df716adb8\",\"requestId\":\"83465640-a0a9-4e50-83c1-de59d78faf1e\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.goto\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+          "connections": []
+        },
+        "data": {
+          "navigated": true
+        },
+        "resources": [],
+        "operation": {
+          "id": "39f5b9f5-d374-4b00-a9ab-706df716adb8",
+          "requestId": "83465640-a0a9-4e50-83c1-de59d78faf1e",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.nav.goto"
+      },
+      "finishedAt": "2026-11-04T11:12:51.296Z"
+    },
+    {
+      "label": "authentication-actual-wait",
+      "args": [
+        "browser",
+        "wait",
+        "--text",
+        "成功",
+        "--timeout",
+        "500",
+        "--page",
+        "54de0736-a74a-4586-b034-24294ba9b2ed"
+      ],
+      "startedAt": "2026-11-04T11:12:44.901Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 3,
+        "pid": 6846,
+        "code": 2,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"浏览器命令等待 5500ms 后超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"52dd8a74-5a7a-41fd-92bd-7f1b1ab097ea\",\"requestId\":\"6c0b6254-eccb-4d4e-99c8-b4ca7a140255\"}\n",
+        "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+        "timedOut": false
+      },
+      "parsed": {
+        "error": {
+          "effectState": "read-only",
+          "code": "BROWSER_TIMEOUT",
+          "layer": "provider",
+          "message": "浏览器命令等待 5500ms 后超时",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "operationId": "52dd8a74-5a7a-41fd-92bd-7f1b1ab097ea",
+        "requestId": "6c0b6254-eccb-4d4e-99c8-b4ca7a140255"
+      },
+      "finishedAt": "2026-11-04T11:12:51.228Z"
+    },
+    {
+      "label": "authentication-fixture-close",
+      "args": [
+        "browser",
+        "tab",
+        "close",
+        "--page",
+        "54de0736-a74a-4586-b034-24294ba9b2ed"
+      ],
+      "startedAt": "2026-11-04T11:12:51.297Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 4,
+        "pid": 6896,
+        "code": 5,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TAB_CLOSED\",\"layer\":\"provider\",\"message\":\"执行中网页已关闭，操作结果未知\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"ac18ddcb-2486-4783-b147-74b5812b0e14\",\"requestId\":\"8b395cbe-c6c0-46ae-9456-1656f84f015b\"}\n",
+        "stderr": "willyou-app: BROWSER_TAB_CLOSED\n",
+        "timedOut": false
+      },
+      "parsed": {
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_TAB_CLOSED",
+          "layer": "provider",
+          "message": "执行中网页已关闭，操作结果未知",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        },
+        "operationId": "ac18ddcb-2486-4783-b147-74b5812b0e14",
+        "requestId": "8b395cbe-c6c0-46ae-9456-1656f84f015b"
+      },
+      "finishedAt": "2026-11-04T11:12:52.116Z"
+    },
+    {
+      "label": "permission-blank-tab",
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:55619/blank?permission"
+      ],
+      "startedAt": "2026-11-04T11:12:52.117Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 5,
+        "pid": 6903,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:55619\\/blank?permission\",\"pageId\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\"},\"resources\":[],\"operation\":{\"id\":\"d30e79b5-2b39-47ca-8858-158773758136\",\"requestId\":\"41913c25-a14a-4512-9453-3c89cc1e1c26\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:55619/blank?permission",
+          "pageId": "32d20770-405a-483f-9ba8-84dcc5aa7521"
+        },
+        "resources": [],
+        "operation": {
+          "id": "d30e79b5-2b39-47ca-8858-158773758136",
+          "requestId": "41913c25-a14a-4512-9453-3c89cc1e1c26",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      },
+      "finishedAt": "2026-11-04T11:12:52.976Z"
+    },
+    {
+      "label": "permission-agent-goto",
+      "args": [
+        "browser",
+        "goto",
+        "--url",
+        "http://127.0.0.1:55619/permission",
+        "--page",
+        "32d20770-405a-483f-9ba8-84dcc5aa7521"
+      ],
+      "startedAt": "2026-11-04T11:12:52.976Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 6,
+        "pid": 6911,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"navigated\":true},\"resources\":[],\"operation\":{\"id\":\"909ebad9-000c-4771-b703-c3e14b3bc4a0\",\"requestId\":\"cab6983d-50e9-4cec-bfcc-9fc666febc36\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.goto\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+          "connections": []
+        },
+        "data": {
+          "navigated": true
+        },
+        "resources": [],
+        "operation": {
+          "id": "909ebad9-000c-4771-b703-c3e14b3bc4a0",
+          "requestId": "cab6983d-50e9-4cec-bfcc-9fc666febc36",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.nav.goto"
+      },
+      "finishedAt": "2026-11-04T11:12:53.824Z"
+    },
+    {
+      "label": "permission-actual-wait",
+      "args": [
+        "browser",
+        "wait",
+        "--text",
+        "成功",
+        "--timeout",
+        "500",
+        "--page",
+        "32d20770-405a-483f-9ba8-84dcc5aa7521"
+      ],
+      "startedAt": "2026-11-04T11:12:53.824Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 7,
+        "pid": 6925,
+        "code": 2,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"Wait timed out after 500ms\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"588919c1-ab79-4906-92f1-64be84d2194d\",\"requestId\":\"349491a2-bcf7-487f-8441-a726b25c2751\"}\n",
+        "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+        "timedOut": false
+      },
+      "parsed": {
+        "error": {
+          "effectState": "read-only",
+          "code": "BROWSER_TIMEOUT",
+          "layer": "provider",
+          "message": "Wait timed out after 500ms",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "operationId": "588919c1-ab79-4906-92f1-64be84d2194d",
+        "requestId": "349491a2-bcf7-487f-8441-a726b25c2751"
+      },
+      "finishedAt": "2026-11-04T11:12:55.411Z"
+    },
+    {
+      "label": "permission-fixture-close",
+      "args": [
+        "browser",
+        "tab",
+        "close",
+        "--page",
+        "32d20770-405a-483f-9ba8-84dcc5aa7521"
+      ],
+      "startedAt": "2026-11-04T11:12:55.412Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 8,
+        "pid": 6942,
+        "code": 5,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TAB_CLOSED\",\"layer\":\"provider\",\"message\":\"执行中网页已关闭，操作结果未知\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"abb5f7a4-8ac2-49d8-bfe2-8c7e62d32b6c\",\"requestId\":\"42ff4fa8-a36b-4cd4-828d-f7a89c6a7ff7\"}\n",
+        "stderr": "willyou-app: BROWSER_TAB_CLOSED\n",
+        "timedOut": false
+      },
+      "parsed": {
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_TAB_CLOSED",
+          "layer": "provider",
+          "message": "执行中网页已关闭，操作结果未知",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        },
+        "operationId": "abb5f7a4-8ac2-49d8-bfe2-8c7e62d32b6c",
+        "requestId": "42ff4fa8-a36b-4cd4-828d-f7a89c6a7ff7"
+      },
+      "finishedAt": "2026-11-04T11:12:56.363Z"
+    },
+    {
+      "label": "certificate-blank-tab",
+      "args": [
+        "browser",
+        "tab",
+        "create",
+        "--url",
+        "http://127.0.0.1:55619/blank?certificate"
+      ],
+      "startedAt": "2026-11-04T11:12:56.364Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 9,
+        "pid": 6951,
+        "code": 0,
+        "signal": null,
+        "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:55619\\/blank?certificate\",\"pageId\":\"61b84bcb-ea48-4025-a5c4-9038f17c1ca7\"},\"resources\":[],\"operation\":{\"id\":\"5d7a39ce-b241-44ab-8087-103577f50fb4\",\"requestId\":\"93fa9e20-ded7-4baf-a908-6e4a316b953d\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.create\"}\n",
+        "stderr": "",
+        "timedOut": false
+      },
+      "parsed": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:55619/blank?certificate",
+          "pageId": "61b84bcb-ea48-4025-a5c4-9038f17c1ca7"
+        },
+        "resources": [],
+        "operation": {
+          "id": "5d7a39ce-b241-44ab-8087-103577f50fb4",
+          "requestId": "93fa9e20-ded7-4baf-a908-6e4a316b953d",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.tab.create"
+      },
+      "finishedAt": "2026-11-04T11:12:57.299Z"
+    },
+    {
+      "label": "certificate-agent-goto",
+      "args": [
+        "browser",
+        "goto",
+        "--url",
+        "https://p053-cert.invalid:55620/certificate",
+        "--page",
+        "61b84bcb-ea48-4025-a5c4-9038f17c1ca7"
+      ],
+      "startedAt": "2026-11-04T11:12:57.300Z",
+      "raw": {
+        "kind": "cli-result",
+        "id": 10,
+        "pid": 6967,
+        "code": 5,
+        "signal": null,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_ERROR\",\"layer\":\"provider\",\"message\":\"ERR_CONNECTION_CLOSED (-100) loading 'https:\\/\\/p053-cert.invalid:55620\\/certificate'\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"c46cb635-8696-4b58-aa76-a9e05eeacfc3\",\"requestId\":\"c3256523-cf5a-4aa7-bac2-4b188e584742\"}\n",
+        "stderr": "willyou-app: BROWSER_ERROR\n",
+        "timedOut": false
+      },
+      "parsed": {
+        "error": {
+          "effectState": "unknown",
+          "code": "BROWSER_ERROR",
+          "layer": "provider",
+          "message": "ERR_CONNECTION_CLOSED (-100) loading 'https://p053-cert.invalid:55620/certificate'",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+          "retryExhausted": false
+        },
+        "operationId": "c46cb635-8696-4b58-aa76-a9e05eeacfc3",
+        "requestId": "c3256523-cf5a-4aa7-bac2-4b188e584742"
+      },
+      "finishedAt": "2026-11-04T11:13:00.225Z"
+    }
+  ],
+  "requests": [
+    {
+      "path": "/blank?authentication",
+      "method": "GET",
+      "at": 1793790764005,
+      "hadAuthorization": false
+    },
+    {
+      "path": "/favicon.ico",
+      "method": "GET",
+      "at": 1793790764082,
+      "hadAuthorization": false
+    },
+    {
+      "path": "/basic",
+      "method": "GET",
+      "at": 1793790764858,
+      "hadAuthorization": false
+    },
+    {
+      "path": "/blank?permission",
+      "method": "GET",
+      "at": 1793790772912,
+      "hadAuthorization": false
+    },
+    {
+      "path": "/favicon.ico",
+      "method": "GET",
+      "at": 1793790772975,
+      "hadAuthorization": false
+    },
+    {
+      "path": "/permission",
+      "method": "GET",
+      "at": 1793790773764,
+      "hadAuthorization": false
+    },
+    {
+      "path": "/blank?certificate",
+      "method": "GET",
+      "at": 1793790777229,
+      "hadAuthorization": false
+    },
+    {
+      "path": "/favicon.ico",
+      "method": "GET",
+      "at": 1793790777298,
+      "hadAuthorization": false
+    }
+  ],
+  "messages": [
+    {
+      "stage": "M11-setup",
+      "pid": 6788
+    },
+    {
+      "nativeEvent": {
+        "kind": "root-ready",
+        "pid": 6804
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "root-configured",
+        "pid": 6804,
+        "environmentValuesLogged": false
+      }
+    },
+    {
+      "stage": "ready",
+      "pid": 6788
+    },
+    {
+      "ready": true,
+      "pid": 6788,
+      "runRootPid": 6804,
+      "taskId": "8879dcea-242d-4444-a173-40469acee834",
+      "runId": "bce6956c-0132-4322-a292-d746c43127d4",
+      "fixtureProfiles": {
+        "p1": {
+          "id": "project-f64551fcd6f07823cb87971c",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p1"
+          },
+          "source": null
+        },
+        "p2": {
+          "id": "project-3946ca64ff78d93ca61090a4",
+          "scope": "project",
+          "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+          "label": "项目登录态",
+          "owner": {
+            "kind": "project",
+            "id": "p2"
+          },
+          "source": null
+        },
+        "t2": {
+          "id": "a8021fd3-80de-4336-bee5-cfa4679920a5",
+          "scope": "isolated",
+          "partition": "persist:wy-browser-a8021fd3-80de-4336-bee5-cfa4679920a5",
+          "label": "P045 hidden T2",
+          "owner": {
+            "kind": "task",
+            "id": "59d1b214-ba3f-44a8-a1fd-680f3dd533f5"
+          },
+          "source": null
+        }
+      },
+      "sourceBundleHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658"
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 1,
+        "pid": 6821,
+        "args": [
+          "browser",
+          "tab",
+          "create",
+          "--url",
+          "http://127.0.0.1:55619/blank?authentication"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 2,
+        "pid": 6832,
+        "args": [
+          "browser",
+          "goto",
+          "--url",
+          "http://127.0.0.1:55619/basic",
+          "--page",
+          "54de0736-a74a-4586-b034-24294ba9b2ed"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 3,
+        "pid": 6846,
+        "args": [
+          "browser",
+          "wait",
+          "--text",
+          "成功",
+          "--timeout",
+          "500",
+          "--page",
+          "54de0736-a74a-4586-b034-24294ba9b2ed"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 4,
+        "pid": 6896,
+        "args": [
+          "browser",
+          "tab",
+          "close",
+          "--page",
+          "54de0736-a74a-4586-b034-24294ba9b2ed"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 5,
+        "pid": 6903,
+        "args": [
+          "browser",
+          "tab",
+          "create",
+          "--url",
+          "http://127.0.0.1:55619/blank?permission"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 6,
+        "pid": 6911,
+        "args": [
+          "browser",
+          "goto",
+          "--url",
+          "http://127.0.0.1:55619/permission",
+          "--page",
+          "32d20770-405a-483f-9ba8-84dcc5aa7521"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 7,
+        "pid": 6925,
+        "args": [
+          "browser",
+          "wait",
+          "--text",
+          "成功",
+          "--timeout",
+          "500",
+          "--page",
+          "32d20770-405a-483f-9ba8-84dcc5aa7521"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 8,
+        "pid": 6942,
+        "args": [
+          "browser",
+          "tab",
+          "close",
+          "--page",
+          "32d20770-405a-483f-9ba8-84dcc5aa7521"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 9,
+        "pid": 6951,
+        "args": [
+          "browser",
+          "tab",
+          "create",
+          "--url",
+          "http://127.0.0.1:55619/blank?certificate"
+        ]
+      }
+    },
+    {
+      "nativeEvent": {
+        "kind": "cli-spawn",
+        "id": 10,
+        "pid": 6967,
+        "args": [
+          "browser",
+          "goto",
+          "--url",
+          "https://p053-cert.invalid:55620/certificate",
+          "--page",
+          "61b84bcb-ea48-4025-a5c4-9038f17c1ca7"
+        ]
+      }
+    },
+    {
+      "stage": "cleanup",
+      "pid": 6788
+    },
+    {
+      "stage": "done",
+      "pid": 6788
+    },
+    {
+      "willQuit": true
+    }
+  ],
+  "resources": [
+    {
+      "at": "2026-11-04T11:12:41.591Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:42.786Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:42.854Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:42.929Z",
+      "stage": "fixture-server",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:43.003Z",
+      "stage": "authentication-blank-tab",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:43.078Z",
+      "stage": "authentication-blank-tab",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6821,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:43.154Z",
+      "stage": "authentication-blank-tab",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6821,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:44.170Z",
+      "stage": "authentication-agent-goto",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6831,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6832,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   79u  IPv4 0xd0833dbee40438e4      0t0  TCP 127.0.0.1:55645 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:12:44.982Z",
+      "stage": "authentication-actual-wait",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6831,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6832,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        },
+        {
+          "pid": 6846,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   79u  IPv4 0xd0833dbee40438e4      0t0  TCP 127.0.0.1:55645 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:12:51.383Z",
+      "stage": "authentication-fixture-close",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6831,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6896,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   79u  IPv4 0xd0833dbee40438e4      0t0  TCP 127.0.0.1:55645 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:12:52.196Z",
+      "stage": "permission-blank-tab",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6903,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:53.059Z",
+      "stage": "permission-agent-goto",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6910,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6911,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   79u  IPv4 0xd0833dbee40438e4      0t0  TCP 127.0.0.1:55734 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:12:53.903Z",
+      "stage": "permission-actual-wait",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6910,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6925,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   79u  IPv4 0xd0833dbee40438e4      0t0  TCP 127.0.0.1:55734 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:12:55.502Z",
+      "stage": "permission-fixture-close",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6910,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6942,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   79u  IPv4 0xd0833dbee40438e4      0t0  TCP 127.0.0.1:55734 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:12:56.450Z",
+      "stage": "certificate-blank-tab",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6910,
+          "ppid": 6788,
+          "comm": "(Electron Helper )"
+        },
+        {
+          "pid": 6951,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        },
+        {
+          "pid": 6953,
+          "ppid": 6788,
+          "comm": "(willyou-process-)"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:12:57.384Z",
+      "stage": "certificate-agent-goto",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6966,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6967,
+          "ppid": 6804,
+          "comm": "/private/tmp/willyou-m12-p053-prompt-native-001/resources/native/willyou-app"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   69u  IPv4 0xce21300772fb9816      0t0  TCP 127.0.0.1:55777 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:13:09.411Z",
+      "stage": "certificate-agent-goto",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6984,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   69u  IPv4 0xce21300772fb9816      0t0  TCP 127.0.0.1:55777 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:13:09.494Z",
+      "stage": "certificate-agent-goto",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6804,
+          "ppid": 6788,
+          "comm": "(Python)"
+        },
+        {
+          "pid": 6830,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        },
+        {
+          "pid": 6984,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper (Renderer).app/Contents/MacOS/Electron Helper (Renderer)"
+        }
+      ],
+      "listeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nElectron 6788 liubu   69u  IPv4 0xce21300772fb9816      0t0  TCP 127.0.0.1:55777 (LISTEN)\n"
+    },
+    {
+      "at": "2026-11-04T11:13:09.584Z",
+      "stage": "certificate-agent-goto",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+        },
+        {
+          "pid": 6790,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        },
+        {
+          "pid": 6791,
+          "ppid": 6788,
+          "comm": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper"
+        }
+      ],
+      "listeners": ""
+    },
+    {
+      "at": "2026-11-04T11:13:09.645Z",
+      "stage": "certificate-agent-goto",
+      "processes": [
+        {
+          "pid": 6788,
+          "ppid": 6785,
+          "comm": "(Electron)"
+        }
+      ],
+      "listeners": ""
+    }
+  ],
+  "scope": "Original T116 actual nativeCLI I with real M11/module/native prompts; controlled concurrent Python run root, not AgentR or packaged AppA. Authentication cancelled by fixture user only after wait result for cleanup.",
+  "config": {
+    "root": "/private/tmp/willyou-m12-p053-prompt-native-001",
+    "resources": "/private/tmp/willyou-m12-p053-prompt-native-001/resources",
+    "userData": "/private/tmp/willyou-m12-p053-prompt-native-001/runtime-001/userdata",
+    "home": "/private/tmp/willyou-m12-p053-prompt-native-001/runtime-001/home",
+    "tmp": "/private/tmp/willyou-m12-p053-prompt-native-001/runtime-001/tmp",
+    "cwdP1": "/private/tmp/willyou-m12-p053-prompt-native-001/runtime-001/project1",
+    "cwdP2": "/private/tmp/willyou-m12-p053-prompt-native-001/runtime-001/project2",
+    "support": "/private/tmp/willyou-m12-p053-prompt-native-001/runtime-001/application-support",
+    "projects": {
+      "p1": "p1",
+      "p2": "p2"
+    },
+    "tasks": {
+      "t1": "8879dcea-242d-4444-a173-40469acee834",
+      "t2": "59d1b214-ba3f-44a8-a1fd-680f3dd533f5",
+      "t3": "59450f6e-71cd-490d-88f7-a9611686e405"
+    },
+    "origin": "http://127.0.0.1:55619",
+    "tls": "https://p053-cert.invalid:55620"
+  },
+  "tlsFixture": {
+    "nonLocalHost": "p053-cert.invalid",
+    "resolver": "MAP p053-cert.invalid 127.0.0.1",
+    "privateKeyArchived": false,
+    "certificateSha256": "f0cd8f492edf3a2e3f41db75e403446f16af059e5f8ff5cfd160aa9abca91388"
+  },
+  "hostPid": 6788,
+  "ready": {
+    "ready": true,
+    "pid": 6788,
+    "runRootPid": 6804,
+    "taskId": "8879dcea-242d-4444-a173-40469acee834",
+    "runId": "bce6956c-0132-4322-a292-d746c43127d4",
+    "fixtureProfiles": {
+      "p1": {
+        "id": "project-f64551fcd6f07823cb87971c",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-f64551fcd6f07823cb87971c",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p1"
+        },
+        "source": null
+      },
+      "p2": {
+        "id": "project-3946ca64ff78d93ca61090a4",
+        "scope": "project",
+        "partition": "persist:wy-browser-project-3946ca64ff78d93ca61090a4",
+        "label": "项目登录态",
+        "owner": {
+          "kind": "project",
+          "id": "p2"
+        },
+        "source": null
+      },
+      "t2": {
+        "id": "a8021fd3-80de-4336-bee5-cfa4679920a5",
+        "scope": "isolated",
+        "partition": "persist:wy-browser-a8021fd3-80de-4336-bee5-cfa4679920a5",
+        "label": "P045 hidden T2",
+        "owner": {
+          "kind": "task",
+          "id": "59d1b214-ba3f-44a8-a1fd-680f3dd533f5"
+        },
+        "source": null
+      }
+    },
+    "sourceBundleHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658"
+  },
+  "scenarios": [
+    {
+      "kind": "authentication",
+      "startedAt": "2026-11-04T11:12:42.929Z",
+      "pageId": "54de0736-a74a-4586-b034-24294ba9b2ed",
+      "destination": "http://127.0.0.1:55619/basic",
+      "before": {
+        "pageId": "54de0736-a74a-4586-b034-24294ba9b2ed",
+        "taskId": "8879dcea-242d-4444-a173-40469acee834",
+        "profileId": "project-f64551fcd6f07823cb87971c",
+        "url": "http://127.0.0.1:55619/blank?authentication",
+        "auth": {
+          "id": "84cc6547-120f-42ad-865f-f6d8572ab723",
+          "pageId": "54de0736-a74a-4586-b034-24294ba9b2ed",
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "url": "http://127.0.0.1:55619/basic",
+          "host": "127.0.0.1:55619",
+          "realm": "P053 pending auth",
+          "proxy": false
+        },
+        "permission": null,
+        "workspace": {
+          "taskId": "8879dcea-242d-4444-a173-40469acee834",
+          "projectId": "p1",
+          "tabs": [
+            {
+              "id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+              "url": "http://127.0.0.1:55619/blank?authentication",
+              "title": "P053 blank",
+              "favicon": null,
+              "profileId": "project-f64551fcd6f07823cb87971c",
+              "loading": true,
+              "canGoBack": true,
+              "canGoForward": false,
+              "failure": null,
+              "agentActive": true,
+              "agentRunning": true,
+              "importState": "ready",
+              "certificate": null
+            }
+          ],
+          "activeId": null,
+          "recent": [
+            {
+              "url": "http://127.0.0.1:55619/blank?authentication",
+              "title": "P053 blank",
+              "host": "127.0.0.1:55619",
+              "visitedAt": 1793790764014
+            }
+          ],
+          "notice": null,
+          "external": null,
+          "find": {
+            "active": 0,
+            "total": 0
+          },
+          "paused": false,
+          "permission": null,
+          "downloads": [],
+          "auth": null,
+          "authCancelled": null
+        },
+        "siteState": {
+          "schemaVersion": 1,
+          "certificates": [],
+          "permissions": []
+        },
+        "operations": [
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"result\":{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790763789,
+            "updated_at": 1793790764022
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"}",
+            "error_code": null,
+            "created_at": 1793790763792,
+            "updated_at": 1793790764021
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "running",
+            "effect_state": "not-started",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/basic\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790764842,
+            "updated_at": 1793790764843
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "running",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": null,
+            "error_code": null,
+            "created_at": 1793790764845,
+            "updated_at": 1793790764856
+          }
+        ]
+      },
+      "promptId": "84cc6547-120f-42ad-865f-f6d8572ab723",
+      "wait": {
+        "label": "authentication-actual-wait",
+        "args": [
+          "browser",
+          "wait",
+          "--text",
+          "成功",
+          "--timeout",
+          "500",
+          "--page",
+          "54de0736-a74a-4586-b034-24294ba9b2ed"
+        ],
+        "startedAt": "2026-11-04T11:12:44.901Z",
+        "raw": {
+          "kind": "cli-result",
+          "id": 3,
+          "pid": 6846,
+          "code": 2,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"浏览器命令等待 5500ms 后超时\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"52dd8a74-5a7a-41fd-92bd-7f1b1ab097ea\",\"requestId\":\"6c0b6254-eccb-4d4e-99c8-b4ca7a140255\"}\n",
+          "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+          "timedOut": false
+        },
+        "parsed": {
+          "error": {
+            "effectState": "read-only",
+            "code": "BROWSER_TIMEOUT",
+            "layer": "provider",
+            "message": "浏览器命令等待 5500ms 后超时",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          },
+          "operationId": "52dd8a74-5a7a-41fd-92bd-7f1b1ab097ea",
+          "requestId": "6c0b6254-eccb-4d4e-99c8-b4ca7a140255"
+        },
+        "finishedAt": "2026-11-04T11:12:51.228Z"
+      },
+      "after": {
+        "pageId": "54de0736-a74a-4586-b034-24294ba9b2ed",
+        "taskId": "8879dcea-242d-4444-a173-40469acee834",
+        "profileId": "project-f64551fcd6f07823cb87971c",
+        "url": "http://127.0.0.1:55619/blank?authentication",
+        "auth": {
+          "id": "84cc6547-120f-42ad-865f-f6d8572ab723",
+          "pageId": "54de0736-a74a-4586-b034-24294ba9b2ed",
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "url": "http://127.0.0.1:55619/basic",
+          "host": "127.0.0.1:55619",
+          "realm": "P053 pending auth",
+          "proxy": false
+        },
+        "permission": null,
+        "workspace": {
+          "taskId": "8879dcea-242d-4444-a173-40469acee834",
+          "projectId": "p1",
+          "tabs": [
+            {
+              "id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+              "url": "http://127.0.0.1:55619/blank?authentication",
+              "title": "P053 blank",
+              "favicon": null,
+              "profileId": "project-f64551fcd6f07823cb87971c",
+              "loading": true,
+              "canGoBack": true,
+              "canGoForward": false,
+              "failure": null,
+              "agentActive": true,
+              "agentRunning": true,
+              "importState": "ready",
+              "certificate": null
+            }
+          ],
+          "activeId": null,
+          "recent": [
+            {
+              "url": "http://127.0.0.1:55619/blank?authentication",
+              "title": "P053 blank",
+              "host": "127.0.0.1:55619",
+              "visitedAt": 1793790764014
+            }
+          ],
+          "notice": null,
+          "external": null,
+          "find": {
+            "active": 0,
+            "total": 0
+          },
+          "paused": false,
+          "permission": null,
+          "downloads": [],
+          "auth": null,
+          "authCancelled": null
+        },
+        "siteState": {
+          "schemaVersion": 1,
+          "certificates": [],
+          "permissions": []
+        },
+        "operations": [
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"result\":{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790763789,
+            "updated_at": 1793790764022
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"}",
+            "error_code": null,
+            "created_at": 1793790763792,
+            "updated_at": 1793790764021
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "running",
+            "effect_state": "not-started",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/basic\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790764842,
+            "updated_at": 1793790764843
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "running",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": null,
+            "error_code": null,
+            "created_at": 1793790764845,
+            "updated_at": 1793790764856
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:6c0b6254-eccb-4d4e-99c8-b4ca7a140255",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "wait",
+            "state": "failed",
+            "effect_state": "read-only",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"read\",\"arguments\":{\"timeout\":500,\"text\":\"成功\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TIMEOUT",
+            "created_at": 1793790765678,
+            "updated_at": 1793790771178
+          }
+        ]
+      },
+      "checkedAt": "2026-11-04T11:12:51.229Z",
+      "fixtureUserCleanup": {
+        "cancelled": "84cc6547-120f-42ad-865f-f6d8572ab723"
+      },
+      "navigation": {
+        "label": "authentication-agent-goto",
+        "args": [
+          "browser",
+          "goto",
+          "--url",
+          "http://127.0.0.1:55619/basic",
+          "--page",
+          "54de0736-a74a-4586-b034-24294ba9b2ed"
+        ],
+        "startedAt": "2026-11-04T11:12:44.083Z",
+        "raw": {
+          "kind": "cli-result",
+          "id": 2,
+          "pid": 6832,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"navigated\":true},\"resources\":[],\"operation\":{\"id\":\"39f5b9f5-d374-4b00-a9ab-706df716adb8\",\"requestId\":\"83465640-a0a9-4e50-83c1-de59d78faf1e\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.goto\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+            "connections": []
+          },
+          "data": {
+            "navigated": true
+          },
+          "resources": [],
+          "operation": {
+            "id": "39f5b9f5-d374-4b00-a9ab-706df716adb8",
+            "requestId": "83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "effectState": "completed",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.nav.goto"
+        },
+        "finishedAt": "2026-11-04T11:12:51.296Z"
+      },
+      "close": {
+        "label": "authentication-fixture-close",
+        "args": [
+          "browser",
+          "tab",
+          "close",
+          "--page",
+          "54de0736-a74a-4586-b034-24294ba9b2ed"
+        ],
+        "startedAt": "2026-11-04T11:12:51.297Z",
+        "raw": {
+          "kind": "cli-result",
+          "id": 4,
+          "pid": 6896,
+          "code": 5,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TAB_CLOSED\",\"layer\":\"provider\",\"message\":\"执行中网页已关闭，操作结果未知\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"ac18ddcb-2486-4783-b147-74b5812b0e14\",\"requestId\":\"8b395cbe-c6c0-46ae-9456-1656f84f015b\"}\n",
+          "stderr": "willyou-app: BROWSER_TAB_CLOSED\n",
+          "timedOut": false
+        },
+        "parsed": {
+          "error": {
+            "effectState": "unknown",
+            "code": "BROWSER_TAB_CLOSED",
+            "layer": "provider",
+            "message": "执行中网页已关闭，操作结果未知",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+            "retryExhausted": false
+          },
+          "operationId": "ac18ddcb-2486-4783-b147-74b5812b0e14",
+          "requestId": "8b395cbe-c6c0-46ae-9456-1656f84f015b"
+        },
+        "finishedAt": "2026-11-04T11:12:52.116Z"
+      },
+      "finishedAt": "2026-11-04T11:12:52.117Z"
+    },
+    {
+      "kind": "permission",
+      "startedAt": "2026-11-04T11:12:52.117Z",
+      "pageId": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+      "destination": "http://127.0.0.1:55619/permission",
+      "before": {
+        "pageId": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+        "taskId": "8879dcea-242d-4444-a173-40469acee834",
+        "profileId": "project-f64551fcd6f07823cb87971c",
+        "url": "http://127.0.0.1:55619/permission",
+        "auth": null,
+        "permission": {
+          "id": "fabe0b39-2614-4d4c-a243-413ab7c13a6a",
+          "pageId": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "origin": "http://127.0.0.1:55619",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "workspace": {
+          "taskId": "8879dcea-242d-4444-a173-40469acee834",
+          "projectId": "p1",
+          "tabs": [
+            {
+              "id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+              "url": "http://127.0.0.1:55619/permission",
+              "title": "P053 permission",
+              "favicon": null,
+              "profileId": "project-f64551fcd6f07823cb87971c",
+              "loading": false,
+              "canGoBack": true,
+              "canGoForward": false,
+              "failure": null,
+              "agentActive": true,
+              "agentRunning": false,
+              "importState": "ready",
+              "certificate": null
+            }
+          ],
+          "activeId": null,
+          "recent": [
+            {
+              "url": "http://127.0.0.1:55619/permission",
+              "title": "P053 permission",
+              "host": "127.0.0.1:55619",
+              "visitedAt": 1793790773766
+            }
+          ],
+          "notice": null,
+          "external": null,
+          "find": {
+            "active": 0,
+            "total": 0
+          },
+          "paused": false,
+          "permission": null,
+          "downloads": [],
+          "auth": null,
+          "authCancelled": null
+        },
+        "siteState": {
+          "schemaVersion": 1,
+          "certificates": [],
+          "permissions": []
+        },
+        "operations": [
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"result\":{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790763789,
+            "updated_at": 1793790764022
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"}",
+            "error_code": null,
+            "created_at": 1793790763792,
+            "updated_at": 1793790764021
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/basic\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":{\"navigated\":true},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790764842,
+            "updated_at": 1793790771238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"navigated\":true}",
+            "error_code": null,
+            "created_at": 1793790764845,
+            "updated_at": 1793790771238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:6c0b6254-eccb-4d4e-99c8-b4ca7a140255",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "wait",
+            "state": "failed",
+            "effect_state": "read-only",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"read\",\"arguments\":{\"timeout\":500,\"text\":\"成功\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TIMEOUT",
+            "created_at": 1793790765678,
+            "updated_at": 1793790771178
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:8b395cbe-c6c0-46ae-9456-1656f84f015b",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790772063,
+            "updated_at": 1793790772070
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "8b395cbe-c6c0-46ae-9456-1656f84f015b",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": null,
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790772065,
+            "updated_at": 1793790772070
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:41913c25-a14a-4512-9453-3c89cc1e1c26",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?permission\"},\"result\":{\"pageId\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\",\"url\":\"http://127.0.0.1:55619/blank?permission\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790772864,
+            "updated_at": 1793790772921
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "41913c25-a14a-4512-9453-3c89cc1e1c26",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\",\"url\":\"http://127.0.0.1:55619/blank?permission\"}",
+            "error_code": null,
+            "created_at": 1793790772866,
+            "updated_at": 1793790772920
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:cab6983d-50e9-4cec-bfcc-9fc666febc36",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/permission\",\"page\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\"},\"result\":{\"navigated\":true},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790773749,
+            "updated_at": 1793790773772
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "cab6983d-50e9-4cec-bfcc-9fc666febc36",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"navigated\":true}",
+            "error_code": null,
+            "created_at": 1793790773752,
+            "updated_at": 1793790773772
+          }
+        ]
+      },
+      "promptId": "fabe0b39-2614-4d4c-a243-413ab7c13a6a",
+      "wait": {
+        "label": "permission-actual-wait",
+        "args": [
+          "browser",
+          "wait",
+          "--text",
+          "成功",
+          "--timeout",
+          "500",
+          "--page",
+          "32d20770-405a-483f-9ba8-84dcc5aa7521"
+        ],
+        "startedAt": "2026-11-04T11:12:53.824Z",
+        "raw": {
+          "kind": "cli-result",
+          "id": 7,
+          "pid": 6925,
+          "code": 2,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"read-only\",\"code\":\"BROWSER_TIMEOUT\",\"layer\":\"provider\",\"message\":\"Wait timed out after 500ms\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"588919c1-ab79-4906-92f1-64be84d2194d\",\"requestId\":\"349491a2-bcf7-487f-8441-a726b25c2751\"}\n",
+          "stderr": "willyou-app: BROWSER_TIMEOUT\n",
+          "timedOut": false
+        },
+        "parsed": {
+          "error": {
+            "effectState": "read-only",
+            "code": "BROWSER_TIMEOUT",
+            "layer": "provider",
+            "message": "Wait timed out after 500ms",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          },
+          "operationId": "588919c1-ab79-4906-92f1-64be84d2194d",
+          "requestId": "349491a2-bcf7-487f-8441-a726b25c2751"
+        },
+        "finishedAt": "2026-11-04T11:12:55.411Z"
+      },
+      "after": {
+        "pageId": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+        "taskId": "8879dcea-242d-4444-a173-40469acee834",
+        "profileId": "project-f64551fcd6f07823cb87971c",
+        "url": "http://127.0.0.1:55619/permission",
+        "auth": null,
+        "permission": {
+          "id": "fabe0b39-2614-4d4c-a243-413ab7c13a6a",
+          "pageId": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+          "profileId": "project-f64551fcd6f07823cb87971c",
+          "origin": "http://127.0.0.1:55619",
+          "permissions": [
+            "geolocation"
+          ]
+        },
+        "workspace": {
+          "taskId": "8879dcea-242d-4444-a173-40469acee834",
+          "projectId": "p1",
+          "tabs": [
+            {
+              "id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+              "url": "http://127.0.0.1:55619/permission",
+              "title": "P053 permission",
+              "favicon": null,
+              "profileId": "project-f64551fcd6f07823cb87971c",
+              "loading": false,
+              "canGoBack": true,
+              "canGoForward": false,
+              "failure": null,
+              "agentActive": true,
+              "agentRunning": false,
+              "importState": "ready",
+              "certificate": null
+            }
+          ],
+          "activeId": null,
+          "recent": [
+            {
+              "url": "http://127.0.0.1:55619/permission",
+              "title": "P053 permission",
+              "host": "127.0.0.1:55619",
+              "visitedAt": 1793790773766
+            }
+          ],
+          "notice": null,
+          "external": null,
+          "find": {
+            "active": 0,
+            "total": 0
+          },
+          "paused": false,
+          "permission": null,
+          "downloads": [],
+          "auth": null,
+          "authCancelled": null
+        },
+        "siteState": {
+          "schemaVersion": 1,
+          "certificates": [],
+          "permissions": []
+        },
+        "operations": [
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"result\":{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790763789,
+            "updated_at": 1793790764022
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"}",
+            "error_code": null,
+            "created_at": 1793790763792,
+            "updated_at": 1793790764021
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/basic\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":{\"navigated\":true},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790764842,
+            "updated_at": 1793790771238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"navigated\":true}",
+            "error_code": null,
+            "created_at": 1793790764845,
+            "updated_at": 1793790771238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:6c0b6254-eccb-4d4e-99c8-b4ca7a140255",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "wait",
+            "state": "failed",
+            "effect_state": "read-only",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"read\",\"arguments\":{\"timeout\":500,\"text\":\"成功\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TIMEOUT",
+            "created_at": 1793790765678,
+            "updated_at": 1793790771178
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:8b395cbe-c6c0-46ae-9456-1656f84f015b",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790772063,
+            "updated_at": 1793790772070
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "8b395cbe-c6c0-46ae-9456-1656f84f015b",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": null,
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790772065,
+            "updated_at": 1793790772070
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:41913c25-a14a-4512-9453-3c89cc1e1c26",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?permission\"},\"result\":{\"pageId\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\",\"url\":\"http://127.0.0.1:55619/blank?permission\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790772864,
+            "updated_at": 1793790772921
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "41913c25-a14a-4512-9453-3c89cc1e1c26",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\",\"url\":\"http://127.0.0.1:55619/blank?permission\"}",
+            "error_code": null,
+            "created_at": 1793790772866,
+            "updated_at": 1793790772920
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:cab6983d-50e9-4cec-bfcc-9fc666febc36",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/permission\",\"page\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\"},\"result\":{\"navigated\":true},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790773749,
+            "updated_at": 1793790773772
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "cab6983d-50e9-4cec-bfcc-9fc666febc36",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"navigated\":true}",
+            "error_code": null,
+            "created_at": 1793790773752,
+            "updated_at": 1793790773772
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:349491a2-bcf7-487f-8441-a726b25c2751",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "wait",
+            "state": "failed",
+            "effect_state": "read-only",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"read\",\"arguments\":{\"timeout\":500,\"text\":\"成功\",\"page\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TIMEOUT",
+            "created_at": 1793790774710,
+            "updated_at": 1793790775344
+          }
+        ]
+      },
+      "checkedAt": "2026-11-04T11:12:55.411Z",
+      "navigation": {
+        "label": "permission-agent-goto",
+        "args": [
+          "browser",
+          "goto",
+          "--url",
+          "http://127.0.0.1:55619/permission",
+          "--page",
+          "32d20770-405a-483f-9ba8-84dcc5aa7521"
+        ],
+        "startedAt": "2026-11-04T11:12:52.976Z",
+        "raw": {
+          "kind": "cli-result",
+          "id": 6,
+          "pid": 6911,
+          "code": 0,
+          "signal": null,
+          "stdout": "{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658\",\"connections\":[]},\"data\":{\"navigated\":true},\"resources\":[],\"operation\":{\"id\":\"909ebad9-000c-4771-b703-c3e14b3bc4a0\",\"requestId\":\"cab6983d-50e9-4cec-bfcc-9fc666febc36\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.goto\"}\n",
+          "stderr": "",
+          "timedOut": false
+        },
+        "parsed": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "542e6826d1b9a3aa70ff71057e90deaa24e5275988286a4cc4113b8e05c27658",
+            "connections": []
+          },
+          "data": {
+            "navigated": true
+          },
+          "resources": [],
+          "operation": {
+            "id": "909ebad9-000c-4771-b703-c3e14b3bc4a0",
+            "requestId": "cab6983d-50e9-4cec-bfcc-9fc666febc36",
+            "effectState": "completed",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.nav.goto"
+        },
+        "finishedAt": "2026-11-04T11:12:53.824Z"
+      },
+      "close": {
+        "label": "permission-fixture-close",
+        "args": [
+          "browser",
+          "tab",
+          "close",
+          "--page",
+          "32d20770-405a-483f-9ba8-84dcc5aa7521"
+        ],
+        "startedAt": "2026-11-04T11:12:55.412Z",
+        "raw": {
+          "kind": "cli-result",
+          "id": 8,
+          "pid": 6942,
+          "code": 5,
+          "signal": null,
+          "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_TAB_CLOSED\",\"layer\":\"provider\",\"message\":\"执行中网页已关闭，操作结果未知\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"abb5f7a4-8ac2-49d8-bfe2-8c7e62d32b6c\",\"requestId\":\"42ff4fa8-a36b-4cd4-828d-f7a89c6a7ff7\"}\n",
+          "stderr": "willyou-app: BROWSER_TAB_CLOSED\n",
+          "timedOut": false
+        },
+        "parsed": {
+          "error": {
+            "effectState": "unknown",
+            "code": "BROWSER_TAB_CLOSED",
+            "layer": "provider",
+            "message": "执行中网页已关闭，操作结果未知",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+            "retryExhausted": false
+          },
+          "operationId": "abb5f7a4-8ac2-49d8-bfe2-8c7e62d32b6c",
+          "requestId": "42ff4fa8-a36b-4cd4-828d-f7a89c6a7ff7"
+        },
+        "finishedAt": "2026-11-04T11:12:56.363Z"
+      },
+      "finishedAt": "2026-11-04T11:12:56.364Z"
+    },
+    {
+      "kind": "certificate",
+      "startedAt": "2026-11-04T11:12:56.364Z",
+      "pageId": "61b84bcb-ea48-4025-a5c4-9038f17c1ca7",
+      "destination": "https://p053-cert.invalid:55620/certificate",
+      "before": {
+        "pageId": "61b84bcb-ea48-4025-a5c4-9038f17c1ca7",
+        "taskId": "8879dcea-242d-4444-a173-40469acee834",
+        "profileId": "project-f64551fcd6f07823cb87971c",
+        "url": "https://p053-cert.invalid:55620/certificate",
+        "auth": null,
+        "permission": null,
+        "workspace": {
+          "taskId": "8879dcea-242d-4444-a173-40469acee834",
+          "projectId": "p1",
+          "tabs": [
+            {
+              "id": "61b84bcb-ea48-4025-a5c4-9038f17c1ca7",
+              "url": "http://127.0.0.1:55619/blank?certificate",
+              "title": "P053 blank",
+              "favicon": null,
+              "profileId": "project-f64551fcd6f07823cb87971c",
+              "loading": false,
+              "canGoBack": true,
+              "canGoForward": false,
+              "failure": {
+                "kind": "reset",
+                "url": "https://p053-cert.invalid:55620/certificate",
+                "host": "p053-cert.invalid:55620",
+                "title": "p053-cert.invalid:55620 连接被中断",
+                "errorName": "ERR_CONNECTION_CLOSED",
+                "recovery": null
+              },
+              "agentActive": true,
+              "agentRunning": false,
+              "importState": "ready",
+              "certificate": null
+            }
+          ],
+          "activeId": null,
+          "recent": [
+            {
+              "url": "http://127.0.0.1:55619/blank?certificate",
+              "title": "P053 blank",
+              "host": "127.0.0.1:55619",
+              "visitedAt": 1793790777232
+            }
+          ],
+          "notice": null,
+          "external": null,
+          "find": {
+            "active": 0,
+            "total": 0
+          },
+          "paused": false,
+          "permission": null,
+          "downloads": [],
+          "auth": null,
+          "authCancelled": null
+        },
+        "siteState": {
+          "schemaVersion": 1,
+          "certificates": [],
+          "permissions": []
+        },
+        "operations": [
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"result\":{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790763789,
+            "updated_at": 1793790764022
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "c6c327ee-1a9c-41e4-a781-7bedc8efcf1d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"54de0736-a74a-4586-b034-24294ba9b2ed\",\"url\":\"http://127.0.0.1:55619/blank?authentication\"}",
+            "error_code": null,
+            "created_at": 1793790763792,
+            "updated_at": 1793790764021
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/basic\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":{\"navigated\":true},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790764842,
+            "updated_at": 1793790771238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "83465640-a0a9-4e50-83c1-de59d78faf1e",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"navigated\":true}",
+            "error_code": null,
+            "created_at": 1793790764845,
+            "updated_at": 1793790771238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:6c0b6254-eccb-4d4e-99c8-b4ca7a140255",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "wait",
+            "state": "failed",
+            "effect_state": "read-only",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"read\",\"arguments\":{\"timeout\":500,\"text\":\"成功\",\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TIMEOUT",
+            "created_at": 1793790765678,
+            "updated_at": 1793790771178
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:8b395cbe-c6c0-46ae-9456-1656f84f015b",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"page\":\"54de0736-a74a-4586-b034-24294ba9b2ed\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790772063,
+            "updated_at": 1793790772070
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "8b395cbe-c6c0-46ae-9456-1656f84f015b",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "54de0736-a74a-4586-b034-24294ba9b2ed",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": null,
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790772065,
+            "updated_at": 1793790772070
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:41913c25-a14a-4512-9453-3c89cc1e1c26",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?permission\"},\"result\":{\"pageId\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\",\"url\":\"http://127.0.0.1:55619/blank?permission\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790772864,
+            "updated_at": 1793790772921
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "41913c25-a14a-4512-9453-3c89cc1e1c26",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\",\"url\":\"http://127.0.0.1:55619/blank?permission\"}",
+            "error_code": null,
+            "created_at": 1793790772866,
+            "updated_at": 1793790772920
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:cab6983d-50e9-4cec-bfcc-9fc666febc36",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/permission\",\"page\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\"},\"result\":{\"navigated\":true},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790773749,
+            "updated_at": 1793790773772
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "cab6983d-50e9-4cec-bfcc-9fc666febc36",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "goto",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"navigated\":true}",
+            "error_code": null,
+            "created_at": 1793790773752,
+            "updated_at": 1793790773772
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:349491a2-bcf7-487f-8441-a726b25c2751",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "wait",
+            "state": "failed",
+            "effect_state": "read-only",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"read\",\"arguments\":{\"timeout\":500,\"text\":\"成功\",\"page\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TIMEOUT",
+            "created_at": 1793790774710,
+            "updated_at": 1793790775344
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:42ff4fa8-a36b-4cd4-828d-f7a89c6a7ff7",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"page\":\"32d20770-405a-483f-9ba8-84dcc5aa7521\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790776322,
+            "updated_at": 1793790776329
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "42ff4fa8-a36b-4cd4-828d-f7a89c6a7ff7",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "32d20770-405a-483f-9ba8-84dcc5aa7521",
+            "command": "tab close",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": null,
+            "error_code": "BROWSER_TAB_CLOSED",
+            "created_at": 1793790776325,
+            "updated_at": 1793790776328
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:93fa9e20-ded7-4baf-a908-6e4a316b953d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "61b84bcb-ea48-4025-a5c4-9038f17c1ca7",
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"http://127.0.0.1:55619/blank?certificate\"},\"result\":{\"pageId\":\"61b84bcb-ea48-4025-a5c4-9038f17c1ca7\",\"url\":\"http://127.0.0.1:55619/blank?certificate\"},\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": null,
+            "created_at": 1793790777179,
+            "updated_at": 1793790777238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "93fa9e20-ded7-4baf-a908-6e4a316b953d",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": null,
+            "command": "tab create",
+            "state": "succeeded",
+            "effect_state": "completed",
+            "progress": null,
+            "summary": "{\"pageId\":\"61b84bcb-ea48-4025-a5c4-9038f17c1ca7\",\"url\":\"http://127.0.0.1:55619/blank?certificate\"}",
+            "error_code": null,
+            "created_at": 1793790777181,
+            "updated_at": 1793790777238
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "audit:c3256523-cf5a-4aa7-bac2-4b188e584742",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "61b84bcb-ea48-4025-a5c4-9038f17c1ca7",
+            "command": "goto",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": "{\"schema\":\"browser-audit-v1\",\"actor\":\"agent\",\"projectId\":\"p1\",\"targetTaskId\":\"8879dcea-242d-4444-a173-40469acee834\",\"semantics\":\"write\",\"arguments\":{\"url\":\"https://p053-cert.invalid:55620/certificate\",\"page\":\"61b84bcb-ea48-4025-a5c4-9038f17c1ca7\"},\"result\":null,\"authorization\":null,\"authorizations\":[],\"passwordFill\":null}",
+            "error_code": "BROWSER_ERROR",
+            "created_at": 1793790778087,
+            "updated_at": 1793790780176
+          },
+          {
+            "run_id": "bce6956c-0132-4322-a292-d746c43127d4",
+            "request_id": "c3256523-cf5a-4aa7-bac2-4b188e584742",
+            "task_id": "8879dcea-242d-4444-a173-40469acee834",
+            "page_id": "61b84bcb-ea48-4025-a5c4-9038f17c1ca7",
+            "command": "goto",
+            "state": "unknown",
+            "effect_state": "unknown",
+            "progress": null,
+            "summary": null,
+            "error_code": "BROWSER_ERROR",
+            "created_at": 1793790778090,
+            "updated_at": 1793790780176
+          }
+        ]
+      }
+    }
+  ],
+  "status": "failed-or-partial",
+  "error": "Error: certificate actual native prompt did not appear; no substituted callback\n    at file:///private/tmp/willyou-m12-p053-prompt-native-001/run.mjs:10:351\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)",
+  "failureStage": "certificate-agent-goto",
+  "shutdown": {
+    "cleanup": {
+      "windows": [],
+      "contents": [
+        {
+          "id": 1,
+          "destroyed": true,
+          "debuggerAttached": false
+        },
+        {
+          "id": 2,
+          "destroyed": true,
+          "debuggerAttached": false
+        },
+        {
+          "id": 3,
+          "destroyed": true,
+          "debuggerAttached": false
+        },
+        {
+          "id": 4,
+          "destroyed": true,
+          "debuggerAttached": false
+        }
+      ],
+      "allRemaining": []
+    }
+  },
+  "exit": {
+    "code": 0,
+    "signal": null
+  },
+  "hostResult": null,
+  "tlsServerClosed": true,
+  "serverClosed": true,
+  "knownPids": [
+    6785,
+    6788,
+    6790,
+    6791,
+    6804,
+    6821,
+    6832,
+    6830,
+    6831,
+    6846,
+    6896,
+    6903,
+    6911,
+    6910,
+    6925,
+    6942,
+    6951,
+    6953,
+    6967,
+    6966,
+    6984,
+    6939
+  ],
+  "knownPorts": [
+    55619,
+    55620,
+    55645,
+    55734,
+    55777
+  ],
+  "finishedAt": "2026-11-04T11:13:09.646Z",
+  "diagnosticFiles": []
+}

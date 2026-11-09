@@ -1,0 +1,110 @@
+{
+  "parent": "M12-T130",
+  "source": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M9_文件浏览工作区/验收/用例覆盖索引.json",
+  "sourceSHA256": "c6e241d28fcfaaa5354d18e6f69d687ff4b684c660a5ebef399aa085a7a2ccdd",
+  "cases": [
+    {
+      "id": "M9-T-F26",
+      "group": "F",
+      "title": "全部归档识别",
+      "requirements": [
+        "M9-R06.14"
+      ],
+      "level": "单元／集成／安装端到端",
+      "environments": [
+        "U",
+        "I",
+        "A"
+      ],
+      "data": [
+        "D05"
+      ],
+      "steps": "按元数据27种archive扩展提供最小真实magic fixture并调用判定。",
+      "expected": "均有archive或更高优先artifact映射；不执行/解包到任意路径；损坏文件错误独立。",
+      "source": "V F20",
+      "prototype": "PS-viewer",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-attachment-dev065-archives-r18-20261018.json"
+      ],
+      "actual_result": "r18真实打包App逐个打开27种已评审归档扩展、4份损坏Office及1份含../条目的合成ZIP，共32组通过。普通归档明确不支持预览；OOXML优先进入artifact解析并显示独立错误，ODF保留archive分类且明确未支持。真实原生I核对27项大小写后缀、container/kind及32文件完整bytes；相关分类U/I共5项通过。未执行/解包，原文件hash/inode/mtime/ctime、项目条目均不变，越界sentinel未生成。最小真实容器识别不等于通用归档CRC/完整性验证或有效Office文档解析，二者不作额外宣称。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R06",
+        "M9-R05"
+      ],
+      "prototype_pages": [
+        "P16"
+      ],
+      "prototype_status": "本条U/I/A完整核对；无独立P层或完整像素结论",
+      "prototype_note": "复用既有unsupported和artifact错误状态，无新增设计；最小容器与损坏Office、路径越界样本分别验证。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R06.14"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    },
+    {
+      "id": "M9-T-F27",
+      "group": "F",
+      "title": "二进制与未知媒体",
+      "requirements": [
+        "M9-R06.14"
+      ],
+      "level": "单元／集成／安装端到端",
+      "environments": [
+        "I",
+        "A"
+      ],
+      "data": [
+        "D05",
+        "D09"
+      ],
+      "steps": "打开未知.bin、无扩展PNG、非支持音视频后缀、超短文件。",
+      "expected": "contentKind与后缀共同决定；unsupported有对应提示；没有伪hex编辑/乱码保存入口。",
+      "source": "V F21",
+      "prototype": "PS-viewer",
+      "basis": "参考事实＋迁移设计",
+      "status": "通过",
+      "evidence": [
+        "证据/m9-acceptance-f27-20261018.json"
+      ],
+      "actual_result": "r6实际App：未知bin和1字节NUL显示二进制说明且无编辑器；无扩展真实PNG正确显示红绿图像；有效WAV使用非支持后缀显示媒体类型说明；1字节ASCII显示文本。",
+      "defects": [],
+      "legacy_parent_requirements": [
+        "M9-R06",
+        "M9-R05"
+      ],
+      "prototype_pages": [
+        "P16"
+      ],
+      "prototype_status": "已有候选页面；本用例全部状态尚未核验",
+      "prototype_note": "页面入口可用于评审，正式用例未执行；不据映射认定对应功能已完整实现。",
+      "decision_dependencies": [],
+      "engineering_dependencies": [],
+      "evidence_dependencies": [],
+      "scope": "m9-local",
+      "applicability": {
+        "classification": "current-local",
+        "current_branch": "本机可信根及本期已确认能力下的本条步骤/预期。",
+        "deferred_branch": null,
+        "current_requirements": [
+          "M9-R06.14"
+        ],
+        "deferred_requirements": [],
+        "basis": "D07=A，R3.3-20261017；本期本机范围，执行前仍需正式开发授权和相应环境。"
+      }
+    }
+  ],
+  "notANewResultLedger": true
+}

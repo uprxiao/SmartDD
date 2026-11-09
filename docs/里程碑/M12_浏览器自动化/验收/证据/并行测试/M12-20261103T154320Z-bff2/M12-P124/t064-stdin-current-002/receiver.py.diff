@@ -1,0 +1,11 @@
+--- 001/receiver.py
++++ 002/receiver.py
+@@ -19,7 +19,7 @@
+  if not m:continue
+  tag,payload=m.groups();assert tag not in seen;seen.add(tag);job=json.loads(base64.b64decode(payload,validate=True));env=dict(os.environ)
+  if isinstance(job,dict):
+-  assert job['kind']=='stdin-fill'and re.fullmatch(r'@e\d+',job['ref'])
++  assert job['kind']=='stdin-fill'and re.fullmatch(r'@k[0-9a-f]{32}s[0-9]+e[0-9]+',job['ref'])
+   command='printf \'%s\' "$PASS" | willyou-app browser fill --element '+job['ref']+' --stdin value'
+   env['PASS']=(root/'runtime-001/canary.private.txt').read_text();argv=['/bin/zsh','-c',command]
+  else:

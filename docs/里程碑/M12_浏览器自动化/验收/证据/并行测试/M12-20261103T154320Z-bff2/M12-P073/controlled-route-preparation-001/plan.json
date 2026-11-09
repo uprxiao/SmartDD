@@ -1,0 +1,65 @@
+{
+  "status": "Staticfeasible; noNative/compile started",
+  "gateSource": {
+    "path": "owned-iframe-emission-gate.ts",
+    "sha256": "e99b0b4420ca78c062fdae3fae934ea17eee0134fc39f2ab6866359294c396b2"
+  },
+  "inputPins": [
+    {
+      "root": "/private/tmp/willyou-m12-p073-source-015/source",
+      "manifestSha256": "beb858ca46df4dd12246969c0c435f54234afcb0cc52ad323188b55558460f5b",
+      "gateSha256": "79bbd8d6b996d0fa6180d1a96d3a4d711e51710c7d3fb547a15d5ccaec1c3dd3",
+      "proxySha256": "23e539f5faf4a4225d115d96507f9cbb5369c7c4c60d75f12c6082c32cc3ddcf"
+    },
+    {
+      "root": "/private/tmp/willyou-m12-p073-source-016/source",
+      "manifestSha256": "c333b4b9d054062c2e272de2a060be3b6cb919d731df98a2ef7bca4e8f2a5ef3",
+      "gateSha256": "84714e4065c7a838d8da8c392c9c7f23f781573b89df1acefd238adf9ad5a2b4",
+      "proxySha256": "c95617008218f83d25e1257fd6760166a549bb1717f12f8043577633d0e487d1"
+    }
+  ],
+  "coverageOfRealAttachPaths": {
+    "cdp-proxy.ts:107-108": "Native message emits realattached event to eachclient via this.emit",
+    "cdp-proxy.ts:198": "Target.setAutoAttach replay enumerates actualownedframeSessions throughsame this.emit",
+    "onlySocketSend": "cdp-proxy.ts:76 privateemit calls client.socket.send; no alternate attachedsend path found",
+    "notModified": [
+      "frameSessions/frameInitializations",
+      "realNativeframe/guard/AX trees/input",
+      "Page events/AX responsepayload",
+      "Helper source/binary/state",
+      "queue/receipts/audit/activity"
+    ]
+  },
+  "injectionLifecycle": [
+    "After actualnewcrosspage tabcreate and childready, beforefirstHelpercommand, assertthispage helperActivePid/daemonPid null; if notcold stopprecondition, never resetdaemon/cache.",
+    "Private testIPC arms onepage emit delay; exact owned iframe session+targetId equality only, keep actualclient/value/this references.",
+    "Passive handleobserver logs onlyactual incoming AX method/frameId/wire session, originalPromise untouched. Normal proxy.send observer logs resulting effectiveSession/nodes.",
+    "Duringfirst Helper.command(snapshot), defer everyactualownedTarget.attachedToTarget send; othermessages/replies remain original.",
+    "On originalsnapshotPromise resolve/reject/syncthrow, restoreemit/command exactrefs then release each buffered originalemit exactlyonce; shutdownfinally also releases if snapshotneverends.",
+    "Rawgate events/calltimes/AXwire/effectiveSession/capture prove controlledbranch, no directCDPanswer."
+  ],
+  "controlledOld015": {
+    "privateRoot": "/private/tmp/willyou-m12-p073-route-controlled-005-old015",
+    "expected": "actualrootwireAX explicitrealchildframeId -> root effectiveSession -> FrameNotFound; snapshot childrefsabsent; no click/answer/next. Preserve originalsnapshot CLI0/read-only if Helperignoreschild error.",
+    "classification": "Expected oldproduct red under disclosed eventdelay fault injection; not a new formal case."
+  },
+  "controlledNew016": {
+    "privateRoot": "/private/tmp/willyou-m12-p073-route-controlled-006-new016",
+    "expected": "SamefirstrootwireAX explicitrealchildframe -> actualownedchild effectiveSession withsuccessnodes, capturedframe/backend/name and actualavailablehostrefs; completeoriginalcrossclick/prompt/CLIanswer/receipt/audit/activity/next.",
+    "guardrails": "Eventchannel isactual root allowed; sourcechildframe and AXownersession join actualpreclick Nativeprocess/tree; no assumed equality.",
+    "cleanup": "EveryHook exactrestored/allrealbufferedevents released; endpoint path+parent only no token; exactPID/TCP/Helper/Unix checks."
+  },
+  "sameFixtureRequirement": "Use exactsame fixture/gate/hosttest module bytes in isolated old/new roots; onlyconfiguration selects immutable015/016 and old/no-click versus new/full-input expected contract.",
+  "pendingBeforeNative": [
+    "Root review this gate/scope",
+    "Assemble pair actualhosts using source015/source016 only; privatecache/dependency/resource PIN, no Helper/Appbuild",
+    "Actualgeneratedhost semanticpositive+deliberateunboundnegative, syntax/CDP/arrays/puremock/finalpreflight",
+    "Explicit wholepair Nativelease after READY"
+  ],
+  "limitations": [
+    "Delay controls only thispage clientattached events and explicitreplays. It doesnot alter hostNativeframeSessions or serverresponses.",
+    "If Helper learns a childsession through another realpath, reportbranch-unproven, do notfake AXparams/state or dropframes.",
+    "Oldtabcreate/navigation onlyfixtureprecondition; old has no inputclick/dialoganswer writes."
+  ],
+  "nativeStarted": false
+}

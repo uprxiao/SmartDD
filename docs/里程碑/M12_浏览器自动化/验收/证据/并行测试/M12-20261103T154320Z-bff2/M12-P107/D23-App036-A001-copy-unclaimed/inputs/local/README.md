@@ -1,0 +1,2 @@
+D23 only: exact original independent branch, two themes/four App/two normal restarts. Mature actual D19 start/quit, fixed per-theme userdata, once exact-PID activation/3s/single guard, original passive seven-handler observer. API prepares only project/root registrations; pins/root/tab/edit/MetaS/reopen are real UI.
+Clipboard hook is disabled until Root supplies an exact reviewed helper module in frozen READY inputs; no helper means copy stays pending. No external opening or full D23/T130 claim. No Node/App/Native/OS execution performed in preparation.

@@ -1,0 +1,71 @@
+{
+  "case": "M12-T068",
+  "layer": "I only",
+  "originalLine": "| M12-T068 | R04.6 | I | 对话框页 | 对 alert、confirm、prompt 分别执行 `dialog accept`（prompt 带 `--text`）和 `dialog dismiss` | 页面记录的返回值与操作一致 | 关闭固定内核自动alert处理后，alert/confirm各accept/dismiss四分支真实返回和CDP开关事件一致；prompt未产生打开事件，Electron默认实现不支持，兼容路径调查中；未计通过 | 失败 | [原始输出及独立判定](证据/并行测试/M12-20261103T154320Z-bff2/M12-P004/attempt-008/adjudication.json) |",
+  "rules": [
+    "**R02.10 同页串行**：同一页面的命令串行执行，不同页面可以并行。",
+    "**R04.6 对话框**：`dialog accept [--text]`、`dialog dismiss`。",
+    "**R04.8 约束**：所有交互命令受同页串行（R02.10）、取消（R02.9）、错误码（R02.7）约束。"
+  ],
+  "matrix": [
+    {
+      "id": "alert-accept",
+      "kind": "alert",
+      "action": "accept",
+      "text": null,
+      "expectedType": "undefined",
+      "expectedValue": null
+    },
+    {
+      "id": "alert-dismiss",
+      "kind": "alert",
+      "action": "dismiss",
+      "text": null,
+      "expectedType": "undefined",
+      "expectedValue": null
+    },
+    {
+      "id": "confirm-accept",
+      "kind": "confirm",
+      "action": "accept",
+      "text": null,
+      "expectedType": "boolean",
+      "expectedValue": true
+    },
+    {
+      "id": "confirm-dismiss",
+      "kind": "confirm",
+      "action": "dismiss",
+      "text": null,
+      "expectedType": "boolean",
+      "expectedValue": false
+    },
+    {
+      "id": "prompt-accept",
+      "kind": "prompt",
+      "action": "accept",
+      "text": "accepted-中文",
+      "expectedType": "string",
+      "expectedValue": "accepted-中文"
+    },
+    {
+      "id": "prompt-dismiss",
+      "kind": "prompt",
+      "action": "dismiss",
+      "text": null,
+      "expectedType": "object",
+      "expectedValue": null
+    }
+  ],
+  "acceptedRoute": "real nativeCLI→M11/v2 facade→BrowserService production→fixedHelper→actualNativepage",
+  "fixtureRoute": "PrivateHTTP/SSE triggers realJS dialog and reports trueJSreturn; doesnotanswer viaCDP/IPC",
+  "extrasPendingFreeze": [
+    "prompt explicit emptytext",
+    "record actual defaultPrompt / CLI omittedtext semantics",
+    "earlyHTML preload installation",
+    "same-origin/srcdoc/cross-origin exactsession/frameidentity",
+    "stale UI response/closed navigation cancellation",
+    "click/goto dialog queue potentialdeadlock: nooutofband exception permitted"
+  ],
+  "nativeStarted": false
+}

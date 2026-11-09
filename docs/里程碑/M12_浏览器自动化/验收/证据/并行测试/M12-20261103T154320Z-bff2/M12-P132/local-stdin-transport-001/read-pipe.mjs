@@ -1,0 +1,1 @@
+let chunks=[];for await(const b of process.stdin)chunks.push(b);const all=Buffer.concat(chunks);console.log(JSON.stringify({bytes:all.length,nonTTY:!process.stdin.isTTY,rawExact:all.equals(Buffer.from('M12_SYNTHETIC_STDIN_001\n')),afterOneNewlineTrim:all.toString().replace(/\r?\n$/,'')==='M12_SYNTHETIC_STDIN_001'}));

@@ -18,6 +18,7 @@ import { Toaster } from '@renderer/lib/ui/sonner';
 import { TooltipProvider } from '@renderer/lib/ui/tooltip';
 import { ProjectTransferHost } from './views/projects/project-transfer';
 import { installFileCloseHost } from './features/files/close-host';
+import { BrowserAccessHost } from './features/browser/access-dialog';
 
 const queryClient = createRendererQueryClient();
 
@@ -49,6 +50,7 @@ export function App() {
         <LanguageSync>
           <TooltipProvider>
             <Workspace />
+            <BrowserAccessHost />
             <TaskSearchDialog />
             <ProjectTransferHost />
             <Toaster />

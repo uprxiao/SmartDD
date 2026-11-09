@@ -1,0 +1,707 @@
+{
+  "at": "2026-11-03T06:34:15.247Z",
+  "boundary": "E3 experiment: local Electron 42 host + agent-browser 0.27.3, loopback synthetic pages on two origins, no external network, no WillYou gateway",
+  "steps": [
+    {
+      "label": "tab list",
+      "command": [
+        "tab",
+        "list"
+      ],
+      "ms": 148,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "tabs": [
+          {
+            "active": true,
+            "label": null,
+            "tabId": "t1",
+            "title": "WillYou E3 host",
+            "type": "page",
+            "url": "data:text/html,<title>WillYou E3 host</title>"
+          },
+          {
+            "active": false,
+            "label": null,
+            "tabId": "t2",
+            "title": "E3 覆盖页",
+            "type": "page",
+            "url": "http://127.0.0.1:9361/frames.html"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "switch",
+      "command": [
+        "tab",
+        "t2"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "label": null,
+        "tabId": "t2",
+        "title": "E3 覆盖页",
+        "url": "http://127.0.0.1:9361/frames.html"
+      },
+      "error": null
+    },
+    {
+      "label": "snapshot (Orca default, no flags)",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 25,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"origin\":\"http://127.0.0.1:9361/frames.html\",\"refs\":{\"e1\":{\"name\":\"E3 覆盖页\",\"role\":\"heading\"},\"e10\":{\"name\":\"开放影子输入 \",\"role\":\"textbox\"},\"e11\":{\"name\":\"封闭影子输入 \",\"role\":\"textbox\"},\"e12\":{\"name\":\"同源框按钮\",\"role\":\"button\"},\"e13\":{\"name\":\"同源框输入 \",\"role\":\"textbox\"},\"e14\":{\"name\":\"跨源框按钮\",\"role\":\"button\"},\"e15\":{\"name\":\"跨源框输入 \",\"role\":\"textbox\"},\"e2\":{\"name\":\"主按钮\",\"role\":\"button\"},\"e3\":{\"name\":\"\",\"role\":\"Iframe\"},\"e4\":{\"name\":\"\",\"role\":\"Iframe\"},\"e5\":{\"name\":\"加载数据\",\"role\":\"button\"},\"e6\":{\"name\":\"\",\"role\":\"textbox\"},\"e7\":{\"name\":\"主页面输入 \",\"role\":\"textbox\"},\"e8\":{\"name\":\"开放影子按钮\",\"role\":\"button\"},\"e9\":{\"name\":\"封闭影子按钮\",\"role\":\"button\"}},\"snapshot\":\"- heading \\\"E3 覆盖页\\\" [level=1, ref=e1]\\n- LabelText\\n  - StaticText \\\"主页面输入 \\\"\\n  - textbox \\\"主页面输入 \\\" [ref=e7]\\n- button \\\"主按钮\\\" [ref=e2]\\n- paragraph\\n  - StaticText \\\"无\\\"\\n- Iframe [ref=e3]\\n  - generic\\n    - LabelText\\n      - StaticText \\\"同源框输入 \\\"\\n      - textbox \\\"同源框输入 \\\" [ref=e13]\\n    - button \\\"同源框按钮\\\" [ref=e12]\\n- Iframe [ref=e4]\\n  - generic\\n    - LabelText\\n      - StaticText \\\"跨源框输入 \\\"\\n      - textbox \\\"跨源框输入 \\\" [ref=e15]\\n    - button \\\"跨源框按钮\\\" [ref=e14]\\n- generic\\n  - LabelText\\n    - StaticText \\\"开放影子输入 \\\"\\n    - textbox \\\"开放影子输入 …(1456 chars)",
+      "error": null
+    },
+    {
+      "label": "fill 主页面输入",
+      "command": [
+        "fill",
+        "@e7",
+        "E3值"
+      ],
+      "ms": 8,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e7"
+      },
+      "error": null
+    },
+    {
+      "label": "fill 同源框输入",
+      "command": [
+        "fill",
+        "@e13",
+        "E3值"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e13"
+      },
+      "error": null
+    },
+    {
+      "label": "fill 跨源框输入",
+      "command": [
+        "fill",
+        "@e15",
+        "E3值"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e15"
+      },
+      "error": null
+    },
+    {
+      "label": "fill 开放影子输入",
+      "command": [
+        "fill",
+        "@e10",
+        "E3值"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e10"
+      },
+      "error": null
+    },
+    {
+      "label": "fill 封闭影子输入",
+      "command": [
+        "fill",
+        "@e11",
+        "E3值"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "@e11"
+      },
+      "error": null
+    },
+    {
+      "label": "click 同源框按钮",
+      "command": [
+        "click",
+        "@e12"
+      ],
+      "ms": 25,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e12"
+      },
+      "error": null
+    },
+    {
+      "label": "click 跨源框按钮",
+      "command": [
+        "click",
+        "@e14"
+      ],
+      "ms": 14,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e14"
+      },
+      "error": null
+    },
+    {
+      "label": "click 开放影子按钮",
+      "command": [
+        "click",
+        "@e8"
+      ],
+      "ms": 16,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e8"
+      },
+      "error": null
+    },
+    {
+      "label": "click 封闭影子按钮",
+      "command": [
+        "click",
+        "@e9"
+      ],
+      "ms": 17,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e9"
+      },
+      "error": null
+    },
+    {
+      "label": "snapshot after clicks",
+      "command": [
+        "snapshot"
+      ],
+      "ms": 8,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"origin\":\"http://127.0.0.1:9361/frames.html\",\"refs\":{\"e1\":{\"name\":\"E3 覆盖页\",\"role\":\"heading\"},\"e10\":{\"name\":\"开放影子输入 \",\"role\":\"textbox\"},\"e11\":{\"name\":\"封闭影子输入 \",\"role\":\"textbox\"},\"e12\":{\"name\":\"同源框已点\",\"role\":\"button\"},\"e13\":{\"name\":\"同源框输入 \",\"role\":\"textbox\"},\"e14\":{\"name\":\"跨源框已点\",\"role\":\"button\"},\"e15\":{\"name\":\"跨源框输入 \",\"role\":\"textbox\"},\"e2\":{\"name\":\"主按钮\",\"role\":\"button\"},\"e3\":{\"name\":\"\",\"role\":\"Iframe\"},\"e4\":{\"name\":\"\",\"role\":\"Iframe\"},\"e5\":{\"name\":\"加载数据\",\"role\":\"button\"},\"e6\":{\"name\":\"\",\"role\":\"textbox\"},\"e7\":{\"name\":\"主页面输入 \",\"role\":\"textbox\"},\"e8\":{\"name\":\"开放影子已点\",\"role\":\"button\"},\"e9\":{\"name\":\"封闭影子已点\",\"role\":\"button\"}},\"snapshot\":\"- heading \\\"E3 覆盖页\\\" [level=1, ref=e1]\\n- LabelText\\n  - StaticText \\\"主页面输入 \\\"\\n  - textbox \\\"主页面输入 \\\" [ref=e7]: E3值\\n    - StaticText \\\"E3值\\\"\\n- button \\\"主按钮\\\" [ref=e2]\\n- paragraph\\n  - StaticText \\\"无\\\"\\n- Iframe [ref=e3]\\n  - generic\\n    - LabelText\\n      - StaticText \\\"同源框输入 \\\"\\n      - textbox \\\"同源框输入 \\\" [ref=e13]: E3值\\n        - StaticText \\\"E3值\\\"\\n    - button \\\"同源框已点\\\" [ref=e12]\\n- Iframe [ref=e4]\\n  - generic\\n    - LabelText\\n      - StaticText \\\"跨源框输入 \\\"\\n      - textbox \\\"跨源框输入 \\\" [ref=e15]: E3值\\n        - StaticText \\\"E3值\\\"\\n    - button…(1623 chars)",
+      "error": null
+    },
+    {
+      "label": "find role button --name 主按钮 click",
+      "command": [
+        "find",
+        "role",
+        "button",
+        "click",
+        "--name",
+        "主按钮"
+      ],
+      "ms": 9,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "[data-agent-browser-located='true']"
+      },
+      "error": null
+    },
+    {
+      "label": "find text 主按钮 click",
+      "command": [
+        "find",
+        "text",
+        "主按钮",
+        "click"
+      ],
+      "ms": 17,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "[data-agent-browser-located='true']"
+      },
+      "error": null
+    },
+    {
+      "label": "find label 主页面输入 fill",
+      "command": [
+        "find",
+        "label",
+        "主页面输入",
+        "fill",
+        "find值"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "[data-agent-browser-located='true']"
+      },
+      "error": null
+    },
+    {
+      "label": "find placeholder 主页面占位 fill",
+      "command": [
+        "find",
+        "placeholder",
+        "主页面占位",
+        "fill",
+        "ph值"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "filled": "[data-agent-browser-located='true']"
+      },
+      "error": null
+    },
+    {
+      "label": "find testid main-btn click",
+      "command": [
+        "find",
+        "testid",
+        "main-btn",
+        "click"
+      ],
+      "ms": 7,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "[data-agent-browser-located='true']"
+      },
+      "error": null
+    },
+    {
+      "label": "find first button hover",
+      "command": [
+        "find",
+        "first",
+        "button",
+        "hover"
+      ],
+      "ms": 16,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "hovered": "[data-agent-browser-located='true']"
+      },
+      "error": null
+    },
+    {
+      "label": "find nth 1 button focus",
+      "command": [
+        "find",
+        "nth",
+        "1",
+        "button",
+        "focus"
+      ],
+      "ms": 4,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Unknown subaction: focus"
+    },
+    {
+      "label": "find label 同源框输入 fill (inside iframe)",
+      "command": [
+        "find",
+        "label",
+        "同源框输入",
+        "fill",
+        "iframe值"
+      ],
+      "ms": 3,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+    },
+    {
+      "label": "find label 不存在 click (no match)",
+      "command": [
+        "find",
+        "label",
+        "不存在的标签",
+        "click"
+      ],
+      "ms": 3,
+      "exit": 1,
+      "ok": false,
+      "data": null,
+      "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+    },
+    {
+      "label": "network route **/api/* (Orca intercept enable, no options)",
+      "command": [
+        "network",
+        "route",
+        "**/api/*"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "routed": "**/api/*"
+      },
+      "error": null
+    },
+    {
+      "label": "click 加载数据",
+      "command": [
+        "click",
+        "@e5"
+      ],
+      "ms": 10,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e5"
+      },
+      "error": null
+    },
+    {
+      "label": "network requests --filter api",
+      "command": [
+        "network",
+        "requests",
+        "--filter",
+        "api"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "requests": [
+          {
+            "headers": {
+              "Referer": "http://127.0.0.1:9361/frames.html",
+              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Electron/42.11.14 Safari/537.36",
+              "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"macOS\""
+            },
+            "method": "GET",
+            "mimeType": "application/json",
+            "requestId": "75107.4",
+            "resourceType": "Fetch",
+            "responseHeaders": {
+              "Connection": "keep-alive",
+              "Date": "Tue, 03 Nov 2026 06:34:17 GMT",
+              "Keep-Alive": "timeout=5",
+              "Transfer-Encoding": "chunked",
+              "content-type": "application/json"
+            },
+            "status": 200,
+            "timestamp": 1793687657163,
+            "url": "http://127.0.0.1:9361/api/data"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "label": "network unroute",
+      "command": [
+        "network",
+        "unroute"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "unrouted": "all"
+      },
+      "error": null
+    },
+    {
+      "label": "click 加载数据 after unroute",
+      "command": [
+        "click",
+        "@e5"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e5"
+      },
+      "error": null
+    },
+    {
+      "label": "network route --abort (reachable via exec)",
+      "command": [
+        "network",
+        "route",
+        "**/api/*",
+        "--abort"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "routed": "**/api/*"
+      },
+      "error": null
+    },
+    {
+      "label": "click 加载数据 with abort route",
+      "command": [
+        "click",
+        "@e5"
+      ],
+      "ms": 5,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "clicked": "@e5"
+      },
+      "error": null
+    },
+    {
+      "label": "network unroute (cleanup)",
+      "command": [
+        "network",
+        "unroute"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "unrouted": "all"
+      },
+      "error": null
+    },
+    {
+      "label": "clipboard read",
+      "command": [
+        "clipboard",
+        "read"
+      ],
+      "ms": 8,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "text": "E3-SYSTEM-MARKER"
+      },
+      "error": null
+    },
+    {
+      "label": "clipboard write",
+      "command": [
+        "clipboard",
+        "write",
+        "E3-PAGE-WRITE"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "written": "E3-PAGE-WRITE"
+      },
+      "error": null
+    },
+    {
+      "label": "focus textarea",
+      "command": [
+        "focus",
+        "#long"
+      ],
+      "ms": 4,
+      "exit": 0,
+      "ok": true,
+      "data": {
+        "focused": "#long"
+      },
+      "error": null
+    },
+    {
+      "label": "keyboard type ~25KB",
+      "command": [
+        "keyboard",
+        "type",
+        "中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入…(9000 chars)"
+      ],
+      "ms": 14269,
+      "exit": 0,
+      "ok": true,
+      "data": "{\"typed\":\"中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文输入E3中文…(9012 chars)",
+      "error": null
+    }
+  ],
+  "findings": {
+    "coverage": {
+      "主页面输入": {
+        "ref": "@e7",
+        "fill": true,
+        "fillError": null,
+        "readBack": "E3值"
+      },
+      "同源框输入": {
+        "ref": "@e13",
+        "fill": true,
+        "fillError": null,
+        "readBack": "E3值"
+      },
+      "跨源框输入": {
+        "ref": "@e15",
+        "fill": true,
+        "fillError": null,
+        "readBackViaSnapshot": "value text present somewhere in snapshot"
+      },
+      "开放影子输入": {
+        "ref": "@e10",
+        "fill": true,
+        "fillError": null,
+        "readBack": "E3值"
+      },
+      "封闭影子输入": {
+        "ref": "@e11",
+        "fill": true,
+        "fillError": null,
+        "readBack": "E3值"
+      },
+      "同源框按钮": {
+        "ref": "@e12",
+        "click": true,
+        "clickError": null,
+        "effectVisible": true
+      },
+      "跨源框按钮": {
+        "ref": "@e14",
+        "click": true,
+        "clickError": null,
+        "effectVisible": true
+      },
+      "开放影子按钮": {
+        "ref": "@e8",
+        "click": true,
+        "clickError": null,
+        "effectVisible": true
+      },
+      "封闭影子按钮": {
+        "ref": "@e9",
+        "click": true,
+        "clickError": null,
+        "effectVisible": true
+      }
+    },
+    "find": {
+      "role button --name 主按钮 click": {
+        "ok": true,
+        "ms": 9,
+        "error": null
+      },
+      "text 主按钮 click": {
+        "ok": true,
+        "ms": 17,
+        "error": null
+      },
+      "label 主页面输入 fill": {
+        "ok": true,
+        "ms": 5,
+        "error": null
+      },
+      "placeholder 主页面占位 fill": {
+        "ok": true,
+        "ms": 5,
+        "error": null
+      },
+      "testid main-btn click": {
+        "ok": true,
+        "ms": 7,
+        "error": null
+      },
+      "first button hover": {
+        "ok": true,
+        "ms": 16,
+        "error": null
+      },
+      "nth 1 button focus": {
+        "ok": false,
+        "ms": 4,
+        "error": "Unknown subaction: focus"
+      },
+      "label 同源框输入 fill (inside iframe)": {
+        "ok": false,
+        "ms": 3,
+        "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+      },
+      "label 不存在 click (no match)": {
+        "ok": false,
+        "ms": 3,
+        "error": "Element not found. Verify the selector is correct and the element exists in the DOM."
+      },
+      "mainInputAfter": "ph值"
+    },
+    "intercept": {
+      "route": true,
+      "pageTextAfterRoute": "{\"real\":true,\"url\":\"/api/data\"}",
+      "serverHitsDuringRoute": 1,
+      "requests": {
+        "requests": [
+          {
+            "headers": {
+              "Referer": "http://127.0.0.1:9361/frames.html",
+              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.280 Electron/42.11.14 Safari/537.36",
+              "sec-ch-ua": "\"Not/A)Brand\";v=\"99\", \"Chromium\";v=\"148\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"macOS\""
+            },
+            "method": "GET",
+            "mimeType": "application/json",
+            "requestId": "75107.4",
+            "resourceType": "Fetch",
+            "responseHeaders": {
+              "Connection": "keep-alive",
+              "Date": "Tue, 03 Nov 2026 06:34:17 GMT",
+              "Keep-Alive": "timeout=5",
+              "Transfer-Encoding": "chunked",
+              "content-type": "application/json"
+            },
+            "status": 200,
+            "timestamp": 1793687657163,
+            "url": "http://127.0.0.1:9361/api/data"
+          }
+        ]
+      },
+      "pageTextAfterUnroute": "{\"real\":true,\"url\":\"/api/data\"}",
+      "pageTextWithAbort": "失败:TypeError: Failed to fetch"
+    },
+    "clipboard": {
+      "read": {
+        "text": "E3-SYSTEM-MARKER"
+      },
+      "readMatchesSystem": true,
+      "writeOk": true,
+      "systemAfterWrite": true
+    },
+    "type": {
+      "inputChars": 9000,
+      "inputUtf8Bytes": 21000,
+      "ok": true,
+      "ms": 14269,
+      "error": null,
+      "valueLength": 9000,
+      "exact": true
+    }
+  },
+  "snapshotText": "- heading \"E3 覆盖页\" [level=1, ref=e1]\n- LabelText\n  - StaticText \"主页面输入 \"\n  - textbox \"主页面输入 \" [ref=e7]\n- button \"主按钮\" [ref=e2]\n- paragraph\n  - StaticText \"无\"\n- Iframe [ref=e3]\n  - generic\n    - LabelText\n      - StaticText \"同源框输入 \"\n      - textbox \"同源框输入 \" [ref=e13]\n    - button \"同源框按钮\" [ref=e12]\n- Iframe [ref=e4]\n  - generic\n    - LabelText\n      - StaticText \"跨源框输入 \"\n      - textbox \"跨源框输入 \" [ref=e15]\n    - button \"跨源框按钮\" [ref=e14]\n- generic\n  - LabelText\n    - StaticText \"开放影子输入 \"\n    - textbox \"开放影子输入 \" [ref=e10]\n  - button \"开放影子按钮\" [ref=e8]\n- generic\n  - LabelText\n    - StaticText \"封闭影子输入 \"\n    - textbox \"封闭影子输入 \" [ref=e11]\n  - button \"封闭影子按钮\" [ref=e9]\n- button \"加载数据\" [ref=e5]\n- paragraph\n  - StaticText \"未加载\"\n- textbox [ref=e6]",
+  "clipboardRestored": true
+}

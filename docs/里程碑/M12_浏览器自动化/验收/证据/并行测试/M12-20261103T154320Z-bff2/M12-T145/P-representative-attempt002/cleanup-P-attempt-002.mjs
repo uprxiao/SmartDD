@@ -1,0 +1,13 @@
+// Read-only exact owned PID/port checks after a Root Native lease, never kill.
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {ROOT,save} from './io-attempt-002.mjs';
+assert(process.argv.includes('--verify')&&process.env.WILLYOU_M12_NATIVE_LEASE_CONFIRMED==='1');
+const tag=process.argv.includes('--representative')?'P-preflight-attempt-002':'P-attempt-002',r=JSON.parse(await readFile(ROOT+'/'+tag+'-raw.json')),checks=[];
+for(const pid of r.knownPids){const x=spawnSync('/bin/ps',['-ww','-p',String(pid),'-o','pid=,ppid=,lstart=,comm='],{encoding:'utf8',timeout:3000});checks.push({kind:'exact-owned-pid',pid,clear:x.status===1&&!x.stdout?.trim(),status:x.status,error:x.error?.name??null,actual:x.stdout?.trim()??''})}
+for(const port of r.knownPorts){const x=spawnSync('/usr/sbin/lsof',['-nP','-iTCP:'+port,'-sTCP:LISTEN'],{encoding:'utf8',timeout:3000});checks.push({kind:'recorded-loopback-port',port,clear:x.status===1&&!x.stdout?.trim(),status:x.status,error:x.error?.name??null,actual:x.stdout?.trim()??''})}
+const pin=JSON.parse(await readFile(ROOT+'/P-runtime-pin.json')),prefix=pin.chromium.slice(0,pin.chromium.lastIndexOf('/')+1),ps=spawnSync('/bin/ps',['-ww','-axo','pid=,ppid=,lstart=,comm='],{encoding:'utf8',timeout:3000}),born=[];assert.equal(ps.status,0);
+for(const line of ps.stdout.split('\n')){const m=line.match(/^\s*(\d+)\s+(\d+)\s+(.{24})\s+(.*)$/);if(!m||(!m[4].startsWith(prefix)&&!m[4].startsWith(ROOT+'/deps/packages/')))continue;const at=Date.parse(m[3]);assert(Number.isFinite(at),'Exact owned Native birth must parse');if(at>=Date.parse(r.startedAt)-2000&&at<=Date.parse(r.finishedAt)+2000)born.push({pid:Number(m[1]),ppid:Number(m[2]),birth:m[3],executable:m[4]})}
+checks.push({kind:'birth-bound-native-helper-subtrees',scope:'Exact owned Chromium package/private dependency binary paths and this sole-lease run birth interval; no argv/env/daily instance rows retained',clear:born.length===0,matchingLive:born});
+const out={at:new Date().toISOString(),case:'M12-T145',layer:'P-reference',checks,allClear:checks.length>0&&checks.every(c=>c.clear),processReceipts:r.processes,scope:'No OS foreground/clipboard/auth/window selection. Exact own PIDs and numeric ports only; no process termination or invented Unix socket/parent receipt. Profiles/cache retained privately as recovery data.',formalNewPasses:0};out.resourcesHeld=!out.allClear;await save(tag+'-cleanup.json',out);console.log(JSON.stringify({allClear:out.allClear,checks:checks.length,formalNewPasses:0}));if(!out.allClear)process.exitCode=1;

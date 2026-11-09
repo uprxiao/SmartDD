@@ -1,0 +1,74 @@
+{
+  "at": "2026-11-05T01:41:45.025Z",
+  "classification": "private-static-preparation-tool-correction",
+  "root": "/private/tmp/willyou-m12-t077-cli-profile-isolation-002/dummy-check",
+  "checks": [
+    {
+      "name": "read-only enumeration preserves all dummy resource bytes/mode/names",
+      "status": "passed"
+    },
+    {
+      "name": "positive pin writes only allowed private output/pin.json",
+      "status": "passed"
+    },
+    {
+      "name": "negative accidental-resource/shared-App output substitution rejected before filesystem write",
+      "status": "passed"
+    },
+    {
+      "name": "negative calls leave both existing pin and resources unchanged",
+      "status": "passed"
+    }
+  ],
+  "scope": "Only synthetic dummy files under the assigned private evidence root were created/read/written. No App/resource/production/prototype/Native/listener touched.",
+  "resourcesBefore": {
+    "rows": [
+      {
+        "path": "first/input.txt",
+        "sha256": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62",
+        "mode": 420,
+        "bytes": 11
+      },
+      {
+        "path": "last/SKILL.md",
+        "sha256": "4ab6dbfed76ea8d423f36f253b60f36f73afcf418f46d4b2ff09e1d7f11d425b",
+        "mode": 420,
+        "bytes": 24
+      }
+    ],
+    "names": [
+      "SKILL.md"
+    ],
+    "contents": [
+      "original A\n",
+      "original final resource\n"
+    ]
+  },
+  "resourcesAfter": {
+    "rows": [
+      {
+        "path": "first/input.txt",
+        "sha256": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62",
+        "mode": 420,
+        "bytes": 11
+      },
+      {
+        "path": "last/SKILL.md",
+        "sha256": "4ab6dbfed76ea8d423f36f253b60f36f73afcf418f46d4b2ff09e1d7f11d425b",
+        "mode": 420,
+        "bytes": 24
+      }
+    ],
+    "names": [
+      "SKILL.md"
+    ],
+    "contents": [
+      "original A\n",
+      "original final resource\n"
+    ]
+  },
+  "privatePinPath": "/private/tmp/willyou-m12-t077-cli-profile-isolation-002/dummy-check/output/pin.json",
+  "pinSha256": "75b6448538c08ecf9a9e006a2ab1cba4c37690b9d9e4a7ec6bb4d8febe660637",
+  "nativeStarted": false,
+  "listenersStarted": false
+}

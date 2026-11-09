@@ -1,0 +1,222 @@
+{
+  "at": "2026-11-04T11:15:51.350Z",
+  "group": "M12-P052",
+  "scope": "T106 completeAonly, T114/T115pending",
+  "inputs": [
+    {
+      "path": "judge.mjs",
+      "sha256": "25a89955f6a1e3e10b9a4b2183afe0232d0e23f89d80935d6f8c69fd3efcd824",
+      "bytes": 5732
+    },
+    {
+      "path": "package-baseline.json",
+      "sha256": "e21069a8f5a72374febd3e08d98fd08b38a835e2dd86ed632818d106fffecaf7",
+      "bytes": 1374
+    },
+    {
+      "path": "preflight.mjs",
+      "sha256": "2816279ee5127da9d2698a453470f0a18fc6d23bc78a2896ada4c6fdc42f9e54",
+      "bytes": 6213
+    },
+    {
+      "path": "preparation-failure-001.json",
+      "sha256": "14318b7bfff6f3e9437fd4b70041c40f0107b1243178199a16b243845135c019",
+      "bytes": 336
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "b8f1859272170bf2bc52197b0548e489d9a61a9ea2eba7534730076ad576a23f",
+      "bytes": 4358
+    },
+    {
+      "path": "prepared.json",
+      "sha256": "5e5c43473424d6d2ebec7bf34c3fd976528a96d56511786430b72b57dea74671",
+      "bytes": 630168
+    },
+    {
+      "path": "production-inputs.json",
+      "sha256": "78c13a50bc048c38c815515944729f079337ededcafd0a779de1246e7a0ab8ea",
+      "bytes": 639659
+    },
+    {
+      "path": "receiver.py",
+      "sha256": "68e560c26c1c4563bb969b811f75b95d356b2e31a1c153d5890cfd2a7341e5f4",
+      "bytes": 2487
+    },
+    {
+      "path": "run.mjs",
+      "sha256": "aa92330d4a40c881a4ae9054352ff03fb0400c4818f05f5bc8e0b33dcf86a3e0",
+      "bytes": 15916
+    }
+  ],
+  "package": {
+    "app": "/private/tmp/willyou-m12-s2-package-013/mac-arm64/WillYou.app",
+    "executable": "/private/tmp/willyou-m12-s2-package-013/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "files": [
+      {
+        "path": "app.asar",
+        "sha256": "5956ffaec1ad9765086789872e36477dd38ea7a0e0c32778c80359675ad60472",
+        "mode": 420
+      },
+      {
+        "path": "agent-browser/SOURCE.json",
+        "sha256": "db70a8ec3d28919c7bf9ba1ff300c570838aa35f482c48bf39af5ffad940759a",
+        "mode": 420
+      },
+      {
+        "path": "agent-browser/arm64/agent-browser",
+        "sha256": "7a009d321491f0645a3c2526639490f624a7b6af967f325add9490c0c274876f",
+        "mode": 493
+      },
+      {
+        "path": "native/willyou-app",
+        "sha256": "2da7c2b4161cd14ebaaa490f9ad67788a5e5b080dead8e87ff75ef13ba55ea1b",
+        "mode": 493
+      },
+      {
+        "path": "native/willyou-process-identity",
+        "sha256": "8599b53719c8f6fe2239a7e0bfc88b82e58084fdf50defb4166cfedfddd8ee10",
+        "mode": 493
+      }
+    ],
+    "asarSha256": "5956ffaec1ad9765086789872e36477dd38ea7a0e0c32778c80359675ad60472"
+  },
+  "sourceManifest": "78c13a50bc048c38c815515944729f079337ededcafd0a779de1246e7a0ab8ea",
+  "productionInputs": 3451,
+  "driverAndSourceFiles": 19,
+  "syntax": [
+    "judge.mjs",
+    "preflight.mjs",
+    "prepare.mjs",
+    "run.mjs"
+  ],
+  "pythonAST": {
+    "status": 0,
+    "stdout": "ASTonlyNoFixtureExecuted\n"
+  },
+  "cdpLiteralChecker": {
+    "status": 0,
+    "stdout": "{\"paths\":1,\"literalExpressions\":7,\"failures\":0,\"executed\":false,\"dynamicTemplates\":\"not covered\"}\n"
+  },
+  "explicitExpressions": [
+    {
+      "name": "visualExpression",
+      "sha256": "9876fb416bc751e30cddc9d7256c2147a955edd3c458acc7e50b46d46afaf86e"
+    }
+  ],
+  "dynamicSampleExpressions": 4,
+  "CLIExpressions": 3,
+  "CLIContract": {
+    "id": "browser.interact.eval",
+    "command": [
+      "browser",
+      "eval"
+    ],
+    "semantics": "write",
+    "input": {
+      "type": "object",
+      "properties": {
+        "expression": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "task": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        },
+        "page": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "maxLength": 262144
+        }
+      },
+      "required": [
+        "expression"
+      ],
+      "additionalProperties": false
+    },
+    "usage": "willyou-app browser eval --expression <js> [--task <任务ID>] [--page <页面ID>]",
+    "cases": [
+      "M12-T057"
+    ],
+    "output": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "bytes",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "truncatedPreview": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "file",
+            "truncatedPreview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "origin": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value",
+            "origin"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "privateCache": "/private/tmp/willyou-m12-p052-s5-app-001/cache",
+  "receiver": {
+    "path": "/private/tmp/willyou-m12-p052-s5-app-001/runtime-001/fixture-agent",
+    "sha256": "68e560c26c1c4563bb969b811f75b95d356b2e31a1c153d5890cfd2a7341e5f4",
+    "boundary": "Syntheticversion/health/configrequirements only, actualTaskServicePTY+M11+CLI; noRorrealOSsandboxclaim"
+  },
+  "fixtureBoundary": "Syntheticversion/health/app-serverrequirements protocol only. actualTaskServicePTY/M11/nativeCLI/browserbehavior/visibleAppUI. noRorrealOSsandboxclaim. NoApp/native/portsstarted.",
+  "focus": "AllRPCprep+healthyprofile beforeonesetupreload. OnefocusNewInstalledWindowthenfreshallowOwnedViewsguard;yieldterminal,norearm.",
+  "timing": "ThreeactualCLI3000msPromiseevals; actualreceiptlastendedAt anchors19s/21s PNGandDOM. NevermainEvaluateexecutecommands.",
+  "cleanup": "Onlyownfixturetaskstopifstillrunning; normalappquit/willquit, realexit0, closeCDP, ownedserver; exactPIDs/ports/privategateway/helperdirectoryauditafterexit",
+  "nativeStarted": false,
+  "listenersStarted": false
+}

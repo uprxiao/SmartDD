@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-03T12:42:31.351448+00:00",
+  "classification": "read-only diagnostic response observer; product false-stale reproduced",
+  "firstGuard": {
+    "result": {
+      "type": "object",
+      "value": {
+        "accepted": [
+          "pointerover",
+          "mouseover",
+          "pointermove",
+          "mousemove",
+          "pointerdown",
+          "mousedown",
+          "focus",
+          "focusin",
+          "pointerup",
+          "mouseup",
+          "click"
+        ],
+        "blocked": [
+          "change"
+        ],
+        "connected": true
+      }
+    }
+  },
+  "checks": {
+    "changeOnlyBlocked": true,
+    "clickDelivered": true,
+    "reportedUnknown": true,
+    "cleanup": true
+  },
+  "diagnosis": "Previous focused input commits change on blur while button click is legitimate; guard rejected that change event although retained action target was connected. Restrict exception to previous-focus object, never arbitrary inputs or detached action target."
+}

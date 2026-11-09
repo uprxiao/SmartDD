@@ -1,0 +1,24 @@
+--- source025/run-plan.test.ts
++++ private/test-adapted.ts
+@@ -1,5 +1,7 @@
+ import {applicationToolDeclarations} from '@shared/application-capabilities';
+ import {randomUUID} from 'node:crypto';
++import {existsSync,mkdirSync,writeFileSync} from 'node:fs';
++import {join} from 'node:path';
+ import {afterEach,beforeEach,describe,expect,it} from 'vitest';
+ import type {ApplicationCapability} from '@shared/application-capabilities';
+ import {capabilitySessionSnapshotSchema} from '@shared/application-session';
+@@ -13,8 +15,11 @@
+ let f:Awaited<ReturnType<typeof runFixture>>,reader:FixtureProcessReader,run:OwnedCapabilityRun|undefined;
+ const capabilities=():ApplicationCapability[]=>applicationToolDeclarations(f.application!.manifest).map(t=>({id:t.annotations.readOnlyHint?'zentao.object.get':'zentao.object.update',title:t.name,contractMajor:1,semantics:t.annotations.readOnlyHint?'read':'write',permission:t.permission,slots:{required:[],conditional:[]},inputSchemaPath:t.inputSchemaPath,outputSchemaPath:t.outputSchemaPath,retry:t.annotations.readOnlyHint?'safe-read':'never',...(t.annotations.readOnlyHint?{}:{protection:{kind:'revision' as const,object:'fixture',key:'expectedRevision'}}),binding:{mcp:{tool:t.name}}}));
+ const build=(runId:string=randomUUID(),caps=capabilities(),available={mcp:true,cli:false})=>createApplicationRunPlan({runId,snapshot:f.snapshot,snapshotHash:f.session.pointer.snapshotHash,applications:[{manifest:f.application!.manifest,packageHash:f.application!.packageHash,capabilities:caps}],available,skills:[],now:'2026-11-01T00:00:00.000Z'});
+-beforeEach(async()=>{reader=new FixtureProcessReader();f=await runFixture(reader,{application:true});});
+-afterEach(async()=>{if(run)await run.cli.exited();run=undefined;f.cleanup();});
++const cleanupReceipts:unknown[]=[];let observerIdentity:{workerPid:number;caseName:string;fixtureRoot:string}|undefined;
++function captureIdentity(){try{return{workerPid:process.pid,caseName:expect.getState().currentTestName!,fixtureRoot:f.root};}catch{return undefined;}}
++function safeCleanupReceipt(){try{cleanupReceipts.push({...observerIdentity,fixtureRootRemoved:!!observerIdentity&&!existsSync(observerIdentity.fixtureRoot)});const out=process.env.WILLYOU_TEST_EVIDENCE_DIR!;mkdirSync(out,{recursive:true});writeFileSync(join(out,'fixture-cleanup.json'),JSON.stringify(cleanupReceipts,null,2)+'\n',{mode:0o600});}catch{}}
++beforeEach(async()=>{observerIdentity=undefined;reader=new FixtureProcessReader();f=await runFixture(reader,{application:true});observerIdentity=captureIdentity();});
++afterEach(async()=>{try{if(run)await run.cli.exited();run=undefined;f.cleanup();}finally{safeCleanupReceipt();}});
+ 
+ describe('M11 immutable, transport-independent application run plans',()=>{
+  it('selects a read fallback only when the primary is unavailable, and never falls back a write',()=>{

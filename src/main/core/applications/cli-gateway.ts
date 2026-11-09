@@ -11,11 +11,13 @@ import type {ApplicationToolService} from './tool-service';
 import type {UnixPeerIdentityReader} from './unix-peer-identity';
 import {requirePlanEntry} from './run-plan';
 
-interface Binding {runId:string;expiresAt:number;timer:ReturnType<typeof setTimeout>;dispose():void}
+interface Binding {runId:string;ttlMs:number;expiresAt:number;timer:ReturnType<typeof setTimeout>;dispose():void}
+
 interface Peer {socket:Socket;buffer:Buffer;controllers:Map<string,{runId:string;abort:AbortController}>;inFlight:number;authenticatedRun?:string}
 const rejected=(id:string,error:unknown):BridgeResponse=>({schema:1,id,status:'error',error:{code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:error instanceof ApplicationError?error.message:'本次应用调用未完成',layer:'auth',retryable:false,attemptCount:0,retryExhausted:false,effectState:'not-started',nextAction:'核对本次运行与应用状态；不要自动重发写操作'}});
 
-/** Independent host endpoint. Tokens never enter disk, argv, Skill or diagnostics. */
+/** Independent host endpoint. This gateway keeps tokens in memory and out of argv,
+ * Skill and diagnostics. Native CLI caches require their own launch-time protection. */
 export class ApplicationCliGateway {
   readonly generation=randomUUID();
   private server?:Server;
@@ -46,14 +48,21 @@ export class ApplicationCliGateway {
   }
   issue(run:OwnedCapabilityRun):{environment:Readonly<{WILLYOU_RUN_TOKEN:string;WILLYOU_ENDPOINT:string}>;expiresAt:number;revoke():void}{
     const endpoint=this.endpoint,context=this.runs.bridgePreparation(run.runId);this.executable();
-    // R17: issued whenever the Agent can reach the CLI, even with no application enabled yet; what it may call is decided per call.
-    if(context.snapshot.schema!==3||!context.plan?.grades.cli)throw new ApplicationError('ENTRY_NOT_ACTIVE','本次运行的Agent没有可用的CLI入口');
-    const token=randomBytes(32).toString('hex'),hash=digest(token),expiresAt=this.clock()+Math.min(12*60*60*1000,Math.max(1,this.options.tokenTtlMs??30*60*1000));
+    if(context.snapshot.schema!==3||!context.plan?.grades.cli)throw new ApplicationError('ENTRY_NOT_ACTIVE','本次运行没有生效的CLI能力');
+    const token=randomBytes(32).toString('hex'),hash=digest(token),ttlMs=Math.min(12*60*60*1000,Math.max(1,this.options.tokenTtlMs??30*60*1000)),expiresAt=this.clock()+ttlMs;
     const revoke=()=>{const binding=this.tokens.get(hash);if(!binding)return;this.tokens.delete(hash);clearTimeout(binding.timer);binding.dispose();for(const peer of this.peers)for(const work of peer.controllers.values())if(work.runId===run.runId)work.abort.abort();};
-    const timer=setTimeout(revoke,Math.max(1,expiresAt-this.clock()));timer.unref();run.signal.addEventListener('abort',revoke,{once:true});
-    this.tokens.set(hash,{runId:run.runId,expiresAt,timer,dispose:()=>run.signal.removeEventListener('abort',revoke)});
+    // The env token cannot be rotated inside a running Agent, so expiry is a lease the host renews while the run stays active.
+    const lapse=()=>{const binding=this.tokens.get(hash);if(!binding)return;if(this.renew(binding)){binding.timer=setTimeout(lapse,ttlMs);binding.timer.unref();}else revoke();};
+    const timer=setTimeout(lapse,ttlMs);timer.unref();run.signal.addEventListener('abort',revoke,{once:true});
+    this.tokens.set(hash,{runId:run.runId,ttlMs,expiresAt,timer,dispose:()=>run.signal.removeEventListener('abort',revoke)});
+
     if(run.signal.aborted)revoke();
     return{environment:Object.freeze({WILLYOU_RUN_TOKEN:token,WILLYOU_ENDPOINT:endpoint}),expiresAt,revoke};
+  }
+  private renew(binding:Binding):boolean{
+    if(this.closed)return false;
+    try{this.runs.assertActive(binding.runId);}catch{return false;}
+    binding.expiresAt=this.clock()+binding.ttlMs;return true;
   }
   private current(binding:Binding):RunContext{
     if(this.closed||binding.expiresAt<=this.clock())throw new ApplicationError('TOKEN_EXPIRED','本次CLI身份已失效');
@@ -62,7 +71,7 @@ export class ApplicationCliGateway {
   private async authenticate(peer:Peer,request:ApplicationCliRequest):Promise<RunContext>{
     // Budget/schema, token, kernel identity, executable, exact ancestor birth, entry, then business scope.
     const binding=this.tokens.get(digest(request.token));if(!binding)throw new ApplicationError('AUTH_REQUIRED','本次CLI身份不存在或已撤销');
-    if(binding.expiresAt<=this.clock())throw new ApplicationError('TOKEN_EXPIRED','本次CLI身份已过期');
+    if(binding.expiresAt<=this.clock()&&!this.renew(binding)){this.revokeRun(binding.runId);throw new ApplicationError('TOKEN_EXPIRED','本次CLI身份已过期');}
     const identity=await this.identities.read(peer.socket);if(!identity||identity.uid!==process.getuid?.())throw new ApplicationError('PEER_UNVERIFIABLE','无法核验CLI内核对端身份');
     if(identity.peer.executable!==this.executable())throw new ApplicationError('EXECUTABLE_MISMATCH','对端不是本次受管CLI程序');
     if(this.tokens.get(digest(request.token))!==binding)throw new ApplicationError('AUTH_REQUIRED','本次CLI身份已撤销');

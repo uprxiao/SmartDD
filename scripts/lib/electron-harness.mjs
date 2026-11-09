@@ -112,7 +112,10 @@ export async function openElectron({
               ),
             })
           ).json()
-        ).find((p) => p.type === "page");
+        ).find((p) => p.type === "page" && (
+          /^file:/.test(p.url) && /\/out\/renderer\/index\.html(?:[?#]|$)/.test(p.url) ||
+          env.ELECTRON_RENDERER_URL && p.url.startsWith(env.ELECTRON_RENDERER_URL)
+        ));
       } catch {
         /* starting; each request is bounded too */
       }

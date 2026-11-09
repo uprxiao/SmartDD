@@ -45,6 +45,7 @@ const failure = (error: unknown,attempts = 0,effect: BridgeFailure['effectState'
 export class ApplicationToolService {
   private readonly packages: PackageRegistry;
   private readonly validator = new AjvJsonSchemaValidator();
+  private readonly contracts = new Map<string,ReturnType<AjvJsonSchemaValidator['getValidator']>>();
   private readonly pending = new Map<string,{ hash: string;work: Promise<BridgeResponse> }>();
   private readonly cache = new Map<string,{ hash: string;response: BridgeResponse;bytes: number }>();
   private cacheBytes = 0;
@@ -56,6 +57,18 @@ export class ApplicationToolService {
     if(this.entry==='cli')return context.snapshot.schema===3?context.snapshot.packages.map(selection=>({selection,contracts:selection.capabilityContractMajors})):[];
     return context.snapshot.packages.map(selection=>({selection,contracts:selection.toolContractMajors}));
   }
+  private contractValidator(selected: SelectedTool,kind: 'input' | 'output') {
+    // The package hash fixes these schemas. Fresh parsed objects otherwise make
+    // Ajv retain a new compiled environment for every call. Authorization and
+    // package integrity are still checked before this compiler lookup.
+    const key = canonicalJson([this.entry,selected.application.packageHash,selected.declaration.name,selected.declaration.contractMajor,kind]);
+    let validate = this.contracts.get(key);
+    if (!validate) {
+      validate = this.validator.getValidator((kind === 'input' ? selected.tool.inputSchema : selected.tool.outputSchema) as JsonSchemaType);
+      this.contracts.set(key,validate);
+    }
+    return validate;
+  }
   private clock(): number { return this.options.now?.() ?? Date.now(); }
   private schema(source: string): { type: 'object';[key: string]: unknown } {
     const raw = Buffer.from(source,'utf8');
@@ -64,17 +77,18 @@ export class ApplicationToolService {
     if (!boundedJson(json) || !json || Array.isArray(json) || typeof json !== 'object' || (json as { type?: unknown }).type !== 'object') throw new ApplicationError('INVALID_PACKAGE','工具契约必须是有界JSON对象schema');
     return json as { type: 'object';[key: string]: unknown };
   }
-  private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true): SelectedTool {
+  private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true,listing?: { application: InstalledApplicationPackage;sources: ReadonlyMap<string,{input:string;output:string}> }): SelectedTool {
     const record=this.snapshotContracts(context).find(p=>Object.hasOwn(p.contracts,call.operation)),selected=record?.selection;
     if (!selected) throw context.unavailableApplication?.(call.operation,this.entry) ?? new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
     if (record?.contracts[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
     if(context.plan){const allowed=context.plan.allowed.find(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===call.operation&&c.contractMajor===call.contractMajor&&c.packageHash===selected.packageHash);if(!allowed)throw new ApplicationError('SCOPE_DENIED','能力不在本次运行允许表中');requirePlanEntry(context.plan,allowed.capabilityId,call.contractMajor,this.entry);}
     else if(this.entry==='cli')throw new ApplicationError('SCOPE_DENIED','CLI调用必须有固定运行计划');
-    const application = this.packages.get(selected.packageHash), declaration = applicationInvocationDeclarations(application.manifest,this.entry).find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
-    if (application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
+    const application = listing?.application ?? this.packages.get(selected.packageHash), declaration = applicationInvocationDeclarations(application.manifest,this.entry).find(t => t.name === call.operation && t.contractMajor === call.contractMajor);
+    if (application.packageHash !== selected.packageHash || application.appId !== selected.appId || !declaration || !selected.allowedOperations.includes(declaration.permission)) throw new ApplicationError('SCOPE_DENIED','工具不在此原会话允许的动作范围');
     const resource = this.store.get(application.resourceId); if (verifyBytes && (resource.state !== 'ready' || resource.integrity !== 'valid')) throw new ApplicationError('CAPABILITY_UNAVAILABLE','固定应用包尚不可用');
     if (verifyBytes) verifyPackageTree(join(this.store.root,application.relativePath),application,this.store.storeId);
-    const schemas = this.packages.toolContractSources(application.packageHash,declaration.name);
+    const schemas = listing ? listing.sources.get(declaration.name) : this.packages.toolContractSources(application.packageHash,declaration.name);
+    if (!schemas) throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原工具契约未留存，需从相同hash的可信完整包恢复');
     const inputSchema = this.schema(schemas.input);
     const originalDescription = typeof inputSchema.description === 'string' && inputSchema.description.length <= 2000 ? inputSchema.description : application.manifest.description,notice=applicationConnectionNotice(this.store,context.recorded??context.snapshot,application.appId);
     const description=notice?originalDescription+'\n\n'+notice:originalDescription;
@@ -86,9 +100,11 @@ export class ApplicationToolService {
       for (const {selection:application,contracts} of this.snapshotContracts(context)) {
         const group: BridgeTool[] = [];
         try {
-          const manifest = this.packages.get(application.packageHash).manifest;
+          const installed = this.packages.get(application.packageHash), manifest = installed.manifest;
+
           const permitted = Object.entries(contracts).filter(([name,major]) => {const declaration=applicationInvocationDeclarations(manifest,this.entry).find(t=>t.name===name);return !!declaration&&application.allowedOperations.includes(declaration.permission)&&(!context.plan&&this.entry==='mcp'||!!context.plan?.allowed.some(c=>(this.entry==='cli'?c.capabilityId:c.mcpTool)===name&&c.contractMajor===major&&c.packageHash===application.packageHash&&c.entry===this.entry));});
-          for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false).tool);
+          const listing = { application: installed,sources: this.packages.toolContractSourcesBatch(application.packageHash,permitted.map(([operation]) => operation)) };
+          for (const [operation,contractMajor] of permitted) group.push(this.selected(context,{ operation,contractMajor },false,listing).tool);
           tools.push(...group);
           if (permitted.length) { const [operation,contractMajor] = permitted[0]; this.selected(context,{ operation,contractMajor }); }
         }
@@ -146,7 +162,7 @@ export class ApplicationToolService {
         if (handler.semantics === 'write' && (handler.retry !== 'never' || selected.declaration.annotations.readOnlyHint)) throw new ApplicationError('HOST_INCOMPATIBLE','写操作不能使用通用自动重试');
         if (handler.semantics === 'read' && !selected.declaration.annotations.readOnlyHint) throw new ApplicationError('HOST_INCOMPATIBLE','宿主执行语义与固定工具契约不同');
         handler.authorize(context,call.connectionId);
-        if (!this.validator.getValidator(selected.tool.inputSchema as JsonSchemaType)(call.arguments).valid) throw new ApplicationError('INVALID_INPUT','参数不符合原工具输入契约');
+        if (!this.contractValidator(selected,'input')(call.arguments).valid) throw new ApplicationError('INVALID_INPUT','参数不符合原工具输入契约');
         const recorded = await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
           this.runs.assertActive(runId); handler.authorize(context,call.connectionId);
           const old = this.store.sqlite.prepare('SELECT * FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,requestId) as InvocationRow | undefined;
@@ -156,7 +172,7 @@ export class ApplicationToolService {
         }).immediate());
         if (recorded) { operationId = recorded.operation_id; attempts = recorded.attempt_count; effect = recorded.effect_state; throw new ApplicationError('REPLAY_UNAVAILABLE','已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行'); }
         const { signal,deadline,timeout } = control;
-        const outputValidator = this.validator.getValidator(selected.tool.outputSchema as JsonSchemaType), canRetry = handler.semantics === 'read' && handler.retry === 'safe-read';
+        const outputValidator = this.contractValidator(selected,'output'), canRetry = handler.semantics === 'read' && handler.retry === 'safe-read';
         while (true) {
           if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'调用已取消或到达本次时限');
           const fresh = this.runs.assertActive(runId); handler.authorize(fresh,call.connectionId); attempts++;

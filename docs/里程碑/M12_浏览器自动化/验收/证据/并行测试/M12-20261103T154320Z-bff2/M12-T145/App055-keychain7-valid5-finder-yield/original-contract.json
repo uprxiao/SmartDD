@@ -1,0 +1,47 @@
+{
+  "case": "T145",
+  "state": "B13-import-keychain-simulated",
+  "slots": 8,
+  "matrix": 456,
+  "originalCatalogEntry": {
+    "id": "B13-import-keychain-simulated",
+    "source": "B13/R01.12",
+    "title": "Cookie导入：keychain-simulated",
+    "required": true,
+    "P": {
+      "steps": [
+        {
+          "kind": "menu",
+          "text": "导入 Chrome／Edge 登录态"
+        },
+        {
+          "kind": "click",
+          "selector": ".bw-dialog button",
+          "text": "下一步"
+        },
+        {
+          "kind": "click",
+          "selector": ".bw-dialog button",
+          "text": "确认导入"
+        }
+      ],
+      "expect": "[role=dialog]"
+    },
+    "A": {
+      "status": "UNBOUND_PENDING_APP026_DRIVER",
+      "trigger": "P010仅表单可复用；后续步骤须绑定原合成browser/keychain受控夹具，绝不发现/读取日常浏览器或auth"
+    },
+    "layerBoundary": "P-only-simulated-system"
+  },
+  "approvedLayerMapping": "root-mapping.json",
+  "assertions": [
+    "RealUI selectsource,target/riskconfirmation/submit",
+    "Actual running title/status/KeyRound15/close+complete disabled",
+    "No targetCookie mutation/NativeStore set/remove/import-journal while pending",
+    "Controlled prewrite failure then actual result exact denialtext/zero targetwrite/ready and normalcleanup",
+    "Original P8 paired actual PNGs+geometry/fonts/theme/containment;4prototype-only buttons explicitly excluded from productcopy"
+  ],
+  "Sreuse": "Original T083 four realChrome/Edge deny/allow only; not8visualimages or new30s systemtimeout",
+  "actualExecuted": 0,
+  "formalIncrement": 0
+}

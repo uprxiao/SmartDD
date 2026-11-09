@@ -1,0 +1,42 @@
+{
+  "case": "M12-T083",
+  "layer": "S",
+  "originalLine": 133,
+  "fourBranches": [
+    "chrome-deny",
+    "chrome-allow",
+    "edge-deny",
+    "edge-allow"
+  ],
+  "sourceHome": "/private/tmp/willyou-m12-t083-real-browsers-001/home",
+  "serverReady": "/private/tmp/willyou-m12-t083-real-browsers-001/server-ready.json",
+  "seedReady": "/private/tmp/willyou-m12-t083-real-browsers-001/both-browsers-seeded.json",
+  "realProductionKeychain": true,
+  "noInjectedSourceKeychainCipherOrMock": true,
+  "expectedCookies": {
+    "chrome": {
+      "name": "m12_t083_chrome",
+      "value": "T083_SYNTHETIC_CHROME"
+    },
+    "edge": {
+      "name": "m12_t083_edge",
+      "value": "T083_SYNTHETIC_EDGE"
+    }
+  },
+  "keychainServiceLabels": {
+    "chrome": [
+      "Chrome Safe Storage",
+      "Chrome"
+    ],
+    "edge": [
+      "Microsoft Edge Safe Storage",
+      "Microsoft Edge"
+    ]
+  },
+  "negative": "Actual user Deny in real system prompt + UI failure + full owned target-cookie canonical hash unchanged",
+  "positive": "Actual user Allow in real system prompt + UI success + controlled native Cookie matches + real server response familyPresent true",
+  "taskFixture": "Explicitly approved synthetic idle PTY precondition only; no real AI/stockCLI command/model gate",
+  "manualProtocol": "Before each confirm, emit prompt-ready.json and await arm-NN.json {ready:true,userNotified:true}; exact window passive NativeDOM/OS3s, original stickyguard then one true UI confirm. During Keychain only read UI; Root records decision-NN.json {observedBy:user-live,promptShown:true,decision:deny|allow}. Never rearm or auto-focus.",
+  "waitPolicy": "Live manual waits do not auto-close on10min; Root stop.request.json is explicit coordinated stop. Production security timeout remains30s.",
+  "browserSourceIsolation": "Production sources.ts39 homedir/HOME default only; no applicationSupport override, no capture-main, no safeStorage substitute; Chrome/Edge source DB remains private real-browser outputs."
+}

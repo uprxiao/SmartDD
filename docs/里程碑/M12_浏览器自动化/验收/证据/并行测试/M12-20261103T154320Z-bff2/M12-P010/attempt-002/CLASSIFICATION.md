@@ -1,0 +1,1 @@
+UI首轮在T021快捷键前置超时，未到五匹配/前后切换；T022/T026设置子段未执行。初版判定把未到达子段写失败并有undefined==undefined误真，原判定initial保留，修正只判已执行段，不改raw/包/用例。后续同包键盘诊断见003：CDP事件进DOM但host无before-input-event；显式原生焦点与sendInputEvent路径触发host并打开查找。按驱动输入路径错误处理，不归为产品红，不把诊断算完整T021。

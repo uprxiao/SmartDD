@@ -1,0 +1,11 @@
+--- /private/tmp/willyou-m12-t124-real-R-cont-006/activate-initial-exact-pid.mjs
++++ /private/tmp/willyou-m12-t123-real-R-cont-002/activate-initial-exact-pid.mjs
+@@ -8,7 +8,7 @@
+ export async function activateInitialExactTestPid({app,pin,userData,privateRoot,authorization,scriptPath}){
+  assert.equal(process.platform,'darwin');
+  assert(authorization?.status==='explicitly-authorized'&&authorization.scope==='M12-isolated-initial-foreground-only'&&authorization.userMessageReference);
+- assert.equal(privateRoot,'/private/tmp/willyou-m12-t124-real-R-cont-006');assert.equal(userData,'/private/tmp/willyou-m12-t123-t124-real-R-004/runtime-001/userdata');
++ assert.equal(privateRoot,'/private/tmp/willyou-m12-t123-real-R-cont-002');assert.equal(userData,'/private/tmp/willyou-m12-t123-t124-real-R-004/runtime-001/userdata');
+  assert(pin.executable.startsWith('/private/tmp/willyou-m12-')&&pin.executable.endsWith('/WillYou.app/Contents/MacOS/WillYou'));
+  assert(Number.isInteger(app.processId)&&app.processId>1);
+  const script=await readFile(scriptPath);assert.equal(sha(script),authorization.scriptSHA256);

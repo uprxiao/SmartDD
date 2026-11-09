@@ -1,0 +1,108 @@
+{
+  "startedAt": "2026-11-05T23:05:29.461032+00:00",
+  "wrapperPid": 29237,
+  "targetRoot": "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003",
+  "scope": "external power lifecycle, original CM input and commands unchanged",
+  "phases": [
+    {
+      "label": "driver",
+      "startedAt": "2026-11-05T23:05:29.473879+00:00",
+      "command": [
+        "/usr/bin/caffeinate",
+        "-i",
+        "-s",
+        "/Users/liubu/.hermes/node/bin/node",
+        "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/run.mjs",
+        "--execute",
+        "--t09-cm"
+      ],
+      "signals": [],
+      "driverExit": null,
+      "pidLayout": "Observed utility retains Popen launcherPID; caffeinate direct-child guard must be verified, never assumed",
+      "launcherPid": 29242,
+      "error": {
+        "type": "AssertionError",
+        "message": "Exact Node utility PID/PPID/exe/argv not observed"
+      },
+      "finishedAt": "2026-11-05T23:05:34.514770+00:00"
+    },
+    {
+      "label": "cleanup",
+      "startedAt": "2026-11-05T23:05:34.515214+00:00",
+      "command": [
+        "/usr/bin/caffeinate",
+        "-i",
+        "-s",
+        "/Users/liubu/.hermes/node/bin/node",
+        "/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/verify-cleanup.mjs",
+        "--verify"
+      ],
+      "signals": [],
+      "driverExit": 1,
+      "pidLayout": "Observed utility retains Popen launcherPID; caffeinate direct-child guard must be verified, never assumed",
+      "launcherPid": 29399,
+      "error": {
+        "type": "AssertionError",
+        "message": "Exact Node utility PID/PPID/exe/argv not observed"
+      },
+      "finishedAt": "2026-11-05T23:05:34.623768+00:00"
+    }
+  ],
+  "errors": [
+    {
+      "type": "FileNotFoundError",
+      "message": "[Errno 2] No such file or directory: '/private/tmp/willyou-m12-t131-t09-lifecycle-ar-003/raw.private.json'"
+    }
+  ],
+  "knownIdentities": [
+    {
+      "pid": 29237,
+      "ppid": 8736,
+      "uid": 501,
+      "birth": "Fri Nov  6 07:05:29 2026",
+      "comm": "/Applications/Xc",
+      "argv": [
+        "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python",
+        "/private/tmp/willyou-m12-t09-cm-power-wrapper-001/run.py",
+        "--execute"
+      ]
+    }
+  ],
+  "permanentSettingsChanged": false,
+  "displayOrUserActiveFlagsRequested": false,
+  "heartbeatLayer": "Python wrapper, not Node event loop or proof against all clamshell sleep",
+  "formalCaseIncrement": 0,
+  "resourcesHeld": true,
+  "postTerminalVerificationRequired": true,
+  "wrapperIdentity": {
+    "pid": 29237,
+    "ppid": 8736,
+    "uid": 501,
+    "birth": "Fri Nov  6 07:05:29 2026",
+    "comm": "/Applications/Xc",
+    "argv": [
+      "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python",
+      "/private/tmp/willyou-m12-t09-cm-power-wrapper-001/run.py",
+      "--execute"
+    ]
+  },
+  "ACPowerBeforeDriver": {
+    "at": "2026-11-05T23:05:29.473520+00:00",
+    "ACPower": true,
+    "rawPowerOutputSaved": false
+  },
+  "judgePid": 29408,
+  "judgeExit": 1,
+  "conditionsVerifiedBeforeWrapperExit": false,
+  "heartbeatErrors": [],
+  "heartbeat": {
+    "layer": "Python wrapper only",
+    "intervalRequestedMs": 250,
+    "samples": 21,
+    "maxWallGapMs": 260.824,
+    "maxMonoGapMs": 260.819375,
+    "environmentGapReviewRequired": false,
+    "noProofAgainstAllSleepOrNodePause": true
+  },
+  "finishedAt": "2026-11-05T23:05:34.776342+00:00"
+}

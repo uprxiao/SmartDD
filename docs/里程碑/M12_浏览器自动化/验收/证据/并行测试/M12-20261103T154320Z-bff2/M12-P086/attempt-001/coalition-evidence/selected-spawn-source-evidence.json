@@ -1,0 +1,241 @@
+{
+  "source023ManifestSha256": "28e48dc679b777e5fe4e55ddb5c152ef74e046131955fd5a32f42867af6b1d42",
+  "helper77SourceCopyManifestSha256": "8ee2435e2019810409c47f1a8b97534738c937b3d2c01f8c74425172d62f13a3",
+  "sourceCopyIsNotBinaryReproducibilityProof": true,
+  "actualApp019ASAR": "f1995c81a490d3c7e899e1e94358402d863b4cff8fef20f4eab10d5cb0727868",
+  "references": [
+    {
+      "label": "source023/src/main/core/applications/process-identity.ts",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/applications/process-identity.ts",
+      "sha256": "dd9e4080843739ec20b5cb54b3bd80d2864d0e051cad21280854612598f00f0b",
+      "lineRanges": [
+        {
+          "start": 15,
+          "end": 26,
+          "text": "15:   constructor(private readonly helper: string) {}\n16:   private inspect(pid: number): z.infer<typeof response> {\n17:     if (process.platform !== 'darwin' || !Number.isSafeInteger(pid) || pid < 1 || pid > 2147483647) return { schema: 1,state: 'unknown' };\n18:     try { return response.parse(JSON.parse(execFileSync(this.helper,[String(pid)],{ timeout: 2000,maxBuffer: 4096,encoding: 'utf8',windowsHide: true,stdio: ['ignore','pipe','ignore'] }))); }\n19:     catch { return { schema: 1,state: 'unknown' }; }\n20:   }\n21:   read(pid: number): ProcessIdentity | null { const result = this.inspect(pid); return result.state === 'running' && result.pid === pid ? { pid: result.pid,startedAt: result.startedAt } : null; }\n22:   state(identity: ProcessIdentity): ProcessState {\n23:     if (!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(identity.startedAt)) return 'unknown';\n24:     const result = this.inspect(identity.pid);\n25:     if (result.state !== 'running') return result.state;\n26:     return result.pid === identity.pid && result.startedAt === identity.startedAt ? 'running' : 'stopped';"
+        }
+      ]
+    },
+    {
+      "label": "source023/native/applications/process-identity.cc",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/native/applications/process-identity.cc",
+      "sha256": "edfb9019632cffb1cd05f712f1cef6ea66eda941466213b6d0ff607a4a125b06",
+      "lineRanges": []
+    },
+    {
+      "label": "source023/native/applications/cli.mm",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/native/applications/cli.mm",
+      "sha256": "4a7270ae92b023cde091e5e80f25fd4bb66b6c0e171f206b70d1bbd2f960a861",
+      "lineRanges": [
+        {
+          "start": 38,
+          "end": 43,
+          "text": "38:   while(offset<message.size()){if(!ready(fd,POLLOUT,until))return nil;ssize_t n=write(fd,message.data()+offset,message.size()-offset);if(n<0&&(errno==EINTR||errno==EAGAIN||errno==EWOULDBLOCK))continue;if(n<=0)return nil;offset+=(size_t)n;}sent=true;\n39:   std::string response;while(response.size()<=responseLimit){if(!ready(fd,POLLIN,until))return nil;char chunk[8192];ssize_t n=read(fd,chunk,sizeof(chunk));if(n<0&&(errno==EINTR||errno==EAGAIN||errno==EWOULDBLOCK))continue;if(n<=0)return nil;response.append(chunk,(size_t)n);size_t line=response.find('\\n');if(line==std::string::npos)continue;if(line>responseLimit||line+1!=response.size())return nil;NSData *data=[NSData dataWithBytes:response.data() length:line];id parsed=[NSJSONSerialization JSONObjectWithData:data options:0 error:nil];if(![parsed isKindOfClass:NSDictionary.class]||![parsed[@\"schema\"] isEqual:@1]||![parsed[@\"id\"] isEqual:request[@\"id\"]])return nil;return parsed;}return nil;\n40: }\n41: int main(int argc,const char *argv[]){@autoreleasepool{\n42:   signal(SIGPIPE,SIG_IGN);\n43:   NSMutableArray<NSString*> *args=[NSMutableArray array];for(int i=1;i<argc;i++){NSString *arg=[[NSString alloc] initWithUTF8String:argv[i]];if(!arg)return failure(@\"INVALID_INPUT\",@\"参数必须是完整UTF-8\",2);[args addObject:arg];}"
+        },
+        {
+          "start": 74,
+          "end": 84,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "label": "source023/src/main/core/applications/unix-peer-identity.ts",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/applications/unix-peer-identity.ts",
+      "sha256": "f46474c0f9fb9451f0d8980440846f406b18fc00b88f9ea7ec038b277f0bf798",
+      "lineRanges": [
+        {
+          "start": 15,
+          "end": 29,
+          "text": "15:  async read(socket:Socket):Promise<UnixPeerIdentity|null>{\n16:   if(process.platform!=='darwin'||socket.destroyed)return null;\n17:   // Narrow, guarded Node adapter: passing Socket itself as stdio transfers/pauses\n18:   // its readable side. A numeric inherited descriptor leaves the host stream alone.\n19:   const fd=(socket as Socket & {_handle?:{fd?:number}})._handle?.fd;if(!Number.isInteger(fd)||fd!<0)return null;\n20:   try{\n21:    // Only this accepted socket's descriptor is inherited; no PID/fd comes from RPC.\n22:    const raw=await new Promise<Buffer|null>(resolve=>{let child:ReturnType<typeof spawn>;try{child=spawn(this.helper,['--peer-fd','3'],{windowsHide:true,stdio:['ignore','pipe','ignore',fd!]});}catch{resolve(null);return;}let bytes=Buffer.alloc(0),failed=false;const timer=setTimeout(()=>{failed=true;child.kill('SIGKILL');},2000);timer.unref();child.once('error',()=>{failed=true;});child.stdout?.on('error',()=>{failed=true;});child.stdout?.on('data',chunk=>{if(bytes.length+chunk.length>16384){failed=true;child.kill('SIGKILL');}else bytes=Buffer.concat([bytes,chunk]);});child.once('close',code=>{clearTimeout(timer);resolve(!failed&&code===0?bytes:null);});});\n23:    if(!raw)return null;const value=schema.parse(JSON.parse(raw.toString('utf8')));\n24:    if(value.state!=='running'||value.uid!==process.getuid?.()||value.peer.pid!==value.ancestors[0].pid||value.peer.startedAt!==value.ancestors[0].startedAt||new Set(value.ancestors.map(item=>item.pid)).size!==value.ancestors.length||value.ancestors.some((item,index)=>index+1<value.ancestors.length&&item.ppid!==value.ancestors[index+1].pid))return null;\n25:    return value;\n26:   }catch{return null;}\n27:  }\n28: }"
+        }
+      ]
+    },
+    {
+      "label": "source023/src/main/core/applications/cli-gateway.ts",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/applications/cli-gateway.ts",
+      "sha256": "77b6cb85c9a35037ce969e9bf8385aecb071b184d1ba744649445edafb335bef",
+      "lineRanges": [
+        {
+          "start": 70,
+          "end": 88,
+          "text": "70:   }\n71:   private async authenticate(peer:Peer,request:ApplicationCliRequest):Promise<RunContext>{\n72:     // Budget/schema, token, kernel identity, executable, exact ancestor birth, entry, then business scope.\n73:     const binding=this.tokens.get(digest(request.token));if(!binding)throw new ApplicationError('AUTH_REQUIRED','本次CLI身份不存在或已撤销');\n74:     if(binding.expiresAt<=this.clock()&&!this.renew(binding)){this.revokeRun(binding.runId);throw new ApplicationError('TOKEN_EXPIRED','本次CLI身份已过期');}\n75:     const identity=await this.identities.read(peer.socket);if(!identity||identity.uid!==process.getuid?.())throw new ApplicationError('PEER_UNVERIFIABLE','无法核验CLI内核对端身份');\n76:     if(identity.peer.executable!==this.executable())throw new ApplicationError('EXECUTABLE_MISMATCH','对端不是本次受管CLI程序');\n77:     if(this.tokens.get(digest(request.token))!==binding)throw new ApplicationError('AUTH_REQUIRED','本次CLI身份已撤销');\n78:     const run=this.runs.get(binding.runId);\n79:     if(!run.pid||!run.processStartedAt||!identity.ancestors.some(p=>p.pid===run.pid&&p.startedAt===run.processStartedAt))throw new ApplicationError('PEER_MISMATCH','CLI对端不属于本次受管进程树');\n80:     const context=this.current(binding);\n81:     if(!context.plan?.grades.cli||!context.plan.allowed.some(c=>c.entry==='cli'))throw new ApplicationError('ENTRY_NOT_ACTIVE','CLI不是本次生效入口');\n82:     if(request.method==='capabilities/call')requirePlanEntry(context.plan,request.call.operation,request.call.contractMajor,'cli');\n83:     if(this.options.authorizationStamp){let current:string|undefined;try{current=this.options.authorizationStamp(context);}catch{/* A removed/disabled binding is an authorization change. */}if(current!==binding.authorizationStamp){this.revokeRun(binding.runId);throw new ApplicationError('SCOPE_DENIED','本次CLI绑定授权已变化，请启动合法的新运行');}}\n84:     peer.authenticatedRun=binding.runId;return context;\n85:   }\n86:   private accept(socket:Socket):void{\n87:     const peer:Peer={socket,buffer:Buffer.alloc(0),controllers:new Map(),inFlight:0};this.peers.add(peer);socket.on('error',()=>{});socket.setTimeout(120000,()=>socket.destroy());\n88:     socket.on('close',()=>{this.peers.delete(peer);for(const work of peer.controllers.values())work.abort.abort();});"
+        }
+      ]
+    },
+    {
+      "label": "source023/src/main/core/browser/agent-browser.ts",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/browser/agent-browser.ts",
+      "sha256": "c3157ecd70834f62d2a98f7998864ee807088132d2de75e9bf01c1171b173c77",
+      "lineRanges": [
+        {
+          "start": 34,
+          "end": 60,
+          "text": "34:   }\n35:   private socketDirectory(): string { return this.options.sockets ?? join(this.options.home, 'sockets'); }\n36:   private async observeDaemon(): Promise<void> {\n37:     if (!this.options.processes) return;\n38:     try {\n39:       const pid = Number(await readFile(join(this.socketDirectory(), this.options.session + '.pid'), 'utf8'));\n40:       if (Number.isSafeInteger(pid) && pid > 1 && (!this.daemon || this.daemon.pid !== pid)) this.daemon = this.options.processes.read(pid) ?? undefined;\n41:     } catch { /* The helper has not published its owned PID yet. */ }\n42:   }\n43:   private environment(): NodeJS.ProcessEnv {\n44:     return { PATH: process.env.PATH, HOME: this.options.home, TMPDIR: join(this.options.home, 'tmp'),\n45:       XDG_CONFIG_HOME: join(this.options.home, 'config'), XDG_CACHE_HOME: join(this.options.home, 'cache'),\n46:       AGENT_BROWSER_SOCKET_DIR: this.socketDirectory(), AGENT_BROWSER_IDLE_TIMEOUT_MS: '600000',\n47:       // The explicit dialog accept/dismiss contract includes alerts. The pinned\n48:       // kernel otherwise consumes alert/beforeunload before the caller can act.\n49:       AGENT_BROWSER_NO_AUTO_DIALOG: '1' };\n50:   }\n51:   private async checkSession(): Promise<boolean> {\n52:     await this.closing;\n53:     await this.prepare();\n54:     if (!this.daemon || !this.options.processes) return false;\n55:     const state = this.options.processes.state(this.daemon);\n56:     if (state === 'unknown') throw new BrowserError('BROWSER_UNAVAILABLE', '无法核对本页 agent-browser 进程身份');\n57:     if (state === 'running') return false;\n58:     await this.close(); // Invalidate refs before any action can arm an old generation.\n59:     return true;\n60:   }"
+        },
+        {
+          "start": 80,
+          "end": 115,
+          "text": "80:   async command(command: readonly string[], options: { signal?: AbortSignal; timeout?: number; dispatched?: () => void; sessionRevision?: number } = {}): Promise<unknown> {\n81:     if (command[0] === 'clipboard' && command[1] === 'write' && Buffer.byteLength(command.slice(2).join(' '), 'utf8') > 16 * 1024 * 1024)\n82:       throw new ApplicationError('INVALID_INPUT', '剪贴板文本超过16MiB宿主上限');\n83:     await this.checkSession();\n84:     if (options.sessionRevision !== undefined && options.sessionRevision !== this.revision) throw new BrowserInputInterrupted();\n85:     if (options.signal?.aborted) {\n86:       await this.closing;\n87:       throw options.signal.reason ?? new BrowserError('BROWSER_ERROR', '操作已取消');\n88:     }\n89:     const timeout = options.timeout ?? 90000;\n90:     const output = await new Promise<{ stdout: string; error: Error | null; timedOut: boolean }>(resolve => {\n91:       let timedOut = false;\n92:       const child = execFile(this.options.executable,\n93:         ['--session', this.options.session, '--cdp', this.options.endpoint, 'batch', '--json'],\n94:         { env: this.environment(), maxBuffer: 16 * 1024 * 1024 }, (error, stdout) => {\n95:           clearTimeout(timer); clearTimeout(hardKill); clearInterval(observe); options.signal?.removeEventListener('abort', cancel);\n96:           if (this.active === child) this.active = undefined;\n97:           resolve({ stdout, error, timedOut });\n98:         });\n99:       this.active = child;\n100:       let hardKill: ReturnType<typeof setTimeout> | undefined;\n101:       const observe = setInterval(() => { void this.observeDaemon(); }, 100);\n102:       const cancel = () => { child.kill('SIGTERM'); hardKill ??= setTimeout(() => child.kill('SIGKILL'), 250); void this.close(); };\n103:       const timer = setTimeout(() => { timedOut = true; cancel(); }, timeout);\n104:       options.signal?.addEventListener('abort', cancel, { once: true });\n105:       child.stdin!.on('error', () => {});\n106:       child.stdin!.end(JSON.stringify([command]), () => options.dispatched?.());\n107:     });\n108:     // Fast commands can finish before the 100ms observer ticks. Keep the kernel birth identity\n109:     // after every response so a later killed/reused PID cannot leave old refs valid.\n110:     await this.observeDaemon();\n111:     if (output.timedOut) {\n112:       await this.closing;\n113:       return this.timeoutFailure(timeout);\n114:     }\n115:     if (options.signal?.aborted) {"
+        }
+      ]
+    },
+    {
+      "label": "source023/src/main/core/applications/skill-observation-monitor.ts",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/applications/skill-observation-monitor.ts",
+      "sha256": "83f29cb6cd5ccb0ef9e63c61e0731215b2ec044ecfa611baffc017cd746728f6",
+      "lineRanges": [
+        {
+          "start": 4,
+          "end": 22,
+          "text": "4:  private closed=false;\n5:  constructor(private readonly collect:(taskId:string,runId:string)=>Promise<void>,private readonly intervalMs=2000,private readonly stopped?:(runId:string)=>void){}\n6:  start(taskId:string,runId:string,signal:AbortSignal):void{\n7:   if(this.closed||signal.aborted)return;\n8:   const existing=this.entries.get(runId);if(existing){existing.refresh();return;}\n9:   let timer:ReturnType<typeof setTimeout>|undefined,canceled=false,running=false,requested=false;\n10:   const cancel=()=>{if(canceled)return;canceled=true;if(timer)clearTimeout(timer);signal.removeEventListener('abort',cancel);this.entries.delete(runId);this.stopped?.(runId);};\n11:   const tick=async()=>{\n12:    if(canceled||this.closed)return;\n13:    if(running){requested=true;return;}\n14:    running=true;\n15:    try{await this.collect(taskId,runId);}catch{/* Missing evidence cannot interrupt the Agent. */}\n16:    running=false;\n17:    if(!canceled&&!this.closed){const delay=requested?0:this.intervalMs;requested=false;timer=setTimeout(()=>{void tick();},delay);timer.unref();}\n18:   };\n19:   const refresh=()=>{if(canceled||this.closed)return;if(timer)clearTimeout(timer);void tick();};\n20:   this.entries.set(runId,{cancel,refresh});signal.addEventListener('abort',cancel,{once:true});\n21:   void tick();\n22:  }"
+        }
+      ]
+    },
+    {
+      "label": "source023/src/main/core/applications/task-capability-launcher.ts",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "7b8182e0e9895c8e60dfd36bc4eb57fc4a579ad2f50bf87f26f003d081368b50",
+      "lineRanges": [
+        {
+          "start": 73,
+          "end": 80,
+          "text": "73:   readonly runs:CapabilityRunRegistry;\n74:   readonly bridges:AgentBridgeProcesses;\n75:   readonly broker:PrivateApplicationBroker;\n76:   readonly bridgeRecovery=new BridgeSupervisor();\n77:   private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.collectSkillObservations(taskId,runId);},undefined,runId=>this.applications.sessionDiagnostics.forgetSkillObservations(runId));\n78:   private readonly recoveryServices=new Map<string,string>();\n79:   readonly claudeDelivery:ClaudeDeliveryCoordinator;\n80:   private readonly catalogs=new Map<string,DiscoveryCatalog>();"
+        }
+      ]
+    },
+    {
+      "label": "source023/src/main/core/applications/session-diagnostics.ts",
+      "path": "/private/tmp/willyou-m12-p078-source-023/source/src/main/core/applications/session-diagnostics.ts",
+      "sha256": "318f6b48ce02abb0f7c62cfde195dee064ecd0b6ffd95ff32e157ba4b43b7754",
+      "lineRanges": [
+        {
+          "start": 75,
+          "end": 95,
+          "text": "75:  }\n76:  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}\n77:  /** Background polling writes nothing until native evidence can have changed.\n78:   * SQL/native hints only suppress redundant work; inspect() still independently\n79:   * checks current ownership, resources and evidence before and after native IO. */\n80:  async collectSkillObservations(taskId:string,runId:string):Promise<void>{\n81:   const hint=this.store.sqlite.prepare(\"SELECT r.snapshot_hash AS snapshotHash,i.session_id AS sessionId FROM capability_runs r JOIN capability_session_identities i ON i.task_id=r.task_id WHERE r.run_id=? AND r.task_id=? AND r.state='active' AND r.revocation_state='open'\").get(runId,taskId) as {snapshotHash:string;sessionId:string|null}|undefined;\n82:   if(!hint?.sessionId){this.forgetSkillObservations(runId);return;}\n83:   let state=this.observationPolls.get(runId);\n84:   if(!state||state.taskId!==taskId||state.snapshotHash!==hint.snapshotHash){\n85:    if(this.observationPolls.size>=128)this.observationPolls.delete(this.observationPolls.keys().next().value!);\n86:    state={taskId,snapshotHash:hint.snapshotHash,revision:null};this.observationPolls.set(runId,state);\n87:   }\n88:   const revision=this.deps.skillObservationRevision?await this.deps.skillObservationRevision(runId,hint.snapshotHash):null;\n89:   if(this.deps.skillObservationRevision&&(!revision||revision===state.revision))return;\n90:   const value=await this.inspect(taskId,runId);\n91:   if(this.observationPolls.get(runId)===state&&value.snapshotHash===hint.snapshotHash&&value.currentRun?.id===runId&&value.currentRun.preparation?.state==='prepared'&&!value.currentRun.preparationIssue&&!value.currentRun.skillObservationIssue&&value.applications.every(app=>!app.packageHash||app.resourceState==='verified'))state.revision=revision;\n92:  }\n93:  forgetSkillObservations(runId:string):void{this.observationPolls.delete(runId);}\n94:  async prepared(value:SessionPreparationEvidence):Promise<void>{\n95:   const evidence=preparationSchema.parse(value),text=canonicalJson(evidence);"
+        }
+      ]
+    },
+    {
+      "label": "helper6b/cli/src/connection.rs",
+      "path": "/private/tmp/willyou-m12-helper6b-source-001/cli/src/connection.rs",
+      "sha256": "8513817a172cd1048f80de16c1588d8d0f83d55f67322e43b7ca480feea01a5f",
+      "lineRanges": [
+        {
+          "start": 131,
+          "end": 145,
+          "text": "131: pub fn cleanup_stale_files(session: &str) {\n132:     let pid_path = get_pid_path(session);\n133:     let _ = fs::remove_file(&pid_path);\n134:     let version_path = get_version_path(session);\n135:     let _ = fs::remove_file(&version_path);\n136:     let stream_path = get_socket_dir().join(format!(\"{}.stream\", session));\n137:     let _ = fs::remove_file(&stream_path);\n138: \n139:     #[cfg(unix)]\n140:     {\n141:         let socket_path = get_socket_path(session);\n142:         let _ = fs::remove_file(&socket_path);\n143:     }\n144: \n145:     #[cfg(windows)]"
+        },
+        {
+          "start": 579,
+          "end": 611,
+          "text": "579: pub fn ensure_daemon(session: &str, opts: &DaemonOptions) -> Result<DaemonResult, String> {\n580:     // Socket connectivity is the sole liveness check — no PID check — so\n581:     // callers in a different PID namespace (e.g. unshare) can still reuse\n582:     // an existing daemon they can reach over the socket.\n583:     //\n584:     // No settle-sleep here: this runs on every CLI invocation, so a fixed\n585:     // delay would tax every command (a 150ms sleep used to dominate warm\n586:     // command latency). The rare race where the daemon exits right after\n587:     // this check is handled at request time: callers respawn via\n588:     // ensure_daemon when the request fails with daemon_unreachable().\n589:     if daemon_ready(session) {\n590:         // Check version: if the running daemon is from a different CLI\n591:         // version (e.g. after an upgrade), kill it and start a fresh one.\n592:         if !daemon_version_matches(session) {\n593:             eprintln!(\n594:                 \"{} Daemon version mismatch detected, restarting...\",\n595:                 crate::color::warning_indicator()\n596:             );\n597:             kill_stale_daemon(session);\n598:             // Fall through to spawn a new daemon below\n599:         } else {\n600:             return Ok(DaemonResult {\n601:                 already_running: true,\n602:             });\n603:         }\n604:     }\n605: \n606:     // Clean up any stale socket/pid files before starting fresh\n607:     cleanup_stale_files(session);\n608: \n609:     // Ensure socket directory exists\n610:     let socket_dir = get_socket_dir();\n611:     if !socket_dir.exists() {"
+        },
+        {
+          "start": 651,
+          "end": 677,
+          "text": "651:     let mut daemon_child: Option<std::process::Child> = None;\n652: \n653:     #[cfg(unix)]\n654:     {\n655:         use std::os::unix::process::CommandExt;\n656: \n657:         let mut cmd = Command::new(&exe_path);\n658:         cmd.env(\"AGENT_BROWSER_DAEMON\", \"1\");\n659:         apply_daemon_env(&mut cmd, session, opts);\n660: \n661:         unsafe {\n662:             cmd.pre_exec(|| {\n663:                 libc::setsid();\n664:                 Ok(())\n665:             });\n666:         }\n667: \n668:         daemon_child = Some(\n669:             cmd.stdin(Stdio::null())\n670:                 .stdout(Stdio::null())\n671:                 .stderr(Stdio::piped())\n672:                 .spawn()\n673:                 .map_err(|e| format!(\"Failed to start daemon: {}\", e))?,\n674:         );\n675:     }\n676: \n677:     #[cfg(windows)]"
+        }
+      ]
+    },
+    {
+      "label": "helper6b/cli/src/native/daemon.rs",
+      "path": "/private/tmp/willyou-m12-helper6b-source-001/cli/src/native/daemon.rs",
+      "sha256": "1f1e3b481c0bf42fc646fe09cc61840a67534595f876018cda3c41c86fc488b0",
+      "lineRanges": [
+        {
+          "start": 62,
+          "end": 86,
+          "text": "62:     let pid_path = socket_dir.join(format!(\"{}.pid\", session));\n63:     let _ = fs::write(&pid_path, process::id().to_string());\n64: \n65:     let version_path = socket_dir.join(format!(\"{}.version\", session));\n66:     let _ = fs::write(&version_path, env!(\"CARGO_PKG_VERSION\"));\n67: \n68:     // On Unix the daemon listens on a Unix domain socket; on Windows it uses\n69:     // TCP, so there is no .sock file — only a .port file written by the server.\n70:     let socket_path = socket_dir.join(format!(\"{}.sock\", session));\n71: \n72:     #[cfg(unix)]\n73:     if socket_path.exists() {\n74:         let _ = fs::remove_file(&socket_path);\n75:     }\n76: \n77:     #[cfg(windows)]\n78:     {\n79:         let _ = fs::remove_file(socket_dir.join(format!(\"{}.port\", session)));\n80:     }\n81: \n82:     let stream_path = socket_dir.join(format!(\"{}.stream\", session));\n83:     let _ = fs::remove_file(&stream_path);\n84:     let _ = fs::remove_file(socket_dir.join(format!(\"{}.engine\", session)));\n85:     let _ = fs::remove_file(socket_dir.join(format!(\"{}.provider\", session)));\n86:     let _ = fs::remove_file(socket_dir.join(format!(\"{}.extensions\", session)));"
+        },
+        {
+          "start": 116,
+          "end": 143,
+          "text": "116:     // Disabled when unset or 0.\n117:     let idle_timeout_ms = env::var(\"AGENT_BROWSER_IDLE_TIMEOUT_MS\")\n118:         .ok()\n119:         .and_then(|s| s.parse::<u64>().ok())\n120:         .filter(|&ms| ms > 0);\n121: \n122:     let result = run_socket_server(\n123:         &socket_path,\n124:         session,\n125:         stream_client,\n126:         stream_server_instance,\n127:         idle_timeout_ms,\n128:     )\n129:     .await;\n130: \n131:     #[cfg(unix)]\n132:     {\n133:         let _ = fs::remove_file(&socket_path);\n134:     }\n135:     #[cfg(windows)]\n136:     {\n137:         let _ = fs::remove_file(socket_dir.join(format!(\"{}.port\", session)));\n138:     }\n139:     let _ = fs::remove_file(&pid_path);\n140:     let _ = fs::remove_file(&version_path);\n141:     let _ = fs::remove_file(&stream_path);\n142:     let _ = fs::remove_file(socket_dir.join(format!(\"{}.engine\", session)));\n143:     let _ = fs::remove_file(socket_dir.join(format!(\"{}.provider\", session)));"
+        }
+      ]
+    },
+    {
+      "label": "helper6b/cli/src/native/actions.rs",
+      "path": "/private/tmp/willyou-m12-helper6b-source-001/cli/src/native/actions.rs",
+      "sha256": "07b002dc194e551a7fb29082bcc89bca3c70b3aed55769afac4eba3cec060d89",
+      "lineRanges": [
+        {
+          "start": 2110,
+          "end": 2134,
+          "text": "2110: \n2111:     let has_cdp = cdp_url.is_some() || cdp_port.is_some();\n2112:     super::browser::validate_launch_options(\n2113:         launch_options.extensions.as_deref(),\n2114:         has_cdp,\n2115:         launch_options.profile.as_deref(),\n2116:         storage_state,\n2117:         launch_options.allow_file_access,\n2118:         launch_options.executable_path.as_deref(),\n2119:     )?;\n2120: \n2121:     if let Some(url) = cdp_url {\n2122:         state.reset_input_state();\n2123:         state.browser = Some(BrowserManager::connect_cdp(url).await?);\n2124:         state.subscribe_to_browser_events();\n2125:         state.start_fetch_handler();\n2126:         state.start_dialog_handler();\n2127:         state.update_stream_client().await;\n2128:         load_storage_state_or_rollback(state, &storage_state_owned).await?;\n2129:         apply_launch_init_scripts(state).await;\n2130:         return Ok(json!({ \"launched\": true }));\n2131:     }\n2132: \n2133:     if let Some(port) = cdp_port {\n2134:         state.reset_input_state();"
+        },
+        {
+          "start": 2631,
+          "end": 2681,
+          "text": "2631: async fn handle_snapshot(cmd: &Value, state: &mut DaemonState) -> Result<Value, String> {\n2632:     let mgr = state.browser.as_ref().ok_or(\"Browser not launched\")?;\n2633:     let session_id = mgr.active_session_id()?.to_string();\n2634: \n2635:     let options = SnapshotOptions {\n2636:         selector: cmd\n2637:             .get(\"selector\")\n2638:             .and_then(|v| v.as_str())\n2639:             .map(String::from),\n2640:         interactive: cmd\n2641:             .get(\"interactive\")\n2642:             .and_then(|v| v.as_bool())\n2643:             .unwrap_or(false),\n2644:         compact: cmd\n2645:             .get(\"compact\")\n2646:             .and_then(|v| v.as_bool())\n2647:             .unwrap_or(false),\n2648:         depth: cmd\n2649:             .get(\"maxDepth\")\n2650:             .and_then(|v| v.as_u64())\n2651:             .map(|d| d as usize),\n2652:         urls: cmd.get(\"urls\").and_then(|v| v.as_bool()).unwrap_or(false),\n2653:     };\n2654: \n2655:     state.ref_map.clear();\n2656:     let tree = snapshot::take_snapshot(\n2657:         &mgr.client,\n2658:         &session_id,\n2659:         &options,\n2660:         &mut state.ref_map,\n2661:         state.active_frame_id.as_deref(),\n2662:         &state.iframe_sessions,\n2663:     )\n2664:     .await?;\n2665: \n2666:     let url = mgr.get_url().await.unwrap_or_default();\n2667: \n2668:     let refs: serde_json::Map<String, Value> = state\n2669:         .ref_map\n2670:         .entries_sorted()\n2671:         .into_iter()\n2672:         .map(|(ref_id, entry)| {\n2673:             let mut obj = serde_json::Map::new();\n2674:             obj.insert(\"role\".into(), Value::String(entry.role));\n2675:             obj.insert(\"name\".into(), Value::String(entry.name));\n2676:             (ref_id, Value::Object(obj))\n2677:         })\n2678:         .collect();\n2679: \n2680:     Ok(json!({ \"snapshot\": tree, \"origin\": url, \"refs\": refs }))\n2681: }"
+        }
+      ]
+    },
+    {
+      "label": "helper6b/cli/src/native/browser.rs",
+      "path": "/private/tmp/willyou-m12-helper6b-source-001/cli/src/native/browser.rs",
+      "sha256": "2830ab3baf0a03cdb8684d888070960b6980cdcfa7e1c14b7832a0a5c4fb7800",
+      "lineRanges": [
+        {
+          "start": 451,
+          "end": 485,
+          "text": "451:     async fn connect_cdp_inner(\n452:         url: &str,\n453:         direct_page: bool,\n454:         headers: Option<Vec<(String, String)>>,\n455:     ) -> Result<Self, String> {\n456:         let ws_url = resolve_cdp_url(url).await?;\n457:         let client = Arc::new(CdpClient::connect_with_headers(&ws_url, headers).await?);\n458:         let mut manager = Self {\n459:             client,\n460:             browser_process: None,\n461:             ws_url,\n462:             pages: Vec::new(),\n463:             active_page_index: 0,\n464:             default_timeout_ms: 25_000,\n465:             download_path: None,\n466:             ignore_https_errors: false,\n467:             visited_origins: HashSet::new(),\n468:             next_tab_id: 1,\n469:         };\n470: \n471:         if direct_page {\n472:             let tab_id = manager.assign_tab_id();\n473:             manager.pages.push(PageInfo {\n474:                 tab_id,\n475:                 label: None,\n476:                 target_id: \"provider-page\".to_string(),\n477:                 session_id: String::new(),\n478:                 url: String::new(),\n479:                 title: String::new(),\n480:                 target_type: \"page\".to_string(),\n481:             });\n482:             manager.active_page_index = 0;\n483:             manager.enable_domains_direct().await?;\n484:         } else {\n485:             manager.discover_and_attach_targets().await?;"
+        }
+      ]
+    },
+    {
+      "label": "helper6b/cli/src/main.rs",
+      "path": "/private/tmp/willyou-m12-helper6b-source-001/cli/src/main.rs",
+      "sha256": "b01d3902d51827d8b44ab9cc7069ce37b0cb4f3f0a8c361e1a9f7265b6ccba9a",
+      "lineRanges": [
+        {
+          "start": 252,
+          "end": 260,
+          "text": "252:     let pid_path = get_dashboard_pid_path();\n253: \n254:     // Check if already running\n255:     if let Ok(pid_str) = fs::read_to_string(&pid_path) {\n256:         if let Ok(pid) = pid_str.trim().parse::<u32>() {\n257:             if is_pid_alive(pid) {\n258:                 if json_mode {\n259:                     print_json_value(json!({\n260:                         \"success\": true,"
+        },
+        {
+          "start": 293,
+          "end": 325,
+          "text": "293:     let mut cmd = std::process::Command::new(&exe_path);\n294:     cmd.env(\"AGENT_BROWSER_DASHBOARD\", \"1\")\n295:         .env(\"AGENT_BROWSER_DASHBOARD_PORT\", port.to_string());\n296: \n297:     #[cfg(unix)]\n298:     {\n299:         use std::os::unix::process::CommandExt;\n300:         unsafe {\n301:             cmd.pre_exec(|| {\n302:                 libc::setsid();\n303:                 Ok(())\n304:             });\n305:         }\n306:     }\n307: \n308:     #[cfg(windows)]\n309:     {\n310:         use std::os::windows::process::CommandExt;\n311:         const CREATE_NEW_PROCESS_GROUP: u32 = 0x00000200;\n312:         const DETACHED_PROCESS: u32 = 0x00000008;\n313:         cmd.creation_flags(CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS);\n314:     }\n315: \n316:     match cmd\n317:         .stdin(std::process::Stdio::null())\n318:         .stdout(std::process::Stdio::null())\n319:         .stderr(std::process::Stdio::null())\n320:         .spawn()\n321:     {\n322:         Ok(child) => {\n323:             let pid = child.id();\n324:             let _ = fs::write(&pid_path, pid.to_string());\n325: "
+        }
+      ]
+    },
+    {
+      "label": "actual005/receiver.py",
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source023-cpu-preflight-005/receiver.py",
+      "sha256": "b267d82ad661470a2a1448daa4ff72e344535a895a801ad6a7ef52c63615d139",
+      "lineRanges": []
+    },
+    {
+      "label": "actual005/run.mjs",
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source023-cpu-preflight-005/run.mjs",
+      "sha256": "4785786b236475db5490bd1b380f7f5aacc2f32e2de499b6e66b83e4a1c1c2a8",
+      "lineRanges": []
+    },
+    {
+      "label": "actual005/cpu_collector.py",
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source023-cpu-preflight-005/cpu_collector.py",
+      "sha256": "ffcd3c96597c59ec8b31d75a1adcde4f103956b1afa38e352cb90ecd56fed4ca",
+      "lineRanges": []
+    },
+    {
+      "label": "actual005/cpu_judge.py",
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source023-cpu-preflight-005/cpu_judge.py",
+      "sha256": "22332440fdf68fe09f3dd4568369f089bb2dc4c1fa77afd69134f07d4148e45d",
+      "lineRanges": []
+    },
+    {
+      "label": "actual005/analyze.py",
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source023-cpu-preflight-005/analyze.py",
+      "sha256": "baf806956315f6ea83b6471602ecc173d754155bf0304f31e25e5e93664adf37",
+      "lineRanges": []
+    },
+    {
+      "label": "actual005/resource-sampler.py",
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source023-cpu-preflight-005/resource-sampler.py",
+      "sha256": "a465c8737953dbfe69b5eeee1739230d3b0893370a745d4ace96640715374b02",
+      "lineRanges": []
+    }
+  ]
+}

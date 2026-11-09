@@ -1,0 +1,19 @@
+import { createRequire } from 'node:module';
+import { describe, expect, it } from 'vitest';
+import MarkdownIt from 'markdown-it';
+import { installDollarMath, markdownMathOptions } from './markdown-dollar-math.mjs';
+const require = createRequire(import.meta.url), texmath = require('markdown-it-texmath');
+const reference = new MarkdownIt().use(texmath, { engine: { renderToString: () => 'U-reference-render-only' }, delimiters: 'dollars' });
+const deferred = new MarkdownIt(); installDollarMath(deferred);
+const tokens = (md: MarkdownIt, source: string): unknown => md.parse(source, {}).map(token => ({ type: token.type, tag: token.tag, markup: token.markup, map: token.map, info: token.info, content: token.content, children: token.children?.map(child => ({ type: child.type, tag: child.tag, markup: child.markup, content: child.content })) }));
+const cases = [
+ ['plain', 'No formula 中文🙂'], ['inline', 'x $a^2$ y'], ['single', '$a$'], ['inline-double', 'x $$a+b$$ y'], ['block', '$$\n\\frac{a}{b}\n$$\n'], ['eqno', '$$x+y$$ (eq-1)'], ['adjacent', '$a$ and $b$'], ['same', '🙂 $x^2$ and $x^2$'], ['cjk', '中文 $\\alpha+β$ 文本'], ['crlf', '# H\r\n\r\n$$\r\nx+y\r\n$$\r\n'], ['cr', 'A\r\r$$\rx+y\r$$\r'], ['blockquote', '> $$\n> a+b\n> $$\n'], ['list', '- math $x+y$\n- next'], ['table', '| A | B |\n| - | - |\n| $a$ | $b$ |'], ['fenced', '```tex\n$x+y$\n```\n'], ['code-inline', '`$x+y$`'], ['escaped-open', '\\$x+y$'], ['price', 'price $5 and $6'], ['digit-before', '2$x$'], ['digit-after', '$x$2'], ['space-open', '$ x$'], ['space-close', '$x $'], ['empty', '$$'], ['unclosed', '$x+y'], ['slash-close', '$x\\$'], ['multiline-inline', '$x\ny$'], ['nested-double', '$$a $b$ c$$'], ['html-literal', '$a<b&c$'], ['eqno-escaped', '$$a$$ (<img>)'], ['trailing', '$x$. $y$, $z$;'],
+];
+describe('DEV114 pinned dollar grammar without eager engine dependency', () => {
+ it.each(cases)('%s matches installed markdown-it-texmath1.0.0 tokens', (_label, source) => { expect(tokens(deferred, source)).toEqual(tokens(reference, source)); });
+ it('emits escaped readable pending source with original Unicode/math code and display mode', () => { const html = deferred.render('中文🙂 $a<b&c$\n\n$$\na^2\n$$'); expect(html).toContain('data-md-math="inline"'); expect(html).toContain('data-md-math="block"'); expect(html).toContain('data-md-math-code="a&lt;b&amp;c"'); expect(html).toContain('$a&lt;b&amp;c$'); expect(html).not.toContain('class="katex"'); });
+ it('preserves a trusted synchronous renderer seam for the separate Notebook worker only', () => { const calls: [string, boolean][] = [], html = deferred.render('x $a$\n\n$$b$$', { mathRender: (source: string, display: boolean) => { calls.push([source, display]); return '<i>U-only adapter</i>'; } }); expect(calls).toEqual([['a', false], ['b', true]]); expect(html).not.toContain('data-md-math'); expect(html).toContain('<i>U-only adapter</i>'); });
+ it('keeps renderer exceptions escaped and readable instead of throwing', () => { const html = deferred.render('$a$', { mathRender: () => { throw Error('<U-only>'); } }); expect(html).toContain('a:&lt;U-only&gt;'); expect(html).not.toContain('<U-only>'); });
+ it('keeps a new strict bounded option object for each real engine call', () => { expect(markdownMathOptions(true)).toEqual({ displayMode: true, strict: 'ignore', throwOnError: false, trust: false, maxExpand: 1000, maxSize: 100 }); expect(markdownMathOptions(false).displayMode).toBe(false); expect(markdownMathOptions(false)).not.toBe(markdownMathOptions(false)); });
+ it('bundles the matcher without KaTeX, texmath CJS or any other engine dependency', async () => { const esbuild = createRequire(require.resolve('vite'))('esbuild'); const result = await esbuild.build({ entryPoints: ['src/shared/markdown-dollar-math.mjs'], bundle: true, platform: 'browser', format: 'esm', metafile: true, write: false }); expect(Object.keys(result.metafile.inputs)).toEqual(['src/shared/markdown-dollar-math.mjs']); });
+});

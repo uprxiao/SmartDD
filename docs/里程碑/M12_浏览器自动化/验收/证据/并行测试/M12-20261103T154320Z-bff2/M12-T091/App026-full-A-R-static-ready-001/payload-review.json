@@ -1,0 +1,39 @@
+{
+  "schema": "T091-minimal-reviewed-payload-draft-before-App026-v1",
+  "scope": "M12-T091-A-R",
+  "destination": {
+    "provider": "openai",
+    "model": "gpt-6.1-sol",
+    "transport": "Root-pinned stock Codex0.166 managed by future official App026"
+  },
+  "businessPolicy": {
+    "sandbox": "workspace-write",
+    "approval": "on-request",
+    "noOverride": true
+  },
+  "health": {
+    "count": 1,
+    "template": "This is an automated connectivity check. Do not use any tools. Reply with exactly ${code} and nothing else.",
+    "codePattern": "SMARTDD-OK-[0-9a-f]{8}"
+  },
+  "fixedPrompts": {
+    "default-enabled": "M12_T091_P3_001_ENABLED 这是隔离的原M12-T091验收。仅使用本轮新P3、实际交付的公开Skill和CLI；不读取认证、日常文件/项目或其他任务，不访问站点，不修改配置，不添加应用，不自报或永久批准，不改变workspace-write/on-request、模型或沙箱；如真实工具要求本次操作审批，保留真实请求等待真实审批。 先完整读取本次实际交付的浏览器应用全部SKILL.md，不能只读开头或引用旧任务Skill。然后只执行一次 willyou-app browser tab list，保留真实数字退出码和原JSON结果，报告当前project/task/run/page身份及结果，不创建网页或执行其他浏览器命令。",
+    "after-deselected": "M12_T091_P3_001_DISABLED 这是隔离的原M12-T091验收。仅使用本轮新P3、实际交付的公开Skill和CLI；不读取认证、日常文件/项目或其他任务，不访问站点，不修改配置，不添加应用，不自报或永久批准，不改变workspace-write/on-request、模型或沙箱；如真实工具要求本次操作审批，保留真实请求等待真实审批。 本项目已由可信界面取消浏览器选用，这是新任务。先核本任务实际发现的Skill目录/清单，报告是否有浏览器Skill；不要查找其他任务或旧目录中的浏览器Skill。然后只执行一次 willyou-app browser tab list，保留真实数字退出码和完整原错误JSON并报告；任何拒绝都立即结束，不重试、不加入应用、不改PATH、不借用别的token或调用绝对路径绕过。"
+  },
+  "sentData": [
+    "the two fixed public prompts",
+    "one product connectivity template/checkmarker",
+    "actual generated nonsecret P3/task/run IDs and isolated paths",
+    "actual public delivered browser Skill content for enabled run only",
+    "actual native CLI JSON/exit and current plan/delivery metadata; no token values"
+  ],
+  "neverSent": [
+    "auth.json content or hash",
+    "real credentials/daily contents",
+    "run token value/individualtokenhash",
+    "quota or other project data"
+  ],
+  "futureAuthReuse": "Only Root-approved owned auth seed into fresh private HOME/CODEX_HOME; no config/catalog/Skill/history copy; no auth file read in preparation",
+  "authorization": "Existing user authorization covers remaining M12 test sends; Root reviews complete exact payload before pin/lease, no per-prompt reauthorization and no fabricated verbatim user approval",
+  "status": "draft-frozen-await-App026/current producer binding; no prompt/model sent"
+}

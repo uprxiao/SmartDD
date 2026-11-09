@@ -1,0 +1,116 @@
+{
+  "scope": "Actual producer/control FS paths, no execution",
+  "accesses": [
+    {
+      "site": "run top",
+      "kind": "static-input",
+      "paths": [
+        "state-catalog.json",
+        "P-runtime-pin.json",
+        "optimizer-includes-attempt-004.json"
+      ]
+    },
+    {
+      "site": "permitP",
+      "kind": "static-input",
+      "paths": [
+        "READY.json",
+        "all READY.inputs",
+        "all READY.links"
+      ],
+      "generatedByRootOnly": [
+        "lease.receipt.json"
+      ],
+      "outputShapeMustBeAbsent": [
+        "runtime-001",
+        "images",
+        "raw.json"
+      ]
+    },
+    {
+      "site": "Vite config imports/alias/realpath",
+      "kind": "static-input",
+      "paths": [
+        "P-runtime-config.mjs",
+        "optimizer-includes-attempt-004.mjs",
+        "reference/source/prototypes/m6-codex/vite.config.mjs",
+        "reference/source actual427 closure",
+        "reference/source/node_modules/katex/dist/fonts"
+      ],
+      "dependencyContents": "old immutable18857 pinned package files; no general shared repo NM link"
+    },
+    {
+      "site": "run optimizer metadata",
+      "kind": "runtime-output-read",
+      "paths": [
+        "cache/vite/deps/_metadata.json"
+      ]
+    },
+    {
+      "site": "run outputs",
+      "kind": "runtime-output-write",
+      "paths": [
+        "live.json",
+        "raw.json",
+        "runtime-001/{home,tmp,profiles,project}",
+        "runtime-001/first-failure.private.log",
+        "runtime-001/failure-dom.private.json",
+        "runtime-001/failure-original.private.png",
+        "runtime-001/<kind>-<exactPID>.private.log",
+        "runtime-001/chromium-<exactPID>-close.private.json",
+        "images/P-<oneSelected4Combo>-<oneOriginal57State>.png",
+        "images/P-<oneSelected4Combo>-<oneOriginal57State>.json"
+      ]
+    },
+    {
+      "site": "static checker",
+      "kind": "static-input-plus-pure-generated",
+      "paths": [
+        "READY.json",
+        "all local source module inputs",
+        "state-catalog.json",
+        "run.mjs"
+      ],
+      "runtimeOutput": [
+        "static-result.json"
+      ]
+    },
+    {
+      "site": "finalize-ready.py",
+      "kind": "static-result-input-and-freeze",
+      "paths": [
+        "READY.json",
+        "static-result.json"
+      ],
+      "writes": [
+        "READY.json",
+        "manifest.json"
+      ]
+    },
+    {
+      "site": "cleanup.mjs --verify",
+      "kind": "runtime-output-read",
+      "paths": [
+        "raw.json",
+        "P-runtime-pin.json"
+      ],
+      "writes": [
+        "cleanup.json"
+      ],
+      "systemReads": "Future Root lease only exactPID/TCP and pinned headless/dependency birth interval; no kill"
+    },
+    {
+      "site": "judge.mjs",
+      "kind": "runtime-output-read",
+      "paths": [
+        "raw.json",
+        "cleanup.json",
+        "state-catalog.json",
+        "images/<exact228 PNG/meta pairs>"
+      ],
+      "writes": [
+        "judgement.json"
+      ]
+    }
+  ]
+}

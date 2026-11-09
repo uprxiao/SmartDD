@@ -1,0 +1,138 @@
+{
+  "firstCommand": {
+    "label": "initial-control-actual-request",
+    "role": "t2",
+    "args": [
+      "browser",
+      "access",
+      "request",
+      "--task",
+      "c441a13a-0652-43e6-a7bf-da2d655f2034",
+      "--mode",
+      "control"
+    ],
+    "phase": "initial",
+    "startedAtMs": 1793800139322,
+    "raw": {
+      "kind": "cli-result",
+      "id": 1,
+      "pid": 19403,
+      "code": 2,
+      "signal": null,
+      "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"跨任务授权需要宿主签发的完整运行生命周期\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"f7f7f828-5c61-49fd-88ca-bc490691e90d\",\"requestId\":\"c7f5dfb6-a52a-4a84-b9ea-9e3f262c30a2\"}\n",
+      "stderr": "willyou-app: SCOPE_DENIED\n",
+      "timedOut": false
+    },
+    "finishedAtMs": 1793800140510,
+    "parsed": {
+      "error": {
+        "effectState": "not-started",
+        "code": "SCOPE_DENIED",
+        "layer": "auth",
+        "message": "跨任务授权需要宿主签发的完整运行生命周期",
+        "retryable": false,
+        "attemptCount": 1,
+        "nextAction": "核对本次错误后重新明确操作",
+        "retryExhausted": false
+      },
+      "operationId": "f7f7f828-5c61-49fd-88ca-bc490691e90d",
+      "requestId": "c7f5dfb6-a52a-4a84-b9ea-9e3f262c30a2"
+    }
+  },
+  "actualCLICommandCount": 1,
+  "stableManagedRuns": [
+    {
+      "role": "t1",
+      "taskId": "c441a13a-0652-43e6-a7bf-da2d655f2034",
+      "runId": "220ebb76-5668-4611-9258-acda3ab9d3e5",
+      "pid": 19317,
+      "snapshotHash": "67a67500e77e70dfd92f1dfd177de507d167b617ea26e3548ab465b005075b47",
+      "environmentKeys": [
+        "WILLYOU_RUN_TOKEN",
+        "WILLYOU_ENDPOINT"
+      ],
+      "at": 1793800137327
+    },
+    {
+      "role": "t2",
+      "taskId": "e0a81696-f3ed-43a3-980c-5351298731ad",
+      "runId": "98df097c-47c5-46d4-94a0-26362e18ac2e",
+      "pid": 19353,
+      "snapshotHash": "c9d56e86df59b5e64a8265fa5392c0a269372d6f21d28a73a80a7fb9741bcda5",
+      "environmentKeys": [
+        "WILLYOU_RUN_TOKEN",
+        "WILLYOU_ENDPOINT"
+      ],
+      "at": 1793800138751
+    }
+  ],
+  "actualUserResponseCalls": 0,
+  "readOnlyAccessStateCalls": 258,
+  "pendingAtCleanup": {
+    "requests": [],
+    "grants": []
+  },
+  "gateEvents": [],
+  "helperStdoutRows": 0,
+  "gateOrExecHooksInstalled": false,
+  "productionPauseCalls": 0,
+  "secondHostStarted": false,
+  "actualStoppedRoots": [
+    {
+      "kind": "real-root-stopped",
+      "role": "t1",
+      "runId": "220ebb76-5668-4611-9258-acda3ab9d3e5",
+      "pid": 19317,
+      "exit": {
+        "code": 0,
+        "signal": null,
+        "at": 1793800151353
+      },
+      "runState": {
+        "runId": "220ebb76-5668-4611-9258-acda3ab9d3e5",
+        "taskId": "c441a13a-0652-43e6-a7bf-da2d655f2034",
+        "projectId": "49bd7d19-db44-4e6e-a546-621fb75eb080",
+        "runner": "codex",
+        "state": "stopped",
+        "snapshotHash": "67a67500e77e70dfd92f1dfd177de507d167b617ea26e3548ab465b005075b47",
+        "pid": 19317,
+        "processStartedAt": "darwin-proc-v1:1793800136:626783",
+        "startedAt": "2026-11-04T13:48:56.427Z",
+        "endedAt": "2026-11-04T13:49:11.443Z"
+      },
+      "at": 1793800151475
+    },
+    {
+      "kind": "real-root-stopped",
+      "role": "t2",
+      "runId": "98df097c-47c5-46d4-94a0-26362e18ac2e",
+      "pid": 19353,
+      "exit": {
+        "code": 0,
+        "signal": null,
+        "at": 1793800151487
+      },
+      "runState": {
+        "runId": "98df097c-47c5-46d4-94a0-26362e18ac2e",
+        "taskId": "e0a81696-f3ed-43a3-980c-5351298731ad",
+        "projectId": "49bd7d19-db44-4e6e-a546-621fb75eb080",
+        "runner": "codex",
+        "state": "stopped",
+        "snapshotHash": "c9d56e86df59b5e64a8265fa5392c0a269372d6f21d28a73a80a7fb9741bcda5",
+        "pid": 19353,
+        "processStartedAt": "darwin-proc-v1:1793800138:402925",
+        "startedAt": "2026-11-04T13:48:57.496Z",
+        "endedAt": "2026-11-04T13:49:11.573Z"
+      },
+      "at": 1793800151605
+    }
+  ],
+  "actualHostExit": {
+    "atMs": 1793800151861,
+    "code": 0,
+    "signal": null
+  },
+  "normalCleanupSignals": [],
+  "rawStageNote": "driver.failureStage remained start-host-initial because grant helper did not advance generic stage; actual step initial-control-actual-request proves failure occurred after successful host ready, not startup.",
+  "unexecutedJudgeNote": "Original strict15-check judge retained0/15 because grant precondition failed and downstream evidence absent. One product failure plus dependent unexecuted requirements; not15 distinct product failures."
+}

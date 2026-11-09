@@ -1,0 +1,57 @@
+--- source025/zentao-data.test.ts
++++ private/test-adapted.ts
+@@ -1,11 +1,10 @@
+ import {parseManifest} from '../manifest';
+-import { execFileSync } from 'node:child_process';
+ import { EventEmitter } from 'node:events';
+-import { mkdtempSync,rmSync } from 'node:fs';
++import { mkdtempSync,rmSync,cpSync,existsSync,mkdirSync,writeFileSync,readFileSync } from 'node:fs';
+ import { createServer,type Server,type IncomingMessage,type ServerResponse } from 'node:http';
+ import type { Socket } from 'node:net';
+ import { tmpdir } from 'node:os';
+-import { join } from 'node:path';
++import { join,resolve } from 'node:path';
+ import { createHash,randomUUID } from 'node:crypto';
+ import { drizzle } from 'drizzle-orm/better-sqlite3';
+ import { afterAll,afterEach,beforeAll,beforeEach,describe,expect,it,vi } from 'vitest';
+@@ -72,13 +71,11 @@
+ async function saveConnection(url=base,secret='zt-secret-canary'){
+  const tested=await app.testConnection(sender,{expectedRevision:0,name:'隔离禅道',config:{kind:'zentao',baseUrl:url,username:'tester',authMode:'token'},secret});return app.saveConnection(sender,'zentao',tested.operationId,tested.candidateHash);
+ }
+-beforeAll(()=>{
+- build=mkdtempSync(join(tmpdir(),'willyou-m10-zt-data-build-'));
+- execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',join(build,'runtime')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});
+- execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(build,'runtime/mcp-bridge.cjs'),'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},timeout:30000,stdio:'pipe'});source=new CapabilityBundleSource(join(build,'bundles'));
+-});
+-afterAll(()=>rmSync(build,{recursive:true,force:true}));
+-beforeEach(async()=>{
++const evidence=process.env.WILLYOU_TEST_EVIDENCE_DIR!;const cleanupReceipts:Record<string,unknown>[]=[];let observerIdentity:{workerPid:number;caseName:string;fixtureRoot:string;port:number}|undefined;
++function safeRecord(name:string,value:unknown){try{mkdirSync(evidence,{recursive:true});writeFileSync(join(evidence,name+'.json'),JSON.stringify(value,null,2)+'\n',{mode:0o600});return true;}catch{return false;}}
++beforeAll(()=>{build=mkdtempSync(join(tmpdir(),'willyou-m10-zt-data-build-'));cpSync(resolve('out/capability-bundles-compatibility-v1'),join(build,'bundles'),{recursive:true});source=new CapabilityBundleSource(join(build,'bundles'));safeRecord('fixture-origin',{buildRoot:build,preparedFrom:resolve('out/capability-bundles-compatibility-v1'),bundleIndexSha256:createHash('sha256').update(readFileSync(join(build,'bundles/index.json'))).digest('hex'),copiedNotBuilt:true});});
++afterAll(()=>{try{rmSync(build,{recursive:true,force:true});}finally{try{safeRecord('build-cleanup',{buildRoot:build,absent:!existsSync(build),fixtureCopiedNotBuilt:true});}catch{}}});
++beforeEach(async()=>{observerIdentity=undefined;
+  holdAuthResponse=false;heldAuthResponse=null;authEntered=null;profileIds=new Map();
+  changeEvents=[];paths=[];tokens=[];acceptedTokens=new Set(['zt-secret-canary']);outside=0;changes=0;workCalls=0;workFailures=0;workRetryAfter=undefined;workFailureStatus=503;workTimes=[];holdDetail=false;held=null;entered=null;duplicatePage=false;totalChanged=false;intruder=false;files=new Map();fileFailures=new Map();objects=new Map([['bug:'+id,initial()]]);sockets=new Set();
+  server=createServer(handle);server.on('connection',s=>{sockets.add(s);s.on('close',()=>sockets.delete(s));});await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));const address=server.address();if(!address||typeof address==='string')throw new Error('fixture address');base='http://127.0.0.1:'+address.port+'/biz/';
+@@ -90,9 +87,9 @@
+  app=new ApplicationService(f.store,{secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(f.root,'unused-worker'),foxmailNative:join(f.root,'unused-native'),uiReadRetryDelays:[0,0],changed:(change?:unknown)=>{changes++;changeEvents.push(change);}});await app.recover();await app.setAdded(sender,'zentao',true,0);
+  const connection=await saveConnection();connectionId=connection.id;await app.select(sender,{projectId:'p1',appId:'zentao',enabled:true,connections:{zentao:connectionId},expectedRevision:0});app.attachRuns(f.runs);
+  owned=await f.create();await owned.prepare();await owned.cli.arm();(f.reader as FixtureProcessReader).identities.set(60101,'darwin-proc-v1:2026:60101');await owned.cli.attach(60101);
+- tools=new ApplicationToolService(f.store,f.runs,new ApplicationAdapterRegistry(f.store,app.data),{retryDelays:[0,0]});
+-});
+-afterEach(async()=>{held?.();heldAuthResponse?.();vi.restoreAllMocks();await app.dispose();await owned.cli.exited();for(const socket of sockets)socket.destroy();await new Promise<void>(r=>server.close(()=>r()));f.cleanup();});
++ tools=new ApplicationToolService(f.store,f.runs,new ApplicationAdapterRegistry(f.store,app.data),{retryDelays:[0,0]});try{observerIdentity={workerPid:process.pid,caseName:expect.getState().currentTestName!,fixtureRoot:f.root,port:address.port};}catch{}
++});
++afterEach(async()=>{try{held?.();heldAuthResponse?.();vi.restoreAllMocks();await app.dispose();await owned.cli.exited();for(const socket of sockets)socket.destroy();await new Promise<void>(r=>server.close(()=>r()));f.cleanup();}finally{try{cleanupReceipts.push({...observerIdentity,fixtureRootRemoved:!!observerIdentity&&!existsSync(observerIdentity.fixtureRoot),httpListening:server?.listening??false});safeRecord('fixture-cleanup',cleanupReceipts);}catch{}}});
+ 
+ describe('original ZenTao tools to actual provider and host-scoped business resources',()=>{
+  it('M11 retains the original local ZenTao reference validator after module composition',async()=>{
+@@ -123,7 +120,7 @@
+  });
+  it('OY held UI provider response obeys the one original deadline and records TIMEOUT instead of cancellation',async()=>{
+   const bounded=new ApplicationExecutionContexts(f.store,app.selections,app.connections,{requireSender:e=>access.requireSender(e),assertRun:run=>f.runs.assertActive(run),uiReadRetryDelays:[0,0],uiReadTimeoutMs:500}),client=new ZentaoClient({kind:'zentao',baseUrl:base,username:'tester',authMode:'token'},'zt-secret-canary');holdDetail=true;const began=performance.now();
+-  try{await expect(bounded.withUi(sender,{projectId:'p1',appId:'zentao',action:'ui.zentao.deadline_probe',operations:['zentao.read'],semantics:'read',retry:'safe-read'},context=>client.detail('bug',id,context.signal))).rejects.toMatchObject({code:'TIMEOUT'});expect(performance.now()-began).toBeLessThan(2000);expect(paths.filter(p=>p.endsWith('/bugs/'+id))).toHaveLength(1);expect(f.sqlite.prepare("SELECT state,error_code,attempt_count FROM application_data_operations WHERE action='ui.zentao.deadline_probe'").all()).toEqual([{state:'failed',error_code:'TIMEOUT',attempt_count:1}]);}finally{client.close();held?.();await bounded.dispose();}
++  try{await expect(bounded.withUi(sender,{projectId:'p1',appId:'zentao',action:'ui.zentao.deadline_probe',operations:['zentao.read'],semantics:'read',retry:'safe-read'},context=>client.detail('bug',id,context.signal))).rejects.toMatchObject({code:'TIMEOUT'});expect(performance.now()-began).toBeLessThan(2000);expect(paths.filter(p=>p.endsWith('/bugs/'+id))).toHaveLength(1);expect(f.sqlite.prepare("SELECT state,error_code,attempt_count FROM application_data_operations WHERE action='ui.zentao.deadline_probe'").all()).toEqual([{state:'failed',error_code:'TIMEOUT',attempt_count:1}]);safeRecord('single-deadline',{budgetMs:500,elapsedMs:performance.now()-began,detailRequests:paths.filter(p=>p.endsWith('/bugs/'+id)).length,operations:f.sqlite.prepare("SELECT state,error_code,attempt_count FROM application_data_operations WHERE action='ui.zentao.deadline_probe'").all()});}finally{client.close();held?.();await bounded.dispose();}
+  });
+  it('OY rejects opting a UI write into the automatic read budget before invoking its work',()=>{
+   let writes=0;expect(()=>app.contexts.withUi(sender,{projectId:'p1',appId:'zentao',action:'ui.zentao.prohibited_write_probe',operations:['zentao.read'],semantics:'write',retry:'safe-read'},async()=>{writes++;return null;})).toThrow('只有受信只读操作');expect(writes).toBe(0);expect(f.sqlite.prepare("SELECT count(*) n FROM application_data_operations WHERE action='ui.zentao.prohibited_write_probe'").get()).toEqual({n:0});

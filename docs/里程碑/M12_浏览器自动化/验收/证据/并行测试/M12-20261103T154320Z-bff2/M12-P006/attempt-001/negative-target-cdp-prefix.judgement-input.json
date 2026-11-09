@@ -1,0 +1,65 @@
+{
+  "id": "target-cdp-prefix",
+  "command": "--cdp 64701 get title",
+  "contract": false,
+  "reason": "Real isolated target port instead of numeric1",
+  "actual": {
+    "name": "negative-target-cdp-prefix",
+    "args": [
+      "browser",
+      "exec",
+      "--command",
+      "--cdp 64701 get title"
+    ],
+    "ms": 767.266166999998,
+    "raw": {
+      "code": 2,
+      "signal": null,
+      "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"INVALID_INPUT\",\"layer\":\"config\",\"message\":\"exec子命令不在固定白名单中\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"a058f2f5-68ad-43b3-bcf4-f6de08f87de9\",\"requestId\":\"336e6f16-fc5a-4d16-a870-07bf8288bfc3\"}\n",
+      "stderr": "willyou-app: INVALID_INPUT\n",
+      "timedOut": false
+    },
+    "parsed": {
+      "error": {
+        "effectState": "not-started",
+        "code": "INVALID_INPUT",
+        "layer": "config",
+        "message": "exec子命令不在固定白名单中",
+        "retryable": false,
+        "attemptCount": 1,
+        "nextAction": "核对本次错误后重新明确操作",
+        "retryExhausted": false
+      },
+      "operationId": "a058f2f5-68ad-43b3-bcf4-f6de08f87de9",
+      "requestId": "336e6f16-fc5a-4d16-a870-07bf8288bfc3"
+    }
+  },
+  "before": {
+    "trace": {
+      "helperCalls": [],
+      "proxyEvents": [],
+      "restored": false
+    },
+    "target": {
+      "accepted": 2,
+      "upstreamConnected": 2,
+      "clientBytes": 657,
+      "upstreamBytes": 1037,
+      "errors": []
+    }
+  },
+  "after": {
+    "trace": {
+      "helperCalls": [],
+      "proxyEvents": [],
+      "restored": false
+    },
+    "target": {
+      "accepted": 2,
+      "upstreamConnected": 2,
+      "clientBytes": 657,
+      "upstreamBytes": 1037,
+      "errors": []
+    }
+  }
+}

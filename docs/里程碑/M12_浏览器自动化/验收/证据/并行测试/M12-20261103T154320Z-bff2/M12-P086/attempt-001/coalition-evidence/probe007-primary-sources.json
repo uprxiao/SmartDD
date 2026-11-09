@@ -1,0 +1,54 @@
+{
+  "sourceRevision": "Apple OSS XNU main, read 2026-11-05; NOT asserted identical to running Darwin25.6.0",
+  "items": [
+    {
+      "id": "proc-private-abi",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/sys/proc_info_private.h",
+      "lineRange": "58-63,143-144",
+      "paraphrase": "flavor20; two coalition IDs+3reserved=40B"
+    },
+    {
+      "id": "public-wrapper-source",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/libsyscall/wrappers/coalition.c",
+      "lineRange": "29-31,50-54",
+      "paraphrase": "resource usage wrapper forwards caller buffer length"
+    },
+    {
+      "id": "read-permission",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/kern/sys_coalition.c",
+      "lineRange": "239-257,338-393",
+      "paraphrase": "resource read path has no root check in this source; create/reap privileges separate"
+    },
+    {
+      "id": "resource-cpu-ledger",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/osfmk/kern/coalition.c",
+      "lineRange": "699-846",
+      "paraphrase": "aggregate dead-task ledger plus active task CPU under coalition lock"
+    },
+    {
+      "id": "unit-layout",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/osfmk/mach/coalition.h",
+      "lineRange": "102-120",
+      "paraphrase": "cpu_time offset24 in mach_absolute_time units"
+    },
+    {
+      "id": "normal-inheritance",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/osfmk/kern/task.c",
+      "lineRange": "1800-1838",
+      "paraphrase": "ordinary child inherits parent resource/jetsam coalition; exec preserves roles"
+    },
+    {
+      "id": "explicit-spawn-gate",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/kern/kern_exec.c",
+      "lineRange": "3780-3871",
+      "paraphrase": "explicit other coalition requires privileged coalition or private spawn entitlement"
+    },
+    {
+      "id": "self-pid-query",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/kern/proc_info.c",
+      "lineRange": "2074-2090,2275-2282,3638-3643",
+      "paraphrase": "coalition flavor selected as non-same-user-check; still proc security policy applies"
+    }
+  ],
+  "exactFullUpstreamFileHashesAvailable": false
+}

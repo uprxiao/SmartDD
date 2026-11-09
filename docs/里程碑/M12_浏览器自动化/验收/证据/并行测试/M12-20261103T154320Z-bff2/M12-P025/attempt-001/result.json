@@ -1,0 +1,2817 @@
+{
+  "at": "2026-11-04T04:46:45.448Z",
+  "group": "M12-P025",
+  "scope": "Native cookie store plus actual-snapshot pure-plan two-phase import/restore component I only",
+  "status": "passed-component-I",
+  "fullT080OrT081Passed": false,
+  "checks": [
+    {
+      "id": "no-activation-no-window-private-native-sessions",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "activation": {
+          "method": "app.setActivationPolicy",
+          "requested": "prohibited",
+          "fulfilled": true,
+          "beforeReady": true
+        },
+        "windows": 0,
+        "views": [
+          {
+            "label": "A",
+            "partition": "persist:p025-A-34a3938b-f875-482e-b74e-e1ea74373f6b",
+            "id": 1,
+            "rendererPid": 87346,
+            "url": "about:blank",
+            "debuggerAttached": true,
+            "sessionMatches": true,
+            "hasWindow": false,
+            "preferences": {
+              "sandbox": true,
+              "contextIsolation": true,
+              "nodeIntegration": false,
+              "webSecurity": true
+            }
+          },
+          {
+            "label": "B",
+            "partition": "persist:p025-B-a48e54a6-d626-451b-8b11-43e502beeb88",
+            "id": 2,
+            "rendererPid": 87349,
+            "url": "about:blank",
+            "debuggerAttached": true,
+            "sessionMatches": true,
+            "hasWindow": false,
+            "preferences": {
+              "sandbox": true,
+              "contextIsolation": true,
+              "nodeIntegration": false,
+              "webSecurity": true
+            }
+          }
+        ],
+        "events": [
+          {
+            "at": "2026-11-04T04:46:16.115Z",
+            "kind": "native-navigation",
+            "id": 1,
+            "url": "about:blank"
+          },
+          {
+            "at": "2026-11-04T04:46:16.159Z",
+            "kind": "native-navigation",
+            "id": 2,
+            "url": "about:blank"
+          },
+          {
+            "at": "2026-11-04T04:46:16.261Z",
+            "kind": "debugger-detached",
+            "id": 1,
+            "reason": "target closed"
+          },
+          {
+            "at": "2026-11-04T04:46:16.261Z",
+            "kind": "contents-destroyed",
+            "id": 1
+          },
+          {
+            "at": "2026-11-04T04:46:16.270Z",
+            "kind": "debugger-detached",
+            "id": 2,
+            "reason": "target closed"
+          },
+          {
+            "at": "2026-11-04T04:46:16.270Z",
+            "kind": "contents-destroyed",
+            "id": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-attributes-exact-roundtrip",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "expected": [
+          {
+            "name": "HostSession",
+            "value": "synthetic-session",
+            "domain": "attrs.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "strict",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "HostPersistent",
+            "value": "synthetic-persistent",
+            "domain": "attrs.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793771176,
+            "partitionKey": null,
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 9443
+          },
+          {
+            "name": "DomainPersistent",
+            "value": "synthetic-domain",
+            "domain": ".attrs.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "NonSecureSession",
+            "value": "synthetic-http",
+            "domain": "attrs.example.test",
+            "path": "/",
+            "secure": false,
+            "httpOnly": false,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 8080
+          }
+        ],
+        "actual": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          }
+        ],
+        "raw": {
+          "cookies": [
+            {
+              "domain": "attrs.example.test",
+              "expires": -1,
+              "httpOnly": true,
+              "name": "HostSession",
+              "path": "/",
+              "priority": "High",
+              "sameSite": "Strict",
+              "secure": true,
+              "session": true,
+              "size": 28,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-session"
+            },
+            {
+              "domain": "attrs.example.test",
+              "expires": 1793771176,
+              "httpOnly": true,
+              "name": "HostPersistent",
+              "path": "/",
+              "priority": "Low",
+              "sameSite": "Lax",
+              "secure": true,
+              "session": false,
+              "size": 34,
+              "sourcePort": 9443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-persistent"
+            },
+            {
+              "domain": ".attrs.example.test",
+              "expires": 1793771176,
+              "httpOnly": true,
+              "name": "DomainPersistent",
+              "path": "/",
+              "priority": "High",
+              "sameSite": "None",
+              "secure": true,
+              "session": false,
+              "size": 32,
+              "sourcePort": 443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-domain"
+            },
+            {
+              "domain": "attrs.example.test",
+              "expires": -1,
+              "httpOnly": false,
+              "name": "NonSecureSession",
+              "path": "/",
+              "priority": "Medium",
+              "sameSite": "Lax",
+              "secure": false,
+              "session": true,
+              "size": 30,
+              "sourcePort": 8080,
+              "sourceScheme": "NonSecure",
+              "value": "synthetic-http"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "native-session-B-isolation",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "initialB": [],
+        "afterCHIPSB": [],
+        "duringImportB": [],
+        "afterRestoreB": []
+      }
+    },
+    {
+      "id": "native-CHIPS-topsite-and-ancestor-full-key",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "expected": [
+          {
+            "name": "X",
+            "value": "synthetic-old-X",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "synthetic-partition-A-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "synthetic-partition-B-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "synthetic-partition-A-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "Y",
+            "value": "synthetic-old-Y",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "Z",
+            "value": "synthetic-keep-Z",
+            "domain": "other.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          }
+        ],
+        "actualX": [
+          {
+            "name": "X",
+            "value": "synthetic-old-X",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "synthetic-partition-A-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "synthetic-partition-B-cross",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": {
+              "topLevelSite": "https://top-b.test",
+              "hasCrossSiteAncestor": true
+            },
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "synthetic-partition-A-same",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": {
+              "topLevelSite": "https://top-a.test",
+              "hasCrossSiteAncestor": false
+            },
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          }
+        ],
+        "raw": {
+          "cookies": [
+            {
+              "domain": "attrs.example.test",
+              "expires": -1,
+              "httpOnly": true,
+              "name": "HostSession",
+              "path": "/",
+              "priority": "High",
+              "sameSite": "Strict",
+              "secure": true,
+              "session": true,
+              "size": 28,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-session"
+            },
+            {
+              "domain": "attrs.example.test",
+              "expires": 1793771176,
+              "httpOnly": true,
+              "name": "HostPersistent",
+              "path": "/",
+              "priority": "Low",
+              "sameSite": "Lax",
+              "secure": true,
+              "session": false,
+              "size": 34,
+              "sourcePort": 9443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-persistent"
+            },
+            {
+              "domain": ".attrs.example.test",
+              "expires": 1793771176,
+              "httpOnly": true,
+              "name": "DomainPersistent",
+              "path": "/",
+              "priority": "High",
+              "sameSite": "None",
+              "secure": true,
+              "session": false,
+              "size": 32,
+              "sourcePort": 443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-domain"
+            },
+            {
+              "domain": "attrs.example.test",
+              "expires": -1,
+              "httpOnly": false,
+              "name": "NonSecureSession",
+              "path": "/",
+              "priority": "Medium",
+              "sameSite": "Lax",
+              "secure": false,
+              "session": true,
+              "size": 30,
+              "sourcePort": 8080,
+              "sourceScheme": "NonSecure",
+              "value": "synthetic-http"
+            },
+            {
+              "domain": "qa.example.test",
+              "expires": -1,
+              "httpOnly": true,
+              "name": "X",
+              "path": "/",
+              "priority": "Medium",
+              "sameSite": "Lax",
+              "secure": true,
+              "session": true,
+              "size": 16,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-old-X"
+            },
+            {
+              "domain": "qa.example.test",
+              "expires": 1793771176,
+              "httpOnly": true,
+              "name": "X",
+              "partitionKey": {
+                "hasCrossSiteAncestor": true,
+                "topLevelSite": "https://top-a.test"
+              },
+              "path": "/",
+              "priority": "High",
+              "sameSite": "None",
+              "secure": true,
+              "session": false,
+              "size": 28,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-partition-A-cross"
+            },
+            {
+              "domain": "qa.example.test",
+              "expires": 1793771176,
+              "httpOnly": true,
+              "name": "X",
+              "partitionKey": {
+                "hasCrossSiteAncestor": true,
+                "topLevelSite": "https://top-b.test"
+              },
+              "path": "/",
+              "priority": "Low",
+              "sameSite": "None",
+              "secure": true,
+              "session": false,
+              "size": 28,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-partition-B-cross"
+            },
+            {
+              "domain": "qa.example.test",
+              "expires": 1793771176,
+              "httpOnly": true,
+              "name": "X",
+              "partitionKey": {
+                "hasCrossSiteAncestor": false,
+                "topLevelSite": "https://top-a.test"
+              },
+              "path": "/",
+              "priority": "Medium",
+              "sameSite": "None",
+              "secure": true,
+              "session": false,
+              "size": 27,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-partition-A-same"
+            },
+            {
+              "domain": "qa.example.test",
+              "expires": -1,
+              "httpOnly": true,
+              "name": "Y",
+              "path": "/",
+              "priority": "Medium",
+              "sameSite": "Lax",
+              "secure": true,
+              "session": true,
+              "size": 16,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-old-Y"
+            },
+            {
+              "domain": "other.example.test",
+              "expires": -1,
+              "httpOnly": true,
+              "name": "Z",
+              "path": "/",
+              "priority": "Medium",
+              "sameSite": "Lax",
+              "secure": true,
+              "session": true,
+              "size": 17,
+              "sourcePort": 8443,
+              "sourceScheme": "Secure",
+              "value": "synthetic-keep-Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "native-delete-without-partition-scope-observed",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "removedIdentities": [
+          "[\"X\",\"qa.example.test\",\"/\",null,null]"
+        ],
+        "removedPartitioned": 0,
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "synthetic-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "after": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "synthetic-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "note": "Protocol observation, not a prior assumption of exact unpartitioned-only deletion"
+      }
+    },
+    {
+      "id": "probe-restores-entire-native-state-two-phase",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "synthetic-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "restored": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "synthetic-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "order": [
+          {
+            "phase": "clear-all",
+            "identity": "[\"HostSession\",\"attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"HostPersistent\",\"attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"DomainPersistent\",\".attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"NonSecureSession\",\"attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"Z\",\"other.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"HostSession\",\"attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"HostPersistent\",\"attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"DomainPersistent\",\".attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"NonSecureSession\",\"attrs.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"Z\",\"other.example.test\",\"/\",null,null]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "actual-plan-complete-before-set-and-absent-W",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "source": {
+          "cookies": [
+            {
+              "name": "X",
+              "value": "synthetic-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            },
+            {
+              "name": "W",
+              "value": "synthetic-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          ],
+          "preserveDomains": [],
+          "sourceCount": 2,
+          "googleSkipped": 0,
+          "partitionSkipped": 0
+        },
+        "plan": {
+          "changes": [
+            {
+              "before": {
+                "name": "X",
+                "value": "synthetic-old-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": {
+                "name": "X",
+                "value": "synthetic-new-X",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793771176,
+                "partitionKey": null,
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "synthetic-partition-A-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793771176,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "High",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "synthetic-partition-B-cross",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793771176,
+                "partitionKey": {
+                  "topLevelSite": "https://top-b.test",
+                  "hasCrossSiteAncestor": true
+                },
+                "priority": "Low",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "X",
+                "value": "synthetic-partition-A-same",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "no_restriction",
+                "expirationDate": 1793771176,
+                "partitionKey": {
+                  "topLevelSite": "https://top-a.test",
+                  "hasCrossSiteAncestor": false
+                },
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": {
+                "name": "Y",
+                "value": "synthetic-old-Y",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": null,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              },
+              "after": null
+            },
+            {
+              "before": null,
+              "after": {
+                "name": "W",
+                "value": "synthetic-new-W",
+                "domain": "qa.example.test",
+                "path": "/",
+                "secure": true,
+                "httpOnly": true,
+                "hostOnly": true,
+                "sameSite": "lax",
+                "expirationDate": 1793771176,
+                "partitionKey": null,
+                "priority": "Medium",
+                "sourceScheme": "Secure",
+                "sourcePort": 8443
+              }
+            }
+          ],
+          "domains": [
+            "qa.example.test"
+          ],
+          "totalCookies": 2,
+          "importedCookies": 2,
+          "skippedCookies": 0,
+          "googleCookiesSkipped": 0,
+          "partitionSkippedCookies": 0,
+          "preservedTargetCookies": 5
+        }
+      }
+    },
+    {
+      "id": "native-import-full-state-XW-Y-deleted-Z-preserved",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "expected": [
+          {
+            "name": "HostSession",
+            "value": "synthetic-session",
+            "domain": "attrs.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "strict",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "HostPersistent",
+            "value": "synthetic-persistent",
+            "domain": "attrs.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793771176,
+            "partitionKey": null,
+            "priority": "Low",
+            "sourceScheme": "Secure",
+            "sourcePort": 9443
+          },
+          {
+            "name": "DomainPersistent",
+            "value": "synthetic-domain",
+            "domain": ".attrs.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "sameSite": "no_restriction",
+            "expirationDate": 1793771176,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 443
+          },
+          {
+            "name": "NonSecureSession",
+            "value": "synthetic-http",
+            "domain": "attrs.example.test",
+            "path": "/",
+            "secure": false,
+            "httpOnly": false,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "NonSecure",
+            "sourcePort": 8080
+          },
+          {
+            "name": "Z",
+            "value": "synthetic-keep-Z",
+            "domain": "other.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": null,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "X",
+            "value": "synthetic-new-X",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793771176,
+            "partitionKey": null,
+            "priority": "High",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          },
+          {
+            "name": "W",
+            "value": "synthetic-new-W",
+            "domain": "qa.example.test",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": true,
+            "sameSite": "lax",
+            "expirationDate": 1793771176,
+            "partitionKey": null,
+            "priority": "Medium",
+            "sourceScheme": "Secure",
+            "sourcePort": 8443
+          }
+        ],
+        "actual": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-new-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "W",
+              "value": "synthetic-new-W",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "afterClear": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "order": [
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-after",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-after",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-restore-all-before-including-CHIPS-and-delete-new-W",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "before": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "synthetic-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "restored": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-old-X",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-B-cross",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-b.test",
+                "hasCrossSiteAncestor": true
+              },
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "X",
+              "value": "synthetic-partition-A-same",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": {
+                "topLevelSite": "https://top-a.test",
+                "hasCrossSiteAncestor": false
+              },
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Y",
+              "value": "synthetic-old-Y",
+              "domain": "qa.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "clear": [
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostSession",
+              "value": "synthetic-session",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "strict",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "HostPersistent",
+              "value": "synthetic-persistent",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "Low",
+              "sourceScheme": "Secure",
+              "sourcePort": 9443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "DomainPersistent",
+              "value": "synthetic-domain",
+              "domain": ".attrs.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": false,
+              "sameSite": "no_restriction",
+              "expirationDate": 1793771176,
+              "partitionKey": null,
+              "priority": "High",
+              "sourceScheme": "Secure",
+              "sourcePort": 443
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "NonSecureSession",
+              "value": "synthetic-http",
+              "domain": "attrs.example.test",
+              "path": "/",
+              "secure": false,
+              "httpOnly": false,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "NonSecure",
+              "sourcePort": 8080
+            }
+          },
+          {
+            "kind": "readable",
+            "cookie": {
+              "name": "Z",
+              "value": "synthetic-keep-Z",
+              "domain": "other.example.test",
+              "path": "/",
+              "secure": true,
+              "httpOnly": true,
+              "hostOnly": true,
+              "sameSite": "lax",
+              "expirationDate": null,
+              "partitionKey": null,
+              "priority": "Medium",
+              "sourceScheme": "Secure",
+              "sourcePort": 8443
+            }
+          }
+        ],
+        "order": [
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "clear-all",
+            "identity": "[\"W\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",null,null]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",true]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-b.test\",true]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"X\",\"qa.example.test\",\"/\",\"https://top-a.test\",false]"
+          },
+          {
+            "phase": "set-all-before",
+            "identity": "[\"Y\",\"qa.example.test\",\"/\",null,null]"
+          }
+        ]
+      }
+    },
+    {
+      "id": "actual-flush-close-debugger-and-native-cleanup",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "cleanup": {
+          "at": "2026-11-04T04:46:37.946Z",
+          "group": "M12-P025",
+          "processes": [
+            {
+              "pid": 87338,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 87341,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 87343,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 87344,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 87346,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            },
+            {
+              "pid": 87349,
+              "ps": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "listeners": {
+                "status": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "absent": true
+            }
+          ],
+          "ports": [],
+          "allAbsent": true,
+          "allPortsClosed": true,
+          "host": {
+            "stores": [
+              {
+                "closed": true
+              },
+              {
+                "closed": true
+              }
+            ],
+            "connections": [
+              {
+                "closed": true
+              },
+              {
+                "closed": true
+              }
+            ],
+            "hooks": [
+              {
+                "id": 1,
+                "removed": true
+              },
+              {
+                "id": 2,
+                "removed": true
+              }
+            ],
+            "contents": [
+              {
+                "id": 1,
+                "destroyed": true
+              },
+              {
+                "id": 2,
+                "destroyed": true
+              }
+            ],
+            "remainingWebContents": [],
+            "windowCount": 0
+          },
+          "hostExit": {
+            "code": 0,
+            "signal": null
+          },
+          "scope": "Only own no-window Electron/private native views/Sessions/debugger event observers; no Helper/PTY/server/site or daily profile"
+        },
+        "events": [
+          {
+            "at": "2026-11-04T04:46:16.115Z",
+            "kind": "native-navigation",
+            "id": 1,
+            "url": "about:blank"
+          },
+          {
+            "at": "2026-11-04T04:46:16.159Z",
+            "kind": "native-navigation",
+            "id": 2,
+            "url": "about:blank"
+          },
+          {
+            "at": "2026-11-04T04:46:16.261Z",
+            "kind": "debugger-detached",
+            "id": 1,
+            "reason": "target closed"
+          },
+          {
+            "at": "2026-11-04T04:46:16.261Z",
+            "kind": "contents-destroyed",
+            "id": 1
+          },
+          {
+            "at": "2026-11-04T04:46:16.270Z",
+            "kind": "debugger-detached",
+            "id": 2,
+            "reason": "target closed"
+          },
+          {
+            "at": "2026-11-04T04:46:16.270Z",
+            "kind": "contents-destroyed",
+            "id": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "frozen-source-runtime-and-real-tldts-inputs",
+      "status": "passed",
+      "failureClass": null,
+      "actual": {
+        "productionInputs": 1515,
+        "dependencyInputs": 49,
+        "versions": [
+          {
+            "name": "tldts",
+            "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/tldts@7.4.18/node_modules/tldts/package.json",
+            "version": "7.4.18",
+            "sha256": "d69acda555e42fa076871068489a0aa46b939f349e413665016f85e4b6756505"
+          },
+          {
+            "name": "tldts-core",
+            "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/tldts-core@7.4.18/node_modules/tldts-core/package.json",
+            "version": "7.4.18",
+            "sha256": "c213bae89da25bcc72ca37c1745265c29baa9ee8ee002690bf41db906ec06321"
+          },
+          {
+            "name": "zod",
+            "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/zod@4.6.7/node_modules/zod/package.json",
+            "version": "4.6.7",
+            "sha256": "c2d190d9ee4e0bdb60332aaa2130a6a98d65ddb903fe1d29248b15de57832c45"
+          },
+          {
+            "name": "vite",
+            "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/vite@6.4.4_@types+node@22.20.5_jiti@2.7.0_lightningcss@1.32.0_yaml@2.9.1/node_modules/vite/package.json",
+            "version": "6.4.4",
+            "sha256": "08aa811517022c5b83c52c63dc435d2aa725a64fe4e3cfa6f351affa6b9ed9de"
+          },
+          {
+            "name": "electron",
+            "path": "/Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/electron@42.11.14/node_modules/electron/package.json",
+            "version": "42.11.14",
+            "sha256": "b1b569ed884012bcbf5e488db799cb162c2c3ef4ff544a3e708043aaf27cfc9a"
+          }
+        ],
+        "hostSha256": "d70ea1951cb552c310a3e5659c7e685ecca6a15a0c28bfbc8071499af530f1c0"
+      }
+    }
+  ],
+  "protocolObservations": {
+    "unpartitionedDeleteRemovedPartitioned": 0,
+    "removedIdentities": [
+      "[\"X\",\"qa.example.test\",\"/\",null,null]"
+    ]
+  },
+  "excluded": "Opaque/unconstructible native partitions, Chrome/Edge/Keychain decryption, encrypted-journal native persistence/crash recovery, user App approval/UI, full T080/T081 not tested. plan application is caller orchestration over real store, not completed production import coordinator."
+}

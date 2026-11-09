@@ -1,0 +1,179 @@
+{
+  "at": "2026-11-04T09:35:27.799195+00:00",
+  "group": "M12-P050",
+  "cases": [
+    {
+      "id": "M12-T098",
+      "layer": "I",
+      "status": "failed-product-contract",
+      "executedSuccesses": [
+        {
+          "label": "fixture-target-tab",
+          "args": [
+            "browser",
+            "tab",
+            "create",
+            "--url",
+            "http://127.0.0.1:54634/app"
+          ],
+          "code": 0,
+          "status": "ok"
+        },
+        {
+          "label": "password-snapshot",
+          "args": [
+            "browser",
+            "snapshot",
+            "--page",
+            "ddcba527-73d4-41e3-915d-0d43569d874d"
+          ],
+          "code": 0,
+          "status": "ok"
+        },
+        {
+          "label": "set-credentials",
+          "args": [
+            "browser",
+            "set",
+            "credentials",
+            "--user",
+            "synthetic-qa",
+            "--stdin",
+            "pass",
+            "--page",
+            "ddcba527-73d4-41e3-915d-0d43569d874d"
+          ],
+          "code": 0,
+          "status": "ok"
+        },
+        {
+          "label": "cookie-set",
+          "args": [
+            "browser",
+            "cookie",
+            "set",
+            "--name",
+            "audit-cookie",
+            "--stdin",
+            "value",
+            "--page",
+            "ddcba527-73d4-41e3-915d-0d43569d874d"
+          ],
+          "code": 0,
+          "status": "ok"
+        },
+        {
+          "label": "storage-set",
+          "args": [
+            "browser",
+            "storage",
+            "local",
+            "set",
+            "--key",
+            "audit-key",
+            "--stdin",
+            "value",
+            "--page",
+            "ddcba527-73d4-41e3-915d-0d43569d874d"
+          ],
+          "code": 0,
+          "status": "ok"
+        },
+        {
+          "label": "password-fill",
+          "args": [
+            "browser",
+            "fill",
+            "--element",
+            "@k3709ecef5a3649c4b77fcb0dcace5d5bs3e1",
+            "--stdin",
+            "value",
+            "--page",
+            "ddcba527-73d4-41e3-915d-0d43569d874d"
+          ],
+          "code": 0,
+          "status": "ok"
+        }
+      ],
+      "failure": {
+        "stage": "set-auth-headers",
+        "classification": "production-contract-gap",
+        "actualExit": 2,
+        "actualError": {
+          "effectState": "not-started",
+          "code": "INVALID_INPUT",
+          "layer": "config",
+          "message": "参数不符合原工具输入契约",
+          "retryable": false,
+          "attemptCount": 0,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "sourceEvidence": "Coordinatorconfirmed native/applications/cli.mm:53-61 verbatim stdin and gen_command_map.py:265 object-only headers; frozenobjectcontractandactualexit2 preserved. Exactparser notincluded inexecutorinput.",
+        "defect": "M12-S5-STDIN-HEADERS",
+        "requirement": "C5敏感值经stdin，native stdin保持文本；headers object-only使合法敏感值契约不可达，不能以移到argv绕过"
+      },
+      "notExecuted": [
+        "cookie get",
+        "audit-history readback of six commands",
+        "authorization request after reload",
+        "production diagnostics final six-command scan"
+      ]
+    },
+    {
+      "id": "M12-T097",
+      "layer": "I",
+      "status": "not-executed",
+      "notExecuted": [
+        "actual --list catalogue",
+        "all six privileged exec negative commands",
+        "site policy before/after readback"
+      ]
+    }
+  ],
+  "originalJudge": {
+    "cases": [
+      "M12-T098",
+      "M12-T097"
+    ],
+    "checks": {
+      "completedRawBusiness": false,
+      "normalExit": true,
+      "noRemainingWebContents": true
+    },
+    "passed": false,
+    "boundary": "Actual native CLI/M11/helper/service/SQLite history I; no packaged App A or native Agent R. OS clipboard untouched."
+  },
+  "originalRawUnmodified": true,
+  "cleanup": {
+    "normalExit": {
+      "code": 0,
+      "signal": null
+    },
+    "allExactPidsAbsent": true,
+    "allPortsClosed": true,
+    "allHelperFilesAbsent": true,
+    "unixGatewayGone": true,
+    "willQuit": {
+      "at": "2026-11-04T09:32:21.103Z",
+      "pid": 8485,
+      "event": "will-quit"
+    },
+    "allCleanupStepsFulfilled": true
+  },
+  "boundary": {
+    "native": "actualM11/nativepeer/CLI/Helper/SQLite, controlledPythonrootnotAgentR,noAppA,prohibitednonfocuspark",
+    "P045Preconditions": "SyntheticChromeSource/cipher and Cookie preseed inherited butunused; keyCalls0, no import or NativeStore countinghooks installed, notT082repeat",
+    "password": "Actualsnapshotref was present and actualfill succeeded, noselector/evalinputfallback; DOMpasswordreadbacknotreached",
+    "logScope": "Canaries intentionallyinactualCLI request/stdout/raw, never classify thoseasproductiondiagnosticlogs",
+    "retry": "Oneactualattempt; nobusinessreplay ordriver/productionedit"
+  },
+  "classificationHistory": [
+    {
+      "initial": "driver-input-contract",
+      "preservedIn": "result-preliminary.json",
+      "correction": "Coordinatorconfirmed M12-S5-STDIN-HEADERS productiongap againstC5; initialtype-onlyclassificationtoonanrrow, rawunchanged",
+      "at": "2026-11-04T09:36:45.810553+00:00"
+    }
+  ]
+}

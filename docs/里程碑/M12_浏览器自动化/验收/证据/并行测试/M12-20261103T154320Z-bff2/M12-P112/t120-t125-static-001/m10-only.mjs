@@ -1,0 +1,3 @@
+// Host-owned synthetic readonly M10; actual mutable F-SITE is a separate project process.
+import{createHandler}from'./fixtures.mjs';
+export function createM10OnlyHandler(options){const readonly=createHandler(options);return async(req,res)=>{if(new URL(req.url,'http://127.0.0.1').pathname.startsWith('/biz/api.php/'))return readonly(req,res);res.writeHead(404,{'content-type':'application/json'});res.end('{"error":"M10 fixture has no site routes"}');await options.onRecord({at:new Date().toISOString(),method:req.method,path:new URL(req.url,'http://127.0.0.1').pathname,status:404,scope:'unexpected-m10-origin',account:null});};}

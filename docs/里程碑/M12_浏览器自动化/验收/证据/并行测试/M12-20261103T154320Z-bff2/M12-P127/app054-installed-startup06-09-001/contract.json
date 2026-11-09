@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-05T17:27:32.724853+00:00",
+  "originalCases": [
+    "M12-T140",
+    "M12-T143"
+  ],
+  "authority": {
+    "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/测试用例.md",
+    "sha256": "73628068d4cbb7e1e4d7bd7bc35f45c135f3fef267a5c95597bf54ca5f1bb7ae",
+    "rows": [
+      {
+        "line": 200,
+        "text": "| M12-T140 | D1、D6 | A | macOS arm64 打包 | 检查包内 agent-browser 二进制的路径、签名、sha256 与原生模块检查；安装后启动并执行一条命令 | 二进制与技研登记的版本和哈希一致，原生检查通过，命令成功 | 2026-11-05实际arm64预览DMG私有安装：20,240项payload／模式相同，内核实际版本／签名／SHA／ARM64与SOURCE一致，六项安装后原生检查全绿；实际安装App从带空格路径启动，原受管CLI三命令含真实snapshot成功，正常0/null且18PID／5TCP／Helper／两挂载独立清场。附加隐藏窗口截图超时原始记录保留，原T140无截图判据，不作视觉证据 | 通过 | [原安装／原生／CLI及独立判定](证据/并行测试/M12-20261103T154320Z-bff2/M12-P085/attempt-001/evidence/coordinator-case-review.json)、[全部61文件](证据/并行测试/M12-20261103T154320Z-bff2/M12-P085/attempt-001/manifest.json) |"
+      },
+      {
+        "line": 203,
+        "text": "| M12-T143 | D6 | A | 上一版本包与 M12 包 | 对比两个包的大小 | 记录增量（技研预计约 10–11MB／架构），与 agent-browser 二进制大小相符 | 2026-11-05同平台／格式实测：旧发布包609,272,511B，本候选617,168,077B；App逻辑文件净增20,439,665B，其中固定内核15,836,368B、内核附带资料12,646B、其余应用资源4,590,651B，逐文件差额完全核平。原10–11MB研究估计与当前补丁构建不符，已保留并纠正需求D6事实；未按旧估计冒充实测或更改原记录／核算判据 | 通过 | [实际逐文件体积核算](证据/并行测试/M12-20261103T154320Z-bff2/M12-P085/attempt-001/evidence/size-comparison.json)、[原判据独立复核](证据/并行测试/M12-20261103T154320Z-bff2/M12-P085/attempt-001/evidence/coordinator-case-review.json) |"
+      }
+    ]
+  },
+  "executedByThisPreparedDriver": "Only T140 installed-startup and original managedCLI(identity/tab.create/snapshot)/normalexit/exactcleanup subset. Root independently builds/mounts/installs/fullbyte+mode comparison/native6 and T143 accounting.",
+  "targetInstalledApp": "/private/tmp/willyou-m12-app054-installer-001/Installed Applications/WillYou.app",
+  "futurePrerequisites": [
+    {
+      "path": "/private/tmp/willyou-m12-app054-installer-001/evidence/candidate-installer.json",
+      "contract": "status=payload-installed-and-compared-not-startup-accepted, inputEqualsDmgEqualsInstalled=true (allpayloadbytes/modes), allOwnedMountsDetached=true, installedApp exact"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-app054-installer-001/evidence/installed-native-result.json",
+      "contract": "actualInstalledApp exact; helperMachOArm64=true/signatureVerified=true/SHA exact; actualSixNativeChecks version0.1.1/darwin/arm64 and sqlite/pty/voiceBridge/fileBroker/officeRenderer/fileWatcher passed"
+    }
+  ],
+  "originalStartupCriteria": [
+    "Actual installed exec/resources/privateuserData and loaded file: DOM home ready",
+    "Original synthetic managedcaller provides real TaskService-issued CLI context; binarySHA fixed",
+    "identity-preflight -> installed-create-page -> installed-snapshot each actualnative exit0/no timeout; distinct operations/requestIDs, source and page/URL/DOM button refs correct",
+    "Normal App0/null with original observed process signals[], independent exactPID/TCP/Unix/helper runtime absence"
+  ],
+  "syntheticBoundary": "Controlled health/config Pythonreceiver says Codex0.166 only for fixture; not actualmodel R or realCodex. Only own localHTTP page; no login/account credential input/clipboard/OS permissions.",
+  "noUIFocusPrerequisite": true,
+  "removedExtraObservation": "Original hidden screenshot timed out after originalbusiness greens; originalT140 has no screenshot/focus/visualcriterion, so omitted here. P085 originalraw/red/green unchanged.",
+  "scopeExclusions": [
+    "No visual/foregroundUI/R claims",
+    "No x64/DeveloperID/notarization/publicinstall/release/push",
+    "No rebuilding/compiling native bridge in this static preparation",
+    "No daily App/data/auth or windowactivation/automaticOSapproval"
+  ],
+  "Native": 0,
+  "App": 0,
+  "Socket": 0,
+  "compile": 0,
+  "formalCaseIncrement": 0,
+  "status": "Originalcontractretained; currentApp054installedoutputsverifiedfileonly,06bindingthen07-09actualruntimepending",
+  "historicalTargetInstalledApp": "/private/tmp/willyou-m12-p125-app023-installer-001/Installed Applications/WillYou.app"
+}

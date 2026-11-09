@@ -78,7 +78,12 @@ export function FileTextEditor({ buffer, wrap, markdown = false, onLink, onOpenI
     const cancelReadingRestore = applyHydratedEditorReading(buffer, editor, scrollMode);
     if (takeEditorModeFocus(buffer, scrollMode) && document.activeElement === document.body) editor.focus();
     const detachReading = attachEditorReading(buffer, editor, scrollMode);
-    const scrolled = () => { buffer.scrollTop = editor.scrollDOM.scrollTop; void buffer.ensureRecoveryRoute().catch(() => undefined); };
+    const scrolled = () => {
+      if(editor.dom.closest('[hidden]'))return;
+      buffer.scrollTop = editor.scrollDOM.scrollTop;
+      rememberEditorScroll(buffer,editor,scrollMode);
+      void buffer.ensureRecoveryRoute().catch(() => undefined);
+    };
     editor.scrollDOM.addEventListener('scroll', scrolled);
     return () => { lineSession.current?.cancel(false); lineSession.current = null; rememberEditorScroll(buffer, editor, scrollMode); scrolled(); detachReading(); cancelReadingRestore(); editor.scrollDOM.removeEventListener('scroll', scrolled); editor.destroy(); input.dispose(); view.current = null; };
   }, [buffer]); // the EditorState lives in buffer across view switches

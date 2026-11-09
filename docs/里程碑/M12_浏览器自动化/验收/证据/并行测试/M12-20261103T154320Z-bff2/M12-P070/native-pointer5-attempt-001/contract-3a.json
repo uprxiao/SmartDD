@@ -1,0 +1,46 @@
+{
+  "scope": "Native pointer affected regression after .5 patch; original003A red frozen",
+  "source": "009/41ddb00334c453d56a8965cebc82de278b3c7b83a4c2e501ca8227e0f97b35e4",
+  "pointerCases": [
+    {
+      "id": "helper-click-onclick",
+      "trigger": "click",
+      "input": "actualHelper find testid primary click",
+      "release": "implicitfullclick"
+    },
+    {
+      "id": "helper-click-onmousedown",
+      "trigger": "mousedown",
+      "input": "actualHelper find testid primary click",
+      "release": "implicitpendingMouseUp"
+    },
+    {
+      "id": "helper-mousedown-paired-up",
+      "trigger": "mousedown",
+      "input": "actualHelper mousemove/down",
+      "release": "explicitactualCLI mouseup"
+    }
+  ],
+  "compatCases": [],
+  "boundary": "Only 3 affectedpointer + 3numeric; all realCLI; no compat/basic6 rerun/directanswer/queue exception. Defaultpreserve extra expectation not carried. Crossframe/reset/nav/detach remain distinct laterNative boundary unless expressly added.",
+  "numericCases": [
+    {
+      "id": "integer-move",
+      "command": "move",
+      "x": 140,
+      "y": 90
+    },
+    {
+      "id": "decimal-move",
+      "command": "move",
+      "x": 122.04296875,
+      "y": 64
+    },
+    {
+      "id": "decimal-wheel",
+      "command": "wheel",
+      "dx": -2.5,
+      "dy": 1.25
+    }
+  ]
+}

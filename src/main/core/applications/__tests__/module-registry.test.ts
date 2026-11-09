@@ -25,10 +25,24 @@ const third = {
 } as const satisfies TrustedApplicationModule;
 
 describe('compiled application module composition', () => {
+  it('supports an explicitly connectionless module without weakening provider-backed modules', () => {
+    const local: TrustedApplicationModule = {...third, appId:'local',slots:[],providers:[],connectionless:true,
+      presentation:{...third.presentation,defaultProvider:''},capabilities:{},legacyPolicy(){throw Error('No legacy entry');}};
+    const registry = new ApplicationModuleRegistry([third,local]);
+    const host = new HostApplicationRegistry(registry.definitions);
+    expect(host.parseSelection({appId:'local',projectId:'project',enabled:true,expectedRevision:0,connections:{}}).connections).toEqual({});
+    expect(() => host.parseSelection({appId:'local',projectId:'project',enabled:true,expectedRevision:0,connections:{third:null}})).toThrow();
+    expect(() => new ApplicationModuleRegistry([{...local,connectionless:undefined}])).toThrow();
+    expect(() => new ApplicationModuleRegistry([{...local,slots:['third']}])).toThrow();
+    expect(() => new ApplicationModuleRegistry([{...local,providers:third.providers}])).toThrow();
+    expect(() => new ApplicationModuleRegistry([{...third,providers:[]}])).toThrow();
+    expect(() => new HostApplicationRegistry({...registry.definitions,applications:[{id:'local',slots:[],stopBeforeSwitch:false}]})).toThrow();
+  });
+
   it('keeps the two current applications and their three providers registered through one catalog', () => {
-    expect(builtinApplicationModules.appIds()).toEqual(['zentao', 'mail', 'sample-kv']);
+    expect(builtinApplicationModules.appIds()).toEqual(['zentao', 'mail', 'sample-kv', 'browser']);
     const host = new HostApplicationRegistry(builtinApplicationModules.definitions);
-    expect(host.appIds()).toEqual(['zentao', 'mail', 'sample-kv']);
+    expect(host.appIds()).toEqual(['zentao', 'mail', 'sample-kv', 'browser']);
     expect(host.provider('foxmail').authentication).toEqual({ kind: 'none', mode: 'local-readonly' });
     expect(host.application('zentao').stopBeforeSwitch).toBe(true);
     expect(host.application('mail').stopBeforeSwitch).toBe(false);

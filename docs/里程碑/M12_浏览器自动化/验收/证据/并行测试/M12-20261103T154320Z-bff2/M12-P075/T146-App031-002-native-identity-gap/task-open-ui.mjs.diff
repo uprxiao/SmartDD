@@ -1,0 +1,16 @@
+--- 001-normalized/task-open-ui.mjs
++++ 002/task-open-ui.mjs
+@@ -3,11 +3,11 @@
+ import {appendFile,writeFile} from 'node:fs/promises';
+ export function classifyTaskOpen({task,runId,dom},{taskId,projectId,explicitResumeSent,headerMenuOpened=false}){
+  assert.equal(task.id,taskId);assert.equal(task.projectId,projectId);
+- if(task.ptyId){if(runId&&dom.selected&&dom.terminals.filter(t=>t.ptyId===task.ptyId&&t.visible).length===1&&!dom.resuming)return{kind:'bound',ptyId:task.ptyId,runId};return{kind:'wait',reason:'actual-pty-awaiting-exact-renderer-binding'};}
++ const eligible=xs=>{const v=(xs??[]).filter(x=>x.visible);return v.length===1&&!v[0].disabled&&v[0].centerOwned&&v[0].inViewport;};
++ if(task.ptyId){if(runId&&dom.selected&&dom.terminals.filter(t=>t.ptyId===task.ptyId&&t.visible).length===1&&!dom.resuming)return{kind:'bound',ptyId:task.ptyId,runId};if(runId&&dom.selected&&dom.stopped&&!dom.resuming&&!explicitResumeSent&&eligible(dom.resume))return{kind:'resume-once',selector:'[data-testid=task-resume]',route:'existing-pty-renderer-binding',originalPTY:task.ptyId,originalRunId:runId};return{kind:'wait',reason:'actual-pty-awaiting-exact-renderer-binding'};}
+  if(dom.resuming)return{kind:'wait',reason:'real-sidebar-auto-resume-in-flight'};
+  if(explicitResumeSent)return{kind:'wait',reason:'one-real-resume-already-sent'};
+  if(!dom.selected)return{kind:'wait',reason:'sidebar-selection-not-presented'};
+- const eligible=xs=>{const v=(xs??[]).filter(x=>x.visible);return v.length===1&&!v[0].disabled&&v[0].centerOwned&&v[0].inViewport;};
+  if(dom.stopped){if(eligible(dom.resume))return{kind:'resume-once',selector:'[data-testid=task-resume]',route:'stopped-panel'};return{kind:'wait',reason:'stopped-panel-control-not-ready',route:'stopped-panel'};}
+  const retained=dom.terminals.filter(t=>t.visible);if(retained.length!==1)return{kind:'wait',reason:'no-unique-retained-terminal-route'};
+  if(!headerMenuOpened){if(eligible(dom.actions))return{kind:'open-header-menu-once',selector:'[data-testid=task-actions]',route:'retained-terminal-header'};return{kind:'wait',reason:'retained-task-more-not-ready',route:'retained-terminal-header'};}

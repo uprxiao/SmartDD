@@ -1,0 +1,136 @@
+{
+  "at": "2026-11-03T08:15:01.698979+00:00",
+  "reviewed": "R1.0",
+  "findings": [
+    {
+      "id": "R1-E01",
+      "priority": "high",
+      "title": "引用两段竞态仍未解决",
+      "status": "retained_from_paused_review",
+      "requirement": [
+        "需求.md:361-367",
+        "需求.md:427"
+      ],
+      "design": [
+        "技研/技术方案.md:155"
+      ],
+      "test": [
+        "验收/测试用例.md:90"
+      ],
+      "evidence": [
+        "contract-counterexamples.json REF-SNAPSHOT-BINDING/REF-CHECK-ACTION",
+        "技研/实验/E4_旧引用与等待副作用与长输入/ax-identity.mjs:17-40"
+      ],
+      "detail": "R1仍先helper snapshot后AX匹配、动作前AX比对后再交helper语义动作；同名替换可发生在两个间隔。E4b明确无helper，只证明静态backend编号变化。T051变化安排在snapshot之后整体执行，没有两处门闩。",
+      "recommendation": "增加两处门闩红测；绑定同一次解析的真实元素身份并以已绑定节点执行，不能仅在动作前再语义匹配。"
+    },
+    {
+      "id": "R1-E02",
+      "priority": "high",
+      "title": "跨页同串ref来源在线传参数中不可区分",
+      "status": "retained_from_paused_review",
+      "requirement": [
+        "需求.md:265",
+        "需求.md:362"
+      ],
+      "design": [
+        "技研/技术方案.md:155"
+      ],
+      "test": [
+        "验收/测试用例.md:90"
+      ],
+      "evidence": [
+        "contract-counterexamples.json REF-CROSS-PAGE"
+      ],
+      "detail": "A与B各自生成@e4时，用A旧引用加pageB与合法B引用参数完全相同。当前映射按页面存，无法知道字符串来自哪份快照，不能满足T051跨页拒绝。",
+      "recommendation": "宿主对外发带页面/快照代际的唯一ref或全局ID，并在验证后翻译到helper内部ref。"
+    },
+    {
+      "id": "R1-E03",
+      "priority": "medium",
+      "title": "分块后进度记录不能保证中段中断时精确等于页面字数",
+      "status": "retained_from_paused_review",
+      "requirement": [
+        "需求.md:386-393"
+      ],
+      "design": [
+        "技研/技术方案.md:133"
+      ],
+      "test": [
+        "验收/测试用例.md:99"
+      ],
+      "evidence": [
+        "contract-counterexamples.json INPUT-PROGRESS"
+      ],
+      "detail": "每个2000字chunk完成后才记账，但T060要中途中断后精确相等。当前chunk部分成功后断开，回执只有已确认整块计数；E4未验证分块恢复。",
+      "recommendation": "区分confirmedChars/unknownTail/observedChars，或可靠目标读回后才记录精确观察值；测试在chunk内部中断。"
+    },
+    {
+      "id": "R1-E04",
+      "priority": "medium",
+      "title": "Cookie恢复读后比对再写回仍可覆盖页面并发登录",
+      "status": "retained_from_paused_review",
+      "requirement": [
+        "需求.md:525-527"
+      ],
+      "design": [
+        "技研/技术方案.md:194-198"
+      ],
+      "test": [
+        "验收/测试用例.md:129"
+      ],
+      "evidence": [
+        "contract-counterexamples.json COOKIE-RESTORE"
+      ],
+      "detail": "页面Cookie写入不受锁约束，检查current==imported到恢复old之间仍有竞态。T081只在恢复之前整体改写，不把页面写安排在比对后写回前，因此会漏掉此路径。",
+      "recommendation": "定义能覆盖页面/网络写入的隔离机制，或检测到可能并发即停止破坏性补偿并交用户处理；增加比对后写回前门闩。不要把无原子CAS的比对恢复当成绝对保留保证。"
+    },
+    {
+      "id": "R1-E05",
+      "priority": "medium",
+      "title": "Cookie冲突与恢复失败状态未进入原型及完整用例",
+      "status": "design_prototype_test_gap",
+      "requirement": [
+        "需求.md:526-528"
+      ],
+      "design": [
+        "技研/技术方案.md:198"
+      ],
+      "prototype": [
+        "prototypes/m6-codex/src/BrowserPanels.jsx:110-130",
+        "prototypes/m6-codex/src/BrowserPanels.jsx:166-174",
+        "prototypes/m6-codex/src/browser-prototype-model.mjs:370-377"
+      ],
+      "test": [
+        "验收/测试用例.md:129"
+      ],
+      "detail": "R1要求冲突数、profile需要处理提示、使用页面阻断；当前原型仅钥匙串失败/允许和成功统计，没有冲突数/恢复失败状态，profile列表也无需要处理标记。T081未注入补偿本身失败，也未验证BROWSER_UNAVAILABLE或页面提示。PRD仅写日志保留，没有明确用户如何恢复可用。",
+      "recommendation": "补原型合成冲突/恢复失败分支、profile及页面提示、受控恢复/重试或明确处置指引，补恢复自身失败与解除阻断用例。恢复按钮本身目前未被需求明确要求，应作为设计待定而非已缺实现。"
+    },
+    {
+      "id": "R1-E06",
+      "priority": "low",
+      "title": "R1跨站iframe和新S1生命周期门槛未完全映射至可判定用例",
+      "status": "retained_mapping_gap",
+      "requirement": [
+        "需求.md:369"
+      ],
+      "design": [
+        "技研/技术方案.md:324"
+      ],
+      "test": [
+        "验收/测试用例.md:92",
+        "验收/测试用例.md:98",
+        "验收/测试用例.md:159-164"
+      ],
+      "detail": "T053仍是同源/跨源通用夹具并称E3已验证，未指定OOPIF子目标/进程确认；T059三次超时重置不等于helper被杀后重连。T107已加入已连接停放→挂回和效果计数，属于有效收口，不复开。",
+      "recommendation": "在既有用例内补OOPIF子目标/独立回显及helperkill→重连完整判据，链接S1。"
+    }
+  ],
+  "evidenceBoundary": "Static frozen source/document review and illustrative interleavings only; no native/UI rerun; prior fixed issues retained closed.",
+  "supportingArtifacts": [
+    "static-checks.json",
+    "contract-counterexamples.json",
+    "matrix.json"
+  ]
+}

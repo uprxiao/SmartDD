@@ -1,0 +1,19 @@
+[
+  "shares draft data and v2 results with the page, fixes CLI origin, and closes the inactive MCP fallback",
+  "keeps per-request replay without performing the same read twice and rejects changed inputs",
+  "authenticates the fixed binary and exact managed ancestor before the real data invocation",
+  "keeps environment-only tokens off disk, declarations and denial audit",
+  "keeps an active run usable past the token TTL (M12-D01) and lets it lapse once the run is no longer active",
+  "rejects missing-token without invoking business or reading a secret",
+  "rejects expired without invoking business or reading a secret",
+  "rejects unknown-peer without invoking business or reading a secret",
+  "rejects wrong-executable without invoking business or reading a secret",
+  "rejects tree-outsider without invoking business or reading a secret",
+  "rejects pid-reuse without invoking business or reading a secret",
+  "rejects revoked without invoking business or reading a secret",
+  "rejects wrong-entry without invoking business or reading a secret",
+  "rejects MCP exchange/renew and self-reported context fields before kernel or business work",
+  "detects a changed fixed binary even if the peer reports the original expected path",
+  "revokes the old environment at run exit and removes only its own endpoint on host close",
+  "keeps refusing access if denial audit storage fails"
+]

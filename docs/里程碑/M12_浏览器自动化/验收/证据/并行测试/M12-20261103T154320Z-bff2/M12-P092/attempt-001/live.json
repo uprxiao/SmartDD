@@ -1,0 +1,125 @@
+{
+  "group": "M12-P092",
+  "scope": "original full1800s CPU/RSS execution; no automatic formalcredit",
+  "formalCaseCredit": 0,
+  "startedAt": "2026-11-05T06:41:03.119Z",
+  "outerPid": 54784,
+  "wrapperKernelExitCode": null,
+  "wrapperKernelSignal": null,
+  "knownPids": [
+    54784,
+    54801,
+    54835,
+    54842,
+    54845,
+    54849
+  ],
+  "events": [],
+  "errors": [
+    "Error: Bounded wait: late wrapper callback\n    at bounded (file:///private/tmp/willyou-m12-p092-fixed-coalition-long-001/run.mjs:13:142)\n    at async main (file:///private/tmp/willyou-m12-p092-fixed-coalition-long-001/run.mjs:35:315)\n    at async file:///private/tmp/willyou-m12-p092-fixed-coalition-long-001/run.mjs:53:39"
+  ],
+  "cleanupErrors": [],
+  "subprocesses": [
+    {
+      "pid": 54801,
+      "program": "/usr/bin/clang",
+      "args": [
+        "-fobjc-arc",
+        "-fblocks",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fmodules-cache-path=/private/tmp/willyou-m12-p092-fixed-coalition-long-001/cache/clang",
+        "-framework",
+        "AppKit",
+        "-framework",
+        "Foundation",
+        "/private/tmp/willyou-m12-p092-fixed-coalition-long-001/wrapper.m",
+        "-o",
+        "/private/tmp/willyou-m12-p092-fixed-coalition-long-001/wrapper/M12AcceptanceRunner.app/Contents/MacOS/M12AcceptanceRunner"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "signals": []
+    },
+    {
+      "pid": 54835,
+      "program": "/usr/bin/clang",
+      "args": [
+        "-fobjc-arc",
+        "-fblocks",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fmodules-cache-path=/private/tmp/willyou-m12-p092-fixed-coalition-long-001/cache/clang",
+        "-framework",
+        "AppKit",
+        "-framework",
+        "Foundation",
+        "/private/tmp/willyou-m12-p092-fixed-coalition-long-001/broker.m",
+        "-o",
+        "/private/tmp/willyou-m12-p092-fixed-coalition-long-001/broker"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "signals": []
+    },
+    {
+      "pid": 54842,
+      "program": "/usr/bin/codesign",
+      "args": [
+        "--force",
+        "--sign",
+        "-",
+        "/private/tmp/willyou-m12-p092-fixed-coalition-long-001/wrapper/M12AcceptanceRunner.app"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "/private/tmp/willyou-m12-p092-fixed-coalition-long-001/wrapper/M12AcceptanceRunner.app: replacing existing signature\n",
+      "signals": []
+    },
+    {
+      "pid": 54845,
+      "program": "/usr/bin/codesign",
+      "args": [
+        "--verify",
+        "--deep",
+        "--strict",
+        "/private/tmp/willyou-m12-p092-fixed-coalition-long-001/wrapper/M12AcceptanceRunner.app"
+      ],
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "signals": []
+    }
+  ],
+  "pins": {
+    "wrapperExeSha256": "e4688c753da9ae9c657c4084f93547157f1d42013d738884054508e6de764630",
+    "brokerSha256": "ff5414ff443be09593e6d1e5acf55cfa6dea26d77609431d75004c5fce6edbce",
+    "nodeSha256": "2e3f1286a7eb3736346ed1803e458a0ff909e2b2d5bc746144dcb76970e9b99d",
+    "node": "/Users/liubu/.hermes/node/bin/node",
+    "wrapperBundleIdentifier": "com.willyou.acceptance.m12.p092.fd28d21626e6"
+  },
+  "brokerPid": 54849,
+  "brokerExit": {
+    "code": 3,
+    "signal": null,
+    "stderr": "",
+    "notWrapperKernelExit": true
+  },
+  "callbackUnresolved": true,
+  "status": "failed-or-partial",
+  "failure": {
+    "stage": "one-nonactive-LaunchServices-wrapper",
+    "error": "Error: Bounded wait: late wrapper callback\n    at bounded (file:///private/tmp/willyou-m12-p092-fixed-coalition-long-001/run.mjs:13:142)\n    at async main (file:///private/tmp/willyou-m12-p092-fixed-coalition-long-001/run.mjs:35:315)\n    at async file:///private/tmp/willyou-m12-p092-fixed-coalition-long-001/run.mjs:53:39"
+  },
+  "cleanupUnresolved": true,
+  "finishedAt": "2026-11-05T06:43:26.569Z",
+  "stage": "cleanup-unresolved-lease-not-released"
+}

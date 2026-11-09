@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-07T03:15:52.734574+00:00",
+  "scope": "Carry only already-SHA-frozen first15 facts into detached continuation; no App/Node/OS/model execution",
+  "source": {
+    "path": "/private/tmp/willyou-m12-t095-App027-A-R-prep-004/raw.json",
+    "sha256": "76a42930e383e8371086141b923e8462630483609368ffbfb0f6c52dbbecd7e5"
+  },
+  "assignments": [
+    {
+      "destination": "r.counterSamples",
+      "source": "original.counterSamples",
+      "operation": "structuredClone",
+      "sourcePresent": true,
+      "sourceJSONSHA256": "274321032c9758034bad3b6557633a940c5a78fa27f9c6d6a316d29fee6f191e"
+    },
+    {
+      "destination": "r.queue",
+      "source": "original.queue",
+      "operation": "structuredClone",
+      "sourcePresent": true,
+      "sourceJSONSHA256": "8f8cee5916b4b3193b9afc01f012821daf16013dbf1c3d7be082928d0e485470"
+    },
+    {
+      "destination": "r.timeout",
+      "source": "original.timeout",
+      "operation": "structuredClone",
+      "sourcePresent": true,
+      "sourceJSONSHA256": "a76b175babc0749396d9d0561b8c517d336975a93f152cc03a920a871aef8f32"
+    }
+  ],
+  "judgeReferences": {
+    "T095-04": "original.counterSamples label before-allow-1 retained; new counter() samples append to cloned array",
+    "T095-06": "original.queue before/after three real queued writes retained",
+    "T095-08": "original.timeout real sixty-second untouched request retained"
+  },
+  "sourceDeltaExactThreeAssignments": true,
+  "newImports": 0,
+  "newLabels": 0,
+  "newFSCalls": 0,
+  "priorStaticEvidence": {
+    "path": "/private/tmp/willyou-m12-t095-App027-C9-C10-cont-001/static-output-001/result.json",
+    "sha256": "30e30d761f1329d8fb8492a109183e1eb93acbb36d7a97e78a4c9d5d9cd38599",
+    "toolCall": "758083",
+    "PID": 35580,
+    "scope": "Actual green before three carry assignments; prior module graph/labels/FS/payload invariants unchanged. Current run three added assignment expressions are file-reviewed only, not newly Node-executed."
+  },
+  "oldReady": {
+    "path": "/private/tmp/willyou-m12-t095-App027-C9-C10-cont-001/history/carry-original-facts-review-001/execution-ready.json",
+    "sha256": "c4f4ba81868a2ae545912e6472184290b2d66350ef1f07e3389e84afdbec7afb"
+  },
+  "oldManifest": {
+    "path": "/private/tmp/willyou-m12-t095-App027-C9-C10-cont-001/history/carry-original-facts-review-001/manifest.json",
+    "sha256": "b3621506bb0b6463052329be6412dc399e2c7e419296cfd4b0571d5a17a6e4a1"
+  }
+}

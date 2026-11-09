@@ -1,0 +1,10 @@
+--- /private/tmp/willyou-m12-p014-executor-001/source/src/main/core/browser/site-state.ts
++++ /private/tmp/willyou-m12-cache-fix-source-029/source/src/main/core/browser/site-state.ts
+@@ -30,4 +30,7 @@
+   }
+   revokePermission(id:string,url:string,permission:string):void{const origin=browserSiteOrigin(url);if(origin===null)throw new ApplicationError('INVALID_INPUT','站点无效');const state=this.read(id);this.save(id,{...state,permissions:state.permissions.filter(row=>row.origin!==origin||row.permission!==permission)});}
+   forget(id:string):void{this.db.prepare('DELETE FROM app_settings WHERE key=?').run(this.key(id));this.states.delete(id);}
++  /** Host-only profile-clone publication, never an IPC grant-setting entry. */
++  inherit(id:string,state:BrowserSiteState):void{if(!this.knownProfile(id))throw new ApplicationError('SCOPE_DENIED','登录态不存在');this.save(id,state);}
++  invalidate(id:string):void{this.states.delete(id);}
+ }

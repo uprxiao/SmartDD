@@ -1,0 +1,100 @@
+{
+  "case": "M12-T095",
+  "layers": [
+    "A",
+    "R"
+  ],
+  "at": "2026-11-07T02:07:53.163Z",
+  "checks": [
+    {
+      "id": "T095-01",
+      "name": "Own --task succeeds without grant",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading '0')"
+    },
+    {
+      "id": "T095-02",
+      "name": "Unauthorized cross-task is actual SCOPE_DENIED/2",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading '1')"
+    },
+    {
+      "id": "T095-03",
+      "name": "No-grant observe request opens and is allowed by actual UI",
+      "pass": false,
+      "message": "Expected values to be strictly equal:\n\n0 !== 1\n"
+    },
+    {
+      "id": "T095-04",
+      "name": "Observe reads but rejects write and wait fn without site execution",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading '3')"
+    },
+    {
+      "id": "T095-05",
+      "name": "Actual control UI authorization permits exactly one true Agent click",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading '6')"
+    },
+    {
+      "id": "T095-06",
+      "name": "Actual UI revocation cancels all three already queued writes with zero execution",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading 'beforeRevoke')"
+    },
+    {
+      "id": "T095-07",
+      "name": "Actual UI refusal yields actual SCOPE_DENIED/2",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading '4')"
+    },
+    {
+      "id": "T095-08",
+      "name": "Untouched original sixty-second request times out, not an early/user refusal",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading 'notHandledByUI')"
+    },
+    {
+      "id": "T095-09",
+      "name": "Actual UI ends a live-grant run, same-task new run cannot inherit it",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading 'access')"
+    },
+    {
+      "id": "T095-10",
+      "name": "Original audit retains actual grant/decision source and visible UI source text",
+      "pass": false,
+      "message": "The expression evaluated to a falsy value:\n\n  assert(rows.some(x=>x.parsed?.mode===mode&&x.parsed?.decisionSource==='user'))\n"
+    }
+  ],
+  "admission": [
+    {
+      "name": "Entire original case finished without failure",
+      "pass": false,
+      "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'failed-or-partial'\n- 'executed-unjudged'\n"
+    },
+    {
+      "name": "Every real payload acknowledged once with exact original canonical Native identity",
+      "pass": false,
+      "message": "Expected values to be strictly equal:\n\n0 !== 3\n"
+    },
+    {
+      "name": "Full public Skill read proofs, two actual run contexts, seventeen unique CLI/Host operations",
+      "pass": false,
+      "message": "Cannot read properties of undefined (reading 'skillCatProof')"
+    },
+    {
+      "name": "One setup reload, one original focus activation, no rearm; fixture references restored",
+      "pass": true
+    },
+    {
+      "name": "Actual App normal terminal and independent exact cleanup",
+      "pass": true
+    }
+  ],
+  "phaseFileProofs": [],
+  "phaseFileErrors": [],
+  "passed": false,
+  "formalNewPasses": 0,
+  "boundary": "Only coordinator may accept/record full row after independent source/Native/Host/UI/cleanup review. No old I is substituted for current App/real R."
+}

@@ -1,10 +1,12 @@
 import { runnerDescription } from '@shared/ai-profiles';
 import {SessionApplicationsPanel} from '@renderer/features/applications/session-applications';
+import {openNewBrowserTab} from '@renderer/features/browser/store';
 // Task details and runtime bar adapted from Yoda (Apache-2.0).
 // The single window title follows the approved Codex reference; the sidebar switches sessions.
 import { Ellipsis, Folder, FolderOpen, Moon, Play, SlidersHorizontal, Square, SquarePlus, Sun, TriangleAlert, X } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
-import { useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { observeTaskHeaderLayout, type TaskHeaderLayout } from '@shared/task-header-layout.mjs';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { profileModel } from '@shared/ai-profiles';
@@ -39,6 +41,9 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
   const { effectiveTheme, setTheme } = useTheme();
   const [busy, setBusy] = useState(false);
   const [sessionApps,setSessionApps]=useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerLayout, setHeaderLayout] = useState<TaskHeaderLayout>('default');
+  useLayoutEffect(() => observeTaskHeaderLayout(headerRef.current, setHeaderLayout), [task.id]);
   const { requestClose, closeDialog, busy: closing } = useTaskClose(task);
   const dark = effectiveTheme === 'ydark';
   const running = Boolean(task.ptyId);
@@ -51,13 +56,14 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
     } catch (e) { toast.error(rpcErrorMessage(e)); }
     finally { setBusy(false); }
   };
-  return <><header className="task-window-header app-drag" data-testid="task-header">
+  return <><header ref={headerRef} className="task-window-header app-drag" data-header-layout={headerLayout} data-testid="task-header">
     <div className="task-window-title" title={`${task.projectName ?? t('task.noProject')} / ${task.title}`}>
       <Folder size={17} aria-hidden="true" /><span>{task.title}</span>
     </div>
     <div className="task-window-actions app-no-drag">
-      <button type="button" className="m9-file-entry" data-testid="task-applications" onClick={()=>setSessionApps(true)}><SlidersHorizontal size={16}/>应用</button>
-      <button type="button" className="m9-file-entry" data-testid="task-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button>
+      {task.projectId&&<button type="button" className="m9-file-entry" data-testid="task-new-browser" title="新建标签页（⇧⌘B）" onClick={()=>openNewBrowserTab(task.id)}><SquarePlus size={16}/><span className="task-entry-label">新建标签页</span></button>}
+      <button type="button" className="m9-file-entry" data-testid="task-applications" onClick={()=>setSessionApps(true)}><SlidersHorizontal size={16}/><span className="task-entry-label">应用</span></button>
+      <button type="button" className="m9-file-entry" data-testid="task-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} /><span className="task-entry-label">文件</span></button>
       <DropdownMenu>
         <DropdownMenuTrigger className="icon-button" data-testid="task-actions" aria-label={t('m6.more')} title={t('m6.more')}><Ellipsis size={18} /></DropdownMenuTrigger>
         <DropdownMenuContent align="end">

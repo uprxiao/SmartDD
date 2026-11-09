@@ -1,0 +1,1708 @@
+{
+  "schema": "private-scoped-original-image-review",
+  "case": "M12-T145",
+  "attempt": "App045-countdown-A032",
+  "createdAt": "2026-11-08T15:18:47.790384+00:00",
+  "reviewer": "t145_download_visual_prep",
+  "scope": {
+    "indices": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "pairs": 11,
+    "originalPNGsActuallyViewed": 22,
+    "window": "1920x1080",
+    "combos": "light480/900 + dark480 paused,resumed,hold; dark900 paused,resumed",
+    "excluded": "Other agent owns nine 1440 images. Missing dark900 hold was not captured by A032 and is not reviewed here; Root assigns A033."
+  },
+  "basis": {
+    "raw": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/raw.json",
+    "rawSHA256": "927b6f7b01a0d6a6339713a5d69644f823ae658b6ef55913011daeab3ddc1f92",
+    "referencesSHA256": "2ac4f1acc483d718e19651cb53b642e6a52bf2a82946a20de1d971403f208db2",
+    "packagePinSHA256": "67d725dcae874f177826e3114d1775f6c716c943132c23416c24e2adf2f64b3a",
+    "app": "App045",
+    "source": "source054",
+    "sourceManifestSHA256": "11da3976ad82bf6d008fb5db8170be73639e04b55972a5001727cdde1181b3f2",
+    "asarSHA256": "b79f5017101f1ee31fe3b4e847b9ac88c78c94abbc7183abc35f5de893ff5e6c"
+  },
+  "result": {
+    "reviewedPairs": 11,
+    "pausedPairsWithoutNewObservedControlDiscrepancy": 4,
+    "activePairsWithConfirmedControlDiscrepancy": 7,
+    "allReviewedIsNotVisualPass": true,
+    "wholeCasePassed": false,
+    "formalIncrement": 0,
+    "publicLedgerChanged": false,
+    "rawChanged": false
+  },
+  "confirmedProductDifferences": [
+    {
+      "id": "A032-ACTIVE-DOUBLE-OUTLINE",
+      "severity": "visual parity defect",
+      "indices": [
+        10,
+        11,
+        13,
+        14,
+        16,
+        17,
+        19
+      ],
+      "finding": "All seven reviewed activity/resumed original A images show a thicker solid blue active edge than P. This is a control discrepancy, not excused by Native content or shell origin.",
+      "sourceEvidence": {
+        "A_pseudo": "source054 src/renderer/features/browser/workspace.css:127 .bw-agent-glow::after has inset 0 0 0 2px accent plus 22px glow",
+        "A_border": "same file:134 .bw-page border:2px solid transparent; .bw-page.bw-agent-glow border-color:accent",
+        "P": "source054 prototypes/m6-codex/src/browser.css:34 only pseudo inset2px, .bw-page:32 has no element border",
+        "metadata": "Each affected A .bw-agent-glow records borderWidth 2px. Original P metadata lacks that selector, so P pixel observation and frozen CSS support the P side."
+      },
+      "fixOrRetest": "Coordinator owns implementation and any necessary real App retest; this review does not alter production or expectations."
+    }
+  ],
+  "separateBoundaries": [
+    {
+      "id": "DYNAMIC-DEADLINE",
+      "observation": "Resumed P displays21; A light20 and dark19. Hold P/A20. Every A recorded countdown equals expectedSeconds from actual host deadline. No +1 imposed and no equality to old dynamic screenshot digits required."
+    },
+    {
+      "id": "SHELL-4PX",
+      "observation": "P toolbar starts y44 and banners y88; A toolbar starts y40 and banners y84. Corresponding banner heights and horizontal positions agree. This existing 4px shell origin is separate from the extra2px active edge."
+    },
+    {
+      "id": "POINTER-STATE",
+      "observation": "Actual pause/resume click retains hover fill; hold captures move pointer to new-tab causing its gray hover circle. These differ from some original P pointer locations. No hover fill called baseline mismatch."
+    },
+    {
+      "id": "NATIVE-PIXELS",
+      "observation": "A renderer screenshots show blank Native area while P includes synthetic login/demo controls. They do not certify Native child webpage pixels. Native contents URL/placement observations are supporting records, not a visual pixel pass."
+    },
+    {
+      "id": "DEMO-DATA",
+      "observation": "A isolated task/project text, URL/title, terminal and absence of prototype demo row differ from P sample data/layout. Downloads are empty in this group. Those are recorded separately and do not hide banner/button/dot/edge differences."
+    }
+  ],
+  "remainingUnverified": [
+    "Missing A032 dark900 hold original P/A pair; Root A033 continuation required.",
+    "Full T145 original matrix and actual Native child page pixel parity are outside this review.",
+    "No new App, Native, Node, OS, HTTP or actual interaction executed by reviewer."
+  ],
+  "sourceEvidenceFiles": [
+    {
+      "path": "/private/tmp/willyou-m12-agent-deadline-source-054/source/src/renderer/features/browser/workspace.css",
+      "sha256": "0f56c826ec228fd33b4084eba6dee88bf0e02e5c5023d429d6f9a034aaa02a03"
+    },
+    {
+      "path": "/private/tmp/willyou-m12-agent-deadline-source-054/source/prototypes/m6-codex/src/browser.css",
+      "sha256": "b5cf2b6bed6b2aa0bd8ce79c745e723f43afbbf2c61476ec9db35e46ef0fe2cd"
+    }
+  ],
+  "rows": [
+    {
+      "rawIndex": 9,
+      "combo": "light-rw480-win1920x1080",
+      "state": "B10-paused",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw480-win1920x1080-B10-paused.png",
+          "sha256": "e7dccd27ba85f60a5b1e658a6e1fa2787d94ba3aca22455ffde57f9c0d828528",
+          "expected": "e7dccd27ba85f60a5b1e658a6e1fa2787d94ba3aca22455ffde57f9c0d828528"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw480-win1920x1080-B10-paused.json",
+          "sha256": "48a508a7bf682e1b00dff04c0771600d184a3a12507e2deabfdcd0f105884af8",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B10-paused.png",
+          "sha256": "c5ecc278c13e9ad1e427c8f911fddae6cb551baac2c7b3357d3586a6237e6265",
+          "expected": "c5ecc278c13e9ad1e427c8f911fddae6cb551baac2c7b3357d3586a6237e6265"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B10-paused.json",
+          "sha256": "c712ac4490001455ced37ab36e48c0ed83f912a04b3afdf49bfb12bb7d42d659",
+          "expected": "c712ac4490001455ced37ab36e48c0ed83f912a04b3afdf49bfb12bb7d42d659"
+        }
+      },
+      "scopedVisualConclusion": "No new in-scope control discrepancy seen in paused state",
+      "banner": {
+        "Atext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Ptext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Arect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 70,
+          "right": 1916,
+          "bottom": 154
+        },
+        "Prect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 70
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "恢复 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(154, 98, 0)",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "borderColor": "rgb(227, 181, 90)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1698.328125,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1705.328125,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(208, 138, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "rgba(208, 138, 0, 0.2) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": null,
+      "defectIds": [],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA"
+      ],
+      "pausedCode": {
+        "Acolor": "rgb(112, 112, 112)",
+        "AfontSize": "11px",
+        "AfontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+        "visual": "Gray monospace agrees visually with original P; no prior inherited yellow code remains. P JSON did not independently select code, so no invented P computed value."
+      }
+    },
+    {
+      "rawIndex": 10,
+      "combo": "light-rw480-win1920x1080",
+      "state": "B10-resumed",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw480-win1920x1080-B10-resumed.png",
+          "sha256": "5ed60962eadeffe8388b260b1ce605f6974340b0d54307c5f5e4d3dbe0b2530d",
+          "expected": "5ed60962eadeffe8388b260b1ce605f6974340b0d54307c5f5e4d3dbe0b2530d"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw480-win1920x1080-B10-resumed.json",
+          "sha256": "365d2c30926c9331a915ca6d80b784826033e5251227e01bb7127dec1d6ce92d",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B10-resumed.png",
+          "sha256": "d183f1afc6edd13bd8d5a4b784022c88065b321a429d3a742294aa545cfdbd91",
+          "expected": "d183f1afc6edd13bd8d5a4b784022c88065b321a429d3a742294aa545cfdbd91"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B10-resumed.json",
+          "sha256": "d555fac52d5610fed1f7d2a7451ee01dc8098905abbf83ac3e1699d1cd10ff87",
+          "expected": "d555fac52d5610fed1f7d2a7451ee01dc8098905abbf83ac3e1699d1cd10ff87"
+        }
+      },
+      "scopedVisualConclusion": "Product visual discrepancy: double active blue outline; other listed controls agree within separate boundaries",
+      "banner": {
+        "Atext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Ptext": "Agent 最近操作过此页面 · 21 秒后清除标记",
+        "Arect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "暂停 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1698.328125,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1705.328125,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(51, 133, 255)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "color(srgb 0.2 0.521569 1 / 0.22) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": {
+        "at": 1794148705692,
+        "text": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "seconds": 20,
+        "focused": true,
+        "visibility": "visible",
+        "expectedSeconds": 20,
+        "agentHoldUntil": 1794148724826
+      },
+      "defectIds": [
+        "A032-ACTIVE-DOUBLE-OUTLINE"
+      ],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA",
+        "DYNAMIC-DEADLINE"
+      ],
+      "activeOutline": {
+        "AmetadataBorderWidth": "2px",
+        "AmetadataBorderColor": "rgb(51, 133, 255)",
+        "observedOriginalPixels": "A solid blue edge appears 4px thick versus original P 2px; both have inner soft glow. A metadata and source confirm 2px element border plus 2px inner pseudo-shadow."
+      }
+    },
+    {
+      "rawIndex": 11,
+      "combo": "light-rw480-win1920x1080",
+      "state": "B09-agent-hold",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw480-win1920x1080-B09-agent-hold.png",
+          "sha256": "839b378a88a3dd1e08c612b0b3427e70bf1d414fffe58387908b7641d52db0d5",
+          "expected": "839b378a88a3dd1e08c612b0b3427e70bf1d414fffe58387908b7641d52db0d5"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw480-win1920x1080-B09-agent-hold.json",
+          "sha256": "3a2e84a0bd7a3a3b9291acbca08092540f2c7536515c21178325c2960e7ee6de",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B09-agent-hold.png",
+          "sha256": "331d2334f2a4418cc544822545d4fc9ff5375e3fe8e91ac91dddd13e484c6064",
+          "expected": "331d2334f2a4418cc544822545d4fc9ff5375e3fe8e91ac91dddd13e484c6064"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw480-win1920x1080-B09-agent-hold.json",
+          "sha256": "e513b803d59ed021b96bae509e4c9a38775091ab46e6a378b0c52a0940780a5c",
+          "expected": "e513b803d59ed021b96bae509e4c9a38775091ab46e6a378b0c52a0940780a5c"
+        }
+      },
+      "scopedVisualConclusion": "Product visual discrepancy: double active blue outline; other listed controls agree within separate boundaries",
+      "banner": {
+        "Atext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Ptext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Arect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "暂停 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1698.328125,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1705.328125,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(51, 133, 255)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "color(srgb 0.2 0.521569 1 / 0.22) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": {
+        "at": 1794148707509,
+        "text": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "seconds": 20,
+        "focused": true,
+        "visibility": "visible",
+        "expectedSeconds": 20,
+        "agentHoldUntil": 1794148727186
+      },
+      "defectIds": [
+        "A032-ACTIVE-DOUBLE-OUTLINE"
+      ],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA",
+        "DYNAMIC-DEADLINE"
+      ],
+      "activeOutline": {
+        "AmetadataBorderWidth": "2px",
+        "AmetadataBorderColor": "rgb(51, 133, 255)",
+        "observedOriginalPixels": "A solid blue edge appears 4px thick versus original P 2px; both have inner soft glow. A metadata and source confirm 2px element border plus 2px inner pseudo-shadow."
+      }
+    },
+    {
+      "rawIndex": 12,
+      "combo": "light-rw900-win1920x1080",
+      "state": "B10-paused",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw900-win1920x1080-B10-paused.png",
+          "sha256": "c5a35840196d19180145332a847d0cb5ba5d7d8e0c2213c31e81f0b21373ed5f",
+          "expected": "c5a35840196d19180145332a847d0cb5ba5d7d8e0c2213c31e81f0b21373ed5f"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw900-win1920x1080-B10-paused.json",
+          "sha256": "c60468743a6500aa1f10e4d57c2455e0c45dacda6705cae74ae6f0e7fb7980cb",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B10-paused.png",
+          "sha256": "eae6cd570cd032b00f1502b167ac612cec6c9ea933fe009cc0fe532efaa6acde",
+          "expected": "eae6cd570cd032b00f1502b167ac612cec6c9ea933fe009cc0fe532efaa6acde"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B10-paused.json",
+          "sha256": "91529833bc8bcdbf0b9b87d10eb35be1d9e9f8b288e5e99073a07b034551488b",
+          "expected": "91529833bc8bcdbf0b9b87d10eb35be1d9e9f8b288e5e99073a07b034551488b"
+        }
+      },
+      "scopedVisualConclusion": "No new in-scope control discrepancy seen in paused state",
+      "banner": {
+        "Atext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Ptext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Arect": {
+          "x": 1017,
+          "y": 84,
+          "width": 899,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1017,
+          "y": 88,
+          "width": 899,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "恢复 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(154, 98, 0)",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "borderColor": "rgb(227, 181, 90)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1441.859375,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1448.859375,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(208, 138, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "rgba(208, 138, 0, 0.2) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": null,
+      "defectIds": [],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA"
+      ],
+      "pausedCode": {
+        "Acolor": "rgb(112, 112, 112)",
+        "AfontSize": "11px",
+        "AfontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+        "visual": "Gray monospace agrees visually with original P; no prior inherited yellow code remains. P JSON did not independently select code, so no invented P computed value."
+      }
+    },
+    {
+      "rawIndex": 13,
+      "combo": "light-rw900-win1920x1080",
+      "state": "B10-resumed",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw900-win1920x1080-B10-resumed.png",
+          "sha256": "3ad93a4494769ad7febebd6f20709b80c90bce06ceb324115f9a1f1c61795edb",
+          "expected": "3ad93a4494769ad7febebd6f20709b80c90bce06ceb324115f9a1f1c61795edb"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw900-win1920x1080-B10-resumed.json",
+          "sha256": "2a41c22cf8f1fac374dbea149dfd7e6688bb54a7793a5411b3acea56e82ab119",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B10-resumed.png",
+          "sha256": "0016428f8dae07e72b09e0f8cb866be9c9624ce75bceff2454fb308baedcc971",
+          "expected": "0016428f8dae07e72b09e0f8cb866be9c9624ce75bceff2454fb308baedcc971"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B10-resumed.json",
+          "sha256": "f946bbc21fac784e90306f4bbed2de6bb99d9ddf4b6c961b52cace3773765d0a",
+          "expected": "f946bbc21fac784e90306f4bbed2de6bb99d9ddf4b6c961b52cace3773765d0a"
+        }
+      },
+      "scopedVisualConclusion": "Product visual discrepancy: double active blue outline; other listed controls agree within separate boundaries",
+      "banner": {
+        "Atext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Ptext": "Agent 最近操作过此页面 · 21 秒后清除标记",
+        "Arect": {
+          "x": 1017,
+          "y": 84,
+          "width": 899,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1017,
+          "y": 88,
+          "width": 899,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "暂停 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(235, 235, 235)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1441.859375,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1448.859375,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(51, 133, 255)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "color(srgb 0.2 0.521569 1 / 0.22) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": {
+        "at": 1794148713807,
+        "text": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "seconds": 20,
+        "focused": true,
+        "visibility": "visible",
+        "expectedSeconds": 20,
+        "agentHoldUntil": 1794148732864
+      },
+      "defectIds": [
+        "A032-ACTIVE-DOUBLE-OUTLINE"
+      ],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA",
+        "DYNAMIC-DEADLINE"
+      ],
+      "activeOutline": {
+        "AmetadataBorderWidth": "2px",
+        "AmetadataBorderColor": "rgb(51, 133, 255)",
+        "observedOriginalPixels": "A solid blue edge appears 4px thick versus original P 2px; both have inner soft glow. A metadata and source confirm 2px element border plus 2px inner pseudo-shadow."
+      }
+    },
+    {
+      "rawIndex": 14,
+      "combo": "light-rw900-win1920x1080",
+      "state": "B09-agent-hold",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw900-win1920x1080-B09-agent-hold.png",
+          "sha256": "4bac0aa23d7f7c0018d97b273b0133b3ccb3f9ed05fd1904dfa5b9cf948b4f86",
+          "expected": "4bac0aa23d7f7c0018d97b273b0133b3ccb3f9ed05fd1904dfa5b9cf948b4f86"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-light-rw900-win1920x1080-B09-agent-hold.json",
+          "sha256": "f12c03f8d1fdb9f78768bf1e32d953a8f4a9a0c7b9df5ad688f5e10ff590a386",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B09-agent-hold.png",
+          "sha256": "a07e83501bf27b2e4fcc2a9823f477f0ad23b93cf0f0cdc97df5690fd20eb15e",
+          "expected": "a07e83501bf27b2e4fcc2a9823f477f0ad23b93cf0f0cdc97df5690fd20eb15e"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-light-rw900-win1920x1080-B09-agent-hold.json",
+          "sha256": "d36ed9d99886792a4b11db2a9481d0b37f60c6749066d429d498b2c48affe6e1",
+          "expected": "d36ed9d99886792a4b11db2a9481d0b37f60c6749066d429d498b2c48affe6e1"
+        }
+      },
+      "scopedVisualConclusion": "Product visual discrepancy: double active blue outline; other listed controls agree within separate boundaries",
+      "banner": {
+        "Atext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Ptext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Arect": {
+          "x": 1017,
+          "y": 84,
+          "width": 899,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1017,
+          "y": 88,
+          "width": 899,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "暂停 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1441.859375,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1448.859375,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(41, 41, 41)",
+          "backgroundColor": "rgb(51, 133, 255)",
+          "borderColor": "rgb(233, 233, 233)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "color(srgb 0.2 0.521569 1 / 0.22) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": {
+        "at": 1794148715920,
+        "text": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "seconds": 20,
+        "focused": true,
+        "visibility": "visible",
+        "expectedSeconds": 20,
+        "agentHoldUntil": 1794148735560
+      },
+      "defectIds": [
+        "A032-ACTIVE-DOUBLE-OUTLINE"
+      ],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA",
+        "DYNAMIC-DEADLINE"
+      ],
+      "activeOutline": {
+        "AmetadataBorderWidth": "2px",
+        "AmetadataBorderColor": "rgb(51, 133, 255)",
+        "observedOriginalPixels": "A solid blue edge appears 4px thick versus original P 2px; both have inner soft glow. A metadata and source confirm 2px element border plus 2px inner pseudo-shadow."
+      }
+    },
+    {
+      "rawIndex": 15,
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B10-paused",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw480-win1920x1080-B10-paused.png",
+          "sha256": "7eb9632baa052e959799cf54b4ca61c9f51161b7b7d435f954e1afef9b84a089",
+          "expected": "7eb9632baa052e959799cf54b4ca61c9f51161b7b7d435f954e1afef9b84a089"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw480-win1920x1080-B10-paused.json",
+          "sha256": "cb2c39591c7d120ed9620426db097d2d90c6f464e1386e92917975399257ae8d",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B10-paused.png",
+          "sha256": "5d810b3ada995277377a42fb08fa9a8e96afb89ad3e3ed0a7d3d1555289623f9",
+          "expected": "5d810b3ada995277377a42fb08fa9a8e96afb89ad3e3ed0a7d3d1555289623f9"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B10-paused.json",
+          "sha256": "31dd380d4707d0c186134ab4336049763af86203ca3379c2c06739e4f4ea9050",
+          "expected": "31dd380d4707d0c186134ab4336049763af86203ca3379c2c06739e4f4ea9050"
+        }
+      },
+      "scopedVisualConclusion": "No new in-scope control discrepancy seen in paused state",
+      "banner": {
+        "Atext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Ptext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Arect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 70,
+          "right": 1916,
+          "bottom": 154
+        },
+        "Prect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 70
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "恢复 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(154, 98, 0)",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "borderColor": "rgb(227, 181, 90)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1698.328125,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1705.328125,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(208, 138, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "rgba(208, 138, 0, 0.2) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": null,
+      "defectIds": [],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA"
+      ],
+      "pausedCode": {
+        "Acolor": "rgb(204, 204, 204)",
+        "AfontSize": "11px",
+        "AfontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+        "visual": "Gray monospace agrees visually with original P; no prior inherited yellow code remains. P JSON did not independently select code, so no invented P computed value."
+      }
+    },
+    {
+      "rawIndex": 16,
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B10-resumed",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw480-win1920x1080-B10-resumed.png",
+          "sha256": "f3abfa5b370a68d2aded74228fd21e5555a9acf269d1bd9572207052dc9966a7",
+          "expected": "f3abfa5b370a68d2aded74228fd21e5555a9acf269d1bd9572207052dc9966a7"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw480-win1920x1080-B10-resumed.json",
+          "sha256": "6bd4e1ca29c2a8ab7e47ec294d67e04e8ad7c6ebc32c87fce311f21068abe614",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B10-resumed.png",
+          "sha256": "9b12338cb85d022078295fcf17d82ac2db83da19d2033a67354ee0ececfa6596",
+          "expected": "9b12338cb85d022078295fcf17d82ac2db83da19d2033a67354ee0ececfa6596"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B10-resumed.json",
+          "sha256": "a298fed9b185f114317c9a6f9f243b33a9146e786d6f8ad91797c7e689547d79",
+          "expected": "a298fed9b185f114317c9a6f9f243b33a9146e786d6f8ad91797c7e689547d79"
+        }
+      },
+      "scopedVisualConclusion": "Product visual discrepancy: double active blue outline; other listed controls agree within separate boundaries",
+      "banner": {
+        "Atext": "Agent 最近操作过此页面 · 19 秒后清除标记",
+        "Ptext": "Agent 最近操作过此页面 · 21 秒后清除标记",
+        "Arect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "暂停 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1698.328125,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1705.328125,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(51, 133, 255)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "color(srgb 0.2 0.521569 1 / 0.22) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": {
+        "at": 1794148723582,
+        "text": "Agent 最近操作过此页面 · 19 秒后清除标记",
+        "seconds": 19,
+        "focused": true,
+        "visibility": "visible",
+        "expectedSeconds": 19,
+        "agentHoldUntil": 1794148742311
+      },
+      "defectIds": [
+        "A032-ACTIVE-DOUBLE-OUTLINE"
+      ],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA",
+        "DYNAMIC-DEADLINE"
+      ],
+      "activeOutline": {
+        "AmetadataBorderWidth": "2px",
+        "AmetadataBorderColor": "rgb(51, 133, 255)",
+        "observedOriginalPixels": "A solid blue edge appears 4px thick versus original P 2px; both have inner soft glow. A metadata and source confirm 2px element border plus 2px inner pseudo-shadow."
+      }
+    },
+    {
+      "rawIndex": 17,
+      "combo": "dark-rw480-win1920x1080",
+      "state": "B09-agent-hold",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw480-win1920x1080-B09-agent-hold.png",
+          "sha256": "99eefeee4e630057e02a22926e44f19640ec0cc31acb70855c56e5e7f7d250b9",
+          "expected": "99eefeee4e630057e02a22926e44f19640ec0cc31acb70855c56e5e7f7d250b9"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw480-win1920x1080-B09-agent-hold.json",
+          "sha256": "083175d5d830f2a209cd50e62074d7b6115a7b7d526adccce2d9685a4666118f",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B09-agent-hold.png",
+          "sha256": "883655608bbeec341fc3b842b2f87933219a62d93fa101afd78e4a66ea1dd30f",
+          "expected": "883655608bbeec341fc3b842b2f87933219a62d93fa101afd78e4a66ea1dd30f"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw480-win1920x1080-B09-agent-hold.json",
+          "sha256": "90bb7d87e48eefa1729e87438f5cb586b436f929e157b78dacc462357700140c",
+          "expected": "90bb7d87e48eefa1729e87438f5cb586b436f929e157b78dacc462357700140c"
+        }
+      },
+      "scopedVisualConclusion": "Product visual discrepancy: double active blue outline; other listed controls agree within separate boundaries",
+      "banner": {
+        "Atext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Ptext": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "Arect": {
+          "x": 1437,
+          "y": 84,
+          "width": 479,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1437,
+          "y": 88,
+          "width": 479,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "暂停 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1698.328125,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1705.328125,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(51, 133, 255)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "color(srgb 0.2 0.521569 1 / 0.22) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": {
+        "at": 1794148725659,
+        "text": "Agent 最近操作过此页面 · 20 秒后清除标记",
+        "seconds": 20,
+        "focused": true,
+        "visibility": "visible",
+        "expectedSeconds": 20,
+        "agentHoldUntil": 1794148745267
+      },
+      "defectIds": [
+        "A032-ACTIVE-DOUBLE-OUTLINE"
+      ],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA",
+        "DYNAMIC-DEADLINE"
+      ],
+      "activeOutline": {
+        "AmetadataBorderWidth": "2px",
+        "AmetadataBorderColor": "rgb(51, 133, 255)",
+        "observedOriginalPixels": "A solid blue edge appears 4px thick versus original P 2px; both have inner soft glow. A metadata and source confirm 2px element border plus 2px inner pseudo-shadow."
+      }
+    },
+    {
+      "rawIndex": 18,
+      "combo": "dark-rw900-win1920x1080",
+      "state": "B10-paused",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw900-win1920x1080-B10-paused.png",
+          "sha256": "a150d853af66a56dc0892406624092a5dfeab7832311bfe0f728ef4891403965",
+          "expected": "a150d853af66a56dc0892406624092a5dfeab7832311bfe0f728ef4891403965"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw900-win1920x1080-B10-paused.json",
+          "sha256": "3a2bab31f324bfcb09c5fe30055e55206d844b981d61810771f9fc11c924f40d",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B10-paused.png",
+          "sha256": "20a73db54e374b50bad6c09db50ba872182eee1032678bc1a92210819ea6ce1b",
+          "expected": "20a73db54e374b50bad6c09db50ba872182eee1032678bc1a92210819ea6ce1b"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B10-paused.json",
+          "sha256": "c706a3a5f5e578743acb4e331dbe86db8b27c46d0085d95d6bc1eddbcb09c9c7",
+          "expected": "c706a3a5f5e578743acb4e331dbe86db8b27c46d0085d95d6bc1eddbcb09c9c7"
+        }
+      },
+      "scopedVisualConclusion": "No new in-scope control discrepancy seen in paused state",
+      "banner": {
+        "Atext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Ptext": "已暂停 Agent 的浏览器操作。暂停期间 Agent 的浏览器命令会返回 BROWSER_PAUSED；你可以在页面里手动登录或处理弹窗，完成后点“恢复 Agent”。",
+        "Arect": {
+          "x": 1017,
+          "y": 84,
+          "width": 899,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1017,
+          "y": 88,
+          "width": 899,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "恢复 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(154, 98, 0)",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "borderColor": "rgb(227, 181, 90)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1441.859375,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1448.859375,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(208, 138, 0)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "rgba(208, 138, 0, 0.2) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": null,
+      "defectIds": [],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA"
+      ],
+      "pausedCode": {
+        "Acolor": "rgb(204, 204, 204)",
+        "AfontSize": "11px",
+        "AfontFamily": "SFMono-Regular, \"SF Mono\", Menlo, Consolas, monospace",
+        "visual": "Gray monospace agrees visually with original P; no prior inherited yellow code remains. P JSON did not independently select code, so no invented P computed value."
+      }
+    },
+    {
+      "rawIndex": 19,
+      "combo": "dark-rw900-win1920x1080",
+      "state": "B10-resumed",
+      "reviewed": true,
+      "method": "Both unchanged full original PNGs individually displayed with view_image; no crop, editing, stitching or image synthesis. Metadata/source inspected separately.",
+      "files": {
+        "A_png": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw900-win1920x1080-B10-resumed.png",
+          "sha256": "57122317a14fdc10ed390228c612529131dd8da0010eae9c1bce73f5df4986e6",
+          "expected": "57122317a14fdc10ed390228c612529131dd8da0010eae9c1bce73f5df4986e6"
+        },
+        "A_meta": {
+          "path": "/private/tmp/willyou-m12-t145-App045-countdown-A-032/A-dark-rw900-win1920x1080-B10-resumed.json",
+          "sha256": "7ed5ee7e555c0e5f8f04c01ee3390ae671abecd3c0c4040fcadd1a17b190ab13",
+          "equalsFrozenRawCapture": true
+        },
+        "P_png": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B10-resumed.png",
+          "sha256": "688768c92d919cb362701f8682826d550e6fd77f4ef55bf8e508d94fbadf4ee9",
+          "expected": "688768c92d919cb362701f8682826d550e6fd77f4ef55bf8e508d94fbadf4ee9"
+        },
+        "P_meta": {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-T145/P-new1080-attempt001/images/P-dark-rw900-win1920x1080-B10-resumed.json",
+          "sha256": "e433e0ff60061d62446b648f2c2b9b05a80c14b68b2f084298b2eac2912f9771",
+          "expected": "e433e0ff60061d62446b648f2c2b9b05a80c14b68b2f084298b2eac2912f9771"
+        }
+      },
+      "scopedVisualConclusion": "Product visual discrepancy: double active blue outline; other listed controls agree within separate boundaries",
+      "banner": {
+        "Atext": "Agent 最近操作过此页面 · 19 秒后清除标记",
+        "Ptext": "Agent 最近操作过此页面 · 21 秒后清除标记",
+        "Arect": {
+          "x": 1017,
+          "y": 84,
+          "width": 899,
+          "height": 34,
+          "right": 1916,
+          "bottom": 118
+        },
+        "Prect": {
+          "x": 1017,
+          "y": 88,
+          "width": 899,
+          "height": 34
+        },
+        "heightMatches": true,
+        "colorMatches": true,
+        "backgroundMatches": true,
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "padding": "7px 14px",
+        "gap": "8px",
+        "observed": "480 paused wraps three lines; 900 paused stays one line; active one line; no clipping or control overlap seen"
+      },
+      "button": {
+        "text": "暂停 Agent",
+        "rect": {
+          "x": 1768.578125,
+          "y": 46,
+          "width": 101.421875,
+          "height": 32,
+          "right": 1870,
+          "bottom": 78
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "500",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(48, 48, 48)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "1px",
+          "borderRadius": "22px",
+          "boxShadow": "rgba(0, 0, 0, 0.01) 0px 1px 10px 0px",
+          "display": "flex",
+          "alignItems": "center",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "6px 10px",
+          "gap": "5px",
+          "textOverflow": "clip",
+          "whiteSpace": "nowrap",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "Resume outline/orange play icon and Pause pause-bars shape/size agree visually; resumed/paused retained hover background and hold new-tab hover are pointer state differences"
+      },
+      "dot": {
+        "rect": {
+          "x": 1441.859375,
+          "y": 16.5,
+          "width": 7,
+          "height": 7,
+          "right": 1448.859375,
+          "bottom": 23.5
+        },
+        "style": {
+          "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "430",
+          "lineHeight": "18px",
+          "letterSpacing": "normal",
+          "color": "rgb(241, 241, 241)",
+          "backgroundColor": "rgb(51, 133, 255)",
+          "borderColor": "rgb(48, 48, 48)",
+          "borderWidth": "0px",
+          "borderRadius": "50%",
+          "boxShadow": "color(srgb 0.2 0.521569 1 / 0.22) 0px 0px 0px 3px",
+          "display": "block",
+          "alignItems": "normal",
+          "flexDirection": "row",
+          "margin": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "textOverflow": "clip",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "overflowY": "visible"
+        },
+        "observed": "7px orange paused or blue active dot with halo; no wrong-state dot seen"
+      },
+      "countdown": {
+        "at": 1794148732703,
+        "text": "Agent 最近操作过此页面 · 19 秒后清除标记",
+        "seconds": 19,
+        "focused": false,
+        "visibility": "visible",
+        "expectedSeconds": 19,
+        "agentHoldUntil": 1794148751366
+      },
+      "defectIds": [
+        "A032-ACTIVE-DOUBLE-OUTLINE"
+      ],
+      "boundaryIds": [
+        "SHELL-4PX",
+        "POINTER-STATE",
+        "NATIVE-PIXELS",
+        "DEMO-DATA",
+        "DYNAMIC-DEADLINE"
+      ],
+      "activeOutline": {
+        "AmetadataBorderWidth": "2px",
+        "AmetadataBorderColor": "rgb(51, 133, 255)",
+        "observedOriginalPixels": "A solid blue edge appears 4px thick versus original P 2px; both have inner soft glow. A metadata and source confirm 2px element border plus 2px inner pseudo-shadow."
+      }
+    }
+  ]
+}

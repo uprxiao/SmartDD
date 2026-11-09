@@ -1,0 +1,3 @@
+import type { ForwardRefExoticComponent, RefAttributes, TextareaHTMLAttributes } from 'react';
+export declare const FileCodeTextarea: ForwardRefExoticComponent<Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'value'> & { value: string; filename?: string; findMatches?: {from: number; to: number}[]; findCurrent?: number } & RefAttributes<HTMLTextAreaElement>>;
+export declare function FilePrototypeBlame(props: { text: string; identity: string; repositoryWebUrl?: string | null; commitId?: string; authorLogin?: string; pullRequest?: { number: number; title?: string }; onOpenLink?(href: string): void }): import('react').ReactElement;

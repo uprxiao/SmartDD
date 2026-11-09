@@ -1,0 +1,42 @@
+{
+  "at": "2026-11-05T02:19:12.269264+00:00",
+  "cases": [
+    "M12-T041",
+    "M12-T042"
+  ],
+  "layers": [
+    "I",
+    "R"
+  ],
+  "originalLines": [
+    "| M12-T041 | R02.2、K19、P1 | I＋R | 打包 App，P1 已选用浏览器应用 | 由真实 UI 启动 Codex 任务；要求 Codex 读 Skill 并打开测试站点做一次 `snapshot` | 运行计划记录的 Skill 哈希与实际交付的文件一致；Codex 从 Skill 得知用法并实际调用成功；宿主活动记录有对应的 CLI 调用 | — | 待执行 | — |",
+    "| M12-T042 | P1 补充 | R | 真实 Codex 0.166.0，默认沙箱 | Codex 在会话中执行 `willyou-app browser tab list` | Codex 子进程能读到 `WILLYOU_RUN_TOKEN` 与 `WILLYOU_ENDPOINT`，调用成功，不需要提权 | — | 待执行 | — |"
+  ],
+  "criteria": {
+    "M12-T041": [
+      "Actual packagedApp project P1 browser enabled; real UI launches actual Codex0.166.0 task",
+      "Initial user request gives noCLI command name; native journal same-call read input/output proves actual delivered Skill full content or exact requiredCLI/workflow usage, before later browserCLI calls",
+      "RunPlan Skill renderedHash equals exact actual delivered file SHA; template/package lockedApp019/source023",
+      "Real model uses learned native CLI to create own localhost page and obtain snapshot containing unique marker",
+      "Host activity records corresponding currentrun actualCLI create/snapshot success"
+    ],
+    "M12-T042": [
+      "Same actualCodex0.166.0 managed task, standard workspace sandbox/on-request; no bypass/elevation",
+      "Followup sent through real terminal UI only after T041 observed complete",
+      "Real Codex child outputs only booleans that WILLYOU_RUN_TOKEN/WILLYOU_ENDPOINT exist, never their values",
+      "Actual willyou-app browser tab list succeeds and has matching currentrun host CLI activity",
+      "Actual native journal turn_context confirms sandbox/approval and actual tool request does not require_escalated"
+    ]
+  },
+  "credentialAuthorization": "Latest user explicitly directs reuse of existing configured/logged-in WillYou CLI; no new login. Root supplies minimal auth/provider/model seed private bundle; this executor does not scan daily credentials or touch daily task state. Test project/userData/HOME/CODEX_HOME remain isolated. Daily bypass/yolo flags not inherited.",
+  "resourcePolicy": "Static only until final privateauthPIN, executable gates, and explicit Native/UI lease. Fresh setupRPC+health then once reload; actual initialfocus stable1s within120s then onceguard. No rearm/yield replay.",
+  "priorBoundary": "S1 realCodex/syntheticloopback results prove launch/sandbox mechanics only, no actualmodelSkill learning claim. T089/P081 remains frozen; no repetition.",
+  "pending": [
+    "User specific payload/destination approval after automatic review rejection",
+    "P069 exclusive measurement completion and explicit new Native/UI lease",
+    "Fresh initial focus at runtime"
+  ],
+  "formalWholeCaseCount": 0,
+  "hostL2Boundary": "Codex0.166 host Skill-read L2/L3 remains unverified per actual support; originalT041 does not require it and no product unsupported claim changes. Independent native journal evidence only.",
+  "skillSelection": "Exactly skillId browser is the T041 read target; both actual browser and reproduce-bug delivered files must match their own plan renderedHash and are retained."
+}

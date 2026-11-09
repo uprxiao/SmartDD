@@ -1,0 +1,79 @@
+--- immutable006/clipboard-bridge.swift
++++ D23/clipboard-bridge.swift
+@@ -8,8 +8,12 @@
+ struct Item: Codable, Equatable { let representations: [Representation] }
+ struct Backup: Codable, Equatable { let items: [Item]; let originalChangeCount: Int }
+ enum Failure: Error { case safe(String) }
+-let ownRoot = "/private/tmp/willyou-m12-t088-system-clipboard-app022-006/runtime-001/"
+-let originalPath = ownRoot + "clipboard-original.private.json"
++let ownRoot = "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/clipboard-control-001/"
++let originalPath = ownRoot + "clipboard-original-D23.private.json"
++
++// D23-only immutable binding; never an arbitrary-path clipboard tool.
++let d23OwnedPaths: [String] = ["/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/light/root-A/a.md", "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/light/root-A/b.md", "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/light/root-B/a.md", "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/light/root-B/b.md", "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/dark/root-A/a.md", "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/dark/root-A/b.md", "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/dark/root-B/a.md", "/private/tmp/willyou-m12-t130-D23-active-root-App036-A-prep-001/runtime-001/dark/root-B/b.md"]
++let d23RendererSourceURL = "file:///private/tmp/willyou-m12-app036-installer-001/Installed%20Applications/WillYou.app/Contents/Resources/app.asar/out/renderer/index.html"
+ func require(_ condition: Bool, _ code: String) throws { if !condition { throw Failure.safe(code) } }
+ func code(_ error: Error) -> String { if case Failure.safe(let s) = error { return s }; return "bridge-internal-error-private-material-retained" }
+ func emit(_ value: [String: Any]) {
+@@ -48,6 +52,7 @@
+     var ownedSnapshot: [Item]?
+     var touched = false, restored = false, workQuiesced = false, writeArmed = false
+     var expectedSourceURL: String?
++    var expectedOwnedPath: String?
+     // This hook is instantiated only in named tests; general has none.
+     var namedBeforeFirstWrite: (() -> Void)?
+     init(_ pb: NSPasteboard, _ backupPath: String, budget: Int = 64 * 1024 * 1024, namedDiagnostics: Bool = false) { self.pb = pb; self.backupPath = backupPath; self.budget = budget; self.namedDiagnostics = namedDiagnostics }
+@@ -105,6 +110,44 @@
+         try require(actual == expected && pb.changeCount == after, "marker-not-exact-no-claim")
+         ownedCount = after; ownedSnapshot = actual
+         return ["originalBackupComplete": true, "originalBackupMode0600": true, "markerMatches": true, "originalOrderPreserved": true]
++    }
++
++    // Dedicated D23 mode. Original x/site mode below is unchanged legacy, not a path validator.
++    func armOwnedPathCopy(_ path: String, _ sourceURL: String) throws -> [String: Any] {
++        try require(touched && !restored && !writeArmed && !workQuiesced && (try ownedMatches()), "owned-marker-changed-before-path-copy-refused")
++        try require(d23OwnedPaths.contains(path) && sourceURL == d23RendererSourceURL, "exact-d23-path-and-renderer-required")
++        expectedOwnedPath = path; expectedSourceURL = sourceURL; writeArmed = true
++        return ["ownedStateVerifiedImmediatelyBeforePathCopy": true, "exactD23Binding": true]
++    }
++    func ownedPathWithExactProvenance(_ items: [Item]) -> String? {
++        guard expectedSourceURL == d23RendererSourceURL, items.count == 1, !items[0].representations.isEmpty else { return nil }
++        let types = items[0].representations.map { $0.type }
++        guard Set(types).count == types.count else { return nil }
++        var path: String?, sourceSeen = false, tokenSeen = false
++        for r in items[0].representations {
++            switch r.type {
++            case "public.utf8-plain-text", "NSStringPboardType":
++                guard let value = String(data: r.data, encoding: .utf8), d23OwnedPaths.contains(value), path == nil || path == value else { return nil }; path = value
++            case "public.utf16-external-plain-text", "public.utf16-plain-text":
++                let values = [String.Encoding.utf16, .utf16LittleEndian, .utf16BigEndian].compactMap { String(data: r.data, encoding: $0) }.filter { d23OwnedPaths.contains($0) }
++                guard let value = values.first, values.allSatisfy({ $0 == value }), path == nil || path == value else { return nil }; path = value
++            case "org.chromium.source-url":
++                guard r.data == Data(d23RendererSourceURL.utf8) else { return nil }; sourceSeen = true
++            case "org.chromium.internal.source-rfh-token":
++                guard r.data.count == 24 else { return nil }; tokenSeen = true
++            default: return nil
++            }
++        }
++        guard let value = path, sourceSeen == tokenSeen else { return nil }
++        return value
++    }
++    func observeOwnedPathCopy() throws -> [String: Any] {
++        try require(writeArmed && expectedOwnedPath != nil && !restored && !workQuiesced, "d23-path-copy-not-armed")
++        guard let previous = ownedCount else { throw Failure.safe("missing-owned-marker") }
++        let count = pb.changeCount, values = try snapshot()
++        guard count > previous && count == pb.changeCount, let value = ownedPathWithExactProvenance(values), let fixtureID = d23OwnedPaths.firstIndex(of: value) else { throw Failure.safe("system-clipboard-not-exact-d23-fixture-no-claim") }
++        ownedCount = count; ownedSnapshot = values; writeArmed = false
++        return ["ownedD23FixtureClaimed": true, "fixtureID": fixtureID, "systemValueEqualsRequestedPath": value == expectedOwnedPath, "allRepresentationsExactOwnedTextOrExactChromiumProvenance": true]
+     }
+     func armCLIWrite(_ sourceURL: String) throws -> [String: Any] {
+         try require(touched && !restored && !writeArmed && !workQuiesced && (try ownedMatches()), "owned-marker-changed-before-cli-write-refused")
+@@ -246,6 +289,8 @@
+         var result: [String: Any]
+         switch op {
+         case "capture-set-marker": guard let marker = v["marker"] as? String else { throw Failure.safe("invalid-marker") }; result = try session.captureSetMarker(marker)
++        case "arm-owned-path-copy": guard let path = v["path"] as? String, let sourceURL = v["sourceURL"] as? String else { throw Failure.safe("exact-d23-path-and-renderer-required") }; result = try session.armOwnedPathCopy(path, sourceURL)
++        case "observe-owned-path-copy": result = try session.observeOwnedPathCopy()
+         case "arm-cli-write": guard let sourceURL = v["sourceURL"] as? String else { throw Failure.safe("exact-owned-source-url-required") }; result = try session.armCLIWrite(sourceURL)
+         case "observe-cli-write": result = try session.observeCLIWrite()
+         case "work-quiesced": session.workQuiesced = true; result = ["workQuiesced": true]

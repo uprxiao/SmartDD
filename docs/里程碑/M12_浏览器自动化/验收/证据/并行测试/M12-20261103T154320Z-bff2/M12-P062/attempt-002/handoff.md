@@ -1,0 +1,11 @@
+# P062 attempt002 — original T096 A+I
+
+Independent original-contract judge10/10 passed. Distinct P1/T1 and P2/T3 actual managed task roots were bound via real UI without PID/PTY/run changes. Both pages and unsaved forms created/filled through actual UI. Real T1 terminal RUN P062 released exactly one actual native CLI access request --task T3 --mode control. CLI84907 returned in1073ms, exit2, JSON SCOPE_DENIED/not-started/auth, no retry.
+
+Continuous read-only DOM observer recorded no prompt insertion/removal; actual browser:access-changed notification count0 and actual pending/grant state stayed empty before/during/after. Target T3 retained WC4/document3/URL/title, unsaved form and counter1. Actual HTTP ledger unchanged. Target proxy54247 was uniquely bound from its UI page creation before/after inventory; connection/request/upgrade count0. Original listener refs/order preserved, explicit observer removal restored exact original counts/references. No target proxy probe: independent native readback uses existing debugger. Target Helper home/socket never initialized. Actual production audit matched T1/P1/run and targetT3/P2, pageIdnull and authorizationnull, failedSCOPE_DENIED/not-started; Browser audit duration4ms.
+
+User-authorized fresh instance: after setup reload waited3.143s for real native+DOM initial focus, then freshguard66 checks, no yield/rearm/steal. App normal exit0/null in561ms, no fallback signal, zero WC/window at will-quit. Two task roots stopped; exact11PID/five numericTCP/Unix/twoHelper paths all absent. NativeUi lease released before finalization.
+
+All3668 productionSHA/modes,151 private dependency hashes,40 copied/adapted files and five App resources reverified. Same immutable App016/ASAR e7f408f2c0c1a303ebce572762d538a802b7c8c4c04ff84acd7adde369757af6. Synthetic model/version/health/requirements only; actual TaskService/PTY/M11/peer/nativeCLI and App UI, no modelR/OSsandbox claim. Original001 focus-deferral retained; noT095/T113/T114 acceptance. Main-renderer PNGs exclude native page pixels; raw native target readbacks supply document evidence.
+
+Executed once: WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-p062-crossproject-app-002/cache node /private/tmp/willyou-m12-p062-crossproject-app-002/run.mjs --execute

@@ -1,0 +1,111 @@
+{
+  "at": "2026-11-05T20:09:21.391469+00:00",
+  "scope": "Actual recorded local model HTTP tool schema and Native request/output; no parameter-memory assumption",
+  "actualHTTPRequestAt": "2026-11-05T20:00:49.158Z",
+  "model": "t131-local-synthetic",
+  "toolSchema": {
+    "type": "function",
+    "name": "exec_command",
+    "description": "Runs a command in a PTY, returning output or a session ID for ongoing interaction.",
+    "strict": false,
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "cmd": {
+          "type": "string",
+          "description": "Shell command to execute."
+        },
+        "justification": {
+          "type": "string",
+          "description": "User-facing approval question for `require_escalated`; omit otherwise."
+        },
+        "login": {
+          "type": "boolean",
+          "description": "True runs the shell with -l/-i semantics; false disables them. Defaults to true."
+        },
+        "max_output_tokens": {
+          "type": "number",
+          "description": "Output token budget. Defaults to 10000 tokens; larger requests may be capped by policy."
+        },
+        "prefix_rule": {
+          "type": "array",
+          "description": "Reusable approval prefix for `cmd`, only with `sandbox_permissions: \"require_escalated\"`; for example [\"git\", \"pull\"].",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sandbox_permissions": {
+          "type": "string",
+          "description": "Per-command sandbox override. Defaults to `use_default`; use `require_escalated` for unsandboxed execution.",
+          "enum": [
+            "use_default",
+            "require_escalated"
+          ]
+        },
+        "shell": {
+          "type": "string",
+          "description": "Shell binary to launch. Defaults to the user's default shell."
+        },
+        "tty": {
+          "type": "boolean",
+          "description": "True allocates a PTY for the command; false or omitted uses plain pipes."
+        },
+        "workdir": {
+          "type": "string",
+          "description": "Working directory for the command. Defaults to the turn cwd."
+        },
+        "yield_time_ms": {
+          "type": "number",
+          "description": "Wait before yielding output. Defaults to 10000 ms; effective range is 250-30000 ms."
+        }
+      },
+      "required": [
+        "cmd"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "actualNativeCall": {
+    "line": 10,
+    "type": "function_call",
+    "name": "exec_command",
+    "callId": "upgrade_new_0",
+    "arguments": {
+      "cmd": "cat '/private/tmp/willyou-m12-browser-upgrade-app021-022-001/runtime-001/home/.agents/skills/smartdd-a-browser-reproduce-bug-2402acb98982/SKILL.md'",
+      "yield_time_ms": 10000,
+      "max_output_tokens": 16000
+    }
+  },
+  "actualNativeOutput": {
+    "line": 13,
+    "type": "function_call_output",
+    "bytes": 10206,
+    "sha256": "3488cc56e21ee28babc7bef1b0bae05da273877ab0cb475b09809552218be8e2",
+    "warning": "Warning: truncated output (original token count: 2566)",
+    "originalTokenCount": 2566,
+    "containsCompleteSOP": false
+  },
+  "actualSOP": {
+    "bytes": 10263,
+    "sha256": "fe0c8af7db6a4b461fc2c45137251bca30ae58864daa2d3b2b41190bb7c77452",
+    "lines": 114,
+    "endsLF": true
+  },
+  "proposedTwoRanges": [
+    {
+      "from": 1,
+      "to": 92,
+      "bytes": 5037,
+      "sha256": "f69eb4d491fc3905700e2cbd6cd49898f1b1b483d92c80a4c39289f6b05dc0a3"
+    },
+    {
+      "from": 93,
+      "to": 114,
+      "bytes": 5226,
+      "sha256": "7eeb06bcb0ebafbfd569f104771ff0e3f7cb3103b6d065ebec6469c5b17c0055"
+    }
+  ],
+  "conclusion": "Declared max_output_tokens exists as number and actual request16000, but output explicitly truncated despite reported2566 tokens. Policy/native cap cause is not determined. Do not rename parameter or claim full read. Bounded literal sed ranges retain original default policy and avoid requiring larger unverified cap.",
+  "Native": 0,
+  "modelSend": 0
+}

@@ -1,0 +1,96 @@
+--- io-attempt-003.mjs
++++ io-attempt-004.mjs
+@@ -7,11 +7,11 @@
+ export async function permitP(){
+  assert(process.argv.includes('--execute'));
+  assert.equal(process.env.NODE_COMPILE_CACHE,ROOT+'/cache/node');assert.equal(process.env.WILLYOU_TEST_CACHE_DIR,ROOT+'/cache');
+- const b=await readFile(ROOT+'/P-execution-ready-attempt-003.json'),ready=JSON.parse(b),lease=JSON.parse(await readFile(ROOT+'/P-lease-attempt-003.receipt.json'));
++ const b=await readFile(ROOT+'/P-execution-ready-attempt-004.json'),ready=JSON.parse(b),lease=JSON.parse(await readFile(ROOT+'/P-lease-attempt-004.receipt.json'));
+  assert.equal(lease.mode,process.argv.includes('--representative')?'representative':'full');assert(lease.status==='granted'&&lease.coordinator==='root'&&lease.privateRoot===ROOT&&lease.executionReadySHA256===sha(b));
+  const check=()=>{assert(!lease.revoked&&Date.now()>=Date.parse(lease.notBefore)&&Date.now()<Date.parse(lease.expiresAt));for(const k of ['Native','HTTP','TCP','Unix','OS'])assert(lease.resources.includes(k))};check();
+  for(const f of ready.inputs){const p=f.external?f.path:ROOT+'/'+f.path;assert.equal(sha(await readFile(p)),f.sha256,p);assert.equal((await stat(p)).mode&511,f.mode,p)}
+- const layout=JSON.parse(await readFile(ROOT+'/dependency-layout-attempt-003.json'));for(const x of layout.links){assert.equal(await readlink(ROOT+'/'+x.path),x.target);assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);assert(x.realTarget.startsWith(ROOT+'/deps/packages/'))}
++ const layout=JSON.parse(await readFile(ROOT+'/dependency-layout-attempt-004.json'));for(const x of layout.links){assert.equal(await readlink(ROOT+'/'+x.path),x.target);assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);assert(x.realTarget.startsWith(ROOT+'/deps/packages/'))}
+  for(const x of layout.rootLinks){assert.equal(await readlink(ROOT+'/'+x.path),x.target);assert.equal(await realpath(ROOT+'/'+x.path),x.realTarget);assert(x.path==='reference/source/node_modules'?x.realTarget===ROOT+'/node_modules':x.realTarget.startsWith(ROOT+'/deps/packages/'))}
+  assert.equal(await realpath(ROOT+'/reference/source/prototypes/m6-codex/node_modules'),ROOT+'/node_modules');return{ready,lease,check};
+ }
+--- run-P-attempt-003.mjs
++++ run-P-attempt-004.mjs
+@@ -3,12 +3,12 @@
+ import {spawn} from 'node:child_process';
+ import {mkdir,readFile,writeFile} from 'node:fs/promises';
+ import {createServer} from 'node:net';
+-import {ROOT,sha,save,permitP} from './io-attempt-003.mjs';
++import {ROOT,sha,save,permitP} from './io-attempt-004.mjs';
+ import {prototypeUI} from './P-ui.mjs';
+ import {resourceRecorder} from './resources.mjs';
+-const {ready,check}=await permitP(),catalog=JSON.parse(await readFile(ROOT+'/state-catalog.json')),pin=JSON.parse(await readFile(ROOT+'/P-runtime-pin.json')),representative=process.argv.includes('--representative'),tag=representative?'P-preflight-attempt-003':'P-attempt-003',runtime=ROOT+'/'+tag+'-runtime-001',images=tag+'-images';
++const {ready,check}=await permitP(),catalog=JSON.parse(await readFile(ROOT+'/state-catalog.json')),pin=JSON.parse(await readFile(ROOT+'/P-runtime-pin.json')),representative=process.argv.includes('--representative'),tag=representative?'P-preflight-attempt-004':'P-attempt-004',runtime=ROOT+'/'+tag+'-runtime-001',images=tag+'-images';
+ await mkdir(runtime,{mode:0o700});for(const n of ['home','tmp','profiles','project'])await mkdir(runtime+'/'+n,{mode:0o700});await mkdir(ROOT+'/'+images,{mode:0o700});
+-const r={case:'M12-T145',layer:'P-reference',mode:representative?'representative':'full',fullOriginalMatrixSlots:catalog.requiredPairCount,startedAt:new Date().toISOString(),driverPid:process.pid,status:'running-reference-only',sourceManifestSHA256:ready.referenceManifestSHA256,actions:[],captures:[],blocked:[],processes:[],cleanupErrors:[],externalRequests:[],noAppOrForeground:true,formalNewPasses:0},resources=resourceRecorder({userData:runtime,driverPid:process.pid});let server,active,connection,stage='startup';
++const r={case:'M12-T145',layer:'P-reference',mode:representative?'representative':'full',fullOriginalMatrixSlots:catalog.requiredPairCount,startedAt:new Date().toISOString(),driverPid:process.pid,status:'running-reference-only',sourceManifestSHA256:ready.referenceManifestSHA256,actions:[],captures:[],blocked:[],processes:[],cleanupErrors:[],externalRequests:[],noAppOrForeground:true,formalNewPasses:0},resources=resourceRecorder({userData:runtime,driverPid:process.pid});let prebundle,server,active,connection,stage='startup';
+ const persist=()=>save(tag+'-live.json',{...r,stage}),delay=ms=>new Promise(ok=>setTimeout(ok,ms));
+ async function bounded(fn,label,ms=20000){const end=Date.now()+ms;do{check();const v=await fn();if(v)return v;await delay(50)}while(Date.now()<end);throw Error('P bounded condition '+label)}
+ function launch(exe,args,kind,cwd){const child=spawn(exe,args,{cwd,env:{HOME:runtime+'/home',TMPDIR:runtime+'/tmp',PATH:'/usr/bin:/bin:/usr/sbin:/sbin',NODE_COMPILE_CACHE:ROOT+'/cache/node',XDG_CACHE_HOME:ROOT+'/cache/xdg'},stdio:['ignore','pipe','pipe']}),row={kind,pid:child.pid,spawnedAtMs:Date.now(),exit:null,signals:[]};resources.pids.add(child.pid);r.processes.push(row);let logs='';child.stdout.on('data',b=>logs+=b);child.stderr.on('data',b=>logs+=b);child.once('exit',(code,signal)=>row.exit={atMs:Date.now(),code,signal});return{child,row,logs:()=>logs}}
+@@ -18,11 +18,15 @@
+ async function metadata(ui){return ui.ev(`(()=>{const selectors=['.file-workspace','.fw-tabs','.fw-web-tab [role=tab]','.bw-root','.bw-toolbar','.bw-security','.bw-profile','.bw-dialog','.bw-scrim','.bw-prompt','.bw-downloads','.bw-find','.bw-agent','.bw-paused','[aria-label="新建标签页（⇧⌘B）"]'],styles=['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','color','backgroundColor','borderColor','borderWidth','borderRadius','boxShadow','padding','gap','textOverflow','whiteSpace','overflowX','overflowY'];return{innerWidth,innerHeight,outerWidth,outerHeight,dpr:devicePixelRatio,theme:document.documentElement.dataset.theme,fonts:document.fonts.status,components:selectors.flatMap(selector=>[...document.querySelectorAll(selector)].map(e=>{const b=e.getBoundingClientRect(),s=getComputedStyle(e);return{selector,rect:{x:b.x,y:b.y,width:b.width,height:b.height},text:e.textContent.trim(),clientWidth:e.clientWidth,scrollWidth:e.scrollWidth,clientHeight:e.clientHeight,scrollHeight:e.scrollHeight,style:Object.fromEntries(styles.map(k=>[k,s[k]]))}})),active:{tag:document.activeElement?.tagName,role:document.activeElement?.getAttribute('role'),label:document.activeElement?.getAttribute('aria-label'),focusVisible:document.activeElement?.matches(':focus-visible')},mainAPI:typeof window.electronAPI}})()`)}
+ try{
+  const holder=createServer();await new Promise(ok=>holder.listen(0,'127.0.0.1',ok));const port=holder.address().port;await new Promise(ok=>holder.close(ok));resources.ports.add(port);const base='http://127.0.0.1:'+port,reference=ROOT+'/reference/source/prototypes/m6-codex';
+- server=launch(pin.node,[pin.viteCLI,'--config',ROOT+'/P-runtime-config-attempt-003.mjs','--host','127.0.0.1','--port',String(port),'--strictPort'], 'vite',reference);
++ stage='explicit-frozen-dependency-prebundle';prebundle=launch(pin.node,[pin.viteCLI,'optimize','--config',ROOT+'/P-runtime-config-attempt-004.mjs','--force'],'vite-optimize',reference);await persist();await resources.capture({processId:prebundle.child.pid},new Set());
++ await bounded(()=>{if(!prebundle.row.exit)return false;assert.equal(prebundle.row.exit.code,0,'Actual private Vite optimize exit0 required');assert.equal(prebundle.row.exit.signal,null);return true},'complete explicit JS dependency prebundle',90000);
++ const expected=JSON.parse(await readFile(ROOT+'/optimizer-includes-attempt-004.json')),metadataPath=ROOT+'/cache/vite-attempt-004/deps/_metadata.json',metadataBytes=await readFile(metadataPath),optimized=JSON.parse(metadataBytes).optimized;for(const key of expected.requiredMetadataKeys)assert(optimized[key],'Actual optimizer metadata missing required JS dependency '+key);r.prebundle={metadataPath,metadataSHA256:sha(metadataBytes),requiredKeys:expected.requiredMetadataKeys,actualKeys:Object.keys(optimized),complete:true};await closeOwned(prebundle,null);prebundle=null;stage='owned-vite-serve';await persist();
++
++ server=launch(pin.node,[pin.viteCLI,'--config',ROOT+'/P-runtime-config-attempt-004.mjs','--host','127.0.0.1','--port',String(port),'--strictPort'], 'vite',reference);await persist();
+  await bounded(async()=>{if(server.row.exit)throw Error('Own Vite exited before readiness');try{return(await fetch(base,{signal:AbortSignal.timeout(1000)})).ok}catch{return false}},'Vite owned HTTP',45000);await resources.capture({processId:server.child.pid},new Set());
+  for(const combo of (representative?catalog.original8Combinations.slice(0,1):catalog.original8Combinations)){
+   check();stage=combo.id+'-start-headless';const profile=runtime+'/profiles/'+combo.id;await mkdir(profile,{mode:0o700});
+-  active=launch(pin.chromium,['--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--user-data-dir='+profile,'--window-size='+combo.windowWidth+','+combo.windowHeight,'--force-device-scale-factor=1','--disable-background-networking','--disable-component-update','--disable-default-apps','--disable-sync','--no-first-run','--no-default-browser-check','--password-store=basic','--use-mock-keychain','about:blank'],'chromium',runtime+'/project');
++  active=launch(pin.chromium,['--remote-debugging-address=127.0.0.1','--remote-debugging-port=0','--user-data-dir='+profile,'--window-size='+combo.windowWidth+','+combo.windowHeight,'--force-device-scale-factor=1','--disable-background-networking','--disable-component-update','--disable-default-apps','--disable-sync','--no-first-run','--no-default-browser-check','--password-store=basic','--use-mock-keychain','about:blank'],'chromium',runtime+'/project');await persist();
+   try{
+    const ws=await bounded(()=>{if(active.row.exit)throw Error('Owned headless exited before inspector');return active.logs().match(/DevTools listening on (ws:\/\/127\.0\.0\.1:\d+\/devtools\/browser\/[a-f0-9-]+)/)?.[1]},'headless CDP');const debugPort=Number(new URL(ws).port);resources.ports.add(debugPort);
+    const list=await(await fetch('http://127.0.0.1:'+debugPort+'/json/list')).json(),target=list.find(t=>t.type==='page'&&t.url==='about:blank');assert(target);connection=await connect(target.webSocketDebuggerUrl);const cdp=connection.call,safeCDP=(m,p)=>{check();return cdp(m,p)},ui=prototypeUI(safeCDP,async a=>{r.actions.push({at:new Date().toISOString(),combo:combo.id,...a});await persist()});
+@@ -46,6 +50,7 @@
+  assert.equal(r.captures.length+r.blocked.length,representative?3:catalog.requiredPairCount);assert.deepEqual(r.runtimeErrors??[],[]);assert.deepEqual(r.externalRequests,[]);r.status=representative?'P-representative-preflight-captured-no-matrix-pass':r.blocked.length?'P-reference-partial-explicit-baseline-gaps':'P-reference-captured-pending-visual-review';
+ }catch(error){r.status='failed-or-partial-P-reference';r.failure={stage,name:error.name,errorSHA256:sha(String(error.stack??error))};await writeFile(runtime+'/failure.private.log',String(error.stack??error),{mode:0o600})}
+ finally{
++ if(prebundle){await resources.capture({processId:prebundle.child.pid},new Set()).catch(()=>{});await closeOwned(prebundle,null)}
+  if(active){await resources.capture({processId:active.child.pid},new Set()).catch(()=>{});await closeOwned(active,connection?()=>connection.call('Browser.close'):null);connection?.close()}
+  if(server){await resources.capture({processId:server.child.pid},new Set()).catch(()=>{});await closeOwned(server,async()=>{if(!server.row.exit)server.row.signals.push({atMs:Date.now(),signal:'SIGTERM',purpose:'owned-Vite-stop',accepted:server.child.kill('SIGTERM')});await exited(server,5000)})}
+  r.knownPids=[...resources.pids];r.knownPorts=[...resources.ports];r.resourceHistory=resources.history;r.finishedAt=new Date().toISOString();await save(tag+'-raw.json',r);console.log(JSON.stringify({status:r.status,captures:r.captures.length,blocked:r.blocked.length,formalNewPasses:0}));
+--- cleanup-P-attempt-003.mjs
++++ cleanup-P-attempt-004.mjs
+@@ -2,9 +2,9 @@
+ import assert from 'node:assert/strict';
+ import {readFile} from 'node:fs/promises';
+ import {spawnSync} from 'node:child_process';
+-import {ROOT,save} from './io-attempt-003.mjs';
++import {ROOT,save} from './io-attempt-004.mjs';
+ assert(process.argv.includes('--verify')&&process.env.WILLYOU_M12_NATIVE_LEASE_CONFIRMED==='1');
+-const tag=process.argv.includes('--representative')?'P-preflight-attempt-003':'P-attempt-003',r=JSON.parse(await readFile(ROOT+'/'+tag+'-raw.json')),checks=[];
++const tag=process.argv.includes('--representative')?'P-preflight-attempt-004':'P-attempt-004',r=JSON.parse(await readFile(ROOT+'/'+tag+'-raw.json')),checks=[];
+ for(const pid of r.knownPids){const x=spawnSync('/bin/ps',['-ww','-p',String(pid),'-o','pid=,ppid=,lstart=,comm='],{encoding:'utf8',timeout:3000});checks.push({kind:'exact-owned-pid',pid,clear:x.status===1&&!x.stdout?.trim(),status:x.status,error:x.error?.name??null,actual:x.stdout?.trim()??''})}
+ for(const port of r.knownPorts){const x=spawnSync('/usr/sbin/lsof',['-nP','-iTCP:'+port,'-sTCP:LISTEN'],{encoding:'utf8',timeout:3000});checks.push({kind:'recorded-loopback-port',port,clear:x.status===1&&!x.stdout?.trim(),status:x.status,error:x.error?.name??null,actual:x.stdout?.trim()??''})}
+ const pin=JSON.parse(await readFile(ROOT+'/P-runtime-pin.json')),prefix=pin.chromium.slice(0,pin.chromium.lastIndexOf('/')+1),ps=spawnSync('/bin/ps',['-ww','-axo','pid=,ppid=,lstart=,comm='],{encoding:'utf8',timeout:3000}),born=[];assert.equal(ps.status,0);
+--- judge-P-attempt-003.mjs
++++ judge-P-attempt-004.mjs
+@@ -1,8 +1,8 @@
+ // Presence/content provenance and geometry only; no visual comparison pass is invented.
+ import assert from 'node:assert/strict';
+ import {readFile} from 'node:fs/promises';
+-import {ROOT,sha,save} from './io-attempt-003.mjs';
+-const representative=process.argv.includes('--representative'),tag=representative?'P-preflight-attempt-003':'P-attempt-003',r=JSON.parse(await readFile(ROOT+'/'+tag+'-raw.json')),c=JSON.parse(await readFile(ROOT+'/'+tag+'-cleanup.json')),catalog=JSON.parse(await readFile(ROOT+'/state-catalog.json')),checks=[];
++import {ROOT,sha,save} from './io-attempt-004.mjs';
++const representative=process.argv.includes('--representative'),tag=representative?'P-preflight-attempt-004':'P-attempt-004',r=JSON.parse(await readFile(ROOT+'/'+tag+'-raw.json')),c=JSON.parse(await readFile(ROOT+'/'+tag+'-cleanup.json')),catalog=JSON.parse(await readFile(ROOT+'/state-catalog.json')),checks=[];
+ function test(id,fn){try{fn();checks.push({id,pass:true})}catch(e){checks.push({id,pass:false,error:e.message})}}
+ test('all-original-eight-combinations-and-required-slots-retained',()=>{assert.equal(catalog.original8Combinations.length,8);assert.equal(catalog.requiredPairCount,456);assert.equal(r.captures.length+r.blocked.length,representative?3:catalog.requiredPairCount);const keys=[...r.captures,...r.blocked].map(x=>x.combo+' '+x.state);assert.equal(new Set(keys).size,keys.length)});
+ test('known-reference-gap-never-faked-or-silently-removed',()=>{assert(r.blocked.every(x=>catalog.states.find(s=>s.id===x.state)?.referenceGap));assert.equal(r.blocked.length,representative?0:8);assert.equal(r.captures.length,representative?3:448)});
+--- P-runtime-config-attempt-003.mjs
++++ P-runtime-config-attempt-004.mjs
+@@ -1,4 +1,5 @@
+ // Isolated serving/cache paths only; approved prototype source and design intact.
++import completeIncludes from './optimizer-includes-attempt-004.mjs';
+ import original from './reference/source/prototypes/m6-codex/vite.config.mjs';
+ const root='/private/tmp/willyou-m12-t145-visual-matrix-prep-001';
+-export default {...original,cacheDir:root+'/cache/vite-attempt-003',optimizeDeps:{...original.optimizeDeps,include:[...(original.optimizeDeps?.include??[]),'docx-preview','docx-preview > jszip']},server:{...original.server,host:'127.0.0.1',fs:{allow:[root+'/reference/source',root+'/deps/packages']}}};
++export default {...original,cacheDir:root+'/cache/vite-attempt-004',optimizeDeps:{...original.optimizeDeps,include:[...(original.optimizeDeps?.include??[]),...completeIncludes]},server:{...original.server,host:'127.0.0.1',fs:{allow:[root+'/reference/source',root+'/deps/packages']}}};

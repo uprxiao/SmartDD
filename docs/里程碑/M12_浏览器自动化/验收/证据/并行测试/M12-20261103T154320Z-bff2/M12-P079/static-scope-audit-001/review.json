@@ -1,0 +1,451 @@
+{
+  "at": "2026-11-04T23:55:34.079896+00:00",
+  "kind": "read-only-static-measurement-boundary-review",
+  "case": "M12-T111",
+  "originalAttempt": "source017-preparation-003",
+  "resources": {
+    "nativeExecuted": false,
+    "OSSamplingExecuted": false,
+    "compilerExecuted": false,
+    "helperExecuted": false,
+    "packageChanged": false,
+    "publicLedgerChanged": false,
+    "originalRawAnalyzerOrThresholdChanged": false
+  },
+  "productionSource020Manifest": {
+    "path": "/private/tmp/willyou-m12-p078-source-020/source-inputs.json",
+    "expectedSha256": "d04f35c568882b394af1dc09daf336aa74536addecb86c4791117a53df2077a1",
+    "actualSha256": "d04f35c568882b394af1dc09daf336aa74536addecb86c4791117a53df2077a1"
+  },
+  "findings": [
+    {
+      "id": "M01",
+      "status": "confirmed-static",
+      "finding": "Original 5-second enumerations sum only live/observed per-PID own user+system. A process born and fully exited between enumerations can be absent from every recorded identity set."
+    },
+    {
+      "id": "M02",
+      "status": "confirmed-static",
+      "finding": "Installed psutil macOS cpu_times implementation returns children_user=children_system=0. Original sampler also never reads either field. Reaped short-child CPU is not accumulated through this path."
+    },
+    {
+      "id": "M03",
+      "status": "confirmed-static",
+      "finding": "Source017 default 2-second SkillObservationMonitor invokes diagnostics.inspect; currentNativeRun invokes MacProcessIdentityReader.read, whose execFileSync starts the packaged identity helper. This is a real idle-capable short-process spawn chain, not proof of how many executions occurred in original003."
+    },
+    {
+      "id": "M04",
+      "status": "confirmed-static",
+      "finding": "Source020 collectSkillObservations can avoid full inspect for absent session or unchanged/missing revision, but changed evidence/explicit inspect still reaches the same identity spawn. Agent-browser command/client/lifecycle checks add other command-related short processes; this audit does not claim all of them are idle."
+    },
+    {
+      "id": "M05",
+      "status": "confirmed-static",
+      "finding": "Darwin SDK exposes proc_pid_rusage for a live or zombie target PID and child user/system counters from RUSAGE_INFO_V1 onward. Headers do not themselves prove counter units, live/zombie/wait timing, recursive rollup, or reparent behavior."
+    },
+    {
+      "id": "M06",
+      "status": "confirmed-static",
+      "finding": "getrusage(RUSAGE_CHILDREN) in an external Python sampler describes that sampler's own terminated children, not the App. SDK wait4 documentation gives returned usage for the terminated child and all its children, useful as a future controlled-probe reference, not a reason to intercept Node's wait/reaping."
+    }
+  ],
+  "independentScopeAdjudication": {
+    "fullOwnedLifetimeCpuCoverage": "not-established-by-original-sampler",
+    "observedIdentitySetStability": "only validates identities actually seen; does not exclude entirely unobserved short processes",
+    "originalCompleteIdleCoverageAssertion": "retain original S03 pass as historical analyzer output; its full-lifetime wording is not supported for entirely unseen child lifetimes",
+    "originalFullOwnedProcessAssertion": "S05 proves recorded seeds/metrics/Helper inclusion at sample time, not all between-sample lifetimes",
+    "measuredOriginalIdleOneCorePercent": 58.98563893755239,
+    "oldCpuThresholdPercent": 5,
+    "oldVerdict": "still-failed-without-needing-missing-child-estimate",
+    "reason": "The measured owned own-CPU contribution alone exceeds 5%; omitted nonnegative CPU cannot turn that failure into a pass. Preserve original activity partition, curves and all idle peaks.",
+    "attributionBoundary": "The original main-process share is a share of measured own CPU, not a proven share of full lifetime CPU including unseen children.",
+    "futureObservedBelow5": "insufficient for full-scope pass until missing child accounting and any ownership/reparent gaps are resolved and independently judged",
+    "newFormalPassClaim": false
+  },
+  "retainedOriginalReferences": [
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/manifest.json",
+      "sha256": "f6860d24e3e5d14b67b91537912424dbb94c76e4d244be67004126d0831a3f3b",
+      "bytes": 17450,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/result.json",
+      "sha256": "89c8d44b22d612b9a93a79f3c490beafced908ea654dac76c500f5437794871b",
+      "bytes": 5873,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/adjudication.json",
+      "sha256": "6caf4fe0f93e93f449a10bfb135777756ad4bf31d5b8585caf9c0191b7ea661a",
+      "bytes": 2444,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/resource-samples.jsonl",
+      "sha256": "2e291243316bc72a6ee0dd80126752bbd48f839eb93d4acbb7075b4be7be503b",
+      "bytes": 5057158,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/cpu-analysis.json",
+      "sha256": "916146c60d355de1216bfde2011a788e538418b076bbb9b5a815ef5b544fd7c6",
+      "bytes": 100908,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/cpu-attribution.json",
+      "sha256": "6c3cd9ffbef103fc5601abea4ae049a31010c1b170fb886cd09642ea8009e87e",
+      "bytes": 15027,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/resource-curve.png",
+      "sha256": "cbf4df47cdd384b157129a14f87941882f1f02dc3d987a71dbf07320d1a23cae",
+      "bytes": 165650,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/resource-curve.svg",
+      "sha256": "4556751d7ec5a597898cb58d5607187b2dfd59693e6d743acac3608a81488b34",
+      "bytes": 123071,
+      "retainedInPlace": true,
+      "modified": false
+    },
+    {
+      "path": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/cleanup.json",
+      "sha256": "5116d0be543f9d0201e13d4a0d9076837f3ad17db66e13918cbaea44c954aaab",
+      "bytes": 6014,
+      "retainedInPlace": true,
+      "modified": false
+    }
+  ],
+  "sources": [
+    {
+      "label": "sampler/resource-sampler.py",
+      "originalPath": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/resource-sampler.py",
+      "sha256": "a465c8737953dbfe69b5eeee1739230d3b0893370a745d4ace96640715374b02",
+      "bytes": 3314,
+      "excerpts": [
+        {
+          "startLine": 9,
+          "endLine": 36,
+          "text": "9: known={}\n10: def sample(req):\n11:  start_ns=time.monotonic_ns();start_wall_ns=time.time_ns();allrows={};read_errors=[]\n12:  for proc in psutil.process_iter(['pid','ppid','name','exe','create_time'],ad_value=None):\n13:   info=proc.info;allrows[info['pid']]=info\n14:  seeds={req['appPid']}|set(req.get('electronMetricPids',[]))|set(req.get('helperPids',[]))\n15:  reasons={pid:{'current-host-seed'} for pid in seeds}\n16:  prefix=req['appBundle'].rstrip('/')+'/'\n17:  for pid,info in allrows.items():\n18:   if info.get('exe','') and info['exe'].startswith(prefix):reasons.setdefault(pid,set()).add('exact-test-app-bundle-executable')\n19:   old=known.get(pid)\n20:   if old and info.get('create_time')==old['createdAtEpochSeconds']:reasons.setdefault(pid,set()).add('previous-owned-same-birth')\n21:  changed=True\n22:  while changed:\n23:   changed=False\n24:   for pid,info in allrows.items():\n25:    if info.get('ppid') in reasons and pid not in reasons:reasons[pid]={'current-owned-descendant'};changed=True\n26:  records=[]\n27:  for pid,why in sorted(reasons.items()):\n28:   try:\n29:    proc=psutil.Process(pid)\n30:    with proc.oneshot():\n31:     born=proc.create_time();cpu=proc.cpu_times();memory=proc.memory_info();ppid=proc.ppid();exe=proc.exe();name=proc.name();threads=proc.num_threads()\n32:    if not proc.is_running():raise psutil.NoSuchProcess(pid)\n33:    row={'pid':pid,'ppid':ppid,'createdAtEpochSeconds':born,'identity':str(pid)+':'+format(born,'.6f'),'name':name,'executable':exe,'rssBytes':memory.rss,'userCpuSeconds':cpu.user,'systemCpuSeconds':cpu.system,'cpuSeconds':cpu.user+cpu.system,'threads':threads,'ownership':sorted(why)}\n34:    records.append(row);known[pid]=row\n35:   except (psutil.NoSuchProcess,psutil.AccessDenied,psutil.ZombieProcess) as exc:read_errors.append({'pid':pid,'class':type(exc).__name__,'ownership':sorted(why)})\n36:  return {'kind':'actual-os-sample','requestId':req['requestId'],'atUtc':time.strftime('%Y-%m-%dT%H:%M:%S',time.gmtime())+'Z','samplingStartedWallNs':start_wall_ns,'wallTimeNs':time.time_ns(),'systemCpuTimes':psutil.cpu_times()._asdict(),'availableSystemMemoryBytes':psutil.virtual_memory().available,'monotonicNs':time.monotonic_ns(),'samplingDurationNs':time.monotonic_ns()-start_ns,'processes':records,'rssTotalBytes':sum(x['rssBytes'] for x in records),'readErrors':read_errors,'samplerPid':os.getpid(),'logicalCpuCount':psutil.cpu_count(),'method':'psutil7.0.0 actual macOS per-PID cumulative user+system CPU seconds and resident RSS;100%=one logical core; no lifetime percentage; no command-line/environment reads'}"
+        }
+      ]
+    },
+    {
+      "label": "sampler/analyze.py",
+      "originalPath": "/private/tmp/willyou-m12-p069-parked-resource-001/source017-preparation-003/analyze.py",
+      "sha256": "baf806956315f6ea83b6471602ecc173d754155bf0304f31e25e5e93664adf37",
+      "bytes": 7707,
+      "excerpts": [
+        {
+          "startLine": 37,
+          "endLine": 54,
+          "text": "37: for a,b in zip(measured,measured[1:]):\n38:  a_node=int(a['requestedAtDriverMonoNs']);b_node=int(b['receivedAtDriverMonoNs']);active=any(int(w['startMonoNs'])<b_node and int(w.get('endMonoNs',b_node))>a_node for w in ranges)\n39:  dt=(int(b['monotonicNs'])-int(a['monotonicNs']))/1e9;previous={x['identity']:x for x in a['processes']};current={x['identity']:x for x in b['processes']};missing=sorted(set(previous)-set(current));new=sorted(set(current)-set(previous));delta=sum(max(0,current[k]['cpuSeconds']-previous[k]['cpuSeconds'])for k in set(previous)&set(current));negative=[k for k in set(previous)&set(current)if current[k]['cpuSeconds']<previous[k]['cpuSeconds']]\n40:  gaps=[]\n41:  if missing:gaps.append({'kind':'exited-process-final-counter-unavailable','identities':missing})\n42:  if new:gaps.append({'kind':'new-process-between-samples','identities':new})\n43:  if a['readErrors']or b['readErrors']:gaps.append({'kind':'OS-counter-read-error','before':a['readErrors'],'after':b['readErrors']})\n44:  if negative:gaps.append({'kind':'counter-decreased','identities':negative})\n45:  wall_dt=(int(b['wallTimeNs'])-int(a['wallTimeNs']))/1e9\n46:  if abs(wall_dt-dt)>.5:gaps.append({'kind':'wall-versus-monotonic-discontinuity','wallSeconds':wall_dt,'monotonicSeconds':dt})\n47:  intervals.append({'startElapsedSeconds':a['elapsedSeconds'],'endElapsedSeconds':b['elapsedSeconds'],'seconds':dt,'idle':not active,'knownCpuSecondsDelta':delta,'oneCorePercent':delta/dt*100 if dt>0 else None,'complete':not gaps and dt>0,'gaps':gaps})\n48: idle=[x for x in intervals if x['idle']];complete=[x for x in idle if x['complete']];gaps=[x for x in idle if not x['complete']];total_dt=sum(x['seconds']for x in complete);cpu=sum(x['knownCpuSecondsDelta']for x in complete)/total_dt*100 if total_dt else None\n49: cpu_analysis={'method':'Actual per-PID user+system cumulative CPU difference / actual monotonic seconds *100;100%=one logical core, no division by logicalCpuCount. Only intervals not overlapping real command activity are idle. All idle peaks retained.','idleWeightedOneCorePercent':cpu,'measuredCompleteIdleSeconds':total_dt,'idleIntervalCount':len(idle),'incompleteIdleIntervals':gaps,'intervals':intervals,'boundary':'A new/exited PID between idle samples creates a coverage gap; unknown final CPU is not silently zero and prevents automatic pass until analyzed.'};(root/'cpu-analysis.json').write_text(json.dumps(cpu_analysis,indent=2)+'\\n')\n50: check('T111-S03-complete-idle-CPU-observation','Actual idle interval CPU coverage has no unaccounted PID lifetime/counter gaps',lambda:bool(idle)and not gaps)\n51: check('T111-S04-idle-CPU-under5','Time-weighted complete idle App aggregate CPU <5% of one logical core',lambda:cpu is not None and cpu<5)\n52: check('T111-S05-full-owned-process-scope','Actual OS samples include main, allElectron metric PIDs and page-owned Helper daemons; no read errors',lambda:bool(measured)and all(not x['readErrors'] and {e['pid']for e in x['electronMetrics']}<={v['pid']for v in x['processes']} and set(sum([h['pids']for h in x['helpers']],[]))<={v['pid']for v in x['processes']} for x in measured))\n53: check('T111-quit-and-cleanup','Actual App normal0/null, no forced App close, all mandatory cleanup succeeded',lambda:raw.get('status')=='executed-unjudged' and raw.get('normalExit',{}).get('code')==0 and raw['normalExit'].get('signal')is None and not raw.get('harnessProcessReceipt',{}).get('signals') and not raw['cleanupErrors'] and raw['serverClosed'])\n54: out={'at':raw.get('finishedAt'),'case':'M12-T111','layers':['I','S'],'status':'passed-pending-independent-cleanup' if all(x['status']=='passed'for x in checks)else'needs-analysis-or-partial','checks':checks,'rssMilestoneBytes':rss,'lastFourRssBytes':last,'rss30Over10Ratio':rss.get(30,0)/rss[10] if rss.get(10)else None,'idleWeightedOneCoreCpuPercent':cpu,'cpuAnalysis':'cpu-analysis.json','formalLedgerModified':False,'boundary':'Original raw retained; resource excess/coverage gaps require diagnosis before conclusion, no restart or filtering to make pass.'};(root/'adjudication.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\\n');print(json.dumps({k:out[k]for k in ['status','rss30Over10Ratio','idleWeightedOneCoreCpuPercent']}));print('failed',[x['id']for x in checks if x['status']!='passed'])"
+        }
+      ]
+    },
+    {
+      "label": "production-017/process-identity.ts",
+      "originalPath": "/private/tmp/willyou-m12-p075-source-017/source/src/main/core/applications/process-identity.ts",
+      "sha256": "dd9e4080843739ec20b5cb54b3bd80d2864d0e051cad21280854612598f00f0b",
+      "bytes": 1890,
+      "excerpts": [
+        {
+          "startLine": 1,
+          "endLine": 28,
+          "text": "1: import { execFileSync } from 'node:child_process';\n2: import { z } from 'zod';\n3: export interface ProcessIdentity { pid: number;startedAt: string }\n4: export type ProcessState = 'running' | 'stopped' | 'unknown';\n5: export interface ProcessIdentityReader {\n6:   read(pid: number): ProcessIdentity | null;\n7:   state(identity: ProcessIdentity): ProcessState;\n8: }\n9: const response = z.discriminatedUnion('state',[\n10:   z.object({ schema: z.literal(1),state: z.literal('running'),pid: z.number().int().positive().max(2147483647),startedAt: z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/) }).strict(),\n11:   z.object({ schema: z.literal(1),state: z.enum(['stopped','unknown']) }).strict(),\n12: ]);\n13: /** Only probes a PID obtained from our own launch/lease record; never enumerates processes. */\n14: export class MacProcessIdentityReader implements ProcessIdentityReader {\n15:   constructor(private readonly helper: string) {}\n16:   private inspect(pid: number): z.infer<typeof response> {\n17:     if (process.platform !== 'darwin' || !Number.isSafeInteger(pid) || pid < 1 || pid > 2147483647) return { schema: 1,state: 'unknown' };\n18:     try { return response.parse(JSON.parse(execFileSync(this.helper,[String(pid)],{ timeout: 2000,maxBuffer: 4096,encoding: 'utf8',windowsHide: true,stdio: ['ignore','pipe','ignore'] }))); }\n19:     catch { return { schema: 1,state: 'unknown' }; }\n20:   }\n21:   read(pid: number): ProcessIdentity | null { const result = this.inspect(pid); return result.state === 'running' && result.pid === pid ? { pid: result.pid,startedAt: result.startedAt } : null; }\n22:   state(identity: ProcessIdentity): ProcessState {\n23:     if (!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(identity.startedAt)) return 'unknown';\n24:     const result = this.inspect(identity.pid);\n25:     if (result.state !== 'running') return result.state;\n26:     return result.pid === identity.pid && result.startedAt === identity.startedAt ? 'running' : 'stopped';\n27:   }\n28: }"
+        }
+      ]
+    },
+    {
+      "label": "production-017/skill-observation-monitor.ts",
+      "originalPath": "/private/tmp/willyou-m12-p075-source-017/source/src/main/core/applications/skill-observation-monitor.ts",
+      "sha256": "c81d0484306f87fb5cdf1ebba69799834f57688bd09f58f21c7d46321d36d02b",
+      "bytes": 1471,
+      "excerpts": [
+        {
+          "startLine": 1,
+          "endLine": 25,
+          "text": "1: /** Host-owned diagnostic collection; never issues tool or user-input authority. */\n2: export class SkillObservationMonitor {\n3:  private readonly entries=new Map<string,{cancel:()=>void;refresh:()=>void}>();\n4:  private closed=false;\n5:  constructor(private readonly collect:(taskId:string,runId:string)=>Promise<void>,private readonly intervalMs=2000){}\n6:  start(taskId:string,runId:string,signal:AbortSignal):void{\n7:   if(this.closed||signal.aborted)return;\n8:   const existing=this.entries.get(runId);if(existing){existing.refresh();return;}\n9:   let timer:ReturnType<typeof setTimeout>|undefined,canceled=false,running=false,requested=false;\n10:   const cancel=()=>{if(canceled)return;canceled=true;if(timer)clearTimeout(timer);signal.removeEventListener('abort',cancel);this.entries.delete(runId);};\n11:   const tick=async()=>{\n12:    if(canceled||this.closed)return;\n13:    if(running){requested=true;return;}\n14:    running=true;\n15:    try{await this.collect(taskId,runId);}catch{/* Missing evidence cannot interrupt the Agent. */}\n16:    running=false;\n17:    if(!canceled&&!this.closed){const delay=requested?0:this.intervalMs;requested=false;timer=setTimeout(()=>{void tick();},delay);timer.unref();}\n18:   };\n19:   const refresh=()=>{if(canceled||this.closed)return;if(timer)clearTimeout(timer);void tick();};\n20:   this.entries.set(runId,{cancel,refresh});signal.addEventListener('abort',cancel,{once:true});\n21:   void tick();\n22:  }\n23:  close():void{this.closed=true;for(const entry of [...this.entries.values()])entry.cancel();}\n24: }"
+        }
+      ]
+    },
+    {
+      "label": "production-017/task-capability-launcher.ts",
+      "originalPath": "/private/tmp/willyou-m12-p075-source-017/source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "c27799a4f265ad76ce2afe53ee90ea200da58a1e6c7b2a8c227ac3d68fbbd76b",
+      "bytes": 79249,
+      "excerpts": [
+        {
+          "startLine": 70,
+          "endLine": 80,
+          "text": "70:   readonly sessions:CapabilitySessionRegistry;\n71:   readonly projector:SessionCapabilityProjector;\n72:   readonly legacyMigration:LegacySessionMigration;\n73:   readonly runs:CapabilityRunRegistry;\n74:   readonly bridges:AgentBridgeProcesses;\n75:   readonly broker:PrivateApplicationBroker;\n76:   readonly bridgeRecovery=new BridgeSupervisor();\n77:   private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.inspect(taskId,runId);});\n78:   private readonly recoveryServices=new Map<string,string>();\n79:   readonly claudeDelivery:ClaudeDeliveryCoordinator;\n80:   private readonly catalogs=new Map<string,DiscoveryCatalog>();"
+        }
+      ]
+    },
+    {
+      "label": "production-017/run-registry.ts",
+      "originalPath": "/private/tmp/willyou-m12-p075-source-017/source/src/main/core/applications/run-registry.ts",
+      "sha256": "20268a5caea8cae63fa5edef97a41ef053ed4f6d5c32ad4f3d3ba02c08d545c9",
+      "bytes": 51970,
+      "excerpts": [
+        {
+          "startLine": 372,
+          "endLine": 381,
+          "text": "372:   currentNativeRun(taskId:string,ptyId:string):CapabilityRunRecord|null{\n373:     const rows=this.store.sqlite.prepare(\"SELECT run_id FROM capability_runs WHERE task_id=? AND pty_id=? AND owner_instance_id=? AND state='active'\").all(taskId,ptyId,this.instanceId) as {run_id:string}[];\n374:     if(rows.length!==1)return null;\n375:     const {row,owned}=this.lifecycle(rows[0].run_id);\n376:     if(owned.abort.signal.aborted||row.revocation_state!=='open'||!row.pid||!row.process_started_at)return null;\n377:     const child=this.store.sqlite.prepare(\"SELECT state,pid,process_started_at FROM capability_run_processes WHERE run_id=? AND kind='cli'\").get(row.run_id) as {state:string;pid:number|null;process_started_at:string|null}|undefined;\n378:     const identity=this.deps.processes.read(row.pid);\n379:     if(!child||child.state!=='active'||child.pid!==row.pid||child.process_started_at!==row.process_started_at||identity?.pid!==row.pid||identity.startedAt!==row.process_started_at)return null;\n380:     return this.view(row);\n381:   }"
+        }
+      ]
+    },
+    {
+      "label": "production-017/session-diagnostics.ts",
+      "originalPath": "/private/tmp/willyou-m12-p075-source-017/source/src/main/core/applications/session-diagnostics.ts",
+      "sha256": "b53ca5cd3a39d8113ead476e85bdfe4851f63e38984b5f41de1cb6ce020fdd07",
+      "bytes": 37125,
+      "excerpts": [
+        {
+          "startLine": 75,
+          "endLine": 96,
+          "text": "75:  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}\n76:  async prepared(value:SessionPreparationEvidence):Promise<void>{\n77:   const evidence=preparationSchema.parse(value),text=canonicalJson(evidence);\n78:   await withResourceLock(this.store.root,()=>{const run=this.store.sqlite.prepare('SELECT task_id FROM capability_runs WHERE run_id=?').get(evidence.runId) as {task_id:string}|undefined;if(!run)throw new ApplicationError('NOT_FOUND','运行记录不存在');const session=this.sessions.inspectCoordinated(run.task_id);if(session.selectionHash!==evidence.selectionHash||session.snapshot.adapterBinding.hash!==evidence.adapterHash)throw new ApplicationError('SCOPE_DENIED','准备证据不属于固定会话');\n79:    if(evidence.schema===2){\n80:     assertNativeCapabilityPreparation(session.snapshot,evidence.capabilities);\n81:     const runtime=this.deps.runs(),owner=this.store.sqlite.prepare('SELECT owner_instance_id,owner_pid,owner_started_at FROM capability_runs WHERE run_id=?').get(evidence.runId) as {owner_instance_id:string;owner_pid:number;owner_started_at:string};\n82:     if(!runtime||runtime.store!==this.store||owner.owner_instance_id!==runtime.instanceId||owner.owner_pid!==runtime.host.pid||owner.owner_started_at!==runtime.host.startedAt)throw new ApplicationError('SCOPE_DENIED','逐项准备证据不属于当前宿主运行');\n83:     const scope=assertPreparationScope(this.store,evidence.runId,session.snapshot,evidence),restriction=readLaunchRestriction(this.store,evidence.runId,session.snapshot.taskId,session.selectionHash);\n84:     if(evidence.capabilities.some(item=>item.state==='prepared'&&(!!restriction||item.kind==='application'&&scope&&!scope.applications.some(app=>app.appId===item.id))))throw new ApplicationError('SCOPE_DENIED','未加载或已停用的能力不能记录为本轮已准备');\n85:    }\n86:    const previous=this.store.sqlite.prepare('SELECT evidence_json FROM capability_run_preparations WHERE run_id=?').get(evidence.runId) as {evidence_json:string}|undefined;if(previous&&previous.evidence_json!==text)throw new ApplicationError('RESOURCE_STATE_CHANGED','本次准备证据已经固定');if(!previous)this.store.sqlite.prepare('INSERT INTO capability_run_preparations VALUES(?,?,?,?)').run(evidence.runId,text,digest(text),evidence.preparedAt);\n87:   });\n88:  }\n89:  async bridgeAuthenticated(runId:string,bridgeId:string):Promise<void>{\n90:   const runs=this.deps.runs();if(!runs)throw new ApplicationError('CAPABILITY_UNAVAILABLE','没有当前运行宿主');runs.assertBridge(runId,bridgeId);\n91:   await withResourceLock(this.store.root,()=>{runs.assertBridge(runId,bridgeId);const child=this.store.sqlite.prepare(\"SELECT pid,process_started_at FROM capability_run_processes WHERE run_id=? AND process_id=? AND kind='bridge' AND state='active'\").get(runId,bridgeId) as {pid:number;process_started_at:string}|undefined;if(!child)throw new ApplicationError('SCOPE_DENIED','没有实际核验的工具桥进程');\n92:    const evidence=bridgeSchema.parse({schema:1,runId,bridgeId,pid:child.pid,startedAt:child.process_started_at,observedAt:new Date().toISOString(),source:'kernel-peer'}),text=canonicalJson(evidence);this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_bridge_observations VALUES(?,?,?,?,?)').run(runId,bridgeId,text,digest(text),evidence.observedAt);\n93:   });\n94:  }\n95:  private run(row:RunRow,session:StoredCapabilitySession|null):SessionRunDiagnostic{\n96:   const runtime=this.deps.runs();let current=false;try{current=!!row.pty_id&&this.deps.activePty?.(row.task_id)===row.pty_id&&runtime?.currentNativeRun(row.task_id,row.pty_id)?.runId===row.run_id;}catch{/* An orphaned or damaged run is not the current owned terminal. */}"
+        },
+        {
+          "startLine": 110,
+          "endLine": 116,
+          "text": "110:   for(const record of skillRows.slice(0,512))try{\n111:    const value=skillObservationSchema.parse(JSON.parse(record.evidence_json)),fixed=session?.snapshot.packages.find(p=>p.appId===value.appId);\n112:    if(value.cliVersion!==preparation?.cliVersion||value.runId!==row.run_id||value.appId!==record.app_id||value.skillId!==record.skill_id||value.kind!==record.kind||value.observedAt!==record.observed_at||digest(canonicalJson(value))!==record.evidence_hash||fixed?.packageHash!==value.packageHash||!fixed.skills.some(s=>s.skillId===value.skillId)||Date.parse(value.observedAt)<Date.parse(row.started_at)||(row.ended_at&&Date.parse(value.observedAt)>Date.parse(row.ended_at)))throw new Error('invalid historical observation');\n113:    skillObservations.push(value);\n114:   }catch{skillObservationIssue='RESOURCE_RECOVERY_REQUIRED';}\n115:   const planned=runPlanDiagnostic(this.store,row.run_id,session?.snapshot.adapterBinding.hash??null);\n116:   return{runPlan:planned.plan,runPlanIssue:planned.issue,skillObservations,skillObservationIssue,id:row.run_id,state:row.state,startedAt:row.started_at,endedAt:row.ended_at,current,preparation,preparationIssue,restriction,restrictionIssue,bridge:{connected,observedAt,issueCode:bridgeIssue}};"
+        },
+        {
+          "startLine": 258,
+          "endLine": 266,
+          "text": "258:    for(const slot of builtinApplicationModules.module(appId).slots as readonly ApplicationProvider[]){\n259:     const original=fixed?.bindings.find(b=>b.bindingId.endsWith(':'+slot));let originalName:string|null=null;if(original)try{originalName=this.connections.get(original.connectionId).name;}catch{/* preserve original id even if metadata is missing */}\n260:     let connectionId:string|null=null,selectionState:'same'|'changed'|'missing'|'unverified'='unverified';try{if(task.project_id){const selected=this.selections.connectionSlot(task.project_id,appId,slot);connectionId=selected.connectionId;selectionState=connectionId?(original?.connectionId===connectionId&&original.identityRevision===selected.identityRevision?'same':'changed'):'missing';}}catch{/* disabled or corrupt slot does not grant */}\n261:     let label:string|null=null,health='unverified',testedAt:string|null=null,compatibility:'compatible'|'incompatible'|'unverified'='unverified',issueCode:string|null=null;\n262:     if(connectionId)try{const c=this.connections.get(connectionId);label=c.name;health=!c.enabled?'disabled':c.authorization!=='connected'?'disconnected':c.health;testedAt=c.testedAt;if(fixed){this.connections.resolvePackageView(fixed.packageHash,c);compatibility='compatible';}}catch(e){issueCode=code(e);if(issueCode==='CONFIG_INCOMPATIBLE')compatibility='incompatible';}\n263:     connections.push({slot,id:connectionId,name:label,originalId:original?.connectionId??null,originalName,health,testedAt,selection:selectionState,compatibility,issueCode});\n264:    }\n265:    const usage=currentRun&&fixed?db.prepare('SELECT COUNT(*) AS total,SUM(CASE WHEN state=\\'succeeded\\' THEN 1 ELSE 0 END) AS successes,MAX(started_at) AS latest FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=?').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {total:number;successes:number|null;latest:string|null}:null;\n266:    const latest=currentRun&&fixed?db.prepare('SELECT error_code,effect_state,attempt_count FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=? ORDER BY started_at DESC,operation_id DESC LIMIT 1').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {error_code:string|null;effect_state:string|null;attempt_count:number}|undefined:undefined;"
+        }
+      ]
+    },
+    {
+      "label": "production-020/process-identity.ts",
+      "originalPath": "/private/tmp/willyou-m12-p078-source-020/source/src/main/core/applications/process-identity.ts",
+      "sha256": "dd9e4080843739ec20b5cb54b3bd80d2864d0e051cad21280854612598f00f0b",
+      "bytes": 1890,
+      "excerpts": [
+        {
+          "startLine": 1,
+          "endLine": 28,
+          "text": "1: import { execFileSync } from 'node:child_process';\n2: import { z } from 'zod';\n3: export interface ProcessIdentity { pid: number;startedAt: string }\n4: export type ProcessState = 'running' | 'stopped' | 'unknown';\n5: export interface ProcessIdentityReader {\n6:   read(pid: number): ProcessIdentity | null;\n7:   state(identity: ProcessIdentity): ProcessState;\n8: }\n9: const response = z.discriminatedUnion('state',[\n10:   z.object({ schema: z.literal(1),state: z.literal('running'),pid: z.number().int().positive().max(2147483647),startedAt: z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/) }).strict(),\n11:   z.object({ schema: z.literal(1),state: z.enum(['stopped','unknown']) }).strict(),\n12: ]);\n13: /** Only probes a PID obtained from our own launch/lease record; never enumerates processes. */\n14: export class MacProcessIdentityReader implements ProcessIdentityReader {\n15:   constructor(private readonly helper: string) {}\n16:   private inspect(pid: number): z.infer<typeof response> {\n17:     if (process.platform !== 'darwin' || !Number.isSafeInteger(pid) || pid < 1 || pid > 2147483647) return { schema: 1,state: 'unknown' };\n18:     try { return response.parse(JSON.parse(execFileSync(this.helper,[String(pid)],{ timeout: 2000,maxBuffer: 4096,encoding: 'utf8',windowsHide: true,stdio: ['ignore','pipe','ignore'] }))); }\n19:     catch { return { schema: 1,state: 'unknown' }; }\n20:   }\n21:   read(pid: number): ProcessIdentity | null { const result = this.inspect(pid); return result.state === 'running' && result.pid === pid ? { pid: result.pid,startedAt: result.startedAt } : null; }\n22:   state(identity: ProcessIdentity): ProcessState {\n23:     if (!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(identity.startedAt)) return 'unknown';\n24:     const result = this.inspect(identity.pid);\n25:     if (result.state !== 'running') return result.state;\n26:     return result.pid === identity.pid && result.startedAt === identity.startedAt ? 'running' : 'stopped';\n27:   }\n28: }"
+        }
+      ]
+    },
+    {
+      "label": "production-020/skill-observation-monitor.ts",
+      "originalPath": "/private/tmp/willyou-m12-p078-source-020/source/src/main/core/applications/skill-observation-monitor.ts",
+      "sha256": "83f29cb6cd5ccb0ef9e63c61e0731215b2ec044ecfa611baffc017cd746728f6",
+      "bytes": 1540,
+      "excerpts": [
+        {
+          "startLine": 1,
+          "endLine": 25,
+          "text": "1: /** Host-owned diagnostic collection; never issues tool or user-input authority. */\n2: export class SkillObservationMonitor {\n3:  private readonly entries=new Map<string,{cancel:()=>void;refresh:()=>void}>();\n4:  private closed=false;\n5:  constructor(private readonly collect:(taskId:string,runId:string)=>Promise<void>,private readonly intervalMs=2000,private readonly stopped?:(runId:string)=>void){}\n6:  start(taskId:string,runId:string,signal:AbortSignal):void{\n7:   if(this.closed||signal.aborted)return;\n8:   const existing=this.entries.get(runId);if(existing){existing.refresh();return;}\n9:   let timer:ReturnType<typeof setTimeout>|undefined,canceled=false,running=false,requested=false;\n10:   const cancel=()=>{if(canceled)return;canceled=true;if(timer)clearTimeout(timer);signal.removeEventListener('abort',cancel);this.entries.delete(runId);this.stopped?.(runId);};\n11:   const tick=async()=>{\n12:    if(canceled||this.closed)return;\n13:    if(running){requested=true;return;}\n14:    running=true;\n15:    try{await this.collect(taskId,runId);}catch{/* Missing evidence cannot interrupt the Agent. */}\n16:    running=false;\n17:    if(!canceled&&!this.closed){const delay=requested?0:this.intervalMs;requested=false;timer=setTimeout(()=>{void tick();},delay);timer.unref();}\n18:   };\n19:   const refresh=()=>{if(canceled||this.closed)return;if(timer)clearTimeout(timer);void tick();};\n20:   this.entries.set(runId,{cancel,refresh});signal.addEventListener('abort',cancel,{once:true});\n21:   void tick();\n22:  }\n23:  close():void{this.closed=true;for(const entry of [...this.entries.values()])entry.cancel();}\n24: }"
+        }
+      ]
+    },
+    {
+      "label": "production-020/task-capability-launcher.ts",
+      "originalPath": "/private/tmp/willyou-m12-p078-source-020/source/src/main/core/applications/task-capability-launcher.ts",
+      "sha256": "7b8182e0e9895c8e60dfd36bc4eb57fc4a579ad2f50bf87f26f003d081368b50",
+      "bytes": 79351,
+      "excerpts": [
+        {
+          "startLine": 70,
+          "endLine": 80,
+          "text": "70:   readonly sessions:CapabilitySessionRegistry;\n71:   readonly projector:SessionCapabilityProjector;\n72:   readonly legacyMigration:LegacySessionMigration;\n73:   readonly runs:CapabilityRunRegistry;\n74:   readonly bridges:AgentBridgeProcesses;\n75:   readonly broker:PrivateApplicationBroker;\n76:   readonly bridgeRecovery=new BridgeSupervisor();\n77:   private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.collectSkillObservations(taskId,runId);},undefined,runId=>this.applications.sessionDiagnostics.forgetSkillObservations(runId));\n78:   private readonly recoveryServices=new Map<string,string>();\n79:   readonly claudeDelivery:ClaudeDeliveryCoordinator;\n80:   private readonly catalogs=new Map<string,DiscoveryCatalog>();"
+        }
+      ]
+    },
+    {
+      "label": "production-020/run-registry.ts",
+      "originalPath": "/private/tmp/willyou-m12-p078-source-020/source/src/main/core/applications/run-registry.ts",
+      "sha256": "20268a5caea8cae63fa5edef97a41ef053ed4f6d5c32ad4f3d3ba02c08d545c9",
+      "bytes": 51970,
+      "excerpts": [
+        {
+          "startLine": 372,
+          "endLine": 381,
+          "text": "372:   currentNativeRun(taskId:string,ptyId:string):CapabilityRunRecord|null{\n373:     const rows=this.store.sqlite.prepare(\"SELECT run_id FROM capability_runs WHERE task_id=? AND pty_id=? AND owner_instance_id=? AND state='active'\").all(taskId,ptyId,this.instanceId) as {run_id:string}[];\n374:     if(rows.length!==1)return null;\n375:     const {row,owned}=this.lifecycle(rows[0].run_id);\n376:     if(owned.abort.signal.aborted||row.revocation_state!=='open'||!row.pid||!row.process_started_at)return null;\n377:     const child=this.store.sqlite.prepare(\"SELECT state,pid,process_started_at FROM capability_run_processes WHERE run_id=? AND kind='cli'\").get(row.run_id) as {state:string;pid:number|null;process_started_at:string|null}|undefined;\n378:     const identity=this.deps.processes.read(row.pid);\n379:     if(!child||child.state!=='active'||child.pid!==row.pid||child.process_started_at!==row.process_started_at||identity?.pid!==row.pid||identity.startedAt!==row.process_started_at)return null;\n380:     return this.view(row);\n381:   }"
+        }
+      ]
+    },
+    {
+      "label": "production-020/session-diagnostics.ts",
+      "originalPath": "/private/tmp/willyou-m12-p078-source-020/source/src/main/core/applications/session-diagnostics.ts",
+      "sha256": "318f6b48ce02abb0f7c62cfde195dee064ecd0b6ffd95ff32e157ba4b43b7754",
+      "bytes": 39082,
+      "excerpts": [
+        {
+          "startLine": 75,
+          "endLine": 96,
+          "text": "75:  }\n76:  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}\n77:  /** Background polling writes nothing until native evidence can have changed.\n78:   * SQL/native hints only suppress redundant work; inspect() still independently\n79:   * checks current ownership, resources and evidence before and after native IO. */\n80:  async collectSkillObservations(taskId:string,runId:string):Promise<void>{\n81:   const hint=this.store.sqlite.prepare(\"SELECT r.snapshot_hash AS snapshotHash,i.session_id AS sessionId FROM capability_runs r JOIN capability_session_identities i ON i.task_id=r.task_id WHERE r.run_id=? AND r.task_id=? AND r.state='active' AND r.revocation_state='open'\").get(runId,taskId) as {snapshotHash:string;sessionId:string|null}|undefined;\n82:   if(!hint?.sessionId){this.forgetSkillObservations(runId);return;}\n83:   let state=this.observationPolls.get(runId);\n84:   if(!state||state.taskId!==taskId||state.snapshotHash!==hint.snapshotHash){\n85:    if(this.observationPolls.size>=128)this.observationPolls.delete(this.observationPolls.keys().next().value!);\n86:    state={taskId,snapshotHash:hint.snapshotHash,revision:null};this.observationPolls.set(runId,state);\n87:   }\n88:   const revision=this.deps.skillObservationRevision?await this.deps.skillObservationRevision(runId,hint.snapshotHash):null;\n89:   if(this.deps.skillObservationRevision&&(!revision||revision===state.revision))return;\n90:   const value=await this.inspect(taskId,runId);\n91:   if(this.observationPolls.get(runId)===state&&value.snapshotHash===hint.snapshotHash&&value.currentRun?.id===runId&&value.currentRun.preparation?.state==='prepared'&&!value.currentRun.preparationIssue&&!value.currentRun.skillObservationIssue&&value.applications.every(app=>!app.packageHash||app.resourceState==='verified'))state.revision=revision;\n92:  }\n93:  forgetSkillObservations(runId:string):void{this.observationPolls.delete(runId);}\n94:  async prepared(value:SessionPreparationEvidence):Promise<void>{\n95:   const evidence=preparationSchema.parse(value),text=canonicalJson(evidence);\n96:   await withResourceLock(this.store.root,()=>{const run=this.store.sqlite.prepare('SELECT task_id FROM capability_runs WHERE run_id=?').get(evidence.runId) as {task_id:string}|undefined;if(!run)throw new ApplicationError('NOT_FOUND','运行记录不存在');const session=this.sessions.inspectCoordinated(run.task_id);if(session.selectionHash!==evidence.selectionHash||session.snapshot.adapterBinding.hash!==evidence.adapterHash)throw new ApplicationError('SCOPE_DENIED','准备证据不属于固定会话');"
+        },
+        {
+          "startLine": 110,
+          "endLine": 116,
+          "text": "110:    const evidence=bridgeSchema.parse({schema:1,runId,bridgeId,pid:child.pid,startedAt:child.process_started_at,observedAt:new Date().toISOString(),source:'kernel-peer'}),text=canonicalJson(evidence);this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_bridge_observations VALUES(?,?,?,?,?)').run(runId,bridgeId,text,digest(text),evidence.observedAt);\n111:   });\n112:  }\n113:  private run(row:RunRow,session:StoredCapabilitySession|null):SessionRunDiagnostic{\n114:   const runtime=this.deps.runs();let current=false;try{current=!!row.pty_id&&this.deps.activePty?.(row.task_id)===row.pty_id&&runtime?.currentNativeRun(row.task_id,row.pty_id)?.runId===row.run_id;}catch{/* An orphaned or damaged run is not the current owned terminal. */}\n115:   const prep=this.store.sqlite.prepare('SELECT * FROM capability_run_preparations WHERE run_id=?').get(row.run_id) as {evidence_json:string;evidence_hash:string;prepared_at:string}|undefined;\n116:   let preparation:SessionPreparationEvidence|null=null,preparationIssue:string|null=null;"
+        },
+        {
+          "startLine": 258,
+          "endLine": 266,
+          "text": "258:   let session:StoredCapabilitySession|null=null,selection:ApplicationSessionDiagnostic['selection']=row||task.has_history?'unknown-history':'not-recorded';const issues:string[]=[];\n259:   if(row&&![2,3].includes(row.schema_version)&&!(row.schema_version===0&&row.legacy_status==='history-unknown')){selection=row.schema_version===0?'corrupt':'unsupported-schema';issues.push(row.schema_version===0?'SNAPSHOT_CORRUPT':'HOST_INCOMPATIBLE');}\n260:   if(row&&[2,3].includes(row.schema_version))try{session=this.sessions.inspectCoordinated(taskId);if(session.snapshot.projectId!==task.project_id||session.snapshot.runner!==(this.inspector?.deliveryAdapters??builtinCapabilityDeliveryAdapters).forRunner(task.runner).id)throw new ApplicationError('SNAPSHOT_CORRUPT','任务与原会话身份不符');selection='fixed';if(session.retention==='hold')issues.push('SESSION_ON_HOLD');}catch(e){session=null;selection='corrupt';issues.push(code(e));}\n261:   // Find the owned terminal independently of wall-clock order. A clock rollback\n262:   // must not let future-dated history hide the live run or reuse its call counts.\n263:   let ownedRunId:string|null=null;try{const ptyId=this.deps.activePty?.(taskId);if(ptyId)ownedRunId=this.deps.runs()?.currentNativeRun(taskId,ptyId)?.runId??null;}catch{/* unknown ownership stays unverified */}\n264:   const currentRow=ownedRunId?db.prepare('SELECT * FROM capability_runs WHERE task_id=? AND run_id=?').get(taskId,ownedRunId) as RunRow|undefined:undefined;\n265:   const candidate=currentRow?this.run(currentRow,session):null,currentRun=candidate?.current?candidate:null;\n266:   const runRows=db.prepare('SELECT * FROM capability_runs WHERE task_id=? AND (? IS NULL OR run_id<>?) ORDER BY started_at DESC,run_id DESC LIMIT 5').all(taskId,currentRun?.id??null,currentRun?.id??null) as RunRow[],runs=runRows.map(r=>this.run(r,session));"
+        }
+      ]
+    },
+    {
+      "label": "production-020/process-identity.cc",
+      "originalPath": "/private/tmp/willyou-m12-p078-source-020/source/native/applications/process-identity.cc",
+      "sha256": "edfb9019632cffb1cd05f712f1cef6ea66eda941466213b6d0ff607a4a125b06",
+      "bytes": 8238,
+      "excerpts": []
+    },
+    {
+      "label": "production-020/agent-browser.ts",
+      "originalPath": "/private/tmp/willyou-m12-p078-source-020/source/src/main/core/browser/agent-browser.ts",
+      "sha256": "c3157ecd70834f62d2a98f7998864ee807088132d2de75e9bf01c1171b173c77",
+      "bytes": 11146,
+      "excerpts": [
+        {
+          "startLine": 30,
+          "endLine": 60,
+          "text": "30:         throw new BrowserError('BROWSER_UNAVAILABLE', 'agent-browser 文件摘要不符');\n31:       for (const path of [this.options.home, this.socketDirectory(), join(this.options.home, 'tmp')]) await mkdir(path, { recursive: true, mode: 0o700 });\n32:     })();\n33:     await this.initialized;\n34:   }\n35:   private socketDirectory(): string { return this.options.sockets ?? join(this.options.home, 'sockets'); }\n36:   private async observeDaemon(): Promise<void> {\n37:     if (!this.options.processes) return;\n38:     try {\n39:       const pid = Number(await readFile(join(this.socketDirectory(), this.options.session + '.pid'), 'utf8'));\n40:       if (Number.isSafeInteger(pid) && pid > 1 && (!this.daemon || this.daemon.pid !== pid)) this.daemon = this.options.processes.read(pid) ?? undefined;\n41:     } catch { /* The helper has not published its owned PID yet. */ }\n42:   }\n43:   private environment(): NodeJS.ProcessEnv {\n44:     return { PATH: process.env.PATH, HOME: this.options.home, TMPDIR: join(this.options.home, 'tmp'),\n45:       XDG_CONFIG_HOME: join(this.options.home, 'config'), XDG_CACHE_HOME: join(this.options.home, 'cache'),\n46:       AGENT_BROWSER_SOCKET_DIR: this.socketDirectory(), AGENT_BROWSER_IDLE_TIMEOUT_MS: '600000',\n47:       // The explicit dialog accept/dismiss contract includes alerts. The pinned\n48:       // kernel otherwise consumes alert/beforeunload before the caller can act.\n49:       AGENT_BROWSER_NO_AUTO_DIALOG: '1' };\n50:   }\n51:   private async checkSession(): Promise<boolean> {\n52:     await this.closing;\n53:     await this.prepare();\n54:     if (!this.daemon || !this.options.processes) return false;\n55:     const state = this.options.processes.state(this.daemon);\n56:     if (state === 'unknown') throw new BrowserError('BROWSER_UNAVAILABLE', '无法核对本页 agent-browser 进程身份');\n57:     if (state === 'running') return false;\n58:     await this.close(); // Invalidate refs before any action can arm an old generation.\n59:     return true;\n60:   }"
+        },
+        {
+          "startLine": 85,
+          "endLine": 110,
+          "text": "85:     if (options.signal?.aborted) {\n86:       await this.closing;\n87:       throw options.signal.reason ?? new BrowserError('BROWSER_ERROR', '操作已取消');\n88:     }\n89:     const timeout = options.timeout ?? 90000;\n90:     const output = await new Promise<{ stdout: string; error: Error | null; timedOut: boolean }>(resolve => {\n91:       let timedOut = false;\n92:       const child = execFile(this.options.executable,\n93:         ['--session', this.options.session, '--cdp', this.options.endpoint, 'batch', '--json'],\n94:         { env: this.environment(), maxBuffer: 16 * 1024 * 1024 }, (error, stdout) => {\n95:           clearTimeout(timer); clearTimeout(hardKill); clearInterval(observe); options.signal?.removeEventListener('abort', cancel);\n96:           if (this.active === child) this.active = undefined;\n97:           resolve({ stdout, error, timedOut });\n98:         });\n99:       this.active = child;\n100:       let hardKill: ReturnType<typeof setTimeout> | undefined;\n101:       const observe = setInterval(() => { void this.observeDaemon(); }, 100);\n102:       const cancel = () => { child.kill('SIGTERM'); hardKill ??= setTimeout(() => child.kill('SIGKILL'), 250); void this.close(); };\n103:       const timer = setTimeout(() => { timedOut = true; cancel(); }, timeout);\n104:       options.signal?.addEventListener('abort', cancel, { once: true });\n105:       child.stdin!.on('error', () => {});\n106:       child.stdin!.end(JSON.stringify([command]), () => options.dispatched?.());\n107:     });\n108:     // Fast commands can finish before the 100ms observer ticks. Keep the kernel birth identity\n109:     // after every response so a later killed/reused PID cannot leave old refs valid.\n110:     await this.observeDaemon();"
+        }
+      ]
+    },
+    {
+      "label": "psutil7/_psosx.py",
+      "originalPath": "/private/tmp/willyou-m12-p069-parked-resource-001/private-python/psutil/_psosx.py",
+      "sha256": "3b41c0e7c58c40c7ccc3a4ab8f20a7d90de83771a94330bae812bdf36eb0d37f",
+      "bytes": 15877,
+      "excerpts": [
+        {
+          "startLine": 462,
+          "endLine": 471,
+          "text": "462:     def cpu_times(self):\n463:         rawtuple = self._get_pidtaskinfo()\n464:         return _common.pcputimes(\n465:             rawtuple[pidtaskinfo_map['cpuutime']],\n466:             rawtuple[pidtaskinfo_map['cpustime']],\n467:             # children user / system times are not retrievable (set to 0)\n468:             0.0,\n469:             0.0,\n470:         )\n471: "
+        }
+      ]
+    },
+    {
+      "label": "psutil7/__init__.py",
+      "originalPath": "/private/tmp/willyou-m12-p069-parked-resource-001/private-python/psutil/__init__.py",
+      "sha256": "b4f4a4154a17f441adbca883cd17123188546c79487456c2c39edae32b0dccb1",
+      "bytes": 86668,
+      "excerpts": [
+        {
+          "startLine": 1100,
+          "endLine": 1112,
+          "text": "1100:             return round(single_cpu_percent, 1)\n1101: \n1102:     @memoize_when_activated\n1103:     def cpu_times(self):\n1104:         \"\"\"Return a (user, system, children_user, children_system)\n1105:         namedtuple representing the accumulated process time, in\n1106:         seconds.\n1107:         This is similar to os.times() but per-process.\n1108:         On macOS and Windows children_user and children_system are\n1109:         always set to 0.\n1110:         \"\"\"\n1111:         return self._proc.cpu_times()\n1112: "
+        }
+      ]
+    },
+    {
+      "label": "psutil7/_common.py",
+      "originalPath": "/private/tmp/willyou-m12-p069-parked-resource-001/private-python/psutil/_common.py",
+      "sha256": "d15ea993fe9daa4688301d9f6dd971111595d2322df26d722f130f0aab15cc0a",
+      "bytes": 28642,
+      "excerpts": [
+        {
+          "startLine": 199,
+          "endLine": 205,
+          "text": "199: # --- for Process methods\n200: \n201: # psutil.Process.cpu_times()\n202: pcputimes = namedtuple(\n203:     'pcputimes', ['user', 'system', 'children_user', 'children_system']\n204: )\n205: # psutil.Process.open_files()"
+        }
+      ]
+    },
+    {
+      "label": "darwin26.5/libproc.h",
+      "originalPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/include/libproc.h",
+      "sha256": "246d87709fc6b9157ce5cf3c475656ac48e0e1ae8bbdc46cf45acd34294448cd",
+      "bytes": 7575,
+      "excerpts": [
+        {
+          "startLine": 105,
+          "endLine": 112,
+          "text": "105: \n106: /*\n107:  * Return resource usage information for the given pid, which can be a live process or a zombie.\n108:  *\n109:  * Returns 0 on success; or -1 on failure, with errno set to indicate the specific error.\n110:  */\n111: int proc_pid_rusage(int pid, int flavor, rusage_info_t *buffer) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);\n112: "
+        }
+      ]
+    },
+    {
+      "label": "darwin26.5/resource.h",
+      "originalPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/include/sys/resource.h",
+      "sha256": "7d16930e6b75f11ba203238faa5580d31d48fcd4230f2b3f604aaa5fd7e86b58",
+      "bytes": 20152,
+      "excerpts": [
+        {
+          "startLine": 184,
+          "endLine": 201,
+          "text": "184:  * Flavors for proc_pid_rusage().\n185:  */\n186: #define RUSAGE_INFO_V0  0\n187: #define RUSAGE_INFO_V1  1\n188: #define RUSAGE_INFO_V2  2\n189: #define RUSAGE_INFO_V3  3\n190: #define RUSAGE_INFO_V4  4\n191: #define RUSAGE_INFO_V5  5\n192: #define RUSAGE_INFO_V6  6\n193: #define RUSAGE_INFO_CURRENT RUSAGE_INFO_V6\n194: \n195: /*\n196:  * Flags for RUSAGE_INFO_V5\n197:  */\n198: #define RU_PROC_RUNS_RESLIDE    0x00000001      /* proc has reslid shared cache */\n199: \n200: typedef void *rusage_info_t;\n201: "
+        },
+        {
+          "startLine": 216,
+          "endLine": 257,
+          "text": "216: struct rusage_info_v1 {\n217: \tuint8_t  ri_uuid[16];\n218: \tuint64_t ri_user_time;\n219: \tuint64_t ri_system_time;\n220: \tuint64_t ri_pkg_idle_wkups;\n221: \tuint64_t ri_interrupt_wkups;\n222: \tuint64_t ri_pageins;\n223: \tuint64_t ri_wired_size;\n224: \tuint64_t ri_resident_size;\n225: \tuint64_t ri_phys_footprint;\n226: \tuint64_t ri_proc_start_abstime;\n227: \tuint64_t ri_proc_exit_abstime;\n228: \tuint64_t ri_child_user_time;\n229: \tuint64_t ri_child_system_time;\n230: \tuint64_t ri_child_pkg_idle_wkups;\n231: \tuint64_t ri_child_interrupt_wkups;\n232: \tuint64_t ri_child_pageins;\n233: \tuint64_t ri_child_elapsed_abstime;\n234: };\n235: \n236: struct rusage_info_v2 {\n237: \tuint8_t  ri_uuid[16];\n238: \tuint64_t ri_user_time;\n239: \tuint64_t ri_system_time;\n240: \tuint64_t ri_pkg_idle_wkups;\n241: \tuint64_t ri_interrupt_wkups;\n242: \tuint64_t ri_pageins;\n243: \tuint64_t ri_wired_size;\n244: \tuint64_t ri_resident_size;\n245: \tuint64_t ri_phys_footprint;\n246: \tuint64_t ri_proc_start_abstime;\n247: \tuint64_t ri_proc_exit_abstime;\n248: \tuint64_t ri_child_user_time;\n249: \tuint64_t ri_child_system_time;\n250: \tuint64_t ri_child_pkg_idle_wkups;\n251: \tuint64_t ri_child_interrupt_wkups;\n252: \tuint64_t ri_child_pageins;\n253: \tuint64_t ri_child_elapsed_abstime;\n254: \tuint64_t ri_diskio_bytesread;\n255: \tuint64_t ri_diskio_byteswritten;\n256: };\n257: "
+        }
+      ]
+    },
+    {
+      "label": "darwin26.5/proc_info.h",
+      "originalPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/include/sys/proc_info.h",
+      "sha256": "e427fa96b348537b21552b9de71e01039410bcad2cedee5584c5e5fddafd70fc",
+      "bytes": 31262,
+      "excerpts": [
+        {
+          "startLine": 120,
+          "endLine": 145,
+          "text": "120: #define PROC_FLAG_PSUGID        0x2000   /* process has set privileges since last exec */\n121: #define PROC_FLAG_EXEC          0x4000   /* process has called exec  */\n122: \n123: \n124: struct proc_taskinfo {\n125: \tuint64_t                pti_virtual_size;       /* virtual memory size (bytes) */\n126: \tuint64_t                pti_resident_size;      /* resident memory size (bytes) */\n127: \tuint64_t                pti_total_user;         /* total time */\n128: \tuint64_t                pti_total_system;\n129: \tuint64_t                pti_threads_user;       /* existing threads only */\n130: \tuint64_t                pti_threads_system;\n131: \tint32_t                 pti_policy;             /* default policy for new threads */\n132: \tint32_t                 pti_faults;             /* number of page faults */\n133: \tint32_t                 pti_pageins;            /* number of actual pageins */\n134: \tint32_t                 pti_cow_faults;         /* number of copy-on-write faults */\n135: \tint32_t                 pti_messages_sent;      /* number of messages sent */\n136: \tint32_t                 pti_messages_received;  /* number of messages received */\n137: \tint32_t                 pti_syscalls_mach;      /* number of mach system calls */\n138: \tint32_t                 pti_syscalls_unix;      /* number of unix system calls */\n139: \tint32_t                 pti_csw;                /* number of context switches */\n140: \tint32_t                 pti_threadnum;          /* number of threads in the task */\n141: \tint32_t                 pti_numrunning;         /* number of running threads */\n142: \tint32_t                 pti_priority;           /* task priority*/\n143: };\n144: \n145: struct proc_taskallinfo {"
+        }
+      ]
+    },
+    {
+      "label": "darwin26.5/getrusage.2",
+      "originalPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/share/man/man2/getrusage.2",
+      "sha256": "b4f4ed265c063282cb851254a5c903f9c1bc484f4e6bb720703c758583eff8b9",
+      "bytes": 6291,
+      "excerpts": [
+        {
+          "startLine": 52,
+          "endLine": 78,
+          "text": "52: .Sh DESCRIPTION\n53: .Fn getrusage\n54: returns information describing the resources utilized by the current\n55: process, or all its terminated child processes.\n56: The\n57: .Fa who\n58: parameter is either\n59: .Dv RUSAGE_SELF\n60: or\n61: .Dv RUSAGE_CHILDREN .\n62: The buffer to which\n63: .Fa r_usage\n64: points will be filled in with\n65: the following structure:\n66: .Bd -literal\n67: struct rusage {\n68:         struct timeval ru_utime; /* user time used */\n69:         struct timeval ru_stime; /* system time used */\n70:         long ru_maxrss;          /* max resident set size */\n71:         long ru_ixrss;           /* integral shared text memory size */\n72:         long ru_idrss;           /* integral unshared data size */\n73:         long ru_isrss;           /* integral unshared stack size */\n74:         long ru_minflt;          /* page reclaims */\n75:         long ru_majflt;          /* page faults */\n76:         long ru_nswap;           /* swaps */\n77:         long ru_inblock;         /* block input operations */\n78:         long ru_oublock;         /* block output operations */"
+        }
+      ]
+    },
+    {
+      "label": "darwin26.5/wait.2",
+      "originalPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk/usr/share/man/man2/wait.2",
+      "sha256": "2178648ce5091cba439ca601216ec3f368ed64487f91385f68b65e7b5e5e5409",
+      "bytes": 8764,
+      "excerpts": [
+        {
+          "startLine": 133,
+          "endLine": 142,
+          "text": "133: their status reported.\n134: .Pp\n135: If\n136: .Fa rusage\n137: is non-zero, a summary of the resources used by the terminated\n138: process and all its\n139: children is returned (this information is currently not available\n140: for stopped processes).\n141: .Pp\n142: When the"
+        }
+      ]
+    },
+    {
+      "label": "darwin15.4/resource.h",
+      "originalPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/include/sys/resource.h",
+      "sha256": "67b82d1a9c0d5e788bcfed206e5a63d519e9f05879f475e736827e4131959f68",
+      "bytes": 19900,
+      "excerpts": []
+    }
+  ],
+  "supplement": "supplemental-accounting.md",
+  "controlledValidationPlan": "controlled-validation-plan.md"
+}

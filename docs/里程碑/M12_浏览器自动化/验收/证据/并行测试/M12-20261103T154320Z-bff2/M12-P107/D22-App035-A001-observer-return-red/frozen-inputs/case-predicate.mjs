@@ -1,0 +1,1 @@
+export const EXPECTED=Object.freeze(['same','different']);export const exactCases=rows=>Boolean(Array.isArray(rows)&&rows.length===2&&new Set(rows.map(x=>x?.kind)).size===2&&EXPECTED.every(kind=>rows.some(x=>x.caseId==='M9-T-D22'&&x.kind===kind)));

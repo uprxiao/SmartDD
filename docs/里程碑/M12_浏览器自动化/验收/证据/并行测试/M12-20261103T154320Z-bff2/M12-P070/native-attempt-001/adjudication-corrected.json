@@ -1,0 +1,249 @@
+{
+  "at": "2026-11-04T16:04:33.437Z",
+  "group": "M12-P070",
+  "case": "M12-T068",
+  "status": "failed-or-partial",
+  "counts": {
+    "total": 6,
+    "passed": 0,
+    "failed": 1,
+    "notExecuted": 5
+  },
+  "originalJudgeUnmodified": true,
+  "originalResultSha256": "9ea512d377f47df4bc5d1f53a4d2489e8fd6125388c46262e10688572e612461",
+  "checks": [
+    {
+      "id": "alert-accept",
+      "expected": {
+        "id": "alert-accept",
+        "kind": "alert",
+        "action": "accept",
+        "text": null,
+        "expectedType": "undefined",
+        "expectedValue": null
+      },
+      "actual": {
+        "id": "p070-alert-accept",
+        "kind": "alert",
+        "action": "accept",
+        "text": null,
+        "expectedType": "undefined",
+        "expectedValue": null,
+        "message": "M12 p070-alert-accept",
+        "startedAtMs": 1793807755360,
+        "beforeEventCount": 0,
+        "opening": {
+          "at": 1793807755366,
+          "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+          "contentsId": 1,
+          "method": "Page.javascriptDialogOpening",
+          "params": {
+            "defaultPrompt": "",
+            "frameId": "F060DB4D5130D707BCA7D92EAD01378E",
+            "hasBrowserHandler": true,
+            "message": "M12 p070-alert-accept",
+            "type": "alert",
+            "url": "http://127.0.0.1:58236/dialog"
+          }
+        },
+        "response": {
+          "label": "answer-alert-accept",
+          "args": [
+            "browser",
+            "dialog",
+            "accept",
+            "--page",
+            "7e0f4314-6b46-4250-9a66-2bb45df602d2"
+          ],
+          "startedAtMs": 1793807755398,
+          "raw": {
+            "kind": "cli-result",
+            "id": 2,
+            "pid": 80402,
+            "code": 5,
+            "signal": null,
+            "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"BROWSER_ERROR\",\"layer\":\"provider\",\"message\":\"agent-browser 执行失败，未返回有效结果\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"查看已有业务执行记录并核实结果，不要自动重发\",\"retryExhausted\":false},\"operationId\":\"e6847f05-ef40-4a55-80df-a048fae9d4ef\",\"requestId\":\"11ac723c-551e-4ac9-93e4-b47cddfcb157\"}\n",
+            "stderr": "willyou-app: BROWSER_ERROR\n",
+            "timedOut": false
+          },
+          "finishedAtMs": 1793807766609,
+          "parsed": {
+            "error": {
+              "effectState": "unknown",
+              "code": "BROWSER_ERROR",
+              "layer": "provider",
+              "message": "agent-browser 执行失败，未返回有效结果",
+              "retryable": false,
+              "attemptCount": 1,
+              "nextAction": "查看已有业务执行记录并核实结果，不要自动重发",
+              "retryExhausted": false
+            },
+            "operationId": "e6847f05-ef40-4a55-80df-a048fae9d4ef",
+            "requestId": "11ac723c-551e-4ac9-93e4-b47cddfcb157"
+          }
+        }
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "alert-dismiss",
+      "expected": {
+        "id": "alert-dismiss",
+        "kind": "alert",
+        "action": "dismiss",
+        "text": null,
+        "expectedType": "undefined",
+        "expectedValue": null
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "confirm-accept",
+      "expected": {
+        "id": "confirm-accept",
+        "kind": "confirm",
+        "action": "accept",
+        "text": null,
+        "expectedType": "boolean",
+        "expectedValue": true
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "confirm-dismiss",
+      "expected": {
+        "id": "confirm-dismiss",
+        "kind": "confirm",
+        "action": "dismiss",
+        "text": null,
+        "expectedType": "boolean",
+        "expectedValue": false
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "prompt-accept",
+      "expected": {
+        "id": "prompt-accept",
+        "kind": "prompt",
+        "action": "accept",
+        "text": "accepted-中文",
+        "expectedType": "string",
+        "expectedValue": "accepted-中文"
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    },
+    {
+      "id": "prompt-dismiss",
+      "expected": {
+        "id": "prompt-dismiss",
+        "kind": "prompt",
+        "action": "dismiss",
+        "text": null,
+        "expectedType": "object",
+        "expectedValue": null
+      },
+      "actual": null,
+      "status": "not-executed",
+      "error": "AssertionError [ERR_ASSERTION]: ActualNative/CLI page readback absent"
+    }
+  ],
+  "cleanup": {
+    "expected": "Normal actual root/host exit, ownedNativeWC/debugger/park/Helper/listeners cleaned, no focus",
+    "actual": {
+      "hostExit": {
+        "atMs": 1793807766958,
+        "code": 0,
+        "signal": null
+      },
+      "signals": [],
+      "actualHostCleanupAfter": {
+        "windows": [],
+        "contents": [
+          {
+            "id": 1,
+            "destroyed": true,
+            "debuggerAttached": false
+          },
+          {
+            "id": 2,
+            "destroyed": true,
+            "debuggerAttached": false
+          }
+        ],
+        "remaining": [],
+        "dialogObserversRemoved": true
+      },
+      "actualBeforeCleanupWindowState": [
+        {
+          "id": 1,
+          "focused": false,
+          "focusable": false,
+          "visible": true,
+          "opacity": 0
+        }
+      ],
+      "externalCleanup": "cleanup.json"
+    },
+    "status": "passed",
+    "correction": "Originaljudge assumed r.after exists even on firstbusiness failure; actual cleanup is read from existing host.cleanupBefore/After and exact external cleanup, originalcriteria retained."
+  },
+  "diagnostic": {
+    "warmupFixtureError": "CLI get title is a production host shortcut, not fixedHelper. 001 did not establish a warm Helper/listener before opening the dialog despite its label.",
+    "warmupCode": {
+      "path": "src/main/core/browser/page-commands.ts",
+      "sha256": "5fa329f113794adf88f069a62d0566d06331fdfb3cededfc567041eb7106acd4",
+      "branch": "get url/title directly native getURL/getTitle"
+    },
+    "coldHelperCompatibility": "Actual first Helper answer during dialog failed; cold-bootstrap compatibility remains unresolved, no causal claim beyond observed actual codepath. No Native retry.",
+    "actualUiState": {
+      "opening": {
+        "at": 1793807755366,
+        "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+        "contentsId": 1,
+        "method": "Page.javascriptDialogOpening",
+        "params": {
+          "defaultPrompt": "",
+          "frameId": "F060DB4D5130D707BCA7D92EAD01378E",
+          "hasBrowserHandler": true,
+          "message": "M12 p070-alert-accept",
+          "type": "alert",
+          "url": "http://127.0.0.1:58236/dialog"
+        }
+      },
+      "uiSnapshot": {
+        "id": "4a48b5bc-5fd2-470b-ac12-43e97124f8e8",
+        "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+        "profileId": "project-2ce5875e933644e245fb0229",
+        "kind": "alert",
+        "url": "http://127.0.0.1:58236/dialog",
+        "message": "M12 p070-alert-accept",
+        "defaultValue": ""
+      },
+      "frameSession": "",
+      "nativeFrameTokenNeverSubstituted": true
+    },
+    "lastClosedEvent": {
+      "at": 1793807766857,
+      "pageId": "7e0f4314-6b46-4250-9a66-2bb45df602d2",
+      "contentsId": 1,
+      "method": "Page.javascriptDialogClosed",
+      "params": {
+        "frameId": "F060DB4D5130D707BCA7D92EAD01378E",
+        "result": false,
+        "userInput": ""
+      }
+    },
+    "helperRawLimit": "No separate execFile stdout observer was installed. Actual nativeCLI stdout/error is preserved; no unavailable innerHelper stderr fabricated."
+  },
+  "formalIncrement": 0
+}

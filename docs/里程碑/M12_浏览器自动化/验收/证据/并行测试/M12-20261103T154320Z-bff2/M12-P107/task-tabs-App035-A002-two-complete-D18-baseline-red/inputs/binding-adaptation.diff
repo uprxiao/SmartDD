@@ -1,0 +1,11 @@
+--- A001/task-open-ui.mjs
++++ cont002/task-open-ui.mjs
+@@ -4,7 +4,7 @@
+ export function classifyTaskOpen({task,runId,receiverPid,dom},{taskId,projectId,expectedPtyId,expectedRunId,expectedReceiverPid,explicitResumeSent}){
+  assert.equal(task.id,taskId);assert.equal(task.projectId,projectId);assert.equal(task.ptyId,expectedPtyId,'Original prepared PTY ended/changed');assert.equal(receiverPid,expectedReceiverPid,'Original receiver PID changed');if(runId!==null)assert.equal(runId,expectedRunId,'Original current run changed');
+  if(runId===expectedRunId&&dom.selected&&dom.terminals.filter(t=>t.ptyId===expectedPtyId&&t.visible).length===1&&!dom.resuming)return{kind:'bound',ptyId:expectedPtyId,runId};
+- if(dom.resuming)return{kind:'wait',reason:'real-sidebar-binding-in-flight'};if(explicitResumeSent)return{kind:'wait',reason:'one-existing-live-binding-click-already-sent'};if(!dom.selected||!dom.stopped||dom.terminals.length!==0||runId!==expectedRunId)return{kind:'wait',reason:'exact-unbound-live-terminal-preconditions-not-present'};
++ if(dom.resuming)return{kind:'wait',reason:'real-sidebar-binding-in-flight'};if(explicitResumeSent)return{kind:'wait',reason:'one-existing-live-binding-click-already-sent'};if(!dom.selected||!dom.stopped||dom.terminals.some(t=>t.ptyId===expectedPtyId||t.visible)||runId!==expectedRunId)return{kind:'wait',reason:'exact-unbound-live-terminal-preconditions-not-present'};
+  const candidates=dom.resume.filter(x=>x.visible);if(candidates.length===1&&!candidates[0].disabled&&candidates[0].centerOwned&&candidates[0].inViewport&&candidates[0].text==='启动')return{kind:'bind-existing-once',selector:'[data-testid=task-resume]'};
+  return{kind:'wait',reason:'existing-live-bind-control-not-unique-enabled-visible-unblocked'};
+ }

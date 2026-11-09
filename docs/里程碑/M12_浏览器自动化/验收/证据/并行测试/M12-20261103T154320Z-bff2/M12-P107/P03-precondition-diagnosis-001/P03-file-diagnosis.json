@@ -1,0 +1,113 @@
+{
+  "at": "2026-11-07T21:27:12.286364+00:00",
+  "originalCase": "M9-T-P03",
+  "scope": "Two-minute file-only diagnosis; no new driver or execution",
+  "actualRound": "T130TerminalLayoutActual002;900115/session88540 ->8dae32",
+  "originalContract": "Hide/minimize file and terminal regions; observe real resizeRPC. Never send0x0; on redisplay fit actual size without rebuildingPTY.",
+  "actualFailure": {
+    "stage": "P03-hide-file",
+    "stack": {
+      "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/primary-failure.private.log",
+      "sha256": "b91a86f6bc740d35c0658ad20f424a0aef49cfcce284ea0a2c9d655cff8dab62"
+    },
+    "flow": {
+      "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/layout-flow.mjs",
+      "sha256": "5d456310e8ee10ee84447981995cfff587c094d04c97a50dc0aea0ac00d2f017",
+      "lines": [
+        22
+      ]
+    },
+    "run": {
+      "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/run.mjs",
+      "sha256": "56450901c09758fa78ebf46af66e2aa858f47a98c866296651a044b5537dfa16",
+      "lines": [
+        57
+      ]
+    },
+    "exactGate": "Unique [role=treeitem][data-file-path=exact project/layout.txt] count===1,15s. No layout.txt click or following P03 terminal/minimize operation executed.",
+    "precedingActualInputs": [
+      {
+        "kind": "click",
+        "selector": "[aria-label=\"隐藏文件区域\"]",
+        "point": {
+          "x": 1374,
+          "y": 20
+        }
+      },
+      {
+        "kind": "click",
+        "selector": "[data-testid=task-files]",
+        "point": {
+          "x": 1248.5,
+          "y": 22
+        }
+      }
+    ],
+    "lastDOM": {
+      "focused": true,
+      "visibility": "visible",
+      "active": "task-files button aria-pressed=true",
+      "savedTextRelevant": [
+        "任务启动目录：[STALE_ROOT] 原目录已移动、删除或被替换，授权和监听已停止；已有编辑仍保留，请恢复原目录后重新关联",
+        "重试目录",
+        "[STALE_ROOT] 原目录已移动、删除或被替换，授权和监听已停止；已有编辑仍保留，请恢复原目录后重新关联"
+      ]
+    },
+    "guard": {
+      "enabled": true,
+      "appPid": 53903,
+      "checkedInputs": 690
+    },
+    "classification": "Driver shared-case precondition invalidated by earlier P07 root-loss FI; not an observed OSfocus failure and not product failure"
+  },
+  "sourceCausality": {
+    "P07": {
+      "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/layout-flow.mjs",
+      "sha256": "5d456310e8ee10ee84447981995cfff587c094d04c97a50dc0aea0ac00d2f017",
+      "lines": [
+        15,
+        20
+      ]
+    },
+    "fact": "P07 renames project root, refresh revokes authorization, then restores only physical path/inode. Original boundary explicitly does not claim Native regrant. P03 then reuses invalid lease; saved DOM confirmsSTALE_ROOT.",
+    "notLocator": "Current file-node selector already uses data-file-path, not obsolete title. Tree can be absent for valid revoked authorization; must not edit metadata/list/store to make it appear."
+  },
+  "currentStandaloneReadiness": {
+    "ready": false,
+    "reason": [
+      "Adapted flow hardcodes P04/P03/P07; terminal extra-file final reads depend on P07 and caseResults unconditionally names3. Cannot run existing command as P03-only without honest scoped derivative.",
+      "Fresh healthy own project would avoid the demonstrated P07 contamination, but it does not resolve later original minimized-window restoration.",
+      "P03 later window recovery still does w.restore();w.show(); BrowserWindow.show gives focus. Deleting explicit w.focus/Page.bringToFront did not make show focus-neutral.",
+      "No verified current no-rearm/no-forcefocus OS restoration path exists. Full original P03 is conditional on genuine later system restore; do not trial showInactive or relax guard tonight."
+    ],
+    "minimumFuturePreparationOnly": "If Root later acquires the system restore condition, derive P03-only from the existing original block with fresh non-revoked project/task, omit only P04/P07 execution and their dependent final bookkeeping, retain all P03 zero-size/realfit/samePTY assertions and original single guard. No preparation or trial created now."
+  },
+  "completedNotReplayed": [
+    "M9-T-P04",
+    "M9-T-P07"
+  ],
+  "originalRaw": {
+    "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/raw.json",
+    "sha256": "b183af2df04b70ee612633a061ed85a8e8713be15a48d2d7848cbe8bc3959dd7"
+  },
+  "originalCleanup": {
+    "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/cleanup.json",
+    "sha256": "6ed093c484447479de1f6c79174ac1f547c1e006baf3f8826d6f3d92ac5ed7ca"
+  },
+  "originalJudge": {
+    "path": "/private/tmp/willyou-m12-t130-terminal-layout-App035-A-cont-002/judgement.json",
+    "sha256": "a07ae033dfbe38312c9cfd2ceb18730c2260f9259d6d1652faa6e4da430a07f9"
+  },
+  "noExecution": {
+    "Node": 0,
+    "App": 0,
+    "Native": 0,
+    "OS": 0,
+    "newTests": 0,
+    "newDriver": false
+  },
+  "resourcesHeld": [],
+  "publicWrites": 0,
+  "formalIncrement": 0,
+  "wholeP03Passed": false
+}

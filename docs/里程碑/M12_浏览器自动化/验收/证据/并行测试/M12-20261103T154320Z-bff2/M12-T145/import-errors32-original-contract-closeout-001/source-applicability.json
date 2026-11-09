@@ -1,0 +1,228 @@
+{
+  "old": "App047/source056 actual captures",
+  "current": "App053/source062 frozen source, not newApp execution",
+  "branchesIdentical": [
+    {
+      "line": 9,
+      "label": "state model",
+      "identical": true,
+      "lineSHA256": "1e153ecf527e3621cdc1881217c42ee4d1c284a147efc85e47dcf92a864f7028"
+    },
+    {
+      "line": 12,
+      "label": "selected source/target/busy",
+      "identical": true,
+      "lineSHA256": "ccb1d138eded096fd1c2c6ca830f0aa2110d6134bc9d7e26a76002f81a9ca453"
+    },
+    {
+      "line": 13,
+      "label": "real submit/result",
+      "identical": true,
+      "lineSHA256": "f51950717a6b9ef1b6475929674fb7fac3c2aefe46450231c799a8c33bdd7b0a"
+    },
+    {
+      "line": 14,
+      "label": "titles",
+      "identical": true,
+      "lineSHA256": "ee8ee4e5d81a855194e97da4ab72d233f5b3ad82e99577bc30e7cd2d3d22c05d"
+    },
+    {
+      "line": 15,
+      "label": "dialog/escape",
+      "identical": true,
+      "lineSHA256": "94555e0afda7f10bd24f48c58ad0746042a4f103fd700c280b162ca360a33623"
+    },
+    {
+      "line": 16,
+      "label": "heading closeX",
+      "identical": true,
+      "lineSHA256": "a2c2746e7f188499b49fb73f320c9e0ea39fa654b080125efadb74cb360c2afa"
+    },
+    {
+      "line": 18,
+      "label": "error alert",
+      "identical": true,
+      "lineSHA256": "8e4a9ca489629acaf7f1db14f728b05933f17c3ff0781f1bd79524c0cddb1f5e"
+    },
+    {
+      "line": 19,
+      "label": "source",
+      "identical": true,
+      "lineSHA256": "6924641fcb6fadd61541f1b2057743154a5eb4eabb6955ee1cae6567c6655945"
+    },
+    {
+      "line": 21,
+      "label": "busy outside selected6",
+      "identical": true,
+      "lineSHA256": "1b0e46d3fac2322e87437ee33224882a8e0fd0fa2212ef58a505182860384ef5"
+    },
+    {
+      "line": 22,
+      "label": "success",
+      "identical": true,
+      "lineSHA256": "64d7f456a8700fe907ad11a6cb74954d7300e011b4978b0c698e5a9f25f4c98f"
+    },
+    {
+      "line": 23,
+      "label": "footer controls",
+      "identical": true,
+      "lineSHA256": "80b2174cd0dcd866da5e75975c4cc3b037f110e3c6a01da1759467612d573b0e"
+    }
+  ],
+  "onlyDialogSourceDelta": "line20 confirm cookie get now code; excluded confirm8 must use currentactual retest",
+  "cssDiff": "--- source056/workspace.css\n\n+++ source062/workspace.css\n\n@@ -47,2 +47,3 @@\n\n .bw-warn-list code,.bw-hint code{font:12px var(--mono);background:var(--hover);border-radius:4px;padding:0 4px}\n+.bw-warn-list code{color:var(--secondary)}\n .bw-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12px}\n@@ -120,6 +121,14 @@\n\n [data-browser-panel=authentication] .bw-form input:focus{outline:none;border-color:var(--secondary)}\n-.bw-warn-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:20px}\n+.bw-warn-list{margin:0;padding-left:18px;list-style:disc;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:20px}\n+.bw-attention-banner{align-items:flex-start;padding:7px 14px;border-top:1px solid var(--border);background:color-mix(in srgb,#e3a008 12%,var(--bg))}\n+.bw-attention-banner svg{flex-shrink:0;margin-top:2px}\n+.bw-attention-banner code{font:11px var(--mono)}\n+.bw-attention-banner .bw-mini{margin-left:auto}\n .bw-attention{display:flex;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #e3a008;border-radius:10px;background:color-mix(in srgb,#e3a008 10%,var(--bg));color:var(--text);font-size:12px;line-height:18px}\n .bw-attention>svg{color:#b7791f;flex-shrink:0;margin-top:1px}\n+.bw-attention>div{flex:1;min-width:0;overflow-wrap:anywhere}\n+.bw-attention code{font:12px/1.7 var(--mono);color:var(--secondary);overflow-wrap:anywhere}\n+[data-browser-panel=profiles]:has(.bw-attention) .bw-dialog-body{scrollbar-width:auto}\n [data-browser-panel=profiles] .bw-row-actions{gap:6px}\n+[data-browser-panel=settings] .bw-row-actions{gap:6px}\n .bw-attention p{margin:4px 0 8px;color:var(--secondary)}\n@@ -162 +171,6 @@\n\n [data-browser-panel=access-request] .bw-dialog-body>.bw-hint{margin:0}\n+\n+.bw-invalid-address h2{margin:4px 0 0}\n+.bw-invalid-address p{max-width:min(420px,100%);line-height:20px;overflow-wrap:anywhere}\n+.bw-invalid-address code{font:12px var(--mono);white-space:normal;overflow-wrap:anywhere}\n+.bw-address input::selection{background-color:Highlight;color:HighlightText}",
+  "cssApplicability": "Deltas concern warn-list code/list markers, needs-attention/banner/profiles scrollbar/layout, settings row gap, invalid page/system addressselection. None changes ordinary ready cookie-import source/result/error modal/head/body/button/radio/status rules. Broader workspace toolbar/menu/Native background changes are not asserted as old full-window visual match.",
+  "unchangedFiles": [
+    {
+      "relativePath": "src/renderer/index.css",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/index.css",
+        "sha256": "0a4b3d5a969adc8601bac523f0dcbb8082c3702b3610a6231936c9434559d1e7",
+        "bytes": 8227
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/renderer/index.css",
+        "sha256": "0a4b3d5a969adc8601bac523f0dcbb8082c3702b3610a6231936c9434559d1e7",
+        "bytes": 8227
+      },
+      "identical": true
+    },
+    {
+      "relativePath": "src/main/core/browser/cookie-import/sources.ts",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/main/core/browser/cookie-import/sources.ts",
+        "sha256": "c3b074c20149d72d7f767e81279a1866629fab96a19d5bf428d4dcdd7a873194",
+        "bytes": 6490
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/main/core/browser/cookie-import/sources.ts",
+        "sha256": "c3b074c20149d72d7f767e81279a1866629fab96a19d5bf428d4dcdd7a873194",
+        "bytes": 6490
+      },
+      "identical": true
+    },
+    {
+      "relativePath": "src/main/core/browser/cookie-import/source-rows.ts",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/main/core/browser/cookie-import/source-rows.ts",
+        "sha256": "41920e1358ac3dd98ea889ed6a7b2b013efe501ba2b440c7daee2cd9cf1a8f7d",
+        "bytes": 5869
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/main/core/browser/cookie-import/source-rows.ts",
+        "sha256": "41920e1358ac3dd98ea889ed6a7b2b013efe501ba2b440c7daee2cd9cf1a8f7d",
+        "bytes": 5869
+      },
+      "identical": true
+    },
+    {
+      "relativePath": "src/main/core/browser/cookie-import/coordinator.ts",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/main/core/browser/cookie-import/coordinator.ts",
+        "sha256": "1b57777247c09504e274ab16dd7e339e31fc42d3808689649e97a99c3c9248df",
+        "bytes": 6060
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/main/core/browser/cookie-import/coordinator.ts",
+        "sha256": "1b57777247c09504e274ab16dd7e339e31fc42d3808689649e97a99c3c9248df",
+        "bytes": 6060
+      },
+      "identical": true
+    },
+    {
+      "relativePath": "src/main/core/browser/cookie-import/chromium-source.ts",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/main/core/browser/cookie-import/chromium-source.ts",
+        "sha256": "37bc4e329f945a11685fe3e6b5f2adda9516a6a823b6d487c02636d8c46db0fd",
+        "bytes": 4203
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/main/core/browser/cookie-import/chromium-source.ts",
+        "sha256": "37bc4e329f945a11685fe3e6b5f2adda9516a6a823b6d487c02636d8c46db0fd",
+        "bytes": 4203
+      },
+      "identical": true
+    },
+    {
+      "relativePath": "src/main/core/browser/cookie-import/native-store.ts",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/main/core/browser/cookie-import/native-store.ts",
+        "sha256": "b2eff2150ad0647f5b5fbc2c91fe23054ab3b90e86a73f1722192fddd5cfdfa3",
+        "bytes": 5627
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/main/core/browser/cookie-import/native-store.ts",
+        "sha256": "b2eff2150ad0647f5b5fbc2c91fe23054ab3b90e86a73f1722192fddd5cfdfa3",
+        "bytes": 5627
+      },
+      "identical": true
+    },
+    {
+      "relativePath": "src/main/core/browser/cookie-import/plan.ts",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/main/core/browser/cookie-import/plan.ts",
+        "sha256": "a48e9a1bcb891f5cacbbc2e8178c9e5ee0f5951002ea2dcec6d7ea1b345f2db0",
+        "bytes": 3806
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/main/core/browser/cookie-import/plan.ts",
+        "sha256": "a48e9a1bcb891f5cacbbc2e8178c9e5ee0f5951002ea2dcec6d7ea1b345f2db0",
+        "bytes": 3806
+      },
+      "identical": true
+    },
+    {
+      "relativePath": "src/main/core/browser/cookie-import/transactions.ts",
+      "old": {
+        "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/main/core/browser/cookie-import/transactions.ts",
+        "sha256": "98455c8ca4d670f6dda898d9a29a4e3108b7e96d0547b801bcdb1fcb0fe1caff",
+        "bytes": 5018
+      },
+      "current": {
+        "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/main/core/browser/cookie-import/transactions.ts",
+        "sha256": "98455c8ca4d670f6dda898d9a29a4e3108b7e96d0547b801bcdb1fcb0fe1caff",
+        "bytes": 5018
+      },
+      "identical": true
+    }
+  ],
+  "mainIdentity": {
+    "at": "2026-11-09T03:01:21.205931+00:00",
+    "asar": "/private/tmp/willyou-m12-s2-package-053/mac-arm64/WillYou.app/Contents/Resources/app.asar",
+    "headerWords": [
+      4,
+      1194524,
+      1194520,
+      1194514
+    ],
+    "path": "out/main/index.js",
+    "offset": 43615225,
+    "bytes": 3319259,
+    "SHA256": "fea680c2cbd6e72cae04c57a75150d6131929565a305bfb3c87a2af1589edb17",
+    "integrityMatch": true,
+    "sourcePolicy": "Actual053 main identical to051/052; no code execution or modification"
+  },
+  "sourceProofs": [
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/cookie-import-dialog.tsx",
+      "sha256": "d1b92ffe3f2eda8b7ae755878061c32ad53fb6085d157c812ef6c6e704e12917",
+      "bytes": 6176
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/renderer/features/browser/cookie-import-dialog.tsx",
+      "sha256": "cdd81d17ae03fb6ef50beb6f77cf4673dd7938cc959eb9ee3c3d2fee56f2d937",
+      "bytes": 6189
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-failure-visual-source-056/source/src/renderer/features/browser/workspace.css",
+      "sha256": "b83484042a6febc61846bd3d80e68bcbe44892682b64d0a79d528a3e7934dd7a",
+      "bytes": 16637
+    },
+    {
+      "path": "/private/tmp/willyou-m12-profile-visual-source-062/source/src/renderer/features/browser/workspace.css",
+      "sha256": "6596ffe95d2b17a48d698039241005cc00aee8edc13f5e6b000abcf11fdde00e",
+      "bytes": 17588
+    }
+  ],
+  "result": "These48 prior scoped visual observations remain applicable to unchanged branches; no retest/newpackage visual execution claimed."
+}

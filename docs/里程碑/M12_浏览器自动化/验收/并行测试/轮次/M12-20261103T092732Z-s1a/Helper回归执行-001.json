@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-03T14:19:52.499Z",
+  "boundary": "I only, fixed patched helper, private fresh profile for every group; no packaged App or real Agent",
+  "baseline": "/private/tmp/willyou-m12-s1-helper-regression-001/baseline.json",
+  "groups": [
+    {
+      "name": "reference",
+      "directory": "/private/tmp/willyou-m12-s1-helper-regression-001-reference",
+      "driver": "s1-reference-probe.mjs",
+      "adjudicator": "adjudicate-s1-reference.mjs",
+      "ms": 10280,
+      "passed": true,
+      "cleanup": {
+        "closed": true,
+        "helpers": [
+          {
+            "daemonPid": 61354,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          },
+          {
+            "daemonPid": 61456,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "nested",
+      "directory": "/private/tmp/willyou-m12-s1-helper-regression-001-nested",
+      "driver": "s1-nested-probe.mjs",
+      "adjudicator": "adjudicate-s1-nested.mjs",
+      "ms": 4337,
+      "passed": true,
+      "cleanup": {
+        "closed": true,
+        "helpers": [
+          {
+            "daemonPid": 61599,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "nested-reference",
+      "directory": "/private/tmp/willyou-m12-s1-helper-regression-001-nested-reference",
+      "driver": "s1-nested-reference-probe.mjs",
+      "adjudicator": "adjudicate-s1-nested-reference.mjs",
+      "ms": 13365,
+      "passed": true,
+      "cleanup": {
+        "closed": true,
+        "helpers": [
+          {
+            "daemonPid": 61654,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "native-ref",
+      "directory": "/private/tmp/willyou-m12-s1-helper-regression-001-native-ref",
+      "driver": "s1-native-ref-contract-probe.mjs",
+      "adjudicator": "adjudicate-s1-native-ref-contract.mjs",
+      "ms": 3783,
+      "passed": false,
+      "cleanup": {
+        "closed": true,
+        "helpers": [
+          {
+            "daemonPid": 61927,
+            "daemonState": "stopped",
+            "clientStopped": true,
+            "socketFilesRemoved": true
+          }
+        ]
+      }
+    }
+  ],
+  "failure": "Error: Actual criteria failed: native-ref\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/scripts/browser/run-s1-helper-regression.mjs:57:28",
+  "passed": false,
+  "finishedAt": "2026-11-03T14:20:24.472Z"
+}

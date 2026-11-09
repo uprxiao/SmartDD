@@ -1,0 +1,69 @@
+{
+  "scope": "Root actual existing P127 phases01-06 only; no source rebuild/publish/model; stop on first failure. Startup07 requires separate Root current-pin review.",
+  "driverPid": 91918,
+  "startedAt": "2026-11-07T00:50:29.646949+00:00",
+  "phases": [
+    {
+      "id": "P127-01-private-copy",
+      "command": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app027-installer-001/cache WILLYOU_P111_PREPARED_SHA=e3d05be5701cae5f9aaecde94bbf864e32d2cf2340bfbecfd93c51485f0716d4 /usr/bin/python3 /private/tmp/willyou-m12-app027-installer-001/prepare-native-input.py --execute",
+      "startedAt": "2026-11-07T00:50:29.647405+00:00",
+      "pid": 91919,
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T00:50:39.137060+00:00",
+      "stdout": "/private/tmp/willyou-m12-app027-installer-001/P127-01-private-copy.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app027-installer-001/P127-01-private-copy.stderr.log"
+    },
+    {
+      "id": "P127-02-prepackaged-dmg",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app027-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app027-installer-001/build-installer-002.py --execute",
+      "startedAt": "2026-11-07T00:50:39.137282+00:00",
+      "pid": 91960,
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T00:51:16.905263+00:00",
+      "stdout": "/private/tmp/willyou-m12-app027-installer-001/P127-02-prepackaged-dmg.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app027-installer-001/P127-02-prepackaged-dmg.stderr.log"
+    },
+    {
+      "id": "P127-03-existing-gate-path-copy",
+      "command": "/bin/cp -p /private/tmp/willyou-m12-app027-installer-001/evidence/attempt-002/candidate-installer.json /private/tmp/willyou-m12-app027-installer-001/evidence/candidate-installer.json",
+      "startedAt": "2026-11-07T00:51:16.905749+00:00",
+      "pid": 92173,
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T00:51:16.924747+00:00",
+      "stdout": "/private/tmp/willyou-m12-app027-installer-001/P127-03-existing-gate-path-copy.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app027-installer-001/P127-03-existing-gate-path-copy.stderr.log"
+    },
+    {
+      "id": "P127-04-install-payload-size",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app027-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app027-installer-001/install-and-compare.py --execute",
+      "startedAt": "2026-11-07T00:51:16.924952+00:00",
+      "pid": 92175,
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T00:51:54.952029+00:00",
+      "stdout": "/private/tmp/willyou-m12-app027-installer-001/P127-04-install-payload-size.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app027-installer-001/P127-04-install-payload-size.stderr.log"
+    },
+    {
+      "id": "P127-05-actual-installed-native",
+      "command": "WILLYOU_TEST_CACHE_DIR=/private/tmp/willyou-m12-app027-installer-001/cache /usr/bin/python3 /private/tmp/willyou-m12-app027-installer-001/check-installed-native.py --execute",
+      "startedAt": "2026-11-07T00:51:54.952683+00:00",
+      "pid": 92356,
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T00:51:59.348511+00:00",
+      "stdout": "/private/tmp/willyou-m12-app027-installer-001/P127-05-actual-installed-native.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app027-installer-001/P127-05-actual-installed-native.stderr.log"
+    },
+    {
+      "id": "P127-06-bind-current-startup-pins",
+      "command": "WILLYOU_M12_NATIVE_LEASE_CONFIRMED=1 /usr/bin/python3 /private/tmp/willyou-m12-app027-installer-001/bind-installed-pins.py --execute",
+      "startedAt": "2026-11-07T00:51:59.348810+00:00",
+      "pid": 92397,
+      "exitCode": 0,
+      "finishedAt": "2026-11-07T00:51:59.968517+00:00",
+      "stdout": "/private/tmp/willyou-m12-app027-installer-001/P127-06-bind-current-startup-pins.stdout.log",
+      "stderr": "/private/tmp/willyou-m12-app027-installer-001/P127-06-bind-current-startup-pins.stderr.log"
+    }
+  ],
+  "status": "first-six-complete-pending-Root-startup-pin-review",
+  "finishedAt": "2026-11-07T00:51:59.968725+00:00"
+}

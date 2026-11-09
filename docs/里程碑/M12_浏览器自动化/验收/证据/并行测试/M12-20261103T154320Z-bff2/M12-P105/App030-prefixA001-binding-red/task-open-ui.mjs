@@ -1,0 +1,28 @@
+// Real sidebar selection may auto-resume. Observe actual task/run plus renderer binding before any explicit resume.
+import assert from 'node:assert/strict';
+import {appendFile,writeFile} from 'node:fs/promises';
+export function classifyTaskOpen({task,runId,dom},{taskId,projectId,explicitResumeSent}){
+ assert.equal(task.id,taskId);assert.equal(task.projectId,projectId);
+ if(task.ptyId){if(runId&&dom.selected&&dom.terminals.filter(t=>t.ptyId===task.ptyId&&t.visible).length===1&&!dom.resuming)return{kind:'bound',ptyId:task.ptyId,runId};return{kind:'wait',reason:'actual-pty-awaiting-exact-renderer-binding'};}
+ if(dom.resuming)return{kind:'wait',reason:'real-sidebar-auto-resume-in-flight'};
+ if(explicitResumeSent)return{kind:'wait',reason:'one-real-resume-already-sent'};
+ if(!dom.selected)return{kind:'wait',reason:'sidebar-selection-not-presented'};
+ const candidates=dom.resume.filter(x=>x.visible);
+ if(candidates.length===1&&!candidates[0].disabled&&candidates[0].centerOwned&&candidates[0].inViewport)return{kind:'resume-once',selector:'[data-testid=task-resume]'};
+ return{kind:'wait',reason:candidates.length===1&&candidates[0].disabled?'actual-resume-disabled':'resume-not-unique-visible-unblocked'};
+}
+export async function openTaskThroughRealUI({app,ui,poll,taskId,projectId,expectedPtyId,expectedRunId,record,persist,privatePath}){
+ assert(typeof expectedPtyId==='string'&&expectedPtyId&&typeof expectedRunId==='string'&&expectedRunId,'Only existing prepared PTY/run may bind');
+ record.startedAt=new Date().toISOString();record.explicitResumeSent=false;record.onlyBindExisting=true;record.expected={taskId,projectId,ptyId:expectedPtyId,runId:expectedRunId};record.samples??=[];record.actions??=[];
+ const describe=async()=>{const task=await app.invoke('tasks.get',taskId),session=await app.invoke('applications.session',taskId);assert(session?.ok);const runId=session.value.currentRun?.id??null;const dom=await app.evaluate(`(()=>{const taskId=${JSON.stringify(taskId)},control=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e),x=r.x+r.width/2,y=r.y+r.height/2,top=document.elementFromPoint(x,y);return{testId:e.getAttribute('data-testid'),text:e.textContent.trim(),disabled:!!e.disabled,visible:r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden',inViewport:r.x>=0&&r.y>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,centerOwned:!!top&&e.contains(top),rect:{x:r.x,y:r.y,width:r.width,height:r.height},hit:top?{tag:top.tagName,testId:top.getAttribute('data-testid'),role:top.getAttribute('role'),className:typeof top.className==='string'?top.className:null}:null};};return{selected:[...document.querySelectorAll('[data-testid=sidebar-task]')].some(e=>e.getAttribute('data-task-id')===taskId&&e.getAttribute('aria-current')==='page'),sidebar:[...document.querySelectorAll('[data-testid=sidebar-task]')].filter(e=>e.getAttribute('data-task-id')===taskId).map(control),resuming:!!document.querySelector('[data-testid=task-resuming]'),stopped:!!document.querySelector('[data-testid=task-stopped]'),resume:[...document.querySelectorAll('[data-testid=task-resume]')].map(control),terminals:[...document.querySelectorAll('[data-testid=task-terminal]')].map(e=>({ptyId:e.getAttribute('data-pty'),...control(e)})),focused:document.hasFocus(),visibility:document.visibilityState};})()`);return{at:new Date().toISOString(),task:{id:task.id,projectId:task.projectId,ptyId:task.ptyId,nativeSessionId:task.nativeSessionId,recovery:task.recovery},runId,dom};};
+ const save=async(label,sample,decision)=>{const row={label,...sample,decision};await appendFile(privatePath,JSON.stringify(row)+'\n',{mode:0o600});record.samples.push({at:row.at,label,task:row.task,runId:row.runId,decision});await persist();return row;};
+ const exact=sample=>{assert.equal(sample.task.id,taskId);assert.equal(sample.task.projectId,projectId);assert.equal(sample.task.ptyId,expectedPtyId,'Prepared task PTY ended/changed; never restart');if(sample.runId!==null)assert.equal(sample.runId,expectedRunId,'Prepared current run changed; never resume another run');};
+ try{
+  const before=await describe();await save('before-sidebar',before,{kind:'observe-before-real-sidebar-existing-only'});exact(before);
+  await ui.click('[data-testid=sidebar-task][data-task-id="'+taskId+'"]');record.actions.push({kind:'real-sidebar-selected',at:new Date().toISOString()});await persist();let boundSince=null,boundKey=null;
+  return await poll(async()=>{const sample=await describe(),decision=classifyTaskOpen(sample,{taskId,projectId,explicitResumeSent:true});await save('open-decision',sample,decision);exact(sample);
+   if(decision.kind!=='bound'){boundSince=null;boundKey=null;return null;}assert.equal(decision.ptyId,expectedPtyId);assert.equal(decision.runId,expectedRunId);const key=decision.ptyId+':'+decision.runId;if(boundKey!==key){boundKey=key;boundSince=Date.now()}if(Date.now()-boundSince<250)return null;
+   record.bound={...decision,at:new Date().toISOString(),source:'Actual same prepared task/PTY/run and visible renderer terminal; sidebar only, no resume/start input'};await persist();return record.bound;
+  },120000);
+ }catch(error){record.failure={at:new Date().toISOString(),name:error.name,message:error.message,descriptorPath:privatePath};try{await save('failure',await describe(),{kind:'failed-no-retry'})}catch(e){record.failure.descriptorError=String(e.stack??e)}try{const s=await app.cdp('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});const path=privatePath+'.failure.private.png';await writeFile(path,Buffer.from(s.data,'base64'),{flag:'wx',mode:0o600});record.failure.screenshotPrivatePath=path}catch(e){record.failure.screenshotError=String(e.stack??e)}await persist();throw error;}
+}

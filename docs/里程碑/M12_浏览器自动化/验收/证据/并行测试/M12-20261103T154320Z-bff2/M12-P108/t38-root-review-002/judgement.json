@@ -1,0 +1,200 @@
+{
+  "at": "2026-11-05T21:02:17.311Z",
+  "status": "failed-or-partial",
+  "prechecks": [
+    {
+      "id": "A-actual-plan-owned-skill-native-prefix-and-exact-calls",
+      "passed": true
+    },
+    {
+      "id": "B-actual-plan-owned-skill-native-prefix-and-exact-calls",
+      "passed": true
+    },
+    {
+      "id": "independent-exact-cleanup-complete",
+      "passed": true
+    }
+  ],
+  "decision": {
+    "case": "M11-T38 (M12-T131 subcase)",
+    "status": "failed-or-partial",
+    "passed": 8,
+    "total": 9,
+    "checks": [
+      {
+        "id": "T38-01-two-real-current-runs-original-policy",
+        "passed": true,
+        "proof": null
+      },
+      {
+        "id": "T38-02-real-native-valid-token-tree-outsider",
+        "passed": true,
+        "proof": {
+          "pid": 7633,
+          "code": "PEER_MISMATCH",
+          "actualKernel": true,
+          "business": 0
+        }
+      },
+      {
+        "id": "T38-03-unreadable",
+        "passed": true,
+        "proof": {
+          "code": "PEER_UNVERIFIABLE",
+          "actualNativeReads": 1,
+          "declaredFault": "unreadable",
+          "business": 0
+        }
+      },
+      {
+        "id": "T38-04-wrong-start",
+        "passed": true,
+        "proof": {
+          "code": "PEER_MISMATCH",
+          "actualNativeReads": 1,
+          "declaredFault": "wrong-start",
+          "business": 0
+        }
+      },
+      {
+        "id": "T38-05-wrong-executable",
+        "passed": true,
+        "proof": {
+          "code": "EXECUTABLE_MISMATCH",
+          "actualNativeReads": 1,
+          "declaredFault": "wrong-executable",
+          "business": 0
+        }
+      },
+      {
+        "id": "T38-06-unselected-write",
+        "passed": true,
+        "proof": {
+          "code": "SCOPE_DENIED",
+          "actualNativeReads": 1,
+          "declaredFault": "normal",
+          "business": 0,
+          "boundary": "Actual CLI command discovery denied unlisted write; direct host-call refusal remains separate I evidence"
+        }
+      },
+      {
+        "id": "T38-07-normal-restored-legal-A",
+        "passed": true,
+        "proof": {
+          "businessSuccess": true,
+          "authority": "AST-attributed actual CLI stdout plus exact current authenticated-run Host invocation",
+          "childExitCodeObserved": 0,
+          "legacyTransportConnectionId": null,
+          "sourceConnections": [
+            {
+              "slot": "zentao",
+              "identityRevision": 1,
+              "connectionId": "64e966da-7145-492a-83a8-d1d144374e45",
+              "configRevision": 1,
+              "policyRevision": 1,
+              "bindingRevision": 1
+            }
+          ],
+          "itemReference": {
+            "nativeId": "79291",
+            "identityRevision": 1,
+            "connectionId": "64e966da-7145-492a-83a8-d1d144374e45",
+            "contentRevision": "4864304b7cbefc1c55dc5c1ac12f9f86852e0b7cedb92a3a7aa4cab89ac0c2c5"
+          },
+          "activityConnections": [
+            {
+              "id": "64e966da-7145-492a-83a8-d1d144374e45",
+              "name": "T131 synthetic A"
+            }
+          ],
+          "operationId": "52906e6c-88dc-4ffb-959d-fbd1b208583d",
+          "requestId": "da653f42-dc06-41bc-a8fc-a37d20ea363a",
+          "actor": {
+            "runId": "92f9e3bb-de81-4a72-8c09-5c90f9b6eec2",
+            "taskId": "3e4728b2-ef97-4fb3-8adc-482b04d8651f",
+            "projectId": "b9f306cc-f51c-4b81-852f-b474f6cf8972",
+            "appId": "zentao",
+            "packageHash": "4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a"
+          },
+          "attemptCount": 1,
+          "postBaselineBusinessRequests": 2,
+          "BbusinessRequests": 0
+        }
+      },
+      {
+        "id": "T38-08-actual-other-live-run-token",
+        "passed": true,
+        "proof": {
+          "runId": "ff14d7b6-6f42-466d-a355-8c8ee0fc6a18",
+          "tokenOwnerRunId": "92f9e3bb-de81-4a72-8c09-5c90f9b6eec2",
+          "code": "PEER_MISMATCH",
+          "distinctActualOwners": true,
+          "business": 0
+        }
+      },
+      {
+        "id": "T38-09-hooks-privacy-normal-cleanup",
+        "passed": false,
+        "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(r.tokenPrivacy&&!r.tokenPrivacy.matchedAny&&r.tokenPrivacy.errors.length===0&&!r.tokenPrivacy.rawTokenValuesReturned&&!r.tokenPrivacy.tokenHashesReturned)\n"
+      }
+    ],
+    "formalWholeCaseCount": 0,
+    "boundary": "Six original real-App/kernel admission cases; three explicitly altered native-evidence returns, actual outsider/second run, real stockCLI and zero business. No new I17/35min, UI action or OpenAI/model-autonomy claim."
+  },
+  "sources": [
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/raw.private.json",
+      "sha256": "cbf56b002272154530d451fe349b57bd0f807f8f5252085ef41f7f87946f6981",
+      "bytes": 1044445
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/A-manifest.private.json",
+      "sha256": "d138956d29269695ff70e4df9e7f1ff4bc1d9bf0a352a377af218db03012da20",
+      "bytes": 4758
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/A-skill.private.md",
+      "sha256": "3e4d8d12fedcd3a82b04a06a63e952fd4c47f5a932de84315f19f4e73c8531bc",
+      "bytes": 1868
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/A-native-prefix-0.private.jsonl",
+      "sha256": "8344f8d97e78a31914df001315c08671073d33050e9b14fd1f12d8dc6f2648b7",
+      "bytes": 75916
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/codex/sessions/2026/11/06/rollout-2026-11-06T04-39-45-01a1ad70-6107-7f71-a1e2-bc59374b3cf3.jsonl",
+      "sha256": "8344f8d97e78a31914df001315c08671073d33050e9b14fd1f12d8dc6f2648b7",
+      "bytes": 75916
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/B-manifest.private.json",
+      "sha256": "d138956d29269695ff70e4df9e7f1ff4bc1d9bf0a352a377af218db03012da20",
+      "bytes": 4758
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/B-skill.private.md",
+      "sha256": "3e4d8d12fedcd3a82b04a06a63e952fd4c47f5a932de84315f19f4e73c8531bc",
+      "bytes": 1868
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/B-native-prefix-0.private.jsonl",
+      "sha256": "ec25157400ab315edd0f72b5840416913ad2b8297e4824bc456b455aa8c454e6",
+      "bytes": 58779
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/runtime-001/codex/sessions/2026/11/06/rollout-2026-11-06T04-39-49-01a1ad70-6e7b-70b2-804a-37cb308b0ebf.jsonl",
+      "sha256": "ec25157400ab315edd0f72b5840416913ad2b8297e4824bc456b455aa8c454e6",
+      "bytes": 58779
+    },
+    {
+      "path": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/cleanup-verification.json",
+      "sha256": "5734f6af3a3babca5726072283d80a6d7558c3c5ced2f5d0db564bf1ffb829bb",
+      "bytes": 11073
+    }
+  ],
+  "formalWholeCaseCount": 0,
+  "executionNotRepeated": true,
+  "originalJudgementPreserved": "/private/tmp/willyou-m12-t131-t38-peer-ar-001/judgement.json",
+  "revision": "Finite diagnostic line before or after strict single JSON; original nine predicates including token privacy unchanged"
+}

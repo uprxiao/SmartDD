@@ -1,0 +1,5 @@
+006 已完成判定加固与已有005 raw独立重判，原00592文件逐项SHA不变，无新App/OS/Native。18个纯数据负控通过，旧judge错误候选绿/scopeApproved输出按synthetic完整留存。新decision/scopeApproved都以全部必经checks为硬gate，rawmax另从实际node/API重建。240列表+240 rusage原始尝试均有效，legacy init未保存原始read的边界保留；不补造errno。
+
+原长测004已安装collector/judge防御性修订，15个起始测试加3个额外denom/rawcredit负控均过；原六脚本、App019/source023和阈值/周期/35+5不动，最新ready/preflight/SHA在handoff.json，不应再用旧long hash。005健康路径actualerrno0可沿用，修订不新增NativeAPI/产品输入。
+
+五项范围证据与边界在scope-closure-review.md：真实20anchor完整已知树、选定spawn/wait、固定6b正常复用/唯一PID写入/退出清理闭包、final cut/14条读序、原窗口实现均有真SHA/原raw推理。但不能据端点稳定或policy字符串宣称任意opaque Native额外detached进程绝不存在。建议协调者先认可受控工作负载有限闭包，再按原long流程执行并最终据真实1800秒数据判；若要求更广的系统级orphan排除，当前仍有明确缺口，即使upper<5也不能自动完整绿。当前没有授予/启动long Native。

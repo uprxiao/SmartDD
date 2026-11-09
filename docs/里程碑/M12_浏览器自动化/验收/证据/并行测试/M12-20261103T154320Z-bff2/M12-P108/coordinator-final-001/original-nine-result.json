@@ -1,0 +1,849 @@
+{
+  "at": "2026-11-07T11:32:02.548974+00:00",
+  "parent": "M12-T131",
+  "status": "all-nine-original-contracts-evidenced-ready-for-Root-to-mark-passed",
+  "recommendation": "可按原范围将T131整条passed，前提是Root复核本批安全证据；执行者不写公共账。",
+  "originalNineCount": 9,
+  "completeNine": 9,
+  "cases": [
+    {
+      "case": "M11-T01",
+      "layer": "I＋A＋R",
+      "originalPrerequisite": "A 已选禅道 Bug 只读能力；新 Skill 与 CLI 已交付",
+      "originalSteps": "由真实 UI 启动 Codex，要求读取 Skill、发现能力并通过 CLI 查询本人 Bug；核对宿主回执与选用连接",
+      "originalExpected": "CLI 调用实际完成；结果、连接、项目与权限对应；只有交付记录不算 Agent 已发现或已调用",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": [
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t01-coordinator-001/result.json",
+          "sha256": "44c788337b4983b5fc4588b64c6d31cb3adc01a7b1b15892d15ac61b77020cc6",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t01-coordinator-001/manifest.json",
+          "manifestSHA256": "c557fc573d631a61f5780b564d274d4ef46ae5a84a7ffc05b3fdc6dc03a42cef",
+          "originalDecision": "applicable-existing-I-A-R-evidence-coordinator-review",
+          "originalTimestamp": "2026-11-05T17:32:25.867Z",
+          "notReexecuted": true
+        }
+      ],
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": null
+    },
+    {
+      "case": "M11-T06",
+      "layer": "I＋A＋R",
+      "originalPrerequisite": "A／B 项目、不同连接；A 仅有有限动作",
+      "originalSteps": "在 A 会话提交 B 的项目／连接标识、额外动作和自报审批参数，再正常查询 A",
+      "originalExpected": "越权请求拒绝且无外部副作用；合法 A 查询仍可用，参数不产生授权",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": [
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t06-root-review-001/judgement-derived.json",
+          "sha256": "f08e870191992d78dc8df5f94a090a5c2c595a5aa44fa8fce0ca11c6b98603c9",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t06-root-review-001/manifest.json",
+          "manifestSHA256": "f1f87f564bcf1d49aa82b28dab2e86734a46d774e481e452aed86d777f36f6e9",
+          "originalDecision": "T06-AR-evidence-pass-review-required",
+          "originalTimestamp": "2026-11-05T20:09:06.571Z",
+          "notReexecuted": true
+        },
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/d01-coordinator-review-001/coordinator-review.json",
+          "sha256": "7080c6bec3593926c05739b19f1bb7eceeb83edda713e2a31aad1a36b2fe64b6",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/d01-coordinator-review-001/manifest.json",
+          "manifestSHA256": "d1caeba29e3dfb6d10abd41704353e0273dd7a391d8ceb24bb48772e32849ed7",
+          "originalDecision": "T06-I-and-T38-I-current-approved-D01-scope-passed; parent partial",
+          "originalTimestamp": "2026-11-05T15:29:46.285038+00:00",
+          "notReexecuted": true
+        }
+      ],
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": null
+    },
+    {
+      "case": "M11-T07",
+      "layer": "I＋A＋R",
+      "originalPrerequisite": "A 受管会话有效；保留本次身份和待执行请求",
+      "originalSteps": "正常调用后经 UI 停止／停用／撤销，再使用原身份调用；建立合法新运行作对照",
+      "originalExpected": "原身份失效，不能复活；新运行只能获得当前允许权限；记录与真实进程收尾对应",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": {
+        "at": "2026-11-07T11:32:02.548974+00:00",
+        "originalT07Criteria": [
+          {
+            "criterion": "有效受管原身份、实际正常调用",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disconnect-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disconnect-replay/attempt-f2IJAw/result.json",
+                  "rawSHA256": "c9d77b15287cef3ea22e68d29ef69055b84f74e75a8c363b0fb57de4919fd3c9",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "*-actual-native-numeric-full-skill-host"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "真实UI停止/全局停用/断开确认三分支",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disconnect-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disconnect-replay/attempt-f2IJAw/result.json",
+                  "rawSHA256": "c9d77b15287cef3ea22e68d29ef69055b84f74e75a8c363b0fb57de4919fd3c9",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-real-stop-old-and-new-identities",
+                "T07-disable-reenable-never-revives-original",
+                "T07-real-disconnect-zero-side-effect"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "原身份拒绝、不复活且无业务副作用",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disconnect-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disconnect-replay/attempt-f2IJAw/result.json",
+                  "rawSHA256": "c9d77b15287cef3ea22e68d29ef69055b84f74e75a8c363b0fb57de4919fd3c9",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-real-stop-old-and-new-identities",
+                "T07-disable-reenable-never-revives-original",
+                "T07-real-disconnect-zero-side-effect"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "重启用后原token仍拒绝，新合法运行只获当前固定权限",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-disable-reenable-never-revives-original"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "同Task/Native，新PTY/run和实际operation归属新run；旧进程/registry收尾对应",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-real-stop-old-and-new-identities"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          }
+        ],
+        "originalT14Criteria": [
+          {
+            "criterion": "实际活跃受管运行和已有持久project/profile/config",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "app-restart-original-producer-checks"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "精确原生菜单Quit+真实运行任务确认；同child正常0/null/signals[]",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-real-AX-normal-quit-not-host-fixture"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "旧实际CLI消失、旧run停止且撤销",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-real-AX-normal-quit-not-host-fixture"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "同userdata真实UI恢复同Task/Native，新PTY/run",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-persistent-config-same-Native-new-run-external-refusal"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "原profile/project/业务TOML与snapshot指针保留，当前固定权限一致",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-persistent-config-same-Native-new-run-external-refusal"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            },
+            "boundary": "Codex TUI notice-only byte changes retained in nativeConfigWrites; business fields preservation checked by original producer, not falsely all-file-identical."
+          },
+          {
+            "criterion": "恢复后真实CLI/Host只读实际新operation绑定新run",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "app-restart-actual-native-numeric-full-skill-host"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "外部无身份实际packagedCLI拒绝AUTH_REQUIRED3",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-persistent-config-same-Native-new-run-external-refusal"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          }
+        ],
+        "I40Reuse": {
+          "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/reuse-I40/coordinator-review.json",
+          "sha256": "735650feafd3f2b7bcb4d903c1c9820422fa0e0139aaae9fa3a19a7fa1928a05",
+          "actualTests": 40,
+          "failed": 0,
+          "originalAssertions": 189,
+          "originalBusinessCalls": 446,
+          "wholeTestBodiesUnchanged": true,
+          "boundary": "Registry controlled lifecycle I. It is not AX/actual OS exit; current006 provides actual exit."
+        },
+        "sourceApplicability": [
+          {
+            "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/source-applicability.json",
+            "sha256": "9b2ea1b24b2309725755ca9787bfa7183131a9584e01c795d2bc0896f8525e0c"
+          },
+          {
+            "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/source035-applicability.json",
+            "sha256": "fa2fa5fd6908fb76a008470aaf874564ae3173b0d83e7d943bfa52e19b695877"
+          }
+        ],
+        "currentMergedJudge": {
+          "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+          "sha256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221",
+          "passed": 30,
+          "total": 30
+        },
+        "currentSourcePackage": {
+          "source035": "88dfe535e049ce40211777014a1829deee8d295b9c452ffb82b87cd46e42b6da",
+          "asar031": "cadb8e9944cfddb86ce7055de8064c6069e794843024eadc5275e4a4e848dbea"
+        }
+      },
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": null
+    },
+    {
+      "case": "M11-T08",
+      "layer": "I",
+      "originalPrerequisite": "使用仅用于测试的可识别密钥，覆盖成功与失败",
+      "originalSteps": "执行 CLI 帮助、查询、错误和诊断；检查 Agent 可见命令参数、Skill、普通日志与结果",
+      "originalExpected": "三方测试密钥不出现在这些输出中；JSON stdout 与诊断 stderr 分离，无解析器泄密",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": [
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t08-coordinator-review-001/coordinator-review.json",
+          "sha256": "c97fdc1e12dcac8409b3f14b86caea744d8531060d7ff035e8bfef79be758f31",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t08-coordinator-review-001/manifest.json",
+          "manifestSHA256": "78cf3728a8aab2ff6955419ddfbfa46a4c75c3de41c26f9960349a0aad07f0e4",
+          "originalDecision": "originalT08Ipassed-only-parent-partial",
+          "originalTimestamp": "2026-11-05T14:20:12.999809+00:00",
+          "notReexecuted": true
+        }
+      ],
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": null
+    },
+    {
+      "case": "M11-T09",
+      "layer": "I＋A",
+      "originalPrerequisite": "可控读超时、上游 CLI 卡住、MCP 断连与写效果未知夹具",
+      "originalSteps": "分别取消、等待截止时间及模拟外部已接受后断连；查询原操作回执",
+      "originalExpected": "有界结束；取消／失败／未知可区分；写动作不自动重发；仅收尾本次自有进程",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": [
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-read-coordinator-001/coordinator-review.json",
+          "sha256": "3fe3a666a3fb81a0839f1bc54468cd9bc52b8faf95cb60d431e382f75fbeb597",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-read-coordinator-001/manifest.json",
+          "manifestSHA256": "43f63e067bb09cd254bcbdc345f05de99697194189fc435ece5e641ee9041043",
+          "originalDecision": "all original selected currentI criteria passed; fullparent remains partial",
+          "originalTimestamp": "2026-11-05T17:00:55.123178+00:00",
+          "notReexecuted": true
+        },
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-root-original-review-003/coordinator-review.json",
+          "sha256": "0a50dddfbb6b478f4efb139965a0f3a13ec5b5ce6d724d5985eaf6fc072f687c",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-root-original-review-003/manifest.json",
+          "manifestSHA256": "8c3c26eaf188b057ad63e60280ce4f4ba8f25e7603850a7b8bdb130b67d18604",
+          "originalDecision": true,
+          "originalTimestamp": "2026-11-05T22:37:02.315855+00:00",
+          "notReexecuted": true
+        },
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-C-root-review-001/coordinator-review.json",
+          "sha256": "eaedbf4fa4cd08bf3987664772fbe9167418e745ff60640f562410b4c7e03023",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-C-root-review-001/manifest.json",
+          "manifestSHA256": "23693e97580d97457dd88b2ef023ac7e492d4d0009cfba85632defd65e68122a",
+          "originalDecision": "originalT09-upstreamCLIhang-C-contract-evidenced",
+          "originalTimestamp": "2026-11-05T23:21:31.514557+00:00",
+          "notReexecuted": true
+        },
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-M-root-review-001/coordinator-review.json",
+          "sha256": "bf2c176eb1e39984a451ebcdaeefefb2cfce9843befdea4e717319e8c2f96325",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t09-M-root-review-001/manifest.json",
+          "manifestSHA256": "d750581cbd73087c38bd435b413dc4ed1264bd0b6eb7c4083f06f61c94aa0fd4",
+          "originalDecision": "M-original-contract-verified;T09-I-and-all-A-C-M-slices-complete",
+          "originalTimestamp": "2026-11-05T23:28:53.767768+00:00",
+          "notReexecuted": true
+        }
+      ],
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": null
+    },
+    {
+      "case": "M11-T14",
+      "layer": "I＋A＋R",
+      "originalPrerequisite": "A 正常受管运行，已有持久配置；未授权外部终端",
+      "originalSteps": "退出并重启 App，恢复原会话、检查配置；在无有效授权上下文中直接调用 CLI",
+      "originalExpected": "持久配置按原服务保持；恢复与固定权限一致；无授权调用明确拒绝，不因可执行文件可见就获权",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": {
+        "at": "2026-11-07T11:32:02.548974+00:00",
+        "originalT07Criteria": [
+          {
+            "criterion": "有效受管原身份、实际正常调用",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disconnect-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disconnect-replay/attempt-f2IJAw/result.json",
+                  "rawSHA256": "c9d77b15287cef3ea22e68d29ef69055b84f74e75a8c363b0fb57de4919fd3c9",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "*-actual-native-numeric-full-skill-host"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "真实UI停止/全局停用/断开确认三分支",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disconnect-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disconnect-replay/attempt-f2IJAw/result.json",
+                  "rawSHA256": "c9d77b15287cef3ea22e68d29ef69055b84f74e75a8c363b0fb57de4919fd3c9",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-real-stop-old-and-new-identities",
+                "T07-disable-reenable-never-revives-original",
+                "T07-real-disconnect-zero-side-effect"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "原身份拒绝、不复活且无业务副作用",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                },
+                {
+                  "mode": "ui-disconnect-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disconnect-replay/attempt-f2IJAw/result.json",
+                  "rawSHA256": "c9d77b15287cef3ea22e68d29ef69055b84f74e75a8c363b0fb57de4919fd3c9",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-real-stop-old-and-new-identities",
+                "T07-disable-reenable-never-revives-original",
+                "T07-real-disconnect-zero-side-effect"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "重启用后原token仍拒绝，新合法运行只获当前固定权限",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-disable-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-005/runs/ui-disable-replay/attempt-hrdxbz/result.json",
+                  "rawSHA256": "2d1ac2c1a3d655b11fad712cb290d62d593a84c441fc498e31798dd7c47082d0",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-disable-reenable-never-revives-original"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "同Task/Native，新PTY/run和实际operation归属新run；旧进程/registry收尾对应",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "ui-stop-replay",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/ui-stop-replay/attempt-LT0snw/result.json",
+                  "rawSHA256": "d06458e254faaeb8ab7d65d653a39f03b1bad450cbee225f79c7a1390cf816ea",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T07-real-stop-old-and-new-identities"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          }
+        ],
+        "originalT14Criteria": [
+          {
+            "criterion": "实际活跃受管运行和已有持久project/profile/config",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "app-restart-original-producer-checks"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "精确原生菜单Quit+真实运行任务确认；同child正常0/null/signals[]",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-real-AX-normal-quit-not-host-fixture"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "旧实际CLI消失、旧run停止且撤销",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-real-AX-normal-quit-not-host-fixture"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "同userdata真实UI恢复同Task/Native，新PTY/run",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-persistent-config-same-Native-new-run-external-refusal"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "原profile/project/业务TOML与snapshot指针保留，当前固定权限一致",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-persistent-config-same-Native-new-run-external-refusal"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            },
+            "boundary": "Codex TUI notice-only byte changes retained in nativeConfigWrites; business fields preservation checked by original producer, not falsely all-file-identical."
+          },
+          {
+            "criterion": "恢复后真实CLI/Host只读实际新operation绑定新run",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "app-restart-actual-native-numeric-full-skill-host"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          },
+          {
+            "criterion": "外部无身份实际packagedCLI拒绝AUTH_REQUIRED3",
+            "passed": true,
+            "proof": {
+              "modes": [
+                {
+                  "mode": "app-restart",
+                  "rawPath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/runs/app-restart/attempt-5K13gF/result.json",
+                  "rawSHA256": "739a1387dd21e1587bd6a5218efbba4db06aee1ff830c9c38a0f4716761ff8d2",
+                  "producerChecksAllPassed": true
+                }
+              ],
+              "originalMergedJudgeIds": [
+                "T14-persistent-config-same-Native-new-run-external-refusal"
+              ],
+              "judgePath": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+              "judgeSHA256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221"
+            }
+          }
+        ],
+        "I40Reuse": {
+          "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/reuse-I40/coordinator-review.json",
+          "sha256": "735650feafd3f2b7bcb4d903c1c9820422fa0e0139aaae9fa3a19a7fa1928a05",
+          "actualTests": 40,
+          "failed": 0,
+          "originalAssertions": 189,
+          "originalBusinessCalls": 446,
+          "wholeTestBodiesUnchanged": true,
+          "boundary": "Registry controlled lifecycle I. It is not AX/actual OS exit; current006 provides actual exit."
+        },
+        "sourceApplicability": [
+          {
+            "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/source-applicability.json",
+            "sha256": "9b2ea1b24b2309725755ca9787bfa7183131a9584e01c795d2bc0896f8525e0c"
+          },
+          {
+            "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/source035-applicability.json",
+            "sha256": "fa2fa5fd6908fb76a008470aaf874564ae3173b0d83e7d943bfa52e19b695877"
+          }
+        ],
+        "currentMergedJudge": {
+          "path": "/private/tmp/willyou-m12-t131-T07-T14-App031-A-R-prep-006/judgement.json",
+          "sha256": "deb50f004dc38e380e603e61865206c899419b13d4ee1f4a42f47c79eb940221",
+          "passed": 30,
+          "total": 30
+        },
+        "currentSourcePackage": {
+          "source035": "88dfe535e049ce40211777014a1829deee8d295b9c452ffb82b87cd46e42b6da",
+          "asar031": "cadb8e9944cfddb86ce7055de8064c6069e794843024eadc5275e4a4e848dbea"
+        }
+      },
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": null
+    },
+    {
+      "case": "M11-T29",
+      "layer": "I＋A＋R",
+      "originalPrerequisite": "真实打包 App、受管 Codex（交互式、沿用用户配置）；两类用户策略：默认配置、自定义具名档案（含拒读目录与允许域名）",
+      "originalSteps": "启动后核对运行计划中的沙箱注入摘要；会话内执行 CLI、写工作区、读拒读目录、访问允许域名与未允许域名、连接 MCP 桥 socket；并行第二个会话；对比用户 `~/.codex/config.toml`",
+      "originalExpected": "仅 CLI 端点被追加放行，MCP 桥 socket 不可达；**原允许的仍允许、原拒绝的仍拒绝**（工作区写入、拒读、允许域名、未允许域名均与不注入时一致）；无法证明等价的策略不注入并降级；两个会话令牌隔离；用户配置未改",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": [
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t29-root-review-001/coordinator-review.json",
+          "sha256": "af23d01bf79b9b7621909a891b58db945c0b0a44051848e32bff35c7a0da24e3",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t29-root-review-001/manifest.json",
+          "manifestSHA256": "2444fbff7a987c9c5e03f3c51ae9e1ab1508795c21ca7ebbbec59aced41a4c50",
+          "originalDecision": "T29 current original policy compatibility evidenced; no parent whole pass",
+          "originalTimestamp": "2026-11-05T21:06:25.312098+00:00",
+          "notReexecuted": true
+        }
+      ],
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": "Prior C22 allowed-domain narrowing accepted; no Internet-positive/new named-policy concurrent-B claim."
+    },
+    {
+      "case": "M11-T37",
+      "layer": "I＋A＋R",
+      "originalPrerequisite": "禅道运行计划生效入口为 CLI（或降级为 MCP）的两个会话",
+      "originalSteps": "在生效入口为 CLI 的会话中直接调用该能力的 MCP 工具；反之亦然",
+      "originalExpected": "非生效入口的调用**不得交付、不得执行**（`ENTRY_NOT_ACTIVE` 或 `AUTH_REQUIRED` 均可，须记录实际码与原因）；运行计划记录的 Skill 渲染哈希与实际交付一致",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": [
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t37-root-review-001/coordinator-review.json",
+          "sha256": "aaf33ff106953bad319eaecb6b435fc0c1d10e1870c0026256707a547c3c8966",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t37-root-review-001/manifest.json",
+          "manifestSHA256": "1897076091f1002f6eb482af04010b353d6f046e3df3edc37b5cb784d37c647a",
+          "originalDecision": "original-T37-current-A-R-contract-evidenced-with-valid-existing-I8",
+          "originalTimestamp": "2026-11-05T21:19:53.245605+00:00",
+          "notReexecuted": true
+        }
+      ],
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": "Two entry directions no-delivery/business0; approved ENTRY_NOT_ACTIVE/AUTH_REQUIRED or native undispatched rejection with separate exact I."
+    },
+    {
+      "case": "M11-T38",
+      "layer": "I＋A",
+      "originalPrerequisite": "WillYou 宿主 CLI 网关；有效令牌但树外进程、另一运行令牌、身份不可读、启动时间不符、可执行文件不符、越权写",
+      "originalSteps": "分别发起调用并统计业务执行次数",
+      "originalExpected": "全部被拒，**业务执行次数为 0**；返回码分别对应核验步骤；有效调用正常（技研自测与真实 Codex 会话中的树外盗用已通过，见技术方案 §12，均为模拟宿主，不计通过）",
+      "evidenceStatus": "complete-original-required-layers",
+      "evidence": [
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t38-original-contract-review-001/coordinator-contract-review.json",
+          "sha256": "c8a68cdfbb8cbd5db8d91bb44cea87ea34bc00aca428a608c96d34fbdbfe9cbd",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/t38-original-contract-review-001/manifest.json",
+          "manifestSHA256": "05d0b0fda74640da740dd0767b63c63bbc674d08b176dda288a3e56e5d825c31",
+          "originalDecision": "original-T38-authentication-A-contract-evidenced; supplemental-native-cache-finding-open",
+          "originalTimestamp": "2026-11-05T21:19:10.236761+00:00",
+          "notReexecuted": true
+        },
+        {
+          "path": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/d01-coordinator-review-001/coordinator-review.json",
+          "sha256": "7080c6bec3593926c05739b19f1bb7eceeb83edda713e2a31aad1a36b2fe64b6",
+          "manifestPath": "/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M12_浏览器自动化/验收/证据/并行测试/M12-20261103T154320Z-bff2/M12-P108/d01-coordinator-review-001/manifest.json",
+          "manifestSHA256": "d1caeba29e3dfb6d10abd41704353e0273dd7a391d8ceb24bb48772e32849ed7",
+          "originalDecision": "T06-I-and-T38-I-current-approved-D01-scope-passed; parent partial",
+          "originalTimestamp": "2026-11-05T15:29:46.285038+00:00",
+          "notReexecuted": true
+        }
+      ],
+      "acceptanceAuthority": "Root already accepted seven; new T07/T14 final Root review pending; no case scope change",
+      "specificApprovedBoundary": "Original auth0-side-effect contract + approved M12-D01 lease branch; supplemental Native-cache finding disposition is separate, not silently reclassified."
+    }
+  ],
+  "formalIncrementByExecutor": 0,
+  "notNewMatrixOrExecution": true,
+  "scopeBoundary": "Original M11 synthetic Responses R only where required; I/A boundaries retained; no M12 true OpenAI SOP claim. No new data read/model/App/Native/OS/test occurred during combination. No global all-privacy claim."
+}
