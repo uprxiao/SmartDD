@@ -13,9 +13,19 @@ describe('M11 sender identity upgrade and offline rollback',()=>{
   const{db,migrations,index}=before();
   db.prepare("INSERT INTO capability_session_snapshots VALUES('old',2,'original immutable bytes','original-hash','2026-10-01T00:00:00Z','created','active')").run();
   const snapshot=db.prepare('SELECT * FROM capability_session_snapshots').all(),previousColumns=columns(db),ledger=db.prepare('SELECT hash,created_at FROM __drizzle_migrations ORDER BY id').all();
-  expect(runMigrations(db,migrations)).toEqual(['0029_mail_sender_identity']);expect(columns(db)).toEqual([...previousColumns,'sender_identity_hash']);expect(db.prepare('SELECT * FROM mail_sender_confirmations').all()).toEqual([]);expect(db.prepare('SELECT * FROM capability_session_snapshots').all()).toEqual(snapshot);
+  expect(runMigrations(db,migrations.slice(0,index+1))).toEqual(['0029_mail_sender_identity']);expect(columns(db)).toEqual([...previousColumns,'sender_identity_hash']);expect(db.prepare('SELECT * FROM mail_sender_confirmations').all()).toEqual([]);expect(db.prepare('SELECT * FROM capability_session_snapshots').all()).toEqual(snapshot);
   db.exec(rollback);expect(columns(db)).toEqual(previousColumns);expect(db.prepare('SELECT hash,created_at FROM __drizzle_migrations ORDER BY id').all()).toEqual(ledger);expect(db.prepare('SELECT * FROM capability_session_snapshots').all()).toEqual(snapshot);
-  expect(runMigrations(db,migrations)).toEqual([migrations[index].tag]);expect(columns(db)).toContain('sender_identity_hash');expect(db.pragma('foreign_key_check')).toEqual([]);
+  expect(runMigrations(db,migrations.slice(0,index+1))).toEqual([migrations[index].tag]);expect(columns(db)).toContain('sender_identity_hash');expect(db.pragma('foreign_key_check')).toEqual([]);
+ });
+ it('refuses sender rollback after the real browser migration and preserves its schema and receipts',()=>{
+  const{db,migrations}=before();runMigrations(db,migrations);
+  const ledger=db.prepare('SELECT * FROM __drizzle_migrations ORDER BY id').all();
+  const schema=db.prepare('SELECT name,sql FROM sqlite_master ORDER BY name').all();
+  expect(migrations.at(-1)?.tag).toBe('0030_browser_operations');
+  expect(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='browser_operations'").get()).toEqual({name:'browser_operations'});
+  expect(()=>db.exec(rollback)).toThrow(/CHECK/);expect(db.inTransaction).toBe(false);
+  expect(db.prepare('SELECT * FROM __drizzle_migrations ORDER BY id').all()).toEqual(ledger);
+  expect(db.prepare('SELECT name,sql FROM sqlite_master ORDER BY name').all()).toEqual(schema);
  });
  it('refuses rollback after a later migration and leaves all schema and migration receipts intact',()=>{
   const{db,migrations}=before();runMigrations(db,migrations);const latest=migrations.at(-1)!;db.prepare('INSERT INTO __drizzle_migrations(hash,created_at) VALUES(?,?)').run('later-migration',latest.when+1);const ledger=db.prepare('SELECT * FROM __drizzle_migrations').all();
