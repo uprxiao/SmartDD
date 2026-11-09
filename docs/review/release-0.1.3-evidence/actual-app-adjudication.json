@@ -1,0 +1,339 @@
+{
+  "schema": 1,
+  "sourceCommit": "588acd2a4d6e9178a217cdad200f94c5898b71eb",
+  "productionInputsAggregate": "ebdbc14c969b321f0540213a175531a4b269ccb013164612e1d85f577bb1a2c5",
+  "rawPrivateResult": "/private/tmp/willyou-m11-r10-release013-GdSN0h/result.json",
+  "rawResultSha256": "23203a40c7283c1bc6cdacbf850e568473498c887e51baa3803effc08103e9b8",
+  "boundary": "A: real packaged App + actual Codex 0.166.0 PTY + real CLI gateway/Skill library; synthetic Responses model and ZenTao provider; reversible test cipher instead of Keychain; no real OpenAI reasoning, real ZenTao service or real Keychain acceptance claimed.",
+  "cases": {
+    "T45": {
+      "checks": [
+        {
+          "name": "Marked M4 copy, coordination root and interrupted-cleanup leftover removed at first start; user Skills (incl. remote-password-ssh and an unmarked smartdd-* directory) unchanged by hash",
+          "at": "2026-11-09T14:46:57.202Z",
+          "remaining": [
+            "remote-password-ssh",
+            "smartdd-user-made",
+            "willyou-project-db-diagnostics",
+            "willyou-remote-password-ssh"
+          ]
+        }
+      ]
+    },
+    "T39": {
+      "checks": [
+        {
+          "name": "One entity per Skill, no hash suffix; Claude entries are links to it; a Codex and a Claude task added no copies and no per-task plugin",
+          "at": "2026-11-09T14:47:04.705Z",
+          "entries": [
+            "willyou-browser-browser",
+            "willyou-browser-reproduce-bug",
+            "willyou-mail-work-assistant",
+            "willyou-project-db-diagnostics",
+            "willyou-remote-password-ssh",
+            "willyou-zentao-bug-analysis",
+            "willyou-zentao-story-review"
+          ],
+          "links": [
+            "willyou-browser-browser",
+            "willyou-browser-reproduce-bug",
+            "willyou-mail-work-assistant",
+            "willyou-project-db-diagnostics",
+            "willyou-remote-password-ssh",
+            "willyou-zentao-bug-analysis",
+            "willyou-zentao-story-review"
+          ]
+        }
+      ]
+    },
+    "T41": {
+      "checks": [
+        {
+          "name": "Enabling ZenTao after launch: the same Codex run (same PTY and native session) queried ZenTao through the CLI on its next turn; no new task, no shared-catalog wait",
+          "at": "2026-11-09T14:47:10.939Z"
+        }
+      ],
+      "cliOutput": "Chunk ID: 87415b\nWall time: 0.5622 seconds\nProcess exited with code 0\nOriginal token count: 264\nOutput:\n{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"zentao\",\"revision\":null,\"packageHash\":\"4f98bcc31608ee22231cfcbe3fd23b95ffa99890423ccffb6018cff16d6f8f9a\",\"connections\":[{\"slot\":\"zentao\",\"identityRevision\":1,\"connectionId\":\"ef5f6525-4804-4201-9a3d-b9a7f7293a2b\",\"configRevision\":1,\"policyRevision\":1,\"bindingRevision\":2}]},\"data\":{\"nextCursor\":null,\"checkedAt\":\"2026-11-09T14:47:10.424Z\",\"problems\":[],\"kind\":\"bug\",\"total\":1,\"complete\":true,\"items\":[{\"status\":\"active\",\"id\":\"79291\",\"title\":\"R10 Synthetic Bug\",\"assignedTo\":\"tester\",\"reference\":{\"nativeId\":\"79291\",\"identityRevision\":1,\"connectionId\":\"ef5f6525-4804-4201-9a3d-b9a7f7293a2b\",\"contentRevision\":\"2bcb53dc34e2fb7ab754da03bd590e2cab8ad087883e35e40a04a75d88aa210c\"}}]},\"resources\":[],\"operation\":{\"id\":\"e1bf2d91-0876-4489-9170-20d7e30d9920\",\"requestId\":\"cc11eefd-a4b0-4b20-b9bd-24f70a70b425\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":{\"total\":1,\"nextCursor\":null},\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"zentao.object.list\"}\n",
+      "nativeSessionId": "01a1c0c6-f11c-7402-ac6a-8c5bd21ab565",
+      "ptyId": "289d18e2-a6d6-44f3-8a36-cf2e480dbe3d"
+    },
+    "M12-browser-native-page": {
+      "checks": [
+        {
+          "name": "Same actual Codex run created an own loopback HTML page and the real CLI/CDP/helper snapshot returned its actual pageId, URL, marker and button",
+          "at": "2026-11-09T14:47:21.145Z"
+        }
+      ]
+    },
+    "M12-current-browser": {
+      "checks": [
+        {
+          "name": "Real UI project browser switch false→true→false changes authorization for the same actual Codex task/PTY/run; denied calls are APP_NOT_ENABLED",
+          "at": "2026-11-09T14:47:25.047Z"
+        }
+      ]
+    },
+    "T43": {
+      "checks": [
+        {
+          "name": "Project B without ZenTao: the host refused with the guidance to enable it on project B’s Applications page; no provider request",
+          "at": "2026-11-09T14:47:26.761Z"
+        }
+      ],
+      "cliOutput": "Chunk ID: d33d4f\nWall time: 0.0000 seconds\nProcess exited with code 2\nOriginal token count: 75\nOutput:\nwillyou-app: APP_NOT_ENABLED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"APP_NOT_ENABLED\",\"layer\":\"auth\",\"message\":\"请到项目「R10 项目B」的‘应用’页开启禅道\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n"
+    },
+    "T46": {
+      "checks": [
+        {
+          "name": "With two running tasks and an application just enabled, a third task launched from the composer reached the terminal and answered",
+          "at": "2026-11-09T14:47:32.466Z",
+          "clickToTerminalMs": 450
+        }
+      ],
+      "clickToTerminalMs": 450,
+      "baselineR09": "0.65–0.9 s (isolated environment)",
+      "runningBefore": 3
+    },
+    "S5-notice": {
+      "checks": [
+        {
+          "name": "A running Codex task shows “应用已更新（邮件），恢复会话后生效” after Mail (MCP entry) is enabled on its project page",
+          "at": "2026-11-09T14:47:36.631Z",
+          "advice": {
+            "applications": [
+              "邮件"
+            ]
+          }
+        }
+      ]
+    },
+    "M12-snapshot-disk": {
+      "checks": [
+        {
+          "name": "Explicitly enabled private shell_snapshot config, host-disabled actual Codex argv, immutable saved profile; own token raw/base64/UTF16 digest scan of this fresh runtime regular files found no match",
+          "at": "2026-11-09T14:47:38.510Z",
+          "files": 522,
+          "bytes": 22725127
+        }
+      ]
+    },
+    "T48": {
+      "checks": [
+        {
+          "name": "A Codex session outside WillYou that tries the ZenTao Skill fails (command not found / AUTH_REQUIRED) with no provider request; the Skill says WillYou tasks only",
+          "at": "2026-11-09T14:47:38.701Z",
+          "notOnPath": true,
+          "onPath": true
+        }
+      ],
+      "bareExit": 3,
+      "bare": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"AUTH_REQUIRED\",\"layer\":\"auth\",\"message\":\"请在WillYou受管终端中使用应用能力\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+      "notOnPath": {
+        "exit": 0,
+        "sawLibrarySkill": true,
+        "toolOutput": "Chunk ID: 9b20ba\nWall time: 0.0000 seconds\nProcess exited with code 127\nOriginal token count: 10\nOutput:\nzsh:1: command not found: willyou-app\n"
+      },
+      "onPath": {
+        "exit": 0,
+        "sawLibrarySkill": true,
+        "toolOutput": "Chunk ID: 25f12e\nWall time: 0.0000 seconds\nProcess exited with code 3\nOriginal token count: 70\nOutput:\nwillyou-app: AUTH_REQUIRED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"AUTH_REQUIRED\",\"layer\":\"auth\",\"message\":\"请在WillYou受管终端中使用应用能力\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n"
+      }
+    },
+    "T44": {
+      "checks": [
+        {
+          "name": "After disabling, the running session’s next call was refused without a provider request; removing ZenTao deleted its library entities and Claude links, Mail stayed",
+          "at": "2026-11-09T14:47:45.158Z"
+        }
+      ],
+      "cliOutput": "Chunk ID: 245cb5\nWall time: 0.0000 seconds\nProcess exited with code 2\nOriginal token count: 75\nOutput:\nwillyou-app: APP_NOT_ENABLED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"APP_NOT_ENABLED\",\"layer\":\"auth\",\"message\":\"请到项目「R10 项目A」的‘应用’页开启禅道\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+      "zentaoConnectionsAfterRemove": 1
+    },
+    "S6-risk": {
+      "checks": [
+        {
+          "name": "After stop every run ended, including the Claude Code runs whose Agent never started its MCP servers",
+          "at": "2026-11-09T14:47:45.973Z",
+          "runs": 5
+        }
+      ]
+    }
+  },
+  "cliVersions": {
+    "codex": "codex-cli 0.166.0",
+    "claude": "2.1.319 (Claude Code)"
+  },
+  "initialFocusStableMs": 3038,
+  "realHomeUnchanged": true,
+  "savedProfileUnchanged": true,
+  "browserCurrentAuthorization": {
+    "sameTask": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+    "originalPTY": "289d18e2-a6d6-44f3-8a36-cf2e480dbe3d",
+    "originalRun": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+    "steps": [
+      {
+        "suffix": "DENY1",
+        "enabled": false,
+        "taskId": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+        "ptyId": "289d18e2-a6d6-44f3-8a36-cf2e480dbe3d",
+        "runId": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+        "nativeSessionId": "01a1c0c6-f11c-7402-ac6a-8c5bd21ab565",
+        "output": "Chunk ID: 94c6ef\nWall time: 0.0000 seconds\nProcess exited with code 2\nOriginal token count: 75\nOutput:\nwillyou-app: APP_NOT_ENABLED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"APP_NOT_ENABLED\",\"layer\":\"auth\",\"message\":\"请到项目「R10 项目C」的‘应用’页开启浏览器\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+        "pass": true
+      },
+      {
+        "suffix": "ALLOW",
+        "enabled": true,
+        "taskId": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+        "ptyId": "289d18e2-a6d6-44f3-8a36-cf2e480dbe3d",
+        "runId": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+        "nativeSessionId": "01a1c0c6-f11c-7402-ac6a-8c5bd21ab565",
+        "output": "Chunk ID: 46332f\nWall time: 0.5308 seconds\nProcess exited with code 0\nOriginal token count: 123\nOutput:\n{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece\",\"connections\":[]},\"data\":{\"tabs\":[]},\"resources\":[],\"operation\":{\"id\":\"154ae9bb-a080-4630-bd7c-34fcd67834cd\",\"requestId\":\"dd7d0acf-aa1c-4bf0-8e17-e924c8ea5294\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.list\"}\n",
+        "pass": true
+      },
+      {
+        "suffix": "DENY2",
+        "enabled": false,
+        "taskId": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+        "ptyId": "289d18e2-a6d6-44f3-8a36-cf2e480dbe3d",
+        "runId": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+        "nativeSessionId": "01a1c0c6-f11c-7402-ac6a-8c5bd21ab565",
+        "output": "Chunk ID: bedfaf\nWall time: 0.0000 seconds\nProcess exited with code 2\nOriginal token count: 75\nOutput:\nwillyou-app: APP_NOT_ENABLED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"APP_NOT_ENABLED\",\"layer\":\"auth\",\"message\":\"请到项目「R10 项目C」的‘应用’页开启浏览器\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+        "pass": true
+      }
+    ]
+  },
+  "browserPageProof": {
+    "create": {
+      "sha256": "3c5ccc93be4409e85ccb1eae7a0b5245af8bc80a0f7c4ebe9d5cbfc3710f99b2",
+      "operation": {
+        "id": "275b11a3-993e-490e-a579-ae46a8f712ec",
+        "requestId": "d4dec555-c619-4d43-b709-4fbdf9a30bd0",
+        "effectState": "completed",
+        "origin": "cli"
+      },
+      "source": {
+        "appId": "browser",
+        "revision": null,
+        "packageHash": "1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece",
+        "connections": []
+      },
+      "runId": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+      "taskId": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+      "commonInvocationRow": {
+        "operation_id": "275b11a3-993e-490e-a579-ae46a8f712ec",
+        "request_id": "d4dec555-c619-4d43-b709-4fbdf9a30bd0",
+        "run_id": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+        "task_id": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+        "app_id": "browser",
+        "tool_name": "browser.tab.create",
+        "state": "succeeded",
+        "effect_state": "completed",
+        "attempt_count": 1
+      },
+      "writeReplayRow": {
+        "run_id": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+        "request_id": "d4dec555-c619-4d43-b709-4fbdf9a30bd0",
+        "task_id": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+        "page_id": null,
+        "command": "tab create",
+        "state": "succeeded",
+        "effect_state": "completed"
+      }
+    },
+    "snapshot": {
+      "sha256": "544a1478fd78100bb60e14ca0743b0c24803fade7a7b2beab0f8243e3263fb01",
+      "operation": {
+        "id": "a12b12af-05fe-4863-8fe1-40b66a8964e7",
+        "requestId": "67cbf873-3504-4628-b942-5e45565987d6",
+        "effectState": "read-only",
+        "origin": "cli"
+      },
+      "source": {
+        "appId": "browser",
+        "revision": null,
+        "packageHash": "1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece",
+        "connections": []
+      },
+      "runId": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+      "taskId": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+      "commonInvocationRow": {
+        "operation_id": "a12b12af-05fe-4863-8fe1-40b66a8964e7",
+        "request_id": "67cbf873-3504-4628-b942-5e45565987d6",
+        "run_id": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+        "task_id": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+        "app_id": "browser",
+        "tool_name": "browser.nav.snapshot",
+        "state": "succeeded",
+        "effect_state": "read-only",
+        "attempt_count": 1
+      },
+      "readHasNoWriteReplayRow": true
+    },
+    "installedBrowserSkillSha256": "1d612aa3613e0d8707d1523b19152bdbd92a1732f4abaf0cd0c0e38c6f8319dd"
+  },
+  "shellSnapshotScan": {
+    "startedAt": "2026-11-09T14:47:37.769Z",
+    "scope": "Regular file contents beneath this fresh runtime root only; no symlink following; digest matching raw64hex/base64-of-ASCII/UTF16LE/UTF16BE, no token values stored",
+    "root": "/private/tmp/willyou-m11-r10-release013-GdSN0h",
+    "forms": [
+      "base64",
+      "raw64hex",
+      "utf16be",
+      "utf16le"
+    ],
+    "regularFiles": 522,
+    "bytesRead": 22725127,
+    "skippedSymlinks": [
+      "codex/tmp/arg0-macos/codex-arg06Q4WWl/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg06Q4WWl/applypatch",
+      "codex/tmp/arg0-macos/codex-arg0F7ZZDa/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg0F7ZZDa/applypatch",
+      "codex/tmp/arg0-macos/codex-arg0bKV4ai/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg0bKV4ai/applypatch",
+      "codex/tmp/arg0-macos/codex-arg0r1xf97/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg0r1xf97/applypatch",
+      "home/.claude/skills/willyou-browser-browser",
+      "home/.claude/skills/willyou-browser-reproduce-bug",
+      "home/.claude/skills/willyou-mail-work-assistant",
+      "home/.claude/skills/willyou-project-db-diagnostics",
+      "home/.claude/skills/willyou-remote-password-ssh",
+      "home/.claude/skills/willyou-zentao-bug-analysis",
+      "home/.claude/skills/willyou-zentao-story-review"
+    ],
+    "skippedSpecialFiles": [],
+    "errors": [],
+    "matches": [],
+    "finishedAt": "2026-11-09T14:47:38.510Z"
+  },
+  "shellSnapshotProbe": {
+    "schema": "release013-own-token-digests-v1",
+    "receiptPath": "/private/tmp/willyou-m11-r10-release013-GdSN0h/projects/R10 项目C/.release013-token-digests.json",
+    "receiptSHA256": "f9e56b5ed04070c197c90997ef71fd9ba67cdae612b908f39549ea1c83982747",
+    "tokenLength": 64,
+    "forms": [
+      "base64",
+      "raw64hex",
+      "utf16be",
+      "utf16le"
+    ],
+    "sameTask": "f8896875-25ff-42e2-a1a5-7be5ae782528",
+    "samePTY": "289d18e2-a6d6-44f3-8a36-cf2e480dbe3d",
+    "sameRun": "23acd2ec-a5b9-472e-bc00-1583f0b68999",
+    "configExplicitlyEnabledShellSnapshot": true,
+    "savedProfileStillNoDisablePair": true
+  },
+  "independentCleanup": {
+    "runEnded": true,
+    "allOwnedBirthsGone": true,
+    "appPathClear": true,
+    "tcpClear": true
+  },
+  "completed": true,
+  "installedAsarSha256": "3af8f10ed5d5e6306574811b34377754846d025c4d9ffc6162de7cbfbe87a718",
+  "installerDmgSha256": "f9a4725c7da4f49e6999e81f24eddae4e3cdebbe9dc075e7889b1f6b73f1548c",
+  "visualInspection": {
+    "normalHome": "Actual screenshot reviewed: fresh dark Home, no project/task data, no startup-error overlay.",
+    "resumeNotice": "Actual screenshot reviewed: M11 resume advice and button visible above working Codex terminal; denied ZenTao command visibly exited status2."
+  }
+}
