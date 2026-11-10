@@ -63,7 +63,8 @@ export const PLUGINS = [
 export const INSTALL_CANDIDATES = [
   { id: 'demo-tracker', file: 'demo-tracker-0.1.0.zip', kind: 'zip', name: 'Demo Tracker', version: '0.1.0', publisher: '示例开发者', category: '示例', hostApi: '^1.0',
     tagline: '示例插件：记录与查询待办', permissions: ['读写插件私有数据目录'], capabilities: [{ name: '列出待办', kind: '读取' }, { name: '新增待办', kind: '写入' }], skills: ['demo-tracker-usage'] },
-  { id: 'zentao', file: '~/Downloads/zentao-plugin-1.1.0/', kind: 'dir', name: '禅道', version: '1.1.0', publisher: 'WillYou', hostApi: '^1.0', tagline: '禅道 1.1.0', permissions: ['联网：仅连接你配置的禅道服务器', '读写插件私有数据目录', '读取本次绑定连接的账号凭据（宿主按次下发）'], capabilities: [], skills: [] },
+  { id: 'zentao', file: '~/Downloads/zentao-plugin-1.1.0/', kind: 'dir', name: '禅道', version: '1.1.0', publisher: 'WillYou', hostApi: '^1.0', tagline: '查询 Bug 与研发需求，分析根因', permissions: ['联网：仅连接你配置的禅道服务器', '读写插件私有数据目录', '读取本次绑定连接的账号凭据（宿主按次下发）'], capabilities: [{ name: '查询指派给我的 Bug', kind: '读取' }, { name: '查询指派给我的研发需求', kind: '读取' }, { name: '查看详情与历史', kind: '读取' }], skills: ['zentao-bug-analysis', 'zentao-story-review'] },
+  { id: 'zentao', file: '~/Downloads/zentao-plugin-2.0.0-drop/', kind: 'dir', name: '禅道', version: '2.0.0', publisher: 'WillYou', hostApi: '^1.0', tagline: '删除了“查看详情与历史”的示例新版本', permissions: ['联网：仅连接你配置的禅道服务器', '读写插件私有数据目录'], capabilities: [{ name: '查询指派给我的 Bug', kind: '读取' }, { name: '查询指派给我的研发需求', kind: '读取' }], skills: ['zentao-bug-analysis'] },
   { id: 'report-kit', file: 'report-kit-2.0.0.zip', kind: 'zip', name: 'Report Kit', version: '2.0.0', publisher: '第三方', hostApi: '^2.0', tagline: '需要更新版 WillYou', permissions: [], capabilities: [], skills: [] },
   { id: 'native-helper', file: 'native-helper-0.3.0.zip', kind: 'zip', name: 'Native Helper', version: '0.3.0', publisher: '第三方', hostApi: '^1.0', nativeModule: 'runtime/helper.node', tagline: '自带原生模块', permissions: [], capabilities: [], skills: [] },
   { id: null, file: 'broken-plugin.zip', kind: 'zip', broken: '缺少 .willyou-plugin/plugin.json', permissions: [], capabilities: [], skills: [] },
@@ -71,6 +72,12 @@ export const INSTALL_CANDIDATES = [
 const cmpVer = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0); return 0; };
 export const HOST_API = '1.4';
 /** 安装前校验：结构、身份、宿主接口、原生模块、已安装版本。返回 {ok, kind, errors, existing}。 */
+/** 更新时比对能力（需求补记第 5 项）：新版本删除的能力若无 legacyToolNames 映射，提示老任务调用会失败。 */
+export function removedCapabilities(existing, candidate) {
+  if (!existing || !candidate.capabilities?.length) return [];
+  const next = new Set(candidate.capabilities.map(c => c.name)), legacy = candidate.legacyToolNames || {};
+  return existing.capabilities.filter(c => !next.has(c.name) && !legacy[c.name]).map(c => c.name);
+}
 export function validateInstall(candidate, installed) {
   const errors = [];
   if (candidate.broken) return { ok: false, kind: 'invalid', errors: ['插件包结构不完整：' + candidate.broken] };
@@ -110,7 +117,6 @@ export const CAPABILITIES = [
     reason: '需要 OAuth 登录', fix: '在 Codex 中执行 codex mcp login figma 完成认证', targets: { claude: { s: 'source' }, codex: { s: 'blocked', reason: '需在 Codex 单独认证' } } },
   { id: 'm-sentry', type: 'mcp', name: 'sentry', desc: 'sse · https://mcp.sentry.example.test/sse', from: 'claude', scope: 'user', path: '~/.claude.json · mcpServers.sentry', state: 'unsupported', transport: 'sse',
     reason: 'Codex 不支持 SSE 传输', fix: '如来源提供 HTTP 端点，在来源改用后重新扫描', targets: { claude: { s: 'source' }, codex: { s: 'blocked', reason: 'SSE 不支持' } } },
-  { id: 'm-willyou', type: 'mcp', name: 'willyou', desc: 'WillYou 宿主工具', from: 'host', scope: 'host', path: 'WillYou 内置', state: 'host', targets: {} },
 ];
 /** 插件自带 Skill 由插件安装状态派生（审核 P04）：随插件安装、停用、更新、卸载变化。 */
 export const pluginSkillCaps = plugins => plugins.filter(p => p.enabled).flatMap(p => (p.skills || []).map(name => ({ id: 'ps-' + p.id + '-' + name, type: 'skill', name, desc: `${p.name}插件自带`, from: 'plugin', plugin: p.id, pluginName: p.name, scope: 'plugin', path: `${p.name}插件 ${p.version}`, state: 'plugin', targets: {} })));
@@ -197,4 +203,96 @@ export function globalModelNotice(before, after) {
   if (before.model !== after.model) lines.push(before.model === undefined ? 'model（原来没有这一项，可删除该行）' : `model = "${before.model}"`);
   if (before.effort !== after.effort) lines.push(before.effort === undefined ? 'model_reasoning_effort（原来没有这一项，可删除该行）' : `model_reasoning_effort = "${before.effort}"`);
   return { before, after, restore: lines };
+}
+
+// ================= P0.5 =================
+// ---------- 插件连接：全局默认＋项目个性化（需求“插件连接与项目使用”补记） ----------
+/** 每个插件每种连接类型一个全局默认；有连接时必须有默认。 */
+export const INITIAL_DEFAULTS = { zentao: { zentao: 'zt-company' }, mail: { source: 'mail-local' } };
+/** 项目绑定：{[pluginId]: {[projectId]: {disabled?, [type]: {mode:'follow'|'custom', connectionId?}}}}；未记录即“跟随全局”。 */
+export const INITIAL_BINDINGS = {};
+/** 合成的运行中任务及其启动时绑定的连接（用于“运行中任务继续用原连接”与删除拦截）。 */
+export const RUNNING_TASKS = [{ id: 'run-1', title: '分析登录页验证码问题', project: 'ais', plugin: 'zentao', type: 'zentao', connectionId: 'zt-company' }];
+export const projectBinding = (bindings, pluginId, projectId) => bindings[pluginId]?.[projectId] || {};
+export function effectiveConnection(plugin, defaults, bindings, projectId, type) {
+  const b = projectBinding(bindings, plugin.id, projectId);
+  if (b.disabled) return { disabled: true };
+  const slot = b[type];
+  if (slot?.mode === 'custom') return { mode: 'custom', connection: plugin.connections.find(c => c.id === slot.connectionId) || null };
+  return { mode: 'follow', connection: plugin.connections.find(c => c.id === defaults[plugin.id]?.[type]) || null };
+}
+/** 改全局默认的影响：跟随全局的项目将同步；个性化的保持不变（即使选的就是原默认）。 */
+export function defaultChangeImpact(plugin, bindings, projects, type) {
+  const follow = [], custom = [];
+  for (const pr of projects) { const b = projectBinding(bindings, plugin.id, pr.id); if (b.disabled) continue; (b[type]?.mode === 'custom' ? custom : follow).push(pr); }
+  return { follow, custom };
+}
+/** 删除连接的影响：运行中任务在用则阻止；是全局默认且还有其他连接则须先选新默认；个性化选了它的项目改回跟随全局。 */
+export function deleteImpact(plugin, defaults, bindings, projects, conn, running = RUNNING_TASKS) {
+  const sameType = plugin.connections.filter(c => c.type === conn.type);
+  const runningUse = running.filter(t => t.plugin === plugin.id && t.connectionId === conn.id);
+  const isDefault = defaults[plugin.id]?.[conn.type] === conn.id;
+  const customProjects = projects.filter(pr => { const s = projectBinding(bindings, plugin.id, pr.id)[conn.type]; return s?.mode === 'custom' && s.connectionId === conn.id; });
+  return { blocked: runningUse.length > 0, runningUse, isDefault, needNewDefault: isDefault && sameType.length > 1, last: sameType.length === 1, others: sameType.filter(c => c.id !== conn.id), customProjects };
+}
+
+// ---------- 邮件“草稿”页（需求补记第 1 项） ----------
+export const MAIL_DRAFTS = [
+  { id: 'd1', subject: '回复：报表金额四舍五入问题的处理进度', to: 'wang@customer.example', updated: '今天 10:42', status: 'draft', project: 'smartdd', attachments: ['处理说明.pdf'], body: '王经理您好：\n关于导出报表金额四舍五入的问题，我们已定位原因，预计本周五发布修复版本……' },
+  { id: 'd2', subject: '本周发布说明', to: 'team@example.test', updated: '昨天 18:05', status: 'sent', sentAt: '昨天 18:06', project: 'smartdd', attachments: [], body: '本周发布内容如下……' },
+  { id: 'd3', subject: '回复：登录异常', to: 'li@customer.example', updated: '昨天 15:20', status: 'failed', error: 'SMTP 认证失败：授权码已过期', project: 'ais', attachments: ['截图.png'], body: '李工您好：……' },
+  { id: 'd4', subject: '回复：批量导入超时', to: 'zhao@customer.example', updated: '11 月 9 日', status: 'unknown', project: 'ais', attachments: [], body: '赵工您好：……' },
+];
+export const DRAFT_STATUS = { draft: ['草稿', 'muted'], sent: ['已发送', 'ok'], failed: ['发送失败', 'danger'], unknown: ['结果未知', 'warn'] };
+
+// ---------- 禅道“我的工作”页（需求补记第 2 项，审核 P10） ----------
+const mkBugs = () => Array.from({ length: 12 }, (_, i) => ({ id: 1290 - i * 3, kind: 'bug', title: ['导出报表时金额四舍五入错误', '登录页在 Safari 下验证码不刷新', '批量导入超过 500 行时超时', '权限列表分页后筛选条件丢失', '移动端菜单遮挡保存按钮', '审计日志时间显示为 UTC'][i % 6] + (i >= 6 ? '（复现于 v2）' : ''), severity: ['严重', '一般', '严重', '一般', '轻微', '一般'][i % 6], status: i % 5 === 4 ? '已解决' : '激活', product: '订单中心', opened: `11 月 ${10 - (i % 9)} 日` }));
+const mkStories = () => Array.from({ length: 7 }, (_, i) => ({ id: 482 - i * 5, kind: 'story', title: ['导出报表支持按币种汇总', '登录支持企业微信扫码', '批量导入支持断点续传', '审计日志支持按人员筛选', '订单详情显示物流轨迹', '权限模板支持复制', '数据看板支持自定义时间段'][i], priority: ['高', '中', '高', '低', '中', '中', '低'][i], status: i === 2 ? '已关闭' : '激活', product: '订单中心', opened: `11 月 ${9 - i} 日` }));
+export const ZENTAO_ITEMS = { bug: mkBugs(), story: mkStories() };
+export const ZENTAO_PAGE = 5;
+export function zentaoDetail(item) {
+  return { body: item.kind === 'bug' ? `【步骤】\n1. 打开${item.product}\n2. 按描述操作\n【结果】与预期不符：${item.title}\n【期望】按需求正常处理。` : `【需求描述】${item.title}。\n【验收标准】\n1. 功能可用\n2. 有权限控制\n3. 有操作日志`,
+    history: [{ at: item.opened + ' 09:12', who: '测试员 张三', what: '创建' }, { at: item.opened + ' 14:30', who: '项目经理 李四', what: '指派给 liubu' }],
+    attachments: item.kind === 'bug' && item.id % 2 === 0 ? ['复现截图.png'] : [] };
+}
+
+// ---------- WillYou 内置能力（需求补记第 7 项） ----------
+export const BUILTIN_CAPS = [
+  { id: 'b-db', type: 'skill', name: 'project-db-diagnostics', desc: '按项目配置的数据库做只读诊断', version: '1.3.0', enabled: true },
+  { id: 'b-ssh', type: 'skill', name: 'remote-password-ssh', desc: '按项目配置的服务器做 SSH 排查', version: '1.2.1', enabled: true },
+  { id: 'b-ctx', type: 'mcp', name: 'WillYou 项目上下文', desc: '按会话提供当前项目的数据库、服务器等资源身份与配置路径', version: '0.1.4', enabled: true },
+];
+
+// ---------- 能力页：重新扫描时的新发现（审核 P11 自动纳管演示） ----------
+export const DISCOVERY_QUEUE = [
+  { id: 's-changelog', type: 'skill', name: 'changelog-writer', desc: '按提交生成变更日志', from: 'claude', scope: 'user', path: '~/.claude/skills/changelog-writer', state: 'new', targets: { claude: { s: 'source' }, codex: { s: 'pending', at: '~/.agents/skills/changelog-writer' } } },
+  { id: 's-lint', type: 'skill', name: 'code-review', desc: '代码评审清单', from: 'codex', scope: 'user', path: '~/.agents/skills/code-review', state: 'conflict', conflict: 'Claude 第三方运行目录中已有你自己的同名 Skill', targets: { codex: { s: 'source' }, claude: { s: 'blocked', reason: '同名冲突' } } },
+];
+/** 合成会话加载状态（审核 P11）：配置成功、会话加载、调用验证分开表达。 */
+export const SESSION_STATE = { 's-frontend': { loaded: 1, pending: 1 }, 'm-github': { loaded: 2, pending: 0, verified: true } };
+
+// ---------- AI 配置导入导出（需求补记第 6 项） ----------
+/** 导出：勾选运行配置自动带上其 Provider；默认不含 Key；不导出工具路径与本机目录。 */
+export function buildExport({ providers, configs, selectedConfigs, selectedProviders, includeKey }) {
+  const cfgs = configs.filter(c => selectedConfigs.includes(c.id));
+  const provIds = new Set([...selectedProviders, ...cfgs.map(c => c.provider).filter(Boolean)]);
+  const provs = providers.filter(p => provIds.has(p.id)).map(p => p.type === 'native' ? { id: p.id, name: p.name, type: 'native', tool: p.tool } : { id: p.id, name: p.name, type: p.type, preset: p.preset, url: p.url, protocols: p.protocols, models: p.models.map(m => ({ id: m.id, name: m.name, ctx: m.ctx })), key: includeKey ? { encrypted: true } : null });
+  return { format: 'willyou-ai-config/v1', exportedAt: '2026-11-11T10:00:00Z', includesKeys: !!includeKey, providers: provs, runConfigs: cfgs.map(({ id, name, tool, provider, model, tiers, env, args, legacy }) => ({ id, name, tool, provider, model, tiers, env: (env || []).map(e => ({ key: e.key, ...(e.secret ? { secret: true } : { value: e.value }) })), args, legacy })) };
+}
+/** 导入预览：同名不覆盖，导入项名称加“（导入）”；未带 Key 的 Provider 标“需要填写 Key”。 */
+export function importPreview(file, { providers, configs }) {
+  if (file?.format !== 'willyou-ai-config/v1') return { ok: false, error: '不是 WillYou AI 配置文件，或版本不支持' };
+  const pn = new Set(providers.map(p => p.name)), cn = new Set(configs.map(c => c.name));
+  return { ok: true, encrypted: file.includesKeys,
+    providers: file.providers.map(p => ({ ...p, finalName: pn.has(p.name) ? p.name + '（导入）' : p.name, needKey: p.type !== 'native' && !p.key, existsNative: p.type === 'native' && providers.some(x => x.id === p.id) })),
+    runConfigs: file.runConfigs.map(c => ({ ...c, finalName: cn.has(c.name) ? c.name + '（导入）' : c.name })) };
+}
+export const SAMPLE_IMPORT = { format: 'willyou-ai-config/v1', exportedAt: '2026-11-10T08:00:00Z', includesKeys: false, providers: [{ id: 'deepseek', name: 'DeepSeek', type: 'preset', preset: 'deepseek', url: 'https://api.deepseek.com/', protocols: ['responses', 'anthropic'], models: [{ id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', ctx: '128K' }], key: null }, { id: 'acme', name: '同事的 Acme 服务', type: 'custom', url: 'https://api.acme.example/v1', protocols: ['responses'], models: [{ id: 'acme-coder-large', name: 'acme-coder-large', ctx: '128K' }], key: null }], runConfigs: [{ id: 'x1', name: 'Codex · DeepSeek', tool: 'codex', provider: 'deepseek', model: 'deepseek-v4-pro' }, { id: 'x2', name: 'Codex · Acme', tool: 'codex', provider: 'acme', model: 'acme-coder-large' }] };
+
+// ---------- 本机工具自定义路径（审核 P11） ----------
+export function checkToolPath(path) {
+  if (!path.trim()) return { ok: false, error: '请填写可执行文件路径' };
+  if (/missing|不存在/.test(path)) return { ok: false, error: '找不到该文件' };
+  if (/\.(txt|md|json)$/.test(path)) return { ok: false, error: '该文件不可执行' };
+  return { ok: true };
 }

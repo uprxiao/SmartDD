@@ -1,3 +1,4 @@
+// P0.5 起连接行“编辑”收进“…”菜单，驱动相应调整。
 // 审核 review-20261111-0030 中原型已有部分错误（P01–P04、P06–P08）的浏览器复核；P09 由模型单测覆盖。
 import { createRequire } from 'node:module';
 const { chromium } = createRequire('/Users/liubu/.npm/_npx/0b9ff77863cb6e9f/node_modules/')('playwright-core');
@@ -30,29 +31,30 @@ ok('P02 禅道只读 3 项、浏览器打开页面为写入', ztCaps === 3 && zt
 await hash('m13/plugins/mail'); await p.getByRole('button', { name: /添加发件账号/ }).click(); await p.waitForTimeout(150);
 const mailFields = await dlg().locator('.m13-field > span').allInnerTexts(); await p.screenshot({ path: out + '/p03-mail-smtp-form.png' });
 await dlg().getByRole('button', { name: '关闭' }).click();
-await hash('m13/plugins/zentao'); await p.locator('.m13-row').filter({ hasText: '公司禅道' }).getByRole('button', { name: '编辑' }).click(); await p.waitForTimeout(150);
+await hash('m13/plugins/zentao'); await p.locator('.m13-row').filter({ hasText: '公司禅道' }).getByRole('button', { name: /更多操作/ }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(150);
 const ztFields = await dlg().locator('.m13-field > span').allInnerTexts();
 await dlg().locator('.m13-field input').first().fill('研发禅道'); await dlg().getByRole('button', { name: '保存' }).click(); await p.waitForTimeout(200);
-await p.locator('.m13-row').filter({ hasText: '研发禅道' }).getByRole('button', { name: '编辑' }).click(); await p.waitForTimeout(150);
+await p.locator('.m13-row').filter({ hasText: '研发禅道' }).getByRole('button', { name: /更多操作/ }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(150);
 const reopened = await dlg().locator('.m13-field input').first().inputValue(); await dlg().getByRole('button', { name: '关闭' }).click();
 ok('P03 邮件表单为 SMTP 字段，不含禅道字段', mailFields.some(t => t.includes('SMTP 服务器')) && !mailFields.some(t => t.includes('禅道') || t.includes('服务器地址')), mailFields);
 ok('P03 禅道含认证方式，改名保存后重开为新值', ztFields.some(t => t.includes('认证方式')) && reopened === '研发禅道', { ztFields, reopened });
-// P04：卸载保留数据 → 重装恢复 1 个连接与 2 个项目；插件自带 Skill 随卸载消失
+// P04：卸载保留数据 → 重装恢复连接、全局默认与项目个性化设置；插件自带 Skill 随卸载消失（P0.5 起项目授权为项目页“插件”分区的设置）
+await hash('project/smartdd/apps'); await p.locator('select[aria-label="禅道禅道连接"]').selectOption({ label: '研发禅道' }); await p.waitForTimeout(150); await hash('m13/plugins/zentao');
 await p.locator('.m13-detail-actions').getByRole('button', { name: '插件更多操作' }).click(); await p.getByRole('menuitem', { name: '卸载…' }).click();
 await dlg().getByRole('button', { name: '卸载' }).click(); await p.waitForTimeout(250);
 await hash('m13/capabilities'); const skillsAfterUninstall = await p.locator('.m13-cap b').allInnerTexts();
 await hash('m13/plugins'); await p.getByRole('button', { name: '添加' }).click(); await p.getByRole('menuitem', { name: /文件夹/ }).click();
 await dlg().locator('.m13-radio').filter({ hasText: 'zentao-plugin-1.1.0' }).click(); await dlg().getByRole('button', { name: '检查插件' }).click(); await dlg().getByRole('button', { name: '安装' }).click(); await p.waitForTimeout(300);
-const conns = await p.locator('#m13-connections .m13-row').count(); const projs = await p.locator('.m13-chip').count();
+const conns = await p.locator('#m13-connections .m13-row').count(); const dflt = await p.locator('#m13-connections .m13-pill.ok').count(); await hash('project/smartdd/apps'); const projs = (await p.locator('select[aria-label="禅道禅道连接"]').evaluate(e => e.options[e.selectedIndex].text)) === '研发禅道' ? 1 : 0; await hash('m13/plugins/zentao');
 await p.screenshot({ path: out + '/p04-reinstall-restored.png' });
 ok('P04 卸载后插件自带 Skill 消失', !skillsAfterUninstall.includes('zentao-bug-analysis'), skillsAfterUninstall);
-ok('P04 保留数据后重装恢复连接与项目', conns === 1 && projs === 2, { conns, projs });
+ok('P04 保留数据后重装恢复连接、全局默认与项目个性化', conns === 1 && dflt === 1 && projs === 1, { conns, dflt, projs });
 // P04 删除数据路径
 await p.locator('.m13-detail-actions').getByRole('button', { name: '插件更多操作' }).click(); await p.getByRole('menuitem', { name: '卸载…' }).click();
 await dlg().locator('.m13-radio').filter({ hasText: '删除数据' }).click(); await dlg().getByRole('button', { name: '卸载' }).click(); await p.waitForTimeout(250);
 await p.getByRole('button', { name: '添加' }).click(); await p.getByRole('menuitem', { name: /文件夹/ }).click();
 await dlg().locator('.m13-radio').filter({ hasText: 'zentao-plugin-1.1.0' }).click(); await dlg().getByRole('button', { name: '检查插件' }).click(); await dlg().getByRole('button', { name: '安装' }).click(); await p.waitForTimeout(300);
-ok('P04 删除数据后重装为空', await p.locator('#m13-connections .m13-row').count() === 0 && await p.locator('.m13-chip').count() === 0);
+{ const c0 = await p.locator('#m13-connections .m13-row').count(); await hash('project/smartdd/apps'); const noConn = await p.locator('.m13-pp-card').filter({ hasText: '禅道' }).getByText('还没有连接').count(); await hash('m13/plugins/zentao'); ok('P04 删除数据后重装为空（连接与项目设置都清除）', c0 === 0 && noConn === 1, { c0, noConn }); }
 // P06：删除 DeepSeek 后可重新以预设接入
 await hash('m13/ai/providers'); await p.locator('.m13-item').filter({ hasText: 'DeepSeek' }).click(); await dlg().getByRole('button', { name: '删除' }).click(); await p.waitForTimeout(200);
 await p.getByRole('button', { name: '接入 Provider' }).click();

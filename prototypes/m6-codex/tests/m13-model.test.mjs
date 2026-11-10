@@ -91,3 +91,56 @@ test('全局模型提醒：只读生成还原内容；原无键时提示删除�
   assert.deepEqual(globalModelNotice({ model: 'a', effort: 'high' }, { model: 'b', effort: 'high' }).restore, ['model = "a"']);
   assert.match(globalModelNotice({ model: undefined }, { model: 'b' }).restore[0], /原来没有/);
 });
+
+// ---------- P0.5 ----------
+import { INITIAL_DEFAULTS, INSTALL_CANDIDATES as IC, RUN_CONFIGS, SAMPLE_IMPORT, buildExport, checkToolPath, defaultChangeImpact, deleteImpact, effectiveConnection, importPreview, removedCapabilities } from '../src/m13-model.mjs';
+const zt0 = PLUGINS.find(p => p.id === 'zentao');
+const zt = { ...zt0, connections: [...zt0.connections, { id: 'zt-ops', type: 'zentao', name: '运维禅道', values: {} }] };
+const prj = [{ id: 'ais', name: 'AIS' }, { id: 'smartdd', name: 'WillYou' }, { id: 'x', name: 'X' }];
+test('连接：未记录的项目跟随全局默认；个性化即使选的是原默认也算个性化；关闭的项目不可用', () => {
+  const b = { zentao: { smartdd: { zentao: { mode: 'custom', connectionId: 'zt-company' } }, x: { disabled: true } } };
+  assert.equal(effectiveConnection(zt, INITIAL_DEFAULTS, b, 'ais', 'zentao').connection.id, 'zt-company');
+  assert.equal(effectiveConnection(zt, INITIAL_DEFAULTS, b, 'ais', 'zentao').mode, 'follow');
+  assert.equal(effectiveConnection(zt, INITIAL_DEFAULTS, b, 'smartdd', 'zentao').mode, 'custom');
+  assert.equal(effectiveConnection(zt, INITIAL_DEFAULTS, b, 'x', 'zentao').disabled, true);
+  const imp = defaultChangeImpact(zt, b, prj, 'zentao');
+  assert.deepEqual(imp.follow.map(p => p.id), ['ais']); assert.deepEqual(imp.custom.map(p => p.id), ['smartdd']);
+  const after = { ...INITIAL_DEFAULTS, zentao: { zentao: 'zt-ops' } };
+  assert.equal(effectiveConnection(zt, after, b, 'ais', 'zentao').connection.id, 'zt-ops', '跟随全局的项目同步到新默认');
+  assert.equal(effectiveConnection(zt, after, b, 'smartdd', 'zentao').connection.id, 'zt-company', '个性化项目保持');
+});
+test('删除连接：运行中任务在用时阻止；删全局默认需选新默认；个性化项目列出；唯一连接提示不可用', () => {
+  const b = { zentao: { smartdd: { zentao: { mode: 'custom', connectionId: 'zt-ops' } } } };
+  const r1 = deleteImpact(zt, INITIAL_DEFAULTS, b, prj, zt.connections[0]);
+  assert.equal(r1.blocked, true); assert.equal(r1.runningUse[0].id, 'run-1');
+  const r2 = deleteImpact(zt, INITIAL_DEFAULTS, b, prj, zt.connections[0], []);
+  assert.equal(r2.needNewDefault, true); assert.deepEqual(r2.others.map(c => c.id), ['zt-ops']);
+  const r3 = deleteImpact(zt, INITIAL_DEFAULTS, b, prj, zt.connections[1], []);
+  assert.equal(r3.isDefault, false); assert.deepEqual(r3.customProjects.map(p => p.id), ['smartdd']);
+  assert.equal(deleteImpact(zt0, INITIAL_DEFAULTS, {}, prj, zt0.connections[0], []).last, true);
+});
+test('插件更新：新版本删除能力且无旧名映射时提示', () => {
+  const v11 = IC.find(c => c.version === '1.1.0'), v2 = IC.find(c => c.version === '2.0.0');
+  assert.deepEqual(removedCapabilities(zt0, v11), []);
+  assert.deepEqual(removedCapabilities(zt0, v2), ['查看详情与历史']);
+  assert.deepEqual(removedCapabilities(zt0, { ...v2, legacyToolNames: { '查看详情与历史': '查询指派给我的 Bug' } }), []);
+});
+test('导出：勾选运行配置自动带上 Provider；默认不含 Key；原生登录只导出设定', () => {
+  const e = buildExport({ providers: PROVIDERS, configs: RUN_CONFIGS, selectedConfigs: ['rc-codex-ds', 'rc-cc-native'], selectedProviders: [], includeKey: false });
+  assert.deepEqual(e.providers.map(p => p.id).sort(), ['deepseek', 'native-claude']);
+  assert.ok(e.providers.every(p => !p.key)); assert.equal(e.includesKeys, false);
+  assert.deepEqual(Object.keys(e.providers.find(p => p.id === 'native-claude')).sort(), ['id', 'name', 'tool', 'type']);
+  assert.ok(!JSON.stringify(e).includes('3f9a'), '不含任何 Key 片段');
+  assert.equal(buildExport({ providers: PROVIDERS, configs: RUN_CONFIGS, selectedConfigs: ['rc-codex-ds'], selectedProviders: [], includeKey: true }).providers[0].key.encrypted, true);
+});
+test('导入预览：同名不覆盖并加“（导入）”；未带 Key 标需要填写；非本格式拒绝', () => {
+  const pv = importPreview(SAMPLE_IMPORT, { providers: PROVIDERS, configs: RUN_CONFIGS });
+  assert.equal(pv.providers.find(p => p.id === 'deepseek').finalName, 'DeepSeek（导入）');
+  assert.equal(pv.runConfigs.find(c => c.id === 'x1').finalName, 'Codex · DeepSeek（导入）');
+  assert.ok(pv.providers.every(p => p.needKey));
+  assert.equal(importPreview({ foo: 1 }, { providers: [], configs: [] }).ok, false);
+});
+test('本机工具自定义路径校验', () => {
+  assert.equal(checkToolPath('').ok, false); assert.match(checkToolPath('/opt/missing/codex').error, /找不到/);
+  assert.match(checkToolPath('/tmp/codex.txt').error, /不可执行/); assert.equal(checkToolPath('/opt/bin/codex').ok, true);
+});
