@@ -5,14 +5,49 @@
 export const AGENTS = { claude: 'Claude Code', codex: 'Codex' };
 
 // ---------- 插件 ----------
+/** 连接表单声明（审核 P03）：由插件声明字段，WillYou 渲染；密码／Token 只显示“已保存”，原型不保存秘密值。 */
+export const CONNECTION_TYPES = {
+  zentao: [{ type: 'zentao', label: '禅道连接', fields: [
+    { key: 'url', label: '服务器地址', kind: 'text', placeholder: 'https://zentao.example.test', required: true },
+    { key: 'account', label: '账号', kind: 'text', required: true },
+    { key: 'auth', label: '认证方式', kind: 'choice', options: [['token', 'Token'], ['password', '密码']], default: 'token' },
+    { key: 'secret', label: 'Token 或密码', kind: 'secret' }] }],
+  mail: [
+    { type: 'source', label: '读取来源', fields: [
+      { key: 'account', label: 'Foxmail 本机账号', kind: 'text', required: true },
+      { key: 'days', label: '读取最近天数（最多 100）', kind: 'number', default: 30, min: 1, max: 100 }] },
+    { type: 'smtp', label: '发件账号（SMTP）', fields: [
+      { key: 'host', label: 'SMTP 服务器', kind: 'text', placeholder: 'smtp.example.test', required: true },
+      { key: 'port', label: '端口', kind: 'number', default: 465, min: 1, max: 65535 },
+      { key: 'account', label: '发件人邮箱', kind: 'text', required: true },
+      { key: 'secret', label: '密码或授权码', kind: 'secret' }] }],
+};
+export const connectionTypesOf = plugin => CONNECTION_TYPES[plugin.id] || plugin.connectionTypes || [];
+export function connectionSummary(plugin, c) {
+  const v = c.values || {};
+  if (c.type === 'zentao') return `${v.url || '—'} · ${v.account || '—'} · ${v.auth === 'password' ? '密码' : 'Token'}`;
+  if (c.type === 'source') return `Foxmail 本机只读 · ${v.account || '—'} · 最近 ${v.days || 30} 天`;
+  if (c.type === 'smtp') return `SMTP ${v.host || '—'}:${v.port || 465} · ${v.account || '—'}`;
+  return Object.values(v).join(' · ');
+}
+/** 校验连接表单：必填项、数字范围。返回错误数组。 */
+export function validateConnection(def, values) {
+  const errors = [];
+  for (const f of def.fields) {
+    const v = values[f.key];
+    if (f.required && !String(v ?? '').trim()) errors.push(`请填写${f.label}`);
+    if (f.kind === 'number' && v !== undefined && v !== '' && (Number(v) < f.min || Number(v) > f.max || !Number.isInteger(Number(v)))) errors.push(`${f.label}应为 ${f.min}–${f.max} 的整数`);
+  }
+  return errors;
+}
 export const PLUGINS = [
   { id: 'mail', name: '邮件', mark: 'mail', builtin: true, publisher: 'WillYou', category: '沟通', version: '0.1.4', tagline: '读取本机邮箱，起草与发送邮件',
     description: '让 Agent 读取 Foxmail 本机邮件、整理线索并起草回复；发送前由你确认。随 WillYou 升级，依赖本机原生组件，保持内置。',
     capabilities: [{ name: '读取最近邮件', kind: '读取' }, { name: '查看邮件详情', kind: '读取' }, { name: '保存草稿', kind: '写入' }, { name: '发送草稿', kind: '写入' }],
-    skills: ['mail-triage'], examples: ['整理最近 3 天客户邮件里待我回复的问题', '根据这封投诉邮件起草一封礼貌、明确的回复'], projects: ['smartdd'], connections: [{ id: 'mail-local', name: 'Foxmail 本机', detail: '只读来源 · 最近 30 天', status: 'ok' }] },
+    skills: ['mail-triage'], examples: ['整理最近 3 天客户邮件里待我回复的问题', '根据这封投诉邮件起草一封礼貌、明确的回复'], projects: ['smartdd'], connections: [{ id: 'mail-local', type: 'source', name: 'Foxmail 本机', values: { account: 'liubu@example.test', days: 30 }, status: 'ok' }] },
   { id: 'browser', name: '浏览器', mark: 'browser', builtin: true, publisher: 'WillYou', category: '自动化', version: '0.1.4', tagline: '在任务内置浏览器中打开和操作网页',
     description: '为每个任务提供隔离的网页标签，Agent 经宿主命令操作页面并保留回执。依赖 Electron 主进程，保持内置。',
-    capabilities: [{ name: '打开页面', kind: '读取' }, { name: '页面快照', kind: '读取' }, { name: '点击与输入', kind: '写入' }],
+    capabilities: [{ name: '打开页面', kind: '写入' }, { name: '页面快照', kind: '读取' }, { name: '点击与输入', kind: '写入' }],
     skills: ['willyou-browser-browser', 'willyou-browser-reproduce-bug'], examples: ['打开测试环境登录页，复现用户反馈的按钮无响应'], projects: ['smartdd', 'ais'], connections: [] },
   { id: 'zentao', name: '禅道', mark: 'zentao', builtin: false, publisher: 'WillYou', category: '研发协作', version: '1.0.0', hostApi: '^1.0',
     tagline: '查询 Bug 与研发需求，分析根因', source: { kind: 'dir', path: '~/WillYou/plugins/zentao' },
@@ -20,9 +55,9 @@ export const PLUGINS = [
     migratedFrom: '原内置禅道应用：连接、项目授权与调用历史已迁移',
     permissions: ['联网：仅连接你配置的禅道服务器', '读写插件私有数据目录', '读取本次绑定连接的账号凭据（宿主按次下发）'],
     dataDir: '~/Library/Application Support/SmartDD/plugins/zentao',
-    capabilities: [{ name: '查询 Bug 列表', kind: '读取' }, { name: '查看 Bug 详情', kind: '读取' }, { name: '查询研发需求', kind: '读取' }, { name: '添加 Bug 备注', kind: '写入' }],
+    capabilities: [{ name: '查询指派给我的 Bug', kind: '读取' }, { name: '查询指派给我的研发需求', kind: '读取' }, { name: '查看详情与历史', kind: '读取' }],
     skills: ['zentao-bug-analysis', 'zentao-story-review'], examples: ['分析指派给我的高优先级 Bug，并给出最可能的根因', '检查研发需求 #482 的验收标准是否完整'],
-    projects: ['ais', 'smartdd'], connections: [{ id: 'zt-company', name: '公司禅道', detail: 'https://zentao.example.test · liubu', status: 'ok' }],
+    projects: ['ais', 'smartdd'], connections: [{ id: 'zt-company', type: 'zentao', name: '公司禅道', values: { url: 'https://zentao.example.test', account: 'liubu', auth: 'token' }, status: 'ok' }],
     resources: [{ id: 1281, title: '导出报表时金额四舍五入错误', severity: '严重', status: '激活' }, { id: 1277, title: '登录页在 Safari 下验证码不刷新', severity: '一般', status: '激活' }, { id: 1263, title: '批量导入超过 500 行时超时', severity: '严重', status: '已解决' }] },
 ];
 export const INSTALL_CANDIDATES = [
@@ -63,7 +98,6 @@ export const CAPABILITIES = [
     conflict: 'Codex 用户目录 ~/.agents/skills/release-notes 已有你自己的同名 Skill', targets: { claude: { s: 'source' }, codex: { s: 'blocked', reason: '同名冲突' } } },
   { id: 's-old', type: 'skill', name: 'old-helper', desc: '来源已被卸载', from: 'claude', scope: 'user', path: '~/.claude/skills/old-helper', state: 'dangling',
     targets: { claude: { s: 'blocked', reason: '来源已删除' }, codex: { s: 'blocked', reason: '链接已失效，下次扫描自动清理' } } },
-  { id: 's-zentao', type: 'skill', name: 'zentao-bug-analysis', desc: '禅道 Bug 根因分析', from: 'plugin', plugin: 'zentao', scope: 'plugin', path: '禅道插件 1.0.0', state: 'plugin', targets: {} },
   { id: 'm-github', type: 'mcp', name: 'github', desc: 'stdio · npx @modelcontextprotocol/server-github', from: 'claude', scope: 'user', path: '~/.claude.json · mcpServers.github', state: 'managed', transport: 'stdio',
     env: ['GITHUB_TOKEN（引用 ${GITHUB_TOKEN}）'], approval: 'source', targets: { claude: { s: 'source' }, codex: { s: 'onrun', at: '启动时以 -c mcp_servers.github 注入，经 WillYou 启动包装' } } },
   { id: 'm-pg', type: 'mcp', name: 'postgres-readonly', desc: 'stdio · 只读数据库查询', from: 'codex', scope: 'project', project: 'smartdd', path: '<SmartDD>/.codex/config.toml · mcp_servers.postgres-readonly', state: 'new', transport: 'stdio',
@@ -78,10 +112,12 @@ export const CAPABILITIES = [
     reason: 'Codex 不支持 SSE 传输', fix: '如来源提供 HTTP 端点，在来源改用后重新扫描', targets: { claude: { s: 'source' }, codex: { s: 'blocked', reason: 'SSE 不支持' } } },
   { id: 'm-willyou', type: 'mcp', name: 'willyou', desc: 'WillYou 宿主工具', from: 'host', scope: 'host', path: 'WillYou 内置', state: 'host', targets: {} },
 ];
+/** 插件自带 Skill 由插件安装状态派生（审核 P04）：随插件安装、停用、更新、卸载变化。 */
+export const pluginSkillCaps = plugins => plugins.filter(p => p.enabled).flatMap(p => (p.skills || []).map(name => ({ id: 'ps-' + p.id + '-' + name, type: 'skill', name, desc: `${p.name}插件自带`, from: 'plugin', plugin: p.id, pluginName: p.name, scope: 'plugin', path: `${p.name}插件 ${p.version}`, state: 'plugin', targets: {} })));
 export const STATE_LABEL = { managed: '已纳管', new: '新发现', conflict: '同名冲突', dangling: '来源已删除', plugin: '插件自带', unsupported: '不支持转换', 'missing-var': '缺少变量', auth: '需单独认证', host: '宿主专属' };
 export const STATE_TONE = { managed: 'ok', new: 'info', conflict: 'warn', dangling: 'warn', plugin: 'muted', unsupported: 'warn', 'missing-var': 'warn', auth: 'warn', host: 'muted' };
 export const ATTENTION = new Set(['conflict', 'dangling', 'unsupported', 'missing-var', 'auth']);
-export const scopeLabel = (c, projects = []) => c.scope === 'user' ? `${AGENTS[c.from]} · 用户级` : c.scope === 'project' ? `${AGENTS[c.from]} · 项目 ${projects.find(p => p.id === c.project)?.name || c.project}` : c.scope === 'plugin' ? '随插件管理' : '宿主内置';
+export const scopeLabel = (c, projects = []) => c.scope === 'user' ? `${AGENTS[c.from]} · 用户级` : c.scope === 'project' ? `${AGENTS[c.from]} · 项目 ${projects.find(p => p.id === c.project)?.name || c.project}` : c.scope === 'plugin' ? `随${c.pluginName || ''}插件管理` : '宿主内置';
 export function filterCapabilities(items, { type, filter, query }) {
   const q = (query || '').trim().toLowerCase();
   return items.filter(c => !c.hidden && c.type === type && (!q || (c.name + c.desc).toLowerCase().includes(q)) && (filter === 'all' || (filter === 'new' && c.state === 'new') || (filter === 'managed' && c.state === 'managed') || (filter === 'attention' && ATTENTION.has(c.state))));
@@ -93,7 +129,9 @@ export function manageAll(items) {
   const next = items.map(c => { if (c.state !== 'new') return c; managed.push(c.name); return manage(c); });
   return { items: next, managed };
 }
-export function manage(c) { return { ...c, state: 'managed', targets: Object.fromEntries(Object.entries(c.targets).map(([k, t]) => [k, t.s === 'pending' ? { ...t, s: c.scope === 'project' ? 'onrun' : 'configured' } : t])) }; }
+/** 纳管后的生效方式（审核 P09）：MCP 一律按次注入，不写目标全局配置；Skill 用户级链接到共用目录，项目级按次挂载。 */
+export const managedState = c => c.type === 'mcp' || c.scope === 'project' ? 'onrun' : 'configured';
+export function manage(c) { return { ...c, state: 'managed', targets: Object.fromEntries(Object.entries(c.targets).map(([k, t]) => [k, t.s === 'pending' ? { ...t, s: managedState(c) } : t])) }; }
 export function unmanage(c) { return { ...c, state: 'new', targets: Object.fromEntries(Object.entries(c.targets).map(([k, t]) => [k, t.s === 'configured' || t.s === 'onrun' ? { ...t, s: 'pending' } : t])) }; }
 
 // ---------- AI 配置 ----------
@@ -116,12 +154,20 @@ export function compatible(toolId, provider) {
   return provider.protocols.includes(TOOL_PROTOCOL[toolId]) ? { ok: true } : { ok: false, reason: `${AGENTS[toolId]} 需要 ${PROTOCOL_LABEL[TOOL_PROTOCOL[toolId]]} 兼容接口` };
 }
 export const autoName = (toolId, provider) => `${AGENTS[toolId]} · ${provider.type === 'native' ? '原有登录' : provider.name.replace(/（.*）/, '')}`;
+export const CLAUDE_TIERS = [['opus', 'Opus 档'], ['sonnet', 'Sonnet 档'], ['haiku', 'Haiku 档'], ['smallFast', 'small-fast'], ['subagent', '子 Agent']];
+/** 按所选 Provider 重建档位映射（审核 P07）：保留仍属于该 Provider 且可用的映射，其余改为默认模型。 */
+export function rebuildTiers(provider, model, tiers = {}) {
+  const ok = new Set((provider?.models || []).filter(m => m.status !== 'rejected').map(m => m.id));
+  return Object.fromEntries(CLAUDE_TIERS.map(([k]) => [k, ok.has(tiers[k]) ? tiers[k] : model]));
+}
+export const tiersValid = (provider, tiers) => CLAUDE_TIERS.every(([k]) => (provider?.models || []).some(m => m.id === tiers?.[k] && m.status !== 'rejected'));
 export const RUN_CONFIGS = [
   { id: 'rc-cc-native', name: 'Claude Code · 原有登录', tool: 'claude', provider: 'native-claude', model: null, default: true },
   { id: 'rc-codex-native', name: 'Codex · 原有登录', tool: 'codex', provider: 'native-codex', model: null },
   { id: 'rc-codex-ds', name: 'Codex · DeepSeek', tool: 'codex', provider: 'deepseek', model: 'deepseek-v4-pro' },
-  { id: 'rc-cc-ds', name: 'Claude Code · DeepSeek', tool: 'claude', provider: 'deepseek', model: 'deepseek-v4-pro', tiers: { opus: 'deepseek-v4-pro', sonnet: 'deepseek-v4-pro', haiku: 'deepseek-v4-flash' } },
-  { id: 'rc-legacy-rj', name: 'CC-rj', tool: 'claude', provider: null, model: null, legacy: true, legacyNote: '从旧 AI 配置迁移：包含无法识别的变量 RJ_GATEWAY_MODE，整体保留为高级配置，原凭据引用不变' },
+  { id: 'rc-cc-ds', name: 'Claude Code · DeepSeek', tool: 'claude', provider: 'deepseek', model: 'deepseek-v4-pro', tiers: { opus: 'deepseek-v4-pro', sonnet: 'deepseek-v4-pro', haiku: 'deepseek-v4-flash', smallFast: 'deepseek-v4-flash', subagent: 'deepseek-v4-pro' } },
+  { id: 'rc-legacy-rj', name: 'CC-rj', tool: 'claude', provider: null, model: null, legacy: true, legacyNote: '从旧 AI 配置迁移：包含无法识别的变量 RJ_GATEWAY_MODE，整体保留为高级配置，原凭据引用不变',
+    env: [{ key: 'ANTHROPIC_BASE_URL', value: 'https://rj-gateway.example.test' }, { key: 'ANTHROPIC_AUTH_TOKEN', secret: true }, { key: 'RJ_GATEWAY_MODE', value: 'strict' }], args: '' },
 ];
 /** 运行配置在启动时的说明（只显示规则，不显示具体值）。 */
 export function runNotes(rc, provider) {
@@ -132,6 +178,10 @@ export function runNotes(rc, provider) {
   else { n.push('按次注入 Provider 与模型目录，不写 ~/.codex/config.toml'); n.push('关闭插件同步与统计：Codex 原生插件在此类运行中不可用'); }
   return n;
 }
+export const PRESETS = {
+  deepseek: { name: 'DeepSeek', url: 'https://api.deepseek.com/', protocols: ['responses', 'anthropic'], keyLabel: 'DeepSeek Key', models: [{ id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', ctx: '128K' }, { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', ctx: '128K' }] },
+  magpie: { name: 'Magpie（本机网关）', url: 'http://127.0.0.1:3425/v1', protocols: ['responses', 'anthropic'], keyLabel: '令牌', defaultKey: 'magpie-codex', models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K' }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K' }] },
+};
 /** 自定义地址探测（合成）：只给出候选协议，最终以一次最小调用确认。 */
 export function probe(url, key, scene) {
   if (!/^https?:\/\/.+/.test(url)) return { ok: false, error: '请输入以 http:// 或 https:// 开头的地址' };

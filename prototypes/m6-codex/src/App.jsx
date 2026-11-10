@@ -20,7 +20,7 @@ import './browser.css';
 import { Globe as M12Globe, PanelRightOpen as M12NewTab } from 'lucide-react';
 import { preparePrototypeTaskClose, serializeWorkspaceStore } from './file-workspace-model.mjs';
 import { IntegrationWorkspace } from './IntegrationWorkspace';
-import { M13Workspace } from './M13Workspace';
+import { M13Workspace, useM13State } from './M13Workspace';
 import { Puzzle as M13Puzzle } from 'lucide-react';
 import { useIntegrationPreview, ProjectApplications, SessionApplications } from './IntegrationPackageUI';
 import { APP_DEFINITIONS, integrationSnapshot, projectPackages, packageVersion, snapshotCurrent, sessionApplicationState } from './integration-model.mjs';
@@ -280,7 +280,13 @@ export function App() {
   const homeInput = useRef(null), toastTimer = useRef(null);
   const dark = theme === 'dark' || (theme === 'system' && systemDark);
   const project = projects.find(p => p.id === projectId && !p.archived) ?? projects.find(p => !p.archived) ?? { id: '', name: '选择项目', path: '', dirs: [], capabilities: {} };
-  const profile = profiles.find(p => p.id === profileId) ?? profiles.find(p => p.isDefault) ?? profiles[0];
+  // M13（审核 P01）：M13 预览开启后，首页运行配置选择读取 M13 共享状态中的运行配置，离开 M13 区域不丢失。
+  const m13 = useM13State();
+  const [m13Active, setM13Active] = useState(() => new URLSearchParams(location.search).get('preview') === 'm13' || location.hash.startsWith('#m13'));
+  const [m13ProfileId, setM13ProfileId] = useState(null);
+  const m13Profiles = m13.configs.map(c => ({ id: c.id, name: c.name, runner: c.tool, isDefault: !!c.default }));
+  const homeProfiles = m13Active ? m13Profiles : profiles;
+  const profile = m13Active ? (m13Profiles.find(p => p.id === m13ProfileId) ?? m13Profiles.find(p => p.isDefault) ?? m13Profiles[0]) : (profiles.find(p => p.id === profileId) ?? profiles.find(p => p.isDefault) ?? profiles[0]);
   const dir = project.dirs.find(d => d.id === dirId) ?? project.dirs.find(d => d.isDefault) ?? project.dirs[0];
   const taskId = route.startsWith('task/') ? route.split('/')[1] : null, task = tasks.find(t => t.id === taskId);
   useLayoutEffect(() => observeTaskHeaderLayout(taskHeaderRef.current, setTaskHeaderLayout), [taskId]);
@@ -288,6 +294,7 @@ export function App() {
   const isProject = route.startsWith('project/'), projectTab = route.split('/')[2] || 'overview';
   const isApps = route === 'apps' || route.startsWith('apps/');
   const isM13 = route === 'm13' || route.startsWith('m13/');
+  useEffect(() => { if (isM13) setM13Active(true); }, [isM13]);
   const storeFileWidth = (width, available = fileAvailable) => { const next = normalizedFilePanelWidth(width, available); if (!next) return; setFilePreference(next); localStorage.setItem('willyou-m9-prototype-panel-width', String(next.value)); };
   useEffect(() => {
     const frame = fileFrame.current, area = fileArea.current; if (!frame || !area) return;
@@ -427,12 +434,12 @@ export function App() {
     {route === 'scheduled' && <aside className="sidebar scheduled-sidebar"><h2>定时任务</h2><button className="nav-row" disabled title="后续开放"><Plus size={16} />新建任务</button><p>即将执行</p><span className="scheduled-empty">暂未开放</span></aside>}
     {!collapsed && <div className="sidebar-resizer" role="separator" aria-label="调整侧栏宽度" aria-orientation="vertical" tabIndex={0} aria-valuenow={sidebarWidth} aria-valuemin={240} aria-valuemax={420} onPointerDown={resize} onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setSidebarWidth(w => Math.max(240, Math.min(420, w + (e.key === 'ArrowRight' ? 10 : -10)))); } }} />}
     <main ref={fileArea} className="workspace" style={task && fileWorkspace ? { minWidth: 0 } : undefined}>
-      {isM13 && <M13Workspace route={route} nav={nav} projects={projects} dark={dark} onTheme={() => setTheme(dark ? 'light' : 'dark')} onTryPrompt={text => { setPrompt(text); nav('home'); }} />}
+      {isM13 && <M13Workspace store={m13} route={route} nav={nav} projects={projects} dark={dark} onTheme={() => setTheme(dark ? 'light' : 'dark')} onTryPrompt={text => { setPrompt(text); nav('home'); }} />}
       {isApps && <IntegrationWorkspace currentTerminalTaskId={lastIntegrationTask.current} selectedProjectId={integrationProjectId} onSelectProject={setIntegrationProjectId} integration={integration} onUsePrompt={useApplicationPrompt} onNewProjectTask={newApplicationTask} route={route} nav={nav} projects={projects} tasks={tasks} onStopTasks={stopApplicationTasks} onSimulateConnectionReference={connection=>{const pid=Object.keys(integration.data.bindings).find(key=>integration.data.bindings[key].includes(connection.id))||integrationProjectId;setTasks(current=>[...current,{...(current.find(item=>item.project===pid)||current[0]),id:id(),title:'预检新增历史引用 · 合成示例',firstMessage:'仅用于连接预检引用变化，不运行Agent。',project:pid,status:'stopped',archived:true,time:'刚刚',integrationSnapshot:{projectId:pid,evidence:'prepared-demo',packages:[{id:connection.app,version:packageVersion(integration.data,connection.app),connections:[{id:connection.id,revision:connection.revision}],skills:[],tools:[]}]}}]);}} dark={dark} onTheme={() => setTheme(dark ? 'light' : 'dark')} onInsertReference={(text, selectedProject, target) => { if (!previewTerminalCurrent(target, tasks, selectedProject, lastIntegrationTask.current)) { notify('原目标任务或终端已变化，请重新查看对象后再插入。'); return false; } setFileWorkspace(false); setIntegrationReference({ taskId: target.taskId, ptyId: target.ptyId, text, requestId: id() }); nav('task/' + target.taskId); return true; }} />}
       {!task && <header className="topbar"><div className="breadcrumbs">{isSettings ? <><span>设置</span><ChevronRight size={12} /><span>{SETTINGS.find(s => s[0] === section)?.[2] || 'AI 配置'}</span></> : isProject ? <><Folder size={15} /><span>{activeProject.name}</span></> : <span className="quiet">工作台</span>}</div>
         <div className="topbar-actions"><button className="preview-badge" onClick={() => setModal({ type: 'preview' })}>界面预览</button><IconButton icon={dark ? Sun : Moon} label={dark ? '切换浅色主题' : '切换深色主题'} onClick={() => setTheme(dark ? 'light' : 'dark')} /></div>
       </header>}
-      {route === 'home' && <ReferenceHome preparing={preparationPreview} onCancelPreparation={() => { const url = new URL(location.href); url.searchParams.delete('m10Preparation'); history.replaceState(null, '', url); setPreparationPreview(false); notify('已取消准备，输入已保留'); }} dir={dir} onDir={setDirId} onLaunchSettings={() => setModal({ type: 'launch-settings' })} launchError={launchError}  project={project} projects={projects.filter(p => !p.archived)} profile={profile} profiles={profiles} prompt={prompt} setPrompt={setPrompt} inputRef={homeInput} onProject={setProjectId} onProfile={setProfileId} onSubmit={createTask} onSettings={() => nav('settings/ai')} onAddProject={() => setModal({ type: 'project' })} voiceBusy={voice.busy} onVoice={() => voice.trigger(textareaTarget(homeInput.current, setPrompt))} />}
+      {route === 'home' && <ReferenceHome preparing={preparationPreview} onCancelPreparation={() => { const url = new URL(location.href); url.searchParams.delete('m10Preparation'); history.replaceState(null, '', url); setPreparationPreview(false); notify('已取消准备，输入已保留'); }} dir={dir} onDir={setDirId} onLaunchSettings={() => setModal({ type: 'launch-settings' })} launchError={launchError}  project={project} projects={projects.filter(p => !p.archived)} profile={profile} profiles={homeProfiles} prompt={prompt} setPrompt={setPrompt} inputRef={homeInput} onProject={setProjectId} onProfile={m13Active ? setM13ProfileId : setProfileId} onSubmit={createTask} onSettings={() => nav(m13Active ? 'm13/ai' : 'settings/ai')} onAddProject={() => setModal({ type: 'project' })} voiceBusy={voice.busy} onVoice={() => voice.trigger(textareaTarget(homeInput.current, setPrompt))} />}
       {route === 'scheduled' && <section className="scheduled-placeholder" aria-label="定时任务规划"><span className="scheduled-clock" aria-hidden="true">🕗</span><h1>安排任务</h1><p>定时执行项目任务，让重复的工作按计划完成。</p><span className="scheduled-planned">功能规划中</span><p className="scheduled-note">已列入后续需求，本轮保留入口。暂不创建或执行定时任务。</p><button className="text-button" onClick={() => nav('home')}>返回工作台<ArrowRight size={14} /></button></section>}
       {task && <section className="task-page">
         {task.status === 'running' && <ResumeAdvicePreview key={task.id} notify={notify} />}
