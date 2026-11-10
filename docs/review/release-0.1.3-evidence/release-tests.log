@@ -1,0 +1,158 @@
+
+> smartdd@0.1.3 test:release /private/tmp/willyou-m12-integration-0.1.3
+> node --test scripts/release/release.test.mjs scripts/applications/build.test.mjs scripts/applications/module-onboarding.test.mjs scripts/applications/module-metadata-imports.test.mjs
+
+TAP version 13
+# Subtest: CLI builds pinned application bundles from an escaped native path with complete nested inventories
+ok 1 - CLI builds pinned application bundles from an escaped native path with complete nested inventories
+  ---
+  duration_ms: 1654.255958
+  type: 'test'
+  ...
+# Subtest: keeps Windows drive and UNC module source paths in the metadata bundle
+ok 2 - keeps Windows drive and UNC module source paths in the metadata bundle
+  ---
+  duration_ms: 0.573458
+  type: 'test'
+  ...
+# Subtest: keeps POSIX source paths, relative imports and project aliases in the bundle
+ok 3 - keeps POSIX source paths, relative imports and project aliases in the bundle
+  ---
+  duration_ms: 0.102959
+  type: 'test'
+  ...
+# Subtest: continues externalizing Node builtins and third-party packages
+ok 4 - continues externalizing Node builtins and third-party packages
+  ---
+  duration_ms: 0.045167
+  type: 'test'
+  ...
+# Subtest: accepts a data-only onboarding
+ok 5 - accepts a data-only onboarding
+  ---
+  duration_ms: 0.913083
+  type: 'test'
+  ...
+# Subtest: rejects a shared-code change and a branch on the application name
+ok 6 - rejects a shared-code change and a branch on the application name
+  ---
+  duration_ms: 0.173542
+  type: 'test'
+  ...
+# Subtest: rejects a renderer or preload reference even when that path is not changed in this commit
+ok 7 - rejects a renderer or preload reference even when that path is not changed in this commit
+  ---
+  duration_ms: 0.140708
+  type: 'test'
+  ...
+# Subtest: reports a missing bundle or catalog entry instead of passing quietly
+ok 8 - reports a missing bundle or catalog entry instead of passing quietly
+  ---
+  duration_ms: 0.120833
+  type: 'test'
+  ...
+# Subtest: keeps the allowlist narrow
+ok 9 - keeps the allowlist narrow
+  ---
+  duration_ms: 0.077708
+  type: 'test'
+  ...
+# Subtest: Windows checkout guard rejects historical POSIX names and excessive depth while retaining Unicode
+ok 10 - Windows checkout guard rejects historical POSIX names and excessive depth while retaining Unicode
+  ---
+  duration_ms: 0.690417
+  type: 'test'
+  ...
+# Subtest: Mac bundle cleanup removes signing-blocking metadata and preserves quarantine
+ok 11 - Mac bundle cleanup removes signing-blocking metadata and preserves quarantine
+  ---
+  duration_ms: 10.969042
+  type: 'test'
+  ...
+# Subtest: custom version carry and numeric tag ordering
+ok 12 - custom version carry and numeric tag ordering
+  ---
+  duration_ms: 0.320917
+  type: 'test'
+  ...
+# Subtest: rejects versions outside the agreed ranges and malformed tags
+ok 13 - rejects versions outside the agreed ranges and malformed tags
+  ---
+  duration_ms: 0.274042
+  type: 'test'
+  ...
+# Subtest: metadata requires matching version and one nonempty exact changelog section
+ok 14 - metadata requires matching version and one nonempty exact changelog section
+  ---
+  duration_ms: 0.156833
+  type: 'test'
+  ...
+# Subtest: packaging refuses another OS before rebuilding or producing installers
+ok 15 - packaging refuses another OS before rebuilding or producing installers
+  ---
+  duration_ms: 72.829375
+  type: 'test'
+  ...
+# Subtest: native probe finishes after PTY exit even if a worker handle remains open
+ok 16 - native probe finishes after PTY exit even if a worker handle remains open
+  ---
+  duration_ms: 79.979542
+  type: 'test'
+  ...
+# Subtest: release tag must be annotated, checked out, sequential and already in main
+ok 17 - release tag must be annotated, checked out, sequential and already in main
+  ---
+  duration_ms: 430.73525
+  type: 'test'
+  ...
+# Subtest: installer filenames match native package architecture conventions
+ok 18 - installer filenames match native package architecture conventions
+  ---
+  duration_ms: 0.490125
+  type: 'test'
+  ...
+# Subtest: WillYou packaging paths and workflow upload patterns stay consistent across platforms
+ok 19 - WillYou packaging paths and workflow upload patterns stay consistent across platforms
+  ---
+  duration_ms: 0.885458
+  type: 'test'
+  ...
+# Subtest: all seven installers must match their recorded checksums and commit
+ok 20 - all seven installers must match their recorded checksums and commit
+  ---
+  duration_ms: 2.806584
+  type: 'test'
+  ...
+# Subtest: missing platforms, dirty builds and unsigned Mac builds block publication
+ok 21 - missing platforms, dirty builds and unsigned Mac builds block publication
+  ---
+  duration_ms: 2.154417
+  type: 'test'
+  ...
+# Subtest: preview permits unsigned assets while stable still requires signing
+ok 22 - preview permits unsigned assets while stable still requires signing
+  ---
+  duration_ms: 2.601166
+  type: 'test'
+  ...
+# Subtest: missing MSI or Linux formats and altered manifest entries block publication
+ok 23 - missing MSI or Linux formats and altered manifest entries block publication
+  ---
+  duration_ms: 3.135583
+  type: 'test'
+  ...
+# Subtest: workflow entry points keep builds read-only and publication dependent on all builds
+ok 24 - workflow entry points keep builds read-only and publication dependent on all builds
+  ---
+  duration_ms: 10.24575
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1702.055667

@@ -1,0 +1,23 @@
+model="m11-r10-model"
+model_provider="m11_local_fixture"
+notify=[]
+default_permissions="m11_user"
+[permissions.m11_user]
+extends=":workspace"
+[permissions.m11_user.network]
+enabled=false
+[model_providers.m11_local_fixture]
+name="M11 R10 Synthetic"
+base_url="http://127.0.0.1:12345/v1"
+wire_api="responses"
+requires_openai_auth=false
+[analytics]
+enabled=false
+[feedback]
+enabled=false
+[tui]
+screen_reader_detection_done = true
+[tui.model_availability_nux]
+"gpt-6.1-sol" = 1
+[features]
+shell_snapshot=true

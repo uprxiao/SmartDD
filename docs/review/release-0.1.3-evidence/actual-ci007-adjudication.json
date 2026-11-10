@@ -1,0 +1,349 @@
+{
+  "verifiedAt": "2026-11-10T01:00:26.722483+00:00",
+  "status": "passed",
+  "groupCount": 12,
+  "groupChecks": {
+    "T45": [
+      {
+        "name": "Marked M4 copy, coordination root and interrupted-cleanup leftover removed at first start; user Skills (incl. remote-password-ssh and an unmarked smartdd-* directory) unchanged by hash",
+        "at": "2026-11-10T00:53:13.002Z",
+        "remaining": [
+          "remote-password-ssh",
+          "smartdd-user-made",
+          "willyou-project-db-diagnostics",
+          "willyou-remote-password-ssh"
+        ]
+      }
+    ],
+    "T39": [
+      {
+        "name": "One entity per Skill, no hash suffix; Claude entries are links to it; a Codex and a Claude task added no copies and no per-task plugin",
+        "at": "2026-11-10T00:53:21.389Z",
+        "entries": [
+          "willyou-browser-browser",
+          "willyou-browser-reproduce-bug",
+          "willyou-mail-work-assistant",
+          "willyou-project-db-diagnostics",
+          "willyou-remote-password-ssh",
+          "willyou-zentao-bug-analysis",
+          "willyou-zentao-story-review"
+        ],
+        "links": [
+          "willyou-browser-browser",
+          "willyou-browser-reproduce-bug",
+          "willyou-mail-work-assistant",
+          "willyou-project-db-diagnostics",
+          "willyou-remote-password-ssh",
+          "willyou-zentao-bug-analysis",
+          "willyou-zentao-story-review"
+        ]
+      }
+    ],
+    "T41": [
+      {
+        "name": "Enabling ZenTao after launch: the same Codex run (same PTY and native session) queried ZenTao through the CLI on its next turn; no new task, no shared-catalog wait",
+        "at": "2026-11-10T00:53:30.005Z"
+      }
+    ],
+    "M12-browser-native-page": [
+      {
+        "name": "Same actual Codex run created an own loopback HTML page and the real CLI/CDP/helper snapshot returned its actual pageId, URL, marker and button",
+        "at": "2026-11-10T00:53:43.410Z"
+      }
+    ],
+    "M12-current-browser": [
+      {
+        "name": "Real UI project browser switch false\u2192true\u2192false changes authorization for the same actual Codex task/PTY/run; denied calls are APP_NOT_ENABLED",
+        "at": "2026-11-10T00:53:46.867Z"
+      }
+    ],
+    "T43": [
+      {
+        "name": "Project B without ZenTao: the host refused with the guidance to enable it on project B\u2019s Applications page; no provider request",
+        "at": "2026-11-10T00:53:48.846Z"
+      }
+    ],
+    "T46": [
+      {
+        "name": "With two running tasks and an application just enabled, a third task launched from the composer reached the terminal and answered",
+        "at": "2026-11-10T00:53:55.090Z",
+        "clickToTerminalMs": 553
+      }
+    ],
+    "S5-notice": [
+      {
+        "name": "A running Codex task shows \u201c\u5e94\u7528\u5df2\u66f4\u65b0\uff08\u90ae\u4ef6\uff09\uff0c\u6062\u590d\u4f1a\u8bdd\u540e\u751f\u6548\u201d after Mail (MCP entry) is enabled on its project page",
+        "at": "2026-11-10T00:54:00.843Z",
+        "advice": {
+          "applications": [
+            "\u90ae\u4ef6"
+          ]
+        }
+      }
+    ],
+    "M12-snapshot-disk": [
+      {
+        "name": "Explicitly enabled private shell_snapshot config, host-disabled actual Codex argv, immutable saved profile; own token raw/base64/UTF16 digest scan of this fresh runtime regular files found no match",
+        "at": "2026-11-10T00:54:03.610Z",
+        "files": 522,
+        "bytes": 22659966
+      }
+    ],
+    "T48": [
+      {
+        "name": "A Codex session outside WillYou that tries the ZenTao Skill fails (command not found / AUTH_REQUIRED) with no provider request; the Skill says WillYou tasks only",
+        "at": "2026-11-10T00:54:03.873Z",
+        "notOnPath": true,
+        "onPath": true
+      }
+    ],
+    "T44": [
+      {
+        "name": "After disabling, the running session\u2019s next call was refused without a provider request; removing ZenTao deleted its library entities and Claude links, Mail stayed",
+        "at": "2026-11-10T00:54:10.562Z"
+      }
+    ],
+    "S6-risk": [
+      {
+        "name": "After stop every run ended, including the Claude Code runs whose Agent never started its MCP servers",
+        "at": "2026-11-10T00:54:11.465Z",
+        "runs": 5
+      }
+    ]
+  },
+  "rawResult": "/private/tmp/willyou-m11-r10-release013-ci007-cNlY14/result.json",
+  "rawResultSha256": "45ae7a635b4023c18cb3d16297d30ec40d0f27009ac00b7693d069fd0c17abff",
+  "packageCommit": "f70cdd7fdd0f3cd1d76ac7ec0c8ff98314a62a43",
+  "asarSha256": "056cc30504b4c553573a5fe913f5708dcdff735e6a7cf68be8472418cfab8871",
+  "browserHelper": {
+    "path": "/private/tmp/willyou-m11-s7/release013-ci-f70cdd7f/WillYou.app/Contents/Resources/agent-browser/arm64/agent-browser",
+    "sha256": "9839db250e18ac493197bb492f38f67fc424496c366be1a7bb85101d0c010cf2",
+    "normalizationUsed": false
+  },
+  "layer": "A: real packaged App + actual Codex 0.166.0 PTY + real CLI gateway/Skill library; synthetic Responses model and ZenTao provider; reversible test cipher instead of Keychain",
+  "boundaries": "Actual installed CI App and native Codex/CLI; synthetic loopback Responses/ZenTao and fixture-only reversible cipher; no real model/ZenTao/Keychain claim. Existing12 groups, not12 new formal M12 cases.",
+  "cli": {
+    "codex": "codex-cli 0.166.0",
+    "claude": "2.1.319 (Claude Code)"
+  },
+  "browserCurrentAuthorization": {
+    "sameTask": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+    "originalPTY": "00c5bdce-048d-46fd-89e1-2671e8f8a91e",
+    "originalRun": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+    "steps": [
+      {
+        "suffix": "DENY1",
+        "enabled": false,
+        "taskId": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+        "ptyId": "00c5bdce-048d-46fd-89e1-2671e8f8a91e",
+        "runId": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+        "nativeSessionId": "01a1c2f2-02c9-79e1-88e1-cd92f4c3b4d8",
+        "output": "Chunk ID: 86f0e5\nWall time: 0.0000 seconds\nProcess exited with code 2\nOriginal token count: 75\nOutput:\nwillyou-app: APP_NOT_ENABLED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"APP_NOT_ENABLED\",\"layer\":\"auth\",\"message\":\"\u8bf7\u5230\u9879\u76ee\u300cR10 \u9879\u76eeC\u300d\u7684\u2018\u5e94\u7528\u2019\u9875\u5f00\u542f\u6d4f\u89c8\u5668\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"\u6838\u5bf9\u5f53\u524d\u5e94\u7528\u72b6\u6001\u540e\u518d\u660e\u786e\u64cd\u4f5c\",\"retryExhausted\":false}}\n",
+        "pass": true
+      },
+      {
+        "suffix": "ALLOW",
+        "enabled": true,
+        "taskId": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+        "ptyId": "00c5bdce-048d-46fd-89e1-2671e8f8a91e",
+        "runId": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+        "nativeSessionId": "01a1c2f2-02c9-79e1-88e1-cd92f4c3b4d8",
+        "output": "Chunk ID: cb7233\nWall time: 0.8113 seconds\nProcess exited with code 0\nOriginal token count: 123\nOutput:\n{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece\",\"connections\":[]},\"data\":{\"tabs\":[]},\"resources\":[],\"operation\":{\"id\":\"adaf085d-8f15-48dd-b172-8c6df288e32d\",\"requestId\":\"dd9d2785-9a5a-4054-804c-d2b2383f3d9b\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.tab.list\"}\n",
+        "pass": true
+      },
+      {
+        "suffix": "DENY2",
+        "enabled": false,
+        "taskId": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+        "ptyId": "00c5bdce-048d-46fd-89e1-2671e8f8a91e",
+        "runId": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+        "nativeSessionId": "01a1c2f2-02c9-79e1-88e1-cd92f4c3b4d8",
+        "output": "Chunk ID: 5cdab4\nWall time: 0.0000 seconds\nProcess exited with code 2\nOriginal token count: 75\nOutput:\nwillyou-app: APP_NOT_ENABLED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"APP_NOT_ENABLED\",\"layer\":\"auth\",\"message\":\"\u8bf7\u5230\u9879\u76ee\u300cR10 \u9879\u76eeC\u300d\u7684\u2018\u5e94\u7528\u2019\u9875\u5f00\u542f\u6d4f\u89c8\u5668\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"\u6838\u5bf9\u5f53\u524d\u5e94\u7528\u72b6\u6001\u540e\u518d\u660e\u786e\u64cd\u4f5c\",\"retryExhausted\":false}}\n",
+        "pass": true
+      }
+    ]
+  },
+  "browserProof": {
+    "fixtureURL": "http://127.0.0.1:50705/release013-browser-fixture",
+    "marker": "M11R10_BROWSER_HTML_cNlY14",
+    "pageId": "22ce7d6f-9ede-4f24-a506-d9f3d8b29d22",
+    "actualSnapshotMarker": true,
+    "actualSnapshotButton": true,
+    "onlyOwnHTTP": true,
+    "sameNativeRun": true
+  },
+  "databaseOperations": {
+    "create": {
+      "invocation": {
+        "operation_id": "fe540951-f243-4c46-8695-890fd9aa33a0",
+        "run_id": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+        "request_id": "d1eedaf7-9f0f-4e63-a09e-f6a09051784e",
+        "task_id": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+        "semantics": "write",
+        "state": "succeeded",
+        "effect_state": "completed"
+      },
+      "writeReplay": {
+        "run_id": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+        "request_id": "d1eedaf7-9f0f-4e63-a09e-f6a09051784e",
+        "page_id": null,
+        "command": "tab create",
+        "state": "succeeded",
+        "effect_state": "completed"
+      }
+    },
+    "snapshot": {
+      "invocation": {
+        "operation_id": "3b631466-f345-47f7-8a8e-3e01c12f3808",
+        "run_id": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+        "request_id": "2ff24a8e-90b3-4486-800f-d9fc60b29139",
+        "task_id": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+        "semantics": "read",
+        "state": "succeeded",
+        "effect_state": "read-only"
+      },
+      "writeReplay": null
+    }
+  },
+  "nativeArgvProjection": [
+    {
+      "label": "T39-CLI-library-final-native-argv",
+      "at": "2026-11-10T00:53:20.174Z",
+      "taskId": "8f521d29-d54f-41c0-808e-8a00fc0efb51",
+      "ptyId": "14a112c6-09ac-434b-b1a3-7b6f53f25ae6",
+      "runId": "fe123871-0b87-433a-af9b-114c5b8dd50a",
+      "pid": 57770,
+      "processStartedAt": "darwin-proc-v1:1794271998:909478",
+      "argvTextSHA256": "844ec8f9dfac7d18748875bda86d0074146cec708b27fb1b49919980f24d3b60",
+      "snapshotDisabledByHost": true,
+      "savedProfileUnchanged": true,
+      "source": "readonly own capability_runs PID + exact PID ps command, no environment read/no spawn hook"
+    },
+    {
+      "label": "T41-before-dynamic-selection",
+      "at": "2026-11-10T00:53:23.453Z",
+      "taskId": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+      "ptyId": "00c5bdce-048d-46fd-89e1-2671e8f8a91e",
+      "runId": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+      "pid": 57891,
+      "processStartedAt": "darwin-proc-v1:1794272002:308404",
+      "argvTextSHA256": "dc067049bc092e2112ae8dc291adda9e74e1cbf274fe5653e846aa9176636dc6",
+      "snapshotDisabledByHost": true,
+      "savedProfileUnchanged": true,
+      "source": "readonly own capability_runs PID + exact PID ps command, no environment read/no spawn hook"
+    },
+    {
+      "label": "T41-before-private-disk-scan",
+      "at": "2026-11-10T00:54:02.491Z",
+      "taskId": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+      "ptyId": "00c5bdce-048d-46fd-89e1-2671e8f8a91e",
+      "runId": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+      "pid": 57891,
+      "processStartedAt": "darwin-proc-v1:1794272002:308404",
+      "argvTextSHA256": "dc067049bc092e2112ae8dc291adda9e74e1cbf274fe5653e846aa9176636dc6",
+      "snapshotDisabledByHost": true,
+      "savedProfileUnchanged": true,
+      "source": "readonly own capability_runs PID + exact PID ps command, no environment read/no spawn hook"
+    }
+  ],
+  "shellSnapshotProbe": {
+    "schema": "release013-own-token-digests-v1",
+    "receiptPath": "/private/tmp/willyou-m11-r10-release013-ci007-cNlY14/projects/R10 \u9879\u76eeC/.release013-token-digests.json",
+    "receiptSHA256": "c3b36100e261624bdd285c40a2bfa48ff6b703cb4164244a53e7d37f3f5b73a3",
+    "tokenLength": 64,
+    "forms": [
+      "base64",
+      "raw64hex",
+      "utf16be",
+      "utf16le"
+    ],
+    "sameTask": "8ec6f55c-5d87-4372-bd81-2a89c2c56427",
+    "samePTY": "00c5bdce-048d-46fd-89e1-2671e8f8a91e",
+    "sameRun": "32f4f18d-6e87-4f8e-b60b-830ef875f7d9",
+    "configExplicitlyEnabledShellSnapshot": true,
+    "savedProfileStillNoDisablePair": true
+  },
+  "shellSnapshotScan": {
+    "startedAt": "2026-11-10T00:54:02.492Z",
+    "scope": "Regular file contents beneath this fresh runtime root only; no symlink following; digest matching raw64hex/base64-of-ASCII/UTF16LE/UTF16BE, no token values stored",
+    "root": "/private/tmp/willyou-m11-r10-release013-ci007-cNlY14",
+    "forms": [
+      "base64",
+      "raw64hex",
+      "utf16be",
+      "utf16le"
+    ],
+    "regularFiles": 522,
+    "bytesRead": 22659966,
+    "skippedSymlinks": [
+      "codex/tmp/arg0-macos/codex-arg02Ax8Ln/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg02Ax8Ln/applypatch",
+      "codex/tmp/arg0-macos/codex-arg0B9xU1d/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg0B9xU1d/applypatch",
+      "codex/tmp/arg0-macos/codex-arg0MNzqBN/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg0MNzqBN/applypatch",
+      "codex/tmp/arg0-macos/codex-arg0qqNSQW/apply_patch",
+      "codex/tmp/arg0-macos/codex-arg0qqNSQW/applypatch",
+      "home/.claude/skills/willyou-browser-browser",
+      "home/.claude/skills/willyou-browser-reproduce-bug",
+      "home/.claude/skills/willyou-mail-work-assistant",
+      "home/.claude/skills/willyou-project-db-diagnostics",
+      "home/.claude/skills/willyou-remote-password-ssh",
+      "home/.claude/skills/willyou-zentao-bug-analysis",
+      "home/.claude/skills/willyou-zentao-story-review"
+    ],
+    "skippedSpecialFiles": [],
+    "errors": [],
+    "matches": [],
+    "finishedAt": "2026-11-10T00:54:03.610Z"
+  },
+  "savedProfileUnchanged": true,
+  "realHomeUnchanged": true,
+  "rendererErrors": [],
+  "initialActivation": {
+    "at": "2026-11-10T00:53:13.970Z",
+    "pid": 57609,
+    "executable": "/private/tmp/willyou-m11-s7/release013-ci-f70cdd7f/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m11-r10-release013-ci007-cNlY14/userdata",
+    "mainWindow": {
+      "id": 1,
+      "contentsId": 1,
+      "title": "[A] Release0.1.3 CI007 M11 dynamic CLI snapshot-protection"
+    },
+    "scope": "M12-isolated-initial-foreground-only",
+    "userAuthorization": "Existing user reply: \u5141\u8bb8\u6309\u51c6\u786e PID \u9996\u6b21\u6fc0\u6d3b\u6d4b\u8bd5\u7a97\u53e3 (question call_7fa2b9ae68354542a7dcf11b953aeea9), followed by blanket authorization for this M12 testing scope; first activation only, no rearm.",
+    "scriptSHA256": "65e3e655fa1487b1583a7a11f9e32b5c2f9a12b03a724bfbc0fc4fb935ccb37a",
+    "attempts": 1,
+    "guardNotInstalledYet": true,
+    "axReadonlyWaitSeconds": 8,
+    "execTimeoutMs": 30000,
+    "requestSent": true,
+    "focusSuccess": "unverified-until-real-Native-DOM-stable3s",
+    "ax": {
+      "schema": "m12-exact-title-initial-activation-v1",
+      "activated": true,
+      "reason": "exact-title-activated-once",
+      "samples": [
+        {
+          "totalWindows": 1,
+          "matchedWindows": 1,
+          "titles": [
+            "[A] Release0.1.3 CI007 M11 dynamic CLI snapshot-protection"
+          ]
+        },
+        {
+          "totalWindows": 1,
+          "matchedWindows": 1,
+          "titles": [
+            "[A] Release0.1.3 CI007 M11 dynamic CLI snapshot-protection"
+          ]
+        }
+      ]
+    },
+    "stdout": "{\"schema\":\"m12-exact-title-initial-activation-v1\",\"activated\":true,\"reason\":\"exact-title-activated-once\",\"samples\":[{\"totalWindows\":1,\"matchedWindows\":1,\"titles\":[\"[A] Release0.1.3 CI007 M11 dynamic CLI snapshot-protection\"]},{\"totalWindows\":1,\"matchedWindows\":1,\"titles\":[\"[A] Release0.1.3 CI007 M11 dynamic CLI snapshot-protection\"]}]}\n",
+    "stderr": "M12_AX_WINDOW_OBSERVATION={\"totalWindows\":1,\"matchedWindows\":1,\"titles\":[\"[A] Release0.1.3 CI007 M11 dynamic CLI snapshot-protection\"]}\nM12_AX_WINDOW_OBSERVATION={\"totalWindows\":1,\"matchedWindows\":1,\"titles\":[\"[A] Release0.1.3 CI007 M11 dynamic CLI snapshot-protection\"]}\nM12_AX_ACTION_REQUESTED_ONCE\n",
+    "noRetry": true
+  },
+  "initialFocusStableMs": 3057,
+  "ownCleanupVerified": true
+}
