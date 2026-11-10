@@ -20,6 +20,7 @@ export interface DetectOptions {
   env: Record<string, string>;
   shell?: string;
   timeoutMs?: number;
+  signal?: AbortSignal;
 }
 
 /** Parse the script output; exported for tests. */
@@ -45,7 +46,7 @@ export function detectRunner(runner: Runner, executable: string | null, o: Detec
     execFile(
       o.shell ?? loginShell(),
       ['-l', '-i', '-c', DETECT_SCRIPT, 'smartdd-detect', command],
-      { env: o.env, timeout: o.timeoutMs ?? 15_000, maxBuffer: 1024 * 1024 },
+      { env: o.env, timeout: o.timeoutMs ?? 15_000, maxBuffer: 1024 * 1024, signal: o.signal },
       (err, stdout) => {
         const info = parseDetectOutput(runner, command, String(stdout ?? ''));
         if (err && !info.path) {
