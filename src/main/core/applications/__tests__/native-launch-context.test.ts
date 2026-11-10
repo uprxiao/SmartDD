@@ -35,7 +35,7 @@ const input = (command: string): TaskLaunchInput => ({
 describe('inspectNativeLaunch with a bare app PATH', () => {
   it('verifies an absolute script CLI whose interpreter is only on the login-shell PATH', async () => {
     const context = await inspectNativeLaunch(input(join(bin, 'codex')));
-    expect(context).toMatchObject({ command: join(bin, 'codex'), version: '0.166.0' });
+    expect(context).toMatchObject({ command: join(bin, 'codex'), version: '0.166.0', shellPath: `${bin}:/usr/bin:/bin` });
   });
 
   it('resolves a bare command name through the login-shell PATH', async () => {

@@ -40,6 +40,7 @@ let expectedDisposeError:unknown;
 let argMax:number|null;
 let applicationRuntimeAvailable:boolean;
 let cliPolicyAvailable:boolean;
+let sandboxPaths:string[]=[];
 const fixtureCliPolicy={available:true as const,kind:'inherit' as const,parent:':read-only',networkProxy:true,enableNetwork:true,existingNames:[],source:'controlled-effective-policy-fixture',digest:digest('controlled-effective-policy-fixture')};
 // TestPtys has no native bridge child. Its synthetic exit callbacks must settle
 // before their SQLite store/root is closed; retain every rejection for teardown.
@@ -59,7 +60,7 @@ class TestPtys extends EventEmitter implements PtyHost{
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
 beforeEach(async({task})=>{
- cliPolicyAvailable=true;const withCli=['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
+ cliPolicyAvailable=true;sandboxPaths=[];const withCli=['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
  fixtureBridgeExits=[];expectedDisposeError=undefined;applicationRuntimeAvailable=true;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
@@ -67,7 +68,7 @@ beforeEach(async({task})=>{
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
  capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
- applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+ applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async(input:{environment:Record<string,string>})=>{sandboxPaths.push(input.environment.PATH);return cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null};}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
  // Codex and Claude start their configured MCP servers with the session, so the bridge child exits with the Agent.
  // TestPtys forks nothing: settle each prepared bridge handle when its PTY is killed.
  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
@@ -116,6 +117,12 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   await applications.selections.setAdded('browser',true,0);
   await applications.selections.select({projectId,appId:'browser',enabled:false,expectedRevision:0,connections:{}});
  }
+ it('hands the CLI and the sandbox check the login-shell PATH, not the bare app PATH, so env-node Agents still start',async()=>{
+  const rcBin=join(root,'rc-bin');mkdirSync(rcBin);writeFileSync(join(home,'.zshrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');writeFileSync(join(home,'.bashrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');
+  await create();const launch=ptys.launches[0];
+  expect(sandboxPaths).toEqual([rcBin+':/usr/bin:/bin']);
+  expect(launch.env![VALUE_PREFIX+'PATH']).toBe(dirname(realpathSync(resolve('out/native/willyou-app')))+':'+rcBin+':/usr/bin:/bin');
+ });
  it('keeps identity and snapshot protection with no enabled apps, then authorizes an app enabled in the same run',async()=>{
   await deselectLastCliApp();const running=await create(),launch=ptys.launches[0],runId=running.task.runtimeSnapshot!.runId;
   expect(managed.runs.assertActive(runId).snapshot.packages).toEqual([]);
