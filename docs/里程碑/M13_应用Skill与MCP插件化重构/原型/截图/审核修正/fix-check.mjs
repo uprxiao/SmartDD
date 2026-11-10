@@ -1,3 +1,4 @@
+// P0.6 起 AI 配置改为 Code Agent 配置（两栏新建、供应商目录），驱动相应调整。
 // P0.5 起连接行“编辑”收进“…”菜单，驱动相应调整。
 // 审核 review-20261111-0030 中原型已有部分错误（P01–P04、P06–P08）的浏览器复核；P09 由模型单测覆盖。
 import { createRequire } from 'node:module';
@@ -11,13 +12,13 @@ const hash = async h => { await p.evaluate(x => { location.hash = x; }, h); awai
 const dlg = () => p.locator('.m13-dialog');
 await p.goto('http://127.0.0.1:4176/?preview=m13#m13/plugins'); await p.waitForTimeout(700);
 // P01：新建运行配置 → 回工作台 → 首页选择器有它 → 回 M13 仍在
-await hash('m13/ai'); await p.getByRole('button', { name: '新建运行配置' }).click();
-await dlg().locator('.m13-field input').first().fill('P01 校验配置'); await dlg().getByRole('button', { name: '保存' }).click(); await p.waitForTimeout(200);
-await hash('home'); await p.getByRole('button', { name: '选择 AI 配置' }).click(); await p.waitForTimeout(150);
+await hash('m13/ai'); await p.getByRole('button', { name: '新建 Code Agent' }).click();
+await p.locator('.m13-agent-right .m13-field').filter({ hasText: '名称' }).locator('input').fill('P01 校验配置'); await p.locator('.m13-agent-dialog').getByRole('button', { name: '保存' }).click(); await p.waitForTimeout(200);
+await hash('home'); await p.getByRole('button', { name: '选择 Code Agent' }).click(); await p.waitForTimeout(150);
 const homeItems = await p.locator('.profile-choice-menu [role=menuitem]').allInnerTexts();
 await p.screenshot({ path: out + '/p01-home-picker.png' });
 await p.keyboard.press('Escape'); await hash('m13/ai');
-const back = await p.locator('.m13-item b').allInnerTexts();
+const back = await p.locator('.m13-agent-row b').allInnerTexts();
 ok('P01 首页可选新配置', homeItems.some(t => t.includes('P01 校验配置')), homeItems);
 ok('P01 回到 M13 不丢失', back.some(t => t.includes('P01 校验配置')), back.length);
 // P02：禅道 3 个只读能力，浏览器打开页面为写入
@@ -56,28 +57,28 @@ await p.getByRole('button', { name: '添加' }).click(); await p.getByRole('menu
 await dlg().locator('.m13-radio').filter({ hasText: 'zentao-plugin-1.1.0' }).click(); await dlg().getByRole('button', { name: '检查插件' }).click(); await dlg().getByRole('button', { name: '安装' }).click(); await p.waitForTimeout(300);
 { const c0 = await p.locator('#m13-connections .m13-row').count(); await hash('project/smartdd/apps'); const noConn = await p.locator('.m13-pp-card').filter({ hasText: '禅道' }).getByText('还没有连接').count(); await hash('m13/plugins/zentao'); ok('P04 删除数据后重装为空（连接与项目设置都清除）', c0 === 0 && noConn === 1, { c0, noConn }); }
 // P06：删除 DeepSeek 后可重新以预设接入
-await hash('m13/ai/providers'); await p.locator('.m13-item').filter({ hasText: 'DeepSeek' }).click(); await dlg().getByRole('button', { name: '删除' }).click(); await p.waitForTimeout(200);
-await p.getByRole('button', { name: '接入 Provider' }).click();
-const dsDisabled = await dlg().locator('.m13-radio').filter({ hasText: 'DeepSeek' }).locator('input').isDisabled();
-await dlg().locator('.m13-radio').filter({ hasText: 'DeepSeek' }).click(); await dlg().getByRole('button', { name: '下一步' }).click();
+await hash('m13/ai/providers'); await p.locator('.m13-agent-row').filter({ hasText: 'DeepSeek' }).click(); await dlg().getByRole('button', { name: '删除' }).click(); await p.waitForTimeout(200);
+await p.getByRole('button', { name: '接入供应商' }).first().click();
+const dsDisabled = await dlg().locator('.m13-cat-item').filter({ hasText: 'DeepSeek' }).isDisabled();
+await dlg().locator('.m13-cat-item').filter({ hasText: 'DeepSeek' }).click();
 await dlg().locator('input[type=password]').fill('sk-demo-1234'); await dlg().getByRole('button', { name: '获取模型' }).click(); await p.waitForTimeout(150);
-await dlg().getByRole('button', { name: '下一步' }).click(); await p.waitForTimeout(1000); await dlg().getByRole('button', { name: '下一步' }).click(); await dlg().getByRole('button', { name: '完成接入' }).click(); await p.waitForTimeout(300);
-const provs = await p.locator('.m13-item b').allInnerTexts();
+await dlg().getByRole('button', { name: '下一步' }).click(); await p.waitForTimeout(1000); await dlg().getByRole('button', { name: '保存' }).click(); await p.waitForTimeout(200); await dlg().getByRole('button', { name: '完成' }).click(); await p.waitForTimeout(300);
+const provs = await p.locator('.m13-agent-row b').allInnerTexts();
 ok('P06 删除后 DeepSeek 预设可选并重新接入', !dsDisabled && provs.some(t => t.startsWith('DeepSeek')), { dsDisabled, provs });
 // P07：Claude 配置改到 Magpie 后档位全部属于 Magpie
-await hash('m13/ai'); const target = p.locator('.m13-item').filter({ hasText: 'Claude Code · DeepSeek' }).last();
+await hash('m13/ai'); const target = p.locator('.m13-agent-row').filter({ hasText: 'Claude Code · DeepSeek' }).last();
 await target.getByRole('button', { name: /更多操作/ }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(150);
-await dlg().locator('.m13-radio').filter({ hasText: 'Magpie' }).click(); await dlg().locator('summary').click(); await p.waitForTimeout(150);
-const tierVals = await dlg().locator('.m13-tiers select').evaluateAll(els => els.map(e => e.value));
+await p.locator('.m13-pane-item').filter({ hasText: 'Magpie' }).click(); await p.locator('.m13-agent-dialog summary').click(); await p.waitForTimeout(150);
+const tierVals = await p.locator('.m13-agent-dialog .m13-tiers select').evaluateAll(els => els.map(e => e.value));
 await p.screenshot({ path: out + '/p07-tiers-magpie.png' });
-await dlg().getByRole('button', { name: '保存' }).click(); await p.waitForTimeout(200);
+await p.locator('.m13-agent-dialog').getByRole('button', { name: '保存' }).click(); await p.waitForTimeout(200);
 ok('P07 换到 Magpie 后 5 个档位都属于 Magpie', tierVals.length === 5 && tierVals.every(v => ['gpt-5.5', 'claude-sonnet-5-5'].includes(v)), tierVals);
 // P08：旧高级配置可维护环境变量与参数，保存后重开回显
-await p.locator('.m13-item').filter({ hasText: 'CC-rj' }).getByRole('button', { name: /更多操作/ }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(150);
+await p.locator('.m13-agent-row').filter({ hasText: 'CC-rj' }).getByRole('button', { name: /更多操作/ }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(150);
 await dlg().getByRole('button', { name: '添加变量' }).click(); const rows = dlg().locator('.m13-env-row');
 await rows.last().locator('input').first().fill('HTTPS_PROXY'); await rows.last().locator('input').nth(1).fill('${HTTPS_PROXY}');
 await dlg().locator('.m13-field').filter({ hasText: '附加启动参数' }).locator('input').fill('--verbose'); await dlg().getByRole('button', { name: '保存' }).click(); await p.waitForTimeout(200);
-await p.locator('.m13-item').filter({ hasText: 'CC-rj' }).getByRole('button', { name: /更多操作/ }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(150);
+await p.locator('.m13-agent-row').filter({ hasText: 'CC-rj' }).getByRole('button', { name: /更多操作/ }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(150);
 const envKeys = await dlg().locator('.m13-env-row input[aria-label=变量名]').evaluateAll(els => els.map(e => e.value));
 const argsVal = await dlg().locator('.m13-field').filter({ hasText: '附加启动参数' }).locator('input').inputValue();
 await p.screenshot({ path: out + '/p08-legacy-editable.png' });

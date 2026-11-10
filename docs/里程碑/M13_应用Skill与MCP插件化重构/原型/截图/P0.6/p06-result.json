@@ -1,0 +1,90 @@
+{
+ "命名：Code Agent 配置／三个页签／侧栏／首页选择器": {
+  "pass": true,
+  "detail": {
+   "h1": "Code Agent 配置",
+   "tabs": [
+    "Code Agent\n5",
+    "供应商\n4",
+    "本机工具\n2"
+   ],
+   "nav": "Code Agent",
+   "pickerHead": "Code Agent"
+  }
+ },
+ "目录：原有登录／供应商／自定义三组，五家供应商，已接入不可重复，占位项标待核实，可搜索": {
+  "pass": true,
+  "detail": {
+   "groups": [
+    "原有登录\n使用 CLI 自己登录的账号，不需要 Key",
+    "供应商\n模型服务的 API",
+    "自定义\n目录里没有的服务"
+   ],
+   "disabled": [
+    "Claude Code 原有登录",
+    "Codex 原有登录",
+    "DeepSeek",
+    "Magpie"
+   ],
+   "unverified": [
+    "GLM（智谱）",
+    "SMG",
+    "UltraCloud"
+   ],
+   "searched": 2
+  }
+ },
+ "预设接入：占位提示、缺 Key 报错、按协议确认、只给可搭配的工具、一键生成 Code Agent": {
+  "pass": true,
+  "detail": {
+   "confirmRows": [
+    "Anthropic\n流式与工具调用正常 · 可用于 Claude Code\n可用",
+    "OpenAI 兼容\n可以保存，但 Codex、Claude Code 都不能直接使用；可经 Magpie 等网关接入\n需经网关"
+   ],
+   "pairs": [
+    "搭配 Claude Code\n生成“Claude Code · GLM”"
+   ],
+   "last": "Claude Code · GLM"
+  }
+ },
+ "供应商详情一键搭配；已有同一组合时不重复创建": {
+  "pass": true,
+  "detail": "已有“Claude Code · GLM”，可在 Code Agent 中编辑"
+ },
+ "不匹配：只有 OpenAI 兼容的供应商可保存但不能搭配，列表标需经网关，新建时两个工具置灰、不能保存": {
+  "pass": true,
+  "detail": {
+   "ucNoPair": 1,
+   "gw": 1,
+   "bothOff": 2,
+   "saveOff": true
+  }
+ },
+ "两栏新建：选供应商与工具，名称自动生成可改，Claude 档位可调，保存后列表与首页同步": {
+  "pass": true,
+  "detail": {
+   "autoName": "Claude Code · DeepSeek",
+   "tiers": 5
+  }
+ },
+ "新建弹窗左栏底部可直接接入新供应商": {
+  "pass": true
+ },
+ "自定义供应商：必填校验、检测协议给出候选、按协议决定可搭配工具": {
+  "pass": true,
+  "detail": {
+   "det": "候选：Anthropic（最终以确认步骤为准）",
+   "cPairs": [
+    "搭配 Claude Code\n生成“Claude Code · 公司中转”"
+   ]
+  }
+ },
+ "Magpie 未运行时测试连接给出明确失败": {
+  "pass": true,
+  "detail": "Magpie 未运行，无法连接"
+ },
+ "窄窗下两栏弹窗改为上下排列，无横向溢出": {
+  "pass": true
+ },
+ "errors": []
+}

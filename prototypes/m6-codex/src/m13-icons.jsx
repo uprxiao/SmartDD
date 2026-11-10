@@ -42,3 +42,18 @@ export function PluginIcon({ id, name = '', size = 36 }) {
     {tile ? tile.glyph : <text x="18" y="24.2" textAnchor="middle" fontSize="17" fontWeight="600" fill="#fff" fontFamily="-apple-system,system-ui,sans-serif">{(name || id || '?').trim().charAt(0).toUpperCase()}</text>}
   </svg>;
 }
+
+/** 供应商图标（P0.6）：没有可追溯的官方品牌资源，统一用首字母彩色方块；原有登录用命令行符号。颜色仅作区分，不代表官方品牌。 */
+const PROVIDER_TILES = { deepseek: ['#5b7cff', '#3a55e6'], glm: ['#4a6bff', '#2a3fd1'], smg: ['#25b39e', '#12867a'], ultracloud: ['#ff9a3d', '#e86b13'], magpie: ['#3d4250', '#1f2229'], 'native-claude': ['#e08a6a', '#c8603f'], 'native-codex': ['#3a3d44', '#15171b'] };
+export function ProviderIcon({ catalog, name = '', size = 28 }) {
+  const [from, to] = PROVIDER_TILES[catalog] || FALLBACK[hash(catalog || name) % FALLBACK.length];
+  const r = size >= 30 ? 9 : size >= 20 ? 6 : 4, rv = r * 36 / size, gid = 'm13p-' + (catalog || name || 'x') + '-' + size;
+  const native = catalog?.startsWith('native-');
+  const letter = (name || catalog || '?').replace(/^Claude Code.*/, 'C').trim().charAt(0).toUpperCase();
+  return <svg className="m13-icon" width={size} height={size} viewBox="0 0 36 36" aria-hidden="true" style={{ borderRadius: r }}>
+    <defs><linearGradient id={gid} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={from} /><stop offset="1" stopColor={to} /></linearGradient></defs>
+    <rect width="36" height="36" rx={rv} fill={`url(#${gid})`} />
+    {native ? <path d="M10.5 13l5 5-5 5M18.5 24h7" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      : <text x="18" y="24.2" textAnchor="middle" fontSize="17" fontWeight="600" fill="#fff" fontFamily="-apple-system,system-ui,sans-serif">{letter}</text>}
+  </svg>;
+}

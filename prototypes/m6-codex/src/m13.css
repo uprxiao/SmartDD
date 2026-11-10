@@ -244,3 +244,62 @@
 .m13-pp-head{display:flex;align-items:center;gap:12px}.m13-pp-head .m13-switch-row{margin:0}
 .m13-pp-slot{display:grid;grid-template-columns:120px minmax(0,320px) minmax(0,1fr);gap:12px;align-items:center;margin-top:10px;padding-left:40px;font-size:13px}
 .m13-pp-label{color:var(--cx-secondary)}
+/* ===== P0.6 Code Agent 配置 ===== */
+.m13-agent-list{display:flex;flex-direction:column;border-top:1px solid var(--border)}
+.m13-agent-row{display:flex;align-items:center;gap:14px;padding:12px 6px;border-bottom:1px solid var(--border);text-align:left;width:100%;font-size:13px;min-height:62px}
+.m13-agent-row.clickable:hover,.m13-add-row:hover{background:var(--surface)}
+.m13-agent-row.tool{align-items:flex-start}
+.m13-agent-icon{position:relative;flex:0 0 36px;width:36px;height:36px;display:inline-flex}
+.m13-agent-tool{position:absolute;right:-5px;bottom:-5px;border-radius:5px;box-shadow:0 0 0 2px var(--bg);display:inline-flex}
+.m13-cap-icon.big{width:36px;height:36px;flex:0 0 36px;border-radius:9px}
+.m13-add-row{color:var(--cx-secondary)}.m13-add-row .m13-cap-icon{border-style:dashed}
+.m13-toolchips{display:inline-flex;gap:6px;flex-shrink:0}
+.m13-toolchip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px 0 4px;border-radius:11px;background:var(--cx-pill);font-size:12px;color:var(--cx-text)}
+.m13-toolchip .m13-icon{width:14px!important;height:14px!important}
+.m13-toolchip.none{padding:0 8px;color:#a65a0b;background:#fdf1e3}:root[data-theme=dark] .m13-toolchip.none{background:#3a2c18;color:#f0b467}
+/* 两栏新建弹窗 */
+.m13-agent-dialog{width:min(880px,100%);height:min(640px,calc(100dvh - 60px))}
+.m13-agent-panes{flex:1;min-height:0;display:grid;grid-template-columns:280px minmax(0,1fr);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.m13-agent-left{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--border);background:var(--surface)}
+.m13-pane-search{margin:12px 12px 6px;width:auto!important;height:30px!important;min-height:30px!important}
+.m13-pane-list{flex:1;overflow:auto;padding:4px 8px}
+.m13-pane-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px;border-radius:9px;font-size:13px}
+.m13-pane-item:hover{background:var(--hover)}.m13-pane-item.selected{background:var(--cx-selected)}
+.m13-pane-item>span{flex:1;min-width:0}.m13-pane-item b{display:block;font-weight:500;color:var(--cx-text)}.m13-pane-item small{display:block;color:var(--cx-secondary);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m13-warn-ic{color:#b26a12;flex-shrink:0}
+.m13-pane-add{display:flex;align-items:center;gap:6px;margin:6px 12px 12px;padding:8px 10px;border:1px dashed var(--border-strong);border-radius:9px;font-size:13px;color:var(--cx-secondary)}
+.m13-pane-add:hover{background:var(--hover);color:var(--cx-text)}
+.m13-agent-right{overflow:auto;padding:16px 22px}
+.m13-right-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}.m13-right-head b{display:block;font-size:15px;font-weight:600}.m13-right-head small{display:block;color:var(--cx-secondary);font-size:12px;line-height:18px;word-break:break-all}
+.m13-agent-dialog .m13-seg button:disabled{opacity:.45}
+.m13-agent-dialog .m13-seg button .m13-icon{width:16px!important;height:16px!important}
+.m13-pad{padding:8px}
+/* 供应商目录（参考 Magpie 供应商页） */
+.m13-cat-search{width:100%!important;margin-bottom:6px}
+.m13-cat-group{margin-top:16px}.m13-cat-group h3{font-size:13px;font-weight:600;margin:0 0 8px;display:flex;align-items:baseline;gap:8px}.m13-cat-group h3 span{font-weight:400;font-size:12px;color:var(--cx-tertiary)}
+.m13-cat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.m13-cat-item{display:flex;align-items:center;gap:10px;text-align:left;padding:9px 10px;border-radius:10px;border:1px solid var(--border);font-size:13px}
+.m13-cat-item:hover:not(:disabled){background:var(--surface);border-color:var(--border-strong)}
+.m13-cat-item:disabled{opacity:.6;cursor:default}
+.m13-cat-item>span{min-width:0;flex:1}.m13-cat-item b{display:flex;align-items:center;gap:6px;font-weight:500}.m13-cat-item small{display:block;color:var(--cx-secondary);font-size:12px;line-height:17px}
+.m13-dot-ok{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--success)}
+.m13-unverified{color:#a65a0b!important}
+/* 接入表单（参考 Magpie 自定义供应商） */
+.m13-form-grid{display:grid;grid-template-columns:96px minmax(0,1fr);column-gap:14px;row-gap:14px;align-items:start;margin-bottom:12px}
+.m13-form-label{font-size:13px;color:var(--cx-secondary);padding-top:7px;text-align:right}.m13-demo-label::before{content:'演示 · ';color:#a65a0b}
+.m13-input{width:100%;border:1px solid var(--border-strong);border-radius:9px;padding:7px 10px;font-size:13px;background:var(--bg);color:var(--text)}
+.m13-proto-tabs{display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--cx-pill);margin-bottom:6px}
+.m13-proto-tabs button{padding:4px 10px;border-radius:7px;font-size:12px;color:var(--cx-secondary)}.m13-proto-tabs button[aria-selected=true]{background:var(--bg);color:var(--cx-text);box-shadow:0 1px 2px #0000001a}
+.m13-inline-actions{display:flex;align-items:center;gap:10px;margin:8px 0 4px}
+.m13-key{display:flex;gap:8px;align-items:center}.m13-key input{flex:1;border:1px solid var(--border-strong);border-radius:9px;padding:7px 10px;font-size:13px;background:var(--bg);color:var(--text)}.m13-key .m13-link{display:inline-flex;gap:4px;align-items:center;margin:0}
+.m13-endpoint{display:flex;align-items:center;gap:8px;margin-bottom:4px}.m13-endpoint code{font-size:12px;word-break:break-all}
+.m13-err{color:#c4332b}
+.m13-done .m13-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.m13-pair-btn{display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border:1px solid var(--border-strong);border-radius:12px;font-size:13px}
+.m13-pair-btn:hover{background:var(--surface)}.m13-pair-btn>span{flex:1}.m13-pair-btn b{display:block;font-weight:500}.m13-pair-btn small{display:block;color:var(--cx-secondary);font-size:12px}
+.m13-pair-btn .m13-icon{width:20px!important;height:20px!important}
+.m13-dialog-foot .m10-button .m13-icon{width:14px!important;height:14px!important}
+@media (max-width:900px){.m13-agent-panes{grid-template-columns:1fr}.m13-agent-left{max-height:220px;border-right:0;border-bottom:1px solid var(--border)}.m13-cat-grid,.m13-done .m13-pair{grid-template-columns:1fr}}
+.m13-form-grid .m13-adv summary{margin:4px 0 6px}.m13-form-grid .m13-adv+.m13-hint{margin-top:2px}
+:root[data-theme=dark] .m13-toolchip .m13-icon,:root[data-theme=dark] .m13-agent-tool .m13-icon,:root[data-theme=dark] .m13-seg .m13-icon{box-shadow:0 0 0 1px #ffffff38}
+@media (max-width:900px){.m13-agent-left{max-height:280px}}

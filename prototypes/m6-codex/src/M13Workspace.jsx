@@ -5,6 +5,7 @@ import { ArrowRight, Download, FileText, ListTodo, Upload, Settings, Blocks, Bot
 import { AGENTS, ATTENTION, BUILTIN_CAPS, CAPABILITIES, CLAUDE_TIERS, DISCOVERY_QUEUE, INITIAL_BINDINGS, INITIAL_DEFAULTS, MAIL_DRAFTS, SESSION_STATE, checkToolPath, defaultChangeImpact, deleteImpact, removedCapabilities, INSTALL_CANDIDATES, PLUGINS, PRESETS, PROTOCOL_LABEL, PROVIDERS, RUN_CONFIGS, STATE_LABEL, STATE_TONE, TOOLS, autoName, compatible, connectionSummary, connectionTypesOf, countBy, filterCapabilities, globalModelNotice, manage, manageAll, pluginSkillCaps, probe, rebuildTiers, runNotes, scopeLabel, tiersValid, unmanage, validateConnection, validateInstall } from './m13-model.mjs';
 import { pluginAccent } from './m13-icons.jsx';
 import { Btn, Dialog, Mark, Menu, Pill } from './m13-ui.jsx';
+import { CodeAgentConfig, CodeAgentDialog, CatalogDialog, ProviderDialog, ToolPathDialog, makeAgent } from './M13CodeAgent.jsx';
 import { MailDrafts, ZentaoWork, ConnectionDefaultDialog, ConnectionDeleteDialog, ExportDialog, ImportDialog, BuiltinGroup } from './M13Pages.jsx';
 import './m13.css';
 
@@ -41,13 +42,15 @@ export function M13Workspace({ route, nav, projects, tasks = [], dark, onTheme, 
   useEffect(() => { setMenu(null); if (contentRef.current) contentRef.current.scrollTop = 0; }, [route]);
   const projectName = id => projects.find(p => p.id === id)?.name || id;
   const close = () => setModal(null);
+  /** 供应商一键搭配工具生成 Code Agent；同一组合已存在时提示，不重复创建。 */
+  const pair = (provider, tool) => { const ex = configs.find(c => c.provider === provider.id && c.tool === tool); if (ex) { notify(`已有“${ex.name}”，可在 Code Agent 中编辑`); } else { const a = makeAgent(provider, tool); setConfigs(cs => [...cs, a]); notify(`已生成 Code Agent“${a.name}”，可在首页选择`); } close(); nav('m13/ai/configs'); };
 
   return <div className="m10-shell m13-shell">
     <aside className="m10-sidebar">
       <div className="m10-sidebar-title"><h2>自定义</h2><Btn icon={Search} label="搜索插件" onClick={() => { nav('m13/plugins'); setTimeout(() => document.querySelector('[aria-label="搜索插件"].m13-search-input')?.focus(), 40); }} /></div>
       <button className={'m10-nav ' + (page === 'plugins' ? 'selected' : '')} onClick={() => nav('m13/plugins')}><Puzzle size={17} />插件</button>
       <button className={'m10-nav ' + (page === 'capabilities' ? 'selected' : '')} onClick={() => nav('m13/capabilities')}><Blocks size={17} />Skill 与 MCP{countBy(caps, 'skill').new + countBy(caps, 'mcp').new > 0 && <span className="m13-nav-dot" aria-label="有新发现" />}</button>
-      <button className={'m10-nav ' + (page === 'ai' ? 'selected' : '')} onClick={() => nav('m13/ai')}><Bot size={17} />AI 配置</button>
+      <button className={'m10-nav ' + (page === 'ai' ? 'selected' : '')} onClick={() => nav('m13/ai')}><Bot size={17} />Code Agent</button>
       <div className="m10-sidebar-label">已安装</div>
       {plugins.map(p => <React.Fragment key={p.id}><button className={'m10-nav installed ' + (page === 'plugins' && sub === p.id && !sub2 ? 'selected ' : '') + (p.enabled ? '' : 'm13-disabled')} onClick={() => nav('m13/plugins/' + p.id)}><Mark id={p.id} name={p.name} size={16} /><span>{p.name}</span>{!p.enabled && <small className="m13-nav-note">已停用</small>}</button>
         {SUBPAGES[p.id] && page === 'plugins' && sub === p.id && (() => { const [k, t, Icon] = SUBPAGES[p.id]; return <button className={'m10-nav m13-nav-child ' + (sub2 === k ? 'selected' : '')} onClick={() => nav('m13/plugins/' + p.id + '/' + k)}><Icon size={16} />{t}</button>; })()}</React.Fragment>)}
@@ -62,7 +65,7 @@ export function M13Workspace({ route, nav, projects, tasks = [], dark, onTheme, 
         {page === 'plugins' && sub === 'mail' && sub2 === 'drafts' && plugins.find(p => p.id === 'mail') && <MailDrafts plugin={plugins.find(p => p.id === 'mail')} {...{ store, projects, notify, nav }} />}
         {page === 'plugins' && sub === 'zentao' && sub2 === 'work' && plugins.find(p => p.id === 'zentao') && <ZentaoWork plugin={plugins.find(p => p.id === 'zentao')} {...{ store, projects, tasks, scene, notify, nav }} />}
         {page === 'capabilities' && <Capabilities {...{ store, caps, setCaps, plugins, autoManage, setAutoManage, setModal, notify, projects }} />}
-        {page === 'ai' && <AiConfig tab={sub || 'configs'} {...{ store, nav, scene, providers, setProviders, configs, setConfigs, setModal, notify, menu, setMenu }} />}
+        {page === 'ai' && <CodeAgentConfig tab={sub || 'configs'} {...{ store, nav, scene, setModal, notify, menu, setMenu }} />}
       </div>
     </div>
     {modal?.type === 'install' && <InstallDialog source={modal.source} plugins={plugins} onClose={close} onDone={(cand, kind) => {
@@ -83,11 +86,11 @@ export function M13Workspace({ route, nav, projects, tasks = [], dark, onTheme, 
       const idMap = {}; const newProv = pv.providers.filter(p => !p.existsNative).map(p => { const id = providers.some(x => x.id === p.id) ? p.id + '-imp-' + Math.random().toString(36).slice(2, 5) : p.id; idMap[p.id] = id; return { ...p, id, name: p.finalName, key: p.needKey ? null : 'sk-•••• 已导入', needKey: p.needKey, refreshed: '导入', models: (p.models || []).map(m => ({ ...m, status: 'untested' })) }; });
       pv.providers.filter(p => p.existsNative).forEach(p => { idMap[p.id] = p.id; });
       setProviders(ps => [...ps, ...newProv]); setConfigs(cs => [...cs, ...pv.runConfigs.map(c => ({ ...c, id: 'rc-imp-' + Math.random().toString(36).slice(2, 7), name: c.finalName, provider: idMap[c.provider] ?? c.provider, default: false }))]);
-      close(); notify(`已导入 ${pv.runConfigs.length} 个运行配置、${newProv.length} 个 Provider${newProv.some(p => p.needKey) ? '；有 Provider 需要填写 Key' : ''}`); }} />}
+      close(); notify(`已导入 ${pv.runConfigs.length} 个 Code Agent、${newProv.length} 个供应商${newProv.some(p => p.needKey) ? '；有供应商需要填写 Key' : ''}`); }} />}
     {modal?.type === 'capability' && <CapabilityDialog item={caps.find(c => c.id === modal.id)} projects={projects} onClose={close} onChange={next => setCaps(cs => cs.map(c => c.id === next.id ? next : c))} notify={notify} />}
-    {modal?.type === 'runconfig' && <RunConfigDialog initial={modal.config} providers={providers} configs={configs} scene={scene} onClose={close} onSave={rc => { setConfigs(cs => cs.some(c => c.id === rc.id) ? cs.map(c => c.id === rc.id ? rc : c) : [...cs, rc]); close(); notify('运行配置已保存'); }} />}
-    {modal?.type === 'provider' && <ProviderDialog provider={providers.find(p => p.id === modal.id)} setProviders={setProviders} configs={configs} scene={scene} onClose={close} notify={notify} onRemove={() => { setProviders(ps => ps.filter(p => p.id !== modal.id)); setConfigs(cs => cs.map(c => c.provider === modal.id ? { ...c, provider: null, broken: true } : c)); close(); notify('Provider 已删除；引用它的运行配置需要改选'); }} />}
-    {modal?.type === 'add-provider' && <AddProviderDialog providers={providers} scene={scene} onClose={close} onDone={(prov, gen) => { setProviders(ps => [...ps, prov]); setConfigs(cs => [...cs, ...gen]); close(); notify(`${prov.name} 已接入，生成 ${gen.length} 个运行配置`); nav('m13/ai/providers'); }} />}
+    {modal?.type === 'agent' && <CodeAgentDialog initial={modal.config} store={store} scene={scene} onClose={close} onConnect={() => setModal({ type: 'catalog', back: 'agent' })} onSave={rc => { setConfigs(cs => cs.some(c => c.id === rc.id) ? cs.map(c => c.id === rc.id ? rc : c) : [...cs, rc]); close(); notify(`Code Agent“${rc.name}”已保存，可在首页选择`); nav('m13/ai/configs'); }} />}
+    {modal?.type === 'provider' && providers.find(p => p.id === modal.id) && <ProviderDialog provider={providers.find(p => p.id === modal.id)} store={store} scene={scene} onClose={close} notify={notify} onPair={pair} onRemove={() => { setProviders(ps => ps.filter(p => p.id !== modal.id)); setConfigs(cs => cs.map(c => c.provider === modal.id ? { ...c, provider: null, broken: true } : c)); close(); notify('供应商已删除；使用它的 Code Agent 需要改选'); }} />}
+    {modal?.type === 'catalog' && <CatalogDialog store={store} scene={scene} onClose={close} onSaved={p => { setProviders(ps => ps.some(x => x.id === p.id) ? ps : [...ps, p]); notify(`${p.name} 已接入`); }} onPair={pair} />}
     {modal?.type === 'tool-path' && <ToolPathDialog tool={modal.tool} onClose={close} onSave={path => { store.setTools(ts => ts.map(t => t.id === modal.tool.id ? { ...t, path } : t)); close(); notify('已检测：程序可启动，路径已保存（演示）'); }} />}
     {toast && <div className="m10-toast m13-toast" role="status">{toast}</div>}
   </div>;
@@ -264,151 +267,4 @@ function CapabilityDialog({ item: c, projects, onClose, onChange, notify }) {
   </Dialog>;
 }
 
-// ============ AI 配置 ============
-function AiConfig({ store, tab, nav, scene, providers, setProviders, configs, setConfigs, setModal, notify, menu, setMenu }) {
-  const [noticeOpen, setNoticeOpen] = useState(true);
-  const notice = scene === 'model-changed' && noticeOpen ? globalModelNotice({ model: 'gpt-5.5', effort: 'high' }, { model: 'deepseek-v4-pro', effort: 'high' }) : null;
-  const provName = id => providers.find(p => p.id === id)?.name;
-  return <>
-    <div className="m10-page-head"><div><h1>AI 配置</h1><p>把本机工具和模型服务组合成运行配置，首页直接选择。按每次运行注入，WillYou 不修改 CLI 的全局配置。</p></div>
-      <div className="m10-head-actions"><button className="m10-button secondary" onClick={() => setModal({ type: 'import' })}><Upload size={14} />导入</button><button className="m10-button secondary" onClick={() => setModal({ type: 'export' })}><Download size={14} />导出</button>{tab === 'configs' && <button className="m10-button primary" onClick={() => setModal({ type: 'runconfig' })}><Plus size={14} />新建运行配置</button>}{tab === 'providers' && <button className="m10-button primary" onClick={() => setModal({ type: 'add-provider' })}><Plus size={14} />接入 Provider</button>}</div></div>
-    {notice && <div className="m13-alert info m13-model-notice"><Info size={16} /><div><strong>上次 Codex 会话修改了全局默认模型</strong><p>原来是 <code>{notice.before.model}</code>，现在是 <code>{notice.after.model}</code>。这会影响你在终端里直接运行的 Codex。WillYou 不会自动改回。</p><p>需要还原时，打开 <code>~/.codex/config.toml</code>，把对应行改为：</p><pre>{notice.restore.join('\n')}</pre><p className="m13-hint">下次在会话里切换模型时，按 s 只对本次会话生效。</p></div><div className="m13-notice-actions"><button className="m10-button secondary" onClick={() => notify('已复制还原内容（演示）')}><Copy size={14} />复制</button><button className="m10-button secondary" onClick={() => notify('已在默认编辑器中打开（演示）')}><ExternalLink size={14} />打开配置文件</button><button className="m10-button secondary" onClick={() => setNoticeOpen(false)}>知道了</button></div></div>}
-    <div className="m10-tabs" role="tablist">{[['configs', '运行配置'], ['providers', 'Provider'], ['tools', '本机工具']].map(([v, t]) => <button key={v} role="tab" aria-selected={tab === v} onClick={() => nav('m13/ai/' + v)}>{t}</button>)}</div>
-    {tab === 'configs' && <>
-      <div className="m13-list">{configs.map(rc => { const prov = providers.find(p => p.id === rc.provider); return <div key={rc.id} className="m13-item">
-        <span className="m13-cap-icon"><Terminal size={16} /></span>
-        <span className="m13-cap-main"><b>{rc.name}{rc.default && <Pill tone="ok"><Star size={11} />默认</Pill>}{rc.legacy && <Pill>高级配置</Pill>}{rc.broken && <Pill tone="warn">Provider 已删除</Pill>}</b>
-          <small>{AGENTS[rc.tool]} · {rc.legacy ? '保留原环境变量与参数' : prov ? prov.name : '需要重新选择 Provider'} · {rc.model || 'CLI 默认模型'}{prov?.needKey ? ' · Provider 需要填写 Key 后才能启动' : ''}</small>
-          {rc.legacy && <small className="m13-cap-scope">{rc.legacyNote}</small>}</span>
-        <Menu open={menu === 'rc-' + rc.id} onToggle={() => setMenu(menu === 'rc-' + rc.id ? null : 'rc-' + rc.id)} label={rc.name + ' 更多操作'} items={[['编辑', () => { setMenu(null); setModal({ type: 'runconfig', config: rc }); }], !rc.default && ['设为默认', () => { setMenu(null); setConfigs(cs => cs.map(c => ({ ...c, default: c.id === rc.id }))); notify(`${rc.name} 已设为默认`); }], !rc.default && ['删除', () => { setMenu(null); setConfigs(cs => cs.filter(c => c.id !== rc.id)); notify('已删除；使用过它的历史任务恢复时会提示重新选择'); }, true]]} />
-      </div>; })}</div>
-      <section className="m13-section"><h2>首页显示效果</h2><div className="m13-home-picker"><div className="m13-picker-trigger"><Terminal size={14} />{configs.find(c => c.default)?.name}<ChevronDown size={14} /></div><div className="m13-picker-menu">{configs.map(c => <div key={c.id} className={c.default ? 'selected' : ''}><span>{c.name}</span>{c.default && <Check size={14} />}</div>)}</div></div><p className="m13-hint">首页按名称选择，常用流程不显示环境变量与启动参数。</p></section>
-    </>}
-    {tab === 'providers' && <div className="m13-list">{providers.map(p => { const down = scene === 'magpie-down' && p.id === 'magpie'; return <button key={p.id} className="m13-item clickable" onClick={() => setModal({ type: 'provider', id: p.id })}>
-      <span className="m13-cap-icon">{p.type === 'native' ? <KeyRound size={16} /> : <Server size={16} />}</span>
-      <span className="m13-cap-main"><b>{p.name}<Pill>{p.type === 'native' ? '原有登录' : p.type === 'preset' ? '预设' : '自定义'}</Pill>{p.needKey && <Pill tone="warn">需要填写 Key</Pill>}</b>
-        <small>{p.type === 'native' ? p.note : `${p.url} · ${p.protocols.map(x => PROTOCOL_LABEL[x]).join('、')} · ${p.models.length} 个模型`}</small></span>
-      {down ? <Pill tone="warn">未运行</Pill> : p.needKey ? null : p.type !== 'native' && <Pill tone="ok">可用</Pill>}<ChevronRight size={15} className="m13-chev" /></button>; })}</div>}
-    {tab === 'tools' && <div className="m13-list">{store.tools.map(t => { const version = scene === 'codex-unverified' && t.id === 'codex' ? '0.167.0' : t.version; const ok = t.verified.includes(version); return <div key={t.id} className="m13-item tool">
-      <span className="m13-cap-icon"><Terminal size={16} /></span>
-      <span className="m13-cap-main"><b>{t.name}<span className="m10-package-version">{version}</span></b><small><code>{t.path}</code></small>
-        <span className="m13-checks"><span><Check size={12} />检测到程序</span><span><Check size={12} />程序可启动</span>{ok ? <span><Check size={12} />版本已验证</span> : <span className="warn"><TriangleAlert size={12} />未验证版本，可继续使用，遇到问题请反馈</span>}<span className="muted"><CircleDashed size={12} />模型连接在运行配置中测试</span></span></span>
-      <div className="m13-item-actions"><button className="m10-button secondary" onClick={() => notify(`${t.name} 已重新检测`)}>重新检测</button><Menu open={menu === 'tool-' + t.id} onToggle={() => setMenu(menu === 'tool-' + t.id ? null : 'tool-' + t.id)} label={t.name + ' 更多操作'} items={[['自定义路径…', () => { setMenu(null); setModal({ type: 'tool-path', tool: t }); }]]} /></div>
-    </div>; })}</div>}
-  </>;
-}
-function RunConfigDialog({ initial, providers, configs, scene, onClose, onSave }) {
-  const legacy = initial?.legacy;
-  const [tool, setTool] = useState(initial?.tool || 'claude');
-  const [prov, setProv] = useState(initial?.provider || (initial ? null : 'native-claude'));
-  const provider = providers.find(p => p.id === prov);
-  const [model, setModel] = useState(initial?.model || null);
-  const [tiers, setTiers] = useState(() => initial?.tiers || {});
-  const [name, setName] = useState(initial?.name || '');
-  const [touched, setTouched] = useState(!!initial);
-  const [env, setEnv] = useState(() => initial?.env || []);
-  const [args, setArgs] = useState(initial?.args || '');
-  const effName = touched ? name : provider ? autoName(tool, provider) : '';
-  const okProv = provider && compatible(tool, provider).ok;
-  const thirdClaude = !legacy && tool === 'claude' && provider && provider.type !== 'native';
-  const effTiers = thirdClaude ? rebuildTiers(provider, model, tiers) : undefined;
-  const tierOk = !thirdClaude || tiersValid(provider, effTiers);
-  const [testRes, setTestRes] = useState(null);
-  const runTest = () => { setTestRes('testing'); setTimeout(() => setTestRes(provider?.type === 'native' ? { ok: true, text: `使用 ${AGENTS[tool]} 的原有登录，按 CLI 自身登录状态运行` } : provider?.needKey ? { ok: false, text: '这个 Provider 还没有 Key' } : scene === 'magpie-down' && provider?.id === 'magpie' ? { ok: false, text: 'Magpie 未运行，无法连接' } : { ok: true, text: `流式与工具调用正常 · ${model}（演示）` }), 700); };
-  const pickProvider = p => { setProv(p.id); const m = p.models?.find(x => x.status === 'ok')?.id || null; setModel(m); setTiers({}); };
-  const save = () => onSave({ ...(initial || {}), id: initial?.id || 'rc-' + Math.random().toString(36).slice(2, 8), name: effName || '未命名配置', tool, provider: legacy ? null : prov, model: legacy || provider?.type === 'native' ? null : model, tiers: effTiers, env, args, broken: false });
-  const envEditor = <div className="m13-field"><span>环境变量（值为秘密的只显示“已加密”，原型不保存秘密原文）</span>
-    {env.map((e, i) => <div key={i} className="m13-env-row"><input aria-label="变量名" value={e.key} onChange={ev => setEnv(list => list.map((x, j) => j === i ? { ...x, key: ev.target.value } : x))} /><input aria-label="变量值" value={e.secret ? '' : e.value || ''} placeholder={e.secret ? '已加密，留空不修改' : '值或 ${引用}'} onChange={ev => setEnv(list => list.map((x, j) => j === i ? { ...x, value: ev.target.value, secret: false } : x))} /><button type="button" className="m13-link" onClick={() => setEnv(list => list.filter((_, j) => j !== i))}>删除</button></div>)}
-    <button type="button" className="m13-link m13-add-conn" onClick={() => setEnv(list => [...list, { key: '', value: '' }])}><Plus size={13} />添加变量</button></div>;
-  return <Dialog title={initial ? '编辑运行配置' : '新建运行配置'} onClose={onClose} wide footer={<>{!legacy && <button className="m10-button secondary m13-foot-left" disabled={!okProv || testRes === 'testing'} onClick={runTest}>{testRes === 'testing' ? '测试中…' : '测试连接'}</button>}<button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" disabled={!legacy && (!okProv || !tierOk)} onClick={save}>保存</button></>}>
-    {testRes && testRes !== 'testing' && <div className={'m13-alert ' + (testRes.ok ? 'info' : 'danger')}>{testRes.ok ? <CircleCheck size={16} /> : <TriangleAlert size={16} />}<div><p>{testRes.text}{provider?.type !== 'native' ? '。测试会发起一次最小调用，可能产生少量费用。' : ''}</p></div></div>}
-    {legacy ? <>
-      <div className="m13-alert info"><Info size={16} /><div><strong>高级配置</strong><p>{initial.legacyNote}。可以继续维护环境变量与启动参数；如需拆成工具＋Provider，可新建运行配置。</p></div></div>
-      <label className="m13-field"><span>名称</span><input value={effName} onChange={e => { setTouched(true); setName(e.target.value); }} /></label>
-      <h3 className="m13-sub">本机工具</h3><div className="m13-seg">{TOOLS.map(t => <button key={t.id} aria-pressed={tool === t.id} onClick={() => setTool(t.id)}><Terminal size={14} />{t.name}<small>{t.version}</small></button>)}</div>
-      {envEditor}
-      <label className="m13-field"><span>附加启动参数</span><input value={args} onChange={e => setArgs(e.target.value)} placeholder="一般不需要填写" /></label>
-    </> : <>
-      <h3 className="m13-sub">1. 本机工具</h3><div className="m13-seg">{TOOLS.map(t => <button key={t.id} aria-pressed={tool === t.id} onClick={() => { setTool(t.id); if (provider && !compatible(t.id, provider).ok) setProv(null); }}><Terminal size={14} />{t.name}<small>{t.version}</small></button>)}</div>
-      <h3 className="m13-sub">2. 模型服务</h3><div className="m13-radios" role="radiogroup">{providers.map(p => { const c = compatible(tool, p); return <label key={p.id} className={'m13-radio' + (prov === p.id ? ' selected' : '') + (c.ok ? '' : ' disabled')}><input type="radio" disabled={!c.ok} checked={prov === p.id} onChange={() => pickProvider(p)} /><span><b>{p.name}</b><small>{c.ok ? (p.type === 'native' ? p.note : p.url) : c.reason}</small></span></label>; })}</div>
-      {provider && provider.type !== 'native' && <><h3 className="m13-sub">3. 默认模型</h3><select className="m13-select" value={model || ''} onChange={e => setModel(e.target.value || null)}>{provider.models.map(m => <option key={m.id} value={m.id} disabled={m.status === 'rejected'}>{m.name}{m.status === 'rejected' ? '（调用被拒绝）' : m.status === 'untested' ? '（未测试）' : ''}</option>)}</select>
-        {thirdClaude && <p className="m13-hint">Opus／Sonnet／Haiku、small-fast 与子 Agent 档位都只能选 {provider.name} 的模型；更换模型服务时会重新设置，可在高级设置中逐项调整。</p>}</>}
-      <label className="m13-field"><span>名称</span><input value={effName} onChange={e => { setTouched(true); setName(e.target.value); }} placeholder="选择工具和服务后自动生成" /></label>
-      {okProv && <ul className="m13-notes">{runNotes({ tool, provider: prov }, provider).map(n => <li key={n}><Info size={13} />{n}</li>)}</ul>}
-      <details className="m13-adv"><summary>高级设置</summary>
-        {thirdClaude && <div className="m13-tiers">{CLAUDE_TIERS.map(([k, label]) => <label key={k} className="m13-field"><span>{label}</span><select className="m13-select" value={effTiers[k]} onChange={e => setTiers(t => ({ ...rebuildTiers(provider, model, t), [k]: e.target.value }))}>{provider.models.filter(m => m.status !== 'rejected').map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label>)}</div>}
-        {envEditor}
-        <label className="m13-field"><span>附加启动参数</span><input value={args} onChange={e => setArgs(e.target.value)} placeholder="一般不需要填写" /></label>
-      </details>
-      {!tierOk && <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>有档位使用了不属于 {provider?.name} 的模型，请在高级设置中重新选择。</p></div></div>}
-    </>}
-  </Dialog>;
-}
-function ProviderDialog({ provider: p, setProviders, configs, scene, onClose, notify, onRemove }) {
-  const [keyEdit, setKeyEdit] = useState(p.needKey ? '' : null), [refreshing, setRefreshing] = useState(false);
-  const refs = configs.filter(c => c.provider === p.id);
-  const down = scene === 'magpie-down' && p.id === 'magpie';
-  const patch = fn => setProviders(ps => ps.map(x => x.id === p.id ? fn(x) : x));
-  const test = m => { patch(x => ({ ...x, models: x.models.map(y => y.id === m.id ? { ...y, status: 'testing' } : y) })); setTimeout(() => patch(x => ({ ...x, models: x.models.map(y => y.id === m.id ? { ...y, status: m.status === 'rejected' ? 'rejected' : 'ok', tested: '刚刚' } : y) })), 700); };
-  const refresh = () => { setRefreshing(true); setTimeout(() => { setRefreshing(false); const extra = p.preset === 'deepseek' && !p.models.some(m => m.id === 'deepseek-v4-lite') ? [{ id: 'deepseek-v4-lite', name: 'DeepSeek V4 Lite', ctx: '64K', status: 'untested' }] : []; patch(x => ({ ...x, refreshed: '刚刚', models: [...x.models, ...extra] })); notify(extra.length ? `模型列表已刷新：新增 ${extra.map(e => e.name).join('、')}` : '模型列表已刷新：没有变化'); }, 700); };
-  return <Dialog title={p.name} sub={p.type === 'native' ? '原有登录' : p.url} onClose={onClose} wide footer={<>{p.type !== 'native' && <button className="m10-button secondary m13-danger-text" onClick={onRemove}>删除</button>}<button className="m10-button primary" onClick={onClose}>完成</button></>}>
-    {p.type === 'native' ? <p className="m13-desc">{p.note}。如需切换账号，请在终端中用 {AGENTS[p.tool]} 自己的登录命令完成。</p> : <>
-      {down && <div className="m13-alert warn"><TriangleAlert size={16} /><div><strong>Magpie 未运行</strong><p>启动任务前会先提示，不会让 CLI 卡在重连。请先打开 Magpie。</p></div></div>}
-      {p.needKey && <div className="m13-alert warn"><Info size={16} /><div><strong>需要填写 Key</strong><p>这个 Provider 从导入文件创建，文件里不含 Key。填写后才能启动任务。</p></div></div>}
-      <dl className="m13-info compact"><dt>协议</dt><dd>{p.protocols.map(x => PROTOCOL_LABEL[x]).join('、')}</dd>
-        <dt>Key</dt><dd>{keyEdit === null ? <><code>{p.key || '未填写'}</code><button className="m13-link" onClick={() => setKeyEdit('')}>{p.key ? '更换' : '填写'}</button></> : <span className="m13-inline-edit"><input type="password" aria-label="新的 Key" value={keyEdit} onChange={e => setKeyEdit(e.target.value)} placeholder="加密保存，只在启动时注入" /><button className="m10-button secondary m13-row-btn" disabled={!keyEdit.trim()} onClick={() => { patch(x => ({ ...x, key: 'sk-•••• ' + keyEdit.slice(-4), needKey: false })); setKeyEdit(null); notify('Key 已更新（原型只保留脱敏后四位）'); }}>保存</button>{!p.needKey && <button className="m13-link" onClick={() => setKeyEdit(null)}>取消</button>}</span>}</dd>
-        <dt>模型目录</dt><dd>{p.refreshed} 刷新 · 每次启动任务前自动比对<button className="m13-link" disabled={refreshing || down} onClick={refresh}>{refreshing ? '刷新中…' : '刷新模型'}</button></dd>
-        <dt>被引用</dt><dd>{refs.length ? refs.map(r => r.name).join('、') : '暂无运行配置使用'}</dd></dl>
-      <h3 className="m13-sub">模型</h3><div className="m13-table models" role="table"><div role="row" className="m13-th"><span>模型</span><span>上下文</span><span>可用性</span><span /></div>{p.models.map(m => <div role="row" key={m.id}><span>{m.name}</span><span>{m.ctx}</span><span>{m.status === 'ok' ? <Pill tone="ok">可用</Pill> : m.status === 'rejected' ? <Pill tone="warn">调用被拒绝</Pill> : m.status === 'testing' ? <Pill>测试中…</Pill> : <Pill>未测试</Pill>}</span><span><button className="m13-link" disabled={down || p.needKey || m.status === 'testing'} onClick={() => test(m)}>测试可用性</button></span></div>)}</div>
-      <p className="m13-hint">“测试可用性”会发起一次最小的流式＋工具调用，可能产生少量费用；结果会保留在这里。能列出的模型不一定能调用。</p>
-      {refs.length > 0 && <p className="m13-hint">删除后，引用它的 {refs.length} 个运行配置需要重新选择 Provider；历史任务恢复时会提示改选，不会静默换账号。</p>}
-    </>}
-  </Dialog>;
-}
-function ToolPathDialog({ tool, onClose, onSave }) {
-  const [path, setPath] = useState(tool.path), [err, setErr] = useState('');
-  return <Dialog title="自定义可执行路径" sub={tool.name + ' · 高级'} onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" onClick={() => { const r = checkToolPath(path); if (!r.ok) setErr(r.error); else onSave(path.trim()); }}>检测并保存</button></>}>
-    <label className="m13-field"><span>可执行文件</span><input value={path} onChange={e => { setPath(e.target.value); setErr(''); }} /></label>
-    {err && <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>{err}，未保存。</p></div></div>}
-    <p className="m13-hint">一般不需要修改。WillYou 会检测该文件能否启动并读取版本（原型中路径含“missing”视为不存在，以 .txt 结尾视为不可执行）。</p>
-  </Dialog>;
-}
-function AddProviderDialog({ providers, scene, onClose, onDone }) {
-  const [step, setStep] = useState('choose'), [kind, setKind] = useState(null), [url, setUrl] = useState('https://api.acme.example/v1'), [key, setKey] = useState(''), [demo, setDemo] = useState('ok');
-  const [result, setResult] = useState(null), [models, setModels] = useState([]), [manual, setManual] = useState(''), [confirm, setConfirm] = useState(null), [gen, setGen] = useState({ codex: true, claude: true });
-  const has = id => providers.some(p => p.id === id);
-  const preset = kind && kind !== 'custom' ? PRESETS[kind] : null;
-  const name = preset ? preset.name : 'Acme 服务';
-  const choose = k => { setKind(k); setResult(null); if (PRESETS[k]) { setUrl(PRESETS[k].url); setKey(PRESETS[k].defaultKey || ''); } else setUrl('https://api.acme.example/v1'); };
-  const runProbe = () => {
-    let r;
-    if (preset) r = kind === 'magpie' && scene === 'magpie-down' ? { ok: false, error: 'Magpie 未运行：无法连接 http://127.0.0.1:3425。请先打开 Magpie。' } : !key.trim() ? { ok: false, error: `请填写${preset.keyLabel}` } : { ok: true, candidates: preset.protocols, models: preset.models };
-    else r = probe(url, key, demo);
-    setResult(r); if (r.ok) { setModels(r.models.map(m => m.id)); setStep('models'); }
-  };
-  const runConfirm = () => { setConfirm('testing'); setTimeout(() => setConfirm(preset || demo === 'ok' || demo === 'empty' ? { responses: true, anthropic: true } : demo === 'partial' ? { responses: true, anthropic: false } : { responses: false, anthropic: false }), 800); };
-  const passed = confirm && confirm !== 'testing' ? result.candidates.filter(x => confirm[x]) : [];
-  const finish = () => { const prov = { id: preset ? kind : 'custom-' + Math.random().toString(36).slice(2, 6), name, type: preset ? 'preset' : 'custom', preset: preset ? kind : undefined, url, protocols: passed, key: preset && kind === 'magpie' ? key : 'sk-•••• ' + (key.slice(-4) || '0000'), refreshed: '刚刚', models: (models.length ? result.models.filter(m => models.includes(m.id)) : [{ id: manual, name: manual, ctx: '—' }]).map(m => ({ ...m, status: 'ok' })) };
-    const first = prov.models[0]?.id; const out = []; if (gen.codex && prov.protocols.includes('responses')) out.push({ id: 'rc-' + prov.id + '-codex-' + Math.random().toString(36).slice(2, 5), name: autoName('codex', prov), tool: 'codex', provider: prov.id, model: first }); if (gen.claude && prov.protocols.includes('anthropic')) out.push({ id: 'rc-' + prov.id + '-claude-' + Math.random().toString(36).slice(2, 5), name: autoName('claude', prov), tool: 'claude', provider: prov.id, model: first, tiers: rebuildTiers(prov, first) }); onDone(prov, out); };
-  return <Dialog title="接入 Provider" sub={{ choose: '选择预设或填写地址与 Key', form: preset ? name : '自定义地址', models: '选择要接入的模型', confirm: '确认可用', gen: '生成运行配置' }[step]} onClose={onClose} wide
-    footer={step === 'choose' ? <><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" disabled={!kind} onClick={() => setStep('form')}>下一步</button></>
-      : step === 'form' ? <><button className="m10-button secondary" onClick={() => setStep('choose')}>返回</button><button className="m10-button primary" onClick={runProbe}>获取模型</button></>
-        : step === 'models' ? <><button className="m10-button secondary" onClick={() => setStep('form')}>返回</button><button className="m10-button primary" disabled={!models.length && !manual.trim()} onClick={() => { setStep('confirm'); runConfirm(); }}>下一步</button></>
-          : step === 'confirm' ? <><button className="m10-button secondary" onClick={() => setStep('models')}>返回</button><button className="m10-button primary" disabled={confirm === 'testing' || !passed.length} onClick={() => setStep('gen')}>下一步</button></>
-            : <><button className="m10-button secondary" onClick={() => setStep('confirm')}>返回</button><button className="m10-button primary" onClick={finish}>完成接入</button></>}>
-    {step === 'choose' && <div className="m13-radios" role="radiogroup">
-      {[['magpie', 'http://127.0.0.1:3425/v1 · 真实 Key 与路由留在 Magpie'], ['deepseek', 'https://api.deepseek.com/ · 同时支持 Codex 与 Claude Code']].map(([id, d]) => <label key={id} className={'m13-radio' + (kind === id ? ' selected' : '') + (has(id) ? ' disabled' : '')}><input type="radio" disabled={has(id)} checked={kind === id} onChange={() => choose(id)} /><span><b>{PRESETS[id].name}</b><small>{has(id) ? '已接入，可在 Provider 详情中管理' : d}</small></span></label>)}
-      <label className={'m13-radio' + (kind === 'custom' ? ' selected' : '')}><input type="radio" checked={kind === 'custom'} onChange={() => choose('custom')} /><span><b>自定义地址＋Key</b><small>OpenAI Responses 或 Anthropic Messages 兼容的服务</small></span></label></div>}
-    {step === 'form' && <>{preset ? <dl className="m13-info compact"><dt>服务地址</dt><dd><code>{preset.url}</code></dd><dt>协议</dt><dd>{preset.protocols.map(x => PROTOCOL_LABEL[x]).join('、')}</dd></dl> : <label className="m13-field"><span>服务地址</span><input value={url} onChange={e => setUrl(e.target.value)} /></label>}
-      <label className="m13-field"><span>{preset ? preset.keyLabel : 'Key'}</span><input type="password" value={key} onChange={e => setKey(e.target.value)} placeholder="加密保存，只在启动时注入" /></label>
-      {!preset && <label className="m13-field demo"><span>演示结果（原型）</span><select value={demo} onChange={e => setDemo(e.target.value)}><option value="ok">成功</option><option value="empty">模型列表为空</option><option value="bad-key">Key 无效（401）</option><option value="unreachable">服务不可达</option><option value="partial">仅 Responses 确认通过</option><option value="tools-fail">能列出模型但工具调用失败</option></select></label>}
-      {result && !result.ok && <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>{result.error}</p></div></div>}</>}
-    {step === 'models' && <>{!preset && <><p className="m13-desc">候选协议：{result.candidates.map(x => <Pill key={x} tone="info">{PROTOCOL_LABEL[x]}（候选）</Pill>)}</p><p className="m13-hint">候选协议只是初步判断，下一步用一次最小调用确认后才算可用。</p></>}
-      {result.models.length ? <div className="m13-checks-list">{result.models.map(m => <label key={m.id}><input type="checkbox" checked={models.includes(m.id)} onChange={e => setModels(ms => e.target.checked ? [...ms, m.id] : ms.filter(x => x !== m.id))} />{m.name}<small>{m.ctx}</small></label>)}</div>
-        : <><div className="m13-alert info"><Info size={16} /><div><p>{result.note}</p></div></div><label className="m13-field"><span>模型 ID</span><input value={manual} onChange={e => setManual(e.target.value)} placeholder="例如 acme-coder-large" /></label></>}</>}
-    {step === 'confirm' && <>{confirm === 'testing' ? <p className="m13-desc"><RefreshCw size={14} className="m13-spin" /> 正在用一次最小的流式＋工具调用确认…</p> : <div className="m13-list">{result.candidates.map(x => <div key={x} className="m13-item"><span className="m13-cap-icon">{confirm[x] ? <CircleCheck size={16} /> : <TriangleAlert size={16} />}</span><span className="m13-cap-main"><b>{PROTOCOL_LABEL[x]}</b><small>{confirm[x] ? `流式与工具调用正常 · 可用于 ${x === 'responses' ? 'Codex' : 'Claude Code'}` : '模型列表可读，但最小工具调用失败：返回 400 tools not supported'}</small></span><Pill tone={confirm[x] ? 'ok' : 'warn'}>{confirm[x] ? '可用' : '不可用'}</Pill></div>)}</div>}
-      {confirm && confirm !== 'testing' && !passed.length && <div className="m13-alert danger"><TriangleAlert size={16} /><div><strong>没有可用的协议</strong><p>这个服务不能作为代码 Agent 的模型服务使用，不会接入。可检查地址或联系服务提供方。</p></div></div>}
-      <p className="m13-hint">确认调用可能产生少量费用。</p></>}
-    {step === 'gen' && <><p className="m13-desc">按确认可用的协议生成运行配置，之后可以在首页直接选择：</p><div className="m13-checks-list">{[['codex', 'responses'], ['claude', 'anthropic']].filter(([, pr]) => passed.includes(pr)).map(([t]) => <label key={t}><input type="checkbox" checked={gen[t]} onChange={e => setGen(g => ({ ...g, [t]: e.target.checked }))} />{AGENTS[t]} · {name.replace(/（.*）/, '')}</label>)}</div></>}
-  </Dialog>;
-}
+// Code Agent 配置（原 AI 配置）的页面与弹窗见 M13CodeAgent.jsx。

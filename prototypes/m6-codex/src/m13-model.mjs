@@ -146,11 +146,11 @@ export const TOOLS = [
   { id: 'codex', name: 'Codex', path: '~/.local/bin/codex', version: '0.166.0', verified: ['0.166.0'] },
 ];
 export const PROVIDERS = [
-  { id: 'native-claude', name: 'Claude Code 原有登录', type: 'native', tool: 'claude', note: '使用你在 Claude Code 中已登录的账号，WillYou 不读取凭据' },
-  { id: 'native-codex', name: 'Codex 原有登录', type: 'native', tool: 'codex', note: '使用你在 Codex 中已登录的账号，WillYou 不读取凭据' },
-  { id: 'deepseek', name: 'DeepSeek', type: 'preset', preset: 'deepseek', url: 'https://api.deepseek.com/', protocols: ['responses', 'anthropic'], key: 'sk-•••• 3f9a', refreshed: '今天 09:12',
+  { id: 'native-claude', name: 'Claude Code 原有登录', type: 'native', catalog: 'native-claude', tool: 'claude', note: '使用你在 Claude Code 中已登录的账号，WillYou 不读取凭据' },
+  { id: 'native-codex', name: 'Codex 原有登录', type: 'native', catalog: 'native-codex', tool: 'codex', note: '使用你在 Codex 中已登录的账号，WillYou 不读取凭据' },
+  { id: 'deepseek', name: 'DeepSeek', type: 'preset', preset: 'deepseek', catalog: 'deepseek', url: 'https://api.deepseek.com/', endpoints: { responses: 'https://api.deepseek.com/', anthropic: 'https://api.deepseek.com/anthropic' }, protocols: ['responses', 'anthropic'], key: 'sk-•••• 3f9a', refreshed: '今天 09:12',
     models: [{ id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', ctx: '128K', status: 'ok' }, { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', ctx: '128K', status: 'ok' }, { id: 'deepseek-legacy-chat', name: 'deepseek-legacy-chat', ctx: '64K', status: 'rejected', detail: '能列出，但调用被服务端拒绝' }] },
-  { id: 'magpie', name: 'Magpie（本机网关）', type: 'preset', preset: 'magpie', url: 'http://127.0.0.1:3425/v1', protocols: ['responses', 'anthropic'], key: 'magpie-codex', refreshed: '今天 08:40',
+  { id: 'magpie', name: 'Magpie', type: 'preset', preset: 'magpie', catalog: 'magpie', url: 'http://127.0.0.1:3425/v1', endpoints: { responses: 'http://127.0.0.1:3425/v1', anthropic: 'http://127.0.0.1:3425' }, protocols: ['responses', 'anthropic'], key: 'magpie-codex', refreshed: '今天 08:40',
     models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K', status: 'ok' }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K', status: 'untested' }] },
 ];
 export const PROTOCOL_LABEL = { responses: 'OpenAI Responses', anthropic: 'Anthropic Messages' };
@@ -281,7 +281,7 @@ export function buildExport({ providers, configs, selectedConfigs, selectedProvi
 }
 /** 导入预览：同名不覆盖，导入项名称加“（导入）”；未带 Key 的 Provider 标“需要填写 Key”。 */
 export function importPreview(file, { providers, configs }) {
-  if (file?.format !== 'willyou-ai-config/v1') return { ok: false, error: '不是 WillYou AI 配置文件，或版本不支持' };
+  if (file?.format !== 'willyou-ai-config/v1') return { ok: false, error: '不是 WillYou Code Agent 配置文件，或版本不支持' };
   const pn = new Set(providers.map(p => p.name)), cn = new Set(configs.map(c => c.name));
   return { ok: true, encrypted: file.includesKeys,
     providers: file.providers.map(p => ({ ...p, finalName: pn.has(p.name) ? p.name + '（导入）' : p.name, needKey: p.type !== 'native' && !p.key, existsNative: p.type === 'native' && providers.some(x => x.id === p.id) })),
@@ -296,3 +296,38 @@ export function checkToolPath(path) {
   if (/\.(txt|md|json)$/.test(path)) return { ok: false, error: '该文件不可执行' };
   return { ok: true };
 }
+
+// ================= P0.6：Code Agent 配置（需求 2026-11-11 补记） =================
+/** 通用供应商目录：首期内置五家＋原有登录＋自定义。verified=false 的为占位数据，正式开发前须按官方资料或用户提供的信息核实。 */
+export const CATALOG_GROUPS = [['native', '原有登录', '使用 CLI 自己登录的账号，不需要 Key'], ['vendor', '供应商', '模型服务的 API'], ['custom', '自定义', '目录里没有的服务']];
+export const CATALOG = [
+  { id: 'native-claude', group: 'native', name: 'Claude Code 原有登录', tool: 'claude', desc: '使用你在 Claude Code 中已登录的账号', verified: true },
+  { id: 'native-codex', group: 'native', name: 'Codex 原有登录', tool: 'codex', desc: '使用你在 Codex 中已登录的账号', verified: true },
+  { id: 'deepseek', group: 'vendor', name: 'DeepSeek', desc: '官方 API', endpoints: { responses: 'https://api.deepseek.com/', anthropic: 'https://api.deepseek.com/anthropic' }, keyLabel: 'DeepSeek API Key', verified: true,
+    models: [{ id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', ctx: '128K' }, { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', ctx: '128K' }] },
+  { id: 'glm', group: 'vendor', name: 'GLM（智谱）', desc: '智谱开放平台', endpoints: { anthropic: 'https://open.bigmodel.cn/api/anthropic', openai: 'https://open.bigmodel.cn/api/paas/v4' }, keyLabel: '智谱 API Key', verified: false,
+    models: [{ id: 'glm-5', name: 'GLM-5', ctx: '128K' }, { id: 'glm-5-air', name: 'GLM-5-Air', ctx: '128K' }] },
+  { id: 'smg', group: 'vendor', name: 'SMG', desc: '地址与协议待用户提供', endpoints: { responses: 'https://smg.example.invalid/v1', anthropic: 'https://smg.example.invalid/anthropic' }, keyLabel: 'SMG Key', verified: false,
+    models: [{ id: 'smg-coder', name: 'smg-coder（占位）', ctx: '—' }] },
+  { id: 'ultracloud', group: 'vendor', name: 'UltraCloud', desc: '地址与协议待用户提供', endpoints: { openai: 'https://ultracloud.example.invalid/v1' }, keyLabel: 'UltraCloud Key', verified: false,
+    models: [{ id: 'uc-chat', name: 'uc-chat（占位）', ctx: '—' }] },
+  { id: 'magpie', group: 'vendor', name: 'Magpie', desc: '本机网关，真实 Key 与路由留在 Magpie', endpoints: { responses: 'http://127.0.0.1:3425/v1', anthropic: 'http://127.0.0.1:3425' }, keyLabel: '令牌', defaultKey: 'magpie-codex', verified: true,
+    models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K' }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K' }] },
+];
+export const PROTOCOL_TABS = [['responses', 'OpenAI Responses'], ['anthropic', 'Anthropic'], ['openai', 'OpenAI 兼容']];
+export const PROTOCOL_LABEL_FULL = { responses: 'OpenAI Responses', anthropic: 'Anthropic', openai: 'OpenAI 兼容' };
+/** 供应商可直接搭配的工具：Codex 需要 Responses，Claude Code 需要 Anthropic；原有登录只对应其 CLI。 */
+export function toolsFor(p) {
+  if (p.type === 'native' || p.group === 'native') return [p.tool];
+  const pr = p.protocols || Object.keys(p.endpoints || {});
+  return ['codex', 'claude'].filter(t => pr.includes(TOOL_PROTOCOL[t]));
+}
+export const pairingNote = p => { const t = toolsFor(p); return t.length ? '可用于 ' + t.map(x => AGENTS[x]).join('、') : '两个工具都不能直接使用，可经 Magpie 等网关接入'; };
+/** 自定义供应商检测协议（合成）：按地址给出候选协议；以 /anthropic 结尾判为 Anthropic，含 /chat 判为 OpenAI 兼容。 */
+export function detectProtocols(url) {
+  if (!/^https?:\/\/.+/.test(url)) return { ok: false, error: '请输入以 http:// 或 https:// 开头的地址' };
+  if (/anthropic\/?$/.test(url)) return { ok: true, candidates: ['anthropic'] };
+  if (/chat|paas|compatible/.test(url)) return { ok: true, candidates: ['openai'] };
+  return { ok: true, candidates: ['responses', 'anthropic'] };
+}
+export const catalogItem = id => CATALOG.find(c => c.id === id);

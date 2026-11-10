@@ -144,3 +144,26 @@ test('本机工具自定义路径校验', () => {
   assert.equal(checkToolPath('').ok, false); assert.match(checkToolPath('/opt/missing/codex').error, /找不到/);
   assert.match(checkToolPath('/tmp/codex.txt').error, /不可执行/); assert.equal(checkToolPath('/opt/bin/codex').ok, true);
 });
+
+// ---------- P0.6 Code Agent 配置 ----------
+import { CATALOG, CATALOG_GROUPS, detectProtocols, pairingNote, toolsFor } from '../src/m13-model.mjs';
+test('供应商目录：三组；首期五家供应商；未核实的标为占位', () => {
+  assert.deepEqual(CATALOG_GROUPS.map(g => g[0]), ['native', 'vendor', 'custom']);
+  assert.deepEqual(CATALOG.filter(c => c.group === 'vendor').map(c => c.id), ['deepseek', 'glm', 'smg', 'ultracloud', 'magpie']);
+  assert.deepEqual(CATALOG.filter(c => c.verified === false).map(c => c.id), ['glm', 'smg', 'ultracloud']);
+});
+test('可搭配工具：Codex 需 Responses、Claude Code 需 Anthropic；只有 OpenAI 兼容时都不能用；原有登录只对应其 CLI', () => {
+  const by = id => CATALOG.find(c => c.id === id);
+  assert.deepEqual(toolsFor(by('deepseek')), ['codex', 'claude']);
+  assert.deepEqual(toolsFor(by('glm')), ['claude']);
+  assert.deepEqual(toolsFor(by('ultracloud')), []);
+  assert.match(pairingNote(by('ultracloud')), /网关/);
+  assert.deepEqual(toolsFor(by('native-codex')), ['codex']);
+  assert.deepEqual(toolsFor({ type: 'custom', protocols: ['responses', 'openai'] }), ['codex']);
+});
+test('自定义供应商检测协议（合成）', () => {
+  assert.deepEqual(detectProtocols('https://x.test/anthropic').candidates, ['anthropic']);
+  assert.deepEqual(detectProtocols('https://x.test/api/paas/v4').candidates, ['openai']);
+  assert.deepEqual(detectProtocols('https://x.test/v1').candidates, ['responses', 'anthropic']);
+  assert.equal(detectProtocols('x.test').ok, false);
+});

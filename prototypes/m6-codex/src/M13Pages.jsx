@@ -107,11 +107,11 @@ export function ExportDialog({ providers, configs, onClose, notify }) {
     if (withKey && pass !== pass2) return setErr('两次输入的口令不一致');
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
     const a = document.createElement('a'); a.href = url; a.download = 'willyou-ai-config.json'; a.click(); URL.revokeObjectURL(url);
-    notify(`已导出 ${data.runConfigs.length} 个运行配置、${data.providers.length} 个 Provider${withKey ? '（含加密的 Key）' : '（不含 Key）'}`); onClose();
+    notify(`已导出 ${data.runConfigs.length} 个 Code Agent、${data.providers.length} 个供应商${withKey ? '（含加密的 Key）' : '（不含 Key）'}`); onClose();
   };
-  return <Dialog title="导出 AI 配置" sub="生成 JSON 文件，别人导入后可直接使用" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" onClick={go}><Download size={14} />导出</button></>}>
-    <h3 className="m13-sub">运行配置</h3><div className="m13-checks-list">{configs.map(c => <label key={c.id}><input type="checkbox" checked={cfgs.includes(c.id)} onChange={() => toggle(cfgs, setCfgs, c.id)} />{c.name}<small>{c.legacy ? '高级配置' : ''}</small></label>)}</div>
-    <h3 className="m13-sub">Provider</h3><div className="m13-checks-list">{providers.map(p => <label key={p.id}><input type="checkbox" checked={auto.has(p.id) || provs.includes(p.id)} disabled={auto.has(p.id)} onChange={() => toggle(provs, setProvs, p.id)} />{p.name}<small>{auto.has(p.id) ? '随所选运行配置带上' : ''}</small></label>)}</div>
+  return <Dialog title="导出 Code Agent 配置" sub="生成 JSON 文件，别人导入后可直接使用" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" onClick={go}><Download size={14} />导出</button></>}>
+    <h3 className="m13-sub">Code Agent</h3><div className="m13-checks-list">{configs.map(c => <label key={c.id}><input type="checkbox" checked={cfgs.includes(c.id)} onChange={() => toggle(cfgs, setCfgs, c.id)} />{c.name}<small>{c.legacy ? '高级配置' : ''}</small></label>)}</div>
+    <h3 className="m13-sub">供应商</h3><div className="m13-checks-list">{providers.map(p => <label key={p.id}><input type="checkbox" checked={auto.has(p.id) || provs.includes(p.id)} disabled={auto.has(p.id)} onChange={() => toggle(provs, setProvs, p.id)} />{p.name}<small>{auto.has(p.id) ? '随所选 Code Agent 带上' : ''}</small></label>)}</div>
     <label className="m13-check"><input type="checkbox" checked={withKey} onChange={e => setWithKey(e.target.checked)} />包含 Key（用口令加密，导入时需输入口令）</label>
     {withKey && <div className="m13-tiers"><label className="m13-field"><span>口令（至少 8 个字符）</span><input type="password" value={pass} onChange={e => setPass(e.target.value)} /></label><label className="m13-field"><span>再次输入</span><input type="password" value={pass2} onChange={e => setPass2(e.target.value)} /></label></div>}
     <p className="m13-hint">不导出工具可执行路径与本机目录；原生登录只导出“使用原有登录”这一设定。{withKey ? '' : '默认不含 Key，文件可以放心分享。'}</p>
@@ -124,7 +124,7 @@ export function ImportDialog({ providers, configs, onImport, onClose }) {
   const file = samples.find(s => s[0] === pick)[2];
   const pv = importPreview(file, { providers, configs });
   const go = () => { if (!pv.ok) return; if (pv.encrypted && pass !== 'demo-pass-8') return setErr('口令不正确，未导入任何内容'); onImport(pv); };
-  return <Dialog title="导入 AI 配置" sub="原型不打开系统文件选择器，请从示例文件中选择" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" disabled={!pv.ok} onClick={go}><Upload size={14} />导入</button></>}>
+  return <Dialog title="导入 Code Agent 配置" sub="原型不打开系统文件选择器，请从示例文件中选择" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" disabled={!pv.ok} onClick={go}><Upload size={14} />导入</button></>}>
     <div className="m13-radios">{samples.map(([v, t]) => <label key={v} className={'m13-radio' + (pick === v ? ' selected' : '')}><input type="radio" checked={pick === v} onChange={() => { setPick(v); setErr(''); }} /><span><b>{t}</b></span></label>)}</div>
     {!pv.ok ? <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>{pv.error}</p></div></div> : <>
       <h3 className="m13-sub">将导入</h3>
