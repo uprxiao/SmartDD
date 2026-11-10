@@ -1,0 +1,520 @@
+{
+ "cases": {
+  "v1_claude_isolated_symlink": {
+   "code": 143,
+   "calls": [
+    {
+     "api": "anth",
+     "step": 0,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": ""
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v1",
+     "baseDir": "<root>/claude-iso/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": "Launching skill: wydemo"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v1",
+     "baseDir": "<root>/claude-iso/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": "Launching skill: wydemo|HELLO-v1\nShell cwd was reset to <root>/proj"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v1",
+     "baseDir": "<root>/claude-iso/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": "Launching skill: wydemo|HELLO-v1\nShell cwd was reset to <root>/proj"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wydemo v1 cwd=<root>/claude-iso/skills/wydemo"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "v1_claude_plugindir": {
+   "code": 143,
+   "calls": [
+    {
+     "api": "anth",
+     "step": 0,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj"
+     ],
+     "trText": ""
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v1",
+     "baseDir": "<root>/run-plugin/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj",
+      "wydemo"
+     ],
+     "trText": "Launching skill: willyou-run:wydemo"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v1",
+     "baseDir": "<root>/run-plugin/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj",
+      "wydemo"
+     ],
+     "trText": "Launching skill: willyou-run:wydemo|HELLO-v1\nShell cwd was reset to <root>/proj"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v1",
+     "baseDir": "<root>/run-plugin/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj",
+      "wydemo"
+     ],
+     "trText": "Launching skill: willyou-run:wydemo|HELLO-v1\nShell cwd was reset to <root>/proj"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wydemo v1 cwd=<root>/run-plugin/skills/wydemo"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "v1_codex_link_user_agents": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "resp",
+     "step": 0,
+     "bodyVer": null,
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/codex-user-home/.agents/skills/wyproj/SKILL.md",
+     "out": ""
+    },
+    {
+     "api": "resp",
+     "step": 1,
+     "bodyVer": "v1",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/codex-user-home/.agents/skills/wyproj/SKILL.md",
+     "out": "Chunk ID: 577aa6\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wyproj\ndescription: DESC-wyproj for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE"
+    },
+    {
+     "api": "resp",
+     "step": 2,
+     "bodyVer": "v1",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/codex-user-home/.agents/skills/wyproj/SKILL.md",
+     "out": "Chunk ID: 577aa6\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wyproj\ndescription: DESC-wyproj for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE|Chunk ID: 2445dd\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 3\nOutput:\nHELLO-v1\n"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wyproj v1 cwd=<root>/codex-user-home/.agents/skills/wyproj"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "v1_codex_link_proj_agents": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "resp",
+     "step": 0,
+     "bodyVer": null,
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/proj/.agents/skills/wydemo/SKILL.md",
+     "out": ""
+    },
+    {
+     "api": "resp",
+     "step": 1,
+     "bodyVer": "v1",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/proj/.agents/skills/wydemo/SKILL.md",
+     "out": "Chunk ID: 80eb3c\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wydemo\ndescription: DESC-wydemo for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE"
+    },
+    {
+     "api": "resp",
+     "step": 2,
+     "bodyVer": "v1",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/proj/.agents/skills/wydemo/SKILL.md",
+     "out": "Chunk ID: 80eb3c\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wydemo\ndescription: DESC-wydemo for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE|Chunk ID: 02b9d6\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 3\nOutput:\nHELLO-v1\n"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wydemo v1 cwd=<root>/proj/.agents/skills/wydemo"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "v2_claude_isolated_symlink": {
+   "code": 143,
+   "calls": [
+    {
+     "api": "anth",
+     "step": 0,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": ""
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v2",
+     "baseDir": "<root>/claude-iso/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": "Launching skill: wydemo"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v2",
+     "baseDir": "<root>/claude-iso/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": "Launching skill: wydemo|HELLO-v2\nShell cwd was reset to <root>/proj"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v2",
+     "baseDir": "<root>/claude-iso/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo",
+      "wyproj"
+     ],
+     "trText": "Launching skill: wydemo|HELLO-v2\nShell cwd was reset to <root>/proj"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wydemo v2 cwd=<root>/claude-iso/skills/wydemo"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "v2_claude_plugindir": {
+   "code": 143,
+   "calls": [
+    {
+     "api": "anth",
+     "step": 0,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj"
+     ],
+     "trText": ""
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v2",
+     "baseDir": "<root>/run-plugin/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj",
+      "wydemo"
+     ],
+     "trText": "Launching skill: willyou-run:wydemo"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v2",
+     "baseDir": "<root>/run-plugin/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj",
+      "wydemo"
+     ],
+     "trText": "Launching skill: willyou-run:wydemo|HELLO-v2\nShell cwd was reset to <root>/proj"
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": "v2",
+     "baseDir": "<root>/run-plugin/skills/wydemo",
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo",
+      "wyproj",
+      "wydemo"
+     ],
+     "trText": "Launching skill: willyou-run:wydemo|HELLO-v2\nShell cwd was reset to <root>/proj"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wydemo v2 cwd=<root>/run-plugin/skills/wydemo"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "v2_codex_link_user_agents": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "resp",
+     "step": 0,
+     "bodyVer": null,
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/codex-user-home/.agents/skills/wyproj/SKILL.md",
+     "out": ""
+    },
+    {
+     "api": "resp",
+     "step": 1,
+     "bodyVer": "v2",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/codex-user-home/.agents/skills/wyproj/SKILL.md",
+     "out": "Chunk ID: b2e762\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wyproj\ndescription: DESC-wyproj for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE"
+    },
+    {
+     "api": "resp",
+     "step": 2,
+     "bodyVer": "v2",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/codex-user-home/.agents/skills/wyproj/SKILL.md",
+     "out": "Chunk ID: b2e762\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wyproj\ndescription: DESC-wyproj for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE|Chunk ID: 982c8e\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 3\nOutput:\nHELLO-v2\n"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wyproj v2 cwd=<root>/codex-user-home/.agents/skills/wyproj"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "v2_codex_link_proj_agents": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "resp",
+     "step": 0,
+     "bodyVer": null,
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/proj/.agents/skills/wydemo/SKILL.md",
+     "out": ""
+    },
+    {
+     "api": "resp",
+     "step": 1,
+     "bodyVer": "v2",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/proj/.agents/skills/wydemo/SKILL.md",
+     "out": "Chunk ID: a23896\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wydemo\ndescription: DESC-wydemo for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE"
+    },
+    {
+     "api": "resp",
+     "step": 2,
+     "bodyVer": "v2",
+     "listed": [
+      "wydemo",
+      "wyproj"
+     ],
+     "file": "<root>/proj/.agents/skills/wydemo/SKILL.md",
+     "out": "Chunk ID: a23896\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 27\nOutput:\n---\nname: wydemo\ndescription: DESC-wydemo for M13 A2\n---\nRun the helper: sh scripts/hello.sh . VE|Chunk ID: 8d1550\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 3\nOutput:\nHELLO-v2\n"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [
+    "HELLO wydemo v2 cwd=<root>/proj/.agents/skills/wydemo"
+   ],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "removed_claude_isolated_symlink": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "anth",
+     "step": 0,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo"
+     ],
+     "trText": ""
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "wydemo"
+     ],
+     "trText": "<tool_use_error>Unknown skill: wydemo</tool_use_error>"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "removed_claude_plugindir": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "anth",
+     "step": 0,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo"
+     ],
+     "trText": ""
+    },
+    {
+     "api": "anth",
+     "step": 1,
+     "bodyVer": null,
+     "baseDir": null,
+     "listedInSkillTool": [],
+     "mentioned": [
+      "willyou-run:wydemo"
+     ],
+     "trText": "<tool_use_error>Unknown skill: willyou-run:wydemo</tool_use_error>"
+    }
+   ],
+   "stderr": [],
+   "script_unique": [],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "removed_codex_link_user_agents": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "resp",
+     "step": 0,
+     "bodyVer": null,
+     "listed": [],
+     "file": null,
+     "out": ""
+    }
+   ],
+   "stderr": [],
+   "script_unique": [],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  },
+  "removed_codex_link_proj_agents": {
+   "code": 0,
+   "calls": [
+    {
+     "api": "resp",
+     "step": 0,
+     "bodyVer": null,
+     "listed": [],
+     "file": null,
+     "out": ""
+    }
+   ],
+   "stderr": [],
+   "script_unique": [],
+   "script_count_note": "Claude 用例因模拟模型循环重复执行脚本至超时，仅保留去重结果"
+  }
+ },
+ "target_dir_listing_after_removed": {
+  "iso": [
+   {
+    "n": ".willyou-managed.json",
+    "link": false,
+    "dangling": false
+   },
+   {
+    "n": "wydemo",
+    "link": true,
+    "dangling": true
+   }
+  ]
+ }
+}

@@ -1,0 +1,72 @@
+{
+ "C2_codex_concurrent": {
+  "A": {
+   "code": 0,
+   "thread": "01a1c485-402a-7e52-aa40-5be3720f77e4",
+   "text": "OK-A",
+   "mock": [
+    {
+     "model": "model-A",
+     "keyOK": true
+    }
+   ]
+  },
+  "B": {
+   "code": 0,
+   "thread": "01a1c485-4026-7ac3-92e6-b842fa055eb2",
+   "text": "OK-B",
+   "mock": [
+    {
+     "model": "model-B",
+     "keyOK": true
+    }
+   ]
+  },
+  "rollouts": [
+   {
+    "provider": "wy_B",
+    "models": [
+     "model-B"
+    ]
+   },
+   {
+    "provider": "wy_A",
+    "models": [
+     "model-A"
+    ]
+   }
+  ],
+  "configUnchanged": true
+ },
+ "G_restore": {
+  "G1_session_wrote": {
+   "decide": "offer",
+   "restoredOk": true,
+   "restoredEqualsBase": true
+  },
+  "G2_user_added_other_key_meanwhile": {
+   "decide": "offer",
+   "restoredOk": true,
+   "keepsUserAddition": true,
+   "modelRestored": true
+  },
+  "G3_user_changed_model_after": {
+   "decide": "offer",
+   "restoredOk": false,
+   "reason": "model 已再次变化，放弃还原",
+   "leftUserChoice": "gpt-user-choice"
+  },
+  "G4_changed_by_other_not_session": {
+   "action": "no-offer",
+   "reason": "当前全局模型不是本会话用过的模型，可能是终端或其他程序修改"
+  },
+  "G5_unchanged": {
+   "action": "none"
+  },
+  "G6_key_absent_before": {
+   "decide": "offer",
+   "restoredOk": true,
+   "removed": true
+  }
+ }
+}

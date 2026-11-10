@@ -1,0 +1,369 @@
+{
+ "cases": {
+  "N1_missing_token": {
+   "code": 1,
+   "sig": null,
+   "result": "Not logged in · Please run /login",
+   "isError": true,
+   "session": "49e77153-3505-4d53-ad96-de4ba792fe63",
+   "mockA": [],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc1"
+  },
+  "N2_invalid_token_401": {
+   "code": 143,
+   "sig": null,
+   "result": "",
+   "isError": null,
+   "session": null,
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "BAD",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "BAD",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "BAD",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "BAD",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "BAD",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "BAD",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "BAD",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc2"
+  },
+  "N3_apikey_bad_and_authtoken_good": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "7ae7b5a6-b1f1-4d72-ac70-824424ff9b06",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "A",
+     "xapikey": "APIKEY_BAD"
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc3"
+  },
+  "N4_oauth_env_only": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "20e2aa61-749d-4c12-8a49-a831eb86bb16",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "OAT",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc4"
+  },
+  "N5_oauth_env_plus_authtoken": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "a74ec771-474a-495c-924e-8fb22e90d340",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "A",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc5"
+  },
+  "N6_residual_settings_env": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-B",
+   "isError": false,
+   "session": "39a8133e-9055-470c-adec-c4f9fb0be534",
+   "mockA": [],
+   "mockB": [
+    {
+     "mock": "B",
+     "model": "m",
+     "auth": "B",
+     "xapikey": null
+    }
+   ],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc6"
+  },
+  "N7_residual_apiKeyHelper": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "ac7008e2-0720-4c78-a90e-884010d82f4b",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "m",
+     "auth": "A",
+     "xapikey": "HELPER"
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc7"
+  },
+  "N8_settings_flag_overrides": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-B",
+   "isError": false,
+   "session": "d1e00c38-3b09-4875-b4b6-835c9aac32ed",
+   "mockA": [],
+   "mockB": [
+    {
+     "mock": "B",
+     "model": "m",
+     "auth": "B",
+     "xapikey": null
+    }
+   ],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc8"
+  },
+  "C1_concurrent_A": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "465f33da-1e3a-4f64-9370-3c32d9883a3d",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "model-A",
+     "auth": "A",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc9"
+  },
+  "C1_concurrent_B": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-B",
+   "isError": false,
+   "session": "a29b06fb-58ca-42da-abeb-b4fd065cfb16",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "model-A",
+     "auth": "A",
+     "xapikey": null
+    }
+   ],
+   "mockB": [
+    {
+     "mock": "B",
+     "model": "model-B",
+     "auth": "B",
+     "xapikey": null
+    }
+   ],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc10"
+  },
+  "R1_request_vs_reported": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "492b7262-802a-4a57-8ca5-57e5a87f2274",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "req-model",
+     "auth": "A",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc11"
+  },
+  "R2_resume_switch": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "492b7262-802a-4a57-8ca5-57e5a87f2274",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "req-two",
+     "auth": "A",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc11"
+  },
+  "R3_resume_failed_turn": {
+   "code": 143,
+   "sig": null,
+   "result": "",
+   "isError": null,
+   "session": null,
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "req-three",
+     "auth": "A",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "req-three",
+     "auth": "A",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "req-three",
+     "auth": "A",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "req-three",
+     "auth": "A",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "req-three",
+     "auth": "A",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "req-three",
+     "auth": "A",
+     "xapikey": null
+    },
+    {
+     "mock": "A",
+     "model": "req-three",
+     "auth": "A",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc11"
+  },
+  "R4_alias_sonnet": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "isError": false,
+   "session": "9fc15260-646d-4e06-87e1-533db16c762b",
+   "mockA": [
+    {
+     "mock": "A",
+     "model": "mapped-sonnet",
+     "auth": "A",
+     "xapikey": null
+    }
+   ],
+   "mockB": [],
+   "proxy": [],
+   "stderr": [],
+   "cfg": "<root>/cc12"
+  }
+ },
+ "R_jsonl_session1": [
+  {
+   "model": "req-model-srv",
+   "isApiErrorMessage": null,
+   "isSidechain": false,
+   "text": "[{\"type\":\"text\",\"text\":\"OK-A\"}]"
+  },
+  {
+   "model": "req-two-srv",
+   "isApiErrorMessage": null,
+   "isSidechain": false,
+   "text": "[{\"type\":\"text\",\"text\":\"OK-A\"}]"
+  }
+ ],
+ "R_jsonl_alias": [
+  {
+   "model": "mapped-sonnet-srv",
+   "isApiErrorMessage": null,
+   "isSidechain": false,
+   "text": "[{\"type\":\"text\",\"text\":\"OK-A\"}]"
+  }
+ ],
+ "R_jsonl_anyRequestedModelString": {
+  "reqModel": true,
+  "reqTwo": true,
+  "aliasWord": true
+ }
+}

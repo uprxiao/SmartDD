@@ -1,0 +1,47 @@
+{
+  "schema": "willyou-plugin/v0-draft",
+  "id": "demo-tracker",
+  "version": "0.1.0",
+  "hostApi": 1,
+  "displayName": "Demo Tracker",
+  "description": "模拟禅道的缺陷管理插件，用于 M13 插件协议技研",
+  "author": { "name": "WillYou M13 技研" },
+  "icon": { "light": "assets/icon-light.svg", "dark": "assets/icon-dark.svg" },
+  "permissions": ["network"],
+  "providers": [{
+    "id": "demo-tracker-api",
+    "displayName": "Demo Tracker 服务",
+    "config": {
+      "type": "object", "additionalProperties": false, "required": ["baseUrl", "account"],
+      "properties": {
+        "baseUrl": { "type": "string", "title": "服务地址", "pattern": "^https?://" },
+        "account": { "type": "string", "title": "账号", "minLength": 1 }
+      }
+    },
+    "secret": { "title": "API Token", "required": true },
+    "summaryFields": ["baseUrl", "account"]
+  }],
+  "capabilities": {
+    "demo-tracker.bugs.list": {
+      "title": "列出指派给我的 Bug", "permission": "demo-tracker.bugs.read", "semantics": "read",
+      "slots": ["demo-tracker-api"],
+      "input": "schemas/bugs.list.input.json", "output": "schemas/bugs.list.output.json"
+    }
+  },
+  "runtime": { "type": "process", "entry": "runtime/main.mjs", "protocol": "jsonrpc-stdio/1" },
+  "skills": "skills/",
+  "ui": {
+    "panels": [{
+      "id": "my-bugs", "title": "我的 Bug", "kind": "table",
+      "source": { "capability": "demo-tracker.bugs.list", "input": { "status": "active" } },
+      "rowKey": "id",
+      "columns": [
+        { "field": "id", "title": "ID", "width": 64 },
+        { "field": "title", "title": "标题" },
+        { "field": "severity", "title": "严重程度", "format": "badge" },
+        { "field": "openedAt", "title": "创建时间", "format": "datetime" }
+      ],
+      "rowActions": [{ "title": "在浏览器打开", "kind": "openUrl", "field": "url" }]
+    }]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-10T16:40:33.757425+08:00",
+  "branch": "feature/0.1.4",
+  "runtime": {
+    "node": "22.23.1",
+    "claude": "2.1.321",
+    "codex": "0.166.0"
+  },
+  "scope": "文档与技研复核；无生产代码修改。新增 CLI 探针只用临时 HOME、合成 Key、本机模拟模型与拒绝外网的记录代理。无真实账号／Key／模型请求。",
+  "probes": {
+    "project-settings": "只改变临时项目的 Claude settings；独立配置目录干净，预期 A，实际 B。",
+    "project-credential": "项目只改变 BASE_URL；实际 B 端点收到注入的 A 诱饵令牌。",
+    "skill-scope": "项目 A 合成 Skill 经链接放入共用配置根，在不同项目运行的 Claude 中被发现。",
+    "missing-variable": "逐字复用 a1.mjs 中 emit 函数及依赖，只增加 NOT_SET 反例。",
+    "restore": "逐字复用 a3b.mjs 的纯逻辑函数，只增加合法 TOML 单引号／行尾注释反例；未接触真实 config.toml。",
+    "wrapper": {
+      "args": [
+        "--set",
+        "ANTHROPIC_API_KEY=WY_MCPV_1",
+        "--unset",
+        "ANTHROPIC_API_KEY",
+        "--unset-prefix",
+        "WY_MCPV_",
+        "--",
+        "node",
+        "<print environment presence>"
+      ],
+      "env": {
+        "WY_MCPV_1": "decoy-mcp-key",
+        "ANTHROPIC_API_KEY": "decoy-model-key"
+      },
+      "expected": "MCP 自己的 decoy-mcp-key 保留，模型 Key 清除",
+      "actual": "ANTHROPIC_API_KEY 缺失，退出码 0"
+    },
+    "bg-exact": "精确方案参数与完整原实验参数对照；本轮两者记录代理均无外连。仅支持临时空 CODEX_HOME 下的一次性请求边界。"
+  },
+  "evidenceBoundary": "stdout/stderr 为新增探针直接输出；内部复用的旧驱动仍可能只输出摘要，不能当完整 Native 流。"
+}

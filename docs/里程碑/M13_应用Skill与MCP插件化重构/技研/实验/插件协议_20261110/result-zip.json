@@ -1,0 +1,28 @@
+{
+ "srcHash": "4c1baf5e8cc8b7e32d7c8847b29b44dd427c890a6037f8689a43963637078221",
+ "cases": {
+  "good": {
+   "ok": true,
+   "hash": "4c1baf5e8cc8b7e32d7c8847b29b44dd427c890a6037f8689a43963637078221",
+   "matchesSource": true,
+   "id": "demo-tracker"
+  },
+  "symlink": {
+   "ok": false,
+   "error": "symlink entry: runtime/link"
+  },
+  "traversal": {
+   "ok": false,
+   "error": "invalid relative path: ../../evil.mjs"
+  },
+  "absolute": {
+   "ok": false,
+   "error": "absolute path: /tmp/evil-abs"
+  },
+  "bomb": {
+   "ok": false,
+   "error": "file too large: assets/big.bin"
+  }
+ },
+ "evilWritten": []
+}

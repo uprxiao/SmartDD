@@ -1,0 +1,222 @@
+{
+ "out": {
+  "G01_red_v2": {
+   "exit": 0,
+   "got": {
+    "argv": [
+     "decoy-alpha-key"
+    ],
+    "API_KEY": null,
+    "ANTHROPIC_API_KEY": null,
+    "slots": []
+   },
+   "stderr": "",
+   "leaked": true
+  },
+  "G01_v3_alpha_slot_name": {
+   "beta": {
+    "exit": 0,
+    "got": {
+     "argv": [
+      "@WYARG:WY_MCPV_1_1"
+     ],
+     "API_KEY": null,
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "alpha": {
+    "exit": 0,
+    "got": {
+     "argv": [],
+     "API_KEY": "decoy-alpha-key",
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "pass": true
+  },
+  "G01_v3_old_style_name": {
+   "beta": {
+    "exit": 0,
+    "got": {
+     "argv": [
+      "@WYARG:WY_MCPV_1"
+     ],
+     "API_KEY": null,
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "alpha": {
+    "exit": 0,
+    "got": {
+     "argv": [],
+     "API_KEY": "decoy-alpha-key",
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "pass": true
+  },
+  "G01_v3_unknown_marker": {
+   "beta": {
+    "exit": 0,
+    "got": {
+     "argv": [
+      "@WYARG:NOPE"
+     ],
+     "API_KEY": null,
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "alpha": {
+    "exit": 0,
+    "got": {
+     "argv": [],
+     "API_KEY": "decoy-alpha-key",
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "pass": true
+  },
+  "G01_v3_option_like": {
+   "beta": {
+    "exit": 0,
+    "got": {
+     "argv": [
+      "--arg"
+     ],
+     "API_KEY": null,
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "alpha": {
+    "exit": 0,
+    "got": {
+     "argv": [],
+     "API_KEY": "decoy-alpha-key",
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "pass": true
+  },
+  "T2_two_mcp_template_args": {
+   "m1": {
+    "exit": 0,
+    "got": {
+     "argv": [
+      "decoy-k1",
+      "tail"
+     ],
+     "API_KEY": "decoy-k1",
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "m2": {
+    "exit": 0,
+    "got": {
+     "argv": [
+      "decoy-k2"
+     ],
+     "API_KEY": "decoy-k2",
+     "ANTHROPIC_API_KEY": null,
+     "slots": []
+    },
+    "stderr": ""
+   },
+   "pass": true
+  },
+  "T3_dollar_literal": {
+   "exit": 0,
+   "got": {
+    "argv": [
+     "cost ${HOME} $5"
+    ],
+    "API_KEY": null,
+    "ANTHROPIC_API_KEY": null,
+    "slots": []
+   },
+   "stderr": "",
+   "usesSlot": true,
+   "pass": true
+  },
+  "R1_same_name": {
+   "exit": 0,
+   "got": {
+    "argv": [],
+    "API_KEY": null,
+    "ANTHROPIC_API_KEY": "decoy-mcp",
+    "slots": []
+   },
+   "stderr": "",
+   "pass": true
+  },
+  "R2_missing_source": {
+   "exit": 65,
+   "got": null,
+   "stderr": "wy-mcp-launch: missing source WY_MCPV_9_9",
+   "pass": true
+  },
+  "R3_non_slot_source": {
+   "exit": 64,
+   "got": null,
+   "stderr": "wy-mcp-launch: source must be a WY_MCPV_ slot: ANTHROPIC_AUTH_TOKEN",
+   "pass": true
+  },
+  "R4_index_out_of_range": {
+   "exit": 64,
+   "got": null,
+   "stderr": "wy-mcp-launch: index out of range 5",
+   "pass": true
+  },
+  "R5_b3_regression": {
+   "present": [
+    "ok"
+   ],
+   "skipped": [
+    "miss",
+    "u"
+   ],
+   "slots": [],
+   "pass": true
+  },
+  "R6_codex_shape": {
+   "codex": [
+    "-c",
+    "mcp_servers.c={command=\"/bin/sh\",args=[\"/Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M13_应用Skill与MCP插件化重构/技研/实验/C_审核三修正_20261110/wy-mcp-launch.sh\",\"--set\",\"API_KEY=WY_MCPV_1_1\",\"--arg\",\"1=WY_MCPV_1_2\",\"--unset-prefix\",\"WY_MCPV_\",\"--\",\"node\",\"@WYARG:X\",\"\"],env_vars=[\"WY_MCPV_1_1\",\"WY_MCPV_1_2\"]}"
+   ],
+   "pass": true
+  }
+ },
+ "redReproduced": true,
+ "pass": {
+  "G01_v3_alpha_slot_name": true,
+  "G01_v3_old_style_name": true,
+  "G01_v3_unknown_marker": true,
+  "G01_v3_option_like": true,
+  "T2_two_mcp_template_args": true,
+  "T3_dollar_literal": true,
+  "R1_same_name": true,
+  "R2_missing_source": true,
+  "R3_non_slot_source": true,
+  "R4_index_out_of_range": true,
+  "R5_b3_regression": true,
+  "R6_codex_shape": true
+ },
+ "allPass": true
+}

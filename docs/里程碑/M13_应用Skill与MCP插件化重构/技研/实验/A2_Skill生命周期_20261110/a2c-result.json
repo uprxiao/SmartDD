@@ -1,0 +1,56 @@
+{
+ "codex_duplicate_names": {
+  "entries": [
+   {
+    "desc": "DESC-IN-PROJECT",
+    "root": "<root>/proj/.agents/skills"
+   },
+   {
+    "desc": "DESC-IN-CODEX-HOME",
+    "root": "<root>/ch/skills"
+   },
+   {
+    "desc": "DESC-USER-OWN-HOME-AGENTS",
+    "root": "<root>/home/.agents/skills"
+   }
+  ]
+ },
+ "link_alpha": {
+  "action": "linked"
+ },
+ "link_alpha_again": {
+  "action": "already"
+ },
+ "link_beta_conflict": {
+  "action": "conflict",
+  "reason": "目标已有同名项，不覆盖"
+ },
+ "scan_target": [
+  {
+   "name": "alpha",
+   "isLink": true,
+   "dangling": false,
+   "classification": "managed（不再纳管）"
+  },
+  {
+   "name": "beta",
+   "isLink": false,
+   "dangling": false,
+   "classification": "external-candidate"
+  }
+ ],
+ "scan_after_source_removed": [
+  {
+   "name": "alpha",
+   "isLink": true,
+   "dangling": true,
+   "classification": "managed-dangling→清理"
+  },
+  {
+   "name": "beta",
+   "isLink": false,
+   "dangling": false,
+   "classification": "external-candidate"
+  }
+ ]
+}

@@ -1,0 +1,256 @@
+{
+ "root": "<tmp>/m13-tcfg-2MgzPI",
+ "cli": "codex-cli 0.166.0",
+ "requests": [
+  {
+   "n": 1,
+   "url": "/v1/responses",
+   "model": "model-a",
+   "authMatches": true,
+   "authPresent": true
+  },
+  {
+   "n": 2,
+   "url": "/v1/responses",
+   "model": "cfg-default",
+   "authMatches": true,
+   "authPresent": true
+  },
+  {
+   "n": 3,
+   "url": "/v1/responses",
+   "model": "model-b",
+   "authMatches": true,
+   "authPresent": true
+  },
+  {
+   "n": 4,
+   "url": "/v1/responses",
+   "model": "cfg-default",
+   "authMatches": true,
+   "authPresent": true
+  }
+ ],
+ "cases": {
+  "E1_exec_modelA": {
+   "args": [
+    "exec",
+    "--skip-git-repo-check",
+    "--json",
+    "-c",
+    "analytics.enabled=false",
+    "-c",
+    "feedback.enabled=false",
+    "-c",
+    "model_provider=\"wy\"",
+    "-c",
+    "model_providers.wy={name=\"WillYou test\",base_url=\"http://127.0.0.1:60928/v1\",wire_api=\"responses\",env_key=\"WY_T_KEY\"}",
+    "-m",
+    "model-a",
+    "hello"
+   ],
+   "code": 0,
+   "signal": null,
+   "thread": "01a1c410-59d1-7070-81a0-702a329eb221",
+   "newRequests": [
+    {
+     "n": 1,
+     "url": "/v1/responses",
+     "model": "model-a",
+     "authMatches": true,
+     "authPresent": true
+    }
+   ],
+   "stdoutHead": [
+    "{\"type\":\"thread.started\",\"thread_id\":\"01a1c410-59d1-7070-81a0-702a329eb221\"}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"Model metadata for `model-a` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}}",
+    "{\"type\":\"turn.started\"}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"agent_message\",\"text\":\"MOCK_1\"}}"
+   ],
+   "stderrTail": [
+    "Reading additional input from stdin..."
+   ]
+  },
+  "E1_configTomlUnchanged": true,
+  "E3a_resume_noModel": {
+   "args": [
+    "exec",
+    "resume",
+    "--skip-git-repo-check",
+    "--json",
+    "-c",
+    "analytics.enabled=false",
+    "-c",
+    "feedback.enabled=false",
+    "-c",
+    "model_provider=\"wy\"",
+    "-c",
+    "model_providers.wy={name=\"WillYou test\",base_url=\"http://127.0.0.1:60928/v1\",wire_api=\"responses\",env_key=\"WY_T_KEY\"}",
+    "01a1c410-59d1-7070-81a0-702a329eb221",
+    "again"
+   ],
+   "code": 0,
+   "signal": null,
+   "thread": "01a1c410-59d1-7070-81a0-702a329eb221",
+   "newRequests": [
+    {
+     "n": 2,
+     "url": "/v1/responses",
+     "model": "cfg-default",
+     "authMatches": true,
+     "authPresent": true
+    }
+   ],
+   "stdoutHead": [
+    "{\"type\":\"thread.started\",\"thread_id\":\"01a1c410-59d1-7070-81a0-702a329eb221\"}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"This session was recorded with model `model-a` but is resuming with `cfg-default`. Consider switching back to `model-a` as it may affect Codex performance.\"}}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"Model metadata for `cfg-default` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}}",
+    "{\"type\":\"turn.started\"}"
+   ],
+   "stderrTail": []
+  },
+  "E3b_resume_modelB": {
+   "args": [
+    "exec",
+    "resume",
+    "--skip-git-repo-check",
+    "--json",
+    "-c",
+    "analytics.enabled=false",
+    "-c",
+    "feedback.enabled=false",
+    "-c",
+    "model_provider=\"wy\"",
+    "-c",
+    "model_providers.wy={name=\"WillYou test\",base_url=\"http://127.0.0.1:60928/v1\",wire_api=\"responses\",env_key=\"WY_T_KEY\"}",
+    "-m",
+    "model-b",
+    "01a1c410-59d1-7070-81a0-702a329eb221",
+    "switch"
+   ],
+   "code": 0,
+   "signal": null,
+   "thread": "01a1c410-59d1-7070-81a0-702a329eb221",
+   "newRequests": [
+    {
+     "n": 3,
+     "url": "/v1/responses",
+     "model": "model-b",
+     "authMatches": true,
+     "authPresent": true
+    }
+   ],
+   "stdoutHead": [
+    "{\"type\":\"thread.started\",\"thread_id\":\"01a1c410-59d1-7070-81a0-702a329eb221\"}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"This session was recorded with model `cfg-default` but is resuming with `model-b`. Consider switching back to `cfg-default` as it may affect Codex performance.\"}}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"Model metadata for `model-b` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}}",
+    "{\"type\":\"turn.started\"}"
+   ],
+   "stderrTail": []
+  },
+  "E3c_resume_noModel_afterB": {
+   "args": [
+    "exec",
+    "resume",
+    "--skip-git-repo-check",
+    "--json",
+    "-c",
+    "analytics.enabled=false",
+    "-c",
+    "feedback.enabled=false",
+    "-c",
+    "model_provider=\"wy\"",
+    "-c",
+    "model_providers.wy={name=\"WillYou test\",base_url=\"http://127.0.0.1:60928/v1\",wire_api=\"responses\",env_key=\"WY_T_KEY\"}",
+    "01a1c410-59d1-7070-81a0-702a329eb221",
+    "after"
+   ],
+   "code": 0,
+   "signal": null,
+   "thread": "01a1c410-59d1-7070-81a0-702a329eb221",
+   "newRequests": [
+    {
+     "n": 4,
+     "url": "/v1/responses",
+     "model": "cfg-default",
+     "authMatches": true,
+     "authPresent": true
+    }
+   ],
+   "stdoutHead": [
+    "{\"type\":\"thread.started\",\"thread_id\":\"01a1c410-59d1-7070-81a0-702a329eb221\"}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"This session was recorded with model `model-b` but is resuming with `cfg-default`. Consider switching back to `model-b` as it may affect Codex performance.\"}}",
+    "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"Model metadata for `cfg-default` not found. Defaulting to fallback metadata; this can degrade performance and cause issues.\"}}",
+    "{\"type\":\"turn.started\"}"
+   ],
+   "stderrTail": []
+  },
+  "E4_resume_noProvider": {
+   "args": [
+    "exec",
+    "resume",
+    "--skip-git-repo-check",
+    "--json",
+    "-c",
+    "analytics.enabled=false",
+    "-c",
+    "feedback.enabled=false",
+    "01a1c410-59d1-7070-81a0-702a329eb221",
+    "noprov"
+   ],
+   "code": 1,
+   "signal": null,
+   "thread": null,
+   "newRequests": [],
+   "stdoutHead": [],
+   "stderrTail": [
+    "Error: thread/resume: thread/resume failed: This chat uses model provider “wy”, which is no longer configured. Restore this provider’s configuration to continue. (code -32600), data: {\"type\":\"modelPro"
+   ]
+  },
+  "E3_configTomlUnchanged": true,
+  "E2a_login_empty": {
+   "code": 1,
+   "lines": [
+    "Not logged in"
+   ]
+  },
+  "E2b_login_symlinkAuth": {
+   "code": 0,
+   "lines": [
+    "Logged in using ChatGPT"
+   ]
+  },
+  "E2_realAuthUnchanged": {
+   "sha": true,
+   "mtime": true
+  }
+ },
+ "rollouts": [
+  {
+   "file": "<root>/codex-home/sessions/2026/11/10/rollout-2026-11-10T14-06-08-01a1c410-59d1-7070-81a0-702a329eb221.jsonl",
+   "meta": [
+    {
+     "provider": "wy"
+    }
+   ],
+   "turnContexts": [
+    {
+     "model": "model-a",
+     "effort": null
+    },
+    {
+     "model": "cfg-default",
+     "effort": null
+    },
+    {
+     "model": "model-b",
+     "effort": null
+    },
+    {
+     "model": "cfg-default",
+     "effort": null
+    }
+   ]
+  }
+ ]
+}

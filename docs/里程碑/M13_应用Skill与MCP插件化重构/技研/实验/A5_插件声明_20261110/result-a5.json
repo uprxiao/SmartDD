@@ -1,0 +1,91 @@
+{
+ "positive_errors": [],
+ "neg_列字段拼错": [
+  "panel my-work: 列字段不存在 titel"
+ ],
+ "neg_分页字段不存在": [
+  "panel my-work: 分页输出字段不存在 next"
+ ],
+ "neg_详情 section 路径错误": [
+  "panel my-work detail object: section from 不存在 attachment",
+  "panel my-work detail object: 附件字段不存在 filename",
+  "panel my-work detail object: 附件字段不存在 resource"
+ ],
+ "neg_未知动作": [
+  "panel my-work detail object: 未知动作 runShell"
+ ],
+ "neg_模板未知作用域": [
+  "panel my-work detail object title: 未知模板作用域 secret"
+ ],
+ "neg_页签取值不在枚举": [
+  "panel my-work tab story: 取值不在枚举 kind=task"
+ ],
+ "viewModel": {
+  "panelTitle": "指派给我",
+  "tabs": [
+   "Bug",
+   "研发需求"
+  ],
+  "rows": [
+   {
+    "ID": "101",
+    "标题": "登录页报错",
+    "状态": "激活",
+    "指派给": "alice"
+   }
+  ],
+  "hasMore": true,
+  "nextInput": {
+   "kind": "bug",
+   "cursor": "c2"
+  },
+  "partialNotice": "部分结果未完成（1 项问题）",
+  "detail": {
+   "title": "Bug #101",
+   "fields": [
+    {
+     "label": "严重程度",
+     "text": "严重"
+    },
+    {
+     "label": "状态",
+     "text": "激活"
+    }
+   ],
+   "resources": [
+    {
+     "title": "正文",
+     "present": true
+    },
+    {
+     "title": "历史",
+     "present": false
+    }
+   ],
+   "attachments": [
+    {
+     "name": "截图.png",
+     "previewable": true
+    },
+    {
+     "name": "日志.zip",
+     "previewable": false
+    }
+   ],
+   "incomplete": "缺少：history",
+   "actions": [
+    {
+     "kind": "insertTerminal",
+     "title": "插入终端",
+     "payload": {
+      "objectKind": "bug",
+      "reference": {
+       "nativeId": "101",
+       "revision": "r1"
+      }
+     }
+    }
+   ]
+  }
+ }
+}

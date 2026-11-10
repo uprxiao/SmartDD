@@ -1,0 +1,21 @@
+{
+  "original": "model = 'user-default' # valid TOML\nmodel_reasoning_effort = \"high\"\n",
+  "before": {
+    "model_reasoning_effort": "high"
+  },
+  "after": "model = \"session-model\"\nmodel_reasoning_effort = \"high\"\n",
+  "decision": {
+    "action": "offer",
+    "changed": [
+      "model"
+    ],
+    "expect": {
+      "model": "session-model",
+      "model_reasoning_effort": "high"
+    }
+  },
+  "result": {
+    "ok": true,
+    "text": "model_reasoning_effort = \"high\"\n"
+  }
+}

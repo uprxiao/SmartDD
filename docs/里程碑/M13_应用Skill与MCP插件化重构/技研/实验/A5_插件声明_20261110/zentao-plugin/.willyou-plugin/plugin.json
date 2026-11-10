@@ -1,0 +1,37 @@
+{
+ "schema":"willyou-plugin/v0-draft2","id":"zentao","version":"2.0.0","hostApi":1,
+ "displayName":"禅道","description":"查看指派给我的 Bug 和研发需求","icon":{"light":"assets/zentao-light.svg","dark":"assets/zentao-dark.svg"},
+ "permissions":["network"],
+ "schemas":["schemas/ref.json","schemas/resource.json"],
+ "providers":[{"id":"zentao","displayName":"禅道服务","config":{"type":"object","additionalProperties":false,"required":["baseUrl","username"],"properties":{"baseUrl":{"type":"string","title":"服务地址","pattern":"^https?://"},"username":{"type":"string","title":"账号"}}},"secret":{"title":"Token 或密码","modes":["token","password"]},"summaryFields":["baseUrl","username"]}],
+ "projectPolicy":{"connectionsPerProject":1,"note":"每项目仅一个生效连接；停用或认证失败不会自动切换账号。"},
+ "capabilities":{
+  "zentao.object.list":{"title":"列出指派给我的 Bug／需求","permission":"zentao.read","semantics":"read","retry":"safe-read","slots":["zentao"],"input":"schemas/work.list.input.json","output":"schemas/work.list.output.json"},
+  "zentao.object.get":{"title":"读取 Bug／需求详情","permission":"zentao.read","semantics":"read","retry":"safe-read","slots":["zentao"],"input":"schemas/object.get.input.json","output":"schemas/object.get.output.json"},
+  "zentao.resource.read":{"title":"读取正文、历史或附件","permission":"zentao.read","semantics":"read","retry":"safe-read","slots":["zentao"],"input":"schemas/resource.read.input.json","output":"schemas/resource.read.output.json","agentVisible":true}
+ },
+ "legacyToolNames":{"smartdd_zentao_work_list_v1":"zentao.object.list","smartdd_zentao_object_get_v1":"zentao.object.get","smartdd_zentao_resource_v1":"zentao.resource.read"},
+ "runtime":{"type":"process","entry":"runtime/main.mjs","protocol":"jsonrpc-stdio/1"},
+ "skills":"skills/",
+ "ui":{"panels":[{
+  "id":"my-work","title":"指派给我","subtitle":"当前连接账号：{connection.summary.username} · 只读本人指派的 Bug 与研发需求",
+  "requires":{"projectConnection":"zentao","emptyAction":"projectSelection"},
+  "kind":"list","refresh":true,
+  "tabs":[{"id":"bug","title":"Bug","input":{"kind":"bug"}},{"id":"story","title":"研发需求","input":{"kind":"story"}}],
+  "source":{"capability":"zentao.object.list","items":"items","pagination":{"type":"cursor","inputField":"cursor","nextField":"nextCursor","pageSize":50},"partial":{"completeField":"complete","problemsField":"problems"},"presentationField":"presentation"},
+  "rowKey":"id",
+  "columns":[{"field":"id","title":"ID","width":72},{"field":"title","title":"标题"},{"field":"status","title":"状态","enum":"status"},{"field":"assignedTo","title":"指派给"}],
+  "onRowOpen":{"detail":"object"},
+  "details":{"object":{
+    "titleTemplate":"{tab.title} #{row.id}",
+    "source":{"capability":"zentao.object.get","input":{"kind":"{tab.input.kind}","reference":"{row.reference}"},"presentationField":"presentation","partial":{"completeField":"complete","missingField":"missing"}},
+    "sections":[
+     {"kind":"fields","from":"fields","labels":"presentation.labels","enums":"presentation.choices"},
+     {"kind":"resource","title":"正文","from":"body","read":"zentao.resource.read","render":"markdown-or-text"},
+     {"kind":"resource","title":"历史","from":"history","read":"zentao.resource.read","render":"markdown-or-text"},
+     {"kind":"resourceList","title":"附件","from":"attachments","nameField":"filename","resourceField":"resource","read":"zentao.resource.read","preview":["image/*","text/*","application/pdf"]}
+    ],
+    "actions":[{"kind":"insertTerminal","title":"插入终端","payload":{"objectKind":"{tab.input.kind}","reference":"{value.reference}"},"closeOnDone":true}]
+  }}
+ }]}
+}

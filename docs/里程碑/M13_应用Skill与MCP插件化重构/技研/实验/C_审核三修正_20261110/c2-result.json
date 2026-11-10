@@ -1,0 +1,71 @@
+{
+ "cases": {
+  "N1_normal": {
+   "r": {
+    "ok": true
+   },
+   "equalsOriginal": true,
+   "mode": "600",
+   "leftovers": [],
+   "pass": true
+  },
+  "W1_write_before_capture": {
+   "r": {
+    "ok": false,
+    "reason": "还原前文件已被修改，已放回对方内容，放弃"
+   },
+   "keptExternal": true,
+   "leftovers": [],
+   "pass": true
+  },
+  "W2_create_after_capture_rename": {
+   "r": {
+    "ok": false,
+    "reason": "还原期间其他程序写入了配置，已保留对方内容，放弃"
+   },
+   "keptExternal": true,
+   "leftovers": [],
+   "pass": true
+  },
+  "W3_write_after_capture": {
+   "r": {
+    "ok": false,
+    "reason": "还原期间其他程序写入了配置，已保留对方内容，放弃"
+   },
+   "keptExternal": true,
+   "leftovers": [],
+   "pass": true
+  },
+  "W4_double_concurrent": {
+   "r": {
+    "ok": false,
+    "reason": "检测到多次并发修改，已保留两份",
+    "kept": [
+     "config.toml",
+     ".config.toml.willyou-captured-<tag>"
+    ]
+   },
+   "keptBoth": true,
+   "pass": true
+  },
+  "W5_deleted_meanwhile": {
+   "r": {
+    "ok": false,
+    "reason": "配置文件已被移走或删除，放弃",
+    "code": "ENOENT"
+   },
+   "stillAbsent": true,
+   "leftovers": [],
+   "pass": true
+  }
+ },
+ "pass": {
+  "N1_normal": true,
+  "W1_write_before_capture": true,
+  "W2_create_after_capture_rename": true,
+  "W3_write_after_capture": true,
+  "W4_double_concurrent": true,
+  "W5_deleted_meanwhile": true
+ },
+ "allPass": true
+}

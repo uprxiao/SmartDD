@@ -1,0 +1,175 @@
+{
+ "root": "<tmp>",
+ "cases": {
+  "C1a_env_only": {
+   "code": 0,
+   "sig": null,
+   "session": "a0be4902-acbb-4df6-abb4-39b5c3260a8d",
+   "result": "MOCK_1",
+   "isError": false,
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "model": "claude-opus-5-5",
+     "authIsTestToken": true,
+     "authLooksOAuth": false,
+     "authHeaderKind": "authorization",
+     "stream": true
+    }
+   ],
+   "stderr": []
+  },
+  "C1b_env_ANTHROPIC_MODEL": {
+   "code": 0,
+   "sig": null,
+   "session": "543f417a-e60b-4209-b65f-daf1cdfe7190",
+   "result": "MOCK_2",
+   "isError": false,
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "model": "model-a",
+     "authIsTestToken": true,
+     "authLooksOAuth": false,
+     "authHeaderKind": "authorization",
+     "stream": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"model-a\",\"query_source\":\"sdk\"}"
+   ]
+  },
+  "C1c_settings_file_model_baseurl__token_env": {
+   "code": 0,
+   "sig": null,
+   "session": "1509b719-941f-42d6-8d73-e01df04308be",
+   "result": "MOCK_3",
+   "isError": false,
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "model": "model-b",
+     "authIsTestToken": true,
+     "authLooksOAuth": false,
+     "authHeaderKind": "authorization",
+     "stream": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"model-b\",\"query_source\":\"sdk\"}"
+   ]
+  },
+  "C1d_flag_model": {
+   "code": 0,
+   "sig": null,
+   "session": "93073993-a419-43f6-be56-40a23ba7485c",
+   "result": "MOCK_4",
+   "isError": false,
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "model": "model-c",
+     "authIsTestToken": true,
+     "authLooksOAuth": false,
+     "authHeaderKind": "authorization",
+     "stream": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"model-c\",\"query_source\":\"sdk\"}"
+   ]
+  },
+  "C4a_resume_noModel": {
+   "code": 0,
+   "sig": null,
+   "session": "93073993-a419-43f6-be56-40a23ba7485c",
+   "result": "MOCK_5",
+   "isError": false,
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "model": "model-c",
+     "authIsTestToken": true,
+     "authLooksOAuth": false,
+     "authHeaderKind": "authorization",
+     "stream": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"model-c\",\"query_source\":\"sdk\"}"
+   ]
+  },
+  "C4b_resume_modelD": {
+   "code": 0,
+   "sig": null,
+   "session": "93073993-a419-43f6-be56-40a23ba7485c",
+   "result": "MOCK_6",
+   "isError": false,
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "model": "model-d",
+     "authIsTestToken": true,
+     "authLooksOAuth": false,
+     "authHeaderKind": "authorization",
+     "stream": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"model-d\",\"query_source\":\"sdk\"}"
+   ]
+  },
+  "C4c_resume_noModel_afterD": {
+   "code": 0,
+   "sig": null,
+   "session": "93073993-a419-43f6-be56-40a23ba7485c",
+   "result": "MOCK_7",
+   "isError": false,
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "model": "model-d",
+     "authIsTestToken": true,
+     "authLooksOAuth": false,
+     "authHeaderKind": "authorization",
+     "stream": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"model-d\",\"query_source\":\"sdk\"}"
+   ]
+  }
+ },
+ "settingsUnchanged": true,
+ "sessionFiles": [
+  {
+   "file": "<tmp>/cfg/projects/-private-tmp-m13-cc-1oeVWi-proj/1509b719-941f-42d6-8d73-e01df04308be.jsonl",
+   "assistantModels": [
+    "model-b"
+   ]
+  },
+  {
+   "file": "<tmp>/cfg/projects/-private-tmp-m13-cc-1oeVWi-proj/543f417a-e60b-4209-b65f-daf1cdfe7190.jsonl",
+   "assistantModels": [
+    "model-a"
+   ]
+  },
+  {
+   "file": "<tmp>/cfg/projects/-private-tmp-m13-cc-1oeVWi-proj/93073993-a419-43f6-be56-40a23ba7485c.jsonl",
+   "assistantModels": [
+    "model-c",
+    "model-c",
+    "model-d",
+    "model-d"
+   ]
+  },
+  {
+   "file": "<tmp>/cfg/projects/-private-tmp-m13-cc-1oeVWi-proj/a0be4902-acbb-4df6-abb4-39b5c3260a8d.jsonl",
+   "assistantModels": [
+    "claude-opus-5-5"
+   ]
+  }
+ ],
+ "anyOAuth": false,
+ "allTestToken": true
+}

@@ -1,0 +1,672 @@
+{
+ "cases": {
+  "M1a_claudeSrc_native_claude": {
+   "target": "claude",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "arg-SRCVAL",
+      "lit-$x",
+      "dflt"
+     ],
+     "cwd": "<root>/p1",
+     "env": {
+      "ANTHROPIC_BASE_URL": "http://127.0.0.1:51079",
+      "ANTHROPIC_AUTH_TOKEN": "<model-token>",
+      "WILLYOU_RUN_TOKEN": "run-token-x",
+      "WY_PROBE_LOG": "<root>/probe.log",
+      "A_FULL": "SRCVAL",
+      "B_PART": "pre-SRCVAL-post",
+      "C_LIT": "plain",
+      "D_DOLLAR": "cost $5 and $HOME",
+      "API_KEY": "<KEY_A>"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [
+    {
+     "path": "/mcp",
+     "auth": "Bearer <HTTP_TOK>",
+     "xpart": "t-SRCVAL",
+     "xlit": null,
+     "method": "initialize"
+    }
+   ],
+   "model": [
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": null,
+     "isError": null
+    },
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": "<tool_use_error>Error: No such tool available: mcp__h1__wy_echo\"}]</tool_use_error>",
+     "isError": true
+    }
+   ],
+   "stderr": [],
+   "argvHasSecret": false,
+   "configHasSecret": false
+  },
+  "M1b_claudeSrc_converted_codex": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "arg-SRCVAL",
+      "lit-$x",
+      "dflt"
+     ],
+     "cwd": "<root>/p2",
+     "env": {
+      "D_DOLLAR": "cost $5 and $HOME",
+      "WY_PROBE_LOG": "<root>/probe.log",
+      "C_LIT": "plain",
+      "B_PART": "pre-SRCVAL-post",
+      "A_FULL": "SRCVAL",
+      "API_KEY": "<KEY_A>"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [
+    {
+     "path": "/mcp",
+     "auth": "Bearer <HTTP_TOK>",
+     "xpart": "t-SRCVAL",
+     "xlit": null,
+     "method": "initialize"
+    }
+   ],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__h1::wy_echo",
+      "mcp__p1::wy_echo",
+      "mcp__p1::wy_write"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__h1::wy_echo",
+      "mcp__p1::wy_echo",
+      "mcp__p1::wy_write"
+     ],
+     "toolResult": "unsupported call: mcp__h1wy_echo\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:49.432271Z ERROR codex_core::tools::router: error=unsupported call: mcp__h1wy_echo\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M1c_codexSrc_native_codex": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "arg-${SRC}"
+     ],
+     "cwd": "<root>/p3",
+     "env": {
+      "A_FULL": "${SRC}",
+      "C_LIT": "plain",
+      "WY_PROBE_LOG": "<root>/probe.log"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [
+    {
+     "path": "/mcp",
+     "auth": "Bearer <HTTP_TOK>",
+     "xpart": null,
+     "xlit": "${SRC}",
+     "method": "initialize"
+    }
+   ],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__h2::wy_echo",
+      "mcp__p2::wy_echo",
+      "mcp__p2::wy_write"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__h2::wy_echo",
+      "mcp__p2::wy_echo",
+      "mcp__p2::wy_write"
+     ],
+     "toolResult": "unsupported call: mcp__h2wy_echo\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:49.547259Z ERROR codex_core::tools::router: error=unsupported call: mcp__h2wy_echo\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M1d_codexSrc_converted_claude": {
+   "target": "claude",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "arg-${SRC}"
+     ],
+     "cwd": "<root>/p4",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log",
+      "C_LIT": "plain",
+      "A_FULL": "${SRC}"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [
+    {
+     "path": "/mcp",
+     "auth": "Bearer <HTTP_TOK>",
+     "xpart": null,
+     "xlit": "SRCVAL",
+     "method": "initialize"
+    }
+   ],
+   "model": [
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": null,
+     "isError": null
+    },
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": "<tool_use_error>Error: No such tool available: mcp__h2__wy_echo\"}]</tool_use_error>",
+     "isError": true
+    }
+   ],
+   "stderr": [],
+   "argvHasSecret": false,
+   "configHasSecret": false
+  },
+  "M2_collision_cwd_claude": {
+   "target": "claude",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "cb"
+     ],
+     "cwd": "<root>/p5",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log",
+      "API_KEY": "<KEY_B>"
+     }
+    },
+    {
+     "argv": [
+      "ca"
+     ],
+     "cwd": "<root>/cwd with space 'q' $x",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log",
+      "API_KEY": "<KEY_A>"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": null,
+     "isError": null
+    },
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": "<tool_use_error>Error: No such tool available: mcp__ca__wy_echo\"}]</tool_use_error>",
+     "isError": true
+    }
+   ],
+   "stderr": [],
+   "argvHasSecret": false,
+   "configHasSecret": false
+  },
+  "M2_collision_cwd_codex": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "ca"
+     ],
+     "cwd": "<root>/cwd with space 'q' $x",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log",
+      "API_KEY": "<KEY_A>"
+     }
+    },
+    {
+     "argv": [
+      "cb"
+     ],
+     "cwd": "<root>/p6",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log",
+      "API_KEY": "<KEY_B>"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__ca::wy_echo",
+      "mcp__ca::wy_write",
+      "mcp__cb::wy_echo",
+      "mcp__cb::wy_write"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__ca::wy_echo",
+      "mcp__ca::wy_write",
+      "mcp__cb::wy_echo",
+      "mcp__cb::wy_write"
+     ],
+     "toolResult": "unsupported call: mcp__cawy_echo\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:50.196516Z ERROR codex_core::tools::router: error=unsupported call: mcp__cawy_echo\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M6c1_codex_default_noninteractive": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "pa"
+     ],
+     "cwd": "<root>/p7",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": "unsupported call: mcp__pawy_echo\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:50.310038Z ERROR codex_core::tools::router: error=unsupported call: mcp__pawy_echo\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M6c2_codex_server_approve": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "pa"
+     ],
+     "cwd": "<root>/p8",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": "unsupported call: mcp__pawy_echo\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:50.421564Z ERROR codex_core::tools::router: error=unsupported call: mcp__pawy_echo\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M6c3_codex_approve_but_write_prompt__echo": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "pa"
+     ],
+     "cwd": "<root>/p9",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": "unsupported call: mcp__pawy_echo\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:50.531675Z ERROR codex_core::tools::router: error=unsupported call: mcp__pawy_echo\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M6c4_codex_approve_but_write_prompt__write": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "pa"
+     ],
+     "cwd": "<root>/p10",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo",
+      "mcp__pa::wy_write"
+     ],
+     "toolResult": "unsupported call: mcp__pawy_write\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:50.641251Z ERROR codex_core::tools::router: error=unsupported call: mcp__pawy_write\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M6c5_codex_disabled_write": {
+   "target": "codex",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "pa"
+     ],
+     "cwd": "<root>/p11",
+     "env": {
+      "WY_PROBE_LOG": "<root>/probe.log"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo"
+     ],
+     "toolResult": null,
+     "forcedUnlisted": true
+    },
+    {
+     "api": "responses",
+     "listed": [
+      "mcp__pa::wy_echo"
+     ],
+     "toolResult": "unsupported call: mcp__pawy_write\"}]}]"
+    }
+   ],
+   "stderr": [
+    "2026-11-10T07:59:50.751933Z ERROR codex_core::tools::router: error=unsupported call: mcp__pawy_write\"}]}]"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": null
+  },
+  "M6a1_claude_default_noninteractive": {
+   "target": "claude",
+   "code": 0,
+   "starts": [
+    {
+     "argv": [
+      "pa"
+     ],
+     "cwd": "<root>/p12",
+     "env": {
+      "ANTHROPIC_BASE_URL": "http://127.0.0.1:51079",
+      "ANTHROPIC_AUTH_TOKEN": "<model-token>",
+      "WILLYOU_RUN_TOKEN": "run-token-x",
+      "WY_PROBE_LOG": "<root>/probe.log"
+     }
+    }
+   ],
+   "calls": [],
+   "http": [],
+   "model": [
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": null,
+     "isError": null
+    },
+    {
+     "api": "anthropic",
+     "listed": [],
+     "toolResult": "<tool_use_error>Error: No such tool available: mcp__pa__wy_echo\"}]</tool_use_error>",
+     "isError": true
+    }
+   ],
+   "stderr": [],
+   "argvHasSecret": false,
+   "configHasSecret": false
+  },
+  "M6a2_claude_allowed_echo": {
+   "target": "claude",
+   "code": 1,
+   "starts": [],
+   "calls": [],
+   "http": [],
+   "model": [],
+   "stderr": [
+    "Error: Input must be provided either through stdin or as a prompt argument when using --print"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": false
+  },
+  "M6a3_claude_allowed_echo__write": {
+   "target": "claude",
+   "code": 1,
+   "starts": [],
+   "calls": [],
+   "http": [],
+   "model": [],
+   "stderr": [
+    "Error: Input must be provided either through stdin or as a prompt argument when using --print"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": false
+  },
+  "M6a4_claude_disallowed_write": {
+   "target": "claude",
+   "code": 1,
+   "starts": [],
+   "calls": [],
+   "http": [],
+   "model": [],
+   "stderr": [
+    "Error: Input must be provided either through stdin or as a prompt argument when using --print"
+   ],
+   "argvHasSecret": false,
+   "configHasSecret": false
+  }
+ },
+ "emit_claude_to_codex": {
+  "codexArgs": [
+   "-c",
+   "mcp_servers.p1={command=\"/bin/sh\",args=[\"/tmp/m13-a1/wy-mcp-launch.sh\",\"--set\",\"A_FULL=WY_MCPV_1\",\"--set\",\"B_PART=WY_MCPV_2\",\"--set\",\"C_LIT=WY_MCPV_3\",\"--set\",\"D_DOLLAR=WY_MCPV_4\",\"--set\",\"API_KEY=WY_MCPV_5\",\"--set\",\"WY_PROBE_LOG=WY_MCPV_6\",\"--unset\",\"WY_MODEL_KEY\",\"--unset\",\"WILLYOU_RUN_TOKEN\",\"--unset-prefix\",\"WY_MCPV_\",\"--\",\"node\",\"/tmp/m13-a1/probe-server.mjs\",\"@WYARG:WY_MCPV_7\",\"@WYARG:WY_MCPV_8\",\"@WYARG:WY_MCPV_9\"],env_vars=[\"WY_MCPV_1\",\"WY_MCPV_2\",\"WY_MCPV_3\",\"WY_MCPV_4\",\"WY_MCPV_5\",\"WY_MCPV_6\",\"WY_MCPV_7\",\"WY_MCPV_8\",\"WY_MCPV_9\"]}",
+   "-c",
+   "mcp_servers.h1={url=\"http://127.0.0.1:51078/mcp\",env_http_headers={\"Authorization\"=\"WY_MCPV_10\",\"X-Part\"=\"WY_MCPV_11\"}}"
+  ],
+  "addKeys": [
+   "WY_MCPV_1",
+   "WY_MCPV_2",
+   "WY_MCPV_3",
+   "WY_MCPV_4",
+   "WY_MCPV_5",
+   "WY_MCPV_6",
+   "WY_MCPV_7",
+   "WY_MCPV_8",
+   "WY_MCPV_9",
+   "WY_MCPV_10",
+   "WY_MCPV_11"
+  ],
+  "problems": []
+ },
+ "emit_codex_to_claude": {
+  "claudeJson": {
+   "mcpServers": {
+    "p2": {
+     "type": "stdio",
+     "command": "/bin/sh",
+     "args": [
+      "/tmp/m13-a1/wy-mcp-launch.sh",
+      "--set",
+      "A_FULL=WY_MCPV_1",
+      "--set",
+      "C_LIT=WY_MCPV_2",
+      "--set",
+      "WY_PROBE_LOG=WY_MCPV_3",
+      "--set",
+      "SRC=WY_MCPV_4",
+      "--set",
+      "KEY_B=WY_MCPV_5",
+      "--unset",
+      "ANTHROPIC_AUTH_TOKEN",
+      "--unset",
+      "ANTHROPIC_API_KEY",
+      "--unset",
+      "ANTHROPIC_BASE_URL",
+      "--unset",
+      "WILLYOU_RUN_TOKEN",
+      "--unset-prefix",
+      "WY_MCPV_",
+      "--",
+      "node",
+      "/tmp/m13-a1/probe-server.mjs",
+      "@WYARG:WY_MCPV_6"
+     ],
+     "env": {}
+    },
+    "h2": {
+     "type": "http",
+     "url": "http://127.0.0.1:51078/mcp",
+     "headers": {
+      "X-Lit": "${WY_MCPV_7}",
+      "Authorization": "${WY_MCPV_8}"
+     }
+    }
+   }
+  },
+  "addKeys": [
+   "WY_MCPV_1",
+   "WY_MCPV_2",
+   "WY_MCPV_3",
+   "WY_MCPV_4",
+   "WY_MCPV_5",
+   "WY_MCPV_6",
+   "WY_MCPV_7",
+   "WY_MCPV_8"
+  ]
+ },
+ "M3_missing_var": [
+  "mv: 缺少变量 NOT_SET"
+ ]
+}

@@ -1,0 +1,15 @@
+{
+  "time": "2026-11-10T17:45:09.749481+08:00",
+  "branch": "feature/0.1.4",
+  "runtime": {
+    "node": "22.23.1",
+    "claude": "2.1.322",
+    "codexBaseline": "0.166.0（本轮未重跑 Codex）"
+  },
+  "method": "复跑 B2/B3/B4/B7 纯逻辑及 B1/B1b/B5/B6 CLI 驱动；使用临时 HOME、本机假模型/MCP、诱饵 Key，记录代理拒绝外连，未使用真实模型和凭据；不修改原实验或生产代码。",
+  "newProbes": {
+    "literal-marker": "直接调用归档 emit；alpha 有 API_KEY=decoy-alpha-key，beta 的来源字面参数为 @WYARG:WY_MCPV_1，执行生成的 beta 包装（合并 emit.add 环境），beta 得到 alpha 的 Key。未运行真实 Claude 整链路。",
+    "cas-window": "只在本测试 Node 进程拦截 fs.renameSync，并 syncBuiltinESMExports；在最后哈希校验已完成、实际 rename 前模拟另一个保存者写入同一临时测试文件。函数返回 ok，外部新增项被覆盖。这是确定性故障注入，不是自然并发发生率测试。"
+  },
+  "boundary": "新 stdout 为探针直接输出；被复用的原驱动内部仍有摘要裁剪。不计打包 App 验收；P1 签名 Electron 等未执行。"
+}

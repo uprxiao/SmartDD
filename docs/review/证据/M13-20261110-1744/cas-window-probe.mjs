@@ -1,0 +1,11 @@
+import fs from 'node:fs';import {syncBuiltinESMExports} from 'node:module';
+import {join} from 'node:path';
+const dir=fs.mkdtempSync('/private/tmp/m13-cas-gap-');const target=join(dir,'config.toml');
+const oldRename=fs.renameSync;let injected=false;
+fs.renameSync=(a,b)=>{if(b===target){fs.writeFileSync(target,'model = "session"\nexternal_user_change = true\n');injected=true;}return oldRename(a,b);};
+syncBuiltinESMExports();
+const mod=await import("file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M13_%E5%BA%94%E7%94%A8Skill%E4%B8%8EMCP%E6%8F%92%E4%BB%B6%E5%8C%96%E9%87%8D%E6%9E%84/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/B_%E5%AE%A1%E6%A0%B8%E4%BA%8C%E4%BF%AE%E6%AD%A3_20261110/b4-toml-restore.mjs");
+const original='model = "original"\n';const before=mod.readTop(original);const session=mod.setTop(original,'model','session').text;
+fs.writeFileSync(target,session);const expected=mod.readTop(session).values;
+const result=mod.restoreFile(target,before.values,expected,{raw:before.raw});
+console.log(JSON.stringify({method:'仅在本测试进程中拦截 rename；在最后校验之后、替换之前模拟其他进程保存',injected,result,after:fs.readFileSync(target,'utf8')},null,2));

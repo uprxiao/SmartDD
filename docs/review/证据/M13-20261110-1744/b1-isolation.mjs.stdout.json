@@ -1,0 +1,282 @@
+{
+ "claude": "2.1.322 (Claude Code)",
+ "cases": {
+  "R0_red_project_only_baseurl": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-B",
+   "reqs": {
+    "A": [],
+    "B": [
+     {
+      "mock": "B",
+      "auth": "A",
+      "xapikey": null,
+      "marks": [
+       "MARK-CLAUDEMD-PROJ",
+       "sk-proj-native"
+      ]
+     }
+    ],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "B:A"
+    ],
+    "marks": [
+     "MARK-CLAUDEMD-PROJ",
+     "sk-proj-native"
+    ]
+   }
+  },
+  "R0b_red_local_baseurl_key_helper": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-B",
+   "reqs": {
+    "A": [],
+    "B": [
+     {
+      "mock": "B",
+      "auth": "B",
+      "xapikey": "H",
+      "marks": []
+     }
+    ],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "B:B"
+    ],
+    "marks": []
+   }
+  },
+  "R1_sources_user_project_baseurl": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "reqs": {
+    "A": [
+     {
+      "mock": "A",
+      "auth": "A",
+      "xapikey": null,
+      "marks": []
+     }
+    ],
+    "B": [],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "A:A"
+    ],
+    "marks": []
+   }
+  },
+  "R2_sources_user_project_all": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "reqs": {
+    "A": [
+     {
+      "mock": "A",
+      "auth": "A",
+      "xapikey": null,
+      "marks": []
+     }
+    ],
+    "B": [],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "A:A"
+    ],
+    "marks": []
+   }
+  },
+  "R3_sources_user_local_all": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "reqs": {
+    "A": [
+     {
+      "mock": "A",
+      "auth": "A",
+      "xapikey": null,
+      "marks": []
+     }
+    ],
+    "B": [],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "A:A"
+    ],
+    "marks": []
+   }
+  },
+  "R4_flag_settings_baseurl_only": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "reqs": {
+    "A": [
+     {
+      "mock": "A",
+      "auth": "B",
+      "xapikey": "H",
+      "marks": []
+     }
+    ],
+    "B": [],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "A:B"
+    ],
+    "marks": []
+   }
+  },
+  "S1_concurrent_projA": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "reqs": {
+    "A": [
+     {
+      "mock": "A",
+      "auth": "A",
+      "xapikey": null,
+      "marks": [
+       "sk-user-shared",
+       "sk-proj-a-private"
+      ]
+     }
+    ],
+    "B": [],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "A:A"
+    ],
+    "marks": [
+     "sk-user-shared",
+     "sk-proj-a-private"
+    ]
+   }
+  },
+  "S2_concurrent_projB": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A2",
+   "reqs": {
+    "A": [
+     {
+      "mock": "A",
+      "auth": "A",
+      "xapikey": null,
+      "marks": [
+       "sk-user-shared",
+       "sk-proj-a-private"
+      ]
+     }
+    ],
+    "B": [],
+    "A2": [
+     {
+      "mock": "A2",
+      "auth": "A",
+      "xapikey": null,
+      "marks": [
+       "sk-user-shared",
+       "sk-proj-b-private"
+      ]
+     }
+    ]
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "A:A",
+     "A2:A"
+    ],
+    "marks": [
+     "sk-user-shared",
+     "sk-proj-a-private",
+     "sk-proj-b-private"
+    ]
+   }
+  },
+  "S3_projA_after_unmanage": {
+   "code": 0,
+   "sig": null,
+   "result": "OK-A",
+   "reqs": {
+    "A": [
+     {
+      "mock": "A",
+      "auth": "A",
+      "xapikey": null,
+      "marks": [
+       "sk-user-shared"
+      ]
+     }
+    ],
+    "B": [],
+    "A2": []
+   },
+   "proxy": [],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ],
+   "summary": {
+    "endpoints": [
+     "A:A"
+    ],
+    "marks": [
+     "sk-user-shared"
+    ]
+   }
+  }
+ }
+}

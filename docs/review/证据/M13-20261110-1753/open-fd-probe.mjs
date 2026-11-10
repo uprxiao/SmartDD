@@ -1,0 +1,11 @@
+import fs from 'node:fs';import {syncBuiltinESMExports} from 'node:module';import {join} from 'node:path';
+const dir=fs.mkdtempSync('/private/tmp/m13-swap-audit-');const target=join(dir,'config.toml');
+const before={model:'user-default'},expect={model:'session-model'},raw={model:'model = "user-default"'};
+const current='model = "session-model"\n';const external='model = "external-choice"\nexternal_writer_mark = true\n';
+fs.writeFileSync(target,current,{mode:0o600});
+const fd=fs.openSync(target,'r+');const nativeLink=fs.linkSync;let injected=false;
+fs.linkSync=(a,b)=>{if(!injected&&b===target&&a.includes('willyou-new')){fs.writeSync(fd,external,0,'utf8');fs.ftruncateSync(fd,Buffer.byteLength(external));injected=true;}return nativeLink(a,b);};
+syncBuiltinESMExports();const {restoreFileSwap}=await import("file:///Users/liubu/hx/4.uprxiao/SmartDD/docs/%E9%87%8C%E7%A8%8B%E7%A2%91/M13_%E5%BA%94%E7%94%A8Skill%E4%B8%8EMCP%E6%8F%92%E4%BB%B6%E5%8C%96%E9%87%8D%E6%9E%84/%E6%8A%80%E7%A0%94/%E5%AE%9E%E9%AA%8C/C_%E5%AE%A1%E6%A0%B8%E4%B8%89%E4%BF%AE%E6%AD%A3_20261110/c2-restore-swap.mjs");
+const result=restoreFileSwap(target,before,expect,{raw});fs.closeSync(fd);
+const files=fs.readdirSync(dir).map(n=>({name:n,text:fs.readFileSync(join(dir,n),'utf8')}));
+console.log(JSON.stringify({method:'并发方在 rename 前已打开 r+ FD；捕获哈希校验后通过同一 FD 保存，再继续 link',injected,result,files,externalWritePreserved:files.some(x=>x.text.includes('external_writer_mark'))},null,2));

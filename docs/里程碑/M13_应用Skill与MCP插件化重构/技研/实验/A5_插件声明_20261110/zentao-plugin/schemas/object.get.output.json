@@ -1,0 +1,6 @@
+{"type":"object","additionalProperties":false,"required":["id","reference","fields","attachments","complete","missing"],"properties":{
+ "id":{"type":"string"},"reference":{"$ref":"ref"},"fields":{"type":"object"},
+ "body":{"oneOf":[{"$ref":"resource"},{"type":"null"}]},"history":{"oneOf":[{"$ref":"resource"},{"type":"null"}]},
+ "attachments":{"type":"array","items":{"type":"object","required":["filename","resource"],"properties":{"filename":{"type":"string"},"resource":{"$ref":"resource"}}}},
+ "complete":{"type":"boolean"},"missing":{"type":"array","items":{"type":"string"}},
+ "presentation":{"type":"object","properties":{"labels":{"type":"object"},"choices":{"type":"object"}}}}}

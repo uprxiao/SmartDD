@@ -1,0 +1,51 @@
+{
+  "baseline": {
+    "branch": "feature/0.1.4",
+    "node": "22.23.1",
+    "codex": "0.166.0",
+    "claude": "2.1.321"
+  },
+  "method": "私有临时 HOME/CODEX_HOME/CLAUDE_CONFIG_DIR，模拟模型、MCP 均本机 loopback；复用归档 run3 转换函数，仅增加占位符反例并分别运行一侧 CLI。未访问真实模型、日常登录或 WillYou App。",
+  "input": {
+    "env.WY_STATIC": "${WY_PASS}",
+    "process.env.WY_PASS": "passed-through"
+  },
+  "actual": {
+    "claude-probe.mjs": {
+      "A_codex2claude_wrap_ts-default_STDIO": {
+        "exit": 0,
+        "stdio": [
+          {
+            "kind": "stdio",
+            "tool": "wy_echo",
+            "cwd": "/private/tmp/m13-mcp-f6xZPd/server-cwd",
+            "WY_STATIC": "passed-through",
+            "WY_PASS": "passed-through",
+            "hasAnthropicToken": true,
+            "hasModelKeyEnv": false,
+            "hasHttpTokenEnv": true,
+            "t": 1794296917931
+          }
+        ]
+      }
+    },
+    "probe.mjs": {
+      "B_claude2codex_envvars_STDIO": {
+        "exit": 0,
+        "stdio": [
+          {
+            "kind": "stdio",
+            "tool": "wy_echo",
+            "cwd": "/private/tmp/m13-mcp-3tDw4J/proj",
+            "WY_STATIC": "${WY_PASS}",
+            "WY_PASS": "passed-through",
+            "hasAnthropicToken": false,
+            "hasModelKeyEnv": false,
+            "hasHttpTokenEnv": false,
+            "t": 1794296918173
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,404 @@
+{
+ "cases": {
+  "A_codex2claude_wrap_ts-default_STDIO": {
+   "code": 0,
+   "final": "DONE ECHO {",
+   "mcpLog": [
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "GET",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "stdio",
+     "tool": "wy_echo",
+     "cwd": "<root>/server-cwd",
+     "WY_STATIC": "static-val",
+     "WY_PASS": "passed-through",
+     "hasAnthropicToken": true,
+     "hasModelKeyEnv": false,
+     "hasHttpTokenEnv": true,
+     "t": 1794295316275
+    }
+   ],
+   "model": [
+    {
+     "api": "anthropic",
+     "nTools": 12,
+     "mcpTools": [],
+     "trText": null,
+     "target": "wystdio",
+     "picked": "mcp__wystdio__wy_echo",
+     "gotToolResult": false
+    },
+    {
+     "api": "anthropic",
+     "nTools": 12,
+     "mcpTools": [],
+     "trText": "ECHO {\"kind\":\"stdio\",\"tool\":\"wy_echo\",\"cwd\":\"<root>/server-cwd\",\"WY_STATIC\":\"static-val\",\"WY_PASS\":\"passed-through\",\"hasAnthropicToken\":true,\"hasModelKeyEnv\":false,\"hasHttpTokenEnv\":true,\"t\":1794295316275}",
+     "target": "wystdio",
+     "picked": null,
+     "gotToolResult": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ]
+  },
+  "A_claude_inherit_env_STDIO": {
+   "code": 0,
+   "final": "DONE ECHO {",
+   "mcpLog": [
+    {
+     "kind": "stdio",
+     "tool": "wy_echo",
+     "cwd": "<root>/proj",
+     "WY_STATIC": null,
+     "WY_PASS": "passed-through",
+     "hasAnthropicToken": true,
+     "hasModelKeyEnv": false,
+     "hasHttpTokenEnv": true,
+     "t": 1794295316541
+    }
+   ],
+   "model": [
+    {
+     "api": "anthropic",
+     "nTools": 12,
+     "mcpTools": [],
+     "trText": null,
+     "target": "wystdio",
+     "picked": "mcp__wystdio__wy_echo",
+     "gotToolResult": false
+    },
+    {
+     "api": "anthropic",
+     "nTools": 12,
+     "mcpTools": [],
+     "trText": "ECHO {\"kind\":\"stdio\",\"tool\":\"wy_echo\",\"cwd\":\"<root>/proj\",\"WY_STATIC\":null,\"WY_PASS\":\"passed-through\",\"hasAnthropicToken\":true,\"hasModelKeyEnv\":false,\"hasHttpTokenEnv\":true,\"t\":1794295316541}",
+     "target": "wystdio",
+     "picked": null,
+     "gotToolResult": true
+    }
+   ],
+   "stderr": [
+    "[claude-code:unrecognized_model] {\"model\":\"m\",\"query_source\":\"sdk\"}"
+   ]
+  },
+  "B_claude2codex_noenvvars_STDIO": {
+   "code": 0,
+   "final": "DONE [{",
+   "mcpLog": [
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "GET",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "stdio",
+     "tool": "wy_echo",
+     "cwd": "<root>/proj",
+     "WY_STATIC": "static-val",
+     "WY_PASS": null,
+     "hasAnthropicToken": false,
+     "hasModelKeyEnv": false,
+     "hasHttpTokenEnv": false,
+     "t": 1794295316709
+    },
+    {
+     "kind": "http-req",
+     "method": "DELETE",
+     "authOk": true,
+     "hasAuth": true
+    }
+   ],
+   "model": [
+    {
+     "api": "responses",
+     "outText": null,
+     "toolNames": [
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "mcp__wyhttp::wy_echo",
+      "mcp__wystdio::wy_echo"
+     ],
+     "target": "wystdio",
+     "picked": "mcp__wystdio::wy_echo",
+     "gotOutput": false
+    },
+    {
+     "api": "responses",
+     "outText": "[{\"type\":\"input_text\",\"text\":\"Wall time: 0.0006 seconds\\nOutput:\"},{\"type\":\"input_text\",\"text\":\"ECHO {\\\"kind\\\":\\\"stdio\\\",\\\"tool\\\":\\\"wy_echo\\\",\\\"cwd\\\":\\\"<root>/proj\\\",\\\"WY_STATIC\\\":\\\"static-val\\\",\\\"WY_PASS\\\":null,\\\"hasAnthropicToken\\\":false,\\\"hasModelKeyEnv\\\":false,\\\"hasHttpToken",
+     "toolNames": [
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "mcp__wyhttp::wy_echo",
+      "mcp__wystdio::wy_echo"
+     ],
+     "target": "wystdio",
+     "picked": null,
+     "gotOutput": true
+    }
+   ],
+   "stderr": []
+  },
+  "B_claude2codex_envvars_STDIO": {
+   "code": 0,
+   "final": "DONE [{",
+   "mcpLog": [
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "GET",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "stdio",
+     "tool": "wy_echo",
+     "cwd": "<root>/proj",
+     "WY_STATIC": "static-val",
+     "WY_PASS": "passed-through",
+     "hasAnthropicToken": false,
+     "hasModelKeyEnv": false,
+     "hasHttpTokenEnv": false,
+     "t": 1794295316823
+    },
+    {
+     "kind": "http-req",
+     "method": "DELETE",
+     "authOk": true,
+     "hasAuth": true
+    }
+   ],
+   "model": [
+    {
+     "api": "responses",
+     "outText": null,
+     "toolNames": [
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "mcp__wyhttp::wy_echo",
+      "mcp__wystdio::wy_echo"
+     ],
+     "target": "wystdio",
+     "picked": "mcp__wystdio::wy_echo",
+     "gotOutput": false
+    },
+    {
+     "api": "responses",
+     "outText": "[{\"type\":\"input_text\",\"text\":\"Wall time: 0.0007 seconds\\nOutput:\"},{\"type\":\"input_text\",\"text\":\"ECHO {\\\"kind\\\":\\\"stdio\\\",\\\"tool\\\":\\\"wy_echo\\\",\\\"cwd\\\":\\\"<root>/proj\\\",\\\"WY_STATIC\\\":\\\"static-val\\\",\\\"WY_PASS\\\":\\\"passed-through\\\",\\\"hasAnthropicToken\\\":false,\\\"hasModelKeyEnv\\\":false,",
+     "toolNames": [
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "mcp__wyhttp::wy_echo",
+      "mcp__wystdio::wy_echo"
+     ],
+     "target": "wystdio",
+     "picked": null,
+     "gotOutput": true
+    }
+   ],
+   "stderr": []
+  },
+  "B_claude2codex_envvars_HTTP": {
+   "code": 0,
+   "final": "DONE [{",
+   "mcpLog": [
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "GET",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-req",
+     "method": "POST",
+     "authOk": true,
+     "hasAuth": true
+    },
+    {
+     "kind": "http-call",
+     "tool": "wy_echo",
+     "authOk": true
+    },
+    {
+     "kind": "http-req",
+     "method": "DELETE",
+     "authOk": true,
+     "hasAuth": true
+    }
+   ],
+   "model": [
+    {
+     "api": "responses",
+     "outText": null,
+     "toolNames": [
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "mcp__wyhttp::wy_echo",
+      "mcp__wystdio::wy_echo"
+     ],
+     "target": "wyhttp",
+     "picked": "mcp__wyhttp::wy_echo",
+     "gotOutput": false
+    },
+    {
+     "api": "responses",
+     "outText": "[{\"type\":\"input_text\",\"text\":\"Wall time: 0.0010 seconds\\nOutput:\"},{\"type\":\"input_text\",\"text\":\"HTTP_ECHO ok\"}]",
+     "toolNames": [
+      "list_mcp_resources",
+      "list_mcp_resource_templates",
+      "read_mcp_resource",
+      "mcp__wyhttp::wy_echo",
+      "mcp__wystdio::wy_echo"
+     ],
+     "target": "wyhttp",
+     "picked": null,
+     "gotOutput": true
+    }
+   ],
+   "stderr": []
+  }
+ },
+ "conv_codex_to_claude_wrap": {
+  "mcpServers": {
+   "wystdio": {
+    "type": "stdio",
+    "command": "/bin/sh",
+    "args": [
+     "-c",
+     "cd \"$0\" && exec \"$@\"",
+     "<root>/server-cwd",
+     "node",
+     "/tmp/m13-mcp-driver/fake-mcp-stdio.mjs",
+     "<root>/mcp-calls.log"
+    ],
+    "env": {
+     "WY_STATIC": "static-val",
+     "WY_PASS": "${WY_PASS}"
+    }
+   },
+   "wyhttp": {
+    "type": "http",
+    "url": "http://127.0.0.1:53607/mcp",
+    "headers": {
+     "Authorization": "Bearer ${WY_HTTP_TOKEN}"
+    }
+   }
+  },
+  "notes": [
+   "wystdio: startup_timeout_sec 无逐服务器对应",
+   "wystdio: tool_timeout_sec 无逐服务器对应",
+   "wyoff: enabled=false 跳过"
+  ]
+ },
+ "conv_claude_to_codex_nopass": {
+  "args": [
+   "-c",
+   "mcp_servers.wystdio={command=\"node\",args=[\"/tmp/m13-mcp-driver/fake-mcp-stdio.mjs\",\"<root>/mcp-calls.log\"],env={\"WY_STATIC\"=\"static-val\"},default_tools_approval_mode=\"approve\"}",
+   "-c",
+   "mcp_servers.wyhttp={url=\"http://127.0.0.1:53607/mcp\",bearer_token_env_var=\"WY_HTTP_TOKEN\",default_tools_approval_mode=\"approve\"}"
+  ],
+  "notes": []
+ },
+ "conv_claude_to_codex_pass": {
+  "args": [
+   "-c",
+   "mcp_servers.wystdio={command=\"node\",args=[\"/tmp/m13-mcp-driver/fake-mcp-stdio.mjs\",\"<root>/mcp-calls.log\"],env={\"WY_STATIC\"=\"static-val\"},env_vars=[\"WY_PASS\"],default_tools_approval_mode=\"approve\"}",
+   "-c",
+   "mcp_servers.wyhttp={url=\"http://127.0.0.1:53607/mcp\",bearer_token_env_var=\"WY_HTTP_TOKEN\",default_tools_approval_mode=\"approve\"}"
+  ],
+  "notes": []
+ },
+ "globalsUnchanged": {
+  "codex": true,
+  "claudeSettings": true,
+  "claudeJson": true
+ },
+ "srvcwd": "<root>/server-cwd"
+}

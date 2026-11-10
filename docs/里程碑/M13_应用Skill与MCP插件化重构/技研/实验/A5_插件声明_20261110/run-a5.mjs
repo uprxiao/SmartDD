@@ -1,0 +1,9 @@
+import {loadPlugin,validate,viewModel} from './validate-ui.mjs';import {cpSync,readFileSync,writeFileSync,mkdtempSync} from 'node:fs';import {join} from 'node:path';import {fileURLToPath} from 'node:url';
+const DIR=fileURLToPath(new URL('./zentao-plugin',import.meta.url));const out={};
+const pl=loadPlugin(DIR);out.positive_errors=validate(pl);
+const neg=[['列字段拼错',m=>m.ui.panels[0].columns[1].field='titel'],['分页字段不存在',m=>m.ui.panels[0].source.pagination.nextField='next'],['详情 section 路径错误',m=>m.ui.panels[0].details.object.sections[3].from='attachment'],['未知动作',m=>m.ui.panels[0].details.object.actions[0].kind='runShell'],['模板未知作用域',m=>m.ui.panels[0].details.object.titleTemplate='{secret.token}'],['页签取值不在枚举',m=>m.ui.panels[0].tabs[1].input.kind='task']];
+for(const[name,mut]of neg){const d=mkdtempSync('/tmp/m13-a5-');cpSync(DIR,d,{recursive:true});const f=join(d,'.willyou-plugin/plugin.json');const m=JSON.parse(readFileSync(f,'utf8'));mut(m);writeFileSync(f,JSON.stringify(m));out['neg_'+name]=validate(loadPlugin(d));}
+const listOut={items:[{id:'101',title:'登录页报错',status:'active',assignedTo:'alice',reference:{nativeId:'101',revision:'r1'}}],total:2,nextCursor:'c2',complete:false,problems:[{code:'object-unavailable',objectId:'102'}],presentation:{labels:{},choices:{status:{active:'激活',resolved:'已解决'}}}};
+const detailOut={id:'101',reference:{nativeId:'101',revision:'r1'},fields:{severity:'2',status:'active'},body:{id:'res-body',mediaType:'text/markdown'},history:null,attachments:[{filename:'截图.png',resource:{id:'res-1',mediaType:'image/png'}},{filename:'日志.zip',resource:{id:'res-2',mediaType:'application/zip'}}],complete:false,missing:['history'],presentation:{labels:{severity:'严重程度',status:'状态'},choices:{severity:{'2':'严重'},status:{active:'激活'}}}};
+out.viewModel=viewModel(pl.m,'bug',listOut,detailOut);
+console.log(JSON.stringify(out,null,1));

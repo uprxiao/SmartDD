@@ -1,0 +1,99 @@
+{
+ "smolToml": "1.9.1",
+ "cases": {
+  "T1_review_counterexample_single_quote_comment": {
+   "before": {
+    "model": "user-default",
+    "model_reasoning_effort": "high"
+   },
+   "decide": "offer",
+   "restoredOk": true,
+   "equalsOriginal": false,
+   "text": "model = \"user-default\" # valid TOML\nmodel_reasoning_effort = \"high\"\n"
+  },
+  "T2_double_quote_plain": {
+   "before": {
+    "model": "user-default",
+    "model_reasoning_effort": "high"
+   },
+   "decide": "offer",
+   "restoredOk": true,
+   "equalsOriginal": true,
+   "text": "model = \"user-default\"\nmodel_reasoning_effort = \"high\"\n\n[mcp_servers.keepme]\ncommand = \"true\"\n"
+  },
+  "T3_escape_and_comment_with_hash": {
+   "before": {
+    "model": "a\"b#c"
+   },
+   "decide": "offer",
+   "restoredOk": true,
+   "equalsOriginal": true,
+   "text": "model = \"a\\\"b#c\" # note # more\n"
+  },
+  "T4_quoted_key_and_indent": {
+   "before": {
+    "model": "x"
+   },
+   "decide": "offer",
+   "restoredOk": true,
+   "equalsOriginal": false,
+   "text": "  model = \"x\"\nother = 1\n[t]\nmodel = \"table-scoped\"\n"
+  },
+  "T5_absent_before": {
+   "before": {},
+   "decide": "offer",
+   "restoredOk": true,
+   "equalsOriginal": true,
+   "text": "x = 1\n[t]\ny = 2\n"
+  },
+  "T6_literal_with_bracket_line_multiline_other": {
+   "before": {
+    "model": "m0"
+   },
+   "decide": "offer",
+   "restoredOk": true,
+   "equalsOriginal": true,
+   "text": "other = \"\"\"\n[not a table]\n\"\"\"\nmodel = \"m0\"\n"
+  },
+  "T7_multiline_value_refused": {
+   "before": {
+    "model": "user-default"
+   },
+   "setOk": false,
+   "reason": "编辑后无法解析，拒绝"
+  },
+  "T8_non_string": {
+   "ok": false,
+   "reason": "model 不是字符串，不支持还原"
+  },
+  "T9_user_changed_after": {
+   "ok": false,
+   "reason": "model 已再次变化，放弃还原"
+  },
+  "T10_file_cas": {
+   "raceResult": {
+    "ok": false,
+    "reason": "文件在还原期间被修改，放弃"
+   },
+   "raceKeptExternal": true,
+   "normalResult": {
+    "ok": true
+   },
+   "normalEqualsOriginal": false,
+   "mode": "600"
+  }
+ },
+ "pass": {
+  "T1": false,
+  "T2": true,
+  "T3": true,
+  "T4": true,
+  "T5": true,
+  "T6": true,
+  "T7": true,
+  "T8": true,
+  "T9": true,
+  "T10": false
+ },
+ "allPass": false
+}
