@@ -544,7 +544,7 @@ export function agentSnapshot(agent, providers = [], runModel) {
   const nameOf = id => p?.models?.find(m => m.id === id)?.name || id;
   // runModel：本次运行实际使用的模型（审核 Q01）；新建时为智能体默认模型，恢复时由 resumeDecision 决定
   const run = agent.source === 'provider' ? (runModel || agent.model || null) : null;
-  return { agentId: agent.id, agentName: agent.name, tool: agent.tool, source: agent.source, method: agent.method || null, providerId: agent.provider || null, providerName: p?.name || null,
+  return { agentId: agent.id, agentName: agent.name, tool: agent.tool, source: agent.source, method: agent.method || null, providerId: agent.provider || null, providerName: p?.name || null, providerRev: p ? (p.rev || 0) : null,
     model: agent.model || null, models: agentModels(agent), modelNames: agentModels(agent).map(nameOf), runModel: run, runModelName: run ? nameOf(run) : null };
 }
 /** 恢复用哪个模型（审核 Q01）：上次使用的模型仍在所选智能体允许列表里就保留；不在时用所选智能体的默认模型并提示。订阅与旧配置按 CLI 自己的模型。 */
@@ -554,8 +554,27 @@ export function resumeDecision(snapshot, agent) {
   if (last && agentModels(agent).includes(last)) return { model: last, lost: false };
   return { model: agent.model, lost: !!last };
 }
-/** 恢复任务（审核 Q01、Q02）：模型按 resumeDecision；插件与连接按恢复时的最新状态重新生成本次运行快照；权限沿用创建时的档位（需求补记 8）。 */
-export function resumedTask(task, agent, store) {
+/** 模型来源的可读描述（恢复提示用）。 */
+export const sourceLabel = (a, providers = []) => a.source === 'login' ? `${LOGIN_LABEL[a.method || 'subscription'] || '订阅'}（CLI 自己的登录）` : a.source === 'legacy' ? '旧配置'
+  : (providers.find(p => p.id === (a.providerId ?? a.provider))?.name || a.providerName || '供应商已删除');
+/** 身份变化（审核 review-20261111-2119 F01，需求 5.3「任务记录与恢复」）：所选智能体就是原智能体（ID 相同），但认证来源已变——
+ *  来源类型、CLI 登录方式（订阅↔API）、供应商，或同一供应商的身份修订号（地址、协议或已有 Key 被替换时加 1，不含 Key 原文）。
+ *  只改名称、排序、默认模型、勾选模型不算。换成另一个智能体由用户主动选择，不经此判断。 */
+export function identityChange(snapshot, agent, providers = []) {
+  if (!snapshot || !agent || snapshot.agentId !== agent.id) return null;
+  const pid = agent.provider || null; const p = providers.find(x => x.id === pid);
+  const changed = snapshot.source !== agent.source
+    || (agent.source === 'login' && (snapshot.method || 'subscription') !== (agent.method || 'subscription'))
+    || (agent.source === 'provider' && (snapshot.providerId !== pid || (snapshot.providerRev ?? 0) !== (p ? (p.rev || 0) : null)));
+  if (!changed) return null;
+  const from = sourceLabel(snapshot, []); const to = sourceLabel(agent, providers);
+  return { from, to: from === to ? `${to}（地址或 Key 已修改）` : to };
+}
+/** 恢复任务（审核 Q01、Q02、review-20261111-2119 F01）：模型按 resumeDecision；插件与连接按恢复时的最新状态重新生成本次运行快照；权限沿用创建时的档位。
+ *  原智能体的来源已变时，必须带 confirmedIdentity（用户在恢复弹窗里重新选择过）才能恢复——与弹窗同一判断，不只靠界面。 */
+export function resumedTask(task, agent, store, { confirmedIdentity = false } = {}) {
+  const ch = identityChange(task.agent, agent, store.providers);
+  if (ch && !confirmedIdentity) throw new Error(`原智能体的来源已改变（${ch.from} → ${ch.to}），需重新选择后才能恢复`);
   const d = resumeDecision(task.agent, agent);
   return { lost: d.lost, task: { ...task, profile: agent.id, profileName: agent.name, agent: agentSnapshot(agent, store.providers, d.model),
     pluginSnapshot: pluginSnapshot(store.plugins, store.defaults, store.bindings, task.project), status: 'running' } };

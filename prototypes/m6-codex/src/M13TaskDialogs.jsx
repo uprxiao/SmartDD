@@ -1,7 +1,7 @@
 // M13 原型 P0.16（审核 review-20261111-1500 N01）：M13 预览下的任务信息、恢复任务、任务配置与会话插件弹窗。
 // 都读任务创建时记录的智能体快照与插件快照（task.agent、task.pluginSnapshot），不再回查旧 AI 配置。全部为合成数据。
 import React, { useState } from 'react';
-import { AGENTS, LOGIN_LABEL, launchBlock, projectBinding, resumeAgents, resumeDecision } from './m13-model.mjs';
+import { AGENTS, LOGIN_LABEL, identityChange, launchBlock, projectBinding, resumeAgents, resumeDecision } from './m13-model.mjs';
 import { Dialog, Pill } from './m13-ui.jsx';
 
 const sourceText = a => a.source === 'login' ? `${LOGIN_LABEL[a.method || 'subscription'] || '订阅'}（CLI 自己的登录）` : a.source === 'legacy' ? '旧配置（保留原环境变量与参数）' : a.providerName || '供应商已删除';
@@ -26,13 +26,16 @@ export function M13TaskInfo({ task, project, m13, onClose, onResume }) {
 export function M13ResumeDialog({ task, m13, onClose, onResume, nav }) {
   const a = task.agent; const tool = a?.tool || task.runner || 'claude';
   const options = resumeAgents(m13.configs, m13.tools, tool);
-  const [pick, setPick] = useState(options.find(c => c.id === a?.agentId)?.id || options[0]?.id || '');
+  const orig = options.find(c => c.id === a?.agentId);
+  const changed = orig ? identityChange(a, orig, m13.providers) : null; // 审核 2119 F01：原智能体来源已变时不预选，由用户重新选择
+  const [pick, setPick] = useState(changed ? '' : orig?.id || options[0]?.id || '');
   const chosen = options.find(c => c.id === pick);
   const decision = chosen ? resumeDecision(a, chosen) : null; const lost = decision?.lost; // 审核 Q01：与实际恢复用同一判断
   const block = chosen ? launchBlock(chosen, m13.providers) : null; // 审核 Q03：恢复同样做启动预检
-  return <Dialog title="恢复任务" sub={`${task.title} · 保留同一个 Code Agent（${AGENTS[tool]}）`} onClose={onClose} footer={<><button className="m10-button secondary" onClick={() => { onClose(); nav('settings/ai'); }}>管理智能体</button><button className="m10-button primary" disabled={!chosen || !!block} onClick={() => onResume(chosen)}>恢复任务</button></>}>
+  return <Dialog title="恢复任务" sub={`${task.title} · 保留同一个 Code Agent（${AGENTS[tool]}）`} onClose={onClose} footer={<><button className="m10-button secondary" onClick={() => { onClose(); nav('settings/ai'); }}>管理智能体</button><button className="m10-button primary" disabled={!chosen || !!block} onClick={() => onResume(chosen, { confirmedIdentity: !!changed && chosen.id === orig?.id })}>恢复任务</button></>}>
     {a && !m13.configs.some(c => c.id === a.agentId) && <div className="m13-alert warn"><div><p>原智能体“{a.agentName}”已删除，请选择一个 {AGENTS[tool]} 智能体继续，不会悄悄换成别的账号。</p></div></div>}
-    {options.length ? <label className="m13-field"><span>智能体</span><select className="m13-select" aria-label="恢复使用的智能体" value={pick} onChange={e => setPick(e.target.value)}>{options.map(c => <option key={c.id} value={c.id}>{c.name}{c.id === a?.agentId ? '（原智能体）' : ''}</option>)}</select></label>
+    {changed && <div className="m13-alert warn" data-resume-identity><div><p>原智能体“{orig.name}”的模型来源已改变：{changed.from} → {changed.to}。请重新选择要使用的智能体；继续选它表示改用新的来源，不会悄悄换账号。</p></div></div>}
+    {options.length ? <label className="m13-field"><span>智能体</span><select className="m13-select" aria-label="恢复使用的智能体" value={pick} onChange={e => setPick(e.target.value)}>{changed && <option value="" disabled>请选择智能体</option>}{options.map(c => <option key={c.id} value={c.id}>{c.name}{c.id === a?.agentId ? (changed ? `（原智能体，来源已改为 ${changed.to}）` : '（原智能体）') : ''}</option>)}</select></label>
       : <p className="m13-hint">没有可用的 {AGENTS[tool]} 智能体，请先新建。</p>}
     {lost && <p className="m13-hint m13-err">上次使用的模型 {a.runModelName || a.runModel || a.model} 不在所选智能体的模型里，将使用它的默认模型。</p>}
     {block && <div className="m13-alert warn" data-resume-block><div><p>{block.reason}。</p>{block.providerId && <button className="m13-link" onClick={() => { onClose(); nav('settings/ai/providers/' + block.providerId); }}>去填写 Key</button>}</div></div>}
