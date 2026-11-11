@@ -75,3 +75,23 @@ export function ProviderIcon({ catalog, name = '', size = 28 }) {
   </svg>;
 }
 export const ToolIcon = ({ tool, size = 16 }) => <ProviderIcon catalog={'tool-' + tool} size={size} />;
+/** 智能体图标（P0.16，用户 2026-11-11 要求首页下拉与“设置 › 智能体”列表完全一致）：Code Agent 官方图标＋右下角供应商角标；
+ *  旧配置用终端符号。列表与首页下拉共用这一个组件，尺寸按比例缩放（角标为图标的一半，外移 1/7）。 */
+export function AgentIcon({ tool, provider = null, legacy = false, size = 28 }) {
+  const box = { width: size, height: size, flex: `0 0 ${size}px` };
+  return <span className="m13-agent-icon" style={box} data-agent-icon>
+    {legacy ? <span className="m13-cap-icon" style={{ ...box, borderRadius: Math.round(size * 0.27) }}><TerminalGlyph size={Math.round(size * 0.54)} /></span> : <ToolIcon tool={tool} size={size} />}
+    {provider && !legacy && <span className="m13-agent-badge" style={{ right: -Math.round(size / 7), bottom: -Math.round(size / 7) }}><ProviderIcon catalog={provider.catalog} name={provider.name} size={Math.round(size / 2)} /></span>}
+  </span>;
+}
+const TerminalGlyph = ({ size }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5" /><line x1="12" x2="20" y1="19" y2="19" /></svg>;
+
+// P0.17 首页权限菜单图标：按 Codex 参考图（2026-11-11 用户截图）用同风格线条图标。请求批准＝手掌、完全访问＝带感叹号的盾，复用 lucide；
+// “帮我批准”在 Codex 中为盾形内 “>_”，lucide 没有对应图标，这里用 lucide 盾形轮廓加提示符自绘，差异记录在原型说明。
+import { Hand, ShieldAlert } from 'lucide-react';
+const SHIELD = 'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z';
+export function PermIcon({ icon, size = 16, strokeWidth = 1.7 }) {
+  if (icon === 'hand') return <Hand size={size} strokeWidth={strokeWidth} />;
+  if (icon === 'alert') return <ShieldAlert size={size} strokeWidth={strokeWidth} />;
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={SHIELD} /><path d="m9 10 2 2-2 2M13 14h2.5" /></svg>;
+}

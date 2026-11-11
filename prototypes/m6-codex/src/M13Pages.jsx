@@ -1,9 +1,9 @@
 // M13 原型 P0.5 新增页面与对话框：邮件“草稿”页、禅道“我的工作”页、连接全局默认／删除确认、AI 配置导入导出、
 // “WillYou 内置”分组、项目页“插件”分区。依据需求 2026-11-11 补记（七项讨论结论）与审核 review-20261111-0030 P05／P10／P11。
-// 全部为合成数据；“插入终端引用”只演示交互，不向真实终端写入；导出文件只含合成数据。
+// 全部为合成数据；“插入终端引用”写入原型的演示终端输入（不回车，P0.16），不连接真实终端；导出文件只含合成数据。
 import React, { useState } from 'react';
 import { ArrowRight, Check, Download, FileText, Info, KeyRound, Paperclip, RefreshCw, Sparkles, Server, TriangleAlert, Upload } from 'lucide-react';
-import { sessionEffect, affectedSessions, DRAFT_STATUS, ZENTAO_ITEMS, ZENTAO_PAGE, SAMPLE_IMPORT, buildExport, connectionSummary, connectionTypesOf, effectiveConnection, importPreview, projectBinding, zentaoDetail } from './m13-model.mjs';
+import { sessionEffect, affectedSessions, DRAFT_STATUS, ZENTAO_ITEMS, ZENTAO_PAGE, SAMPLE_IMPORT, buildExport, connectionSummary, connectionTypesOf, effectiveConnection, importPreview, mailDraftState, projectBinding, zentaoDetail } from './m13-model.mjs';
 import { Dialog, Mark, Pill } from './m13-ui.jsx';
 
 // ================= 邮件“草稿”页 =================
@@ -18,26 +18,31 @@ export const MailDrafts = props => props.plugin.enabled ? <MailDraftsPage {...pr
 function MailDraftsPage({ plugin, store, projects, notify, nav }) {
   const { drafts, setDrafts } = store;
   const [filter, setFilter] = useState('all'), [open, setOpen] = useState(null), [editing, setEditing] = useState(null), [checking, setChecking] = useState(false);
-  const hasSender = plugin.connections.some(c => c.type === 'smtp');
+  // P0.16（审核 N06，用户 2026-11-11 决定）：按草稿所属项目判断——项目关闭邮件插件时只读；发件账号用本项目生效的 SMTP 连接
+  const anySmtp = plugin.connections.some(c => c.type === 'smtp');
+  const stateOf = x => mailDraftState(x, plugin, store.defaults, store.bindings);
   const list = drafts.filter(d => filter === 'all' || d.status === filter);
-  const d = drafts.find(x => x.id === open);
+  const d = drafts.find(x => x.id === open); const ds = d ? stateOf(d) : null; const hasSender = !!ds?.sender && !ds.projectClosed;
   const update = (id, patch) => setDrafts(ds => ds.map(x => x.id === id ? { ...x, ...patch } : x));
-  const send = x => { update(x.id, { status: 'sent', sentAt: '刚刚', error: undefined }); notify(`“${x.subject}”已发送（演示）`); setOpen(null); };
+  const send = x => { const st = stateOf(x); if (st.projectClosed || !st.sender) return; update(x.id, { status: 'sent', sentAt: '刚刚', sentVia: st.sender.name, error: undefined }); notify(`“${x.subject}”已用“${st.sender.name}”发送（演示）`); setOpen(null); };
   const projectName = id => projects.find(p => p.id === id)?.name || id;
   return <div className="m13-subpage">
     <div className="m10-page-head"><div><h1>草稿</h1><p>Agent 起草的邮件保存在这里，发送前由你确认；结果未知时不会自动重发。</p></div></div>
-    {!hasSender && <div className="m13-alert warn"><Info size={16} /><div><strong>还没有发件账号</strong><p>可以查看和编辑草稿；发送前需要先在邮件插件里添加 SMTP 发件账号。</p></div><button className="m10-button secondary" onClick={() => nav('m13/plugins/mail')}>去添加</button></div>}
+    {!anySmtp && <div className="m13-alert warn"><Info size={16} /><div><strong>还没有发件账号</strong><p>可以查看和编辑草稿；发送前需要先在邮件插件里添加 SMTP 发件账号。</p></div><button className="m10-button secondary" onClick={() => nav('m13/plugins/mail')}>去添加</button></div>}
     <div className="m10-tabs" role="tablist">{[['all', '全部'], ['draft', '草稿'], ['sent', '已发送'], ['failed', '发送失败'], ['unknown', '结果未知']].map(([v, t]) => <button key={v} role="tab" aria-selected={filter === v} onClick={() => setFilter(v)}>{t}<span className="m13-count">{v === 'all' ? drafts.length : drafts.filter(x => x.status === v).length}</span></button>)}</div>
     <div className="m13-cap-list">{list.map(x => <button key={x.id} className="m13-cap" onClick={() => { setOpen(x.id); setEditing(null); setChecking(false); }}>
       <span className="m13-cap-icon"><FileText size={16} /></span>
       <span className="m13-cap-main"><b>{x.subject}</b><small>收件人 {x.to} · {projectName(x.project)}{x.attachments.length ? ` · ${x.attachments.length} 个附件` : ''}</small><small className="m13-cap-scope">{x.status === 'sent' ? `${x.sentAt} 发送` : `${x.updated} 更新`}{x.error ? ' · ' + x.error : ''}</small></span>
-      <Pill tone={DRAFT_STATUS[x.status][1]}>{DRAFT_STATUS[x.status][0]}</Pill>
+      {stateOf(x).projectClosed && <Pill tone="warn">本项目已关闭邮件插件</Pill>}<Pill tone={DRAFT_STATUS[x.status][1]}>{DRAFT_STATUS[x.status][0]}</Pill>
     </button>)}{!list.length && <div className="m13-empty"><FileText size={20} /><h3>没有这类邮件</h3><p>Agent 起草的邮件会出现在这里。</p></div>}</div>
     {d && <Dialog title={d.subject} sub={`收件人 ${d.to} · ${DRAFT_STATUS[d.status][0]}`} wide onClose={() => setOpen(null)}
-      footer={editing !== null ? <><button className="m10-button secondary" onClick={() => setEditing(null)}>取消</button><button className="m10-button primary" onClick={() => { update(d.id, { body: editing, updated: '刚刚' }); setEditing(null); notify('草稿已保存'); }}>保存</button></>
+      footer={ds?.projectClosed ? <button className="m10-button primary" onClick={() => setOpen(null)}>关闭</button> : editing !== null ? <><button className="m10-button secondary" onClick={() => setEditing(null)}>取消</button><button className="m10-button primary" onClick={() => { update(d.id, { body: editing, updated: '刚刚' }); setEditing(null); notify('草稿已保存'); }}>保存</button></>
         : d.status === 'sent' ? <button className="m10-button primary" onClick={() => setOpen(null)}>关闭</button>
           : d.status === 'unknown' ? <><button className="m10-button secondary" onClick={() => setChecking(true)}>核对结果</button><button className="m10-button primary" onClick={() => setOpen(null)}>关闭</button></>
-            : <><button className="m10-button secondary m13-danger-text" onClick={() => { setDrafts(ds => ds.filter(x => x.id !== d.id)); setOpen(null); notify('草稿已删除'); }}>删除</button><button className="m10-button secondary" onClick={() => setEditing(d.body)}>编辑</button><button className="m10-button primary" disabled={!hasSender} title={hasSender ? '' : '先添加发件账号'} onClick={() => send(d)}>{d.status === 'failed' ? '重新发送' : '发送'}</button></>}>
+            : <><button className="m10-button secondary m13-danger-text" onClick={() => { setDrafts(ds => ds.filter(x => x.id !== d.id)); setOpen(null); notify('草稿已删除'); }}>删除</button><button className="m10-button secondary" onClick={() => setEditing(d.body)}>编辑</button><button className="m10-button primary" disabled={!hasSender} title={hasSender ? '' : '本项目还没有可用的发件账号'} onClick={() => send(d)}>{d.status === 'failed' ? '重新发送' : '发送'}</button></>}>
+      {ds?.projectClosed ? <div className="m13-alert warn" data-mail-closed><Info size={16} /><div><strong>{projectName(d.project)} 已关闭邮件插件</strong><p>可以查看这封邮件，不能编辑和发送；在项目页重新打开邮件插件后恢复。</p></div></div>
+        : <div className="m13-row m13-sender" data-mail-sender><span className="m13-rowicon"><Info size={16} /></span><span>{ds?.sender ? <>发件账号：{ds.sender.name}<small>{projectName(d.project)} 当前生效（{ds.mode === 'custom' ? '本项目个性化' : '跟随全局默认'}）</small></> : <>本项目还没有可用的发件账号<small>在邮件插件里添加 SMTP 发件账号，或在项目页为 {projectName(d.project)} 选择一个</small></>}</span></div>}
+      {d.status === 'sent' && d.sentVia && <p className="m13-hint">已用“{d.sentVia}”发送。</p>}
       {d.status === 'failed' && <div className="m13-alert danger"><TriangleAlert size={16} /><div><strong>发送失败</strong><p>{d.error}。修复发件账号后可重新发送。</p></div></div>}
       {d.status === 'unknown' && <div className="m13-alert warn"><TriangleAlert size={16} /><div><strong>无法确认是否已发出</strong><p>发送时连接中断。WillYou 不会自动重发，以免重复发送。</p></div></div>}
       {checking && <div className="m13-alert info"><Info size={16} /><div><p>请到发件邮箱的“已发送”中核对这封邮件。</p></div><div className="m13-notice-actions"><button className="m10-button secondary" onClick={() => { update(d.id, { status: 'sent', sentAt: '已核对' }); setOpen(null); notify('已标记为已发送'); }}>已发出，标记为已发送</button><button className="m10-button secondary" disabled={!hasSender} onClick={() => send(d)}>确认未发出，重新发送</button></div></div>}
@@ -49,7 +54,7 @@ function MailDraftsPage({ plugin, store, projects, notify, nav }) {
 
 // ================= 禅道“我的工作”页 =================
 export const ZentaoWork = props => props.plugin.enabled ? <ZentaoWorkPage {...props} /> : <DisabledPage plugin={props.plugin} title="我的工作" togglePlugin={props.togglePlugin} />;
-function ZentaoWorkPage({ plugin, store, projects, tasks, scene, notify, nav, onTryPrompt }) {
+function ZentaoWorkPage({ plugin, store, projects, tasks, scene, notify, nav, onTryPrompt, onInsertReference }) {
   const { defaults, bindings } = store;
   const [projectId, setProjectId] = useState(projects[0]?.id), [kind, setKind] = useState('bug'), [pages, setPages] = useState({ bug: 1, story: 1 }), [failed, setFailed] = useState(false), [refreshing, setRefreshing] = useState(false), [open, setOpen] = useState(null), [target, setTarget] = useState(null);
   const eff = effectiveConnection(plugin, defaults, bindings, projectId, 'zentao');
@@ -72,7 +77,7 @@ function ZentaoWorkPage({ plugin, store, projects, tasks, scene, notify, nav, on
         : more ? <button className="m10-button secondary m13-more" onClick={next}>读取下一页</button> : <p className="m13-hint">已显示全部 {items.length} 条。</p>}
     </>}
     {item && (() => { const det = zentaoDetail(item); return <Dialog title={`#${item.id} ${item.title}`} sub={`${item.kind === 'bug' ? 'Bug' : '研发需求'} · ${item.product} · ${item.status}`} wide onClose={() => setOpen(null)}
-      footer={<><button className="m10-button secondary" onClick={() => setOpen(null)}>关闭</button>{running.length ? <button className="m10-button primary" disabled={!target} onClick={() => { const t = running.find(r => r.id === target); notify(`已插入会话“${t.title}”的终端输入（演示，未回车）`); setOpen(null); }}>插入终端引用</button>
+      footer={<><button className="m10-button secondary" onClick={() => setOpen(null)}>关闭</button>{running.length ? <button className="m10-button primary" disabled={!target} onClick={() => { const t = running.find(r => r.id === target); const text = `禅道${item.kind === 'bug' ? ' Bug' : '研发需求'} #${item.id} ${item.title}：`; setOpen(null); if (onInsertReference?.(t.id, text)) notify(`已插入会话“${t.title}”的终端输入（未回车）`); else notify('目标会话已不存在，请重新选择'); }}>插入终端引用</button>
         : <button className="m10-button primary" onClick={() => { setOpen(null); onTryPrompt?.(`禅道${item.kind === 'bug' ? ' Bug' : '研发需求'} #${item.id} ${item.title}：`, projectId); }}>新建会话并插入</button>}</>}>
       <pre className="m13-mail-body">{det.body}</pre>
       {det.attachments.length > 0 && <><h3 className="m13-sub">附件</h3>{det.attachments.map(a => <div key={a} className="m13-row"><span className="m13-rowicon"><Paperclip size={16} /></span><span>{a}<small>合成附件</small></span></div>)}</>}

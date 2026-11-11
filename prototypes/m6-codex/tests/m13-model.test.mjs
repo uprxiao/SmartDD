@@ -111,7 +111,8 @@ test('连接：未记录的项目跟随全局默认；个性化即使选的是�
 });
 test('删除连接：运行中任务在用时阻止；删全局默认需选新默认；个性化项目列出；唯一连接提示不可用', () => {
   const b = { zentao: { smartdd: { zentao: { mode: 'custom', connectionId: 'zt-ops' } } } };
-  const r1 = deleteImpact(zt, INITIAL_DEFAULTS, b, prj, zt.connections[0]);
+  const run = [{ id: 'run-1', title: '分析登录页验证码问题', project: 'ais', plugin: 'zentao', type: 'zentao', connectionId: 'zt-company' }]; // P0.16：由调用方传入运行中任务的连接快照
+  const r1 = deleteImpact(zt, INITIAL_DEFAULTS, b, prj, zt.connections[0], run);
   assert.equal(r1.blocked, true); assert.equal(r1.runningUse[0].id, 'run-1');
   const r2 = deleteImpact(zt, INITIAL_DEFAULTS, b, prj, zt.connections[0], []);
   assert.equal(r2.needNewDefault, true); assert.deepEqual(r2.others.map(c => c.id), ['zt-ops']);
@@ -281,4 +282,30 @@ test('接入时自动测试推荐模型并写回可用性', async () => {
   const t = autoTest(ds); assert.deepEqual(t, { claude: { model: 'deepseek-v4-pro', result: 'ok' }, codex: { model: 'deepseek-v4-pro', result: 'ok' } });
   const p = applyTest(ds, autoTest(ds, 'tools-fail'));
   assert.deepEqual(p.models[0].avail, { claude: 'bad', codex: 'ok' });
+});
+
+// P0.17 智能体权限（需求补记 8）
+import { permissionOptions, effectivePermission, choosePermission, permissionSnapshot, DEFAULT_PERMISSION } from '../src/m13-model.mjs';
+test('P0.17 权限档位：Codex 三档，Claude 只有请求批准与完全访问，都没有自定义', () => {
+  assert.deepEqual(permissionOptions('codex').map(p => p.id), ['ask', 'auto', 'full']);
+  assert.deepEqual(permissionOptions('claude').map(p => p.id), ['ask', 'full']);
+  assert.equal(DEFAULT_PERMISSION, 'ask');
+});
+test('P0.17 记住的帮我批准在 Claude 下按默认档位，切回 Codex 恢复', () => {
+  assert.equal(effectivePermission('auto', 'claude').id, 'ask');
+  assert.equal(effectivePermission('auto', 'codex').id, 'auto');
+  assert.equal(effectivePermission('unknown', 'codex').id, 'ask');
+  assert.equal(effectivePermission('custom', 'claude').id, 'ask');
+  assert.equal(effectivePermission('custom', 'codex').id, 'ask');
+});
+test('P0.17 第一次选完全访问需要确认，确认后不再询问', () => {
+  assert.deepEqual(choosePermission('full', false), { needConfirm: true });
+  assert.deepEqual(choosePermission('full', true), { needConfirm: false, selected: 'full' });
+  assert.deepEqual(choosePermission('auto', false), { needConfirm: false, selected: 'auto' });
+});
+test('P0.17 权限快照的启动参数（补验 E）', () => {
+  assert.equal(permissionSnapshot('ask', 'codex').args, '-s workspace-write -a on-request -c approvals_reviewer="user"');
+  assert.equal(permissionSnapshot('full', 'claude').args, '--permission-mode bypassPermissions');
+  assert.deepEqual(permissionSnapshot('auto', 'claude'), { id: 'ask', name: '请求批准', args: '--permission-mode default' });
+  assert.deepEqual(permissionSnapshot('custom', 'codex'), { id: 'ask', name: '请求批准', args: '-s workspace-write -a on-request -c approvals_reviewer="user"' });
 });

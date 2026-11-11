@@ -3,10 +3,10 @@
 // 除 SMG 真实接入外全部为合成数据，不读取真实 CLI 登录或配置、不保存秘密原文。
 import React, { useState } from 'react';
 import { ArrowLeft, Check, Copy, GripVertical, Download, Eye, EyeOff, ExternalLink, Info, Plus, RefreshCw, Search, Star, Terminal, TriangleAlert, Upload } from 'lucide-react';
-import { AGENTS, AVAIL_LABEL, CATALOG, CODE_AGENTS, agentModels, canBeDefault, existingAgent, nameTaken, agentName, providersForTool, providerSummary, recommendedModel, CATALOG_GROUPS, CLAUDE_TIERS, LOGIN_DESC, LOGIN_LABEL, PROTOCOL_LABEL_FULL, PROTOCOL_TABS, TOOL_PROTOCOL, applyTest, autoName, autoTest, availOf, catalogItem, checkToolPath, compatible, detectProtocols, globalModelNotice, modelsFor, pairingNote, probe, rebuildTiers, runNotes, tiersValid, toolsFor } from './m13-model.mjs';
-import { ProviderIcon, ToolIcon } from './m13-icons.jsx';
+import { AGENTS, AVAIL_LABEL, CATALOG, CODE_AGENTS, agentModels, canBeDefault, cleanPicked, reconcileModels, uniformTiers, existingAgent, nameTaken, agentName, providersForTool, providerSummary, recommendedModel, CATALOG_GROUPS, CLAUDE_TIERS, LOGIN_DESC, LOGIN_LABEL, PROTOCOL_LABEL_FULL, PROTOCOL_TABS, TOOL_PROTOCOL, applyTest, autoName, autoTest, availOf, catalogItem, checkToolPath, compatible, detectProtocols, globalModelNotice, modelsFor, pairingNote, probe, rebuildTiers, runNotes, tiersValid, toolsFor } from './m13-model.mjs';
+import { AgentIcon, ProviderIcon, ToolIcon } from './m13-icons.jsx';
 import { Dialog, Menu, Pill } from './m13-ui.jsx';
-import { getLiveKey, isLive, liveClaudeTest, liveModels, liveProbe, setLiveKey } from './m13-live.mjs';
+import { clearLiveKey, getLiveKey, isLive, liveClaudeTest, liveModels, liveProbe, setLiveKey } from './m13-live.mjs';
 
 const TOOL_IDS = ['claude', 'codex'];
 const providerKind = p => p.type === 'custom' ? '自定义' : '目录';
@@ -42,8 +42,8 @@ export function CodeAgentConfig({ store, tab, nav, scene, setModal, notify, menu
     return <div key={rc.id} className={'m13-agent-row m13-agent-item' + (rc.loggedOut || missingTool ? ' dim' : '') + (drag === rc.id ? ' dragging' : '') + (over === rc.id && drag && drag !== rc.id ? ' drop-target' : '')} data-agent={rc.id}
       draggable={!rc.default} onDragStart={e => { setDrag(rc.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', rc.id); }} onDragOver={e => { e.preventDefault(); setOver(rc.id); }} onDragLeave={() => setOver(o => o === rc.id ? null : o)} onDrop={e => { e.preventDefault(); if (drag) ops.reorder(drag, rc.id); setDrag(null); setOver(null); }} onDragEnd={() => { setDrag(null); setOver(null); }}>
       <span className={'m13-grip' + (rc.default ? ' locked' : '')} title={rc.default ? '默认智能体固定排在第一位' : '拖动调整顺序（即首页下拉中的顺序）'} aria-hidden="true"><GripVertical size={14} /></span>
-      <span className="m13-agent-icon sm">{rc.legacy ? <span className="m13-cap-icon"><Terminal size={15} /></span> : <ToolIcon tool={rc.tool} size={28} />}{prov && <span className="m13-agent-badge"><ProviderIcon catalog={prov.catalog} name={prov.name} size={14} /></span>}</span>
-      <span className="m13-cap-main"><b>{rc.name}{rc.default && <Pill tone="ok"><Star size={11} />默认</Pill>}{rc.loggedOut && <Pill tone="warn">已退出登录</Pill>}{prov?.needKey && <Pill tone="warn">供应商需要 Key</Pill>}{missingTool && <Pill tone="warn">{AGENTS[rc.tool]} 未安装</Pill>}{rc.legacy && <Pill>旧配置</Pill>}</b>
+      <AgentIcon tool={rc.tool} provider={prov} legacy={rc.legacy} size={28} />
+      <span className="m13-cap-main"><b>{rc.name}{rc.default && <Pill tone="ok"><Star size={11} />默认</Pill>}{rc.loggedOut && <Pill tone="warn">已退出登录</Pill>}{prov?.needKey && <Pill tone="warn">供应商需要 Key</Pill>}{missingTool && <Pill tone="warn">{AGENTS[rc.tool]} 未安装</Pill>}{m?.offline && <Pill tone="warn">默认模型已下线，请改选</Pill>}{rc.legacy && <Pill>旧配置</Pill>}</b>
         <small>{sub}</small></span>
       <span className="m13-home-toggle" title={visTitle}><span>首页</span><Switch on={!!rc.visible && !rc.loggedOut && !missingTool} label={(rc.visible ? '不在首页显示 ' : '在首页显示 ') + rc.name} disabled={rc.default || rc.loggedOut || missingTool} title={visTitle} onChange={() => ops.toggleVisible(rc)} /></span>
       {menuOf('rc-' + rc.id, rc.name + ' 更多操作', [
@@ -103,16 +103,19 @@ export function AgentDialog({ initial, preset, copy, store, onClose, onSave, onA
   const options = provider ? modelsFor(provider, tool) : [];
   const hiddenBad = provider ? provider.models.length - options.length : 0;
   const thirdClaude = !legacy && !login && tool === 'claude' && provider;
-  const effTiers = thirdClaude ? rebuildTiers(provider, model, initial?.tiers || {}) : undefined; // P0.14 去掉高级设置：各档位默认等于默认模型
+  // P0.16（审核 N02）：勾选只保留当前可选的模型，默认模型随之校正；Claude 五个档位一律等于默认模型
+  const cp = provider ? cleanPicked(provider, tool, picked, model) : { picked: [], model: null };
+  const effTiers = thirdClaude ? uniformTiers(cp.model) : undefined;
+  const toolReady = tools.find(t => t.id === tool)?.installed !== false;
   const rec = recOf(provider, tool);
   const others = configs.filter(c => c.id !== initial?.id);
   const autoN = legacy ? initial.name : (login || provider) ? agentName(others, tool, login ? null : provider, model, method) : '';
   const effName = touched ? name : autoN;
   const dupName = !legacy && effName.trim() ? nameTaken(configs, effName, initial?.id) : null;
   const dupAgent = !legacy && prov ? taken(tool, prov) : null;
-  const ready = legacy || (CODE_AGENTS.find(a => a.id === tool)?.supported && (login ? !!method : !!provider && picked.length > 0 && picked.includes(model)) && !dupName && !dupAgent);
+  const ready = legacy || (CODE_AGENTS.find(a => a.id === tool)?.supported && (login ? !!method : !!provider && cp.picked.length > 0 && !!cp.model) && toolReady && !dupName && !dupAgent);
   const save = () => onSave({ ...(initial || {}), id: editing ? initial.id : null, name: effName.trim() || autoN, customName: touched && effName.trim() !== autoN ? true : undefined, tool,
-    source: legacy ? 'legacy' : login ? 'login' : 'provider', provider: legacy || login ? null : prov, method: login ? method : undefined, model: legacy || login ? null : model, models: legacy || login ? undefined : [model, ...picked.filter(x => x !== model)], tiers: effTiers, visible, env, args, loggedOut: login ? initial?.loggedOut : undefined, default: editing ? initial.default : false });
+    source: legacy ? 'legacy' : login ? 'login' : 'provider', provider: legacy || login ? null : prov, method: login ? method : undefined, model: legacy || login ? null : cp.model, models: legacy || login ? undefined : [cp.model, ...cp.picked.filter(x => x !== cp.model)], tiers: effTiers, visible, env, args, loggedOut: login ? initial?.loggedOut : undefined, default: editing ? initial.default : false });
   const test = async mid => {
     setTesting(mid);
     const r = isLive(provider) ? (getLiveKey(provider.id) ? await liveClaudeTest(provider.catalog, getLiveKey(provider.id), mid) : { result: 'bad', detail: '原型刷新后不保留 Key，请在供应商详情里重新填写' }) : await new Promise(res => setTimeout(() => res({ result: 'ok' }), 700));
@@ -147,14 +150,14 @@ export function AgentDialog({ initial, preset, copy, store, onClose, onSave, onA
     <section className="m13-step" data-step="3"><h3 className="m13-step-h"><i>3</i>模型与名称</h3>
       {login ? <p className="m13-hint m13-plain">使用 {AGENTS[tool]} 自己的默认模型，可在会话里切换。WillYou 拿不到 CLI 的凭据，不能获取模型列表或测试可用性。</p>
         : provider ? <div className="m13-field"><span>模型<small className="m13-field-note">可多选，会话里可以在勾选的模型之间切换；★ 为启动时的默认模型</small></span>
-          <div className="m13-model-checks" role="group" aria-label="模型">{options.map(m => { const a = availOf(m, tool), on = picked.includes(m.id); return <div key={m.id} className={'m13-model-check' + (on ? ' on' : '')} data-model={m.id}>
+          <div className="m13-model-checks" role="group" aria-label="模型">{options.map(m => { const a = availOf(m, tool), on = cp.picked.includes(m.id); return <div key={m.id} className={'m13-model-check' + (on ? ' on' : '')} data-model={m.id}>
             <label><input type="checkbox" checked={on} onChange={() => toggleModel(m.id)} /><span className="m13-mc-name">{m.name}</span></label>
             {m.id === rec && <Pill tone="info">推荐</Pill>}<Pill tone={availTone(a)}>{testing === m.id ? '测试中…' : AVAIL_LABEL[a]}</Pill>
             {a === 'untested' && testing !== m.id && <button className="m13-link" onClick={() => test(m.id)}>测试</button>}
-            <span className="m13-mc-default">{on && (model === m.id ? <span className="m13-mc-star"><Star size={12} />默认</span> : <button className="m13-link" onClick={() => setModel(m.id)}>设为默认</button>)}</span>
+            <span className="m13-mc-default">{on && (cp.model === m.id ? <span className="m13-mc-star"><Star size={12} />默认</span> : <button className="m13-link" onClick={() => setModel(m.id)}>设为默认</button>)}</span>
           </div>; })}</div>
           {hiddenBad > 0 && <small className="m13-hint">{hiddenBad} 个模型在 {AGENTS[tool]} 中不可用，已隐藏；可在供应商详情里重新测试。</small>}
-          {!picked.length && <small className="m13-hint m13-err">至少勾选一个模型。</small>}
+          {!cp.picked.length && <small className="m13-hint m13-err">至少勾选一个模型。</small>}{!toolReady && <small className="m13-hint m13-err">没有检测到 {AGENTS[tool]}，不能保存。</small>}
         </div> : <p className="m13-hint m13-plain">{compat.every(p => taken(tool, p.id)) && (!loginOf(tool) || taken(tool, 'login')) ? `${AGENTS[tool]} 的订阅和已添加的供应商都已经有智能体了。想用更多模型，点第 2 步里的“编辑它”勾选；或添加新的供应商。` : '先在第 2 步选订阅或供应商。'}</p>}
       {(login || provider) && <>
       <label className="m13-field"><span>名称</span><input aria-label="名称" value={effName} onChange={e => { setTouched(true); setName(e.target.value); }} placeholder={autoN} />{dupName && <small className="m13-hint m13-err">名称已被“{dupName.name}”使用，请换一个。</small>}</label>
@@ -298,7 +301,7 @@ export function ProviderDialog({ provider: p, store, scene, onClose, notify, onR
   };
   const untested = p.models.flatMap(m => ts.filter(t => availOf(m, t) === 'untested').map(t => [m, t]));
   const refresh = () => {
-    if (live) return (async () => { const k = getLiveKey(p.id); if (!k) { notify('原型刷新后不保留 Key，请先点“更换”重新填写'); return; } setRefreshing(true); const r = await liveModels(p.catalog, k); setRefreshing(false); if (!r.ok) { notify(r.error); return; } const have = new Set(p.models.map(m => m.id)); const extra = r.models.filter(m => !have.has(m.id)).map(m => ({ ...m, avail: {} })); patch(x => ({ ...x, refreshed: '刚刚', models: [...x.models, ...extra] })); notify(extra.length ? `模型列表已刷新：新增 ${extra.map(e => e.name).join('、')}（未测试）` : '模型列表已刷新：没有变化'); })();
+    if (live) return (async () => { const k = getLiveKey(p.id); if (!k) { notify('原型刷新后不保留 Key，请先点“更换”重新填写'); return; } setRefreshing(true); const r = await liveModels(p.catalog, k); setRefreshing(false); if (!r.ok) { notify(r.error); return; } const rec = reconcileModels(p.models, r.models); patch(x => ({ ...x, refreshed: '刚刚', models: rec.models })); const hit = refs.filter(a => rec.removed.some(m => (a.models || [a.model]).includes(m.id))); notify([rec.added.length && `新增 ${rec.added.map(e => e.name).join('、')}（未测试）`, rec.removed.length && `已下线 ${rec.removed.map(e => e.name).join('、')}`, hit.length && `${hit.map(a => `“${a.name}”`).join('、')}用到了已下线的模型，请改选`].filter(Boolean).join('；') || '模型列表已刷新：没有变化'); })();
     setRefreshing(true); setTimeout(() => { setRefreshing(false); const extra = p.catalog === 'deepseek' && !p.models.some(m => m.id === 'deepseek-v4-lite') ? [{ id: 'deepseek-v4-lite', name: 'DeepSeek V4 Lite', ctx: '64K', avail: {} }] : []; patch(x => ({ ...x, refreshed: '刚刚', models: [...x.models, ...extra] })); notify(extra.length ? `模型列表已刷新：新增 ${extra.map(e => e.name).join('、')}（未测试）` : '模型列表已刷新：没有变化'); }, 700); };
   const isDefaultOf = (m, t) => refs.some(r => r.tool === t && r.model === m.id);
   const recs = typeof p.recommended === 'object' ? Object.values(p.recommended || {}) : [p.recommended];

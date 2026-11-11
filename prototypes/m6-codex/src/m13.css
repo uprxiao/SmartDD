@@ -418,3 +418,43 @@ button.m13-prov-opt:hover{background:var(--surface)}.m13-prov-opt.selected{borde
 .m13-tool-status{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px;font-size:12px;color:var(--cx-secondary)}
 .m13-ts-label{color:var(--cx-tertiary)}.m13-ts-item{display:inline-flex;align-items:center;gap:8px}.m13-ts-item b{font-weight:500;color:var(--cx-text)}
 .m13-ts-item .m13-checks{margin:0;gap:4px 8px}.m13-ts-item .warn{display:inline-flex;align-items:center;gap:3px;color:#a65a0b}
+/* P0.16：首页智能体下拉与设置列表共用 AgentIcon（用户 2026-11-11 要求完全一致） */
+.profile-choice-menu > button.agent-choice{min-height:32px;gap:9px;font-size:13px;padding:3px 8px}
+.profile-choice-menu .m13-agent-badge{box-shadow:0 0 0 2px var(--surface);background:var(--surface)}
+.profile-choice-menu:has(.agent-choice){min-width:236px}
+/* P0.16 追加（用户 2026-11-11）：下拉整体与图标再收小，弹层更轻 */
+.profile-choice-menu:has(.agent-choice) > span{padding:5px 8px;font-size:11px}
+.profile-choice-menu:has(.agent-choice) > button:not(.agent-choice){min-height:30px;font-size:13px;padding:3px 8px}
+.profile-choice-menu:has(.agent-choice) .popup-divider{margin:4px 8px}
+.profile-choice-menu > button.agent-choice{white-space:nowrap}
+/* P0.16（用户 2026-11-11）：首页智能体选择器用当前智能体图标代替闪电；菜单以选择器为中心弹出（参照 Codex 推理强度弹层） */
+.composer-profile > button .m13-agent-icon{margin-right:1px}
+.profile-choice-menu:has(.agent-choice){left:50%;right:auto;transform:translateX(-50%)}
+
+/* P0.17 首页智能体权限（需求补记 8）：按 Codex 参考图（用户 2026-11-11 截图，文字宽度标定比例约 1.08：标题 14px、说明 13px）复刻。
+   测量换算：菜单 355×244→329×226（参考为四项；用户评审去掉“自定义”后 Codex 三项约 329×179、Claude 两项约 329×132）；每项间距 51→47；图标左缘 16→15；文字左缘 41→38；标题下沿到底边 14→13。颜色取样：标题 #000、说明与表头 #7d7d7f、图标 #46474b、完全访问 rgb(222,62,0)、按钮展开底色 #f1f2f2。 */
+.m13-perm-picker{position:relative}
+.reference-composer-toolbar .m13-perm-trigger{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 8px;border:0;border-radius:14px;background:transparent;color:#7d7e80;font-size:13px;line-height:18px;white-space:nowrap}
+.reference-composer-toolbar .m13-perm-trigger:hover,.reference-composer-toolbar .m13-perm-trigger[aria-expanded="true"]{background:#f1f2f2;color:#7d7e80}
+.reference-composer-toolbar .m13-perm-trigger.danger{color:#de3e00}
+.m13-perm-menu{position:absolute;left:0;bottom:calc(100% + 8px);z-index:50;width:329px;box-sizing:border-box;padding:4px;border:1px solid rgba(0,0,0,.09);border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.m13-perm-head{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;font-size:13px;line-height:18px;color:#7b7d7e}
+.m13-perm-head button{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:3px}
+.m13-perm-menu > button{display:flex;align-items:center;gap:8px;width:100%;padding:5px 10px;border:0;border-radius:8px;background:none;text-align:left;color:#46474b}
+.m13-perm-menu > button:hover,.m13-perm-menu > button:focus-visible{background:var(--hover);outline:none}
+.m13-perm-menu > button > svg:first-child{flex:none}
+.m13-perm-text{display:flex;flex-direction:column;min-width:0;flex:1}
+.m13-perm-text b{font-size:14px;line-height:19px;font-weight:500;color:#000}
+.m13-perm-text small{font-size:13px;line-height:18px;color:#7d7d7f;white-space:nowrap}
+.m13-perm-check{flex:none;margin-left:auto;color:#454649}
+.m13-perm-menu > button.danger,.m13-perm-menu > button.danger .m13-perm-text b,.m13-perm-menu > button.danger .m13-perm-text small{color:#de3e00}
+.m13-perm-args{display:block;margin-top:4px;font-size:12px;word-break:break-all}
+.m13-perm-warn{margin:0 0 10px;color:var(--text);font-size:14px;line-height:21px}
+/* 深色：没有 Codex 深色参考图，按 WillYou 深色变量推定，未核对 */
+:root[data-theme="dark"] .reference-composer-toolbar .m13-perm-trigger{color:var(--secondary)}
+:root[data-theme="dark"] .reference-composer-toolbar .m13-perm-trigger:hover,:root[data-theme="dark"] .reference-composer-toolbar .m13-perm-trigger[aria-expanded="true"]{background:#303030;color:var(--secondary)}
+:root[data-theme="dark"] .m13-perm-menu{background:var(--surface);border-color:#3a3a3a;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+:root[data-theme="dark"] .m13-perm-head,:root[data-theme="dark"] .m13-perm-text small{color:var(--muted)}
+:root[data-theme="dark"] .m13-perm-text b{color:var(--text)}
+:root[data-theme="dark"] .m13-perm-menu > button,:root[data-theme="dark"] .m13-perm-check{color:var(--secondary)}
+:root[data-theme="dark"] .reference-composer-toolbar .m13-perm-trigger.danger,:root[data-theme="dark"] .m13-perm-menu > button.danger,:root[data-theme="dark"] .m13-perm-menu > button.danger .m13-perm-text b,:root[data-theme="dark"] .m13-perm-menu > button.danger .m13-perm-text small{color:#ff7a45}

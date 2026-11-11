@@ -1,0 +1,23 @@
+// P0.16：首页智能体下拉图标与“设置 › 智能体”列表一致；选择器用当前智能体图标代替闪电；菜单以选择器为中心弹出（用户 2026-11-11 要求）。
+import { createRequire } from 'node:module';
+const { chromium } = createRequire('/Users/liubu/.npm/_npx/0b9ff77863cb6e9f/node_modules/')('playwright-core');
+const out = process.argv[2]; const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
+const p = await (await b.newContext({ viewport: { width: 1512, height: 949 }, deviceScaleFactor: 2, locale: 'zh-CN' })).newPage();
+const errors = []; p.on('pageerror', e => errors.push(e.message)); const R = {}; const ok = (k, v, d) => { R[k] = { pass: !!v, detail: d }; };
+const sig = sel => p.locator(sel).evaluateAll(es => es.map(e => [...e.querySelectorAll('image')].map(i => i.getAttribute('href').split('/').pop()).join('+') || (e.querySelector('polyline') ? 'terminal' : 'letter')));
+await p.goto('http://127.0.0.1:4176/?preview=m13#settings/ai/configs'); await p.waitForTimeout(900);
+const list = await sig('.m13-agent-item [data-agent-icon]'); const names = await p.locator('.m13-agent-item .m13-cap-main b').evaluateAll(es => es.map(e => e.firstChild.textContent.trim()));
+await p.locator('.m13-agent-list').screenshot({ path: `${out}/icon-settings.png` });
+await p.evaluate(() => { location.hash = 'home'; }); await p.waitForTimeout(500);
+const trig = p.getByRole('button', { name: '选择智能体' }); const trigIcon = await trig.locator('[data-agent-icon] image').evaluateAll(es => es.map(e => e.getAttribute('href').split('/').pop()).join('+')); const zap = await trig.locator('svg.lucide-zap').count(); const trigBox = await trig.boundingBox();
+await p.locator('.reference-composer').screenshot({ path: `${out}/icon-trigger.png` });
+await trig.click(); await p.waitForTimeout(200);
+const menuBox = await p.locator('.profile-choice-menu').boundingBox(); const offset = Math.abs((menuBox.x + menuBox.width / 2) - (trigBox.x + trigBox.width / 2));
+await p.screenshot({ path: `${out}/icon-menu-centered.png`, clip: { x: menuBox.x - 120, y: menuBox.y - 20, width: menuBox.width + 240, height: menuBox.height + 120 } });
+ok('选择器用当前智能体图标（Claude Code · 订阅 → Claude 图标），不再有闪电；菜单中心与选择器中心对齐（偏差 ≤ 1px）', trigIcon === 'claude.png' && zap === 0 && offset <= 1, { trigIcon, zap, offset, trigBox, menuBox });
+const menu = await sig('.profile-choice-menu [data-agent-icon]'); const mnames = (await p.locator('.profile-choice-menu [role=menuitem].agent-choice').allInnerTexts()).map(t => t.trim());
+await p.locator('.profile-choice-menu').screenshot({ path: `${out}/icon-home-menu.png` });
+await p.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark')); await p.waitForTimeout(200); await p.locator('.profile-choice-menu').screenshot({ path: `${out}/icon-home-menu-dark.png` });
+const listMap = Object.fromEntries(names.map((n, i) => [n, list[i]]));
+ok('首页下拉每一项的图标与设置列表同名智能体完全相同（Code Agent 图标＋供应商角标；旧配置为终端符号）', menu.length === mnames.length && mnames.every((n, i) => listMap[n] === menu[i]), { listMap, menu, mnames });
+console.log(JSON.stringify({ results: R, errors }, null, 1)); await b.close();

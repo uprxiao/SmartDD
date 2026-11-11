@@ -1,0 +1,62 @@
+{
+ "cli": "2.1.322 (Claude Code)",
+ "provider": "zenmux (cw)",
+ "model": "sonnet",
+ "runs": {
+  "acceptEdits": {
+   "exit": 0,
+   "sec": 11.3,
+   "files": {
+    "inCwd": true,
+    "bash": true,
+    "outside": false
+   },
+   "denials": [
+    {
+     "tool": "Write",
+     "target": "/Users/liubu/.willyou-permE2-out/e10-acceptEdits/outside.txt"
+    }
+   ],
+   "result": "1) allowed\n2) allowed\n3) denied",
+   "isError": false,
+   "cost": 0.024557999999999996,
+   "numTurns": 4,
+   "stderr": ""
+  },
+  "auto": {
+   "exit": 1,
+   "sec": 10.5,
+   "files": {
+    "inCwd": true,
+    "bash": true,
+    "outside": false
+   },
+   "denials": [
+    {
+     "tool": "Write",
+     "target": "/Users/liubu/.willyou-permE2-out/e10-auto/outside.txt"
+    }
+   ],
+   "result": "1) allowed\n2) allowed\n3) denied. Auto mode's safety check is unavailable for this session, so the Write wasn't run.",
+   "isError": false,
+   "cost": 0.024296299999999996,
+   "numTurns": 4,
+   "stderr": "Auto mode can't check actions in this session. Its safety check runs on the server, and your requests go through zenmux.ai, which doesn't pass it through. Nobody can be asked to approve actions in this session, so every action that needs the check is refused. To run these actions, use another permission mode. To use auto mode, ask whoever runs zenmux.ai to pass Claude Code's server-side safety check through: https://code.claude.com/docs/en/permission-modes#server-side-classifier-review\nError: auto mode could not check some actions Claude tried, so they did not run. To run them, use another permission mode. Exiting with code 1."
+  },
+  "bypassPermissions": {
+   "exit": 0,
+   "sec": 11.0,
+   "files": {
+    "inCwd": true,
+    "bash": true,
+    "outside": true
+   },
+   "denials": [],
+   "result": "1) allowed\n2) allowed\n3) allowed",
+   "isError": false,
+   "cost": 0.024227800000000004,
+   "numTurns": 4,
+   "stderr": ""
+  }
+ }
+}

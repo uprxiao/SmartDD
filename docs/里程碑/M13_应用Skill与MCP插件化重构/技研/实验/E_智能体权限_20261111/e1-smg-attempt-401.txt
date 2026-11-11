@@ -1,0 +1,5 @@
+2026-11-11 16:4x（本机时间）首次按 e1-claude.mjs 经 SMG 实跑 Claude Code 各权限模式：default、acceptEdits、auto 三个都 exit 1、没有任何文件，每个约 200 秒。
+单独复跑一个最小请求（"Reply with the word pong."）得到：
+  api_error_status 401，result "Failed to authenticate. API Error: 401 Invalid, expired or disabled gateway API key."，duration_ms 180410（CLI 内部重试）。
+判断：用户 2026-11-11 提供的 SMG Key 当前无效、过期或已停用（之前补验 D 时可用）。没有反复重试；改用本机模拟服务（e1m-claude.py）测权限行为，与供应商无关。
+Key 只经环境变量传入，本文件与结果中不含 Key。

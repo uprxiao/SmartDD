@@ -84,7 +84,7 @@ export function updateDiff(existing, candidate) {
   return { addedCaps, droppedCaps, broken, addedPerms, removedPerms, addedSkills, removedSkills, empty: ![addedCaps, droppedCaps, addedPerms, removedPerms, addedSkills, removedSkills].some(x => x.length) };
 }
 export function removedCapabilities(existing, candidate) {
-  if (!existing || !candidate.capabilities?.length) return [];
+  if (!existing || !Array.isArray(candidate.capabilities)) return []; // P0.16（审核 N05）：合法的空数组表示新版删除了全部能力
   const next = new Set(candidate.capabilities.map(c => c.name)), legacy = candidate.legacyToolNames || {};
   return existing.capabilities.filter(c => !next.has(c.name) && !legacy[c.name]).map(c => c.name);
 }
@@ -180,7 +180,7 @@ export const autoName = (toolId, provider) => `${AGENTS[toolId]} · ${provider.n
 /** 某工具可选的模型：去掉“不可用”，推荐的排第一。 */
 export function modelsFor(provider, tool) {
   const rec = recommendedId(provider, tool);
-  return (provider?.models || []).filter(m => availOf(m, tool) !== 'bad').sort((a, b) => (b.id === rec) - (a.id === rec));
+  return (provider?.models || []).filter(m => availOf(m, tool) !== 'bad' && !m.offline).sort((a, b) => (b.id === rec) - (a.id === rec));
 }
 const recommendedId = (p, tool) => typeof p?.recommended === 'object' ? p.recommended?.[tool] : p?.recommended;
 /** 推荐的默认模型：供应商推荐值可用时用它，否则取第一个可用的，再否则第一个未测试的。 */
@@ -194,13 +194,20 @@ export function rebuildTiers(provider, model, tiers = {}) {
   const ok = new Set(modelsFor(provider, 'claude').map(m => m.id));
   return Object.fromEntries(CLAUDE_TIERS.map(([k]) => [k, ok.has(tiers[k]) ? tiers[k] : model]));
 }
+/** P0.16（审核 N02）：Claude Code 五个档位一律等于默认模型（需求补记 5）。 */
+export const uniformTiers = model => Object.fromEntries(CLAUDE_TIERS.map(([k]) => [k, model]));
+/** 勾选的模型只保留当前在该工具中可选的（不可用、已下线的移除）；默认模型不在其中时改为第一个。 */
+export function cleanPicked(provider, tool, picked, model) {
+  const ok = new Set(modelsFor(provider, tool).map(m => m.id)); const p = (picked || []).filter(id => ok.has(id));
+  return { picked: p, model: p.includes(model) ? model : p[0] || null };
+}
 export const tiersValid = (provider, tiers) => CLAUDE_TIERS.every(([k]) => modelsFor(provider, 'claude').some(m => m.id === tiers?.[k]));
 /** 智能体 = Code Agent ＋ 订阅/API（source: login）或供应商（source: provider）；旧 AI 配置迁移来的为 legacy（P0.13 起与其他智能体平铺）。
  *  列表顺序即首页下拉顺序，默认的固定排第一；visible：是否在首页显示；default：首页默认选中（必须显示）。
  *  models：勾选的模型（P0.14，可多选，会话里可切换）；model：其中的默认模型。 */
 export const RUN_CONFIGS = [
   { id: 'rc-cc-login', name: 'Claude Code · 订阅', tool: 'claude', source: 'login', provider: null, model: null, default: true, visible: true },
-  { id: 'rc-cc-ds', name: 'Claude Code · DeepSeek', tool: 'claude', source: 'provider', provider: 'deepseek', model: 'deepseek-v4-pro', models: ['deepseek-v4-pro', 'deepseek-v4-flash'], visible: true, tiers: { opus: 'deepseek-v4-pro', sonnet: 'deepseek-v4-pro', haiku: 'deepseek-v4-flash', smallFast: 'deepseek-v4-flash', subagent: 'deepseek-v4-pro' } },
+  { id: 'rc-cc-ds', name: 'Claude Code · DeepSeek', tool: 'claude', source: 'provider', provider: 'deepseek', model: 'deepseek-v4-pro', models: ['deepseek-v4-pro', 'deepseek-v4-flash'], visible: true, tiers: { opus: 'deepseek-v4-pro', sonnet: 'deepseek-v4-pro', haiku: 'deepseek-v4-pro', smallFast: 'deepseek-v4-pro', subagent: 'deepseek-v4-pro' } },
   { id: 'rc-codex-ds', name: 'Codex · DeepSeek', tool: 'codex', source: 'provider', provider: 'deepseek', model: 'deepseek-v4-pro', models: ['deepseek-v4-pro'], visible: true },
   { id: 'rc-codex-mp', name: 'Codex · Magpie', tool: 'codex', source: 'provider', provider: 'magpie', model: 'gpt-5.5', models: ['gpt-5.5'], visible: false },
   { id: 'rc-legacy-rj', name: 'CC-rj', tool: 'claude', source: 'legacy', provider: null, model: null, legacy: true, visible: true, legacyNote: '从旧 AI 配置迁移：包含无法识别的变量 RJ_GATEWAY_MODE，保留原环境变量与参数，原凭据引用不变',
@@ -225,7 +232,7 @@ export function agentName(configs, tool, provider, model, method) {
 /** 新建供应商智能体；Claude Code 各档位默认等于默认模型。 */
 export function makeProviderAgent(provider, tool, extra = {}) {
   const model = extra.model ?? recommendedModel(provider, tool);
-  return { id: newId(), name: autoName(tool, provider), tool, source: 'provider', provider: provider.id, model, models: model ? [model] : [], visible: true, tiers: tool === 'claude' ? rebuildTiers(provider, model) : undefined, env: [], args: '', ...extra };
+  return { id: newId(), name: autoName(tool, provider), tool, source: 'provider', provider: provider.id, model, models: model ? [model] : [], visible: true, tiers: tool === 'claude' ? uniformTiers(model) : undefined, env: [], args: '', ...extra };
 }
 export const makeLoginAgent = (tool, method, extra = {}) => ({ id: newId(), name: loginName(tool, method), tool, source: 'login', provider: null, model: null, method, visible: true, env: [], args: '', ...extra });
 /** 新建时第 ② 步：按所选 Code Agent 的协议过滤供应商；不兼容的单独返回并带原因。 */
@@ -254,9 +261,20 @@ export function reorderAgent(configs, fromId, toId) {
   const next = [...configs]; const [x] = next.splice(from, 1); next.splice(to, 0, x); return next;
 }
 /** 默认交接：默认智能体被删除、退出登录或供应商删除时，默认交给下一个在首页显示且可用的智能体。 */
-export function nextDefault(configs, excludeIds = []) {
+export function nextDefault(configs, excludeIds = [], tools = TOOLS) {
   const ex = new Set([].concat(excludeIds));
-  return configs.find(c => !ex.has(c.id) && c.visible && !c.loggedOut && !c.broken) || null;
+  return configs.find(c => !ex.has(c.id) && usable(c, tools)) || null;
+}
+/** 可作为默认／首页可选：打开首页显示、未退出登录、供应商未删除、工具已安装。 */
+const usable = (c, tools = TOOLS) => !!c && c.visible && !c.loggedOut && !c.broken && tools.find(t => t.id === c.tool)?.installed !== false;
+/** P0.16（审核 N04，用户 2026-11-11 决定）：默认智能体不可用（如工具没了）时，按当前顺序从上往下第一个可用的设为默认并排第一；
+ *  原默认恢复可用后不抢回。没有默认但有可用的（如新建第一个）时，也设第一个可用的为默认。都不可用时清空默认。 */
+export function reconcileDefault(configs, tools = TOOLS) {
+  const cur = configs.find(c => c.default);
+  if (cur && usable(cur, tools)) return { configs, newDefault: null, previous: null };
+  const nd = nextDefault(configs, cur ? [cur.id] : [], tools);
+  if (nd) return { configs: withDefault(configs, nd.id), newDefault: nd, previous: cur || null };
+  return { configs: cur ? configs.map(c => ({ ...c, default: false })) : configs, newDefault: null, previous: cur || null, empty: true };
 }
 /** 设为默认：只有在首页显示的才能设为默认；设为默认后排到第一位（P0.14）。 */
 export const canBeDefault = rc => !!rc && rc.visible && !rc.loggedOut && !rc.broken;
@@ -268,20 +286,20 @@ export function withDefault(configs, id) {
 /** 智能体使用的模型：勾选的模型，默认模型排第一。 */
 export const agentModels = rc => { const ms = rc.models?.length ? rc.models : rc.model ? [rc.model] : []; return [rc.model, ...ms.filter(m => m !== rc.model)].filter(Boolean); };
 /** 删除智能体或供应商后整理默认：原默认不在了就交接。 */
-function handover(configs, removedIds) {
+function handover(configs, removedIds, tools = TOOLS) {
   const left = configs.filter(c => !removedIds.includes(c.id));
   if (left.some(c => c.default)) return { configs: left, newDefault: null };
-  const nd = nextDefault(left);
+  const nd = nextDefault(left, [], tools);
   return { configs: nd ? withDefault(left, nd.id) : left, newDefault: nd };
 }
-export function removeAgent(configs, id) { return handover(configs, [id]); }
+export function removeAgent(configs, id, tools = TOOLS) { return handover(configs, [id], tools); }
 /** 删除供应商：使用它的智能体一并删除（删除前列出），默认按规则交接。 */
-export function removeProviderImpact(providerId, configs) {
+export function removeProviderImpact(providerId, configs, tools = TOOLS) {
   const removed = configs.filter(c => c.provider === providerId);
-  return { removed, ...handover(configs, removed.map(c => c.id)) };
+  return { removed, ...handover(configs, removed.map(c => c.id), tools) };
 }
 /** 首页可选的智能体（按列表顺序）：打开了“首页显示”、没有退出登录、工具已安装。 */
-export const homeAgents = (configs, tools = TOOLS) => configs.filter(c => c.visible && !c.loggedOut && !c.broken && tools.find(t => t.id === c.tool)?.installed !== false);
+export const homeAgents = (configs, tools = TOOLS) => configs.filter(c => usable(c, tools));
 /** 按 CLI 登录检测结果同步已有的订阅/API 智能体（P0.13 起不自动添加，新建时“订阅”作为一个选项）：
  *  登录方式变化 → 改名（订阅↔API，用户改过的名称保留）；退出登录 → 保留并标“已退出登录”、不在首页显示，默认交给下一个；
  *  重新登录 → 恢复，不抢回默认。 */
@@ -354,7 +372,8 @@ export function defaultChangeImpact(plugin, bindings, projects, type) {
   return { follow, custom };
 }
 /** 删除连接的影响：运行中任务在用则阻止；是全局默认且还有其他连接则须先选新默认；个性化选了它的项目改回跟随全局。 */
-export function deleteImpact(plugin, defaults, bindings, projects, conn, running = RUNNING_TASKS) {
+/** P0.16（审核 N07）：running 为运行中任务启动时的连接快照（runningPluginUses(tasks)），不再用写死的示例任务。 */
+export function deleteImpact(plugin, defaults, bindings, projects, conn, running = []) {
   const sameType = plugin.connections.filter(c => c.type === conn.type);
   const runningUse = running.filter(t => t.plugin === plugin.id && t.connectionId === conn.id);
   const isDefault = defaults[plugin.id]?.[conn.type] === conn.id;
@@ -402,17 +421,19 @@ export const SESSION_STATE = { 's-frontend': { loaded: 1, pending: 1 }, 'm-githu
 export function buildExport({ providers, configs, selectedConfigs, selectedProviders, includeKey }) {
   const cfgs = configs.filter(c => selectedConfigs.includes(c.id) && c.source !== 'login');
   const provIds = new Set([...selectedProviders, ...cfgs.map(c => c.provider).filter(Boolean)]);
-  const provs = providers.filter(p => provIds.has(p.id)).map(p => ({ id: p.id, name: p.name, type: p.type, preset: p.preset, url: p.url, protocols: p.protocols, models: p.models.map(m => ({ id: m.id, name: m.name, ctx: m.ctx })), key: includeKey ? { encrypted: true } : null }));
-  return { format: 'willyou-ai-config/v1', exportedAt: '2026-11-11T10:00:00Z', includesKeys: !!includeKey, providers: provs, runConfigs: cfgs.map(({ id, name, tool, source, provider, model, tiers, env, args, legacy, visible }) => ({ id, name, tool, source, provider, model, tiers, visible, env: (env || []).map(e => ({ key: e.key, ...(e.secret ? { secret: true } : { value: e.value }) })), args, legacy })) };
+  const provs = providers.filter(p => provIds.has(p.id)).map(p => ({ id: p.id, name: p.name, type: p.type, preset: p.preset, url: p.url, protocols: p.protocols, endpoints: p.endpoints || null, recommended: p.recommended ?? null, models: p.models.map(m => ({ id: m.id, name: m.name, ctx: m.ctx })), key: includeKey ? { encrypted: true } : null })); // P0.16（审核 N03）：保留各协议地址与推荐模型
+  return { format: 'willyou-ai-config/v1', exportedAt: '2026-11-11T10:00:00Z', includesKeys: !!includeKey, providers: provs, runConfigs: cfgs.map(({ id, name, tool, source, provider, model, models, tiers, env, args, legacy, visible }) => ({ id, name, tool, source, provider, model, models: agentModels({ model, models }), tiers, visible, env: (env || []).map(e => ({ key: e.key, ...(e.secret ? { secret: true } : { value: e.value }) })), args, legacy })) };
 }
 /** 导入预览：同名不覆盖，导入项名称加“（导入）”；未带 Key 的供应商标“需要填写 Key”；文件里的订阅/API 智能体跳过（按本机登录检测）。 */
 export function importPreview(file, { providers, configs }) {
   if (file?.format !== 'willyou-ai-config/v1') return { ok: false, error: '不是 WillYou 智能体配置文件，或版本不支持' };
+  // P0.16（审核 N03）：名称在“现有＋本批已分配”的集合里循环避重：X、X（导入）、X（导入 2）……
+  const unique = (name, used) => { let n = name, k = 1; while (used.has(n)) n = k++ === 1 ? `${name}（导入）` : `${name}（导入 ${k - 1}）`; used.add(n); return n; };
   const pn = new Set(providers.map(p => p.name)), cn = new Set(configs.map(c => c.name));
   return { ok: true, encrypted: file.includesKeys,
-    providers: file.providers.filter(p => p.type !== 'native').map(p => ({ ...p, finalName: pn.has(p.name) ? p.name + '（导入）' : p.name, needKey: !p.key })),
+    providers: file.providers.filter(p => p.type !== 'native').map(p => ({ ...p, finalName: unique(p.name, pn), needKey: !p.key })),
     skipped: file.runConfigs.filter(c => c.source === 'login').length,
-    runConfigs: file.runConfigs.filter(c => c.source !== 'login').map(c => ({ ...c, finalName: cn.has(c.name) ? c.name + '（导入）' : c.name })) };
+    runConfigs: file.runConfigs.filter(c => c.source !== 'login').map(c => ({ ...c, finalName: unique(c.name, cn) })) };
 }
 export const SAMPLE_IMPORT = { format: 'willyou-ai-config/v1', exportedAt: '2026-11-10T08:00:00Z', includesKeys: false, providers: [{ id: 'deepseek', name: 'DeepSeek', type: 'preset', preset: 'deepseek', url: 'https://api.deepseek.com/', protocols: ['responses', 'anthropic'], models: [{ id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', ctx: '128K' }], key: null }, { id: 'acme', name: '同事的 Acme 服务', type: 'custom', url: 'https://api.acme.example/v1', protocols: ['responses'], models: [{ id: 'acme-coder-large', name: 'acme-coder-large', ctx: '128K' }], key: null }], runConfigs: [{ id: 'x1', name: 'Codex · DeepSeek', tool: 'codex', provider: 'deepseek', model: 'deepseek-v4-pro' }, { id: 'x2', name: 'Codex · Acme', tool: 'codex', provider: 'acme', model: 'acme-coder-large' }] };
 
@@ -513,4 +534,73 @@ export function affectedSessions(kind, target, tasks, bindings = {}) {
   }[kind];
   if (!hit) throw new Error('未知的影响范围：' + kind);
   return run.filter(hit).length;
+}
+
+// ================= P0.16：任务快照（审核 review-20261111-1500 N01／N07） =================
+/** 任务创建时记录的智能体快照：恢复与显示都读它，不再回查旧 AI 配置。 */
+export function agentSnapshot(agent, providers = []) {
+  if (!agent) return null;
+  const p = providers.find(x => x.id === agent.provider);
+  return { agentId: agent.id, agentName: agent.name, tool: agent.tool, source: agent.source, method: agent.method || null, providerId: agent.provider || null, providerName: p?.name || null,
+    model: agent.model || null, models: agentModels(agent), modelNames: agentModels(agent).map(id => p?.models?.find(m => m.id === id)?.name || id) };
+}
+/** 启动时的插件快照：项目里可用的插件及当时生效的连接（运行中任务继续用原连接；删除连接按它判断）。 */
+export function pluginSnapshot(plugins, defaults, bindings, projectId) {
+  return plugins.filter(p => p.enabled && !projectBinding(bindings, p.id, projectId).disabled).map(p => ({ id: p.id, name: p.name, version: p.version,
+    connections: connectionTypesOf(p).map(t => ({ type: t.type, connectionId: effectiveConnection(p, defaults, bindings, projectId, t.type).connection?.id || null })).filter(c => c.connectionId) }));
+}
+/** 恢复时可选的智能体：同一个工具、工具已安装、未退出登录。 */
+export const resumeAgents = (configs, tools, tool) => configs.filter(c => c.tool === tool && !c.loggedOut && !c.broken && tools.find(t => t.id === tool)?.installed !== false);
+/** 合成任务转成删除连接判断所需的运行记录（只看运行中任务启动时的连接快照）。 */
+export const runningPluginUses = tasks => (tasks || []).filter(t => t.status === 'running' && !t.archived && t.pluginSnapshot).flatMap(t => t.pluginSnapshot.flatMap(p => p.connections.map(c => ({ id: t.id, title: t.title, project: t.project, plugin: p.id, type: c.type, connectionId: c.connectionId }))));
+
+// ================= P0.16：插件更新元数据、邮件草稿项目边界、模型目录对账（审核 N05／N06／N08） =================
+/** 更新插件：新包声明整体作为新元数据；启停、连接、项目设置、数据目录等本机状态保留。区分“字段缺失”与“合法空数组”。 */
+export function applyPluginUpdate(p, cand) {
+  const meta = ['version', 'publisher', 'hostApi', 'tagline', 'permissions', 'capabilities', 'skills', 'legacyToolNames'];
+  const next = { ...p }; for (const k of meta) if (k in cand) next[k] = cand[k];
+  return next;
+}
+/** 邮件草稿的项目边界：项目关闭邮件插件时只读；发件账号用本项目生效的 SMTP 连接（跟随全局或个性化）。 */
+export function mailDraftState(draft, plugin, defaults, bindings) {
+  const b = projectBinding(bindings, plugin.id, draft.project);
+  if (b.disabled) return { projectClosed: true, sender: null, mode: null };
+  const eff = effectiveConnection(plugin, defaults, bindings, draft.project, 'smtp');
+  return { projectClosed: false, sender: eff.connection || null, mode: eff.mode };
+}
+/** 模型目录对账：新列表里没有的旧模型标“已下线”（保留以便提示改选），新出现的标未测试。 */
+export function reconcileModels(oldModels, fresh) {
+  const ids = new Set(fresh.map(m => m.id)), have = new Set(oldModels.map(m => m.id));
+  const models = [...oldModels.map(m => ids.has(m.id) ? { ...m, offline: false } : { ...m, offline: true }), ...fresh.filter(m => !have.has(m.id)).map(m => ({ ...m, avail: {} }))];
+  return { models, added: fresh.filter(m => !have.has(m.id)), removed: oldModels.filter(m => !ids.has(m.id) && !m.offline) };
+}
+
+// ================= P0.17：智能体权限（需求补记 8，用户 2026-11-11 决定；参数依据补验 E） =================
+/** 首页权限档位，名称与说明照搬 Codex。tools 缺省表示两个 Code Agent 都提供；Claude 暂不提供“帮我批准”（订阅未实测、第三方不完整）。两个 Code Agent 都不提供“自定义”（用户 2026-11-11 原型评审：太专业，去掉）。 */
+export const PERMISSIONS = [
+  { id: 'ask', name: '请求批准', desc: '编辑外部文件和使用互联网时始终询问', icon: 'hand' },
+  { id: 'auto', name: '帮我批准', desc: '仅对检测到的风险操作请求批准', icon: 'shield-prompt', tools: ['codex'] },
+  { id: 'full', name: '完全访问权限', desc: '可不受限制地访问互联网和你电脑上的任何文件', icon: 'alert', danger: true },
+];
+export const DEFAULT_PERMISSION = 'ask';
+/** 启动参数（补验 E 实测）：Codex 的“请求批准”必须指定由用户审批，否则用户 config.toml 里的自动审查会代批。 */
+export const PERMISSION_ARGS = {
+  codex: { ask: '-s workspace-write -a on-request -c approvals_reviewer="user"', auto: '--approve-for-me', full: '--dangerously-bypass-approvals-and-sandbox' },
+  claude: { ask: '--permission-mode default', full: '--permission-mode bypassPermissions' },
+};
+/** 某个 Code Agent 可选的档位。 */
+export const permissionOptions = tool => PERMISSIONS.filter(p => !p.tools || p.tools.includes(tool));
+/** 记住的选择对当前智能体不可用时（如 Claude 不提供“帮我批准”），按默认档位显示与启动；记住的选择本身不改，切回 Codex 仍恢复。 */
+export function effectivePermission(selected, tool) {
+  const opts = permissionOptions(tool);
+  return opts.find(p => p.id === selected) || opts.find(p => p.id === DEFAULT_PERMISSION);
+}
+/** 选择档位：第一次选完全访问需要确认，确认后记住。 */
+export function choosePermission(id, fullConfirmed) {
+  return id === 'full' && !fullConfirmed ? { needConfirm: true } : { needConfirm: false, selected: id };
+}
+/** 任务创建时记录的权限快照；恢复任务沿用它，不随首页之后的选择变化。 */
+export function permissionSnapshot(selected, tool) {
+  const p = effectivePermission(selected, tool);
+  return { id: p.id, name: p.name, args: PERMISSION_ARGS[tool]?.[p.id] ?? '' };
 }

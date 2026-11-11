@@ -1,0 +1,177 @@
+{
+ "args": [
+  "codex",
+  "…mock provider…",
+  "-s",
+  "workspace-write",
+  "-a",
+  "on-request",
+  "-c",
+  "approvals_reviewer=\"user\""
+ ],
+ "sec": 11.1,
+ "events": [
+  {
+   "t": 1.0,
+   "event": "user approval prompt #1 → yes",
+   "excerpt": "Reason: Write a test file outside the workspace? $ printf c > /Users/liubu/.willyou-permE2-out/e9-on-request-user-guardian-allow-answer-yes/outside-escalated.txt && echo ok-out-esc › 1. Yes, proceed (y) 2. Yes, and don't ask again for commands that start with `printf c > /Users/liubu/.willyou-permE2-out/e9-on-request-user-guardian-allow-answer-yes/outside- escalated.txt && echo ok-out-esc` (p) 3. No, and tell Codex what to do differently (esc) Press enter to confirm or esc to cancel"
+  },
+  {
+   "t": 3.9,
+   "event": "user approval prompt #2 → yes",
+   "excerpt": "{http_code}\" --max-time 15 https://example.com Would you like to run the following command? Environment: local Reason: Access example.com for a connectivity test? $ curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com › 1. Yes, proceed (y) 2. Yes, and don't ask again for commands that start with `curl -s -o /dev/null -w '%{http_code}' --max-time 15 https://example.com` (p) 3. No, and tell Codex what to do differently (esc) Press enter to confirm or esc to cancel"
+  }
+ ],
+ "files": {
+  "inCwd": true,
+  "outsideDefault": false,
+  "outsideEscalated": true
+ },
+ "functionOutputs": [
+  "Chunk ID: e0c076\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 2\nOutput:\nok-in\n",
+  "Chunk ID: 54ee62\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 33\nOutput:\nzsh:1: operation not permitted: /Users/liubu/.willyou-permE2-out/e9-on-request-user-guardian-allow-answer-yes/outside-default.txt\n",
+  "Chunk ID: 24a1a7\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 3\nOutput:\nok-out-esc\n",
+  "Chunk ID: 688ab2\nWall time: 1.8084 seconds\nProcess exited with code 0\nOriginal token count: 1\nOutput:\n200",
+  "Chunk ID: f73937\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 4\nOutput:\n000 curl-exit=6\n"
+ ],
+ "requests": [
+  {
+   "kind": "main",
+   "nOutputs": 0,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "side",
+   "nOutputs": 0,
+   "reply": "text",
+   "tools": []
+  },
+  {
+   "kind": "main",
+   "nOutputs": 1,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "main",
+   "nOutputs": 2,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "main",
+   "nOutputs": 3,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "main",
+   "nOutputs": 4,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "main",
+   "nOutputs": 5,
+   "reply": "text",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  }
+ ],
+ "keyLines": [
+  "Would you like to run the following command? Environment: local Reason: Access example.com for a connectivity",
+  "approved codex to run curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://examp",
+  "approved codex to run printf c > /Users/liubu/.willyou-permE2-out/e9-on-request-user-gua",
+  "escalated.txt && echo ok-out-esc",
+  "escalated.txt && echo ok-out-esc Would you like to run the following command? Envi",
+  "escalated.txt && echo ok-out-esc • Working (0s • esc to interrupt) › Ask Codex to do a",
+  "escalated.txt && echo ok-out-esc › 1. Yes, proceed (y)",
+  "escalated.txt && echo ok-out-esc` (p) 3. No, and tell Codex what to do differently (es",
+  "review - review any changes and find issues"
+ ],
+ "tail": "M ✔ You approved codex to run curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com this time • Running curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com • Working (0s • esc to interrupt) › Ask Codex to do anything mock-model default · /private/tmp/permE2/e9/proj-on-request-user-guardian-allow-answer-yes · ← for agents ⚠ 2 warnings · f2 to view ◦◦1••◦◦2 ◦ Running curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com └ 200 ◦ Working (2s • esc to interrupt) › Ask Codex to do anything mock-model default · /private/tmp/permE2/e9/proj-on-request-user-guardian-allow-answer-yes · ← for agents ⚠ 2 warnings · f2 to view \u001bM\u001bM\u001bM • Ran curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com └ 200 ◦ Working (2s • esc to interrupt) › Ask Codex to do anything mock-model default · /private/tmp/permE2/e9/proj-on-request-user-guardian-allow-answer-yes · ← for agents ⚠ 2 warnings · f2 to view · 1 background terminal running · /ps to view · /stop to close\u001bM\u001bM\u001bM • Ran curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com; echo \" curl-exit=$?\" └ 000 curl-exit=6 \u001bM\u001bM\u001bM\u001bM • all steps done Worked for 6s • 5:46 PM › Ask Codex to do anything mock-model default · /private/tmp/permE2/e9/proj-on-request-user-guardian-allow-answer-yes · ← for agents ⚠ 2 warnings · f2 to view › Shutting down... Token usage: total=12 input=6 output=6 To continue this session, run: codex resume 01a1ca00-a849-7ef1-a31d-48ef9cf907a6"
+}

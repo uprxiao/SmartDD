@@ -1,0 +1,129 @@
+{
+ "args": [
+  "codex",
+  "…mock provider…",
+  "-s",
+  "workspace-write",
+  "-a",
+  "on-request",
+  "-c",
+  "approvals_reviewer=\"user\""
+ ],
+ "sec": 121.5,
+ "events": [
+  {
+   "t": 1.1,
+   "event": "user approval prompt → yes",
+   "excerpt": " ok-in • Running printf c > /Users/liubu/.willyou-permE2-out/e9-on-request-user-guardian-allow-answer-yes/outside-escalated.txt && echo ok-out-esc Would you like to run the following command? Environment: local Reason: Write a test file outside the workspace? $ printf c > /Users/liubu/.willyou-permE2-out/e9-on-request-user-guardian-allow-answer-yes/outside-escalated.txt && echo ok-out-esc › 1. Yes, proceed (y) 2. Yes, and don't ask again for commands that start with `printf c > /Users/liubu/.wil"
+  }
+ ],
+ "files": {
+  "inCwd": true,
+  "outsideDefault": false,
+  "outsideEscalated": true
+ },
+ "functionOutputs": [
+  "Chunk ID: 7d551e\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 2\nOutput:\nok-in\n",
+  "Chunk ID: c1b64d\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 33\nOutput:\nzsh:1: operation not permitted: /Users/liubu/.willyou-permE2-out/e9-on-request-user-guardian-allow-answer-yes/outside-default.txt\n",
+  "Chunk ID: ee9613\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 3\nOutput:\nok-out-esc\n"
+ ],
+ "requests": [
+  {
+   "kind": "main",
+   "nOutputs": 0,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "side",
+   "nOutputs": 0,
+   "reply": "text",
+   "tools": []
+  },
+  {
+   "kind": "main",
+   "nOutputs": 1,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "main",
+   "nOutputs": 2,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  },
+  {
+   "kind": "main",
+   "nOutputs": 3,
+   "reply": "call:exec_command",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "mcp__codex_tui",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ]
+  }
+ ],
+ "keyLines": [
+  "Would you like to run the following command? Environment: local Reason: Access example.com for a connectivity",
+  "approved codex to run printf c > /Users/liubu/.willyou-permE2-out/e9-on-request-user-gua",
+  "escalated.txt && echo ok-out-esc",
+  "escalated.txt && echo ok-out-esc Would you like to run the following command? Envi",
+  "escalated.txt && echo ok-out-esc • Working (0s • esc to interrupt) › Ask Codex to do a",
+  "escalated.txt && echo ok-out-esc › 1. Yes, proceed (y)",
+  "escalated.txt && echo ok-out-esc` (p) 3. No, and tell Codex what to do differently (es",
+  "review - review any changes and find issues"
+ ],
+ "tail": " ok-out-esc • Working (0s • esc to interrupt) › Ask Codex to do anything mock-model default · /private/tmp/permE2/e9/proj-on-request-user-guardian-allow-answer-yes · ← for agents ⚠ 2 warnings · f2 to view • Running curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com Would you like to run the following command? Environment: local Reason: Access example.com for a connectivity test? $ curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com › 1. Yes, proceed (y) 2. Yes, and don't ask again for commands that start with `curl -s -o /dev/null -w '%{http_code}' --max-time 15 https://example.com` (p) 3. No, and tell Codex what to do differently (esc) Press enter to confirm or esc to cancel \u001bM\u001bM\u001bM\u001bM\u001bM ✗ You canceled the request to run curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com • Ran curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com └ (no output) • Working (0s • esc to interrupt) › Ask Codex to do anything mock-model default · /private/tmp/permE2/e9/proj-on-request-user-guardian-allow-answer-yes · ← for agents ⚠ 2 warnings · f2 to view \u001bM\u001bM ■ Conversation interrupted - use /feedback if something went wrong › Ask Codex to do anything mock-model default · /private/tmp/permE2/e9/proj-on-request-user-guardian-allow-answer-yes · ← for agents ⚠ 2 warnings · f2 to view › Shutting down... Token usage: total=8 input=4 output=4 To continue this session, run: codex resume 01a1c9fe-2e93-7192-bbca-007fce7dc027"
+}

@@ -1,0 +1,150 @@
+{
+ "args": [
+  "codex",
+  "exec",
+  "--skip-git-repo-check",
+  "--json",
+  "…mock provider…",
+  "-s",
+  "danger-full-access"
+ ],
+ "exit": 0,
+ "sec": 3.3,
+ "files": {
+  "inCwd": true,
+  "outsideDefault": true,
+  "outsideEscalated": false
+ },
+ "commands": [
+  {
+   "cmd": "scratchpad/permE/e6/final/proj-danger-full-access-guardian-allow/in-cwd.txt && echo ok-in'",
+   "exit": 0,
+   "status": "completed",
+   "out": "ok-in\n"
+  },
+  {
+   "cmd": "-permE-1794387378/e6-danger-full-access-guardian-allow/outside-default.txt && echo ok-out'",
+   "exit": 0,
+   "status": "completed",
+   "out": "ok-out\n"
+  },
+  {
+   "cmd": "-s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com; echo \" curl-exit=$?\"'",
+   "exit": 0,
+   "status": "completed",
+   "out": "200 curl-exit=0\n"
+  }
+ ],
+ "functionOutputs": [
+  "Chunk ID: a1cf4b\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 2\nOutput:\nok-in\n",
+  "Chunk ID: b16b1b\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 2\nOutput:\nok-out\n",
+  "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+  "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+  "Chunk ID: 3b76a9\nWall time: 0.8607 seconds\nProcess exited with code 0\nOriginal token count: 4\nOutput:\n200 curl-exit=0\n"
+ ],
+ "requests": [
+  {
+   "kind": "main",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ],
+   "nOutputs": 0,
+   "reply": "call:exec_command",
+   "instrHead": ""
+  },
+  {
+   "kind": "main",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ],
+   "nOutputs": 1,
+   "reply": "call:exec_command",
+   "instrHead": ""
+  },
+  {
+   "kind": "main",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ],
+   "nOutputs": 2,
+   "reply": "call:exec_command",
+   "instrHead": ""
+  },
+  {
+   "kind": "main",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ],
+   "nOutputs": 3,
+   "reply": "call:exec_command",
+   "instrHead": ""
+  },
+  {
+   "kind": "main",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ],
+   "nOutputs": 4,
+   "reply": "call:exec_command",
+   "instrHead": ""
+  },
+  {
+   "kind": "main",
+   "tools": [
+    "exec_command",
+    "write_stdin",
+    "request_user_input",
+    "view_image",
+    "multi_agent_v1",
+    "get_goal",
+    "create_goal",
+    "update_goal",
+    "web_search"
+   ],
+   "nOutputs": 5,
+   "reply": "text",
+   "instrHead": ""
+  }
+ ],
+ "stderrTail": "Reading additional input from stdin...\n2026-11-11T09:19:02.145455Z ERROR codex_core::tools::router: error=approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never\n2026-11-11T09:19:02.153159Z ERROR codex_core::tools::router: error=approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never"
+}

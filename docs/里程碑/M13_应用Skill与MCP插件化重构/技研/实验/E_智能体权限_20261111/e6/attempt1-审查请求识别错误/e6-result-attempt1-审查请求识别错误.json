@@ -1,0 +1,485 @@
+{
+ "workspace-write": {
+  "args": [
+   "codex",
+   "exec",
+   "--skip-git-repo-check",
+   "--json",
+   "…mock provider…",
+   "-s",
+   "workspace-write"
+  ],
+  "exit": 0,
+  "sec": 2.6,
+  "files": {
+   "inCwd": true,
+   "outsideDefault": false,
+   "outsideEscalated": false
+  },
+  "commands": [
+   {
+    "cmd": "-4f52-afc3-9f867b2b14f3/scratchpad/permE/e6/proj-workspace-write/in-cwd.txt && echo ok-in'",
+    "exit": 0,
+    "status": "completed",
+    "out": "ok-in\n"
+   }
+  ],
+  "functionOutputs": [
+   "Chunk ID: f85a5d\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 2\nOutput:\nok-in\n",
+   "Chunk ID: e7a2dc\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 28\nOutput:\nzsh:1: operation not permitted: /Users/liubu/.willyou-permE-1794387378/e6-workspace-write/outside-default.txt\n",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never"
+  ],
+  "requests": [
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 0,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 1,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 2,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 3,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   }
+  ],
+  "stderrTail": "Reading additional input from stdin...\n2026-11-11T09:16:10.768358Z ERROR codex_core::tools::router: error=approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never\n2026-11-11T09:16:10.793752Z ERROR codex_core::tools::router: error=approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never"
+ },
+ "approve-for-me": {
+  "args": [
+   "codex",
+   "exec",
+   "--skip-git-repo-check",
+   "--json",
+   "…mock provider…",
+   "--approve-for-me"
+  ],
+  "exit": 0,
+  "sec": 3.8,
+  "files": {
+   "inCwd": true,
+   "outsideDefault": false,
+   "outsideEscalated": false
+  },
+  "commands": [
+   {
+    "cmd": "a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e6/proj-approve-for-me/in-cwd.txt && echo ok-in'",
+    "exit": 0,
+    "status": "completed",
+    "out": "ok-in\n"
+   },
+   {
+    "cmd": "iubu/.willyou-permE-1794387378/e6-approve-for-me/outside-escalated.txt && echo ok-out-esc'",
+    "exit": null,
+    "status": "declined",
+    "out": ""
+   },
+   {
+    "cmd": "/bin/zsh -lc 'curl -s -o /dev/null -w \"%{http_code}\" --max-time 15 https://example.com'",
+    "exit": null,
+    "status": "declined",
+    "out": ""
+   }
+  ],
+  "functionOutputs": [
+   "Chunk ID: fe2537\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 2\nOutput:\nok-in\n",
+   "Chunk ID: a6cf23\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 28\nOutput:\nzsh:1: operation not permitted: /Users/liubu/.willyou-permE-1794387378/e6-approve-for-me/outside-default.txt\n",
+   "Chunk ID: d1e1a7\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 45\nOutput:\nzsh:1: operation not permitted: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e6/proj-approve-for-me/in-cwd.txt\n",
+   "Chunk ID: 1cfab7\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 28\nOutput:\nzsh:1: operation not permitted: /Users/liubu/.willyou-permE-1794387378/e6-approve-for-me/outside-default.txt\n",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "exec_command failed: CreateProcess { message: \"Rejected(\\\"Automatic approval review failed: guardian assessment was not valid JSON\\\\nThe action was not executed because automatic approval review could not be completed. This is a review failure, not a determination that the action is unsafe. Do not b",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "exec_command failed: CreateProcess { message: \"Rejected(\\\"Automatic approval review failed: guardian assessment was not valid JSON\\\\nThe action was not executed because automatic approval review could not be completed. This is a review failure, not a determination that the action is unsafe. Do not b"
+  ],
+  "requests": [
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 0,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 1,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 2,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 0,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 1,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 2,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 3,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 3,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "view_image"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   }
+  ],
+  "stderrTail": "resolve the error or ask the user for guidance.\\\")\" }\n2026-11-11T09:16:14.593299Z ERROR codex_core::tools::router: error=exec_command failed: CreateProcess { message: \"Rejected(\\\"Automatic approval review failed: guardian assessment was not valid JSON\\\\nThe action was not executed because automatic approval review could not be completed. This is a review failure, not a determination that the action is unsafe. Do not bypass the approval check; resolve the error or ask the user for guidance.\\\")\" }"
+ },
+ "read-only": {
+  "args": [
+   "codex",
+   "exec",
+   "--skip-git-repo-check",
+   "--json",
+   "…mock provider…",
+   "-s",
+   "read-only"
+  ],
+  "exit": 0,
+  "sec": 3.8,
+  "files": {
+   "inCwd": false,
+   "outsideDefault": false,
+   "outsideEscalated": false
+  },
+  "commands": [],
+  "functionOutputs": [
+   "Chunk ID: 29f682\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 44\nOutput:\nzsh:1: operation not permitted: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e6/proj-read-only/in-cwd.txt\n",
+   "Chunk ID: a1ee93\nWall time: 0.0000 seconds\nProcess exited with code 1\nOriginal token count: 26\nOutput:\nzsh:1: operation not permitted: /Users/liubu/.willyou-permE-1794387378/e6-read-only/outside-default.txt\n",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never",
+   "approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never"
+  ],
+  "requests": [
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 0,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 1,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 2,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 3,
+    "reply": "call:exec_command",
+    "instrHead": ""
+   },
+   {
+    "kind": "main",
+    "tools": [
+     "exec_command",
+     "write_stdin",
+     "request_user_input",
+     "view_image",
+     "multi_agent_v1",
+     "get_goal",
+     "create_goal",
+     "update_goal",
+     "web_search"
+    ],
+    "nOutputs": 4,
+    "reply": "text",
+    "instrHead": ""
+   }
+  ],
+  "stderrTail": "Reading additional input from stdin...\n2026-11-11T09:16:16.874543Z ERROR codex_core::tools::router: error=approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never\n2026-11-11T09:16:16.881191Z ERROR codex_core::tools::router: error=approval policy is Never; reject command — you cannot ask for escalated permissions if the approval policy is Never"
+ }
+}

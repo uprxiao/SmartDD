@@ -1,0 +1,361 @@
+{
+ "cli": "2.1.322 (Claude Code)",
+ "method": "mock Anthropic server, -p --permission-prompts none",
+ "runs": {
+  "default": {
+   "exit": 0,
+   "sec": 0.3,
+   "files": {
+    "inCwd": false,
+    "bash": false,
+    "outside": false
+   },
+   "denials": [
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-default/in-cwd.txt"
+    },
+    {
+     "tool": "Bash",
+     "target": "echo b > /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-default/bash.txt"
+    },
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/outside-default/outside.txt"
+    }
+   ],
+   "result": "done",
+   "isError": false,
+   "stderr": "[claude-code:unrecognized_model] {\"model\":\"m-default\",\"query_source\":\"sdk\"}",
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 0,
+     "lastResult": null,
+     "isErr": null,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 1,
+     "lastResult": "Permission for this tool use was denied. It requires approval, and this session has no approval surface — nobody can answer a permission prompt here — so it was",
+     "isErr": true,
+     "reply": "tool_use Bash"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 2,
+     "lastResult": "Permission for this tool use was denied. It requires approval, and this session has no approval surface — nobody can answer a permission prompt here — so it was",
+     "isErr": true,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 3,
+     "lastResult": "Permission for this tool use was denied. It requires approval, and this session has no approval surface — nobody can answer a permission prompt here — so it was",
+     "isErr": true,
+     "reply": "text"
+    }
+   ]
+  },
+  "acceptEdits": {
+   "exit": 0,
+   "sec": 1.5,
+   "files": {
+    "inCwd": true,
+    "bash": true,
+    "outside": false
+   },
+   "denials": [
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/outside-acceptEdits/outside.txt"
+    }
+   ],
+   "result": "done",
+   "isError": false,
+   "stderr": "[claude-code:unrecognized_model] {\"model\":\"m-default\",\"query_source\":\"sdk\"}",
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 0,
+     "lastResult": null,
+     "isErr": null,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 1,
+     "lastResult": "File created successfully at: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-acceptEdi",
+     "isErr": null,
+     "reply": "tool_use Bash"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 2,
+     "lastResult": "(Bash completed with no output)",
+     "isErr": false,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 3,
+     "lastResult": "Permission for this tool use was denied. It requires approval, and this session has no approval surface — nobody can answer a permission prompt here — so it was",
+     "isErr": true,
+     "reply": "text"
+    }
+   ]
+  },
+  "auto": {
+   "exit": 1,
+   "sec": 1.3,
+   "files": {
+    "inCwd": true,
+    "bash": true,
+    "outside": false
+   },
+   "denials": [
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/outside-auto/outside.txt"
+    }
+   ],
+   "result": "done",
+   "isError": false,
+   "stderr": "e check is refused. To run these actions, use another permission mode. To use auto mode, ask whoever runs 127.0.0.1:53215 to pass Claude Code's server-side safety check through: https://code.claude.com/docs/en/permission-modes#server-side-classifier-review\nError: auto mode could not check some actions Claude tried, so they did not run. To run them, use another permission mode. Exiting with code 1.",
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 0,
+     "lastResult": null,
+     "isErr": null,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 1,
+     "lastResult": "File created successfully at: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-auto/in-c",
+     "isErr": null,
+     "reply": "tool_use Bash"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 2,
+     "lastResult": "(Bash completed with no output)",
+     "isErr": false,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 3,
+     "lastResult": "Auto mode is unavailable: its safety check does not run for this session, so Write was not run. Other actions that need the check will be denied too, and retryi",
+     "isErr": true,
+     "reply": "text"
+    }
+   ]
+  },
+  "plan": {
+   "exit": 1,
+   "sec": 0.2,
+   "files": {
+    "inCwd": false,
+    "bash": false,
+    "outside": false
+   },
+   "denials": [
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-plan/in-cwd.txt"
+    },
+    {
+     "tool": "Bash",
+     "target": "echo b > /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-plan/bash.txt"
+    },
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/outside-plan/outside.txt"
+    }
+   ],
+   "result": "done",
+   "isError": false,
+   "stderr": "e check is refused. To run these actions, use another permission mode. To use auto mode, ask whoever runs 127.0.0.1:53215 to pass Claude Code's server-side safety check through: https://code.claude.com/docs/en/permission-modes#server-side-classifier-review\nError: auto mode could not check some actions Claude tried, so they did not run. To run them, use another permission mode. Exiting with code 1.",
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 0,
+     "lastResult": null,
+     "isErr": null,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 1,
+     "lastResult": "Permission for this tool use was denied. It requires approval, and this session has no approval surface — nobody can answer a permission prompt here — so it was",
+     "isErr": true,
+     "reply": "tool_use Bash"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 2,
+     "lastResult": "Auto mode is unavailable: its safety check does not run for this session, so Bash was not run. Other actions that need the check will be denied too, and retryin",
+     "isErr": true,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 3,
+     "lastResult": "Permission for this tool use was denied. It requires approval, and this session has no approval surface — nobody can answer a permission prompt here — so it was",
+     "isErr": true,
+     "reply": "text"
+    }
+   ]
+  },
+  "dontAsk": {
+   "exit": 0,
+   "sec": 0.2,
+   "files": {
+    "inCwd": false,
+    "bash": false,
+    "outside": false
+   },
+   "denials": [
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-dontAsk/in-cwd.txt"
+    },
+    {
+     "tool": "Bash",
+     "target": "echo b > /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-dontAsk/bash.txt"
+    },
+    {
+     "tool": "Write",
+     "target": "/private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/outside-dontAsk/outside.txt"
+    }
+   ],
+   "result": "done",
+   "isError": false,
+   "stderr": "[claude-code:unrecognized_model] {\"model\":\"m-default\",\"query_source\":\"sdk\"}",
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 0,
+     "lastResult": null,
+     "isErr": null,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 1,
+     "lastResult": "Permission to use Write has been denied because Claude Code is running in don't ask mode. IMPORTANT: You *may* attempt to accomplish this action using other too",
+     "isErr": true,
+     "reply": "tool_use Bash"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 2,
+     "lastResult": "Permission to use Bash has been denied because Claude Code is running in don't ask mode. IMPORTANT: You *may* attempt to accomplish this action using other tool",
+     "isErr": true,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 3,
+     "lastResult": "Permission to use Write has been denied because Claude Code is running in don't ask mode. IMPORTANT: You *may* attempt to accomplish this action using other too",
+     "isErr": true,
+     "reply": "text"
+    }
+   ]
+  },
+  "bypassPermissions": {
+   "exit": 0,
+   "sec": 1.3,
+   "files": {
+    "inCwd": true,
+    "bash": true,
+    "outside": true
+   },
+   "denials": [],
+   "result": "done",
+   "isError": false,
+   "stderr": "[claude-code:unrecognized_model] {\"model\":\"m-default\",\"query_source\":\"sdk\"}",
+   "requests": [
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 0,
+     "lastResult": null,
+     "isErr": null,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 1,
+     "lastResult": "File created successfully at: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/proj-bypassPer",
+     "isErr": null,
+     "reply": "tool_use Bash"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 2,
+     "lastResult": "(Bash completed with no output)",
+     "isErr": false,
+     "reply": "tool_use Write"
+    },
+    {
+     "path": "/v1/messages?beta=true",
+     "tools": 12,
+     "hasWrite": true,
+     "toolResults": 3,
+     "lastResult": "File created successfully at: /private/tmp/claude-501/-Users-liubu-hx-4-uprxiao-SmartDD/3f88fd22-d89a-4f52-afc3-9f867b2b14f3/scratchpad/permE/e1m/outside-bypass",
+     "isErr": null,
+     "reply": "text"
+    }
+   ]
+  }
+ }
+}

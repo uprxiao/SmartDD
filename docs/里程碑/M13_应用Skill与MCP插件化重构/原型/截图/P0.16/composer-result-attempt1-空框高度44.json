@@ -1,0 +1,55 @@
+{
+ "checks": {
+  "空输入框保持原高度 42px，无滚动条": {
+   "pass": false,
+   "detail": {
+    "h": 44,
+    "sh": 44,
+    "oy": "hidden",
+    "st": 0,
+    "lines": 1
+   }
+  },
+  "5 行时随内容增高（5×22=110px），无滚动条": {
+   "pass": true,
+   "detail": {
+    "h": 110,
+    "sh": 110,
+    "oy": "hidden",
+    "st": 0,
+    "lines": 5
+   }
+  },
+  "10 行时高度 220px，正好不出滚动条": {
+   "pass": true,
+   "detail": {
+    "h": 220,
+    "sh": 220,
+    "oy": "hidden",
+    "st": 0,
+    "lines": 10
+   }
+  },
+  "超过 10 行（14 行）高度停在 220px，出现竖向滚动条并滚到光标处": {
+   "pass": true,
+   "detail": {
+    "h": 220,
+    "sh": 308,
+    "oy": "auto",
+    "st": 85,
+    "lines": 14
+   }
+  },
+  "清空后回到 42px": {
+   "pass": false,
+   "detail": {
+    "h": 44,
+    "sh": 44,
+    "oy": "hidden",
+    "st": 0,
+    "lines": 1
+   }
+  }
+ },
+ "errors": []
+}
