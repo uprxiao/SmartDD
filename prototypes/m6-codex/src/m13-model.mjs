@@ -538,11 +538,35 @@ export function affectedSessions(kind, target, tasks, bindings = {}) {
 
 // ================= P0.16：任务快照（审核 review-20261111-1500 N01／N07） =================
 /** 任务创建时记录的智能体快照：恢复与显示都读它，不再回查旧 AI 配置。 */
-export function agentSnapshot(agent, providers = []) {
+export function agentSnapshot(agent, providers = [], runModel) {
   if (!agent) return null;
   const p = providers.find(x => x.id === agent.provider);
+  const nameOf = id => p?.models?.find(m => m.id === id)?.name || id;
+  // runModel：本次运行实际使用的模型（审核 Q01）；新建时为智能体默认模型，恢复时由 resumeDecision 决定
+  const run = agent.source === 'provider' ? (runModel || agent.model || null) : null;
   return { agentId: agent.id, agentName: agent.name, tool: agent.tool, source: agent.source, method: agent.method || null, providerId: agent.provider || null, providerName: p?.name || null,
-    model: agent.model || null, models: agentModels(agent), modelNames: agentModels(agent).map(id => p?.models?.find(m => m.id === id)?.name || id) };
+    model: agent.model || null, models: agentModels(agent), modelNames: agentModels(agent).map(nameOf), runModel: run, runModelName: run ? nameOf(run) : null };
+}
+/** 恢复用哪个模型（审核 Q01）：上次使用的模型仍在所选智能体允许列表里就保留；不在时用所选智能体的默认模型并提示。订阅与旧配置按 CLI 自己的模型。 */
+export function resumeDecision(snapshot, agent) {
+  if (!agent || agent.source !== 'provider') return { model: null, lost: false };
+  const last = snapshot?.runModel || snapshot?.model || null;
+  if (last && agentModels(agent).includes(last)) return { model: last, lost: false };
+  return { model: agent.model, lost: !!last };
+}
+/** 恢复任务（审核 Q01、Q02）：模型按 resumeDecision；插件与连接按恢复时的最新状态重新生成本次运行快照；权限沿用创建时的档位（需求补记 8）。 */
+export function resumedTask(task, agent, store) {
+  const d = resumeDecision(task.agent, agent);
+  return { lost: d.lost, task: { ...task, profile: agent.id, profileName: agent.name, agent: agentSnapshot(agent, store.providers, d.model),
+    pluginSnapshot: pluginSnapshot(store.plugins, store.defaults, store.bindings, task.project), status: 'running' } };
+}
+/** 新建与恢复共用的启动预检（审核 Q03，技术方案 §3.1“Provider 缺认证：启动前拒绝”）：供应商已删除或缺 Key 时不启动。 */
+export function launchBlock(agent, providers = []) {
+  if (!agent || agent.source !== 'provider') return null;
+  const p = providers.find(x => x.id === agent.provider);
+  if (!p) return { reason: `智能体“${agent.name}”的供应商已删除，请改选其他智能体`, providerId: null };
+  if (p.needKey || !p.key) return { reason: `供应商“${p.name}”还没有填写 Key，填写后才能启动`, providerId: p.id };
+  return null;
 }
 /** 启动时的插件快照：项目里可用的插件及当时生效的连接（运行中任务继续用原连接；删除连接按它判断）。 */
 export function pluginSnapshot(plugins, defaults, bindings, projectId) {

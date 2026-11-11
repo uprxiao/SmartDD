@@ -1,0 +1,27 @@
+{
+  "checks": [
+    {
+      "id": "模型已移除时提示并回退默认",
+      "pass": true,
+      "warning": "恢复任务\n\n独立补验：模型丢失与恢复权限 · 保留同一个 Code Agent（Codex）\n\n智能体\nCodex · DeepSeek（原智能体）\nCodex · Magpie\n\n上次使用的模型 DeepSeek V4 Pro 不在所选智能体的模型里，将使用它的默认模型。\n\n上次使用的模型仍在所选智能体里就沿用，否则改用它的默认模型；插件和连接按恢复时的最新状态重新加载；权限沿用创建时的档位。本页仅演示。\n\n管理智能体\n恢复任务",
+      "run": "DeepSeek V4 Flash"
+    },
+    {
+      "id": "恢复仍保留任务完全访问，不使用首页请求批准",
+      "pass": true,
+      "info": "项目\nWillYou\n智能体\nCodex · DeepSeek\nCode Agent\nCodex\n订阅或供应商\nDeepSeek\n模型\nDeepSeek V4 Flash（默认）\n本次模型\nDeepSeek V4 Flash\n权限\n完全访问权限--dangerously-bypass-approvals-and-sandbox\n工作目录\n/workspace/SmartDD\n插件（启动时）\n邮件 v0.1.4、浏览器 v0.1.4\n任务状态\n运行中"
+    },
+    {
+      "id": "恢复后不再加载已停用禅道",
+      "pass": true,
+      "plugins": "会话插件\n\n独立补验：模型丢失与恢复权限\n\n邮件\n本次启动时 v0.1.4\n连接：Foxmail 本机（运行中继续用这个连接）\n可用\n浏览器\n本次启动时 v0.1.4\n无需连接\n可用\n\n启动时已加载的 Skill 与 MCP 在重启会话后才按最新状态变化；插件调用立即按最新状态执行。\n\n完成"
+    },
+    {
+      "id": "恢复选择无Key智能体同样被阻止并提供补Key入口",
+      "pass": true,
+      "disabled": true,
+      "block": "供应商“同事的 Acme 服务”还没有填写 Key，填写后才能启动。\n\n去填写 Key"
+    }
+  ],
+  "errors": []
+}

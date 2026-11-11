@@ -17,7 +17,7 @@ export function detectByScene(scene) {
   };
 }
 
-export function M13AgentSettings({ tab, store, nav }) {
+export function M13AgentSettings({ tab, focus, store, nav }) {
   const { providers, setProviders, configs, setConfigs, tools, setTools, scene, setScene } = store;
   const [modal, setModal] = useState(null);
   const [menu, setMenu] = useState(null);
@@ -26,6 +26,8 @@ export function M13AgentSettings({ tab, store, nav }) {
   const notify = text => { clearTimeout(toastTimer.current); setToast(text); toastTimer.current = setTimeout(() => setToast(''), 4200); };
   useEffect(() => { const close = e => { if (!e.target.closest?.('.m10-menu-wrap')) setMenu(null); }; document.addEventListener('mousedown', close); return () => document.removeEventListener('mousedown', close); }, []);
   useEffect(() => setMenu(null), [tab]);
+  // 审核 Q03：首页／恢复的“去填写 Key”直接打开该供应商详情（路由 settings/ai/providers/<id>）
+  useEffect(() => { if (tab === 'providers' && focus && store.providers.some(p => p.id === focus)) setModal({ type: 'provider', id: focus }); }, [tab, focus]);
   const close = () => setModal(null);
 
   /** 检测并同步：工具安装状态；已有订阅/API 智能体随登录状态改名、标记退出或恢复（不自动添加）。 */

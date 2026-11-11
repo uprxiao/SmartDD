@@ -1,0 +1,26 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "id": "resume-model",
+      "before": "项目\nWillYou\n智能体\nCodex · DeepSeek\nCode Agent\nCodex\n订阅或供应商\nDeepSeek\n模型\nDeepSeek V4 Pro（默认）\n权限\n请求批准-s workspace-write -a on-request -c approvals_reviewer=\"user\"\n工作目录\n/workspace/SmartDD\n插件（启动时）\n邮件 v0.1.4、浏览器 v0.1.4、禅道 v1.0.0\n任务状态\n运行中",
+      "restoreText": "恢复任务\n\n审核：恢复模型与连接 · 保留同一个 Code Agent（Codex）\n\n智能体\nCodex · DeepSeek（原智能体）\nCodex · Magpie\n\n换成其他智能体恢复时，模型能力可能不同；插件按当前状态重新检查，运行中的连接规则不变。本页仅演示。\n\n管理智能体\n恢复任务",
+      "after": "项目\nWillYou\n智能体\nCodex · DeepSeek\nCode Agent\nCodex\n订阅或供应商\nDeepSeek\n模型\nDeepSeek V4 Flash（默认）、DeepSeek V4 Pro\n权限\n请求批准-s workspace-write -a on-request -c approvals_reviewer=\"user\"\n工作目录\n/workspace/SmartDD\n插件（启动时）\n邮件 v0.1.4、浏览器 v0.1.4、禅道 v1.0.0\n任务状态\n运行中",
+      "expected": "上次模型 Pro 仍在勾选列表，恢复仍应使用 Pro",
+      "issueReproduced": true
+    },
+    {
+      "id": "resume-connection",
+      "actual": "会话插件\n\n审核：恢复模型与连接\n\n邮件\n启动时 v0.1.4\n连接：Foxmail 本机（运行中继续用这个连接）\n可用\n浏览器\n启动时 v0.1.4\n无需连接\n可用\n禅道\n启动时 v1.0.0\n连接：公司禅道（运行中继续用这个连接）\n可用\n\n启动时已加载的 Skill 与 MCP 在重启会话后才按最新状态变化；插件调用立即按最新状态执行。\n\n完成",
+      "expected": "恢复后按当前全局默认使用审核连接B",
+      "issueReproduced": true
+    },
+    {
+      "id": "missing-key",
+      "importedRow": "同\nCodex · Acme\n供应商需要 Key\nacme-coder-large · 未测试\n首页",
+      "actual": "项目\nWillYou\n智能体\nCodex · Acme\nCode Agent\nCodex\n订阅或供应商\n同事的 Acme 服务\n模型\nacme-coder-large（默认）\n权限\n请求批准-s workspace-write -a on-request -c approvals_reviewer=\"user\"\n工作目录\n/workspace/SmartDD\n插件（启动时）\n邮件 v0.1.4、浏览器 v0.1.4、禅道 v1.0.0\n任务状态\n运行中",
+      "expected": "供应商缺 Key，拒绝启动并引导补 Key",
+      "issueReproduced": true
+    }
+  ]
+}
