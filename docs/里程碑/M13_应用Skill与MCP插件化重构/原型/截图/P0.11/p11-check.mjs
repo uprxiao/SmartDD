@@ -1,0 +1,30 @@
+// 原型 P0.11 浏览器走查：项目页“插件”分区按内置／外部页签分开、说明弱化为底部小字（用户 2026-11-11 提出）。
+import { createRequire } from 'node:module';
+const { chromium } = createRequire('/Users/liubu/.npm/_npx/0b9ff77863cb6e9f/node_modules/')('playwright-core');
+const out = process.argv[2];
+const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
+const p = await (await b.newContext({ viewport: { width: 1512, height: 949 }, locale: 'zh-CN' })).newPage();
+const errors = []; p.on('pageerror', e => errors.push(e.message)); p.on('console', m => m.type() === 'error' && errors.push(m.text()));
+const R = {}; const ok = (k, v, d) => { R[k] = { pass: !!v, detail: d }; };
+const hash = async h => { await p.evaluate(x => { location.hash = x; }, h); await p.waitForTimeout(400); };
+const shot = n => p.screenshot({ path: `${out}/${n}.png` });
+const cards = () => p.locator('.m13-pp-card .m13-cap-main b').allInnerTexts();
+const tabs = () => p.locator('.m13-pp-tabs [role=tab]').allInnerTexts();
+await p.goto('http://127.0.0.1:4176/?preview=m13#project/ais/apps'); await p.waitForTimeout(800);
+const t0 = (await tabs()).map(x => x.replace(/\s+/g, '')); const sel0 = await p.locator('.m13-pp-tabs [aria-selected=true]').innerText(); const c0 = await cards(); await shot('01-project-builtin');
+await p.locator('.m13-pp-tabs [role=tab]').filter({ hasText: '外部' }).click(); await p.waitForTimeout(200); const c1 = await cards(); await shot('02-project-external');
+const head = await p.locator('.m13-project-plugins h2').count(); const foot = await p.locator('.m13-pp-foot').evaluate(e => ({ t: e.innerText, fs: getComputedStyle(e).fontSize }));
+const firstIsTabs = await p.locator('.m13-project-plugins').evaluate(e => e.firstElementChild.classList.contains('m13-pp-tabs'));
+ok('说明已弱化：不再有“插件”标题，页签在最上面；说明合并为底部 12px 浅灰小字', head === 0 && firstIsTabs && foot.fs === '12px' && foot.t.includes('插件默认对所有项目可用') && foot.t.includes('运行中的任务仍用原连接'), { head, firstIsTabs, foot });
+ok('项目页插件分区有“内置 2／外部 1”页签，默认内置；内置只列邮件、浏览器，外部只列禅道', t0.join('|') === '内置2|外部1' && sel0.startsWith('内置') && c0.join('|') === '邮件|浏览器' && c1.join('|') === '禅道', { t0, sel0, c0, c1 });
+await p.getByRole('switch', { name: '关闭 禅道' }).click(); await p.locator('.toast').waitFor({ timeout: 2000 }).catch(() => {}); const tt = await p.locator('.toast').innerText().catch(() => ''); const still = await p.locator('.m13-pp-tabs [aria-selected=true]').innerText();
+ok('外部页签内开关可用，操作后仍停留在外部页签', tt.includes('已在本项目关闭') && still.startsWith('外部'), { tt, still });
+// 卸载禅道后外部为空
+await hash('m13/plugins'); await p.getByRole('button', { name: '禅道 更多操作' }).click(); await p.locator('.m10-menu [role=menuitem]').filter({ hasText: '卸载' }).click(); await p.waitForTimeout(200); await p.locator('.m13-dialog').getByRole('button', { name: '卸载' }).click(); await p.waitForTimeout(300);
+await hash('project/ais/apps'); await p.locator('.m13-pp-tabs [role=tab]').filter({ hasText: '外部' }).click(); await p.waitForTimeout(200);
+const empty = await p.locator('.m13-empty').innerText().catch(() => ''); const t2 = (await tabs()).map(x => x.replace(/\s+/g, '')); await shot('03-project-external-empty');
+await p.locator('.m13-empty').getByRole('button', { name: '去插件页' }).click(); await p.waitForTimeout(300); const h = await p.evaluate(() => location.hash);
+ok('没有外部插件时显示空态并可去插件页', empty.includes('还没有安装外部插件') && t2.join('|') === '内置2|外部0' && h === '#m13/plugins', { empty, t2, h });
+await p.goto('http://127.0.0.1:4176/?preview=m13#project/ais/apps'); await p.waitForTimeout(700); await p.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark')); await p.waitForTimeout(200); await shot('04-project-builtin-dark');
+console.log(JSON.stringify({ results: R, errors }, null, 1));
+await b.close();

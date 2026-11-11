@@ -1,0 +1,48 @@
+{
+ "case": "behaves",
+ "settings": {
+  "modelPicker": {
+   "options": [
+    {
+     "model": "m-default",
+     "label": "默认 A（m-default）",
+     "description": "启动时的默认模型",
+     "behavesAs": "claude-sonnet-4-5"
+    },
+    {
+     "model": "m-b",
+     "label": "模型 B",
+     "behavesAs": "claude-sonnet-4-5"
+    },
+    {
+     "model": "m-c",
+     "label": "模型 C",
+     "behavesAs": "claude-sonnet-4-5"
+    }
+   ],
+   "replaceBuiltInOptions": true
+  }
+ },
+ "args": [
+  "--setting-sources",
+  "user"
+ ],
+ "start": " ▐▛███▛█Claude Codev2.1.322 ▝▜██████▀默认 A（m-default） · API Usage Billing ▝▝ ▝▝ /private/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m13-r1-f45mlw0b/proj ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ❯ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents ⏸ manual mode on · ? for shortuts ·←for agents █▟█▟ ▟█▟█ ▛▛",
+ "reqsAtStart": [],
+ "picker": "\u000f ❯ /model Set the AI model for Claude Code (currently 默认 A（m-default）) /auto-mode-setup Teach auto mode about your environment, plus optional rule tweaks /code-review Review the current diff or a PR for bugs and cleanups /update-config Change settings: hooks, permissions, environment variables /loop Repeat a prompt or command on an interval (e.g. /loop 5m /foo) /model ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔ Select model Switch between Claude models. Your pick becomes the default for new sessions. For other/previous model names, specify with --model. 1. Default (recommended) Us te default model (curently m-dfault[1m]) ❯ 2. 默认 A（m-default） ✔ 启动时的默认模型 3. 模型 B Custom model (m-b) 4. 模型 C Custom model (m-c) ○ Effort not supported for 默认 A（m-default） Enter to setas default · s to use this session only · Esc to cancel",
+ "afterPickS": " 模型C · API Usage Billing ❯ /model ⎿ Setmodelto模型 Cforthissessiononly ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ❯ ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── ⏸ manual modeon· ? forshorcut",
+ "settingsAfterS": "{\"modelPicker\": {\"options\": [{\"model\": \"m-default\", \"label\": \"默认 A（m-default）\", \"description\": \"启动时的默认模型\", \"behavesAs\": \"claude-sonnet-4-5\"}, {\"model\": \"m-b\", \"label\": \"模型 B\", \"behavesAs\": \"claude-sonnet-4-5\"}, {\"model\": \"m-c\", \"label\": \"模型 C\", \"behavesAs\": \"claude-sonnet-4-5\"}], \"replaceBuiltInOptions\": true}}",
+ "reqsAfterHi": [
+  {
+   "method": "POST",
+   "path": "/v1/messages?beta=true",
+   "model": "m-c",
+   "tools": 13,
+   "maxTokens": 32000
+  }
+ ],
+ "allPaths": [
+  "POST /v1/messages"
+ ],
+ "unknownModelWarning": false
+}

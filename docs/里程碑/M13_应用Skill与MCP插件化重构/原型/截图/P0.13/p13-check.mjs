@@ -1,0 +1,68 @@
+// 原型 P0.13 浏览器走查：智能体平铺可排序、首页开关、新建三步联动、添加供应商不自动生成、供应商详情两个页签（用户 2026-11-11 确认）。
+import { createRequire } from 'node:module';
+const { chromium } = createRequire('/Users/liubu/.npm/_npx/0b9ff77863cb6e9f/node_modules/')('playwright-core');
+const out = process.argv[2];
+const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
+const p = await (await b.newContext({ viewport: { width: 1512, height: 949 }, locale: 'zh-CN' })).newPage();
+const errors = []; p.on('pageerror', e => errors.push(e.message)); p.on('console', m => m.type() === 'error' && errors.push(m.text()));
+const R = {}; const ok = (k, v, d) => { R[k] = { pass: !!v, detail: d }; };
+const hash = async h => { await p.evaluate(x => { location.hash = x; }, h); await p.waitForTimeout(350); };
+const shot = n => p.screenshot({ path: `${out}/${n}.png` });
+const dlg = () => p.locator('.m13-dialog');
+const names = () => p.locator('.m13-agent-item .m13-cap-main b').evaluateAll(es => es.map(e => e.firstChild.textContent.trim()));
+const toast = async () => { const t = p.locator('.m13-toast'); await t.waitFor({ timeout: 2500 }).catch(() => {}); return t.innerText().catch(() => ''); };
+const menuItem = async (label, item) => { await p.getByRole('button', { name: label }).click(); await p.locator('.m10-menu [role=menuitem]').filter({ hasText: item }).click(); await p.waitForTimeout(250); };
+const homeList = async () => { await hash('home'); await p.getByRole('button', { name: '选择智能体' }).click(); const l = await p.locator('.profile-choice-menu [role=menuitem] span').allInnerTexts(); await p.keyboard.press('Escape'); await p.getByRole('button', { name: '选择智能体' }).click().catch(() => {}); return l; };
+await p.goto('http://127.0.0.1:4176/?preview=m13#settings/ai/configs'); await p.waitForTimeout(900);
+const n0 = await names(); const groups = await p.locator('.m13-tool-head').count(); const toggles = await p.locator('.m13-agent-item [role=switch]').count(); const primary = await p.locator('.m10-head-actions .m10-button.primary').innerText(); await shot('01-agents');
+ok('平铺列表：无分组、无单独“高级配置”组（旧配置并入列表并标记）；每行有首页开关；主按钮“新建智能体”', groups === 0 && n0.join('|') === 'Claude Code · 订阅|Claude Code · DeepSeek|Codex · DeepSeek|Codex · Magpie|Claude Code · Magpie|CC-rj' && toggles === 6 && primary.includes('新建智能体') && await p.locator('[data-agent=rc-legacy-rj] .m13-pill').filter({ hasText: '旧配置' }).count() === 1, { n0, groups, toggles, primary });
+let home = await homeList();
+ok('首页下拉按列表顺序，只列首页显示的', home.join('|') === 'Claude Code · 订阅|Claude Code · DeepSeek|Codex · DeepSeek|Codex · Magpie|CC-rj', home);
+await hash('settings/ai/configs'); await menuItem('Codex · Magpie 更多操作', '上移'); const t1 = await toast(); const n1 = await names();
+await p.locator('[data-agent=rc-legacy-rj]').dragTo(p.locator('[data-agent=rc-cc-ds]')); await p.waitForTimeout(300); const n2 = await names(); await shot('02-sorted');
+home = await homeList();
+ok('排序：菜单上移、拖动都生效，首页下拉同步', t1.includes('上移') && n1[2] === 'Codex · Magpie' && n2[1] === 'CC-rj' && home[1] === 'CC-rj', { n1, n2, home });
+// 新建智能体
+await hash('settings/ai/configs'); await p.getByRole('button', { name: '新建智能体' }).click(); await p.waitForTimeout(250);
+const cards = await dlg().locator('.m13-agent-card').evaluateAll(es => es.map(e => [e.querySelector('b').textContent, e.disabled, e.querySelector('small').textContent]));
+const selProv = await dlg().locator('.m13-prov-opt.selected b').innerText(); const nameV = await dlg().getByLabel('名称').inputValue(); await shot('03-new-claude-login');
+ok('新建：Code Agent 6 张卡片，OpenCode/ZCode/Pi/DSH 置灰标“暂不支持”；Claude Code 已登录时默认选“订阅”，模型用 CLI 默认，名称自动', cards.length === 6 && cards.slice(2).every(c => c[1] && c[2] === '暂不支持') && cards[0][2].includes('已登录订阅') && selProv.startsWith('订阅') && nameV.startsWith('Claude Code · 订阅'), { cards, selProv, nameV });
+await dlg().locator('.m13-prov-opt[data-provider=deepseek]').click(); await p.waitForTimeout(150);
+const optsCC = await dlg().getByLabel('模型').locator('option').allInnerTexts(); const nameDS = await dlg().getByLabel('名称').inputValue();
+await dlg().locator('.m13-prov-opt[data-provider=magpie]').click(); await p.waitForTimeout(150); const optsMP = await dlg().getByLabel('模型').locator('option').allInnerTexts(); await shot('04-new-claude-magpie');
+ok('②③联动：选 DeepSeek 后模型只列 Claude Code 可用/未测试、推荐预选；换 Magpie 模型列表随之更新；名称重复时加模型名', optsCC[0].includes('推荐') && !optsCC.some(o => o.includes('legacy')) && nameDS === 'Claude Code · DeepSeek · DeepSeek V4 Pro' && optsMP.length === 2 && optsMP[0].startsWith('claude-sonnet-5-5'), { optsCC, nameDS, optsMP });
+await dlg().locator('.m13-agent-card').filter({ hasText: 'Codex' }).click(); await p.waitForTimeout(150);
+const codexOpts = await dlg().locator('.m13-prov-list .m13-prov-opt').evaluateAll(es => es.map(e => e.innerText.replace(/\s+/g, ' ')));
+const codexSel = await dlg().locator('.m13-prov-opt.selected b').innerText(); const mOpts = await dlg().getByLabel('模型').locator('option').allInnerTexts(); await shot('05-new-codex');
+ok('①②联动：换成 Codex 后，未登录的“订阅”置灰并提示登录方法，默认选第一个兼容供应商，模型随之重选', codexOpts[0].includes('未登录') && codexSel.startsWith('DeepSeek') && mOpts[0].includes('DeepSeek V4 Pro'), { codexOpts, codexSel, mOpts });
+await dlg().getByLabel('模型').selectOption('deepseek-v4-flash'); await dlg().getByRole('button', { name: '创建' }).click(); const t3 = await toast(); const n3 = await names();
+ok('创建后加到列表末尾', t3.includes('已创建') && n3.at(-1) === 'Codex · DeepSeek · DeepSeek V4 Flash', { t3, n3 });
+// 添加供应商：不自动生成；完成页“用它新建”；不兼容过滤
+await p.getByRole('tab', { name: /供应商/ }).click(); await p.getByRole('button', { name: '添加供应商' }).first().click(); await dlg().locator('.m13-cat-item').filter({ hasText: 'GLM' }).click();
+await dlg().locator('input[type=password]').fill('decoy-key-0000'); await dlg().getByRole('button', { name: '获取模型' }).click(); await dlg().getByRole('button', { name: '接入' }).click(); await dlg().locator('.m13-done').waitFor({ timeout: 4000 });
+const done = await dlg().locator('.m13-done').innerText(); const btns = await dlg().locator('[data-new-agent]').allInnerTexts(); await shot('06-provider-done');
+const before = (await p.locator('.m13-agent-item').count());
+ok('添加供应商完成页：不自动生成智能体，显示推荐模型测试结果与“用它新建 Claude Code 智能体”', !done.includes('已生成') && done.includes('推荐模型测试') && btns.length === 1 && btns[0].includes('用它新建 Claude Code 智能体'), { done: done.slice(0, 300), btns });
+await dlg().locator('[data-new-agent=claude]').click(); await p.waitForTimeout(300);
+const pre = await dlg().locator('.m13-prov-opt.selected b').innerText(); const preTool = await dlg().locator('.m13-agent-card.selected b').innerText(); await shot('07-new-from-provider');
+ok('“用它新建”打开新建智能体并预选 Claude Code 与 GLM', preTool === 'Claude Code' && pre.startsWith('GLM'), { pre, preTool });
+await dlg().locator('.m13-agent-card').filter({ hasText: 'Codex' }).click(); await p.waitForTimeout(150);
+await dlg().locator('.m13-incompat-list summary').click(); const inc = await dlg().locator('.m13-incompat-list').innerText(); await shot('08-incompat');
+ok('Codex 下 GLM 折叠在“不支持 Codex 的供应商”里并写明原因', inc.includes('不支持 Codex 的供应商（1）') && inc.includes('GLM') && inc.includes('OpenAI Responses'), inc);
+await dlg().getByRole('button', { name: '取消' }).click(); await p.waitForTimeout(150);
+// 供应商详情两个页签
+await hash('settings/ai/providers'); await p.locator('[data-provider=deepseek]').click(); await p.waitForTimeout(250);
+const ptabs = (await dlg().locator('.m13-ptabs [role=tab]').allInnerTexts()).map(x => x.replace(/\s+/g, '')); const hasMatrix = await dlg().locator('.m13-table.matrix').count(); const hasAgents0 = await dlg().locator('.m13-gen-list').count(); await shot('09-provider-overview');
+await dlg().locator('.m13-ptabs [role=tab]').filter({ hasText: '智能体' }).click(); await p.waitForTimeout(150);
+const agentsTab = await dlg().locator('.m13-gen-list').innerText(); const newBtns = await dlg().locator('.m13-regen').allInnerTexts(); await shot('10-provider-agents');
+ok('供应商详情：默认“概览”（信息与模型可用性），“智能体”页签列出使用它的智能体并可用它新建', ptabs.join('|').startsWith('概览|智能体') && hasMatrix === 1 && hasAgents0 === 0 && agentsTab.includes('Codex · DeepSeek') && newBtns.length === 2, { ptabs, agentsTab, newBtns });
+await dlg().getByRole('button', { name: '完成' }).click();
+// 订阅：不自动添加；退出登录标记
+await hash('settings/ai/configs'); await p.locator('.m13-scene-line select').selectOption('codex-login'); const t4 = await toast(); const n4 = await names();
+ok('Codex 登录后不自动添加，只提示新建时可选', t4.includes('新建智能体时可以选') && !n4.includes('Codex · 订阅'), { t4 });
+await p.locator('.m13-scene-line select').selectOption('claude-logout'); const t5 = await toast(); await shot('11-claude-logout');
+ok('Claude 退出登录：订阅智能体保留并标记，默认交接', t5.includes('已退出登录') && t5.includes('默认改为') && await p.locator('[data-agent=rc-cc-login] .m13-pill').filter({ hasText: '已退出登录' }).count() === 1, t5);
+await p.locator('.m13-scene-line select').selectOption('normal'); await p.waitForTimeout(300);
+await p.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark')); await p.waitForTimeout(200); await shot('12-agents-dark');
+await p.getByRole('button', { name: '新建智能体' }).click(); await p.waitForTimeout(200); await shot('13-new-dark');
+console.log(JSON.stringify({ results: R, errors }, null, 1)); await b.close();

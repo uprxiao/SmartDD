@@ -43,17 +43,35 @@ export function PluginIcon({ id, name = '', size = 36 }) {
   </svg>;
 }
 
-/** 供应商图标（P0.6）：没有可追溯的官方品牌资源，统一用首字母彩色方块；原有登录用命令行符号。颜色仅作区分，不代表官方品牌。 */
-const PROVIDER_TILES = { deepseek: ['#5b7cff', '#3a55e6'], glm: ['#4a6bff', '#2a3fd1'], smg: ['#25b39e', '#12867a'], ultracloud: ['#ff9a3d', '#e86b13'], magpie: ['#3d4250', '#1f2229'], 'native-claude': ['#e08a6a', '#c8603f'], 'native-codex': ['#3a3d44', '#15171b'] };
+/** 供应商与工具图标（P0.12）：使用官方图标（来源与哈希见 public/assets/m13-agent-icons/SOURCE.md）。
+ *  App 图标（Claude、Magpie）自带圆角底，裁掉 macOS 图标留白后铺满；网站图标放在白底方块中。
+ *  Codex 暂无可追溯的专用图标，用 OpenAI 标志黑底白标，与 OpenAI 供应商的白底黑标区分。没有图标的用首字母方块。 */
+const A = '/assets/m13-agent-icons/';
+const PROVIDER_IMAGES = {
+  'tool-claude': { href: A + 'claude.png', bleed: 1.22 }, 'tool-codex': { href: A + 'openai-white.svg', bg: '#0d0d0d', inset: 7 },
+  anthropic: { href: A + 'anthropic.png', bleed: 1 }, openai: { href: A + 'openai.svg', bg: '#fff', inset: 7, border: true },
+  deepseek: { href: A + 'deepseek.png', bg: '#fff', inset: 3, border: true },
+  'agent-opencode': { href: A + 'opencode.png', bleed: 1 }, 'agent-pi': { href: A + 'pi.svg', bg: '#fff', inset: 2, border: true }, 'agent-zcode': { href: A + 'zcode.png', bleed: 1.22 }, 'agent-dsh': { href: A + 'dsh.png', bleed: 1.22 }, glm: { href: A + 'zhipu.png', bleed: 1.04 }, magpie: { href: A + 'magpie.png', bleed: 1.22 },
+};
+PROVIDER_IMAGES['native-claude'] = PROVIDER_IMAGES['tool-claude']; PROVIDER_IMAGES['native-codex'] = PROVIDER_IMAGES['tool-codex'];
+const PROVIDER_TILES = { smg: ['#25b39e', '#12867a'], ultracloud: ['#ff9a3d', '#e86b13'] };
 export function ProviderIcon({ catalog, name = '', size = 28 }) {
+  const r = size >= 30 ? 9 : size >= 20 ? 6 : 4, rv = r * 36 / size, gid = 'm13p-' + (catalog || name || 'x').replace(/[^\w-]/g, '_') + '-' + size;
+  const img = PROVIDER_IMAGES[catalog];
+  if (img) {
+    const w = img.bleed ? 36 * img.bleed : 36 - (img.inset || 0) * 2, o = (36 - w) / 2;
+    return <svg className="m13-icon image" width={size} height={size} viewBox="0 0 36 36" aria-hidden="true" style={{ borderRadius: r }}>
+      <defs><clipPath id={gid}><rect width="36" height="36" rx={rv} /></clipPath></defs>
+      <g clipPath={`url(#${gid})`}>{img.bg && <rect width="36" height="36" fill={img.bg} />}<image href={img.href} x={o} y={o} width={w} height={w} preserveAspectRatio="xMidYMid meet" /></g>
+      {img.border && <rect x=".5" y=".5" width="35" height="35" rx={rv - .5} fill="none" stroke="#e3e3e3" />}
+    </svg>;
+  }
   const [from, to] = PROVIDER_TILES[catalog] || FALLBACK[hash(catalog || name) % FALLBACK.length];
-  const r = size >= 30 ? 9 : size >= 20 ? 6 : 4, rv = r * 36 / size, gid = 'm13p-' + (catalog || name || 'x') + '-' + size;
-  const native = catalog?.startsWith('native-');
-  const letter = (name || catalog || '?').replace(/^Claude Code.*/, 'C').trim().charAt(0).toUpperCase();
+  const letter = (name || catalog || '?').trim().charAt(0).toUpperCase();
   return <svg className="m13-icon" width={size} height={size} viewBox="0 0 36 36" aria-hidden="true" style={{ borderRadius: r }}>
     <defs><linearGradient id={gid} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={from} /><stop offset="1" stopColor={to} /></linearGradient></defs>
     <rect width="36" height="36" rx={rv} fill={`url(#${gid})`} />
-    {native ? <path d="M10.5 13l5 5-5 5M18.5 24h7" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      : <text x="18" y="24.2" textAnchor="middle" fontSize="17" fontWeight="600" fill="#fff" fontFamily="-apple-system,system-ui,sans-serif">{letter}</text>}
+    <text x="18" y="24.2" textAnchor="middle" fontSize="17" fontWeight="600" fill="#fff" fontFamily="-apple-system,system-ui,sans-serif">{letter}</text>
   </svg>;
 }
+export const ToolIcon = ({ tool, size = 16 }) => <ProviderIcon catalog={'tool-' + tool} size={size} />;

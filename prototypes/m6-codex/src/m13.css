@@ -303,3 +303,118 @@
 .m13-form-grid .m13-adv summary{margin:4px 0 6px}.m13-form-grid .m13-adv+.m13-hint{margin-top:2px}
 :root[data-theme=dark] .m13-toolchip .m13-icon,:root[data-theme=dark] .m13-agent-tool .m13-icon,:root[data-theme=dark] .m13-seg .m13-icon{box-shadow:0 0 0 1px #ffffff38}
 @media (max-width:900px){.m13-agent-left{max-height:280px}}
+
+/* ===== P0.7 设置 › 智能体（原 Code Agent 配置，替代 AI 配置位置） ===== */
+.settings-mode .settings-inner.m13-settings-inner{max-width:860px}
+.m13-settings-embed{display:block;background:transparent}
+.m13-settings-embed .m10-page-head{margin-top:0}
+.m13-scene-line{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:0 0 12px;font-size:12px;color:var(--cx-tertiary)}
+.m13-scene-line label{display:flex;align-items:center;gap:6px}
+.m13-scene-line select{width:auto;field-sizing:content;min-width:0;height:auto;padding:0 2px;font:inherit;color:var(--cx-secondary);background:transparent;border:0;box-shadow:none}
+/* P0.8：插件详情的启用状态（替代“已停用”标签）；底色随主题 */
+.m13-state.on{color:var(--success)}.m13-state.off{color:#a65a0b}
+:root[data-theme=dark] .m13-state.off{color:#f0b467}
+/* P0.8：更新弹窗只列变化 */
+.m13-perms.m13-diff li.del{color:var(--muted)}.m13-perms.m13-diff li.del svg{color:#b3261e}
+:root[data-theme=dark] .m13-perms.m13-diff li.del svg{color:#f2a49e}
+.m13-install-review .m13-alert ul{margin:4px 0 0;padding-left:18px}
+.m13-perms li.cap svg{color:var(--muted)}
+.m13-install-review>.m13-hint{margin-top:14px}
+/* P0.10：插件停用时侧栏子页面显示为不可用（仍可点进去看说明） */
+.m10-nav.m13-nav-child.m13-disabled{color:var(--muted)}.m10-nav.m13-nav-child.m13-disabled svg{opacity:.55}
+/* P0.11：项目页“插件”分区按内置／外部分页签 */
+.m13-project-plugins .m13-pp-tabs{margin:0 0 14px}
+/* P0.11：说明弱化为底部浅灰小字（用户 2026-11-11 提出） */
+.m13-project-plugins .m13-pp-foot{font-size:12px;line-height:18px;color:var(--muted);margin-top:12px}
+/* P0.12：智能体按工具分组；工具信息在分组标题；自动生成；模型 × 工具可用性（需求补记“智能体自动生成”） */
+.m13-agent-groups{display:flex;flex-direction:column;gap:22px}
+.m13-tool-head{display:flex;align-items:center;gap:8px;min-height:34px;padding:0 6px 6px;font-size:13px}
+.m13-tool-head>b{font-size:14px;font-weight:600}
+.m13-tool-head .m10-package-version{margin:0}
+.m13-tool-state{color:var(--cx-secondary);font-size:12px}.m13-tool-state.ok{color:var(--success)}
+.m13-tool-state::before{content:'·';margin-right:8px;color:var(--cx-tertiary)}
+.m13-tool-actions{margin-left:auto}
+.m13-tool-hint{display:flex;align-items:center;gap:6px;margin:0 0 8px;padding:8px 10px;border-radius:9px;background:var(--surface);font-size:12px;color:var(--cx-secondary)}
+.m13-tool-hint.muted{background:transparent;border-top:1px solid var(--border);border-radius:0;padding:12px 6px;margin:0}
+.m13-tool-hint code{font-size:12px;padding:0 4px;border-radius:4px;background:var(--hover)}
+.m13-agent-icon.sm{flex:0 0 28px;width:28px;height:28px}
+.m13-agent-item{min-height:54px;padding:9px 6px}
+.m13-agent-item.dim .m13-agent-icon,.m13-agent-item.dim .m13-cap-main b{opacity:.55}
+.m13-home-toggle{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--cx-secondary);flex-shrink:0}
+.m13-switch:disabled{opacity:.5;cursor:default}
+.m13-avail-tag.untested{color:var(--cx-tertiary)}.m13-avail-tag.bad{color:#a65a0b}
+.m13-fit{display:inline-flex;align-items:center;gap:6px;flex-shrink:0}.m13-fit-label{font-size:12px;color:var(--cx-tertiary);margin-right:2px}
+.m13-fit-line{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.m13-toolchip.off{background:transparent;border:1px dashed var(--border-strong);color:var(--cx-tertiary)}.m13-toolchip.off .m13-icon{opacity:.45}
+.m13-toolchip svg.lucide{color:var(--success)}.m13-dash{color:var(--cx-tertiary)}
+.m13-steps{display:flex;gap:6px;list-style:none;margin:0 0 14px;padding:0;font-size:12px;color:var(--cx-tertiary)}
+.m13-steps li{display:flex;align-items:center;gap:6px}.m13-steps li+li::before{content:'';width:18px;height:1px;background:var(--border-strong);margin-right:2px}
+.m13-steps i{font-style:normal;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border-strong);font-size:11px}
+.m13-steps li.on{color:var(--cx-secondary)}.m13-steps li.on i{border-color:var(--primary);color:var(--primary)}.m13-steps li.cur{color:var(--cx-text);font-weight:500}.m13-steps li.cur i{background:var(--primary);color:#fff}
+.m13-fetched{margin-top:4px}.m13-fetched .m13-sub span{font-weight:400;color:var(--cx-tertiary);font-size:12px;margin-left:8px}
+.m13-cat-foot{margin-top:14px}
+.m13-incompat{display:flex;align-items:center;gap:6px}
+.m13-sub-row{display:flex;align-items:center;gap:10px}.m13-sub-row .m13-link{margin-left:auto;font-weight:400}
+.m13-table.matrix>div{grid-template-columns:minmax(0,1fr) 60px 150px 150px}
+.m13-th-tool{display:inline-flex;align-items:center;gap:5px}
+.m13-cell{display:inline-flex;align-items:center;gap:6px}.m13-cell .m13-link{font-size:12px}
+.m13-cell-na{color:var(--cx-tertiary)}
+.m13-cell-name{display:inline-flex;align-items:center;gap:6px;min-width:0}
+.m13-star{color:#e0a100;fill:#e0a100}
+.m13-gen-list{list-style:none;margin:0 0 10px;padding:0;border-top:1px solid var(--border)}
+.m13-gen-list li{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--border);font-size:13px}
+.m13-gen-list b{font-weight:500}.m13-gen-list small{color:var(--cx-secondary);font-size:12px}
+.m13-regen{margin:0 8px 6px 0}
+.m13-icon.image{flex-shrink:0}
+:root[data-theme=dark] .m13-icon.image{box-shadow:0 0 0 1px #ffffff1f}
+@media (max-width:760px){.m13-fit-label{display:none}.m13-table.matrix>div{grid-template-columns:minmax(0,1fr) 110px 110px}.m13-table.matrix>div>span:nth-child(2){display:none}.m13-agent-row{flex-wrap:wrap}}
+.m13-info.compact dd>code{display:inline;margin-right:8px}
+.m13-tool-checks{margin:0 0 0 6px;gap:4px 10px}
+@media (max-width:900px){.m13-tool-checks span:not(.warn){display:none}}
+.m13-live-tag{display:block;color:#2f63c4;font-size:11px}:root[data-theme=dark] .m13-live-tag{color:#8db3f5}
+.m13-probe-line{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.m13-probe-line span{display:inline-flex;align-items:center;gap:3px}.m13-probe-line .ok{color:var(--success)}.m13-probe-line .no{color:var(--cx-tertiary)}
+/* P0.13：智能体平铺可排序；新建智能体三步联动；供应商详情页签（需求补记 5） */
+.m13-sortable .m13-agent-item{gap:10px;padding-left:2px}
+.m13-grip{display:inline-flex;color:var(--cx-tertiary);cursor:grab;opacity:.5;flex-shrink:0}.m13-agent-item:hover .m13-grip{opacity:1}
+.m13-agent-item.dragging{opacity:.45}.m13-agent-item.drop-target{box-shadow:inset 0 2px 0 var(--primary)}
+.m13-agent-badge{position:absolute;right:-4px;bottom:-4px;border-radius:4px;box-shadow:0 0 0 2px var(--bg);display:inline-flex;background:var(--bg)}
+.m13-step{padding:4px 0 14px;border-bottom:1px solid var(--border);margin-bottom:12px}.m13-step:last-child{border-bottom:0;margin-bottom:0}
+.m13-step-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:0 0 10px}
+.m13-step-h i{font-style:normal;width:18px;height:18px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center}
+.m13-step-h small{font-weight:400;color:var(--cx-tertiary);font-size:12px}
+.m13-agent-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.m13-agent-card{position:relative;display:flex;align-items:center;gap:9px;text-align:left;padding:9px 10px;border:1px solid var(--border);border-radius:10px;font-size:13px}
+.m13-agent-card>span{min-width:0}.m13-agent-card b{display:block;font-weight:500}.m13-agent-card small{display:block;color:var(--cx-secondary);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m13-agent-card:hover:not(:disabled){background:var(--surface)}.m13-agent-card.selected{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.m13-agent-card:disabled{opacity:.5;cursor:default}.m13-card-check{position:absolute;top:8px;right:8px;color:var(--primary)}
+.m13-prov-list{display:flex;flex-direction:column;gap:4px}
+.m13-prov-opt{display:flex;align-items:center;gap:10px;text-align:left;padding:8px 10px;border:1px solid transparent;border-radius:10px;font-size:13px;width:100%}
+.m13-prov-opt>span:last-child{min-width:0;flex:1}.m13-prov-opt b{display:flex;align-items:center;gap:6px;font-weight:500}.m13-prov-opt small{display:block;color:var(--cx-secondary);font-size:12px}
+.m13-prov-opt small code{font-size:11.5px;padding:0 3px;border-radius:4px;background:var(--hover)}
+button.m13-prov-opt:hover{background:var(--surface)}.m13-prov-opt.selected{border-color:var(--primary);background:var(--surface)}
+.m13-prov-opt.disabled{opacity:.55}
+.m13-radio-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border-strong);flex-shrink:0;position:relative}
+.m13-prov-opt.selected .m13-radio-dot{border-color:var(--primary)}.m13-prov-opt.selected .m13-radio-dot::after{content:'';position:absolute;inset:2.5px;border-radius:50%;background:var(--primary)}
+.m13-prov-opt.disabled .m13-radio-dot{border-style:dashed}
+.m13-incompat-list summary{cursor:pointer;font-size:12px;color:var(--cx-secondary);padding:6px 10px}
+.m13-new-agent-btns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 6px}
+.m13-ptabs{margin:0 0 14px}
+@media (max-width:760px){.m13-agent-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.m13-new-agent-btns{grid-template-columns:1fr}}
+/* P0.14：模型多选；默认智能体固定第一 */
+.m13-field-note{display:block;font-weight:400;color:var(--cx-tertiary);font-size:12px;margin-top:2px}
+.m13-model-checks{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.m13-model-check{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;border-top:1px solid var(--border)}.m13-model-check:first-child{border-top:0}
+.m13-model-check.on{background:var(--surface)}
+.m13-model-check label{display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer}.m13-mc-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m13-mc-default{min-width:64px;text-align:right}.m13-mc-star{display:inline-flex;align-items:center;gap:3px;color:#b58100;font-size:12px}.m13-mc-star svg{fill:#e0a100;color:#e0a100}
+.m13-more-models{color:var(--cx-tertiary)}
+.m13-grip.locked{cursor:default;opacity:.2!important}
+.m13-model-check input[type=checkbox]{width:auto;flex:0 0 auto;padding:0;margin:0;border-radius:3px}
+.m13-model-check label{justify-content:flex-start;text-align:left}.m13-model-check .m13-mc-name{flex:1;min-width:0}
+/* P0.15：已有智能体的选项；完成页模型列表 */
+.m13-prov-opt.exists{opacity:1}.m13-prov-opt.exists>span:not(.m13-radio-dot) b,.m13-prov-opt.exists .m13-icon{opacity:.6}.m13-prov-opt.exists .m13-link{flex-shrink:0}
+.m13-table.done-models>div{grid-template-columns:minmax(0,1fr) 60px repeat(2,110px)}
+/* P0.15：新建弹窗第 1 步下的本机检测行（需求 5.1） */
+.m13-tool-status{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px;font-size:12px;color:var(--cx-secondary)}
+.m13-ts-label{color:var(--cx-tertiary)}.m13-ts-item{display:inline-flex;align-items:center;gap:8px}.m13-ts-item b{font-weight:500;color:var(--cx-text)}
+.m13-ts-item .m13-checks{margin:0;gap:4px 8px}.m13-ts-item .warn{display:inline-flex;align-items:center;gap:3px;color:#a65a0b}

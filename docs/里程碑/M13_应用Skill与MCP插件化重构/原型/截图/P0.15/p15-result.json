@@ -1,0 +1,177 @@
+{
+ "results": {
+  "列表平铺、和首页下拉同顺序（隐藏的不出现）；菜单没有“复制”": {
+   "pass": true,
+   "detail": {
+    "n0": [
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Codex · DeepSeek",
+     "Codex · Magpie",
+     "CC-rj"
+    ],
+    "home": [
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Codex · DeepSeek",
+     "CC-rj"
+    ],
+    "m0": [
+     "设为默认",
+     "编辑",
+     "下移",
+     "删除"
+    ]
+   }
+  },
+  "默认规则：隐藏的不能设为默认；设为默认即排第一且不能移动；拖到它上方时放在它后面；首页同步": {
+   "pass": true,
+   "detail": {
+    "hid": [
+     "编辑",
+     "上移",
+     "下移",
+     "删除"
+    ],
+    "n1": [
+     "Codex · DeepSeek",
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Codex · Magpie",
+     "CC-rj"
+    ],
+    "dm": [
+     "编辑",
+     "删除"
+    ],
+    "n2": [
+     "Codex · DeepSeek",
+     "CC-rj",
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Codex · Magpie"
+    ],
+    "home": [
+     "Codex · DeepSeek",
+     "CC-rj",
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek"
+    ]
+   }
+  },
+  "新建 Claude Code：订阅、DeepSeek 已有智能体，显示“已有…编辑它”不可选；默认选 Magpie，推荐模型已勾选，名称自动；没有运行说明与高级设置；暂不支持的用官方图标": {
+   "pass": true,
+   "detail": {
+    "exist": [
+     "rc-cc-login",
+     "rc-cc-ds"
+    ],
+    "sel": "Magpie",
+    "ck": [
+     "claude-sonnet-5-5"
+    ],
+    "nm": "Claude Code · Magpie",
+    "extras": [
+     0,
+     0
+    ],
+    "icons": [
+     "/assets/m13-agent-icons/claude.png",
+     "/assets/m13-agent-icons/openai-white.svg",
+     "/assets/m13-agent-icons/opencode.png",
+     "/assets/m13-agent-icons/zcode.png",
+     "/assets/m13-agent-icons/pi.svg",
+     "/assets/m13-agent-icons/dsh.png"
+    ]
+   }
+  },
+  "名称不能重复：提示并禁止创建": {
+   "pass": true,
+   "detail": {
+    "dupMsg": "名称已被“Codex · DeepSeek”使用，请换一个。",
+    "dis": true
+   }
+  },
+  "点“编辑它”打开已有的 Claude Code · DeepSeek，可勾选更多模型": {
+   "pass": true,
+   "detail": {
+    "t5": "编辑智能体|Claude Code · DeepSeek",
+    "ck5": [
+     "deepseek-v4-pro",
+     "deepseek-v4-flash"
+    ]
+   }
+  },
+  "创建 Claude Code · Magpie（两个模型）后，再新建时 Magpie 也变成“已有”，第 3 步提示编辑已有的或添加供应商": {
+   "pass": true,
+   "detail": {
+    "t6": "已创建“Claude Code · Magpie”，已加到列表末尾，可拖动调整顺序",
+    "n6": [
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Codex · DeepSeek",
+     "Codex · Magpie",
+     "CC-rj",
+     "Claude Code · Magpie"
+    ],
+    "exist7": [
+     "订阅",
+     "DeepSeek",
+     "Magpie"
+    ],
+    "msg7": "Claude Code 的订阅和已添加的供应商都已经有智能体了。想用更多模型，点第 2 步里的“编辑它”勾选；或添加新的供应商。"
+   }
+  },
+  "Codex：订阅未登录置灰、DeepSeek 与 Magpie 已有，不能创建": {
+   "pass": true,
+   "detail": {
+    "cx": "订阅 / Codex 未登录。在终端运行 codex 登录后即可选择 / DeepSeek / 已有“Codex · DeepSeek”，同一组合只能有一个；想用更多模型请编辑它 / 编辑它 / Magpie / 已有“Codex · Magpie”，同一组合只能有一个；想用更多模型请编辑它 / 编辑它 / 添加供应商",
+    "cdis": true
+   }
+  },
+  "完成页只列模型；右下角“创建智能体”在“完成”左边；没有“查看供应商”、没有中间的新建卡片": {
+   "pass": true,
+   "detail": {
+    "foot": [
+     "创建智能体",
+     "完成"
+    ],
+    "rows": 2,
+    "old": [
+     0,
+     0
+    ]
+   }
+  },
+  "“创建智能体”打开新建并预选 Codex 与 OpenAI": {
+   "pass": true,
+   "detail": {
+    "pt": "Codex",
+    "pp": "OpenAI"
+   }
+  },
+  "供应商详情“智能体”页签：两个 Code Agent 都已有时不再给新建按钮，提示去编辑": {
+   "pass": true,
+   "detail": {
+    "nb": 0
+   }
+  },
+  "设置 › 常规不再有“AI 配置”": {
+   "pass": true,
+   "detail": 0
+  },
+  "本机检测（需求 5.1）：新建第 1 步下显示各工具检测项与“重新检测”“自定义路径”；未验证版本提示；未检测到时卡片置灰，自定义路径校验后可用并回到新建": {
+   "pass": true,
+   "detail": {
+    "ts": "本机检测\nClaude Code\n检测到程序\n程序可启动\n版本已验证\n自定义路径…\nCodex\n检测到程序\n程序可启动\n版本已验证\n自定义路径…\n重新检测",
+    "tsU": "Codex\n检测到程序\n程序可启动\n未验证版本 0.167.0，可继续使用\n自定义路径…",
+    "tsM": "Codex\n未检测到\n自定义路径…",
+    "cxDis": true,
+    "pErr": 1,
+    "back": "新建智能体",
+    "cxOk": true
+   }
+  }
+ },
+ "errors": []
+}

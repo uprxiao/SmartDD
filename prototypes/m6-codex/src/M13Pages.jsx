@@ -3,11 +3,19 @@
 // 全部为合成数据；“插入终端引用”只演示交互，不向真实终端写入；导出文件只含合成数据。
 import React, { useState } from 'react';
 import { ArrowRight, Check, Download, FileText, Info, KeyRound, Paperclip, RefreshCw, Sparkles, Server, TriangleAlert, Upload } from 'lucide-react';
-import { DRAFT_STATUS, ZENTAO_ITEMS, ZENTAO_PAGE, SAMPLE_IMPORT, buildExport, connectionSummary, connectionTypesOf, effectiveConnection, importPreview, projectBinding, zentaoDetail } from './m13-model.mjs';
+import { sessionEffect, affectedSessions, DRAFT_STATUS, ZENTAO_ITEMS, ZENTAO_PAGE, SAMPLE_IMPORT, buildExport, connectionSummary, connectionTypesOf, effectiveConnection, importPreview, projectBinding, zentaoDetail } from './m13-model.mjs';
 import { Dialog, Mark, Pill } from './m13-ui.jsx';
 
 // ================= 邮件“草稿”页 =================
-export function MailDrafts({ plugin, store, projects, notify, nav }) {
+/** 插件全局停用时，插件页面不再读取数据（P0.10，需求补记 3 B1）；已有数据保留，启用后照常显示。 */
+function DisabledPage({ plugin, title, togglePlugin }) {
+  return <div className="m13-subpage"><div className="m10-page-head"><div><h1>{title}</h1></div></div>
+    <div className="m13-empty"><Info size={20} /><h3>{plugin.name}插件已停用</h3><p>停用期间不读取数据，也不能插入或发送；已有数据都保留，启用后照常显示。</p><button className="m10-button primary" onClick={() => togglePlugin(plugin)}>启用</button></div></div>;
+}
+
+// 停用判断放在外层组件，避免内层 hooks 数量随启停变化
+export const MailDrafts = props => props.plugin.enabled ? <MailDraftsPage {...props} /> : <DisabledPage plugin={props.plugin} title="草稿" togglePlugin={props.togglePlugin} />;
+function MailDraftsPage({ plugin, store, projects, notify, nav }) {
   const { drafts, setDrafts } = store;
   const [filter, setFilter] = useState('all'), [open, setOpen] = useState(null), [editing, setEditing] = useState(null), [checking, setChecking] = useState(false);
   const hasSender = plugin.connections.some(c => c.type === 'smtp');
@@ -40,12 +48,14 @@ export function MailDrafts({ plugin, store, projects, notify, nav }) {
 }
 
 // ================= 禅道“我的工作”页 =================
-export function ZentaoWork({ plugin, store, projects, tasks, scene, notify, nav }) {
+export const ZentaoWork = props => props.plugin.enabled ? <ZentaoWorkPage {...props} /> : <DisabledPage plugin={props.plugin} title="我的工作" togglePlugin={props.togglePlugin} />;
+function ZentaoWorkPage({ plugin, store, projects, tasks, scene, notify, nav, onTryPrompt }) {
   const { defaults, bindings } = store;
   const [projectId, setProjectId] = useState(projects[0]?.id), [kind, setKind] = useState('bug'), [pages, setPages] = useState({ bug: 1, story: 1 }), [failed, setFailed] = useState(false), [refreshing, setRefreshing] = useState(false), [open, setOpen] = useState(null), [target, setTarget] = useState(null);
   const eff = effectiveConnection(plugin, defaults, bindings, projectId, 'zentao');
   const items = ZENTAO_ITEMS[kind], shown = items.slice(0, pages[kind] * ZENTAO_PAGE), more = shown.length < items.length;
   const running = tasks.filter(t => t.project === projectId && t.status === 'running' && !t.archived);
+  const projectName = projects.find(p => p.id === projectId)?.name || '该项目';
   const item = open && [...ZENTAO_ITEMS.bug, ...ZENTAO_ITEMS.story].find(x => x.kind + x.id === open);
   const next = () => { if (scene === 'zentao-partial' && !failed && pages[kind] === 1) { setFailed(true); return; } setFailed(false); setPages(p => ({ ...p, [kind]: p[kind] + 1 })); };
   return <div className="m13-subpage">
@@ -62,12 +72,13 @@ export function ZentaoWork({ plugin, store, projects, tasks, scene, notify, nav 
         : more ? <button className="m10-button secondary m13-more" onClick={next}>读取下一页</button> : <p className="m13-hint">已显示全部 {items.length} 条。</p>}
     </>}
     {item && (() => { const det = zentaoDetail(item); return <Dialog title={`#${item.id} ${item.title}`} sub={`${item.kind === 'bug' ? 'Bug' : '研发需求'} · ${item.product} · ${item.status}`} wide onClose={() => setOpen(null)}
-      footer={<><button className="m10-button secondary" onClick={() => setOpen(null)}>关闭</button><button className="m10-button primary" disabled={!target} onClick={() => { const t = running.find(r => r.id === target); notify(`已插入任务“${t.title}”的终端输入（演示，未回车）`); setOpen(null); }}>插入终端引用</button></>}>
+      footer={<><button className="m10-button secondary" onClick={() => setOpen(null)}>关闭</button>{running.length ? <button className="m10-button primary" disabled={!target} onClick={() => { const t = running.find(r => r.id === target); notify(`已插入会话“${t.title}”的终端输入（演示，未回车）`); setOpen(null); }}>插入终端引用</button>
+        : <button className="m10-button primary" onClick={() => { setOpen(null); onTryPrompt?.(`禅道${item.kind === 'bug' ? ' Bug' : '研发需求'} #${item.id} ${item.title}：`, projectId); }}>新建会话并插入</button>}</>}>
       <pre className="m13-mail-body">{det.body}</pre>
       {det.attachments.length > 0 && <><h3 className="m13-sub">附件</h3>{det.attachments.map(a => <div key={a} className="m13-row"><span className="m13-rowicon"><Paperclip size={16} /></span><span>{a}<small>合成附件</small></span></div>)}</>}
       <h3 className="m13-sub">历史</h3>{det.history.map(h => <p key={h.at} className="m13-hint">{h.at} · {h.who} · {h.what}</p>)}
-      <h3 className="m13-sub">插入到</h3>{running.length ? <select className="m13-select" value={target || ''} onChange={e => setTarget(e.target.value)}>{running.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}</select> : <p className="m13-hint">该项目没有运行中的任务。先新建任务，再回来插入引用。</p>}
-      <p className="m13-hint">只把引用放进终端输入，不会自动回车；你补充说明后再回车，Agent 会读取这条{item.kind === 'bug' ? ' Bug' : '需求'}。</p>
+      <h3 className="m13-sub">插入到</h3>{running.length ? <select className="m13-select" aria-label="插入到会话" value={target || ''} onChange={e => setTarget(e.target.value)}>{running.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}</select> : <p className="m13-hint">{projectName}没有运行中的会话。可以新建一个会话，引用会放进新会话的输入框。</p>}
+      <p className="m13-hint">{running.length ? `只列出${projectName}运行中的会话（这条 Bug 属于${projectName}所选的禅道，其他项目可能用不同的连接或已关闭禅道）。` : ''}只放进输入框，不会自动回车；你补充说明后再发送，Agent 会读取这条{item.kind === 'bug' ? ' Bug' : '需求'}。</p>
     </Dialog>; })()}
   </div>;
 }
@@ -97,7 +108,8 @@ export function ConnectionDeleteDialog({ plugin, conn, impact, onConfirm, onClos
 
 // ================= AI 配置导入导出 =================
 export function ExportDialog({ providers, configs, onClose, notify }) {
-  const [cfgs, setCfgs] = useState(configs.filter(c => !c.legacy).map(c => c.id)), [provs, setProvs] = useState([]), [withKey, setWithKey] = useState(false), [pass, setPass] = useState(''), [pass2, setPass2] = useState(''), [err, setErr] = useState('');
+  const exportable = configs.filter(c => c.source !== 'login');
+  const [cfgs, setCfgs] = useState(exportable.filter(c => !c.legacy).map(c => c.id)), [provs, setProvs] = useState([]), [withKey, setWithKey] = useState(false), [pass, setPass] = useState(''), [pass2, setPass2] = useState(''), [err, setErr] = useState('');
   const data = buildExport({ providers, configs, selectedConfigs: cfgs, selectedProviders: provs, includeKey: withKey });
   const auto = new Set(configs.filter(c => cfgs.includes(c.id)).map(c => c.provider));
   const toggle = (list, set, id) => set(list.includes(id) ? list.filter(x => x !== id) : [...list, id]);
@@ -107,14 +119,14 @@ export function ExportDialog({ providers, configs, onClose, notify }) {
     if (withKey && pass !== pass2) return setErr('两次输入的口令不一致');
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
     const a = document.createElement('a'); a.href = url; a.download = 'willyou-ai-config.json'; a.click(); URL.revokeObjectURL(url);
-    notify(`已导出 ${data.runConfigs.length} 个 Code Agent、${data.providers.length} 个供应商${withKey ? '（含加密的 Key）' : '（不含 Key）'}`); onClose();
+    notify(`已导出 ${data.runConfigs.length} 个智能体、${data.providers.length} 个供应商${withKey ? '（含加密的 Key）' : '（不含 Key）'}`); onClose();
   };
-  return <Dialog title="导出 Code Agent 配置" sub="生成 JSON 文件，别人导入后可直接使用" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" onClick={go}><Download size={14} />导出</button></>}>
-    <h3 className="m13-sub">Code Agent</h3><div className="m13-checks-list">{configs.map(c => <label key={c.id}><input type="checkbox" checked={cfgs.includes(c.id)} onChange={() => toggle(cfgs, setCfgs, c.id)} />{c.name}<small>{c.legacy ? '高级配置' : ''}</small></label>)}</div>
-    <h3 className="m13-sub">供应商</h3><div className="m13-checks-list">{providers.map(p => <label key={p.id}><input type="checkbox" checked={auto.has(p.id) || provs.includes(p.id)} disabled={auto.has(p.id)} onChange={() => toggle(provs, setProvs, p.id)} />{p.name}<small>{auto.has(p.id) ? '随所选 Code Agent 带上' : ''}</small></label>)}</div>
+  return <Dialog title="导出智能体配置" sub="生成 JSON 文件，别人导入后可直接使用" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" onClick={go}><Download size={14} />导出</button></>}>
+    <h3 className="m13-sub">智能体</h3><div className="m13-checks-list">{exportable.map(c => <label key={c.id}><input type="checkbox" checked={cfgs.includes(c.id)} onChange={() => toggle(cfgs, setCfgs, c.id)} />{c.name}<small>{c.legacy ? '高级配置' : ''}</small></label>)}</div>
+    <h3 className="m13-sub">供应商</h3><div className="m13-checks-list">{providers.map(p => <label key={p.id}><input type="checkbox" checked={auto.has(p.id) || provs.includes(p.id)} disabled={auto.has(p.id)} onChange={() => toggle(provs, setProvs, p.id)} />{p.name}<small>{auto.has(p.id) ? '随所选智能体带上' : ''}</small></label>)}</div>
     <label className="m13-check"><input type="checkbox" checked={withKey} onChange={e => setWithKey(e.target.checked)} />包含 Key（用口令加密，导入时需输入口令）</label>
     {withKey && <div className="m13-tiers"><label className="m13-field"><span>口令（至少 8 个字符）</span><input type="password" value={pass} onChange={e => setPass(e.target.value)} /></label><label className="m13-field"><span>再次输入</span><input type="password" value={pass2} onChange={e => setPass2(e.target.value)} /></label></div>}
-    <p className="m13-hint">不导出工具可执行路径与本机目录；原生登录只导出“使用原有登录”这一设定。{withKey ? '' : '默认不含 Key，文件可以放心分享。'}</p>
+    <p className="m13-hint">不导出工具可执行路径与本机目录；订阅/API 智能体跟随本机 CLI 登录，不导出，对方登录后会自动添加。{withKey ? '' : '默认不含 Key，文件可以放心分享。'}</p>
     {err && <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>{err}</p></div></div>}
   </Dialog>;
 }
@@ -124,12 +136,13 @@ export function ImportDialog({ providers, configs, onImport, onClose }) {
   const file = samples.find(s => s[0] === pick)[2];
   const pv = importPreview(file, { providers, configs });
   const go = () => { if (!pv.ok) return; if (pv.encrypted && pass !== 'demo-pass-8') return setErr('口令不正确，未导入任何内容'); onImport(pv); };
-  return <Dialog title="导入 Code Agent 配置" sub="原型不打开系统文件选择器，请从示例文件中选择" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" disabled={!pv.ok} onClick={go}><Upload size={14} />导入</button></>}>
+  return <Dialog title="导入智能体配置" sub="原型不打开系统文件选择器，请从示例文件中选择" wide onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" disabled={!pv.ok} onClick={go}><Upload size={14} />导入</button></>}>
     <div className="m13-radios">{samples.map(([v, t]) => <label key={v} className={'m13-radio' + (pick === v ? ' selected' : '')}><input type="radio" checked={pick === v} onChange={() => { setPick(v); setErr(''); }} /><span><b>{t}</b></span></label>)}</div>
     {!pv.ok ? <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>{pv.error}</p></div></div> : <>
       <h3 className="m13-sub">将导入</h3>
-      {pv.providers.map(p => <div key={p.id} className="m13-row"><span className="m13-rowicon"><Server size={16} /></span><span>{p.finalName}<small>{p.type === 'native' ? '原有登录' : p.url}</small></span>{p.existsNative ? <Pill>已存在，跳过</Pill> : p.needKey ? <Pill tone="warn">需要填写 Key</Pill> : <Pill tone="ok">含 Key</Pill>}</div>)}
+      {pv.providers.map(p => <div key={p.id} className="m13-row"><span className="m13-rowicon"><Server size={16} /></span><span>{p.finalName}<small>{p.url}</small></span>{p.needKey ? <Pill tone="warn">需要填写 Key</Pill> : <Pill tone="ok">含 Key</Pill>}</div>)}
       {pv.runConfigs.map(c => <div key={c.id} className="m13-row"><span className="m13-rowicon"><Sparkles size={16} /></span><span>{c.finalName}<small>{c.finalName !== c.name ? '已有同名配置，不覆盖' : '新配置'}</small></span></div>)}
+      {pv.skipped > 0 && <p className="m13-hint">文件里有 {pv.skipped} 个订阅/API 智能体，已跳过：它们跟随本机 CLI 登录，登录后会自动添加。</p>}
       {pv.encrypted && <label className="m13-field"><span>口令（演示口令 demo-pass-8）</span><input type="password" value={pass} onChange={e => { setPass(e.target.value); setErr(''); }} /></label>}
       {err && <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>{err}</p></div></div>}
     </>}
@@ -137,25 +150,29 @@ export function ImportDialog({ providers, configs, onImport, onClose }) {
 }
 
 // ================= “WillYou 内置”分组 =================
-export function BuiltinGroup({ store, notify }) {
+export function BuiltinGroup({ store, notify, affect }) {
   const { builtins, setBuiltins } = store;
   return <section className="m13-builtin"><h2 className="m10-section-title">WillYou 内置</h2>
     <div className="m13-cap-list">{builtins.map(b => <div key={b.id} className="m13-cap static">
       <span className="m13-cap-icon">{b.type === 'skill' ? <Sparkles size={16} /> : <Server size={16} />}</span>
       <span className="m13-cap-main"><b>{b.name}<span className="m10-package-version">{b.version}</span></b><small>{b.desc}</small><small className="m13-cap-scope">{b.type === 'skill' ? 'Skill · 随 WillYou 安装到 ~/.agents/skills，所有项目可用' : 'MCP · 每个会话自动提供'}</small></span>
-      <label className="m13-switch-row"><span>{b.enabled ? '已启用' : '已停用'}</span><button role="switch" aria-checked={b.enabled} aria-label={(b.enabled ? '停用 ' : '启用 ') + b.name} className={'m13-switch' + (b.enabled ? ' on' : '')} onClick={() => { setBuiltins(bs => bs.map(x => x.id === b.id ? { ...x, enabled: !x.enabled } : x)); notify(b.enabled ? `${b.name} 已停用：新任务不再加载` : `${b.name} 已启用`); }}><i /></button></label>
+      <label className="m13-switch-row"><span>{b.enabled ? '已启用' : '已停用'}</span><button role="switch" aria-checked={b.enabled} aria-label={(b.enabled ? '停用 ' : '启用 ') + b.name} className={'m13-switch' + (b.enabled ? ' on' : '')} onClick={() => { setBuiltins(bs => bs.map(x => x.id === b.id ? { ...x, enabled: !x.enabled } : x)); notify(b.enabled ? `${b.name} 已停用：${sessionEffect('cap-off', affect('cap', b))}` : `${b.name} 已启用：${sessionEffect('cap-on', affect('cap', b))}`); }}><i /></button></label>
     </div>)}</div></section>;
 }
 
 // ================= 项目页“插件”分区（审核 P05；需求“插件连接与项目使用”） =================
-export function ProjectPlugins({ project, store, nav, notify }) {
+export function ProjectPlugins({ project, store, nav, notify, tasks = [] }) {
   const { plugins, defaults, bindings, setBindings } = store;
   const set = (pid, patch) => setBindings(b => ({ ...b, [pid]: { ...(b[pid] || {}), [project.id]: { ...projectBinding(b, pid, project.id), ...patch } } }));
+  // P0.11：按“内置／外部”页签分开（用户 2026-11-11 提出）
+  const [tab, setTab] = useState('builtin');
+  const groups = { builtin: plugins.filter(p => p.builtin), external: plugins.filter(p => !p.builtin) };
   return <div className="m13-shell m13-project-plugins">
-    <div className="settings-section-head"><h2>插件</h2><p>插件装好后所有项目默认可用。连接在插件详情里配置；这里可以关闭插件，或为本项目单独选择连接。</p></div>
-    {plugins.map(pl => { const b = projectBinding(bindings, pl.id, project.id), types = connectionTypesOf(pl); return <div key={pl.id} className="m13-pp-card">
+    <div className="m10-tabs m13-pp-tabs" role="tablist" aria-label="插件类型">{[['builtin', '内置'], ['external', '外部']].map(([v, t]) => <button key={v} role="tab" aria-selected={tab === v} onClick={() => setTab(v)}>{t}<span className="m13-count">{groups[v].length}</span></button>)}</div>
+    {tab === 'external' && !groups.external.length && <div className="m13-empty"><Info size={20} /><h3>还没有安装外部插件</h3><p>在“插件”页通过“添加”安装后，会出现在这里。</p><button className="m10-button secondary" onClick={() => nav('m13/plugins')}>去插件页</button></div>}
+    {groups[tab].map(pl => { const b = projectBinding(bindings, pl.id, project.id), types = connectionTypesOf(pl); return <div key={pl.id} className="m13-pp-card">
       <div className="m13-pp-head"><Mark id={pl.id} name={pl.name} size={28} /><span className="m13-cap-main"><b>{pl.name}{!pl.enabled && <Pill tone="warn">插件已停用</Pill>}</b><small>{pl.tagline}</small></span>
-        <label className="m13-switch-row"><span>{b.disabled ? '本项目已关闭' : '本项目可用'}</span><button role="switch" aria-checked={!b.disabled} aria-label={(b.disabled ? '启用 ' : '关闭 ') + pl.name} className={'m13-switch' + (b.disabled ? '' : ' on')} onClick={() => { set(pl.id, { disabled: !b.disabled }); notify(b.disabled ? `${pl.name} 已在本项目启用` : `${pl.name} 已在本项目关闭：新任务不再加载它`); }}><i /></button></label></div>
+        <label className="m13-switch-row"><span>{b.disabled ? '本项目已关闭' : '本项目可用'}</span><button role="switch" aria-checked={!b.disabled} aria-label={(b.disabled ? '启用 ' : '关闭 ') + pl.name} className={'m13-switch' + (b.disabled ? '' : ' on')} onClick={() => { set(pl.id, { disabled: !b.disabled }); const n = affectedSessions('project', project.id, tasks); notify(!pl.enabled ? `${pl.name} 已在本项目${b.disabled ? '启用' : '关闭'}；插件当前已全局停用，全局启用后按本项目设置生效` : b.disabled ? `${pl.name} 已在本项目启用：${sessionEffect('project-on', n)}` : `${pl.name} 已在本项目关闭：${sessionEffect('project-off', n)}`); }}><i /></button></label></div>
       {!b.disabled && types.map(def => { const eff = effectiveConnection(pl, defaults, bindings, project.id, def.type), list = pl.connections.filter(c => c.type === def.type), dflt = list.find(c => c.id === defaults[pl.id]?.[def.type]); return <div key={def.type} className="m13-pp-slot">
         <span className="m13-pp-label">{def.label}</span>
         {list.length ? <select className="m13-select" aria-label={pl.name + def.label} value={b[def.type]?.mode === 'custom' ? b[def.type].connectionId : 'follow'} onChange={e => { const v = e.target.value; set(pl.id, { [def.type]: v === 'follow' ? { mode: 'follow' } : { mode: 'custom', connectionId: v } }); notify(v === 'follow' ? '已改为跟随全局默认' : '已为本项目单独选择连接；运行中的任务继续用原连接'); }}>
@@ -164,6 +181,6 @@ export function ProjectPlugins({ project, store, nav, notify }) {
         {eff.connection && <small className="m13-hint">生效：{eff.connection.name}（{eff.mode === 'custom' ? '本项目个性化' : '跟随全局'}）</small>}
       </div>; })}
     </div>; })}
-    <p className="m13-hint">切换连接后，正在运行的任务继续使用启动时的连接，新建或恢复的任务使用新连接。</p>
+    <p className="m13-hint m13-pp-foot">插件默认对所有项目可用，连接在插件详情里配置；这里可关闭插件或为本项目单独选择连接。切换连接后，运行中的任务仍用原连接，新建或恢复的任务用新连接。</p>
   </div>;
 }

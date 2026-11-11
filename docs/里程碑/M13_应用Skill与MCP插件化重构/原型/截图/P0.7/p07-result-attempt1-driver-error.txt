@@ -1,0 +1,4 @@
+attempt1（2026-11-11）：p07-check 首轮两次失败，均为驱动／环境问题，非原型缺陷：
+1) 页面 500：上一步用 perl 写入跳转规则时，正则中的 $/ 被 perl 当作换行变量展开，App.jsx 第 302 行被拆成两行导致语法错误；已删除多出的半行，Vite 恢复正常。
+2) locator('.rail-link.selected') 超时：左侧图标栏的选中状态用 aria-current="page" 表示，没有 selected 类；驱动改用 [aria-current=page] 后通过。
+原驱动副本：p07-check.attempt1.mjs（会话临时目录，未入库）。

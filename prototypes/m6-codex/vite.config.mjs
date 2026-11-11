@@ -19,6 +19,13 @@ export default defineConfig({
     warmup: {
       clientFiles: ["./src/main.jsx"],
     },
+    // M13 P0.12（用户 2026-11-11 要求）：SMG 供应商在原型中真实接入。浏览器直连局域网网关会被跨域拦截，
+    // 由开发服务器只转发到这一个地址；Key 由用户在页面里填写，只随请求头转发，不写入任何文件。
+    // 内网地址不入库（用户 2026-11-11 决定）：启动时用环境变量 M13_SMG_URL 指定，例如 M13_SMG_URL=http://<SMG 内网地址> npx vite …
+    proxy: process.env.M13_SMG_URL ? {
+      '/__m13-live/smg': { target: process.env.M13_SMG_URL, changeOrigin: true, rewrite: path => path.replace(/^\/__m13-live\/smg/, '') },
+    } : {},
   },
+  define: { __M13_SMG_URL__: JSON.stringify(process.env.M13_SMG_URL || '') },
   plugins: [react()],
 });

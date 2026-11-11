@@ -1,0 +1,264 @@
+{
+ "results": {
+  "页签只有智能体/供应商；按工具分组，分组标题显示版本与登录状态；订阅排第一并为默认；Codex 未登录显示登录提示": {
+   "pass": true,
+   "detail": {
+    "tabs": [
+     "智能体6",
+     "供应商2"
+    ],
+    "heads": [
+     "Claude Code\nv2.1.322\n已登录订阅",
+     "Codex\nv0.166.0\n未登录",
+     "高级配置\n从旧 AI 配置迁移"
+    ],
+    "cc": [
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Claude Code · Magpie"
+    ],
+    "cx": [
+     "Codex · DeepSeek",
+     "Codex · Magpie"
+    ],
+    "hint": "在终端运行\ncodex\n登录后，点“重新检测”即可添加订阅或 API 智能体。",
+    "mpOff": "false",
+    "defDisabled": true
+   }
+  },
+  "使用官方图标：Claude、Codex(OpenAI 标志)、DeepSeek、Magpie": {
+   "pass": true,
+   "detail": [
+    "/assets/m13-agent-icons/claude.png",
+    "/assets/m13-agent-icons/deepseek.png",
+    "/assets/m13-agent-icons/magpie.png",
+    "/assets/m13-agent-icons/openai-white.svg"
+   ]
+  },
+  "首页智能体选择只列“首页显示”打开的（Claude Code · Magpie 不在）": {
+   "pass": true,
+   "detail": [
+    "Claude Code · 订阅",
+    "Claude Code · DeepSeek",
+    "Codex · DeepSeek",
+    "Codex · Magpie",
+    "CC-rj"
+   ]
+  },
+  "打开首页显示后首页出现": {
+   "pass": true,
+   "detail": {
+    "t2": "“Claude Code · Magpie”会在首页显示",
+    "home": [
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Claude Code · Magpie",
+     "Codex · DeepSeek",
+     "Codex · Magpie",
+     "CC-rj"
+    ]
+   }
+  },
+  "设为默认：默认只有一个，默认的首页开关不可关": {
+   "pass": true,
+   "detail": {
+    "t3": "“Codex · DeepSeek”已设为默认，首页优先选择它"
+   }
+  },
+  "订阅智能体不能删除，也没有“复制并改模型”": {
+   "pass": true,
+   "detail": [
+    "编辑"
+   ]
+  },
+  "供应商列表显示“适用”工具": {
+   "pass": true,
+   "detail": "适用\nClaude Code\nCodex"
+  },
+  "详情有模型 × 工具可用性表；按工具分别记录；★ 标默认模型；列出由它生成的智能体": {
+   "pass": true,
+   "detail": {
+    "th": "模型上下文ClaudeCodeCodex",
+    "flashCodex": "untested",
+    "flashCC": "ok",
+    "legacy": "bad",
+    "stars": 2,
+    "gen": "Claude Code · DeepSeek\nDeepSeek V4 Pro\nCodex · DeepSeek\nDeepSeek V4 Pro"
+   }
+  },
+  "单个测试：未测试→可用；原来不可用的重测仍不可用": {
+   "pass": true,
+   "detail": {
+    "after": "ok"
+   }
+  },
+  "编辑：默认模型只列这个工具可用或未测试的，推荐标出；不可用的隐藏并说明": {
+   "pass": true,
+   "detail": {
+    "mgBad": "bad",
+    "opts": [
+     "gpt-5.5 · 可用 · 推荐"
+    ],
+    "hid": "1 个模型在 Codex 中不可用，已隐藏；可在供应商详情里重新测试。"
+   }
+  },
+  "Claude Code 高级设置一行说明各档位默认使用默认模型": {
+   "pass": true,
+   "detail": "Claude Code 各档位默认使用默认模型，一般不需要修改；只能选 DeepSeek 中可用或未测试的模型。"
+  },
+  "复制并改模型：生成同工具同供应商的另一个智能体": {
+   "pass": true,
+   "detail": {
+    "t5": "已创建“Codex · DeepSeek Flash”",
+    "cx2": [
+     "Codex · DeepSeek",
+     "Codex · Magpie",
+     "Codex · DeepSeek Flash"
+    ]
+   }
+  },
+  "接入目录：三步；没有订阅组；有 Anthropic、OpenAI 官方": {
+   "pass": true,
+   "detail": {
+    "groups": [
+     "供应商\n模型服务的 API，Key 由 WillYou 加密保存",
+     "自定义\n目录里没有的服务"
+    ],
+    "vend": [
+     "Anthropic",
+     "OpenAI",
+     "DeepSeek",
+     "GLM（智谱）",
+     "SMG",
+     "UltraCloud",
+     "Magpie"
+    ],
+    "steps": [
+     "1\n选择",
+     "2\n填写 Key 并获取模型",
+     "3\n完成"
+    ]
+   }
+  },
+  "接入 GLM：获取模型后接入，只生成 Claude Code · GLM（推荐模型已测可用），Codex 说明原因未生成": {
+   "pass": true,
+   "detail": {
+    "fetched": "已获取 2 个模型取消勾选的不会接入",
+    "done": "GLM（智谱） 已接入\n适用 Claude Code\n已生成 1 个智能体，已在首页显示\nClaude Code · GLM\n默认模型 GLM-5\n可用\n\nCodex：Codex 需要 OpenAI Responses 兼容接口，未生成。\n\n已用推荐模型为每个工具各测试一次（最小调用，可能产生少量费用）。其他模型可在供应商详情中测试，或在编辑智能体时更换。"
+   }
+  },
+  "接入 OpenAI 官方：生成 Codex · OpenAI": {
+   "pass": true,
+   "detail": "OpenAI 已接入\n适用 Codex\n已生成 1 个智能体，已在首页显示\nCodex · OpenAI\n默认模型 gpt-5.5\n可用\n\nClaude Code：Claude Code 需要 Anthropic Messages 兼容接口，未生成。\n\n已用推荐模型为每个工具各测试一次（最小调用，可能产生少量费用）。其他模型可在供应商详情中测试，或在编辑智能体时更换。"
+  },
+  "推荐模型测试失败：改用下一个候选并标未测试": {
+   "pass": true,
+   "detail": "A\nAcme 已接入\n适用 Claude Code、Codex\n已生成 2 个智能体，已在首页显示\nA\nClaude Code · Acme\n推荐模型 acme-coder-large 测试失败，已改用 acme-coder-small（未测试）\n推荐模型不可用\nA\nCodex · Acme\n默认模型 acme-coder-large\n可用\n\n已用推荐模型为每个工具各测试一次（最小调用，可能产生少量费用）。其他模型可在供应商详情中测试，或在编辑智能体时更换。"
+  },
+  "CLI 改用 API Key 登录：改名为“Claude Code · API”，不生成第二个": {
+   "pass": true,
+   "detail": {
+    "t7": "Claude Code 改用 API Key 登录，“Claude Code · 订阅”已改名为“Claude Code · API”",
+    "cc7": [
+     "Claude Code · API",
+     "Claude Code · DeepSeek",
+     "Claude Code · Magpie",
+     "Claude Code · GLM",
+     "Claude Code · Acme"
+    ],
+    "h7": "Claude Code\nv2.1.322\n已登录（API Key）"
+   }
+  },
+  "退出登录：保留并标“已退出登录”，不在首页显示，默认交给下一个": {
+   "pass": true,
+   "detail": {
+    "t8": "Claude Code 已退出登录：“Claude Code · API”保留并标为已退出登录，不在首页显示；默认改为“Claude Code · DeepSeek”",
+    "home": [
+     "Claude Code · DeepSeek",
+     "Claude Code · Magpie",
+     "Codex · DeepSeek",
+     "Codex · Magpie",
+     "CC-rj",
+     "Codex · DeepSeek Flash",
+     "Claude Code · GLM",
+     "Codex · OpenAI",
+     "Claude Code · Acme",
+     "Codex · Acme"
+    ]
+   }
+  },
+  "重新登录（订阅）：恢复并改回订阅": {
+   "pass": true,
+   "detail": "Claude Code 已重新登录，“Claude Code · API”已恢复"
+  },
+  "Codex 登录订阅后自动添加“Codex · 订阅”，排第一": {
+   "pass": true,
+   "detail": {
+    "t10": "检测到 Codex 已登录订阅，已添加“Codex · 订阅”",
+    "cx10": [
+     "Codex · 订阅",
+     "Codex · DeepSeek",
+     "Codex · Magpie",
+     "Codex · DeepSeek Flash",
+     "Codex · OpenAI",
+     "Codex · Acme"
+    ]
+   }
+  },
+  "没有检测到 Codex：Codex 智能体变灰、不在首页": {
+   "pass": true,
+   "detail": {
+    "t11": "没有检测到 Codex：它的智能体暂时不能使用，也不在首页显示",
+    "dim": 6,
+    "home": [
+     "Claude Code · 订阅",
+     "Claude Code · DeepSeek",
+     "Claude Code · Magpie",
+     "CC-rj",
+     "Claude Code · GLM",
+     "Claude Code · Acme"
+    ]
+   }
+  },
+  "重新检测到 Codex：为缺少的供应商补生成 Codex 智能体，默认不在首页显示": {
+   "pass": true,
+   "detail": {
+    "t12": "检测到 Codex：已为 1 个供应商补上 Codex 智能体，默认不在首页显示；Codex 已退出登录：“Codex · 订阅”保留并标为已退出登录，不在首页显示",
+    "re": "false"
+   }
+  },
+  "删除供应商：先列出将一起删除的智能体，删除后这些智能体消失": {
+   "pass": true,
+   "detail": {
+    "conf": "删除 DeepSeek？\n\n供应商与它的 Key 会一并删除\n\n由它生成的 3 个智能体会一起删除：\n\nClaude Code · DeepSeek\n默认\nCodex · DeepSeek\nCodex · DeepSeek Flash\n\n“Claude Code · DeepSeek”是默认智能体，删除后默认改为首页显示中的下一个。\n\n使用过这些智能体的历史任务恢复时会提示重新选择，不会悄悄换成别的账号。\n\n取消\n删除",
+    "t13": "已删除 DeepSeek 和 3 个智能体；默认改为“Claude Code · 订阅”"
+   }
+  },
+  "只有 OpenAI 兼容的供应商：可保存、不生成智能体，列表两个工具都标“—”": {
+   "pass": true,
+   "detail": {
+    "doneU": "U\nUltraCloud 已接入\n两个工具都不能直接使用，可经 Magpie 等网关接入\n\nClaude Code：Claude Code 需要 Anthropic Messages 兼容接口，未生成。\n\nCodex：Codex 需要 OpenAI Responses 兼容接口，未生成。\n\n这个供应商只提供 OpenA",
+    "ucFit": 2
+   }
+  },
+  "接入 Anthropic 官方：只生成 Claude Code · Anthropic，默认 Claude Sonnet 5.5": {
+   "pass": true,
+   "detail": "Anthropic 已接入\n适用 Claude Code\n已生成 1 个智能体，已在首页显示\nClaude Code · Anthropic\n默认模型 Claude Sonnet 5.5\n可用\n\nCodex：Codex 需要 OpenAI Responses 兼容接口，未生成。\n\n已用推荐模型为每个工具各测试一次（最小调用，可能产生少量费用）。其他模型可在供应商详情中测试，或在编辑智能体时更换。"
+  },
+  "Magpie 未运行：接入时获取模型报错，不生成": {
+   "pass": true,
+   "detail": "Magpie 未运行：无法连接 http://127.0.0.1:3425。请先打开 Magpie。"
+  },
+  "窄窗口 760px 无横向滚动": {
+   "pass": true,
+   "detail": {
+    "ovf": false
+   }
+  },
+  "图标资源全部加载成功": {
+   "pass": true,
+   "detail": []
+  }
+ },
+ "errors": []
+}

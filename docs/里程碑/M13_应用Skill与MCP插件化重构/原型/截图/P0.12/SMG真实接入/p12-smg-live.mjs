@@ -1,0 +1,37 @@
+// 归档说明：SMG 内网地址不入库（用户 2026-11-11 决定），已替换为占位 <SMG 内网地址>；运行时使用实际地址。
+// 原型 P0.12 SMG 真实接入走查（用户 2026-11-11 提供地址与 Key）。Key 只从环境变量 SMG_KEY 读取，不打印、不写入结果。
+import { createRequire } from 'node:module';
+const { chromium } = createRequire('/Users/liubu/.npm/_npx/0b9ff77863cb6e9f/node_modules/')('playwright-core');
+const out = process.argv[2], KEY = process.env.SMG_KEY; if (!KEY) throw new Error('缺 SMG_KEY');
+const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
+const p = await (await b.newContext({ viewport: { width: 1512, height: 949 }, locale: 'zh-CN' })).newPage();
+const errors = []; p.on('pageerror', e => errors.push(e.message)); p.on('console', m => m.type() === 'error' && errors.push(m.text().replaceAll(KEY, '<KEY>')));
+const R = {}; const ok = (k, v, d) => { R[k] = { pass: !!v, detail: d }; };
+const dlg = () => p.locator('.m13-dialog'); const shot = n => p.screenshot({ path: `${out}/${n}.png` });
+const leak = async () => p.evaluate(k => document.documentElement.outerHTML.includes(k) || [...document.querySelectorAll('input')].some(i => i.type !== 'password' && i.value.includes(k)), KEY);
+await p.goto('http://127.0.0.1:4176/?preview=m13#settings/ai/configs'); await p.waitForTimeout(900);
+await p.getByRole('button', { name: '接入供应商' }).first().click(); const card = await dlg().locator('.m13-cat-item').filter({ hasText: 'SMG' }).innerText(); await shot('s01-catalog');
+await dlg().locator('.m13-cat-item').filter({ hasText: 'SMG' }).click(); const form = await dlg().locator('.m13-form-grid').innerText();
+await dlg().getByLabel('SMG API Key').fill('decoy-key-0000'); await dlg().getByRole('button', { name: '获取模型' }).click(); await dlg().locator('.m13-alert.danger').waitFor({ timeout: 20000 });
+const bad = await dlg().locator('.m13-alert.danger').innerText(); await shot('s02-bad-key');
+ok('SMG 卡片与表单：适用 Claude Code，地址为用户提供的网关，标“原型中真实接入”；错误 Key 显示网关返回的 401', card.includes('适用 Claude Code') && card.includes('原型中真实接入') && form.includes('http://<SMG 内网地址>') && bad.includes('401'), { card, bad });
+await dlg().getByLabel('SMG API Key').fill(KEY); await dlg().getByRole('button', { name: '获取模型' }).click(); await dlg().locator('.m13-fetched').waitFor({ timeout: 20000 });
+const fetched = await dlg().locator('.m13-fetched h3').innerText(); const names = await dlg().locator('.m13-fetched label').allInnerTexts(); await shot('s03-models');
+ok('真实获取模型列表', /已获取 \d+ 个模型/.test(fetched) && names.length > 5, { fetched, names });
+const t0 = Date.now(); await dlg().getByRole('button', { name: '接入' }).click(); await dlg().locator('.m13-done').waitFor({ timeout: 90000 });
+const done = await dlg().locator('.m13-done').innerText(); const ms = Date.now() - t0; await shot('s04-done');
+ok('接入：真实探测接口（Anthropic、OpenAI 兼容有，Responses 无）；用推荐模型做工具调用测试；只生成 Claude Code · SMG', done.includes('Claude Code · SMG') && !done.includes('Codex · SMG') && done.includes('Codex：') && /流式与工具调用正常|测试失败/.test(done), { done, ms });
+await dlg().getByRole('button', { name: '完成' }).click(); await p.waitForTimeout(300);
+const row = await p.locator('.m13-agent-item').filter({ hasText: 'Claude Code · SMG' }).innerText(); await shot('s05-agents');
+await p.getByRole('tab', { name: /供应商/ }).click(); await p.waitForTimeout(200); const fit = await p.locator('[data-provider=smg]').innerText();
+await p.locator('[data-provider=smg]').click(); await p.waitForTimeout(300); await shot('s06-detail');
+const glm = dlg().locator('[data-model="glm-5"] .m13-cell[data-tool=claude]'); await glm.getByRole('button', { name: '测试' }).click();
+await p.waitForFunction(() => document.querySelector('[data-model="glm-5"] .m13-cell[data-tool=claude]')?.dataset.avail !== 'testing', null, { timeout: 60000 });
+const glmA = await glm.getAttribute('data-avail'); const glmT = await glm.getAttribute('title'); const codexNA = await dlg().locator('[data-model="glm-5"] .m13-cell-na').count(); await shot('s07-detail-tested');
+ok('详情：Codex 列为“—”；单个模型真实测试并写回结果', codexNA === 1 && ['ok', 'bad'].includes(glmA), { row, fit, glmA, glmT });
+await dlg().getByRole('button', { name: '完成' }).click(); await p.locator('[role=tab]').filter({ hasText: '智能体' }).click(); await p.waitForTimeout(200);
+await p.getByRole('button', { name: 'Claude Code · SMG 更多操作' }).click(); await p.getByRole('menuitem', { name: '编辑' }).click(); await p.waitForTimeout(200);
+const opts = await dlg().getByLabel('默认模型').locator('option').allInnerTexts(); await shot('s08-edit');
+ok('编辑：默认模型下拉列出 SMG 模型并标可用／未测试／推荐', opts.length > 5 && opts.some(o => o.includes('推荐')), opts);
+ok('页面中没有出现完整 Key', !(await leak()));
+console.log(JSON.stringify({ results: R, errors }, null, 1)); await b.close();

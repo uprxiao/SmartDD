@@ -54,7 +54,7 @@ function ResourceEditor({ kind, resource, onClose, onSave }) {
   </form></Dialog>;
 }
 
-export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, onNewTask, onOpenTask, onExport, applications, bundledApplications, appsLabel }) {
+export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, onNewTask, onOpenTask, onExport, applications, bundledApplications, appsLabel, skillsTab = true }) {
   const [modal, setModal] = useState(null);
   const collection = COLLECTIONS[tab];
   const update = next => onUpdate({ ...next, configVersion: Math.max(next.configVersion, project.configVersion + 1) });
@@ -62,7 +62,7 @@ export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, on
   return <section className="project-page"><div className="project-page-inner parity-project">
     <div className="page-heading"><div><div className="title-with-icon"><FolderOpen size={25} /><h1>{project.name}</h1>{project.archived && <span className="tag">已归档</span>}</div><p>{project.description || '项目设置与资源'}</p></div><button className="button secondary" disabled={project.archived} onClick={onNewTask}><SquarePen size={16} strokeWidth={1.75} aria-hidden="true" />新建任务</button></div>
     {project.archived && <p className="notice">项目已归档；取消归档后可创建新任务。</p>}
-    <nav className="tabbar" aria-label="项目设置分类">{TABS.map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => onNavigate(key)}>{key === 'apps' && appsLabel ? appsLabel : label}</button>)}</nav>
+    <nav className="tabbar" aria-label="项目设置分类">{TABS.filter(([key]) => skillsTab || key !== 'skills').map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => onNavigate(key)}>{key === 'apps' && appsLabel ? appsLabel : label}</button>)}</nav>
     {tab === 'overview' && <><div className="settings-card project-info"><div><span>项目名称</span><strong>{project.name}</strong></div><div><span>别名</span><span>{project.aliases || '—'}</span></div><div><span>说明</span><span>{project.description || '—'}</span></div><div><span>规则文件</span><code>{project.rulesPath || '未设置'}</code></div><div><span>配置版本</span><span>v{project.configVersion}</span></div><div><span>创建时间</span><span>{project.createdAt}</span></div></div>
       <div className="project-actions"><button className="button secondary" onClick={onExport}><ArrowUpFromLine size={14} />导出项目</button><button className="button secondary" onClick={() => setModal({ type: 'edit' })}><Pencil size={14} />编辑项目信息</button><button className="button secondary" onClick={() => update({ ...project, archived: !project.archived })}>{project.archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}{project.archived ? '取消归档项目' : '归档项目'}</button><button className="button danger" onClick={() => setModal({ type: 'delete-project' })}><Trash2 size={14} />删除项目</button></div>
       <div className="project-summary">{[['code', FolderOpen, '代码目录', project.dirs.length], ['database', Database, '数据库', project.databases.length], ['server', Server, '服务器', project.servers.length]].map(([key, Icon, label, count]) => <button key={key} onClick={() => onNavigate(key)}><Icon size={18} /><span>{label}</span><strong>{count}</strong></button>)}</div>
@@ -76,7 +76,7 @@ export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, on
       </div>)}
     </>}
     {tab === 'apps' && applications}
-    {tab === 'skills' && <CapabilitiesPanel project={project} profiles={profiles} bundledApplications={bundledApplications} onManageApplications={() => onNavigate('apps')} onChange={capabilities => update({ ...project, capabilities })} />}
+    {tab === 'skills' && skillsTab && <CapabilitiesPanel project={project} profiles={profiles} bundledApplications={bundledApplications} onManageApplications={() => onNavigate('apps')} onChange={capabilities => update({ ...project, capabilities })} />}
     {tab === 'tasks' && <><div className="group-heading"><h2>项目任务</h2><span>{projectTasks.length} 项</span></div>{projectTasks.length === 0 && <p className="section-description">还没有任务，可以从右上角新建。</p>}{projectTasks.map(t => <button className="recent-row" key={t.id} onClick={() => onOpenTask(t.id)}><div><span>{t.title}</span><small>{profiles.find(p => p.id === t.profile)?.name || t.profileName || '配置已删除'}</small></div><span>{t.archived ? '已归档' : t.status === 'running' ? '运行中' : '已停止'}</span></button>)}</>}
     {modal?.type === 'edit' && <ProjectEditor project={project} onClose={() => setModal(null)} onSave={values => { update({ ...project, ...values }); setModal(null); }} />}
     {modal?.type === 'resource' && <ResourceEditor kind={modal.collection} resource={modal.resource} onClose={() => setModal(null)} onSave={value => { update(saveResource(project, modal.collection, value)); setModal(null); }} />}

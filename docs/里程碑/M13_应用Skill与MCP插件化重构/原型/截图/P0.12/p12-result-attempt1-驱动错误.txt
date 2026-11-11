@@ -1,0 +1,5 @@
+P0.12 走查第 1 次（2026-11-11）：驱动错误，不是原型缺陷。
+前面各步都执行了，在最后“深色”一步失败：
+  locator.click: Timeout 30000ms exceeded. waiting for locator('[data-provider=deepseek]')
+原因：驱动用 p.goto() 打开与当前完全相同的地址（含 #settings/ai/configs），浏览器按同页跳转处理，没有重新加载；前一步已删除 DeepSeek，所以找不到。
+修正：先 goto('about:blank') 再打开地址。结果未写入 JSON（进程在打印前退出）。

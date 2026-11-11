@@ -1,7 +1,7 @@
 // M13 原型模型单测：安装校验、能力纳管、运行配置兼容与说明、探测与全局模型提醒（只读）。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CAPABILITIES, CONNECTION_TYPES, INSTALL_CANDIDATES, PLUGINS, PROVIDERS, autoName, compatible, countBy, filterCapabilities, globalModelNotice, manageAll, pluginSkillCaps, probe, rebuildTiers, runNotes, tiersValid, unmanage, manage, validateConnection, validateInstall } from '../src/m13-model.mjs';
+import { loginName, CAPABILITIES, CONNECTION_TYPES, INSTALL_CANDIDATES, PLUGINS, PROVIDERS, autoName, compatible, countBy, filterCapabilities, globalModelNotice, manageAll, pluginSkillCaps, probe, rebuildTiers, runNotes, tiersValid, unmanage, manage, validateConnection, validateInstall } from '../src/m13-model.mjs';
 
 const cand = file => INSTALL_CANDIDATES.find(c => c.file === file);
 test('安装校验：新装、升级、宿主接口不兼容、原生模块、结构异常、同版本', () => {
@@ -66,13 +66,13 @@ test('筛选与计数：需处理包含冲突、悬空、不支持、缺变量�
   const hidden = CAPABILITIES.map(c => c.name === 'old-helper' ? { ...c, hidden: true } : c);
   assert.equal(countBy(hidden, 'skill').attention, 1);
 });
-test('运行配置兼容性与名称', () => {
-  const ds = PROVIDERS.find(p => p.id === 'deepseek'), nc = PROVIDERS.find(p => p.id === 'native-claude');
+test('智能体兼容性与名称（P0.12：订阅/API 按登录方式命名）', () => {
+  const ds = PROVIDERS.find(p => p.id === 'deepseek');
   assert.ok(compatible('codex', ds).ok); assert.ok(compatible('claude', ds).ok);
-  assert.equal(compatible('codex', nc).ok, false);
   assert.equal(compatible('claude', { type: 'custom', protocols: ['responses'] }).ok, false);
   assert.equal(autoName('claude', PROVIDERS.find(p => p.id === 'magpie')), 'Claude Code · Magpie');
-  assert.equal(autoName('codex', PROVIDERS.find(p => p.id === 'native-codex')), 'Codex · 原有登录');
+  assert.equal(loginName('codex', 'subscription'), 'Codex · 订阅');
+  assert.equal(loginName('claude', 'api'), 'Claude Code · API');
 });
 test('第三方 Claude 运行说明包含“不应用项目设置”，Codex 包含插件不可用', () => {
   const ds = PROVIDERS.find(p => p.id === 'deepseek');
@@ -125,11 +125,11 @@ test('插件更新：新版本删除能力且无旧名映射时提示', () => {
   assert.deepEqual(removedCapabilities(zt0, v2), ['查看详情与历史']);
   assert.deepEqual(removedCapabilities(zt0, { ...v2, legacyToolNames: { '查看详情与历史': '查询指派给我的 Bug' } }), []);
 });
-test('导出：勾选运行配置自动带上 Provider；默认不含 Key；原生登录只导出设定', () => {
-  const e = buildExport({ providers: PROVIDERS, configs: RUN_CONFIGS, selectedConfigs: ['rc-codex-ds', 'rc-cc-native'], selectedProviders: [], includeKey: false });
-  assert.deepEqual(e.providers.map(p => p.id).sort(), ['deepseek', 'native-claude']);
+test('导出：勾选智能体自动带上供应商；默认不含 Key；订阅/API 智能体不导出（P0.12）', () => {
+  const e = buildExport({ providers: PROVIDERS, configs: RUN_CONFIGS, selectedConfigs: ['rc-codex-ds', 'rc-cc-login'], selectedProviders: [], includeKey: false });
+  assert.deepEqual(e.providers.map(p => p.id), ['deepseek']);
+  assert.deepEqual(e.runConfigs.map(c => c.id), ['rc-codex-ds']);
   assert.ok(e.providers.every(p => !p.key)); assert.equal(e.includesKeys, false);
-  assert.deepEqual(Object.keys(e.providers.find(p => p.id === 'native-claude')).sort(), ['id', 'name', 'tool', 'type']);
   assert.ok(!JSON.stringify(e).includes('3f9a'), '不含任何 Key 片段');
   assert.equal(buildExport({ providers: PROVIDERS, configs: RUN_CONFIGS, selectedConfigs: ['rc-codex-ds'], selectedProviders: [], includeKey: true }).providers[0].key.encrypted, true);
 });
@@ -147,18 +147,20 @@ test('本机工具自定义路径校验', () => {
 
 // ---------- P0.6 Code Agent 配置 ----------
 import { CATALOG, CATALOG_GROUPS, detectProtocols, pairingNote, toolsFor } from '../src/m13-model.mjs';
-test('供应商目录：三组；首期五家供应商；未核实的标为占位', () => {
-  assert.deepEqual(CATALOG_GROUPS.map(g => g[0]), ['native', 'vendor', 'custom']);
-  assert.deepEqual(CATALOG.filter(c => c.group === 'vendor').map(c => c.id), ['deepseek', 'glm', 'smg', 'ultracloud', 'magpie']);
-  assert.deepEqual(CATALOG.filter(c => c.verified === false).map(c => c.id), ['glm', 'smg', 'ultracloud']);
+test('供应商目录（P0.12）：不再有订阅组；加 Anthropic、OpenAI 官方；SMG 按用户提供的地址；未核实的标为占位', () => {
+  assert.deepEqual(CATALOG_GROUPS.map(g => g[0]), ['vendor', 'custom']);
+  assert.deepEqual(CATALOG.filter(c => c.group === 'vendor').map(c => c.id), ['anthropic', 'openai', 'deepseek', 'glm', 'smg', 'ultracloud', 'magpie']);
+  assert.deepEqual(CATALOG.filter(c => c.verified === false).map(c => c.id), ['glm', 'ultracloud']);
+  assert.deepEqual(toolsFor(CATALOG.find(c => c.id === 'smg')), ['claude'], 'SMG 只有 Anthropic 与 OpenAI 兼容接口，只适用 Claude Code');
 });
-test('可搭配工具：Codex 需 Responses、Claude Code 需 Anthropic；只有 OpenAI 兼容时都不能用；原有登录只对应其 CLI', () => {
+test('适用工具：Codex 需 Responses、Claude Code 需 Anthropic；只有 OpenAI 兼容时都不能用', () => {
   const by = id => CATALOG.find(c => c.id === id);
-  assert.deepEqual(toolsFor(by('deepseek')), ['codex', 'claude']);
+  assert.deepEqual(toolsFor(by('deepseek')), ['claude', 'codex']);
+  assert.deepEqual(toolsFor(by('anthropic')), ['claude']);
+  assert.deepEqual(toolsFor(by('openai')), ['codex']);
   assert.deepEqual(toolsFor(by('glm')), ['claude']);
   assert.deepEqual(toolsFor(by('ultracloud')), []);
   assert.match(pairingNote(by('ultracloud')), /网关/);
-  assert.deepEqual(toolsFor(by('native-codex')), ['codex']);
   assert.deepEqual(toolsFor({ type: 'custom', protocols: ['responses', 'openai'] }), ['codex']);
 });
 test('自定义供应商检测协议（合成）', () => {
@@ -166,4 +168,117 @@ test('自定义供应商检测协议（合成）', () => {
   assert.deepEqual(detectProtocols('https://x.test/api/paas/v4').candidates, ['openai']);
   assert.deepEqual(detectProtocols('https://x.test/v1').candidates, ['responses', 'anthropic']);
   assert.equal(detectProtocols('x.test').ok, false);
+});
+
+test('会话生效规则（P0.8）：统一文案，运行中会话数提示重启', async () => {
+  const { sessionEffect, runningSessions } = await import('../src/m13-model.mjs');
+  assert.equal(runningSessions([{ status: 'running' }, { status: 'running', archived: true }, { status: 'stopped' }]), 1);
+  assert.equal(sessionEffect('cap-off', 0), '新建或恢复的会话不再加载');
+  assert.match(sessionEffect('plugin-off', 2), /即刻不能再调用.*2 个运行中的会话重启后完全生效/);
+  assert.match(sessionEffect('plugin-update', 1), /立即使用新版本；1 个运行中的会话重启后完全生效/);
+  assert.throws(() => sessionEffect('x'), /未知的生效类型/);
+});
+
+test('更新（P0.8）：只接受同一插件、不允许降级、只列变化', async () => {
+  const { updateDiff } = await import('../src/m13-model.mjs');
+  const zt = PLUGINS.find(p => p.id === 'zentao');
+  const mis = validateInstall(cand('demo-tracker-0.1.0.zip'), PLUGINS, zt);
+  assert.equal(mis.kind, 'mismatch'); assert.match(mis.errors[0], /这不是禅道的插件包/);
+  const down = validateInstall(cand('zentao-plugin-0.9.0.zip'), PLUGINS, zt);
+  assert.equal(down.ok, false); assert.equal(down.kind, 'downgrade'); assert.match(down.errors[0], /不支持安装更低的版本/);
+  assert.equal(validateInstall(cand('~/Downloads/zentao-plugin-1.1.0/'), PLUGINS, zt).kind, 'update');
+  const d = updateDiff(zt, cand('~/Downloads/zentao-plugin-1.1.0/'));
+  assert.deepEqual([d.addedCaps, d.addedPerms, d.addedSkills, d.broken], [['下载附件'], ['联网：下载 Bug 附件'], ['zentao-daily-summary'], []]);
+  const d2 = updateDiff(zt, cand('~/Downloads/zentao-plugin-2.0.0-drop/'));
+  assert.deepEqual(d2.broken, ['查看详情与历史']); assert.equal(d2.empty, false);
+});
+
+test('受影响会话（P0.10 B3）：按插件可用项目、项目、技能作用域、纳管目标工具计数', async () => {
+  const { affectedSessions, sessionEffect } = await import('../src/m13-model.mjs');
+  const tasks = [{ status: 'running', project: 'ais', profile: 'cc-work' }, { status: 'running', project: 'smartdd', runner: 'codex' }, { status: 'stopped', project: 'ais', profile: 'cc-work' }];
+  const zt = { id: 'zentao' };
+  assert.equal(affectedSessions('plugin', zt, tasks, {}), 2);
+  assert.equal(affectedSessions('plugin', zt, tasks, { zentao: { ais: { disabled: true } } }), 1);
+  assert.equal(affectedSessions('project', 'ais', tasks), 1);
+  assert.equal(affectedSessions('cap', { scope: 'user' }, tasks), 2);
+  assert.equal(affectedSessions('cap', { scope: 'project', project: 'smartdd' }, tasks), 1);
+  assert.equal(affectedSessions('manage', { from: 'claude', scope: 'user' }, tasks), 1); // 只算 Codex 会话
+  assert.equal(affectedSessions('manage', [{ from: 'claude', scope: 'user' }, { from: 'codex', scope: 'user' }], tasks), 2);
+  assert.equal(sessionEffect('project-off', 0), '本项目运行中的会话即刻不能再调用它，新建或恢复的会话不再加载');
+  assert.throws(() => affectedSessions('x', null, tasks), /未知的影响范围/);
+});
+
+// ---------- P0.12 智能体自动生成 ----------
+test('模型可用性按工具记录；下拉只列可用与未测试，推荐的排第一（需求第 6 项）', async () => {
+  const { modelsFor, recommendedModel, availOf } = await import('../src/m13-model.mjs');
+  const ds = PROVIDERS.find(p => p.id === 'deepseek'), mg = PROVIDERS.find(p => p.id === 'magpie');
+  assert.deepEqual(modelsFor(ds, 'codex').map(m => m.id), ['deepseek-v4-pro', 'deepseek-v4-flash']);
+  assert.equal(availOf(ds.models[1], 'codex'), 'untested'); assert.equal(availOf(ds.models[1], 'claude'), 'ok');
+  assert.deepEqual(modelsFor(mg, 'codex').map(m => m.id), ['gpt-5.5'], 'Codex 中不可用的模型隐藏');
+  assert.equal(recommendedModel(mg, 'claude'), 'claude-sonnet-5-5'); assert.equal(recommendedModel(mg, 'codex'), 'gpt-5.5');
+});
+test('新建智能体（P0.13/P0.15）：按 Code Agent 协议过滤供应商；不兼容的带原因；摘要按工具统计；同一 Code Agent＋供应商不重复；名称不重复', async () => {
+  const { providersForTool, providerSummary, agentName, catalogItem, CODE_AGENTS } = await import('../src/m13-model.mjs');
+  const glm = { ...catalogItem('glm'), protocols: ['anthropic', 'openai'] };
+  const all = [...PROVIDERS, glm];
+  assert.deepEqual(providersForTool('claude', all).compat.map(p => p.id), ['deepseek', 'magpie', 'glm']);
+  const cx = providersForTool('codex', all); assert.deepEqual(cx.compat.map(p => p.id), ['deepseek', 'magpie']);
+  assert.match(cx.incompat[0].reason, /OpenAI Responses/);
+  assert.equal(providerSummary(PROVIDERS[0], 'codex').text, '1 个可用 · 1 个未测试');
+  assert.equal(agentName(RUN_CONFIGS, 'claude', glm, 'glm-5'), 'Claude Code · GLM');
+  const { existingAgent, nameTaken } = await import('../src/m13-model.mjs');
+  assert.equal(existingAgent(RUN_CONFIGS, 'claude', 'deepseek').id, 'rc-cc-ds', '同一 Code Agent＋供应商已有智能体');
+  assert.equal(existingAgent(RUN_CONFIGS, 'claude', 'login').id, 'rc-cc-login');
+  assert.equal(existingAgent(RUN_CONFIGS, 'codex', 'login'), null);
+  assert.equal(existingAgent(RUN_CONFIGS, 'claude', 'deepseek', 'rc-cc-ds'), null, '编辑自己时不算重复');
+  assert.equal(nameTaken(RUN_CONFIGS, ' Codex · Magpie ').id, 'rc-codex-mp');
+  assert.equal(agentName(RUN_CONFIGS, 'codex', null, null, 'subscription'), 'Codex · 订阅');
+  assert.deepEqual(CODE_AGENTS.filter(a => a.supported).map(a => a.id), ['claude', 'codex']);
+  assert.equal(CODE_AGENTS.length, 6);
+});
+test('排序（P0.13/P0.14）：上移下移与拖动；默认固定第一；设为默认即排第一；隐藏的不能设为默认；首页下拉按列表顺序', async () => {
+  const { moveAgent, reorderAgent, homeAgents, withDefault, canBeDefault, agentModels } = await import('../src/m13-model.mjs');
+  const ids = cs => cs.map(c => c.id);
+  assert.deepEqual(ids(moveAgent(RUN_CONFIGS, 'rc-codex-ds', -1)).slice(0, 3), ['rc-cc-login', 'rc-codex-ds', 'rc-cc-ds']);
+  assert.equal(moveAgent(RUN_CONFIGS, 'rc-cc-ds', -1), RUN_CONFIGS, '不能排到默认前面');
+  assert.equal(moveAgent(RUN_CONFIGS, 'rc-cc-login', 1), RUN_CONFIGS, '默认不能移动');
+  const r = reorderAgent(RUN_CONFIGS, 'rc-legacy-rj', 'rc-cc-login');
+  assert.deepEqual(ids(r).slice(0, 2), ['rc-cc-login', 'rc-legacy-rj'], '拖到默认上方时放在默认之后');
+  assert.equal(homeAgents(r)[1].id, 'rc-legacy-rj');
+  const d = withDefault(RUN_CONFIGS, 'rc-codex-mp');
+  assert.equal(d[0].id, 'rc-codex-mp'); assert.equal(d.filter(c => c.default).length, 1);
+  assert.equal(canBeDefault(RUN_CONFIGS.find(c => c.id === 'rc-codex-mp')), false, '不在首页显示的不能设为默认');
+  assert.deepEqual(agentModels(RUN_CONFIGS.find(c => c.id === 'rc-cc-ds')), ['deepseek-v4-pro', 'deepseek-v4-flash']);
+});
+test('订阅/API 检测（P0.13）：不自动添加；方式变化改名；退出登录保留标记并交接默认；重新登录恢复', async () => {
+  const { syncLogin, homeAgents, makeLoginAgent } = await import('../src/m13-model.mjs');
+  assert.equal(syncLogin(RUN_CONFIGS, 'codex', 'subscription').event, null, '没有订阅智能体时不自动添加');
+  assert.equal(makeLoginAgent('codex', 'subscription').name, 'Codex · 订阅');
+  const r = syncLogin(RUN_CONFIGS, 'claude', 'api');
+  assert.equal(r.event.kind, 'switched'); assert.equal(r.configs.find(c => c.id === 'rc-cc-login').name, 'Claude Code · API');
+  const out = syncLogin(RUN_CONFIGS, 'claude', 'none');
+  const cc = out.configs.find(c => c.id === 'rc-cc-login');
+  assert.ok(cc.loggedOut && !cc.visible && !cc.default);
+  assert.equal(out.event.newDefault.id, 'rc-cc-ds');
+  assert.ok(!homeAgents(out.configs).some(c => c.id === 'rc-cc-login'));
+  const back = syncLogin(out.configs, 'claude', 'subscription');
+  assert.equal(back.event.kind, 'restored'); assert.ok(!back.configs.find(c => c.id === 'rc-cc-login').loggedOut);
+  assert.ok(back.configs.find(c => c.id === 'rc-cc-ds').default, '重新登录不抢回默认');
+});
+test('删除供应商：列出并删除使用它的智能体；默认交接；首页只列打开显示的', async () => {
+  const { removeProviderImpact, removeAgent, homeAgents, withDefault } = await import('../src/m13-model.mjs');
+  const cs = withDefault(RUN_CONFIGS, 'rc-cc-ds');
+  const r = removeProviderImpact('deepseek', cs);
+  assert.deepEqual(r.removed.map(c => c.id), ['rc-cc-ds', 'rc-codex-ds']);
+  assert.equal(r.newDefault.id, 'rc-cc-login'); assert.ok(r.configs.every(c => c.provider !== 'deepseek'));
+  assert.equal(removeAgent(RUN_CONFIGS, 'rc-codex-mp').newDefault, null, '删除非默认不交接');
+  assert.ok(!homeAgents(RUN_CONFIGS).some(c => c.id === 'rc-codex-mp'));
+  assert.equal(withDefault(RUN_CONFIGS, 'rc-codex-ds')[0].id, 'rc-codex-ds', '设为默认后排第一');
+});
+test('接入时自动测试推荐模型并写回可用性', async () => {
+  const { autoTest, applyTest, catalogItem } = await import('../src/m13-model.mjs');
+  const ds = { ...catalogItem('deepseek'), protocols: ['responses', 'anthropic'] };
+  const t = autoTest(ds); assert.deepEqual(t, { claude: { model: 'deepseek-v4-pro', result: 'ok' }, codex: { model: 'deepseek-v4-pro', result: 'ok' } });
+  const p = applyTest(ds, autoTest(ds, 'tools-fail'));
+  assert.deepEqual(p.models[0].avail, { claude: 'bad', codex: 'ok' });
 });
