@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: K01 更换已有 Key：修订号加 1，只保留脱敏后四位
+not ok 1 - K01 更换已有 Key：修订号加 1，只保留脱敏后四位
+  ---
+  duration_ms: 0.280083
+  type: 'test'
+  location: '/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: 'M.applyProviderKey is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:10:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: K01 首次填写 Key（原来缺 Key）：修订号不变
+not ok 2 - K01 首次填写 Key（原来缺 Key）：修订号不变
+  ---
+  duration_ms: 0.0475
+  type: 'test'
+  location: '/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:15:1'
+  failureType: 'testCodeFailure'
+  error: 'M.applyProviderKey is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:17:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: K01 端到端：任务创建后经保存入口更换 Key，恢复识别为身份变化并要求重新选择
+not ok 3 - K01 端到端：任务创建后经保存入口更换 Key，恢复识别为身份变化并要求重新选择
+  ---
+  duration_ms: 0.0955
+  type: 'test'
+  location: '/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:19:1'
+  failureType: 'testCodeFailure'
+  error: 'M.applyProviderKey is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    file:///Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:21:60
+    Array.map (<anonymous>)
+    TestContext.<anonymous> (file:///Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:21:27)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: K01 对照：缺 Key 时先填写再恢复（审核 Q03 流程）不触发身份变化
+not ok 4 - K01 对照：缺 Key 时先填写再恢复（审核 Q03 流程）不触发身份变化
+  ---
+  duration_ms: 0.086042
+  type: 'test'
+  location: '/Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: 'M.applyProviderKey is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    file:///Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:29:57
+    Array.map (<anonymous>)
+    TestContext.<anonymous> (file:///Users/liubu/hx/4.uprxiao/SmartDD/prototypes/m6-codex/tests/m13-review-2134.test.mjs:29:24)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 0
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 32.060042

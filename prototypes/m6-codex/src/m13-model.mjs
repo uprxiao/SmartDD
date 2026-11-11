@@ -554,6 +554,11 @@ export function resumeDecision(snapshot, agent) {
   if (last && agentModels(agent).includes(last)) return { model: last, lost: false };
   return { model: agent.model, lost: !!last };
 }
+/** 供应商详情保存 Key（复核 review-20261111-2134 K01，技术方案 §2）：替换已有 Key 时身份修订号加 1；原来缺 Key 时的首次填写不加。只保留脱敏后四位。 */
+export function applyProviderKey(p, key) {
+  const replacing = !!p.key && !p.needKey;
+  return { ...p, key: 'sk-•••• ' + key.trim().slice(-4), needKey: false, rev: (p.rev || 0) + (replacing ? 1 : 0) };
+}
 /** 模型来源的可读描述（恢复提示用）。 */
 export const sourceLabel = (a, providers = []) => a.source === 'login' ? `${LOGIN_LABEL[a.method || 'subscription'] || '订阅'}（CLI 自己的登录）` : a.source === 'legacy' ? '旧配置'
   : (providers.find(p => p.id === (a.providerId ?? a.provider))?.name || a.providerName || '供应商已删除');
