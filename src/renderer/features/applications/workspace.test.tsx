@@ -10,7 +10,7 @@ import {ProjectApplications} from './project-applications';
 import {ApplicationsWorkspace} from './workspace';
 import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
 import type {CatalogItem} from './api';
-const m=vi.hoisted(()=>({impact:vi.fn(),versions:vi.fn(async()=>({ok:true,value:{appId:'mail',items:[],checkedAt:'2026-10-20T00:00:00.000Z',recoveryPending:0}})),catalog:vi.fn(),connections:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),setAdded:vi.fn(),setEnabled:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn(),projectList:vi.fn(),projectGet:vi.fn(),refreshTasks:vi.fn(),tasks:[] as {id:string;projectId:string;ptyId:string|null;title:string}[]}));
+const m=vi.hoisted(()=>({pluginStartupStatus:vi.fn(async()=>({ok:true,value:null})),pluginCatalog:vi.fn(async()=>({ok:true,value:[]})),impact:vi.fn(),versions:vi.fn(async()=>({ok:true,value:{appId:'mail',items:[],checkedAt:'2026-10-20T00:00:00.000Z',recoveryPending:0}})),catalog:vi.fn(),connections:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),setAdded:vi.fn(),setEnabled:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn(),projectList:vi.fn(),projectGet:vi.fn(),refreshTasks:vi.fn(),tasks:[] as {id:string;projectId:string;ptyId:string|null;title:string}[]}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m,projects:{list:m.projectList,get:m.projectGet},dialog:{pickDirectory:vi.fn()}},events:{on:()=>()=>{}}}));
 vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{get tasks(){return m.tasks;},refresh:m.refreshTasks}}));
 const uid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -22,7 +22,7 @@ const ok=<T,>(value:T)=>({ok:true as const,value});
 function mount(node:React.ReactNode){client=new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}});return render(<QueryClientProvider client={client}>{node}</QueryClientProvider>);}
 function fill(){fireEvent.change(screen.getByLabelText('连接名称'),{target:{value:'Private fixture'}});fireEvent.change(screen.getByLabelText('禅道服务地址'),{target:{value:'https://private.example.test/'}});fireEvent.change(screen.getByLabelText('禅道账号'),{target:{value:'private-user'}});fireEvent.change(screen.getByLabelText('认证凭据'),{target:{value:'form-canary-do-not-persist'}});}
 beforeEach(()=>{
- vi.clearAllMocks();localStorage.clear();navigation.currentProjectId=null;navigation.openApplications();m.tasks=[];
+ vi.clearAllMocks();m.pluginCatalog.mockResolvedValue({ok:true,value:[]});localStorage.clear();navigation.currentProjectId=null;navigation.openApplications();m.tasks=[];
  catalog=[app('zentao'),app('mail')];connections=[connection(11,'foxmail','来源 A'),connection(12,'foxmail','来源 B'),connection(21,'smtp','发件 A'),connection(22,'smtp','发件 B'),connection(31,'zentao','禅道 A'),connection(32,'zentao','禅道 B')];settings={mail:{projectId:project.id,appId:'mail',enabled:true,revision:1,pendingOperationId:null,connections:{foxmail:uid(11),smtp:uid(21)},slotRevisions:{foxmail:1,smtp:1}},zentao:{projectId:project.id,appId:'zentao',enabled:true,revision:1,pendingOperationId:null,connections:{zentao:uid(31)},slotRevisions:{zentao:1}}};
  m.catalog.mockImplementation(async()=>ok(structuredClone(catalog)));m.connections.mockImplementation(async(id:ApplicationId)=>ok(structuredClone(connections.filter(c=>c.appId===id))));m.projectSettings.mockImplementation(async(_id:string,appId:ApplicationId)=>ok(structuredClone(settings[appId])));m.select.mockImplementation(async input=>{settings[input.appId as ApplicationId]={...settings[input.appId as ApplicationId],...input,revision:input.expectedRevision+1};return ok(structuredClone(settings[input.appId as ApplicationId]));});m.setAdded.mockImplementation(async(id:ApplicationId,added:boolean)=>{catalog=catalog.map(a=>a.appId===id?{...a,added,enabled:added,revision:a.revision+1}:a);return ok(catalog.find(a=>a.appId===id));});
  m.impact.mockImplementation(async input=>ok({kind:input.kind,appId:input.appId??'zentao',checkedAt:'2026-10-22T00:00:00Z',connections:[],projects:[],runs:[]}));
@@ -31,6 +31,21 @@ beforeEach(()=>{
 });
 afterEach(()=>{cleanup();client?.clear();Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');Reflect.deleteProperty(HTMLDialogElement.prototype,'close');vi.restoreAllMocks();});
 describe('actual production application forms with explicit RPC fixtures',()=>{
+ it('opens an installed external plugin from the sidebar after navigating from another page and removes stale entries',async()=>{
+  const external={appId:'demo-tracker',hash:'a'.repeat(64),installed:true,enabled:true,revision:1,version:'0.1.0',paused:false,displayName:'Demo Tracker',description:'合成插件',author:null,permissions:[],capabilities:[],skills:[],panels:[]};
+  m.pluginCatalog.mockResolvedValue(ok([external]) as never);navigation.openApplications('activity');
+  // Start on an existing built-in detail so the plugin manager is not mounted yet.
+  navigation.openApplications('mail');mount(<ApplicationsWorkspace/>);
+  const sidebar=screen.getByRole('heading',{name:'自定义'}).closest('aside')!;
+  fireEvent.click(await within(sidebar).findByRole('button',{name:'Demo Tracker'}));
+  expect(await screen.findByRole('dialog',{name:'Demo Tracker'})).toBeTruthy();expect(screen.getByLabelText('插件数据项目')).toBeTruthy();
+  m.pluginCatalog.mockResolvedValue(ok([]) as never);await act(async()=>{await client.invalidateQueries({queryKey:['applications','plugins']});});
+  await waitFor(()=>expect(within(sidebar).queryByRole('button',{name:'Demo Tracker'})).toBeNull());expect(screen.queryByRole('dialog',{name:'Demo Tracker'})).toBeNull();
+ });
+
+ it('redirects a retired builtin detail entry to the plugin catalog without rendering its old connection controls',async()=>{
+  catalog=catalog.filter(a=>a.appId!=='zentao');navigation.openApplications('zentao');mount(<ApplicationsWorkspace/>);expect(await screen.findByText('插件入口已更新或未安装')).toBeTruthy();expect(screen.queryByText('查看指派给我的 Bug 和研发需求')).toBeNull();expect(m.connections).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'前往插件目录'}));await screen.findByRole('heading',{name:'应用'});
+ });
  it.each([
   {kind:'smtp' as const,mode:'password',existing:false},
   {kind:'zentao' as const,mode:'token',existing:false},

@@ -1,18 +1,20 @@
 import type {AttachmentSaveResult,MailAttachmentSource} from './application-attachments';
 import {z} from 'zod';
-import {applicationIdSchema,type ApplicationId} from './application-connections';
+import {applicationIdSchema} from './application-connections';
+import {pluginManifestSchema} from './plugins';
 import type {MailDraftContent,MailAttachment} from './mail-drafts';
 import type {MailSendState,MailSendResult} from './mail-execution';
 import type {BrowserActivityDetails} from './browser-audit';
 export const applicationActivityQuerySchema=z.object({
- appId:applicationIdSchema.optional(),connectionId:z.uuid().optional(),projectId:z.string().min(1).max(128).optional(),
+ appId:z.union([applicationIdSchema,pluginManifestSchema.shape.id]).optional(),connectionId:z.uuid().optional(),projectId:z.string().min(1).max(128).optional(),
  limit:z.number().int().min(1).max(100).default(50),cursor:z.string().min(1).max(4096).nullable().optional(),
 }).strict();
 export type ApplicationActivityQuery=z.input<typeof applicationActivityQuerySchema>;
 export interface ApplicationActivityItem {
- id:string;kind:'operation'|'send'|'browser';appId:ApplicationId;projectId:string|null;projectName:string|null;taskId:string|null;taskTitle:string|null;runId:string|null;jobId:string|null;parentOperationId:string|null;
+ id:string;kind:'operation'|'send'|'browser';appId:string;projectId:string|null;projectName:string|null;taskId:string|null;taskTitle:string|null;runId:string|null;jobId:string|null;parentOperationId:string|null;
  callerKind:'ui'|'agent-run'|'index-job';action:string;semantics:'read'|'write';state:string;attemptCount:number;errorCode:string|null;effectState:string|null;requestId:string|null;
  startedAt:string;endedAt:string|null;connections:{id:string;name:string|null}[];
+ pluginState?:'uninstalled';
  browser?:Pick<BrowserActivityDetails,'pageId'|'targetTaskId'|'durationMs'>;
  subjects:{kind:'connection'|'mail-send'|'mail-draft';id:string}[];
  send:null|{intentId:string;draftId:string;draftRevision:number;executionId:string|null;state:MailSendState;executionState:string|null;authorizationSource:string|null;grantState:string|null;updatedAt:string};

@@ -1,6 +1,8 @@
 import {existsSync,lstatSync,mkdirSync,readFileSync,readdirSync,readlinkSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
-import {afterEach,beforeEach,describe,expect,it} from 'vitest';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+import {CurrentApplicationAuthorization} from '../current-authorization';
+import {resolveApplicationTerminalSource} from '../terminal-sources';
 import {SkillLibraryService} from '../skill-library-service';
 import {builtinCapabilityDeliveryAdapters} from '../capability-delivery-adapters';
 import {cliFixture} from './cli-fixture';
@@ -13,9 +15,28 @@ beforeEach(async()=>{
  f=await cliFixture();
  library=new SkillLibraryService(f.store,f.applications.builtin,{home:f.home,targets:()=>builtinCapabilityDeliveryAdapters.libraryTargets(),added:appId=>{const s=f.applications.selections.catalogState(appId as 'mail');return s.added&&s.enabled;}});
 });
-afterEach(async()=>{await f?.cleanup();});
+afterEach(async()=>{vi.restoreAllMocks();await f?.cleanup();});
 
 describe('M11 R16 Skill library delivery',()=>{
+ it.each(['migration','uninstalled'] as const)('retires only owned legacy Zentao Skills and blocks its old entrypoints after %s',async owner=>{
+  await f.applications.selections.setAdded('zentao',true,0);await f.applications.selections.select({projectId:'p1',appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});expect(new CurrentApplicationAuthorization(f.store,f.applications.builtin).selectedApps('p1').some(a=>a.appId==='zentao')).toBe(true);library.sync();expect(ours(shared()).some(n=>n.startsWith('willyou-zentao-'))).toBe(true);const mail=ours(shared()).filter(n=>n.startsWith('willyou-mail-'));
+  if(owner==='migration')f.sqlite.prepare('INSERT INTO plugin_builtin_migrations VALUES(?,?,?,?,?,?)').run('zentao',1,'a'.repeat(64),'b'.repeat(64),'[]','old');
+  else f.sqlite.prepare("INSERT INTO plugin_installations VALUES('zentao',NULL,0,0,1,'old')").run();
+  const sender={...f.sender,senderFrame:null} as unknown as Parameters<typeof f.applications.catalog>[0];const removed=library.sync();expect(removed.removed.some(n=>n.startsWith('willyou-zentao-'))).toBe(true);expect(ours(shared())).toEqual(mail);expect(ours(claude())).toEqual(mail);expect(f.applications.catalog(sender).some(a=>a.appId==='zentao')).toBe(false);expect(f.applications.catalog(sender).some(a=>a.appId==='mail')).toBe(true);
+  const selected=new CurrentApplicationAuthorization(f.store,f.applications.builtin).selectedApps('p1');expect(selected.some(a=>a.appId==='zentao')).toBe(false);expect(selected.some(a=>a.appId==='mail')).toBe(true);
+  const reads=vi.spyOn(f.applications.contexts,'withUi'),management=vi.spyOn(f.applications.contexts,'withManagement');
+  const oldEntries=[()=>f.applications.zentaoWork(sender,'p1',{} as never),()=>f.applications.zentaoObject(sender,'p1',{} as never),()=>f.applications.zentaoResource(sender,'p1',{}),()=>f.applications.invokeCapability(sender,'p1','zentao','zentao.object.list',{}),()=>f.applications.listConnections(sender,'zentao'),()=>f.applications.projectSettings(sender,'p1','zentao'),()=>f.applications.setEnabled(sender,'zentao',true,1)];
+  for(const invoke of oldEntries)expect(invoke).toThrow('外部插件');expect(reads).not.toHaveBeenCalled();expect(management).not.toHaveBeenCalled();
+ });
+ it('revokes an already prepared legacy terminal Skill proof as soon as migration takes ownership',async()=>{
+  await f.applications.selections.setAdded('zentao',true,0);await f.applications.selections.select({projectId:'p1',appId:'zentao',enabled:true,expectedRevision:0,connections:{zentao:null}});
+  // Native discovery is a controlled old-session fixture; SQL, policy and proof revalidation are real.
+  const sender={...f.sender,senderFrame:null} as unknown as Parameters<typeof f.applications.catalog>[0],base=f.runs.bridgePreparation(f.run.runId),pack=f.plan('codex').packages[0],snapshot=structuredClone(base.snapshot),skills=[{...pack.skills[0],skillId:'bug-analysis'}];
+  if(snapshot.schema===3)snapshot.packages=[{...pack,entry:'mcp',capabilityContractMajors:{'zentao.object.list':1},skills}];else snapshot.packages=[{...pack,skills}];const context={...base,snapshot};
+  f.sqlite.prepare('INSERT INTO tasks(id,project_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,1,1)').run(base.run.taskId,'p1',f.cwd,'codex','Synthetic old terminal');vi.spyOn(f.runs,'inputContext').mockImplementation((taskId,ptyId)=>taskId===base.run.taskId&&ptyId===f.run.ptyId?context:null);vi.spyOn(f.applications.sessionDiagnostics,'inspect').mockResolvedValue({applications:[{appId:'zentao',resourceState:'verified'}],currentRun:{id:base.run.runId,preparation:{state:'prepared'}}} as never);
+  const input={projectId:'p1',target:{taskId:base.run.taskId,ptyId:f.run.ptyId},source:{kind:'skill' as const,appId:'zentao' as const,skillId:'bug-analysis'}},proof=await resolveApplicationTerminalSource(f.applications,f.runs,sender,input);expect(proof.text).toContain('Bug');expect(()=>proof.assert()).not.toThrow();
+  f.sqlite.prepare('INSERT INTO plugin_builtin_migrations VALUES(?,?,?,?,?,?)').run('zentao',1,'a'.repeat(64),'b'.repeat(64),'[]','old');expect(()=>proof.assert()).toThrow('外部插件');await expect(resolveApplicationTerminalSource(f.applications,f.runs,sender,input)).rejects.toMatchObject({code:'CAPABILITY_UNAVAILABLE'});
+ });
  it('writes one unversioned WillYou copy per added application Skill and links it for Claude Code',()=>{
   const names=f.applications.builtin.packages.get(f.applications.builtin.packages.active('mail')!.packageHash).manifest.skills.map(s=>'willyou-mail-'+s.id).sort();
   const result=library.sync();

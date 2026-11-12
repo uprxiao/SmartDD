@@ -4,13 +4,14 @@ import {ApplicationError} from '@shared/applications';
 import type {ProcessIdentity,ProcessIdentityReader} from './process-identity';
 import type {UnixPeerIdentityReader} from './unix-peer-identity';
 import type {CapabilityRunRegistry,OwnedRunProcess} from './run-registry';
+import type {RunPeerRootAuthorizer} from './run-backend-authority';
 interface Tracked {runId:string;handle:OwnedRunProcess;identity:ProcessIdentity;detach:()=>void;state:'active'|'unknown';exiting?:Promise<void>}
 /** Agent-spawned bridges are owned only after kernel peer + executable + CLI ancestry proof.
  * Socket closure is not an exit event. Unknown identity retains its registry lease.
  */
 export class AgentBridgeProcesses {
  private readonly tracked=new Map<string,Tracked>();private readonly pending=new Set<Promise<void>>();private closed=false;private closing?:Promise<void>;private polling=false;private readonly timer:ReturnType<typeof setInterval>;
- constructor(private readonly runs:CapabilityRunRegistry,private readonly peers:UnixPeerIdentityReader,private readonly processes:ProcessIdentityReader,private readonly options:{pollMs?:number;waitForCliMs?:number;signal?:(identity:ProcessIdentity)=>void;disposeWaitMs?:number}={}){this.timer=setInterval(()=>{void this.poll();},Math.max(20,options.pollMs??500));this.timer.unref();}
+ constructor(private readonly runs:CapabilityRunRegistry,private readonly peers:UnixPeerIdentityReader,private readonly processes:ProcessIdentityReader,private readonly options:{pollMs?:number;waitForCliMs?:number;signal?:(identity:ProcessIdentity)=>void;disposeWaitMs?:number;additionalRoot?:RunPeerRootAuthorizer}={}){this.timer=setInterval(()=>{void this.poll();},Math.max(20,options.pollMs??500));this.timer.unref();}
  attach(socket:Socket,runId:string,handle:OwnedRunProcess):Promise<void>{const work=this.attachOnce(socket,runId,handle);this.pending.add(work);void work.finally(()=>this.pending.delete(work)).catch(()=>{});return work;}
  private async attachOnce(socket:Socket,runId:string,handle:OwnedRunProcess):Promise<void>{
   if(this.closed)throw new ApplicationError('CANCELED','桥进程监督已停止');const deadline=performance.now()+Math.max(1,Math.min(2000,this.options.waitForCliMs??1500));let context=this.runs.bridgePreparation(runId);
@@ -19,7 +20,8 @@ export class AgentBridgeProcesses {
   const proof=await this.peers.read(socket),latest=this.runs.get(runId);if(latest.pid!==context.run.pid||latest.processStartedAt!==context.run.processStartedAt)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生CLI启动身份已改变');let expected:string;try{expected=realpathSync(process.execPath);}catch{throw new ApplicationError('HOST_INCOMPATIBLE','无法核验当前桥执行器');}
   let actualImage:string|null=null;try{if(proof)actualImage=realpathSync(proof.peer.executable);}catch{/* The original image must still be verifiable. */}
   if(!proof)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','无法核验本次桥进程身份，保留启动窗口与占用');
-  if(proof.peer.pid===context.run.pid||actualImage!==expected||!proof.ancestors.some(item=>item.pid===context.run.pid&&item.startedAt===context.run.processStartedAt))throw new ApplicationError('SCOPE_DENIED','连接进程不是本次CLI的受管桥');
+  const belongs=proof.ancestors.some(item=>item.pid===context.run.pid&&item.startedAt===context.run.processStartedAt)||this.options.additionalRoot?.authorize(runId,proof)===true;
+  if(proof.uid!==process.getuid?.()||proof.peer.pid===context.run.pid||actualImage!==expected||!belongs)throw new ApplicationError('SCOPE_DENIED','连接进程不是本次CLI的受管桥');
   const identity={pid:proof.peer.pid,startedAt:proof.peer.startedAt},old=this.tracked.get(handle.processId);
   if(old&&(old.runId!==runId||old.identity.pid!==identity.pid||old.identity.startedAt!==identity.startedAt))throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原桥进程身份不能替换');
   try{await handle.attach(identity.pid,identity.startedAt);}catch(error){

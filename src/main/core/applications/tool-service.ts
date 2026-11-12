@@ -17,7 +17,7 @@ import type { ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
 import type { CapabilityRunRegistry, RunContext } from './run-registry';
 import {requirePlanEntry} from './run-plan';
-import {isApplicationPreflightFailure} from './capability-preflight';
+import {isApplicationPreflightFailure,applicationPreflightFailure} from './capability-preflight';
 import {applicationResultV2Schema} from '@shared/application-result';
 /** AbortSignal.any retains the first reason; a later deadline cannot replace an earlier caller cancellation. */
 const interruptionCode=(signal:AbortSignal,timeout:AbortSignal):'TIMEOUT'|'CANCELED'=>timeout.aborted&&signal.reason===timeout.reason?'TIMEOUT':'CANCELED';
@@ -35,11 +35,23 @@ export interface ApplicationToolHost {
   resolve(packageHash: string,toolName: string,contractMajor: number,entry?:ApplicationEntry): HostToolOperation;
 }
 interface InvocationRow { operation_id: string;request_hash: string;state: 'running' | 'succeeded' | 'failed' | 'unknown';attempt_count: number;effect_state: BridgeFailure['effectState'];error_code: string | null }
-interface SelectedTool { application: InstalledApplicationPackage;declaration: ApplicationManifest['tools'][number];tool: BridgeTool }
+export interface SelectedApplicationTool {
+  application: {appId:string;packageHash:string;manifest:{schema:string}};
+  declaration: Pick<ApplicationManifest['tools'][number],'name'|'contractMajor'|'permission'|'annotations'>;
+  tool: BridgeTool;
+  handler?: HostToolOperation;
+  validators?: {input:(value:unknown)=>{valid:boolean};output:(value:unknown)=>{valid:boolean}};
+}
+/** Separate trust domains share only the authenticated run, budgets and invocation ledger. */
+export interface AdditionalApplicationTools {
+  select(context:RunContext,call:Pick<BridgeToolCall,'operation'|'contractMajor'>,entry:ApplicationEntry):SelectedApplicationTool|undefined;
+  list(context:RunContext,entry:ApplicationEntry):{tools:BridgeTool[];unavailable:{appId:string;code:string}[]};
+  withSelection<T>(context:RunContext,call:Pick<BridgeToolCall,'operation'|'contractMajor'>,entry:ApplicationEntry,work:(selected:SelectedApplicationTool)=>Promise<T>):Promise<T>|undefined;
+}
 const failure = (error: unknown,attempts = 0,effect: BridgeFailure['effectState'] = 'not-started',exhausted = false): BridgeFailure => {
   const code = error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE';
   if(code==='UPSTREAM_RESULT_UNKNOWN')effect='unknown';
-  return { code,message: error instanceof ApplicationError ? error.message : '应用能力本次调用未完成',layer: ['SCOPE_DENIED','APP_NOT_ENABLED','ENTRY_NOT_ACTIVE','SENDER_IDENTITY_REQUIRED','SENDER_IDENTITY_MISMATCH','AUTH_REQUIRED','AUTH_FAILED','AUTHORIZATION_REQUIRED'].includes(code) ? 'auth' : ['CONFIG_INCOMPATIBLE','HOST_INCOMPATIBLE','INVALID_INPUT','INVALID_PACKAGE','TOO_LARGE'].includes(code) ? 'config' : 'provider',retryable: effect !== 'unknown' && (['TRANSIENT_FAILURE','TIMEOUT'].includes(code) || (code === 'RESOURCE_BUSY' && effect === 'read-only')),attemptCount: attempts,retryExhausted: exhausted,effectState: effect,nextAction: effect === 'unknown' ? '查看已有业务执行记录并核实结果，不要自动重发' : exhausted ? '本次重试已结束，请稍后明确重试' : '核对本次错误后重新明确操作' };
+  return { code,message: error instanceof ApplicationError ? error.message : '应用能力本次调用未完成',layer: ['SCOPE_DENIED','PERMISSION_DENIED','APP_NOT_ENABLED','ENTRY_NOT_ACTIVE','SENDER_IDENTITY_REQUIRED','SENDER_IDENTITY_MISMATCH','AUTH_REQUIRED','AUTH_FAILED','AUTHORIZATION_REQUIRED'].includes(code) ? 'auth' : ['CONFIG_INCOMPATIBLE','HOST_INCOMPATIBLE','INVALID_INPUT','INVALID_PACKAGE','TOO_LARGE'].includes(code) ? 'config' : 'provider',retryable: effect !== 'unknown' && (['TRANSIENT_FAILURE','TIMEOUT'].includes(code) || (code === 'RESOURCE_BUSY' && effect === 'read-only')),attemptCount: attempts,retryExhausted: exhausted,effectState: effect,nextAction: effect === 'unknown' ? '查看已有业务执行记录并核实结果，不要自动重发' : exhausted ? '本次重试已结束，请稍后明确重试' : '核对本次错误后重新明确操作' };
 };
 /** Fixed package contracts + run-derived context. No model argument ever selects project or package. */
 export class ApplicationToolService {
@@ -49,15 +61,20 @@ export class ApplicationToolService {
   private readonly pending = new Map<string,{ hash: string;work: Promise<BridgeResponse> }>();
   private readonly cache = new Map<string,{ hash: string;response: BridgeResponse;bytes: number }>();
   private cacheBytes = 0;
-  constructor(readonly store: ResourceStore,private readonly runs: CapabilityRunRegistry,private readonly host: ApplicationToolHost,private readonly options: { retryDelays?: readonly number[];now?: () => number;entry?:ApplicationEntry } = {}) { this.packages = new PackageRegistry(store,'tool-reader'); }
+  constructor(readonly store: ResourceStore,private readonly runs: CapabilityRunRegistry,private readonly host: ApplicationToolHost,private readonly options: { retryDelays?: readonly number[];now?: () => number;entry?:ApplicationEntry;additional?:AdditionalApplicationTools } = {}) { this.packages = new PackageRegistry(store,'tool-reader'); }
   private get entry():ApplicationEntry{return this.options.entry??'mcp';}
   get invocationEntry():ApplicationEntry{return this.entry;}
   private handler(hash:string,operation:string,major:number){return this.entry==='cli'?this.host.resolve(hash,operation,major,'cli'):this.host.resolve(hash,operation,major);}
+  private selectedHandler(selected:SelectedApplicationTool){return selected.handler??this.handler(selected.application.packageHash,selected.declaration.name,selected.declaration.contractMajor);}
+  private withSelection<T>(context:RunContext,call:Pick<BridgeToolCall,'operation'|'contractMajor'>,work:(selected:SelectedApplicationTool)=>Promise<T>):Promise<T>{
+    return this.options.additional?.withSelection(context,call,this.entry,work)??work(this.selected(context,call));
+  }
   private snapshotContracts(context:RunContext){
     if(this.entry==='cli')return context.snapshot.schema===3?context.snapshot.packages.map(selection=>({selection,contracts:selection.capabilityContractMajors})):[];
     return context.snapshot.packages.map(selection=>({selection,contracts:selection.toolContractMajors}));
   }
-  private contractValidator(selected: SelectedTool,kind: 'input' | 'output') {
+  private contractValidator(selected: SelectedApplicationTool,kind: 'input' | 'output') {
+    if(selected.validators)return selected.validators[kind];
     // The package hash fixes these schemas. Fresh parsed objects otherwise make
     // Ajv retain a new compiled environment for every call. Authorization and
     // package integrity are still checked before this compiler lookup.
@@ -77,7 +94,8 @@ export class ApplicationToolService {
     if (!boundedJson(json) || !json || Array.isArray(json) || typeof json !== 'object' || (json as { type?: unknown }).type !== 'object') throw new ApplicationError('INVALID_PACKAGE','工具契约必须是有界JSON对象schema');
     return json as { type: 'object';[key: string]: unknown };
   }
-  private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true,listing?: { application: InstalledApplicationPackage;sources: ReadonlyMap<string,{input:string;output:string}> }): SelectedTool {
+  private selected(context: RunContext,call: Pick<BridgeToolCall,'operation' | 'contractMajor'>,verifyBytes = true,listing?: { application: InstalledApplicationPackage;sources: ReadonlyMap<string,{input:string;output:string}> }): SelectedApplicationTool {
+    const additional=this.options.additional?.select(context,call,this.entry);if(additional)return additional;
     const record=this.snapshotContracts(context).find(p=>Object.hasOwn(p.contracts,call.operation)),selected=record?.selection;
     if (!selected) throw context.unavailableApplication?.(call.operation,this.entry) ?? new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
     if (record?.contracts[call.operation] !== call.contractMajor) throw new ApplicationError('SCOPE_DENIED','此原会话未选用该能力契约');
@@ -110,6 +128,7 @@ export class ApplicationToolService {
         }
         catch (error) { unavailable.push({ appId: application.appId,code: error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE' }); }
       }
+      const additional=this.options.additional?.list(context,this.entry);if(additional){tools.push(...additional.tools);unavailable.push(...additional.unavailable);}
       this.runs.assertActive(runId); return { tools,unavailable };
     });
   }
@@ -119,7 +138,7 @@ export class ApplicationToolService {
       if (!z.uuid().safeParse(requestId).success || !boundedJson(input) || Buffer.byteLength(JSON.stringify(input)) > BRIDGE_LIMITS.requestBytes) throw new ApplicationError('INVALID_INPUT','调用编号或JSON范围无效');
       const parsed = (this.entry==='cli'?cliInvocationCallSchema:bridgeCallSchema).safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','能力调用包含未允许字段或契约无效');
       const call = parsed.data, context = this.runs.assertActive(runId), selected = this.selected(context,call);
-      const handler = this.handler(selected.application.packageHash,call.operation,call.contractMajor);
+      const handler = this.selectedHandler(selected);
       const hash = digest(canonicalJson(call)), key = runId + ':' + requestId, previous = this.pending.get(key) ?? this.cache.get(key);
       if (previous) {
         if (previous.hash !== hash) throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已经用于其他输入');
@@ -156,8 +175,8 @@ export class ApplicationToolService {
     let operationId: string | undefined, attempts = 0, effect: BridgeFailure['effectState'] = 'not-started', exhausted = false, write=false;
     try {
       if (control.signal.aborted) throw new ApplicationError(interruptionCode(control.signal,control.timeout),'本次调用已取消');
-      return await this.runs.withActivity(runId,async context => {
-        const selected = this.selected(context,call), handler = this.handler(selected.application.packageHash,call.operation,call.contractMajor);
+      return await this.runs.withActivity(runId,async context => this.withSelection(context,call,async selected => {
+        const handler = this.selectedHandler(selected);
         write=handler.semantics==='write';
         if (handler.semantics === 'write' && (handler.retry !== 'never' || selected.declaration.annotations.readOnlyHint)) throw new ApplicationError('HOST_INCOMPATIBLE','写操作不能使用通用自动重试');
         if (handler.semantics === 'read' && !selected.declaration.annotations.readOnlyHint) throw new ApplicationError('HOST_INCOMPATIBLE','宿主执行语义与固定工具契约不同');
@@ -178,8 +197,10 @@ export class ApplicationToolService {
           const fresh = this.runs.assertActive(runId); handler.authorize(fresh,call.connectionId); attempts++;
           effect = handler.semantics === 'read' ? 'read-only' : 'unknown';
           await withResourceLock(this.store.root,() => { this.store.sqlite.prepare('UPDATE application_invocations SET attempt_count=?,effect_state=? WHERE operation_id=?').run(attempts,effect,operationId); });
-          if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'执行前调用已取消');
-          this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
+          try{
+            if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'执行前调用已取消');
+            this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
+          }catch(error){throw applicationPreflightFailure(error,operationId!);}
           // An executor may ignore cancellation; its activity lease stays held until it really settles.
           try {
             const value = await handler.execute(fresh,call.arguments,{ operationId: operationId!,requestId,attempt: attempts,deadline,signal,packageHash: selected.application.packageHash,appId: selected.application.appId,toolName: call.operation,contractMajor: call.contractMajor,connectionId: call.connectionId,...(this.entry==='cli'?{entry:this.entry}:{}) });
@@ -200,7 +221,7 @@ export class ApplicationToolService {
             try { await delay(wait,undefined,{ signal }); } catch { throw new ApplicationError(interruptionCode(signal,timeout),'重试等待已取消'); }
           }
         }
-      });
+      }));
     } catch (error) {
       // A cooperative producer reports local cancellation for either upstream
       // cause. Persist the original host deadline cause,without changing effect

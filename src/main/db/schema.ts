@@ -456,3 +456,34 @@ export const capabilitySkillObservations=sqliteTable('capability_skill_observati
 },t=>({pk:primaryKey({columns:[t.runId,t.appId,t.skillId,t.kind]})}));
 
 export const mailSenderConfirmations=sqliteTable('mail_sender_confirmations',{projectId:text('project_id').primaryKey(),bindingHash:text('binding_hash').notNull(),bindingJson:text('binding_json').notNull(),method:text('method').notNull(),receiptId:text('receipt_id').notNull().unique(),senderId:text('sender_id'),confirmedAt:text('confirmed_at').notNull(),recordHash:text('record_hash').notNull()});
+
+export const pluginPackages=sqliteTable('plugin_packages',{
+  packageHash:text('package_hash').primaryKey(),bundleHash:text('bundle_hash').notNull(),appId:text('app_id').notNull(),version:text('version').notNull(),relativePath:text('relative_path').notNull().unique(),manifestJson:text('manifest_json').notNull(),createdAt:text('created_at').notNull(),
+});
+export const pluginInstallations=sqliteTable('plugin_installations',{
+  appId:text('app_id').primaryKey(),packageHash:text('package_hash').references(()=>pluginPackages.packageHash),installed:integer('installed',{mode:'boolean'}).notNull(),enabled:integer('enabled',{mode:'boolean'}).notNull(),revision:integer('revision').notNull(),updatedAt:text('updated_at').notNull(),
+});
+export const pluginLifecycleChanges=sqliteTable('plugin_lifecycle_changes',{
+  changeId:text('change_id').primaryKey(),appId:text('app_id').notNull(),kind:text('kind',{enum:['install','update','uninstall']}).notNull(),fromHash:text('from_hash'),toHash:text('to_hash'),fromRevision:integer('from_revision').notNull(),previousEnabled:integer('previous_enabled',{mode:'boolean'}).notNull(),state:text('state',{enum:['preparing','prepared','swapping','committed','rolled-back','recovery-required']}).notNull(),payloadJson:text('payload_json').notNull(),errorCode:text('error_code'),hostInstanceId:text('host_instance_id').notNull(),createdAt:text('created_at').notNull(),updatedAt:text('updated_at').notNull(),
+},t=>({pending:uniqueIndex('plugin_lifecycle_pending').on(t.appId).where(sql`${t.state} IN ('preparing','prepared','swapping','recovery-required')`)}));
+export const pluginRuntimeLeases=sqliteTable('plugin_runtime_leases',{
+  leaseId:text('lease_id').primaryKey(),appId:text('app_id').notNull(),packageHash:text('package_hash').notNull().references(()=>pluginPackages.packageHash),kind:text('kind',{enum:['invocation','activation']}).notNull(),hostInstanceId:text('host_instance_id').notNull(),hostPid:integer('host_pid').notNull(),hostStartedAt:text('host_started_at').notNull(),pid:integer('pid'),processStartedAt:text('process_started_at'),state:text('state',{enum:['reserved','launching','running','closed']}).notNull(),createdAt:text('created_at').notNull(),endedAt:text('ended_at'),
+});
+export const pluginRuntimeHealth=sqliteTable('plugin_runtime_health',{
+  appId:text('app_id').primaryKey(),failuresJson:text('failures_json').notNull(),paused:integer('paused',{mode:'boolean'}).notNull(),errorCode:text('error_code'),updatedAt:text('updated_at').notNull(),
+});
+export const pluginUiReads=sqliteTable('plugin_ui_reads',{
+  operationId:text('operation_id').primaryKey().references(()=>applicationDataOperations.operationId,{onDelete:'cascade'}),hostInstanceId:text('host_instance_id').notNull(),hostPid:integer('host_pid').notNull(),hostStartedAt:text('host_started_at').notNull(),
+});
+export const pluginWriteApprovals=sqliteTable('plugin_write_approvals',{
+  operationId:text('operation_id').primaryKey().references(()=>applicationInvocations.operationId),approvalId:text('approval_id').notNull().unique(),runId:text('run_id').notNull(),appId:text('app_id').notNull(),packageHash:text('package_hash').notNull(),capability:text('capability').notNull(),inputHash:text('input_hash').notNull(),reviewHash:text('review_hash').notNull(),policyHash:text('policy_hash').notNull(),state:text('state').notNull(),hostInstanceId:text('host_instance_id').notNull(),hostPid:integer('host_pid').notNull(),hostStartedAt:text('host_started_at').notNull(),provenanceJson:text('provenance_json'),createdAt:integer('created_at').notNull(),expiresAt:integer('expires_at').notNull(),decidedAt:integer('decided_at'),
+});
+export const pluginConnectionDefaults=sqliteTable('plugin_connection_defaults',{
+  appId:text('app_id').primaryKey(),connectionId:text('connection_id').references(()=>applicationConnections.id),revision:integer('revision').notNull(),
+});
+export const pluginProjectPreferences=sqliteTable('plugin_project_preferences',{
+  projectId:text('project_id').notNull(),appId:text('app_id').notNull(),mode:text('mode',{enum:['follow','individual']}).notNull(),
+},t=>({pk:primaryKey({columns:[t.projectId,t.appId]}),project:foreignKey({columns:[t.projectId,t.appId],foreignColumns:[applicationProjectSettings.projectId,applicationProjectSettings.appId]}).onDelete('cascade')}));
+export const pluginBuiltinMigrations=sqliteTable('plugin_builtin_migrations',{
+  appId:text('app_id').primaryKey(),migrationVersion:integer('migration_version').notNull(),packageHash:text('package_hash').notNull(),sourceHash:text('source_hash').notNull(),tablesJson:text('tables_json').notNull(),completedAt:text('completed_at').notNull(),
+});

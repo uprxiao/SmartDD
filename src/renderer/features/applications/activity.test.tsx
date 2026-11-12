@@ -17,6 +17,13 @@ const ok=<T,>(value:T)=>({ok:true as const,value});let client:QueryClient;
 function mount(filter={}){client=new QueryClient({defaultOptions:{queries:{retry:false,refetchOnWindowFocus:false}}});render(<QueryClientProvider client={client}><ActivityWorkspace initialFilter={filter}/></QueryClientProvider>);}
 beforeEach(()=>{vi.clearAllMocks();m.activity.mockResolvedValue(ok({items:[item(),send],nextCursor:null,checkedAt:at}));m.activityDetail.mockResolvedValue(ok(detail));m.connections.mockImplementation(async(appId:string)=>ok(appId==='mail'?[{id:uid(11),name:'私有发件账号',appId:'mail'}]:[{id:uid(12),name:'私有禅道',appId:'zentao'}]));m.projects.mockResolvedValue([{id:'p1',name:'项目一'},{id:'p2',name:'项目二'}]);Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.setAttribute('open','');}});Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:()=>{}});});
 afterEach(()=>{cleanup();client?.clear();Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');Reflect.deleteProperty(HTMLDialogElement.prototype,'close');});
+it('shows an uninstalled plugin marker in retained list and detail while preserving the actual call outcome',async()=>{
+ const original=Object.assign(item({appId:'demo-tracker',action:'demo-tracker.items.list',connections:[]}),{pluginState:'uninstalled' as const});
+ m.activity.mockResolvedValue(ok({items:[original],nextCursor:null,checkedAt:at}));m.activityDetail.mockResolvedValue(ok({item:original,send:null}));mount();
+ fireEvent.click(await screen.findByRole('button',{name:/demo-tracker.items.list/}));
+ const dialog=await screen.findByRole('dialog');await within(dialog).findByText('调用完成 · 插件已卸载');expect(screen.getAllByText('调用完成 · 插件已卸载')).toHaveLength(2);
+ expect(m.executeSend).not.toHaveBeenCalled();expect(m.authorizeSend).not.toHaveBeenCalled();
+});
 it('shows browser page, source grant, duration, redacted lengths and original file path without executing an action',async()=>{
  const browser=item({appId:'browser',kind:'browser',id:'72756e_726571',action:'fill',callerKind:'agent-run',taskId:'source-task',taskTitle:'同名任务',runId:'run-browser',requestId:'request-browser',connections:[],browser:{pageId:'page-browser',targetTaskId:'target-task',durationMs:23}});
  const browserDetail:ApplicationActivityDetail={item:browser,send:null,browser:{command:'fill',pageId:'page-browser',targetTaskId:'target-task',durationMs:23,arguments:{element:'@ref',value:{redacted:'已脱敏',length:18}},result:{file:{path:'/private/tmp/synthetic-browser.png',bytes:10}},authorization:{grantId:'user-grant',mode:'control',source:'user'},passwordFill:true}};

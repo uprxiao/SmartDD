@@ -10,6 +10,7 @@ import type {CapabilityRunRegistry,OwnedCapabilityRun,RunContext} from './run-re
 import type {ApplicationToolService} from './tool-service';
 import type {UnixPeerIdentityReader} from './unix-peer-identity';
 import {requirePlanEntry} from './run-plan';
+import type {RunPeerRootAuthorizer} from './run-backend-authority';
 
 interface Binding {runId:string;ttlMs:number;expiresAt:number;timer:ReturnType<typeof setTimeout>;dispose():void}
 
@@ -27,7 +28,7 @@ export class ApplicationCliGateway {
   private readonly tokens=new Map<string,Binding>();
   private readonly peers=new Set<Peer>();
   private readonly pending=new Set<Promise<void>>();
-  constructor(private readonly runs:CapabilityRunRegistry,private readonly tools:ApplicationToolService,private readonly identities:UnixPeerIdentityReader,private readonly options:{executable:{path:string;sha256:string};now?:()=>number;tokenTtlMs?:number}){
+  constructor(private readonly runs:CapabilityRunRegistry,private readonly tools:ApplicationToolService,private readonly identities:UnixPeerIdentityReader,private readonly options:{executable:{path:string;sha256:string};now?:()=>number;tokenTtlMs?:number;additionalRoot?:RunPeerRootAuthorizer}){
     if(!isAbsolute(options.executable.path)||!/^[a-f0-9]{64}$/.test(options.executable.sha256))throw new ApplicationError('INVALID_INPUT','受管CLI资源身份无效');
     if(tools.invocationEntry!=='cli')throw new ApplicationError('HOST_INCOMPATIBLE','独立CLI端点只能连接CLI能力执行入口');
   }
@@ -76,7 +77,7 @@ export class ApplicationCliGateway {
     if(identity.peer.executable!==this.executable())throw new ApplicationError('EXECUTABLE_MISMATCH','对端不是本次受管CLI程序');
     if(this.tokens.get(digest(request.token))!==binding)throw new ApplicationError('AUTH_REQUIRED','本次CLI身份已撤销');
     const run=this.runs.get(binding.runId);
-    if(!run.pid||!run.processStartedAt||!identity.ancestors.some(p=>p.pid===run.pid&&p.startedAt===run.processStartedAt))throw new ApplicationError('PEER_MISMATCH','CLI对端不属于本次受管进程树');
+    if(!run.pid||!run.processStartedAt||!(identity.ancestors.some(p=>p.pid===run.pid&&p.startedAt===run.processStartedAt)||this.options.additionalRoot?.authorize(binding.runId,identity)===true))throw new ApplicationError('PEER_MISMATCH','CLI对端不属于本次受管进程树');
     const context=this.current(binding);
     if(!context.plan?.grades.cli)throw new ApplicationError('ENTRY_NOT_ACTIVE','CLI不是本次生效入口');
     if(request.method==='capabilities/call'){const operation=request.call.operation;if(!context.plan.allowed.some(c=>c.capabilityId===operation)){const disabled=context.unavailableApplication?.(operation,'cli');if(disabled)throw disabled;}requirePlanEntry(context.plan,operation,request.call.contractMajor,'cli');}
@@ -108,11 +109,16 @@ export class ApplicationCliGateway {
       const parsed=cliRequestSchema.safeParse(value);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','CLI协议或请求字段无效');
       const request=parsed.data;id=request.id;method=request.method==='capabilities/list'?'cli-list':request.method==='capabilities/call'?'cli-call':'cli-cancel';
       const context=await this.authenticate(peer,request);
-      if(request.method==='capabilities/list'){const result=await this.tools.list(context.run.runId);return{schema:1,id,status:'ok',value:{capabilities:result.tools.map(({name,...tool})=>({id:name,...tool,command:context.plan?.allowed.find(c=>c.capabilityId===name&&c.entry==='cli')?.cliCommand})),unavailable:result.unavailable,notEnabled:context.notEnabledCommands?.()??[]}};}
+      const external=(name:string)=>context.snapshot.schema===3&&context.snapshot.externalPlugins?.some(p=>p.entry==='cli'&&p.capabilities.some(c=>c.id===name));
+      if(request.method==='capabilities/list'){const result=await this.tools.list(context.run.runId);return{schema:1,id,status:'ok',value:{capabilities:result.tools.map(({name,...tool})=>({id:name,...tool,command:context.plan?.allowed.find(c=>c.capabilityId===name&&c.entry==='cli')?.cliCommand,...(external(name)?{resultContract:'willyou-plugin-result-v1'}:{})})),unavailable:result.unavailable,notEnabled:context.notEnabledCommands?.()??[]}};}
       if(request.method==='cancel'){const work=peer.controllers.get(request.targetId);if(work?.runId===context.run.runId)work.abort.abort();return{schema:1,id,status:'ok',value:{cancelled:!!work}};}
       if(peer.controllers.has(id))throw new ApplicationError('REQUEST_CONFLICT','本连接正在执行同编号调用');
       const abort=new AbortController();peer.controllers.set(id,{runId:context.run.runId,abort});
-      try{return await this.tools.call(context.run.runId,id,request.call,abort.signal);}finally{peer.controllers.delete(id);}
+      try{
+        const response=await this.tools.call(context.run.runId,id,request.call,abort.signal);
+        if(response.status==='ok'&&external(request.call.operation))return{...response,value:{schema:'willyou-plugin-result-v1',capabilityId:request.call.operation,contractMajor:1,data:response.value,operation:{id:response.operationId,requestId:id,effectState:response.effectState}}};
+        return response;
+      }finally{peer.controllers.delete(id);}
     }catch(error){return this.denial(peer,id,method,error instanceof SyntaxError?new ApplicationError('INVALID_INPUT','CLI请求JSON无效'):error);}
   }
   revokeRun(runId:string):void{

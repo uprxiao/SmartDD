@@ -1,11 +1,16 @@
 import type {BrowserService} from '../browser/service';
 import { AgentAdapterRegistry } from './agent-adapter-registry';
+import {PluginHostService,type PluginHostOptions} from './plugins/host-service';
+import {hasExternalPluginOwner} from './plugins/legacy-routing';
+import {pluginPageContextSchema,type PluginUiRead,type PluginPageContext} from '@shared/plugins';
 import {applicationToolDeclarations} from '@shared/application-capabilities';
 import type {ApplicationCapabilityExecution} from './capability-execution';
 import {readDraftSendHistory} from './mail-draft-send-history';
 import {applicationCleanupProgressEvent} from '@shared/events';
 import {ApplicationUiReads} from './ui-read-requests';
-import type {ApplicationHealthChange} from '@shared/events';
+import type {ApplicationHealthChange,PluginRuntimeChange,PluginApprovalChange} from '@shared/events';
+import {pluginApprovalTargetSchema,type PluginWriteDecision} from '@shared/plugin-approval';
+import type {TerminalTarget} from '@shared/file-terminal';
 import {randomUUID} from 'node:crypto';
 import {existsSync} from 'node:fs';
 import {AttachmentExportStore,safeAttachmentFilename} from './attachment-export-store';
@@ -27,6 +32,9 @@ import {canonicalJson,digest} from './manifest';
 import {ApplicationTerminalInsertion} from './terminal-insertion';
 import {resolveApplicationTerminalSource} from './terminal-sources';
 import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
+import type {PluginUiActionRequest} from '@shared/plugin-actions';
+import type {PluginConnectionTarget,PluginConnectionTest,PluginConnectionSave,PluginDefaultInput,PluginDeleteConnection,PluginProjectConnection} from '@shared/plugin-connections';
+import type {ApplicationTerminalProof} from './terminal-insertion';
 import type {PtyAccess} from '../../pty-access';
 import {ApplicationSessionDiagnostics} from './session-diagnostics';
 import {ApplicationVersionMaintenance} from './version-maintenance';
@@ -73,6 +81,7 @@ import type { CapabilityRunRegistry } from './run-registry';
 const uuid=z.uuid();
 /** Main-process composition for actual local business services. Agent runtime attachment is explicit. */
 export class ApplicationService {
+  readonly plugins?:PluginHostService;
   private readonly maintenanceWaits=new MaintenanceWaits();
   readonly terminal?:ApplicationTerminalInsertion;
   readonly sessionDiagnostics:ApplicationSessionDiagnostics;
@@ -106,10 +115,13 @@ export class ApplicationService {
   constructor(readonly store:ResourceStore,private readonly options:{
     browser?:BrowserService;distributionRoot?:string;uiReadRetryDelays?:readonly number[];uiReadTimeoutMs?:number;secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
     terminal?:{access:PtyAccess;bracketedPaste(ptyId:string):Promise<boolean>;write(ptyId:string,data:string):void};
-    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;fileNative?:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;changed?(change?:ApplicationHealthChange):void;
+    openPluginUrl?:(url:string)=>Promise<void>;
+    plugins?:Omit<PluginHostOptions,'processes'|'changed'>&{processes?:ProcessIdentityReader};
+    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;fileNative?:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;changed?(change?:ApplicationHealthChange|PluginRuntimeChange|PluginApprovalChange):void;
   }){
     const processes=options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')),move=(input:Parameters<typeof restoreOwnedDirectory>[1])=>restoreOwnedDirectory(join(dirname(options.foxmailNative),'willyou-process-identity'),input);
     this.readRecoveryProcesses=processes;
+    if(options.plugins)this.plugins=new PluginHostService(store,options.secrets,{...options.plugins,processes:options.plugins.processes??processes,changed:change=>options.changed?.(change)});
     this.versions=new ApplicationVersionMaintenance(store,processes,undefined,move,new ResourceGraphMaintenance(store,processes,move));
     this.activity=new ApplicationActivityService(store);
     this.nativeInputs=new NativeUserInputs({requireSender:options.requireSender,current:target=>this.runs?.inputContext(target.taskId,target.ptyId)??null,mailSendScope:context=>this.nativeMailScope(context.run.projectId)});
@@ -140,8 +152,65 @@ export class ApplicationService {
   }
   observeInput(sender:ApplicationUiSender,target:NativeInputTarget,data:string):void{this.nativeInputs.observe(sender,target,data);this.notifyInvalidSources();}
   private notifyInvalidSources():void{if(this.mailAuthorizations.reconcileSources())try{this.options.changed?.();}catch{/* UI notification cannot replay or change accepted terminal input. */}}
-  attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;}
-  async recover():Promise<void>{await this.connections.recoverSecretChanges();await this.blobs.recover();await recoverApplicationCacheClears(this.store,this.readRecoveryProcesses);await recoverApplicationCacheStatus(this.store,this.readRecoveryProcesses);await recoverApplicationReads(this.store,this.readRecoveryProcesses);await this.versions.recover();
+  attachRuns(runs:CapabilityRunRegistry):void{if(this.runs&&this.runs!==runs)throw new ApplicationError('RESOURCE_BUSY','业务服务已有固定的当前运行注册表');this.runs=runs;this.plugins?.attachRuns(runs);}
+  private pluginService(sender:ApplicationUiSender){this.options.requireSender(sender);if(!this.plugins)throw new ApplicationError('HOST_INCOMPATIBLE','当前平台尚未支持外部插件');return this.plugins;}
+  private pluginOwner(sender:ApplicationUiSender):string {const frame=sender.senderFrame;if(!frame)throw new ApplicationError('SCOPE_DENIED','插件检查需要当前界面身份');return`${sender.sender.id}:${frame.processId}:${frame.routingId}`;}
+  pluginCatalog(sender:ApplicationUiSender){this.options.requireSender(sender);return this.plugins?.catalog()??[];}
+  pluginStartupStatus(sender:ApplicationUiSender){this.options.requireSender(sender);return this.plugins?.startupStatus()??null;}
+  pluginInspect(sender:ApplicationUiSender,path:string,kind:'directory'|'zip',target?:string){return this.pluginService(sender).inspect(this.pluginOwner(sender),path,z.enum(['directory','zip']).parse(kind),target);}
+  pluginInstall(sender:ApplicationUiSender,token:string){return this.pluginService(sender).install(this.pluginOwner(sender),uuid.parse(token));}
+  pluginDiscard(sender:ApplicationUiSender,token:string){this.pluginService(sender).discard(this.pluginOwner(sender),uuid.parse(token));return{discarded:true};}
+  pluginSetEnabled(sender:ApplicationUiSender,appId:string,enabled:boolean,revision:number){return this.pluginService(sender).setEnabled(appId,z.boolean().parse(enabled),z.number().int().nonnegative().parse(revision));}
+  pluginUninstall(sender:ApplicationUiSender,appId:string,deleteData:boolean,revision:number){return this.pluginService(sender).uninstall(appId,z.boolean().parse(deleteData),z.number().int().nonnegative().parse(revision));}
+  pluginRestart(sender:ApplicationUiSender,appId:string){return this.pluginService(sender).restart(appId);}
+  pluginApprovalList(sender:ApplicationUiSender,target:TerminalTarget){
+    this.options.requireSender(sender);const parsed=pluginApprovalTargetSchema.parse(target);if(!this.options.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端授权通道不可用');
+    this.options.terminal.access.authorize(sender,parsed);return this.plugins?.approvals.present(this.pluginOwner(sender),parsed)??[];
+  }
+  pluginApprovalDecide(sender:ApplicationUiSender,input:PluginWriteDecision){
+    const service=this.pluginService(sender),target=pluginApprovalTargetSchema.parse({taskId:input?.taskId,ptyId:input?.ptyId});
+    if(!this.options.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端授权通道不可用');this.options.terminal.access.authorize(sender,target);
+    return service.approvals.decide(this.pluginOwner(sender),input);
+  }
+  pluginRead(sender:ApplicationUiSender,input:PluginUiRead){return this.pluginService(sender).ui.read(this.pluginOwner(sender),input);}
+  pluginPageContext(sender:ApplicationUiSender,input:PluginPageContext){const service=this.pluginService(sender),parsed=pluginPageContextSchema.parse(input);service.selections(parsed.projectId);return service.ui.context(parsed);}
+  pluginCancelRead(sender:ApplicationUiSender,requestId:string){return this.pluginService(sender).ui.cancel(this.pluginOwner(sender),requestId);}
+  pluginConnections(sender:ApplicationUiSender,input:PluginConnectionTarget){return this.pluginService(sender).connections.list(input);}
+  pluginConnectionTest(sender:ApplicationUiSender,input:PluginConnectionTest){return this.pluginService(sender).connections.test(this.pluginOwner(sender),input);}
+  pluginConnectionCancel(sender:ApplicationUiSender,id:string){return this.pluginService(sender).connections.cancel(this.pluginOwner(sender),id);}
+  pluginConnectionDiscard(sender:ApplicationUiSender,id:string){return this.pluginService(sender).connections.discard(this.pluginOwner(sender),id);}
+  pluginConnectionSave(sender:ApplicationUiSender,input:PluginConnectionSave){return this.pluginService(sender).connections.save(this.pluginOwner(sender),input);}
+  pluginDefaultPlan(sender:ApplicationUiSender,input:PluginDefaultInput){return this.pluginService(sender).connections.planDefault(input);}
+  pluginDefaultSave(sender:ApplicationUiSender,input:PluginDefaultInput){return this.pluginService(sender).connections.setDefault(input);}
+  pluginDeleteConnectionPlan(sender:ApplicationUiSender,input:PluginDeleteConnection){return this.pluginService(sender).connections.planDelete(input);}
+  pluginDeleteConnection(sender:ApplicationUiSender,input:PluginDeleteConnection){return this.pluginService(sender).connections.delete(input);}
+  pluginProjectSettings(sender:ApplicationUiSender,input:PluginConnectionTarget,projectId:string){return this.pluginService(sender).connections.project(input,z.string().min(1).max(128).parse(projectId));}
+  pluginProjectSave(sender:ApplicationUiSender,input:PluginProjectConnection){return this.pluginService(sender).connections.setProject(input);}
+  pluginPrepareAction(sender:ApplicationUiSender,input:PluginUiActionRequest){return this.pluginService(sender).ui.actions.prepare(this.pluginOwner(sender),input);}
+  pluginReleaseAction(sender:ApplicationUiSender,id:string){return this.pluginService(sender).ui.actions.release(this.pluginOwner(sender),uuid.parse(id));}
+  pluginReviewAction(sender:ApplicationUiSender,id:string){return this.pluginService(sender).ui.actions.proof(this.pluginOwner(sender),uuid.parse(id)).value;}
+  async pluginOpenAction(sender:ApplicationUiSender,id:string){
+    const service=this.pluginService(sender),owner=this.pluginOwner(sender),proof=service.ui.actions.proof(owner,uuid.parse(id));
+    if(proof.value.kind!=='openUrl'||!this.options.openPluginUrl)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前页面动作无法打开网址');
+    const claimed=service.ui.actions.consume(owner,id);
+    try{claimed.assert();try{await this.options.openPluginUrl(proof.value.url);}catch{throw new ApplicationError('UPSTREAM_RESULT_UNKNOWN','打开网址的结果未确认，不自动重试');}return{opened:true};}
+    finally{service.ui.actions.release(owner,id);}
+  }
+  async pluginTerminalProof(sender:ApplicationUiSender,input:ApplicationTerminalBind):Promise<ApplicationTerminalProof>{
+    if(input.source.kind!=='pluginAction')throw new ApplicationError('INVALID_INPUT','插件页面引用类型无效');
+    const service=this.pluginService(sender),proof=service.ui.actions.proof(this.pluginOwner(sender),input.source.actionId),value=proof.value;
+    if(value.kind!=='insertTerminal'||value.appId!==input.source.appId||value.projectId!==input.projectId)throw new ApplicationError('SCOPE_DENIED','插件引用不属于目标项目');
+    const context=this.runs?.inputContext(input.target.taskId,input.target.ptyId),runId=context?.run.runId;
+    if(!runId)throw new ApplicationError('SCOPE_DENIED','插件引用需要实际运行中的终端');
+    const assert=()=>{
+      proof.assert();const current=this.runs?.inputContext(input.target.taskId,input.target.ptyId),task=this.store.sqlite.prepare('SELECT project_id,archived_at FROM tasks WHERE id=?').get(input.target.taskId) as {project_id:string|null;archived_at:number|null}|undefined;
+      if(!current||current.run.runId!==runId||current.run.projectId!==input.projectId||task?.project_id!==input.projectId||task.archived_at!==null||current.snapshot.schema!==3)throw new ApplicationError('SCOPE_DENIED','原插件引用的运行任务已变化');
+      const selected=current.snapshot.externalPlugins?.find(p=>p.appId===value.appId),now=service.policy.capture(input.projectId).find(p=>p.appId===value.appId);
+      if(!selected||!now||canonicalJson(selected.connections)!==canonicalJson(now.connections))throw new ApplicationError('SCOPE_DENIED','原会话未加载该插件或使用不同连接，请重启会话后插入');
+    };
+    assert();return{text:value.text,runId,assert,inspect:async()=>{assert();}};
+  }
+  async recover():Promise<void>{await this.plugins?.recover();await this.connections.recoverSecretChanges();await this.blobs.recover();await recoverApplicationCacheClears(this.store,this.readRecoveryProcesses);await recoverApplicationCacheStatus(this.store,this.readRecoveryProcesses);await recoverApplicationReads(this.store,this.readRecoveryProcesses);await this.versions.recover();
     const unfinished=this.store.sqlite.prepare("SELECT 1 FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing') LIMIT 1").get();
     if(unfinished)try{await this.mailExecution();}catch(error){this.mailRecoveryIssue={code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:'原邮件执行的恢复核查尚未完成；保留原结果，不自动重发'};}
   }
@@ -159,20 +228,21 @@ export class ApplicationService {
   listActivity(sender:ApplicationUiSender,input:ApplicationActivityQuery={}){this.options.requireSender(sender);return{...this.activity.list(input),recoveryIssue:this.mailRecoveryIssue};}
   activityDetail(sender:ApplicationUiSender,kind:'operation'|'send'|'browser',id:string){this.options.requireSender(sender);const detail=this.activity.detail(kind,id),result=detail.item.projectId&&existsSync(join(this.blobs.root,'attachment-exports'))?this.attachmentExportService().forOperation(detail.item.projectId,id):undefined;return{...detail,...(result?{attachmentSave:result}:{}),recoveryIssue:this.mailRecoveryIssue};}
   catalog(sender:ApplicationUiSender){
-    this.options.requireSender(sender);return builtinApplicationModules.appIds().map(appId=>{
+    this.options.requireSender(sender);return builtinApplicationModules.appIds().filter(appId=>!hasExternalPluginOwner(this.store.sqlite,appId)).map(appId=>{
       const active=this.builtin.packages.active(appId),versions=this.builtin.packages.list().filter(p=>p.appId===appId),current=versions.find(p=>p.packageHash===active?.packageHash);
       return{...this.selections.catalogState(appId),displayName:current?.manifest.displayName??builtinApplicationModules.module(appId).presentation.displayName,presentation:structuredClone(builtinApplicationModules.module(appId).presentation),slots:[...builtinApplicationModules.module(appId).slots],stopBeforeSwitch:builtinApplicationModules.module(appId).stopBeforeSwitch,providers:builtinApplicationModules.module(appId).providers.map(p=>builtinApplicationModules.providerPresentation(p.id)),description:current?.manifest.description??'',defaultPackageHash:active?.packageHash??null,version:current?.version??null,skills:current?.manifest.skills.map(s=>({id:s.id,description:s.description}))??[],tools:(current?applicationToolDeclarations(current.manifest):[]).map(t=>({name:t.name,permission:t.permission,readOnly:t.annotations.readOnlyHint}))??[],versions:versions.map(p=>({packageHash:p.packageHash,version:p.version,state:p.state,defaultForNewSessions:p.packageHash===active?.packageHash})),connectionCount:this.connections.count(appId)};
     });
   }
   private management<T>(sender:ApplicationUiSender,appId:ApplicationId,action:string,semantics:'read'|'write',work:(context:import('./execution-context').ApplicationExecutionContext)=>Promise<T>,projectId?:string):Promise<T>{
-    applicationIdSchema.parse(appId);if(projectId)this.options.projects.getProject(projectId);
+    this.options.requireSender(sender);applicationIdSchema.parse(appId);this.requireBuiltinRoute(appId);if(projectId)this.options.projects.getProject(projectId);
     return this.contexts.withManagement(sender,{appId,action,semantics,projectId},async context=>{const value=await work(context);if(semantics==='write'){this.contexts.invalidate();await this.data.connectionsChanged();if(this.executionPromise)await(await this.executionPromise).invalidatePolicies();this.options.changed?.();}return value;});
   }
+  private requireBuiltinRoute(appId:string):void{if(hasExternalPluginOwner(this.store.sqlite,appId))throw new ApplicationError('CAPABILITY_UNAVAILABLE','该能力已由外部插件管理，请从外部插件入口访问；卸载后不会回退内置版本');}
   setAdded(sender:ApplicationUiSender,appId:ApplicationId,added:boolean,expectedRevision:number){return this.management(sender,appId,'application.add','write',()=>this.selections.setAdded(appId,z.boolean().parse(added),z.number().int().nonnegative().parse(expectedRevision)));}
   setEnabled(sender:ApplicationUiSender,appId:ApplicationId,enabled:boolean,expectedRevision:number){return this.management(sender,appId,'application.enable','write',()=>this.selections.setGlobalEnabled(appId,z.boolean().parse(enabled),z.number().int().nonnegative().parse(expectedRevision)));}
   projectSettings(sender:ApplicationUiSender,projectId:string,appId:ApplicationId){return this.management(sender,appId,'application.project.read','read',async()=>this.selections.projectView(projectId,appId),projectId);}
   invokeCapability(sender:ApplicationUiSender,projectId:string,appId:ApplicationId,capabilityId:string,input:unknown){
-    this.options.requireSender(sender);this.options.projects.getProject(projectId);applicationIdSchema.parse(appId);
+    this.options.requireSender(sender);this.requireBuiltinRoute(appId);this.options.projects.getProject(projectId);applicationIdSchema.parse(appId);
     const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','应用没有可用版本');const application=this.builtin.assertTrusted(active.packageHash),capability=builtinApplicationModules.capabilityViews(application.manifest).find(c=>c.id===capabilityId);
     if(!capability)throw new ApplicationError('SCOPE_DENIED','项目应用未声明此能力');
     return this.contexts.withUi(sender,{projectId,appId,action:'ui.capability.invoke',operations:[capability.permission],semantics:capability.semantics==='read'?'read':'write',...(capability.retry==='safe-read'?{retry:'safe-read' as const}:{})},context=>this.capabilities.execute(this.contexts.caller(context),capability.id,capability.contractMajor,input));
@@ -181,7 +251,7 @@ export class ApplicationService {
   projectAction(sender:ApplicationUiSender,projectId:string,appId:ApplicationId,input:unknown){return this.management(sender,appId,'application.project.action','write',context=>{const action=this.data.policy(appId)?.action;if(!action)throw new ApplicationError('SCOPE_DENIED','此应用没有项目页面专属动作');return action(context,sender,input);},projectId);}
   select(sender:ApplicationUiSender,input:ProjectApplicationSelectionInput){const value=this.connections.registry.parseSelection(input);return this.management(sender,value.appId,'application.project.select','write',()=>this.selections.select(value),value.projectId);}
   listConnections(sender:ApplicationUiSender,appId:ApplicationId){return this.management(sender,appId,'connection.list','read',async()=>this.connections.list(appId));}
-  testConnection(sender:ApplicationUiSender,input:SaveApplicationConnection){const value=this.connections.registry.parseSave(input),appId=this.connections.registry.providerApplication(value.config.kind);return this.contexts.withManagement(sender,{appId,action:'connection.test',semantics:'write'},async context=>{if(value.id){const known=this.connections.get(value.id);if(known.appId!==appId)throw new ApplicationError('SCOPE_DENIED','原连接不属于当前应用');await this.contexts.subject(context,'connection',known.id);}const tested=await this.connections.testCandidate(value,context.signal,work=>this.contexts.retainActivity(context,work));await this.contexts.subject(context,'connection',tested.connectionId);return tested;});}
+  testConnection(sender:ApplicationUiSender,input:SaveApplicationConnection){const value=this.connections.registry.parseSave(input),appId=this.connections.registry.providerApplication(value.config.kind);this.options.requireSender(sender);this.requireBuiltinRoute(appId);return this.contexts.withManagement(sender,{appId,action:'connection.test',semantics:'write'},async context=>{if(value.id){const known=this.connections.get(value.id);if(known.appId!==appId)throw new ApplicationError('SCOPE_DENIED','原连接不属于当前应用');await this.contexts.subject(context,'connection',known.id);}const tested=await this.connections.testCandidate(value,context.signal,work=>this.contexts.retainActivity(context,work));await this.contexts.subject(context,'connection',tested.connectionId);return tested;});}
   saveConnection(sender:ApplicationUiSender,appId:ApplicationId,operationId:string,candidateHash:string,acceptedImpactHash?:string){
     uuid.parse(operationId);z.string().regex(/^[a-f0-9]{64}$/).parse(candidateHash);
     return this.management(sender,appId,'connection.save','write',async context=>{
@@ -257,9 +327,9 @@ export class ApplicationService {
   mailMessage(sender:ApplicationUiSender,projectId:string,reference:MailSourceRef){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.read',operations:['mail.read'],semantics:'read'},scope=>this.capabilities.forUi(scope,'mail.message.read',{reference}) as ReturnType<MailReadDataService['read']>);}
   mailResource(sender:ApplicationUiSender,projectId:string,input:unknown){return this.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.resource',operations:['mail.read'],semantics:'read'},scope=>this.capabilities.forUi(scope,'mail.resource.read',input) as ReturnType<MailReadDataService['resource']>);}
   cancelUiRead(sender:ApplicationUiSender,requestId:string){this.options.requireSender(sender);return this.uiReads.cancel(sender,requestId);}
-  zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.capabilities.forUi(scope,'zentao.object.list',input) as Promise<ZentaoWorkData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
-  zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.capabilities.forUi(scope,'zentao.object.get',input) as Promise<ZentaoDetailData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
-  zentaoResource(sender:ApplicationUiSender,projectId:string,input:unknown,requestId?:string){this.options.requireSender(sender);const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.resource',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.resources.read(scope,input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+  zentaoWork(sender:ApplicationUiSender,projectId:string,input:ZentaoWorkInput,requestId?:string){this.options.requireSender(sender);this.requireBuiltinRoute('zentao');const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.work',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.capabilities.forUi(scope,'zentao.object.list',input) as Promise<ZentaoWorkData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+  zentaoObject(sender:ApplicationUiSender,projectId:string,input:ZentaoDetailInput,requestId?:string){this.options.requireSender(sender);this.requireBuiltinRoute('zentao');const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.object',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.capabilities.forUi(scope,'zentao.object.get',input) as Promise<ZentaoDetailData>);return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
+  zentaoResource(sender:ApplicationUiSender,projectId:string,input:unknown,requestId?:string){this.options.requireSender(sender);this.requireBuiltinRoute('zentao');const read=(signal?:AbortSignal)=>this.contexts.withUi(sender,{projectId,appId:'zentao',action:'ui.zentao.resource',operations:['zentao.read'],semantics:'read',retry:'safe-read',signal},scope=>this.resources.read(scope,input));return requestId===undefined?read():this.uiReads.run(sender,requestId,read);}
   /** Shared only inside this host; every business read must still check its own execution context. */
   mailCache():Promise<MailCache>{
     if(this.closed)return Promise.reject(new ApplicationError('CANCELED','邮件缓存服务已停止'));
@@ -287,6 +357,6 @@ export class ApplicationService {
   });}
   dispose():Promise<void>{
     if(this.closing)return this.closing;this.closed=true;this.uiReads.dispose();this.terminal?.dispose();this.nativeMessages.dispose();this.nativeInputs.dispose();this.fileAttachments.dispose();this.attachmentOpeners?.dispose();const sending=this.executionPromise?.then(engine=>engine.dispose(),()=>undefined);this.mailAuthorizations.dispose();const mail=this.mailReads.dispose(),contexts=this.contexts.dispose(),cache=this.cachePromise?.then(value=>value.dispose(),()=>undefined);
-    const exports=this.attachmentExports?.dispose();const maintenance=this.maintenanceWaits.dispose();this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending,exports,maintenance,this.cacheRepairPromise,this.data.dispose(),this.options.browser?.dispose()]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
+    const exports=this.attachmentExports?.dispose();const maintenance=this.maintenanceWaits.dispose();this.closing=(async()=>{const results=await Promise.allSettled([contexts,mail,cache,sending,exports,maintenance,this.cacheRepairPromise,this.data.dispose(),this.options.browser?.dispose(),this.plugins?.close()]);for(const result of results)if(result.status==='rejected')throw result.reason;})();return this.closing;
   }
 }

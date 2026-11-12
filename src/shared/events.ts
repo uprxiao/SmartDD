@@ -18,8 +18,10 @@ export const browserChangedEvent=defineEvent<{taskId:string}>('browser:changed')
 export const browserAccessChangedEvent=defineEvent<Record<string,never>>('browser:access-changed');
 export const browserShortcutEvent=defineEvent<{taskId:string;action:BrowserShortcut}>('browser:shortcut');
 export interface ApplicationHealthChange {kind:'health';appId:ApplicationId;connectionId:string}
+export interface PluginRuntimeChange {kind:'plugin-runtime';appId:string}
+export interface PluginApprovalChange {kind:'plugin-approval';taskId:string}
 export const applicationCleanupProgressEvent = defineEvent<ApplicationCleanupProgress>('applications:cleanup-progress');
-export const applicationsChangedEvent = defineEvent<ApplicationHealthChange|undefined>('applications:changed');
+export const applicationsChangedEvent = defineEvent<ApplicationHealthChange|PluginRuntimeChange|PluginApprovalChange|undefined>('applications:changed');
 export const fileWatchEvent = defineEvent<FileWatchUpdate>('files:watch');
 export const fileSearchEvent = defineEvent<FileSearchProgress>('files:search');
 export const fileCloseEvent = defineEvent<FileCloseRequest>('files:close-request');

@@ -1,3 +1,4 @@
+import {hasExternalPluginOwner} from './plugins/legacy-routing';
 import {ApplicationError} from '@shared/applications';
 import {applicationInvocationDeclarations,applicationToolDeclarations,type ApplicationEntry} from '@shared/application-capabilities';
 import type {CapabilitySessionSnapshotV3} from '@shared/application-session-v3';
@@ -21,7 +22,7 @@ export class CurrentApplicationAuthorization {
 
   selectedApps(projectId:string):{appId:string;packageHash:string}[]{
     const rows=this.store.sqlite.prepare('SELECT s.app_id AS appId FROM application_project_settings s JOIN application_catalog_state c ON c.app_id=s.app_id WHERE s.project_id=? AND s.enabled=1 AND c.added=1 AND c.enabled=1 ORDER BY s.app_id').all(projectId) as {appId:string}[];
-    return rows.map(({appId})=>{const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','选用应用尚无可用的默认版本');return{appId,packageHash:active.packageHash};});
+    return rows.filter(({appId})=>this.modules.appIds().some(id=>id===appId)&&!hasExternalPluginOwner(this.store.sqlite,appId)).map(({appId})=>{const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','选用应用尚无可用的默认版本');return{appId,packageHash:active.packageHash};});
   }
 
   bindings(projectId:string,appIds:readonly string[]):RunBindingRevision[]{

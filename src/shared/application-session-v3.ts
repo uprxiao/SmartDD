@@ -1,9 +1,12 @@
 import {z} from 'zod';
 import {capabilitySessionSnapshotSchema,applicationNativeSkillName} from './application-session';
+import {pluginSessionSelectionSchema} from './plugin-session';
 const fields=capabilitySessionSnapshotSchema.shape;
 /** Transport-independent snapshots. The schema-2 parser remains intact for historical sessions. */
 export const capabilitySessionSnapshotV3Schema=z.object({
   ...fields,schema:z.literal(3),
+  // Optional without a default: historical v3 snapshots retain their exact canonical bytes/hash.
+  externalPlugins:z.array(pluginSessionSelectionSchema).max(32).optional(),
   packages:z.array(fields.packages.element.extend({
     // R1.0 R16: library sessions keep application Skills in the shared library, not in the snapshot.
     skills:z.array(fields.packages.element.shape.skills.element).max(64),
@@ -15,10 +18,15 @@ export const capabilitySessionSnapshotV3Schema=z.object({
   if(Object.keys(snapshot.adapterBinding.nativeToolNames).length>512||new Set(Object.values(snapshot.adapterBinding.nativeToolNames)).size!==Object.keys(snapshot.adapterBinding.nativeToolNames).length)fail('原生工具映射重复或超过预算');
   if(snapshot.adapterBinding.id!==snapshot.runner||snapshot.legacyBinding||snapshot.provenance!=='created'||snapshot.adapterBinding.projectionFormatVersion!==1)fail('新快照不能冒充旧格式迁移');
   if(new Set(snapshot.packages.map(p=>p.appId)).size!==snapshot.packages.length||new Set(snapshot.standardSkills.map(s=>s.skillId)).size!==snapshot.standardSkills.length)fail('快照应用或标准Skill重复');
+  const plugins=snapshot.externalPlugins??[],allIds=[...snapshot.packages.map(p=>p.appId),...plugins.map(p=>p.appId)];
+  if(new Set(allIds).size!==allIds.length||allIds.length>32)fail('内置应用和外部插件身份重复或超限');
+  const nativeTools=[...snapshot.packages.flatMap(p=>Object.keys(p.toolContractMajors)),...plugins.flatMap(p=>p.capabilities.flatMap(c=>[c.mcpTool,...c.aliases]))];
+  if(new Set(nativeTools).size!==nativeTools.length||nativeTools.length>512)fail('内置与插件工具名称重复或超限');
   const skills=snapshot.packages.flatMap(p=>p.skills),paths=[...skills.map(s=>s.projectionPath),...snapshot.standardSkills.map(s=>s.projectionPath)];
   if(new Set(paths).size!==paths.length||new Set(skills.map(s=>s.nativeName)).size!==skills.length)fail('Skill名称或投影路径重复');
   if(new Set(snapshot.mcp.map(m=>m.serverName)).size!==snapshot.mcp.length||new Set(snapshot.mcp.map(m=>m.kind)).size!==snapshot.mcp.length)fail('MCP名称或桥类别重复');
   const requiringMcp=snapshot.packages.filter(p=>Object.keys(p.toolContractMajors).length>0),bridge=snapshot.mcp.find(m=>m.kind==='applications');
+  if(plugins.some(p=>p.entry==='mcp'&&p.capabilities.length)&&!bridge)fail('外部插件须挂载应用桥');
   if(requiringMcp.length&&(!bridge||requiringMcp.some(p=>p.runtimeHash!==bridge.runtimeHash)))fail('MCP能力须有对应的固定业务桥');
   // R1.0 R17: every managed run mounts the application bridge, even before an MCP application is enabled.
   for(const p of snapshot.packages){

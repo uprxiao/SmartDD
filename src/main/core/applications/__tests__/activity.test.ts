@@ -6,12 +6,29 @@ let f:Awaited<ReturnType<typeof runFixture>>,activity:ApplicationActivityService
 const when='2026-10-20T12:00:00.000Z',source=randomUUID(),other=randomUUID();
 beforeEach(async()=>{f=await runFixture();activity=new ApplicationActivityService(f.store);});
 afterEach(async()=>{await f.runs.dispose();f.cleanup();});
-function put(over:{id?:string;app?:'mail'|'zentao';project?:string|null;at?:string;targets?:unknown;caller?:'ui'|'agent-run'|'index-job';state?:string;action?:string;runId?:string;taskId?:string}={}){
+function put(over:{id?:string;app?:'mail'|'zentao'|'demo-tracker';project?:string|null;at?:string;targets?:unknown;caller?:'ui'|'agent-run'|'index-job';state?:string;action?:string;runId?:string;taskId?:string}={}){
  const id=over.id??randomUUID(),caller=over.caller??'ui',project=over.project===undefined?'p1':over.project;
  f.sqlite.prepare(`INSERT INTO application_data_operations(operation_id,caller_kind,scope_kind,project_id,task_id,run_id,job_id,parent_operation_id,app_id,package_hash,data_api,action,semantics,scope_hash,targets_json,state,started_at) VALUES(@id,@caller,@scope,@project,@task,@run,@job,@parent,@app,'private-package',1,@action,'read','scope',@targets,@state,@at)`).run({id,caller,scope:caller==='index-job'?'internal-index':project===null?'connection-management':'project',project,task:over.taskId??null,run:over.runId??null,job:caller==='index-job'?randomUUID():null,parent:caller==='index-job'?randomUUID():null,app:over.app??'mail',action:over.action??'mail.query',targets:JSON.stringify(over.targets??[]),state:over.state??'succeeded',at:over.at??when});return id;
 }
 
 describe('persistent read-only application activity',()=>{
+ it('marks retained plugin calls and project authorizations uninstalled without changing their original outcome',()=>{
+  const call=put({app:'demo-tracker',action:'demo-tracker.items.list'}),authorization=put({app:'demo-tracker',action:'application.project.select'}),builtin=put({app:'mail'});
+  f.sqlite.prepare('INSERT INTO plugin_installations VALUES(?,NULL,0,0,1,?)').run('demo-tracker',when);
+  for(const id of[call,authorization])expect(activity.detail('operation',id).item).toMatchObject({id,state:'succeeded',pluginState:'uninstalled'});
+  expect(activity.list({appId:'demo-tracker'}).items.map(item=>item.id).sort()).toEqual([call,authorization].sort());
+  expect(activity.list().items.find(i=>i.id===builtin)).not.toHaveProperty('pluginState');
+  expect(f.sqlite.prepare('SELECT state FROM application_data_operations WHERE operation_id=?').get(call)).toEqual({state:'succeeded'});
+ });
+ it('reads the original plugin connectionId provenance after deletion and filters by that exact historical connection',()=>{
+  const target={slot:'demo-local',connectionId:source,identityRevision:1,revision:1,configRevision:1,policyRevision:1,secretRevision:1};
+  const id=put({app:'demo-tracker',action:'demo-tracker.items.list',targets:[target]});
+  expect(activity.detail('operation',id).item.connections).toEqual([{id:source,name:null}]);
+  expect(activity.list({appId:'demo-tracker',connectionId:source}).items.map(item=>item.id)).toEqual([id]);
+  expect(activity.list({connectionId:other}).items).toEqual([]);
+  f.sqlite.prepare('UPDATE application_data_operations SET targets_json=? WHERE operation_id=?').run(JSON.stringify([{...target,id:other}]),id);
+  expect(()=>activity.list({connectionId:source})).toThrow(/来源记录损坏/);
+ });
  it('deduplicates the Data API and bridge ledger while preserving the true source,request and attempt count',async()=>{
   const run=await f.create(),id=put({caller:'agent-run',targets:[{id:source}],runId:run.runId,taskId:f.snapshot.taskId}),request=randomUUID();
   f.sqlite.prepare(`INSERT INTO application_invocations(operation_id,run_id,request_id,request_hash,project_id,task_id,app_id,package_hash,tool_name,contract_major,connection_id,semantics,state,attempt_count,error_code,effect_state,started_at) VALUES(?,?,?,'request','p1',?,'mail','private-package','smartdd_mail_query_v1',1,?,'read','succeeded',3,NULL,'read-only',?)`).run(id,run.runId,request,f.snapshot.taskId,source,when);

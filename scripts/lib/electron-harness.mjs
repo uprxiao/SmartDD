@@ -7,6 +7,7 @@ import { writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
+import { isM13PreEntryRun } from "./electron-isolation-paths.mjs";
 
 const require = createRequire(import.meta.url);
 export const pause = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -57,7 +58,8 @@ export async function openElectron({
     !startupMainHook ||
       (inspectMain &&
         (executable?.startsWith("/private/tmp/willyou-m10-") ||
-          executable?.startsWith("/private/tmp/willyou-m11-s7/"))),
+          executable?.startsWith("/private/tmp/willyou-m11-s7/") ||
+          isM13PreEntryRun(executable,userData,extraEnv.HOME))),
     "Pre-entry hook requires this explicit private inspected App",
   );
   const child = spawn(

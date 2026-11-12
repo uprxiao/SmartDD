@@ -6,9 +6,10 @@ import { AGENTS, ATTENTION, BUILTIN_CAPS, CAPABILITIES, CLAUDE_TIERS, DISCOVERY_
 import { pluginAccent } from './m13-icons.jsx';
 import { Btn, Dialog, Mark, Menu, Pill } from './m13-ui.jsx';
 import { MailDrafts, ZentaoWork, ConnectionDefaultDialog, ConnectionDeleteDialog, BuiltinGroup } from './M13Pages.jsx';
+import {P1_SCENES,P1MigrationNotice,P1WritePreview} from './M13P1States.jsx';
 import './m13.css';
 
-export const SCENES = [['normal', '正常'], ['loading', '插件目录加载中'], ['plugin-crash', '禅道插件进程异常'], ['zentao-partial', '禅道列表第 2 页读取失败'], ['magpie-down', 'Magpie 未运行'], ['model-changed', 'Codex 全局模型被会话修改'], ['codex-unverified', 'Codex 版本未验证'], ['login-api', 'Claude Code 改用 API Key 登录'], ['claude-logout', 'Claude Code 已退出登录'], ['codex-login', 'Codex 已登录订阅'], ['codex-missing', '没有安装 Codex']];
+export const SCENES = [['normal', '正常'], ['loading', '插件目录加载中'], ['plugin-crash', '禅道插件进程异常'], ['zentao-partial', '禅道列表第 2 页读取失败'], ['magpie-down', 'Magpie 未运行'], ['model-changed', 'Codex 全局模型被会话修改'], ['codex-unverified', 'Codex 版本未验证'], ['login-api', 'Claude Code 改用 API Key 登录'], ['claude-logout', 'Claude Code 已退出登录'], ['codex-login', 'Codex 已登录订阅'], ['codex-missing', '没有安装 Codex'],...P1_SCENES];
 
 /** M13 原型共享状态（审核 P01）：在 App 层创建，M13 各页、首页运行配置选择共用；只存内存，刷新页面后重置。 */
 export function useM13State() {
@@ -24,17 +25,22 @@ export function useM13State() {
   const [builtins, setBuiltins] = useState(BUILTIN_CAPS);
   const [tools, setTools] = useState(TOOLS);
   const [scene, setScene] = useState('normal'); // 演示场景：插件页与“设置 › 智能体”共用
-  return { plugins, setPlugins, retained, setRetained, caps, setCaps, autoManage, setAutoManage, providers, setProviders, configs, setConfigs, defaults, setDefaults, bindings, setBindings, drafts, setDrafts, builtins, setBuiltins, tools, setTools, scene, setScene };
+  const selectScene = value => {setScene(value);if(value==='p1-default-missing')setDefaults(d=>({...d,zentao:{...d.zentao,zentao:null}}));};
+  return { plugins, setPlugins, retained, setRetained, caps, setCaps, autoManage, setAutoManage, providers, setProviders, configs, setConfigs, defaults, setDefaults, bindings, setBindings, drafts, setDrafts, builtins, setBuiltins, tools, setTools, scene, setScene:selectScene };
 }
 
 export function M13Workspace({ route, nav, projects, tasks = [], dark, onTheme, onTryPrompt, onInsertReference, store }) {
   const [, page = 'plugins', sub, sub2] = route.split('/');
-  const { plugins, setPlugins, retained, setRetained, caps, setCaps, autoManage, setAutoManage, providers, setProviders, configs, setConfigs, defaults, setDefaults, bindings, setBindings, scene, setScene } = store;
+  const { plugins:installedPlugins, setPlugins, retained, setRetained, caps, setCaps, autoManage, setAutoManage, providers, setProviders, configs, setConfigs, defaults, setDefaults, bindings, setBindings, scene, setScene } = store;
+  // A failed migration must not claim the successful external-plugin identity.
+  // This projects only synthetic display metadata; connections/bindings stay intact.
+  const plugins=installedPlugins.map(p=>p.id!=='zentao'?p:scene==='p1-migration-failed'?{...p,builtin:true,migratedFrom:null,dataDir:null,description:'原内置禅道。迁移未完成，连接、项目设置与数据仍保留。'}:scene==='p1-migration-uncertain'?{...p,migratedFrom:'迁移状态待核查，未确认完成',description:'原禅道数据已保留，请重新启动后核对迁移状态。'}:p);
   const SUBPAGES = { mail: ['drafts', '草稿', FileText], zentao: ['work', '我的工作', ListTodo] };
   const [modal, setModal] = useState(null);
   const [menu, setMenu] = useState(null);
   const [toast, setToast] = useState('');
   const toastTimer = useRef(null);
+  useEffect(()=>{setToast('');setMenu(null);clearTimeout(toastTimer.current);},[scene]);
   const notify = text => { clearTimeout(toastTimer.current); setToast(text); toastTimer.current = setTimeout(() => setToast(''), 3200); };
   useEffect(() => { const close = e => { if (!e.target.closest?.('.m10-menu-wrap')) setMenu(null); }; document.addEventListener('mousedown', close); return () => document.removeEventListener('mousedown', close); }, []);
   const contentRef = useRef(null);
@@ -57,14 +63,17 @@ export function M13Workspace({ route, nav, projects, tasks = [], dark, onTheme, 
       <div className="m10-sidebar-bottom"><img src="/assets/app-icon.png" alt="" /><span>WillYou</span><span className="m10-phase-tag">M13</span></div>
     </aside>
     <div className="m10-main">
-      <div className="m10-previewbar m13-previewbar"><span>M13 原型 · 合成数据，不读取真实插件、CLI 配置或密钥；唯一例外是 SMG 供应商：经开发服务器真实请求，Key 只在页面内存</span><label>演示场景<select value={scene} onChange={e => setScene(e.target.value)}>{SCENES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label><Btn icon={dark ? Sun : Moon} label={dark ? '切换浅色主题' : '切换深色主题'} onClick={onTheme} /></div>
+      <div className="m10-previewbar m13-previewbar"><span>M13 原型 · 合成数据，不读取真实插件、CLI 配置或密钥；唯一例外是 SMG 供应商：经开发服务器真实请求，Key 只在页面内存</span><label>演示场景<select value={scene} onChange={e => {const value=e.target.value;setScene(value);if(value.startsWith('p1-write-')||value.startsWith('p1-migration-'))nav('m13/plugins');if(value==='p1-default-missing')nav('m13/plugins/zentao');}}>{SCENES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label><Btn icon={dark ? Sun : Moon} label={dark ? '切换浅色主题' : '切换深色主题'} onClick={onTheme} /></div>
       {page === 'plugins' && sub && <div className="m13-detail-bar"><nav className="m13-crumb" aria-label="位置"><button onClick={() => nav('m13/plugins')}>插件</button><ChevronRight size={14} />{sub2 ? <><button onClick={() => nav('m13/plugins/' + sub)}>{plugins.find(p => p.id === sub)?.name}</button><ChevronRight size={14} /><span>{SUBPAGES[sub]?.[1]}</span></> : <span>{plugins.find(p => p.id === sub)?.name || '未找到'}</span>}</nav></div>}
       <div ref={contentRef} className={'m10-content m10-catalog-content m13-content' + (page === 'plugins' && sub ? ' detail' : '')}>
+        {page === 'plugins' && <P1MigrationNotice scene={scene}/>}
+        {page === 'plugins' && scene.startsWith('p1-write-')?<P1WritePreview key={scene} scene={scene}/>:<>
         {page === 'plugins' && !sub && <PluginCatalog {...{ plugins, scene, menu, setMenu, nav, setModal, togglePlugin, notify }} />}
         {page === 'plugins' && sub && !sub2 && <PluginDetail plugin={plugins.find(p => p.id === sub)} {...{ defaults, scene, menu, setMenu, nav, setModal, notify, projectName, onTryPrompt, togglePlugin, subpage: SUBPAGES[sub] }} />}
         {page === 'plugins' && sub === 'mail' && sub2 === 'drafts' && plugins.find(p => p.id === 'mail') && <MailDrafts plugin={plugins.find(p => p.id === 'mail')} {...{ store, projects, notify, nav, togglePlugin }} />}
         {page === 'plugins' && sub === 'zentao' && sub2 === 'work' && plugins.find(p => p.id === 'zentao') && <ZentaoWork plugin={plugins.find(p => p.id === 'zentao')} {...{ store, projects, tasks, scene, notify, nav, onTryPrompt, onInsertReference, togglePlugin }} />}
         {page === 'capabilities' && <Capabilities {...{ store, caps, setCaps, plugins, autoManage, setAutoManage, setModal, notify, projects, affect }} />}
+        </>}
       </div>
     </div>
     {modal?.type === 'install' && <InstallDialog source={modal.source} forPlugin={modal.forPlugin} plugins={plugins} affect={affect} onClose={close} onDone={(cand, kind) => {
@@ -123,6 +132,7 @@ function PluginDetail({ plugin: p, defaults, scene, menu, setMenu, nav, setModal
           : <button className="m10-button primary m13-try" onClick={toggle}>启用</button>}</div></div>
     {!p.enabled && <div className="m13-alert warn"><Info size={16} /><div><strong>已停用</strong><p>运行中的会话不能再调用它，新建或恢复的会话不再加载它的工具与 Skill；连接、项目设置都保留。</p></div></div>}
     {crashed && <div className="m13-alert danger"><TriangleAlert size={16} /><div><strong>插件进程异常退出</strong><p>1 分钟内连续退出 3 次，WillYou 已暂停调用它，不影响其他插件和正在运行的终端。</p></div><button className="m10-button secondary" onClick={() => notify('已重新启动插件进程（演示）')}>重新启动</button></div>}
+    {scene==='p1-default-missing'&&connectionTypesOf(p).some(def=>!p.connections.some(c=>c.type===def.type&&c.id===defaults[p.id]?.[def.type]))&&<div className="m13-alert warn" role="alert"><TriangleAlert size={16}/><div><strong>请选择一个全局默认连接</strong><p>当前项目的原选用保持不变。请在下方连接菜单中选择“设为全局默认”，核对受影响项目后确认。</p><small>演示 · 没有自动改用列表中的第一个连接。</small></div></div>}
     {p.examples?.length > 0 && <div className="m13-hero">{p.examples.map(ex => <button key={ex} className="m13-example" disabled={!p.enabled || crashed} onClick={() => onTryPrompt(ex)}><Mark id={p.id} name={p.name} size={14} /><span><b style={{ color: pluginAccent(p.id) }}>{p.name}</b> {ex}</span><ArrowRight size={16} /></button>)}</div>}
     <p className="m13-desc">{p.description}</p>
     <section className="m13-section"><h2>能力 <span>{p.capabilities.length}</span></h2>{p.capabilities.map(c => <div key={c.name} className="m13-row"><span className="m13-rowicon"><Terminal size={18} /></span><span>{c.name}<small>{c.kind === '写入' ? '会改变页面或外部系统的状态' : '只读取，不改变页面或外部系统'}</small></span><Pill tone={c.kind === '写入' ? 'warn' : 'muted'}>{c.kind}</Pill></div>)}{p.capabilities.some(c => c.kind === '写入') && <p className="m13-hint">读写分类以插件声明为准，写入类能力按 WillYou 的审批规则执行。</p>}</section>

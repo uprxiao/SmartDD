@@ -2,17 +2,17 @@ import {useEffect,useRef,useState} from 'react';
 import {observer} from 'mobx-react-lite';
 import {ArrowUpRight,SquareTerminal} from 'lucide-react';
 import {APPLICATION_SKILL_EXAMPLES,type ApplicationTerminalSource,type ApplicationTerminalBinding} from '@shared/application-terminal';
-import {TERMINAL_CONTEXT_LIMITS} from '@shared/file-terminal';
+import {TERMINAL_CONTEXT_LIMITS,type TerminalTarget} from '@shared/file-terminal';
 import {rpc} from '@renderer/lib/ipc';
 import {navigation} from '@renderer/core/navigation';
 import {tasksStore} from '@renderer/core/tasks-store';
 import {currentFileTerminal} from '@renderer/features/files/terminal-context/store';
 import {unwrap} from './api';
 /** A detail retains its explicitly selected target. It never searches running tasks for a replacement. */
-export const ApplicationTerminalButton=observer(function ApplicationTerminalButton({projectId,source,onInserted,disabled=false,label='插入终端引用',compact=false,variant='default'}:{projectId:string;source:ApplicationTerminalSource;onInserted?:()=>void;disabled?:boolean;label?:string;compact?:boolean;variant?:'default'|'example'}){
- const [target]=useState(()=>{const task=tasksStore.current;return task&&task.projectId===projectId&&task.ptyId&&task.archivedAt===null&&tasksStore.terminals.get(task.id)===task.ptyId?{taskId:task.id,ptyId:task.ptyId}:null;}),[state,setState]=useState<'idle'|'inserting'|'inserted'|'failed'|'unknown'>('idle'),[notice,setNotice]=useState('');
+export const ApplicationTerminalButton=observer(function ApplicationTerminalButton({projectId,source,onInserted,disabled=false,label='插入终端引用',compact=false,variant='default',target:explicitTarget}:{projectId:string;source:ApplicationTerminalSource;onInserted?:()=>void;disabled?:boolean;label?:string;compact?:boolean;variant?:'default'|'example';target?:TerminalTarget}){
+ const [target]=useState(()=>{if(explicitTarget)return{...explicitTarget};const task=tasksStore.current;return task&&task.projectId===projectId&&task.ptyId&&task.archivedAt===null&&tasksStore.terminals.get(task.id)===task.ptyId?{taskId:task.id,ptyId:task.ptyId}:null;}),[state,setState]=useState<'idle'|'inserting'|'inserted'|'failed'|'unknown'>('idle'),[notice,setNotice]=useState('');
  const live=useRef(true),busy=useRef(false),binding=useRef<ApplicationTerminalBinding|null>(null),sourceKey=JSON.stringify(source),initialSource=useRef(sourceKey),epoch=useRef(0);
- const selected=tasksStore.current,current=!!target&&selected?.id===target.taskId&&selected.projectId===projectId&&selected.ptyId===target.ptyId&&selected.archivedAt===null&&tasksStore.terminals.get(target.taskId)===target.ptyId&&sourceKey===initialSource.current;
+ const selected=explicitTarget?tasksStore.byId.get(explicitTarget.taskId):tasksStore.current,current=!!target&&selected?.id===target.taskId&&selected.projectId===projectId&&selected.ptyId===target.ptyId&&selected.archivedAt===null&&tasksStore.terminals.get(target.taskId)===target.ptyId&&sourceKey===initialSource.current&&(!explicitTarget||explicitTarget.taskId===target.taskId&&explicitTarget.ptyId===target.ptyId);
  const currentRef=useRef(current);currentRef.current=current;
  const release=()=>{const value=binding.current;binding.current=null;if(value)void rpc.applications.terminalRelease(value.id).catch(()=>{});};
  useEffect(()=>{live.current=true;return()=>{live.current=false;epoch.current++;release();};},[]);

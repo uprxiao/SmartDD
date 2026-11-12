@@ -4,6 +4,8 @@ import {afterEach,beforeEach,describe,expect,it} from 'vitest';
 import type {ApplicationCapability} from '@shared/application-capabilities';
 import {capabilitySessionSnapshotSchema} from '@shared/application-session';
 import {capabilitySessionSnapshotV3Schema} from '@shared/application-session-v3';
+import {pluginSessionSelectionSchema} from '@shared/plugin-session';
+import {cliInvocationCallSchema} from '@shared/application-cli';
 import {canonicalJson,digest} from '../manifest';
 import {createApplicationRunPlan,readApplicationRunPlan,renderSkillTemplate,requirePlanEntry,selectCapabilityEntry,storeApplicationRunPlan,verifyApplicationRunPlan,assertRunPlanSnapshotSource} from '../run-plan';
 import {CapabilityRunRegistry,type OwnedCapabilityRun} from '../run-registry';
@@ -81,5 +83,29 @@ describe('M11 immutable, transport-independent application run plans',()=>{
   expect(capabilitySessionSnapshotV3Schema.safeParse({...cli,mcp:original.mcp}).success).toBe(true);
   expect(capabilitySessionSnapshotV3Schema.safeParse({...cli,packages:cli.packages.map(p=>({...p,capabilityContractMajors:{'other.object.get':1}}))}).success).toBe(false);
   expect(capabilitySessionSnapshotSchema.parse(f.snapshot)).toEqual(original);
+ });
+ it('keeps historical schema-3 canonical bytes unchanged when no external plugins were selected',()=>{
+  const snapshot={...f.snapshot,schema:3,packages:f.snapshot.packages.map(p=>({...p,entry:'mcp',capabilityContractMajors:{'zentao.object.get':1}}))};
+  const parsed=capabilitySessionSnapshotV3Schema.parse(snapshot);expect(canonicalJson(parsed)).toBe(canonicalJson(snapshot));expect(Object.hasOwn(parsed,'externalPlugins')).toBe(false);
+ });
+ it('validates external discovery identities, bridge requirements and cross-domain collisions',()=>{
+  const selected=pluginSessionSelectionSchema.parse({appId:'tracker',version:'1.0.0',packageHash:'a'.repeat(64),entry:'mcp',connections:[],capabilities:[{id:'tracker.read',permission:'tracker.read',semantics:'read',slots:[],mcpTool:'smartdd_tracker_read_v1',aliases:[]}]});
+  const snapshot={...f.snapshot,schema:3,packages:f.snapshot.packages.map(p=>({...p,entry:'mcp',capabilityContractMajors:{'zentao.object.get':1}})),externalPlugins:[selected]};
+  expect(capabilitySessionSnapshotV3Schema.safeParse(snapshot).success).toBe(true);
+  expect(capabilitySessionSnapshotV3Schema.safeParse({...snapshot,mcp:[]}).success).toBe(false);
+  expect(capabilitySessionSnapshotV3Schema.safeParse({...snapshot,externalPlugins:[selected,selected]}).success).toBe(false);
+  expect(capabilitySessionSnapshotV3Schema.safeParse({...snapshot,externalPlugins:[{...selected,appId:'other'}]}).success).toBe(false);
+  expect(capabilitySessionSnapshotV3Schema.safeParse({...snapshot,externalPlugins:[{...selected,capabilities:[{...selected.capabilities[0],mcpTool:Object.keys(f.snapshot.packages[0].toolContractMajors)[0]}]}]}).success).toBe(false);
+  expect(capabilitySessionSnapshotSchema.safeParse(snapshot).success).toBe(false);
+ });
+ it('plans only launch-discovered plugin capabilities with unique native CLI commands and no automatic entry fallback',()=>{
+  const cap=(id:string,semantics:'read'|'write'='read')=>({id,permission:'tracker.read',semantics,slots:[],mcpTool:'smartdd_'+id.replaceAll('.','_')+'_v1',aliases:[]});
+  const selected=pluginSessionSelectionSchema.parse({appId:'tracker',version:'1.0.0',packageHash:'a'.repeat(64),entry:'cli',connections:[],capabilities:[cap('tracker.read'),cap('tracker.deep.items.read_value','write')]});
+  const snapshot=capabilitySessionSnapshotV3Schema.parse({...f.snapshot,schema:3,packages:[],externalPlugins:[selected]});
+  const create=(cli:boolean)=>createApplicationRunPlan({runId:randomUUID(),snapshot,snapshotHash:digest(canonicalJson(snapshot)),applications:[],available:{mcp:true,cli},skills:[]});
+  const plan=create(true);expect(plan.allowed.map(c=>c.capabilityId)).toEqual(['tracker.read','tracker.deep.items.read_value']);expect(new Set(plan.allowed.map(c=>c.cliCommand?.join(' '))).size).toBe(2);
+  expect(cliInvocationCallSchema.safeParse({operation:'tracker.deep.items.read_value',contractMajor:1,connectionId:null,arguments:{}}).success).toBe(true);
+  expect(()=>requirePlanEntry(plan,'tracker.read',1,'mcp')).toThrow(expect.objectContaining({code:'ENTRY_NOT_ACTIVE'}));
+  expect(create(false).allowed).toEqual([]);expect(create(false).applications[0].effectiveEntry).toBe('unavailable');
  });
 });

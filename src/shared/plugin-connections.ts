@@ -1,0 +1,14 @@
+import {z} from 'zod';
+const appId=z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),hash=z.string().regex(/^[a-f0-9]{64}$/);
+export const pluginConnectionTargetSchema=z.object({appId,packageHash:hash}).strict();
+export const pluginConnectionTestSchema=pluginConnectionTargetSchema.extend({requestId:z.uuid(),id:z.uuid().optional(),expectedRevision:z.number().int().nonnegative(),name:z.string().trim().min(1).max(120),providerId:appId,config:z.record(z.string(),z.unknown()),authMode:appId.optional(),secret:z.string().min(1).max(65536).optional()}).strict();
+export const pluginConnectionSaveSchema=pluginConnectionTargetSchema.extend({operationId:z.uuid(),candidateHash:hash}).strict();
+export const pluginDefaultInputSchema=pluginConnectionTargetSchema.extend({connectionId:z.uuid(),planHash:hash.optional()}).strict();
+export const pluginDeleteConnectionSchema=pluginConnectionTargetSchema.extend({connectionId:z.uuid(),replacementId:z.uuid().optional(),planHash:hash.optional()}).strict();
+export const pluginProjectConnectionSchema=pluginConnectionTargetSchema.extend({projectId:z.string().min(1).max(128),expectedRevision:z.number().int().nonnegative(),enabled:z.boolean(),mode:z.enum(['follow','individual']),connectionId:z.uuid().optional()}).strict();
+export type PluginConnectionTarget=z.infer<typeof pluginConnectionTargetSchema>;
+export type PluginConnectionTest=z.infer<typeof pluginConnectionTestSchema>;
+export type PluginConnectionSave=z.infer<typeof pluginConnectionSaveSchema>;
+export type PluginDefaultInput=z.infer<typeof pluginDefaultInputSchema>;
+export type PluginDeleteConnection=z.infer<typeof pluginDeleteConnectionSchema>;
+export type PluginProjectConnection=z.infer<typeof pluginProjectConnectionSchema>;

@@ -14,7 +14,7 @@ export type HostedSelectionInput<C extends HostedConfiguration,A extends string>
 export type HostedSelection<C extends HostedConfiguration,A extends string>=Omit<ProjectApplicationSelection,'appId'|'connections'|'slotRevisions'|'repair'>&{appId:A;connections:Partial<Record<C['kind'],string|null>>;slotRevisions:Partial<Record<C['kind'],number>>;repair?:{slots:C['kind'][];fingerprint:string}};
 export interface HostProvider<C extends HostedConfiguration,A extends string>{
  id:C['kind'];appId:A;configApiMajor:1;configSchemaVersion?:number;configSchema:z.ZodType<C>;
- authentication:{kind:'secret';modes:readonly string[]}|{kind:'none';mode:string};
+ authentication:{kind:'secret';modes:readonly string[];required?:boolean}|{kind:'none';mode:string};
  permissions:{read:string;write:string};
  /** Non-authority defaults pinned per read operation; only trusted, unauthenticated providers may declare them. */
  readDefaultKeys?:readonly string[];
@@ -27,6 +27,7 @@ export interface HostApplicationDefinitions<C extends HostedConfiguration,A exte
 const id=z.string().regex(/^[a-z][a-z0-9-]{0,63}$/);
 const text=z.string().trim().min(1).max(512).refine(s=>!/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]/u.test(s));
 const identitySchema=z.object({providerId:id,serviceId:text,accountId:text,contractMajor:z.literal(1)}).strict();
+export {identitySchema as hostedIdentitySchema};
 const saveFields=z.object({id:z.uuid().optional(),expectedRevision:z.number().int().nonnegative(),name:text.max(120),config:z.unknown(),secret:z.string().min(1).max(65536).optional(),acceptedImpactHash:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict();
 const selectionFields=z.object({projectId:z.string().min(1).max(128),appId:id,expectedRevision:z.number().int().nonnegative(),enabled:z.boolean(),connections:z.record(id,z.uuid().nullable()),repair:z.object({slot:id,fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict().optional()}).strict();
 const exactKeys=(value:unknown,keys:readonly string[])=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Reflect.ownKeys(value).every(key=>typeof key==='string'&&keys.includes(key));
@@ -46,10 +47,10 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
   for(const provider of definitions.providers){
    if(!exactKeys(provider,['id','appId','configApiMajor','configSchemaVersion','configSchema','authentication','permissions','readDefaultKeys','validateCandidate'])||!id.safeParse(provider.id).success||this.providers.has(provider.id)||!this.applications.has(provider.appId)||provider.configApiMajor!==1||!Number.isSafeInteger(provider.configSchemaVersion??1)||(provider.configSchemaVersion??1)<1||!provider.configSchema||typeof provider.configSchema.safeParse!=='function'||!exactKeys(provider.permissions,['read','write'])||![provider.permissions.read,provider.permissions.write].every(p=>typeof p==='string'&&p.startsWith(provider.appId+'.')&&/^[a-z][a-z0-9.-]{0,127}$/.test(p)))throw invalid();
    const auth=provider.authentication;
-   if(!auth||auth.kind!=='none'&&auth.kind!=='secret'||auth.kind==='secret'&&(!exactKeys(auth,['kind','modes'])||!Array.isArray(auth.modes)||!auth.modes.length||new Set(auth.modes).size!==auth.modes.length||auth.modes.some((v:unknown)=>!id.safeParse(v).success))||auth.kind==='none'&&(!exactKeys(auth,['kind','mode'])||!id.safeParse(auth.mode).success))throw invalid();
+   if(!auth||auth.kind!=='none'&&auth.kind!=='secret'||auth.kind==='secret'&&(!exactKeys(auth,['kind','modes','required'])||auth.required!==undefined&&typeof auth.required!=='boolean'||!Array.isArray(auth.modes)||!auth.modes.length||new Set(auth.modes).size!==auth.modes.length||auth.modes.some((v:unknown)=>!id.safeParse(v).success))||auth.kind==='none'&&(!exactKeys(auth,['kind','mode'])||!id.safeParse(auth.mode).success))throw invalid();
    if(provider.readDefaultKeys!==undefined&&(!Array.isArray(provider.readDefaultKeys)||!provider.readDefaultKeys.length||provider.readDefaultKeys.length>8||auth.kind!=='none'||new Set(provider.readDefaultKeys).size!==provider.readDefaultKeys.length||provider.readDefaultKeys.some((key:unknown)=>typeof key!=='string'||!/^[a-z][A-Za-z0-9]{0,63}$/.test(key)||['kind','constructor','prototype'].includes(key))))throw invalid();
    if(provider.validateCandidate!==undefined&&typeof provider.validateCandidate!=='function')throw invalid();
-   this.providers.set(provider.id,Object.freeze({...provider,...(provider.readDefaultKeys?{readDefaultKeys:Object.freeze([...provider.readDefaultKeys])}:{}),permissions:Object.freeze({...provider.permissions}),authentication:auth.kind==='secret'?Object.freeze({kind:'secret' as const,modes:Object.freeze([...auth.modes])}):Object.freeze({...auth})}));
+   this.providers.set(provider.id,Object.freeze({...provider,...(provider.readDefaultKeys?{readDefaultKeys:Object.freeze([...provider.readDefaultKeys])}:{}),permissions:Object.freeze({...provider.permissions}),authentication:auth.kind==='secret'?Object.freeze({kind:'secret' as const,modes:Object.freeze([...auth.modes]),...(auth.required===undefined?{}:{required:auth.required})}):Object.freeze({...auth})}));
   }
   for(const application of this.applications.values())if(application.slots.some(slot=>this.providers.get(slot)?.appId!==application.id))throw invalid();
   for(const provider of this.providers.values())if(!this.applications.get(provider.appId)!.slots.includes(provider.id))throw invalid();
@@ -79,10 +80,10 @@ export class HostApplicationRegistry<C extends HostedConfiguration,A extends str
   const auth=this.provider(config.kind).authentication;if(auth.kind==='none')return auth.mode;const value:unknown=Reflect.get(config,'authMode');
   if(typeof value!=='string'||!auth.modes.includes(value))throw new ApplicationError('INVALID_INPUT','连接认证方式不属于已注册宿主契约');return value;
  }
- requiresSecret(config:C):boolean{return this.provider(config.kind).authentication.kind==='secret';}
+ requiresSecret(config:C):boolean{const auth=this.provider(config.kind).authentication;return auth.kind==='secret'&&auth.required!==false;}
  validateCandidate(config:C,previous:C|null,secretSupplied:boolean):void{
   if(previous&&previous.kind!==config.kind)throw new ApplicationError('IDENTITY_CHANGE_REQUIRES_SELECTION','已有连接不能替换应用类型，请新建连接');
-  if(!this.requiresSecret(config)&&secretSupplied)throw new ApplicationError('INVALID_INPUT','本地只读来源不保存发件凭据');this.provider(config.kind).validateCandidate?.(config,previous,secretSupplied);
+  if(this.provider(config.kind).authentication.kind==='none'&&secretSupplied)throw new ApplicationError('INVALID_INPUT','本地只读来源不保存发件凭据');this.provider(config.kind).validateCandidate?.(config,previous,secretSupplied);
  }
  /** Same SQLite store and transaction as normal connections. No rows confer
   * authority on a program that has not compiled the corresponding definition. */

@@ -1,0 +1,361 @@
+{
+  "schema": 1,
+  "runId": "M13-P1-20261112T032307Z-d528d0",
+  "updatedAt": "2026-11-12T12:15:30.473599+00:00",
+  "scope": "P1 authorized only; two independent preparation groups, no App/CLI/model/native execution until coordinator resource allocation",
+  "source": "/private/tmp/willyou-m13-p1-20261112t032307z-d528d0/source",
+  "sourceManifest": "/private/tmp/willyou-m13-p1-20261112t032307z-d528d0/source-manifest.json",
+  "candidate": "/private/tmp/willyou-m13-p1-App005/mac-arm64/WillYou.app",
+  "asarSha256": "4b07f21d5b1942bd002e3d66346d366cf3e3c6ec1f93d5e8c3b1c7f5f33c150d",
+  "groups": [
+    {
+      "id": "P1-SDK-prep",
+      "cases": [
+        "M13-T007"
+      ],
+      "layers": [
+        "I",
+        "S"
+      ],
+      "privateDirectory": "/private/tmp/willyou-m13-p1-20261112t032307z-d528d0/isolation",
+      "status": "T007-whole-case-passed-with-sdk-write-supplement",
+      "agent": "/root/p1_isolation_prep",
+      "delivery": "验收/证据/P1-App005-isolation-sdk-20261112-a1",
+      "remaining": [],
+      "earlierPreflightFailure": "Vite SSR transformed CommonJS native dependency; no plugin ran; cleanup stopped true",
+      "componentApplicability": "验收/证据/P1-App005-boundary-applicability-20261112-a1/environment.json"
+    },
+    {
+      "id": "P1-CLI-prep",
+      "cases": [
+        "M13-T001",
+        "M13-T012"
+      ],
+      "layers": [
+        "I",
+        "A",
+        "S"
+      ],
+      "privateDirectory": "/private/tmp/willyou-m13-p1-20261112t032307z-d528d0/cli",
+      "status": "T001-and-T012-original-contracts-passed",
+      "agent": "/root/p1_cli_prep",
+      "delivery": "验收/证据/P1-claude-default-receipt-20261112-a1",
+      "previousStatus": "native-decision-receipt-missing-offline-review-archived",
+      "finalDeliveries": [
+        "验收/证据/P1-App008-two-agent-closure-20261112-a1/environment.json",
+        "验收/证据/P1-App009-old-history-complete-20261112-a1/environment.json"
+      ]
+    },
+    {
+      "id": "P1-ZT-password-R",
+      "cases": [
+        "M13-T014"
+      ],
+      "layers": [
+        "R software native integration only; not A"
+      ],
+      "agent": "/root/p1_cli_prep",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-password-real-20261112-001",
+      "status": "password-R-subflow-passed-archived",
+      "scope": "One actual reasoning-model turn using synthetic qa-b password auth. Current account envelope reused without refresh; no real business or OS keychain data.",
+      "payloadReview": "/private/tmp/willyou-m13-p1-password-real-20261112-001/payload-review.json",
+      "delivery": "验收/证据/P1-codex-password-real-20261112-a1",
+      "rawPrivate": "/private/tmp/willyou-m13-p1-password-real-20261112-001/raw.json",
+      "wholeCasePassed": false
+    },
+    {
+      "id": "P1-Claude-native-No",
+      "cases": [
+        "M13-T001"
+      ],
+      "layers": [
+        "I actual native TUI; not A"
+      ],
+      "agent": "coordinator",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-claude-native-no-20261112-001",
+      "status": "unknown-native-denial-archived-resources-released",
+      "basis": "Esc cancel had no native denial receipt; observed menu explicitly provides No. One Down then Return only after actual No selection, no B request. SSH fallback blocked before native spawn.",
+      "attempt002": "/private/tmp/willyou-m13-p1-claude-native-no-20261112-001/attempt-002",
+      "scope": "Default native No read-tool denial only, no accepted B request; does not cover Host write approval or A",
+      "delivery": "验收/证据/P1-claude-native-No-20261112-a1",
+      "next": "Complete actual xterm/GUI protocol after unlock; no same software rerun"
+    },
+    {
+      "id": "P1-T005-UI042",
+      "cases": [
+        "M13-T005"
+      ],
+      "layers": [
+        "A/S native picker + readonly SQL/data validation"
+      ],
+      "agent": "coordinator",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-App005-ui-042",
+      "status": "T005-whole-case-passed-resources-released",
+      "source": "Reuses App005 and original UI006 data, new driver attempt042",
+      "finalAttempt": "/private/tmp/willyou-m13-p1-App005-ui-043",
+      "delivery": "验收/证据/P1-App005-failed-update-nonempty-20261112-a1",
+      "normalExit": {
+        "pid": 87427,
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "id": "P1-SDK-write-unlocked-001",
+      "cases": [
+        "M13-T007"
+      ],
+      "layers": [
+        "S"
+      ],
+      "agent": "coordinator",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-20261112t032307z-d528d0/isolation/execution/sdk-write-unlocked-001",
+      "status": "T007-whole-case-passed-archived-resources-released",
+      "processes": [
+        91707,
+        92086,
+        92212,
+        92751
+      ],
+      "basis": "Original App005/profile, unlocked dedicated HOME; outside before encrypt+roundtrip succeeded; fresh inside encrypt refused and fixed synthetic item remained absent; outside after captured for independent verdict",
+      "approvalRejection": "Deletion of synthetic item with HOME-overridden environment rejected, not executed; non-destructive fresh keychain alternative used.",
+      "delivery": "验收/证据/P1-App005-sdk-write-20261112-a1",
+      "cleanup": "All stopped, two dedicated keychains removed, daily metadata unchanged"
+    },
+    {
+      "id": "P1-T014-UI044",
+      "cases": [
+        "M13-T014"
+      ],
+      "layers": [
+        "A actual packaged GUI",
+        "existing R unchanged"
+      ],
+      "agent": "coordinator",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-App005-ui-044",
+      "status": "T014-whole-case-passed-with-strict-packaged-R",
+      "basis": "Original UI018 migrated two-auth seed; App005 unchanged; fixed F-ZT origin51286; native idle Codex no task prompt; local health echo only",
+      "criteria": [
+        "Actual Token/password saved connection test",
+        "Bug/story50+1 paging/refresh",
+        "Actual detail body/history/attachment from both sources",
+        "Insert reference into actual idle CLI, prefix preserved, no submit/extra model requests",
+        "Change projectA individual binding A toB then actual reads qa-b",
+        "Original secrets/other bindings unchanged and own cleanup"
+      ],
+      "manifestSha256": "e98c5c6fe33682084ecbb5bac02441f18c301858cedd74b6869a5344ef5433bf",
+      "normalExit": {
+        "pid": 97935,
+        "code": 0
+      },
+      "nextAttempt": "/private/tmp/willyou-m13-p1-App005-ui-046",
+      "diagnosis": "Radix project option searched immediately after click; no menu-ready wait. New attempt waits original visible option; no business flow yet, original seed and safeStorage preserved.",
+      "latestAttempt": "/private/tmp/willyou-m13-p1-App005-ui-045",
+      "observed": [
+        "Token/password actual saved connection UI verified",
+        "Bug/story each50+1+refresh and complete body/history/attachment UI passed"
+      ],
+      "remaining": [],
+      "driverFailure": "After actual main flows, switching back to Bug remounts first50; driver incorrectly required51 without load-more. No product behavior changed; followup only remaining insertion/switch.",
+      "finalAttempt": "/private/tmp/willyou-m13-p1-App005-ui-046",
+      "delivery": "验收/证据/P1-App005-zentao-ui-20261112-a1"
+    },
+    {
+      "id": "P1-T014-packaged-R047",
+      "cases": [
+        "M13-T014"
+      ],
+      "layers": [
+        "R actual packaged App UI native model"
+      ],
+      "agent": "coordinator",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-App005-ui-047",
+      "status": "T014-whole-case-passed-archived-resources-released",
+      "scope": "One actual UI-created read-only Codex task; same public synthetic qa-b F-ZT plus existing current auth envelope without refresh; actual OpenAI health+one task prompt; no retry on observation uncertainty",
+      "payloadReview": "/private/tmp/willyou-m13-p1-App005-ui-047/payload-review.json",
+      "candidateAsarSha256": "4b07f21d5b1942bd002e3d66346d366cf3e3c6ec1f93d5e8c3b1c7f5f33c150d",
+      "priorAttempt": "/private/tmp/willyou-m13-p1-App005-ui-047",
+      "latestAttempt": "/private/tmp/willyou-m13-p1-App005-ui-048",
+      "sessionId": 53714,
+      "originalPid": 167,
+      "priorFailure": "Main inspection label uppercase rejected before profile/model/activation; prior auth removed and PIDstopped verified",
+      "delivery": "验收/证据/P1-App005-zentao-real-model-20261112-a1",
+      "normalExit": {
+        "pid": 167,
+        "code": 0
+      },
+      "taskId": "9039ba48-1edc-422a-97cc-c599d69c130e",
+      "runId": "46e26aaf-114b-49d7-9820-cfe33ccd8326",
+      "checks": 44,
+      "cleanup": "All original process identities stopped; leaseclosed; private auth deleted; original login unchanged"
+    },
+    {
+      "id": "P1-T004-UI049",
+      "cases": [
+        "M13-T004"
+      ],
+      "layers": [
+        "A actual native tasks",
+        "S original native picker"
+      ],
+      "agent": "coordinator",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-App005-ui-049",
+      "status": "history-C-scoped-passed; background-input-verified; native-front-step-deferred",
+      "criteria": [
+        "Separate drop-removal inspection warning while original0.4 installed",
+        "H actual native old call then real UI stop",
+        "A original3000ms call running during actual Update click",
+        "A returns0.4, same running B returns0.5",
+        "Real UI resume original H NativeSession, new C returns0.5",
+        "Old package GC/new unique display/hash invariant/own cleanup"
+      ],
+      "basis": "No clicks/profile/CLI/peer started; new attempt adds readonly initial native/DOM timeline and failure foreground metadata only; no same-process rearm",
+      "inputManifestSha256": "00c74408eafba3b675c1fc60d136e8fabd4dad4b3a34c40683b0e68570597e25",
+      "normalExit": {
+        "pid": 13007,
+        "code": 0
+      },
+      "nextAttempt": "/private/tmp/willyou-m13-p1-App005-ui-056",
+      "latestAttempt": "/private/tmp/willyou-m13-p1-App005-ui-063",
+      "reusableEvidence": [
+        "Drop warning actual native selection/review",
+        "NativeH complete plus Host old0.4 successful and nonempty original item"
+      ],
+      "noResend": "Original H proof parsed known native framing; subsequent attempt reuses original actual native history and exact fixed local peer port",
+      "priorA": "Unreleased held tool, zero Host invocations, known pre-dispatch cancellation; not unknown replay",
+      "desktopReply": "Now ready continuous testing; call_9955c87a109e443c93ca1636191fe35f/0",
+      "observed": [
+        "UI055 original Native A in-flight update0.4→0.5 actual UI success; A returned0.4",
+        "Driver failed task navigation from Apps sidebar; both peers closed normal0; same-run B not executed"
+      ],
+      "continuation": "UI056 valid0.6.1 package; same-runtime A0.5/update/B0.6.1 plus original H0.4 actual UI resume C0.6.1; no historical H resend",
+      "deliveryPartial": "验收/证据/P1-App005-update-partial-20261112-a1",
+      "backgroundPolicy": "User confirmed2026-11-12;AGENTS updated; exact PID/HOME/userData/WebContents; no OS foreground needed for pure Input.*",
+      "remaining": [
+        "Same continuous Native run A old/update/B new",
+        "Independent final native/Host/GC review"
+      ],
+      "historicalDelivery": "验收/证据/P1-App005-history-resume-20261112-a1",
+      "next": "Do not repeat native focus attempts while user works. Next fresh background batch runs ready non-native criteria; native picker is separate remaining step."
+    },
+    {
+      "id": "P1-T001-UI064",
+      "cases": [
+        "M13-T001"
+      ],
+      "layers": [
+        "A actual packaged UI Codex native fixed-model protocol",
+        "Host write approval and disk controls"
+      ],
+      "agent": "coordinator",
+      "status": "archived-earlier-attempt-superseded-by-final-closure",
+      "privateDirectory": "/private/tmp/willyou-m13-p1-App005-ui-064",
+      "preparation": "/private/tmp/willyou-m13-p1-t001-codex-prep-002",
+      "manifestSha256": "c70df09fd4388ec7292391806eb8f04bcd5069a63f87ab461e7480ff819cedfc",
+      "scope": "READ then distinct DENY/ALLOW; no real external model, no native permission bypass; background exact target CDP",
+      "wholeCasePassed": false,
+      "historicalStatus": "running at earlier checkpoint",
+      "finalDelivery": "验收/证据/P1-App008-two-agent-closure-20261112-a1/environment.json",
+      "resourcesHeld": []
+    }
+  ],
+  "resources": {
+    "UI": "released; all exact owned final App/Native/bridge/server PIDs absent",
+    "build": "released; App009 audited and six native smoke passed",
+    "runtimes": "released; original final Apps normal exit0; peer/fixture closed; run revoked/stopped; lease closed",
+    "preparation": "Both assigned review/preparation agents completed; no execution resources held"
+  },
+  "abiPreflight": {
+    "status": "passed",
+    "electron": "42.11.14",
+    "abi": 146,
+    "nativeModules": 2
+  },
+  "ledgerReceipt": {
+    "at": "2026-11-12T12:15:30.473599+00:00",
+    "source": "验收/测试用例.md",
+    "scope": "Original P1 T001-T015 all marked passed; no other M13 promoted",
+    "delivery": "交付说明.md"
+  },
+  "preflightObservationHistory": [
+    {
+      "wholeCasesPassedAdded": 0,
+      "abi": "Electron42.11.14 ABI146 two native modules loaded",
+      "candidateSignature": "codesign deep strict passed",
+      "hostI": "preflight failed before plugin: ASAR hash then SSR CJS loader; separate attempts retained",
+      "nativeCLI": "vitest import failed before CLI: missing private standard skill assets",
+      "productionChangesThisContinuation": false
+    }
+  ],
+  "latestObservedResults": {
+    "HostI": "actual escape install/call and OS controls archived",
+    "SDK": "Actual outside write encrypt/roundtrip and item creation observed; exact sandbox negative; T007 whole case passed",
+    "nativeClaude": "actual prompt shown; no native denial receipt; extra public marketplace SSH clone noted",
+    "wholeCasesAdded": 0
+  },
+  "externalConditionHistory": [
+    {
+      "condition": "Mac remains locked; remaining A/system/actual terminal prerequisites need desktop availability",
+      "userPrompt": "One asynchronous unlock-condition prompt pending; no new permission requested",
+      "lastObserved": "loginwindow;399",
+      "progressThisGoalTurn": "Password qa-b real-model read workflow passed; native No selected but denial unproven",
+      "next": "User unlocks Mac and resumes P1; first revalidate current package/source and actual stable focus, then new-instance UI batches. Prior permissions retained; no old input queue replay.",
+      "consecutiveGoalTurnsWithDesktopBlock": 3,
+      "countRule": "Count goal turns, not repeated polls; prior SDK goal turn and current password-R goal turn both observed loginwindow. Both made independent progress. New continuation must revalidate state and meaningful remaining safe actions.",
+      "remainingActionAudit": {
+        "T001": "Actual complete terminal/xterm and Host write approval UI; software No/Enter attempts have no sufficient native receipt",
+        "T004-T006": "Actual update/uninstall/inflight/history lifecycle UI, native chooser",
+        "T007": "Outside SDK write complete positive; prior methods unknown, revalidate desktop/system conditions before retry",
+        "T009-T010": "Actual packaged App exception/restart and other task/terminal unaffected UI",
+        "T012": "Actual old-App-produced history then UI display and resume",
+        "T014": "Actual MyWork paging/details/insertion, both auth connection UI and project switching; Token/password R both passed"
+      },
+      "auditResult": "Desktop condition recurred in three consecutive goal turns; independent password R and S applicability work are archived, no current ready uncovered original criterion can be completed without desktop/system state change. Original repeated No/chooser attempts require real xterm/UI; no running process is being mistaken for stopped.",
+      "auditEvidence": "阻塞复核_20261112.json",
+      "executionState": "blocked-by-desktop"
+    }
+  ],
+  "externalCondition": {
+    "goalResumedByUser": true,
+    "lastObserved": "ChatGPT;787",
+    "desktopAvailable": true,
+    "consecutiveResumedBlockedTurns": 0
+  },
+  "latestGoalTurnAudit": {
+    "classification": "progress",
+    "authoritativeChange": "T012 full original I/A contract archived and passed; P1 complete",
+    "wholeCasesAdded": 1,
+    "remaining": [],
+    "next": "P1 delivery record and final consistency checks only; no other M13 execution.",
+    "scope": "P1 only; no release/install",
+    "prerequisiteFollowup": "验收/证据/P1-old-history-prerequisite-followup-20261112-a1/environment.json",
+    "oldHistoryH": "验收/证据/P1-old-history-H-20261112-a1/environment.json"
+  },
+  "candidateCurrent": {
+    "at": "2026-11-12T11:22:51.081609+00:00",
+    "status": "P1 accepted with per-case build/applicability evidence; not released",
+    "asarSha256": "c84a220b11699c59984395127370d0b589edd4d2ef5d565e9a3be480d561347c",
+    "executableSha256": "08e3381b169f79e627892666ce3361cc7ebb45a36183fab63bfe52a0046e744a",
+    "candidate": "/private/tmp/willyou-m13-p1-App009/mac-arm64/WillYou.app",
+    "sourceSnapshot": "/private/tmp/willyou-m13-p1-App009-build-prep-001/source-readonly",
+    "fixes": [
+      "D-P1-22",
+      "D-P1-23"
+    ],
+    "nativeBuild": "Sources/dependencies unchanged; existing Electron ABI require/sqlite-memory preflight instead of force rebuilding identical native modules; audit confirms nativeChanges=[] against App007",
+    "wholeCasesPromoted": 0,
+    "release": "not installed, committed, pushed or published"
+  },
+  "activeExecution": {
+    "status": "complete",
+    "resourcesHeld": [],
+    "cleanup": "All final original App/Native/bridge/server PIDs verified absent; actual normal App exit receipts archived."
+  },
+  "completion": {
+    "scope": "P1 only",
+    "ledger": "验收/测试用例.md",
+    "finalEvidence": "验收/证据/P1-App009-old-history-complete-20261112-a1/environment.json",
+    "release": "Not installed, committed, pushed or published"
+  },
+  "status": "complete-P1-only"
+}

@@ -1,3 +1,4 @@
+import {ProjectExternalPlugins} from './plugin-connections';
 import {SenderIdentityStatus} from './sender-identity';
 import {ApplicationTerminalButton} from './terminal-insertion';
 import {APPLICATION_SKILL_EXAMPLES} from '@shared/application-terminal';
@@ -20,7 +21,8 @@ export const ProjectApplications=observer(function ProjectApplications({project}
  if(catalog.error)return <AppEmpty error title="项目应用暂不可用" text={catalog.error.message} action="重试" onAction={()=>void catalog.refetch()}/>;
  return <div className="m10-project-apps" aria-label={project.name+'的应用'}><div className="m10-project-apps-intro"><div><h2>项目应用</h2><p>启用应用后，配套 Skill 与工具一起提供给本项目的会话。</p></div><button className="m10-button secondary" onClick={()=>navigation.openApplications()}>管理应用<ArrowUpRight size={13}/></button></div>
   {catalog.data?.map(app=><ProjectApplication key={app.appId} app={app} project={project}/>)}
-  <div className="m10-project-session-note"><SquareTerminal size={17}/><div><strong>所有会话按项目当前设置使用应用</strong><p>每次调用按当前的启用、连接和权限检查；某项应用暂不可用不停止 Agent 的其他工作。升级后所有会话使用新版本。</p><span>首版目标：macOS arm64 · Claude Code / Codex · 仅 WillYou 内启动／恢复。</span></div><button className="m10-button secondary" disabled={project.archivedAt!==null} onClick={()=>navigation.newTask(project.id)}>新建任务<ArrowUpRight size={13}/></button></div>
+  <ProjectExternalPlugins projectId={project.id} archived={project.archivedAt!==null}/>
+  <div className="m10-project-session-note"><SquareTerminal size={17}/><div><strong>会话与连接</strong><p>每次调用都会核对当前启用与权限；外部插件切换连接时，运行中的任务继续用原连接，新建或恢复的任务使用新连接。升级后后续调用使用新版本。</p><span>首版目标：macOS arm64 · Claude Code / Codex · 仅 WillYou 内启动／恢复。</span></div><button className="m10-button secondary" disabled={project.archivedAt!==null} onClick={()=>navigation.newTask(project.id)}>新建任务<ArrowUpRight size={13}/></button></div>
   <div className="m10-local-data"><Database size={15}/><span>连接、草稿和记录独立保存在本机；项目导出不包含这些应用数据，导入后需在本机重新选用连接。</span></div>
  </div>;
 });

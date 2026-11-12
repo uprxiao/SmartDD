@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import {buildFileBroker} from './files/build.mjs';
 import {buildProcessIdentity,buildApplicationCli} from './applications/build.mjs';
 import {buildApplicationRuntime} from './applications/build-runtime.mjs';
+import {buildZentaoPlugin} from './plugins/build-zentao.mjs';
 
 const output=resolve(process.argv[2]??'out');
 execFileSync(process.execPath,['scripts/applications/generate-module-metadata.mjs','--write'],{stdio:'inherit'});
@@ -26,6 +27,7 @@ if(identityHelper){
  nativeProbe={pid:value.pid,startedAt:value.startedAt,elapsedMs:Date.now()-started};
 }
 await buildApplicationRuntime(join(output,'applications'));
+await buildZentaoPlugin(join(output,'plugins/zentao'));
 execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(output,'capability-bundles'),join(output,'applications/mcp-bridge.cjs')],{stdio:'inherit'});
 execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(output,'capability-bundles-compatibility-v1'),join(output,'applications/mcp-bridge.cjs'),'--retained-v1-test-fixture'],{stdio:'inherit'});
 console.log(JSON.stringify({prepared:'software-test resources',output,platform:process.platform,arch:process.arch,nativeProbe,packagedApp:false}));

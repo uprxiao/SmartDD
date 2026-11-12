@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "required": [
+    "mediaType",
+    "encoding",
+    "data"
+  ],
+  "properties": {
+    "mediaType": {
+      "type": "string"
+    },
+    "encoding": {
+      "enum": [
+        "utf8",
+        "base64"
+      ]
+    },
+    "data": {
+      "type": "string"
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "resourceId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "length": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nextOffset": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "eof": {
+      "type": "boolean"
+    }
+  }
+}

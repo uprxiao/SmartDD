@@ -13,6 +13,11 @@ import type { ApplicationDataReply, ApplicationResourceRead } from '@shared/appl
 import type { MailSourceRef } from '@shared/application-mail-data';
 import type { ZentaoWorkInput,ZentaoDetailInput } from '@shared/application-zentao';
 import type { ApplicationService } from './application-service';
+import type {PluginUiRead,PluginPageContext} from '@shared/plugins';
+import type {PluginWriteDecision} from '@shared/plugin-approval';
+import type {TerminalTarget} from '@shared/file-terminal';
+import type {PluginUiActionRequest} from '@shared/plugin-actions';
+import type {PluginConnectionTarget,PluginConnectionTest,PluginConnectionSave,PluginDefaultInput,PluginDeleteConnection,PluginProjectConnection} from '@shared/plugin-connections';
 export function createApplicationController(service:ApplicationService|undefined,requireSender:(sender:IpcMainInvokeEvent)=>void){
   const run=async<T>(event:IpcMainInvokeEvent,work:(current:ApplicationService)=>T|Promise<T>):Promise<ApplicationDataReply<T>>=>{
     try{requireSender(event);}catch{return{ok:false,code:'SCOPE_DENIED',message:'当前窗口无权操作应用配置和业务数据'};}
@@ -27,6 +32,40 @@ export function createApplicationController(service:ApplicationService|undefined
   };
   const saving=new Set<number>();
   return createScopedRPCController({
+    pluginCatalog:(event)=>run(event,current=>current.pluginCatalog(event)),
+    pluginStartupStatus:(event)=>run(event,current=>current.pluginStartupStatus(event)),
+    pluginChoose:(event,kind:'directory'|'zip',target?:string)=>run(event,async current=>{
+      if(kind!=='directory'&&kind!=='zip')throw new ApplicationError('INVALID_INPUT','请选择本地文件夹或压缩包');
+      const window=BrowserWindow.fromWebContents(event.sender);if(!window)throw new ApplicationError('SCOPE_DENIED','没有可用的插件安装窗口');
+      const chosen=await dialog.showOpenDialog(window,{title:target?'选择更新插件包':'选择插件包',properties:[kind==='directory'?'openDirectory':'openFile','dontAddToRecent'],...(kind==='zip'?{filters:[{name:'插件压缩包',extensions:['zip']}]}:{})});
+      if(chosen.canceled||!chosen.filePaths[0])return null;
+      return current.pluginInspect(event,chosen.filePaths[0],kind,target);
+    }),
+    pluginInstall:(event,token:string)=>run(event,current=>current.pluginInstall(event,token)),
+    pluginDiscard:(event,token:string)=>run(event,current=>current.pluginDiscard(event,token)),
+    pluginSetEnabled:(event,appId:string,enabled:boolean,revision:number)=>run(event,current=>current.pluginSetEnabled(event,appId,enabled,revision)),
+    pluginUninstall:(event,appId:string,deleteData:boolean,revision:number)=>run(event,current=>current.pluginUninstall(event,appId,deleteData,revision)),
+    pluginRestart:(event,appId:string)=>run(event,current=>current.pluginRestart(event,appId)),
+    pluginApprovalList:(event,target:TerminalTarget)=>run(event,current=>current.pluginApprovalList(event,target)),
+    pluginApprovalDecide:(event,input:PluginWriteDecision)=>run(event,current=>current.pluginApprovalDecide(event,input)),
+    pluginRead:(event,input:PluginUiRead)=>run(event,current=>current.pluginRead(event,input)),
+    pluginPageContext:(event,input:PluginPageContext)=>run(event,current=>current.pluginPageContext(event,input)),
+    pluginCancelRead:(event,requestId:string)=>run(event,current=>current.pluginCancelRead(event,requestId)),
+    pluginConnections:(event,input:PluginConnectionTarget)=>run(event,current=>current.pluginConnections(event,input)),
+    pluginConnectionTest:(event,input:PluginConnectionTest)=>run(event,current=>current.pluginConnectionTest(event,input)),
+    pluginConnectionCancel:(event,id:string)=>run(event,current=>current.pluginConnectionCancel(event,id)),
+    pluginConnectionDiscard:(event,id:string)=>run(event,current=>current.pluginConnectionDiscard(event,id)),
+    pluginConnectionSave:(event,input:PluginConnectionSave)=>run(event,current=>current.pluginConnectionSave(event,input)),
+    pluginDefaultPlan:(event,input:PluginDefaultInput)=>run(event,current=>current.pluginDefaultPlan(event,input)),
+    pluginDefaultSave:(event,input:PluginDefaultInput)=>run(event,current=>current.pluginDefaultSave(event,input)),
+    pluginDeleteConnectionPlan:(event,input:PluginDeleteConnection)=>run(event,current=>current.pluginDeleteConnectionPlan(event,input)),
+    pluginDeleteConnection:(event,input:PluginDeleteConnection)=>run(event,current=>current.pluginDeleteConnection(event,input)),
+    pluginProjectSettings:(event,input:PluginConnectionTarget,projectId:string)=>run(event,current=>current.pluginProjectSettings(event,input,projectId)),
+    pluginProjectSave:(event,input:PluginProjectConnection)=>run(event,current=>current.pluginProjectSave(event,input)),
+    pluginPrepareAction:(event,input:PluginUiActionRequest)=>run(event,current=>current.pluginPrepareAction(event,input)),
+    pluginReleaseAction:(event,id:string)=>run(event,current=>current.pluginReleaseAction(event,id)),
+    pluginReviewAction:(event,id:string)=>run(event,current=>current.pluginReviewAction(event,id)),
+    pluginOpenAction:(event,id:string)=>run(event,current=>current.pluginOpenAction(event,id)),
     impact:(event,input:ApplicationImpactQuery)=>run(event,current=>current.impact(event,input)),
     terminalBind:(event,input:ApplicationTerminalBind)=>run(event,current=>current.bindTerminal(event,input)),
     terminalInsert:(event,input:ApplicationTerminalInsert)=>run(event,current=>current.insertTerminal(event,input)),

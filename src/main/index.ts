@@ -1,9 +1,10 @@
 import {BrowserService} from './core/browser/service';
 import {installBrowserProjectDefaults} from './core/applications/browser-project-defaults';
+import {pluginHostReadOnlyRoots} from './core/applications/plugins/host-paths';
 import {existsSync,readFileSync} from 'node:fs';
 import { voiceErrorsZh, voiceErrorsEn } from '@shared/voice-errors';
 import { join } from 'node:path';
-import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, globalShortcut, Notification, shell } from 'electron';
 import {
   aiProfilesChangedEvent,
   applicationsChangedEvent,
@@ -203,7 +204,7 @@ async function main(): Promise<void> {
         if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>(agentSupport.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string|null}|undefined)?.project_id??null,taskDirectory:id=>(agentSupport.store.sqlite.prepare('SELECT cwd FROM tasks WHERE id=?').get(id) as {cwd:string}|undefined)?.cwd??null,window:getMainWindow,changed:taskId=>events.emit(browserChangedEvent,{taskId}),accessChanged:()=>events.emit(browserAccessChangedEvent,{}),shortcut:(taskId,action)=>events.emit(browserShortcutEvent,{taskId,action})});
       }
       await browser?.reconcile();
-      applications=new ApplicationService(agentSupport.store,{browser,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>{events.emit(applicationsChangedEvent,change);managedTasks?.syncSkillLibrary();}});
+      applications=new ApplicationService(agentSupport.store,{browser,openPluginUrl:url=>shell.openExternal(url),plugins:process.platform==='darwin'?{bundledZentao:app.isPackaged?join(process.resourcesPath,'plugins/zentao'):join(app.getAppPath(),'out/plugins/zentao'),runtime:{executable:process.execPath,readOnlyRoots:pluginHostReadOnlyRoots(app.getAppPath(),process.execPath),keychainRoots:[join(app.getPath('home'),'Library/Keychains'),'/Library/Keychains']}}:undefined,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>{events.emit(applicationsChangedEvent,change);if(change?.kind!=='plugin-runtime'&&change?.kind!=='plugin-approval')managedTasks?.syncSkillLibrary();}});
 
       await applications.recover();
       if(browser)installBrowserProjectDefaults(projects,applications.selections,()=>events.emit(applicationsChangedEvent,undefined));

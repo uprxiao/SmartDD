@@ -16,13 +16,19 @@ export const appNames=Object.fromEntries(applicationModuleMetadata.map(m=>[m.app
 // Display only;null prototype keeps unknown Skill IDs from inheriting labels.
 export const skillNames:Readonly<Record<string,string>>=Object.freeze(Object.assign(Object.create(null) as Record<string,string>,skillLabels));
 export function useApplicationEvents(){const client=useQueryClient();useEffect(()=>events.on(applicationsChangedEvent,change=>{
- if(change?.kind==='health'){
+ if(change?.kind==='plugin-approval'){
+  void client.invalidateQueries({queryKey:['applications','plugin-approvals',change.taskId]});
+ }else if(change?.kind==='plugin-runtime'){
+  // Closing a child is metadata, never an instruction to replay a page's business read.
+  void client.invalidateQueries({queryKey:['applications','plugins']});
+ }else if(change?.kind==='health'){
   // Runtime health is metadata. Re-fetching the business query would erase its failure/cursor and feed another health change.
   void client.invalidateQueries({queryKey:['applications','connections',change.appId]});
   void client.invalidateQueries({queryKey:['applications','session']});
  }else void client.invalidateQueries({queryKey:['applications']});
 }),[client]);}
 export function useCatalog(){return useQuery({queryKey:['applications','catalog'],queryFn:async()=>unwrap(await rpc.applications.catalog()),retry:false});}
+export function usePluginCatalog(){return useQuery({queryKey:['applications','plugins'],queryFn:async()=>unwrap(await rpc.applications.pluginCatalog()),retry:false});}
 export function useConnections(appId:ApplicationId){return useQuery({queryKey:['applications','connections',appId],queryFn:async()=>unwrap(await rpc.applications.connections(appId)),retry:false});}
 export function useProjectApplication(projectId:string,appId:ApplicationId){return useQuery({queryKey:['applications','project',projectId,appId],queryFn:async()=>unwrap(await rpc.applications.projectSettings(projectId,appId)),retry:false});}
 export function useApplicationImpact(input:ApplicationImpactQuery|null){return useQuery({queryKey:['applications','impact',input],queryFn:async()=>{if(!input)throw new Error('请选择影响核对目标');return unwrap(await rpc.applications.impact(input));},enabled:input!==null,retry:false,gcTime:0,refetchOnWindowFocus:false});}

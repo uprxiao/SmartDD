@@ -8,6 +8,10 @@ import {canonicalJson,compareCodePoints,digest} from './manifest';
 
 export interface RunPlanAvailability {mcp:boolean;cli:boolean;reason?:string}
 export interface RunPlanApplication {manifest:ApplicationPackageManifest;packageHash:string;capabilities:readonly ApplicationCapability[]}
+export function pluginCliCommand(appId:string,capabilityId:string):string[]{
+  const suffix=capabilityId.slice(appId.length+1).split('.');
+  return ['plugin',appId,...(suffix.length<=6&&suffix.every(part=>/^[a-z][a-z0-9-]{0,63}$/.test(part))?suffix:['call-'+digest(capabilityId).slice(0,16)])];
+}
 export function selectCapabilityEntry(capability:ApplicationCapability,available:RunPlanAvailability):{entry:ApplicationEntry|null;fallback:boolean;reason:string|null}{
   const primary:ApplicationEntry=capability.binding.cli?'cli':'mcp';
   if(available[primary])return{entry:primary,fallback:false,reason:null};
@@ -38,6 +42,11 @@ export function createApplicationRunPlan(input:{runId:string;snapshotHash:string
       const mcpTool=bindings.flatMap(b=>'mcp'in b&&b.mcp?[b.mcp.tool]:[])[0],cliCommand=bindings.flatMap(b=>'cli'in b&&b.cli?[b.cli.command]:[])[0];
       allowed.push({capabilityId:choice.capability.id,contractMajor:choice.capability.contractMajor,appId:selected.appId,packageHash:selected.packageHash,entry:choice.entry,...(mcpTool?{mcpTool}:{}),...(cliCommand?{cliCommand}:{})});
     }
+  }
+  if(snapshot.schema===3)for(const selected of snapshot.externalPlugins??[]){
+    const entry=input.available[selected.entry]?selected.entry:null;
+    applications.push({appId:selected.appId,packageHash:selected.packageHash,primaryEntry:selected.entry,effectiveEntry:entry??'unavailable',fallback:false,reason:entry?null:`${selected.entry} unavailable`});
+    for(const cap of selected.capabilities)if(entry)allowed.push({capabilityId:cap.id,contractMajor:1,appId:selected.appId,packageHash:selected.packageHash,entry,mcpTool:cap.mcpTool,...(entry==='cli'?{cliCommand:pluginCliCommand(selected.appId,cap.id)}: {})});
   }
   const binding={id:snapshot.adapterBinding.id,version:snapshot.adapterBinding.version,hash:snapshot.adapterBinding.hash};
   const payload={schema:'willyou-application-run-plan-v1' as const,runId:input.runId,taskId:snapshot.taskId,projectId:snapshot.projectId,snapshotHash:input.snapshotHash,runner:binding,capabilityAdapter:binding,cliVersion:input.cliVersion??snapshot.agentAtCreation.version,grades:{skill:true,mcp:input.available.mcp,cli:input.available.cli,configuration:true,discoveryObserved:false,userMessageObserved:false,evidence:[`agent-adapter:${binding.id}:${binding.hash}`]},applications,allowed,skills:input.skills,sandbox:input.sandbox??{source:'unchanged-user-policy',digest:null},createdAt:input.now??new Date().toISOString()};

@@ -1,3 +1,7 @@
+import {PtyAccess} from '../../../pty-access';
+import {fixture as pluginFixture} from '../plugins/__tests__/fixture';
+import {pluginMcpToolName} from '../plugins/session-tools';
+import {MacProcessIdentityReader} from '../process-identity';
 import {applicationToolDeclarations} from '@shared/application-capabilities';
 import {ApplicationConnectionService} from '../connection-service';
 import type {ApplicationUiSender} from '../execution-context';
@@ -33,13 +37,16 @@ import {CapabilityBundleSource} from '../bundle-source';
 import {installCliFixturePackage} from './cli-fixture';
 import {connect} from 'node:net';
 import {VALUE_PREFIX} from '../../../launch-env';
+import {codexServerArgs,type CodexTaskServerRequest,type PrivateCodexTaskServer} from '../codex-task-server';
 import {UpstreamSessionPool} from '../upstream/session-pool';
 import type {BridgeResponse} from '@shared/application-bridge';
 let root:string,home:string,cwd:string,sqlite:Database.Database,capabilities:CapabilityService,support:AgentSupportService,applications:ApplicationService,managed:ManagedTaskCapabilities,tasks:TaskService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,ptys:TestPtys,projectId:string,codexId:string,claudeId:string;
 let expectedDisposeError:unknown;
+let pluginWrites:{id:string;data:string}[]=[],pluginUrls:string[]=[];
 let argMax:number|null;
 let applicationRuntimeAvailable:boolean;
 let cliPolicyAvailable:boolean;
+let codexRequests:CodexTaskServerRequest[]=[],codexStarted:string[]=[],codexStopped:string[]=[],codexStartFailure=false;
 const fixtureCliPolicy={available:true as const,kind:'inherit' as const,parent:':read-only',networkProxy:true,enableNetwork:true,existingNames:[],source:'controlled-effective-policy-fixture',digest:digest('controlled-effective-policy-fixture')};
 // TestPtys has no native bridge child. Its synthetic exit callbacks must settle
 // before their SQLite store/root is closed; retain every rejection for teardown.
@@ -52,6 +59,17 @@ async function drainFixtureBridgeExits():Promise<unknown[]>{
  while(fixtureBridgeExits.length){for(const result of await Promise.all(fixtureBridgeExits.splice(0)))if(result.status==='rejected')failures.push(result.reason);}
  return failures;
 }
+/** Task wiring only: native Codex/Unix ownership is tested separately. Both
+ * backend roles and their explicit fake exit events are persisted here. */
+async function prepareSyntheticCodexServer(request:CodexTaskServerRequest):Promise<PrivateCodexTaskServer>{
+ codexRequests.push(request);codexServerArgs(request.profileArgs,request.managedArgs);
+ const launcher=await request.run.reserveBridge(),server=await request.run.reserveBridge();let state:PrivateCodexTaskServer['state']='prepared',pid:number|undefined,closing:Promise<void>|undefined;
+ const stop=():Promise<void>=>{if(state==='stopped')return Promise.resolve();if(closing)return closing;closing=(async()=>{state='stopping';if(pid===undefined){await launcher.cancelUnforked!();await server.cancelUnforked!();}else{reader.identities.delete(pid);await launcher.exited();await server.exited();}codexStopped.push(request.run.runId);state='stopped';})();return closing;};
+ return{url:'unix:///private/tmp/synthetic-codex-'+request.run.runId,get state(){return state;},recoveryWarnings:[],stop,start:async()=>{
+  state='starting';await launcher.arm();await server.arm();pid=51000+codexStarted.length;reader.identities.set(pid,'darwin-proc-v1:400:'+pid);await launcher.attach(pid);await server.attach(pid);codexStarted.push(request.run.runId);
+  if(codexStartFailure)throw new Error('controlled-private-server-start-failure');state='ready';
+ }};
+}
 class TestPtys extends EventEmitter implements PtyHost{
  readonly live=new Map<string,number>();readonly launches:SpawnOptions[]=[];
  spawn(options:SpawnOptions){this.launches.push(options);const pid=31000+this.launches.length;this.live.set(options.id!,pid);reader.identities.set(pid,'darwin-proc-v1:300:'+pid);return options.id!;}
@@ -59,7 +77,7 @@ class TestPtys extends EventEmitter implements PtyHost{
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
 beforeEach(async({task})=>{
- cliPolicyAvailable=true;const withCli=['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
+ pluginWrites=[];pluginUrls=[];codexRequests=[];codexStarted=[];codexStopped=[];codexStartFailure=false;cliPolicyAvailable=true;const withPlugins=task.suite?.name==='M13 P1 plugins through production task startup';const withCli=withPlugins||['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
  fixtureBridgeExits=[];expectedDisposeError=undefined;applicationRuntimeAvailable=true;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
@@ -67,7 +85,7 @@ beforeEach(async({task})=>{
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
  capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
- applications=new ApplicationService(support.store,{secrets,projects,tasks,activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+ applications=new ApplicationService(support.store,{secrets,projects,tasks,...(withPlugins?{openPluginUrl:async(url:string)=>{pluginUrls.push(url);},terminal:{access:new PtyAccess({trusted:()=>true,activePty:id=>tasks.activePty(id),alive:id=>ptys.live.has(id),write:()=>{},resize:()=>{},killTask:()=>{}}),bracketedPaste:async()=>true,write:(id:string,data:string)=>{pluginWrites.push({id,data});}},plugins:{processes:new MacProcessIdentityReader(resolve('out/native/willyou-process-identity')),runtime:{executable:process.execPath,readOnlyRoots:[process.execPath],keychainRoots:[home]}}}:{}),activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,...(withPlugins?{prepareCodexServer:prepareSyntheticCodexServer}:{}),stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
  // Codex and Claude start their configured MCP servers with the session, so the bridge child exits with the Agent.
  // TestPtys forks nothing: settle each prepared bridge handle when its PTY is killed.
  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
@@ -618,4 +636,84 @@ describe('embedded runtime failure narrows only application execution',()=>{
   expect(await tools.call(newRun,randomUUID(),{operation:'smartdd_mail_draft_list_v1',contractMajor:1,connectionId:null,arguments:{}})).toMatchObject({status:'ok'});
   tasks.kill(id);await vi.waitFor(()=>expect(managed.runs.get(newRun).state).toBe('stopped'));
  },30000);
+});
+
+
+describe('M13 P1 plugins through production task startup',()=>{
+ beforeEach(async()=>{writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.166.0";; *) exit 70;; esac\n',{mode:0o700});});
+ const putPlugin=async(version='0.1.0',extra=false,actions=false,skills=false)=>{
+  const f=pluginFixture();f.manifest.version=version;f.manifest.providers=[];f.manifest.capabilities['demo-tracker.items.list'].slots=[];
+  if(actions){Object.assign(f.manifest.ui.panels[0],{rowActions:[{kind:'insertTerminal',title:'插入引用',payload:{reference:'{row.id}'}},{kind:'openUrl',title:'打开链接',field:'url'}]});const schema=JSON.parse(f.files.get('schemas/output.json')!.toString());schema.properties.items.items.properties.url={type:'string'};f.files.set('schemas/output.json',Buffer.from(JSON.stringify(schema)));}
+  if(extra)Object.assign(f.manifest.capabilities,{'demo-tracker.items.extra':{...f.manifest.capabilities['demo-tracker.items.list']}});
+  if(skills){Object.assign(f.manifest,{skills:['skills']});f.files.set('skills/query/SKILL.md',Buffer.from('---\nname: query\ndescription: Synthetic query '+version+'\n---\n{{WILLYOU_APPLICATION}}\n{{WILLYOU_ENTRYPOINTS}}\n'));f.files.set('skills/query/references/version.txt',Buffer.from(version));}
+  f.files.set('runtime/main.mjs',Buffer.from(`import readline from 'node:readline';readline.createInterface({input:process.stdin}).on('line',line=>{const m=JSON.parse(line),result=m.method==='initialize'?{protocol:'jsonrpc-stdio/1',plugin:'demo-tracker',version:${JSON.stringify(version)}}:{items:[{id:${JSON.stringify(version)},title:'Synthetic P1',url:'https://example.invalid/p1'}]};process.stdout.write(JSON.stringify({jsonrpc:'2.0',id:m.id,result})+'\\n');});`));
+  const directory=join(root,'plugin-source',version);for(const[path,bytes]of f.bundle()){mkdirSync(dirname(join(directory,path)),{recursive:true});writeFileSync(join(directory,path),bytes);}
+  const inspected=await applications.plugins!.inspect('synthetic-renderer',directory,'directory');await applications.plugins!.install('synthetic-renderer',inspected.token);
+ };
+ const pluginTools=()=>new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data),{additional:applications.plugins!.tools});
+ const invoke=(taskId:string)=>{const row=sqlite.prepare("SELECT run_id FROM capability_runs WHERE task_id=? AND state='active'").get(taskId) as {run_id:string};return pluginTools().call(row.run_id,randomUUID(),{operation:pluginMcpToolName('demo-tracker.items.list'),contractMajor:1,connectionId:null,arguments:{}});};
+ const usePrivateCodex=()=>writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "0.167.1";; *) exit 70;; esac\n',{mode:0o700});
+ it('delivers Codex frozen roots and run plan before the actual task terminal connects to its own backend',async()=>{
+  usePrivateCodex();await putPlugin('0.1.0',false,false,true);const created=await create(),request=codexRequests[0],launch=ptys.launches.at(-1)!;
+  expect(codexRequests).toHaveLength(1);expect(codexStarted).toEqual([request.run.runId]);expect(request.run.runId).toBe(created.task.runtimeSnapshot!.runId);expect(launch.args).toContain('--remote');expect(launch.args[launch.args.indexOf('--remote')+1]).toContain(request.run.runId);
+  expect(request.managedArgs).not.toContain('--remote');expect(request.skills.codexRoots).toHaveLength(1);expect(readFileSync(join(request.skills.codexRoots[0],'SKILL.md'),'utf8')).toContain('Synthetic query 0.1.0');expect(managed.runs.bridgePreparation(request.run.runId).plan?.skills).toEqual([expect.objectContaining({nativeName:'willyou-demo-tracker-query'})]);
+  expect(managed.runs.bridgePreparation(request.run.runId).plan?.grades.cli).toBe(false);expect(request.environment).not.toHaveProperty('WILLYOU_RUN_TOKEN');expect(request.environment).not.toHaveProperty('CODEX_HOME');expect(existsSync(join(cwd,'.agents/skills'))).toBe(false);
+  tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(request.run.runId).state).toBe('stopped'));expect(codexStopped).toEqual([request.run.runId]);expect(existsSync(request.skills.root)).toBe(false);
+ });
+ it('keeps a running Codex Skill frozen while host calls use the new package, then refreshes private roots on resume',async()=>{
+  usePrivateCodex();await putPlugin('0.1.0',false,false,true);const first=await create(),old=codexRequests[0],path=join(old.skills.codexRoots[0],'SKILL.md'),bytes=readFileSync(path,'utf8');await putPlugin('0.2.0',false,false,true);expect(readFileSync(path,'utf8')).toBe(bytes);expect(await invoke(first.task.id)).toMatchObject({status:'ok',value:{items:[{id:'0.2.0'}]}});
+  const id=await stopForSwitchFixture(first,'codex');expect(existsSync(old.skills.root)).toBe(false);const resumed=await tasks.open({taskId:first.task.id}),next=codexRequests[1];expect(resumed.task.nativeSessionId).toBe(id);expect(next.run.runId).not.toBe(old.run.runId);expect(next.skills.root).not.toBe(old.skills.root);expect(readFileSync(join(next.skills.codexRoots[0],'SKILL.md'),'utf8')).toContain('Synthetic query 0.2.0');expect(ptys.launches.at(-1)!.args).toContain('resume');
+ });
+ it('closes a backend which started before a terminal fork failure without using the whole-run no-fork receipt',async()=>{
+  usePrivateCodex();await putPlugin('0.1.0',false,false,true);codexStartFailure=true;await expect(create()).rejects.toThrow('controlled-private-server-start-failure');expect(codexStarted).toHaveLength(1);expect(ptys.launches).toHaveLength(0);
+  await vi.waitFor(()=>expect(sqlite.prepare('SELECT state FROM capability_runs').all()).toEqual([{state:'stopped'}]));expect(codexStopped).toEqual(codexStarted);const states=sqlite.prepare("SELECT kind,state FROM capability_run_processes").all();expect(states).toContainEqual({kind:'cli',state:'canceled'});expect(states.filter(row=>(row as {kind:string}).kind==='bridge')).toEqual(expect.arrayContaining([{kind:'bridge',state:'exited'},{kind:'bridge',state:'exited'}]));
+ });
+ it('narrows a prepared Codex launch before any backend fork and retains the ordinary native Agent',async()=>{
+  usePrivateCodex();await putPlugin('0.1.0',false,false,true);const original=managed.prepare.bind(managed);vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{const launch=await original(input);return launch.nativeOnly!('managed_launch_payload_too_large');});const created=await create();expect(codexRequests).toHaveLength(1);expect(codexStarted).toEqual([]);expect(codexStopped).toHaveLength(1);expect(ptys.launches.at(-1)!.args).not.toContain('--remote');expect(created.task.runtimeSnapshot!.selfCheck.issues).toContain('managed_launch_payload_too_large');
+ });
+ it('preserves unsupported profile arguments in a native-only launch and does not start a private backend',async()=>{
+  usePrivateCodex();await putPlugin('0.1.0',false,false,true);mkdirSync(join(home,'.codex'),{recursive:true});writeFileSync(join(home,'.codex/work.config.toml'),'model="synthetic"\n');profiles.update(codexId,{name:'Codex version fixture',runner:'codex',executable:profiles.resolve(codexId).command,args:['--profile','work'],env:[],color:null,isDefault:true});
+  const created=await create();expect(codexStarted).toEqual([]);expect(ptys.launches.at(-1)!.args).toEqual(['--profile','work']);expect(created.task.runtimeSnapshot!.selfCheck.issues).toContain('AGENT_ADAPTER_UNSUPPORTED');
+ });
+ it('does not prepare private Codex roots for a project-closed plugin',async()=>{
+  usePrivateCodex();await putPlugin('0.1.0',false,false,true);const plugin=applications.plugins!.catalog()[0],target={appId:plugin.appId,packageHash:plugin.hash!},setting=applications.plugins!.connections.project(target,projectId);await applications.plugins!.connections.setProject({...target,projectId,expectedRevision:setting.binding_revision,mode:'follow',enabled:false});await create();expect(codexRequests).toEqual([]);expect(ptys.launches.at(-1)!.args).not.toContain('--remote');
+ });
+ it('refuses changed Codex Skill bytes before backend/terminal forks and closes prepared windows',async()=>{
+  usePrivateCodex();await putPlugin('0.1.0',false,false,true);const original=managed.prepare.bind(managed);vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{const launch=await original(input);writeFileSync(join(codexRequests[0].skills.codexRoots[0],'SKILL.md'),'changed');return launch;});await expect(create()).rejects.toMatchObject({code:'HASH_MISMATCH'});expect(codexStarted).toEqual([]);expect(ptys.launches).toHaveLength(0);await vi.waitFor(()=>expect(sqlite.prepare('SELECT state FROM capability_runs').all()).toEqual([{state:'stopped'}]));
+ });
+ it('delivers a private Claude Skill at the actual task launch, keeps it frozen after update, and refreshes on resume',async()=>{
+  await putPlugin('0.1.0',false,false,true);const created=await create(claudeId),launch=ptys.launches.at(-1)!,index=launch.args.indexOf('--plugin-dir');expect(index).toBeGreaterThan(-1);const oldRoot=launch.args[index+1],entry=join(oldRoot,'payload/skills/query/SKILL.md'),before=readFileSync(entry,'utf8'),saved=await managed.sessions.get(created.task.id);expect(before).toContain('Synthetic query 0.1.0');expect(before).toContain(saved.snapshot.adapterBinding.nativeToolNames[pluginMcpToolName('demo-tracker.items.list')]);expect(before).not.toContain('{{WILLYOU_');expect(existsSync(join(home,'.claude/skills/willyou-demo-tracker'))).toBe(false);
+  expect(managed.runs.bridgePreparation(created.task.runtimeSnapshot!.runId).plan?.skills).toEqual([expect.objectContaining({appId:'demo-tracker',nativeName:'willyou-demo-tracker:query'})]);await putPlugin('0.2.0',false,false,true);expect(readFileSync(entry,'utf8')).toBe(before);expect(await invoke(created.task.id)).toMatchObject({status:'ok',value:{items:[{id:'0.2.0'}]}});
+  const nativeId=await stopForSwitchFixture(created,'claude-code');await vi.waitFor(()=>expect(existsSync(oldRoot)).toBe(false));const resumed=await tasks.open({taskId:created.task.id}),next=ptys.launches.at(-1)!,nextRoot=next.args[next.args.indexOf('--plugin-dir')+1];expect(resumed.task.nativeSessionId).toBe(nativeId);expect(nextRoot).not.toBe(oldRoot);expect(readFileSync(join(nextRoot,'payload/skills/query/SKILL.md'),'utf8')).toContain('Synthetic query 0.2.0');
+ });
+ it('does not inject a project-closed Claude plugin into a new or resumed task',async()=>{
+  await putPlugin('0.1.0',false,false,true);const created=await create(claudeId);await stopForSwitchFixture(created,'claude-code');const plugin=applications.plugins!.catalog()[0],target={appId:plugin.appId,packageHash:plugin.hash!},setting=applications.plugins!.connections.project(target,projectId);await applications.plugins!.connections.setProject({...target,projectId,expectedRevision:setting.binding_revision,mode:'follow',enabled:false});await tasks.open({taskId:created.task.id});expect(ptys.launches.at(-1)!.args).not.toContain('--plugin-dir');const fresh=await create(claudeId);expect(ptys.launches.at(-1)!.args).not.toContain('--plugin-dir');const current=await managed.sessions.get(fresh.task.id);expect(current.snapshot.schema===3&&current.snapshot.externalPlugins).toEqual([]);
+ });
+ it('refuses a changed Skill projection before the native fork and closes the unspawned run',async()=>{
+  await putPlugin('0.1.0',false,false,true);const original=managed.prepare.bind(managed);vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await original(input),index=launch.args.indexOf('--plugin-dir');if(index>=0)writeFileSync(join(launch.args[index+1],'payload/skills/query/SKILL.md'),'tampered');return launch;});await expect(create(claudeId)).rejects.toMatchObject({code:'HASH_MISMATCH'});expect(ptys.launches).toHaveLength(0);await vi.waitFor(()=>expect(sqlite.prepare("SELECT state FROM capability_runs").all()).toEqual([{state:'stopped'}]));expect(managed.recoveryWarnings.some(w=>w.homeId.startsWith('plugin-skills:'))).toBe(true);
+ });
+ it('routes a real sandbox page result into the chosen task through host-owned proof and the existing exactly-once paste transport',async()=>{
+  await putPlugin('0.1.0',false,true);const created=await create(),frame={processId:101,routingId:202},sender={sender:{id:91,mainFrame:frame,isDestroyed:()=>false},senderFrame:frame} as unknown as ApplicationUiSender;
+  const target={taskId:created.task.id,ptyId:created.ptyId},hash=applications.plugins!.catalog()[0].hash!,page=await applications.pluginRead(sender,{requestId:randomUUID(),projectId,appId:'demo-tracker',panelId:'items',packageHash:hash,capability:'demo-tracker.items.list',input:{}});
+  const request={receiptId:page.actionReceipt!,actionIndex:0,row:{receiptId:page.actionReceipt!,index:0}},action=applications.pluginPrepareAction(sender,request);
+  const source={kind:'pluginAction' as const,appId:'demo-tracker',actionId:action.id},binding=await applications.bindTerminal(sender,{projectId,target,source}),operation={bindingId:binding.id,operationId:randomUUID()};
+  expect(await applications.insertTerminal(sender,operation)).toMatchObject({state:'inserted'});expect(await applications.insertTerminal(sender,operation)).toMatchObject({state:'inserted'});expect(pluginWrites).toHaveLength(1);expect(pluginWrites[0]).toMatchObject({id:created.ptyId});expect(pluginWrites[0].data).toContain('"reference":"0.1.0"');expect(pluginWrites[0].data.endsWith('\r')).toBe(false);
+  const opened=applications.pluginPrepareAction(sender,{...request,actionIndex:1});const opening=applications.pluginOpenAction(sender,opened.id);await expect(applications.pluginOpenAction(sender,opened.id)).rejects.toMatchObject({code:'INTENT_STALE'});await opening;expect(pluginUrls).toEqual(['https://example.invalid/p1']);
+  applications.releaseTerminal(sender,binding.id);const next=await applications.bindTerminal(sender,{projectId,target,source});sqlite.prepare("UPDATE application_project_settings SET enabled=0 WHERE app_id='demo-tracker' AND project_id=?").run(projectId);
+  expect(()=>applications.insertTerminal(sender,{bindingId:next.id,operationId:randomUUID()})).toThrow();expect(pluginWrites).toHaveLength(1);expect(()=>applications.pluginPrepareAction(sender,request)).toThrow();
+ });
+ it('captures an installed plugin in the actual task snapshot/plan and dispatches its sandbox process',async()=>{
+  await putPlugin();const created=await create(),saved=await managed.sessions.get(created.task.id);expect(saved.snapshot.schema).toBe(3);
+  if(saved.snapshot.schema!==3)throw new Error('schema3 required');expect(saved.snapshot.externalPlugins).toHaveLength(1);expect(saved.snapshot.adapterBinding.nativeToolNames).toHaveProperty(pluginMcpToolName('demo-tracker.items.list'));
+  expect(saved.snapshot.packages.some(p=>p.appId==='demo-tracker')).toBe(false);expect(await invoke(created.task.id)).toMatchObject({status:'ok',value:{items:[{id:'0.1.0'}]}});
+  await applications.plugins!.setEnabled('demo-tracker',false,applications.plugins!.catalog()[0].revision);expect(await invoke(created.task.id)).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});
+ });
+ it('refreshes plugin discovery on native-session resume and retains the original native identity/history',async()=>{
+  await putPlugin();const created=await create(),nativeId=await stopForSwitchFixture(created,'codex'),old=await managed.sessions.get(created.task.id);
+  await putPlugin('0.2.0',true);const resumed=await tasks.open({taskId:created.task.id}),current=await managed.sessions.get(created.task.id);
+  expect(resumed.task.nativeSessionId).toBe(nativeId);expect(current.pointer.snapshotHash).not.toBe(old.pointer.snapshotHash);expect(current.snapshot.native).toEqual(old.snapshot.native);
+  if(current.snapshot.schema!==3)throw new Error('schema3 required');expect(current.snapshot.externalPlugins![0]).toMatchObject({version:'0.2.0'});expect(current.snapshot.externalPlugins![0].capabilities.some(c=>c.id==='demo-tracker.items.extra')).toBe(true);
+  expect(sqlite.prepare('SELECT 1 FROM capability_snapshot_versions WHERE task_id=? AND snapshot_hash=?').get(created.task.id,old.pointer.snapshotHash)).toBeTruthy();
+  expect(await invoke(created.task.id)).toMatchObject({status:'ok',value:{items:[{id:'0.2.0'}]}});
+ });
 });

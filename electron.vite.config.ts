@@ -29,6 +29,7 @@ export default defineConfig({
       execFileSync(process.execPath, ['scripts/applications/build.mjs'], { stdio: 'inherit' });
       execFileSync(process.execPath, ['scripts/applications/build-runtime.mjs'], { stdio: 'inherit' });
       execFileSync(process.execPath, ['scripts/applications/build-bundles.mjs'], { stdio: 'inherit' });
+      execFileSync(process.execPath, ['scripts/plugins/build-zentao.mjs'], { stdio: 'inherit' });
       if (process.platform === 'darwin') {
         execFileSync(process.execPath, ['scripts/browser/prepare-agent-browser.mjs'], { stdio: 'inherit' });
         execFileSync('python3', ['scripts/files/prepare-tex.py'], { stdio: 'inherit' });

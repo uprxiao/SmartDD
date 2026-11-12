@@ -5,10 +5,12 @@ import type {ApplicationService} from './application-service';
 import type {CapabilityRunRegistry} from './run-registry';
 import {canonicalJson} from './manifest';
 import type {ApplicationTerminalProof} from './terminal-insertion';
+import {hasExternalPluginOwner} from './plugins/legacy-routing';
 /** Source identities come from the host's local data, never arbitrary renderer text. */
 export async function resolveApplicationTerminalSource(service:ApplicationService,runs:CapabilityRunRegistry|undefined,sender:ApplicationUiSender,input:ApplicationTerminalBind):Promise<ApplicationTerminalProof>{
+ if(input.source.kind==='pluginAction')return service.pluginTerminalProof(sender,input);
  const {target,projectId,source}=input,appId=terminalSourceApp(source),store=service.store;
- const current=()=>{const task=store.sqlite.prepare('SELECT project_id,archived_at FROM tasks WHERE id=?').get(target.taskId) as {project_id:string|null;archived_at:number|null}|undefined,context=runs?.inputContext(target.taskId,target.ptyId);if(!task||task.archived_at!==null||task.project_id!==projectId||context?.run.projectId!==projectId)throw new ApplicationError('SCOPE_DENIED','引用与当前运行任务不属于同一项目');service.selections.requireEnabled(projectId,appId);return context;};
+ const current=()=>{if(hasExternalPluginOwner(store.sqlite,appId))throw new ApplicationError('CAPABILITY_UNAVAILABLE','该引用已由外部插件管理，请从插件页面重新准备');const task=store.sqlite.prepare('SELECT project_id,archived_at FROM tasks WHERE id=?').get(target.taskId) as {project_id:string|null;archived_at:number|null}|undefined,context=runs?.inputContext(target.taskId,target.ptyId);if(!task||task.archived_at!==null||task.project_id!==projectId||context?.run.projectId!==projectId)throw new ApplicationError('SCOPE_DENIED','引用与当前运行任务不属于同一项目');service.selections.requireEnabled(projectId,appId);return context;};
  const initial=current(),pack=initial.snapshot.packages.find(p=>p.appId===appId);if(!pack)throw new ApplicationError('CAPABILITY_UNAVAILABLE','原会话没有选用此应用；可使用当前版本新建会话');
  const runId=initial.run.runId,policy=canonicalJson(service.selections.policyStamp(projectId,appId));let assertSource=()=>{};
  const assert=()=>{const run=current();if(run.run.runId!==runId||run.snapshot.packages.find(p=>p.appId===appId)?.packageHash!==pack.packageHash||canonicalJson(service.selections.policyStamp(projectId,appId))!==policy)throw new ApplicationError('RESOURCE_STATE_CHANGED','原任务运行或应用选用已变化');assertSource();};

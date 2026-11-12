@@ -8,7 +8,7 @@ import type { ApplicationModuleRegistry, TrustedApplicationModule } from './modu
 import type { BuiltinPackageRegistry } from './builtin-package-registry';
 import { canonicalJson } from './manifest';
 import {applicationResultV2Schema,type ApplicationResultV2} from '@shared/application-result';
-import {applicationResourceRefSchema} from '@shared/application-data';
+import {buildApplicationResultV2} from './result-v2';
 import {AjvJsonSchemaValidator} from '@modelcontextprotocol/server/validators/ajv';
 import type {JsonSchemaType} from '@modelcontextprotocol/server';
 import {applicationPreflightFailure} from './capability-preflight';
@@ -53,12 +53,7 @@ export class ApplicationCapabilityExecution {
     return capability.contractMajor===2?applicationResultV2Schema.parse(value).data:value;
   }
   private result(caller:CallerContext,context:ApplicationExecutionContext,capability:ApplicationCapability,data:unknown):ApplicationResultV2{
-    const object=data&&typeof data==='object'&&!Array.isArray(data)?data as Record<string,unknown>:{},record=(value:unknown)=>value&&typeof value==='object'?value as Record<string,unknown>:{};
-    const resources=new Map<string,ApplicationResultV2['resources'][number]>(),visit=(value:unknown):void=>{const parsed=applicationResourceRefSchema.safeParse(value);if(parsed.success){resources.set(parsed.data.id+':'+parsed.data.revision,parsed.data);return;}if(Array.isArray(value))for(const item of value)visit(item);else if(value&&typeof value==='object')for(const item of Object.values(value))visit(item);};
-    if(!boundedJson(data))throw new ApplicationError('INVALID_RESPONSE','业务结果不是有界JSON');visit(data);
-    const revision=record(object.reference).contentRevision??record(object.draft).revision??record(object.intent).reviewHash;
-    const state=record(object.intent).state,missing=Array.isArray(object.missing)?object.missing.filter((v):v is string=>typeof v==='string'):[];
-    return applicationResultV2Schema.parse({schema:'willyou-app-result-v2',contractMajor:2,status:'ok',capabilityId:capability.id,data,source:{appId:context.appId,packageHash:context.packageHash,connections:this.contexts.sourceRevisions(context),revision:typeof revision==='string'||typeof revision==='number'?String(revision):null},completeness:{complete:object.complete!==false&&missing.length===0,missing},pagination:Object.hasOwn(object,'nextCursor')?{nextCursor:typeof object.nextCursor==='string'?object.nextCursor:null,total:typeof object.total==='number'?object.total:null}:null,resources:[...resources.values()],operation:{id:context.operationId,requestId:caller.kind==='agent'?caller.requestId:null,origin:caller.kind==='agent'?caller.entry:caller.kind==='internal'?'internal':'ui',effectState:capability.semantics==='read'?'read-only':state==='unknown'?'unknown':'completed'}});
+    return buildApplicationResultV2({capabilityId:capability.id,appId:context.appId,packageHash:context.packageHash,semantics:capability.semantics,connections:this.contexts.sourceRevisions(context),operationId:context.operationId,requestId:caller.kind==='agent'?caller.requestId:null,origin:caller.kind==='agent'?caller.entry:caller.kind==='internal'?'internal':'ui'},data);
   }
   async execute(caller:CallerContext,capabilityId:string,contractMajor:number,args:unknown,signal?:AbortSignal):Promise<unknown>{
     // Authentication precedes argument interpretation, slot/credential resolution and business work.

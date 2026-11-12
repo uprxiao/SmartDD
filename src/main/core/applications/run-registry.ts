@@ -55,6 +55,9 @@ export interface OwnedRunProcess {
   /** Call only from the exit event of that same owned native handle. */
   exited(): Promise<void>;
   cancelBeforeLaunch(): Promise<void>;
+  /** Host-only proof that this armed window never reached an OS fork (or the
+   * original ChildProcess reported spawn failure with no PID). Not recovery. */
+  cancelUnforked?():Promise<void>;
   /**
    * Bridge only. The host atomically took back this bridge's one-use bootstrap before any process read it, so no
    * bridge can ever join this run. Once the Agent process has exited, the armed window is released (an Agent that
@@ -72,6 +75,13 @@ export interface OwnedCapabilityRun {
 }
 // Only a handle minted by reserveGuard can request waiting-phase H admission.
 const nativeGuardReservations = new WeakMap<OwnedCapabilityRun,{store:ResourceStore;assert:(runner:string,resources:readonly string[],phase:'preparing'|'prepared')=>void}>();
+// Backend ownership is a host capability, not a run ID supplied by a tool.
+const ownedReservations = new WeakMap<OwnedCapabilityRun,{registry:CapabilityRunRegistry;runId:string;ptyId:string;signal:AbortSignal;cli:OwnedRunProcess}>();
+export function assertOwnedCapabilityRun(registry:CapabilityRunRegistry,run:OwnedCapabilityRun):void {
+  const proof=ownedReservations.get(run);
+  if(!proof||proof.registry!==registry||proof.runId!==run.runId||proof.ptyId!==run.ptyId||proof.signal!==run.signal||proof.cli!==run.cli)throw new ApplicationError('SCOPE_DENIED','后端只接受当前宿主签发的原运行句柄');
+  registry.bridgePreparation(run.runId);
+}
 export function assertNativeGuardReservation(store:ResourceStore,run:OwnedCapabilityRun,runner:string,resources:readonly string[],phase:'preparing'|'prepared'):void {
   const proof=nativeGuardReservations.get(run);
   if(!proof||proof.store!==store)throw new ApplicationError('SCOPE_DENIED','维护等待只允许当前宿主签发的普通原生守护');
@@ -199,7 +209,8 @@ export class CapabilityRunRegistry {
     }).immediate());
     const owned: OwnedRun = { ...(plan?{planHash:plan.planHash}:{}),selectionHash,leaseId,abort: new AbortController(),processes: new Set([processId]) }; this.owned.set(runId,owned);
     if (this.closed) { await this.stop(runId,'host-shutdown'); throw new ApplicationError('CANCELED','运行准备期间宿主服务已停止'); }
-    return { runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
+    const handle:OwnedCapabilityRun={ runId,ptyId,signal: owned.abort.signal,cli: this.processHandle(runId,processId,ptyId),prepare: () => this.prepare(runId),reserveBridge: () => this.reserveBridge(runId),cancelBeforeFork: () => this.cancelBeforeFork(runId),stop: (reason = 'user-stop') => this.stop(runId,reason) };
+    ownedReservations.set(handle,{registry:this,runId,ptyId,signal:handle.signal,cli:handle.cli});return handle;
   }
   /** Trusted host-only guard for schema0 history. It cannot assertActive or reserve a bridge. */
   async reserveNativeGuard(input:NativeGuardRequest,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{
@@ -360,6 +371,12 @@ export class CapabilityRunRegistry {
         this.owner(runId); const process = this.processRow(runId,id);
         if (process.state !== 'reserved' && process.state !== 'canceled') throw new ApplicationError('RESOURCE_STATE_CHANGED','已登记启动窗口，不能宣称没有子进程');
         this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE process_id=?").run(now(),id); this.finish(runId);
+      }).immediate());
+    },cancelUnforked:async()=>{
+      await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
+        this.owner(runId);const child=this.processRow(runId,id);
+        if(!['reserved','armed','canceled'].includes(child.state)||child.pid!==null||child.process_started_at!==null)throw new ApplicationError('RESOURCE_STATE_CHANGED','已出现或未知的子进程不能作为未 fork 取消');
+        this.store.sqlite.prepare("UPDATE capability_run_processes SET state='canceled',ended_at=? WHERE process_id=?").run(now(),id);if(child.kind==='cli')this.releaseUnclaimedBridges(runId);this.finish(runId);
       }).immediate());
     },releaseUnclaimed: async () => {
       await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {

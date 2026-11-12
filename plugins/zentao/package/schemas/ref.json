@@ -1,0 +1,29 @@
+{
+  "$id": "ref",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "connectionId",
+    "identityRevision",
+    "nativeId",
+    "contentRevision"
+  ],
+  "properties": {
+    "connectionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "identityRevision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "nativeId": {
+      "type": "string",
+      "pattern": "^[0-9]{1,64}$"
+    },
+    "contentRevision": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

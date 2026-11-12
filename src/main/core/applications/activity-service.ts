@@ -5,16 +5,20 @@ import {applicationActivityQuerySchema,type ApplicationActivityDetail,type Appli
 import {draftContentSchema} from '@shared/mail-drafts';
 import type {ResourceStore} from './resource-store';
 import {canonicalJson,digest} from './manifest';
-import type {ApplicationId} from '@shared/application-connections';
 import {browserActivityDetails} from '../browser/audit';
 import type {BrowserOperation} from '../browser/operations';
+import {pluginManifestSchema} from '@shared/plugins';
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.uuid();
 const cursorSchema=z.object({schema:z.literal(1),filter:hash,at:z.iso.datetime(),key:z.string().max(4096).regex(/^(?:(operation|send):[a-f0-9-]{36}|browser:[a-f0-9]+_[a-f0-9]+)$/)}).strict();
 const subjectSchema=z.array(z.object({kind:z.enum(['connection','mail-send','mail-draft']),id}).strict()).max(200);
-const targetSchema=z.array(z.object({id}).passthrough()).max(3);
+const pluginTargetSchema=z.object({slot:pluginManifestSchema.shape.id,connectionId:id,identityRevision:z.number().int().positive(),revision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().positive(),secretRevision:z.number().int().nonnegative()}).strict();
+const targetSchema=z.union([
+ z.array(z.object({id}).passthrough().refine(value=>!Object.hasOwn(value,'connectionId'))).max(3).transform(targets=>targets.map(target=>({id:target.id}))),
+ z.array(pluginTargetSchema).max(32).transform(targets=>targets.map(target=>({id:target.connectionId}))),
+]);
 const attachmentSchema=z.array(z.object({id,filename:z.string().max(1024),contentType:z.string().max(256),size:z.number().int().nonnegative(),contentHash:hash,createdAt:z.string()}).strict()).max(100);
 const resultSchema=z.object({state:z.enum(['server-accepted','failed','unknown']),complete:z.boolean(),accepted:z.array(z.string().max(512)).max(100),rejected:z.array(z.string().max(512)).max(100),errorCode:z.string().nullable(),smtpCode:z.number().nullable(),messageId:z.string().max(2000)}).strict();
-type Row={key:string;kind:ApplicationActivityItem['kind'];id:string;app_id:ApplicationId;project_id:string|null;task_id:string|null;run_id:string|null;job_id:string|null;parent_operation_id:string|null;caller_kind:ApplicationActivityItem['callerKind'];action:string;semantics:'read'|'write';state:string;attempt_count:number;error_code:string|null;effect_state:string|null;request_id:string|null;started_at:string;ended_at:string|null;targets_json:string;connection_id:string|null;subjects_json:string;draft_id:string|null;draft_revision:number|null;execution_id:string|null;execution_state:string|null;authorization_source:string|null;grant_state:string|null;updated_at:string|null};
+type Row={key:string;kind:ApplicationActivityItem['kind'];id:string;app_id:string;project_id:string|null;task_id:string|null;run_id:string|null;job_id:string|null;parent_operation_id:string|null;caller_kind:ApplicationActivityItem['callerKind'];action:string;semantics:'read'|'write';state:string;attempt_count:number;error_code:string|null;effect_state:string|null;request_id:string|null;started_at:string;ended_at:string|null;targets_json:string;connection_id:string|null;subjects_json:string;draft_id:string|null;draft_revision:number|null;execution_id:string|null;execution_state:string|null;authorization_source:string|null;grant_state:string|null;updated_at:string|null};
 /** A read-only union. The MCP transport and Data API share one operation identity;
  * SMTP execution remains a distinct, authoritative business record. No results,
  * user grants, scopes or provider calls are created by inspecting this history. */
@@ -61,8 +65,11 @@ export class ApplicationActivityService {
   const project=row.project_id?this.store.sqlite.prepare('SELECT name FROM projects WHERE id=?').get(row.project_id) as {name:string}|undefined:undefined;
   const task=row.task_id?this.store.sqlite.prepare('SELECT title FROM tasks WHERE id=? AND project_id=?').get(row.task_id,row.project_id) as {title:string}|undefined:undefined;
   const browser=this.browser(row),metadata=browser?browserActivityDetails(browser):undefined;
+  const hasPlugins=this.store.sqlite.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='plugin_installations'").get();
+  const plugin=hasPlugins?this.store.sqlite.prepare('SELECT installed FROM plugin_installations WHERE app_id=?').get(row.app_id) as {installed:number}|undefined:undefined;
   return {id:row.id,kind:row.kind,appId:row.app_id,projectId:row.project_id,projectName:project?.name??null,taskId:row.task_id,taskTitle:task?.title??null,runId:row.run_id,jobId:row.job_id,parentOperationId:row.parent_operation_id,callerKind:row.caller_kind,action:row.action,semantics:row.semantics,state:row.state,attemptCount:row.attempt_count,errorCode:row.error_code,effectState:row.effect_state,requestId:row.request_id,startedAt:row.started_at,endedAt:row.ended_at,
    ...(metadata?{browser:{pageId:metadata.pageId,targetTaskId:metadata.targetTaskId,durationMs:metadata.durationMs}}:{}),
+   ...(plugin?.installed===0?{pluginState:'uninstalled' as const}:{}),
    connections:[...ids].map(id=>{const c=this.store.sqlite.prepare('SELECT name FROM application_connections WHERE id=? AND app_id=?').get(id,row.app_id) as {name:string}|undefined;return{id,name:c?.name??null};}),subjects,
    send:row.kind==='send'?{intentId:row.id,draftId:row.draft_id!,draftRevision:row.draft_revision!,executionId:row.execution_id,state:row.state as NonNullable<ApplicationActivityItem['send']>['state'],executionState:row.execution_state,authorizationSource:row.authorization_source,grantState:row.grant_state,updatedAt:row.updated_at!}:null};
  }
@@ -75,10 +82,10 @@ export class ApplicationActivityService {
   if(args.projectId){clauses.push('l.project_id=?');bindings.push(args.projectId);}
   if(args.connectionId){
    const scope=(args.appId?' AND o.app_id=?':'')+(args.projectId?' AND o.project_id=?':'');
-   const unsafe=this.store.sqlite.prepare(`SELECT 1 FROM application_data_operations o WHERE (NOT json_valid(o.targets_json) OR json_type(CASE WHEN json_valid(o.targets_json) THEN o.targets_json ELSE 'null' END)!='array' OR EXISTS(SELECT 1 FROM json_each(CASE WHEN json_valid(o.targets_json) THEN o.targets_json ELSE '[]' END) t WHERE t.type!='object' OR COALESCE(json_type(CASE WHEN t.type='object' THEN t.value ELSE '{}' END,'$.id'),'null')!='text')) ${scope} LIMIT 1`).get(...[...(args.appId?[args.appId]:[]),...(args.projectId?[args.projectId]:[])]);
-   if(unsafe)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','部分原来源记录损坏，不能确认连接筛选已完整');
+   const sources=this.store.sqlite.prepare(`SELECT o.targets_json FROM application_data_operations o WHERE 1=1 ${scope}`).iterate(...[...(args.appId?[args.appId]:[]),...(args.projectId?[args.projectId]:[])]) as Iterable<{targets_json:string}>;
+   try{for(const source of sources)stored(source.targets_json,targetSchema);}catch{throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','部分原来源记录损坏，不能确认连接筛选已完整');}
   }
-  if(args.connectionId){clauses.push(`(l.connection_id=? OR EXISTS(SELECT 1 FROM json_each(CASE WHEN json_valid(l.targets_json) THEN l.targets_json ELSE '[]' END) t WHERE json_extract(CASE WHEN t.type='object' THEN t.value ELSE '{}' END,'$.id')=?) OR EXISTS(SELECT 1 FROM json_each(l.subjects_json) t WHERE json_extract(t.value,'$.kind')='connection' AND json_extract(t.value,'$.id')=?))`);bindings.push(args.connectionId,args.connectionId,args.connectionId);}
+  if(args.connectionId){clauses.push(`(l.connection_id=? OR EXISTS(SELECT 1 FROM json_each(CASE WHEN json_valid(l.targets_json) THEN l.targets_json ELSE '[]' END) t WHERE COALESCE(json_extract(CASE WHEN t.type='object' THEN t.value ELSE '{}' END,'$.id'),json_extract(CASE WHEN t.type='object' THEN t.value ELSE '{}' END,'$.connectionId'))=?) OR EXISTS(SELECT 1 FROM json_each(l.subjects_json) t WHERE json_extract(t.value,'$.kind')='connection' AND json_extract(t.value,'$.id')=?))`);bindings.push(args.connectionId,args.connectionId,args.connectionId);}
   if(cursor){clauses.push('(l.started_at<? OR (l.started_at=? AND l.key<?))');bindings.push(cursor.at,cursor.at,cursor.key);}
   const rows=this.store.sqlite.prepare(`WITH ledger AS (${this.ledger()}) SELECT * FROM ledger l ${clauses.length?'WHERE '+clauses.join(' AND '):''} ORDER BY l.started_at DESC,l.key DESC LIMIT ?`).all(...bindings,args.limit+1) as Row[];
   const page=rows.slice(0,args.limit),last=page.at(-1);

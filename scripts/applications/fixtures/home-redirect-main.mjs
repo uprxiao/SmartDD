@@ -3,9 +3,10 @@
 // acceptance run would read and write the real user's ~/.agents/skills and ~/.claude/skills.
 import assert from 'node:assert/strict';
 import {once} from 'node:events';
+import {isM13HomePath} from '../../lib/electron-isolation-paths.mjs';
 
 export async function redirectHome({logs,isRunning,home}){
- assert(home.startsWith('/private/tmp/willyou-m11-'),'Isolated HOME only');
+ assert(home.startsWith('/private/tmp/willyou-m11-')||isM13HomePath(home),'Isolated HOME only');
  const end=Date.now()+15000,until=async(fn,label)=>{while(Date.now()<end){const v=fn();if(v)return v;if(!isRunning())throw Error('App exited before entry: '+logs());await new Promise(r=>setTimeout(r,20));}throw Error('Bounded entry hook: '+label);};
  const url=await until(()=>logs().match(/Debugger listening on (ws:\/\/127\.0\.0\.1:\d+\/[a-f0-9-]+)/)?.[1],'main inspector');
  const ws=new WebSocket(url);await once(ws,'open');let seq=0;const waiting=new Map(),pauses=[];

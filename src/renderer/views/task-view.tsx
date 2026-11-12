@@ -27,6 +27,7 @@ import { cn } from '@renderer/utils/utils';
 import { InjectionFailure } from './capabilities';
 import { ArchivedTaskNotice } from './task-archive';
 import { ResumeAdviceNotice } from './resume-advice';
+import {PluginApprovalPanel} from '@renderer/features/applications/plugin-approval';
 import { FILE_TERMINAL_DRAG_TYPE, currentFileTerminal, dropFileToTerminal, registerFileTerminal } from '@renderer/features/files/terminal-context/store';
 
 function xtermTheme() {
@@ -278,6 +279,7 @@ function TaskTerminal({ taskId, ptyId, visible, readOnly }: { taskId: string; pt
       onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFileDropHover(false); }}
       onDrop={event => { if (!visible || readOnly || !event.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) return; event.preventDefault(); event.stopPropagation(); setFileDropHover(false); const target = currentFileTerminal(); void dropFileToTerminal(event.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE), { taskId, ptyId }, notice => { if (currentFileTerminal() === target) setFileDropNotice(notice); }); }}>
       <div ref={hostRef} className="h-full w-full" />
+      {visible&&!readOnly&&!terminalExited&&<PluginApprovalPanel taskId={taskId} ptyId={ptyId}/>}
       {fileDropNotice && <div role="status" className="absolute bottom-2 left-2 right-2 rounded border border-border bg-background px-3 py-2 text-xs text-foreground-muted">{fileDropNotice}</div>}
     </div>
   );

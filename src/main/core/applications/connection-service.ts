@@ -14,6 +14,12 @@ import type { ResourceStore } from './resource-store';
 export interface ConnectionVerifier<C extends HostedConfiguration=ConnectionConfig> {
  verify(config:C,secret:string|null,signal:AbortSignal):Promise<HostedIdentity<C>>;
 }
+export interface ConnectionServiceHooks<C extends HostedConfiguration> {
+ /** Main-only hooks for installed external-plugin contracts. They never receive a secret. */
+ plan?(id:string|undefined,expectedRevision:number,config:C):ConnectionChangePlan;
+ beforeCommit?():void;
+ committed?(id:string,created:boolean):void;
+}
 type VerificationActivity<C extends HostedConfiguration>=(work:()=>Promise<HostedIdentity<C>>)=>Promise<HostedIdentity<C>>;
 interface ConnectionRow<C extends HostedConfiguration,A extends string> {
   id:string;app_id:A;provider_id:C['kind']; name: string; config_json: string; config_schema_version: number;
@@ -41,7 +47,7 @@ const safeVerificationError = (error: unknown): ApplicationError => {
 export class ApplicationConnectionService<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
   readonly registry:HostApplicationRegistry<C,A>;
   private readonly tests = new Map<string, AbortController>();
-  constructor(readonly store:ResourceStore,private readonly secrets:SecretsStore,private readonly verifier:ConnectionVerifier<C>,private readonly timeoutMs=10000,definitions?:HostApplicationDefinitions<C,A>,private readonly configViews:Pick<ConfigViewRegistry<{kind:string}>,'resolve'>=builtinConfigViews){
+  constructor(readonly store:ResourceStore,private readonly secrets:SecretsStore,private readonly verifier:ConnectionVerifier<C>,private readonly timeoutMs=10000,definitions?:HostApplicationDefinitions<C,A>,private readonly configViews:Pick<ConfigViewRegistry<{kind:string}>,'resolve'>=builtinConfigViews,private readonly hooks:ConnectionServiceHooks<C>={}){
     // The omitted-definition constructor retains the exact built-in product
     // boundary. Explicit generic callers still pass through those runtime parsers.
     this.registry=new HostApplicationRegistry(definitions??builtinHostApplications as unknown as HostApplicationDefinitions<C,A>);this.registry.register(store.sqlite);
@@ -107,6 +113,7 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
   }
   planConfigChange(id: string | undefined, expectedRevision: number, input: unknown): ConnectionChangePlan {
     const config=this.registry.parseConfig(input); this.checkRevision(id, expectedRevision);
+    if(this.hooks.plan)return this.hooks.plan(id,expectedRevision,config);
     const appId = this.registry.providerApplication(config.kind), records: { taskId: string | null; hash: string; version: string; manifest: string; snapshotHash?: string }[] = [];
     const active = this.store.sqlite.prepare(`SELECT p.package_hash AS hash,p.version,p.manifest_json AS manifest FROM capability_active_packages a JOIN capability_packages p ON p.package_hash=a.package_hash WHERE a.app_id=?`).get(appId) as { hash: string; version: string; manifest: string } | undefined;
     if (active) records.push({ ...active, taskId: null });
@@ -198,6 +205,7 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
     let committed!: CandidateRow;
     try {
       await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+        this.hooks.beforeCommit?.();
         const change = this.candidate(operationId);
         if (change.candidate_hash !== candidateHash || change.state !== 'validated' || change.expires_at <= new Date().toISOString()) throw new ApplicationError('CONFIG_PLAN_STALE', '测试结果已过期或表单已变化，请重新测试');
         const value = JSON.parse(change.candidate_json) as CandidateConfig<C>;
@@ -214,6 +222,7 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
           secretRevision: (old?.secret_revision ?? 0) + (changedSecret ? 1 : 0), policyRevision: (old?.policy_revision ?? 0) + (!old || old.auth_state === 'disconnected' ? 1 : 0), enabled: old?.enabled ?? 1, createdAt: old?.created_at ?? now, now };
         if (old) this.store.sqlite.prepare(`UPDATE application_connections SET name=@name,config_json=@config,config_schema_version=@configSchemaVersion,revision=@revision,config_revision=@configRevision,verified_identity_json=@identity,identity_hash=@identityHash,secret_ref=@secretRef,secret_revision=@secretRevision,policy_revision=@policyRevision,auth_state='connected',health='healthy',health_code='OK',health_message='连接已核验',tested_at=@now,updated_at=@now WHERE id=@id`).run(args);
         else this.store.sqlite.prepare(`INSERT INTO application_connections(id,app_id,provider_id,name,config_json,config_schema_version,revision,config_revision,identity_revision,verified_identity_json,identity_hash,secret_ref,secret_revision,policy_revision,enabled,auth_state,health,health_code,health_message,tested_at,created_at,updated_at) VALUES(@id,@appId,@provider,@name,@config,@configSchemaVersion,@revision,@configRevision,@identityRevision,@identity,@identityHash,@secretRef,@secretRevision,@policyRevision,@enabled,'connected','healthy','OK','连接已核验',@now,@createdAt,@now)`).run(args);
+        this.hooks.committed?.(value.id,!old);
         this.store.sqlite.prepare("UPDATE application_secret_changes SET state='committed',updated_at=? WHERE operation_id=?").run(now, operationId);
         committed = change;
       }).immediate());

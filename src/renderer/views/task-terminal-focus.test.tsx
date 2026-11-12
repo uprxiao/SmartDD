@@ -5,6 +5,7 @@ import{TaskView}from'./task-view';
 const state=vi.hoisted(()=>({navigation:{currentViewId:'home'},task:{id:'task-1',runtimeSnapshot:null,archivedAt:null as number|null},terminalSettings:{value:undefined},focus:vi.fn(),keyHandler:null as ((event:KeyboardEvent)=>boolean)|null}));
 vi.mock('mobx-react-lite',()=>({observer:(component:unknown)=>component}));
 vi.mock('./resume-advice',()=>({ResumeAdviceNotice:()=>null}));
+vi.mock('@renderer/features/applications/plugin-approval',()=>({PluginApprovalPanel:()=>null}));
 vi.mock('@renderer/core/navigation',()=>({navigation:state.navigation}));
 vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{get current(){return state.task},terminals:new Map([['task-1','pty-1']]),get byId(){return new Map([['task-1',state.task]])}}}));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey',()=>({useAppSettingsKey:()=>state.terminalSettings}));

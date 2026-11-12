@@ -6,7 +6,7 @@ module.exports = {
   productName: 'WillYou',
   directories: { output: 'release' },
   artifactName: 'WillYou-${version}-${os}-${arch}.${ext}',
-  files: ['out/**', '!out/native/**', '!out/agent-browser/**', '!out/agent-browser-build/**', '!out/capability-bundles/**', '!out/capability-bundles-compatibility-v1/**', 'NOTICE', 'licenses/**'],
+  files: ['out/**', '!out/native/**', '!out/plugins/**', '!out/agent-browser/**', '!out/agent-browser-build/**', '!out/capability-bundles/**', '!out/capability-bundles-compatibility-v1/**', 'NOTICE', 'licenses/**'],
   asarUnpack: ['node_modules/better-sqlite3/**', 'node_modules/node-pty/**', '**/*.node'],
   // Rebuild these two modules explicitly, using the target Electron ABI.
   npmRebuild: false,
@@ -24,6 +24,7 @@ module.exports = {
       { from: 'out/native/willyou-app', to: 'native/willyou-app' },
       { from: 'out/agent-browser', to: 'agent-browser', filter: ['SOURCE.json', 'LICENSE', '${arch}/agent-browser'] },
       { from: 'out/capability-bundles', to: 'capability-bundles' },
+      { from: 'out/plugins', to: 'plugins' },
       { from: 'out/native/tex', to: 'native/tex' },
       { from: 'out/native/office', to: 'native/office' },
       { from: 'out/native/libreoffice', to: 'native/libreoffice' },

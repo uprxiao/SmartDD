@@ -21,7 +21,7 @@ describe('M11 sender identity upgrade and offline rollback',()=>{
   const{db,migrations}=before();runMigrations(db,migrations);
   const ledger=db.prepare('SELECT * FROM __drizzle_migrations ORDER BY id').all();
   const schema=db.prepare('SELECT name,sql FROM sqlite_master ORDER BY name').all();
-  expect(migrations.at(-1)?.tag).toBe('0030_browser_operations');
+  expect(migrations.some(m=>m.tag==='0030_browser_operations')).toBe(true);expect(migrations.at(-1)?.tag).toBe('0031_external_plugins');
   expect(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='browser_operations'").get()).toEqual({name:'browser_operations'});
   expect(()=>db.exec(rollback)).toThrow(/CHECK/);expect(db.inTransaction).toBe(false);
   expect(db.prepare('SELECT * FROM __drizzle_migrations ORDER BY id').all()).toEqual(ledger);

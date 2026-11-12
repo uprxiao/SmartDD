@@ -8,6 +8,7 @@ import {digest} from './manifest';
 import {builtinApplicationModules} from './modules';
 import {verifyPackageTree} from './package-files';
 import type {ResourceStore} from './resource-store';
+import {hasExternalPluginOwner} from './plugins/legacy-routing';
 
 /**
  * R16: one library copy per application Skill, for every application the user has added and enabled,
@@ -22,7 +23,7 @@ export class SkillLibraryService {
   skills():LibrarySkill[]{
     const result:LibrarySkill[]=[];
     for(const appId of (this.options.modules??builtinApplicationModules).appIds()){
-      if(!this.options.added(appId))continue;
+      if(!this.options.added(appId)||hasExternalPluginOwner(this.store.sqlite,appId))continue;
       const active=this.builtin.packages.active(appId);if(!active)continue;
       const installed=this.builtin.packages.get(active.packageHash),root=join(this.store.root,installed.relativePath);
       verifyPackageTree(root,installed,this.store.storeId);

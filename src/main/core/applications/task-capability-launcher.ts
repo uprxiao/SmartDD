@@ -29,6 +29,7 @@ import {codexProfileArgsForCli,type CodexCliSandboxPlan} from './codex-effective
 import {createApplicationRunPlan,selectCapabilityEntry,type RunPlanAvailability} from './run-plan';
 
 import { AgentBridgeProcesses } from './agent-bridge-processes';
+import {RunBackendAuthority} from './run-backend-authority';
 import { MacProcessIdentityReader, type ProcessIdentityReader } from './process-identity';
 import { MacUnixPeerIdentityReader, type UnixPeerIdentityReader } from './unix-peer-identity';
 import type { NativeLaunchContext, TaskLaunchInput } from './native-launch-context';
@@ -36,9 +37,12 @@ import { canonicalJson, digest } from './manifest';
 import {legacyRuntimeMetadata} from './legacy-task-evidence';
 import {EmbeddedNodeRuntime} from './embedded-node-runtime';
 import {builtinApplicationModules} from './modules';
+import {FrozenPluginSkills,type FrozenPluginSkillSet} from './plugins/frozen-skills';
+import {prepareCodexTaskServer,type CodexTaskServerRequest,type PrivateCodexTaskServer} from './codex-task-server';
+import {codexClientArgs} from './codex-client-args';
 /** Resource kinds only pre-R1.0 launches used (shared discovery, per-session projections, Claude plugin, M4 originals). */
 const RETIRED_RESOURCE_KINDS:ReadonlySet<string>=new Set(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery','agent-projection','legacy-agent-projection','legacy-static-plugin','legacy-plugin-source']);
-interface ActiveLaunch {run:OwnedCapabilityRun;runtime?:PreparedRuntime;releasing?:Promise<void>}
+interface ActiveLaunch {run:OwnedCapabilityRun;runtime?:PreparedRuntime;codex?:PrivateCodexTaskServer;releasing?:Promise<void>}
 export interface TaskCapabilityLauncherOptions {
   helper: string;
   cliPath?:string;
@@ -48,6 +52,8 @@ export interface TaskCapabilityLauncherOptions {
   peers?:UnixPeerIdentityReader;
   inspectNative?:(input:TaskLaunchInput)=>Promise<NativeLaunchContext>;
   probeApplicationRuntime?:(signal:AbortSignal)=>Promise<boolean>;
+  /** Host-only dependency for isolated software tests; no RPC/config surface. */
+  prepareCodexServer?:(request:CodexTaskServerRequest)=>Promise<PrivateCodexTaskServer>;
   pollMs?:number;
   /** R16: HOME whose `.agents/skills` (and each Agent's link directory) holds the single WillYou Skill library. Omitted: no library delivery. */
   skillLibraryHome?:string;
@@ -64,6 +70,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   readonly runs:CapabilityRunRegistry;
   private readonly authorization:CurrentApplicationAuthorization;
   readonly bridges:AgentBridgeProcesses;
+  readonly backends:RunBackendAuthority;
   readonly broker:PrivateApplicationBroker;
   readonly bridgeRecovery=new BridgeSupervisor();
   private readonly skillObservations=new SkillObservationMonitor(async(taskId,runId)=>{await this.applications.sessionDiagnostics.collectSkillObservations(taskId,runId);},undefined,runId=>this.applications.sessionDiagnostics.forgetSkillObservations(runId));
@@ -76,6 +83,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly timer:ReturnType<typeof setInterval>;
   readonly recoveryWarnings:{homeId:string;code:string}[]=[];
   private readonly library?:SkillLibraryService;
+  private readonly pluginSkills?:FrozenPluginSkills;
   /** Last pre-R1.0 copy cleanup (diagnostics). */
   legacyCleanup:import('./legacy-copy-cleanup').LegacyCopyCleanup|null=null;
   /** Last retirement of pre-R1.0 resource records (diagnostics). */
@@ -85,6 +93,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const store=support.store;this.processes=options.processes??new MacProcessIdentityReader(options.helper);
     this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:snapshot=>this.assertInitialSelection(snapshot),verifyExtraResource:(resource,snapshot)=>this.verifyResource(resource,snapshot)});
     this.authorization=new CurrentApplicationAuthorization(store,applications.builtin);
+    if(applications.plugins)this.pluginSkills=new FrozenPluginSkills(store,applications.plugins.lifecycle);
     if(options.skillLibraryHome)this.library=new SkillLibraryService(store,applications.builtin,{home:options.skillLibraryHome,targets:()=>support.adapters.deliveryAdapters.libraryTargets(),added:appId=>{const state=applications.selections.catalogState(appId as Parameters<typeof applications.selections.catalogState>[0]);return state.added&&state.enabled;},standardSkills:()=>(store.sqlite.prepare('SELECT skill_id AS skillId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;hash:string}[]).map(s=>({skillId:s.skillId,files:Object.fromEntries(Object.entries(support.legacy.verify(store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([path,text])=>[path,Buffer.from(text,'utf8')]))}))});
     this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,currentAuthorization:context=>this.authorization.view(context),createPlan:(snapshot,snapshotHash,runId)=>{
       // R17: the plan records what the Agent loads at this launch, i.e. the project's current applications (not the
@@ -93,21 +102,24 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       const selected={...snapshot,packages:apps.map(a=>this.authorization.packageSelection(snapshot.projectId,a.packageHash,bindings,[])),standardSkills:[]} as CapabilitySessionSnapshot;
       const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.capabilityViews(application.manifest)};});
       // R16: Skills come from the machine-wide library; a run plan carries no per-run Skill copies.
-      return createApplicationRunPlan({runId,snapshotHash,snapshot:selected,applications:sources,skills:[],available:this.cliAvailability(snapshot.taskId),sandbox:this.planningCliPolicies.has(snapshot.taskId)?{source:this.planningCliPolicies.get(snapshot.taskId)!.source,digest:this.planningCliPolicies.get(snapshot.taskId)!.digest}:undefined,cliVersion:this.planningAgents.get(snapshot.taskId)?.version??'unverified'});
+      const available=this.cliAvailability(snapshot.taskId),skills=snapshot.runner==='claude-code'||snapshot.runner==='codex'&&this.planningAgents.get(snapshot.taskId)?.version==='0.167.1'?this.pluginSkills?.describe(selected,runId,available)?.skills??[]:[];
+      return createApplicationRunPlan({runId,snapshotHash,snapshot:selected,applications:sources,skills,available,sandbox:this.planningCliPolicies.has(snapshot.taskId)?{source:this.planningCliPolicies.get(snapshot.taskId)!.source,digest:this.planningCliPolicies.get(snapshot.taskId)!.digest}:undefined,cliVersion:this.planningAgents.get(snapshot.taskId)?.version??'unverified'});
     },assertCurrent:snapshot=>{
       // Application enablement and current slots belong to each business call, not Agent liveness.
       const project=store.sqlite.prepare('SELECT archived_at FROM projects WHERE id=?').get(snapshot.projectId) as {archived_at:number|null}|undefined;
       if(!project||project.archived_at!==null)throw new ApplicationError('SCOPE_DENIED','项目已删除或归档，不能继续使用此运行');
-    },revoke:runId=>{const recoveryService=this.recoveryServices.get(runId);if(recoveryService)this.bridgeRecovery.revoke(runId,recoveryService);this.broker?.revokeRun(runId);this.cli?.revokeRun(runId);this.bridges?.revokeRun(runId);const entry=this.active.get(runId);if(entry)this.options.stopPty(entry.run.ptyId);}});
-    this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
-    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data)),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId),rejectedReplacement:(runId,bridgeId)=>this.bridges.revokeBridge(runId,bridgeId)});
-    if(options.cliPath)try{this.cli=new ApplicationCliGateway(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{entry:'cli'}),options.peers??new MacUnixPeerIdentityReader(options.helper),{executable:{path:canonicalFuturePath(options.cliPath),sha256:digest(readFileSync(options.cliPath))}});}catch{/* Missing CLI resources retain the approved read-only MCP fallback. */}
+    },revoke:runId=>{const recoveryService=this.recoveryServices.get(runId);if(recoveryService)this.bridgeRecovery.revoke(runId,recoveryService);this.broker?.revokeRun(runId);this.cli?.revokeRun(runId);this.bridges?.revokeRun(runId);this.backends?.revokeRun(runId);const entry=this.active.get(runId),backend=entry?.codex?.stop();if(entry)this.options.stopPty(entry.run.ptyId);return backend;}});
+    this.backends=new RunBackendAuthority(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
+    this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs,additionalRoot:this.backends});
+    this.broker=new PrivateApplicationBroker(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{additional:applications.plugins?.tools}),{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId),rejectedReplacement:(runId,bridgeId)=>this.bridges.revokeBridge(runId,bridgeId)});
+    if(options.cliPath)try{this.cli=new ApplicationCliGateway(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{entry:'cli',additional:applications.plugins?.tools}),options.peers??new MacUnixPeerIdentityReader(options.helper),{executable:{path:canonicalFuturePath(options.cliPath),sha256:digest(readFileSync(options.cliPath))},additionalRoot:this.backends});}catch{/* Missing CLI resources retain the approved read-only MCP fallback. */}
     applications.sessionDiagnostics.attach({deliveryAdapters:support.adapters.deliveryAdapters,channelConnected:id=>this.broker.hasAuthenticated(id),recoveryIssue:id=>{const server=this.recoveryServices.get(id);const result=server?this.bridgeRecovery.inspect(id,server)?.result:undefined;return result&&result.code!=='CONNECTED'?result.code:null;},verify:(resource,snapshot)=>this.verifyResource(resource,snapshot)});
     this.timer=setInterval(()=>{void this.sweep();},Math.max(20,options.pollMs??500));this.timer.unref();
   }
   static async open(support:AgentSupportService,capabilities:CapabilityService,applications:ApplicationService,options:TaskCapabilityLauncherOptions):Promise<ManagedTaskCapabilities>{
     const result=new ManagedTaskCapabilities(support,capabilities,applications,options);
     try{await result.runs.recover();
+      for(const issue of result.pluginSkills?.recover()??[])result.recoveryWarnings.push({homeId:'plugin-skills:'+issue.runId,code:issue.code});
       if(options.skillLibraryHome)try{result.legacyCleanup=cleanupPreLibraryCopies({home:options.skillLibraryHome,storeId:support.store.storeId,unattributable:options.cleanupUnattributable===true});}catch(error){result.recoveryWarnings.push({homeId:'legacy-copy-cleanup',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
       try{result.retirement=await retirePreLibraryResources(support.store);}catch(error){result.recoveryWarnings.push({homeId:'pre-library-retirement',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
       result.syncSkillLibrary();await result.broker.start();if(result.cli)try{await result.cli.start();result.cliReady=true;}catch{await result.cli.close();}applications.attachRuns(result.runs);return result;}catch(error){await result.dispose();throw error;}
@@ -160,6 +172,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if(canonicalJson(apps)!==canonicalJson(snapshot.packages.map(p=>({appId:p.appId,packageHash:p.packageHash}))))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目应用或默认版本已变化');
     const bindings=this.bindings(snapshot.projectId,snapshot.packages.map(p=>p.appId));
     for(const app of snapshot.packages){const current=bindings.filter(b=>b.appId===app.appId&&b.connectionId).map(b=>({bindingId:`${snapshot.projectId}:${app.appId}:${b.slot}`,connectionId:b.connectionId!,identityRevision:b.identityRevision!}));if(canonicalJson(current)!==canonicalJson(app.bindings))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目连接选择已变化');}
+    if(snapshot.schema===3&&this.applications.plugins&&canonicalJson(snapshot.externalPlugins??[])!==canonicalJson(this.applications.plugins.selections(snapshot.projectId)))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间插件或启动连接已变化');
     const settings=store.sqlite.prepare('SELECT id,project_id AS projectId,capability_id AS capabilityId,enabled FROM project_capabilities WHERE project_id=?').all(snapshot.projectId) as ProjectCapabilitySetting[];
     if(projectCapabilityEnabled(settings,snapshot.projectId,MCP_CAPABILITY)!==snapshot.mcp.some(m=>m.kind==='legacy-project-context'))throw new ApplicationError('RESOURCE_STATE_CHANGED','准备期间项目上下文选择已变化');
   }
@@ -221,6 +234,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(current.snapshot.projectId!==input.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务项目与原会话身份不符');
       if(current.pointer.snapshotHash!==pointer.snapshotHash)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针与原会话快照不同');
       await this.sessions.verifyNativeIdentity(input.taskId,{runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
+      if(this.applications.plugins)return{adapterHash:hash,current:await this.sessions.adoptLibrary(input.taskId,current.pointer.snapshotHash,this.createLibrarySnapshot(input,native.version,hash))};
       return{adapterHash:hash,current};
     }
     if(!input.newTask)return undefined;
@@ -257,8 +271,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const runtimeHash=packages[0]?.runtimeHash??this.applicationRuntimeHash(),appMcp=applicationMcpServerName(digest(input.taskId));
     if(new Set(packages.map(p=>p.runtimeHash)).size>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
     const mcp:CapabilitySessionSnapshot['mcp']=runtimeHash?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash}]:[];
+    const externalPlugins=this.applications.plugins?.selections(input.projectId);
     if(this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
-    return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(packages.flatMap(p=>Object.keys(p.toolContractMajors).map(name=>[name,'mcp__'+appMcp+'__'+name])))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:agentVersion,adapterRevision:1},catalogGeneration:'library',packages,standardSkills:[],mcp,provenance:'created'};
+    const toolNames=[...packages.flatMap(p=>Object.keys(p.toolContractMajors)),...(externalPlugins??[]).flatMap(p=>p.capabilities.flatMap(c=>[c.mcpTool,...c.aliases]))];
+    return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(toolNames.map(name=>[name,'mcp__'+appMcp+'__'+name]))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:agentVersion,adapterRevision:1},catalogGeneration:'library',packages,...(externalPlugins?{externalPlugins}:{}),standardSkills:[],mcp,provenance:'created'};
   }
   private async prepareLibrary(input:TaskLaunchInput,native:NativeLaunchContext,selected:{adapterHash:string;current?:StoredCapabilitySession}):Promise<TaskCapabilityLaunch>{
     let current=selected.current;
@@ -268,7 +284,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     }
     const snapshot=current.snapshot,stored=current;
     // M10 rule kept in R1.0: while a stop-before-switch connection change is pending, no run of the project forks.
-    const gate=()=>assertNoPendingApplicationSwitch(this.support.store,{projectId:input.projectId,packages:this.selectedApps(input.projectId)});gate();
+    let frozenSkills:FrozenPluginSkillSet|undefined;
+    const gate=()=>{assertNoPendingApplicationSwitch(this.support.store,{projectId:input.projectId,packages:this.selectedApps(input.projectId)});if(frozenSkills){this.pluginSkills!.verify(frozenSkills);if(snapshot.schema===3&&canonicalJson(this.applications.plugins?.selections(input.projectId)??[])!==canonicalJson(snapshot.externalPlugins??[]))throw new ApplicationError('RESOURCE_STATE_CHANGED','启动前插件或连接选择已变化，请重新启动');}};gate();
     await this.configureCli(input,native,snapshot);
     if(this.support.adapters.versionSupport(snapshot.adapterBinding.hash,native.version)==='unsupported')return this.prepareUnavailableSession(input,stored,native,'AGENT_ADAPTER_UNSUPPORTED');
     const bridgeReady=!snapshot.mcp.some(m=>m.kind==='applications')||await(this.options.probeApplicationRuntime?.(input.signal)??this.embeddedNode.check(input.signal));
@@ -288,9 +305,17 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(planned.grades.cli&&this.cli&&policy?.available){cliSandbox={endpoint:this.cli.endpoint,kind:policy.kind,parent:policy.parent,networkProxy:policy.networkProxy,enableNetwork:policy.enableNetwork,existingNames:policy.existingNames,source:policy.source,digest:policy.digest};cliEnvironment=this.cli.issue(run).environment;runtime.secretValues.push(cliEnvironment.WILLYOU_RUN_TOKEN);}
       const bridgeEntry=mcp.find(m=>m.kind==='applications');let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;
       if(bridgeEntry){bridge=await this.broker.prepare(run,bridgeEntry.serverName);bridgeEntry.args[2]=bridge.bootstrapPath;}
+      const profileArgs=cliEnvironment&&policy?.available?codexProfileArgsForCli(input.profile.args,policy):input.profile.args;
+      let clientProfileArgs:string[]|undefined;
+      const launchEnvironment=cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env;
       // A plan the adapter still refuses (another collision, unsupported mechanism) leaves the ordinary Agent: native only.
       let plan:import('@shared/agent-adapters').AgentLoadPlan|undefined,planIssue:'AGENT_ADAPTER_UNSUPPORTED'|'AGENT_CAPABILITY_NAME_CONFLICT'|undefined;
-      try{plan=this.support.adapters.planLibrary(snapshot.adapterBinding.hash,{snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:input.home},inventory:native.inventory,planHash:planned.planHash,...(cliSandbox?{cliSandbox}:{}),mcp});}
+      try{plan=this.support.adapters.planLibrary(snapshot.adapterBinding.hash,{snapshot,runId:run.runId,cliVersion:native.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:input.home},inventory:native.inventory,planHash:planned.planHash,...(cliSandbox?{cliSandbox}:{}),mcp});
+        if((snapshot.runner==='claude-code'||snapshot.runner==='codex'&&native.version==='0.167.1')&&this.pluginSkills&&bridgeReady&&!appConflict){const set=this.pluginSkills.describe(snapshot,run.runId,this.cliAvailability(input.taskId));if(canonicalJson(set?.skills??[])!==canonicalJson(planned.skills))throw new ApplicationError('RESOURCE_STATE_CHANGED','插件 Skill 来源在准备期间已变化');if(set){this.pluginSkills.checkNative(set,native);this.pluginSkills.materialize(set);frozenSkills=set;
+          if(snapshot.runner==='claude-code')plan.args.push(...set.claudeRoots.flatMap(root=>['--plugin-dir',root]));
+          else{const request:CodexTaskServerRequest={task:input,native,run,skills:set,profileArgs:[...profileArgs],managedArgs:[...plan.args],environment:{...launchEnvironment},storeId:this.support.store.storeId};entry.codex=await(this.options.prepareCodexServer?.(request)??prepareCodexTaskServer(request,this.backends,this.processes));const client=codexClientArgs(profileArgs,plan.args,input.mode==='resume');clientProfileArgs=client.profile;plan.args=[...client.managed,'--remote',entry.codex.url];}
+        }}
+      }
       catch(error){if(error instanceof ApplicationError&&(error.code==='AGENT_ADAPTER_UNSUPPORTED'||error.code==='AGENT_CAPABILITY_NAME_CONFLICT'))planIssue=error.code;else throw error;}
       if(bridgeEntry&&plan)this.registerBridgeRecovery(run,bridgeEntry.serverName,snapshot.adapterBinding.hash,native.version);
       const configPaths:string[]=[],root=dirname(runtime.snapshot.manifestPath);
@@ -301,17 +326,17 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       let phase:'prepared'|'restricting'|'native-only'|'arming'='prepared',effective=true,prepared=runtime;
       const narrow=async(reason:string,cause?:ManagedCapabilityRestriction):Promise<TaskCapabilityLaunch>=>{
         if(phase!=='prepared'||this.closed||input.signal.aborted)throw new ApplicationError('CANCELED','此启动不能再撤去应用注入');
-        phase='restricting';this.broker.revokeRun(run.runId);this.cli?.revokeRun(run.runId);await bridge?.bridge.cancelBeforeLaunch();
+        phase='restricting';this.broker.revokeRun(run.runId);this.cli?.revokeRun(run.runId);await entry.codex?.stop();await bridge?.bridge.cancelBeforeLaunch();
         await this.runs.restrictToNative(run.runId,cause);effective=false;prepared.release();prepared=this.unavailableRuntime(input,stored,run.runId,cause?.issueCode??'AGENT_ADAPTER_UNSUPPORTED');
         prepared.snapshot.selfCheck?.issues.push(reason);entry.runtime=prepared;launch.runtime=prepared;launch.args=[];launch.profileArgs=undefined;launch.env={};launch.initialInput=undefined;phase='native-only';return launch;
       };
-      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args:plan?.args??[],profileArgs:cliEnvironment&&policy?.available?codexProfileArgsForCli(input.profile.args,policy):undefined,env:cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env,command:native.command,
+      const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args:plan?.args??[],profileArgs:clientProfileArgs??(cliEnvironment&&policy?.available?profileArgs:undefined),env:launchEnvironment,command:native.command,
         assertBeforeFork:()=>{if(effective)gate();},
         nativeOnly:reason=>narrow(reason),
-        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effective)gate();phase='arming';if(!nativeOnly&&effective)await bridge?.bridge.arm();await run.cli.arm();},
+        beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effective)gate();phase='arming';if(!nativeOnly&&effective){await entry.codex?.start();gate();await bridge?.bridge.arm();}await run.cli.arm();},
         spawned:async pid=>{await run.cli.attach(pid??0);if(effective)this.skillObservations.start(input.taskId,run.runId,run.signal);},
         initialInput:(sender,text)=>this.applications.nativeInputs.observeLaunch(sender,{taskId:input.taskId,ptyId:run.ptyId},text),
-        cancelBeforeFork:()=>run.cancelBeforeFork().then(()=>this.releaseStopped(entry)),spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>this.stopWithSkillHistory(input.taskId,entry,reason),
+        cancelBeforeFork:async()=>{if(entry.codex){await run.cli.cancelUnforked!();await run.stop('native-fork-not-attempted');await entry.codex.stop();}else await run.cancelBeforeFork();await this.releaseStopped(entry);},spawnFailed:()=>run.stop('native-fork-error').then(()=>this.releaseStopped(entry)),exited:()=>run.cli.exited().then(()=>this.releaseStopped(entry)),stop:reason=>this.stopWithSkillHistory(input.taskId,entry,reason),
         bindNative:async id=>{const known=await this.sessions.get(input.taskId),bound=await this.sessions.bindNativeSession(input.taskId,known.pointer.snapshotHash,{...snapshot.native,runner:snapshot.runner,sessionId:id});prepared.snapshot.sessionCapabilities=bound.pointer;if(effective)this.skillObservations.start(input.taskId,run.runId,run.signal);}};
       return planIssue?narrow(planIssue,{reason:'managed_capabilities_unavailable',issueCode:planIssue}):launch;
 
@@ -405,9 +430,9 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     void work.finally(()=>{if(this.stopping.get(entry.run.runId)===work)this.stopping.delete(entry.run.runId);}).catch(()=>{});
     return work;
   }
-  private releaseStopped(entry:ActiveLaunch):Promise<void>{if(this.runs.get(entry.run.runId).state!=='stopped')return Promise.resolve();if(entry.releasing)return entry.releasing;const work=(async()=>{entry.runtime?.release();const server=this.recoveryServices.get(entry.run.runId);if(server)this.bridgeRecovery.release(entry.run.runId,server);this.recoveryServices.delete(entry.run.runId);this.active.delete(entry.run.runId);})();entry.releasing=work;void work.catch(()=>{entry.releasing=undefined;});return work;}
+  private releaseStopped(entry:ActiveLaunch):Promise<void>{if(this.runs.get(entry.run.runId).state!=='stopped')return Promise.resolve();if(entry.releasing)return entry.releasing;const work=(async()=>{await entry.codex?.stop();if(entry.codex?.recoveryWarnings.length)this.recoveryWarnings.push({homeId:'codex-server:'+entry.run.runId,code:'RESOURCE_RECOVERY_REQUIRED'});entry.runtime?.release();try{this.pluginSkills?.release(entry.run.runId);}catch(error){this.recoveryWarnings.push({homeId:'plugin-skills:'+entry.run.runId,code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}const server=this.recoveryServices.get(entry.run.runId);if(server)this.bridgeRecovery.release(entry.run.runId,server);this.recoveryServices.delete(entry.run.runId);this.active.delete(entry.run.runId);})();entry.releasing=work;void work.catch(()=>{entry.releasing=undefined;});return work;}
   private async sweep():Promise<void>{if(this.sweeping)return;this.sweeping=true;try{await Promise.allSettled([...this.active.values()].map(entry=>this.releaseStopped(entry)));}finally{this.sweeping=false;}}
   tombstone(taskId:string):Promise<void>{return this.sessions.tombstone(taskId);}
   activeTaskIds(projectId:string):ReadonlySet<string>{return new Set((this.support.store.sqlite.prepare("SELECT task_id AS id FROM capability_runs WHERE project_id=? AND state NOT IN ('stopped','failed')").all(projectId) as {id:string}[]).map(r=>r.id));}
-  dispose():Promise<void>{if(this.closing)return this.closing;this.closed=true;this.skillObservations.close();clearInterval(this.timer);this.closing=(async()=>{await Promise.allSettled([...this.pending]);const finishes=[...this.active.values()].filter(entry=>!this.stopping.has(entry.run.runId)).map(entry=>this.applications.sessionDiagnostics.prepareStop(this.runs.get(entry.run.runId).taskId,entry.run.runId));const results=await Promise.allSettled([...this.stopping.values(),this.runs.dispose(),this.bridges.dispose(),this.broker.close(),...(this.cli?[this.cli.close()]:[])]);await Promise.allSettled(finishes.map(finish=>finish()));const deadline=performance.now()+2000;do{await this.sweep();if(!this.active.size)break;await new Promise<void>(done=>setTimeout(done,10));}while(performance.now()<deadline);if(results.some(result=>result.status==='rejected'))throw new ApplicationError('RUN_STOP_FAILED','部分运行关闭尚未完成；私有通道已撤销，未知占用继续保留');})();return this.closing;}
+  dispose():Promise<void>{if(this.closing)return this.closing;this.closed=true;this.skillObservations.close();clearInterval(this.timer);this.closing=(async()=>{await Promise.allSettled([...this.pending]);const finishes=[...this.active.values()].filter(entry=>!this.stopping.has(entry.run.runId)).map(entry=>this.applications.sessionDiagnostics.prepareStop(this.runs.get(entry.run.runId).taskId,entry.run.runId));const results=await Promise.allSettled([...this.stopping.values(),this.runs.dispose(),this.bridges.dispose(),this.backends.dispose(),this.broker.close(),...(this.cli?[this.cli.close()]:[])]);await Promise.allSettled(finishes.map(finish=>finish()));const deadline=performance.now()+2000;do{await this.sweep();if(!this.active.size)break;await new Promise<void>(done=>setTimeout(done,10));}while(performance.now()<deadline);if(results.some(result=>result.status==='rejected'))throw new ApplicationError('RUN_STOP_FAILED','部分运行关闭尚未完成；私有通道已撤销，未知占用继续保留');})();return this.closing;}
 }
