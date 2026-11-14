@@ -1,5 +1,9 @@
 # M13 插件化、能力统一管理与 AI 配置优化
 
+最新自主补验：[Claude ask 三组拒绝／单次允许I](验收/证据/M13-T100-Claude-ask-three-deny-allow-union-I-488-20261115-a1/coordinator-verdict.json)已联合归档；原驱动红、跨SID边界与清理事实保留。继续Codex审批与浏览器独立项，整条状态仍取唯一账。
+
+最新自主补验：[Codex full 三项启动行为I](验收/证据/M13-T100-Codex-full-three-startup-effects-I-484-20261115-a1/coordinator-verdict.json)已完成、归档；继续请求批准及自动审查矩阵。仅补组件覆盖，整条状态取唯一用例账，无生产改动或新App打包。
+
 2026-11-15 当前自主增量：[Claude full 启动三项行为及原证据只读复核](验收/证据/M13-T100-Claude-full-three-startup-effects-original-and-offline-proof-I-482-20261115-a1/coordinator-verdict.json)已归档，原驱动后处理红保留，未重复执行写入／联网。继续其余权限启动判据及Codex浏览器组合；完整状态只取唯一用例账。
 
 2026-11-15 最新自主补验：T049已正式归档；T100两端全部权限档位的原生MCP／宿主审批及双向原SID权限恢复组件已核对归档，见[本批执行记录](验收/执行与缺陷记录.md#2026-11-15-t100-codex-三档原生-mcp-与独立宿主审批组件-i)。仅补组件覆盖，原整条状态以[唯一用例账](验收/测试用例.md)为准。继续不需本人凭据的独立矩阵，钥匙串与账号留后；独立项耗尽时按用户安排暂停，不重复打包。
