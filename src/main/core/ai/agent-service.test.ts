@@ -8,14 +8,19 @@ import { SecretsStore } from '../../secrets';
 import { AgentService } from './agent-service';
 import { migrateAgentProfiles } from './agent-migration';
 import { AiProfileService } from './ai-profile-service';
+import { createAgentController } from './agent-controller';
+import { ProviderService } from './provider-service';
+import type { AgentToolService } from './agent-tools';
 
 let sqlite: Database.Database, service: AgentService, legacy: AiProfileService, db: ReturnType<typeof drizzle<typeof schema>>;
 let decrypts: number;
+let providers: ProviderService;
 beforeEach(() => {
   sqlite = new Database(':memory:'); sqlite.pragma('foreign_keys = ON'); runBundledMigrations(sqlite);
   db = drizzle(sqlite, { schema }); decrypts = 0;
   const secrets = new SecretsStore(db, { isAvailable: () => true, encrypt: (value) => Buffer.from(`encrypted:${value}`), decrypt: (value) => { decrypts++; return value.toString().slice(10); } });
   service = new AgentService(db, secrets, () => 1000);
+  providers = new ProviderService(db, secrets, service);
   legacy = new AiProfileService(db, secrets, () => 1000);
   service.recordTool({ id: 'claude', kind: 'claude', executable: '/test/claude', installed: true, login: 'api', version: 'test-only' });
   service.recordTool({ id: 'codex', kind: 'codex', executable: '/test/codex', installed: true, login: 'subscription', version: 'test-only' });
@@ -28,6 +33,28 @@ const provider = (changes: Partial<ProviderInput> = {}): ProviderInput => ({
 });
 const config = (providerId: string, changes: Partial<RunConfigInput> = {}): RunConfigInput => ({
   name: 'Claude synthetic', toolId: 'claude', source: 'provider', providerId, models: ['m1'], defaultModel: 'm1', ...changes,
+});
+
+it.each(['agent', 'provider'] as const)('notifies task observers after deleting a referenced %s, retaining task history', kind => {
+  const p = service.saveProvider(provider()), a = service.saveConfig(config(p.id));
+  sqlite.prepare("INSERT INTO tasks(id,cwd,ai_profile_id,ai_profile_name,runner,title,created_at,updated_at) VALUES('observed','/synthetic',?,?, 'claude','original',1,1)").run(a.id, a.name);
+  const observations: unknown[] = [];
+  const controller = createAgentController(service, {} as AgentToolService, providers, legacy, () => {
+    observations.push(sqlite.prepare("SELECT ai_profile_id,ai_profile_name,title FROM tasks WHERE id='observed'").get());
+    expect(service.configs().some(c => c.id === a.id)).toBe(false);
+  });
+  if (kind === 'agent') controller.agents.delete(a.id);
+  else expect(controller.agents.deleteProvider(p.id)).toEqual([a.id]);
+  expect(observations).toEqual([{ ai_profile_id: null, ai_profile_name: a.name, title: 'original' }]);
+  expect(service.providers().some(x => x.id === p.id)).toBe(kind === 'agent');
+});
+
+it('does not notify task observers when deletion fails', () => {
+  let notifications = 0;
+  const controller = createAgentController(service, {} as AgentToolService, providers, legacy, () => notifications++);
+  expect(() => controller.agents.delete('missing')).toThrow();
+  expect(() => controller.agents.deleteProvider('missing')).toThrow();
+  expect(notifications).toBe(0);
 });
 
 it('legacy editor keeps runner/path/color and encrypted values, permits legacy duplicate names, and changes only its own visibility',()=>{

@@ -296,6 +296,7 @@ async function main(): Promise<void> {
       applications,
       browser,
       onProjectDeleted:()=>{events.emit(tasksChangedEvent,undefined);browserOrphans();},
+      onTaskProfilesChanged:()=>events.emit(tasksChangedEvent,undefined),
       ptys,
       ptyAccess,
       baseEnv,

@@ -223,3 +223,15 @@ T042 Claude非交互默认审批的[真实I尾段](验收/证据/M13-T042-Claude
 
 
 2026-11-15 最新正式收口：[430原完整U/I/A联合与用户边界确认](验收/证据/M13-T064-original-full-contract-union-user-clarified-history-430-20261115-a1/coordinator-verdict.json)已归账。用户确认CLI正常追加历史与宿主保护的边界，原需求/方案/用例同步，原红保留且无重跑。继续T094自主菜单缺项，真实账号/服务输入留后；正式数量只取唯一用例账，M13尚未完成。
+
+
+2026-11-15 最新接续：[T030 本期完整联合](验收/证据/M13-T030-thirdparty-complete-user-deferred-subscription-435-20261115-a1/coordinator-verdict.json)与[T048 真实 Flash 完整验收](验收/证据/M13-T048-real-DeepSeek-Flash-full-436-20261115-a1/coordinator-verdict.json)已归账。Claude 订阅后补边界见[需求第6章](需求.md)；实际状态只取[唯一用例账](验收/测试用例.md)。继续补 T092 官方 Native API 环境与 T088 真实登录校准，M13 尚未完成，无发布。
+
+
+2026-11-15 接续：[T092 本期完整联合](验收/证据/M13-T092-official-Native-api-env-user-subscription-excluded-439-20261115-a1/coordinator-verdict.json)已归账；Claude 订阅验证按[最新范围决定](验收/证据/M13-T092-official-Native-api-env-user-subscription-excluded-439-20261115-a1/user-decision.json)取消，纯订阅 T059 单列。当前进度只取[唯一用例账](验收/测试用例.md)。继续 Codex 登录校准与其余 Provider、权限任务，无发布。
+
+
+2026-11-15：[T088 原完整联合](验收/证据/M13-T088-original-complete-real-Codex-status-calibration-441-20261115-a1/coordinator-verdict.json)已收口；当前原部分通过用例已全部完成本期要求，Claude 订阅取消项保持显式记录。继续剩余真实 Provider、任务快照、模型切换与权限验证，状态以[唯一用例账](验收/测试用例.md)为准。
+
+
+2026-11-15 最新统一基线 source012／App058：[T055真实双端快照与即时删除提示](验收/证据/M13-T055-real-both-CLI-snapshot-delete-event-fix-App058-448-20261115-a1/coordinator-verdict.json)已完整通过。原缺少变更事件已修复，包只重建一次，原失败保留。正式进度仍只取[唯一用例账](验收/测试用例.md)，继续其余网关、模型切换与权限矩阵，无发布。

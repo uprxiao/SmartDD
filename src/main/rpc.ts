@@ -63,6 +63,7 @@ export interface RpcDeps {
   applications?: ApplicationService;
   browser?:BrowserService;
   onProjectDeleted?:()=>void;
+  onTaskProfilesChanged?:()=>void;
   ptys: PtyManager;
   ptyAccess: PtyAccess;
   baseEnv: () => Record<string, string>;
@@ -101,7 +102,7 @@ export function createRpcRouter(d: RpcDeps) {
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
     ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id),deleted:()=>d.onProjectDeleted?.() }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
-    ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles),
+    ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles,d.onTaskProfilesChanged),
     agentTransfer: createAgentTransferController(d.agentTransfer),
     providerSetup: createProviderSetupController(d.providers),
     ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event),path=>shell.openPath(path)),
