@@ -1,0 +1,76 @@
+{
+  "scope": "Live native HTTP MCP transport and typed elicitation; local synthetic model chooses tool and host fixture answers form, no real user approval UI or business action.",
+  "checks": [
+    {
+      "id": "claude-accept",
+      "status": "passed",
+      "detail": {
+        "sessionId": "b7e82fd8-04d8-4264-8646-9e3029d10bf0",
+        "userId": "70038563-076b-4e11-8780-f9f695ba93fc",
+        "terminal": "success",
+        "modelRequests": 2,
+        "httpRequests": 7,
+        "elicitationCount": 1,
+        "mcpToolResult": {
+          "action": "accept",
+          "content": {
+            "label": "isolated-choice",
+            "count": 2,
+            "enabled": true
+          }
+        }
+      }
+    },
+    {
+      "id": "claude-decline",
+      "status": "passed",
+      "detail": {
+        "sessionId": "92b1c8a2-4ed1-4106-aa37-1ca91f61cd14",
+        "userId": "b9c26adc-4c11-41ef-a695-d325ace9b749",
+        "terminal": "success",
+        "modelRequests": 2,
+        "httpRequests": 7,
+        "elicitationCount": 1,
+        "mcpToolResult": {
+          "action": "decline"
+        }
+      }
+    },
+    {
+      "id": "claude-cancel",
+      "status": "passed",
+      "detail": {
+        "sessionId": "654161b5-a871-4846-9079-103970b3e2b1",
+        "userId": "3dc4b79f-db7d-4a3b-a6d8-10d0a25a2a0d",
+        "terminal": "success",
+        "modelRequests": 2,
+        "httpRequests": 7,
+        "elicitationCount": 1,
+        "mcpToolResult": {
+          "action": "cancel"
+        }
+      }
+    },
+    {
+      "id": "claude-bad-auth",
+      "status": "passed",
+      "detail": {
+        "sessionId": "823d0554-e0e3-421e-a860-b7aecb54d860",
+        "userId": "7b71ab15-a4de-4c4e-90df-5b3550a88b1b",
+        "terminal": "success",
+        "modelRequests": 1,
+        "httpRequests": 2,
+        "elicitationCount": 0,
+        "mcpToolResult": null
+      }
+    },
+    {
+      "id": "codex-accept",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'failed'\n- 'completed'\n\n    at codex (file:///private/tmp/willyou-m14-http-mcp-probe/probe.mjs:34:550)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///private/tmp/willyou-m14-http-mcp-probe/probe.mjs:53:179\n    at async check (file:///private/tmp/willyou-m14-http-mcp-probe/probe.mjs:36:72)\n    at async file:///private/tmp/willyou-m14-http-mcp-probe/probe.mjs:53:102"
+    }
+  ],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'decline'\n- 'accept'\n\n    at Server.<anonymous> (file:///private/tmp/willyou-m14-http-mcp-probe/probe.mjs:50:313)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+  "passed": 4,
+  "failed": 1
+}

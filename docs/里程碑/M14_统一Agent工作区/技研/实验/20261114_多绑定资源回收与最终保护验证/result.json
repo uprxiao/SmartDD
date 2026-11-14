@@ -1,0 +1,103 @@
+{
+  "out": "/private/tmp/willyou-m14-binding-gc-probe/attempt-jHFuve",
+  "checks": [
+    {
+      "id": "G01",
+      "label": "baseline deleter overlooks new-only references and physically removes retained package",
+      "status": "passed",
+      "evidence": {
+        "baselineRiskReproduced": true,
+        "removed": [
+          "app:0559fd95e88b9c0e03d91eb4829ab48b3462e4a663f97fbcb701d0b83da5805f",
+          "runtime:c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793"
+        ],
+        "newOnlyRefsStillPresent": 3
+      }
+    },
+    {
+      "id": "G02",
+      "label": "active, tombstone and another binding retain the dependency closure",
+      "status": "passed",
+      "evidence": {
+        "activeRetains": true,
+        "tombstoneRetains": true,
+        "secondBindingRetains": true,
+        "dependency": "runtime:c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793"
+      }
+    },
+    {
+      "id": "G03",
+      "label": "new reference invalidates a previously collectable plan",
+      "status": "passed",
+      "evidence": {
+        "stalePlanRejected": true
+      }
+    },
+    {
+      "id": "G04",
+      "label": "final write transaction catches a reference admitted after proposal capture",
+      "status": "passed",
+      "evidence": {
+        "finalTransactionRejected": true,
+        "noCleanupIntentCommitted": true
+      }
+    },
+    {
+      "id": "G05",
+      "label": "late admission after deleting is rejected with no partial binding",
+      "status": "passed",
+      "evidence": {
+        "admissionRejected": true,
+        "completeCancellationAllowsAdmission": true
+      }
+    },
+    {
+      "id": "G06",
+      "label": "final deletion and recovery stop if a rogue new reference bypasses admission",
+      "status": "passed",
+      "evidence": {
+        "physicalDeletionPrevented": true,
+        "recoveryPending": true,
+        "rogueFixtureWrite": true
+      }
+    },
+    {
+      "id": "G07",
+      "label": "corrupt or incomplete new history blocks cleanup instead of being treated as no reference",
+      "status": "passed",
+      "evidence": {
+        "badHashRetained": true,
+        "missingRequiredReferenceRetained": true
+      }
+    },
+    {
+      "id": "G08",
+      "label": "last history release still respects a real ResourceStore usage lease before physical deletion",
+      "status": "passed",
+      "evidence": {
+        "leaseRespected": true,
+        "oldPackageAndRuntimeRemovedAfterRelease": true,
+        "newDefaultPreserved": true
+      }
+    },
+    {
+      "id": "G09",
+      "label": "unmapped historical selections remain a global cleanup hold",
+      "status": "passed",
+      "evidence": {
+        "unmappedHistoryRetained": true
+      }
+    },
+    {
+      "id": "G10",
+      "label": "a binding with lost capability history is not treated as an empty released binding",
+      "status": "passed",
+      "evidence": {
+        "orphanedBindingRetained": true
+      }
+    }
+  ],
+  "passed": 10,
+  "failed": 0,
+  "scope": "Actual graph planner/deleter, ResourceStore, native rename helper, legal v2 snapshots migrated to candidate relations. Candidate build injects new reference reader into planner/final guard. Fixture process identity, no native agent or product edits."
+}

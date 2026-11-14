@@ -1,0 +1,116 @@
+{
+  "out": "/private/tmp/willyou-m14-config-revision-probe/attempt-rNdxxF",
+  "checks": [
+    {
+      "id": "V01",
+      "label": "actual service already rolls back mixed credential writes on encryption failure",
+      "status": "passed",
+      "evidence": {
+        "actualServiceTransaction": true,
+        "noCandidateSchema": true
+      }
+    },
+    {
+      "id": "V02",
+      "label": "migration preserves current profiles and seeds version idempotently",
+      "status": "passed",
+      "evidence": {
+        "legacyRowsPreserved": true,
+        "revision": 1
+      }
+    },
+    {
+      "id": "V03",
+      "label": "cosmetic update/default/health do not invalidate but same-clock launch args do",
+      "status": "passed",
+      "evidence": {
+        "sameUpdatedAt": true,
+        "cosmeticsPreserved": true,
+        "changedArgsRejected": true
+      }
+    },
+    {
+      "id": "V04",
+      "label": "same-clock key rotation and direct SecretsStore writes invalidate old plans",
+      "status": "passed",
+      "evidence": {
+        "directSecretWriteTracked": true,
+        "noTimestampDependency": true
+      }
+    },
+    {
+      "id": "V05",
+      "label": "other business credentials and unreferenced AI secrets do not invalidate",
+      "status": "passed",
+      "evidence": {
+        "unrelatedSecretWritesIgnored": true
+      }
+    },
+    {
+      "id": "V06",
+      "label": "candidate revision rolls back with deleted and rewritten credentials",
+      "status": "passed",
+      "evidence": {
+        "revisionAndCredentialsAtomic": true
+      }
+    },
+    {
+      "id": "V07",
+      "label": "two database connections rotating a secret during resolve cannot return a mixed handle",
+      "status": "passed",
+      "evidence": {
+        "separateConnection": true,
+        "changedDuringActualDecrypt": true,
+        "mixedCaptureRejected": true
+      }
+    },
+    {
+      "id": "V08",
+      "label": "missing secret or unavailable cipher blocks capture; output carries no plaintext",
+      "status": "passed",
+      "evidence": {
+        "privatePlaintextOnly": true,
+        "noFallback": true
+      }
+    },
+    {
+      "id": "V09",
+      "label": "delete and recreation of same id cannot revive an old revision",
+      "status": "passed",
+      "evidence": {
+        "tombstoneRetained": true,
+        "syntheticReinsertCannotReuseOldHandle": true
+      }
+    },
+    {
+      "id": "V10",
+      "label": "command availability affects revision and stale SQLite snapshots are refused",
+      "status": "passed",
+      "evidence": {
+        "commandPendingTracked": true,
+        "transactionSnapshotRejected": true
+      }
+    },
+    {
+      "id": "V11",
+      "label": "import-like direct insert after credentials obtains one valid initial revision",
+      "status": "passed",
+      "evidence": {
+        "actualImportOrderReproduced": true,
+        "fullTransferServiceNotRun": true,
+        "rollback": true
+      }
+    },
+    {
+      "id": "V12",
+      "label": "malformed old configuration prevents partial revision migration",
+      "status": "passed",
+      "evidence": {
+        "invalidOriginalPreserved": true,
+        "noPartialMigration": true
+      }
+    }
+  ],
+  "passed": 12,
+  "scope": "Actual AiProfileService, SecretsStore, bundled DB migrations and RunnerAdapterRegistry; isolated SQLite, fake cipher/clock and candidate SQL revision/capture. No product changes, model/native Agent, OS keychain, real credentials or full import service."
+}

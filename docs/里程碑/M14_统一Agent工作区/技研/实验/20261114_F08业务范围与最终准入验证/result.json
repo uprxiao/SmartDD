@@ -1,0 +1,95 @@
+{
+  "out": "/private/tmp/willyou-m14-f08-admission/attempt-3OvkbR",
+  "checks": [
+    {
+      "id": "A01-actual-mail-receipts-and-manual-facts-remain-separate",
+      "passed": true,
+      "result": {
+        "manuallyReconciled": 2,
+        "originalSmtpUnknownUnchanged": true,
+        "partialReceiptNotFullSuccess": true,
+        "newGrants": 0,
+        "noSubmitFunctionConstructed": true
+      }
+    },
+    {
+      "id": "A02-known-object-scopes-use-existing-target-and-subject-parsers",
+      "passed": true,
+      "result": {
+        "knownUnrelatedConnectionAllowed": true,
+        "deletedKnownScopePreserved": true,
+        "connectionManagementSubjectResolved": true,
+        "unknownOwnershipAndConflictingTargetBlocked": true,
+        "scopeIsEnforcedModuleOperationNotArbitraryAgent": true
+      }
+    },
+    {
+      "id": "A03-shared-operation-merges-only-after-source-consistency",
+      "passed": true,
+      "result": {
+        "oneBusinessOperationTwoSources": true,
+        "conflictNotHiddenByDisplayDedup": true
+      }
+    },
+    {
+      "id": "A04-final-prepare-rereads-insert-update-and-delete",
+      "passed": true,
+      "result": [
+        {
+          "mode": "insert",
+          "previewRejectedAtCommit": true,
+          "freshPreviewStillBlocks": true
+        },
+        {
+          "mode": "update",
+          "previewRejectedAtCommit": true,
+          "freshPreviewStillBlocks": true
+        },
+        {
+          "mode": "delete",
+          "previewRejectedAtCommit": true,
+          "freshPreviewStillBlocks": true
+        }
+      ]
+    },
+    {
+      "id": "A05-consumption-rechecks-second-connection-and-atomic-callback",
+      "passed": true,
+      "result": {
+        "secondConnectionChangeRejected": true,
+        "callbackAndConsumptionAtomic": true,
+        "copyDenied": true,
+        "replayDenied": true,
+        "newBusinessRecordStartsInSameTransaction": true
+      }
+    },
+    {
+      "id": "A06-stopped-run-and-reconciled-mail-still-wait-for-live-business-lease",
+      "passed": true,
+      "result": {
+        "manualFactDoesNotEndLiveness": true,
+        "stoppedRunNotEnough": true,
+        "leaseFixtureOnly": true
+      }
+    },
+    {
+      "id": "A07-manual-reconciliation-mutation-invalidates-preview-without-new-permission",
+      "passed": true,
+      "result": {
+        "changedVerificationRejected": true,
+        "originalUnknownPreserved": true,
+        "newGrants": 0
+      }
+    },
+    {
+      "id": "A08-missing-source-and-visible-delete-cannot-erase-unresolved-evidence",
+      "passed": true,
+      "result": {
+        "deleteDidNotRunOrClearFacts": true,
+        "missingSourceNotEmpty": true
+      }
+    }
+  ],
+  "passed": 8,
+  "scope": "Current actual business read/parsing and historical synthetic service results, plus C1.5 admission/journal candidate. No new native/SMTP/browser operations, no user grants. Relation/lease/receipt inputs explicitly controlled."
+}

@@ -1,0 +1,203 @@
+{
+  "nativeNotificationsValidated": 29,
+  "generatedFixtureCases": 10,
+  "fixtures": [
+    {
+      "schema": "CommandExecutionRequestApprovalParams",
+      "value": {
+        "threadId": "t",
+        "turnId": "turn",
+        "itemId": "command",
+        "startedAtMs": 1,
+        "kind": "command",
+        "availableDecisions": [
+          "accept",
+          "acceptForSession",
+          {
+            "acceptWithExecpolicyAmendment": {
+              "execpolicy_amendment": [
+                "git",
+                "status"
+              ]
+            }
+          },
+          "decline",
+          "cancel"
+        ],
+        "command": "git status"
+      }
+    },
+    {
+      "schema": "CommandExecutionRequestApprovalResponse",
+      "value": {
+        "decision": {
+          "acceptWithExecpolicyAmendment": {
+            "execpolicy_amendment": [
+              "git",
+              "status"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "schema": "CommandExecutionRequestApprovalResponse",
+      "value": {
+        "decision": "acceptForSession"
+      }
+    },
+    {
+      "schema": "ToolRequestUserInputParams",
+      "value": {
+        "threadId": "t",
+        "turnId": "turn",
+        "itemId": "input",
+        "isBlocking": false,
+        "questions": [
+          {
+            "id": "q",
+            "header": "Choice",
+            "question": "Pick",
+            "options": [
+              {
+                "label": "A",
+                "description": "Choice A"
+              }
+            ]
+          },
+          {
+            "id": "secret",
+            "header": "Secret",
+            "question": "Synthetic secret",
+            "isSecret": true,
+            "options": null
+          }
+        ]
+      }
+    },
+    {
+      "schema": "ToolRequestUserInputResponse",
+      "value": {
+        "answers": {
+          "q": {
+            "answers": [
+              "A"
+            ]
+          },
+          "secret": {
+            "answers": [
+              "FAKE_SECRET_123"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "schema": "McpServerElicitationRequestParams",
+      "value": {
+        "threadId": "t",
+        "turnId": null,
+        "serverName": "fixture",
+        "mode": "form",
+        "message": "Form",
+        "requestedSchema": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            },
+            "flag": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "count",
+            "flag"
+          ]
+        }
+      }
+    },
+    {
+      "schema": "McpServerElicitationRequestResponse",
+      "value": {
+        "action": "accept",
+        "content": {
+          "count": 2,
+          "flag": false
+        }
+      }
+    },
+    {
+      "schema": "McpServerElicitationRequestParams",
+      "value": {
+        "threadId": "t",
+        "turnId": null,
+        "serverName": "fixture",
+        "mode": "url",
+        "message": "Auth",
+        "url": "https://example.invalid/auth",
+        "elicitationId": "e"
+      }
+    },
+    {
+      "schema": "McpServerElicitationRequestParams",
+      "value": {
+        "threadId": "t",
+        "turnId": null,
+        "serverName": "fixture",
+        "mode": "openai/userVerification",
+        "challenge": "fixture",
+        "description": "device proof",
+        "title": "Verify"
+      }
+    },
+    {
+      "schema": "McpServerElicitationRequestParams",
+      "value": {
+        "threadId": "t",
+        "serverName": "fixture",
+        "mode": "form",
+        "message": "Array",
+        "requestedSchema": {
+          "type": "object",
+          "properties": {
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B"
+                ]
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "tags"
+          ]
+        }
+      }
+    }
+  ],
+  "schemas": [
+    "ServerNotification",
+    "v2/RawResponseItemCompletedNotification",
+    "v2/RawResponseCompletedNotification",
+    "CommandExecutionRequestApprovalParams",
+    "CommandExecutionRequestApprovalResponse",
+    "ToolRequestUserInputParams",
+    "ToolRequestUserInputResponse",
+    "McpServerElicitationRequestParams",
+    "McpServerElicitationRequestResponse"
+  ],
+  "strict": false,
+  "numericFormatCheck": "finite floats; safe-integer bounds including uint16/uint32/int32",
+  "standardSchemaMissingObservedMethods": [
+    "rawResponseItem/completed",
+    "rawResponse/completed"
+  ],
+  "scope": "Schema compatibility only, not actual interactive native calls"
+}

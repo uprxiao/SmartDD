@@ -1,0 +1,72 @@
+{
+  "smartddHead": "5a9e04382441e24624cb94635f9d902c543a03d7",
+  "sources": [
+    {
+      "path": "src/main/core/applications/activity-service.ts",
+      "sha256": "6192728f2cccaff24b9a72e5f6479d1352073616c77397613ff119ff1022a896"
+    },
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "sha256": "222ef15bd4121f9a86900db6d44372ba1a4aa3fe5d14c0b9474475ca4fb6d817"
+    },
+    {
+      "path": "src/main/core/applications/mail-execution-service.ts",
+      "sha256": "3006274bb057f5ca31b8dc39f7b680fa8cebfbadac81014d014520ad8f1f48dd"
+    },
+    {
+      "path": "src/main/core/applications/mail-send-data-service.ts",
+      "sha256": "e2bcc5a9cd3c773a6fa24382124bd5a6a329c37b140ff21ec6c7cd2b98fac288"
+    },
+    {
+      "path": "src/main/core/applications/mail-unknown-verifications.ts",
+      "sha256": "cc30d5c36b6dd281c70591d05f08e7b09af3c5791f58c8e6a9a02a301a410fcf"
+    },
+    {
+      "path": "src/main/core/applications/mail-draft-send-history.ts",
+      "sha256": "e9a0d3d2a404838d15318378f2499000a2a02d36d8c616196543cd88dc5e422d"
+    },
+    {
+      "path": "src/main/core/applications/mail-user-authorizations.ts",
+      "sha256": "b7c6806ec0417d4a0c087f79a9eb9ccccba67d04a3c7a17a505381cbded122e8"
+    },
+    {
+      "path": "src/main/core/applications/application-service.ts",
+      "sha256": "c4a772c31f52dffce1567c9199dd620c30fda12fa7d6ca744e681e65708eed89"
+    },
+    {
+      "path": "drizzle/0020_application_activity_subjects.sql",
+      "sha256": "9b48a5f6a3718088932ee066b296d5d03267ea240a0d72568fc7d07692b54193"
+    }
+  ],
+  "actualServices": [
+    "ApplicationActivityService",
+    "ApplicationConnectionService",
+    "ApplicationSelectionService",
+    "SecretsStore",
+    "MailBlobStore",
+    "MailDraftService",
+    "MailExecutionService",
+    "MailUnknownVerifications",
+    "readDraftSendHistory"
+  ],
+  "controlled": [
+    "SecretCipher",
+    "connection verifier",
+    "MailSendPolicy actors and proof map",
+    "manual-verification execution context and sender identity",
+    "submit transport"
+  ],
+  "findings": [
+    "Existing read-only ActivityService merges bridge and Data API by their shared operation identity, includes subject links and browser/send rows; reuse in unified UI.",
+    "Its pagination, legacy absent-browser fallback, optional project filtering and deduplication are not a complete integrity/admission proof.",
+    "Partial SMTP acceptance persists server-accepted and draft sent with complete false; unified UI must consume receipt.",
+    "readDraftSendHistory performs stronger project/revision/content/message identity checks than generic activity.detail.",
+    "Manual sent/not-sent observations append mail_draft_mutations; original SMTP unknown is immutable, and not-sent creates a new draft without sending authority."
+  ],
+  "limits": [
+    "No real SMTP, native SDK, real UI sender or native user-origin verification",
+    "No actual ApplicationExecutionContexts/ToolService dispatch in this experiment; those remain separate integration work",
+    "Conflict and missing-table cases are synthetic integrity/compatibility probes, not a claim normal product paths corrupt records",
+    "No product completion, new admission service, large-store performance or migration closure"
+  ]
+}

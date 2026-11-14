@@ -1,0 +1,23 @@
+{
+  "attempts": [
+    {
+      "id": "attempt-5Z17Xp",
+      "passed": 1,
+      "failed": 1,
+      "cause": "子任务夹具沿用父 MCP serverName；实际会话注册器正确拒绝冲突。修正夹具为按子 taskId 生成独立名称及 nativeToolNames，生产代码不变。"
+    },
+    {
+      "id": "attempt-6COdnw",
+      "passed": 7,
+      "failed": 1,
+      "cause": "C08 把 ToolService.call 已返回取消当作 withActivity 已结束；当时 run 实际仍 stopping。修正为先断言取消响应到达而 lease 仍 active，再释放受控业务，等待实际 withActivity Promise 完成；无 sleep／轮询。"
+    },
+    {
+      "id": "attempt-OZDDJm",
+      "passed": 12,
+      "failed": 0,
+      "cause": "最终批；12 项与 SQLite 终态核对。"
+    }
+  ],
+  "processes": "Only FixtureProcessReader identities; no native SDK or actual OS child was started."
+}

@@ -1,0 +1,14 @@
+{
+  "attempt": "attempt-k5kX17",
+  "status": "incomplete, not counted as a pass",
+  "databaseSnapshot": "attempt-k5kX17/interrupted.sqlite",
+  "observedPhase": "requested",
+  "recordedOwner": {
+    "pid": 78141,
+    "startedAt": "darwin-proc-v1:1794642173:542947"
+  },
+  "currentKernelState": "stopped",
+  "processInventory": "Read-only escalated ps found no probe or worker process on revalidation. No process was killed by name.",
+  "driverDefect": "spawnWorker always constructed a checkpoint promise whose done branch throws; complete() does not consume that promise, so a normally completed non-paused worker can create an unhandled rejection. Original stderr/exit receipt is absent; exact original termination cause is not proved.",
+  "correction": "Only create the checkpoint race for paused workers; persist worker PID/frames/exit incrementally, and clean up only captured live ChildProcess handles in finally."
+}

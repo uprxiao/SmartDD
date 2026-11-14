@@ -1,0 +1,68 @@
+{
+  "out": "/private/tmp/willyou-m14-programmatic-claim-joint-probe/attempt-jqDtPY",
+  "checks": [
+    {
+      "id": "J01",
+      "title": "prior programmatic native publication ignores retained historical claims",
+      "status": "passed",
+      "evidence": {
+        "negative": true,
+        "priorCandidateAcceptedRetainedIdentity": true,
+        "retainedClaimStillOwnedByOriginalBinding": true,
+        "productNotAffected": true
+      }
+    },
+    {
+      "id": "J02",
+      "title": "joint claim rejects old-root collision and keeps all rows unchanged",
+      "status": "passed",
+      "evidence": {
+        "historicalConflictDenied": true,
+        "nonCanonicalRootRejected": true,
+        "allRowsUnchanged": true
+      }
+    },
+    {
+      "id": "J03",
+      "title": "new native publication records immutable source and repeat is idempotent",
+      "status": "passed",
+      "evidence": {
+        "sourceRevisionRetained": true,
+        "sameIdentityRepeatUnchanged": true,
+        "claimAndSourceDeletionDenied": true,
+        "crossBindingSourceRejected": true
+      }
+    },
+    {
+      "id": "J04",
+      "title": "actual legacy session creation cannot take a programmatically claimed identity",
+      "status": "passed",
+      "evidence": {
+        "actualSessionRegistryRejected": true,
+        "legacySnapshotsUnchanged": true
+      }
+    },
+    {
+      "id": "J05",
+      "title": "revision and claim source are one rollback unit",
+      "status": "passed",
+      "evidence": {
+        "twoTransactionCutPointsRolledBack": true,
+        "explicitRetryAfterRollbackSucceeded": true,
+        "noNativeProcessOrInputDispatched": true
+      }
+    },
+    {
+      "id": "J06",
+      "title": "second programmatic binding cannot publish the same native identity",
+      "status": "passed",
+      "evidence": {
+        "sharedClaimTableProtectsBothEntryModes": true,
+        "losingBindingUnchanged": true
+      }
+    }
+  ],
+  "passed": 6,
+  "error": null,
+  "scope": "Shared isolated DB combines prior retained-history claim projection and programmatic first-native publication. Actual current session registry/copy service/migrations plus candidate SQL and publication; no SDK, native processes, business admission, GC integration or product modifications."
+}

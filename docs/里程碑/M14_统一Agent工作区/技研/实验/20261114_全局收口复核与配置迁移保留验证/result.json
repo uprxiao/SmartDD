@@ -1,0 +1,62 @@
+{
+  "final": {
+    "out": "/private/tmp/willyou-m14-transfer-boundary-probe/attempt-JVhWm7",
+    "checks": [
+      {
+        "id": "T01",
+        "title": "actual encrypted project transfer preserves configured DB and SSH credentials but creates no task history",
+        "status": "passed",
+        "evidence": {
+          "encryptedCredentialsPreserved": true,
+          "newProjectAndConnectionIds": true,
+          "noTaskHistory": true,
+          "sourceUnchanged": true
+        }
+      },
+      {
+        "id": "T02",
+        "title": "default Agent export excludes keys and local execution identities without decrypting secrets",
+        "status": "passed",
+        "evidence": {
+          "noKeyRead": true,
+          "noExecutableOrNativeBinding": true,
+          "providerIncludedOnce": true,
+          "foreignChecksReset": true
+        }
+      },
+      {
+        "id": "T03",
+        "title": "explicit encrypted key transfer imports fresh identities without requiring installed CLI or carrying runtime authorization",
+        "status": "passed",
+        "evidence": {
+          "confirmedEncryptedKeysPreserved": true,
+          "missingCliImportAllowed": true,
+          "previewUsesLocalToolInstalledFlag": true,
+          "newIdsAndNoMerge": true,
+          "noImportedLoginOrTasks": true
+        }
+      },
+      {
+        "id": "T04",
+        "title": "local-login export rejects; imported login declarations skip; unknown runtime fields fail before mutation",
+        "status": "passed",
+        "evidence": {
+          "nativeLoginNotPortable": true,
+          "unknownRunMetadataRejected": true,
+          "unknownDriverRejectedWithoutMutation": true
+        }
+      }
+    ],
+    "passed": 4,
+    "error": null,
+    "scope": "Actual current project/Agent transfer, config, secret-store and SQLite services. Synthetic cipher/credentials/directories and captured existing portable schemas. Actual file password encryption; no OS keychain, network, SSH/DB connection or M14 product migration/managed-runtime UI."
+  },
+  "bootstrapFailure": {
+    "phase": "module import before attempt creation",
+    "passed": 0,
+    "error": "Bundled node-pty locates pty.node relative to standalone bundle; Failed to load native module pty.node",
+    "evidence": "exec chunk 9c80e1 exit 1; no probe assertion executed",
+    "correction": "Externalize existing node-pty package using its actual installed path; preserve native resource resolution. No replacement of application behavior."
+  },
+  "reviewScope": "Requirement/artifact trace and remaining-decision audit; not evidence that every Q or D is closed."
+}

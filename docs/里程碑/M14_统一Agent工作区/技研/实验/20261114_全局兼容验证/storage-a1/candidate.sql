@@ -1,0 +1,9 @@
+CREATE TABLE tasks(id TEXT PRIMARY KEY,legacy_json TEXT NOT NULL,active_binding TEXT,generation INTEGER NOT NULL DEFAULT 0,draft_rev INTEGER NOT NULL DEFAULT 0,draft TEXT NOT NULL DEFAULT '');
+CREATE TABLE bindings(id TEXT PRIMARY KEY,task TEXT NOT NULL REFERENCES tasks(id),runtime TEXT NOT NULL,profile_revision TEXT NOT NULL,state_root TEXT NOT NULL,native_id TEXT,capability_session TEXT NOT NULL UNIQUE,UNIQUE(runtime,state_root,native_id));
+CREATE TABLE transfers(id TEXT PRIMARY KEY,binding TEXT NOT NULL REFERENCES bindings(id),item TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('pending','delivered','unknown')),UNIQUE(binding,item));
+CREATE TABLE delegates(id TEXT PRIMARY KEY,parent TEXT NOT NULL REFERENCES tasks(id),request TEXT NOT NULL,digest TEXT NOT NULL,child TEXT NOT NULL REFERENCES tasks(id),state TEXT NOT NULL,UNIQUE(parent,request));
+CREATE TABLE deliveries(delegation TEXT NOT NULL REFERENCES delegates(id),version INTEGER NOT NULL,kind TEXT NOT NULL CHECK(kind='child-result'),state TEXT NOT NULL,PRIMARY KEY(delegation,version));
+CREATE TABLE events(task TEXT NOT NULL REFERENCES tasks(id),seq INTEGER NOT NULL,body TEXT NOT NULL,PRIMARY KEY(task,seq));
+CREATE TABLE items(task TEXT NOT NULL REFERENCES tasks(id),item TEXT NOT NULL,ordinal INTEGER NOT NULL,body TEXT NOT NULL,PRIMARY KEY(task,item),UNIQUE(task,ordinal));
+CREATE TABLE templates(id TEXT NOT NULL,rev INTEGER NOT NULL,body TEXT NOT NULL,PRIMARY KEY(id,rev));
+CREATE TABLE template_applications(task TEXT PRIMARY KEY REFERENCES tasks(id),template TEXT NOT NULL,revision INTEGER NOT NULL,resolved TEXT NOT NULL,FOREIGN KEY(template,revision) REFERENCES templates(id,rev));

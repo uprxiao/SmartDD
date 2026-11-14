@@ -1,0 +1,146 @@
+{
+  "out": "/private/tmp/willyou-m14-programmatic-reserve-probe/attempt-5Vk7mT",
+  "checks": [
+    {
+      "id": "P01",
+      "label": "two scoped capability sessions share one logical task without inserting legacy mirrors",
+      "status": "passed",
+      "evidence": {
+        "bindings": 2,
+        "logicalTask": "01c61124-fce8-4a2f-9635-2df7df3264da",
+        "noSyntheticLegacyRows": true,
+        "legacyLookupRefusesNewTask": true
+      }
+    },
+    {
+      "id": "P02",
+      "label": "A to B to A reserves correctly scoped runs and monotonic per-binding generations",
+      "status": "passed",
+      "evidence": {
+        "runIds": [
+          "8d710210-0f13-4acc-be9f-35a4b4828b56",
+          "039b3dd9-a3a0-43a8-9d78-50bb2f606d59",
+          "0ca0b853-2204-490a-bc4d-7fea80205864"
+        ],
+        "generations": [
+          1,
+          1,
+          2
+        ],
+        "sameLogicalTask": true,
+        "exactResourceClosure": true
+      }
+    },
+    {
+      "id": "P03",
+      "label": "two concurrent binding reservations preserve single unresolved run per task",
+      "status": "passed",
+      "evidence": {
+        "oneAccepted": true,
+        "otherRejected": "RESOURCE_BUSY"
+      }
+    },
+    {
+      "id": "P04",
+      "label": "actual R17 and ToolService receive current binding with original logical task",
+      "status": "passed",
+      "evidence": {
+        "actualCurrentAuthorization": true,
+        "syntheticReadHandlers": 2,
+        "stoppedARemainsDenied": true
+      }
+    },
+    {
+      "id": "P05",
+      "label": "mixed binding, capability, source, task and supplied generation cannot reserve",
+      "status": "passed",
+      "evidence": {
+        "fourScopeSubstitutionsDenied": true,
+        "noRunOrLeaseCreated": true
+      }
+    },
+    {
+      "id": "P06",
+      "label": "late reservation failure rolls back run, plan, lease, process and generation",
+      "status": "passed",
+      "evidence": {
+        "allReservationRecordsAtomic": true,
+        "retryGeneration": 1
+      }
+    },
+    {
+      "id": "P07",
+      "label": "first native binding in programmatic revisions preserves run source without legacy versions",
+      "status": "passed",
+      "evidence": {
+        "sourceUnchangedForOriginal": true,
+        "newRunUsesBoundRevision": true,
+        "legacyVersionTableUnused": true
+      }
+    },
+    {
+      "id": "P08",
+      "label": "private owner scope rejects changed run generation and copied handles",
+      "status": "passed",
+      "evidence": {
+        "exactOwnedGenerationRequired": true,
+        "unsupportedLegacyGuardExplicitlyRejected": true
+      }
+    },
+    {
+      "id": "P09",
+      "label": "actual resource byte verification rejects damaged adapter before preparing",
+      "status": "passed",
+      "evidence": {
+        "actualSessionVerifierUsed": true,
+        "noPreparedStateOnCorruption": true,
+        "repairedFixtureRetry": true
+      }
+    },
+    {
+      "id": "P10",
+      "label": "original legacy session still prepares independently with source bytes preserved",
+      "status": "passed",
+      "evidence": {
+        "legacyPathPreserved": true,
+        "firstNativeProjectionCoherent": true
+      }
+    },
+    {
+      "id": "P11",
+      "label": "exact resource references and MCP claims are checked on live context reads",
+      "status": "passed",
+      "evidence": {
+        "referenceAndNativeToolNamespaceRequired": true
+      }
+    },
+    {
+      "id": "P12",
+      "label": "retention hold denies use but does not remove owned cancellation authority",
+      "status": "passed",
+      "evidence": {
+        "heldSourceDenied": true,
+        "cleanupStillPossible": true
+      }
+    },
+    {
+      "id": "P13",
+      "label": "programmatic reservation requires an immutable application plan producer",
+      "status": "passed",
+      "evidence": {
+        "missingPlanFactoryRejected": true
+      }
+    },
+    {
+      "id": "P14",
+      "label": "legacy MCP name collision rolls programmatic publication back",
+      "status": "passed",
+      "evidence": {
+        "publicationRolledBack": true,
+        "legacyConflictDomainPreserved": true
+      }
+    }
+  ],
+  "passed": 14,
+  "scope": "Isolated source variants for scoped session creation/read/verification and actual run reservation transaction/ownership with R17 ToolService. Real SQLite/resource bytes; fixture adapter packages and process identities; no native Agent, IPC, model turn, complete launcher or product changes."
+}

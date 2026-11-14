@@ -1,0 +1,74 @@
+{
+  "out": "/private/tmp/willyou-m14-context-probe/attempt-OZDDJm",
+  "results": [
+    {
+      "id": "C01-real-tool-context-connection-chain",
+      "passed": true,
+      "detail": {
+        "operationExpires": true,
+        "runStillLive": true,
+        "decrypts": 1
+      }
+    },
+    {
+      "id": "C02-opaque-context-caller-and-credential",
+      "passed": true
+    },
+    {
+      "id": "C03-contract-claim-and-child-receipt",
+      "passed": true
+    },
+    {
+      "id": "C04-same-identity-secret-rotation",
+      "passed": true,
+      "detail": {
+        "secretRevision": 2,
+        "decryptDelta": 2
+      }
+    },
+    {
+      "id": "C05-config-change-rejects-stale-handle",
+      "passed": true,
+      "detail": {
+        "handleCannotBeReused": true,
+        "decryptDeltaIncludingConnectionRetest": 1
+      }
+    },
+    {
+      "id": "C06-disabled-selected-connection-no-fallback",
+      "passed": true,
+      "detail": {
+        "healthyAlternateNotUsed": true
+      }
+    },
+    {
+      "id": "C07-project-policy-change-drops-late-result",
+      "passed": true
+    },
+    {
+      "id": "C08-stop-retains-operation-until-settlement",
+      "passed": true,
+      "detail": {
+        "heldState": "stopping",
+        "heldActiveLeases": 1
+      }
+    },
+    {
+      "id": "C09-fixed-package-integrity-even-for-cached-receipt",
+      "passed": true
+    },
+    {
+      "id": "C10-new-run-same-task-does-not-inherit-receipt",
+      "passed": true
+    },
+    {
+      "id": "C11-operation-cancel-is-not-run-cancel",
+      "passed": true
+    },
+    {
+      "id": "C12-unselected-connection-and-revoked-receipt",
+      "passed": true
+    }
+  ],
+  "scope": "Actual ToolService, execution contexts, connection/selection/SecretsStore, package verification, run/session/resources and complete bundled migrations; controlled compiled read handler, package, identity verifier, reversible cipher and process identity fixture. No native SDK/private broker/live UI/external business execution."
+}

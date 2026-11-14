@@ -1,0 +1,62 @@
+{
+  "out": "/private/tmp/willyou-m14-entry-handoff-probe/attempt-82I02C",
+  "checks": [
+    {
+      "id": "E01",
+      "title": "stop returns while owned child and activity remain; migration refuses",
+      "status": "passed",
+      "evidence": {
+        "state": "stopping",
+        "child": "running",
+        "migrationRejected": true
+      }
+    },
+    {
+      "id": "E02",
+      "title": "real child exit is insufficient while activity remains",
+      "status": "passed",
+      "evidence": {
+        "code": 0,
+        "signal": null,
+        "activeBusiness": 1,
+        "migrationRejected": true
+      }
+    },
+    {
+      "id": "E03",
+      "title": "drain permits schema mapping but unknown write still requires independent handoff gate",
+      "status": "passed",
+      "evidence": {
+        "schemaMigrationPassedWithUnknownWrite": true,
+        "activationRefused": true,
+        "unknownWriteSeeded": true,
+        "noExternalWritePerformed": true
+      }
+    },
+    {
+      "id": "E04",
+      "title": "native identity cannot be assigned to another task in either registry direction",
+      "status": "passed",
+      "evidence": {
+        "newCannotStealOld": true,
+        "oldCannotStealNew": true,
+        "oldCreateRolledBack": true
+      }
+    },
+    {
+      "id": "E05",
+      "title": "stale source and concurrent handoff refuse; legacy writer sealed after one admission",
+      "status": "passed",
+      "evidence": {
+        "oneWinner": true,
+        "oldReservationRolledBack": true,
+        "originalSnapshotReadable": true,
+        "nativeIdPreserved": true,
+        "programmaticPreparationNotImplemented": true
+      }
+    }
+  ],
+  "passed": 5,
+  "error": null,
+  "scope": "Actual current registry + real owned generic Node process; candidate schema mapping and minimal atomic admission gate. Synthetic unknown write; no native model, PTY, SDK activation, production implementation or external business reconciliation."
+}

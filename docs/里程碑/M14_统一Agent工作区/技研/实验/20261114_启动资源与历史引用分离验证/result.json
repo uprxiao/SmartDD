@@ -1,0 +1,61 @@
+{
+  "out": "/private/tmp/willyou-m14-launch-retention-probe/attempt-lVNrld",
+  "checks": [
+    {
+      "id": "L01",
+      "label": "source-only preparation misses the current launch package after another default upgrade",
+      "status": "passed",
+      "evidence": {
+        "riskReproduced": true,
+        "syntheticDeferredFileConsumer": true,
+        "requiredPath": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-gGum8S/capabilities/apps/zentao/3.0.0/ef740d020991a8d764cae3de209062a84dd6971c620a9a5f948354a9c1000608/adapter/index.cjs",
+        "preparedLaunchPackageRemoved": "ef740d020991a8d764cae3de209062a84dd6971c620a9a5f948354a9c1000608",
+        "sourceStillPresent": true,
+        "newDefault": "8c1f4c7db551fee17ba4b4a01d4853b47afdabfecb21a5f83019fd9c48054ab8"
+      }
+    },
+    {
+      "id": "L02",
+      "label": "union of source and launch references protects the selected package across default upgrades",
+      "status": "passed",
+      "evidence": {
+        "launchPackageRetained": true,
+        "sourceSnapshotUnchanged": true,
+        "preparedReferenceCount": 4
+      }
+    },
+    {
+      "id": "L03",
+      "label": "existing candidate finish folds additional launch refs into source history and needs explicit lifetime design",
+      "status": "passed",
+      "evidence": {
+        "launchRefStoredAsHistoricalRef": true,
+        "sourceContentDoesNotContainLaunchPackage": true,
+        "lifetimeNotYetSeparated": true
+      }
+    },
+    {
+      "id": "L04",
+      "label": "explicit pre-fork cancellation releases both source and launch preparation refs",
+      "status": "passed",
+      "evidence": {
+        "cancelReleasedLaunchReference": true,
+        "oldLaunchPackageRemoved": true,
+        "noNativeChild": true
+      }
+    },
+    {
+      "id": "L05",
+      "label": "a package listed only for launch audit does not by itself require its files to remain",
+      "status": "passed",
+      "evidence": {
+        "auditStillVerifiableWithoutPackageFiles": true,
+        "listingAloneIsNotAFileDependency": true,
+        "noDeferredFileConsumer": true
+      }
+    }
+  ],
+  "passed": 5,
+  "failed": 0,
+  "scope": "Actual application-run-plan builder and graph GC with previous candidate preparation/retention. Different recorded vs launch package is controlled input matching prior R17 evidence. No native child, no complete launch-plan persistence, no lifetime-separated production implementation."
+}

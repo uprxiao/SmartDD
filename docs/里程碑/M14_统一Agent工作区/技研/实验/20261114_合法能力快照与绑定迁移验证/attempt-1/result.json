@@ -1,0 +1,137 @@
+{
+  "node": "v26.5.0",
+  "boundary": "Actual schema, session/resource/plan/GC services with controlled packages and isolated SQLite; candidate envelope is not production implementation.",
+  "results": [
+    {
+      "id": "B01",
+      "name": "actual v2 registry reads installed package, skill projection and references",
+      "status": "pass",
+      "evidence": {
+        "snapshotHash": "7c5cac9db8eea13b5f4917ffb911ff63c8a05d2234ff7043ce321ff1dffce09e",
+        "skillBytes": 80,
+        "refs": [
+          {
+            "ref_id": "agent-adapter:claude-code:b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e",
+            "ref_kind": "agent-adapter",
+            "ref_hash": "b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e",
+            "relative_path": "run-fixtures/agent-adapter/b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e"
+          },
+          {
+            "ref_id": "app:0559fd95e88b9c0e03d91eb4829ab48b3462e4a663f97fbcb701d0b83da5805f",
+            "ref_kind": "application-package",
+            "ref_hash": "0559fd95e88b9c0e03d91eb4829ab48b3462e4a663f97fbcb701d0b83da5805f",
+            "relative_path": "apps/zentao/1.0.0/0559fd95e88b9c0e03d91eb4829ab48b3462e4a663f97fbcb701d0b83da5805f"
+          },
+          {
+            "ref_id": "runtime:c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793",
+            "ref_kind": "runtime",
+            "ref_hash": "c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793",
+            "relative_path": "runtime/c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793"
+          }
+        ]
+      }
+    },
+    {
+      "id": "B02",
+      "name": "actual v3 registry accepts valid capability contracts and preserves omitted optional plugins",
+      "status": "fail",
+      "error": {
+        "message": "该旧禅道工具没有受信业务映射",
+        "stack": "ApplicationError: 该旧禅道工具没有受信业务映射\n    at legacyPolicy (/private/tmp/willyou-m14-snapshot-probe/actual.cjs:31575:21)\n    at /private/tmp/willyou-m14-snapshot-probe/actual.cjs:27820:20\n    at Array.map (<anonymous>)\n    at applicationCapabilityViews (/private/tmp/willyou-m14-snapshot-probe/actual.cjs:27819:25)\n    at ApplicationModuleRegistry.capabilityViews (/private/tmp/willyou-m14-snapshot-probe/actual.cjs:28032:12)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:19:131\n    at Array.map (<anonymous>)\n    at v3 (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:19:25)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:30:6\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)"
+      }
+    },
+    {
+      "id": "B03",
+      "name": "old schema and registry refuse additive binding fields and same-task replacement",
+      "status": "pass",
+      "evidence": {
+        "extraFieldRejected": true,
+        "sameTaskReplacementRejected": true
+      }
+    },
+    {
+      "id": "B04",
+      "name": "native binding preserves original revision and source-plan compatibility",
+      "status": "fail",
+      "error": {
+        "message": "该旧禅道工具没有受信业务映射",
+        "stack": "ApplicationError: 该旧禅道工具没有受信业务映射\n    at legacyPolicy (/private/tmp/willyou-m14-snapshot-probe/actual.cjs:31575:21)\n    at /private/tmp/willyou-m14-snapshot-probe/actual.cjs:27820:20\n    at Array.map (<anonymous>)\n    at applicationCapabilityViews (/private/tmp/willyou-m14-snapshot-probe/actual.cjs:27819:25)\n    at ApplicationModuleRegistry.capabilityViews (/private/tmp/willyou-m14-snapshot-probe/actual.cjs:28032:12)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:22:272\n    at Array.map (<anonymous>)\n    at plan (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:22:122)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:40:6\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)"
+      }
+    },
+    {
+      "id": "B05",
+      "name": "run plan v1 is strict; unrelated selection change cannot borrow native-bind exception",
+      "status": "fail",
+      "error": {
+        "message": "Cannot read properties of undefined (reading 'snapshot')",
+        "stack": "TypeError: Cannot read properties of undefined (reading 'snapshot')\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:48:27\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:46:7"
+      }
+    },
+    {
+      "id": "B06",
+      "name": "old registry retains global MCP-name and native-identity uniqueness",
+      "status": "fail",
+      "error": {
+        "message": "The validation function is expected to return \"true\". Received false\n\nCaught error:\n\nApplicationError: 会话能力或原生发现目录无效",
+        "stack": "AssertionError [ERR_ASSERTION]: The validation function is expected to return \"true\". Received false\n\nCaught error:\n\nApplicationError: 会话能力或原生发现目录无效\n    at async file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:52:3\n    at async check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:52)\n    at async file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:51:1"
+      }
+    },
+    {
+      "id": "B07",
+      "name": "binding envelopes retain legal v2 and v3 bytes and all native history revisions",
+      "status": "fail",
+      "error": {
+        "message": "Cannot read properties of undefined (reading 'snapshot')",
+        "stack": "TypeError: Cannot read properties of undefined (reading 'snapshot')\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:58:67\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:56:7"
+      }
+    },
+    {
+      "id": "B08",
+      "name": "equal content hashes do not grant access to another binding or task",
+      "status": "fail",
+      "error": {
+        "message": "The input did not match the regular expression /scope mismatch/. Input:\n\n\"TypeError: Cannot read properties of undefined (reading 'taskId')\"\n",
+        "stack": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /scope mismatch/. Input:\n\n\"TypeError: Cannot read properties of undefined (reading 'taskId')\"\n\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:67:94\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:64:7"
+      }
+    },
+    {
+      "id": "B09",
+      "name": "candidate relation constraints and resource identity reject cross-binding or tampered refs",
+      "status": "fail",
+      "error": {
+        "message": "The input did not match the regular expression /FOREIGN KEY/. Input:\n\n\"TypeError: Cannot read properties of undefined (reading 'taskId')\"\n",
+        "stack": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /FOREIGN KEY/. Input:\n\n\"TypeError: Cannot read properties of undefined (reading 'taskId')\"\n\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:73:10\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:71:7"
+      }
+    },
+    {
+      "id": "B10",
+      "name": "actual reader rejects corrupt hashes, missing refs and MCP name mismatch without repairing history",
+      "status": "fail",
+      "error": {
+        "message": "Cannot read properties of undefined (reading 'taskId')",
+        "stack": "TypeError: Cannot read properties of undefined (reading 'taskId')\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:78:96\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:77:7"
+      }
+    },
+    {
+      "id": "B11",
+      "name": "actual GC sees old tombstone refs but misses candidate-only binding refs",
+      "status": "pass",
+      "evidence": {
+        "legacyTombstoneProtected": true,
+        "candidateOnlyIncorrectlyCollectible": true,
+        "performedDeletion": false
+      }
+    },
+    {
+      "id": "B12",
+      "name": "native run-plan source lookup does not read new-only revision storage",
+      "status": "fail",
+      "error": {
+        "message": "The validation function is expected to return \"true\". Received false\n\nCaught error:\n\nTypeError: Cannot read properties of undefined (reading 'snapshot')",
+        "stack": "AssertionError [ERR_ASSERTION]: The validation function is expected to return \"true\". Received false\n\nCaught error:\n\nTypeError: Cannot read properties of undefined (reading 'snapshot')\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:93:10\n    at check (file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:11:58)\n    at file:///private/tmp/willyou-m14-snapshot-probe/probe.mjs:90:7"
+      }
+    }
+  ],
+  "passed": 3,
+  "failed": 9
+}

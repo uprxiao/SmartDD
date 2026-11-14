@@ -1,0 +1,145 @@
+{
+  "final": {
+    "out": "/private/tmp/willyou-m14-mixed-question-probe/attempt-HnQw7x",
+    "checks": [
+      {
+        "id": "J01",
+        "title": "identical concurrent host-child forms reject wrong child/run and parent scope",
+        "status": "passed",
+        "evidence": {
+          "sameForm": true,
+          "differentHostTasks": true,
+          "wrongChildAndParentRejected": true
+        }
+      },
+      {
+        "id": "J02",
+        "title": "logical parent binding change leaves child question owner unchanged",
+        "status": "passed",
+        "evidence": {
+          "candidateParentPointerOnly": true,
+          "childRunUnaffected": true,
+          "notNativeProviderSwitch": true
+        }
+      },
+      {
+        "id": "J03",
+        "title": "stopped child refuses old response while sibling completes",
+        "status": "passed",
+        "evidence": {
+          "oldAnswerNotSent": true,
+          "siblingAnswerObservedByActualMcp": true,
+          "decisionRepeatNoDuplicateSend": true
+        }
+      },
+      {
+        "id": "J07",
+        "title": "Codex cancellation preserves pending Claude sibling and exact cancelled close is not consent",
+        "status": "passed",
+        "evidence": {
+          "codexCancelled": true,
+          "claudeStillPending": true,
+          "closedDoesNotMeanApproved": true
+        }
+      },
+      {
+        "id": "J04",
+        "title": "same child native session next run keeps prior response expired",
+        "status": "passed",
+        "evidence": {
+          "actualSdkResumeSameNativeId": true,
+          "hostRunAndGenerationChanged": true,
+          "oldResponseIsolated": true,
+          "newAnswerObserved": true
+        }
+      },
+      {
+        "id": "J05",
+        "title": "normal retirement differs from explicit cancellation without claiming native acknowledgement",
+        "status": "passed",
+        "evidence": {
+          "normalCancelFlag": 0,
+          "explicitCancelFlag": 1,
+          "retirementNotNativeClose": true,
+          "noWaitingAfterExit": true,
+          "idempotent": true
+        }
+      },
+      {
+        "id": "J06",
+        "title": "retirement evidence and liveness commit atomically after actual run exits",
+        "status": "passed",
+        "evidence": {
+          "rollbackKeepsOriginalDecision": true,
+          "noPartialRetirement": true,
+          "retryOnlyRetiresNoResend": true
+        }
+      },
+      {
+        "id": "J08",
+        "title": "Codex same native thread resume rejects prior connection response and accepts current answer",
+        "status": "passed",
+        "evidence": {
+          "sameNativeThread": true,
+          "newConnection": true,
+          "oldResponseRejected": true,
+          "currentAnswerObserved": true,
+          "numericNativeRequestId": 0
+        }
+      }
+    ],
+    "passed": 8,
+    "error": null,
+    "serverError": null,
+    "modelRequests": 8,
+    "processes": [
+      {
+        "id": "a-1",
+        "pid": 28789,
+        "exit": {
+          "code": 1,
+          "signal": null
+        }
+      },
+      {
+        "id": "b-1",
+        "pid": 28801,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      },
+      {
+        "id": "a-2",
+        "pid": 28845,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      },
+      {
+        "id": "b-2",
+        "pid": 28855,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      },
+      {
+        "id": "b-3",
+        "pid": 28903,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    ],
+    "scope": "Mixed Claude/Codex same-store child question candidate; real Codex resolved frames journaled exactly. Candidate retirement separates explicit cancellation from actual stopped native run; no native-close or consumption claim. Actual Claude SDK forms/resume, actual child run ownership, candidate parent-child pointers and response ledger in one current store. Synthetic forms/answers/local model. No actual delegation creation/outbox service, real parent provider switch, user UI, business approval, request-ledger crash or full business delegation."
+  },
+  "scopeClarification": "Inherited normal-run result scope says no native-close claim; that restriction applies to Claude retirement. This mixed run journals real Codex resolved frames, but does not infer consent or business success from closure.",
+  "actualCodexRequestIds": [
+    0,
+    0,
+    0
+  ]
+}

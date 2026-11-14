@@ -1,0 +1,13 @@
+import {build} from '/private/tmp/willyou-m14-owner-probe/node_modules/esbuild/lib/main.js';
+import {readFileSync,writeFileSync,globSync,existsSync,symlinkSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const root=import.meta.dirname,repo='/Users/hx/projects/SmartDD',extra='/private/tmp/willyou-m10-config-fix-9_31ogou/node_modules';
+if(!existsSync(root+'/node_modules'))symlinkSync('/private/tmp/willyou-m14-owner-probe/node_modules',root+'/node_modules');
+const mods={'__tests__/run-fixture':['runFixture','FixtureProcessReader'],'__tests__/fixtures':['fixtureBundle'],'execution-context':['ApplicationExecutionContexts'],'connection-service':['ApplicationConnectionService'],'selection-service':['ApplicationSelectionService'],'builtin-package-registry':['BuiltinPackageRegistry'],'bundle-source':['CapabilityBundleSource'],'runtime-registry':['validateRuntime'],'tool-service':['ApplicationToolService'],'manifest':['canonicalJson','digest','manifestHash']};
+const entry=Object.entries(mods).map(([m,n])=>`export {${n.join(',')}} from '${repo}/src/main/core/applications/${m}.ts';`).join('\n')+`\nexport {SecretsStore} from '${repo}/src/main/secrets.ts';\nexport * as schema from '${repo}/src/main/db/schema.ts';\nexport {drizzle} from '${extra}/drizzle-orm/better-sqlite3/index.js';`;
+const result=await build({stdin:{contents:entry,resolveDir:repo,loader:'ts'},bundle:true,platform:'node',format:'cjs',target:'node22',metafile:true,tsconfig:repo+'/tsconfig.node.json',external:['better-sqlite3'],nodePaths:[root+'/node_modules',extra],outfile:root+'/actual.cjs',plugins:[{name:'raw-assets-only',setup(b){b.onLoad({filter:/\/(db\/migrations|capabilities\/assets)\.ts$/},({path})=>({loader:'ts',contents:readFileSync(path,'utf8').replace(/import\.meta\.glob\('([^']+)',\s*\{[\s\S]*?\}\)/g,(_,pattern)=>'('+JSON.stringify(Object.fromEntries(globSync(pattern.replace('@root/',repo+'/')).flatMap(p=>{try{return[[p,readFileSync(p,'utf8')]]}catch{return[]}})))+')')}))}}]});
+const sha=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
+const files=Object.keys(result.metafile.inputs).filter(p=>!p.startsWith('<')).map(p=>({path:p.startsWith('/')?p:process.cwd()+'/'+p,sha256:sha(p)}));
+for(const p of globSync(repo+'/drizzle/*.sql'))files.push({path:p,sha256:sha(p)});
+writeFileSync(root+'/build.json',JSON.stringify({sources:files,bundleSha256:sha(root+'/actual.cjs'),note:'Actual runtime sources; only Vite raw-glob replacement for standalone Node. Existing test fixture and process-reader used explicitly.'},null,2));
+console.log(JSON.stringify({sources:files.length}));

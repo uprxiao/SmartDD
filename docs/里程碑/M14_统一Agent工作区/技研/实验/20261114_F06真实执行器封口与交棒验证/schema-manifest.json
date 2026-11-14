@@ -1,0 +1,1019 @@
+{
+  "marker": {
+    "revision": "C1.3",
+    "inputs_hash": "8fd97889b8ceffe069a39e796b1653dd37f70a145eb147a84a9d43e81962a9f8",
+    "schema_hash": "cc42e6a4ca1a359dd27291308e3838dd9a83112dc7b59098d38357881badd017"
+  },
+  "rows": [
+    {
+      "type": "index",
+      "name": "ai_run_config_login_unique",
+      "sql": "CREATE UNIQUE INDEX ai_run_config_login_unique ON ai_run_configs(tool_id) WHERE source = 'login'"
+    },
+    {
+      "type": "index",
+      "name": "ai_run_config_provider_unique",
+      "sql": "CREATE UNIQUE INDEX ai_run_config_provider_unique ON ai_run_configs(tool_id, provider_id) WHERE source = 'provider'"
+    },
+    {
+      "type": "index",
+      "name": "application_activity_subjects_lookup",
+      "sql": "CREATE INDEX application_activity_subjects_lookup ON application_activity_subjects(kind,subject_id,operation_id)"
+    },
+    {
+      "type": "index",
+      "name": "application_connections_identity_key",
+      "sql": "CREATE UNIQUE INDEX application_connections_identity_key ON application_connections(id,provider_id,app_id)"
+    },
+    {
+      "type": "index",
+      "name": "application_connections_provider_idx",
+      "sql": "CREATE INDEX application_connections_provider_idx ON application_connections(provider_id,app_id)"
+    },
+    {
+      "type": "index",
+      "name": "application_data_operations_activity_time",
+      "sql": "CREATE INDEX application_data_operations_activity_time ON application_data_operations(started_at,operation_id)"
+    },
+    {
+      "type": "index",
+      "name": "application_data_operations_project",
+      "sql": "CREATE INDEX application_data_operations_project ON application_data_operations(project_id,started_at)"
+    },
+    {
+      "type": "index",
+      "name": "application_data_resources_identity",
+      "sql": "CREATE UNIQUE INDEX application_data_resources_identity ON application_data_resources(project_id,app_id,backing_kind,object_id,object_revision,part,data_contract_major)"
+    },
+    {
+      "type": "index",
+      "name": "application_invocations_activity_time",
+      "sql": "CREATE INDEX application_invocations_activity_time ON application_invocations(started_at,operation_id)"
+    },
+    {
+      "type": "index",
+      "name": "application_invocations_project_idx",
+      "sql": "CREATE INDEX application_invocations_project_idx ON application_invocations(project_id,started_at)"
+    },
+    {
+      "type": "index",
+      "name": "application_zentao_revisions_identity",
+      "sql": "CREATE UNIQUE INDEX application_zentao_revisions_identity ON application_zentao_revisions(project_id,connection_id,identity_revision,object_kind,native_id,content_revision,representation)"
+    },
+    {
+      "type": "index",
+      "name": "browser_operations_created",
+      "sql": "CREATE INDEX browser_operations_created ON browser_operations(created_at)"
+    },
+    {
+      "type": "index",
+      "name": "capability_broker_denials_run",
+      "sql": "CREATE INDEX capability_broker_denials_run ON capability_broker_denials(run_id,observed_at)"
+    },
+    {
+      "type": "index",
+      "name": "capability_legacy_preparation_state",
+      "sql": "CREATE INDEX capability_legacy_preparation_state ON capability_legacy_migration_preparations(state,task_id)"
+    },
+    {
+      "type": "index",
+      "name": "capability_resource_leases_resource_idx",
+      "sql": "CREATE INDEX `capability_resource_leases_resource_idx` ON `capability_resource_leases` (`resource_id`,`state`)"
+    },
+    {
+      "type": "index",
+      "name": "capability_resources_discovery_path",
+      "sql": "CREATE UNIQUE INDEX capability_resources_discovery_path\n  ON capability_resources(scope_identity,scope_relative_path) WHERE path_scope='H' AND state<>'removed'"
+    },
+    {
+      "type": "index",
+      "name": "capability_run_evidence_time",
+      "sql": "CREATE INDEX capability_run_evidence_time ON capability_run_preparations(prepared_at,run_id)"
+    },
+    {
+      "type": "index",
+      "name": "capability_run_one_cli_idx",
+      "sql": "CREATE UNIQUE INDEX capability_run_one_cli_idx ON capability_run_processes(run_id) WHERE kind='cli'"
+    },
+    {
+      "type": "index",
+      "name": "capability_run_processes_run_idx",
+      "sql": "CREATE INDEX capability_run_processes_run_idx ON capability_run_processes(run_id)"
+    },
+    {
+      "type": "index",
+      "name": "capability_session_refs_resource_idx",
+      "sql": "CREATE INDEX `capability_session_refs_resource_idx` ON `capability_session_refs` (`ref_id`)"
+    },
+    {
+      "type": "index",
+      "name": "m14_delivery_execution_key",
+      "sql": "CREATE UNIQUE INDEX m14_delivery_execution_key ON m14_delivery(receipt_id,run_id,plan_hash)"
+    },
+    {
+      "type": "index",
+      "name": "m14_native_claim_binding",
+      "sql": "CREATE INDEX m14_native_claim_binding ON m14_native_claim(binding_id)"
+    },
+    {
+      "type": "index",
+      "name": "m14_native_claim_exact_owner",
+      "sql": "CREATE UNIQUE INDEX m14_native_claim_exact_owner ON m14_native_claim(runner,identity_root,native_id,binding_id,task_id)"
+    },
+    {
+      "type": "index",
+      "name": "m14_run_exact",
+      "sql": "CREATE UNIQUE INDEX m14_run_exact ON capability_runs(run_id,task_id,binding_id,capability_session_id,source_snapshot_hash,generation)"
+    },
+    {
+      "type": "index",
+      "name": "m14_run_scope_c1",
+      "sql": "CREATE UNIQUE INDEX m14_run_scope_c1 ON capability_runs(run_id,task_id,binding_id,generation)"
+    },
+    {
+      "type": "index",
+      "name": "mail_drafts_project_updated",
+      "sql": "CREATE INDEX mail_drafts_project_updated ON mail_drafts(project_id,updated_at,id)"
+    },
+    {
+      "type": "index",
+      "name": "mail_send_intents_activity_time",
+      "sql": "CREATE INDEX mail_send_intents_activity_time ON mail_send_intents(created_at,id)"
+    },
+    {
+      "type": "index",
+      "name": "mail_send_intents_project_updated",
+      "sql": "CREATE INDEX mail_send_intents_project_updated ON mail_send_intents(project_id,updated_at,id)"
+    },
+    {
+      "type": "index",
+      "name": "plugin_lifecycle_pending",
+      "sql": "CREATE UNIQUE INDEX plugin_lifecycle_pending ON plugin_lifecycle_changes(app_id)\n WHERE state IN ('preparing','prepared','swapping','recovery-required')"
+    },
+    {
+      "type": "index",
+      "name": "project_databases_project_idx",
+      "sql": "CREATE INDEX `project_databases_project_idx` ON `project_databases` (`project_id`)"
+    },
+    {
+      "type": "index",
+      "name": "project_dirs_project_idx",
+      "sql": "CREATE INDEX `project_dirs_project_idx` ON `project_dirs` (`project_id`)"
+    },
+    {
+      "type": "index",
+      "name": "project_servers_project_idx",
+      "sql": "CREATE INDEX `project_servers_project_idx` ON `project_servers` (`project_id`)"
+    },
+    {
+      "type": "index",
+      "name": "tasks_project_idx",
+      "sql": "CREATE INDEX `tasks_project_idx` ON `tasks` (`project_id`)"
+    },
+    {
+      "type": "table",
+      "name": "__drizzle_migrations",
+      "sql": "CREATE TABLE __drizzle_migrations (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      hash TEXT NOT NULL,\n      created_at NUMERIC\n    )"
+    },
+    {
+      "type": "table",
+      "name": "ai_profiles",
+      "sql": "CREATE TABLE `ai_profiles` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`name` text NOT NULL,\n\t`runner` text NOT NULL,\n\t`executable` text,\n\t`env` text DEFAULT '[]' NOT NULL,\n\t`args` text DEFAULT '[]' NOT NULL,\n\t`color` text,\n\t`is_default` integer DEFAULT false NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n, `check_status` text, `check_category` text, `check_source` text, `check_message` text, `check_ms` integer, `check_at` integer, `command_pending` integer DEFAULT false NOT NULL)"
+    },
+    {
+      "type": "table",
+      "name": "ai_providers",
+      "sql": "CREATE TABLE ai_providers (\n  id TEXT PRIMARY KEY NOT NULL,\n  name TEXT NOT NULL,\n  preset TEXT,\n  endpoints TEXT NOT NULL,\n  auth_type TEXT NOT NULL DEFAULT 'bearer' CHECK (auth_type IN ('bearer', 'api-key')),\n  secret_ref TEXT,\n  identity_revision INTEGER NOT NULL DEFAULT 1,\n  models TEXT NOT NULL DEFAULT '[]',\n  recommended TEXT NOT NULL DEFAULT '{}',\n  refreshed_at INTEGER,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL\n, key_hint TEXT)"
+    },
+    {
+      "type": "table",
+      "name": "ai_run_configs",
+      "sql": "CREATE TABLE ai_run_configs (\n  profile_id TEXT PRIMARY KEY NOT NULL REFERENCES ai_profiles(id) ON DELETE CASCADE,\n  tool_id TEXT NOT NULL REFERENCES ai_tools(id),\n  source TEXT NOT NULL CHECK (source IN ('login', 'provider', 'legacy')),\n  provider_id TEXT REFERENCES ai_providers(id),\n  models TEXT NOT NULL DEFAULT '[]',\n  default_model TEXT,\n  home_visible INTEGER NOT NULL DEFAULT 1,\n  logged_out INTEGER NOT NULL DEFAULT 0,\n  name_customized INTEGER NOT NULL DEFAULT 1,\n  sort_order INTEGER NOT NULL,\n  legacy_reason TEXT,\n  migration_version INTEGER NOT NULL DEFAULT 1\n)"
+    },
+    {
+      "type": "table",
+      "name": "ai_task_snapshots",
+      "sql": "CREATE TABLE ai_task_snapshots (\n  task_id TEXT PRIMARY KEY NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,\n  snapshot TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "ai_tools",
+      "sql": "CREATE TABLE ai_tools (\n  id TEXT PRIMARY KEY NOT NULL,\n  kind TEXT NOT NULL,\n  executable TEXT NOT NULL,\n  custom_path TEXT,\n  version TEXT,\n  installed INTEGER NOT NULL DEFAULT 0,\n  login TEXT NOT NULL DEFAULT 'none' CHECK (login IN ('none', 'subscription', 'api', 'local')),\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "app_secrets",
+      "sql": "CREATE TABLE `app_secrets` (\n\t`key` text PRIMARY KEY NOT NULL,\n\t`secret` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "app_settings",
+      "sql": "CREATE TABLE `app_settings` (\n\t`key` text PRIMARY KEY NOT NULL,\n\t`value` text NOT NULL,\n\t`updated_at` integer DEFAULT (unixepoch() * 1000) NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_activity_subjects",
+      "sql": "CREATE TABLE application_activity_subjects (\n operation_id TEXT NOT NULL REFERENCES application_data_operations(operation_id) ON DELETE CASCADE,\n kind TEXT NOT NULL CHECK(kind IN ('connection','mail-send','mail-draft')),\n subject_id TEXT NOT NULL,\n PRIMARY KEY(operation_id,kind,subject_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_binding_changes",
+      "sql": "CREATE TABLE `application_binding_changes` (\n  `operation_id` text PRIMARY KEY NOT NULL,\n  `project_id` text NOT NULL,\n  `app_id` text NOT NULL,\n  `from_revision` integer NOT NULL,\n  `to_revision` integer,\n  `previous_json` text NOT NULL,\n  `next_json` text NOT NULL,\n  `state` text NOT NULL,\n  `error_code` text,\n  `created_at` text NOT NULL,\n  `updated_at` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_binding_slot_revisions",
+      "sql": "CREATE TABLE \"application_binding_slot_revisions\" (\n  project_id TEXT NOT NULL,\n  app_id TEXT NOT NULL,\n  slot TEXT NOT NULL,\n  revision INTEGER NOT NULL CHECK(revision >= 0),\n  PRIMARY KEY(project_id,app_id,slot),\n  FOREIGN KEY(project_id,app_id) REFERENCES application_project_settings(project_id,app_id) ON DELETE CASCADE,\n  FOREIGN KEY(slot,app_id) REFERENCES application_host_providers(provider_id,app_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_catalog_state",
+      "sql": "CREATE TABLE \"application_catalog_state\" (\n  `app_id` text PRIMARY KEY NOT NULL REFERENCES application_host_applications(app_id),\n  `added` integer NOT NULL CHECK (`added` IN (0,1)),\n  `enabled` integer NOT NULL CHECK (`enabled` IN (0,1)),\n  `revision` integer NOT NULL,\n  `updated_at` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_connections",
+      "sql": "CREATE TABLE \"application_connections\" (\n  `id` text PRIMARY KEY NOT NULL,\n  `app_id` text NOT NULL REFERENCES application_host_applications(app_id),\n  `provider_id` text NOT NULL,\n  `name` text NOT NULL,\n  `config_schema_version` integer NOT NULL DEFAULT 1,\n  `config_json` text NOT NULL,\n  `revision` integer NOT NULL,\n  `config_revision` integer NOT NULL,\n  `identity_revision` integer NOT NULL,\n  `verified_identity_json` text NOT NULL,\n  `identity_hash` text NOT NULL,\n  `secret_ref` text,\n  `secret_revision` integer NOT NULL,\n  `policy_revision` integer NOT NULL,\n  `enabled` integer NOT NULL CHECK (`enabled` IN (0,1)),\n  `auth_state` text NOT NULL CHECK (`auth_state` IN ('connected','disconnected')),\n  `health` text NOT NULL CHECK (`health` IN ('unverified','healthy','unavailable')),\n  `health_code` text,\n  `health_message` text,\n  `tested_at` text,\n  `cleanup_pending` integer NOT NULL DEFAULT 0 CHECK (`cleanup_pending` IN (0,1)),\n  `created_at` text NOT NULL,\n  `updated_at` text NOT NULL, deleted_at TEXT,\n  FOREIGN KEY (`provider_id`,`app_id`) REFERENCES application_host_providers(provider_id,app_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_data_operations",
+      "sql": "CREATE TABLE application_data_operations (\n  operation_id TEXT PRIMARY KEY NOT NULL,\n  caller_kind TEXT NOT NULL CHECK(caller_kind IN ('ui','agent-run','index-job')),\n  scope_kind TEXT NOT NULL CHECK(scope_kind IN ('project','connection-management','internal-index')),\n  project_id TEXT,\n  task_id TEXT,\n  run_id TEXT,\n  job_id TEXT,\n  parent_operation_id TEXT,\n  app_id TEXT NOT NULL,\n  package_hash TEXT NOT NULL,\n  data_api INTEGER NOT NULL,\n  action TEXT NOT NULL,\n  semantics TEXT NOT NULL CHECK(semantics IN ('read','write')),\n  scope_hash TEXT NOT NULL,\n  targets_json TEXT NOT NULL DEFAULT '[]',\n  attempt_count INTEGER NOT NULL DEFAULT 1,\n  state TEXT NOT NULL CHECK(state IN ('running','succeeded','failed','unknown','cancelled')),\n  error_code TEXT,\n  started_at TEXT NOT NULL,\n  ended_at TEXT,\n  CHECK((caller_kind='agent-run' AND scope_kind='project' AND project_id IS NOT NULL AND task_id IS NOT NULL AND run_id IS NOT NULL AND job_id IS NULL AND parent_operation_id IS NULL)\n    OR (caller_kind='ui' AND ((scope_kind='project' AND project_id IS NOT NULL) OR scope_kind='connection-management') AND task_id IS NULL AND run_id IS NULL AND job_id IS NULL AND parent_operation_id IS NULL)\n    OR (caller_kind='index-job' AND scope_kind='internal-index' AND semantics='read' AND project_id IS NOT NULL AND task_id IS NULL AND run_id IS NULL AND job_id IS NOT NULL AND parent_operation_id IS NOT NULL))\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_data_resources",
+      "sql": "CREATE TABLE application_data_resources (\n  resource_id TEXT PRIMARY KEY NOT NULL,\n  project_id TEXT NOT NULL,\n  app_id TEXT NOT NULL,\n  backing_kind TEXT NOT NULL,\n  object_id TEXT NOT NULL,\n  object_revision TEXT NOT NULL,\n  part TEXT NOT NULL,\n  data_contract_major INTEGER NOT NULL,\n  permission TEXT NOT NULL,\n  content_hash TEXT NOT NULL,\n  byte_size INTEGER NOT NULL CHECK(byte_size>=0),\n  media_type TEXT NOT NULL,\n  minted_package_hash TEXT NOT NULL,\n  minted_operation_id TEXT NOT NULL,\n  created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_host_applications",
+      "sql": "CREATE TABLE application_host_applications (\n app_id TEXT PRIMARY KEY NOT NULL CHECK(length(app_id) BETWEEN 1 AND 64 AND app_id GLOB '[a-z]*' AND app_id NOT GLOB '*[^a-z0-9-]*')\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_host_providers",
+      "sql": "CREATE TABLE application_host_providers (\n provider_id TEXT PRIMARY KEY NOT NULL CHECK(length(provider_id) BETWEEN 1 AND 64 AND provider_id GLOB '[a-z]*' AND provider_id NOT GLOB '*[^a-z0-9-]*'),\n app_id TEXT NOT NULL REFERENCES application_host_applications(app_id) ON DELETE RESTRICT,\n config_api_major INTEGER NOT NULL CHECK(config_api_major=1),\n UNIQUE(provider_id,app_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_index_waiters",
+      "sql": "CREATE TABLE application_index_waiters (\n  index_operation_id TEXT NOT NULL REFERENCES application_data_operations(operation_id),\n  parent_operation_id TEXT NOT NULL REFERENCES application_data_operations(operation_id),\n  source_key TEXT NOT NULL,\n  joined_at TEXT NOT NULL,\n  ended_at TEXT,\n  state TEXT NOT NULL CHECK(state IN ('waiting','completed','cancelled','failed')),\n  PRIMARY KEY(index_operation_id,parent_operation_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_invocations",
+      "sql": "CREATE TABLE application_invocations (\n  operation_id TEXT PRIMARY KEY NOT NULL,\n  run_id TEXT NOT NULL REFERENCES capability_runs(run_id) ON DELETE RESTRICT,\n  request_id TEXT NOT NULL,\n  request_hash TEXT NOT NULL,\n  project_id TEXT NOT NULL,\n  task_id TEXT NOT NULL,\n  app_id TEXT NOT NULL,\n  package_hash TEXT NOT NULL,\n  tool_name TEXT NOT NULL,\n  contract_major INTEGER NOT NULL,\n  connection_id TEXT,\n  semantics TEXT NOT NULL CHECK(semantics IN ('read','write')),\n  state TEXT NOT NULL CHECK(state IN ('running','succeeded','failed','unknown')),\n  attempt_count INTEGER NOT NULL DEFAULT 0,\n  error_code TEXT,\n  effect_state TEXT NOT NULL CHECK(effect_state IN ('not-started','read-only','completed','unknown')),\n  started_at TEXT NOT NULL,\n  ended_at TEXT,\n  UNIQUE(run_id,request_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_mail_operation_sources",
+      "sql": "CREATE TABLE application_mail_operation_sources (\n  operation_id TEXT PRIMARY KEY NOT NULL REFERENCES application_data_operations(operation_id),\n  source_key TEXT NOT NULL,\n  source_revision TEXT NOT NULL,\n  operation_kind TEXT NOT NULL CHECK(operation_kind IN ('query','read','resource')),\n  provenance_json TEXT NOT NULL,\n  created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_project_bindings",
+      "sql": "CREATE TABLE \"application_project_bindings\" (\n  `project_id` text NOT NULL,\n  `app_id` text NOT NULL,\n  `slot` text NOT NULL,\n  `connection_id` text NOT NULL,\n  `identity_revision` integer NOT NULL,\n  PRIMARY KEY (`project_id`,`app_id`,`slot`),\n  FOREIGN KEY (`connection_id`,`slot`,`app_id`) REFERENCES `application_connections` (`id`,`provider_id`,`app_id`),\n  FOREIGN KEY (`project_id`,`app_id`) REFERENCES `application_project_settings` (`project_id`,`app_id`) ON DELETE CASCADE,\n  FOREIGN KEY (`slot`,`app_id`) REFERENCES application_host_providers(provider_id,app_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_project_settings",
+      "sql": "CREATE TABLE \"application_project_settings\" (\n  `project_id` text NOT NULL REFERENCES `projects` (`id`) ON DELETE CASCADE,\n  `app_id` text NOT NULL REFERENCES application_host_applications(app_id),\n  `enabled` integer NOT NULL CHECK (`enabled` IN (0,1)),\n  `binding_revision` integer NOT NULL,\n  `pending_operation_id` text,\n  `updated_at` text NOT NULL,\n  `policy_revision` INTEGER NOT NULL DEFAULT 0,\n  PRIMARY KEY (`project_id`,`app_id`)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_read_receipt_checks",
+      "sql": "CREATE TABLE application_read_receipt_checks (\n  check_operation_id TEXT PRIMARY KEY NOT NULL,\n  original_operation_id TEXT NOT NULL,\n  checked_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_secret_changes",
+      "sql": "CREATE TABLE `application_secret_changes` (\n  `operation_id` text PRIMARY KEY NOT NULL,\n  `connection_id` text NOT NULL,\n  `expected_revision` integer NOT NULL,\n  `old_secret_ref` text,\n  `new_secret_ref` text,\n  `candidate_hash` text NOT NULL,\n  `candidate_json` text NOT NULL,\n  `verified_identity_json` text,\n  `compatibility_plan_json` text,\n  `expires_at` text NOT NULL,\n  `state` text NOT NULL CHECK (`state` IN ('preparing','validated','committed','cleanup-pending','failed','cleaned')),\n  `error_code` text,\n  `created_at` text NOT NULL,\n  `updated_at` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_zentao_cursors",
+      "sql": "CREATE TABLE application_zentao_cursors (\n  cursor_id TEXT PRIMARY KEY NOT NULL,\n  project_id TEXT NOT NULL,\n  target_json TEXT NOT NULL,\n  object_kind TEXT NOT NULL,\n  page_size INTEGER NOT NULL,\n  page_no INTEGER NOT NULL,\n  expected_total INTEGER NOT NULL,\n  seen_json TEXT NOT NULL,\n  expires_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_zentao_files",
+      "sql": "CREATE TABLE application_zentao_files (\n  object_key TEXT NOT NULL REFERENCES application_zentao_revisions(object_key),\n  file_id TEXT NOT NULL,\n  content_hash TEXT NOT NULL,\n  bytes BLOB NOT NULL,\n  media_type TEXT NOT NULL,\n  byte_size INTEGER NOT NULL CHECK(byte_size>=0),\n  fetched_at TEXT NOT NULL,\n  PRIMARY KEY(object_key,file_id,content_hash)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_zentao_operation_objects",
+      "sql": "CREATE TABLE application_zentao_operation_objects (\n  operation_id TEXT NOT NULL,\n  object_key TEXT NOT NULL REFERENCES application_zentao_revisions(object_key),\n  PRIMARY KEY(operation_id,object_key)\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_zentao_operation_resources",
+      "sql": "CREATE TABLE application_zentao_operation_resources (\n  operation_id TEXT PRIMARY KEY NOT NULL,\n  backing_json TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "application_zentao_revisions",
+      "sql": "CREATE TABLE application_zentao_revisions (\n  object_key TEXT PRIMARY KEY NOT NULL,\n  project_id TEXT NOT NULL,\n  connection_id TEXT NOT NULL,\n  identity_revision INTEGER NOT NULL,\n  object_kind TEXT NOT NULL CHECK(object_kind IN ('bug','story')),\n  native_id TEXT NOT NULL,\n  content_revision TEXT NOT NULL,\n  representation TEXT NOT NULL CHECK(representation IN ('summary','detail')),\n  payload_json TEXT NOT NULL,\n  fetched_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "browser_operations",
+      "sql": "CREATE TABLE browser_operations (\n run_id TEXT NOT NULL, request_id TEXT NOT NULL, task_id TEXT NOT NULL, page_id TEXT,\n command TEXT NOT NULL, state TEXT NOT NULL CHECK(state IN ('accepted','running','succeeded','failed','unknown')),\n effect_state TEXT NOT NULL, progress TEXT, summary TEXT, error_code TEXT,\n created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,\n PRIMARY KEY(run_id, request_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "builtin_plugin_defaults",
+      "sql": "CREATE TABLE builtin_plugin_defaults (\n  app_id TEXT NOT NULL CHECK(app_id IN ('mail','browser')),\n  slot TEXT NOT NULL,\n  connection_id TEXT REFERENCES application_connections(id),\n  revision INTEGER NOT NULL DEFAULT 0,\n  PRIMARY KEY(app_id,slot)\n)"
+    },
+    {
+      "type": "table",
+      "name": "builtin_plugin_project_preferences",
+      "sql": "CREATE TABLE builtin_plugin_project_preferences (\n  project_id TEXT NOT NULL,\n  app_id TEXT NOT NULL CHECK(app_id IN ('mail','browser')),\n  slot TEXT NOT NULL,\n  mode TEXT NOT NULL CHECK(mode IN ('follow','individual')),\n  PRIMARY KEY(project_id,app_id,slot),\n  FOREIGN KEY(project_id,app_id) REFERENCES application_project_settings(project_id,app_id) ON DELETE CASCADE\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_active_packages",
+      "sql": "CREATE TABLE `capability_active_packages` (\n  `app_id` text PRIMARY KEY NOT NULL,\n  `package_hash` text NOT NULL REFERENCES `capability_packages` (`package_hash`),\n  `activation_generation` integer NOT NULL,\n  `activated_at` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_agent_adapters",
+      "sql": "CREATE TABLE capability_agent_adapters (\n  agent_id TEXT NOT NULL,\n  version TEXT NOT NULL,\n  adapter_hash TEXT NOT NULL UNIQUE,\n  resource_id TEXT NOT NULL REFERENCES capability_resources(resource_id) ON DELETE RESTRICT,\n  manifest_json TEXT NOT NULL,\n  PRIMARY KEY(agent_id,version)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_bridge_observations",
+      "sql": "CREATE TABLE capability_bridge_observations (\n run_id TEXT NOT NULL REFERENCES capability_runs(run_id),\n bridge_id TEXT NOT NULL REFERENCES capability_run_processes(process_id),\n evidence_json TEXT NOT NULL,\n evidence_hash TEXT NOT NULL,\n observed_at TEXT NOT NULL,\n PRIMARY KEY(run_id,bridge_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_broker_denials",
+      "sql": "CREATE TABLE capability_broker_denials (\n audit_id TEXT PRIMARY KEY NOT NULL,\n host_generation TEXT NOT NULL,\n run_id TEXT,\n bridge_id TEXT,\n method TEXT NOT NULL CHECK(method IN ('unknown','exchange','renew','tools/list','tools/call','cancel')),\n error_code TEXT NOT NULL,\n observed_at TEXT NOT NULL,\n CHECK ((run_id IS NULL AND bridge_id IS NULL) OR (run_id IS NOT NULL AND bridge_id IS NOT NULL))\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_builtin_package_sources",
+      "sql": "CREATE TABLE capability_builtin_package_sources (\n  package_hash TEXT NOT NULL REFERENCES capability_packages(package_hash) ON DELETE RESTRICT,\n  source_index_hash TEXT NOT NULL,\n  source_index_json TEXT NOT NULL,\n  approved_at TEXT NOT NULL,\n  PRIMARY KEY(package_hash,source_index_hash)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_discovery_roots",
+      "sql": "CREATE TABLE capability_discovery_roots (\n  home_id TEXT PRIMARY KEY NOT NULL,\n  canonical_home TEXT NOT NULL UNIQUE\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_install_journal",
+      "sql": "CREATE TABLE `capability_install_journal` (\n  `install_id` text PRIMARY KEY NOT NULL REFERENCES `capability_resource_operations` (`operation_id`),\n  `host_build` text NOT NULL,\n  `from_generation` integer,\n  `to_generation` integer,\n  `state` text NOT NULL,\n  `plan_json` text NOT NULL,\n  `backup_path` text,\n  `error_code` text,\n  `updated_at` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_lease_resources",
+      "sql": "CREATE TABLE capability_lease_resources (\n  lease_id TEXT NOT NULL REFERENCES capability_resource_leases(lease_id) ON DELETE RESTRICT,\n  resource_id TEXT NOT NULL REFERENCES capability_resources(resource_id) ON DELETE RESTRICT,\n  content_hash TEXT NOT NULL,\n  generation INTEGER NOT NULL,\n  PRIMARY KEY(lease_id,resource_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_legacy_h_bindings",
+      "sql": "CREATE TABLE capability_legacy_h_bindings (\n task_id TEXT PRIMARY KEY NOT NULL REFERENCES capability_legacy_migration_preparations(task_id),\n binding_json TEXT NOT NULL,\n binding_hash TEXT NOT NULL,\n created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_legacy_migration_preparations",
+      "sql": "CREATE TABLE capability_legacy_migration_preparations (\n task_id TEXT PRIMARY KEY NOT NULL REFERENCES capability_session_snapshots(task_id),\n source_snapshot_json TEXT NOT NULL,\n source_record_json TEXT NOT NULL,\n source_snapshot_hash TEXT NOT NULL,\n source_identity_json TEXT NOT NULL,\n bound_native_session_id TEXT,\n evidence_json TEXT,\n evidence_hash TEXT,\n manifest_json TEXT,\n manifest_hash TEXT,\n state TEXT NOT NULL CHECK(state IN ('held','prepared','migrated')),\n issue_code TEXT,\n created_at TEXT NOT NULL,\n updated_at TEXT NOT NULL, `h_binding_hash` text,\n CHECK((evidence_json IS NULL AND evidence_hash IS NULL AND manifest_json IS NULL AND manifest_hash IS NULL)\n    OR (evidence_json IS NOT NULL AND evidence_hash IS NOT NULL AND manifest_json IS NOT NULL AND manifest_hash IS NOT NULL))\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_package_contracts",
+      "sql": "CREATE TABLE capability_package_contracts (\n  package_hash TEXT NOT NULL REFERENCES capability_packages(package_hash) ON DELETE RESTRICT,\n  tool_name TEXT NOT NULL,\n  input_source TEXT NOT NULL,\n  output_source TEXT NOT NULL,\n  PRIMARY KEY(package_hash,tool_name)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_packages",
+      "sql": "CREATE TABLE `capability_packages` (\n  `package_hash` text PRIMARY KEY NOT NULL,\n  `app_id` text NOT NULL,\n  `version` text NOT NULL,\n  `hash_algorithm` text NOT NULL CHECK (`hash_algorithm` = 'app-manifest-v1'),\n  `relative_path` text NOT NULL,\n  `manifest_json` text NOT NULL,\n  `resource_id` text NOT NULL REFERENCES `capability_resources` (`resource_id`),\n  `installed_at` text NOT NULL,\n  UNIQUE (`app_id`,`version`)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_registry",
+      "sql": "CREATE TABLE capability_registry (\n  id TEXT PRIMARY KEY NOT NULL,\n  kind TEXT NOT NULL,\n  name TEXT NOT NULL,\n  runner TEXT NOT NULL,\n  source_path TEXT NOT NULL,\n  source_scope TEXT NOT NULL,\n  project_root TEXT,\n  source_label TEXT NOT NULL,\n  version TEXT,\n  validity TEXT NOT NULL,\n  issues TEXT NOT NULL,\n  managed INTEGER NOT NULL DEFAULT 0,\n  enabled INTEGER NOT NULL DEFAULT 1,\n  auto_approve INTEGER NOT NULL DEFAULT 0,\n  present INTEGER NOT NULL DEFAULT 1,\n  discovered_at INTEGER NOT NULL,\n  scanned_at INTEGER NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_registry_preferences",
+      "sql": "CREATE TABLE capability_registry_preferences (\n  id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),\n  auto_manage INTEGER NOT NULL DEFAULT 0,\n  builtin_disabled TEXT NOT NULL DEFAULT '[]'\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_resource_dependencies",
+      "sql": "CREATE TABLE `capability_resource_dependencies` (\n  `resource_id` text NOT NULL REFERENCES `capability_resources` (`resource_id`),\n  `dependency_id` text NOT NULL REFERENCES `capability_resources` (`resource_id`),\n  PRIMARY KEY (`resource_id`,`dependency_id`),\n  CHECK (`resource_id` <> `dependency_id`)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_resource_leases",
+      "sql": "CREATE TABLE `capability_resource_leases` (\n  `lease_id` text PRIMARY KEY NOT NULL,\n  `resource_id` text NOT NULL REFERENCES `capability_resources` (`resource_id`),\n  `owner_kind` text NOT NULL,\n  `owner_id` text NOT NULL,\n  `host_instance_id` text NOT NULL,\n  `pid` integer,\n  `process_started_at` text,\n  `state` text NOT NULL CHECK (`state` IN ('preparing','active','releasing','released','recovery-required')),\n  `created_at` text NOT NULL,\n  `ended_at` text\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_resource_operations",
+      "sql": "CREATE TABLE `capability_resource_operations` (\n  `operation_id` text PRIMARY KEY NOT NULL,\n  `kind` text NOT NULL,\n  `owner_store_id` text NOT NULL,\n  `state` text NOT NULL,\n  `plan_json` text NOT NULL,\n  `error_code` text,\n  `created_at` text NOT NULL,\n  `updated_at` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_resources",
+      "sql": "CREATE TABLE `capability_resources` (\n  `resource_id` text PRIMARY KEY NOT NULL,\n  `kind` text NOT NULL,\n  `content_hash` text NOT NULL,\n  `owner_store_id` text NOT NULL,\n  `path_scope` text NOT NULL CHECK (`path_scope` IN ('C','H')),\n  `relative_path` text NOT NULL,\n  `state` text NOT NULL CHECK (`state` IN ('staged','verified','ready','deleting','removed','recovery-required')),\n  `generation` integer NOT NULL DEFAULT 1,\n  `integrity` text NOT NULL CHECK (`integrity` IN ('unknown','valid','invalid')),\n  `operation_id` text, scope_identity TEXT NOT NULL DEFAULT '', scope_relative_path TEXT,\n  UNIQUE (`owner_store_id`,`path_scope`,`relative_path`)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_run_activities",
+      "sql": "CREATE TABLE capability_run_activities (\n  activity_id TEXT PRIMARY KEY NOT NULL,\n  run_id TEXT NOT NULL REFERENCES capability_runs(run_id) ON DELETE RESTRICT,\n  state TEXT NOT NULL CHECK(state IN ('active','finished','owner-stopped')),\n  started_at TEXT NOT NULL,\n  ended_at TEXT\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_run_preparations",
+      "sql": "CREATE TABLE capability_run_preparations (\n run_id TEXT PRIMARY KEY NOT NULL REFERENCES capability_runs(run_id),\n evidence_json TEXT NOT NULL,\n evidence_hash TEXT NOT NULL,\n prepared_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_run_processes",
+      "sql": "CREATE TABLE capability_run_processes (\n  process_id TEXT PRIMARY KEY NOT NULL,\n  run_id TEXT NOT NULL REFERENCES capability_runs(run_id) ON DELETE RESTRICT,\n  kind TEXT NOT NULL CHECK(kind IN ('cli','bridge')),\n  launch_key TEXT NOT NULL UNIQUE,\n  state TEXT NOT NULL CHECK(state IN ('reserved','armed','active','exited','canceled','unknown')),\n  pid INTEGER,\n  process_started_at TEXT,\n  armed_at TEXT,\n  attached_at TEXT,\n  ended_at TEXT\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_run_restrictions",
+      "sql": "CREATE TABLE capability_run_restrictions (\n run_id TEXT PRIMARY KEY NOT NULL REFERENCES capability_runs(run_id),\n evidence_json TEXT NOT NULL,\n evidence_hash TEXT NOT NULL,\n restricted_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_runs",
+      "sql": "CREATE TABLE \"capability_runs\" (\n  run_id TEXT PRIMARY KEY NOT NULL,\n  task_id TEXT NOT NULL ,\n  project_id TEXT NOT NULL,\n  runner TEXT NOT NULL,\n  pid INTEGER,\n  process_started_at TEXT,\n  state TEXT NOT NULL,\n  started_at TEXT NOT NULL,\n  ended_at TEXT,\n  error_code TEXT,\n  snapshot_hash TEXT,\n  owner_instance_id TEXT,\n  owner_pid INTEGER,\n  owner_started_at TEXT,\n  bindings_json TEXT NOT NULL DEFAULT '[]',\n  pty_id TEXT\n, revocation_state TEXT NOT NULL DEFAULT 'open', binding_mode TEXT NOT NULL DEFAULT 'current' CHECK(binding_mode IN ('current','run')), binding_id TEXT,capability_session_id TEXT,execution_mode TEXT NOT NULL DEFAULT 'legacy' CHECK(execution_mode IN ('legacy','programmatic')),generation INTEGER,source_snapshot_hash TEXT, execution_scope_required INTEGER NOT NULL DEFAULT 0 CHECK(execution_scope_required IN (0,1)),\n   CHECK((binding_id IS NULL)=(capability_session_id IS NULL)),CHECK(execution_mode='legacy' OR (binding_id IS NOT NULL AND snapshot_hash IS NOT NULL AND source_snapshot_hash IS NOT NULL AND generation IS NOT NULL AND typeof(generation)='integer' AND generation>0)),\n   FOREIGN KEY(binding_id,task_id,runner) REFERENCES m14_binding(binding_id,task_id,runner),\n   FOREIGN KEY(capability_session_id,task_id,binding_id,snapshot_hash) REFERENCES m14_revision(cap_id,task_id,binding_id,snapshot_hash),\n   FOREIGN KEY(capability_session_id,task_id,binding_id,source_snapshot_hash) REFERENCES m14_revision(cap_id,task_id,binding_id,snapshot_hash))"
+    },
+    {
+      "type": "table",
+      "name": "capability_schema_migrations",
+      "sql": "CREATE TABLE `capability_schema_migrations` (\n  `app_id` text NOT NULL,\n  `migration_id` text NOT NULL,\n  `checksum` text NOT NULL,\n  `from_version` integer NOT NULL,\n  `to_version` integer NOT NULL,\n  `applied_at` text NOT NULL,\n  `host_build` text NOT NULL,\n  PRIMARY KEY (`app_id`,`migration_id`)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_session_holds",
+      "sql": "CREATE TABLE capability_session_holds (\n  task_id TEXT PRIMARY KEY NOT NULL REFERENCES capability_session_snapshots(task_id) ON DELETE RESTRICT,\n  previous_retention TEXT NOT NULL CHECK(previous_retention IN ('active','tombstone','hold')),\n  reason TEXT NOT NULL,\n  created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_session_identities",
+      "sql": "CREATE TABLE capability_session_identities (\n  task_id TEXT PRIMARY KEY NOT NULL REFERENCES capability_session_snapshots(task_id) ON DELETE RESTRICT,\n  runner TEXT NOT NULL,\n  identity_root TEXT NOT NULL,\n  session_id TEXT,\n  cwd TEXT NOT NULL,\n  discovery_home TEXT NOT NULL,\n  selection_hash TEXT NOT NULL,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL,\n  UNIQUE(runner,identity_root,session_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_session_mcp_names",
+      "sql": "CREATE TABLE capability_session_mcp_names (\n  server_name TEXT PRIMARY KEY NOT NULL,\n  task_id TEXT NOT NULL REFERENCES capability_session_snapshots(task_id) ON DELETE RESTRICT,\n  kind TEXT NOT NULL,\n  UNIQUE(task_id,kind)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_session_refs",
+      "sql": "CREATE TABLE `capability_session_refs` (\n  `task_id` text NOT NULL REFERENCES `capability_session_snapshots` (`task_id`),\n  `ref_kind` text NOT NULL,\n  `ref_id` text NOT NULL REFERENCES `capability_resources` (`resource_id`),\n  `ref_hash` text NOT NULL,\n  `relative_path` text NOT NULL,\n  PRIMARY KEY (`task_id`,`ref_kind`,`ref_id`)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_session_snapshots",
+      "sql": "CREATE TABLE `capability_session_snapshots` (\n  `task_id` text PRIMARY KEY NOT NULL,\n  `schema_version` integer NOT NULL,\n  `snapshot_json` text NOT NULL,\n  `snapshot_hash` text NOT NULL,\n  `created_at` text NOT NULL,\n  `legacy_status` text NOT NULL,\n  `retention_state` text NOT NULL CHECK (`retention_state` IN ('active','tombstone','hold'))\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_skill_observations",
+      "sql": "CREATE TABLE capability_skill_observations (\n run_id TEXT NOT NULL REFERENCES capability_runs(run_id),\n app_id TEXT NOT NULL,\n skill_id TEXT NOT NULL,\n kind TEXT NOT NULL CHECK(kind IN ('discovery','read')),\n evidence_json TEXT NOT NULL,\n evidence_hash TEXT NOT NULL,\n observed_at TEXT NOT NULL,\n PRIMARY KEY(run_id,app_id,skill_id,kind)\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_skill_placements",
+      "sql": "CREATE TABLE capability_skill_placements (\n  id TEXT PRIMARY KEY NOT NULL,\n  capability_id TEXT NOT NULL REFERENCES capability_registry(id),\n  target_root TEXT NOT NULL,\n  name TEXT NOT NULL,\n  project_root TEXT\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_snapshot_versions",
+      "sql": "CREATE TABLE capability_snapshot_versions (\n  snapshot_hash TEXT PRIMARY KEY NOT NULL,\n  task_id TEXT NOT NULL REFERENCES capability_session_snapshots(task_id) ON DELETE RESTRICT,\n  snapshot_json TEXT NOT NULL,\n  selection_hash TEXT NOT NULL,\n  created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "capability_store_state",
+      "sql": "CREATE TABLE capability_store_state (\n  singleton INTEGER PRIMARY KEY NOT NULL CHECK(singleton=1),\n  store_id TEXT NOT NULL,\n  resource_generation INTEGER NOT NULL DEFAULT 1,\n  maintenance_state TEXT NOT NULL CHECK(maintenance_state IN ('ready','pending','recovery-required')),\n  maintenance_operation_id TEXT\n)"
+    },
+    {
+      "type": "table",
+      "name": "imported_keys",
+      "sql": "CREATE TABLE `imported_keys` (\n  `server_id` text PRIMARY KEY NOT NULL,\n  `path` text NOT NULL,\n  `created_at` integer NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "m14_binding",
+      "sql": "CREATE TABLE m14_binding(\n binding_id TEXT PRIMARY KEY,task_id TEXT NOT NULL,runner TEXT NOT NULL,\n identity_root TEXT,native_id TEXT,cwd TEXT NOT NULL,\n legacy_task_id TEXT UNIQUE REFERENCES capability_session_snapshots(task_id),\n entry_mode TEXT NOT NULL CHECK(entry_mode IN ('legacy','programmatic')),\n phase TEXT NOT NULL DEFAULT 'historical' CHECK(phase IN ('historical','planned','preparing','prepared','canceled')),profile_id TEXT,profile_revision INTEGER, discovery_home TEXT, run_generation INTEGER NOT NULL DEFAULT 0 CHECK(run_generation>=0),\n CHECK(phase IN ('planned','canceled') OR identity_root IS NOT NULL),\n CHECK(phase<>'planned' OR native_id IS NULL),\n UNIQUE(binding_id,task_id),UNIQUE(binding_id,task_id,runner),UNIQUE(runner,identity_root,native_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_cap",
+      "sql": "CREATE TABLE m14_cap(\n cap_id TEXT PRIMARY KEY,task_id TEXT NOT NULL,binding_id TEXT NOT NULL,\n retention TEXT NOT NULL CHECK(retention IN ('active','hold','tombstone')),current_hash TEXT,\n UNIQUE(cap_id,task_id,binding_id),\n FOREIGN KEY(binding_id,task_id) REFERENCES m14_binding(binding_id,task_id),\n FOREIGN KEY(cap_id,current_hash) REFERENCES m14_revision(cap_id,snapshot_hash) DEFERRABLE INITIALLY DEFERRED)"
+    },
+    {
+      "type": "table",
+      "name": "m14_command_receipt",
+      "sql": "CREATE TABLE m14_command_receipt(\n caller_key TEXT NOT NULL,command_id TEXT NOT NULL,method TEXT NOT NULL,request_hash TEXT NOT NULL CHECK(length(request_hash)=64),\n task_id TEXT NOT NULL REFERENCES m14_task_state(task_id),response_json TEXT NOT NULL CHECK(json_valid(response_json)),\n PRIMARY KEY(caller_key,command_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_completion_delivery",
+      "sql": "CREATE TABLE m14_completion_delivery(\n delivery_id TEXT PRIMARY KEY,delegation_id TEXT NOT NULL REFERENCES m14_delegation(id),result_revision INTEGER NOT NULL CHECK(typeof(result_revision)='integer' AND result_revision>0),\n parent_task TEXT NOT NULL,target_binding TEXT,target_run TEXT,target_generation INTEGER,input_id TEXT,\n state TEXT NOT NULL CHECK(state IN ('pending','dispatching','accepted','observed','not-sent','unknown')),\n UNIQUE(delegation_id,result_revision),\n CHECK((target_run IS NULL AND target_generation IS NULL AND input_id IS NULL) OR (target_run IS NOT NULL AND target_binding IS NOT NULL AND typeof(target_generation)='integer' AND target_generation>0 AND input_id IS NOT NULL)),\n FOREIGN KEY(target_binding,parent_task) REFERENCES m14_binding(binding_id,task_id),\n FOREIGN KEY(input_id,parent_task,target_binding,target_run,target_generation) REFERENCES m14_input(input_id,task_id,binding_id,run_id,generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_contract_baseline",
+      "sql": "CREATE TABLE m14_contract_baseline(revision TEXT PRIMARY KEY,inputs_hash TEXT NOT NULL,schema_hash TEXT NOT NULL)"
+    },
+    {
+      "type": "table",
+      "name": "m14_delegation",
+      "sql": "CREATE TABLE m14_delegation(\n id TEXT PRIMARY KEY,parent_task TEXT NOT NULL,parent_binding TEXT NOT NULL,parent_run TEXT NOT NULL,parent_generation INTEGER NOT NULL,\n child_task TEXT NOT NULL UNIQUE REFERENCES m14_task_state(task_id),child_binding TEXT NOT NULL,turn_id TEXT NOT NULL UNIQUE,\n state TEXT NOT NULL CHECK(state IN ('queued','preparing','running','waiting','canceling','completed','cancelled','failed','unknown')),\n CHECK(parent_task<>child_task),\n UNIQUE(id,parent_task,parent_binding,parent_run,parent_generation),UNIQUE(id,child_task,child_binding),\n FOREIGN KEY(parent_run,parent_task,parent_binding,parent_generation) REFERENCES capability_runs(run_id,task_id,binding_id,generation),\n FOREIGN KEY(turn_id,child_task,child_binding) REFERENCES m14_turn(id,task_id,binding_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_delivery",
+      "sql": "CREATE TABLE m14_delivery(\n receipt_id TEXT PRIMARY KEY,token TEXT NOT NULL UNIQUE,store_id TEXT NOT NULL,\n task_id TEXT NOT NULL,binding_id TEXT NOT NULL,cap_id TEXT NOT NULL,snapshot_hash TEXT NOT NULL,run_id TEXT NOT NULL,generation INTEGER NOT NULL CHECK(typeof(generation)='integer' AND generation>0),\n plan_json TEXT NOT NULL,plan_hash TEXT NOT NULL,\n owner_pid INTEGER NOT NULL,owner_started_at TEXT NOT NULL,owner_instance TEXT NOT NULL,\n phase TEXT NOT NULL CHECK(phase IN ('prepared','adopted','released','abandoned')),run_lease_id TEXT REFERENCES capability_resource_leases(lease_id),\n CHECK(phase NOT IN ('adopted','released') OR run_lease_id IS NOT NULL),\n UNIQUE(run_id,generation),\n FOREIGN KEY(run_id,task_id,binding_id,cap_id,snapshot_hash,generation) REFERENCES capability_runs(run_id,task_id,binding_id,capability_session_id,source_snapshot_hash,generation),\n FOREIGN KEY(cap_id,task_id,binding_id,snapshot_hash) REFERENCES m14_revision(cap_id,task_id,binding_id,snapshot_hash))"
+    },
+    {
+      "type": "table",
+      "name": "m14_delivery_ref",
+      "sql": "CREATE TABLE m14_delivery_ref(receipt_id TEXT NOT NULL REFERENCES m14_delivery(receipt_id),resource_id TEXT NOT NULL REFERENCES capability_resources(resource_id),kind TEXT NOT NULL,content_hash TEXT NOT NULL,relative_path TEXT NOT NULL,generation INTEGER NOT NULL CHECK(generation>0),PRIMARY KEY(receipt_id,resource_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_draft",
+      "sql": "CREATE TABLE m14_draft(task_id TEXT PRIMARY KEY REFERENCES m14_task_state(task_id),blocks_json TEXT NOT NULL CHECK(json_valid(blocks_json)))"
+    },
+    {
+      "type": "table",
+      "name": "m14_event",
+      "sql": "CREATE TABLE m14_event(\n task_id TEXT NOT NULL REFERENCES m14_task_state(task_id),task_seq INTEGER NOT NULL CHECK(typeof(task_seq)='integer' AND task_seq>0),\n protocol INTEGER NOT NULL CHECK(protocol=1),type TEXT NOT NULL,binding_id TEXT,run_id TEXT,generation INTEGER,payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),\n CHECK((run_id IS NULL AND binding_id IS NULL AND generation IS NULL) OR (run_id IS NOT NULL AND binding_id IS NOT NULL AND typeof(generation)='integer' AND generation>0)),\n PRIMARY KEY(task_id,task_seq),\n FOREIGN KEY(run_id,task_id,binding_id,generation) REFERENCES capability_runs(run_id,task_id,binding_id,generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_execution_plan",
+      "sql": "CREATE TABLE m14_execution_plan(\n run_id TEXT PRIMARY KEY REFERENCES capability_runs(run_id),\n receipt_id TEXT NOT NULL UNIQUE, receipt_hash TEXT NOT NULL,\n application_plan_hash TEXT NOT NULL, plan_json TEXT NOT NULL, plan_hash TEXT NOT NULL,\n FOREIGN KEY(receipt_id,run_id,receipt_hash) REFERENCES m14_delivery(receipt_id,run_id,plan_hash))"
+    },
+    {
+      "type": "table",
+      "name": "m14_execution_scope",
+      "sql": "CREATE TABLE m14_execution_scope(run_id TEXT PRIMARY KEY REFERENCES capability_runs(run_id),launch_id TEXT NOT NULL UNIQUE,phase TEXT NOT NULL CHECK(phase IN ('open','closing','unknown','drained')),coverage TEXT NOT NULL CHECK(coverage IN ('known','unknown')),revision INTEGER NOT NULL,drained_revision INTEGER,reason TEXT)"
+    },
+    {
+      "type": "table",
+      "name": "m14_input",
+      "sql": "CREATE TABLE m14_input(\n input_id TEXT PRIMARY KEY,command_id TEXT NOT NULL UNIQUE,request_hash TEXT NOT NULL CHECK(length(request_hash)=64),\n source TEXT NOT NULL CHECK(source IN ('ui-user','history-transfer','agent-delegation','automatic-followup','child-result')),\n text TEXT NOT NULL,turn_id TEXT NOT NULL,task_id TEXT NOT NULL,binding_id TEXT NOT NULL,run_id TEXT NOT NULL,generation INTEGER NOT NULL,\n scope_json TEXT NOT NULL CHECK(json_valid(scope_json)),scope_hash TEXT NOT NULL CHECK(length(scope_hash)=64),\n state TEXT NOT NULL CHECK(state IN ('queued','dispatching','unknown','accepted')),\n owner_instance TEXT NOT NULL,owner_pid INTEGER NOT NULL CHECK(typeof(owner_pid)='integer' AND owner_pid>0),owner_birth TEXT NOT NULL,native_json TEXT CHECK(native_json IS NULL OR json_valid(native_json)),\n CHECK(state<>'accepted' OR native_json IS NOT NULL),\n CHECK(json_extract(scope_json,'$.taskId') IS task_id AND json_extract(scope_json,'$.bindingId') IS binding_id AND json_extract(scope_json,'$.runId') IS run_id AND json_extract(scope_json,'$.generation') IS generation),\n UNIQUE(input_id,scope_hash),UNIQUE(input_id,task_id,binding_id,run_id,generation),\n FOREIGN KEY(turn_id,task_id,binding_id,run_id,generation) REFERENCES m14_turn(id,task_id,binding_id,run_id,generation),\n FOREIGN KEY(run_id,task_id,binding_id,generation) REFERENCES capability_runs(run_id,task_id,binding_id,generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_input_inbox",
+      "sql": "CREATE TABLE m14_input_inbox(\n event_id TEXT PRIMARY KEY,input_id TEXT NOT NULL,scope_hash TEXT NOT NULL,frame_json TEXT NOT NULL CHECK(json_valid(frame_json)),frame_hash TEXT NOT NULL CHECK(length(frame_hash)=64),processed INTEGER NOT NULL DEFAULT 0 CHECK(processed IN(0,1)),\n FOREIGN KEY(input_id,scope_hash) REFERENCES m14_input(input_id,scope_hash))"
+    },
+    {
+      "type": "table",
+      "name": "m14_mcp",
+      "sql": "CREATE TABLE m14_mcp(\n server_name TEXT PRIMARY KEY,binding_id TEXT NOT NULL,task_id TEXT NOT NULL,kind TEXT NOT NULL,\n UNIQUE(binding_id,kind),FOREIGN KEY(binding_id,task_id) REFERENCES m14_binding(binding_id,task_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_migration",
+      "sql": "CREATE TABLE m14_migration(version INTEGER PRIMARY KEY,source_schema_hash TEXT NOT NULL)"
+    },
+    {
+      "type": "table",
+      "name": "m14_native_claim",
+      "sql": "CREATE TABLE m14_native_claim(runner TEXT NOT NULL,identity_root TEXT NOT NULL,native_id TEXT NOT NULL,binding_id TEXT NOT NULL,task_id TEXT NOT NULL,PRIMARY KEY(runner,identity_root,native_id),FOREIGN KEY(binding_id,task_id,runner) REFERENCES m14_binding(binding_id,task_id,runner))"
+    },
+    {
+      "type": "table",
+      "name": "m14_native_claim_source",
+      "sql": "CREATE TABLE m14_native_claim_source(runner TEXT NOT NULL,identity_root TEXT NOT NULL,native_id TEXT NOT NULL,snapshot_hash TEXT NOT NULL REFERENCES capability_snapshot_versions(snapshot_hash) ON DELETE RESTRICT,PRIMARY KEY(runner,identity_root,native_id,snapshot_hash),FOREIGN KEY(runner,identity_root,native_id) REFERENCES m14_native_claim(runner,identity_root,native_id) ON DELETE RESTRICT)"
+    },
+    {
+      "type": "table",
+      "name": "m14_outbox",
+      "sql": "CREATE TABLE m14_outbox(\n id TEXT PRIMARY KEY,delegation_id TEXT NOT NULL UNIQUE,child_task TEXT NOT NULL,child_binding TEXT NOT NULL,\n state TEXT NOT NULL CHECK(state IN ('queued','claimed','reserved','dispatching','initialized','stopped','blocked','unknown')),claim TEXT,reason TEXT,\n run_id TEXT UNIQUE,generation INTEGER,target_profile_id TEXT NOT NULL,target_revision INTEGER NOT NULL CHECK(typeof(target_revision)='integer' AND target_revision>0),\n CHECK((run_id IS NULL AND generation IS NULL) OR (run_id IS NOT NULL AND typeof(generation)='integer' AND generation>0)),\n UNIQUE(id,run_id),\n FOREIGN KEY(delegation_id,child_task,child_binding) REFERENCES m14_delegation(id,child_task,child_binding),\n FOREIGN KEY(run_id,child_task,child_binding,generation) REFERENCES capability_runs(run_id,task_id,binding_id,generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_preparation",
+      "sql": "CREATE TABLE m14_preparation(binding_id TEXT PRIMARY KEY REFERENCES m14_binding(binding_id),token TEXT NOT NULL UNIQUE,snapshot_hash TEXT NOT NULL,snapshot_json TEXT NOT NULL,selection_hash TEXT NOT NULL)"
+    },
+    {
+      "type": "table",
+      "name": "m14_preparation_ref",
+      "sql": "CREATE TABLE m14_preparation_ref(binding_id TEXT NOT NULL REFERENCES m14_binding(binding_id),token TEXT NOT NULL,ref_id TEXT NOT NULL REFERENCES capability_resources(resource_id),ref_kind TEXT NOT NULL,ref_hash TEXT NOT NULL,relative_path TEXT NOT NULL,generation INTEGER NOT NULL CHECK(generation>0),PRIMARY KEY(binding_id,ref_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_profile_execution_revision",
+      "sql": "CREATE TABLE m14_profile_execution_revision(\n profile_id TEXT PRIMARY KEY,\n revision INTEGER NOT NULL CHECK(typeof(revision)='integer' AND revision>0),\n present INTEGER NOT NULL CHECK(present IN(0,1))\n)"
+    },
+    {
+      "type": "table",
+      "name": "m14_programmatic_claim_source",
+      "sql": "CREATE TABLE m14_programmatic_claim_source(\n runner TEXT NOT NULL,identity_root TEXT NOT NULL,native_id TEXT NOT NULL,\n binding_id TEXT NOT NULL,task_id TEXT NOT NULL,cap_id TEXT NOT NULL,snapshot_hash TEXT NOT NULL,\n PRIMARY KEY(runner,identity_root,native_id,cap_id,snapshot_hash),\n FOREIGN KEY(runner,identity_root,native_id,binding_id,task_id) REFERENCES m14_native_claim(runner,identity_root,native_id,binding_id,task_id) ON DELETE RESTRICT,\n FOREIGN KEY(cap_id,task_id,binding_id,snapshot_hash) REFERENCES m14_revision(cap_id,task_id,binding_id,snapshot_hash) ON DELETE RESTRICT)"
+    },
+    {
+      "type": "table",
+      "name": "m14_publication",
+      "sql": "CREATE TABLE m14_publication(binding_id TEXT PRIMARY KEY REFERENCES m14_binding(binding_id),request_hash TEXT NOT NULL CHECK(length(request_hash)=64),scope_json TEXT NOT NULL CHECK(json_valid(scope_json)))"
+    },
+    {
+      "type": "table",
+      "name": "m14_receipt",
+      "sql": "CREATE TABLE m14_receipt(\n parent_task TEXT NOT NULL,origin_binding TEXT NOT NULL,origin_run TEXT NOT NULL,origin_generation INTEGER NOT NULL,\n request_key TEXT NOT NULL,request_hash TEXT NOT NULL CHECK(length(request_hash)=64),delegation_id TEXT NOT NULL,response TEXT NOT NULL CHECK(json_valid(response)),\n PRIMARY KEY(parent_task,request_key),\n FOREIGN KEY(delegation_id,parent_task,origin_binding,origin_run,origin_generation) REFERENCES m14_delegation(id,parent_task,parent_binding,parent_run,parent_generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_ref",
+      "sql": "CREATE TABLE m14_ref(\n cap_id TEXT NOT NULL,snapshot_hash TEXT NOT NULL,ref_id TEXT NOT NULL REFERENCES capability_resources(resource_id),\n ref_kind TEXT NOT NULL,ref_hash TEXT NOT NULL,relative_path TEXT NOT NULL,task_id TEXT NOT NULL,\n PRIMARY KEY(cap_id,snapshot_hash,ref_id),FOREIGN KEY(cap_id,task_id,snapshot_hash) REFERENCES m14_revision(cap_id,task_id,snapshot_hash))"
+    },
+    {
+      "type": "table",
+      "name": "m14_response",
+      "sql": "CREATE TABLE m14_response(\n command_id TEXT PRIMARY KEY,request_id TEXT NOT NULL,task_id TEXT NOT NULL,binding_id TEXT NOT NULL,run_id TEXT NOT NULL,generation INTEGER NOT NULL,\n expected_revision INTEGER NOT NULL CHECK(typeof(expected_revision)='integer' AND expected_revision>0),request_hash TEXT NOT NULL CHECK(length(request_hash)=64),\n state TEXT NOT NULL CHECK(state IN ('dispatching','applied','not-sent','unknown')),\n FOREIGN KEY(request_id,task_id,binding_id,run_id,generation) REFERENCES m14_runtime_request(request_id,task_id,binding_id,run_id,generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_retained_identity_source",
+      "sql": "CREATE TABLE m14_retained_identity_source(binding_id TEXT PRIMARY KEY REFERENCES m14_binding(binding_id),task_id TEXT NOT NULL UNIQUE REFERENCES capability_session_snapshots(task_id) ON DELETE RESTRICT,snapshot_hash TEXT NOT NULL,kind TEXT NOT NULL CHECK(kind IN ('held-known','schema0')))"
+    },
+    {
+      "type": "table",
+      "name": "m14_revision",
+      "sql": "CREATE TABLE m14_revision(\n cap_id TEXT NOT NULL,task_id TEXT NOT NULL,binding_id TEXT NOT NULL,snapshot_hash TEXT NOT NULL,\n snapshot_json TEXT NOT NULL,schema_version INTEGER NOT NULL CHECK(schema_version IN (2,3)),selection_hash TEXT NOT NULL,\n PRIMARY KEY(cap_id,snapshot_hash),UNIQUE(cap_id,task_id,binding_id,snapshot_hash),UNIQUE(cap_id,task_id,snapshot_hash),\n FOREIGN KEY(cap_id,task_id,binding_id) REFERENCES m14_cap(cap_id,task_id,binding_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_run_request",
+      "sql": "CREATE TABLE m14_run_request(request_key TEXT PRIMARY KEY,request_hash TEXT NOT NULL CHECK(length(request_hash)=64),run_id TEXT NOT NULL UNIQUE,\n FOREIGN KEY(request_key,run_id) REFERENCES m14_outbox(id,run_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_runtime_request",
+      "sql": "CREATE TABLE m14_runtime_request(\n request_id TEXT PRIMARY KEY,task_id TEXT NOT NULL,binding_id TEXT NOT NULL,run_id TEXT NOT NULL,generation INTEGER NOT NULL,turn_id TEXT,\n source TEXT NOT NULL,kind TEXT NOT NULL CHECK(kind IN ('approval','questions','form','url','unsupported')),native_key TEXT,\n revision INTEGER NOT NULL CHECK(typeof(revision)='integer' AND revision>0),state TEXT NOT NULL CHECK(state IN ('pending','dispatching','resolved','expired','unknown')),\n spec_json TEXT NOT NULL CHECK(json_valid(spec_json)),blocking INTEGER NOT NULL CHECK(blocking IN(0,1)),\n UNIQUE(request_id,task_id,binding_id,run_id,generation),UNIQUE(run_id,generation,source,native_key),\n FOREIGN KEY(run_id,task_id,binding_id,generation) REFERENCES capability_runs(run_id,task_id,binding_id,generation),\n FOREIGN KEY(turn_id,task_id,binding_id,run_id,generation) REFERENCES m14_turn(id,task_id,binding_id,run_id,generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_scope_member",
+      "sql": "CREATE TABLE m14_scope_member(run_id TEXT NOT NULL REFERENCES m14_execution_scope(run_id),pid INTEGER NOT NULL,birth TEXT NOT NULL,kind TEXT NOT NULL,PRIMARY KEY(run_id,pid,birth))"
+    },
+    {
+      "type": "table",
+      "name": "m14_submission",
+      "sql": "CREATE TABLE m14_submission(\n input_id TEXT PRIMARY KEY,task_id TEXT NOT NULL,binding_id TEXT NOT NULL,turn_id TEXT NOT NULL UNIQUE,\n client_key TEXT NOT NULL,request_hash TEXT NOT NULL CHECK(length(request_hash)=64),\n source TEXT NOT NULL CHECK(source IN ('ui-user','history-transfer','agent-delegation','automatic-followup','child-result')),\n target_json TEXT NOT NULL CHECK(json_valid(target_json)),blocks_json TEXT NOT NULL CHECK(json_valid(blocks_json)),\n FOREIGN KEY(turn_id,task_id,binding_id) REFERENCES m14_turn(id,task_id,binding_id),UNIQUE(task_id,client_key))"
+    },
+    {
+      "type": "table",
+      "name": "m14_task_state",
+      "sql": "CREATE TABLE \"m14_task_state\"(task_id TEXT PRIMARY KEY,active_binding TEXT,selection_revision INTEGER NOT NULL DEFAULT 1 CHECK(typeof(selection_revision)='integer' AND selection_revision>0),draft_revision INTEGER NOT NULL DEFAULT 0 CHECK(typeof(draft_revision)='integer' AND draft_revision>=0),task_seq INTEGER NOT NULL DEFAULT 0 CHECK(typeof(task_seq)='integer' AND task_seq>=0),record_state TEXT NOT NULL CHECK(record_state IN ('active','retained')),FOREIGN KEY(active_binding,task_id) REFERENCES m14_binding(binding_id,task_id))"
+    },
+    {
+      "type": "table",
+      "name": "m14_turn",
+      "sql": "CREATE TABLE m14_turn(\n id TEXT PRIMARY KEY,task_id TEXT NOT NULL REFERENCES m14_task_state(task_id),binding_id TEXT NOT NULL,\n input TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('queued','dispatching','accepted','running','waiting','canceling','completed','cancelled','failed','not-sent','unknown')),\n run_id TEXT,generation INTEGER,\n CHECK((run_id IS NULL AND generation IS NULL) OR (run_id IS NOT NULL AND typeof(generation)='integer' AND generation>0)),\n UNIQUE(id,task_id),UNIQUE(id,task_id,binding_id),UNIQUE(id,task_id,binding_id,run_id,generation),\n FOREIGN KEY(binding_id,task_id) REFERENCES m14_binding(binding_id,task_id),\n FOREIGN KEY(run_id,task_id,binding_id,generation) REFERENCES capability_runs(run_id,task_id,binding_id,generation))"
+    },
+    {
+      "type": "table",
+      "name": "m14_unmapped",
+      "sql": "CREATE TABLE m14_unmapped(task_id TEXT PRIMARY KEY,snapshot_hash TEXT NOT NULL,reason TEXT NOT NULL)"
+    },
+    {
+      "type": "table",
+      "name": "m14_unmapped_version",
+      "sql": "CREATE TABLE m14_unmapped_version(task_id TEXT NOT NULL,snapshot_hash TEXT NOT NULL,snapshot_json TEXT NOT NULL,selection_hash TEXT NOT NULL,reason TEXT NOT NULL,PRIMARY KEY(task_id,snapshot_hash))"
+    },
+    {
+      "type": "table",
+      "name": "m14_workspace_hold",
+      "sql": "CREATE TABLE m14_workspace_hold(run_id TEXT PRIMARY KEY REFERENCES m14_execution_scope(run_id),descriptor TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('held','released')))"
+    },
+    {
+      "type": "table",
+      "name": "mail_attachment_objects",
+      "sql": "CREATE TABLE mail_attachment_objects (\n  id TEXT PRIMARY KEY NOT NULL,\n  project_id TEXT NOT NULL,\n  content_hash TEXT NOT NULL REFERENCES mail_blob_objects(content_hash) ON DELETE RESTRICT,\n  filename TEXT NOT NULL,\n  content_type TEXT NOT NULL,\n  byte_size INTEGER NOT NULL CHECK(byte_size >= 0),\n  created_at TEXT NOT NULL\n, kind TEXT NOT NULL DEFAULT 'attachment' CHECK(kind IN ('attachment','message')))"
+    },
+    {
+      "type": "table",
+      "name": "mail_blob_objects",
+      "sql": "CREATE TABLE mail_blob_objects (\n  content_hash TEXT PRIMARY KEY NOT NULL,\n  byte_size INTEGER NOT NULL CHECK(byte_size >= 0),\n  created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_blob_writes",
+      "sql": "CREATE TABLE mail_blob_writes (\n  operation_id TEXT PRIMARY KEY NOT NULL,\n  attachment_id TEXT NOT NULL,\n  project_id TEXT NOT NULL,\n  request_hash TEXT NOT NULL,\n  metadata_json TEXT NOT NULL,\n  state TEXT NOT NULL CHECK(state IN ('preparing','staged','published','committed','failed')),\n  error_code TEXT,\n  cleanup_pending INTEGER NOT NULL DEFAULT 0 CHECK(cleanup_pending IN (0,1)),\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_draft_mutations",
+      "sql": "CREATE TABLE mail_draft_mutations (\n  project_id TEXT NOT NULL,\n  operation_id TEXT NOT NULL,\n  request_hash TEXT NOT NULL,\n  draft_id TEXT NOT NULL REFERENCES mail_drafts(id) ON DELETE RESTRICT,\n  result_json TEXT NOT NULL,\n  created_at TEXT NOT NULL,\n  PRIMARY KEY(project_id,operation_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_draft_revisions",
+      "sql": "CREATE TABLE mail_draft_revisions (\n  draft_id TEXT NOT NULL REFERENCES mail_drafts(id) ON DELETE RESTRICT,\n  revision INTEGER NOT NULL CHECK(revision >= 1),\n  content_json TEXT NOT NULL,\n  content_hash TEXT NOT NULL,\n  actor_task_id TEXT,\n  created_at TEXT NOT NULL,\n  PRIMARY KEY(draft_id,revision)\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_drafts",
+      "sql": "CREATE TABLE mail_drafts (\n  id TEXT PRIMARY KEY NOT NULL,\n  project_id TEXT NOT NULL,\n  source_task_id TEXT,\n  copied_from_draft_id TEXT REFERENCES mail_drafts(id) ON DELETE RESTRICT,\n  subject TEXT NOT NULL,\n  attachment_count INTEGER NOT NULL CHECK(attachment_count >= 0),\n  current_revision INTEGER NOT NULL CHECK(current_revision >= 1),\n  state TEXT NOT NULL CHECK(state IN ('draft','sending','sent','failed','unknown')),\n  active_intent_id TEXT,\n  last_execution_id TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_send_executions",
+      "sql": "CREATE TABLE mail_send_executions (\n  id TEXT PRIMARY KEY NOT NULL,\n  intent_id TEXT NOT NULL UNIQUE REFERENCES mail_send_intents(id) ON DELETE RESTRICT,\n  project_id TEXT NOT NULL,\n  draft_id TEXT NOT NULL,\n  draft_revision INTEGER NOT NULL,\n  review_hash TEXT NOT NULL,\n  state TEXT NOT NULL CHECK(state IN ('executing','server-accepted','failed','unknown')),\n  result_json TEXT,\n  secret_revision INTEGER NOT NULL,\n  owner_instance_id TEXT NOT NULL,\n  started_at TEXT NOT NULL,\n  ended_at TEXT,\n  UNIQUE(draft_id,draft_revision)\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_send_grants",
+      "sql": "CREATE TABLE mail_send_grants (\n  id TEXT PRIMARY KEY NOT NULL,\n  intent_id TEXT NOT NULL REFERENCES mail_send_intents(id) ON DELETE RESTRICT,\n  source TEXT NOT NULL CHECK(source IN ('renderer-confirmation','native-user-message')),\n  evidence_id TEXT NOT NULL,\n  evidence_hash TEXT NOT NULL,\n  review_hash TEXT NOT NULL,\n  evidence_json TEXT NOT NULL,\n  state TEXT NOT NULL CHECK(state IN ('active','used','revoked')),\n  expires_at TEXT NOT NULL,\n  created_at TEXT NOT NULL,\n  UNIQUE(source,evidence_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_send_intents",
+      "sql": "CREATE TABLE mail_send_intents (\n  id TEXT PRIMARY KEY NOT NULL,\n  project_id TEXT NOT NULL,\n  source_task_id TEXT,\n  source_run_id TEXT,\n  operation_id TEXT NOT NULL,\n  request_hash TEXT NOT NULL,\n  draft_id TEXT NOT NULL,\n  draft_revision INTEGER NOT NULL,\n  draft_content_hash TEXT NOT NULL,\n  connection_id TEXT NOT NULL REFERENCES application_connections(id) ON DELETE RESTRICT,\n  identity_revision INTEGER NOT NULL,\n  config_revision INTEGER NOT NULL,\n  policy_revision INTEGER NOT NULL,\n  binding_revision INTEGER NOT NULL,\n  identity_json TEXT NOT NULL,\n  smtp_config_json TEXT NOT NULL,\n  raw_write_id TEXT NOT NULL,\n  raw_object_id TEXT REFERENCES mail_attachment_objects(id) ON DELETE RESTRICT,\n  raw_hash TEXT,\n  frozen_hash TEXT,\n  envelope_json TEXT,\n  message_id TEXT NOT NULL,\n  review_json TEXT,\n  review_hash TEXT,\n  state TEXT NOT NULL CHECK(state IN ('preparing','awaiting-authorization','authorized','executing','server-accepted','failed','unknown','canceled','stale')),\n  grant_id TEXT,\n  execution_id TEXT,\n  cancel_requested_at TEXT,\n  owner_instance_id TEXT NOT NULL,\n  owner_pid INTEGER NOT NULL,\n  owner_started_at TEXT NOT NULL,\n  error_code TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL, `sender_identity_hash` text,\n  UNIQUE(project_id,operation_id),\n  FOREIGN KEY(draft_id,draft_revision) REFERENCES mail_draft_revisions(draft_id,revision) ON DELETE RESTRICT\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_sender_confirmation_versions",
+      "sql": "CREATE TABLE mail_sender_confirmation_versions (\n  project_id TEXT NOT NULL,\n  binding_hash TEXT NOT NULL,\n  binding_json TEXT NOT NULL,\n  method TEXT NOT NULL,\n  receipt_id TEXT NOT NULL UNIQUE,\n  sender_id TEXT,\n  confirmed_at TEXT NOT NULL,\n  record_hash TEXT NOT NULL,\n  PRIMARY KEY(project_id,binding_hash,receipt_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_sender_confirmations",
+      "sql": "CREATE TABLE `mail_sender_confirmations` (\n  `project_id` text PRIMARY KEY NOT NULL,\n  `binding_hash` text NOT NULL,\n  `binding_json` text NOT NULL,\n  `method` text NOT NULL CHECK (`method` IN ('automatic','user')),\n  `receipt_id` text NOT NULL UNIQUE,\n  `sender_id` text,\n  `confirmed_at` text NOT NULL,\n  `record_hash` text NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "mail_user_action_sources",
+      "sql": "CREATE TABLE mail_user_action_sources (\n  evidence_id TEXT PRIMARY KEY NOT NULL,\n  intent_id TEXT NOT NULL REFERENCES mail_send_intents(id),\n  source_kind TEXT NOT NULL CHECK(source_kind IN ('renderer-confirmation','native-user-message')),\n  source_hash TEXT NOT NULL,\n  provenance_json TEXT NOT NULL,\n  created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_builtin_migrations",
+      "sql": "CREATE TABLE plugin_builtin_migrations (\n app_id TEXT PRIMARY KEY NOT NULL,\n migration_version INTEGER NOT NULL CHECK(migration_version>0),\n package_hash TEXT NOT NULL,\n source_hash TEXT NOT NULL,\n tables_json TEXT NOT NULL,\n completed_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_connection_defaults",
+      "sql": "CREATE TABLE plugin_connection_defaults (\n app_id TEXT PRIMARY KEY NOT NULL REFERENCES application_host_applications(app_id),\n connection_id TEXT REFERENCES application_connections(id) ON DELETE RESTRICT,\n revision INTEGER NOT NULL CHECK(revision>=0)\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_installations",
+      "sql": "CREATE TABLE plugin_installations (\n app_id TEXT PRIMARY KEY NOT NULL,\n package_hash TEXT REFERENCES plugin_packages(package_hash) ON DELETE RESTRICT,\n installed INTEGER NOT NULL CHECK(installed IN (0,1)),\n enabled INTEGER NOT NULL CHECK(enabled IN (0,1)),\n revision INTEGER NOT NULL CHECK(revision > 0),\n updated_at TEXT NOT NULL,\n CHECK(installed=1 OR (enabled=0 AND package_hash IS NULL))\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_lifecycle_changes",
+      "sql": "CREATE TABLE plugin_lifecycle_changes (\n change_id TEXT PRIMARY KEY NOT NULL,\n app_id TEXT NOT NULL,\n kind TEXT NOT NULL CHECK(kind IN ('install','update','uninstall')),\n from_hash TEXT, to_hash TEXT,\n from_revision INTEGER NOT NULL,\n previous_enabled INTEGER NOT NULL CHECK(previous_enabled IN (0,1)),\n state TEXT NOT NULL CHECK(state IN ('preparing','prepared','swapping','committed','rolled-back','recovery-required')),\n payload_json TEXT NOT NULL,\n error_code TEXT,\n host_instance_id TEXT NOT NULL,\n created_at TEXT NOT NULL, updated_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_packages",
+      "sql": "CREATE TABLE plugin_packages (\n package_hash TEXT PRIMARY KEY NOT NULL,\n bundle_hash TEXT NOT NULL,\n app_id TEXT NOT NULL,\n version TEXT NOT NULL,\n relative_path TEXT NOT NULL UNIQUE,\n manifest_json TEXT NOT NULL,\n created_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_project_preferences",
+      "sql": "CREATE TABLE plugin_project_preferences (\n project_id TEXT NOT NULL,\n app_id TEXT NOT NULL,\n mode TEXT NOT NULL CHECK(mode IN ('follow','individual')),\n PRIMARY KEY(project_id,app_id),\n FOREIGN KEY(project_id,app_id) REFERENCES application_project_settings(project_id,app_id) ON DELETE CASCADE\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_runtime_health",
+      "sql": "CREATE TABLE plugin_runtime_health (\n app_id TEXT PRIMARY KEY NOT NULL,\n failures_json TEXT NOT NULL,\n paused INTEGER NOT NULL CHECK(paused IN (0,1)),\n error_code TEXT,\n updated_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_runtime_leases",
+      "sql": "CREATE TABLE plugin_runtime_leases (\n lease_id TEXT PRIMARY KEY NOT NULL,\n app_id TEXT NOT NULL,\n package_hash TEXT NOT NULL REFERENCES plugin_packages(package_hash) ON DELETE RESTRICT,\n kind TEXT NOT NULL CHECK(kind IN ('invocation','activation')),\n host_instance_id TEXT NOT NULL,\n host_pid INTEGER NOT NULL,\n host_started_at TEXT NOT NULL,\n pid INTEGER,\n process_started_at TEXT,\n state TEXT NOT NULL CHECK(state IN ('reserved','launching','running','closed')),\n created_at TEXT NOT NULL, ended_at TEXT\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_ui_reads",
+      "sql": "CREATE TABLE plugin_ui_reads (\n operation_id TEXT PRIMARY KEY NOT NULL REFERENCES application_data_operations(operation_id) ON DELETE CASCADE,\n host_instance_id TEXT NOT NULL,\n host_pid INTEGER NOT NULL,\n host_started_at TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "plugin_write_approvals",
+      "sql": "CREATE TABLE plugin_write_approvals (\n operation_id TEXT PRIMARY KEY NOT NULL REFERENCES application_invocations(operation_id),\n approval_id TEXT NOT NULL UNIQUE,\n run_id TEXT NOT NULL,\n app_id TEXT NOT NULL,\n package_hash TEXT NOT NULL,\n capability TEXT NOT NULL,\n input_hash TEXT NOT NULL,\n review_hash TEXT NOT NULL,\n policy_hash TEXT NOT NULL,\n state TEXT NOT NULL CHECK(state IN ('pending','allowed','denied','cancelled','expired','invalidated')),\n host_instance_id TEXT NOT NULL,\n host_pid INTEGER NOT NULL,\n host_started_at TEXT NOT NULL,\n provenance_json TEXT,\n created_at INTEGER NOT NULL,\n expires_at INTEGER NOT NULL,\n decided_at INTEGER\n)"
+    },
+    {
+      "type": "table",
+      "name": "project_capabilities",
+      "sql": "CREATE TABLE `project_capabilities` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`project_id` text NOT NULL,\n\t`capability_id` text NOT NULL,\n\t`enabled` integer DEFAULT true NOT NULL,\n\tFOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade\n)"
+    },
+    {
+      "type": "table",
+      "name": "project_databases",
+      "sql": "CREATE TABLE `project_databases` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`project_id` text NOT NULL,\n\t`env` text NOT NULL,\n\t`label` text DEFAULT '' NOT NULL,\n\t`aliases` text DEFAULT '[]' NOT NULL,\n\t`vendor` text NOT NULL,\n\t`host` text NOT NULL,\n\t`port` integer NOT NULL,\n\t`database` text DEFAULT '' NOT NULL,\n\t`schema` text,\n\t`username` text DEFAULT '' NOT NULL,\n\t`access_level` text DEFAULT 'readonly' NOT NULL,\n\t`is_default` integer DEFAULT false NOT NULL,\n\t`note` text DEFAULT '' NOT NULL,\n\t`last_test_at` integer,\n\t`last_test_ok` integer,\n\t`last_test_category` text,\n\t`last_test_message` text,\n\t`last_test_ms` integer,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL,\n\tFOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade\n)"
+    },
+    {
+      "type": "table",
+      "name": "project_dirs",
+      "sql": "CREATE TABLE `project_dirs` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`project_id` text NOT NULL,\n\t`label` text DEFAULT '' NOT NULL,\n\t`path` text NOT NULL,\n\t`is_default` integer DEFAULT false NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL,\n\tFOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade\n)"
+    },
+    {
+      "type": "table",
+      "name": "project_import_receipts",
+      "sql": "CREATE TABLE `project_import_receipts` (\n  `request_id` text PRIMARY KEY NOT NULL,\n  `fingerprint` text NOT NULL,\n  `result` text NOT NULL,\n  `created_at` integer NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "project_servers",
+      "sql": "CREATE TABLE `project_servers` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`project_id` text NOT NULL,\n\t`env` text NOT NULL,\n\t`label` text DEFAULT '' NOT NULL,\n\t`aliases` text DEFAULT '[]' NOT NULL,\n\t`host` text NOT NULL,\n\t`port` integer DEFAULT 22 NOT NULL,\n\t`username` text NOT NULL,\n\t`auth_type` text NOT NULL,\n\t`private_key_path` text,\n\t`default_root` integer DEFAULT false NOT NULL,\n\t`sudo_policy` text DEFAULT 'none' NOT NULL,\n\t`app_root` text,\n\t`logs_path` text,\n\t`note` text DEFAULT '' NOT NULL,\n\t`last_test_at` integer,\n\t`last_test_ok` integer,\n\t`last_test_category` text,\n\t`last_test_message` text,\n\t`last_test_ms` integer,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL,\n\tFOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade\n)"
+    },
+    {
+      "type": "table",
+      "name": "projects",
+      "sql": "CREATE TABLE `projects` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`name` text NOT NULL,\n\t`aliases` text DEFAULT '[]' NOT NULL,\n\t`description` text DEFAULT '' NOT NULL,\n\t`rules_path` text,\n\t`config_version` integer DEFAULT 1 NOT NULL,\n\t`archived_at` integer,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "sessions",
+      "sql": "CREATE TABLE `sessions` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`runner` text NOT NULL,\n\t`cwd` text NOT NULL,\n\t`native_session_id` text,\n\t`title` text NOT NULL,\n\t`created_at` integer NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "skill_versions",
+      "sql": "CREATE TABLE `skill_versions` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`skill_id` text NOT NULL,\n\t`name` text NOT NULL,\n\t`version` text NOT NULL,\n\t`hash` text NOT NULL,\n\t`installed_at` integer NOT NULL,\n\t`active` integer DEFAULT false NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "sqlite_sequence",
+      "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+    },
+    {
+      "type": "table",
+      "name": "tasks",
+      "sql": "CREATE TABLE `tasks` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`project_id` text,\n\t`dir_id` text,\n\t`cwd` text NOT NULL,\n\t`ai_profile_id` text,\n\t`ai_profile_name` text,\n\t`runner` text NOT NULL,\n\t`native_session_id` text,\n\t`title` text NOT NULL,\n\t`first_message` text DEFAULT '' NOT NULL,\n\t`injected_env_names` text DEFAULT '[]' NOT NULL,\n\t`config_version` integer,\n\t`state_root` text,\n\t`archived_at` integer,\n\t`last_launched_at` integer,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL, `runtime_snapshot` text, `native_history_observed` integer,\n\tFOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,\n\tFOREIGN KEY (`dir_id`) REFERENCES `project_dirs`(`id`) ON UPDATE no action ON DELETE set null,\n\tFOREIGN KEY (`ai_profile_id`) REFERENCES `ai_profiles`(`id`) ON UPDATE no action ON DELETE set null\n)"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_claim_legacy_insert",
+      "sql": "CREATE TRIGGER m14_claim_legacy_insert BEFORE INSERT ON capability_session_identities WHEN NEW.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM m14_native_claim c JOIN m14_binding b ON b.binding_id=c.binding_id WHERE c.runner=NEW.runner AND c.identity_root=NEW.identity_root AND c.native_id=NEW.session_id AND b.legacy_task_id IS NOT NEW.task_id) BEGIN SELECT RAISE(ABORT,'M14_NATIVE_CLAIM_CONFLICT');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_claim_legacy_update",
+      "sql": "CREATE TRIGGER m14_claim_legacy_update BEFORE UPDATE ON capability_session_identities WHEN NEW.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM m14_native_claim c JOIN m14_binding b ON b.binding_id=c.binding_id WHERE c.runner=NEW.runner AND c.identity_root=NEW.identity_root AND c.native_id=NEW.session_id AND b.legacy_task_id IS NOT NEW.task_id) BEGIN SELECT RAISE(ABORT,'M14_NATIVE_CLAIM_CONFLICT');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_completion_target_frozen",
+      "sql": "CREATE TRIGGER m14_completion_target_frozen BEFORE UPDATE OF target_binding,target_run,target_generation,input_id ON m14_completion_delivery\nWHEN OLD.state NOT IN ('pending','not-sent') AND (OLD.target_binding IS NOT NEW.target_binding OR OLD.target_run IS NOT NEW.target_run OR OLD.target_generation IS NOT NEW.target_generation OR OLD.input_id IS NOT NEW.input_id)\nBEGIN SELECT RAISE(ABORT,'COMPLETION_TARGET_FROZEN');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_config_revision_change",
+      "sql": "CREATE TRIGGER m14_config_revision_change AFTER UPDATE ON ai_run_configs\nWHEN OLD.tool_id IS NOT NEW.tool_id OR OLD.source IS NOT NEW.source OR OLD.provider_id IS NOT NEW.provider_id OR OLD.models IS NOT NEW.models OR OLD.default_model IS NOT NEW.default_model OR OLD.logged_out IS NOT NEW.logged_out OR OLD.legacy_reason IS NOT NEW.legacy_reason OR OLD.migration_version IS NOT NEW.migration_version\nBEGIN UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE profile_id IN (OLD.profile_id,NEW.profile_id) AND present=1; END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_config_revision_delete",
+      "sql": "CREATE TRIGGER m14_config_revision_delete AFTER DELETE ON ai_run_configs BEGIN UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE profile_id=OLD.profile_id AND present=1; END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_config_revision_insert",
+      "sql": "CREATE TRIGGER m14_config_revision_insert AFTER INSERT ON ai_run_configs BEGIN UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE profile_id=NEW.profile_id AND present=1; END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_delegation_cycle_insert",
+      "sql": "CREATE TRIGGER m14_delegation_cycle_insert BEFORE INSERT ON m14_delegation\nWHEN EXISTS(WITH RECURSIVE descendants(id) AS (SELECT child_task FROM m14_delegation WHERE parent_task=NEW.child_task UNION SELECT d.child_task FROM m14_delegation d JOIN descendants x ON d.parent_task=x.id) SELECT 1 FROM descendants WHERE id=NEW.parent_task)\nBEGIN SELECT RAISE(ABORT,'DELEGATION_CYCLE');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_delegation_origin_immutable",
+      "sql": "CREATE TRIGGER m14_delegation_origin_immutable BEFORE UPDATE OF parent_task,parent_binding,parent_run,parent_generation,child_task,child_binding,turn_id ON m14_delegation\nWHEN OLD.parent_task IS NOT NEW.parent_task OR OLD.parent_binding IS NOT NEW.parent_binding OR OLD.parent_run IS NOT NEW.parent_run OR OLD.parent_generation IS NOT NEW.parent_generation OR OLD.child_task IS NOT NEW.child_task OR OLD.child_binding IS NOT NEW.child_binding OR OLD.turn_id IS NOT NEW.turn_id\nBEGIN SELECT RAISE(ABORT,'DELEGATION_ORIGIN_IMMUTABLE');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_input_origin_immutable",
+      "sql": "CREATE TRIGGER m14_input_origin_immutable BEFORE UPDATE OF input_id,command_id,request_hash,source,text,turn_id,task_id,binding_id,run_id,generation,scope_json,scope_hash,owner_instance,owner_pid,owner_birth ON m14_input\nWHEN OLD.input_id IS NOT NEW.input_id OR OLD.command_id IS NOT NEW.command_id OR OLD.request_hash IS NOT NEW.request_hash OR OLD.source IS NOT NEW.source OR OLD.text IS NOT NEW.text OR OLD.turn_id IS NOT NEW.turn_id OR OLD.task_id IS NOT NEW.task_id OR OLD.binding_id IS NOT NEW.binding_id OR OLD.run_id IS NOT NEW.run_id OR OLD.generation IS NOT NEW.generation OR OLD.scope_json IS NOT NEW.scope_json OR OLD.scope_hash IS NOT NEW.scope_hash OR OLD.owner_instance IS NOT NEW.owner_instance OR OLD.owner_pid IS NOT NEW.owner_pid OR OLD.owner_birth IS NOT NEW.owner_birth\nBEGIN SELECT RAISE(ABORT,'INPUT_ORIGIN_IMMUTABLE');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_new_input_needs_submission",
+      "sql": "CREATE TRIGGER m14_new_input_needs_submission BEFORE INSERT ON m14_input\n WHEN NOT EXISTS(SELECT 1 FROM m14_submission s WHERE s.input_id=NEW.input_id AND s.task_id=NEW.task_id AND s.binding_id=NEW.binding_id AND s.turn_id=NEW.turn_id AND s.source=NEW.source)\n BEGIN SELECT RAISE(ABORT,'LOGICAL_SUBMISSION_REQUIRED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_old_identity_guard",
+      "sql": "CREATE TRIGGER m14_old_identity_guard BEFORE UPDATE ON capability_session_identities WHEN EXISTS(SELECT 1 FROM m14_binding b WHERE b.task_id=NEW.task_id AND b.entry_mode='programmatic') BEGIN SELECT RAISE(ABORT,'M14_LEGACY_IDENTITY_SEALED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_old_mcp_insert_guard",
+      "sql": "CREATE TRIGGER m14_old_mcp_insert_guard BEFORE INSERT ON capability_session_mcp_names WHEN EXISTS(SELECT 1 FROM m14_mcp m JOIN m14_binding b USING(binding_id) WHERE m.server_name=NEW.server_name AND b.legacy_task_id IS NOT NEW.task_id) BEGIN SELECT RAISE(ABORT,'M14_MCP_NAME_CONFLICT');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_old_native_insert_guard",
+      "sql": "CREATE TRIGGER m14_old_native_insert_guard BEFORE INSERT ON capability_session_identities WHEN NEW.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM m14_binding b WHERE b.runner=NEW.runner AND b.identity_root=NEW.identity_root AND b.native_id=NEW.session_id AND b.legacy_task_id IS NOT NEW.task_id) BEGIN SELECT RAISE(ABORT,'M14_NATIVE_IDENTITY_CONFLICT');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_old_native_update_guard",
+      "sql": "CREATE TRIGGER m14_old_native_update_guard BEFORE UPDATE ON capability_session_identities WHEN NEW.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM m14_binding b WHERE b.runner=NEW.runner AND b.identity_root=NEW.identity_root AND b.native_id=NEW.session_id AND b.legacy_task_id IS NOT NEW.task_id) BEGIN SELECT RAISE(ABORT,'M14_NATIVE_IDENTITY_CONFLICT');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_old_run_guard",
+      "sql": "CREATE TRIGGER m14_old_run_guard BEFORE INSERT ON capability_runs WHEN NEW.execution_mode='legacy' AND EXISTS(SELECT 1 FROM m14_binding b WHERE b.task_id=NEW.task_id AND b.entry_mode='programmatic') BEGIN SELECT RAISE(ABORT,'M14_LEGACY_WRITER_SEALED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_profile_revision_change",
+      "sql": "CREATE TRIGGER m14_profile_revision_change AFTER UPDATE ON ai_profiles\nWHEN OLD.runner IS NOT NEW.runner OR OLD.executable IS NOT NEW.executable OR OLD.env IS NOT NEW.env OR OLD.args IS NOT NEW.args OR OLD.command_pending IS NOT NEW.command_pending\nBEGIN UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE profile_id=NEW.id; END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_profile_revision_delete",
+      "sql": "CREATE TRIGGER m14_profile_revision_delete AFTER DELETE ON ai_profiles BEGIN\n UPDATE m14_profile_execution_revision SET revision=revision+1,present=0 WHERE profile_id=OLD.id;\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_profile_revision_insert",
+      "sql": "CREATE TRIGGER m14_profile_revision_insert AFTER INSERT ON ai_profiles BEGIN\n INSERT INTO m14_profile_execution_revision VALUES(NEW.id,1,1)\n ON CONFLICT(profile_id) DO UPDATE SET revision=revision+1,present=1;\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_provider_revision_change",
+      "sql": "CREATE TRIGGER m14_provider_revision_change AFTER UPDATE ON ai_providers\nWHEN OLD.preset IS NOT NEW.preset OR OLD.endpoints IS NOT NEW.endpoints OR OLD.auth_type IS NOT NEW.auth_type OR OLD.secret_ref IS NOT NEW.secret_ref OR OLD.identity_revision IS NOT NEW.identity_revision OR OLD.models IS NOT NEW.models OR OLD.recommended IS NOT NEW.recommended\nBEGIN UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (SELECT profile_id FROM ai_run_configs WHERE provider_id=NEW.id OR provider_id=OLD.id); END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_provider_secret_revision_delete",
+      "sql": "CREATE TRIGGER m14_provider_secret_revision_delete AFTER DELETE ON app_secrets BEGIN\n UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (SELECT c.profile_id FROM ai_run_configs c JOIN ai_providers p ON c.provider_id=p.id WHERE p.secret_ref=OLD.key);\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_provider_secret_revision_insert",
+      "sql": "CREATE TRIGGER m14_provider_secret_revision_insert AFTER INSERT ON app_secrets BEGIN\n UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (SELECT c.profile_id FROM ai_run_configs c JOIN ai_providers p ON c.provider_id=p.id WHERE p.secret_ref=NEW.key);\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_provider_secret_revision_update",
+      "sql": "CREATE TRIGGER m14_provider_secret_revision_update AFTER UPDATE ON app_secrets WHEN OLD.key IS NOT NEW.key OR OLD.secret IS NOT NEW.secret BEGIN\n UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (SELECT c.profile_id FROM ai_run_configs c JOIN ai_providers p ON c.provider_id=p.id WHERE p.secret_ref=NEW.key OR p.secret_ref=OLD.key);\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_result_parent_insert",
+      "sql": "CREATE TRIGGER m14_result_parent_insert BEFORE INSERT ON m14_completion_delivery WHEN NOT EXISTS(SELECT 1 FROM m14_delegation WHERE id=NEW.delegation_id AND parent_task=NEW.parent_task) BEGIN SELECT RAISE(ABORT,'RESULT_PARENT_CHANGED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_result_parent_update",
+      "sql": "CREATE TRIGGER m14_result_parent_update BEFORE UPDATE OF delegation_id,parent_task ON m14_completion_delivery WHEN NOT EXISTS(SELECT 1 FROM m14_delegation WHERE id=NEW.delegation_id AND parent_task=NEW.parent_task) BEGIN SELECT RAISE(ABORT,'RESULT_PARENT_CHANGED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_secret_revision_change",
+      "sql": "CREATE TRIGGER m14_secret_revision_change AFTER UPDATE ON app_secrets\nWHEN OLD.key IS NOT NEW.key OR OLD.secret IS NOT NEW.secret\nBEGIN\n UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (\n SELECT p.id FROM ai_profiles p,json_each(p.env) e WHERE json_extract(e.value,'$.secret')=1 AND (NEW.key='ai:'||p.id||':env:'||json_extract(e.value,'$.name') OR OLD.key='ai:'||p.id||':env:'||json_extract(e.value,'$.name')));\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_secret_revision_delete",
+      "sql": "CREATE TRIGGER m14_secret_revision_delete AFTER DELETE ON app_secrets BEGIN\n UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (\n SELECT p.id FROM ai_profiles p,json_each(p.env) e WHERE json_extract(e.value,'$.secret')=1 AND OLD.key='ai:'||p.id||':env:'||json_extract(e.value,'$.name'));\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_secret_revision_insert",
+      "sql": "CREATE TRIGGER m14_secret_revision_insert AFTER INSERT ON app_secrets BEGIN\n UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (\n SELECT p.id FROM ai_profiles p,json_each(p.env) e WHERE json_extract(e.value,'$.secret')=1 AND NEW.key='ai:'||p.id||':env:'||json_extract(e.value,'$.name'));\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_submission_frozen",
+      "sql": "CREATE TRIGGER m14_submission_frozen BEFORE UPDATE ON m14_submission BEGIN SELECT RAISE(ABORT,'SUBMISSION_IMMUTABLE');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_task_state_active_insert",
+      "sql": "CREATE TRIGGER m14_task_state_active_insert BEFORE INSERT ON m14_task_state WHEN NEW.record_state='active' AND NOT EXISTS(SELECT 1 FROM tasks WHERE id=NEW.task_id) BEGIN SELECT RAISE(ABORT,'VISIBLE_TASK_REQUIRED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_task_state_active_update",
+      "sql": "CREATE TRIGGER m14_task_state_active_update BEFORE UPDATE ON m14_task_state WHEN NEW.record_state='active' AND NOT EXISTS(SELECT 1 FROM tasks WHERE id=NEW.task_id) BEGIN SELECT RAISE(ABORT,'VISIBLE_TASK_REQUIRED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_tool_revision_change",
+      "sql": "CREATE TRIGGER m14_tool_revision_change AFTER UPDATE ON ai_tools\nWHEN OLD.kind IS NOT NEW.kind OR OLD.executable IS NOT NEW.executable OR OLD.custom_path IS NOT NEW.custom_path OR OLD.version IS NOT NEW.version OR OLD.installed IS NOT NEW.installed OR OLD.login IS NOT NEW.login\nBEGIN UPDATE m14_profile_execution_revision SET revision=revision+1 WHERE present=1 AND profile_id IN (SELECT profile_id FROM ai_run_configs WHERE tool_id=NEW.id OR tool_id=OLD.id); END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_visible_task_delete_guard",
+      "sql": "CREATE TRIGGER m14_visible_task_delete_guard BEFORE DELETE ON tasks WHEN EXISTS(SELECT 1 FROM m14_task_state WHERE task_id=OLD.id AND record_state<>'retained') BEGIN SELECT RAISE(ABORT,'TASK_RETENTION_REQUIRED');END"
+    },
+    {
+      "type": "trigger",
+      "name": "m14_visible_task_insert_guard",
+      "sql": "CREATE TRIGGER m14_visible_task_insert_guard BEFORE INSERT ON tasks WHEN EXISTS(SELECT 1 FROM m14_task_state WHERE task_id=NEW.id AND record_state='retained') BEGIN SELECT RAISE(ABORT,'TASK_RETAINED');END"
+    }
+  ]
+}

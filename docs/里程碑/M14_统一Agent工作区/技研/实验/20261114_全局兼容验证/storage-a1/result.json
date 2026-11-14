@@ -1,0 +1,78 @@
+[
+  {
+    "id": "P01-old-design-single-binding-counterexample",
+    "status": "passed",
+    "detail": "Actual SQL from R0.2 rejects second runtime row for same task; confirms redesign is required."
+  },
+  {
+    "id": "P02-existing-DDL-unknown-exclusion",
+    "status": "passed",
+    "detail": "Unknown turn keeps exclusive task slot."
+  },
+  {
+    "id": "P03-existing-DDL-delete-protection",
+    "status": "passed",
+    "detail": "Foreign key prevents task deletion during unresolved restore."
+  },
+  {
+    "id": "P04-candidate-multibinding-idempotence",
+    "status": "passed",
+    "detail": "Candidate additive migration reruns and A→B→A preserve task and original snapshot bytes; not production migration."
+  },
+  {
+    "id": "P05-candidate-native-ownership",
+    "status": "passed",
+    "detail": "Same native identity cannot be assigned to another logical task."
+  },
+  {
+    "id": "P06-candidate-switch-transaction-failure",
+    "status": "passed",
+    "detail": "Injected foreign-key failure rolls back active pointer and leaves no partial binding."
+  },
+  {
+    "id": "P07-draft-compare-and-set",
+    "status": "passed",
+    "detail": "CAS prevents old-window draft save from overwriting newer draft."
+  },
+  {
+    "id": "P08-template-revision-reopen",
+    "status": "passed",
+    "detail": "Persisted role swap affects new revision; prior task keeps adopted revision across reopen; config deletion validation still needs service."
+  },
+  {
+    "id": "P09-delegation-idempotence-origin",
+    "status": "passed",
+    "detail": "Candidate unique keys protect delegation and result enqueue; delivery cannot claim human origin. No runtime scheduler proven."
+  },
+  {
+    "id": "P10-history-pagination-after-event-prune",
+    "status": "passed",
+    "detail": {
+      "pages": 200,
+      "all_items_retained": true,
+      "query_plan": [
+        [
+          4,
+          0,
+          47,
+          "SEARCH items USING COVERING INDEX sqlite_autoindex_items_2 (task=? AND ordinal<?)"
+        ]
+      ],
+      "not_proven": "IPC snapshot atomicity, renderer anchoring and heap"
+    }
+  },
+  {
+    "id": "P11-history-publication-no-replace",
+    "status": "passed",
+    "detail": "No-replace link publication preserves competing target; full native subsidiary history still unproven."
+  },
+  {
+    "id": "P12-real-local-SVN-large-sparse-fixture",
+    "status": "passed",
+    "detail": {
+      "logical_bytes": 11811160064,
+      "allocated_bytes": 0,
+      "boundary": "Sparse fixture tests metadata paths, NOT representative real-project performance."
+    }
+  }
+]

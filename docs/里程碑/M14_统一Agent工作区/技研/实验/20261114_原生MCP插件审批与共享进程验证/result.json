@@ -1,0 +1,60 @@
+{
+  "out": "/private/tmp/willyou-m14-plugin-mcp-joint-probe/attempt-0bcfLk",
+  "checks": [
+    {
+      "id": "B01",
+      "title": "codex actual private MCP executes sandbox plugin only after existing approval and respects live disable",
+      "status": "passed",
+      "evidence": {
+        "runId": "a97686cf-96be-4c5f-8445-bbbd41daf29d",
+        "sameLogicalTask": "6c170f42-dfaa-431c-841b-26d28ce0565d",
+        "realPrivateBrokerAndBridge": true,
+        "kernelPeerAndAncestryVerified": true,
+        "actualApplicationToolService": true,
+        "actualSandboxPluginHandler": true,
+        "existingWriteApprovalEnforced": true,
+        "wrongWindowDenied": true,
+        "liveR17DisableReturnedToModel": true,
+        "immutableLaunchPlan": true,
+        "executedOnce": true,
+        "oldRunDenied": false,
+        "nativeAndBridgeStopped": true
+      }
+    },
+    {
+      "id": "B02",
+      "title": "claude actual private MCP executes sandbox plugin only after existing approval and respects live disable",
+      "status": "passed",
+      "evidence": {
+        "runId": "27df9555-8173-4d00-9f2e-990cc34cd179",
+        "sameLogicalTask": "6c170f42-dfaa-431c-841b-26d28ce0565d",
+        "realPrivateBrokerAndBridge": true,
+        "kernelPeerAndAncestryVerified": true,
+        "actualApplicationToolService": true,
+        "actualSandboxPluginHandler": true,
+        "existingWriteApprovalEnforced": true,
+        "wrongWindowDenied": true,
+        "liveR17DisableReturnedToModel": true,
+        "immutableLaunchPlan": true,
+        "executedOnce": true,
+        "oldRunDenied": true,
+        "nativeAndBridgeStopped": true
+      }
+    },
+    {
+      "id": "B03",
+      "title": "host-owned pooled plugin survives provider switch and closes with its own service",
+      "status": "passed",
+      "evidence": {
+        "twoApprovedIsolatedPluginWrites": true,
+        "sharedPluginRuntimeIndependentOfAgent": true,
+        "hostServiceCloseStopsOwnRuntime": true,
+        "noBusinessReplay": true,
+        "noRunningInvocations": true,
+        "allLeasesReleased": true
+      }
+    }
+  ],
+  "passed": 3,
+  "scope": "Current programmatic owner/plan and actual private MCP, PluginHostService/PluginSessionTools/write approval/policy/sandbox process. Real Codex then Claude same logical task, local mock models and isolated synthetic plugin code writing only its temporary private data. Trusted-window research facade, no real UI approval, external system writes, complete parent-child tree, host crash or product edits."
+}

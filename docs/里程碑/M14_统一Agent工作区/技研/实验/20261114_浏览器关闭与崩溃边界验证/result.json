@@ -1,0 +1,60 @@
+{
+  "out": "/private/tmp/willyou-m14-browser-close-probe/attempt-IC3bRU",
+  "checks": [
+    {
+      "id": "C01",
+      "title": "existing workspace close does not wait for beforeunload",
+      "status": "passed",
+      "evidence": {
+        "handler": {
+          "handler": "function",
+          "activation": true
+        },
+        "blocked": 0,
+        "beforeunloadExecuted": false,
+        "originalCloseDestroyed": true,
+        "policy": "Current workspace close skips page beforeunload; no new unsaved-form confirmation promised."
+      }
+    },
+    {
+      "id": "C02",
+      "title": "opener close destroys named popup but preserves new tab",
+      "status": "passed",
+      "evidence": {
+        "opener": "8e7ba1f7-75c1-4121-8ffa-40f0f8116eaf",
+        "popup": "1d898e0b-fe0e-41f4-8423-8fc5dc992247",
+        "survivingTab": "cb7b859e-8126-472d-a188-8ba8210d4f06",
+        "popupCascaded": true,
+        "blankTabSurvived": true,
+        "sharedSession": true
+      }
+    },
+    {
+      "id": "C03",
+      "title": "renderer crash is distinct from page destruction and explicit reload restores cookie",
+      "status": "passed",
+      "evidence": {
+        "details": {
+          "reason": "killed",
+          "exitCode": 2
+        },
+        "logicalPageSurvivesCrash": true,
+        "explicitHostReload": true,
+        "domReset": true,
+        "localStorageAndCookieRetained": true
+      }
+    },
+    {
+      "id": "C04",
+      "title": "popup initialization racing opener close cannot publish a surviving orphan",
+      "status": "passed",
+      "evidence": {
+        "publishedBeforeClose": [],
+        "orphanSurvived": false,
+        "initializationDestroyed": true
+      }
+    }
+  ],
+  "passed": 4,
+  "scope": "Actual Electron and current BrowserService. Host-driven isolated local pages, no Agent/native model turn, no product UI, no external account or data."
+}

@@ -1,0 +1,98 @@
+{
+  "out": "/private/tmp/willyou-m14-f12-worktree/attempt-az6zb88u",
+  "passed": 7,
+  "checks": [
+    {
+      "id": "G01-success-before-bind-restart",
+      "passed": true,
+      "result": {
+        "exitAtDurableReady": 74,
+        "restartBindsExactlyOnce": true,
+        "plannedNotRunnable": true,
+        "oldTaskSelectionUnchanged": true,
+        "bindingHistoryRetains": true
+      }
+    },
+    {
+      "id": "G02-failing-hook-known-and-unknown",
+      "passed": true,
+      "result": [
+        {
+          "window": "before-binding",
+          "nativeGitExit": 19,
+          "outputsPreserved": {
+            "ignored/result.bin": "ea07cd11b8e9778c91ba69c66ddc4ce522630a517184c992ce7b52850133286e",
+            "user-result.txt": "fc82ee388b2138d70c587c4d432551f3a3866c1fb92d9b5b042762dc813aca84"
+          },
+          "registered": true,
+          "noBinding": true
+        },
+        {
+          "window": "after-command",
+          "nativeGitExit": 19,
+          "outputsPreserved": {
+            "ignored/result.bin": "ea07cd11b8e9778c91ba69c66ddc4ce522630a517184c992ce7b52850133286e",
+            "user-result.txt": "fc82ee388b2138d70c587c4d432551f3a3866c1fb92d9b5b042762dc813aca84"
+          },
+          "registered": true,
+          "noBinding": true
+        }
+      ]
+    },
+    {
+      "id": "G03-success-without-receipt",
+      "passed": true,
+      "result": {
+        "actualGitSuccessWithoutDurableReceiptNotReady": true,
+        "noRerunOrAutomaticRemoval": true
+      }
+    },
+    {
+      "id": "G04-commit-failure-and-stale-selection",
+      "passed": true,
+      "result": {
+        "realSqliteCommitConstraintFailed": true,
+        "cwdLinkAndIntentAllRolledBack": true,
+        "staleSelectionRefused": true,
+        "worktreeRetained": true
+      }
+    },
+    {
+      "id": "G05-output-and-path-replacement",
+      "passed": true,
+      "result": {
+        "preserved": [
+          "ignored",
+          "untracked",
+          "committed",
+          "replaced",
+          "replaced-bound"
+        ],
+        "changedReadyDoesNotBind": true
+      }
+    },
+    {
+      "id": "G06-live-lock-and-owned-unused",
+      "passed": true,
+      "result": {
+        "liveHeldLockBlocksOtherProcess": true,
+        "releasedLockAllowsRecovery": true,
+        "pristineOwnedUnusedDistinguished": true,
+        "deathNotInferredFromElapsedTime": true
+      }
+    },
+    {
+      "id": "G07-history-retention",
+      "passed": true,
+      "result": {
+        "taskRetainedDoesNotDeleteWorktree": true,
+        "foreignKeyProtectsHistoricalBinding": true,
+        "noImplicitBranchRemoval": true
+      }
+    }
+  ],
+  "error": null,
+  "seed": "/private/tmp/willyou-m14-f12-worktree/seed-C16.sqlite",
+  "seedSha256": "d95b1dc36e37fc23d5522d94eb0bca85a7019b541d3bffc766655e86e8d07782",
+  "scope": "Real local Git, SQLite C1.6 copy plus C1.7 research candidate, distinct child process exits/restarts. No SDK, product code or UI; synchronous synthetic hook only. Retention classifies, does not implement user-authorized physical removal or all external writer exclusion."
+}

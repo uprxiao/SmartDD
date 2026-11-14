@@ -1,0 +1,102 @@
+{
+  "checks": [
+    {
+      "id": "H01",
+      "title": "Claude SDK tool history resumes in actual CLI then returns to SDK",
+      "status": "passed",
+      "evidence": {
+        "sameSessionId": "86ab2b52-acf5-40ad-8a94-d3aec7b86ba4",
+        "first": {
+          "path": "/private/tmp/willyou-m14-cli-sdk-history-probe/attempt-UopqC9/claude-home/.claude/projects/-private-tmp-willyou-m14-cli-sdk-history-probe-attempt-UopqC9-claude-workspace/86ab2b52-acf5-40ad-8a94-d3aec7b86ba4.jsonl",
+          "sha256": "1fdd9e7b6d80a11f51f3fad6c7fb04c9c031fa2ea33d4579104086c89250681b",
+          "bytes": 53815
+        },
+        "second": {
+          "path": "/private/tmp/willyou-m14-cli-sdk-history-probe/attempt-UopqC9/claude-home/.claude/projects/-private-tmp-willyou-m14-cli-sdk-history-probe-attempt-UopqC9-claude-workspace/86ab2b52-acf5-40ad-8a94-d3aec7b86ba4.jsonl",
+          "sha256": "8c84476706953e6e797feaa8984945c8364099196b5af169ae73fe13d8047e92",
+          "bytes": 63409
+        },
+        "third": {
+          "path": "/private/tmp/willyou-m14-cli-sdk-history-probe/attempt-UopqC9/claude-home/.claude/projects/-private-tmp-willyou-m14-cli-sdk-history-probe-attempt-UopqC9-claude-workspace/86ab2b52-acf5-40ad-8a94-d3aec7b86ba4.jsonl",
+          "sha256": "404aac455b942b8777ad4061df6b36c4e1e7cb9c02028eb10ad57b9d2da57ca0",
+          "bytes": 73278
+        },
+        "toolResultsPresentInNextModeRequests": true,
+        "localModelRequests": 6
+      }
+    },
+    {
+      "id": "H02",
+      "title": "Codex app-server tool history resumes in exec CLI then returns to app-server",
+      "status": "passed",
+      "evidence": {
+        "sameThreadId": "01a1d975-b31c-7e51-8592-d9e072363ca3",
+        "first": {
+          "path": "/private/tmp/willyou-m14-cli-sdk-history-probe/attempt-RvCagg/codex-home/.codex/sessions/2026/11/14/rollout-2026-11-14T17-48-51-01a1d975-b31c-7e51-8592-d9e072363ca3.jsonl",
+          "sha256": "1f3e9ef8c516e9760334c93287dbd371b48a941651f9e5f66e08abee60dec5fa",
+          "bytes": 38707
+        },
+        "second": {
+          "path": "/private/tmp/willyou-m14-cli-sdk-history-probe/attempt-RvCagg/codex-home/.codex/sessions/2026/11/14/rollout-2026-11-14T17-48-51-01a1d975-b31c-7e51-8592-d9e072363ca3.jsonl",
+          "sha256": "3eb64d268810c9154e48e78370576a30b76ba5c71c8d578e93620cd1dc0a73e1",
+          "bytes": 48280
+        },
+        "third": {
+          "path": "/private/tmp/willyou-m14-cli-sdk-history-probe/attempt-RvCagg/codex-home/.codex/sessions/2026/11/14/rollout-2026-11-14T17-48-51-01a1d975-b31c-7e51-8592-d9e072363ca3.jsonl",
+          "sha256": "60f1858af7dc9255726a018a494adbc154bc2d6db49e4cd31db4ba50d2c6510c",
+          "bytes": 57173
+        },
+        "toolResultsPresentInNextModeRequests": true,
+        "localModelRequests": 6
+      }
+    },
+    {
+      "id": "H03",
+      "title": "claude actual locator and CLI missing-history rejection",
+      "status": "passed",
+      "evidence": {
+        "driver": "claude",
+        "nativeId": "86ab2b52-acf5-40ad-8a94-d3aec7b86ba4",
+        "actualLocatorFoundHistory": true,
+        "locatorReturnsNullWhenMissing": true,
+        "actualCodexIndex": [],
+        "missingCliExit": 1,
+        "modelRequests": 0,
+        "originalRestoredSha256": "404aac455b942b8777ad4061df6b36c4e1e7cb9c02028eb10ad57b9d2da57ca0"
+      }
+    },
+    {
+      "id": "H04",
+      "title": "codex actual locator and CLI missing-history rejection",
+      "status": "passed",
+      "evidence": {
+        "driver": "codex",
+        "nativeId": "01a1d975-b31c-7e51-8592-d9e072363ca3",
+        "actualLocatorFoundHistory": true,
+        "locatorReturnsNullWhenMissing": true,
+        "actualCodexIndex": [
+          {
+            "id": "01a1d975-b31c-7e51-8592-d9e072363ca3",
+            "cwd": "/private/tmp/willyou-m14-cli-sdk-history-probe/attempt-RvCagg/codex-workspace",
+            "timestampMs": 1794649731869,
+            "originator": "m14_cli_sdk_history",
+            "firstUserMessage": "USER_codex_1"
+          }
+        ],
+        "missingCliExit": 1,
+        "modelRequests": 0,
+        "originalRestoredSha256": "60f1858af7dc9255726a018a494adbc154bc2d6db49e4cd31db4ba50d2c6510c"
+      }
+    }
+  ],
+  "passed": 4,
+  "selectedEvidence": {
+    "claude": "attempt-UopqC9",
+    "codex": "attempt-RvCagg",
+    "missing": "missing-history/result.json"
+  },
+  "totalLocalModelRequests": 15,
+  "paidModelCalls": 0,
+  "originalFailedCodexAttemptPreserved": true,
+  "scope": "Fixed-version native history compatibility, three turns with real file-read tools each; CLI missing-history refusal and existing SmartDD native locator. Not interactive PTY, TaskService migration, concurrent writer guard, product UI, cross-version downgrade or external provider authentication."
+}

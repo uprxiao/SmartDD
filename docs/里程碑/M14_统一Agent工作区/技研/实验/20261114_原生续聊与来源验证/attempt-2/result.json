@@ -1,0 +1,70 @@
+{
+  "checks": [
+    {
+      "id": "S01-Claude-one-query-for-transfer-plus-user",
+      "status": "passed",
+      "detail": {
+        "sid": "3ab0e460-90f6-4ca9-ab18-f2d005b7404a",
+        "uid": "10ea36ec-91ce-47c0-8cba-3f2f91419a46",
+        "transferId": "7faae6e6-30d3-4aee-b365-9664cd49bdd0",
+        "historyReceiptOnly": true,
+        "userReceiptMatched": true
+      }
+    },
+    {
+      "id": "S02-Claude-original-user-record",
+      "status": "passed",
+      "detail": {
+        "uuid": "10ea36ec-91ce-47c0-8cba-3f2f91419a46",
+        "text": "USER_B1_0528\r\n原文乙"
+      }
+    },
+    {
+      "id": "S03-A-native-thread-resumed-after-process-restart",
+      "status": "passed",
+      "detail": {
+        "nativeThread": "01a1d7ca-b851-7ce2-a0df-e64adc4c0a86",
+        "firstPid": 16006,
+        "secondPid": 16030
+      }
+    },
+    {
+      "id": "S04-A-receives-only-B-delta-and-retains-A",
+      "status": "passed",
+      "detail": {
+        "retainedA": true,
+        "deltaB": true
+      }
+    }
+  ],
+  "first": {
+    "thread": "01a1d7ca-b851-7ce2-a0df-e64adc4c0a86",
+    "inputId": "b0f7bad8-51ff-4ed7-a63c-338d1a0ebe2b",
+    "pid": 16006
+  },
+  "claudeRows": [
+    {
+      "uuid": "7faae6e6-30d3-4aee-b365-9664cd49bdd0",
+      "isMeta": true,
+      "isSidechain": false,
+      "text": "[MESSAGE FROM NON-USER SOURCE - NOT USER INPUT]\nTRANSFER_A_REFERENCE_NOT_NEW_AUTH\n{\"source\":\"history\",\"items\":[{\"id\":\"user-a\",\"role\":\"user\",\"text\":\"USER_A1_0417\\r\\n原文甲\"},{\"id\":\"assistant-a\",\"role\":\"assistant\",\"text\":\"ANSWER_A1\"}]}"
+    },
+    {
+      "uuid": "10ea36ec-91ce-47c0-8cba-3f2f91419a46",
+      "isSidechain": false,
+      "text": "USER_B1_0528\r\n原文乙"
+    }
+  ],
+  "second": {
+    "thread": "01a1d7ca-b851-7ce2-a0df-e64adc4c0a86",
+    "inputId": "9c89f3f2-6a53-4b57-8a77-8e5d4a8c3c33",
+    "pid": 16030
+  },
+  "currentInputs": {
+    "u1": "USER_A1_0417\r\n原文甲",
+    "u2": "USER_B1_0528\r\n原文乙",
+    "u3": "USER_A2_0639\r\n原文丙"
+  },
+  "scope": "Actual Codex→Claude→same Codex native thread with process restart, loopback fake models; host transfer selection is explicit fixture, not production coverage ledger or business authorization",
+  "sourceSha256": "40c714f4c62112d8c5eb68f8ab4c611ebc21419b7c9bdb9873a4d0dea29bf088"
+}

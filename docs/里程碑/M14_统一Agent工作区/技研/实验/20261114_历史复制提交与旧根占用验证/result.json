@@ -1,0 +1,201 @@
+{
+  "final": {
+    "out": "/private/tmp/willyou-m14-history-copy-probe/attempt-gFMScC",
+    "checks": [
+      {
+        "id": "H01",
+        "title": "forged copy receipt rejected before metadata update",
+        "status": "passed",
+        "evidence": {
+          "fakeReceiptRejected": true
+        }
+      },
+      {
+        "id": "H02",
+        "title": "genuine copied receipt becomes invalid after source changes",
+        "status": "passed",
+        "evidence": {
+          "sourceChangeRejected": true,
+          "metadataUnchanged": true,
+          "newCopyReceipt": true
+        }
+      },
+      {
+        "id": "H03",
+        "title": "metadata and task pointer roll back together after callback failure; copied files remain",
+        "status": "passed",
+        "evidence": {
+          "allMetadataRolledBack": true,
+          "copiedFileRemains": true,
+          "notACrashTest": true
+        }
+      },
+      {
+        "id": "H04",
+        "title": "retry with still-valid receipt commits pointer and retains old root ownership",
+        "status": "passed",
+        "evidence": {
+          "taskPointerCommitted": true,
+          "oldRootAndAliasRejected": true,
+          "currentRootRejected": true,
+          "oldHistoryBytesPreserved": true,
+          "alias": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-PVLnqW/old-root-alias"
+        }
+      },
+      {
+        "id": "H05",
+        "title": "old M14 candidate loses old-root exclusion although actual registry retains it",
+        "status": "passed",
+        "evidence": {
+          "negativeReproduced": true,
+          "scope": "Old temporary M14 claimBinding; not product bug",
+          "unmappedHistoricalVersions": 3
+        }
+      },
+      {
+        "id": "H06",
+        "title": "history-aware candidate rejects prior/current roots and alias after migration",
+        "status": "passed",
+        "evidence": {
+          "oldRootAliasCurrentRejected": true,
+          "noBindingInserted": true,
+          "dependsOnRetainedHistoricalVersions": true
+        }
+      },
+      {
+        "id": "H07",
+        "title": "unrelated native ID accepted once; canonical alias cannot claim it twice",
+        "status": "passed",
+        "evidence": {
+          "unrelatedIdAccepted": true,
+          "newBindingAliasRejected": true
+        }
+      }
+    ],
+    "passed": 7,
+    "error": null,
+    "scope": "Actual copyClaudeSession + actual session registry; synthetic task pointer transaction callback. Temporary old M14 migration negative and isolated retained-history claim guard. No native provider, actual TaskService, crash recovery, production edits or project snapshot."
+  },
+  "attempts": [
+    {
+      "out": "/private/tmp/willyou-m14-history-copy-probe/attempt-DEd0KJ",
+      "checks": [
+        {
+          "id": "H01",
+          "title": "forged copy receipt rejected before metadata update",
+          "status": "passed",
+          "evidence": {
+            "fakeReceiptRejected": true
+          }
+        },
+        {
+          "id": "H02",
+          "title": "genuine copied receipt becomes invalid after source changes",
+          "status": "passed",
+          "evidence": {
+            "sourceChangeRejected": true,
+            "metadataUnchanged": true,
+            "newCopyReceipt": true
+          }
+        },
+        {
+          "id": "H03",
+          "title": "metadata and task pointer roll back together after callback failure; copied files remain",
+          "status": "passed",
+          "evidence": {
+            "allMetadataRolledBack": true,
+            "copiedFileRemains": true,
+            "notACrashTest": true
+          }
+        },
+        {
+          "id": "H04",
+          "title": "retry with still-valid receipt commits pointer and retains old root ownership",
+          "status": "failed",
+          "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /已属于另一任务/. Input:\n\n'ApplicationError: 原生会话已关联另一任务，不能新增另一套能力'\n\n    at async file:///private/tmp/willyou-m14-history-copy-probe/probe.mjs:45:42\n    at async check (file:///private/tmp/willyou-m14-history-copy-probe/probe.mjs:13:85)\n    at async file:///private/tmp/willyou-m14-history-copy-probe/probe.mjs:42:2"
+        }
+      ],
+      "passed": 3,
+      "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /已属于另一任务/. Input:\n\n'ApplicationError: 原生会话已关联另一任务，不能新增另一套能力'\n\n    at async file:///private/tmp/willyou-m14-history-copy-probe/probe.mjs:45:42\n    at async check (file:///private/tmp/willyou-m14-history-copy-probe/probe.mjs:13:85)\n    at async file:///private/tmp/willyou-m14-history-copy-probe/probe.mjs:42:2",
+      "scope": "Actual copyClaudeSession + actual session registry; synthetic task pointer transaction callback. Temporary old M14 migration negative and isolated retained-history claim guard. No native provider, actual TaskService, crash recovery, production edits or project snapshot."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-history-copy-probe/attempt-gFMScC",
+      "checks": [
+        {
+          "id": "H01",
+          "title": "forged copy receipt rejected before metadata update",
+          "status": "passed",
+          "evidence": {
+            "fakeReceiptRejected": true
+          }
+        },
+        {
+          "id": "H02",
+          "title": "genuine copied receipt becomes invalid after source changes",
+          "status": "passed",
+          "evidence": {
+            "sourceChangeRejected": true,
+            "metadataUnchanged": true,
+            "newCopyReceipt": true
+          }
+        },
+        {
+          "id": "H03",
+          "title": "metadata and task pointer roll back together after callback failure; copied files remain",
+          "status": "passed",
+          "evidence": {
+            "allMetadataRolledBack": true,
+            "copiedFileRemains": true,
+            "notACrashTest": true
+          }
+        },
+        {
+          "id": "H04",
+          "title": "retry with still-valid receipt commits pointer and retains old root ownership",
+          "status": "passed",
+          "evidence": {
+            "taskPointerCommitted": true,
+            "oldRootAndAliasRejected": true,
+            "currentRootRejected": true,
+            "oldHistoryBytesPreserved": true,
+            "alias": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-PVLnqW/old-root-alias"
+          }
+        },
+        {
+          "id": "H05",
+          "title": "old M14 candidate loses old-root exclusion although actual registry retains it",
+          "status": "passed",
+          "evidence": {
+            "negativeReproduced": true,
+            "scope": "Old temporary M14 claimBinding; not product bug",
+            "unmappedHistoricalVersions": 3
+          }
+        },
+        {
+          "id": "H06",
+          "title": "history-aware candidate rejects prior/current roots and alias after migration",
+          "status": "passed",
+          "evidence": {
+            "oldRootAliasCurrentRejected": true,
+            "noBindingInserted": true,
+            "dependsOnRetainedHistoricalVersions": true
+          }
+        },
+        {
+          "id": "H07",
+          "title": "unrelated native ID accepted once; canonical alias cannot claim it twice",
+          "status": "passed",
+          "evidence": {
+            "unrelatedIdAccepted": true,
+            "newBindingAliasRejected": true
+          }
+        }
+      ],
+      "passed": 7,
+      "error": null,
+      "scope": "Actual copyClaudeSession + actual session registry; synthetic task pointer transaction callback. Temporary old M14 migration negative and isolated retained-history claim guard. No native provider, actual TaskService, crash recovery, production edits or project snapshot."
+    }
+  ],
+  "failureClassification": "First driver expected a different Chinese error message; actual NATIVE_IDENTITY_CONFLICT was correct. Corrected assertion to stable code; original failing attempt preserved."
+}

@@ -1,0 +1,68 @@
+{
+  "smartddHead": "40ea344a930aec37e36a803b7c621d3632d2d75a",
+  "t3Head": "f313d0a6cb843551fb60e57a454a71e71a3a8c04",
+  "sourceInputs": 399,
+  "references": [
+    {
+      "path": "/Users/hx/projects/SmartDD/src/main/core/applications/run-registry.ts",
+      "sha256": "83f097157e666f2dde4e57fa0b37a8e0d51271154c1494fa0c0278a13c15502f"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/src/main/core/applications/run-recovery.ts",
+      "sha256": "f3fd283544902264b7766487dc3ca5f7641e553588d27b545de3561468d125cc"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/src/main/core/applications/resource-gc-plan.ts",
+      "sha256": "42df5194f4f5482fb958068d5da9cbaa6ef2eb7b76ebe200014545f654fc6da9"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/src/main/core/applications/resource-gc-tree.ts",
+      "sha256": "2b7a69f94516c3450354041b3e4e212236dd7662daa6b239ee97b9c0097101eb"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/src/main/core/applications/resource-graph-maintenance.ts",
+      "sha256": "0185cf5a61ebddd4d596e7633d4a1e13c11259d9807119335f4dbbba6b176137"
+    },
+    {
+      "path": "/Users/hx/projects/t3code/apps/server/src/provider/CodexInstallation.ts",
+      "sha256": "e2969c8a37f777ec1e7f52db32140dd0ebb3e8dd951a8a348e07ffac57b1ddb2"
+    }
+  ],
+  "variants": [
+    {
+      "variant": "actual",
+      "file": "/private/tmp/willyou-m14-runtime-lease-probe/actual.cjs",
+      "sha256": "4e5e420aa6c62a4dcc34d4e2b3c40cb027bc3976f9a0aef491a2c40d3209d765",
+      "patches": []
+    },
+    {
+      "variant": "naive",
+      "file": "/private/tmp/willyou-m14-runtime-lease-probe/naive.cjs",
+      "sha256": "76e3aefb5289bab3badbf4c666638c4d0633ff467c45da8f2b9f1dc040cb1025",
+      "patches": [
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/resource-gc-plan.ts",
+          "before": "42df5194f4f5482fb958068d5da9cbaa6ef2eb7b76ebe200014545f654fc6da9",
+          "after": "5f07356623f875accef4ec210695767451052fc7c82cc15427f7dfe6d7c38e6d"
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "file": "/private/tmp/willyou-m14-runtime-lease-probe/candidate.cjs",
+      "sha256": "95aa9beb13bd4a752cc52592fdf6bc7c18615a1445013871009b370cba6ed7ea",
+      "patches": [
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/resource-gc-plan.ts",
+          "before": "42df5194f4f5482fb958068d5da9cbaa6ef2eb7b76ebe200014545f654fc6da9",
+          "after": "a9174494bb293e98fc242333c2d0ea42d32cbb51728bd3a4e1150cf4f97eee4a"
+        }
+      ]
+    }
+  ],
+  "sourceFindings": [
+    "Current planner accepts application-package root only and does not read capability_lease_resources members.",
+    "Current tree collector does not support agent-native-runtime manifest and synchronously reads whole files with 256MiB/file and 512MiB/tree limits.",
+    "T3 remove checks install activity, in-memory leases and protected custom paths; this is not a claim of cross-host persistent run GC coverage."
+  ]
+}

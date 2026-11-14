@@ -1,0 +1,67 @@
+{
+  "out": "/private/tmp/willyou-m14-native-claims-probe/attempt-T7zMyd",
+  "checks": [
+    {
+      "id": "P01",
+      "title": "claim projection shares migration rollback transaction",
+      "status": "passed",
+      "evidence": {
+        "allCandidateTablesRolledBack": true,
+        "legacyDataPreserved": true
+      }
+    },
+    {
+      "id": "P02",
+      "title": "successful migration retains current and former roots with provenance",
+      "status": "passed",
+      "evidence": {
+        "roots": [
+          "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-rdOfPR/history-b",
+          "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-rdOfPR/home/.claude"
+        ],
+        "oneOwner": true,
+        "sourceForeignKeys": true
+      }
+    },
+    {
+      "id": "P03",
+      "title": "new binding cannot claim current/former root or alias, even for same task",
+      "status": "passed",
+      "evidence": {
+        "sixConflictsRejected": true,
+        "newBindingRolledBack": true
+      }
+    },
+    {
+      "id": "P04",
+      "title": "retained new-binding root blocks actual legacy create and first bind",
+      "status": "passed",
+      "evidence": {
+        "legacyInsertRejected": true,
+        "legacyFirstBindRejected": true,
+        "syntheticNewBindingRootChange": true
+      }
+    },
+    {
+      "id": "P05",
+      "title": "retained claim source cannot be deleted independently",
+      "status": "passed",
+      "evidence": {
+        "sourceDeleteRestricted": true
+      }
+    },
+    {
+      "id": "P06",
+      "title": "actual copy adoption and binding/revision/claim changes roll back and commit together",
+      "status": "passed",
+      "evidence": {
+        "rollbackIncludesBindingClaimsAndRevisions": true,
+        "currentPointerMatchesActualSnapshot": true,
+        "threeRootsOneBinding": true
+      }
+    }
+  ],
+  "passed": 6,
+  "error": null,
+  "scope": "Actual copy/session registry and schema plus isolated M14 claim projection, migration hook and synchronous adoption callback. Synthetic new-binding root change, no real provider. No full TaskService, unknown/held/corrupt source migration, cross-process projection recovery, final resource/GC integration or product modification."
+}

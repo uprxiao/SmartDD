@@ -1,0 +1,214 @@
+{
+  "integration": {
+    "out": "/private/tmp/willyou-m14-config-plan-integration-probe/attempt-l3uiaH",
+    "checks": [
+      {
+        "id": "J01",
+        "label": "real claude initialization survives cosmetic rename after plan commit",
+        "status": "passed",
+        "evidence": {
+          "driver": "claude",
+          "actualInitialization": true,
+          "planUnchanged": true,
+          "cosmeticEditAllowed": true,
+          "ownedPid": 66483,
+          "modelTurns": 0
+        },
+        "final": {
+          "closed": true,
+          "attempted": true,
+          "spawnCount": 1,
+          "payloadReleased": true,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J02",
+        "label": "real codex initialization survives cosmetic rename after plan commit",
+        "status": "passed",
+        "evidence": {
+          "driver": "codex",
+          "actualInitialization": true,
+          "planUnchanged": true,
+          "cosmeticEditAllowed": true,
+          "ownedPid": 66515,
+          "modelTurns": 0
+        },
+        "final": {
+          "closed": true,
+          "attempted": true,
+          "spawnCount": 1,
+          "payloadReleased": true,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J03",
+        "label": "key rotation after arm blocks native factory and retains cancellation rights",
+        "status": "passed",
+        "evidence": {
+          "keyRotatedThroughActualService": true,
+          "noOSSpawn": true,
+          "cleanupAfterInvalidation": true
+        },
+        "final": {
+          "closed": true,
+          "attempted": false,
+          "spawnCount": 0,
+          "payloadReleased": false,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J04",
+        "label": "key rotation after wrapper fork prevents native payload release",
+        "status": "passed",
+        "evidence": {
+          "wrapperOnly": true,
+          "nativePayloadReleased": false,
+          "ownedExitObserved": true
+        },
+        "final": {
+          "closed": true,
+          "attempted": true,
+          "spawnCount": 1,
+          "payloadReleased": false,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J05",
+        "label": "deleting profile after Claude initializes still allows owned cancellation",
+        "status": "passed",
+        "evidence": {
+          "deletedByActualService": true,
+          "ownCleanupWorksWithoutProfile": true,
+          "modelTurns": 0
+        },
+        "final": {
+          "closed": true,
+          "attempted": true,
+          "spawnCount": 1,
+          "payloadReleased": true,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J06",
+        "label": "rotating credentials after Codex initializes rejects stale execution use",
+        "status": "passed",
+        "evidence": {
+          "stalePlanDenied": true,
+          "existingNativeExplicitlyStopped": true,
+          "modelTurns": 0
+        },
+        "final": {
+          "closed": true,
+          "attempted": true,
+          "spawnCount": 1,
+          "payloadReleased": true,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J07",
+        "label": "provider callback cannot substitute another executable",
+        "status": "passed",
+        "evidence": {
+          "commandSubstitutionRejected": true
+        },
+        "final": {
+          "closed": true,
+          "attempted": false,
+          "spawnCount": 0,
+          "payloadReleased": false,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J08",
+        "label": "provider callback cannot substitute captured environment",
+        "status": "passed",
+        "evidence": {
+          "environmentSubstitutionRejected": true
+        },
+        "final": {
+          "closed": true,
+          "attempted": false,
+          "spawnCount": 0,
+          "payloadReleased": false,
+          "runState": "stopped"
+        }
+      },
+      {
+        "id": "J09",
+        "label": "serialized execution handle cannot create launcher; stale plan cancellation is valid before fork",
+        "status": "passed",
+        "evidence": {
+          "copiedHandleRejected": true,
+          "deletedBeforeForkCanceled": true
+        },
+        "final": {
+          "closed": true,
+          "attempted": false,
+          "spawnCount": 0,
+          "payloadReleased": false,
+          "runState": "stopped"
+        }
+      }
+    ],
+    "passed": 9,
+    "sdk": {
+      "path": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs",
+      "sha256": "20524b5de1d5e69f4b98005994e0970f0426c99ec55e9b9dae1af1f270d86ab7"
+    },
+    "scope": "Candidate full host-plan association + actual profile service with revision triggers + actual owned-run/native process identity + real Claude SDK and Codex initialization. Legacy run reservation fixture and synthetic credentials; no model turns, native thread start, full business bridge or product changes."
+  },
+  "baseline": {
+    "status": "reproduced",
+    "candidateDefect": "old live reader still compares updatedAt after cosmetic rename",
+    "error": "TARGET_CONFIGURATION_CHANGED",
+    "evidence": {
+      "actualProfileUpdatedAt": 2,
+      "fixtureEpoch": 1,
+      "plan": {
+        "schema": "m14-execution-plan-probe-v1",
+        "storeId": "2a834ee0-4960-431b-aa44-30d30689c277",
+        "projectId": "p1",
+        "taskId": "5247b12b-c0f4-4116-8788-c315e00ecf4e",
+        "bindingId": "9133b8c0-b165-4558-889c-ec5f5ef4c6b1",
+        "capabilitySessionId": "1197d92b-f22e-4e7d-95b6-ff173b19e5f9",
+        "sourceSnapshotHash": "fb077781f9c7dd183927bb62b55e35960508c6df1adb547b391c8be741ac111a",
+        "runId": "959f2b53-3142-4cf0-9a9f-b2dcb2a78e19",
+        "generation": 1,
+        "applicationPlanHash": "56b7672bd4eddd8f0510deaa46d337a4eb1564d1e77666dd158eb5ce8de99dff",
+        "delivery": {
+          "receiptId": "6618e707-99f0-44af-a8b0-4102865fbd0f",
+          "hash": "03e68d23ff5721c301f1116d04b8b023511cc319e1f684240d691f6769085789"
+        },
+        "target": {
+          "profileId": "64a14d0f-20a6-4b47-8b1b-2f763212e106",
+          "profileRevision": 1,
+          "configEpoch": 1,
+          "runner": "claude-code",
+          "profileRunner": "claude"
+        },
+        "adapter": {
+          "id": "claude-code",
+          "version": "1.0.0",
+          "hash": "b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e"
+        },
+        "runtime": {
+          "kind": "external",
+          "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-4GjfN1/fixture-executable",
+          "sha256": "5d0650edc85d046cb7cfe91c2f40de2a8c64e4e28fa78aeac21a19f2c0960983",
+          "sdkVersion": "fixture-sdk-1",
+          "nativeVersion": "fixture-native-1",
+          "protocol": "fixture-protocol-1"
+        },
+        "createdAt": "2026-11-14T06:32:05.720Z"
+      }
+    },
+    "modelTurns": 0
+  }
+}

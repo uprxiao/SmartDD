@@ -1,0 +1,81 @@
+{
+  "out": "/private/tmp/willyou-m14-claude-identity-probe/attempt-IDYn4o",
+  "allocationMode": "host-allocated",
+  "checks": [
+    {
+      "id": "H01",
+      "label": "SDK initialization is recorded separately from the native session event",
+      "status": "passed",
+      "evidence": {
+        "modelRequests": 0,
+        "initializeKeys": [
+          "commands",
+          "agents",
+          "output_style",
+          "available_output_styles",
+          "user_output_styles_dir",
+          "models",
+          "account",
+          "pid",
+          "claude_code_version",
+          "current_permission_mode",
+          "hook_on_failure_supported",
+          "other_hook_ask_outranks_host",
+          "feedback_mode",
+          "analytics_disabled",
+          "remote_control_auto_enable",
+          "remote_control_auto_connect_default",
+          "remote_control_available",
+          "remote_control_auto_on_by_default",
+          "ide_rc_auto_enable_gate",
+          "fast_mode_state",
+          "fast_mode_disabled_reason",
+          "session_state",
+          "capabilities"
+        ],
+        "nativeInitEventsSeen": 0
+      }
+    },
+    {
+      "id": "H02",
+      "label": "real Claude init binds identity through the owned run without rewriting source plans",
+      "status": "passed",
+      "evidence": {
+        "native": {
+          "runner": "claude-code",
+          "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vZ1jvH/project",
+          "stateRoot": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vZ1jvH/home/.claude",
+          "sessionId": "73bb2a08-fe23-40ab-8a83-1b6039683e91"
+        },
+        "originalSource": "3591d9ad153879b0b59700712e0a3371ddce4132337f7a70c02e926f72dac1b5",
+        "currentSource": "593ae10876fda1065f65f55b1eb3043e101fb5fbcd142c9bf88082d22d015fba",
+        "localMockRequests": 1
+      }
+    },
+    {
+      "id": "H03",
+      "label": "a new owned run resumes the same Claude session and sends persisted history",
+      "status": "passed",
+      "evidence": {
+        "sameNativeId": "73bb2a08-fe23-40ab-8a83-1b6039683e91",
+        "generation": 2,
+        "historyInActualRequest": true,
+        "localMockRequests": 2
+      }
+    },
+    {
+      "id": "H04",
+      "label": "missing Claude transcript is rejected without changing identity or sending a model request",
+      "status": "passed",
+      "evidence": {
+        "noNewNativeId": true,
+        "noNewModelRequest": true,
+        "originalBindingPreserved": true
+      }
+    }
+  ],
+  "passed": 4,
+  "localMockRequests": 2,
+  "paidModelCalls": 0,
+  "scope": "Actual Claude SDK/native process and isolated owned source/plan variants; synthetic local model replies, no business MCP, user credentials, product code, or whole-app crash recovery."
+}

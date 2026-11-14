@@ -1,0 +1,122 @@
+{
+  "out": "/private/tmp/willyou-m14-unified-binding-probe/attempt-P6uqkn",
+  "checks": [
+    {
+      "id": "U01",
+      "label": "accepted planned binding has no capability and does not globally block GC",
+      "status": "passed",
+      "evidence": {
+        "sameDurableChild": true,
+        "phase": "planned",
+        "noCapabilityAuthority": true,
+        "cleanupAllowed": true
+      }
+    },
+    {
+      "id": "U02",
+      "label": "preparation pins replace no-history state and invalidate the cleanup plan",
+      "status": "passed",
+      "evidence": {
+        "pins": 3,
+        "token": "39707b3a-07a1-45cb-a6c3-79e849cf2e7d",
+        "stalePlanRejected": true
+      }
+    },
+    {
+      "id": "U03",
+      "label": "preparation to history is atomic and archived history still protects resources",
+      "status": "passed",
+      "evidence": {
+        "result": {
+          "bindingId": "d5490dd2-2028-4594-a5d0-d4fec812db4a",
+          "capId": "810bd964-400e-4528-8182-72695706b3a7",
+          "snapshotHash": "69645f5ef76a52b75f2d39bbb25c42b779afa51c6e75869e8fa4f69f52b9cb7d"
+        },
+        "rollbackPreservesPins": true,
+        "tombstoneRetains": true
+      }
+    },
+    {
+      "id": "U04",
+      "label": "pre-fork cancellation releases preparation pins and permits actual obsolete-package deletion",
+      "status": "passed",
+      "evidence": {
+        "canceled": true,
+        "physicalOldPackageRemoved": true,
+        "newDefaultPreserved": true
+      }
+    },
+    {
+      "id": "U05",
+      "label": "target revoked while preparation is pending cannot publish history",
+      "status": "passed",
+      "evidence": {
+        "noFallback": true,
+        "heldUntilExplicitCancel": true
+      }
+    },
+    {
+      "id": "U06",
+      "label": "resource generation changes reject preparation and later commit",
+      "status": "passed",
+      "evidence": {
+        "staleAdmissionRejected": true,
+        "staleCommitRejected": true
+      }
+    },
+    {
+      "id": "U07",
+      "label": "dispatching state cannot use pre-fork cancellation",
+      "status": "passed",
+      "evidence": {
+        "launchUnknownRetains": true,
+        "noNativeWasActuallyLaunched": true
+      }
+    },
+    {
+      "id": "U08",
+      "label": "prepared history loss is distinct from an untouched planned target",
+      "status": "passed",
+      "evidence": {
+        "preparedOrphanHeld": true
+      }
+    },
+    {
+      "id": "U09",
+      "label": "incomplete resource selection cannot enter preparation",
+      "status": "passed",
+      "evidence": {
+        "missingPackageRejectedBeforeReservation": true
+      }
+    },
+    {
+      "id": "U10",
+      "label": "preparation content cannot be replaced between reservation and commit",
+      "status": "passed",
+      "evidence": {
+        "changedContentRejected": true,
+        "originalPlanStillUsable": true
+      }
+    },
+    {
+      "id": "U11",
+      "label": "host exit after reservation preserves pins and permits explicit recovery from frozen DB content",
+      "status": "passed",
+      "evidence": {
+        "worker": {
+          "pid": 56023,
+          "code": null,
+          "signal": "SIGKILL",
+          "stderr": ""
+        },
+        "heldAfterExit": true,
+        "recoveredFromDatabase": true,
+        "staleTokenRejected": true,
+        "noNativeChildOrAutomaticDispatch": true
+      }
+    }
+  ],
+  "passed": 11,
+  "failed": 0,
+  "scope": "Unified isolated binding relation for logical acceptance, preparation refs and migrated history; actual graph GC and resource lock. Actual parent registry uses FixtureProcessReader. Child snapshot is controlled schema-valid input; no native child, projection, full runtime preparation or real configuration service."
+}

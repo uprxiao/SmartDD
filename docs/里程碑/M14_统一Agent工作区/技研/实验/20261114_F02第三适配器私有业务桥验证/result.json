@@ -1,0 +1,138 @@
+{
+  "out": "/private/tmp/willyou-m14-f02-third-adapter/attempt-l2ozh2",
+  "passed": 5,
+  "checks": [
+    {
+      "id": "T01",
+      "title": "third adapter parent uses owned process and actual private MCP",
+      "status": "passed",
+      "evidence": {
+        "runId": "5101589b-51e4-4e47-9936-98063e115882",
+        "taskId": "89116a89-3abd-43ec-b9ce-538f000f8782",
+        "identity": {
+          "pid": 65259,
+          "startedAt": "darwin-proc-v1:1794666741:837849"
+        },
+        "bridgePid": 65262,
+        "result": {
+          "_meta": {
+            "willyou/operationId": "f79e3b3d-081d-40c5-874b-586380f74d8e"
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"value\":\"PARENT_READ\",\"packageHash\":\"6aae25c0afbcc651327079f42154a9d6d2849b4319d367630904404d1399a537\",\"projectId\":\"p1\",\"taskId\":\"89116a89-3abd-43ec-b9ce-538f000f8782\",\"operationId\":\"f79e3b3d-081d-40c5-874b-586380f74d8e\"}"
+            }
+          ],
+          "structuredContent": {
+            "value": "PARENT_READ",
+            "packageHash": "6aae25c0afbcc651327079f42154a9d6d2849b4319d367630904404d1399a537",
+            "projectId": "p1",
+            "taskId": "89116a89-3abd-43ec-b9ce-538f000f8782",
+            "operationId": "f79e3b3d-081d-40c5-874b-586380f74d8e"
+          }
+        }
+      }
+    },
+    {
+      "id": "T02",
+      "title": "distinct child role uses identical host path and scoped business identity",
+      "status": "passed",
+      "evidence": {
+        "delegationId": "63a6be0b-e315-4685-8304-6163ccf28ce0",
+        "runId": "b454b2d3-f784-4e29-8cf7-85d9df08c112",
+        "taskId": "ffc6eadd-653a-4364-977d-72d8871d774a",
+        "identity": {
+          "pid": 65265,
+          "startedAt": "darwin-proc-v1:1794666742:255834"
+        },
+        "bridgePid": 65268,
+        "result": {
+          "_meta": {
+            "willyou/operationId": "0391ea84-5cd5-46f2-8299-35ebf2ee4897"
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"value\":\"CHILD_READ\",\"packageHash\":\"6aae25c0afbcc651327079f42154a9d6d2849b4319d367630904404d1399a537\",\"projectId\":\"p1\",\"taskId\":\"ffc6eadd-653a-4364-977d-72d8871d774a\",\"operationId\":\"0391ea84-5cd5-46f2-8299-35ebf2ee4897\"}"
+            }
+          ],
+          "structuredContent": {
+            "value": "CHILD_READ",
+            "packageHash": "6aae25c0afbcc651327079f42154a9d6d2849b4319d367630904404d1399a537",
+            "projectId": "p1",
+            "taskId": "ffc6eadd-653a-4364-977d-72d8871d774a",
+            "operationId": "0391ea84-5cd5-46f2-8299-35ebf2ee4897"
+          }
+        },
+        "delegationRecord": "fixture only; not command/outbox execution"
+      }
+    },
+    {
+      "id": "T03",
+      "title": "actual live policy denies both roles without handler execution",
+      "status": "passed",
+      "evidence": [
+        {
+          "role": "parent",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"APP_NOT_ENABLED\",\"message\":\"请到项目「isolated run fixture」的‘插件’页开启禅道\",\"layer\":\"auth\",\"retryable\":false,\"attemptCount\":0,\"retryExhausted\":false,\"effectState\":\"not-started\",\"nextAction\":\"核对本次错误后重新明确操作\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "role": "child",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"APP_NOT_ENABLED\",\"message\":\"请到项目「isolated run fixture」的‘插件’页开启禅道\",\"layer\":\"auth\",\"retryable\":false,\"attemptCount\":0,\"retryExhausted\":false,\"effectState\":\"not-started\",\"nextAction\":\"核对本次错误后重新明确操作\"}}"
+              }
+            ],
+            "isError": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "T04",
+      "title": "retired scope cannot borrow active parent and serialized ownership is rejected",
+      "status": "passed",
+      "evidence": {
+        "staleCall": "SCOPE_DENIED",
+        "newBridge": "CANCELED",
+        "copiedHandle": "SCOPE_DENIED (both role starts)",
+        "parentStillActive": true
+      }
+    },
+    {
+      "id": "T05",
+      "title": "all owned processes and resource leases settle",
+      "status": "passed",
+      "evidence": {
+        "invocations": [
+          {
+            "run_id": "5101589b-51e4-4e47-9936-98063e115882",
+            "task_id": "89116a89-3abd-43ec-b9ce-538f000f8782",
+            "state": "succeeded",
+            "attempt_count": 1
+          },
+          {
+            "run_id": "b454b2d3-f784-4e29-8cf7-85d9df08c112",
+            "task_id": "ffc6eadd-653a-4364-977d-72d8871d774a",
+            "state": "succeeded",
+            "attempt_count": 1
+          }
+        ],
+        "leasesReleased": true,
+        "allProcessesStopped": true
+      }
+    }
+  ],
+  "scope": "Real third scripted OS runtime and stdio MCP through current actual broker, tool service, peer identity and R17; isolated generic programmatic owner/session variants. Parent-child relationship seeded, no full scheduler, real third vendor SDK, UI or product modification."
+}

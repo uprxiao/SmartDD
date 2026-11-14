@@ -1,0 +1,70 @@
+{
+  "out": "/private/tmp/willyou-m14-plugin-request-joint-probe/attempt-ygCq5f",
+  "checks": [
+    {
+      "id": "P01",
+      "label": "new child request target maps to exact existing approval without exposing PTY target",
+      "status": "passed",
+      "evidence": {
+        "actualPluginHostAndToolService": true,
+        "baselineRejectsNewScope": true,
+        "facadePreservesReviewHashAndDisplayReceipt": true,
+        "parentViewCannotClaimChild": true
+      }
+    },
+    {
+      "id": "P02",
+      "label": "parent provider switch does not transfer or erase child approval",
+      "status": "passed",
+      "evidence": {
+        "parentStoppedChildStillActive": true,
+        "childApprovalIdentityPreserved": true,
+        "newParentCannotApproveChildAsOwn": true
+      }
+    },
+    {
+      "id": "P03",
+      "label": "child cancellation invalidates old approval and cannot be revived in next generation",
+      "status": "passed",
+      "evidence": {
+        "cancelledBeforePluginDispatch": true,
+        "actualNativeExitAndLeaseDrain": true,
+        "oldApprovalDeniedInNewGeneration": true
+      }
+    },
+    {
+      "id": "P04",
+      "label": "actual project policy is rechecked after allow before plugin execution",
+      "status": "passed",
+      "evidence": {
+        "allowNotBusinessDispatch": true,
+        "realPluginPolicyRecheck": true,
+        "noSyntheticWrite": true
+      }
+    },
+    {
+      "id": "P05",
+      "label": "fresh child review executes sandbox plugin once and preserves invocation receipt",
+      "status": "passed",
+      "evidence": {
+        "realSandboxPluginInvocation": true,
+        "oneWrite": true,
+        "sameRequestIdReceipt": true,
+        "originalReviewCannotBeReused": true
+      }
+    },
+    {
+      "id": "P06",
+      "label": "native approval source cannot be used to answer plugin request and pending revocation blocks late allow",
+      "status": "passed",
+      "evidence": {
+        "sourceDiscriminatorEnforced": true,
+        "realPolicyInvalidatesPending": true,
+        "lateAllowDoesNotWrite": true
+      }
+    }
+  ],
+  "passed": 6,
+  "secretReads": 0,
+  "scope": "Actual PluginHostService, PluginProjectPolicy, PluginWriteApprovals, ApplicationToolService and sandbox plugin, with candidate programmatic parent/child runs and actual Claude/Codex initialization. Temporary trusted-window facade, no renderer IPC/auth, native approval callback, SDK-origin business MCP, external writes or model requests."
+}

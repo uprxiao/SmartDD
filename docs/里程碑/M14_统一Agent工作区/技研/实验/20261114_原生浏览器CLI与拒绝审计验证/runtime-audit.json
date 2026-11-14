@@ -1,0 +1,155 @@
+{
+  "attempts": [
+    {
+      "attempt": "attempt-btSYF5",
+      "passed": 5,
+      "nativeExits": [
+        {
+          "event": "owned-exit",
+          "id": "codex-0",
+          "pid": 96782,
+          "code": 0,
+          "signal": null
+        },
+        {
+          "event": "owned-exit",
+          "id": "claude-2",
+          "pid": 96878,
+          "code": 143,
+          "signal": null
+        },
+        {
+          "event": "owned-exit",
+          "id": "claude-1",
+          "pid": 96788,
+          "code": 143,
+          "signal": null
+        }
+      ],
+      "modelRequests": 15,
+      "kernelProofs": 25,
+      "proofsPerNativeRoot": {
+        "96782": 8,
+        "96788": 8,
+        "96878": 8
+      },
+      "outsideOwnerProofs": 1,
+      "businessCalls": 12,
+      "rejectedBeforeGrant": 3,
+      "grantedRequests": 3,
+      "successfulReads": 6,
+      "allNativeAndBusinessSettled": true,
+      "probeSha256": "75d8577c4630514000b93645f27f4c6968a752183955cb46209f969e8cf7494d"
+    },
+    {
+      "attempt": "attempt-iJQGuD",
+      "passed": 5,
+      "nativeExits": [
+        {
+          "event": "owned-exit",
+          "id": "codex-0",
+          "pid": 96604,
+          "code": 0,
+          "signal": null
+        },
+        {
+          "event": "owned-exit",
+          "id": "claude-2",
+          "pid": 96683,
+          "code": 143,
+          "signal": null
+        },
+        {
+          "event": "owned-exit",
+          "id": "claude-1",
+          "pid": 96610,
+          "code": 143,
+          "signal": null
+        }
+      ],
+      "modelRequests": 15,
+      "kernelProofs": 25,
+      "proofsPerNativeRoot": {
+        "96604": 8,
+        "96683": 8,
+        "96610": 8
+      },
+      "outsideOwnerProofs": 1,
+      "businessCalls": 12,
+      "rejectedBeforeGrant": 3,
+      "grantedRequests": 3,
+      "successfulReads": 6,
+      "allNativeAndBusinessSettled": true,
+      "probeSha256": "c7259c05ff1bc38755de31a8ec87feaecba9bc0aa89f4c0b3346b9554e84a2ac"
+    }
+  ],
+  "finalAttempt": "attempt-btSYF5",
+  "scope": "Actual native shell -> compiled current managed CLI -> actual kernel peer gateway -> CLI ToolService/context/BrowserService. Local controlled model, candidate programmatic launch and host approval; Electron allocations forbidden, no real page/login/UI/external business.",
+  "cli": {
+    "executable": "/private/tmp/willyou-m14-browser-native-cli-probe/willyou-app",
+    "sha256": "f92fa14fb920a1b0ac4205299b2e7d1b6e547b9119fb7134bcedf029789ce8f1",
+    "source": "/Users/hx/projects/SmartDD/native/applications/cli.mm",
+    "sourceSha256": "1fcbd52230269f00057e3897963ff9e8fe796219a1226633d49d639ac72cd4cf"
+  },
+  "revokedTokenCli": {
+    "pid": 96875,
+    "code": 2,
+    "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"AUTH_REQUIRED\",\"layer\":\"auth\",\"message\":\"本次CLI身份不存在或已撤销\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对本次运行与应用状态；不要自动重发写操作\",\"retryExhausted\":false},\"requestId\":\"c911ba49-5ca8-4bd9-bdb5-176c2916cacd\"}\n",
+    "stderr": "willyou-app: AUTH_REQUIRED\n"
+  },
+  "schemaReproduction": {
+    "originalGatewayFailure": {
+      "auditUnavailable": true
+    },
+    "candidateGatewayReceipts": [
+      {
+        "method": "cli-parse",
+        "runId": null,
+        "auditId": "f80065e9-dd1d-4292-bfad-fa7b302037c1"
+      },
+      {
+        "method": "cli-parse",
+        "runId": "09f70b26-6710-443f-80f0-f66ea8c83818",
+        "auditId": "d3b010ff-0318-48c4-87e2-e9027358581c"
+      },
+      {
+        "method": "cli-list",
+        "runId": null,
+        "auditId": "be3c819b-dc2c-4d5b-a06c-a1405eb00634"
+      },
+      {
+        "method": "cli-list",
+        "runId": "09f70b26-6710-443f-80f0-f66ea8c83818",
+        "auditId": "6a687f14-f85e-45d1-bad5-5a9224b18008"
+      },
+      {
+        "method": "cli-call",
+        "runId": null,
+        "auditId": "e7434146-b4ad-4601-9daf-51c1bd924370"
+      },
+      {
+        "method": "cli-call",
+        "runId": "09f70b26-6710-443f-80f0-f66ea8c83818",
+        "auditId": "da370927-5da9-409e-91bf-5cf33bcb25e8"
+      },
+      {
+        "method": "cli-cancel",
+        "runId": null,
+        "auditId": "e06130c8-95c5-4a71-bca8-5a6b9e0807be"
+      },
+      {
+        "method": "cli-cancel",
+        "runId": "09f70b26-6710-443f-80f0-f66ea8c83818",
+        "auditId": "650db400-c637-4aff-9223-efb3a886c1f9"
+      }
+    ],
+    "legacyRowPreserved": true,
+    "transactionRollbackPreserved": true,
+    "invalidMcpShapeRejected": true,
+    "fakeCliBridgeRejected": true,
+    "unknownMethodRejected": true,
+    "scope": "Actual unmodified gateway denial method on copied SQLite; minimal candidate CHECK migration only. Not production migration, no real socket in this schema probe, no CLI auditId rendering fix."
+  },
+  "auditWarning": "Real rejection output succeeded, but original capability_broker_denials remained empty. CHECK restricts methods to MCP names and requires bridge_id for non-null run_id; actual CLI denial uses cli-* and no bridge_id. Native CLI refused() omits top-level auditId/auditUnavailable.",
+  "supportedScope": "macOS arm64 fixed versions and local synthetic model. No Electron pages or real login/network business."
+}

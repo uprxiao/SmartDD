@@ -1,5 +1,7 @@
 # M13 插件化、能力统一管理与 AI 配置优化
 
+2026-11-14 后续阶段调整（用户确认）：本阶段之后安排 [M14 统一 Agent 工作区](../M14_统一Agent工作区/README.md)，定时任务顺延为 [M15](../M15_定时任务/README.md)。本阶段现有范围、进度及授权保持，以本页权威记录为准。
+
 更新：2026-11-14。来源：[需求池 F28／F29／F31](../../需求池.md)。需求基线：**R1.0（由 R0.3 及补记 1–8 合并，定稿评审稿）**。当前分支：`feature/0.1.4`。状态：**P1 门槛完成；M13其余范围已授权，开发与验收收口中，尚未完成**。2026-11-11 用户明确要求“制定目标，先跑P1”，授权按现行需求 R1.0、技术方案 T1.0、原型 P0.20 与验收基线实施插件 P1 门槛、相关测试及缺陷修复。2026-11-12用户进一步授权完成整个M13开发阶段，按检查点→AI配置完整闭环→Skill／MCP→插件UI→整体回归／交付推进；P1检查点已提交推送，本次不合并main或发布。
 
 最新接续（2026-11-14）：集中收口原部分通过用例。当前统一基线为[source011／App057](验收/证据/M13-App057-WillYou-label-build-audit-smoke-375-20261114-a1/coordinator-verdict.json)（按用户确认统一“WillYou”设置分组，原型P0.24与[四实际视图](验收/证据/M13-T073-approved-WillYou-settings-label-software-App057-fourviews-376-20261114-a1/coordinator-verdict.json)已核；仅locale两字符串变，主进程／preload与App056相同）；[会话插件面板原型纠偏十视图A](验收/证据/M13-T073-App056-approved-compact-ten-view-A-343-20261114-a1/coordinator-verdict.json)已通过，[T075原完整九步U+A](验收/证据/M13-T075-App056-original-nine-step-complete-A-349-20261114-a1/coordinator-verdict.json)已收口并归账。[T073原完整旧功能清单](验收/证据/M13-T073-original-complete-contract-union-root-384-20261114-a1/coordinator-verdict.json)已按17项实际证据联合完成；[T076原完整邮件合同](验收/证据/M13-T076-original-complete-union-final-project-tail-356-20261114-a1/coordinator-verdict.json)已按同案真实Agent前缀、实际发送／未知核对及项目／停启尾段联合完成；原驱动红与后置纠正证据保留，未重发邮件。[T061原四任务I+A](验收/证据/M13-T061-original-cold-four-task-complete-App056-A-363-20261114-a1/coordinator-verdict.json)已完整收口；[T074原完整U+A+S](验收/证据/M13-T074-original-full-UI-OS-native-transfer-App056-371-20261114-a1/coordinator-verdict.json)已收口，真实两实例导入导出／原生选择器／OS Key及补Key启动全部通过；[T082原跨项目引用A+I](验收/证据/M13-T082-original-complete-A-I-union-foreign-live-B-395-20261114-a1/coordinator-verdict.json)已按原A/C运行前置联合完整通过，T064三种非身份变化视图及合法旧宿主回收已补，原来源成功恢复在[确认的OS钥匙串等待](验收/证据/M13-T064-models-control-and-confirmed-OS-keychain-wait-379-20261114-a1/coordinator-verdict.json)处保留，未重复保存；T082原两任务、A插入和外项目仍运行时B预填均已实际补齐，原失败与不足前置子段保留。[原附件保存尾段](验收/证据/M13-T073-original-native-text-binary-attachment-save-App057-381-20261114-a2/coordinator-verdict.json)已一次完成，完整旧清单联合根复核已通过；系统安全操作集中留后。未执行部分保留。正式状态只取[唯一用例账](验收/测试用例.md)，资源与接续见[轮次记录](验收/并行测试/轮次/M13-AI-20261112T151240Z-96e267/轮次记录.json)。自主完成可自动化步骤，密码／本人登录留后，按根[AGENTS.md](../../../AGENTS.md)执行。
@@ -24,7 +26,7 @@
 
 启动源码基线：`e851900f9`，开始时工作区干净。[P1 执行计划](验收/P1执行计划.md)列出范围、逐项判据和接续位置；[执行与缺陷记录](验收/执行与缺陷记录.md)记录实际实现与验证。此前[复核 2142](../../review/review-20261111-2142.md)无新增问题，评审历史保留。
 
-M13 包含插件化重构、CLI 安装后的能力发现与统一管理、AI 配置优化及相应 UI；具体规则和本期边界统一见[需求](需求.md)。M14 定时任务留后续，M 编号与分支／发布版本分别维护。
+M13 包含插件化重构、CLI 安装后的能力发现与统一管理、AI 配置优化及相应 UI；具体规则和本期边界统一见[需求](需求.md)。M15 定时任务留后续，M 编号与分支／发布版本分别维护。
 
 | 资料 | 当前状态 |
 | --- | --- |

@@ -1,0 +1,73 @@
+{
+  "out": "/private/tmp/willyou-m14-browser-cli-probe/attempt-7JlkWN",
+  "checks": [
+    {
+      "id": "B01",
+      "title": "current programmatic run reaches actual browser CLI facade with stable lifetime",
+      "status": "passed",
+      "evidence": {
+        "nativeOwners": 2,
+        "actualCliDataFacade": true,
+        "stableRunSignal": true,
+        "commandSignalDistinct": true,
+        "childNoAutomaticGrant": true
+      }
+    },
+    {
+      "id": "B02",
+      "title": "cross-task control and observe grants stay with exact requesting run",
+      "status": "passed",
+      "evidence": {
+        "parentControl": true,
+        "childObserveOnly": true,
+        "twoIndependentGrants": true,
+        "grantsSurviveCommandCompletion": true
+      }
+    },
+    {
+      "id": "B03",
+      "title": "cancel one access request preserves existing grant and real run",
+      "status": "passed",
+      "evidence": {
+        "commandCancelDoesNotStopRun": true,
+        "existingGrantPreserved": true,
+        "lateApprovalDenied": true
+      }
+    },
+    {
+      "id": "B04",
+      "title": "stopping parent revokes requester grants while child target-task grant survives",
+      "status": "passed",
+      "evidence": {
+        "parentGrantRevoked": true,
+        "pauseCleared": true,
+        "childGrantTargetsLogicalTask": true,
+        "childStillActive": true
+      }
+    },
+    {
+      "id": "B05",
+      "title": "provider switch keeps task identity without inheriting old requester authority",
+      "status": "passed",
+      "evidence": {
+        "sameLogicalTask": true,
+        "newRunNeedsOwnCrossTaskGrant": true,
+        "existingChildGrantNotTransferred": true
+      }
+    },
+    {
+      "id": "B06",
+      "title": "actual run stop cancels pending browser request and rejects late approval",
+      "status": "passed",
+      "evidence": {
+        "heldActivityPreventedEarlyRetirement": true,
+        "pendingRequestEnded": true,
+        "lateApprovalDenied": true,
+        "allGrantsRevoked": true,
+        "browserServiceNotDisposedByAgentStop": true
+      }
+    }
+  ],
+  "passed": 6,
+  "scope": "Actual browser service, access, CLI ToolService/module/data facade and contexts with real native current programmatic owners. Calls initiated by research host, not model/shell or CLI socket. Electron allocations forbidden; no real pages, login, UI, network or model turns."
+}

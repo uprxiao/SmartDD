@@ -1,0 +1,146 @@
+{
+  "out": "/private/tmp/willyou-m14-business-readmodel-probe/attempt-5DLUmw",
+  "checks": [
+    {
+      "id": "M01",
+      "title": "actual preparation freezes intent and exact proof is required",
+      "status": "passed",
+      "evidence": {
+        "frozen": "840ae202-c2b8-4d0e-a867-66264cab0f6a",
+        "duplicatePreparationSameIntent": true,
+        "modelBooleanRejected": true,
+        "otherRunRejected": true,
+        "submissions": 0
+      }
+    },
+    {
+      "id": "M02",
+      "title": "key rotation uses current same-identity secret and duplicate execute returns original receipt",
+      "status": "passed",
+      "evidence": {
+        "executionId": "ec495932-7a2f-4278-84e5-f5009007ecaa",
+        "submissions": 1,
+        "repeatUsesReceipt": true,
+        "activityHasOriginalResult": true
+      }
+    },
+    {
+      "id": "M03",
+      "title": "invalid receipt is unknown and copied content requires reviewing previous unknown execution",
+      "status": "passed",
+      "evidence": {
+        "executionId": "531de6e9-4865-41ec-8dad-3271309d19cb",
+        "invalidResultRetained": true,
+        "copyHasUnknownAncestry": true,
+        "noAutomaticResend": true,
+        "explicitProofIsControlledFixtureNotHumanApproval": true
+      }
+    },
+    {
+      "id": "M04",
+      "title": "partial SMTP acceptance stays partial in actual history detail",
+      "status": "passed",
+      "evidence": {
+        "intentState": "server-accepted",
+        "draftState": "sent",
+        "resultComplete": false,
+        "rejectedCount": 1,
+        "design": "Unified UI must read result completeness; state alone is insufficient"
+      }
+    },
+    {
+      "id": "M05",
+      "title": "same connection reselected does not revive an earlier grant",
+      "status": "passed",
+      "evidence": {
+        "sameConnectionDifferentBindingRevision": true,
+        "stale": true,
+        "submissions": 0
+      }
+    },
+    {
+      "id": "M06",
+      "title": "late provider completion after cancellation does not replace unknown or resend",
+      "status": "passed",
+      "evidence": {
+        "unknownAfterCancel": true,
+        "lateAcceptedDoesNotRewrite": true,
+        "submissions": 1,
+        "transport": "controlled Promise, no SMTP"
+      }
+    },
+    {
+      "id": "M07",
+      "title": "existing read model resolves recorded subjects and plugin targets without current configuration",
+      "status": "passed",
+      "evidence": {
+        "managementSubjectWithoutProjectVisible": true,
+        "historicalPluginConnectionPreserved": true,
+        "ambiguousTargetRejected": true,
+        "noConnectionRebinding": true
+      }
+    },
+    {
+      "id": "M08",
+      "title": "read model deduplication must not be reused as integrity or admission proof",
+      "status": "passed",
+      "evidence": {
+        "legitimateSharedIdentityDeduplicated": true,
+        "syntheticConflictMaskedByReadProjection": true,
+        "notClaimOfNormalRuntimeCorruption": true,
+        "admissionMustValidateBothSources": true
+      }
+    },
+    {
+      "id": "M09",
+      "title": "pagination and old-schema browser fallback are UI behavior, not source completeness",
+      "status": "passed",
+      "evidence": {
+        "paginationIsNotCompleteSnapshot": true,
+        "cursorFilterBound": true,
+        "orphanBrowserFilteredOut": true,
+        "missingBrowserTableCompatibilityFallback": true,
+        "admissionRequiresIndependentCoverage": true
+      }
+    },
+    {
+      "id": "M10",
+      "title": "history inspection is read-only and malformed terminal mail results are rejected",
+      "status": "passed",
+      "evidence": {
+        "inspectionCreatesNoCallsOrGrants": true,
+        "corruptResultNotSuccess": true,
+        "draftHistoryValidatesStrongerCrossRecordIdentity": true
+      }
+    },
+    {
+      "id": "M11",
+      "title": "manual sent observation is append-only and does not rewrite SMTP unknown",
+      "status": "passed",
+      "evidence": {
+        "manualDecision": "sent",
+        "smtpResult": "unknown",
+        "originalEvidenceUnchanged": true,
+        "contradictorySecondWindowRejected": true,
+        "noSendingAuthority": true,
+        "contextAndSender": "controlled fixture, not actual Electron context"
+      }
+    },
+    {
+      "id": "M12",
+      "title": "manual not-sent creates a fresh draft and still requires explicit new send proof",
+      "status": "passed",
+      "evidence": {
+        "copiedDraftId": "85582ef8-8248-480f-8b27-f89c41a47076",
+        "oldEvidenceUnchanged": true,
+        "wrongFrameRejected": true,
+        "newIntentStillNeedsPriorUnknownReview": true,
+        "noAutomaticSend": true
+      }
+    }
+  ],
+  "passed": 12,
+  "error": null,
+  "submissions": 4,
+  "scope": "Actual connection/selection/secrets/draft/blob/mail execution/activity services on current isolated SQLite. Synthetic cipher, connection verifier, actors/user-proof policy, manual-verification context/sender and submit transport; no SMTP/network/real user approval/SDK/UI/product edit."
+}

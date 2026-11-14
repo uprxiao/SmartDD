@@ -1,0 +1,160 @@
+{
+  "execution": {
+    "out": "/private/tmp/willyou-m14-execution-plan-probe/attempt-YlE6vF",
+    "checks": [
+      {
+        "id": "E01",
+        "label": "reservation alone cannot dispatch; committed plan resolves actual business plan and owns resource lease",
+        "status": "passed",
+        "evidence": {
+          "linked": true,
+          "syntheticConsumerCalls": 1,
+          "counts": {
+            "m14_execution_plan": 1,
+            "m14_delivery": 1,
+            "m14_delivery_ref": 3
+          },
+          "runId": "51737378-485f-4166-b828-bb016e556bc3"
+        }
+      },
+      {
+        "id": "E02",
+        "label": "transaction rollback at after-pins",
+        "status": "passed",
+        "evidence": {
+          "rollback": true,
+          "originalReservationRetained": true,
+          "retry": {
+            "m14_execution_plan": 1,
+            "m14_delivery": 1,
+            "m14_delivery_ref": 3
+          }
+        }
+      },
+      {
+        "id": "E03",
+        "label": "transaction rollback at after-plan",
+        "status": "passed",
+        "evidence": {
+          "rollback": true,
+          "originalReservationRetained": true,
+          "retry": {
+            "m14_execution_plan": 1,
+            "m14_delivery": 1,
+            "m14_delivery_ref": 3
+          }
+        }
+      },
+      {
+        "id": "E04",
+        "label": "same preparation immutable; a serialized copy never grants dispatch",
+        "status": "passed",
+        "evidence": {
+          "sameReceipt": true,
+          "copiedHandleRejected": true
+        }
+      },
+      {
+        "id": "E05",
+        "label": "rehashed wrong scope, source and adapter rejected by linked reader",
+        "status": "passed",
+        "evidence": {
+          "rehashedChangesRejected": [
+            "bindingId",
+            "runId",
+            "generation",
+            "source",
+            "adapter",
+            "project"
+          ]
+        }
+      },
+      {
+        "id": "E06",
+        "label": "configuration epoch change blocks dispatch but keeps launch audit readable",
+        "status": "passed",
+        "evidence": {
+          "epochResolver": "fixture, not existing secret-store integration",
+          "staleDispatchBlocked": true,
+          "auditReadable": true
+        }
+      },
+      {
+        "id": "E07",
+        "label": "external executable bytes change fails without PATH fallback",
+        "status": "passed",
+        "evidence": {
+          "syntheticFileOnly": true,
+          "replacementRejected": true
+        }
+      },
+      {
+        "id": "E08",
+        "label": "managed resource must be in the exact delivery dependency set",
+        "status": "passed",
+        "evidence": {
+          "missingResourceRejected": true,
+          "managedFixtureResolved": true
+        }
+      },
+      {
+        "id": "E09",
+        "label": "first native identity changes current revision without rewriting launch plans",
+        "status": "passed",
+        "evidence": {
+          "fixedSource": "edb8c558bd97945878beea14ff4c217d3919a87c276b7a7fb7d743592565e7ed",
+          "currentHash": "50c82c7627d61d689da4012d2ace31d12038662465c770e89a3b0dfe4d66fd22",
+          "actualFirstBind": true
+        }
+      },
+      {
+        "id": "E10",
+        "label": "actual R17 per-call enablement remains independent of immutable host plan",
+        "status": "passed",
+        "evidence": {
+          "actualToolService": true,
+          "syntheticReadExecutorCalls": 1,
+          "launchPlanUnchanged": true,
+          "currentPlanMayDiffer": true
+        }
+      },
+      {
+        "id": "E11",
+        "label": "unknown host schema and extra secret field fail closed while v1 audit remains readable",
+        "status": "passed",
+        "evidence": {
+          "strictNewSchema": true,
+          "oldPlanStillReadable": true
+        }
+      }
+    ],
+    "passed": 11,
+    "scope": "Isolated candidate ExecutionPlan linked to actual v3 sessions, immutable v1 ApplicationRunPlan and R17 ToolService. Fixture process identity, executable bytes, config epoch and synchronous consumer. No Agent process, model request, product/shared-prototype change or full programmatic launcher."
+  },
+  "profile": {
+    "out": "/private/tmp/willyou-m14-execution-plan-probe/profile-attempt-wQtBjs",
+    "checks": [
+      {
+        "id": "C01",
+        "status": "passed",
+        "finding": "Actual profile runner claude maps to capability agentId claude-code; raw equality is invalid."
+      },
+      {
+        "id": "C02",
+        "status": "passed",
+        "finding": "Cosmetic rename changes updatedAt while launchSignature stays stable."
+      },
+      {
+        "id": "C03",
+        "status": "passed",
+        "finding": "Two updates sharing an injected millisecond leave same updatedAt while secret and launchSignature change."
+      },
+      {
+        "id": "C04",
+        "status": "passed",
+        "finding": "Missing synthetic secret blocks actual resolve; no fallback."
+      }
+    ],
+    "scope": "Actual AiProfileService/SecretsStore with isolated SQLite, fake cipher and controlled clock; no real keychain or model access."
+  }
+}

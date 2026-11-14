@@ -1,0 +1,101 @@
+{
+  "out": "/private/tmp/willyou-m14-delivery-handoff-probe/attempt-WnDyD0",
+  "checks": [
+    {
+      "id": "H01",
+      "label": "real run lease protects delivery closure before preparation lease is released",
+      "status": "passed",
+      "evidence": {
+        "receipt": {
+          "runId": "efe1d7bc-a850-4c96-8a7f-862ccd2e0861",
+          "leaseId": "e901ae0e-0b1c-4da2-9ebb-5d1992b251ca",
+          "resourceIds": [
+            "app:8b4c39ab3b8e22e79ccbe85e884e3a5d42c107c6974b70a05bcc76693f1f3012",
+            "runtime:38d9b2a94363c1ba06ddb9fa04ac37f9ef2f12eb78e1ae998c91b674f0597762"
+          ],
+          "preparationLease": "840e18ec-5084-4f6f-b576-aa1b4399854c"
+        },
+        "overlapDuringTransfer": true,
+        "baselineIgnoresLeaseMembers": true,
+        "candidateGcRetainsLeaseMembers": true,
+        "actualRunStopReleasesClosure": true
+      }
+    },
+    {
+      "id": "H02",
+      "label": "copied delivery and run handles cannot claim a run lease",
+      "status": "passed",
+      "evidence": {
+        "realOwnedRunWeakMapEnforced": true,
+        "deliveryProofNotSerializable": true
+      }
+    },
+    {
+      "id": "H03",
+      "label": "failed adoption rolls back new run refs while preparation still protects the resource",
+      "status": "passed",
+      "evidence": {
+        "rollbackLeavesPreparationLease": true,
+        "retryRegistersExactlyOneRunRef": true
+      }
+    },
+    {
+      "id": "H04",
+      "label": "canceling destination run cannot resurrect it through delivery adoption",
+      "status": "passed",
+      "evidence": {
+        "stoppedRunRejected": true,
+        "onlyPreparationHeldUntilCallbackEnds": true
+      }
+    },
+    {
+      "id": "H05",
+      "label": "unknown attach retains adopted delivery resources until the actual registry sees process exit",
+      "status": "passed",
+      "evidence": {
+        "unknownHeld": true,
+        "lateAttachDoesNotRestoreAuthority": true,
+        "fixtureProcessReader": true
+      }
+    },
+    {
+      "id": "H06",
+      "label": "stopping adopted run does not release another UI consumer lease",
+      "status": "passed",
+      "evidence": {
+        "otherLeaseSurvivesRunStop": true
+      }
+    },
+    {
+      "id": "H07",
+      "label": "generation changes block both adoption and later real run protection checks",
+      "status": "passed",
+      "evidence": {
+        "admissionAndRuntimeProtectionBothCheckGeneration": true,
+        "rawDbFaultInjection": true
+      }
+    },
+    {
+      "id": "H08",
+      "label": "adding only lease members invalidates a previously collectable plan",
+      "status": "passed",
+      "evidence": {
+        "unchangedActiveLeaseMasters": true,
+        "memberSetChangesPlanHash": true
+      }
+    },
+    {
+      "id": "H09",
+      "label": "final delete guard notices a member inserted after resources were marked deleting",
+      "status": "passed",
+      "evidence": {
+        "rawBypassFixture": true,
+        "physicalDeletionPrevented": true,
+        "cleanupLeftForReconciliation": true
+      }
+    }
+  ],
+  "passed": 9,
+  "failed": 0,
+  "scope": "Candidate handoff writes exact delivery closure into actual run lease after actual owned-handle check. Actual ResourceStore.use and RunRegistry; GC source variant adds active lease-member retention to plan and final deletion guard. Fixture process reader and existing legacy session/pty identity; no SDK child, new multi-binding run contract or crash recovery."
+}

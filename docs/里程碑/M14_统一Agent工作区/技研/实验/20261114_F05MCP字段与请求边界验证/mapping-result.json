@@ -1,0 +1,80 @@
+{
+  "out": "/private/tmp/willyou-m14-f05-mcp-contract/mapping-6D7Vha",
+  "passed": 4,
+  "checks": [
+    {
+      "id": "M01-current-stdio-cwd-env-projection",
+      "status": "passed",
+      "detail": [
+        {
+          "runner": "claude",
+          "observed": {
+            "cwd": "/private/tmp/willyou-m14-f05-mcp-contract/mapping-6D7Vha/project/server",
+            "own": "synthetic-mcp",
+            "model": null,
+            "args": [
+              "synthetic-mcp"
+            ]
+          }
+        },
+        {
+          "runner": "codex",
+          "observed": {
+            "cwd": "/private/tmp/willyou-m14-f05-mcp-contract/mapping-6D7Vha/project/server",
+            "own": "synthetic-mcp",
+            "model": null,
+            "args": [
+              "synthetic-mcp"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M02-current-http-literal-empty-private-slots",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "claude",
+          "headerNames": [
+            "X-Literal",
+            "X-Empty",
+            "X-Key",
+            "Authorization"
+          ],
+          "literalAndEmptyPreserved": true,
+          "noSecretInControls": true
+        },
+        {
+          "target": "codex",
+          "headerNames": [
+            "X-Literal",
+            "X-Empty",
+            "X-Key",
+            "Authorization"
+          ],
+          "literalAndEmptyPreserved": true,
+          "noSecretInControls": true
+        }
+      ]
+    },
+    {
+      "id": "M03-current-disabled-oauth-helper-sse-and-policy-rejection",
+      "status": "passed",
+      "detail": {
+        "fiveUnsupportedPathsRejected": true,
+        "denyBeforeApprove": true
+      }
+    },
+    {
+      "id": "M04-unknown-field-negative-control-and-strict-admission",
+      "status": "passed",
+      "detail": {
+        "actualParserDropsTimeouts": true,
+        "candidateRejectsBeforeConversion": true,
+        "nestedFieldsNeedSameManifest": "design contract; not implemented here"
+      }
+    }
+  ],
+  "scope": "Current source and launcher; synthetic process/env, no SDK native launch. Strict unknown top-level key guard is research-only; full recursive field manifest is a design requirement."
+}

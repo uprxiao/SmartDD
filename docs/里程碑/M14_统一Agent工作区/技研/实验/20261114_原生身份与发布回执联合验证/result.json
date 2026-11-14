@@ -1,0 +1,99 @@
+{
+  "out": "/private/tmp/willyou-m14-native-binding-joint-probe/attempt-7CqQ7n",
+  "checks": [
+    {
+      "id": "N01",
+      "label": "publication retry after real first native binding returns the original receipt",
+      "status": "passed",
+      "evidence": {
+        "realNativeId": "01a1d8e7-59de-7fc3-ba4f-e1f4525bdd60",
+        "originalSource": "abbec0e697f827c13f080b99639a3c141da18c31cde235c7130c69e95287a38c",
+        "currentSource": "2943bfce3e728debb0cc099be379b25c78c27d654518751c8110558da09b02c6"
+      }
+    },
+    {
+      "id": "N02",
+      "label": "publication facts, current source and immutable run plans stay distinct",
+      "status": "passed",
+      "evidence": {
+        "originalPlansUnchanged": true,
+        "currentIdentityVisible": true
+      }
+    },
+    {
+      "id": "N03",
+      "label": "duplicate trusted callback is idempotent; different native identity is rejected",
+      "status": "passed",
+      "evidence": {
+        "sameNativeIdempotent": true,
+        "otherIdRejected": true
+      }
+    },
+    {
+      "id": "N04",
+      "label": "same attempt retries its original reservation source without another run",
+      "status": "passed",
+      "evidence": {
+        "samePrivateRun": true,
+        "currentHashNotNewRequest": true,
+        "sameExecutionPlan": true
+      }
+    },
+    {
+      "id": "N05",
+      "label": "copied owner and changed native scope cannot update the binding",
+      "status": "passed",
+      "evidence": {
+        "privateOwnerAndNativeScopeRequired": true
+      }
+    },
+    {
+      "id": "N06",
+      "label": "explicit next run resumes the same native thread after a history injection",
+      "status": "passed",
+      "evidence": {
+        "sameNativeId": "01a1d8e7-59de-7fc3-ba4f-e1f4525bdd60",
+        "newRun": "41f494c1-6a9f-4cc5-a678-9f121bebdb02",
+        "generation": 2,
+        "modelTurns": 0
+      }
+    },
+    {
+      "id": "N07",
+      "label": "held current capability does not erase historical publication facts",
+      "status": "passed",
+      "evidence": {
+        "historyReadableNotExecutionPermission": true
+      }
+    },
+    {
+      "id": "N08",
+      "label": "publication receipt tampering is rejected independently of current source",
+      "status": "passed",
+      "evidence": {
+        "historicalReceiptIntegrityChecked": true
+      }
+    },
+    {
+      "id": "N09",
+      "label": "new run callback uses its own source while an old run source is rejected",
+      "status": "passed",
+      "evidence": {
+        "newRunSameNativeAccepted": true,
+        "oldRunSourceRejected": true
+      }
+    },
+    {
+      "id": "N10",
+      "label": "first native binding failure rolls back all pointers and permits exact retry",
+      "status": "passed",
+      "evidence": {
+        "actualNativeId": "01a1d8e7-625f-7950-92ca-5bee1015e474",
+        "atomicRollback": true,
+        "exactRetryBound": true
+      }
+    }
+  ],
+  "passed": 10,
+  "scope": "Isolated source/owner/plan variants with real Codex thread start and requested resume; no model turns, business bridge, Claude native proof, product code or complete migration."
+}

@@ -1,0 +1,371 @@
+{
+  "final": {
+    "out": "/private/tmp/willyou-m14-question-retirement-probe/attempt-6vhBRi",
+    "checks": [
+      {
+        "id": "J01",
+        "title": "identical concurrent host-child forms reject wrong child/run and parent scope",
+        "status": "passed",
+        "evidence": {
+          "sameForm": true,
+          "differentHostTasks": true,
+          "wrongChildAndParentRejected": true
+        }
+      },
+      {
+        "id": "J02",
+        "title": "logical parent binding change leaves child question owner unchanged",
+        "status": "passed",
+        "evidence": {
+          "candidateParentPointerOnly": true,
+          "childRunUnaffected": true,
+          "notNativeProviderSwitch": true
+        }
+      },
+      {
+        "id": "J03",
+        "title": "stopped child refuses old response while sibling completes",
+        "status": "passed",
+        "evidence": {
+          "oldAnswerNotSent": true,
+          "siblingAnswerObservedByActualMcp": true,
+          "decisionRepeatNoDuplicateSend": true
+        }
+      },
+      {
+        "id": "J04",
+        "title": "same child native session next run keeps prior response expired",
+        "status": "passed",
+        "evidence": {
+          "actualSdkResumeSameNativeId": true,
+          "hostRunAndGenerationChanged": true,
+          "oldResponseIsolated": true,
+          "newAnswerObserved": true
+        }
+      },
+      {
+        "id": "J05",
+        "title": "normal retirement differs from explicit cancellation without claiming native acknowledgement",
+        "status": "passed",
+        "evidence": {
+          "normalCancelFlag": 0,
+          "explicitCancelFlag": 1,
+          "retirementNotNativeClose": true,
+          "noWaitingAfterExit": true,
+          "idempotent": true
+        }
+      },
+      {
+        "id": "J06",
+        "title": "retirement evidence and liveness commit atomically after actual run exits",
+        "status": "passed",
+        "evidence": {
+          "rollbackKeepsOriginalDecision": true,
+          "noPartialRetirement": true,
+          "retryOnlyRetiresNoResend": true
+        }
+      }
+    ],
+    "passed": 6,
+    "error": null,
+    "serverError": null,
+    "modelRequests": 5,
+    "processes": [
+      {
+        "id": "a-1",
+        "pid": 27887,
+        "exit": {
+          "code": 1,
+          "signal": null
+        }
+      },
+      {
+        "id": "b-1",
+        "pid": 27898,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      },
+      {
+        "id": "a-2",
+        "pid": 27928,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    ],
+    "scope": "Candidate retirement separates explicit cancellation from actual stopped native run; no native-close or consumption claim. Actual Claude SDK forms/resume, actual child run ownership, candidate parent-child pointers and response ledger in one current store. Synthetic forms/answers/local model. No actual delegation creation/outbox service, real parent provider switch, user UI, business approval, request-ledger crash or Codex pair."
+  },
+  "recovery": {
+    "out": "/private/tmp/willyou-m14-question-retirement-probe/recovery-fNY89x",
+    "checks": [
+      {
+        "cut": "before-retire",
+        "status": "passed",
+        "nativeExitedBeforeHostKill": true,
+        "retirementCommitted": false,
+        "cancelFlag": 0,
+        "delivery": "submitted",
+        "nativeConsumption": "unproven",
+        "noRetryOrLiveGrant": true
+      },
+      {
+        "cut": "retirement-inserted",
+        "status": "passed",
+        "nativeExitedBeforeHostKill": true,
+        "retirementCommitted": false,
+        "cancelFlag": 0,
+        "delivery": "submitted",
+        "nativeConsumption": "unproven",
+        "noRetryOrLiveGrant": true
+      },
+      {
+        "cut": "after-retire",
+        "status": "passed",
+        "nativeExitedBeforeHostKill": true,
+        "retirementCommitted": true,
+        "cancelFlag": 0,
+        "delivery": "submitted",
+        "nativeConsumption": "unproven",
+        "noRetryOrLiveGrant": true
+      }
+    ],
+    "workers": [
+      {
+        "cut": "before-retire",
+        "pid": 27611,
+        "exit": {
+          "code": null,
+          "signal": "SIGKILL"
+        }
+      },
+      {
+        "cut": "retirement-inserted",
+        "pid": 27691,
+        "exit": {
+          "code": null,
+          "signal": "SIGKILL"
+        }
+      },
+      {
+        "cut": "after-retire",
+        "pid": 27776,
+        "exit": {
+          "code": null,
+          "signal": "SIGKILL"
+        }
+      }
+    ],
+    "error": null,
+    "passed": 3,
+    "scope": "Three real host SIGKILL windows after actual Claude processes exit, using actual shared SQLite and ResourceStore. Candidate request retirement and recovery only; no business side effects, native request reopen, exact native-close acknowledgement or UI."
+  },
+  "normalAttempts": [
+    {
+      "out": "/private/tmp/willyou-m14-question-retirement-probe/attempt-6vhBRi",
+      "checks": [
+        {
+          "id": "J01",
+          "title": "identical concurrent host-child forms reject wrong child/run and parent scope",
+          "status": "passed",
+          "evidence": {
+            "sameForm": true,
+            "differentHostTasks": true,
+            "wrongChildAndParentRejected": true
+          }
+        },
+        {
+          "id": "J02",
+          "title": "logical parent binding change leaves child question owner unchanged",
+          "status": "passed",
+          "evidence": {
+            "candidateParentPointerOnly": true,
+            "childRunUnaffected": true,
+            "notNativeProviderSwitch": true
+          }
+        },
+        {
+          "id": "J03",
+          "title": "stopped child refuses old response while sibling completes",
+          "status": "passed",
+          "evidence": {
+            "oldAnswerNotSent": true,
+            "siblingAnswerObservedByActualMcp": true,
+            "decisionRepeatNoDuplicateSend": true
+          }
+        },
+        {
+          "id": "J04",
+          "title": "same child native session next run keeps prior response expired",
+          "status": "passed",
+          "evidence": {
+            "actualSdkResumeSameNativeId": true,
+            "hostRunAndGenerationChanged": true,
+            "oldResponseIsolated": true,
+            "newAnswerObserved": true
+          }
+        },
+        {
+          "id": "J05",
+          "title": "normal retirement differs from explicit cancellation without claiming native acknowledgement",
+          "status": "passed",
+          "evidence": {
+            "normalCancelFlag": 0,
+            "explicitCancelFlag": 1,
+            "retirementNotNativeClose": true,
+            "noWaitingAfterExit": true,
+            "idempotent": true
+          }
+        },
+        {
+          "id": "J06",
+          "title": "retirement evidence and liveness commit atomically after actual run exits",
+          "status": "passed",
+          "evidence": {
+            "rollbackKeepsOriginalDecision": true,
+            "noPartialRetirement": true,
+            "retryOnlyRetiresNoResend": true
+          }
+        }
+      ],
+      "passed": 6,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 5,
+      "processes": [
+        {
+          "id": "a-1",
+          "pid": 27887,
+          "exit": {
+            "code": 1,
+            "signal": null
+          }
+        },
+        {
+          "id": "b-1",
+          "pid": 27898,
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "id": "a-2",
+          "pid": 27928,
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Candidate retirement separates explicit cancellation from actual stopped native run; no native-close or consumption claim. Actual Claude SDK forms/resume, actual child run ownership, candidate parent-child pointers and response ledger in one current store. Synthetic forms/answers/local model. No actual delegation creation/outbox service, real parent provider switch, user UI, business approval, request-ledger crash or Codex pair."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-question-retirement-probe/attempt-O7TQXi",
+      "checks": [
+        {
+          "id": "J01",
+          "title": "identical concurrent host-child forms reject wrong child/run and parent scope",
+          "status": "passed",
+          "evidence": {
+            "sameForm": true,
+            "differentHostTasks": true,
+            "wrongChildAndParentRejected": true
+          }
+        },
+        {
+          "id": "J02",
+          "title": "logical parent binding change leaves child question owner unchanged",
+          "status": "passed",
+          "evidence": {
+            "candidateParentPointerOnly": true,
+            "childRunUnaffected": true,
+            "notNativeProviderSwitch": true
+          }
+        },
+        {
+          "id": "J03",
+          "title": "stopped child refuses old response while sibling completes",
+          "status": "passed",
+          "evidence": {
+            "oldAnswerNotSent": true,
+            "siblingAnswerObservedByActualMcp": true,
+            "decisionRepeatNoDuplicateSend": true
+          }
+        },
+        {
+          "id": "J04",
+          "title": "same child native session next run keeps prior response expired",
+          "status": "passed",
+          "evidence": {
+            "actualSdkResumeSameNativeId": true,
+            "hostRunAndGenerationChanged": true,
+            "oldResponseIsolated": true,
+            "newAnswerObserved": true
+          }
+        },
+        {
+          "id": "J05",
+          "title": "normal retirement differs from explicit cancellation without claiming native acknowledgement",
+          "status": "passed",
+          "evidence": {
+            "normalCancelFlag": 0,
+            "explicitCancelFlag": 1,
+            "retirementNotNativeClose": true,
+            "noWaitingAfterExit": true,
+            "idempotent": true
+          }
+        },
+        {
+          "id": "J06",
+          "title": "retirement evidence and liveness commit atomically after actual run exits",
+          "status": "passed",
+          "evidence": {
+            "rollbackKeepsOriginalDecision": true,
+            "noPartialRetirement": true,
+            "retryOnlyRetiresNoResend": true
+          }
+        }
+      ],
+      "passed": 6,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 5,
+      "processes": [
+        {
+          "id": "a-1",
+          "pid": 27389,
+          "exit": {
+            "code": 1,
+            "signal": null
+          }
+        },
+        {
+          "id": "b-1",
+          "pid": 27401,
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "id": "a-2",
+          "pid": 27430,
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Candidate retirement separates explicit cancellation from actual stopped native run; no native-close or consumption claim. Actual Claude SDK forms/resume, actual child run ownership, candidate parent-child pointers and response ledger in one current store. Synthetic forms/answers/local model. No actual delegation creation/outbox service, real parent provider switch, user UI, business approval, request-ledger crash or Codex pair."
+    }
+  ],
+  "interruptedAttempts": [
+    "attempt-IcYDFZ",
+    "attempt-n69QjI",
+    "attempt-q7VtCx"
+  ],
+  "note": "Three intentionally killed hosts have checkpoint/native traces and parent-recorded SIGKILL outcomes instead of child final result. First normal pass predates addition of recovery checkpoints; final normal pass uses the archived final candidate."
+}

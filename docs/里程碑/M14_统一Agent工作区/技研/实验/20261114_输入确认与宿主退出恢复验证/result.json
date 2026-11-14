@@ -1,0 +1,114 @@
+{
+  "out": "/private/tmp/willyou-m14-input-recovery-probe/attempt-GZUUOY",
+  "checks": [
+    {
+      "id": "C01",
+      "label": "actual worker death at queued",
+      "status": "passed",
+      "evidence": {
+        "inputId": "63433e47-6765-477a-9e40-9f222ca22059",
+        "cut": "queued",
+        "decision": "not-dispatched",
+        "modelRequests": 0,
+        "journalRows": 0,
+        "ownerStopped": true,
+        "nativeStopped": false,
+        "recoveryNativeSpawn": false
+      }
+    },
+    {
+      "id": "C02",
+      "label": "actual worker death at dispatch-intent",
+      "status": "passed",
+      "evidence": {
+        "inputId": "2e5d12b5-e212-4ff4-8643-65f169a6b26e",
+        "cut": "dispatch-intent",
+        "decision": "unknown-do-not-resend",
+        "modelRequests": 0,
+        "journalRows": 0,
+        "ownerStopped": true,
+        "nativeStopped": true,
+        "recoveryNativeSpawn": false
+      }
+    },
+    {
+      "id": "C03",
+      "label": "actual worker death at before-journal",
+      "status": "passed",
+      "evidence": {
+        "inputId": "29903b85-8eae-4999-be61-8be1585d81cb",
+        "cut": "before-journal",
+        "decision": "unknown-do-not-resend",
+        "modelRequests": 1,
+        "journalRows": 0,
+        "ownerStopped": true,
+        "nativeStopped": true,
+        "recoveryNativeSpawn": false
+      }
+    },
+    {
+      "id": "C04",
+      "label": "actual worker death at after-journal",
+      "status": "passed",
+      "evidence": {
+        "inputId": "b4f80fc4-c313-4e0c-b785-b4a5aecfce94",
+        "cut": "after-journal",
+        "decision": "accepted-audit-only",
+        "modelRequests": 1,
+        "journalRows": 1,
+        "ownerStopped": true,
+        "nativeStopped": true,
+        "recoveryNativeSpawn": false
+      }
+    },
+    {
+      "id": "C05",
+      "label": "actual worker death at after-receipt",
+      "status": "passed",
+      "evidence": {
+        "inputId": "6f47f9de-f4f6-45ba-9104-3707f43290cf",
+        "cut": "after-receipt",
+        "decision": "accepted-audit-only",
+        "modelRequests": 1,
+        "journalRows": 1,
+        "ownerStopped": true,
+        "nativeStopped": true,
+        "recoveryNativeSpawn": false
+      }
+    },
+    {
+      "id": "C06",
+      "label": "same host command returns its original unknown receipt and changed content conflicts",
+      "status": "passed",
+      "evidence": {
+        "unknownNotResent": true,
+        "noNewPrivateHandle": true,
+        "changedCommandRejected": true
+      }
+    },
+    {
+      "id": "C07",
+      "label": "journal scope tampering fails without replacing original acceptance",
+      "status": "passed",
+      "evidence": {
+        "validHashDoesNotOverrideScope": true,
+        "oldReceiptUnchanged": true
+      }
+    },
+    {
+      "id": "C08",
+      "label": "two actual Codex acceptances with one clientId cannot become one guessed receipt",
+      "status": "passed",
+      "evidence": {
+        "actualFramesReplayed": true,
+        "distinctTurns": [
+          "01a1d911-a990-7a90-ae9c-b8e59feca768",
+          "01a1d911-a9a7-7be0-beb9-10599b334f03"
+        ],
+        "noGuessedReceipt": true
+      }
+    }
+  ],
+  "passed": 8,
+  "scope": "Live Codex with local synthetic responses, actual host worker SIGKILL/kernel observation, temporary input journal. No production run lifecycle integration, business grant, Claude recovery or cross-provider auto-resend."
+}

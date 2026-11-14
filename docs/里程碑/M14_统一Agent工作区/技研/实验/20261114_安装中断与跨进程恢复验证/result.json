@@ -1,0 +1,173 @@
+{
+  "out": "/private/tmp/willyou-m14-install-recovery-probe/attempt-C9boJu",
+  "checks": [
+    {
+      "id": "I01",
+      "label": "installer death at job-created",
+      "status": "passed",
+      "evidence": {
+        "jobId": "467f76bb-c9da-4efc-9ee5-d3777519a69b",
+        "phase": "job-created",
+        "originalOperationPreserved": false,
+        "recoveryCount": 1,
+        "receiptReplay": true
+      }
+    },
+    {
+      "id": "I02",
+      "label": "installer death at prepared",
+      "status": "passed",
+      "evidence": {
+        "jobId": "0befafaa-c8de-42cf-bc3f-42078e0ec2b1",
+        "phase": "prepared",
+        "originalOperationPreserved": false,
+        "recoveryCount": 1,
+        "receiptReplay": true
+      }
+    },
+    {
+      "id": "I03",
+      "label": "installer death at resource-registered",
+      "status": "passed",
+      "evidence": {
+        "jobId": "2dc58528-4423-4951-92ea-8e3f30f70398",
+        "phase": "resource-registered",
+        "originalOperationPreserved": true,
+        "recoveryCount": 1,
+        "receiptReplay": true
+      }
+    },
+    {
+      "id": "I04",
+      "label": "installer death at resource-materialized",
+      "status": "passed",
+      "evidence": {
+        "jobId": "c2e70db7-3684-4a51-9f61-a64143b28aa7",
+        "phase": "resource-materialized",
+        "originalOperationPreserved": true,
+        "recoveryCount": 1,
+        "receiptReplay": true
+      }
+    },
+    {
+      "id": "I05",
+      "label": "installer death at resource-renamed",
+      "status": "passed",
+      "evidence": {
+        "jobId": "8c06ae95-76df-469e-a8c3-6a76ff1c0659",
+        "phase": "resource-renamed",
+        "originalOperationPreserved": true,
+        "recoveryCount": 1,
+        "receiptReplay": true
+      }
+    },
+    {
+      "id": "I06",
+      "label": "installer death at published",
+      "status": "passed",
+      "evidence": {
+        "jobId": "ddedcc57-56e0-4a54-8644-5f0e7729b49d",
+        "phase": "published",
+        "originalOperationPreserved": true,
+        "recoveryCount": 1,
+        "receiptReplay": true
+      }
+    },
+    {
+      "id": "I07",
+      "label": "installer death at activated",
+      "status": "passed",
+      "evidence": {
+        "jobId": "f87048f9-7c9e-487d-8e1a-1a6e47c8f8fe",
+        "phase": "activated",
+        "originalOperationPreserved": true,
+        "recoveryCount": 0,
+        "receiptReplay": true
+      }
+    },
+    {
+      "id": "I08",
+      "label": "two recovery workers produce one activation",
+      "status": "passed",
+      "evidence": {
+        "statuses": [
+          {
+            "exit": {
+              "code": 1,
+              "signal": null
+            },
+            "frames": [
+              {
+                "type": "error",
+                "message": "CLAIM_CHANGED\n+ actual - expected\n\n+ '{\"birth\":\"darwin-proc-v1:1794642333:287809\",\"expected_revision\":7,\"id\":\"c643b053-0b50-4467-801f-860299bf5b1c\",\"manifest_json\":\"{\\\\\"arch\\\\\":\\\\\"arm64\\\\\",\\\\\"driver\\\\\":\\\\\"fixture\\\\\",\\\\\"entry\\\\\":\\\\\"runner\\\\\",\\\\\"files\\\\\":[{\\\\\"executable\\\\\":true,\\\\\"path\\\\\":\\\\\"runner\\\\\",\\\\\"sha256\\\\\":\\\\\"4b2f7c0fd7eb1a0ad4301f8e6ba39c6499be97faf7f223c19bce30c9c1377163\\\\\",\\\\\"size\\\\\":22}],\\\\\"platform\\\\\":\\\\\"darwin\\\\\",\\\\\"schema\\\\\":1,\\\\\"version\\\\\":\\\\\"race\\\\\"}\",\"owner_instance\":\"10b81b7b-582a-4d9b-ad94-b5544cbcb43c\",\"phase\":\"activated\",\"pid\":78920,\"prepared_path\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-4ficAd/capabilities/native-preparation/artifact-5M9U3q\",\"recovery_count\":1,\"request_hash\":\"b14bea0a8635de7f2a7dfd09f79e238d2c0d9a50db4a70a02ef3cbbfef5357be\",\"result_json\":\"{\\\\\"resourceId\\\\\":\\\\\"agent-native-runtime:c843fee1315f25c0c2d05c38db94918b0ab00e0e883874542ef9d7a450042768\\\\\",\\\\\"revision\\\\\":8,\\\\\"target\\\\\":\\\\\"fixture:darwin:arm64\\\\\"}\",\"source_path\":\"/private/tmp/willyou-m14-install-recovery-probe/attempt-C9boJu/data/race\"}'\n- '{\"birth\":\"darwin-proc-v1:1794642333:140879\",\"expected_revision\":7,\"id\":\"c643b053-0b50-4467-801f-860299bf5b1c\",\"manifest_json\":\"{\\\\\"arch\\\\\":\\\\\"arm64\\\\\",\\\\\"driver\\\\\":\\\\\"fixture\\\\\",\\\\\"entry\\\\\":\\\\\"runner\\\\\",\\\\\"files\\\\\":[{\\\\\"executable\\\\\":true,\\\\\"path\\\\\":\\\\\"runner\\\\\",\\\\\"sha256\\\\\":\\\\\"4b2f7c0fd7eb1a0ad4301f8e6ba39c6499be97faf7f223c19bce30c9c1377163\\\\\",\\\\\"size\\\\\":22}],\\\\\"platform\\\\\":\\\\\"darwin\\\\\",\\\\\"schema\\\\\":1,\\\\\"version\\\\\":\\\\\"race\\\\\"}\",\"owner_instance\":\"ae0c72fe-53b7-4a5a-ae39-ddcf834ad39e\",\"phase\":\"prepared\",\"pid\":78913,\"prepared_path\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-4ficAd/capabilities/native-preparation/artifact-5M9U3q\",\"recovery_count\":0,\"request_hash\":\"b14bea0a8635de7f2a7dfd09f79e238d2c0d9a50db4a70a02ef3cbbfef5357be\",\"result_json\":null,\"source_path\":\"/private/tmp/willyou-m14-install-recovery-probe/attempt-C9boJu/data/race\"}'\n",
+                "code": "ERR_ASSERTION",
+                "stack": "AssertionError [ERR_ASSERTION]: CLAIM_CHANGED\n+ actual - expected\n\n+ '{\"birth\":\"darwin-proc-v1:1794642333:287809\",\"expected_revision\":7,\"id\":\"c643b053-0b50-4467-801f-860299bf5b1c\",\"manifest_json\":\"{\\\\\"arch\\\\\":\\\\\"arm64\\\\\",\\\\\"driver\\\\\":\\\\\"fixture\\\\\",\\\\\"entry\\\\\":\\\\\"runner\\\\\",\\\\\"files\\\\\":[{\\\\\"executable\\\\\":true,\\\\\"path\\\\\":\\\\\"runner\\\\\",\\\\\"sha256\\\\\":\\\\\"4b2f7c0fd7eb1a0ad4301f8e6ba39c6499be97faf7f223c19bce30c9c1377163\\\\\",\\\\\"size\\\\\":22}],\\\\\"platform\\\\\":\\\\\"darwin\\\\\",\\\\\"schema\\\\\":1,\\\\\"version\\\\\":\\\\\"race\\\\\"}\",\"owner_instance\":\"10b81b7b-582a-4d9b-ad94-b5544cbcb43c\",\"phase\":\"activated\",\"pid\":78920,\"prepared_path\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-4ficAd/capabilities/native-preparation/artifact-5M9U3q\",\"recovery_count\":1,\"request_hash\":\"b14bea0a8635de7f2a7dfd09f79e238d2c0d9a50db4a70a02ef3cbbfef5357be\",\"result_json\":\"{\\\\\"resourceId\\\\\":\\\\\"agent-native-runtime:c843fee1315f25c0c2d05c38db94918b0ab00e0e883874542ef9d7a450042768\\\\\",\\\\\"revision\\\\\":8,\\\\\"target\\\\\":\\\\\"fixture:darwin:arm64\\\\\"}\",\"source_path\":\"/private/tmp/willyou-m14-install-recovery-probe/attempt-C9boJu/data/race\"}'\n- '{\"birth\":\"darwin-proc-v1:1794642333:140879\",\"expected_revision\":7,\"id\":\"c643b053-0b50-4467-801f-860299bf5b1c\",\"manifest_json\":\"{\\\\\"arch\\\\\":\\\\\"arm64\\\\\",\\\\\"driver\\\\\":\\\\\"fixture\\\\\",\\\\\"entry\\\\\":\\\\\"runner\\\\\",\\\\\"files\\\\\":[{\\\\\"executable\\\\\":true,\\\\\"path\\\\\":\\\\\"runner\\\\\",\\\\\"sha256\\\\\":\\\\\"4b2f7c0fd7eb1a0ad4301f8e6ba39c6499be97faf7f223c19bce30c9c1377163\\\\\",\\\\\"size\\\\\":22}],\\\\\"platform\\\\\":\\\\\"darwin\\\\\",\\\\\"schema\\\\\":1,\\\\\"version\\\\\":\\\\\"race\\\\\"}\",\"owner_instance\":\"ae0c72fe-53b7-4a5a-ae39-ddcf834ad39e\",\"phase\":\"prepared\",\"pid\":78913,\"prepared_path\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-4ficAd/capabilities/native-preparation/artifact-5M9U3q\",\"recovery_count\":0,\"request_hash\":\"b14bea0a8635de7f2a7dfd09f79e238d2c0d9a50db4a70a02ef3cbbfef5357be\",\"result_json\":null,\"source_path\":\"/private/tmp/willyou-m14-install-recovery-probe/attempt-C9boJu/data/race\"}'\n\n    at sqliteTransaction.<anonymous> (file:///private/tmp/willyou-m14-install-recovery-probe/job.mjs:10:117)\n    at sqliteTransaction (/private/tmp/willyou-m14-owner-probe/node_modules/better-sqlite3/lib/methods/transaction.js:65:24)\n    at file:///private/tmp/willyou-m14-install-recovery-probe/job.mjs:10:943\n    at /private/tmp/willyou-m14-install-recovery-probe/actual.cjs:28296:19\n    at withCoordinatorLock (/private/tmp/willyou-m14-install-recovery-probe/actual.cjs:28277:20)\n    at async execute (file:///private/tmp/willyou-m14-install-recovery-probe/job.mjs:10:14)\n    at async file:///private/tmp/willyou-m14-install-recovery-probe/worker.mjs:7:118"
+              }
+            ]
+          },
+          {
+            "exit": {
+              "code": 0,
+              "signal": null
+            },
+            "frames": [
+              {
+                "type": "result",
+                "result": {
+                  "target": "fixture:darwin:arm64",
+                  "resourceId": "agent-native-runtime:c843fee1315f25c0c2d05c38db94918b0ab00e0e883874542ef9d7a450042768",
+                  "revision": 8,
+                  "replayed": false
+                }
+              }
+            ]
+          }
+        ],
+        "oneActivation": true
+      }
+    },
+    {
+      "id": "I09",
+      "label": "concurrent default change blocks stale recovered activation",
+      "status": "passed",
+      "evidence": {
+        "blockedWithoutOverwrite": true,
+        "resourcePreserved": true,
+        "jobId": "333bcf23-f720-4b92-bdf3-5312524de61c"
+      }
+    },
+    {
+      "id": "I10",
+      "label": "default and activation receipt commit or roll back together",
+      "status": "passed",
+      "evidence": {
+        "jobId": "c341d678-021d-4b87-8b00-d97c2d04b5d4",
+        "transactionRollback": true,
+        "oneRetryActivation": true
+      }
+    },
+    {
+      "id": "I11",
+      "label": "changed prepared bytes are retained as a failure instead of being silently recreated",
+      "status": "passed",
+      "evidence": {
+        "jobId": "54aeae74-f7b4-4c93-88ce-117c80e9261e",
+        "changedSourceRejected": true,
+        "noDefaultChange": true
+      }
+    },
+    {
+      "id": "I12",
+      "label": "real Codex package resumes publication after installer death and starts from the recovered path",
+      "status": "passed",
+      "evidence": {
+        "jobId": "ddd8a95e-b1e1-4056-808b-03d38036dcd2",
+        "recoveredResource": "agent-native-runtime:28aa52adbb85b1d1642e09dcc0e2ac68ed2db3c4b9e032fc9bb0bb68b5a4a24d",
+        "version": "codex-cli 0.167.1",
+        "files": 41
+      }
+    }
+  ],
+  "passed": 12,
+  "scope": "Actual worker SIGKILL, kernel process identity, ResourceStore recovery and temporary durable installation/activation schema. No interrupted HTTP transfer, actual run lease/GC, full App restart, supplier/model call or product implementation."
+}

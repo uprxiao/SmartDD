@@ -1,0 +1,73 @@
+{
+  "results": [
+    {
+      "id": "C01-actual-source-SVN-and-path-alias",
+      "status": "passed",
+      "detail": {
+        "root": {
+          "exists": true,
+          "isDirectory": true,
+          "readable": true,
+          "writable": true,
+          "vcs": "svn",
+          "available": true
+        },
+        "nested": {
+          "exists": true,
+          "isDirectory": true,
+          "readable": true,
+          "writable": true,
+          "vcs": "svn",
+          "available": true
+        },
+        "alias": "/private/tmp/willyou-m14-global-f3zh527k/storage-a1/wc",
+        "boundary": "Production directory inspection only; sparse logical size is not IO performance proof."
+      }
+    },
+    {
+      "id": "C02-actual-browser-parent-child-and-run-revocation",
+      "status": "passed",
+      "detail": {
+        "audit": [
+          {
+            "result": "requested",
+            "source": "agent"
+          },
+          {
+            "result": "allowed",
+            "source": "user"
+          },
+          {
+            "result": "revoked",
+            "source": "run-end"
+          }
+        ],
+        "dependency_substitution": "ApplicationError class only; exact BrowserAccess logic transformed by esbuild; not Electron integration"
+      }
+    },
+    {
+      "id": "C03-actual-browser-pending-cancel-and-late-approval",
+      "status": "passed",
+      "detail": [
+        {
+          "result": "requested",
+          "source": "agent"
+        },
+        {
+          "result": "denied",
+          "source": "run-end"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/main/core/projects/dir-status.ts",
+      "sha256": "f4c6bef8553000dcd248da93ea8b88f673026f1c22b5a7fd37dc7eaf1fa407e3"
+    },
+    {
+      "path": "src/main/core/browser/access.ts",
+      "sha256": "349f600c688541111e3fe00967ec02d32dca4afce2443af10b08528ab2dac6a8"
+    }
+  ]
+}

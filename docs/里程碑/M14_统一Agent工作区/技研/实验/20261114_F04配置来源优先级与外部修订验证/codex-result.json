@@ -1,0 +1,53 @@
+{
+  "out": "/private/tmp/willyou-m14-f04-config-contract/codex-9hXrKh",
+  "checks": [
+    {
+      "id": "F04-X01 explicit native cascade retains trusted project effect",
+      "status": "passed",
+      "model": "project-model",
+      "sandbox": "danger-full-access",
+      "account": {
+        "account": null,
+        "requiresOpenaiAuth": false,
+        "workspaceRouting": null
+      }
+    },
+    {
+      "id": "F04-X02 host config overrides explicit source without changing auth file",
+      "status": "passed",
+      "model": "host-model",
+      "approval": "on-request",
+      "sandbox": "read-only",
+      "account": {
+        "account": null,
+        "requiresOpenaiAuth": false,
+        "workspaceRouting": null
+      }
+    },
+    {
+      "id": "F04-X03 new process observes external revision; original auth file preserved",
+      "status": "passed",
+      "model": "changed-project-model"
+    }
+  ],
+  "passed": 3,
+  "error": null,
+  "processes": [
+    {
+      "pid": 62334,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 62335,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 62336,
+      "exitCode": 0,
+      "signal": null
+    }
+  ],
+  "scope": "Real Codex app-server config/read and account/read with synthetic file credential; no model turn, real account verification, OS keychain or product code"
+}

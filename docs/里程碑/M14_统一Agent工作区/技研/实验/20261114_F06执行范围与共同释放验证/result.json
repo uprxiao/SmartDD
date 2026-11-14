@@ -1,0 +1,94 @@
+{
+  "out": "/private/tmp/willyou-m14-f06-execution-scope/attempt-3mB9fF",
+  "passed": 6,
+  "checks": [
+    {
+      "id": "S01",
+      "title": "current finisher negative control releases with live unregistered work",
+      "status": "passed",
+      "evidence": {
+        "actualCurrentFinisherReleased": true,
+        "backgroundStillWrote": true,
+        "controlledNegative": true
+      }
+    },
+    {
+      "id": "S02",
+      "title": "persistent scope retains actual run resources and workspace after root exit",
+      "status": "passed",
+      "evidence": {
+        "runId": "aeac1481-644b-455c-954d-a203413dba0f",
+        "root": {
+          "pid": 68472,
+          "startedAt": "darwin-proc-v1:1794667720:788775"
+        },
+        "background": {
+          "pid": 68476,
+          "startedAt": "darwin-proc-v1:1794667720:860009"
+        },
+        "revision": 3,
+        "runState": "stopping",
+        "workspaceRetained": true
+      }
+    },
+    {
+      "id": "S03",
+      "title": "closing rejects old callback but late cleanup observation retains scope",
+      "status": "passed",
+      "evidence": {
+        "oldCallbackDenied": true,
+        "copyDenied": true,
+        "cleanupObservationNotDiscarded": true,
+        "scope": {
+          "run_id": "aeac1481-644b-455c-954d-a203413dba0f",
+          "launch_id": "20214ed1-936d-4251-8a62-35b91a8f53e2",
+          "phase": "unknown",
+          "coverage": "unknown",
+          "revision": 5,
+          "drained_revision": null,
+          "reason": "LATE_MEMBER"
+        }
+      }
+    },
+    {
+      "id": "S04",
+      "title": "all known PIDs gone does not erase unknown coverage",
+      "status": "passed",
+      "evidence": {
+        "allKnownProcessesStopped": true,
+        "unknownStillBlocksRunAndWorkspace": true
+      }
+    },
+    {
+      "id": "S05",
+      "title": "positive scoped reconciliation atomically permits next writer",
+      "status": "passed",
+      "evidence": {
+        "oldResourcesAndWorkspaceReleasedTogether": true,
+        "nextWriterActuallyLaunched": true,
+        "nextStopped": true,
+        "scopeProofBoundary": "all fixture-created members captured at spawn; not arbitrary OS containment"
+      }
+    },
+    {
+      "id": "S06",
+      "title": "cwd and SVN root replacement block dispatch and retain holds until no-fork cancellation",
+      "status": "passed",
+      "evidence": [
+        {
+          "mode": "cwd",
+          "identityReplacementRejected": true,
+          "noProcessForked": true,
+          "explicitNoForkCancellationReleased": true
+        },
+        {
+          "mode": "root",
+          "identityReplacementRejected": true,
+          "noProcessForked": true,
+          "explicitNoForkCancellationReleased": true
+        }
+      ]
+    }
+  ],
+  "scope": "Current actual run registry/finisher versus one isolated finisher guard. Real owned Node root/background processes with exact births; candidate scope and path gate in same SQLite. Background process is host-created fixture work, not proof of arbitrary native descendant containment. No production mutation."
+}

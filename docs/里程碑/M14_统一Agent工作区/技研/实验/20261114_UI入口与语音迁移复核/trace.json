@@ -1,0 +1,65 @@
+[
+  {
+    "id": "UIE01",
+    "calls": [
+      {
+        "op": "open",
+        "request": {
+          "cols": 80,
+          "rows": 24,
+          "taskId": "sdk-active"
+        }
+      }
+    ],
+    "interpretation": "negative control: new SDK identity mapped into unchanged legacy TaskView ignores runState; not actual product SDK behavior"
+  },
+  {
+    "id": "UIE02",
+    "calls": [
+      {
+        "op": "open",
+        "request": {
+          "cols": 80,
+          "rows": 24,
+          "taskId": "legacy"
+        }
+      }
+    ]
+  },
+  {
+    "id": "UIE04",
+    "calls": [
+      {
+        "op": "open",
+        "request": {
+          "cols": 80,
+          "rows": 24,
+          "taskId": "close-race"
+        }
+      },
+      {
+        "op": "prepareFiles",
+        "scope": {
+          "kind": "task",
+          "taskId": "close-race"
+        },
+        "action": "save"
+      }
+    ]
+  },
+  {
+    "id": "UIE07",
+    "result": {
+      "ok": true,
+      "phase": "shortcut-sent"
+    },
+    "calls": [
+      {
+        "op": "adapter-trigger",
+        "shortcut": "RightOption",
+        "aborted": false
+      }
+    ],
+    "adapter": "synthetic, no real Typeless launch"
+  }
+]

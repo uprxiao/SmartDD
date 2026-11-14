@@ -1,0 +1,40 @@
+{
+  "out": "/private/tmp/willyou-m14-f10-retention/physical-2ewIz4",
+  "checks": [
+    {
+      "id": "P01-current-deleter-negative-control",
+      "passed": true,
+      "result": {
+        "currentCodePhysicallyDeletesNewOnlyHistory": true,
+        "syntheticOwnedBundleOnly": true
+      }
+    },
+    {
+      "id": "P02-current-query-blocks-and-last-reference-release-cleans",
+      "passed": true,
+      "result": {
+        "historyAndReaderProtect": true,
+        "packageAndDependencyPhysicallyDeletedAfterRelease": true
+      }
+    },
+    {
+      "id": "P03-post-preview-reference-invalidates-plan",
+      "passed": true,
+      "result": {
+        "oldPlanRejected": true
+      }
+    },
+    {
+      "id": "P04-final-deletion-window-and-recovery-use-same-query",
+      "passed": true,
+      "result": {
+        "injectedAfterFinalPhaseMarker": true,
+        "physicalBytesRetained": true,
+        "newReaderRejected": true,
+        "recoveryRetainsThenCompletesAfterRelease": true
+      }
+    }
+  ],
+  "passed": 4,
+  "scope": "Current ResourceStore and ResourceGraphMaintenance, only in-memory planner/final-query changes. C1.5 copied relational history has no corresponding old files here; newly installed synthetic package/runtime bytes alone are deletion targets. No user files or native execution."
+}

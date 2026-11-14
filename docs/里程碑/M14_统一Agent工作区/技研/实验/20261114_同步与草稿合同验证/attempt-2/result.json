@@ -1,0 +1,110 @@
+{
+  "scope": "Candidate protocol, real isolated SQLite/WAL, deterministic fake transport. Not actual T3 runtime or WillYou IPC/UI/SDK integration.",
+  "sqlite": "3.54.0",
+  "results": [
+    {
+      "id": "S01-negative-control-nontransactional-snapshot",
+      "passed": true
+    },
+    {
+      "id": "S02-real-WAL-snapshot-is-consistent-with-concurrent-writer",
+      "passed": true
+    },
+    {
+      "id": "S03-subscribe-snapshot-replay-interleavings",
+      "passed": true
+    },
+    {
+      "id": "S04-all-notice-permutations-duplicates-coalesce",
+      "passed": true
+    },
+    {
+      "id": "S05-last-notice-loss-negative-control-and-watermark-repair",
+      "passed": true
+    },
+    {
+      "id": "S06-old-view-snapshot-page-notice-rejected",
+      "passed": true
+    },
+    {
+      "id": "S07-event-gap-does-not-advance-cursor-or-partial-page",
+      "passed": true
+    },
+    {
+      "id": "S08-pruned-cursor-falls-back-to-current-projection",
+      "passed": true
+    },
+    {
+      "id": "S09-new-database-same-task-cannot-reuse-cursor",
+      "passed": true
+    },
+    {
+      "id": "S10-host-reopen-replays-committed-but-unpublished-event",
+      "passed": true
+    },
+    {
+      "id": "S11-rollback-does-not-publish-or-leave-sequence-hole",
+      "passed": true
+    },
+    {
+      "id": "S12-old-runtime-generation-and-terminal-regression-rejected",
+      "passed": true
+    },
+    {
+      "id": "S13-unknown-required-event-blocks-without-cursor-advance",
+      "passed": true
+    },
+    {
+      "id": "S14-old-snapshot-cannot-overwrite-new-live-state",
+      "passed": true
+    },
+    {
+      "id": "D01-draft-CAS-between-independent-connections",
+      "passed": true
+    },
+    {
+      "id": "D02-send-ACK-keeps-new-local-edit-and-advances-base",
+      "passed": true
+    },
+    {
+      "id": "D03-old-task-ACK-does-not-touch-new-view",
+      "passed": true
+    },
+    {
+      "id": "D04-lost-send-ACK-retry-is-one-outbox-and-key-conflict-rejects",
+      "passed": true
+    },
+    {
+      "id": "D05-selection-change-rejects-reference-and-send-preserves-draft",
+      "passed": true
+    },
+    {
+      "id": "D06-reference-idempotence-is-insertion-only",
+      "passed": true
+    },
+    {
+      "id": "D07-create-first-message-retry-does-not-create-or-send-twice",
+      "passed": true
+    },
+    {
+      "id": "D08-draft-outbox-receipt-rollback-together",
+      "passed": true
+    },
+    {
+      "id": "D09-stale-save-ACK-does-not-regress-new-ACK",
+      "passed": true
+    },
+    {
+      "id": "S15-old-database-snapshot-after-reconnect-is-rejected",
+      "passed": false,
+      "error": "",
+      "trace": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-sync-probe/probe.py\", line 295, in decorate\n    fn(host, other, Path(tmp))\n    ~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/willyou-m14-sync-probe/probe.py\", line 528, in _\n    assert not r.snapshot(old_snapshot, old_epoch)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "id": "S16-future-cache-cursor-resets-view-epoch-before-snapshot",
+      "passed": false,
+      "error": "",
+      "trace": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-sync-probe/probe.py\", line 295, in decorate\n    fn(host, other, Path(tmp))\n    ~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/willyou-m14-sync-probe/probe.py\", line 539, in _\n    assert r.cursor == 0 and r.projection['generation'] == 1 and r.epoch != old_epoch\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "out": "/private/tmp/willyou-m14-f11-readset/attempt-FVmRVP",
+  "passed": 7,
+  "checks": [
+    {
+      "id": "S01-start-switch-handoff-directory-preparation-has-no-code-scan",
+      "passed": true,
+      "result": {
+        "ioFile": "S01-io.json",
+        "protocolRequests": 3,
+        "descriptorMetadataCalls": 21,
+        "managedRecoveryDirectoryEntries": 2,
+        "noNativeAgentStarted": true,
+        "measuredOnlyDirectoryPreparationAndActualFileScope": true
+      }
+    },
+    {
+      "id": "S02-scoped-query-and-current-masked-search-have-different-io",
+      "passed": true,
+      "result": {
+        "newQuery": "S02-scoped-io.json",
+        "currentSearch": "S02-current-search-io.json",
+        "nativeReadResultMatchesUnmodifiedHelper": true,
+        "wholeRootMaskDoesNotPruneEnumeration": true
+      }
+    },
+    {
+      "id": "S03-new-matching-file-invalidates-complete-negative-query",
+      "passed": true,
+      "result": {
+        "onlyReturnedFilesCannotProveAbsence": true,
+        "normalizedQueryReexecuted": true,
+        "ioFile": "S03-io.json"
+      }
+    },
+    {
+      "id": "S04-previously-nonmatching-file-change-is-a-query-dependency",
+      "passed": true,
+      "result": {
+        "nonmatchingContentWasRecorded": true,
+        "inodeAndSizePreserved": true,
+        "ioFile": "S04-io.json"
+      }
+    },
+    {
+      "id": "S05-truncation-explicit-domain-and-large-file-budget",
+      "passed": true,
+      "result": {
+        "cancelEndsBeforeContentReads": true,
+        "truncationDoesNotSupportAbsence": true,
+        "oversizeContentNotRead": true,
+        "completeIsLimitedToExplicitNoSymlinkDomain": true,
+        "ioFiles": [
+          "S05-truncated-io.json",
+          "S05-large-io.json",
+          "S05-alias-io.json"
+        ]
+      }
+    },
+    {
+      "id": "S06-membership-change-during-observation-is-unknown",
+      "passed": true,
+      "result": {
+        "changedWhileReadingDetected": true,
+        "newObservationCanComplete": true,
+        "noAtomicFilesystemSnapshotClaim": true,
+        "ioFile": "S06-io.json"
+      }
+    },
+    {
+      "id": "S07-root-context-and-unobserved-native-paths-do-not-gain-coverage",
+      "passed": true,
+      "result": {
+        "managedQueryDoesNotCertifyAllAgentReads": true,
+        "wrongBindingRejected": true,
+        "closedRootRejected": true,
+        "serialPolicyUnchanged": true
+      }
+    }
+  ],
+  "scope": "Current actual FileService/root authorization and fd-anchored native read/list core, isolated query-list coverage variant and readset candidate; current F06 descriptor extracted unchanged except fs instrumentation. Logical I/O inside instrumented broker, not physical-disk throughput. No SDK, all-producer read ledger, directory writer implementation, company project or product acceptance."
+}

@@ -1,0 +1,126 @@
+{
+  "attempt": "attempt-JTiBrz",
+  "processes": [
+    {
+      "name": "extract-native",
+      "pid": 77270,
+      "code": 0,
+      "signal": null,
+      "stdout": "{\"files\": 41, \"bytes\": 366515155, \"path\": \"/private/tmp/willyou-m14-package-download-probe/attempt-JTiBrz/data/native\"}\n",
+      "stderr": "",
+      "timedOut": false
+    },
+    {
+      "name": "native-version",
+      "pid": 77272,
+      "code": 0,
+      "signal": null,
+      "stdout": "codex-cli 0.167.1\n",
+      "stderr": "WARNING: proceeding, even though we could not create PATH aliases: CODEX_HOME points to \"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-laICYn/home/.codex\", but that path does not exist\n",
+      "timedOut": false
+    },
+    {
+      "name": "extract-good",
+      "pid": 77274,
+      "code": 0,
+      "signal": null,
+      "stdout": "{\"files\": 1, \"bytes\": 35, \"path\": \"/private/tmp/willyou-m14-package-download-probe/attempt-JTiBrz/data/good\"}\n",
+      "stderr": "",
+      "timedOut": false
+    },
+    {
+      "name": "extract-traversal",
+      "pid": 77275,
+      "code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-package-download-probe/extract.py\", line 16, in <module>\n    count+=1;assert count<=8192,'MEMBER_LIMIT';name=member.name.rstrip('/')if member.isdir()else member.name;parts=name.split('/');assert all(p and p not in ['.','..'] and not any(c in p for c in ['\\\\',':','\\0'])for p in parts),'UNSAFE_PATH'\nAssertionError: UNSAFE_PATH\n",
+      "timedOut": false
+    },
+    {
+      "name": "extract-symlink",
+      "pid": 77276,
+      "code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-package-download-probe/extract.py\", line 17, in <module>\n    assert member.isfile()or member.isdir(),'UNSUPPORTED_ENTRY_TYPE';assert not member.sparse,'SPARSE_NOT_ALLOWED'\nAssertionError: UNSUPPORTED_ENTRY_TYPE\n",
+      "timedOut": false
+    },
+    {
+      "name": "extract-hardlink",
+      "pid": 77277,
+      "code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-package-download-probe/extract.py\", line 17, in <module>\n    assert member.isfile()or member.isdir(),'UNSUPPORTED_ENTRY_TYPE';assert not member.sparse,'SPARSE_NOT_ALLOWED'\nAssertionError: UNSUPPORTED_ENTRY_TYPE\n",
+      "timedOut": false
+    },
+    {
+      "name": "extract-duplicate",
+      "pid": 77278,
+      "code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-package-download-probe/extract.py\", line 19, in <module>\n    assert name in files,'EXTRA_FILE';assert name not in seen,'DUPLICATE_FILE';expected=files[name];assert member.size==expected['size'],'MEMBER_SIZE_MISMATCH';seen.add(name);total+=member.size;assert total<=sum(x['size']for x in files.values()),'EXPANDED_LIMIT'\nAssertionError: DUPLICATE_FILE\n",
+      "timedOut": false
+    },
+    {
+      "name": "extract-wrong-file",
+      "pid": 77279,
+      "code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-package-download-probe/extract.py\", line 23, in <module>\n    assert written==expected['size']and h.hexdigest()==expected['sha256'],'MEMBER_HASH_MISMATCH';target.chmod(0o500 if expected['executable']else 0o400)\nAssertionError: MEMBER_HASH_MISMATCH\n",
+      "timedOut": false
+    },
+    {
+      "name": "extract-extra",
+      "pid": 77280,
+      "code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-package-download-probe/extract.py\", line 19, in <module>\n    assert name in files,'EXTRA_FILE';assert name not in seen,'DUPLICATE_FILE';expected=files[name];assert member.size==expected['size'],'MEMBER_SIZE_MISMATCH';seen.add(name);total+=member.size;assert total<=sum(x['size']for x in files.values()),'EXPANDED_LIMIT'\nAssertionError: EXTRA_FILE\n",
+      "timedOut": false
+    },
+    {
+      "name": "extract-oversize",
+      "pid": 77281,
+      "code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/willyou-m14-package-download-probe/extract.py\", line 19, in <module>\n    assert name in files,'EXTRA_FILE';assert name not in seen,'DUPLICATE_FILE';expected=files[name];assert member.size==expected['size'],'MEMBER_SIZE_MISMATCH';seen.add(name);total+=member.size;assert total<=sum(x['size']for x in files.values()),'EXPANDED_LIMIT'\nAssertionError: MEMBER_SIZE_MISMATCH\n",
+      "timedOut": false
+    }
+  ],
+  "localHttpRequests": [
+    "/native",
+    "/redirect-good",
+    "/good",
+    "/redirect-out",
+    "/http500",
+    "/wrong-length",
+    "/bad-hash",
+    "/interrupted",
+    "/cancel",
+    "/traversal",
+    "/symlink",
+    "/hardlink",
+    "/duplicate",
+    "/wrong-file",
+    "/extra",
+    "/oversize"
+  ],
+  "paidModelCalls": 0,
+  "publicUpstreamCalls": 0,
+  "python": "Python 3.9.6",
+  "node": "v26.5.0",
+  "nativeVersion": "0.167.1",
+  "archiveBytes": 156152756,
+  "expandedFileCount": 41,
+  "limits": [
+    "Local HTTP, not public HTTPS/proxy",
+    "Archive was built from cached native package, not downloaded from upstream",
+    "Python is an experiment helper, not a product dependency decision",
+    "No install host death, run lease/GC or product integration"
+  ]
+}

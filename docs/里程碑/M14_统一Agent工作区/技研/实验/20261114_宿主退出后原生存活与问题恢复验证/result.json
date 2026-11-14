@@ -1,0 +1,139 @@
+{
+  "final": {
+    "out": "/private/tmp/willyou-m14-live-question-recovery-probe/recovery-VO6bST",
+    "checks": [
+      {
+        "id": "L01",
+        "title": "live old host cannot be taken over while both native forms are pending",
+        "status": "passed",
+        "evidence": {
+          "liveOwnerRejected": true,
+          "nativeProcesses": 2
+        }
+      },
+      {
+        "id": "L02",
+        "title": "lost host expires questions while actual living natives retain run leases",
+        "status": "passed",
+        "evidence": {
+          "questionsExpiredWithoutConsent": true,
+          "nativesStillAlive": true,
+          "leasesRetained": true,
+          "newRunsBlocked": true
+        }
+      },
+      {
+        "id": "L03",
+        "title": "unknown native observations do not release resources or recreate callbacks",
+        "status": "passed",
+        "evidence": {
+          "controlledUnknownReader": true,
+          "actualNativesAlive": true,
+          "leasesRetained": true
+        }
+      },
+      {
+        "id": "L04",
+        "title": "only proved native exits permit actual run recovery and explicit new reservation",
+        "status": "passed",
+        "evidence": {
+          "kernelExitEvents": 2,
+          "nativeBirthsConfirmedStopped": true,
+          "oldRunsStopped": true,
+          "oldLeasesReleased": true,
+          "newReservationsUnforkedAndCancelled": true,
+          "noQuestionResend": true
+        }
+      }
+    ],
+    "passed": 4,
+    "error": null,
+    "processes": [
+      {
+        "role": "host",
+        "pid": 29937,
+        "exit": {
+          "code": null,
+          "signal": "SIGKILL"
+        }
+      },
+      {
+        "role": "exit-observer",
+        "pid": 29980,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    ],
+    "native": [
+      {
+        "id": "a-1",
+        "runId": "297a61de-aa07-46df-83a8-73fe9cbe3fbb",
+        "requestId": "b65b1075-a8b2-4be0-8c67-9faa75bb35e6",
+        "scope": {
+          "taskId": "116e8c38-fd4a-4c7e-a9bb-855e617989c8",
+          "bindingId": "d15d9876-6d36-48c8-bb80-1815dd1bd7f1",
+          "runId": "297a61de-aa07-46df-83a8-73fe9cbe3fbb",
+          "generation": 1,
+          "connectionId": "ee8d0e70-4efe-4541-9975-52658c2e9d54"
+        },
+        "identity": {
+          "pid": 29941,
+          "startedAt": "darwin-proc-v1:1794656655:325771"
+        },
+        "finalState": "stopped"
+      },
+      {
+        "id": "b-1",
+        "runId": "e42d7887-b760-4b93-8c3e-80c38ed3a5de",
+        "requestId": "b1dda2fe-4a82-42e5-adc9-9e8f5991c3a7",
+        "scope": {
+          "taskId": "4a90ef0e-4c1e-471e-800d-329f6eaf2aa3",
+          "bindingId": "8eda6671-8cd8-4c95-b2dc-8afec5ad3bc1",
+          "runId": "e42d7887-b760-4b93-8c3e-80c38ed3a5de",
+          "generation": 1,
+          "connectionId": "3adeabda-ff90-4ea4-939d-d03dff6a6b5b"
+        },
+        "identity": {
+          "pid": 29952,
+          "startedAt": "darwin-proc-v1:1794656655:786534"
+        },
+        "finalState": "stopped"
+      }
+    ],
+    "scope": "Actual current run recovery and request candidate in one store after real host SIGKILL while two real native processes are deliberately SIGSTOP-frozen. Unknown identity is a controlled reader branch. Synthetic pending forms; no answers sent, business writes, active command side effects, native resumes or product UI."
+  },
+  "finalLocalModelRequests": 2,
+  "failedAttemptAudit": {
+    "passed": 0,
+    "classification": "research-driver failure",
+    "primaryError": "Python select.kqueue does not implement context manager __enter__",
+    "secondaryError": "Cleanup waited for exit notifications from already-failed observer; unified exec session exited 1 with WATCHDOG:cleanup native",
+    "observations": [
+      {
+        "identity": {
+          "pid": 29731,
+          "startedAt": "darwin-proc-v1:1794656594:480140"
+        },
+        "state": "stopped"
+      },
+      {
+        "identity": {
+          "pid": 29735,
+          "startedAt": "darwin-proc-v1:1794656595:530267"
+        },
+        "state": "stopped"
+      },
+      {
+        "identity": {
+          "pid": 29746,
+          "startedAt": "darwin-proc-v1:1794656596:305746"
+        },
+        "state": "stopped"
+      }
+    ],
+    "correction": "Explicit kqueue try/finally close; reject readiness on observer failure; do not await dead observer during cleanup. Exact captured PID/birth cleanup performed."
+  },
+  "failureRecordedFrom": "Observer stderr, captured host/native checkpoint, exact-identity cleanup record and exec session 68820 terminal error. Failed driver did not produce its normal final result; not counted as passed."
+}
