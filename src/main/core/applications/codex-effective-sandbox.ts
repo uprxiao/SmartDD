@@ -39,19 +39,48 @@ function sandboxArgument(args:readonly string[],index:number):{mode:string|undef
   return null;
 }
 
-/** Remove only a proved equivalent legacy selector while the private named policy is delivered.
- * Codex 0.166.0's ConfigOverrides.sandbox_mode otherwise overrides default_permissions.
- * Approval flags (including --approve-for-me) retain their native semantics and order.
- * Called only for a CLI-bearing run: disable native shell snapshots for that run so
- * its environment-only authorization cannot be copied into the shell snapshot cache.
+/** Remove proved equivalent legacy selectors only for CLI named-policy delivery.
+ * A single canonical --approve-for-me is consumed at its original argv position after the
+ * inherited :workspace policy has been verified. Its approval settings remain
+ * explicit so later server/client shorthand expansion cannot restore sandbox_mode.
+ * Only the exact verified 0.167.1 remote-server version enables this rewrite.
+ * Undefined, older and future versions retain their existing native argv behavior.
  */
-export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSandboxPlan):string[]{
+export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSandboxPlan,version?:string):string[]{
   if(!policy.available)return [...args];
   if(policy.kind!=='inherit')return [...args,'--disable','shell_snapshot'];
+  const autoFlags=new Set(['--approve-for-me','--not-so-yolo','--full-auto']);
+  let automatic=0,unverifiedAutomatic=0,mixed=false;const overrides:string[]=[];
+  if(version==='0.167.1'){
+    for(let i=0;i<args.length;i++){
+      const arg=args[i];
+      if(arg==='--'){mixed=true;break;}
+      if(autoFlags.has(arg)){automatic++;if(arg!=='--approve-for-me')unverifiedAutomatic++;continue;}
+      const selector=sandboxArgument(args,i);
+      if(selector){mixed=true;i+=selector.width-1;continue;}
+      let override:string|undefined;
+      if(arg==='-c'||arg==='--config')override=args[++i];
+      else if(arg.startsWith('--config='))override=arg.slice(9);
+      else if(arg.startsWith('-c')&&!arg.startsWith('--'))override=arg.slice(2).replace(/^=/,'');
+      if(override!==undefined){overrides.push(override);continue;}
+      if(['--dangerously-bypass-approvals-and-sandbox','--yolo'].includes(arg)||arg.startsWith('--ask-for-approval=')||arg.startsWith('--profile=')||arg==='-a'||arg==='--ask-for-approval'||arg==='-p'||arg==='--profile'||/^-[ap].+/.test(arg)&&!arg.startsWith('--'))mixed=true;
+      if(valueFlags.has(arg)||arg==='--enable'||arg==='--disable')i++;
+    }
+    if(automatic){
+      if(automatic!==1||unverifiedAutomatic||mixed||policy.parent!==':workspace')throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','auto参数与已核验的命名权限不等价');
+      // Conservatively reject a second security selector instead of deleting or
+      // reinterpreting a user override. Nonsecurity config retains its exact bytes.
+      for(const override of overrides){
+        let roots:string[];try{if(override.length>65536)throw Error('budget');roots=Object.keys(parseToml(override));}catch{throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','auto配置参数尚未核验');}
+        if(roots.some(key=>['sandbox_mode','sandbox_workspace_write','default_permissions','permissions','network','approval_policy','approvals_reviewer'].includes(key)))throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','auto不能混用额外权限配置');
+      }
+    }
+  }
   const output:string[]=[];let selectors=0;
   for(let i=0;i<args.length;i++){
     const arg=args[i];
-    if(valueFlags.has(arg)){output.push(arg);if(i+1<args.length)output.push(args[++i]);continue;}
+    if(valueFlags.has(arg)||automatic&&(arg==='--enable'||arg==='--disable')){output.push(arg);if(i+1<args.length)output.push(args[++i]);continue;}
+    if(automatic&&arg==='--approve-for-me'){output.push('-c','approvals_reviewer="auto_review"','-c','approval_policy="on-request"');continue;}
     const selector=sandboxArgument(args,i);
     if(!selector){output.push(arg);continue;}
     const expected=selector.mode==='read-only'?':read-only':selector.mode==='workspace-write'?':workspace':null;

@@ -329,7 +329,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       }
       const bridgeEntry=mcp.find(m=>m.kind==='applications');let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;
       if(bridgeEntry){bridge=await this.broker.prepare(run,bridgeEntry.serverName);bridgeEntry.args[2]=bridge.bootstrapPath;}
-      const profileArgs=cliEnvironment&&policy?.available&&!('runner'in policy)?codexProfileArgsForCli(input.profile.args,policy):input.profile.args;
+      const profileArgs=cliEnvironment&&policy?.available&&!('runner'in policy)?codexProfileArgsForCli(input.profile.args,policy,native.version):input.profile.args;
       let clientProfileArgs:string[]|undefined;
       const launchEnvironment=cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env;
       // A plan the adapter still refuses (another collision, unsupported mechanism) leaves the ordinary Agent: native only.

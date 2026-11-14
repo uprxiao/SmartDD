@@ -3,12 +3,47 @@ import {join} from 'node:path';
 import {afterEach,describe,expect,it} from 'vitest';
 import {codexProfileArgsForCli,codexRequirementsArgs,inspectCodexCliSandbox,planCodexCliSandbox,readCodexRequirements,verifyCodexCliSandbox,type CodexRequirementsProof} from '../codex-effective-sandbox';
 import type {TaskLaunchInput,NativeLaunchContext} from '../native-launch-context';
+import {codexClientArgs} from '../codex-client-args';
+import {codexResumePermissions} from '../codex-resume-relay';
+import {expandCodexPermissionShorthands} from '@shared/agent-permissions';
 const requirements:CodexRequirementsProof={version:'0.166.0',known:true,empty:true,hash:'a'.repeat(64)};
 const plan=(config:Record<string,unknown>,args:string[]=[],proof=requirements)=>planCodexCliSandbox({version:'0.166.0',layers:[{source:'user',config,hash:'b'.repeat(64)}],args,requirements:proof});
 const named=()=>({default_permissions:'userx',permissions:{userx:{extends:':workspace',filesystem:{deny_read:['/private/fixture-denied']},network:{enabled:true,allowed_domains:['allowed.example.test']}}},features:{network_proxy:true}});
 const roots:string[]=[];afterEach(()=>{for(const root of roots.splice(0))rmSync(root,{recursive:true,force:true});});
 
 describe('M11 exact Codex policy inheritance and fail-closed CLI delivery',()=>{
+ it('keeps the verified 0.167.1 auto-review child selected through startup and restore',()=>{
+  const policy=plan({sandbox_mode:'workspace-write'}),input=Object.freeze(['--approve-for-me']);
+  const profile=codexProfileArgsForCli(input,policy,'0.167.1');
+  const managed=['-c','default_permissions="private_child"','-c','permissions.private_child.extends=":workspace"'];
+  expect(expandCodexPermissionShorthands(profile)).not.toContain('sandbox_mode="workspace-write"');
+  expect(profile).toEqual(['-c','approvals_reviewer="auto_review"','-c','approval_policy="on-request"','--disable','shell_snapshot']);
+  const config={sandbox_mode:null,default_permissions:'private_child',approval_policy:'on-request',approvals_reviewer:'auto_review',permissions:{private_child:{extends:':workspace',network:{enabled:true,unix_sockets:{'/private/only.sock':'allow'}}}}};
+  for(const restoring of [false,true]){
+   const keys=codexClientArgs(profile,managed,restoring).permissionKeys;
+   expect(keys).not.toContain('sandbox_mode');
+   expect(codexResumePermissions({config},keys)).toMatchObject({permissions:'private_child',approvalPolicy:'on-request',approvalsReviewer:'auto_review',config:{permissions:config.permissions}});
+  }
+  expect(input).toEqual(['--approve-for-me']);
+ });
+ it.each([undefined,'0.166.0','0.167.0','0.167.2','0.168.0'])('preserves auto argv for unverified version %s',version=>{
+  const input=Object.freeze(['--approve-for-me']),policy=plan({sandbox_mode:'workspace-write'});
+  expect(codexProfileArgsForCli(input,policy,version)).toEqual(['--approve-for-me','--disable','shell_snapshot']);
+ });
+ it.each([
+  ['--approve-for-me','-a','never'],['--approve-for-me','-s','workspace-write'],
+  ['--approve-for-me','-c','default_permissions="other"'],
+  ['--approve-for-me','-c','"permissions".parent.extends=":workspace"'],
+  ['--approve-for-me','--approve-for-me'],['--full-auto'],['--not-so-yolo'],
+ ])('refuses unproved auto and security selector composition %j',(...args)=>{
+  const input=Object.freeze([...args]),policy=plan({sandbox_mode:'workspace-write'});
+  expect(()=>codexProfileArgsForCli(input,policy,'0.167.1')).toThrowError(expect.objectContaining({code:'AGENT_ADAPTER_UNSUPPORTED'}));
+  expect([...input]).toEqual(args);
+ });
+ it('preserves opaque MCP arguments, model and unrelated config order around canonical auto',()=>{
+  const input=Object.freeze(['--disable','plugins','--approve-for-me','-c','analytics.enabled=false','-c','mcp_servers.qa.args=["--full-auto"]','--model','fixture']);
+  expect(codexProfileArgsForCli(input,plan({sandbox_mode:'workspace-write'}),'0.167.1')).toEqual(['--disable','plugins','-c','approvals_reviewer="auto_review"','-c','approval_policy="on-request"','-c','analytics.enabled=false','-c','mcp_servers.qa.args=["--full-auto"]','--model','fixture','--disable','shell_snapshot']);
+ });
  it.each([
   ['--disable','network_proxy'],['--disable=network_proxy'],
   ['--disable','network_proxy','--enable','network_proxy'],

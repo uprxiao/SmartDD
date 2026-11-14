@@ -1,6 +1,6 @@
 # M13 插件化、能力统一管理与 AI 配置优化
 
-当前自主补验：[Codex0.167 ask浏览器与真实内核边界I](验收/证据/M13-T100-Codex-0167-ask-browser-and-kernel-boundary-I-499-20261115-a1/coordinator-verdict.json)已归档。full与ask候选已证，下一步修auto shorthand／named-policy组合并实测，再同步正式实现与统一构建；本人验证留后，状态仍取唯一账。
+当前自主补验：[Codex三档最后auto浏览器组件I](验收/证据/M13-T100-Codex-0167-auto-browser-and-kernel-boundary-I-502-20261115-a1/coordinator-verdict.json)及[生产参数修复相关回归](验收/证据/M13-Codex-auto-named-policy-production-regression-U-503-20261115-a1/coordinator-verdict.json)已归档。下一步接正式0.167.1能力资源、统一新包及受影响App回归；本人验证留后，完整状态仍取唯一账。
 
 最新自主补验：[Claude ask 三组拒绝／单次允许I](验收/证据/M13-T100-Claude-ask-three-deny-allow-union-I-488-20261115-a1/coordinator-verdict.json)已联合归档；原驱动红、跨SID边界与清理事实保留。继续Codex审批与浏览器独立项，整条状态仍取唯一账。
 
