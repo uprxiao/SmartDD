@@ -1,6 +1,6 @@
 # M13 插件化、能力统一管理与 AI 配置优化
 
-当前自主补验：[Codex三档最后auto浏览器组件I](验收/证据/M13-T100-Codex-0167-auto-browser-and-kernel-boundary-I-502-20261115-a1/coordinator-verdict.json)及[生产参数修复相关回归](验收/证据/M13-Codex-auto-named-policy-production-regression-U-503-20261115-a1/coordinator-verdict.json)已归档。下一步接正式0.167.1能力资源、统一新包及受影响App回归；本人验证留后，完整状态仍取唯一账。
+当前统一基线：[source014／App060 双端正式适配资源](验收/证据/M13-both-finite-CLI-adapters-source014-App060-build-510-20261115-a1/coordinator-verdict.json)已完成必要软件回归、包完整性与原生检查。接下来按[四条原用例缺项清单](验收/证据/M13-final-four-original-acceptance-frontier-prepared-509-20261115-a1/FRONTIER.md)合并共用前置补真实App／Provider，先收T096及T094 Claude；整条状态只取唯一账，尚未完成M13。
 
 最新自主补验：[Claude ask 三组拒绝／单次允许I](验收/证据/M13-T100-Claude-ask-three-deny-allow-union-I-488-20261115-a1/coordinator-verdict.json)已联合归档；原驱动红、跨SID边界与清理事实保留。继续Codex审批与浏览器独立项，整条状态仍取唯一账。
 

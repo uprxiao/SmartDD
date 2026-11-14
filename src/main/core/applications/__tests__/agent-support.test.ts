@@ -23,14 +23,36 @@ afterAll(()=>rmSync(build,{recursive:true,force:true}));
 beforeEach(async()=>{f=await agentFixture({applicationVersion:'2.0.0'});const db=drizzle(f.sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});capabilities=new CapabilityService({db,projects:new ProjectService(db,secrets),secrets,userData:f.root});});
 afterEach(()=>{capabilities.dispose();f.cleanup();});
 describe('indexed production resource bootstrap and nonfatal readiness',()=>{
+  it('publishes exact 0.167.1 delivery without enabling native send evidence or changing retained 0.166.0 support',async()=>{
+    const source=new CapabilityBundleSource(output),bundles=source.adapters();
+    const current=bundles.find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.5.0')!;
+    const retained=bundles.find(a=>a.metadata.agentId==='codex'&&a.metadata.version==='1.4.0')!;
+    expect(current.metadata.cliVersions).toEqual(['0.167.1']);
+    const claude=bundles.find(a=>a.metadata.agentId==='claude-code'&&a.metadata.version==='1.3.0')!;
+    expect(claude.metadata.cliVersions).toEqual(['2.1.322']);
+    const cc=await f.adapters.install(claude.metadata,claude.files);
+    expect(f.adapters.effective(cc.hash,'2.1.322')).toEqual({levels:['L0.skill','L0.mcp','L0.cli','L1'],verified:true,nativeSendEvidence:false});
+    expect(f.adapters.effective(cc.hash,'2.1.323').verified).toBe(false);
+    expect(f.adapters.recovery(cc.hash,'2.1.322').capability).toBe('unverified');
+
+    expect(current.files['planner.cjs']).toEqual(retained.files['planner.cjs']);
+    const adapter=await f.adapters.install(current.metadata,current.files);
+    expect(f.adapters.effective(adapter.hash,'0.167.1')).toEqual({levels:['L0.skill','L0.mcp','L0.cli','L1'],verified:true,nativeSendEvidence:false});
+    expect(f.adapters.recovery(adapter.hash,'0.167.1').capability).toBe('unverified');
+    for(const version of ['0.166.0','0.167.2','99.0.0'])expect(f.adapters.effective(adapter.hash,version)).toEqual({levels:['L0.skill','L0.mcp'],verified:false,nativeSendEvidence:false});
+    const old=await f.adapters.install(retained.metadata,retained.files);
+    expect(old.hash).toBe(retained.hash);expect(old.metadata.cliVersions).toEqual(['0.166.0']);
+    expect(f.adapters.effective(old.hash,'0.166.0').levels).toContain('L2');
+    expect(f.adapters.effective(old.hash,'0.167.1').verified).toBe(false);
+  });
   it('builds an index whose complete adapter/runtime hashes match the runtime registries',async()=>{
-    const source=new CapabilityBundleSource(output);expect(source.index.build.appVersion).toMatch(/^\d+\.\d+\.\d+$/);expect(source.index.adapters).toHaveLength(8);expect(source.index.runtimes).toHaveLength(1);
+    const source=new CapabilityBundleSource(output);expect(source.index.build.appVersion).toMatch(/^\d+\.\d+\.\d+$/);expect(source.index.adapters).toHaveLength(10);expect(source.index.runtimes).toHaveLength(1);
     const installed=await new RuntimeRegistry(f.store).install(source.runtime());expect(installed.contentHash).toBe(source.index.runtimes[0].hash);
     for(const bundle of source.adapters()){const record=await f.adapters.install(bundle.metadata,bundle.files);expect(record.hash).toBe(bundle.hash);expect([...bundledAgentAdapters(),...bundledLegacyAgentAdapters()].find(a=>a.metadata.agentId===bundle.metadata.agentId&&a.metadata.version===bundle.metadata.version)!.files).toEqual(bundle.files);}
   });
   it('initializes once from actual indexed files and exposes only prepared resources, with native discovery still unverified',async()=>{
-    const service=new AgentSupportService(f.store,capabilities,output),first=service.initialize();expect(service.initialize()).toBe(first);await first;const status=service.status();expect(status.state).toBe('ready');expect(status.adapters.map(a=>a.agentId+'@'+a.version).sort()).toEqual(['claude-code@1.0.0','claude-code@1.1.0','claude-code@1.2.0','codex@1.0.0','codex@1.1.0','codex@1.2.0','codex@1.3.0','codex@1.4.0']);expect(status.adapters.every(a=>a.filesReady&&a.nativeDiscovery==='unverified'&&a.bridgeRecovery==='unverified'&&a.configReload==='unverified'&&a.recoveryRequiresAgentRestart===null&&a.recoveryEvidence?.length===0)).toBe(true);expect(status.legacyResourceCount).toBe(3);expect(existsSync(join(f.home,'.agents'))).toBe(false);
-    status.adapters.length=0;expect(service.status().adapters).toHaveLength(8);expect(f.packages.active('zentao')?.packageHash).toBe(f.application.packageHash);
+    const service=new AgentSupportService(f.store,capabilities,output),first=service.initialize();expect(service.initialize()).toBe(first);await first;const status=service.status();expect(status.state).toBe('ready');expect(status.adapters.map(a=>a.agentId+'@'+a.version).sort()).toEqual(['claude-code@1.0.0','claude-code@1.1.0','claude-code@1.2.0','claude-code@1.3.0','codex@1.0.0','codex@1.1.0','codex@1.2.0','codex@1.3.0','codex@1.4.0','codex@1.5.0']);expect(status.adapters.every(a=>a.filesReady&&a.nativeDiscovery==='unverified'&&a.bridgeRecovery==='unverified'&&a.configReload==='unverified'&&a.recoveryRequiresAgentRestart===null&&a.recoveryEvidence?.length===0)).toBe(true);expect(status.legacyResourceCount).toBe(3);expect(existsSync(join(f.home,'.agents'))).toBe(false);
+    status.adapters.length=0;expect(service.status().adapters).toHaveLength(10);expect(f.packages.active('zentao')?.packageHash).toBe(f.application.packageHash);
   });
   it('does not throw when the distribution index is missing, leaving existing installed versions usable',async()=>{
     const service=new AgentSupportService(f.store,capabilities,join(f.root,'missing-index'));await expect(service.initialize()).resolves.toBeUndefined();expect(service.status()).toMatchObject({state:'unavailable',errorCode:'INVALID_PACKAGE'});expect(f.adapters.verify(f.installedAdapters[0].hash).resource.state).toBe('ready');

@@ -12,6 +12,30 @@ const named=()=>({default_permissions:'userx',permissions:{userx:{extends:':work
 const roots:string[]=[];afterEach(()=>{for(const root of roots.splice(0))rmSync(root,{recursive:true,force:true});});
 
 describe('M11 exact Codex policy inheritance and fail-closed CLI delivery',()=>{
+ it('accepts the specifically verified 0.167.1 policy without declaring adjacent or future versions',()=>{
+  const version='0.167.1',proof={...requirements,version},layers=[{source:'user',config:named(),hash:'b'.repeat(64)}];
+  const input={version,layers,args:[],requirements:proof};
+  expect(planCodexCliSandbox(input)).toMatchObject({available:true,kind:'inherit',parent:'userx',source:'inherited-named-permissions'});
+  for(const version of ['0.167.0','0.167.2','0.168.0'])expect(planCodexCliSandbox({...input,version,requirements:{...proof,version}})).toMatchObject({available:false,reason:'cli-version-unverified'});
+  expect(planCodexCliSandbox({...input,requirements:{...proof,empty:false}}).available).toBe(false);
+ });
+ it('inspects and rechecks real private policy sources for 0.167.1',async()=>{
+  const root=mkdtempSync('/private/tmp/willyou-m13-policy-167-');roots.push(root);const cwd=join(root,'project');mkdirSync(cwd);mkdirSync(join(cwd,'.git'));const path=join(root,'config.toml');writeFileSync(path,'sandbox_mode="workspace-write"\n');
+  const input={cwd,home:root,stateRoot:root,profile:{runner:'codex',args:['--approve-for-me']},signal:new AbortController().signal} as unknown as TaskLaunchInput;
+  const policy=await inspectCodexCliSandbox(input,{command:'/public-fixture/codex',version:'0.167.1'} as NativeLaunchContext,async()=>({...requirements,version:'0.167.1'}));
+  expect(policy).toMatchObject({available:true,parent:':workspace'});expect(()=>verifyCodexCliSandbox(policy)).not.toThrow();
+  writeFileSync(path,'sandbox_mode="read-only"\n');expect(()=>verifyCodexCliSandbox(policy)).toThrowError(expect.objectContaining({code:'RESOURCE_STATE_CHANGED'}));
+ });
+ it('uses the 0.167.1 native metadata command and binds its reported version',async()=>{
+  const root=mkdtempSync('/private/tmp/willyou-m13-requirements-167-');roots.push(root);const command=join(root,'metadata-fixture');
+  writeFileSync(command,'#!/bin/sh\nprintf \'%s\\n\' "$@" > argv.txt\nprintf \'%s\\n\' \'{"appServerVersion":"0.167.1","configRequirements":{"requirements":null}}\'\n',{mode:0o700});
+  const input={cwd:root,environment:{PATH:'/usr/bin:/bin'},profile:{args:['--approve-for-me']},signal:new AbortController().signal} as unknown as TaskLaunchInput;
+  const native={command,version:'0.167.1'} as NativeLaunchContext;
+  expect(await readCodexRequirements(input,native)).toMatchObject({version:'0.167.1',known:true,empty:true});
+  expect(readFileSync(join(root,'argv.txt'),'utf8')).toBe('-c\napprovals_reviewer="auto_review"\n-c\napproval_policy="on-request"\n-c\nsandbox_mode="workspace-write"\napp-server\n--print-startup-config\n');
+  writeFileSync(command,'#!/bin/sh\nprintf \'%s\\n\' \'{"appServerVersion":"0.166.0","configRequirements":{"requirements":null}}\'\n',{mode:0o700});
+  expect(await readCodexRequirements(input,native)).toMatchObject({known:false,empty:false});
+ });
  it('keeps the verified 0.167.1 auto-review child selected through startup and restore',()=>{
   const policy=plan({sandbox_mode:'workspace-write'}),input=Object.freeze(['--approve-for-me']);
   const profile=codexProfileArgsForCli(input,policy,'0.167.1');

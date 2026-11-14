@@ -1,5 +1,4 @@
 import {inspectCodexCliSandbox} from '../codex-effective-sandbox';
-import {agentAdapterMetadataSchema} from '@shared/agent-adapters';
 import {inspectClaudeCliSandbox} from '../claude-effective-sandbox';
 import type {TaskLaunchInput,NativeLaunchContext} from '../native-launch-context';
 import {withResourceLock} from '../resource-lock';
@@ -89,19 +88,15 @@ class TestPtys extends EventEmitter implements PtyHost{
  nativePid(id:string){return this.live.get(id)??null;}
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
-function candidateClaudeAdapter(){
- const retained=JSON.parse(readFileSync(resolve('resources/agent-adapters/claude-code/1.2.0/adapter.json'),'utf8'));
- return{metadata:agentAdapterMetadataSchema.parse({...retained,version:'1.3.0',cliVersions:['2.1.322'],cliEntry:'supported',levels:{'2.1.322':['L0.skill','L0.mcp','L0.cli','L1']},evidenceBaseline:'synthetic task wiring only; not published native support'}),files:Object.fromEntries(['index.cjs','planner.cjs'].map(file=>[file,readFileSync(resolve('resources/agent-adapters/claude-code/1.3.0',file))]))};
-}
 beforeEach(async({task})=>{
- codexFreshnessProbe=undefined;codexFreshnessReads=[];pluginWrites=[];pluginUrls=[];codexRequests=[];codexStarted=[];codexStopped=[];codexStartFailure=false;cliPolicyAvailable=true;const withPlugins=task.suite?.name==='M13 P1 plugins through production task startup',withClaudeCandidate=task.suite?.name==='M13 Claude candidate CLI through production task entry';const withCli=withPlugins||withClaudeCandidate||['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
+ codexFreshnessProbe=undefined;codexFreshnessReads=[];pluginWrites=[];pluginUrls=[];codexRequests=[];codexStarted=[];codexStopped=[];codexStartFailure=false;cliPolicyAvailable=true;const withPlugins=task.suite?.name==='M13 P1 plugins through production task startup',withClaudeCandidate=task.suite?.name==='M13 Claude CLI through indexed production resource';const withCli=withPlugins||withClaudeCandidate||['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
  fixtureBridgeExits=[];expectedDisposeError=undefined;applicationRuntimeAvailable=true;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
- capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'),withClaudeCandidate?{additionalAdapters:[candidateClaudeAdapter()]}:{});await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
+ capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'),{});await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
  applications=new ApplicationService(support.store,{secrets,projects,tasks,...(withPlugins?{openPluginUrl:async(url:string)=>{pluginUrls.push(url);},terminal:{access:new PtyAccess({trusted:()=>true,activePty:id=>tasks.activePty(id),alive:id=>ptys.live.has(id),write:()=>{},resize:()=>{},killTask:()=>{}}),bracketedPaste:async()=>true,write:(id:string,data:string)=>{pluginWrites.push({id,data});}},plugins:{processes:new MacProcessIdentityReader(resolve('out/native/willyou-process-identity')),runtime:{executable:process.execPath,readOnlyRoots:[process.execPath],keychainRoots:[home]}}}:{}),activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();
  // These launch/authorization fixtures deliberately begin with no selected applications.
  // M13's automatic builtin onboarding is exercised by builtin-plugin-preferences and App tests.
@@ -715,7 +710,7 @@ describe('M13 P1 plugins through production task startup',()=>{
   usePrivateCodex();await putPlugin('0.1.0',false,false,true);const created=await create(),request=codexRequests[0],launch=ptys.launches.at(-1)!;
   expect(codexRequests).toHaveLength(1);expect(codexStarted).toEqual([request.run.runId]);expect(request.run.runId).toBe(created.task.runtimeSnapshot!.runId);expect(launch.args).toContain('--remote');expect(launch.args[launch.args.indexOf('--remote')+1]).toContain(request.run.runId);
   expect(request.managedArgs).not.toContain('--remote');expect(request.skills.codexRoots).toHaveLength(1);expect(readFileSync(join(request.skills.codexRoots[0],'SKILL.md'),'utf8')).toContain('Synthetic query 0.1.0');expect(managed.runs.bridgePreparation(request.run.runId).plan?.skills).toEqual([expect.objectContaining({nativeName:'willyou-demo-tracker-query'})]);
-  expect(managed.runs.bridgePreparation(request.run.runId).plan?.grades.cli).toBe(false);expect(request.environment).not.toHaveProperty('WILLYOU_RUN_TOKEN');expect(request.environment).not.toHaveProperty('CODEX_HOME');expect(existsSync(join(cwd,'.agents/skills'))).toBe(false);
+  expect(managed.runs.bridgePreparation(request.run.runId).plan?.grades.cli).toBe(true);expect((await managed.sessions.get(created.task.id)).snapshot.adapterBinding.version).toBe('1.5.0');expect(support.adapters.effective((await managed.sessions.get(created.task.id)).snapshot.adapterBinding.hash,'0.167.1')).toMatchObject({verified:true,nativeSendEvidence:false,levels:['L0.skill','L0.mcp','L0.cli','L1']});expect(typeof request.environment.WILLYOU_RUN_TOKEN).toBe('string');expect(request.environment.WILLYOU_ENDPOINT).toBe(managed.cli!.endpoint);expect(request.environment).not.toHaveProperty('CODEX_HOME');expect(existsSync(join(cwd,'.agents/skills'))).toBe(false);
   tasks.kill(created.task.id);await vi.waitFor(()=>expect(managed.runs.get(request.run.runId).state).toBe('stopped'));expect(codexStopped).toEqual([request.run.runId]);expect(existsSync(request.skills.root)).toBe(false);
  });
  it('keeps a running Codex Skill frozen while host calls use the new package, then refreshes private roots on resume',async()=>{
@@ -912,7 +907,7 @@ describe('M13 P1 plugins through production task startup',()=>{
 
 /** Synthetic PTY/task composition only. Candidate metadata is installed into
  * this private fixture; production publication and real Native proof are separate. */
-describe('M13 Claude candidate CLI through production task entry',()=>{
+describe('M13 Claude CLI through indexed production resource',()=>{
  let stateRoot:string;
  beforeEach(async()=>{
   stateRoot=join(root,'agents','claude','a'.repeat(32));mkdirSync(stateRoot,{recursive:true,mode:0o700});writeFileSync(join(stateRoot,'settings.json'),JSON.stringify({modelPicker:{options:[]}}),{mode:0o600});
