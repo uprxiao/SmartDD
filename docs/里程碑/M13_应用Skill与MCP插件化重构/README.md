@@ -8,7 +8,7 @@
 
 最新增量：[421原②来源切换A完整](验收/证据/M13-T064-original-source-change-II-complete-A-421-20261114-a1/coordinator-verdict.json)已补齐原②；当前仅接③④跨目录、缺源与默认同名保护的实际App余项。已通过部分不重播，沿用App057，无生产改动或重新打包。
 
-本轮检查点：`bfd866e87` 已提交推送，后续归账检查点继续同步。新增[T080原生选择器完整组件](验收/证据/M13-T080-original-native-picker-component-complete-408-20261114-a1/coordinator-verdict.json)已实际成功：原callback返回准确ZIP，真实检查页核对后取消，原目录未变；接续原400有效生命周期前缀，补实际App后半段。T064已定位并修正私有测试驱动误清公开环境，[实际Main／Native继承核验](验收/证据/M13-T064-effective-public-env-and-native-trust-gate-410-20261114-a1/coordinator-verdict.json)通过，当前仅需补自动处理已授权合成目录的精确信任页；原Task/SID及历史保留，未补造快照或改生产代码。[T080单次系统等待修正](验收/证据/M13-T080-OS-ready-and-actual-physical-path-guard-red-414-20261114-a1/coordinator-verdict.json)已实测通过OS回执；后续实际Python路径守卫残留新输出根已定位，补实际函数正反控后接续。T064信任选项回跳正在[原输入链定位](验收/证据/M13-T064-trust-selection-reverted-before-confirm-413-20261114-a1/coordinator-verdict.json)，未错误确认或发送业务消息。T056官方CLI公告按次关闭能力仍[阻塞](验收/证据/M13-T056-fixed-official-CLI-announcement-optout-readonly-403-20261114-a1/coordinator-verdict.json)，不重复已知无效参数。完整状态只取唯一用例账，片段不增加整条通过数。
+本轮检查点：`247d9037b` 已提交推送并核远端一致。
 
 阶段检查点：`5a9e04382441e24624cb94635f9d902c543a03d7`及会话插件纠偏提交`83b952aa0570c84aa1a5291e067bb85b5d2092b0`均已推送并核远端一致；后者按原型移除未批准诊断与管理入口，组件／调用方测试、类型检查及上述实际App已验证。生成App／二进制／原始载荷保持忽略，以[本地索引](验收/本地运行产物索引_20261112.json)追溯；当前不装机、不合并main、不打tag、不发布，M13尚未完成。
 
@@ -214,3 +214,6 @@ T042 Claude非交互默认审批的[真实I尾段](验收/证据/M13-T042-Claude
 2026-11-14 无凭据测试结果：[T088/T092真实FLOGIN I](验收/证据/M13-T088-T092-FLOGIN-I-20261114-a1/coordinator-verdict.json)已核对归档，打包UI与真实订阅/系统层仍缺；仅增加实际部分结果，未增加完整通过数。
 
 2026-11-14 本批归档：[T088打包A与T092驱动环境红](验收/证据/M13-T088-A-and-T092-driver-env-red-20261114-a1/coordinator-verdict.json)、[T064真实Read/恢复前复制部分I](验收/证据/M13-T064-real-Read-copy-partial-20261114-a1/coordinator-verdict.json)均保留全部缺项。测试自有进程/监听已独立确认收尾，不动历史未知归属App。两组按本批驱动重试上限停放，未增加完整通过数；尚可自主补的A/恢复尾段与需本人操作的钥匙串/真实订阅分开记录，后者明确留明天。
+
+
+2026-11-15 当前接续：T030第三方用户Skill实际App A已补齐（[424](验收/证据/M13-T030-third-party-user-Skill-complete-App057-A-424-20261115-a1/coordinator-verdict.json)），本人订阅R仍缺；T064原③实际App已齐（[425](验收/证据/M13-T064-crossroot-III-complete-and-default-welcome-fixture-red-425-20261115-a1/coordinator-verdict.json)），仅接④默认目录业务/同名保护。原红保留，同包继续，不重复已通过部分。正式状态只取唯一账，M13尚未完成。
