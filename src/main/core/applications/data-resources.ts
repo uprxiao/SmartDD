@@ -25,6 +25,7 @@ export class ApplicationDataResources {
     if(this.providers.has(provider.kind)||!backingSchema.shape.kind.safeParse(provider.kind).success)throw new ApplicationError('VERSION_CONFLICT','业务资源提供方身份重复或无效');this.providers.set(provider.kind,provider);
   }
   private provider(context:ApplicationExecutionContext,kind:string):ApplicationResourceProvider{
+    if(this.contexts.isLocalDraftRead(context)&&!['mail-draft-v1','mail-blob-v1'].includes(kind))throw new ApplicationError('SCOPE_DENIED','本地草稿只读身份不能读取其他来源或发送审阅资源');
     const provider=this.providers.get(kind);
     if(!provider||provider.appId!==context.appId)throw new ApplicationError('HOST_INCOMPATIBLE','当前宿主不支持该业务资源契约');if(provider.kind==='mail-send-review-v1'){try{this.contexts.require(context,provider.permission);}catch{this.contexts.require(context,'mail.send');}}else this.contexts.require(context,provider.permission);return provider;
   }

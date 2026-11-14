@@ -15,10 +15,11 @@ import {
 import type { InputIssue } from '@shared/projects';
 import type { Runner } from '@shared/types';
 import type { AppDb } from '../../db/client';
-import { aiProfiles, appSecrets } from '../../db/schema';
+import { aiProfiles, aiProviders, aiRunConfigs, appSecrets } from '../../db/schema';
 import type { SecretsStore } from '../../secrets';
 import { maskPreview, parseZshrc, suggestedProfileName } from './zshrc-import';
 import { builtinRunnerAdapters, type RunnerAdapterRegistry } from '../tasks/runner-adapters';
+import { AgentService } from './agent-service';
 
 type ProfileRow = typeof aiProfiles.$inferSelect;
 interface StoredEnv {
@@ -69,6 +70,10 @@ export interface ResolvedProfile {
   args: string[];
   env: Record<string, string>;
   isolatePrefixes: string[];
+  /** Exact authentication/routing variables to clear after the user's shell rc. */
+  isolateNames?: string[];
+  /** Current run's credential values, main-only, for native-error redaction. */
+  secretValues?: string[];
 }
 
 export class AiProfileService {
@@ -131,10 +136,13 @@ export class AiProfileService {
   }
 
   update(id: string, input: AiProfileInput): AiProfileView {
+    const managed = this.db.select().from(aiRunConfigs).where(eq(aiRunConfigs.profileId, id)).get();
+    if (managed && managed.source !== 'legacy') throw new Error('该配置已迁移，请在智能体页面编辑');
+    if (this.db.select({ ref: aiProviders.secretRef }).from(aiProviders).all().some((row) => row.ref?.startsWith(aiSecretPrefix(id)))) throw new Error('此认证已由供应商管理，请在供应商页面修改');
     const data = this.parse(input);
     const row = this.require(id);
     this.db.transaction(() => {
-      this.assertUniqueName(data.name, id);
+      if(managed?.source!=='legacy')this.assertUniqueName(data.name, id);
       this.db
         .update(aiProfiles)
         .set({
@@ -154,13 +162,29 @@ export class AiProfileService {
     return this.get(id);
   }
 
+  updateLegacy(id:string,input:{name:string;env:AiProfileInput['env'];args:string[];homeVisible:boolean}):AiProfileView{
+    const config=this.db.select().from(aiRunConfigs).where(eq(aiRunConfigs.profileId,id)).get();
+    if(config?.source!=='legacy')throw new Error('此入口只编辑旧配置');
+    const old=this.require(id);
+    return this.db.transaction(()=>{
+      this.update(id,{name:input.name,env:input.env,args:input.args,runner:old.runner,executable:old.executable,color:old.color,isDefault:old.isDefault});
+      new AgentService(this.db,this.secrets,this.now).setHomeVisible(id,input.homeVisible);return this.get(id);
+    });
+  }
+
   setDefault(id: string): void {
+    if (this.db.select().from(aiRunConfigs).where(eq(aiRunConfigs.profileId, id)).get()) {
+      new AgentService(this.db, this.secrets, this.now).setDefault(id); return;
+    }
     this.require(id);
     this.markDefault(id);
   }
 
   /** Tasks keep a snapshot of the name; their profile link is set to null by the FK. */
   delete(id: string): void {
+    if (this.db.select().from(aiRunConfigs).where(eq(aiRunConfigs.profileId, id)).get()) {
+      new AgentService(this.db, this.secrets, this.now).deleteConfig(id); return;
+    }
     const row = this.require(id);
     this.db.transaction(() => {
       this.db.delete(aiProfiles).where(eq(aiProfiles.id, id)).run();
@@ -178,6 +202,10 @@ export class AiProfileService {
    */
   resolve(id: string, allowPendingCommand = false): ResolvedProfile {
     const row = this.require(id);
+    const managed = this.db.select().from(aiRunConfigs).where(eq(aiRunConfigs.profileId, id)).get();
+    // A managed Provider must use the new per-run plan. Falling through would pair a
+    // replacement Provider key with the old profile's saved endpoint/model.
+    if (managed?.source === 'provider') throw new Error('供应商智能体需要通过智能体运行入口启动');
     if (row.commandPending && !allowPendingCommand) throw new Error(`AI 配置「${row.name}」的本机命令尚未配置，请在设置中修改命令或完成一次连接测试`);
     const env: Record<string, string> = {};
     const missing: string[] = [];
@@ -198,7 +226,7 @@ export class AiProfileService {
       command: row.executable ?? this.runnerAdapters.get(row.runner).describe().command,
       args: readArgs(row),
       env,
-      isolatePrefixes: [...(this.runnerAdapters.get(row.runner).describe().isolatedEnvPrefixes ?? [])],
+      isolatePrefixes: managed?.source === 'login' ? [] : [...(this.runnerAdapters.get(row.runner).describe().isolatedEnvPrefixes ?? [])],
     };
   }
 

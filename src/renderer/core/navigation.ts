@@ -7,7 +7,7 @@ import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/
 export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
-export type ApplicationPage = 'catalog' | 'projects' | 'activity' | ApplicationId;
+export type ApplicationPage = 'catalog' | 'skills' | 'projects' | 'activity' | ApplicationId | `plugin:${string}`;
 export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
 
 export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';
@@ -25,7 +25,11 @@ class NavigationStore {
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
   /** Unsubmitted composer text, kept in memory across views and scoped to its project. */
   homeInputDrafts = new Map<string | null, string>();
+  pluginPromptRequest:{seq:number;prompt:string}|null=null;
+  private pluginPromptSequence=0;
   settingsSection: SettingsSectionId = 'general';
+  agentProviderRequest:{id:string;seq:number}|null=null;
+  private agentProviderSequence=0;
   /** ⌘K task search. */
   searchOpen = false;
   filePanelOpen = typeof localStorage !== 'undefined' && localStorage.getItem('willyou-file-panel-open') === 'true';
@@ -51,6 +55,8 @@ class NavigationStore {
   }
 
   prepareApplicationTask(projectId:string,prompt:string):void{this.newTask(projectId);this.homePreset={...this.homePreset!,applicationPrompt:prompt};}
+  preparePluginTask(prompt:string):void{this.pluginPromptRequest={seq:++this.pluginPromptSequence,prompt};this.currentViewId='home';}
+  consumePluginPrompt(seq:number):string|undefined{if(this.pluginPromptRequest?.seq!==seq)return;const prompt=this.pluginPromptRequest.prompt;this.pluginPromptRequest=null;return prompt;}
   consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
   homeInput(projectId:string|null):string{return this.homeInputDrafts.get(projectId)??'';}
   setHomeInput(projectId:string|null,value:string):void{if(value)this.homeInputDrafts.set(projectId,value);else this.homeInputDrafts.delete(projectId);}
@@ -81,6 +87,9 @@ class NavigationStore {
     if (section) this.settingsSection = section;
     this.currentViewId = 'settings';
   }
+
+  openAgentProvider(id:string):void{this.openSettings('aiProfiles');this.agentProviderRequest={id,seq:++this.agentProviderSequence};}
+  consumeAgentProviderRequest(seq:number):void{if(this.agentProviderRequest?.seq===seq)this.agentProviderRequest=null;}
 
   openApplications(page:ApplicationPage='catalog',projectId?:string):void {
     if(projectId)this.currentProjectId=projectId;

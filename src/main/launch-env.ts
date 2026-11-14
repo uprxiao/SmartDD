@@ -1,3 +1,5 @@
+import { isAbsolute } from 'node:path';
+
 // How an AI profile's variables reach the CLI.
 //
 // The PTY runs `$SHELL -l -i -c ...` so PATH matches the user's terminal. That also runs ~/.zshrc,
@@ -24,6 +26,7 @@ const PARENT_COLOR_VARS = new Set(['NO_COLOR', 'FORCE_COLOR', 'CLICOLOR', 'CLICO
 export const LAUNCH_SCRIPT = [
   'while [ "$#" -gt 0 ]; do',
   '  case "$1" in',
+  '    -x) unset "$2"; shift 2;;',
   `    -u) for __smartdd_n in $(command env | command sed -n "s/^\\($2[A-Za-z0-9_]*\\)=.*/\\1/p"); do unset "$__smartdd_n"; done; shift 2;;`,
   `    -e) eval "export $2=\\"\\\${${VALUE_PREFIX}$2}\\""; unset "${VALUE_PREFIX}$2"; shift 2;;`,
   '    --) shift; break;;',
@@ -60,17 +63,23 @@ export function terminalIdentity(env: Record<string, string>): Record<string, st
 export function planLaunchEnv(
   base: Record<string, string>,
   injected: Record<string, string>,
-  isolatePrefixes: string[]
+  isolatePrefixes: string[],
+  isolateNames: string[] = []
 ): LaunchEnvPlan {
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(base)) {
     if (k.startsWith(VALUE_PREFIX)) continue;
     if (PARENT_COLOR_VARS.has(k)) continue;
+    if (isolateNames.includes(k)) continue;
     if (isolatePrefixes.some((p) => k.startsWith(p))) continue;
     env[k] = v;
   }
   Object.assign(env, terminalIdentity(env));
   const scriptArgs: string[] = [];
+  for (const name of isolateNames) {
+    if (!NAME_RE.test(name)) throw new Error(`无效的变量名：${name}`);
+    scriptArgs.push('-x', name);
+  }
   for (const p of isolatePrefixes) {
     if (!NAME_RE.test(p)) throw new Error(`无效的变量前缀：${p}`);
     scriptArgs.push('-u', p);
@@ -93,3 +102,20 @@ export function shellWrapped(command: string, args: string[], scriptArgs: string
 
 /** Variables left by a parent Claude Code (e.g. when SmartDD is started from one) that change CLI behaviour. */
 export const PARENT_AGENT_VARS = ['CLAUDECODE', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_SSE_PORT'];
+
+
+/** Keep OS/safeStorage HOME on the App, while giving its CLI and discovery
+ * children an explicitly scoped home. The control option never reaches them. */
+export function applicationChildEnvironment(source:Record<string,string|undefined>):Record<string,string> {
+  const env:Record<string,string>={};
+  for(const [name,value] of Object.entries(source)) {
+    if(value!==undefined&&!name.startsWith('ELECTRON_')&&!['SMARTDD_PROBE','SMARTDD_USER_DATA','SMARTDD_CLI_HOME'].includes(name))env[name]=value;
+  }
+  const childHome=source.SMARTDD_CLI_HOME;
+  if(childHome){
+    if(!isAbsolute(childHome))throw new Error('SMARTDD_CLI_HOME 必须是绝对路径');
+    env.HOME=childHome;
+  }
+  env.TERM='xterm-256color';env.COLORTERM='truecolor';
+  return env;
+}

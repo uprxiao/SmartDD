@@ -32,7 +32,7 @@ export function planApplicationActivation(packages:PackageRegistry,requests:read
   if(!records.has(request.hash))records.set(request.hash,[{}]);
  }
  const conversions:{packageHash:string;connectionId:string;converterHash:string;viewDigest:string;schemaHash:string}[]=[];
- const connections=db.prepare('SELECT id,app_id,provider_id,config_json,config_schema_version,revision,verified_identity_json,identity_hash,identity_revision FROM application_connections ORDER BY id').all() as {id:string;app_id:string;provider_id:string;config_json:string;config_schema_version:number;revision:number;verified_identity_json:string;identity_hash:string;identity_revision:number}[];
+ const connections=db.prepare('SELECT id,app_id,provider_id,config_json,config_schema_version,revision,verified_identity_json,identity_hash,identity_revision FROM application_connections WHERE deleted_at IS NULL ORDER BY id').all() as {id:string;app_id:string;provider_id:string;config_json:string;config_schema_version:number;revision:number;verified_identity_json:string;identity_hash:string;identity_revision:number}[];
  for(const [hash,uses] of records){
   try{
    const record=lookup(hash);assertHostCompatible(record.manifest);

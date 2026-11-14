@@ -2,6 +2,7 @@ import { closeSync, openSync, readSync, statSync } from 'node:fs';
 import type { ProfileCheckCategory } from '@shared/ai-profiles';
 import type { Runner } from '@shared/types';
 import { classifyClaudeLine, classifyCodexLine, type HealthEvent } from '../ai/health-classify';
+import { serviceEvent, type ServiceEvent } from './service-failure';
 
 // Follows a running task's session file and reports what the API answered: a real reply means
 // the profile works, an API error (auth, balance, model…) means it does not. Only the lines that
@@ -25,6 +26,9 @@ export interface SessionTailOptions {
   locate: () => string | null;
   launchedAt: number;
   onEvent: (ev: HealthEvent) => void;
+  onServiceEvent?: (event: ServiceEvent) => void;
+  /** Live native identity resolved by the same locate operation. */
+  sessionId?: () => string | null;
 }
 
 export class SessionTail {
@@ -94,12 +98,18 @@ export class SessionTail {
     const isError = (ERROR_HINTS[runner] ?? []).some((h) => line.includes(h));
     // Every reply is passed on: the profile's state is shared with other tasks and tests, and
     // ProfileHealth decides what is worth writing (latest wins).
-    if (!isError && !(OK_HINTS[runner] ?? []).some((h) => line.includes(h))) return;
+    if (!isError && !(OK_HINTS[runner] ?? []).some((h) => line.includes(h)) &&
+      !(this.o.onServiceEvent && runner === 'claude' && (line.includes('"api_error"') || line.includes('"api-request"')))) return;
     let json: unknown;
     try {
       json = JSON.parse(line);
     } catch {
       return;
+    }
+    if (this.o.onServiceEvent) {
+      const service = serviceEvent(runner, json);
+      if (service && (service.kind !== 'request' || (service.at >= this.o.launchedAt &&
+        (!this.o.sessionId || this.o.sessionId() === (json as { sessionId?: unknown }).sessionId)))) this.o.onServiceEvent(service);
     }
     const ev = runner === 'claude' ? classifyClaudeLine(json) : runner === 'codex' ? classifyCodexLine(json) : null;
     if (!ev) return;

@@ -25,6 +25,9 @@ describe('M11 R1.0 library adapter planning',()=>{
   expect(()=>f.adapters.planLibrary(f.snapshot.adapterBinding.hash,{...request(),cliSandbox:{endpoint:'/private/tmp/wy-cli-1/cli.sock',kind:'inherit',parent:':workspace',networkProxy:false,enableNetwork:false,existingNames:[],source:'test',digest:'a'.repeat(64)}})).toThrow(expect.objectContaining({code:'SCOPE_DENIED'}));
   const input=request();expect(()=>f.adapters.planLibrary(f.snapshot.adapterBinding.hash,{...input,inventory:[{kind:'mcp',name:input.mcp[0].serverName,path:'',ownerStoreId:null,contentHash:null}]})).toThrow(expect.objectContaining({code:'AGENT_CAPABILITY_NAME_CONFLICT'}));
  });
+ it('rejects a valid Claude sandbox payload on a Codex run before invoking an immutable planner',()=>{
+  expect(()=>f.adapters.planLibrary(f.snapshot.adapterBinding.hash,{...request(),cliSandbox:{runner:'claude-code',endpoint:'/private/tmp/wy-cli-501-Abc123/cli.sock',kind:'allow-unix',source:'test',digest:'a'.repeat(64)}})).toThrow('CLI沙箱不属于本次Agent');
+ });
  it('adds only the inherited CLI permission profile for Codex and refuses CLI for Claude Code',()=>{
   const {plan}=createRequire(import.meta.url)(resolve('resources/agent-adapters/codex/1.4.0/planner.cjs')) as {plan:(agent:string,input:unknown)=>{args:string[];files:Record<string,string>}};
   const sandbox={endpoint:'/private/tmp/wy-cli-501-x/cli.sock',kind:'inherit',parent:':workspace',networkProxy:true,enableNetwork:true,existingNames:[]};

@@ -15,4 +15,5 @@ export interface MailDraftDataView {
 }
 
 /** Trusted UI views reuse the existing host services; these are not v1 tool contracts. */
-export interface MailDraftListData {items:{id:string;revision:number;state:MailDraftDataView['state'];subject:string;attachmentCount:number;createdAt:string;updatedAt:string}[];nextCursor:string|null}
+export interface MailDraftListInput {limit?:number;cursor?:string|null;state?:MailDraftDataView['state']}
+export interface MailDraftListData {readOnly?:boolean;stateCounts?:Record<MailDraftDataView['state'],number>;items:{id:string;revision:number;state:MailDraftDataView['state'];subject:string;attachmentCount:number;createdAt:string;updatedAt:string}[];nextCursor:string|null}

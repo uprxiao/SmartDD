@@ -92,7 +92,7 @@ export const mailModule: ApplicationModuleDefinition<'mail', readonly [Applicati
       return !!row&&!!row.execution_id&&row.project_id===context.projectId&&row.source_task_id===context.taskId&&row.source_run_id===context.runId&&row.review_hash===parsed.data.expectedReviewHash;
     },legacyData:data.drafts,projectPolicy:{
       status:projectId=>identity.status(projectId),validateSelection:(projectId,slots)=>identity.validateSelection(projectId,slots),afterSelection:projectId=>identity.afterSelection(projectId),
-      stamp:(projectId,permission)=>permission==='mail.send'?identity.requireConfirmed(projectId):null,
+      stamp:(projectId,permission,scope)=>permission==='mail.send'?identity.requireConfirmed(projectId,undefined,scope):null,
       action:(context,sender,input)=>{const parsed=z.object({action:z.literal('confirm-sender'),arguments:z.unknown()}).strict().safeParse(input);if(!parsed.success)throw new ApplicationError('INVALID_INPUT','此项目身份操作无效');return identity.confirm(context,String(sender.sender.id),parsed.data.arguments);},
     },resolve: (version, method, binding) => target(method).resolve(version, method, binding),execute: async (context, method, input) => {
       try{

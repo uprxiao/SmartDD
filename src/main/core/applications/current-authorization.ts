@@ -51,7 +51,7 @@ export class CurrentApplicationAuthorization {
 
   private notEnabled(projectId:string,appId:string):ApplicationError{
     const project=this.store.sqlite.prepare('SELECT name FROM projects WHERE id=?').get(projectId) as {name:string}|undefined,name=this.modules.module(appId).presentation.displayName;
-    return new ApplicationError('APP_NOT_ENABLED',`请到项目「${project?.name??projectId}」的‘应用’页开启${name}`);
+    return new ApplicationError('APP_NOT_ENABLED',`请到项目「${project?.name??projectId}」的‘插件’页开启${name}`);
   }
 
   /**
@@ -73,7 +73,7 @@ export class CurrentApplicationAuthorization {
   /** Replace the launch-time application list and allowed table with the project's current ones. */
   view(context:RunContext):RunContext{
     const launch=context.plan;if(!launch||context.snapshot.schema!==3)return context;
-    const projectId=context.run.projectId,apps=this.selectedApps(projectId),bindings=this.bindings(projectId,apps.map(a=>a.appId));
+    const projectId=context.run.projectId,apps=this.selectedApps(projectId),bindings=context.bindingMode==='run'?[...context.bindings,...this.bindings(projectId,apps.filter(a=>a.appId!=='mail'&&a.appId!=='browser').map(a=>a.appId))]:this.bindings(projectId,apps.map(a=>a.appId));
     // Library Skills are delivered once per machine (R16), not per run; the view carries no per-run Skill paths.
     const packages=apps.map(a=>this.packageSelection(projectId,a.packageHash,bindings,[]));
     const snapshot:CapabilitySessionSnapshotV3={...context.snapshot,packages};

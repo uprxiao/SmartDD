@@ -1,16 +1,16 @@
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, ShieldCheck, Square, Wrench, Zap } from 'lucide-react';
+import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, Square, Wrench } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
-import { useAiProfiles } from '@renderer/lib/hooks/useAiProfiles';
-import { ProfileHealthMark } from '@renderer/lib/profile-health';
-import { pickLaunchProfile } from '@renderer/lib/launch-profile';
+import { useAgents } from '@renderer/lib/hooks/useAgents';
+import { homeAgents, homeAgentId, HomeAgentPicker, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
+import { agentPermission } from '@shared/agent-permissions';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
@@ -28,7 +28,9 @@ const CHIP = 'm6-composer-select';
 export const HomeView = observer(function HomeView() {
   const { t } = useTranslation();
   const { data: projects } = useProjectList(false);
-  const { data: profiles } = useAiProfiles();
+  const { data: agents } = useAgents();
+  const profiles = agents ? homeAgents(agents.configs) : undefined;
+  const permissions = useAppSettingsKey('agentPermissions');
   const draft = useAppSettingsKey('homeDraft');
   const [launchSettings, setLaunchSettings] = useState(false);
   const [creatingProject, setCreatingProject] = useState(false);
@@ -43,6 +45,12 @@ export const HomeView = observer(function HomeView() {
   const launchToken = useRef<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { data: project } = useProject(projectId);
+  useLayoutEffect(()=>{
+    const el=inputRef.current;if(!el)return;
+    el.style.height='0px';const full=el.scrollHeight;
+    el.style.height=Math.max(42,Math.min(full,220))+'px';el.style.overflowY=full>220?'auto':'hidden';
+  },[message]);
+
 
   // Project defaults to the last choice if it still exists (PRD F05).
   const initialized = useRef(false);
@@ -50,6 +58,9 @@ export const HomeView = observer(function HomeView() {
     if (initialized.current || !projects || !profiles || !draft.value) return;
     initialized.current = true;
     const d = draft.value;
+    const initialProjectId=navigation.homePreset&&projects.some(p=>p.id===navigation.homePreset?.projectId)?navigation.homePreset.projectId:d.projectId&&projects.some(p=>p.id===d.projectId)?d.projectId:projects.length===1?projects[0].id:null;
+    const request=navigation.pluginPromptRequest;
+    if(request){const prompt=navigation.consumePluginPrompt(request.seq);if(prompt){const existing=navigation.homeInput(initialProjectId);navigation.setHomeInput(initialProjectId,existing?existing+'\n'+prompt:prompt);}}
     if (navigation.homePreset && projects.some((p) => p.id === navigation.homePreset?.projectId)) {
       setProjectId(navigation.homePreset.projectId);
     } else if (d.projectId && projects.some((p) => p.id === d.projectId)) {
@@ -58,12 +69,17 @@ export const HomeView = observer(function HomeView() {
     } else if (projects.length === 1) setProjectId(projects[0].id);
   }, [projects, profiles, draft.value]);
 
-  // Follows health results until the user picks a profile, so a default that turns out failed yields to the last choice.
+  const pluginPrompt=navigation.pluginPromptRequest;
+  useEffect(()=>{if(!initialized.current||!pluginPrompt)return;const prompt=navigation.consumePluginPrompt(pluginPrompt.seq);if(prompt){const existing=navigation.homeInput(projectId);navigation.setHomeInput(projectId,existing?existing+'\n'+prompt:prompt);inputRef.current?.focus();}},[pluginPrompt?.seq,projectId,projects,profiles,draft.value]);
+
+  // The list is the same service-ordered projection as Settings. Hidden/logout/missing tools cannot stay selected.
   const profileChosen = useRef(false);
   useEffect(() => {
-    if (profileChosen.current || !profiles || !draft.value) return;
-    setProfileId(pickLaunchProfile(profiles, draft.value.aiProfileId));
-  }, [profiles, draft.value]);
+    if (!agents || !draft.value) return;
+    const visible = homeAgents(agents.configs);
+    if (profileChosen.current && visible.some(p => p.id === profileId)) return;
+    setProfileId(homeAgentId(visible, draft.value.aiProfileId));
+  }, [agents, draft.value, profileId]);
 
   // "New task" under a project selects it.
   const preset = navigation.homePreset;
@@ -90,8 +106,10 @@ export const HomeView = observer(function HomeView() {
   const dirs = project?.id === projectId ? (project?.dirs ?? []) : [];
   const dir = dirs.find((d) => d.id === dirId) ?? dirs.find((d) => d.isDefault) ?? dirs[0] ?? null;
   const profile = profiles?.find((p) => p.id === profileId) ?? null;
+  const selectedProvider=agents?.providers.find(p=>p.id===profile?.providerId);
+  const missingProviderKey=profile?.source==='provider'&&selectedProvider&&!selectedProvider.hasKey;
   const dirProblem = project && project.id === projectId && (!dir ? t('home.noDir') : !dir.status.available ? t('home.dirUnavailable', { path: dir.path }) : '');
-  const ready = Boolean(projectId && profile && dir && dir.status.available) && !launching;
+  const ready = Boolean(projectId && profile && dir && dir.status.available && permissions.value) && !launching;
 
   const launch = async () => {
     if (!ready || !projectId || !profile || !dir) return;
@@ -99,7 +117,7 @@ export const HomeView = observer(function HomeView() {
     const token=crypto.randomUUID();launchToken.current=token;
     setLaunching(true);
     try {
-      await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token });
+      await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token, permission:agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id });
       draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
       setMessage('');
     } catch (e) {
@@ -127,19 +145,16 @@ export const HomeView = observer(function HomeView() {
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;
-  const profilePicker = <Select value={profileId} onValueChange={(v) => { profileChosen.current = true; setProfileId(v as string | null); }}>
-    <SelectTrigger className={CHIP} data-testid="home-profile" aria-label={t('home.pickProfile')}><Zap size={15} fill="currentColor" /><SelectValue placeholder={t('home.pickProfile')} /></SelectTrigger>
-    <SelectContent>{(profiles ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}<ProfileHealthMark profile={p} /></SelectItem>)}</SelectContent>
-  </Select>;
+  const profilePicker = <HomeAgentPicker configs={profiles??[]} providers={agents?.providers??[]} value={profileId} onChange={id=>{profileChosen.current=true;setProfileId(id);}} />;
   const directoryPicker = <Select value={dir?.id ?? null} onValueChange={(v) => setDirId(v as string | null)}>
     <SelectTrigger className={CHIP} data-testid="home-dir" aria-label={t('m6.directory')} title={dir?.path}><FolderTree size={15} /><SelectValue placeholder={t('home.noDir')} /></SelectTrigger>
     <SelectContent>{dirs.map((d) => <SelectItem key={d.id} value={d.id}>{d.label || d.path}</SelectItem>)}</SelectContent>
   </Select>;
 
-  return <section className="reference-home" aria-label={t('nav.newTask')}>
+  return <section className="reference-home m13-shell" aria-label={t('nav.newTask')}>
     <div className="reference-welcome"><img src={appIcon} alt="WillYou" draggable={false} /><h1>{t('m6.welcomePrefix')} <button onClick={() => setLaunchSettings(true)}>{project?.name || 'WillYou'}</button> {t('m6.welcomeSuffix')}</h1></div>
     <div className="reference-composer-wrap">
-      {(dirProblem || error || !projectId || !profile) && <div className="launch-hint" role="status"><span>{error || dirProblem || (!projectId ? t(projects?.length ? 'home.pickProject' : 'home.noProjects') : t(profiles?.length ? 'home.pickProfile' : 'home.noProfiles'))}</span><button onClick={() => setLaunchSettings(true)}>{t('m6.taskSettings')}</button></div>}
+      {(dirProblem || error || !projectId || !profile) && <div className="launch-hint" role="status"><span>{error || dirProblem || (!projectId ? t(projects?.length ? 'home.pickProject' : 'home.noProjects') : t(profiles?.length ? 'home.pickProfile' : 'home.noProfiles'))}</span>{error&&missingProviderKey?<button onClick={()=>navigation.openAgentProvider(selectedProvider.id)}>去填写 Key</button>:<button onClick={() => setLaunchSettings(true)}>{t('m6.taskSettings')}</button>}</div>}
       {error && <span data-testid="home-error" className="sr-only">{error}</span>}
       <div className="reference-composer-context"><div className="reference-home-picker">{projectPicker}</div>
         <button className="local-environment" data-testid="home-cwd" title={dir?.path} onClick={() => setLaunchSettings(true)}><Monitor size={16} /><span>{dirs.length > 1 ? dir?.label || t('m6.directory') : t('m6.thisComputer')}</span></button>
@@ -154,7 +169,7 @@ export const HomeView = observer(function HomeView() {
             <DropdownMenuItem onClick={() => navigation.openSettings('aiProfiles')}><Settings />{t('settings.sections.aiProfiles')}</DropdownMenuItem><DropdownMenuSeparator />
             {suggestions.map(({ Icon, key }) => <DropdownMenuItem key={key} data-testid="home-suggestion" onClick={() => { setMessage(t(`home.suggestions.${key}.prompt`)); inputRef.current?.focus(); }}><Icon />{t(`home.suggestions.${key}.title`)}</DropdownMenuItem>)}
           </DropdownMenuContent></DropdownMenu>
-          <button type="button" className="composer-permission" onClick={() => setLaunchSettings(true)}><ShieldCheck size={15} />{t('m6.projectContext')}</button>
+          <HomePermissionPicker kind={profile?.kind??'claude'} disabled={!profile||launching} />
           <div className="reference-home-picker composer-profile">{profilePicker}</div>
           <VoiceButton compact disabled={launching} onClick={() => void voiceStore.trigger(textareaVoiceTarget(inputRef.current), 'home')} />
           <button type={launching ? "button" : "submit"} data-testid="home-launch" className="reference-send" disabled={launching ? canceling : !ready} onClick={launching ? () => void cancelPreparation() : undefined} aria-label={t(launching ? "home.cancelPreparation" : "home.launchHint")} title={t(launching ? "home.cancelPreparation" : "home.launchHint")}>{canceling ? <Loader2 size={19} className="animate-spin" /> : launching ? <Square size={17} fill="currentColor" /> : <ArrowUp size={19} />}</button>

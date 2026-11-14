@@ -1,5 +1,5 @@
 import {execFile} from 'node:child_process';
-import {existsSync,lstatSync,readFileSync} from 'node:fs';
+import {closeSync,constants,fstatSync,lstatSync,openSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {parse as parseToml} from 'smol-toml';
 import {boundedJson} from '@shared/application-bridge';
@@ -21,6 +21,13 @@ function plainJson(value:unknown):unknown{
 export interface CodexRequirementsProof {version:string;known:boolean;empty:boolean;hash:string|null}
 export type CodexCliSandboxPlan={available:false;reason:string;source:string;digest:string|null}|{available:true;kind:'unchanged'|'inherit';parent:string|null;networkProxy:boolean;enableNetwork:boolean;existingNames:string[];source:string;digest:string};
 const unsupported=(reason:string,digest:string|null=null):CodexCliSandboxPlan=>({available:false,reason,source:'unverified-effective-policy',digest});
+const sourceChecks=new WeakMap<object,()=>void>();
+/** Pure plans and trusted injected inspectors have no filesystem source. Every
+ * successful production inspection below retains its own synchronous recheck. */
+export function verifyCodexCliSandbox(policy:CodexCliSandboxPlan):void{
+  if(!policy.available)return;
+  try{sourceChecks.get(policy)?.();}catch{throw new ApplicationError('RESOURCE_STATE_CHANGED','Codex 沙箱配置在启动前已变化，请重新启动');}
+}
 const merge=(first:ObjectValue,second:ObjectValue):ObjectValue=>{const result=structuredClone(first);for(const[key,value]of Object.entries(second))result[key]=object(value)&&object(result[key])?merge(result[key],value):structuredClone(value);return result;};
 
 const valueFlags=new Set(['--config','-c','--profile','-p','--model','-m','--ask-for-approval','-a','--local-provider']);
@@ -64,6 +71,7 @@ export function planCodexCliSandbox(input:{version:string;layers:readonly {sourc
   for(const layer of input.layers){if(!boundedJson(layer.config))return unsupported('configuration-budget');const selected=Object.fromEntries(keys.filter(k=>Object.hasOwn(layer.config,k)).map(k=>[k,layer.config[k]]));if(layer.source==='system'&&Object.keys(selected).length)return unsupported('system-policy-unverified');settings=merge(settings,selected);}
   for(const raw of parsed.overrides){let override:ObjectValue;try{override=plainJson(raw) as ObjectValue;}catch{return unsupported('configuration-budget');}settings=merge(settings,Object.fromEntries(keys.filter(k=>Object.hasOwn(override,k)).map(k=>[k,override[k]])));}
   let extraDirectories=false,explicitMode:string|undefined,selectors=0,bypass=false,autoReview=false;
+  const enabledFeatures=new Set<string>(),disabledFeatures=new Set<string>();
   for(let i=0;i<input.args.length;i++){
     const arg=input.args[i];
     if(valueFlags.has(arg)){if(++i>=input.args.length)valid=false;continue;}
@@ -73,7 +81,7 @@ export function planCodexCliSandbox(input:{version:string;layers:readonly {sourc
     if(arg==='--dangerously-bypass-approvals-and-sandbox'||arg==='--yolo')bypass=true;
     if(arg==='--approve-for-me'||arg==='--not-so-yolo'||arg==='--full-auto')autoReview=true;
     if(arg==='--add-dir'||arg.startsWith('--add-dir=')||arg==='--cd'||arg.startsWith('--cd=')||arg==='-C')extraDirectories=true;
-    if(arg==='--enable'||arg==='--disable'||arg.startsWith('--enable=')||arg.startsWith('--disable=')){const enabled=arg==='--enable'||arg.startsWith('--enable='),feature=arg.includes('=')?arg.slice(arg.indexOf('=')+1):input.args[++i];if(!feature){valid=false;break;}const features=object(settings.features)?settings.features:{};settings.features={...features,[feature]:enabled};}
+    if(arg==='--enable'||arg==='--disable'||arg.startsWith('--enable=')||arg.startsWith('--disable=')){const enabled=arg==='--enable'||arg.startsWith('--enable='),feature=arg.includes('=')?arg.slice(arg.indexOf('=')+1):input.args[++i];if(!feature||!/^[a-z][a-z0-9_]{0,127}$/.test(feature)){valid=false;break;}const own=enabled?enabledFeatures:disabledFeatures,other=enabled?disabledFeatures:enabledFeatures;if(other.has(feature)){valid=false;break;}own.add(feature);const features=object(settings.features)?settings.features:{};settings.features={...features,[feature]:enabled};}
   }
   // The fixed native CLI rejects auto-review mixed with a sandbox/bypass selector.
   if(selectors>1||autoReview&&(selectors>0||bypass))valid=false;
@@ -95,6 +103,10 @@ export function planCodexCliSandbox(input:{version:string;layers:readonly {sourc
     parent=mode==='workspace-write'?':workspace':':read-only';source='equivalent-simple-legacy-policy';
   }
   const features=object(settings.features)?settings.features:{};
+  // Native feature switches are applied after raw -c overrides. An appended
+  // features.network_proxy=true cannot defeat an explicit --disable switch.
+  // Enabling the child network bit in that state could remove its confinement.
+  if(disabledFeatures.has('network_proxy'))return unsupported('network-proxy-disabled-by-arguments',hash);
   if(network.enabled!==undefined&&typeof network.enabled!=='boolean'||features.network_proxy!==undefined&&typeof features.network_proxy!=='boolean')return unsupported('network-policy-unverified',hash);
   const enabled=network.enabled===true;
   if(enabled&&features.network_proxy!==true)return unsupported('network-proxy-equivalence-unverified',hash);
@@ -102,10 +114,47 @@ export function planCodexCliSandbox(input:{version:string;layers:readonly {sourc
   return{available:true,kind:'inherit',parent,networkProxy:true,enableNetwork:!enabled,existingNames:names,source,digest:hash};
 }
 
+/** Only root configuration overrides belong to the startup print command.
+ * TUI selectors are checked separately by the policy planner; forwarding a
+ * profile or a prompt to app-server would inspect a different source or run an
+ * unsupported command. Feature switches are grouped in native CLI order.
+ */
+export function codexRequirementsArgs(args:readonly string[]):string[]|null{
+  if(args.length>256||args.some(arg=>arg.length>65536))return null;
+  let valid=true;const parsed=codexConfigurationArgs([...args],()=>{valid=false;});
+  if(!valid||parsed.profile)return null;
+  const raw:string[]=[],enabled:string[]=[],disabled:string[]=[];let autoReview=false;
+  const irrelevantValues=new Set(['--model','-m','--ask-for-approval','-a','--sandbox','-s']);
+  for(let i=0;i<args.length;i++){
+    const arg=args[i];let assignment:string|undefined;
+    if(arg==='--config'||arg==='-c')assignment=args[++i];
+    else if(arg.startsWith('--config='))assignment=arg.slice(9);
+    else if(arg.startsWith('-c')&&arg.length>2)assignment=arg.slice(2).replace(/^=/,'');
+    else if(arg==='--enable'||arg==='--disable'||arg.startsWith('--enable=')||arg.startsWith('--disable=')){
+      const feature=arg.includes('=')?arg.slice(arg.indexOf('=')+1):args[++i];
+      if(!feature||!/^[a-z][a-z0-9_]{0,127}$/.test(feature))return null;
+      (arg==='--enable'||arg.startsWith('--enable=')?enabled:disabled).push(feature);continue;
+    }else if(irrelevantValues.has(arg)){if(!args[++i])return null;continue;}
+    else if(arg==='--approve-for-me'||arg==='--not-so-yolo'||arg==='--full-auto'){autoReview=true;continue;}
+    else if(['--yolo','--dangerously-bypass-approvals-and-sandbox','--no-alt-screen','--search'].includes(arg)||arg.startsWith('--model=')||arg.startsWith('--ask-for-approval=')||sandboxArgument(args,i)?.width===1)continue;
+    else return null;
+    if(assignment===undefined||/[\r\n]/.test(assignment))return null;
+    // Native has a permissive string fallback which differs from discovery's
+    // TOML fallback. Only unambiguous TOML literals can share this proof.
+    const equal=assignment.indexOf('=');if(equal<=0)return null;
+    try{const value=parseToml('__value__='+assignment.slice(equal+1));if(Object.keys(value).length!==1||!Object.hasOwn(value,'__value__')||!boundedJson(plainJson(value)))return null;}catch{return null;}
+    raw.push('-c',assignment);
+  }
+  for(const [features,value]of [[enabled,true],[disabled,false]] as const)for(const feature of features)raw.push('-c',`features.${feature}=${value}`);
+  if(autoReview)raw.push('-c','approvals_reviewer="auto_review"','-c','approval_policy="on-request"','-c','sandbox_mode="workspace-write"');
+  return [...raw,'app-server','--print-startup-config'];
+}
+
 /** Executes native configuration validation only, without a thread, model or MCP command. */
 export async function readCodexRequirements(input:TaskLaunchInput,native:NativeLaunchContext):Promise<CodexRequirementsProof>{
   const unavailable:CodexRequirementsProof={version:native.version,known:false,empty:false,hash:null};if(native.version!=='0.166.0'||input.signal.aborted)return unavailable;
-  return new Promise(resolve=>execFile(native.command,['app-server','--print-startup-config'],{cwd:input.cwd,env:input.environment,signal:input.signal,timeout:5000,maxBuffer:128*1024,encoding:'utf8',windowsHide:true},(error,stdout)=>{
+  const args=codexRequirementsArgs(input.profile.args);if(!args)return unavailable;
+  return new Promise(resolve=>execFile(native.command,args,{cwd:input.cwd,env:input.environment,signal:input.signal,timeout:5000,maxBuffer:128*1024,encoding:'utf8',windowsHide:true},(error,stdout)=>{
     if(error)return resolve(unavailable);
     try{const value:unknown=JSON.parse(stdout);if(!boundedJson(value)||!object(value)||value.appServerVersion!==native.version||!object(value.configRequirements)||!Object.hasOwn(value.configRequirements,'requirements'))return resolve(unavailable);resolve({version:native.version,known:true,empty:value.configRequirements.requirements===null,hash:digest(canonicalJson(value.configRequirements))});}catch{resolve(unavailable);}
   }));
@@ -113,11 +162,30 @@ export async function readCodexRequirements(input:TaskLaunchInput,native:NativeL
 export async function inspectCodexCliSandbox(input:TaskLaunchInput,native:NativeLaunchContext,readRequirements=readCodexRequirements):Promise<CodexCliSandboxPlan>{
   if(input.profile.runner!=='codex'||native.version!=='0.166.0')return unsupported('agent-cli-unverified');
   let valid=true;const args=codexConfigurationArgs(input.profile.args,()=>{valid=false;});if(!valid)return unsupported('effective-arguments-unverified');
-  const files=[{path:'/etc/codex/config.toml',source:'system'},{path:join(input.stateRoot,'config.toml'),source:'user'},...(args.profile?[{path:join(input.stateRoot,args.profile+'.config.toml'),source:'profile'}]:[]),...projectLayers(input.cwd,input.home).map(path=>({path:join(path,'.codex/config.toml'),source:'project'}))];
-  const layers:{source:string;config:ObjectValue;hash:string}[]=[];
+  const context=()=>canonicalJson({cwd:input.cwd,home:input.home,stateRoot:input.stateRoot,args:input.profile.args,command:native.command,version:native.version});
+  const originalContext=context();
+  const files=()=>[{path:'/etc/codex/config.toml',source:'system'},{path:join(input.stateRoot,'config.toml'),source:'user'},...(args.profile?[{path:join(input.stateRoot,args.profile+'.config.toml'),source:'profile'}]:[]),...projectLayers(input.cwd,input.home).map(path=>({path:join(path,'.codex/config.toml'),source:'project'}))];
+  const readSource=(path:string)=>{
+    let before;try{before=lstatSync(path);}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return null;throw error;}
+    if(!before.isFile()||before.isSymbolicLink()||before.size>1024*1024)throw Error('configuration identity');
+    const fd=openSync(path,constants.O_RDONLY|constants.O_NOFOLLOW);
+    try{
+      const opened=fstatSync(fd);if(opened.dev!==before.dev||opened.ino!==before.ino)throw Error('configuration changed');
+      const bytes=readFileSync(fd),after=fstatSync(fd),current=lstatSync(path);
+      if([opened,after,current].some(stat=>!stat.isFile()||stat.isSymbolicLink()||stat.dev!==before.dev||stat.ino!==before.ino||stat.size!==before.size||stat.mtimeMs!==before.mtimeMs||stat.ctimeMs!==before.ctimeMs)||bytes.length!==before.size||!Buffer.from(bytes.toString('utf8')).equals(bytes))throw Error('configuration changed');
+      return{bytes,identity:{dev:before.dev,ino:before.ino,size:before.size,mtimeMs:before.mtimeMs,ctimeMs:before.ctimeMs,hash:digest(bytes)}};
+    }finally{closeSync(fd);}
+  };
+  const capture=()=>{
+    try{lstatSync('/etc/codex/managed_config.toml');throw Error('managed configuration present');}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
+    return files().map(file=>({...file,value:readSource(file.path)}));
+  };
   try{
-    if(existsSync('/etc/codex/managed_config.toml'))return unsupported('managed-configuration-present');
-    for(const file of files){if(!existsSync(file.path)){if(file.source==='profile')return unsupported('profile-configuration-unavailable');continue;}const stat=lstatSync(file.path);if(!stat.isFile()||stat.isSymbolicLink()||stat.size>1024*1024)return unsupported('configuration-unreadable');const bytes=readFileSync(file.path);if(bytes.length!==stat.size||!Buffer.from(bytes.toString('utf8')).equals(bytes))return unsupported('configuration-changed');const config=plainJson(parseToml(bytes.toString('utf8')));if(!object(config)||!boundedJson(config)||config.profile!==undefined)return unsupported('configuration-unverified');layers.push({source:file.source,config,hash:digest(bytes)});}
+    const captured=capture(),signature=(sources:ReturnType<typeof capture>)=>canonicalJson(sources.map(({path,source,value})=>({path,source,identity:value?.identity??null}))),original=signature(captured);
+    const layers:{source:string;config:ObjectValue;hash:string}[]=[];
+    for(const file of captured){if(!file.value){if(file.source==='profile')return unsupported('profile-configuration-unavailable');continue;}const config=plainJson(parseToml(file.value.bytes.toString('utf8')));if(!object(config)||!boundedJson(config)||config.profile!==undefined)return unsupported('configuration-unverified');layers.push({source:file.source,config,hash:file.value.identity.hash});}
+    const policy=planCodexCliSandbox({version:native.version,layers,args:[...input.profile.args],requirements:await readRequirements(input,native)});
+    if(policy.available){const check=()=>{if(context()!==originalContext||signature(capture())!==original)throw Error('configuration changed');};check();sourceChecks.set(policy,check);}
+    return policy;
   }catch{return unsupported('configuration-unreadable');}
-  return planCodexCliSandbox({version:native.version,layers,args:input.profile.args,requirements:await readRequirements(input,native)});
 }

@@ -10,6 +10,11 @@ export function pluginUiField(value:unknown,path:string):unknown {
   let current=value;for(const key of path.split('.')){if(!object(current)||!Object.hasOwn(current,key))return undefined;const property=Object.getOwnPropertyDescriptor(current,key);if(!property||!('value'in property))return undefined;current=property.value;}
   return current;
 }
+/** Public host metadata for display only; never an execution or credential scope. */
+export interface PluginUiConnectionSelection {
+  mode:'follow'|'individual';
+  connections:{slot:string;connectionId:string;name:string}[];
+}
 export interface PluginUiScopes {tab?:unknown;row?:unknown;value?:unknown;connection?:unknown}
 /** Exact placeholders retain JSON types (notably opaque resource/reference objects). Embedded text stays plain text. */
 export function resolvePluginUiTemplate(template:unknown,scopes:PluginUiScopes):unknown {

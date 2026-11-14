@@ -1,6 +1,6 @@
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync,openSync,closeSync,writeFileSync,statSync,realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -21,6 +21,21 @@ describe.skipIf(process.platform !== 'darwin')('kernel process identity and actu
   it('returns unknown for invalid inputs, missing helper and unavailable identity', () => {
     expect(reader.read(-1)).toBeNull(); expect(reader.read(Number.NaN)).toBeNull(); expect(new MacProcessIdentityReader(join(build,'not-present')).state({ pid: process.pid,startedAt: 'darwin-proc-v1:1:1' })).toBe('unknown');
     expect(JSON.parse(execFileSync(native,['invalid'],{ encoding: 'utf8' }))).toEqual({ schema: 1,state: 'unknown' });
+  });
+  it('returns only known held SQLite file identities and rejects a different birth or executable',()=>{
+    const path=join(build,'state_5.sqlite'),other=join(build,'unrelated-public.txt');
+    writeFileSync(path,'public metadata fixture');writeFileSync(other,'excluded public fixture');
+    const fd=openSync(path,'r'),unrelated=openSync(other,'r');
+    try{
+      const own=reader.read(process.pid)!,image=realpathSync(process.execPath),file=statSync(path);
+      const files=reader.sqliteFiles(own,image)!;
+      expect(files).toContainEqual({path:realpathSync(path),dev:String(file.dev),ino:String(file.ino)});
+      expect(files.some(item=>item.path===realpathSync(other))).toBe(false);
+      expect(reader.sqliteFiles({...own,startedAt:'darwin-proc-v1:1:1'},image)).toBeNull();
+      expect(reader.sqliteFiles(own,'/bin/ls')).toBeNull();
+      const unknown=reader.nativeChild({...own,startedAt:'darwin-proc-v1:1:1'},image);expect(unknown).toBeNull();
+      expect(reader.nativeChild(own,image)).toEqual({...own,root:own,executable:image});
+    }finally{closeSync(fd);closeSync(unrelated);}
   });
   it('keeps leases until actual CLI and bridge child exit events, retaining an in-flight executor', async () => {
     const f = await runFixture(reader); let cli: ChildProcess | undefined, bridge: ChildProcess | undefined;

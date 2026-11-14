@@ -16,6 +16,8 @@ ws.on('connection',socket=>{
     let result={};
     if(message.method==='skills/extraRoots/set')roots=message.params.extraRoots;
     if(message.method==='skills/list')result={data:[{cwd:message.params.cwds[0],errors:[],skills:roots.map(root=>({name:/^name:\s*(.+)$/m.exec(fs.readFileSync(path.join(root,'SKILL.md'),'utf8'))[1],path:path.join(mode==='wrong-root'?'/wrong':root,'SKILL.md'),enabled:true}))}]};
+    if(mode==='named-start'&&message.method==='config/read')result={config:{approval_policy:'on-request',approvals_reviewer:'user',default_permissions:'wy_cli_test',permissions:{t100_parent:{filesystem:{'/synthetic/deny':'deny'}},wy_cli_test:{extends:'t100_parent'}}}};
+    if(mode==='named-start'&&message.method==='thread/start')result={thread:{id:'01a1cc33-e59f-7311-8924-144540948a80'},activePermissionProfile:{id:message.params.permissions,extends:'t100_parent'}};
     socket.send(JSON.stringify({id:message.id,result}));
   });
 });

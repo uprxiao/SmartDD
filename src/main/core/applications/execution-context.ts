@@ -39,7 +39,7 @@ interface ContextRecord<C extends HostedConfiguration,A extends string> {context
 interface OperationRow {scope_hash:string;targets_json:string;state:string;semantics:'read'|'write';attempt_count:number}
 const actionSchema=z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/);
 const targetSchema=z.object({slot:z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),id:z.uuid(),identityRevision:z.number().int().positive(),configRevision:z.number().int().positive(),policyRevision:z.number().int().nonnegative(),bindingRevision:z.number().int().nonnegative(),identityOnly:z.literal(true).optional(),readDefaults:z.object({configHash:z.string().regex(/^[a-f0-9]{64}$/),values:z.record(z.string().min(1).max(64),z.unknown()).refine(value=>Object.keys(value).length<=8&&JSON.stringify(value).length<=4096)}).strict().optional()}).strict();
-const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','application.project.action','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
+const managementActions=new Set(['application.configure','application.cache.status','application.cache.clear','application.add','application.enable','application.project.read','application.project.select','application.project.action','connection.defaults.read','connection.defaults.plan','connection.defaults.save','connection.delete.plan','connection.delete','connection.list','connection.test','connection.test.discard','connection.save','connection.enable','connection.disconnect']);
 
 /** Contexts are capabilities minted only by trusted host entrypoints; JSON copies have no authority. */
 export class ApplicationExecutionContexts<C extends HostedConfiguration=ConnectionConfig,A extends string=ApplicationId> {
@@ -50,6 +50,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   private readonly sharedIndexes=new WeakSet<object>();
   private readonly active=new Set<ContextRecord<C,A>>();
   private readonly actors=new WeakMap<MailActor,ApplicationExecutionContext<A>>();
+  private readonly localDraftReads=new WeakMap<object,{projectClosed:boolean}>();
   private readonly sendActors=new WeakMap<MailSendActor,'mail.send'|'mail.draft'>();
   private readonly pending=new Set<Promise<unknown>>();
   private readonly builtin:BuiltinPackageRegistry;
@@ -133,11 +134,18 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   requireActor(actor:MailActor,permission='mail.draft'):void{
     const context=this.actors.get(actor);if(!context)throw new ApplicationError('SCOPE_DENIED','业务调用者不是当前宿主签发的身份');this.assertActor(context,actor,permission==='mail.draft'&&this.sendActors.get(actor as MailSendActor)==='mail.send'?'mail.send':permission);
   }
+  requireDraftWriteActor(actor:MailActor):void{
+    this.requireActor(actor);const context=this.actors.get(actor)!;
+    if(this.localDraftReads.has(context)||context.semantics!=='write')throw new ApplicationError('SCOPE_DENIED','本次草稿身份只允许读取');
+  }
+  isLocalDraftRead(context:ApplicationExecutionContext<A>):boolean{return this.localDraftReads.has(context);}
+  draftReadOnly(context:ApplicationExecutionContext<A>):boolean{this.record(context);return this.localDraftReads.get(context)?.projectClosed??false;}
   assertActor(context:ApplicationExecutionContext<A>,actor:MailActor,permission='mail.draft'):void{
     const current=this.actor(context,permission);
     if(actor.projectId!==current.projectId||actor.taskId!==current.taskId)throw new ApplicationError('SCOPE_DENIED','业务对象不能替换宿主作用域');
   }
   sendActor(context:ApplicationExecutionContext<A>,permission:'mail.send'|'mail.draft'='mail.send'):MailSendActor{
+    if(this.localDraftReads.has(context))throw new ApplicationError('SCOPE_DENIED','本地草稿只读身份不能取得发送身份');
     this.require(context,permission);if(context.scopeKind!=='project'||context.appId!=='mail'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','发送业务需要真实邮件项目');
     const actor=Object.freeze({projectId:context.projectId,taskId:context.taskId,runId:context.runId});this.actors.set(actor,context);this.sendActors.set(actor,permission);return actor;
   }
@@ -152,6 +160,12 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const context=this.sendScope(actor),application=this.builtin.assertTrusted(context.packageHash);
     const activity=this.store.use(application.resourceId,'mail-send',intentId,()=>{this.assertActive(context);return work();},{identity});this.pending.add(activity);void activity.finally(()=>this.pending.delete(activity)).catch(()=>{});return activity;
   }
+  sendBinding(projectId:string,taskId:string|null,runId:string|null){
+    const slot=this.registry.provider('smtp').id,appId=this.registry.appId('mail');
+    if(runId){const run=this.deps.assertRun(runId);if(run.run.projectId!==projectId||run.run.taskId!==taskId)throw new ApplicationError('SCOPE_DENIED','原发件运行身份不同');return this.runConnectionSelection(run,appId,slot);}
+    if(taskId!==null)throw new ApplicationError('SCOPE_DENIED','发件任务缺少运行身份');
+    return this.selections.connectionSlot(projectId,appId,slot);
+  }
   async sendConnection(context:ApplicationExecutionContext<A>):Promise<HostedConnection<C,A>>{this.require(context,'mail.send');return this.pinConnection(context,this.registry.provider('smtp').id,null,false);}
   private readDefaults(connection:HostedConnection<C,A>):ReadDefaults|undefined{
     const provider=this.registry.provider(connection.providerId),keys=provider.readDefaultKeys;if(!keys?.length)return;
@@ -164,9 +178,30 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     if(!current||current.configHash!==original.configHash||canonicalJson(Object.keys(current.values).sort())!==canonicalJson(Object.keys(original.values).sort()))throw new ApplicationError('REVISION_CONFLICT','本次来源配置或契约已变化，结果未交付');
     return{...connection,config:this.registry.parseConfig({...connection.config,...original.values})};
   }
-  private checkTarget(context:Pick<ApplicationExecutionContext<A>,'projectId'|'appId'|'semantics'>,target:Target<C['kind']>):void{
+  runConnectionSelection(run:RunContext,appId:A,slot:C['kind']):{connectionId:string|null;identityRevision:number|null;revision:number}{
+    const current=this.deps.assertRun(run.run.runId);
+    if(current.run.projectId!==run.run.projectId||current.run.taskId!==run.run.taskId)throw new ApplicationError('SCOPE_DENIED','连接不属于本次真实运行');
+    this.selections.requireApplicationEnabled(current.run.projectId,appId);
+    if(current.bindingMode==='run'&&(appId==='mail'||appId==='browser')){
+      const found=current.bindings.find(b=>b.appId===appId&&b.slot===slot);
+      if(!found)throw new ApplicationError('AUTH_REQUIRED','本次运行未配置此连接，请新建或恢复任务后使用');
+      if(found.connectionId){const c=this.connections.get(found.connectionId);if(c.appId!==appId||c.providerId!==slot||c.identityRevision!==found.identityRevision)throw new ApplicationError('REVISION_CONFLICT','本次运行连接身份已变化，请重新核验');}
+      return{connectionId:found.connectionId,identityRevision:found.identityRevision,revision:found.bindingRevision};
+    }
+    return this.selections.connectionSlot(current.run.projectId,appId,slot);
+  }
+  connectionSelection(context:Pick<ApplicationExecutionContext<A>,'projectId'|'appId'>&Partial<Pick<ApplicationExecutionContext<A>,'callerKind'|'runId'>>,slot:C['kind']){
+    if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','连接需要真实项目');
+    if(context.callerKind==='agent-run'){
+      if(!context.runId)throw new ApplicationError('SCOPE_DENIED','运行身份缺失');
+      const run=this.deps.assertRun(context.runId);if(run.run.projectId!==context.projectId)throw new ApplicationError('SCOPE_DENIED','运行项目不同');
+      return this.runConnectionSelection(run,context.appId,slot);
+    }
+    return this.selections.connectionSlot(context.projectId,context.appId,slot);
+  }
+  private checkTarget(context:Pick<ApplicationExecutionContext<A>,'projectId'|'appId'|'semantics'>&Partial<Pick<ApplicationExecutionContext<A>,'callerKind'|'runId'>>,target:Target<C['kind']>):void{
     if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','来源使用需要真实项目');
-    const selected=this.selections.connectionSlot(context.projectId,context.appId,target.slot),current=this.connections.get(target.id);
+    const selected=this.connectionSelection(context,target.slot),current=this.connections.get(target.id);
     // A captured read default is a preference, not a grant. Every other config
     // field/schema and all identity/policy/binding/enablement checks stay current.
     const sameConfig=target.readDefaults?context.semantics==='read'&&!!this.restoreReadDefaults(current,target.readDefaults):current.configRevision===target.configRevision;
@@ -207,8 +242,9 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     return {connection:resolved.connection,configView:resolved.configView,secret:authenticated.secret};
   }
   private async pinConnection(context:ApplicationExecutionContext<A>,slot:C['kind'],expectedId:string|null,identityOnly:boolean):Promise<HostedConnection<C,A>>{
+    if(this.localDraftReads.has(context))throw new ApplicationError('SCOPE_DENIED','本地草稿只读身份不能读取连接凭据或访问来源');
     if(!context.projectId)throw new ApplicationError('SCOPE_DENIED','连接使用需要有效项目');
-    const selected=this.selections.connectionSlot(context.projectId,context.appId,slot);
+    const selected=this.connectionSelection(context,slot);
     if(!selected.connectionId)throw new ApplicationError('AUTH_REQUIRED','请先明确选用此项目的来源或发件连接');
     if(expectedId!==null&&expectedId!==selected.connectionId)throw new ApplicationError('SCOPE_DENIED','请求的连接不是当前项目明确选用的连接');
     const connection=this.connections.get(selected.connectionId);
@@ -231,7 +267,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   }
   async draftSender(context:ApplicationExecutionContext<A>,expectedId:string|null):Promise<HostedConnection<C,A>|null>{
     this.require(context,'mail.draft');if(context.appId!=='mail'||context.scopeKind!=='project'||!context.projectId)throw new ApplicationError('SCOPE_DENIED','回复身份需要真实邮件项目');
-    const selected=this.selections.connectionSlot(context.projectId,this.registry.appId('mail'),this.registry.provider('smtp').id);
+    const selected=this.connectionSelection(context,this.registry.provider('smtp').id);
     if(!selected.connectionId){if(expectedId)throw new ApplicationError('SCOPE_DENIED','回复发件连接不是当前项目明确选用的连接');return null;}
     return this.pinConnection(context,this.registry.provider('smtp').id,expectedId,true);
   }
@@ -246,6 +282,21 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
   }
   private activePackage(appId:A):InstalledApplicationPackage{
     const active=this.builtin.packages.active(appId);if(!active)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前应用没有已准备的默认版本');return this.builtin.packages.get(active.packageHash);
+  }
+  /** Local persisted draft reads remain available when only the project closes mail.
+   * No caller-supplied permissions, external slots, send actors or mutations. */
+  withUiDraftRead<T>(sender:ApplicationUiSender,input:{projectId:string;action:'list'|'get'|'resource'|'attachment'|'attachment-resource'},work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
+    this.deps.requireSender(sender);if(!['list','get','resource','attachment','attachment-resource'].includes(input.action))throw new ApplicationError('SCOPE_DENIED','本地草稿读取动作无效');
+    const appId=this.registry.appId('mail'),application=this.activePackage(appId);
+    const policy=()=>{this.deps.requireSender(sender);const catalog=this.selections.catalogState(appId);
+      if(!catalog.added||!catalog.enabled)throw new ApplicationError('SCOPE_DENIED','邮件插件已全局停用');
+      const row=this.store.sqlite.prepare('SELECT p.archived_at,COALESCE(s.enabled,0) enabled,COALESCE(s.policy_revision,0) revision FROM projects p LEFT JOIN application_project_settings s ON s.project_id=p.id AND s.app_id=? WHERE p.id=?').get(appId,input.projectId) as {archived_at:number|null;enabled:number;revision:number}|undefined;
+      if(!row||row.archived_at!==null)throw new ApplicationError('NOT_FOUND','项目已删除或归档');
+      if(![0,1].includes(row.enabled)||!Number.isSafeInteger(row.revision)||row.revision<0)throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','项目邮件策略记录无效');
+      return{globalRevision:catalog.revision,projectPolicyRevision:row.revision,projectClosed:row.enabled!==1};
+    };
+    const stamp=policy(),check=()=>{if(canonicalJson(policy())!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','项目邮件读取策略已变化');};
+    return this.begin(application,{operationId:randomUUID(),callerKind:'ui',scopeKind:'project',projectId:input.projectId,taskId:null,runId:null,jobId:null,parentOperationId:null,appId,packageHash:application.packageHash,dataApi:1,action:'ui.mail.local-draft.'+input.action,semantics:'read',allowedOperations:['mail.draft'],signal:new AbortController().signal,startedAt:new Date(this.now()).toISOString()},check,stamp,async context=>{this.localDraftReads.set(context,{projectClosed:stamp.projectClosed});return work(context);},true);
   }
   withUi<T>(sender:ApplicationUiSender,input:{projectId:string;appId:A;action:string;operations:readonly string[];semantics:'read'|'write';signal?:AbortSignal;retry?:'safe-read'},work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
     this.deps.requireSender(sender);const application=this.activePackage(input.appId),stamp=this.selections.policyStamp(input.projectId,input.appId);
@@ -340,7 +391,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const policy=this.selections.policyStamp(row.project_id,row.app_id),hash=digest(canonicalJson({callerKind:row.caller_kind,scopeKind:row.scope_kind,projectId:row.project_id,taskId:row.task_id,runId:row.run_id,jobId:row.job_id,parentOperationId:row.parent_operation_id,appId:row.app_id,packageHash:row.package_hash,action:row.action,semantics:row.semantics,policy}));
     if(hash!==row.scope_hash)throw new ApplicationError('SCOPE_DENIED','原回执对应的应用授权代次已变化');
     let targets:Target<C['kind']>[];try{targets=this.decodeTargets(row.targets_json,row.app_id);}catch{throw new ApplicationError('HASH_MISMATCH','原回执来源记录已损坏');}
-    for(const target of targets)this.checkTarget({projectId:row.project_id,appId:row.app_id,semantics:row.semantics},target);
+    for(const target of targets)this.checkTarget({projectId:row.project_id,appId:row.app_id,semantics:row.semantics,callerKind:'agent-run',runId:row.run_id},target);
   }
   withReadReceipt<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,originalOperationId:string,work:(context:ApplicationExecutionContext<A>)=>Promise<T>,signal?:AbortSignal):Promise<T>{
     this.assertAgentReceipt(claim,binding,originalOperationId);

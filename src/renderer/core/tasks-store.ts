@@ -90,12 +90,22 @@ class TasksStore {
   /** Resume a stopped task on its original profile, once per opened tab. False: not tried. */
   async autoResume(task: TaskView): Promise<boolean> {
     if (this.closing.has(task.id)) return false;
+    // Pre-M13 history has no recorded authentication source. Opening a tab must
+    // leave it stopped until the user explicitly selects a current Agent.
+    if (!task.agentSnapshot && ['claude','codex'].includes(task.runner)) return false;
     if (!shouldAutoResume(task, this.autoResumed)) return false;
     const epoch = this.resumeEpochs.get(task.id) ?? 0;
     this.autoResumed.add(task.id);
     this.resuming.add(task.id);
     this.resumeErrors.delete(task.id);
     try {
+      // A model fallback or changed authentication must be shown before any
+      // process starts. The explicit resume panel will pin the returned tuple.
+      if (task.agentSnapshot) {
+        const preview=await rpc.tasks.agentResumePreview(task.id);
+        if ((this.resumeEpochs.get(task.id)??0)!==epoch || this.closing.has(task.id) || !this.tabs.includes(task.id)) return false;
+        if (preview?.sourceChanged || preview?.model.changed) return false;
+      }
       await this.resume({ taskId: task.id });
     } catch (e) {
       if ((this.resumeEpochs.get(task.id) ?? 0) === epoch) runInAction(() => this.resumeErrors.set(task.id, rpcErrorMessage(e)));

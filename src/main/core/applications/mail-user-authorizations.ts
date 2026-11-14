@@ -15,9 +15,9 @@ interface Display {sender:ApplicationUiSender['sender'];frame:ApplicationUiSende
 interface Action {value:VerifiedMailUserAction;provenance:string;originSignal:AbortSignal|null;native?:NativeUserMessage;nativeContext?:readonly NativeUserMessage[];literalAttachments?:readonly MailAttachment[]}
 /** Only host-observed sources mint authority. Persistent provenance alone is never a live grant. */
 export class MailUserAuthorizations {
- private readonly displays=new Map<string,Display>();private readonly actions=new Map<string,Action>();private closed=false;private nativeSources?:NativeUserMessages;private nativePolicyHash?:(projectId:string)=>string|null;
+ private readonly displays=new Map<string,Display>();private readonly actions=new Map<string,Action>();private closed=false;private nativeSources?:NativeUserMessages;private nativePolicyHash?:(projectId:string,runId?:string,taskId?:string)=>string|null;
  constructor(private readonly contexts:ApplicationExecutionContexts,private readonly now=Date.now){}
- attachNative(sources:NativeUserMessages,policyHash:(projectId:string)=>string|null):void{if(this.nativeSources&&this.nativeSources!==sources)throw new ApplicationError('RESOURCE_STATE_CHANGED','原生用户来源服务已经固定');this.nativeSources=sources;this.nativePolicyHash=policyHash;}
+ attachNative(sources:NativeUserMessages,policyHash:(projectId:string,runId?:string,taskId?:string)=>string|null):void{if(this.nativeSources&&this.nativeSources!==sources)throw new ApplicationError('RESOURCE_STATE_CHANGED','原生用户来源服务已经固定');this.nativeSources=sources;this.nativePolicyHash=policyHash;}
  private cleanup(){for(const [id,value] of this.displays)if(value.expiresAt<=this.now())this.displays.delete(id);for(const [id,value] of this.actions)if(Date.parse(value.value.expiresAt)<=this.now()||value.originSignal?.aborted||value.native&&!this.nativeActionLive(value))this.actions.delete(id);}
  present(context:ApplicationExecutionContext,sender:ApplicationUiSender,intent:MailSendIntent):{displayReceiptId:string;review:MailSendReview}{
   this.contexts.require(context,'mail.draft');if(this.closed||context.callerKind!=='ui'||context.action!=='ui.mail.send.review'||intent.projectId!==context.projectId||!intent.review||!intent.reviewHash)throw new ApplicationError('SCOPE_DENIED','发送审阅必须来自当前项目的真实界面');this.cleanup();if(this.displays.size>=256)throw new ApplicationError('RESOURCE_BUSY','发送审阅已满，请稍后重试');
@@ -36,7 +36,7 @@ export class MailUserAuthorizations {
  /** The source guard is RAM-only; this policy stamp uses only local SQLite, including in C. */
  private nativeLive(message:NativeUserMessage):boolean{
   if(!this.nativeSources?.isLive(message)||!message.receipt.mailSendScope)return false;
-  try{return this.nativePolicyHash?.(message.receipt.projectId)===message.receipt.mailSendScope.policyHash;}catch{return false;}
+  try{return this.nativePolicyHash?.(message.receipt.projectId,message.receipt.runId,message.receipt.taskId)===message.receipt.mailSendScope.policyHash;}catch{return false;}
  }
  private contextLive(message:NativeUserMessage,previous:NativeUserMessage):boolean{
   const a=message.receipt,b=previous.receipt,scope=a.mailSendScope,prior=b.mailSendScope;

@@ -53,7 +53,7 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
     this.registry=new HostApplicationRegistry(definitions??builtinHostApplications as unknown as HostApplicationDefinitions<C,A>);this.registry.register(store.sqlite);
   }
   private row(id: string): ConnectionRow<C,A> {
-    const row = this.store.sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(id) as ConnectionRow<C,A> | undefined;
+    const row = this.store.sqlite.prepare('SELECT * FROM application_connections WHERE deleted_at IS NULL AND id=?').get(id) as ConnectionRow<C,A> | undefined;
     if (!row) throw new ApplicationError('NOT_FOUND', '连接不存在'); return row;
   }
   private decodeRow(r:ConnectionRow<C,A>){
@@ -95,11 +95,11 @@ export class ApplicationConnectionService<C extends HostedConfiguration=Connecti
   }
   count(appId:A):number {
     this.registry.application(appId);
-    return (this.store.sqlite.prepare('SELECT count(*) AS n FROM application_connections WHERE app_id=?').get(appId) as {n:number}).n;
+    return (this.store.sqlite.prepare('SELECT count(*) AS n FROM application_connections WHERE deleted_at IS NULL AND app_id=?').get(appId) as {n:number}).n;
   }
   list(appId?:A):HostedConnection<C,A>[] {
     if(appId!==undefined)this.registry.application(appId);
-    const rows=appId===undefined?this.store.sqlite.prepare('SELECT id FROM application_connections ORDER BY created_at,id').all():this.store.sqlite.prepare('SELECT id FROM application_connections WHERE app_id=? ORDER BY created_at,id').all(appId);
+    const rows=appId===undefined?this.store.sqlite.prepare('SELECT id FROM application_connections WHERE deleted_at IS NULL ORDER BY created_at,id').all():this.store.sqlite.prepare('SELECT id FROM application_connections WHERE deleted_at IS NULL AND app_id=? ORDER BY created_at,id').all(appId);
     return (rows as {id:string}[]).map(r=>this.get(r.id));
   }
   private candidate(id: string): CandidateRow {

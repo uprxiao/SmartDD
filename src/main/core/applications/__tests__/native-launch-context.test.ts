@@ -1,0 +1,31 @@
+import {mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {afterEach,expect,it} from 'vitest';
+import {inspectNativeLaunch,type TaskLaunchInput} from '../native-launch-context';
+import {planAgentLaunch} from '../../ai/agent-launch-plan';
+import type {CodeAgentTool,ProviderView,RunConfigView} from '@shared/ai-agents';
+
+const roots:string[]=[];
+afterEach(()=>{for(const root of roots.splice(0))rmSync(root,{recursive:true,force:true});});
+it('inspects the actual generated third-party Claude profile without falling back to native-only delivery',async()=>{
+  const root=mkdtempSync(join(tmpdir(),'willyou-claude-inspect-'));roots.push(root);
+  const cwd=join(root,'project'),home=join(root,'home'),userData=join(root,'userdata'),command=join(root,'claude');
+  mkdirSync(join(cwd,'.git'),{recursive:true});mkdirSync(home);mkdirSync(userData);
+  writeFileSync(command,'#!/bin/sh\n[ "$1" = "--version" ] || exit 99\nprintf "2.1.322 (Claude Code)\\n"\n',{mode:0o700});
+  const tool:CodeAgentTool={id:'tool',kind:'claude',executable:command,installed:true,login:'none',version:'2.1.322'};
+  const config:RunConfigView={id:'config',name:'Claude test',toolId:tool.id,kind:'claude',source:'provider',providerId:'provider',models:['test'],defaultModel:'test',homeVisible:true,isDefault:true,loggedOut:false,nameCustomized:false,order:0,available:true,legacyReason:null};
+  const provider:ProviderView={id:'provider',name:'Local synthetic',preset:null,endpoints:{anthropic:'http://127.0.0.1:1'},authType:'api-key',hasKey:true,identityRevision:1,models:[{id:'test',name:'Test',offline:false,contextWindow:null,availability:{claude:'available',codex:'unavailable'}}],recommended:{},refreshedAt:null};
+  const planned=planAgentLaunch({config,tool,provider,key:'PUBLIC_ONLY',permission:'ask',cwd,userData,runId:'11111111-1111-4111-a111-111111111111'});
+  const stateRoot=planned.claudeRoot!;mkdirSync(stateRoot,{recursive:true});
+  for(const f of planned.files)writeFileSync(f.path,JSON.stringify(f.value));
+  mkdirSync(join(cwd,'.claude'),{recursive:true});writeFileSync(join(cwd,'.claude','settings.json'),'{broken ignored project settings');
+  writeFileSync(join(stateRoot,'.claude.json'),JSON.stringify({mcpServers:{unselected:{command:'/does/not/exist'}}}));
+  const skill=join(stateRoot,'skills','standard');mkdirSync(skill,{recursive:true});writeFileSync(join(skill,'SKILL.md'),'---\nname: standard\ndescription: local test\n---\nUse the local test.\n');
+  const input:TaskLaunchInput={projectId:'project',taskId:'task',profile:planned.profile,cwd,home,stateRoot,claudeConfigExplicit:true,mode:'new',sessionId:null,previous:null,newTask:true,signal:new AbortController().signal,environment:{...planned.profile.env,PATH:'/usr/bin:/bin',HOME:home}};
+  const result=await inspectNativeLaunch(input);
+  expect(result.version).toBe('2.1.322');expect(result.command).toBe(command);
+  expect(result.inventory.some(row=>row.kind==='skill'&&row.path===join(skill,'SKILL.md'))).toBe(true);
+  expect(result.inventory.some(row=>row.kind==='mcp')).toBe(false);
+  await expect(inspectNativeLaunch({...input,profile:{...input.profile,args:[...input.profile.args,'--settings','{}']}})).rejects.toMatchObject({code:'AGENT_ADAPTER_UNSUPPORTED'});
+});

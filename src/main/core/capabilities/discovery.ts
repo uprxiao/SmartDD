@@ -6,6 +6,8 @@ import { parse as parseToml } from 'smol-toml';
 import { parse as parseYaml } from 'yaml';
 import type { DiscoveredCapability } from '@shared/capabilities';
 import type { Runner } from '@shared/types';
+import type { McpNativePolicy } from './mcp-source';
+import { discoverCodexPlugins } from './codex-plugin-discovery';
 
 type Obj = Record<string, unknown>;
 const isObject = (v: unknown): v is Obj => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -35,6 +37,9 @@ export interface DiscoveryContext {
   details?: NativeDiscoveryDetails;
   /** Exact version from the host-only --version probe; absent in generic UI discovery. */
   nativeVersion?: string;
+  /** Main-only callback. Raw MCP definitions must never enter discovery rows,
+   * persistent diagnostics, capability snapshots or renderer responses. */
+  onMcpDefinition?:(row:DiscoveredCapability,definition:Record<string,unknown>,policy?:McpNativePolicy)=>void;
 }
 
 function textFile(path: string): string {
@@ -97,8 +102,38 @@ export function codexConfigurationArgs(args: string[], issue: () => void): { pro
   return { profile, overrides };
 }
 
+/** Recognize native option boundaries before choosing configuration sources.
+ * Unknown/positional arguments cannot establish a narrower trusted source set. */
+function claudeDiscoveryArgs(args:string[]){
+  const controls=new Set<number>(),sources:number[]=[];
+  const values=new Set(['--model','-m','--permission-mode','--session-id','--resume','-r','--input-format','--output-format','--max-turns','--max-budget-usd','--system-prompt','--append-system-prompt','--settings','--mcp-config','--plugin-dir']);
+  const many=new Set(['--add-dir','--allowedTools','--allowed-tools','--disallowedTools','--disallowed-tools','--tools','--betas']);
+  const switches=new Set(['--strict-mcp-config','--dangerously-skip-permissions','--allow-dangerously-skip-permissions','--verbose','--debug','--continue','-c','--print','-p','--no-session-persistence','--disable-slash-commands']);
+  let userOnly=false,strictMcp=false,ambiguous=false;
+  for(let i=0;i<args.length;i++){
+    const arg=args[i];if(arg==='--')break;
+    if(!arg.startsWith('-')){ambiguous=true;break;}
+    controls.add(i);
+    if(arg==='--setting-sources'||arg.startsWith('--setting-sources=')){
+      sources.push(i);const value=arg==='--setting-sources'?args[++i]:arg.slice('--setting-sources='.length);
+      userOnly=value==='user';continue;
+    }
+    if(arg==='--strict-mcp-config'){strictMcp=true;continue;}
+    if(values.has(arg)){if(++i>=args.length)ambiguous=true;continue;}
+    if(many.has(arg)){while(args[i+1]&&!args[i+1].startsWith('-'))i++;continue;}
+    if(switches.has(arg)||arg.includes('='))continue;
+    // A new option could consume the next token. Do not use it to approve a
+    // settings override or infer that a following token is a control flag.
+    ambiguous=true;if(args[i+1]&&!args[i+1].startsWith('-'))i++;
+  }
+  const accepted=userOnly&&sources.length===1&&!ambiguous;
+  return {controls,acceptedSources:accepted?new Set(sources):new Set<number>(),userOnly:accepted,strictMcp:strictMcp&&!ambiguous};
+}
+
 export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[] {
   const rows: DiscoveredCapability[] = [];
+  const mcpDefinitions=new Map<DiscoveredCapability,Obj>();
+  const mcpPolicy:McpNativePolicy={allow:[],deny:[],ask:[],unverified:false};
   const seen = new Set<string>();
   const layers = projectLayers(c.cwd, c.home);
   const row = (kind: 'skill' | 'mcp', name: string, path: string, source: string): DiscoveredCapability => ({
@@ -189,29 +224,33 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       if (source.includes('project')) r.issues.push('project_trust_unverified');
       r.validity = invalid ? 'invalid' : 'partial';
       rows.push(r);
+      mcpDefinitions.set(r,s);
     }
   };
 
   if (c.runner === 'claude') {
+    const args=c.args??[], options=claudeDiscoveryArgs(args);
     scanDir(join(c.stateRoot, 'skills'), 'user');
     scanDir(join(c.stateRoot, 'commands'), 'user commands', true);
     const settings: Obj[] = [];
     const globalSettings = readConfig(join(c.stateRoot, 'settings.json'));
     if (globalSettings) settings.push(globalSettings);
+    else if(existsSync(join(c.stateRoot,'settings.json')))mcpPolicy.unverified=true;
     for (const p of layers) {
       scanDir(join(p, '.claude', 'skills'), 'project');
       scanDir(join(p, '.claude', 'commands'), 'project commands', true);
-      for (const file of ['settings.json', 'settings.local.json']) {
+      for (const file of options.userOnly?[]:['settings.json', 'settings.local.json']) {
         const config = readConfig(join(p, '.claude', file));
         if (config) settings.push(config);
+        else if(existsSync(join(p,'.claude',file)))mcpPolicy.unverified=true;
       }
       const file = join(p, '.mcp.json');
-      const config = readConfig(file);
+      const config = options.strictMcp?null:readConfig(file);
       if (config) addMcp(config.mcpServers, file, 'project');
     }
     const explicitRoot = c.claudeConfigExplicit ?? c.stateRoot !== join(c.home, '.claude');
     const mainConfigPath = explicitRoot ? join(c.stateRoot, '.claude.json') : join(c.home, '.claude.json');
-    const config = readConfig(mainConfigPath);
+    const config = options.strictMcp?null:readConfig(mainConfigPath);
     if (config) {
       addMcp(config.mcpServers, mainConfigPath, 'user');
       let canonicalCwd = c.cwd;
@@ -231,13 +270,23 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
         scanDir(join(p.installPath, 'skills'), `plugin:${name}`, false, enabled, version);
         scanDir(join(p.installPath, 'commands'), `plugin:${name}`, true, enabled, version);
         const mcpPath = join(p.installPath, '.mcp.json');
-        const mcp = readConfig(mcpPath);
+        const mcp = options.strictMcp?null:readConfig(mcpPath);
         if (mcp) addMcp(mcp.mcpServers ?? mcp, mcpPath, `plugin:${name}`, enabled);
       }
     }
-    for (const s of settings) for (const name of strings(s.disabledMcpServers)) for (const r of rows) if (r.kind === 'mcp' && r.name === name) r.enabled = false;
-    const args = c.args ?? [];
+    for(const s of settings){
+      const permissions=object(s.permissions);
+      for(const key of ['allow','deny','ask'] as const){
+        if(permissions[key]!==undefined&&(!Array.isArray(permissions[key])||(permissions[key] as unknown[]).some(v=>typeof v!=='string')))mcpPolicy.unverified=true;
+        mcpPolicy[key].push(...strings(permissions[key]));
+      }
+    }
     for (let i = 0; i < args.length; i++) {
+      if(!options.controls.has(i))continue;
+      if(options.acceptedSources.has(i)){if(args[i]==='--setting-sources')i++;continue;}
+      const policyFlag={'--allowedTools':'allow','--allowed-tools':'allow','--disallowedTools':'deny','--disallowed-tools':'deny'}[args[i]] as 'allow'|'deny'|undefined;
+      if(policyFlag){while(args[i+1]&&!args[i+1].startsWith('-'))mcpPolicy[policyFlag].push(...args[++i].split(',').filter(Boolean));continue;}
+      if(/^--(?:settings|setting-sources|settings-sources)(?:=|$)/.test(args[i]))mcpPolicy.unverified=true;
       if (args[i] === '--plugin-dir' && args[i + 1]) { const root = resolve(c.cwd, args[++i]); plugin(root); scanDir(join(root, 'skills'), 'profile plugin', false, true); }
       else if (/^--(?:settings|setting-sources|settings-sources|plugin-dir|mcp-config)=|^--(?:settings|setting-sources|settings-sources)$/.test(args[i])) c.details?.issues.push('profile_configuration_unverified');
       else if (args[i] === '--mcp-config' && args[i + 1]) {
@@ -252,6 +301,7 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
         }
       }
     }
+    for (const s of settings) for (const name of strings(s.disabledMcpServers)) for (const r of rows) if (r.kind === 'mcp' && r.name === name) r.enabled = false;
   } else {
     scanDir(join(c.home, '.agents', 'skills'), 'user');
     scanDir(join(c.stateRoot, 'skills'), 'user compatibility');
@@ -282,6 +332,18 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
     for (const config of args.overrides) {
       addMcp(config.mcp_servers, 'profile arguments', 'profile');
       overrides.push({ config, base: c.cwd,configurationPath:null,location:'profile-arguments' });
+    }
+    for (const plugin of discoverCodexPlugins(c.stateRoot, overrides.map(o => o.config), readConfig,
+      (path, source, reason) => badFile('mcp', path, source, reason))) {
+      const source = `plugin:${plugin.key}`;
+      for (const skill of plugin.skills) scanSkill(skill, source, false, plugin.enabled, plugin.version);
+      const first = rows.length;
+      addMcp(plugin.servers, plugin.mcpPath, source, plugin.enabled);
+      for (const entry of rows.slice(first)) {
+        entry.version = plugin.version;
+        if (plugin.enabled === false) entry.enabled = false;
+        else if (plugin.enabled === null && entry.enabled !== false) entry.enabled = null;
+      }
     }
     // The raw config field is the last whole array. Codex 0.162.1 Skill discovery
     // separately keeps lower-layer paths missing from that array; a later explicit
@@ -323,5 +385,8 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       }
     }
   }
+  // Final flags/permissions must be available before a launch resolver consumes
+  // a definition; otherwise a just-disabled source could be injected once more.
+  for(const[row,definition]of mcpDefinitions)c.onMcpDefinition?.(row,definition,c.runner==='claude'?mcpPolicy:undefined);
   return rows.sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name) || a.path.localeCompare(b.path));
 }

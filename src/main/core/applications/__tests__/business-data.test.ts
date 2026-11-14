@@ -39,6 +39,8 @@ const owned:OwnedCapabilityRun[]=[];
 const content=(text='隔离草稿第一版'):MailDraftContent=>({mode:'new',sourceMessageRef:null,senderConnectionId:null,to:['fixture@example.test'],cc:[],bcc:[],subject:'隔离草稿',text,html:null,inReplyTo:null,references:[],attachmentIds:[]});
 const setupService=(distributionRoot?:string)=>new ApplicationService(f.store,{distributionRoot,secrets,projects,tasks:{stopProject:async()=>true,runningInProject:()=>0},requireSender:e=>access.requireSender(e),mailWorker:join(f.root,'not-launched-worker.js'),foxmailNative:join(f.root,'not-launched-native'),processes:reader});
 const ui=<T>(work:(scope:ApplicationExecutionContext)=>Promise<T>,operations=['mail.draft'],projectId='p1',signal?:AbortSignal)=>Promise.resolve().then(()=>app.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.test',operations,semantics:'read',signal},work));
+// These three fixtures create business data; keep read-only fixtures and negative guards unchanged.
+const uiWrite=<T>(work:(scope:ApplicationExecutionContext)=>Promise<T>)=>app.contexts.withUi(sender,{projectId:'p1',appId:'mail',action:'ui.mail.test-write',operations:['mail.draft'],semantics:'write'},work);
 const call=(run:OwnedCapabilityRun,operation:string,args:Record<string,unknown>,id=randomUUID())=>tools.call(run.runId,id,{operation:'smartdd_mail_'+operation+'_v1',contractMajor:1,connectionId:null,arguments:args});
 async function draft(run=cc,text?:string){const response=await call(run,'draft_create',{content:content(text)});expect(response.status,JSON.stringify(response)).toBe('ok');if(response.status!=='ok')throw new Error('draft call failed');return(response.value as {draft:MailDraftDataView}).draft;}
 async function enable(projectId='p1'){
@@ -79,7 +81,7 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
  it('creates without either external slot and lets the other supported Agent and UI read the same business object',async()=>{
   const created=await draft();expect(app.selections.projectSettings('p1','mail').connections).toEqual({foxmail:null,smtp:null});
   const second=await call(codex,'draft_get',{draftId:created.id});expect(second).toMatchObject({status:'ok',value:{draft:{id:created.id,revision:1,sourceTaskId:runs.assertActive(cc.runId).run.taskId}}});
-  expect(await app.viewDraft(sender,'p1',created.id)).toEqual({draft:created,currentRevision:1,sendRecord:null});expect(created).not.toHaveProperty('projectId');expect(typeof created.content.text.id).toBe('string');expect(f.sqlite.prepare('SELECT count(*) n FROM application_connections').get()).toEqual({n:0});
+  expect(await app.viewDraft(sender,'p1',created.id)).toEqual({draft:created,currentRevision:1,currentSender:null,manualVerification:null,readOnly:false,sendRecord:null});expect(created).not.toHaveProperty('projectId');expect(typeof created.content.text.id).toBe('string');expect(f.sqlite.prepare('SELECT count(*) n FROM application_connections').get()).toEqual({n:0});
  });
  it('M11 T32 keeps durable SMTP-only resources readable and identifies the missing conditional foxmail slot',async()=>{
   const smtp=await privateConnections().save({name:'SMTP-only resource fixture',expectedRevision:0,config:smtpConfig(),secret:'SYNTHETIC_T32'});await selectConnections({foxmail:null,smtp:smtp.id});
@@ -157,7 +159,7 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
  });
  it('changes source and SMTP slots without invalidating independent local draft operations',async()=>{
   const first=await fox(),second=await fox('fixture-other');await selectConnections({foxmail:first.id,smtp:null});
-  await ui(async scope=>{const before=app.contexts.actor(scope);await selectConnections({foxmail:second.id,smtp:null});app.contexts.require(scope,'mail.draft');const created=await app.drafts.create(before,{operationId:scope.operationId,content:content()});expect(created.revision).toBe(1);});
+  await uiWrite(async scope=>{const before=app.contexts.actor(scope);await selectConnections({foxmail:second.id,smtp:null});app.contexts.require(scope,'mail.draft');const created=await app.drafts.create(before,{operationId:scope.operationId,content:content()});expect(created.revision).toBe(1);});
  });
  it('pins the exact source of an in-flight read and denies source ABA even when the original account is selected again',async()=>{
   const first=await fox(),second=await fox('fixture-other');await selectConnections({foxmail:first.id,smtp:null});
@@ -240,7 +242,7 @@ describe('host-scoped Data API with original mail package, SQLite, drafts and re
 describe('durable business resource boundaries and pagination',()=>{
  it('returns stable,lossless binary attachment chunks from the durable copy rather than a source path',async()=>{
   const bytes=Buffer.from([0,255,128,10,0,1,254]);let resource!:ApplicationResourceRef;
-  await ui(async scope=>{const attachment=await app.blobs.save(app.contexts.actor(scope),{operationId:scope.operationId,filename:'fixture.bin',contentType:'application/octet-stream'},bytes);resource=await app.resources.register(scope,{kind:'mail-blob-v1',objectId:attachment.id,objectRevision:attachment.contentHash,part:'attachment'},'application/octet-stream',bytes);});
+  await uiWrite(async scope=>{const attachment=await app.blobs.save(app.contexts.actor(scope),{operationId:scope.operationId,filename:'fixture.bin',contentType:'application/octet-stream'},bytes);resource=await app.resources.register(scope,{kind:'mail-blob-v1',objectId:attachment.id,objectRevision:attachment.contentHash,part:'attachment'},'application/octet-stream',bytes);});
   const parts:Buffer[]=[];for(let offset=0;offset<bytes.length;offset+=2){const reply=await call(codex,'resource_read',{resource,offset,length:2});expect(reply.status,JSON.stringify(reply)).toBe('ok');if(reply.status==='ok'){const value=reply.value as ApplicationResourceChunk;expect(value.encoding).toBe('base64');parts.push(Buffer.from(value.data,'base64'));}}
   expect(Buffer.concat(parts)).toEqual(bytes);expect(app.blobs.root).toBe(join(f.root,'app-data/mail'));
  });
@@ -314,10 +316,10 @@ describe('trusted connection form candidate lifecycle',()=>{
   const candidate=await app.testConnection(sender,{name:'No Agent required',expectedRevision:0,config:smtpConfig(),secret:'synthetic-no-agent'});
   expect(verify).toHaveBeenCalledTimes(1);
   await app.discardConnectionTest(sender,'mail',candidate.operationId);
-  const created=await ui(async scope=>app.drafts.create(app.contexts.actor(scope),{operationId:scope.operationId,content:content('UI-owned draft')}));
+  const created=await uiWrite(async scope=>app.drafts.create(app.contexts.actor(scope),{operationId:scope.operationId,content:content('UI-owned draft')}));
   const read=await app.viewDraft(sender,'p1',created.id);
   expect(read.draft.id).toBe(created.id);
-  await expect(Promise.resolve().then(()=>app.viewDraft(sender,'p2',created.id))).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(Promise.resolve().then(()=>app.viewDraft(sender,'p2',created.id))).rejects.toMatchObject({code:'NOT_FOUND'});
   expect(f.sqlite.prepare('SELECT * FROM tasks ORDER BY id').all()).toEqual(tasksBefore);
   const operations=f.sqlite.prepare("SELECT caller_kind,task_id,run_id FROM application_data_operations WHERE caller_kind='ui'").all();
   expect(operations.length).toBeGreaterThan(0);for(const row of operations)expect(row).toMatchObject({caller_kind:'ui',task_id:null,run_id:null});
@@ -421,7 +423,7 @@ describe('M11 unified capability execution with host-issued callers',()=>{
  it('M11 sends UI and MCP through the same executor while keeping the original v1 result and request identity',async()=>{
   const execute=vi.spyOn(app.capabilities,'execute'),primitive=vi.spyOn(app.data,'execute');
   expect(await call(codex,'draft_list',{})).toMatchObject({status:'ok',value:{items:[],nextCursor:null}});
-  expect(await app.viewDrafts(sender,'p1')).toEqual({items:[],nextCursor:null});
+  expect(await app.viewDrafts(sender,'p1')).toEqual({items:[],nextCursor:null,readOnly:false,stateCounts:{draft:0,sending:0,sent:0,failed:0,unknown:0}});
   expect(execute).toHaveBeenCalledTimes(2);expect(primitive).toHaveBeenCalledTimes(2);
   const caller=execute.mock.calls[0][0];expect(caller).toMatchObject({kind:'agent',entry:'mcp',runId:codex.runId,requestId:expect.any(String),plan:{kind:'snapshot-v2',hash:runs.assertActive(codex.runId).run.snapshotHash}});
   expect(execute.mock.calls[1][0]).toMatchObject({kind:'ui',projectId:'p1'});

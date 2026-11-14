@@ -1,3 +1,11 @@
+import {inspectCodexCliSandbox} from '../codex-effective-sandbox';
+import {agentAdapterMetadataSchema} from '@shared/agent-adapters';
+import {inspectClaudeCliSandbox} from '../claude-effective-sandbox';
+import type {TaskLaunchInput,NativeLaunchContext} from '../native-launch-context';
+import {withResourceLock} from '../resource-lock';
+import {AgentService} from '../../ai/agent-service';
+import {AgentRuntimeService} from '../../ai/agent-runtime';
+import {ProviderService} from '../../ai/provider-service';
 import {PtyAccess} from '../../../pty-access';
 import {fixture as pluginFixture} from '../plugins/__tests__/fixture';
 import {pluginMcpToolName} from '../plugins/session-tools';
@@ -7,7 +15,7 @@ import {ApplicationConnectionService} from '../connection-service';
 import type {ApplicationUiSender} from '../execution-context';
 import {EventEmitter} from 'node:events';
 import {randomUUID} from 'node:crypto';
-import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
+import {existsSync,lstatSync,readlinkSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {dirname,join,resolve} from 'node:path';
 import Database from 'better-sqlite3';
@@ -42,6 +50,11 @@ import {UpstreamSessionPool} from '../upstream/session-pool';
 import type {BridgeResponse} from '@shared/application-bridge';
 let root:string,home:string,cwd:string,sqlite:Database.Database,capabilities:CapabilityService,support:AgentSupportService,applications:ApplicationService,managed:ManagedTaskCapabilities,tasks:TaskService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,ptys:TestPtys,projectId:string,codexId:string,claudeId:string;
 let expectedDisposeError:unknown;
+const codexFreshnessCase="refuses a Codex fork when project policy changes after real inspection";
+let codexFreshnessProbe:(()=>Promise<boolean>)|undefined;
+let codexFreshnessReads:{input:TaskLaunchInput;native:NativeLaunchContext;plan:Awaited<ReturnType<typeof inspectCodexCliSandbox>>}[]=[];
+const codexEmptyRequirements=(version:string)=>Promise.resolve({version,known:true,empty:true,hash:digest('U-only-known-empty-managed-requirements')});
+
 let pluginWrites:{id:string;data:string}[]=[],pluginUrls:string[]=[];
 let argMax:number|null;
 let applicationRuntimeAvailable:boolean;
@@ -76,16 +89,34 @@ class TestPtys extends EventEmitter implements PtyHost{
  nativePid(id:string){return this.live.get(id)??null;}
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
+function candidateClaudeAdapter(){
+ const retained=JSON.parse(readFileSync(resolve('resources/agent-adapters/claude-code/1.2.0/adapter.json'),'utf8'));
+ return{metadata:agentAdapterMetadataSchema.parse({...retained,version:'1.3.0',cliVersions:['2.1.322'],cliEntry:'supported',levels:{'2.1.322':['L0.skill','L0.mcp','L0.cli','L1']},evidenceBaseline:'synthetic task wiring only; not published native support'}),files:Object.fromEntries(['index.cjs','planner.cjs'].map(file=>[file,readFileSync(resolve('resources/agent-adapters/claude-code/1.3.0',file))]))};
+}
 beforeEach(async({task})=>{
- pluginWrites=[];pluginUrls=[];codexRequests=[];codexStarted=[];codexStopped=[];codexStartFailure=false;cliPolicyAvailable=true;const withPlugins=task.suite?.name==='M13 P1 plugins through production task startup';const withCli=withPlugins||['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
+ codexFreshnessProbe=undefined;codexFreshnessReads=[];pluginWrites=[];pluginUrls=[];codexRequests=[];codexStarted=[];codexStopped=[];codexStartFailure=false;cliPolicyAvailable=true;const withPlugins=task.suite?.name==='M13 P1 plugins through production task startup',withClaudeCandidate=task.suite?.name==='M13 Claude candidate CLI through production task entry';const withCli=withPlugins||withClaudeCandidate||['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
  fixtureBridgeExits=[];expectedDisposeError=undefined;applicationRuntimeAvailable=true;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
  const command=join(root,'version-fixture');writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "0.162.1";; *) exit 70;; esac\n',{mode:0o700});
  codexId=profiles.create({name:'Codex version fixture',runner:'codex',executable:command,args:[],env:[],color:null,isDefault:true}).id;
  const cc=join(root,'cc-version-fixture');writeFileSync(cc,'#!/bin/sh\ncase "$1" in --version) echo "2.1.303 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});claudeId=profiles.create({name:'CC version fixture',runner:'claude',executable:cc,args:[],env:[],color:null,isDefault:false}).id;
- capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'));await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
- applications=new ApplicationService(support.store,{secrets,projects,tasks,...(withPlugins?{openPluginUrl:async(url:string)=>{pluginUrls.push(url);},terminal:{access:new PtyAccess({trusted:()=>true,activePty:id=>tasks.activePty(id),alive:id=>ptys.live.has(id),write:()=>{},resize:()=>{},killTask:()=>{}}),bracketedPaste:async()=>true,write:(id:string,data:string)=>{pluginWrites.push({id,data});}},plugins:{processes:new MacProcessIdentityReader(resolve('out/native/willyou-process-identity')),runtime:{executable:process.execPath,readOnlyRoots:[process.execPath],keychainRoots:[home]}}}:{}),activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,...(withPlugins?{prepareCodexServer:prepareSyntheticCodexServer}:{}),stopPty:id=>ptys.kill(id),pollMs:20});tasks.attachManagedCapabilities(managed);
+ capabilities=new CapabilityService({db,projects,secrets,userData:root});support=new AgentSupportService(new ResourceStore(sqlite,root),capabilities,resolve('out/capability-bundles-compatibility-v1'),withClaudeCandidate?{additionalAdapters:[candidateClaudeAdapter()]}:{});await support.initialize();expect(support.status().state).toBe('ready');reader=new FixtureProcessReader();ptys=new TestPtys();tasks=new TaskService({db,ptys,profiles,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin',...(withCli?{WILLYOU_RUN_TOKEN:'OUTER_RUN_TOKEN_MUST_NOT_LEAK',WILLYOU_ENDPOINT:'/private/tmp/outer.sock'}:{})}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});
+ applications=new ApplicationService(support.store,{secrets,projects,tasks,...(withPlugins?{openPluginUrl:async(url:string)=>{pluginUrls.push(url);},terminal:{access:new PtyAccess({trusted:()=>true,activePty:id=>tasks.activePty(id),alive:id=>ptys.live.has(id),write:()=>{},resize:()=>{},killTask:()=>{}}),bracketedPaste:async()=>true,write:(id:string,data:string)=>{pluginWrites.push({id,data});}},plugins:{processes:new MacProcessIdentityReader(resolve('out/native/willyou-process-identity')),runtime:{executable:process.execPath,readOnlyRoots:[process.execPath],keychainRoots:[home]}}}:{}),activePty:id=>tasks.activePty(id),requireSender:()=>{},mailWorker:join(root,'unused-worker'),foxmailNative:join(root,'unused-native'),processes:reader});await applications.recover();
+ // These launch/authorization fixtures deliberately begin with no selected applications.
+ // M13's automatic builtin onboarding is exercised by builtin-plugin-preferences and App tests.
+ // Reset only this private fixture's non-tested onboarding rows, retaining the real recovered service.
+ sqlite.exec("DELETE FROM application_project_bindings WHERE app_id IN ('mail','browser'); DELETE FROM application_binding_slot_revisions WHERE app_id IN ('mail','browser'); DELETE FROM application_project_settings WHERE app_id IN ('mail','browser'); UPDATE application_catalog_state SET added=0,enabled=0,revision=0 WHERE app_id IN ('mail','browser');");
+ managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(task.suite?.name==='M13 standard library in independent Claude state'?{skillLibraryHome:home}:{}),...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:withClaudeCandidate?(input:TaskLaunchInput,native:NativeLaunchContext)=>inspectClaudeCliSandbox(input,native,()=>({known:true,empty:true,hash:digest('synthetic-managed-empty-source')})):async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,...(withPlugins?{prepareCodexServer:prepareSyntheticCodexServer}:{}),stopPty:id=>ptys.kill(id),pollMs:20,...(task.name===codexFreshnessCase?{
+  // Only process metadata/requirements transport is synthetic U input. Real policy inspector reads private files.
+  inspectNative:async(input:TaskLaunchInput)=>({command:input.profile.command,version:'0.166.0',inventory:[],userSkillConfig:[]}),
+  inspectSandbox:async(input:TaskLaunchInput,native:NativeLaunchContext)=>{
+    expect(input.profile.args).toEqual([]);expect(input.stateRoot).toBe(join(home,'.codex'));
+    const plan=await inspectCodexCliSandbox(input,native,()=>codexEmptyRequirements(native.version));
+    codexFreshnessReads.push({input,native,plan});return plan;
+  },
+  probeApplicationRuntime:async()=>{if(!codexFreshnessProbe)throw new Error('Exact TOCTOU await stage not installed');return codexFreshnessProbe();},
+ }:{})});tasks.attachManagedCapabilities(managed);
  // Codex and Claude start their configured MCP servers with the session, so the bridge child exits with the Agent.
  // TestPtys forks nothing: settle each prepared bridge handle when its PTY is killed.
  const handles=new Map<string,Awaited<ReturnType<typeof managed.broker.prepare>>['bridge']>(),prepare=managed.broker.prepare.bind(managed.broker),kill=ptys.kill.bind(ptys);
@@ -116,6 +147,33 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   socket.on('error',error=>{clearTimeout(timer);fail(error);});socket.on('data',chunk=>{text+=String(chunk);if(text.includes('\n')){clearTimeout(timer);socket.end();ok(JSON.parse(text.slice(0,text.indexOf('\n'))));}});
   socket.on('connect',()=>socket.write(JSON.stringify({schema:'willyou-cli-v1',id:randomUUID(),token,method:'capabilities/call',call:{operation:'mail.draft.list',contractMajor:2,connectionId:null,arguments:{}}})+'\n'));
  });
+ it(codexFreshnessCase,async()=>{
+  // No system config contents are read. This U fixture requires the two global policy files to be absent.
+  expect(existsSync('/etc/codex/config.toml')).toBe(false);expect(existsSync('/etc/codex/managed_config.toml')).toBe(false);
+  const userRoot=join(home,'.codex');mkdirSync(userRoot,{recursive:true});
+  const userConfig=join(userRoot,'config.toml');
+  writeFileSync(userConfig,'default_permissions = "baseline"\n[permissions.baseline]\nextends = ":workspace"\n');
+  let entered!:()=>void,release!:()=>void;const reached=new Promise<void>(done=>entered=done),held=new Promise<void>(done=>release=done);
+  codexFreshnessProbe=async()=>{entered();await held;return true;};
+  const pending=create();const settled=pending.then(value=>({ok:true as const,value}),error=>({ok:false as const,error}));
+  try{
+    await Promise.race([reached,settled.then(()=>{throw new Error('Task completed before inspect-to-probe await');})]);
+    expect(ptys.launches).toHaveLength(0);expect(codexFreshnessReads.length).toBeGreaterThanOrEqual(1);
+    const before=codexFreshnessReads[0];expect(before.input.profile.args).toEqual([]);
+    expect(before.plan).toMatchObject({available:true,kind:'inherit',parent:'baseline'});
+    const projectRoot=join(cwd,'.codex');mkdirSync(projectRoot);const projectConfig=join(projectRoot,'config.toml');
+    const denied=join(cwd,'private-denied.txt');writeFileSync(denied,'public synthetic file, not read by Native\n');
+    writeFileSync(projectConfig,'default_permissions = "project_locked"\n[permissions.project_locked]\nextends = ":workspace"\n[permissions.project_locked.filesystem]\ndeny_read = ['+JSON.stringify(denied)+']\n');
+    // Same actual inspector, same original Task input and declared0.166 version; only disk layer changed.
+    const after=await inspectCodexCliSandbox(before.input,before.native,()=>codexEmptyRequirements(before.native.version));
+    expect(after).toMatchObject({available:true,kind:'inherit',parent:'project_locked'});expect(after.digest).not.toBe(before.plan.digest);
+    release();const actual=await settled;
+    expect(actual.ok,'Policy changed during actual post-inspect await; Task creation must refuse before PTY fork').toBe(false);
+    if(!actual.ok)expect(actual.error).toMatchObject({code:'RESOURCE_STATE_CHANGED'});
+    expect(ptys.launches).toHaveLength(0);
+  }finally{release();const actual=await settled;if(actual.ok)tasks.kill(actual.value.task.id);}
+ });
+
  it('fixes a CLI plan without per-run Skill copies and supplies an environment-only token that dies at stop',async()=>{
   const running=await create(),launch=ptys.launches[0],runtime=running.task.runtimeSnapshot!,fixed=(await managed.sessions.get(running.task.id)).snapshot,plan=managed.runs.bridgePreparation(runtime.runId).plan!;
   expect(fixed.schema).toBe(3);expect(fixed.adapterBinding.version).toBe('1.4.0');expect(plan.allowed).toMatchObject([{appId:'mail',capabilityId:'mail.draft.list',entry:'cli'}]);expect(plan.sandbox).toEqual({source:policy.source,digest:policy.digest});
@@ -715,5 +773,164 @@ describe('M13 P1 plugins through production task startup',()=>{
   if(current.snapshot.schema!==3)throw new Error('schema3 required');expect(current.snapshot.externalPlugins![0]).toMatchObject({version:'0.2.0'});expect(current.snapshot.externalPlugins![0].capabilities.some(c=>c.id==='demo-tracker.items.extra')).toBe(true);
   expect(sqlite.prepare('SELECT 1 FROM capability_snapshot_versions WHERE task_id=? AND snapshot_hash=?').get(created.task.id,old.pointer.snapshotHash)).toBeTruthy();
   expect(await invoke(created.task.id)).toMatchObject({status:'ok',value:{items:[{id:'0.2.0'}]}});
+ });
+});
+
+
+describe('M13 standard library in independent Claude state',()=>{
+ it('T070 links the effective private Claude root at each real TaskService prepare, follows toggles and retains unrelated user content',async()=>{
+  const privateRoot=join(root,'provider-config/claude');mkdirSync(join(privateRoot,'skills/user-owned'),{recursive:true});writeFileSync(join(privateRoot,'skills/user-owned/SKILL.md'),'USER ORIGINAL');
+  const profile=profiles.get(claudeId);profiles.update(claudeId,{name:profile.name,runner:'claude',executable:profiles.resolve(claudeId).command,args:[],env:[{name:'CLAUDE_CONFIG_DIR',value:privateRoot,secret:false}],color:null,isDefault:false});
+  const dbName='willyou-project-db-diagnostics',sshName='willyou-remote-password-ssh',shared=join(home,'.agents/skills');
+  capabilities.setGlobalEnabled('project-db-diagnostics',false);
+  const a=await create(claudeId);expect(sqlite.prepare('SELECT state_root FROM tasks WHERE id=?').get(a.task.id)).toEqual({state_root:privateRoot});expect(ptys.launches[0].env[VALUE_PREFIX+'CLAUDE_CONFIG_DIR']).toBe(privateRoot);expect(existsSync(join(privateRoot,'skills',dbName))).toBe(false);expect(readlinkSync(join(privateRoot,'skills',sshName))).toBe(join(shared,sshName));expect(existsSync(ptys.launches[0].env[VALUE_PREFIX+'REMOTE_SERVERS_CONFIG'])).toBe(true);expect(ptys.launches[0].env[VALUE_PREFIX+'PROJECT_DB_CONFIG']).toBeUndefined();
+  tasks.kill(a.task.id);await vi.waitFor(()=>expect(managed.runs.get(a.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+  capabilities.setGlobalEnabled('project-db-diagnostics',true);
+  const b=await create(claudeId);expect(readlinkSync(join(privateRoot,'skills',dbName))).toBe(join(shared,dbName));expect(existsSync(ptys.launches[1].env[VALUE_PREFIX+'PROJECT_DB_CONFIG'])).toBe(true);expect(readFileSync(join(privateRoot,'skills/user-owned/SKILL.md'),'utf8')).toBe('USER ORIGINAL');
+  tasks.kill(b.task.id);await vi.waitFor(()=>expect(managed.runs.get(b.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+  capabilities.setGlobalEnabled('remote-password-ssh',false);
+  const c=await create(claudeId);expect(()=>lstatSync(join(privateRoot,'skills',sshName))).toThrow();expect(lstatSync(join(privateRoot,'skills',dbName)).isSymbolicLink()).toBe(true);expect(ptys.launches[2].env[VALUE_PREFIX+'REMOTE_SERVERS_CONFIG']).toBeUndefined();expect(c.task.runtimeSnapshot!.skills).toEqual([]);
+ },20000);
+});
+
+
+// Real AgentRuntime + TaskService + ManagedTaskCapabilities composition; only OS PTY is the existing fixture.
+describe('M13 P1 plugins through production task startup',()=>{
+ async function handoffFixture(){
+  const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});
+  const agents=new AgentService(db,secrets),model='handoff-model';
+  agents.recordTool({id:'handoff-claude',kind:'claude',executable:profiles.resolve(claudeId).command,installed:true,login:'api',version:'2.1.303'});
+  const providers=new ProviderService(db,secrets,agents,{fetch:async()=>new Response(JSON.stringify({data:[{id:model}]}),{headers:{'content-type':'application/json'}})});
+  const configs=['X','Y'].map(name=>{
+   const provider=agents.saveProvider({name:'Handoff '+name,key:'PUBLIC_HANDOFF_'+name,endpoints:{anthropic:'http://127.0.0.1:1/handoff-'+name},models:[{id:model,name:model,availability:{claude:'available',codex:'untested'}}]});
+   return agents.saveConfig({name:'Handoff '+name,toolId:'handoff-claude',source:'provider',providerId:provider.id,models:[model],defaultModel:model});
+  });
+  tasks.dispose();
+  const agentRuns=new AgentRuntimeService({db,agents,providers,profiles,tools:{refresh:async()=>undefined} as never,userData:root,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'})});
+  tasks=new TaskService({db,ptys,profiles,agentRuns,projects,capabilities,baseEnv:()=>({HOME:home,PATH:'/usr/bin:/bin'}),onChanged:()=>{},codexPollMs:20,launchArgMax:()=>argMax});tasks.attachManagedCapabilities(managed);
+  const first=await create(configs[0].id),SID=first.task.id,sourceRoot=agentRuns.snapshot(first.task.id)!.stateRoot;
+  const source=seedNativeHistory('claude-code',SID,sourceRoot);
+  writeFileSync(source,readFileSync(source,'utf8')+JSON.stringify({type:'assistant',requestedModel:model,message:{role:'assistant',content:[]}})+'\n');const bytes=readFileSync(source);
+  tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(first.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+  const old=await managed.sessions.get(first.task.id),before=ptys.launches.length;
+  return{agentRuns,configs,first,SID,sourceRoot,source,bytes,old,before};
+ }
+ const handoffOpen=(id:string,config:string)=>{const preview=tasks.agentResumePreview(id,config)!;return tasks.open({taskId:id,aiProfileId:config,sourceConfirmation:preview.current});};
+ it('T064 carries a verified Claude history copy through the fixed capability identity and retries the same destination',async()=>{
+  const {agentRuns,configs,first,SID,sourceRoot,source,bytes,old,before}=await handoffFixture();
+  const selected=tasks.agentResumePreview(first.task.id,configs[1].id)!;
+  const restored=await tasks.open({taskId:first.task.id,aiProfileId:configs[1].id,sourceConfirmation:selected.current});
+  const current=await managed.sessions.get(first.task.id),target=agentRuns.snapshot(first.task.id)!.stateRoot;
+  expect(target).not.toBe(sourceRoot);expect(current.snapshot.native).toEqual({...old.snapshot.native,stateRoot:target});
+  expect(restored.task.nativeSessionId).toBe(SID);expect(restored.task.runtimeSnapshot!.sessionCapabilities).toEqual(current.pointer);
+  expect(sqlite.prepare('SELECT state_root FROM tasks WHERE id=?').get(first.task.id)).toEqual({state_root:target});
+  expect(readFileSync(source)).toEqual(bytes);expect(ptys.launches).toHaveLength(before+1);
+  expect(sqlite.prepare('SELECT 1 FROM capability_snapshot_versions WHERE task_id=? AND snapshot_hash=?').get(first.task.id,old.pointer.snapshotHash)).toBeTruthy();
+  tasks.kill(first.task.id);await vi.waitFor(()=>expect(managed.runs.get(restored.task.runtimeSnapshot!.runId).state).toBe('stopped'));
+  const again=await tasks.open({taskId:first.task.id});expect(again.task.nativeSessionId).toBe(SID);expect((await managed.sessions.get(first.task.id)).snapshot.native.stateRoot).toBe(target);
+ },20000);
+
+ it.each(['before-spawn','fork-error','cancel-after-commit'] as const)('retains the committed copied history and consistent task pointer after %s, then retries',async fault=>{
+  const {agentRuns,configs,first,SID,sourceRoot,source,bytes,old,before}=await handoffFixture();
+  const prepare=managed.prepare.bind(managed);let restoreMock:{mockRestore():void};
+  if(fault==='fork-error')restoreMock=vi.spyOn(ptys,'spawn').mockImplementationOnce(()=>{throw Error('controlled fork error');});
+  else restoreMock=vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{
+   const launch=await prepare(input),arm=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await arm();if(fault==='cancel-after-commit')tasks.kill(input.taskId);else throw Error('controlled before spawn');};return launch;
+  });
+  await expect(handoffOpen(first.task.id,configs[1].id)).rejects.toThrow();restoreMock.mockRestore();
+  const stopped=tasks.get(first.task.id),committed=await managed.sessions.get(first.task.id),target=committed.snapshot.native.stateRoot;
+  expect(target).not.toBe(sourceRoot);expect(stopped.ptyId).toBeNull();expect(stopped.runtimeSnapshot!.sessionCapabilities).toEqual(committed.pointer);
+  expect(sqlite.prepare('SELECT state_root,ai_profile_id FROM tasks WHERE id=?').get(first.task.id)).toEqual({state_root:target,ai_profile_id:configs[0].id});
+  expect(agentRuns.snapshot(first.task.id)!.stateRoot).toBe(sourceRoot);expect(readFileSync(source)).toEqual(bytes);expect(ptys.live.size).toBe(0);expect(ptys.launches).toHaveLength(before);
+  if(fault==='fork-error'){
+   // An OS fork was attempted but no receipt proves that no child wrote Y. Keep its uncertainty lease.
+   expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(first.task.id)).toEqual({n:1});
+   await expect(handoffOpen(first.task.id,configs[1].id)).rejects.toMatchObject({code:'RESOURCE_BUSY'});return;
+  }
+  expect(sqlite.prepare("SELECT COUNT(*) n FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(first.task.id)).toEqual({n:0});
+  const retried=await handoffOpen(first.task.id,configs[1].id);expect(retried.task.nativeSessionId).toBe(SID);expect(agentRuns.snapshot(first.task.id)!.stateRoot).toBe(target);
+ },20000);
+ it('rolls back both registry identity and task pointer when the host CAS callback refuses a commit',async()=>{
+  const {configs,first,sourceRoot,old,before}=await handoffFixture(),prepare=managed.prepare.bind(managed);
+  const spy=vi.spyOn(managed,'prepare').mockImplementationOnce(input=>prepare({...input,commitSessionSnapshot:()=>{throw Error('controlled stale task CAS');}}));
+  await expect(handoffOpen(first.task.id,configs[1].id)).rejects.toThrow('controlled stale task CAS');spy.mockRestore();
+  expect((await managed.sessions.get(first.task.id)).pointer).toEqual(old.pointer);expect(tasks.get(first.task.id).runtimeSnapshot!.sessionCapabilities).toEqual(old.pointer);
+  expect(sqlite.prepare('SELECT state_root FROM tasks WHERE id=?').get(first.task.id)).toEqual({state_root:sourceRoot});expect(ptys.launches).toHaveLength(before);
+  await handoffOpen(first.task.id,configs[1].id);
+ },20000);
+ it('keeps the current committed target if its bytes change before fork, without overwriting that change from the old source',async()=>{
+  const {configs,first,sourceRoot,source,bytes,before}=await handoffFixture(),prepare=managed.prepare.bind(managed);let targetFile='';
+  const spy=vi.spyOn(managed,'prepare').mockImplementationOnce(async input=>{
+   const launch=await prepare(input),arm=launch.beforeSpawn.bind(launch);launch.beforeSpawn=async()=>{await arm();targetFile=join(input.stateRoot,'projects',encodeClaudeDir(cwd),first.task.id+'.jsonl');writeFileSync(targetFile,readFileSync(targetFile,'utf8')+JSON.stringify({type:'assistant',requestedModel:'handoff-model',message:{role:'assistant',content:'legitimate new target content'}})+'\n');};return launch;
+  });
+  await expect(handoffOpen(first.task.id,configs[1].id)).rejects.toThrow('复制凭据已失效');spy.mockRestore();
+  const current=await managed.sessions.get(first.task.id);expect(current.snapshot.native.stateRoot).not.toBe(sourceRoot);expect(tasks.get(first.task.id).runtimeSnapshot!.sessionCapabilities).toEqual(current.pointer);
+  expect(readFileSync(source)).toEqual(bytes);expect(readFileSync(targetFile,'utf8')).toContain('legitimate new target content');expect(ptys.launches).toHaveLength(before);
+  await handoffOpen(first.task.id,configs[1].id);expect(readFileSync(targetFile,'utf8')).toContain('legitimate new target content');
+ },20000);
+ it('retains the original native root claim after a copied session moves to another configuration',async()=>{
+  const {configs,first,old,SID}=await handoffFixture();await handoffOpen(first.task.id,configs[1].id);
+  const foreign={...old.snapshot,taskId:randomUUID(),mcp:old.snapshot.mcp.map(m=>({...m,serverName:m.serverName+'_other'}))};
+  await expect(managed.sessions.create(foreign,home)).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+  expect((await managed.sessions.get(first.task.id)).snapshot.native.sessionId).toBe(SID);
+ },20000);
+ it('refuses another task owning the target before any history bytes are copied there',async()=>{
+  const {agentRuns,configs,first,old,SID,source,bytes}=await handoffFixture();
+  const plan=await agentRuns.prepare({profileId:configs[1].id,cwd,signal:new AbortController().signal});
+  const foreignRoot=plan!.profile.env.CLAUDE_CONFIG_DIR;expect(foreignRoot).toBeTruthy();
+  const foreignFile=seedNativeHistory('claude-code',SID,foreignRoot);writeFileSync(foreignFile,'FOREIGN_TARGET_ORIGINAL');
+  await managed.sessions.create({...old.snapshot,taskId:randomUUID(),native:{...old.snapshot.native,stateRoot:foreignRoot},mcp:old.snapshot.mcp.map(m=>({...m,serverName:m.serverName+'_other'}))},home);
+  await expect(handoffOpen(first.task.id,configs[1].id)).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
+  expect(readFileSync(foreignFile,'utf8')).toBe('FOREIGN_TARGET_ORIGINAL');expect(readFileSync(source)).toEqual(bytes);
+ },20000);
+ it('serializes restore preparation across independent coordinator calls while allowing inner C metadata operations',async()=>{
+  let release!:()=>void;const held=new Promise<void>(done=>{release=done;}),events:string[]=[];let entered!:()=>void;const ready=new Promise<void>(done=>{entered=done;});
+  const first=managed.coordinateRestore(async()=>{events.push('first');await withResourceLock(support.store.root,()=>sqlite.prepare('SELECT 1').get());entered();await held;events.push('first-end');},new AbortController().signal);
+  await ready;const second=managed.coordinateRestore(async()=>{events.push('second');},new AbortController().signal);
+  await new Promise(done=>setTimeout(done,30));expect(events).toEqual(['first']);release();await Promise.all([first,second]);expect(events).toEqual(['first','first-end','second']);
+ },20000);
+
+ it.each(['missing','structural'] as const)('keeps fixed identity strict with a %s copy receipt',async kind=>{
+  const {configs,first,sourceRoot,old,before}=await handoffFixture(),prepare=managed.prepare.bind(managed);
+  const spy=vi.spyOn(managed,'prepare').mockImplementationOnce(input=>prepare({...input,nativeRestore:kind==='missing'?undefined:{...input.nativeRestore!}}));
+  await expect(handoffOpen(first.task.id,configs[1].id)).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});spy.mockRestore();
+  expect((await managed.sessions.get(first.task.id)).pointer).toEqual(old.pointer);expect(tasks.get(first.task.id).runtimeSnapshot!.sessionCapabilities).toEqual(old.pointer);
+  expect(sqlite.prepare('SELECT state_root FROM tasks WHERE id=?').get(first.task.id)).toEqual({state_root:sourceRoot});expect(ptys.launches).toHaveLength(before);
+ },20000);
+ it('refuses to copy before touching target history when an earlier run is still preparing',async()=>{
+  const {agentRuns,configs,first,SID,sourceRoot,old,before}=await handoffFixture();
+  const held=await managed.runs.reserve({taskId:first.task.id,snapshotHash:old.pointer.snapshotHash,bindings:[],bindingMode:'run'});await held.prepare();
+  try{
+   const target=agentRuns.sourceEnvironment(configs[1].id).CLAUDE_CONFIG_DIR;
+   await expect(handoffOpen(first.task.id,configs[1].id)).rejects.toMatchObject({code:'RESOURCE_BUSY'});
+   expect(existsSync(join(target,'projects',encodeClaudeDir(cwd),SID+'.jsonl'))).toBe(false);
+   expect(sqlite.prepare('SELECT state_root FROM tasks WHERE id=?').get(first.task.id)).toEqual({state_root:sourceRoot});expect(ptys.launches).toHaveLength(before);
+  }finally{await held.cancelBeforeFork();}
+ },20000);
+});
+
+
+/** Synthetic PTY/task composition only. Candidate metadata is installed into
+ * this private fixture; production publication and real Native proof are separate. */
+describe('M13 Claude candidate CLI through production task entry',()=>{
+ let stateRoot:string;
+ beforeEach(async()=>{
+  stateRoot=join(root,'agents','claude','a'.repeat(32));mkdirSync(stateRoot,{recursive:true,mode:0o700});writeFileSync(join(stateRoot,'settings.json'),JSON.stringify({modelPicker:{options:[]}}),{mode:0o600});
+  const command=profiles.resolve(claudeId).command;writeFileSync(command,'#!/bin/sh\ncase "$1" in --version) echo "2.1.322 (Claude Code)";; *) exit 70;; esac\n',{mode:0o700});
+  profiles.update(claudeId,{name:'Claude candidate version fixture',runner:'claude',executable:command,args:['--permission-mode','default','--setting-sources','user','--strict-mcp-config'],env:[{name:'CLAUDE_CONFIG_DIR',value:stateRoot,secret:false},{name:'ANTHROPIC_BASE_URL',value:'http://127.0.0.1:9',secret:false},{name:'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC',value:'1',secret:false}],color:null,isDefault:false});
+
+ });
+ it.each([false,true])('keeps Claude argv and the exact %s sandbox behavior without Codex flags',async enabled=>{
+  if(enabled)writeFileSync(join(stateRoot,'settings.json'),JSON.stringify({sandbox:{enabled:true,autoAllowBashIfSandboxed:false,filesystem:{denyRead:['/private/parent-denied']}}}));
+  const original=readFileSync(join(stateRoot,'settings.json'),'utf8'),result=await create(claudeId),launch=ptys.launches[0],plan=managed.runs.bridgePreparation(result.task.runtimeSnapshot!.runId).plan!;
+  expect(plan.grades.cli).toBe(true);expect((await managed.sessions.get(result.task.id)).snapshot.adapterBinding.version).toBe('1.3.0');
+  expect(launch.args).toContain('--permission-mode');expect(launch.args).toContain('default');expect(launch.args).not.toContain('--disable');expect(launch.args).not.toContain('shell_snapshot');expect(launch.args!.join(' ')).not.toContain('permissions.wy_cli_');
+  const index=launch.args!.indexOf('--settings');if(enabled){expect(index).toBeGreaterThan(-1);expect(JSON.parse(launch.args![index+1])).toEqual({sandbox:{network:{allowUnixSockets:[managed.cli!.endpoint]}}});}else expect(index).toBe(-1);
+  const token=launch.env![VALUE_PREFIX+'WILLYOU_RUN_TOKEN'];expect(token).toMatch(/^[a-f0-9]{64}$/);expect(token).not.toBe('OUTER_RUN_TOKEN_MUST_NOT_LEAK');expect(JSON.stringify(launch.args)).not.toContain(token!);expect(readFileSync(join(stateRoot,'settings.json'),'utf8')).toBe(original);
+  tasks.kill(result.task.id);await vi.waitFor(()=>expect(ptys.live.size).toBe(0));
+ });
+ it('rechecks the inspected source after prepare and rejects mutation before the synthetic fork',async()=>{
+  const prepare=managed.prepare.bind(managed);vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await prepare(input);writeFileSync(join(stateRoot,'settings.json'),JSON.stringify({sandbox:{enabled:true}}));return launch;});
+  await expect(create(claudeId)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(ptys.launches).toEqual([]);
  });
 });

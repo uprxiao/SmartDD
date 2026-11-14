@@ -3,7 +3,7 @@ import { createScopedRPCController } from '@shared/ipc/rpc';
 import type { CreateTaskRequest, OpenTaskRequest } from '@shared/tasks';
 import type { TaskService } from './task-service';
 
-export function createTaskController(svc: TaskService, requireSender: (event: IpcMainInvokeEvent) => void) {
+export function createTaskController(svc: TaskService, requireSender: (event: IpcMainInvokeEvent) => void,openConfig?:(path:string)=>Promise<string>) {
   const run = <T>(event: IpcMainInvokeEvent, fn: () => T): T => { requireSender(event); return fn(); };
   return {
     tasks: createScopedRPCController({
@@ -18,7 +18,12 @@ export function createTaskController(svc: TaskService, requireSender: (event: Ip
       closeSession: (e, id: string) => run(e, () => svc.closeSession(id)),
       delete: (e, id: string) => run(e, () => svc.delete(id)),
       kill: (e, id: string) => run(e, () => svc.kill(id)),
+      stopForServiceFailure: (e, id: string, ptyId: string) => run(e, () => svc.stopForServiceFailure(id, ptyId)),
       resumeAdvice: (e, id: string) => run(e, () => svc.resumeAdvice(id)),
+      codexGlobalNotices:e=>run(e,()=>svc.codexGlobalNotices()),
+      dismissCodexGlobalNotice:(e,id:string)=>run(e,()=>svc.dismissCodexGlobalNotice(id)),
+      openCodexGlobalConfig:(e,id:string)=>run(e,()=>{const path=svc.codexGlobalConfigPath(id);if(!openConfig)throw new Error('本机文件打开不可用');return openConfig(path);}),
+      agentResumePreview: (e,id:string,profileId?:string)=>run(e,()=>svc.agentResumePreview(id,profileId)),
     }),
   };
 }

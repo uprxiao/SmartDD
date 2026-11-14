@@ -4,7 +4,8 @@ import {join} from 'node:path';
 import {realpathSync} from 'node:fs';
 import {once} from 'node:events';
 import * as childProcesses from 'node:child_process';
-import {CodexPrivateServer} from '../codex-private-server';
+import {CodexPrivateServer,type PrivateCodexServerInput} from '../codex-private-server';
+import WebSocket from 'ws';
 import {RunBackendAuthority} from '../run-backend-authority';
 import {MacProcessIdentityReader,type ProcessIdentityReader} from '../process-identity';
 import {MacUnixPeerIdentityReader} from '../unix-peer-identity';
@@ -34,11 +35,21 @@ const ownedSpawn=()=>{
   const index=calls.findIndex(call=>call[0]===process.execPath&&Array.isArray(call[1])&&call[1][0]===resolve('src/main/core/applications/__tests__/fixtures/codex-private-server.cjs'));
   if(index<0)throw Error('Original private service launch missing');return {call:calls[index],child:vi.mocked(childProcesses.spawn).mock.results[index].value as childProcesses.ChildProcess};
 };
-async function prepare(mode='ok',cwd=f.home){
-  server=await CodexPrivateServer.prepare({run:f.run,version:'0.167.1',storeId:f.store.storeId,executable:{path:realpathSync(process.execPath),sha256:digest(readFileSync(process.execPath))},args:['--fixture-mode',mode],executablePrefix:[resolve('src/main/core/applications/__tests__/fixtures/codex-private-server.cjs')],environment:{ELECTRON_RUN_AS_NODE:'1',WILLYOU_TEST_LOG:log,HOME:f.home},cwd,skills:[{path:skill,name:'synthetic-frozen-skill'}],signal:abort.signal},authority,processes,{startupMs:1500,requestMs:150,stopMs:100});return server;
+async function prepare(mode='ok',cwd=f.home,start?:PrivateCodexServerInput['start']){
+  server=await CodexPrivateServer.prepare({run:f.run,version:'0.167.1',storeId:f.store.storeId,executable:{path:realpathSync(process.execPath),sha256:digest(readFileSync(process.execPath))},args:['--fixture-mode',mode],executablePrefix:[resolve('src/main/core/applications/__tests__/fixtures/codex-private-server.cjs')],environment:{ELECTRON_RUN_AS_NODE:'1',WILLYOU_TEST_LOG:log,HOME:f.home},cwd,skills:[{path:skill,name:'synthetic-frozen-skill'}],signal:abort.signal,start},authority,processes,{startupMs:1500,requestMs:150,stopMs:100});return server;
 }
 
 describe.skipIf(process.platform!=='darwin')('per-run private Codex service lifecycle (actual native process, synthetic protocol)',()=>{
+  it('freezes named startup permissions from its own backend before exposing the client relay',async()=>{
+    const s=await prepare('named-start',f.home,{permissionKeys:['approval_policy','approvals_reviewer','default_permissions','permissions']});await s.start();expect(s.url).not.toBe(s.endpoint.url);
+    const client=new WebSocket('ws+unix://'+s.url.replace(/^unix:\/\//,'')+':/rpc');client.on('error',()=>{});
+    try{
+      await once(client,'open');let response=once(client,'message');client.send(JSON.stringify({id:1,method:'initialize',params:{clientInfo:{name:'synthetic'}}}));await response;
+      response=once(client,'message');client.send(JSON.stringify({id:2,method:'thread/start',params:{sandbox:'workspace-write',permissions:null,model:'synthetic'}}));await response;
+      const events=readFileSync(log,'utf8').trim().split('\n').map(line=>JSON.parse(line));const config=events.findIndex(e=>e.method==='config/read'),start=events.findIndex(e=>e.method==='thread/start');expect(config).toBeGreaterThan(-1);expect(start).toBeGreaterThan(config);
+      expect(events[start].params).toMatchObject({model:'synthetic',permissions:'wy_cli_test',approvalPolicy:'on-request',approvalsReviewer:'user',config:{default_permissions:'wy_cli_test',permissions:{wy_cli_test:{extends:'t100_parent'}}}});expect(events[start].params).not.toHaveProperty('sandbox');
+    }finally{client.terminate();await s.stop();}expect(s.state).toBe('stopped');expect(existsSync(s.endpoint.directory)).toBe(false);
+  });
   it('reserves before spawn, checks real socket identity, discovers exact roots, keeps default state env, and stops both records',async()=>{
     const s=await prepare();expect(rows()).toEqual([{state:'reserved',pid:null},{state:'reserved',pid:null}]);expect(vi.mocked(childProcesses.spawn)).not.toHaveBeenCalled();
     await s.start();expect(s.state).toBe('ready');const records=rows() as {state:string;pid:number}[];expect(records).toHaveLength(2);expect(records[0]).toEqual(records[1]);expect(records[0].state).toBe('active');

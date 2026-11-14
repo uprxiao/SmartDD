@@ -1,3 +1,4 @@
+import {CurrentApplicationAuthorization} from '../current-authorization';
 import {randomUUID} from 'node:crypto';
 import {execFile} from 'node:child_process';
 import {readFileSync} from 'node:fs';
@@ -35,7 +36,7 @@ describe('M11 R17 per-call authorization from current project settings',()=>{
   await setMail(false);
   const execute=vi.spyOn(f.applications.data,'execute'),denied=await send();
   expect(denied).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED',layer:'auth'}});
-  expect(denied.status==='error'&&denied.error.message).toBe('请到项目「agent fixture」的‘应用’页开启邮件');
+  expect(denied.status==='error'&&denied.error.message).toBe('请到项目「agent fixture」的‘插件’页开启邮件');
   expect(execute).not.toHaveBeenCalled();expect(count()).toBe(1);
   expect(await send({method:'capabilities/list',call:undefined})).toMatchObject({status:'ok',value:{capabilities:[]}});
   // Enabling again needs no new run or token: the next call reads the new setting.
@@ -47,7 +48,7 @@ describe('M11 R17 per-call authorization from current project settings',()=>{
  it('lets the native CLI report where to enable an application this project has not enabled',async()=>{
   const binary=resolve('out/native/willyou-app');await gateway.close();identity={...identity,peer:{...identity.peer,executable:binary}};
   gateway=new ApplicationCliGateway(f.runs,f.cli,{read:async()=>identity},{executable:{path:binary,sha256:digest(readFileSync(binary))},tokenTtlMs:30000});await gateway.start();issued=gateway.issue(f.run);
-  const guidance='请到项目「agent fixture」的‘应用’页开启邮件';await setMail(false);
+  const guidance='请到项目「agent fixture」的‘插件’页开启邮件';await setMail(false);
   expect(await send({method:'capabilities/list',call:undefined})).toMatchObject({status:'ok',value:{capabilities:[],notEnabled:[{app:'mail',code:'APP_NOT_ENABLED',message:guidance}]}});
   // Asynchronous: the gateway answering this child runs on the same event loop.
   const cli=await new Promise<{status:number|null;stdout:string}>(done=>{execFile(binary,['mail','draft','list'],{env:{PATH:'/usr/bin:/bin',...issued.environment},encoding:'utf8',timeout:10000},(error,stdout)=>done({status:error?(typeof error.code==='number'?error.code:null):0,stdout}));});
@@ -92,4 +93,21 @@ describe('M11 R17 per-call authorization from current project settings',()=>{
   expect(await send()).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});
   expect(count()).toBe(0);
  });
+});
+
+it('M13 builtin connection uses this run binding, not project current or original task binding',()=>{
+ const current=f.runs.assertActive(f.run.runId),auth=new CurrentApplicationAuthorization(f.store,f.applications.builtin);
+ if(current.snapshot.schema!==3)throw new Error('M13 fixture requires a v3 session');
+ const original=current.snapshot;const a=randomUUID(),b=randomUUID(),priorTask=randomUUID();
+ const row=(connectionId:string)=>({appId:'mail',slot:'smtp',connectionId,identityRevision:1,bindingRevision:7});
+ const ui=vi.spyOn(auth,'bindings').mockImplementation((_projectId,appIds)=>appIds.includes('mail')?[row(b)]:[]);
+ // Original task was created with priorTask. This is a restored run that started with A; project now B.
+ const claim={...current,bindingMode:'run' as const,bindings:[row(a)],snapshot:{...original,packages:original.packages.map(pack=>({...pack,bindings:[{bindingId:'p1:mail:smtp',connectionId:priorTask,identityRevision:1}]}))}};
+ const viewed=auth.view(claim);
+ expect(viewed.bindings).toEqual([row(a)]);
+ expect(viewed.snapshot.packages.find(pack=>pack.appId==='mail')!.bindings).toEqual([{bindingId:'p1:mail:smtp',connectionId:a,identityRevision:1}]);
+ // A genuinely new run starts with B; must not inherit either old run A or original task priorTask.
+ const next=auth.view({...claim,bindings:[row(b)]});
+ expect(next.snapshot.packages.find(pack=>pack.appId==='mail')!.bindings[0].connectionId).toBe(b);
+ ui.mockRestore();
 });

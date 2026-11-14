@@ -26,6 +26,7 @@ interface GrantRow { id: string;intent_id: string;source: VerifiedMailUserAction
 export interface MailSendPolicy extends MailPolicy {
   requireSend(actor: MailSendActor): void;
   senderIdentity?(actor:MailSendActor):string;
+  binding?(projectId:string,taskId:string|null,runId:string|null):{connectionId:string|null;identityRevision:number|null;revision:number};
   authenticate(actor:MailSendActor,connection:ApplicationConnection):{config:ConnectionConfig;secret:string|null};
   verifyUserAction(actor: MailSendActor,evidenceRef: string,intent: MailSendIntent): VerifiedMailUserAction;
   allowUiAuthorization?(actor:MailSendActor,intent:MailSendIntent):boolean;
@@ -71,7 +72,7 @@ export class MailExecutionService {
   }
   private current(actor: MailSendActor): { connection: ApplicationConnection;config: SmtpConfig;bindingRevision: number;senderIdentityHash:string|null } {
     this.policy.requireSend(actor);
-    const binding = this.selections.connectionSlot(actor.projectId,'mail','smtp'), id = binding.connectionId;
+    const binding = this.policy.binding?.(actor.projectId,actor.taskId,actor.runId)??this.selections.connectionSlot(actor.projectId,'mail','smtp'), id = binding.connectionId;
     if (!id) throw new ApplicationError('AUTH_REQUIRED','请先明确选用当前项目的发件连接');
     const connection = this.connections.get(id);
     if (connection.providerId !== 'smtp' || connection.config.kind !== 'smtp' || !connection.enabled || connection.authorization !== 'connected') throw new ApplicationError('AUTH_REQUIRED','当前发件连接未启用或已断开');
@@ -274,7 +275,7 @@ export class MailExecutionService {
   /** Recheck public policy only; never decrypt credentials or probe native processes inside C. */
   async invalidatePolicies():Promise<void>{
     const rows=this.store.sqlite.prepare("SELECT * FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing')").all() as IntentRow[];
-    const ids=rows.filter(row=>{try{const binding=this.selections.connectionSlot(row.project_id,'mail','smtp'),connection=this.connections.get(row.connection_id);return binding.connectionId!==row.connection_id||binding.revision!==row.binding_revision||!connection.enabled||connection.authorization!=='connected'||connection.identityRevision!==row.identity_revision||connection.configRevision!==row.config_revision||connection.policyRevision!==row.policy_revision||canonicalJson(connection.identity)!==row.identity_json||canonicalJson(connection.config)!==row.smtp_config_json;}catch{return true;}}).map(row=>row.id);
+    const ids=rows.filter(row=>{try{const binding=this.policy.binding?.(row.project_id,row.source_task_id,row.source_run_id)??this.selections.connectionSlot(row.project_id,'mail','smtp'),connection=this.connections.get(row.connection_id);return binding.connectionId!==row.connection_id||binding.revision!==row.binding_revision||!connection.enabled||connection.authorization!=='connected'||connection.identityRevision!==row.identity_revision||connection.configRevision!==row.config_revision||connection.policyRevision!==row.policy_revision||canonicalJson(connection.identity)!==row.identity_json||canonicalJson(connection.config)!==row.smtp_config_json;}catch{return true;}}).map(row=>row.id);
     await this.invalidate(ids,'stale','POLICY_CHANGED');
   }
   /** Never resumes a submission. Only proven stopped owners may have an interrupted operation finalized. */

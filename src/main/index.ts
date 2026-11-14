@@ -1,3 +1,5 @@
+import { applicationChildEnvironment } from './launch-env';
+import { AgentTransferService } from './core/ai/agent-transfer';
 import {BrowserService} from './core/browser/service';
 import {installBrowserProjectDefaults} from './core/applications/browser-project-defaults';
 import {pluginHostReadOnlyRoots} from './core/applications/plugins/host-paths';
@@ -26,10 +28,21 @@ import { buildAppMenu } from './app/menu';
 import { appIcon } from './app/icon';
 import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, markAppQuitting } from './app/window';
 import { AiProfileService } from './core/ai/ai-profile-service';
+import { AgentService } from './core/ai/agent-service';
+import { ProviderService } from './core/ai/provider-service';
+import { AgentRuntimeService } from './core/ai/agent-runtime';
+import { AgentToolService } from './core/ai/agent-tools';
+import { migrateAgentProfiles } from './core/ai/agent-migration';
 import { ProfileHealth } from './core/ai/profile-health';
 import { CapabilityService } from './core/capabilities/capability-service';
+import { CapabilityRegistryService } from './core/capabilities/capability-registry';
+import { McpProjectionService } from './core/capabilities/mcp-projection';
+import { capabilityScanContexts } from './core/capabilities/scan-contexts';
+import { managedSourceProfiles } from './core/capabilities/managed-source-profiles';
+import { SkillProjectionService } from './core/capabilities/skill-projection';
 import { ResourceStore } from './core/applications/resource-store';
 import {MacProcessIdentityReader} from './core/applications/process-identity';
+import {CodexInitializationCoordinator} from './core/applications/codex-initialization';
 import { AgentSupportService } from './core/applications/agent-support-service';
 import { ApplicationService } from './core/applications/application-service';
 import { ManagedTaskCapabilities } from './core/applications/task-capability-launcher';
@@ -75,13 +88,7 @@ if (embeddedNodeModeRejected) {
 const isProbeMode = process.env.SMARTDD_PROBE === '1';
 
 function baseEnv(): Record<string, string> {
-  const env: Record<string, string> = {};
-  for (const [k, v] of Object.entries(process.env)) {
-    if (v !== undefined && !k.startsWith('ELECTRON_') && k !== 'SMARTDD_PROBE' && k !== 'SMARTDD_USER_DATA') env[k] = v;
-  }
-  env.TERM = 'xterm-256color';
-  env.COLORTERM = 'truecolor';
-  return env;
+  return applicationChildEnvironment(process.env);
 }
 
 const events = createEventEmitter({
@@ -141,10 +148,30 @@ async function main(): Promise<void> {
   const secrets = new SecretsStore(client.db, safeStorageCipher);
   const projects = new ProjectService(client.db, secrets, Date.now, () => projectTransfer.keys.cleanup());
   const aiProfiles = new AiProfileService(client.db, secrets);
+  try { migrateAgentProfiles(client.db); }
+  catch {
+    dialog.showErrorBox('WillYou 无法启动', '智能体配置迁移失败，原配置已保留。请检查数据库后重试。');
+    client.close(); app.exit(1); return;
+  }
+  const agents = new AgentService(client.db, secrets);
+  const providers = new ProviderService(client.db, secrets, agents);
+  const agentTransfer = new AgentTransferService(client.db,secrets,agents,providers);
+  const agentTools = new AgentToolService(agents, { env: baseEnv });
+  void agentTools.refresh().catch(() => console.warn('[agents] Tool detection incomplete; retry from agent settings'));
   const projectTransfer = new ProjectTransferService({ db: client.db, secrets, projects, profiles: aiProfiles, userData: app.getPath('userData'), appVersion: app.getVersion(), env: baseEnv });
   try { projectTransfer.recover(); }
   catch { console.warn('[project-transfer] recovery pending: check managed-key storage before importing'); }
   const capabilities = new CapabilityService({ db: client.db, projects, secrets, userData: app.getPath('userData') });
+  let applications:ApplicationService|undefined;
+  const capabilityRegistry=new CapabilityRegistryService(client.db,()=>capabilityScanContexts(app.getPath('home'),baseEnv(),managedSourceProfiles(app.getPath('userData'),aiProfiles.list(),agents.configs(),agents.providers()),projects.listProjects().flatMap(p=>projects.getProject(p.id).dirs.map(dir=>dir.path))),()=>Date.now(),{revoke:id=>skillProjection.revoke(id),afterScan:()=>skillProjection.reconcileSources(),pluginSkills:()=>applications?.plugins?.catalog().flatMap(plugin=>{
+    const stored=applications!.plugins!.lifecycle.packages.get(plugin.hash!);
+    return stored.plugin.skills.map(skill=>({appId:plugin.appId,pluginName:plugin.displayName,id:skill.id,path:join(stored.directory,skill.path),version:plugin.version!,enabled:plugin.enabled}));
+  })??[]});
+  const skillProjection=new SkillProjectionService(client.db,capabilityRegistry);
+  const mcpProjection:McpProjectionService=new McpProjectionService(capabilityRegistry,{userData:app.getPath('userData'),executable:process.execPath,profileEnvironment:(id):Record<string,string>=>agentRuns.sourceEnvironment(id)});
+  const agentRuns:AgentRuntimeService=new AgentRuntimeService({db:client.db,agents,tools:agentTools,providers,profiles:aiProfiles,userData:app.getPath('userData'),baseEnv,permissionPreferences:()=>settings.get('agentPermissions'),skills:skillProjection,mcp:mcpProjection});
+  const scanManagedCapabilities=()=>{try{capabilityRegistry.scan();}catch{console.warn('[capabilities] Static discovery incomplete; retry from skills');}};
+  scanManagedCapabilities();
   let agentSupport: AgentSupportService | undefined;
   try {
     agentSupport = new AgentSupportService(new ResourceStore(client.sqlite,app.getPath('userData'),undefined,{processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))}),capabilities,app.isPackaged ? join(process.resourcesPath,'capability-bundles') : join(app.getAppPath(),'out/capability-bundles'));
@@ -156,16 +183,19 @@ async function main(): Promise<void> {
     onChanged: (change) => events.emit(aiProfilesChangedEvent, change),
   });
   const ptys = new PtyManager();
+  ptys.on('exit',()=>queueMicrotask(scanManagedCapabilities));
   let browser:BrowserService|undefined;
   const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
   const tasks = new TaskService({
     db: client.db,
     ptys,
     profiles: aiProfiles,
+    agentRuns,
     projects,
     baseEnv,
     health,
     capabilities,
+    codexInitialization:process.platform==='darwin'?new CodexInitializationCoordinator(app.getPath('userData'),new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))):undefined,
     onChanged: () => {events.emit(tasksChangedEvent, undefined);browserOrphans();},
   });
 
@@ -194,7 +224,6 @@ async function main(): Promise<void> {
   });
   registerPtyInput(ipcMain, ptyAccess);
 
-  let applications:ApplicationService|undefined;
   let managedTasks:ManagedTaskCapabilities|undefined;
   try {
     if(agentSupport){
@@ -254,9 +283,15 @@ async function main(): Promise<void> {
       settings,
       projects,
       aiProfiles,
+      agents,
+      agentTools,
+      providers,
+      agentTransfer,
       health,
       tasks,
       capabilities,
+      capabilityRegistry,
+      onCapabilityChanged:()=>managedTasks?.syncSkillLibrary(),
       agentSupport,
       applications,
       browser,

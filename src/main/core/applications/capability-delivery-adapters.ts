@@ -3,6 +3,8 @@ import { ApplicationError } from '@shared/applications';
 import { agentIdSchema } from '@shared/agent-id';
 import { inspectNativeLaunch, type NativeLaunchContext, type TaskLaunchInput } from './native-launch-context';
 import { inspectCodexCliSandbox, type CodexCliSandboxPlan } from './codex-effective-sandbox';
+import {inspectClaudeCliSandbox,type ClaudeCliSandboxPlan} from './claude-effective-sandbox';
+export type CliSandboxPlan=CodexCliSandboxPlan|ClaudeCliSandboxPlan;
 import type { AgentSkillTarget } from './agent-skill-library';
 
 export interface SkillProjectionContext { home: string; storeRoot: string; taskId: string }
@@ -19,7 +21,7 @@ export interface CapabilityDeliveryAdapter {
   readonly library: { readonly readsSharedAgentSkills: boolean; readonly skillDirectory?: string; readonly resumable: boolean; readonly skillsReloadInSession: boolean; readonly mcpReloadInSession: boolean };
   skillProjection(context: SkillProjectionContext): string;
   inspectNative(input: TaskLaunchInput): Promise<NativeLaunchContext>;
-  effectiveSandbox?(input: TaskLaunchInput, native: NativeLaunchContext): Promise<CodexCliSandboxPlan>;
+  effectiveSandbox?(input: TaskLaunchInput, native: NativeLaunchContext): Promise<CliSandboxPlan>;
   entryDelivery(entry: 'mcp' | 'cli'): boolean;
 }
 export class CapabilityDeliveryAdapterRegistry {
@@ -44,6 +46,6 @@ export class CapabilityDeliveryAdapterRegistry {
   libraryTargets(): AgentSkillTarget[] { return this.list().map(a => ({ agentId: a.id, readsSharedAgentSkills: a.library.readsSharedAgentSkills, ...(a.library.skillDirectory ? { skillDirectory: a.library.skillDirectory } : {}) })); }
 }
 export const builtinCapabilityDeliveryAdapters = new CapabilityDeliveryAdapterRegistry([
-  { id: 'claude-code', runnerId: 'claude', discovery: 'session-plugin', library: { readsSharedAgentSkills: false, skillDirectory: '.claude/skills', resumable: true, skillsReloadInSession: false, mcpReloadInSession: true }, skillProjection: context => join(context.storeRoot,'sessions',context.taskId,'claude/plugin/skills'), inspectNative: inspectNativeLaunch, entryDelivery: entry => entry === 'mcp' },
+  { id: 'claude-code', runnerId: 'claude', discovery: 'session-plugin', library: { readsSharedAgentSkills: false, skillDirectory: '.claude/skills', resumable: true, skillsReloadInSession: false, mcpReloadInSession: true }, skillProjection: context => join(context.storeRoot,'sessions',context.taskId,'claude/plugin/skills'), inspectNative: inspectNativeLaunch, effectiveSandbox: inspectClaudeCliSandbox, entryDelivery: () => true },
   { id: 'codex', runnerId: 'codex', discovery: 'shared-home', library: { readsSharedAgentSkills: true, resumable: true, skillsReloadInSession: true, mcpReloadInSession: false }, bestEffortMcp: true, skillProjection: context => join(context.home,'.agents/skills'), inspectNative: inspectNativeLaunch, effectiveSandbox: inspectCodexCliSandbox, entryDelivery: () => true },
 ]);

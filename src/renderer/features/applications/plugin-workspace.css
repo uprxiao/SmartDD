@@ -1,0 +1,29 @@
+/* M13 uses the approved prototype's shared .m13-shell tokens and geometry. */
+.m13-shell .m10-appmark.tile{display:inline-flex;align-items:center;justify-content:center;min-width:0}
+.m13-shell .m13-nav-child{padding-left:38px}
+.m13-shell .m13-nav-note{font-size:11px;color:var(--cx-tertiary);margin-left:auto;white-space:nowrap}
+.m13-shell .m13-change-notice{font-size:12px;line-height:19px;color:var(--cx-secondary);padding:12px 0}
+.m13-shell .m10-menu .danger{color:var(--danger,#d23b3b)}
+.m13-shell .m13-row strong{font-weight:500}
+.m13-shell .m13-row>span:not(.m13-pill):not(.m13-rowicon){overflow-wrap:anywhere}
+.m13-shell .m13-row strong[title]{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m13-shell .m10-nav .m10-appmark.tile{margin:0}
+.m13-shell .m13-hero .m10-appmark.tile{align-self:flex-start;margin-top:3.5px}
+.m13-plugin-manager.headless>.m10-error{margin:12px 0}
+
+/* The older span:not(.m13-pill) flex rule also matches the icon. Match its
+   specificity so the approved 36px icon tile cannot absorb the text column. */
+.m13-shell .m13-row>span.m13-rowicon:not(.m13-pill){flex:0 0 36px}
+
+/* Fixed-height installed rows must keep long plugin names inside their own row. */
+.m13-shell .m10-nav.installed>span:not(.m10-appmark){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Long details retain a readable title column; actions wrap below at narrow widths. */
+.m13-shell .m13-detail-head{flex-wrap:wrap}
+@media(max-width:1100px){.m13-shell .m13-detail-head{align-items:flex-start}}
+.m13-shell .m13-detail-title{flex:1 1 220px;min-width:min(220px,100%)}
+.m13-shell .m13-detail-title h1,.m13-shell .m13-detail-title p{overflow-wrap:anywhere}
+.m13-shell .m13-detail-actions{flex-wrap:wrap;max-width:100%;margin-left:auto}
+.m13-shell .m13-crumb{flex:1;min-width:0;max-width:100%;white-space:nowrap}
+.m13-shell .m13-crumb>svg,.m13-shell .m13-crumb>button:first-child{flex-shrink:0}
+.m13-shell .m13-crumb>button:not(:first-child),.m13-shell .m13-crumb>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

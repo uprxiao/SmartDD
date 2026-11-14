@@ -13,6 +13,7 @@ export function draftContentHash(content: MailDraftContent,attachments: MailAtta
   return digest(canonicalJson({ content,attachments: attachments.map(a => ({ id: a.id,filename: a.filename,contentType: a.contentType,size: a.size,contentHash: a.contentHash })) }));
 }
 export class MailDraftService {
+  private writeAccess(actor:MailActor){this.policy.requireDrafts(actor);this.policy.requireWrite?.(actor);}
   constructor(readonly store: ResourceStore,readonly blobs: MailBlobStore,private readonly policy: MailPolicy) {}
   private row(actor: MailActor,id: string): DraftRow {
     this.policy.requireDrafts(actor); const row = this.store.sqlite.prepare('SELECT * FROM mail_drafts WHERE id=? AND project_id=?').get(id,actor.projectId) as DraftRow | undefined;
@@ -27,11 +28,16 @@ export class MailDraftService {
     if (draftContentHash(content,attachments) !== saved.content_hash) throw new ApplicationError('HASH_MISMATCH','草稿或附件登记摘要不一致');
     return { id: row.id,projectId: row.project_id,sourceTaskId: row.source_task_id,copiedFromDraftId: row.copied_from_draft_id,revision: version,state: row.state,activeIntentId: row.active_intent_id,lastExecutionId: row.last_execution_id,content,contentHash: saved.content_hash,attachments,createdAt: row.created_at,updatedAt: row.updated_at };
   }
-  list(actor: MailActor,limit = 50,cursor?: { updatedAt: string; id: string }): { items: MailDraftSummary[]; nextCursor: { updatedAt: string; id: string } | null } {
+  list(actor: MailActor,limit = 50,cursor?: { updatedAt: string; id: string },state?:MailDraft['state'],manualSentDraftIds:readonly string[]=[]): { items: MailDraftSummary[]; nextCursor: { updatedAt: string; id: string } | null; stateCounts:Record<MailDraft['state'],number> } {
     this.policy.requireDrafts(actor);
+    if(manualSentDraftIds.some(id=>!z.uuid().safeParse(id).success))throw new ApplicationError('INVALID_INPUT','人工核实草稿身份无效');
+    if(state!==undefined&&!['draft','sending','sent','failed','unknown'].includes(state))throw new ApplicationError('INVALID_INPUT','草稿状态筛选无效');
     if (!Number.isInteger(limit) || limit < 1 || limit > 200 || (cursor && (!z.iso.datetime().safeParse(cursor.updatedAt).success || !z.uuid().safeParse(cursor.id).success))) throw new ApplicationError('INVALID_INPUT','草稿分页参数无效');
-    const rows = this.store.sqlite.prepare(`SELECT id,project_id AS projectId,current_revision AS revision,state,subject,attachment_count AS attachmentCount,created_at AS createdAt,updated_at AS updatedAt FROM mail_drafts WHERE project_id=? ${cursor ? 'AND (updated_at < ? OR (updated_at = ? AND id < ?))' : ''} ORDER BY updated_at DESC,id DESC LIMIT ?`).all(...(cursor ? [actor.projectId,cursor.updatedAt,cursor.updatedAt,cursor.id,limit + 1] : [actor.projectId,limit + 1])) as MailDraftSummary[];
-    const items = rows.slice(0,limit), last = items.at(-1); return { items,nextCursor: rows.length > limit && last ? { updatedAt: last.updatedAt,id: last.id } : null };
+    const relation="(SELECT *,CASE WHEN state='unknown' AND id IN(SELECT value FROM json_each(?)) THEN 'sent' ELSE state END AS display_state FROM mail_drafts WHERE project_id=?)",scope=[JSON.stringify(manualSentDraftIds),actor.projectId];
+    const rows = this.store.sqlite.prepare(`SELECT id,project_id AS projectId,current_revision AS revision,display_state AS state,subject,attachment_count AS attachmentCount,created_at AS createdAt,updated_at AS updatedAt FROM ${relation} WHERE 1=1 ${state ? 'AND display_state=?' : ''} ${cursor ? 'AND (updated_at < ? OR (updated_at = ? AND id < ?))' : ''} ORDER BY updated_at DESC,id DESC LIMIT ?`).all(...scope,...(state?[state]:[]),...(cursor?[cursor.updatedAt,cursor.updatedAt,cursor.id]:[]),limit+1) as MailDraftSummary[];
+    const stateCounts:Record<MailDraft['state'],number>={draft:0,sending:0,sent:0,failed:0,unknown:0};
+    for(const value of this.store.sqlite.prepare(`SELECT display_state AS state,count(*) AS n FROM ${relation} GROUP BY display_state`).all(...scope) as {state:MailDraft['state'];n:number}[])if(Object.hasOwn(stateCounts,value.state))stateCounts[value.state]=value.n;
+    const items = rows.slice(0,limit), last = items.at(-1); return { items,stateCounts,nextCursor: rows.length > limit && last ? { updatedAt: last.updatedAt,id: last.id } : null };
   }
   private content(actor: MailActor,input: unknown): MailDraftContent {
     const parsed = draftContentSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','草稿字段无效；可保存未填写完整的收件人与正文');
@@ -54,15 +60,15 @@ export class MailDraftService {
     const result = this.get(actor,id); this.receipt(actor,operationId,requestHash,result); return result;
   }
   async create(actor: MailActor,input: z.infer<typeof draftCreateSchema>): Promise<MailDraft> {
-    this.policy.requireDrafts(actor); const parsed = draftCreateSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','草稿创建参数无效');
+    this.writeAccess(actor); const parsed = draftCreateSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','草稿创建参数无效');
     const value = parsed.data, content = this.content(actor,value.content), requestHash = digest(canonicalJson({ method: 'create',content }));
-    return withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => { this.policy.requireDrafts(actor); return this.insert(actor,value.operationId,content,requestHash,null); }).immediate());
+    return withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => { this.writeAccess(actor); return this.insert(actor,value.operationId,content,requestHash,null); }).immediate());
   }
   async update(actor: MailActor,input: z.infer<typeof draftUpdateSchema>): Promise<MailDraft> {
-    this.policy.requireDrafts(actor); const parsed = draftUpdateSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','草稿更新参数无效');
+    this.writeAccess(actor); const parsed = draftUpdateSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','草稿更新参数无效');
     const value = parsed.data, content = this.content(actor,value.content), requestHash = digest(canonicalJson({ method: 'update',draftId: value.draftId,expectedRevision: value.expectedRevision,content }));
     return withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
-      this.policy.requireDrafts(actor); const prior = this.prior(actor,value.operationId,requestHash); if (prior) return prior;
+      this.writeAccess(actor); const prior = this.prior(actor,value.operationId,requestHash); if (prior) return prior;
       const row = this.row(actor,value.draftId);
       if (row.current_revision !== value.expectedRevision) throw new ApplicationError('REVISION_CONFLICT','草稿已由其他Agent或页面修改，当前修订为' + row.current_revision + '，请重新载入');
       if (['sending','sent','unknown'].includes(row.state) || row.active_intent_id) throw new ApplicationError('DRAFT_LOCKED',row.state === 'sent' ? '已提交的内容保持不变，请复制为新草稿再编辑' : '草稿已被发送意图占用，请先查看结果或取消未执行的意图');
@@ -72,9 +78,14 @@ export class MailDraftService {
       const result = this.get(actor,row.id); this.receipt(actor,value.operationId,requestHash,result); return result;
     }).immediate());
   }
-  async copyAsNew(actor: MailActor,sourceId: string,expectedRevision: number,operationId: string): Promise<MailDraft> {
-    this.policy.requireDrafts(actor); if (!z.uuid().safeParse(operationId).success || !z.uuid().safeParse(sourceId).success || !Number.isInteger(expectedRevision) || expectedRevision < 1) throw new ApplicationError('INVALID_INPUT','草稿复制参数无效');
+  /** Prepared only by host code; the closure is usable solely inside its caller's transaction. */
+  prepareCopyAsNew(actor: MailActor,sourceId: string,expectedRevision: number,operationId: string):()=>MailDraft {
+    this.writeAccess(actor); if (!z.uuid().safeParse(operationId).success || !z.uuid().safeParse(sourceId).success || !Number.isInteger(expectedRevision) || expectedRevision < 1) throw new ApplicationError('INVALID_INPUT','草稿复制参数无效');
     const original = this.get(actor,sourceId,expectedRevision), content = this.content(actor,original.content), requestHash = digest(canonicalJson({ method: 'copyAsNew',sourceId,expectedRevision,contentHash: original.contentHash }));
-    return withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => { this.policy.requireDrafts(actor); this.row(actor,sourceId); return this.insert(actor,operationId,content,requestHash,sourceId); }).immediate());
+    return()=>{if(!this.store.sqlite.inTransaction)throw new ApplicationError('SCOPE_DENIED','草稿复制必须与本次操作原子提交');this.writeAccess(actor);if(this.get(actor,sourceId,expectedRevision).contentHash!==original.contentHash)throw new ApplicationError('HASH_MISMATCH','原草稿内容已变化');return this.insert(actor,operationId,content,requestHash,sourceId);};
+  }
+  async copyAsNew(actor: MailActor,sourceId: string,expectedRevision: number,operationId: string): Promise<MailDraft> {
+    const copy=this.prepareCopyAsNew(actor,sourceId,expectedRevision,operationId);
+    return withResourceLock(this.store.root,() => this.store.sqlite.transaction(copy).immediate());
   }
 }

@@ -1,0 +1,10 @@
+import {z} from 'zod';
+export const builtinPluginIdSchema=z.enum(['mail','browser']);
+export type BuiltinPluginId=z.infer<typeof builtinPluginIdSchema>;
+const hash=z.string().regex(/^[a-f0-9]{64}$/),projectId=z.string().min(1).max(128);
+export const builtinPluginDefaultSchema=z.object({appId:builtinPluginIdSchema,slot:z.string().min(1).max(64),connectionId:z.uuid(),planHash:hash.optional()}).strict();
+export const builtinPluginDeleteSchema=z.object({appId:builtinPluginIdSchema,connectionId:z.uuid(),replacementId:z.uuid().optional(),planHash:hash.optional()}).strict();
+export const builtinPluginProjectSchema=z.object({appId:builtinPluginIdSchema,projectId,expectedRevision:z.number().int().nonnegative(),enabled:z.boolean(),slots:z.record(z.string(),z.object({mode:z.enum(['follow','individual']),connectionId:z.uuid().optional()}).strict())}).strict();
+export type BuiltinPluginDefault=z.infer<typeof builtinPluginDefaultSchema>;
+export type BuiltinPluginDelete=z.infer<typeof builtinPluginDeleteSchema>;
+export type BuiltinPluginProject=z.infer<typeof builtinPluginProjectSchema>;

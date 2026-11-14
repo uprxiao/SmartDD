@@ -22,6 +22,7 @@ export interface PrivateCodexServerInput {
   /** Host-only test/native envelope (production native Codex has no prefix). */
   executablePrefix?:string[];
   resume?:{threadId:string;permissionKeys:readonly CodexPermissionKey[]};
+  start?:{permissionKeys:readonly CodexPermissionKey[]};
 }
 const failure=(code:'CANCELED'|'CAPABILITY_UNAVAILABLE'|'INVALID_RESPONSE'|'TIMEOUT'|'RESOURCE_RECOVERY_REQUIRED',text:string)=>new ApplicationError(code,text);
 
@@ -55,8 +56,9 @@ export class CodexPrivateServer {
     const image=lstatSync(input.executable.path);if(!image.isFile()||image.isSymbolicLink()||image.size>512*1024*1024||digest(readFileSync(input.executable.path))!==input.executable.sha256)throw new ApplicationError('EXECUTABLE_MISMATCH','私有 Codex 程序已变化');
     if(input.skills.length>128||new Set(input.skills.map(s=>s.name)).size!==input.skills.length||input.skills.some(s=>realpathSync(s.path)!==s.path||!lstatSync(join(s.path,'SKILL.md')).isFile()))throw new ApplicationError('HASH_MISMATCH','本次冻结 Skill 目录不完整');
     if(input.resume&&(!/^[a-f0-9-]{36}$/.test(input.resume.threadId)||!input.resume.permissionKeys.length))throw new ApplicationError('INVALID_INPUT','本次恢复身份或权限来源不完整');
+    if(input.start&&(input.resume||!input.start.permissionKeys.includes('default_permissions')))throw new ApplicationError('INVALID_INPUT','本次新建命名权限来源不完整');
     this.endpoint=new PrivateAgentEndpoint({storeId:input.storeId,runId:input.run.runId});
-    if(input.resume)this.relay=new CodexResumeRelay({storeId:input.storeId,runId:input.run.runId,threadId:input.resume.threadId,upstream:this.endpoint.url,verifyUpstream:()=>this.endpoint.verifySocket(),allow:()=>this.phase==='ready'&&!input.run.signal.aborted&&!input.signal.aborted,permissions:()=>{if(!this.resumePermissions)throw failure('CAPABILITY_UNAVAILABLE','本次恢复权限尚未准备');return this.resumePermissions;},observe:options.observeResume});
+    if(input.resume||input.start)this.relay=new CodexResumeRelay({storeId:input.storeId,runId:input.run.runId,method:input.resume?'thread/resume':'thread/start',threadId:input.resume?.threadId,upstream:this.endpoint.url,verifyUpstream:()=>this.endpoint.verifySocket(),allow:()=>this.phase==='ready'&&!input.run.signal.aborted&&!input.signal.aborted,permissions:()=>{if(!this.resumePermissions)throw failure('CAPABILITY_UNAVAILABLE','本次原生权限尚未准备');return this.resumePermissions;},observe:options.observeResume});
   }
   static async prepare(input:PrivateCodexServerInput,authority:RunBackendAuthority,processes:ProcessIdentityReader,options:ServerOptions={}):Promise<CodexPrivateServer>{
     const server=new CodexPrivateServer(input,authority,processes,options);
@@ -67,6 +69,9 @@ export class CodexPrivateServer {
   }
   get url():string{return this.relay?.url??this.endpoint.url;}
   get state(){return this.phase;}
+  initializationProcess():import('./codex-initialization').CodexInitializerProcess {
+    return {attempted:this.forkAttempted,root:this.identity?{...this.identity}:null,executable:this.input.executable.path};
+  }
   private checkCanceled():void {if(this.input.signal.aborted||this.input.run.signal.aborted||this.phase==='stopping'||this.phase==='stopped')throw failure('CANCELED','本次 Codex 服务启动已取消');}
   async start():Promise<void> {
     if(this.phase!=='prepared'||!this.ticket)throw failure('CANCELED','私有 Codex 服务不能重复启动');
@@ -105,7 +110,7 @@ export class CodexPrivateServer {
       socket.send(JSON.stringify({method:'initialized',params:{}}));
       const roots=await this.request('skills/extraRoots/set',{extraRoots:this.input.skills.map(s=>s.path)});this.options.observe?.('skills/extraRoots/set',roots);
       const listed=await this.request('skills/list',{cwds:[this.input.cwd],forceReload:true});this.options.observe?.('skills/list',listed);this.verifySkills(listed);
-      if(this.input.resume){const config=await this.request('config/read',{cwd:this.input.cwd});this.options.observe?.('config/read',config);this.resumePermissions=codexResumePermissions(config,this.input.resume.permissionKeys);await this.relay!.start();}
+      if(this.input.resume||this.input.start){const config=await this.request('config/read',{cwd:this.input.cwd});this.options.observe?.('config/read',config);this.resumePermissions=codexResumePermissions(config,(this.input.resume??this.input.start)!.permissionKeys);await this.relay!.start();}
       this.checkCanceled();this.phase='ready';
     }catch(error){await this.stop();throw error instanceof ApplicationError?error:failure('CAPABILITY_UNAVAILABLE','本次私有 Codex 服务未能完成准备');}
   }

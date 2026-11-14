@@ -16,6 +16,7 @@ import { PackageRegistry } from './package-registry';
 import { RuntimeRegistry } from './runtime-registry';
 import {assertLegacySessionSource} from './legacy-session-source';
 import {builtinApplicationModules} from './modules';
+import {isCopiedClaudeSession,type ClaudeRestoreReceipt} from '../ai/agent-native-state';
 const snapshotFailureMessages={json:'固定能力快照无法解析，保留原记录，不重建选择',shape:'固定能力快照结构无效，保留原记录，不重建选择',hash:'固定能力快照摘要不符，保留原记录，不重建选择',identity:'固定能力快照身份不符，保留原记录，不重建选择'} as const;
 class SnapshotReadFailure extends Error {constructor(readonly kind:keyof typeof snapshotFailureMessages){super(kind);}}
 interface SnapshotRow { task_id: string;schema_version: number;snapshot_json: string;snapshot_hash: string;created_at: string;legacy_status: string;retention_state: 'active' | 'tombstone' | 'hold' }
@@ -48,6 +49,26 @@ export class CapabilitySessionRegistry {
   private readonly packages: PackageRegistry;
   private readonly runtimes: RuntimeRegistry;
   constructor(readonly store: ResourceStore,private readonly deps: SessionRegistryDeps) { this.packages = new PackageRegistry(store,'snapshot-reader'); this.runtimes = new RuntimeRegistry(store); }
+  private nativeClaimedByOther(taskId:string,runner:string,root:string,sessionId:string):boolean {
+    const canonical=canonicalFuturePath(root);
+    if(this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=? AND task_id<>?').get(runner,canonical,sessionId,taskId))return true;
+    // Historical roots remain owned after an explicitly committed copy.
+    const versions=this.store.sqlite.prepare("SELECT snapshot_json FROM capability_snapshot_versions WHERE task_id<>? AND json_extract(snapshot_json,'$.runner')=? AND json_extract(snapshot_json,'$.native.sessionId')=?").all(taskId,runner,sessionId) as {snapshot_json:string}[];
+    return versions.some(row=>{
+      const saved=JSON.parse(row.snapshot_json).native.stateRoot as string;
+      return resolve(saved)===resolve(root)||canonicalFuturePath(saved)===canonical;
+    });
+  }
+  /** Called under C, before copying and again during the atomic metadata commit. */
+  assertHistoryCopyAllowed(input:{taskId:string;from:string;to:string;cwd:string;sessionId:string;home:string}):StoredCapabilitySession {
+    const current=this.read(input.taskId),snapshot=current.snapshot;
+    if(current.retention!=='active'||snapshot.schema!==3||snapshot.legacyBinding||snapshot.runner!=='claude-code'||snapshot.native.stateRoot!==input.from||snapshot.native.cwd!==input.cwd||snapshot.native.sessionId!==input.sessionId||canonicalFuturePath(input.home)!==current.discoveryHome)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','历史复制与原能力会话身份不符');
+    const identity=this.store.sqlite.prepare('SELECT identity_root FROM capability_session_identities WHERE task_id=?').get(input.taskId) as {identity_root:string};
+    if(canonicalFuturePath(input.from)!==identity.identity_root||canonicalFuturePath(input.to)===identity.identity_root)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','历史复制根身份无效');
+    if(this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(input.taskId))throw new ApplicationError('RESOURCE_BUSY','原任务仍有运行或待核查占用，不能复制历史');
+    if(this.nativeClaimedByOther(input.taskId,snapshot.runner,input.to,input.sessionId))throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','目标原生会话已属于另一任务');
+    return current;
+  }
   private expectedSources(snapshot: CapabilitySessionSnapshot): Map<string,{ kind: string;hash: string }> {
     const requested = new Map<string,{ kind: string;hash: string }>();
     const add = (id: string,kind: string,hash: string) => { const previous = requested.get(id); if (previous && (previous.kind !== kind || previous.hash !== hash)) throw new ApplicationError('SNAPSHOT_CORRUPT','快照资源身份冲突'); requested.set(id,{ kind,hash }); };
@@ -132,7 +153,7 @@ export class CapabilitySessionRegistry {
       const previous = this.store.sqlite.prepare(SELECT).get(snapshot.taskId) as SnapshotRow | undefined;
       if (previous) { if (previous.snapshot_hash !== hash) throw new ApplicationError('SNAPSHOT_IMMUTABLE','原任务能力已经固定，不能改成新版本或新路径'); const known = this.read(snapshot.taskId); if (known.discoveryHome !== home) throw new ApplicationError('SNAPSHOT_IMMUTABLE','原生发现目录已经固定'); return known; }
       this.deps.assertInitialSelection(snapshot); this.validatePackages(snapshot); const refs = this.sourceReferences(snapshot,initialApplicationScope);
-      if (snapshot.native.sessionId && this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=?').get(snapshot.runner,nativeRoot,snapshot.native.sessionId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已关联另一任务，不能新增另一套能力');
+      if (snapshot.native.sessionId && this.nativeClaimedByOther(snapshot.taskId,snapshot.runner,nativeRoot,snapshot.native.sessionId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已关联另一任务，不能新增另一套能力');
       for (const mcp of snapshot.mcp) if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_mcp_names WHERE server_name=?').get(mcp.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','已有会话使用此MCP名称，不能改名覆盖');
       this.store.sqlite.prepare("INSERT INTO capability_session_snapshots(task_id,schema_version,snapshot_json,snapshot_hash,created_at,legacy_status,retention_state) VALUES(?,?,?,?,?,?,'active')").run(snapshot.taskId,snapshot.schema,bytes,hash,snapshot.createdAt,snapshot.provenance);
       this.store.sqlite.prepare('INSERT INTO capability_snapshot_versions(snapshot_hash,task_id,snapshot_json,selection_hash,created_at) VALUES(?,?,?,?,?)').run(hash,snapshot.taskId,bytes,selectionHash(snapshot),snapshot.createdAt);
@@ -152,7 +173,7 @@ export class CapabilitySessionRegistry {
       if (current.pointer.snapshotHash !== expectedHash) throw new ApplicationError('RESOURCE_STATE_CHANGED','快照已变化，请重新读取原身份');
       const parsed = capabilitySessionSnapshotSchema.safeParse({ ...snapshot,native: { ...snapshot.native,sessionId: native.sessionId } });
       if (!parsed.success) throw new ApplicationError('INVALID_INPUT','原生会话ID无效'); const next = parsed.data;
-      if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_identities WHERE runner=? AND identity_root=? AND session_id=? AND task_id<>?').get(native.runner,identity.identity_root,native.sessionId,taskId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已属于另一任务');
+      if (this.nativeClaimedByOther(taskId,native.runner,identity.identity_root,native.sessionId)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原生会话已属于另一任务');
       const bytes = canonicalJson(next), hash = digest(bytes), now = new Date().toISOString();
       if(snapshot.legacyBinding){const original=assertLegacySessionSource(this.store,snapshot);const result=this.store.sqlite.prepare("UPDATE capability_legacy_migration_preparations SET bound_native_session_id=?,updated_at=? WHERE task_id=? AND source_snapshot_hash=? AND state='migrated' AND bound_native_session_id IS NULL").run(native.sessionId,now,taskId,original.row.source_snapshot_hash);if(result.changes!==1)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原M4迁移的原生身份已经绑定');}
       this.store.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,snapshot_hash=? WHERE task_id=? AND snapshot_hash=?').run(bytes,hash,taskId,expectedHash);
@@ -164,10 +185,11 @@ export class CapabilitySessionRegistry {
   }
   /**
    * M11 R1.0 S4: a session created before R1.0 becomes a library session on its next resume. The native identity
-   * (runner, state root, cwd, session id) is kept; the snapshot becomes the record of the library launch, and its old
+   * (runner, cwd, session id) is kept; the state root changes only with a host-issued
+   * verified copy handoff and atomic Task pointer commit. The snapshot records the library launch, and its old
    * projection/plugin references are released. Refuses while any run of the task is still live.
    */
-  async adoptLibrary(taskId: string,expectedHash: string,input: CapabilitySessionSnapshot): Promise<StoredCapabilitySession> {
+  async adoptLibrary(taskId: string,expectedHash: string,input: CapabilitySessionSnapshot,options?:{copy?:ClaudeRestoreReceipt;home:string;commit?(before:StoredCapabilitySession,after:StoredCapabilitySession):void}): Promise<StoredCapabilitySession> {
     const parsed = capabilitySessionSnapshotSchema.safeParse(input);
     if (!parsed.success || parsed.data.schema !== 3 || parsed.data.provenance !== 'created') throw new ApplicationError('INVALID_INPUT','库模式快照无效');
     const next = parsed.data, bytes = canonicalJson(next), hash = digest(bytes);let previousSelection = '';
@@ -175,20 +197,31 @@ export class CapabilitySessionRegistry {
       const current = this.read(taskId), old = current.snapshot;previousSelection = current.selectionHash;
       if (current.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话处于保留状态，不能转为库模式');
       if (current.pointer.snapshotHash !== expectedHash) throw new ApplicationError('RESOURCE_STATE_CHANGED','快照已变化，请重新读取原身份');
-      if (next.taskId !== taskId || next.projectId !== old.projectId || next.runner !== old.runner || canonicalJson(next.native) !== canonicalJson(old.native)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','库模式快照必须沿用原任务与原生身份');
+      if (next.taskId !== taskId || next.projectId !== old.projectId || next.runner !== old.runner) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','库模式快照必须沿用原任务与原生身份');
+      const moved=canonicalJson(next.native)!==canonicalJson(old.native),copy=options?.copy;
+      if(moved){
+        if(!copy||!isCopiedClaudeSession(copy)||!options?.commit||copy.from!==old.native.stateRoot||copy.to!==next.native.stateRoot||copy.sessionId!==next.native.sessionId||next.native.cwd!==old.native.cwd||next.native.sessionId!==old.native.sessionId)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','库模式快照必须沿用原任务与原生身份');
+        copy.assertCurrent();this.assertHistoryCopyAllowed({taskId,from:copy.from,to:copy.to,cwd:next.native.cwd,sessionId:copy.sessionId,home:options.home});
+      }
       if (this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(taskId)) throw new ApplicationError('RESOURCE_BUSY','此会话仍有运行，停止后再恢复');
       this.deps.assertInitialSelection(next); this.validatePackages(next); const refs = this.sourceReferences(next);
       const now = new Date().toISOString();
+      if(moved){
+        const identity=this.store.sqlite.prepare('SELECT identity_root FROM capability_session_identities WHERE task_id=?').get(taskId) as {identity_root:string};
+        // Preserve the old canonical claim even if its original spelling was a symlink.
+        const canonicalOld={...old,native:{...old.native,stateRoot:identity.identity_root}},oldBytes=canonicalJson(canonicalOld);
+        this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_snapshot_versions(snapshot_hash,task_id,snapshot_json,selection_hash,created_at) VALUES(?,?,?,?,?)').run(digest(oldBytes),taskId,oldBytes,selectionHash(canonicalOld),now);
+      }
       this.store.sqlite.prepare("UPDATE capability_session_snapshots SET schema_version=3,snapshot_json=?,snapshot_hash=?,legacy_status='created' WHERE task_id=? AND snapshot_hash=?").run(bytes,hash,taskId,expectedHash);
       this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_snapshot_versions(snapshot_hash,task_id,snapshot_json,selection_hash,created_at) VALUES(?,?,?,?,?)').run(hash,taskId,bytes,selectionHash(next),now);
-      this.store.sqlite.prepare('UPDATE capability_session_identities SET selection_hash=?,updated_at=? WHERE task_id=?').run(selectionHash(next),now,taskId);
+      this.store.sqlite.prepare('UPDATE capability_session_identities SET identity_root=?,selection_hash=?,updated_at=? WHERE task_id=?').run(canonicalFuturePath(next.native.stateRoot),selectionHash(next),now,taskId);
       // Old projections and plugin sources are released; the launch runtime reference stays.
       this.store.sqlite.prepare("DELETE FROM capability_session_refs WHERE task_id=? AND ref_kind<>'legacy-runtime'").run(taskId);
       const put = this.store.sqlite.prepare('INSERT INTO capability_session_refs(task_id,ref_kind,ref_id,ref_hash,relative_path) VALUES(?,?,?,?,?)');
       for (const ref of refs) if (ref.refKind !== 'legacy-runtime') put.run(taskId,ref.refKind,ref.refId,ref.refHash,ref.relativePath);
       this.store.sqlite.prepare('DELETE FROM capability_session_mcp_names WHERE task_id=?').run(taskId);
       for (const mcp of next.mcp) { if (this.store.sqlite.prepare('SELECT 1 FROM capability_session_mcp_names WHERE server_name=?').get(mcp.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','已有会话使用此MCP名称，不能改名覆盖'); this.store.sqlite.prepare('INSERT INTO capability_session_mcp_names(server_name,task_id,kind) VALUES(?,?,?)').run(mcp.serverName,taskId,mcp.kind); }
-      return this.read(taskId);
+      const committed=this.read(taskId);copy?.assertCurrent();options?.commit?.(current,committed);return committed;
     }).immediate());
     // The session directory marker names the selection it was written for; move only our own marker to the new one.
     await withResourceLock(this.store.root,() => {

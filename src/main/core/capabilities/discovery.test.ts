@@ -12,6 +12,55 @@ afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 const skill = '---\nname: same-name\ndescription: |\n  multiline description\nmetadata:\n  version: 1.2.3\n---\nInstructions\n';
 
 describe('read-only capability discovery', () => {
+  it.each([['--setting-sources','user'],['--setting-sources=user']])('models Claude user-only settings without importing ignored project settings (%s)', (...args) => {
+    c.runner='claude';
+    file('custom/settings.json', JSON.stringify({permissions:{allow:['mcp__native__read']}}));
+    file('repo/.claude/settings.json', '{invalid project settings ignored by native CLI');
+    file('repo/.claude/settings.local.json', JSON.stringify({disabledMcpServers:['native'],permissions:{deny:['mcp__native__read']}}));
+    file('custom/.claude.json', JSON.stringify({mcpServers:{native:{command:'/usr/bin/true'}}}));
+    const detail=({userSkillConfig:[],plugins:[],issues:[]} as import('./discovery').NativeDiscoveryDetails),policies:unknown[]=[];
+    const rows=discoverCapabilities({...c,args,details:detail,onMcpDefinition:(_row,_definition,policy)=>policies.push(policy)});
+    expect(detail.issues).toEqual([]);
+    expect(rows.find(row=>row.name==='native')).toMatchObject({kind:'mcp',enabled:null});
+    expect(policies).toEqual([{allow:['mcp__native__read'],deny:[],ask:[],unverified:false}]);
+    expect(rows.some(row=>row.issues.includes('config_parse_failed'))).toBe(false);
+  });
+  it.each([['--setting-sources'],['--setting-sources','project'],['--setting-sources','user','--setting-sources','user'],['--settings-sources','user'],['--setting-sources=user,project']])('keeps unmodelled or ambiguous Claude settings sources unverified (%s)', (...args) => {
+    c.runner='claude';const detail=({userSkillConfig:[],plugins:[],issues:[]} as import('./discovery').NativeDiscoveryDetails);discoverCapabilities({...c,args,details:detail});
+    expect(detail.issues).toContain('profile_configuration_unverified');
+  });
+  it('honors Claude strict MCP config while retaining project Skills and explicit MCP definitions', () => {
+    c.runner='claude';const detail=({userSkillConfig:[],plugins:[],issues:[]} as import('./discovery').NativeDiscoveryDetails);
+    file('custom/.claude.json',JSON.stringify({mcpServers:{native:{command:'/usr/bin/true'}}}));
+    file('repo/.mcp.json',JSON.stringify({mcpServers:{project:{command:'/usr/bin/true'}}}));
+    file('repo/.claude/skills/project-skill/SKILL.md',skill);
+    const supplied=file('explicit-mcp.json',JSON.stringify({mcpServers:{explicit:{command:'/usr/bin/true'}}}));
+    const rows=discoverCapabilities({...c,args:['--setting-sources','user','--strict-mcp-config','--mcp-config',supplied],details:detail});
+    expect(detail.issues).toEqual([]);
+    expect(rows.filter(row=>row.kind==='mcp').map(row=>row.name)).toEqual(['explicit']);
+    expect(rows.some(row=>row.kind==='skill'&&row.path.includes('project-skill'))).toBe(true);
+  });
+
+  it.each([['--model','--setting-sources=user'],['--','--setting-sources','user'],['prompt','--setting-sources','user'],['--unknown','--setting-sources','user']])('does not interpret a value, prompt or ambiguous argv as an approved source override (%s)', (...args) => {
+    c.runner='claude';
+    file('repo/.claude/settings.json',JSON.stringify({permissions:{deny:['mcp__native__read']}}));
+    file('custom/.claude.json',JSON.stringify({mcpServers:{native:{command:'/usr/bin/true'}}}));
+    const policies:import('./mcp-source').McpNativePolicy[]=[];
+    discoverCapabilities({...c,args,onMcpDefinition:(_row,_definition,policy)=>{if(policy)policies.push(policy);}});
+    expect(policies[0].deny).toContain('mcp__native__read');
+  });
+  it('does not import an installed plugin MCP implicitly under Claude strict config', () => {
+    c.runner='claude';
+    file('custom/plugins/installed_plugins.json',JSON.stringify({plugins:{'chosen@local':[{installPath:join(tmp,'plugin'),version:'1.0.0',scope:'user'}]}}));
+    file('plugin/.claude-plugin/plugin.json',JSON.stringify({name:'chosen'}));
+    file('plugin/.mcp.json',JSON.stringify({mcpServers:{pluginNative:{command:'/usr/bin/true'}}}));
+    file('plugin/skills/one/SKILL.md',skill);
+    const detail=({userSkillConfig:[],plugins:[],issues:[]} as import('./discovery').NativeDiscoveryDetails);
+    const rows=discoverCapabilities({...c,args:['--strict-mcp-config'],details:detail});
+    expect(detail.issues).toEqual([]);expect(rows.filter(row=>row.kind==='mcp')).toEqual([]);
+    expect(rows.some(row=>row.kind==='skill'&&row.source==='plugin:chosen@local')).toBe(true);
+    expect(detail.plugins).toEqual([{name:'chosen',path:join(tmp,'plugin')}]);
+  });
   it('distinguishes default Claude state from an explicitly configured default-looking directory', () => {
     c.runner = 'claude'; c.stateRoot = join(c.home, '.claude');
     file('home/.claude.json', JSON.stringify({ mcpServers: { implicit: { command: '/usr/bin/true' } } }));

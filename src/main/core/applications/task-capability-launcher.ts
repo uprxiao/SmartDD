@@ -2,6 +2,9 @@ import {SkillObservationMonitor} from './skill-observation-monitor';
 import {BridgeSupervisor} from './bridge-supervisor';
 import {nativeCapabilityPreparation} from './native-preparation-diagnostics';
 import {nativeCapabilityConflicts} from './native-application-conflicts';
+import {withCoordinatorLock} from './coordinator-lock';
+import {withResourceLock} from './resource-lock';
+import {ensureStoreDirectory} from './package-files';
 import {assertNoPendingApplicationSwitch} from './application-run-policy';
 import type {ManagedCapabilityRestriction} from './launch-restriction';
 import { mkdirSync, writeFileSync,readFileSync } from 'node:fs';
@@ -25,7 +28,10 @@ import {CurrentApplicationAuthorization} from './current-authorization';
 import {SkillLibraryService} from './skill-library-service';
 import {cleanupPreLibraryCopies} from './legacy-copy-cleanup';
 import {retirePreLibraryResources,type PreLibraryRetirement} from './retire-pre-library-resources';
-import {codexProfileArgsForCli,type CodexCliSandboxPlan} from './codex-effective-sandbox';
+import {codexProfileArgsForCli} from './codex-effective-sandbox';
+import type {CliSandboxPlan} from './capability-delivery-adapters';
+import {verifyClaudeCliSandbox} from './claude-effective-sandbox';
+import {verifyCodexCliSandbox} from './codex-effective-sandbox';
 import {createApplicationRunPlan,selectCapabilityEntry,type RunPlanAvailability} from './run-plan';
 
 import { AgentBridgeProcesses } from './agent-bridge-processes';
@@ -46,7 +52,7 @@ interface ActiveLaunch {run:OwnedCapabilityRun;runtime?:PreparedRuntime;codex?:P
 export interface TaskCapabilityLauncherOptions {
   helper: string;
   cliPath?:string;
-  inspectSandbox?:(input:TaskLaunchInput,native:NativeLaunchContext)=>Promise<CodexCliSandboxPlan>;
+  inspectSandbox?:(input:TaskLaunchInput,native:NativeLaunchContext)=>Promise<CliSandboxPlan>;
   stopPty(ptyId:string):void;
   processes?:ProcessIdentityReader;
   peers?:UnixPeerIdentityReader;
@@ -63,7 +69,7 @@ export interface TaskCapabilityLauncherOptions {
 /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   private readonly planningAgents=new Map<string,NativeLaunchContext>();
-  private readonly planningCliPolicies=new Map<string,CodexCliSandboxPlan>();
+  private readonly planningCliPolicies=new Map<string,CliSandboxPlan>();
   readonly cli?:ApplicationCliGateway;
   private cliReady=false;
   readonly sessions:CapabilitySessionRegistry;
@@ -94,11 +100,11 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:snapshot=>this.assertInitialSelection(snapshot),verifyExtraResource:(resource,snapshot)=>this.verifyResource(resource,snapshot)});
     this.authorization=new CurrentApplicationAuthorization(store,applications.builtin);
     if(applications.plugins)this.pluginSkills=new FrozenPluginSkills(store,applications.plugins.lifecycle);
-    if(options.skillLibraryHome)this.library=new SkillLibraryService(store,applications.builtin,{home:options.skillLibraryHome,targets:()=>support.adapters.deliveryAdapters.libraryTargets(),added:appId=>{const state=applications.selections.catalogState(appId as Parameters<typeof applications.selections.catalogState>[0]);return state.added&&state.enabled;},standardSkills:()=>(store.sqlite.prepare('SELECT skill_id AS skillId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;hash:string}[]).map(s=>({skillId:s.skillId,files:Object.fromEntries(Object.entries(support.legacy.verify(store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([path,text])=>[path,Buffer.from(text,'utf8')]))}))});
-    this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,currentAuthorization:context=>this.authorization.view(context),createPlan:(snapshot,snapshotHash,runId)=>{
+    if(options.skillLibraryHome)this.library=new SkillLibraryService(store,applications.builtin,{home:options.skillLibraryHome,targets:()=>support.adapters.deliveryAdapters.libraryTargets(),added:appId=>{const state=applications.selections.catalogState(appId as Parameters<typeof applications.selections.catalogState>[0]);return state.added&&state.enabled;},standardSkills:()=>(store.sqlite.prepare('SELECT skill_id AS skillId,hash FROM skill_versions WHERE active=1 ORDER BY skill_id').all() as {skillId:string;hash:string}[]).filter(s=>capabilities.globalEnabled(s.skillId)).map(s=>({skillId:s.skillId,files:Object.fromEntries(Object.entries(support.legacy.verify(store.get('standard-skill:'+s.skillId+':'+s.hash))).map(([path,text])=>[path,Buffer.from(text,'utf8')]))}))});
+    this.runs=new CapabilityRunRegistry(store,this.sessions,{processes:this.processes,currentAuthorization:context=>this.authorization.view(context),createPlan:(snapshot,snapshotHash,runId,pinnedBindings)=>{
       // R17: the plan records what the Agent loads at this launch, i.e. the project's current applications (not the
       // session's creation record), so the resume advice compares against what this run actually loaded.
-      const apps=this.authorization.selectedApps(snapshot.projectId),bindings=this.authorization.bindings(snapshot.projectId,apps.map(a=>a.appId));
+      const apps=this.authorization.selectedApps(snapshot.projectId),bindings=pinnedBindings?[...pinnedBindings,...this.authorization.bindings(snapshot.projectId,apps.filter(a=>a.appId!=='mail'&&a.appId!=='browser').map(a=>a.appId))]:this.authorization.bindings(snapshot.projectId,apps.map(a=>a.appId));
       const selected={...snapshot,packages:apps.map(a=>this.authorization.packageSelection(snapshot.projectId,a.packageHash,bindings,[])),standardSkills:[]} as CapabilitySessionSnapshot;
       const sources=selected.packages.map(p=>{const application=applications.builtin.retainedMetadata(p.packageHash);return{packageHash:p.packageHash,manifest:application.manifest,capabilities:builtinApplicationModules.capabilityViews(application.manifest)};});
       // R16: Skills come from the machine-wide library; a run plan carries no per-run Skill copies.
@@ -125,12 +131,20 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       result.syncSkillLibrary();await result.broker.start();if(result.cli)try{await result.cli.start();result.cliReady=true;}catch{await result.cli.close();}applications.attachRuns(result.runs);return result;}catch(error){await result.dispose();throw error;}
   }
   /** Converge the Skill library after startup and every application change; a failure never blocks tasks. */
-  syncSkillLibrary():void{
+  syncSkillLibrary(claudeStateRoot?:string):void{
     if(!this.library)return;
-    try{this.library.sync();this.recoveryWarnings.splice(0,this.recoveryWarnings.length,...this.recoveryWarnings.filter(w=>w.homeId!=='skill-library'));}
+    try{this.library.sync(claudeStateRoot);this.recoveryWarnings.splice(0,this.recoveryWarnings.length,...this.recoveryWarnings.filter(w=>w.homeId!=='skill-library'));}
     catch(error){if(!this.recoveryWarnings.some(w=>w.homeId==='skill-library'))this.recoveryWarnings.push({homeId:'skill-library',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
   }
   skillLibraryConflicts(){return this.library?.conflicts()??[];}
+  coordinateRestore<T>(work:()=>Promise<T>,signal:AbortSignal):Promise<T>{
+    // Separate H scope: serialize restore/copy admissions across normal hosts,
+    // including different tasks targeting the same native SID. Never hold C over I/O.
+    return withCoordinatorLock(ensureStoreDirectory(this.support.store.root,'locks/native-history'),'catalog',work,{signal,timeoutMs:15000,processes:this.processes});
+  }
+  async assertHistoryCopyAllowed(input:{taskId:string;from:string;to:string;cwd:string;sessionId:string;home:string}):Promise<void>{
+    await withResourceLock(this.support.store.root,()=>{this.sessions.assertHistoryCopyAllowed(input);});
+  }
   /**
    * R1.0 §3.5: applications enabled or upgraded since this library run started that its Agent sees only after a
    * resume (declared per Agent: in-session Skill reload, in-session MCP reload). Removals need no resume.
@@ -233,8 +247,13 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       const current=await this.sessions.get(input.taskId);
       if(current.snapshot.projectId!==input.projectId)throw new ApplicationError('SNAPSHOT_CORRUPT','任务项目与原会话身份不符');
       if(current.pointer.snapshotHash!==pointer.snapshotHash)throw new ApplicationError('SNAPSHOT_CORRUPT','任务指针与原会话快照不同');
-      await this.sessions.verifyNativeIdentity(input.taskId,{runner,stateRoot:input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
-      if(this.applications.plugins)return{adapterHash:hash,current:await this.sessions.adoptLibrary(input.taskId,current.pointer.snapshotHash,this.createLibrarySnapshot(input,native.version,hash))};
+      await this.sessions.verifyNativeIdentity(input.taskId,{runner,stateRoot:input.nativeRestore?.from??input.stateRoot,cwd:input.cwd,sessionId:input.sessionId,home:input.home});
+      if(this.applications.plugins||input.nativeRestore)return{adapterHash:hash,current:await this.sessions.adoptLibrary(input.taskId,current.pointer.snapshotHash,this.createLibrarySnapshot(input,native.version,hash),{
+        copy:input.nativeRestore,home:input.home,commit:input.commitSessionSnapshot?(before,after)=>{
+          if(input.signal.aborted)throw new ApplicationError('CANCELED','历史目录提交已取消');
+          input.commitSessionSnapshot!({pointer:before.pointer,native:before.snapshot.native},{pointer:after.pointer,native:after.snapshot.native});
+        }:undefined,
+      })};
       return{adapterHash:hash,current};
     }
     if(!input.newTask)return undefined;
@@ -284,12 +303,14 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     }
     const snapshot=current.snapshot,stored=current;
     // M10 rule kept in R1.0: while a stop-before-switch connection change is pending, no run of the project forks.
-    let frozenSkills:FrozenPluginSkillSet|undefined;
-    const gate=()=>{assertNoPendingApplicationSwitch(this.support.store,{projectId:input.projectId,packages:this.selectedApps(input.projectId)});if(frozenSkills){this.pluginSkills!.verify(frozenSkills);if(snapshot.schema===3&&canonicalJson(this.applications.plugins?.selections(input.projectId)??[])!==canonicalJson(snapshot.externalPlugins??[]))throw new ApplicationError('RESOURCE_STATE_CHANGED','启动前插件或连接选择已变化，请重新启动');}};gate();
+    let frozenSkills:FrozenPluginSkillSet|undefined,frozenPolicy:CliSandboxPlan|undefined;
+    const gate=()=>{if(frozenPolicy){if('runner'in frozenPolicy)verifyClaudeCliSandbox(frozenPolicy);else verifyCodexCliSandbox(frozenPolicy);}assertNoPendingApplicationSwitch(this.support.store,{projectId:input.projectId,packages:this.selectedApps(input.projectId)});if(frozenSkills){this.pluginSkills!.verify(frozenSkills);if(snapshot.schema===3&&canonicalJson(this.applications.plugins?.selections(input.projectId)??[])!==canonicalJson(snapshot.externalPlugins??[]))throw new ApplicationError('RESOURCE_STATE_CHANGED','启动前插件或连接选择已变化，请重新启动');}};gate();
+    this.syncSkillLibrary(input.profile.runner==='claude'?input.stateRoot:undefined);
     await this.configureCli(input,native,snapshot);
+    const checkedPolicy=this.planningCliPolicies.get(input.taskId);if(checkedPolicy?.available)frozenPolicy=checkedPolicy;
     if(this.support.adapters.versionSupport(snapshot.adapterBinding.hash,native.version)==='unsupported')return this.prepareUnavailableSession(input,stored,native,'AGENT_ADAPTER_UNSUPPORTED');
     const bridgeReady=!snapshot.mcp.some(m=>m.kind==='applications')||await(this.options.probeApplicationRuntime?.(input.signal)??this.embeddedNode.check(input.signal));
-    const run=await this.runs.reserve({taskId:input.taskId,snapshotHash:stored.pointer.snapshotHash,bindings:[]}),entry:ActiveLaunch={run};this.active.set(run.runId,entry);
+    const run=await this.runs.reserve({taskId:input.taskId,snapshotHash:stored.pointer.snapshotHash,bindings:this.applications.builtinPreferences.capture(input.projectId),bindingMode:'run'}),entry:ActiveLaunch={run};this.active.set(run.runId,entry);
     try{
       const legacy=(await this.sessions.references(input.taskId)).filter(r=>r.refKind==='legacy-runtime');if(legacy.length!==1)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','原启动资源身份缺失或重复');
       // A user MCP, Skill or native tool already holding one of our names keeps the user's entry; ours is not mounted.
@@ -302,10 +323,13 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       const planned=this.runs.bridgePreparation(run.runId).plan;if(!planned)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','本次运行身份记录缺失');
       const mcp=snapshot.mcp.filter(m=>m.kind==='applications'?bridgeReady&&!appConflict:m.serverName===mcpName).map(m=>({kind:m.kind,serverName:m.serverName,command:m.kind==='applications'?process.execPath:'python3',args:m.kind==='applications'?[join(this.support.store.root,'runtime',m.runtimeHash,'mcp-bridge.cjs'),'--bootstrap',join(this.support.store.root,'pending-bootstrap.json')]:[join(this.support.store.root,'runtime',m.runtimeHash,'context_mcp.py'),join(this.support.store.root,'runs',input.projectId,input.taskId,run.runId,'context.json')],env:m.kind==='applications'?{ELECTRON_RUN_AS_NODE:'1'}:{} as Record<string,string>}));
       const policy=this.planningCliPolicies.get(input.taskId);let cliEnvironment:Readonly<Record<string,string>>|undefined,cliSandbox:NonNullable<import('@shared/agent-adapters').LibraryLoadRequest['cliSandbox']>|undefined;
-      if(planned.grades.cli&&this.cli&&policy?.available){cliSandbox={endpoint:this.cli.endpoint,kind:policy.kind,parent:policy.parent,networkProxy:policy.networkProxy,enableNetwork:policy.enableNetwork,existingNames:policy.existingNames,source:policy.source,digest:policy.digest};cliEnvironment=this.cli.issue(run).environment;runtime.secretValues.push(cliEnvironment.WILLYOU_RUN_TOKEN);}
+      if(planned.grades.cli&&this.cli&&policy?.available){
+        cliSandbox='runner'in policy?{runner:'claude-code',endpoint:this.cli.endpoint,kind:policy.kind,source:policy.source,digest:policy.digest}:{endpoint:this.cli.endpoint,kind:policy.kind,parent:policy.parent,networkProxy:policy.networkProxy,enableNetwork:policy.enableNetwork,existingNames:policy.existingNames,source:policy.source,digest:policy.digest};
+        cliEnvironment=this.cli.issue(run).environment;runtime.secretValues.push(cliEnvironment.WILLYOU_RUN_TOKEN);
+      }
       const bridgeEntry=mcp.find(m=>m.kind==='applications');let bridge:Awaited<ReturnType<PrivateApplicationBroker['prepare']>>|undefined;
       if(bridgeEntry){bridge=await this.broker.prepare(run,bridgeEntry.serverName);bridgeEntry.args[2]=bridge.bootstrapPath;}
-      const profileArgs=cliEnvironment&&policy?.available?codexProfileArgsForCli(input.profile.args,policy):input.profile.args;
+      const profileArgs=cliEnvironment&&policy?.available&&!('runner'in policy)?codexProfileArgsForCli(input.profile.args,policy):input.profile.args;
       let clientProfileArgs:string[]|undefined;
       const launchEnvironment=cliEnvironment?{...runtime.env,...cliEnvironment,PATH:dirname(this.options.cliPath!)+delimiter+(input.environment.PATH??'')}:runtime.env;
       // A plan the adapter still refuses (another collision, unsupported mechanism) leaves the ordinary Agent: native only.
@@ -331,6 +355,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         prepared.snapshot.selfCheck?.issues.push(reason);entry.runtime=prepared;launch.runtime=prepared;launch.args=[];launch.profileArgs=undefined;launch.env={};launch.initialInput=undefined;phase='native-only';return launch;
       };
       const launch:TaskCapabilityLaunch={ptyId:run.ptyId,runtime,args:plan?.args??[],profileArgs:clientProfileArgs??(cliEnvironment&&policy?.available?profileArgs:undefined),env:launchEnvironment,command:native.command,
+        ...(entry.codex?.initializationProcess?{codexInitializer:()=>entry.codex!.initializationProcess!()}:{}),
         assertBeforeFork:()=>{if(effective)gate();},
         nativeOnly:reason=>narrow(reason),
         beforeSpawn:async()=>{if(this.closed||input.signal.aborted||!['prepared','native-only'].includes(phase))throw new ApplicationError('CANCELED','启动已取消或窗口已使用');const nativeOnly=phase==='native-only';if(effective)gate();phase='arming';if(!nativeOnly&&effective){await entry.codex?.start();gate();await bridge?.bridge.arm();}await run.cli.arm();},

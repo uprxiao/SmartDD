@@ -45,10 +45,10 @@ export function PluginIcon({ id, name = '', size = 36 }) {
 
 /** 供应商与工具图标（P0.12）：使用官方图标（来源与哈希见 public/assets/m13-agent-icons/SOURCE.md）。
  *  App 图标（Claude、Magpie）自带圆角底，裁掉 macOS 图标留白后铺满；网站图标放在白底方块中。
- *  Codex 暂无可追溯的专用图标，用 OpenAI 标志黑底白标，与 OpenAI 供应商的白底黑标区分。没有图标的用首字母方块。 */
+ *  Codex 使用官方公开专用界面符号，与 OpenAI 供应商标志区分。没有图标的用首字母方块。 */
 const A = '/assets/m13-agent-icons/';
 const PROVIDER_IMAGES = {
-  'tool-claude': { href: A + 'claude.png', bleed: 1.22 }, 'tool-codex': { href: A + 'openai-white.svg', bg: '#0d0d0d', inset: 7 },
+  'tool-claude': { href: A + 'claude.png', bleed: 1.22 }, 'tool-codex': { href: A + 'codex.svg', bg: '#fff', inset: 5, border: true },
   anthropic: { href: A + 'anthropic.png', bleed: 1 }, openai: { href: A + 'openai.svg', bg: '#fff', inset: 7, border: true },
   deepseek: { href: A + 'deepseek.png', bg: '#fff', inset: 3, border: true },
   'agent-opencode': { href: A + 'opencode.png', bleed: 1 }, 'agent-pi': { href: A + 'pi.svg', bg: '#fff', inset: 2, border: true }, 'agent-zcode': { href: A + 'zcode.png', bleed: 1.22 }, 'agent-dsh': { href: A + 'dsh.png', bleed: 1.22 }, glm: { href: A + 'zhipu.png', bleed: 1.04 }, magpie: { href: A + 'magpie.png', bleed: 1.22 },

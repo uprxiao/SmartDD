@@ -80,13 +80,166 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
  beforeEach(async()=>{
   f=await agentFixture({applicationVersion:'2.0.0'});messages=[];authentications=[];decrypts=0;loseReceipt=false;holdReceipt=false;heldReceipts=[];const db=drizzle(f.sqlite,{schema});secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>{decrypts++;return b.toString();}});projects=new ProjectService(db,secrets);
   const wc=Object.assign(new EventEmitter(),{id:101,mainFrame:{processId:9,routingId:1},isDestroyed:()=>false});sender={sender:wc,senderFrame:wc.mainFrame} as unknown as IpcMainInvokeEvent;access=new PtyAccess({trusted:e=>e.sender===sender.sender,activePty:()=>null,alive:()=>false,write:()=>{},resize:()=>{},killTask:()=>{}});
-  await new RuntimeRegistry(f.store).install(bundles.runtime());const trusted=new BuiltinPackageRegistry(f.store),pack=await trusted.install(bundles,bundles.index.apps.find(p=>p.appId==='mail')!);await trusted.packages.activate(pack.packageHash,0);app=setup();await app.recover();const tested=await app.testConnection(sender,{name:'Private SMTP',expectedRevision:0,config:{kind:'smtp',host:'127.0.0.1',port:await smtp(),username:'sender@example.test',fromAddress:'sender@example.test',authMode:'password',mode:'plain'},secret:'private-fixture-secret'}),connection=await app.saveConnection(sender,'mail',tested.operationId,tested.candidateHash);smtpId=connection.id;await app.setAdded(sender,'mail',true,0);await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:smtpId}});
+  await new RuntimeRegistry(f.store).install(bundles.runtime());const trusted=new BuiltinPackageRegistry(f.store),pack=await trusted.install(bundles,bundles.index.apps.find(p=>p.appId==='mail')!);await trusted.packages.activate(pack.packageHash,0);app=setup();await app.recover();const tested=await app.testConnection(sender,{name:'Private SMTP',expectedRevision:0,config:{kind:'smtp',host:'127.0.0.1',port:await smtp(),username:'sender@example.test',fromAddress:'sender@example.test',authMode:'password',mode:'plain'},secret:'private-fixture-secret'}),connection=await app.saveConnection(sender,'mail',tested.operationId,tested.candidateHash);smtpId=connection.id;await app.setAdded(sender,'mail',true,app.selections.catalogState('mail').revision);await app.select(sender,{projectId:'p1',appId:'mail',enabled:true,expectedRevision:app.selections.projectSettings('p1','mail').revision,connections:{foxmail:null,smtp:smtpId}});
   // Independent sender identity is a new M11 prerequisite; this is a host UI fixture, not mail-send authorization.
   const senderIdentity=await app.projectPolicy(sender,'p1','mail') as import('@shared/mail-sender-identity').MailSenderIdentityStatus;
   await app.projectAction(sender,'p1','mail',{action:'confirm-sender',arguments:{expectedBindingHash:senderIdentity.bindingHash,confirmed:true}});
   reader=new FixtureProcessReader();runs=new CapabilityRunRegistry(f.store,f.sessions,{processes:reader,assertCurrent:()=>{},revoke:()=>{}});connectTools();cc=await start('claude-code',90101);codex=await start('codex',90102);messages.length=0;authentications.length=0;decrypts=0;
  });
  afterEach(async()=>{await app.dispose();while(owned.length)await owned.pop()!.cli.exited();for(const close of closers.splice(0))await close();vi.restoreAllMocks();f.cleanup();});
+async function unknownForVerification() {
+  loseReceipt=true;
+  const intent=await prepare(); await confirm(intent); await execute(intent);
+  const current=(await app.viewSend(sender,'p1',intent.id)).intent;
+  expect(current.state).toBe('unknown'); expect(current.executionId).toBeTruthy();
+  return {intent:current, executionId:current.executionId!, draftId:current.draftId};
+}
+function immutableMailEvidence() {
+  return JSON.stringify({
+    drafts:f.sqlite.prepare('SELECT * FROM mail_drafts ORDER BY id').all(),
+    revisions:f.sqlite.prepare('SELECT * FROM mail_draft_revisions ORDER BY draft_id,revision').all(),
+    intents:f.sqlite.prepare('SELECT * FROM mail_send_intents ORDER BY id').all(),
+    executions:f.sqlite.prepare('SELECT * FROM mail_send_executions ORDER BY id').all(),
+    grants:f.sqlite.prepare('SELECT * FROM mail_send_grants ORDER BY id').all(),
+    sendSources:f.sqlite.prepare('SELECT * FROM mail_user_action_sources ORDER BY evidence_id').all(),
+  });
+}
+function confirmUnknownInput(shown:{displayReceiptId:string;review:{executionId:string;verificationHash:string}}, decision:'sent'|'not-sent'='sent') {
+ return {displayReceiptId:shown.displayReceiptId,operationId:randomUUID(),
+   executionId:shown.review.executionId,expectedVerificationHash:shown.review.verificationHash,
+   decision,confirmed:true};
+}
+it('T076 showing the verification choices has no effects or send authority',async()=>{
+ const u=await unknownForVerification(), before=immutableMailEvidence();
+ const counts=[messages.length,authentications.length,decrypts];
+ const shown=await app.reviewUnknownSend(sender,'p1',u.executionId);
+ expect(shown.review).toMatchObject({executionId:u.executionId,draftId:u.draftId,state:'unknown'});
+ expect(immutableMailEvidence()).toBe(before);
+ expect([messages.length,authentications.length,decrypts]).toEqual(counts);
+});
+it.each(['missing-receipt','wrong-sender','wrong-frame','wrong-project','wrong-execution','wrong-hash','unconfirmed'])(
+ 'T076 rejects %s without changing unknown or minting send authority',async variant=>{
+ const u=await unknownForVerification(), shown=await app.reviewUnknownSend(sender,'p1',u.executionId);
+ const args=confirmUnknownInput(shown), before=immutableMailEvidence();
+ const counts=[messages.length,authentications.length,decrypts];
+ let event=sender, project='p1';
+ if(variant==='missing-receipt')args.displayReceiptId=randomUUID();
+ if(variant==='wrong-sender')event={...sender,sender:{...sender.sender,id:999}} as unknown as IpcMainInvokeEvent;
+ if(variant==='wrong-frame')event={...sender,senderFrame:{processId:9,routingId:999}} as unknown as IpcMainInvokeEvent;
+ if(variant==='wrong-project')project=projects.createProject({name:'T076 other real project',aliases:[],description:'',rulesPath:null}).id;
+ if(variant==='wrong-execution')args.executionId=randomUUID();
+ if(variant==='wrong-hash')args.expectedVerificationHash='0'.repeat(64);
+ if(variant==='unconfirmed')args.confirmed=false;
+ await expect(Promise.resolve().then(()=>app.confirmUnknownSend(event,project,args))).rejects.toBeDefined();
+ expect(immutableMailEvidence()).toBe(before);
+ expect([messages.length,authentications.length,decrypts]).toEqual(counts);
+});
+it('T076 consumes the current receipt once and prevents contradictory decisions from another open window',async()=>{
+ const u=await unknownForVerification(), a=await app.reviewUnknownSend(sender,'p1',u.executionId),
+  b=await app.reviewUnknownSend(sender,'p1',u.executionId), before=immutableMailEvidence();
+ const input=confirmUnknownInput(a);
+ const result=await app.confirmUnknownSend(sender,'p1',input);
+ expect(result.verification).toMatchObject({review:{executionId:u.executionId},decision:'sent'});
+ expect(immutableMailEvidence()).toBe(before); // append-only separate fact, no SMTP mutation
+ expect((await app.viewDrafts(sender,'p1',{state:'sent'})).items).toEqual([expect.objectContaining({id:u.draftId,state:'sent'})]);expect((await app.viewDrafts(sender,'p1',{state:'unknown'})).items).toEqual([]);
+ expect((await app.viewDraft(sender,'p1',u.draftId)).draft.state).toBe('unknown');
+ await expect(app.confirmUnknownSend(sender,'p1',{...input,operationId:randomUUID()})).rejects.toBeDefined();
+ await expect(app.confirmUnknownSend(sender,'p1',confirmUnknownInput(b,'not-sent'))).rejects.toBeDefined();
+ // An idempotent exact same-operation response may return the same fact, but cannot create another fact.
+});
+it('T076 expired/restarted display receipt cannot be promoted from persistent provenance',async()=>{
+ const u=await unknownForVerification(), shown=await app.reviewUnknownSend(sender,'p1',u.executionId);
+ const before=immutableMailEvidence(), now=Date.now();
+ vi.spyOn(Date,'now').mockReturnValue(now+600001);
+ await expect(app.confirmUnknownSend(sender,'p1',confirmUnknownInput(shown))).rejects.toBeDefined();
+ expect(immutableMailEvidence()).toBe(before);
+});
+it('T076 not-sent produces only a fresh copy; original unknown ancestry still requires a new specific send authorization',async()=>{
+ const u=await unknownForVerification(), shown=await app.reviewUnknownSend(sender,'p1',u.executionId);
+ const original=f.sqlite.prepare('SELECT * FROM mail_send_executions WHERE id=?').get(u.executionId);
+ const counts=[messages.length,authentications.length,decrypts];
+ const result=await app.confirmUnknownSend(sender,'p1',confirmUnknownInput(shown,'not-sent'));
+ const copy=result.draft;if(!copy)throw new Error('Explicit not-sent must return a fresh draft');
+ expect(copy).toMatchObject({state:'draft',copiedFromDraftId:u.draftId,activeIntentId:null,lastExecutionId:null});
+ expect(copy.id).not.toBe(u.draftId);
+ expect(f.sqlite.prepare('SELECT * FROM mail_send_executions WHERE id=?').get(u.executionId)).toEqual(original);
+ expect([messages.length,authentications.length,decrypts]).toEqual(counts);
+ const next=(await app.prepareSend(sender,'p1',{draftId:copy.id,expectedRevision:copy.revision,expectedContentHash:copy.contentHash})).intent;
+ expect(next.authorized).toBe(false);
+ const reviewed=await app.reviewSend(sender,'p1',next.id);
+ expect(reviewed.review.priorUnknownExecutionIds).toContain(u.executionId);
+ await expect(app.executeSend(sender,'p1',{intentId:next.id,expectedReviewHash:next.reviewHash})).rejects.toMatchObject({code:'AUTHORIZATION_REQUIRED'});
+ await expect(app.authorizeSend(sender,'p1',{intentId:next.id,expectedReviewHash:next.reviewHash,
+  displayReceiptId:reviewed.displayReceiptId,reviewedUnknownExecutionIds:[]})).rejects.toMatchObject({code:'AUTHORIZATION_REQUIRED'});
+ expect([messages.length,authentications.length,decrypts]).toEqual(counts);
+});
+
+it('T076 revoked enablement cannot revive a previously displayed manual verification',async()=>{
+ const u=await unknownForVerification(),shown=await app.reviewUnknownSend(sender,'p1',u.executionId),input=confirmUnknownInput(shown),before=immutableMailEvidence(),catalog=app.selections.catalogState('mail');
+ await app.setEnabled(sender,'mail',false,catalog.revision);await expect(Promise.resolve().then(()=>app.confirmUnknownSend(sender,'p1',input))).rejects.toBeDefined();
+ await app.setEnabled(sender,'mail',true,app.selections.catalogState('mail').revision);await expect(app.confirmUnknownSend(sender,'p1',input)).rejects.toMatchObject({code:'AUTHORIZATION_REQUIRED'});
+ expect(immutableMailEvidence()).toBe(before);expect(messages).toHaveLength(1);
+});
+it('T076 concurrent manual choices append one fact and never duplicate or re-authorize an unknown send',async()=>{
+ const u=await unknownForVerification(),a=await app.reviewUnknownSend(sender,'p1',u.executionId),b=await app.reviewUnknownSend(sender,'p1',u.executionId),before=immutableMailEvidence(),input=confirmUnknownInput(a);
+ const inputs=[input,confirmUnknownInput(b)],results=await Promise.allSettled(inputs.map(value=>app.confirmUnknownSend(sender,'p1',value)));const winner=inputs[results.findIndex(value=>value.status==='fulfilled')];expect(results.filter(x=>x.status==='fulfilled')).toHaveLength(1);expect(results.filter(x=>x.status==='rejected')).toHaveLength(1);
+ expect(immutableMailEvidence()).toBe(before);expect(await app.confirmUnknownSend(sender,'p1',winner)).toMatchObject({verification:{id:winner.operationId,decision:'sent'}});
+ await expect(app.confirmUnknownSend(sender,'p1',{...winner,decision:'not-sent'})).rejects.toMatchObject({code:'REVISION_CONFLICT'});expect(messages).toHaveLength(1);
+});
+it('T076 rolls back a new copy when the independent verification append fails and can explicitly retry once',async()=>{
+ const u=await unknownForVerification(),shown=await app.reviewUnknownSend(sender,'p1',u.executionId),input=confirmUnknownInput(shown,'not-sent'),before=immutableMailEvidence();
+ f.sqlite.exec("CREATE TRIGGER t076_abort_verification BEFORE INSERT ON mail_draft_mutations WHEN NEW.request_hash LIKE 'mail-unknown-v1:%' BEGIN SELECT RAISE(ABORT,'T076 injected append failure'); END");
+ await expect(app.confirmUnknownSend(sender,'p1',input)).rejects.toThrow('T076 injected append failure');expect(immutableMailEvidence()).toBe(before);
+ f.sqlite.exec('DROP TRIGGER t076_abort_verification');const value=await app.confirmUnknownSend(sender,'p1',input);expect(value.draft?.copiedFromDraftId).toBe(u.draftId);expect(f.sqlite.prepare('SELECT count(*) n FROM mail_drafts').get()).toEqual({n:2});expect(messages).toHaveLength(1);
+});
+it('T076 detects corrupt manual evidence without changing the original SMTP record',async()=>{
+ const u=await unknownForVerification(),shown=await app.reviewUnknownSend(sender,'p1',u.executionId),input=confirmUnknownInput(shown),before=immutableMailEvidence();await app.confirmUnknownSend(sender,'p1',input);
+ f.sqlite.prepare('UPDATE mail_draft_mutations SET result_json=? WHERE operation_id=?').run('{"kind":"unknown-verification",',input.operationId);
+ await expect(app.viewDraft(sender,'p1',u.draftId)).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});await expect(app.viewDrafts(sender,'p1',{state:'sent'})).rejects.toMatchObject({code:'RESOURCE_RECOVERY_REQUIRED'});expect(immutableMailEvidence()).toBe(before);expect(messages).toHaveLength(1);
+});
+it('T076 closed project retains readonly drafts and original local body while all mutation/send access remains denied',async()=>{
+ const d=await draft({subject:'T076 closed project body',text:'T076 original readonly body'}),before=immutableMailEvidence(),selection=app.selections.projectSettings('p1','mail');
+ await app.select(sender,{projectId:'p1',appId:'mail',enabled:false,expectedRevision:selection.revision,connections:{...selection.connections}});
+ const list=await app.viewDrafts(sender,'p1');expect(list.readOnly).toBe(true);expect(list.items).toEqual([expect.objectContaining({id:d.id})]);
+ const detail=await app.viewDraft(sender,'p1',d.id);expect(detail.readOnly).toBe(true);expect(detail.draft.contentHash).toBe(d.contentHash);expect((await app.readBusinessResource(sender,'p1',{resource:detail.draft.content.text,offset:0,length:65536})).data).toBe('T076 original readonly body');
+ await app.contexts.withUiDraftRead(sender,{projectId:'p1',action:'list'},async context=>{const actor=app.contexts.actor(context);
+  await expect(app.drafts.create(actor,{operationId:randomUUID(),content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(app.drafts.update(actor,{operationId:randomUUID(),draftId:d.id,expectedRevision:d.revision,content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(app.drafts.copyAsNew(actor,d.id,d.revision,randomUUID())).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(app.blobs.save(actor,{operationId:randomUUID(),filename:'forbidden.txt',contentType:'text/plain'},Buffer.from('forbidden'))).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(app.blobs.saveMessage(actor,randomUUID(),Buffer.from('forbidden'))).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  expect(()=>app.contexts.sendActor(context,'mail.draft')).toThrow();await expect(app.contexts.sendConnection(context)).rejects.toMatchObject({code:'SCOPE_DENIED'});
+  await expect(app.capabilities.forUi(context,'mail.draft.create',{content:content()})).rejects.toMatchObject({code:'SCOPE_DENIED'});
+ });
+ await expect(Promise.resolve().then(()=>app.prepareSend(sender,'p1',{draftId:d.id,expectedRevision:d.revision,expectedContentHash:d.contentHash}))).rejects.toMatchObject({code:'SCOPE_DENIED'});
+ await expect(call('draft_get',{draftId:d.id})).resolves.toMatchObject({status:'error',error:{code:'SCOPE_DENIED'}});expect(immutableMailEvidence()).toBe(before);expect(messages).toHaveLength(0);expect(decrypts).toBe(0);
+ await app.setEnabled(sender,'mail',false,app.selections.catalogState('mail').revision);
+ await expect(Promise.resolve().then(()=>app.viewDrafts(sender,'p1'))).rejects.toMatchObject({code:'SCOPE_DENIED'});await expect(Promise.resolve().then(()=>app.readBusinessResource(sender,'p1',{resource:detail.draft.content.text,offset:0,length:65536}))).rejects.toMatchObject({code:'SCOPE_DENIED'});
+});
+it('T076 closing a verification window revokes its receipt without changing the SMTP record',async()=>{const u=await unknownForVerification(),shown=await app.reviewUnknownSend(sender,'p1',u.executionId),before=immutableMailEvidence();expect(app.discardUnknownSend(sender,'p1',shown.displayReceiptId)).toEqual({discarded:true});await expect(app.confirmUnknownSend(sender,'p1',confirmUnknownInput(shown))).rejects.toMatchObject({code:'AUTHORIZATION_REQUIRED'});expect(immutableMailEvidence()).toBe(before);expect(messages).toHaveLength(1);});
+it('T076 public builtin configuration admits exact defaults actions and retains sender and action guards',async()=>{
+ const defaults=await app.builtinDefaults(sender,'mail');expect(defaults.slots.find(s=>s.id==='smtp')?.connection_id).toBe(smtpId);
+ const request={appId:'mail' as const,slot:'smtp' as const,connectionId:smtpId},plan=await app.builtinDefaultPlan(sender,request);await app.builtinDefaultSave(sender,{...request,planHash:plan.planHash});
+ await expect(Promise.resolve().then(()=>app.builtinDefaults({sender:{},frame:'other'} as never,'mail'))).rejects.toThrow();
+ await expect(Promise.resolve().then(()=>app.contexts.withManagement(sender,{appId:'mail',action:'connection.delete.anything',semantics:'write'},async()=>true))).rejects.toMatchObject({code:'SCOPE_DENIED'});
+ expect(messages).toHaveLength(0);expect(decrypts).toBe(0);
+});
+it('T076 deletes an unused SMTP connection with preserved unknown history and removes its active credential',async()=>{const u=await unknownForVerification();await cc.cli.exited();await codex.cli.exited();const before=immutableMailEvidence(),old=app.connections.get(smtpId),secretRow=f.sqlite.prepare('SELECT secret_ref FROM application_connections WHERE id=?').get(smtpId) as {secret_ref:string};const request={appId:'mail' as const,connectionId:smtpId},plan=await app.builtinDeletePlan(sender,request);expect(plan.running).toEqual([]);await app.builtinDelete(sender,{...request,planHash:plan.planHash});expect(app.connections.list('mail')).toEqual([]);expect(app.connections.count('mail')).toBe(0);expect(()=>app.connections.get(smtpId)).toThrow();expect(immutableMailEvidence()).toBe(before);const original=await app.viewDraft(sender,'p1',u.draftId);expect(original.currentSender).toBeNull();expect(original.sendRecord?.item.state).toBe('unknown');expect(original.sendRecord?.send?.messageId).toBe(u.intent.result?.messageId);expect(secrets.get(secretRow.secret_ref)).toBeNull();expect(old.id).toBe(smtpId);expect(messages).toHaveLength(1);});
+ it('T076 trusted UI filters before paging and rejects a cursor from another status',async()=>{
+  for(let i=0;i<4;i++){const d=await draft({subject:'status '+i});f.sqlite.prepare('UPDATE mail_drafts SET state=? WHERE id=?').run(i===3?'draft':'failed',d.id);}
+  // State-only setup; this assertion does not claim a real SMTP failure.
+  const first=await app.viewDrafts(sender,'p1',{limit:2,state:'failed'});expect(first.items).toHaveLength(2);expect(first.items.every(d=>d.state==='failed')).toBe(true);expect(first.stateCounts).toEqual({draft:1,sending:0,sent:0,failed:3,unknown:0});
+  const last=await app.viewDrafts(sender,'p1',{limit:2,state:'failed',cursor:first.nextCursor});expect(last.items).toHaveLength(1);expect(last.nextCursor).toBeNull();
+  await expect(app.viewDrafts(sender,'p1',{limit:2,state:'draft',cursor:first.nextCursor})).rejects.toMatchObject({code:'INVALID_INPUT'});
+  const native=await call('draft_list',{limit:2});expect(native.status).toBe('ok');if(native.status!=='ok')throw new Error('fixture list failed');expect(Object.keys(native.value as object).sort()).toEqual(['items','nextCursor']);
+  expect(messages).toHaveLength(0);expect(decrypts).toBe(0);
+ });
+ it('T076 draft detail exposes the actual current project SMTP identity without minting a send or decrypting credentials',async()=>{
+  const d=await draft(),before=decrypts;const shown=await app.viewDraft(sender,'p1',d.id,d.revision),connection=app.connections.get(smtpId),slot=app.builtinPreferences.project('mail','p1').slots.find(s=>s.id==='smtp')!;
+  expect(connection.config.kind).toBe('smtp');if(connection.config.kind!=='smtp')throw new Error('fixture kind');
+  expect(shown.currentSender).toEqual({id:smtpId,name:connection.name,fromAddress:connection.config.fromAddress,mode:slot.mode,available:true});
+  expect(decrypts).toBe(before);expect(messages).toHaveLength(0);expect(f.sqlite.prepare('SELECT count(*) n FROM mail_send_intents').get()).toEqual({n:0});
+ });
  for(const terminal of ['accepted','unknown'] as const)it('RW trusted UI restores terminal result while immutable v1 draft response remains unchanged: '+terminal,async()=>{
   loseReceipt=terminal==='unknown';const original=await prepare();await confirm(original);const submitted=await execute(original);expect(submitted.status).toBe('ok');const state=terminal==='accepted'?'server-accepted':'unknown',intent=app.store.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(original.id),executions=app.store.sqlite.prepare('SELECT * FROM mail_send_executions').all(),grants=app.store.sqlite.prepare('SELECT * FROM mail_send_grants').all(),sentMessages=messages.length;
   const shown=await app.viewDraft(sender,'p1',original.draftId,original.draftRevision);expect(shown.draft.activeIntentId).toBeNull();expect(shown.sendRecord?.item).toMatchObject({id:original.id,state,projectId:'p1'});expect(shown.sendRecord?.item.send?.executionId).toBe(shown.draft.lastExecutionId);expect(shown.sendRecord?.send?.content?.subject).toBe(content().subject);
@@ -121,7 +274,7 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
  });
  it('migrates only the provable original prepare identity and leaves frozen sends unchanged on replay',async()=>{
   const intent=await prepare();const before=f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id);
-  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity','0030_browser_operations']);
+  f.sqlite.exec('DROP TABLE application_activity_subjects; DELETE FROM __drizzle_migrations WHERE id>20');expect(runBundledMigrations(f.sqlite)).toEqual(['0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity','0030_browser_operations','0031_external_plugins','0032_ai_agent_entities','0033_ai_provider_key_hint','0034_capability_registry','0035_builtin_plugin_preferences','0036_connection_history_retention']);
   expect(f.sqlite.prepare('SELECT kind,subject_id FROM application_activity_subjects').all()).toEqual([{kind:'mail-send',subject_id:intent.id}]);expect(f.sqlite.prepare('SELECT review_json,review_hash,state FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);
   f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>20');runBundledMigrations(f.sqlite);expect(f.sqlite.prepare('SELECT COUNT(*) AS n FROM application_activity_subjects').get()).toEqual({n:1});expect(messages).toHaveLength(0);
  });
@@ -438,8 +591,8 @@ describe.skipIf(process.platform!=='darwin')('original immutable mail package se
  });
  it('upgrades v18 send records and retains metadata-only user-source provenance on migration replay',async()=>{
   const intent=await prepare();await confirm(intent);const before=f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id),source=f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get() as Record<string,string>;
-  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity','0030_browser_operations']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
-  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity','0030_browser_operations']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
+  f.sqlite.exec('DROP TABLE mail_user_action_sources; DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity','0030_browser_operations','0031_external_plugins','0032_ai_agent_entities','0033_ai_provider_key_hint','0034_capability_registry','0035_builtin_plugin_preferences','0036_connection_history_retention']);expect(f.sqlite.prepare('SELECT * FROM mail_send_intents WHERE id=?').get(intent.id)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').all()).toEqual([]);
+  f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(source.evidence_id,source.intent_id,source.source_kind,source.source_hash,source.provenance_json,source.created_at);f.sqlite.exec('DELETE FROM __drizzle_migrations WHERE id>=20');expect(runBundledMigrations(f.sqlite)).toEqual(['0019_mail_user_action_sources','0020_application_activity_subjects','0021_capability_run_evidence','0022_legacy_task_migration_preparations','0023_capability_run_restrictions','0024_native_history_observation', '0025_legacy_h_bindings','0026_registered_application_hosts','0027_capability_skill_observations','0028_capability_broker_denials','0029_mail_sender_identity','0030_browser_operations','0031_external_plugins','0032_ai_agent_entities','0033_ai_provider_key_hint','0034_capability_registry','0035_builtin_plugin_preferences','0036_connection_history_retention']);expect(f.sqlite.prepare('SELECT * FROM mail_user_action_sources').get()).toEqual(source);
   expect(()=>f.sqlite.prepare('INSERT INTO mail_user_action_sources VALUES(?,?,?,?,?,?)').run(randomUUID(),randomUUID(),'renderer-confirmation','hash','metadata','now')).toThrow(/FOREIGN KEY/);expect(()=>f.sqlite.exec("UPDATE mail_user_action_sources SET source_kind='model-approved'")).toThrow(/CHECK/);expect(f.sqlite.prepare('PRAGMA foreign_key_check').all()).toEqual([]);expect(messages).toHaveLength(0);
  });
  it('uses the current rotated secret for the same identity without changing the reviewed bytes',async()=>{

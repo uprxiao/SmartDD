@@ -69,3 +69,24 @@ describe('M11 R16 Skill library delivery',()=>{
   expect(readFileSync(join(user,'SKILL.md'),'utf8')).toBe('user owned\n');expect(existsSync(join(claude(),name))).toBe(false);
  });
 });
+
+describe('M13 actual Claude configuration roots share the verified standard library',()=>{
+ const name='willyou-remote-password-ssh';
+ function standardSource(active:()=>boolean=()=>true){return new SkillLibraryService(f.store,f.applications.builtin,{home:f.home,targets:()=>builtinCapabilityDeliveryAdapters.libraryTargets(),added:()=>false,standardSkills:()=>active()?[{skillId:'remote-password-ssh',files:{'SKILL.md':Buffer.from('---\nname: remote-password-ssh\ndescription: SSH fixture\n---\nsource v1\n'),'scripts/relative.py':Buffer.from('print("PUBLIC")\n')}}]:[]});}
+ it('links two independent Provider roots to the same current library without changing an unrelated user Skill',()=>{
+  const service=standardSource(),a=join(f.root,'providers/a/claude'),b=join(f.root,'providers/b/claude');mkdirSync(join(a,'skills/user-skill'),{recursive:true});writeFileSync(join(a,'skills/user-skill/SKILL.md'),'USER ORIGINAL');
+  service.sync(a);service.sync(b);
+  for(const root of[a,b]){const target=join(root,'skills',name);expect(lstatSync(target).isSymbolicLink()).toBe(true);expect(readlinkSync(target)).toBe(join(shared(),name));expect(readFileSync(join(target,'scripts/relative.py'),'utf8')).toBe('print("PUBLIC")\n');}
+  expect(readFileSync(join(a,'skills/user-skill/SKILL.md'),'utf8')).toBe('USER ORIGINAL');expect(ours(shared())).toEqual([name]);
+ });
+ it('does not overwrite a same-name private-root directory and reports its concrete location',()=>{
+  const service=standardSource(),root=join(f.root,'providers/conflict/claude'),target=join(root,'skills',name);mkdirSync(target,{recursive:true});writeFileSync(join(target,'SKILL.md'),'USER PRIVATE');
+  expect(service.sync(root).conflicts).toContainEqual({name,location:join(root,'skills')});expect(lstatSync(target).isDirectory()).toBe(true);expect(readFileSync(join(target,'SKILL.md'),'utf8')).toBe('USER PRIVATE');
+ });
+ it('removes only its private link on the next run after a global disable and restores it on enable',()=>{
+  let enabled=true;const service=standardSource(()=>enabled),root=join(f.root,'providers/disabled/claude');service.sync(root);expect(lstatSync(join(root,'skills',name)).isSymbolicLink()).toBe(true);enabled=false;service.sync(root);expect(()=>lstatSync(join(root,'skills',name))).toThrow();expect(ours(shared())).toEqual([]);enabled=true;service.sync(root);expect(readFileSync(join(root,'skills',name,'SKILL.md'),'utf8')).toContain('source v1');
+ });
+ it('rejects a relative state root before touching the shared library',()=>{
+  const service=standardSource();expect(()=>service.sync('relative-claude')).toThrow('绝对路径');expect(ours(shared())).toEqual([]);
+ });
+});

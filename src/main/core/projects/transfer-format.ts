@@ -137,7 +137,7 @@ export function validatePayload(input: unknown): PortableProject {
 
 const PARAMS = { name: 'scrypt', N: 131072, r: 8, p: 1 } as const;
 const envelopeSchema = z.strictObject({
-  format: z.literal('willyou.project'), version: z.literal(1),
+  format: z.enum(['willyou.project', 'willyou.agents']), version: z.literal(1),
   kdf: z.strictObject({ name: z.literal(PARAMS.name), N: z.literal(PARAMS.N), r: z.literal(PARAMS.r), p: z.literal(PARAMS.p), salt: z.string().max(32) }),
   cipher: z.strictObject({ name: z.literal('aes-256-gcm'), nonce: z.string().max(24), tag: z.string().max(32) }),
   ciphertext: z.string().max(Math.ceil(TRANSFER_LIMITS.payload / 3) * 4),
@@ -145,12 +145,12 @@ const envelopeSchema = z.strictObject({
 type Envelope = z.infer<typeof envelopeSchema>;
 const aad = (h: Envelope) => Buffer.from(JSON.stringify({ format: h.format, version: h.version, kdf: { ...PARAMS, salt: h.kdf.salt }, cipher: { name: h.cipher.name, nonce: h.cipher.nonce } }));
 const decodeUtf8 = (b: Uint8Array) => { try { return new TextDecoder('utf-8', { fatal: true }).decode(b); } catch { return bad('MALFORMED', '文件编码无效'); } };
-export function inspectEnvelope(raw: Uint8Array): Envelope {
+export function inspectEnvelope(raw: Uint8Array, format: Envelope['format'] = 'willyou.project'): Envelope {
   if (raw.byteLength > TRANSFER_LIMITS.file) bad('TOO_LARGE', '项目文件不能超过 16 MiB');
   const obj = strictJson(decodeUtf8(raw));
   if (obj && typeof obj === 'object' && 'version' in obj && obj.version !== 1) bad('UNSUPPORTED_VERSION', '此项目文件版本暂不支持，请升级 WillYou 或重新导出');
   const result = envelopeSchema.safeParse(obj);
-  if (!result.success) return bad('MALFORMED', '文件格式或加密参数无效，请重新选择');
+  if (!result.success || result.data.format !== format) return bad('MALFORMED', '文件格式或加密参数无效，请重新选择');
   const h = result.data;
   strictBase64(h.kdf.salt, 16); strictBase64(h.cipher.nonce, 12); strictBase64(h.cipher.tag, 16);
   if (strictBase64(h.ciphertext).length > TRANSFER_LIMITS.payload) bad('TOO_LARGE', '项目内容超过 10 MiB');
@@ -161,12 +161,12 @@ async function keyFor(password: string, salt: Buffer): Promise<Buffer> {
   try { return await new Promise<Buffer>((resolve, reject) => scrypt(b, salt, 32, { ...PARAMS, maxmem: 256 * 1024 * 1024 }, (err, key) => err ? reject(err) : resolve(key))); }
   finally { b.fill(0); }
 }
-export async function encryptProject(input: PortableProject, password: string): Promise<Buffer> {
+/** Shared M8 authenticated envelope. Each artifact type has distinct authenticated format/AAD. */
+export async function encryptTransfer(input: unknown, password: string, format: Envelope['format']): Promise<Buffer> {
   const issue = passphraseIssue(password); if (issue) bad('INVALID_PAYLOAD', issue);
-  const payload = validatePayload(input);
-  const plain = Buffer.from(JSON.stringify(payload));
+  const plain = Buffer.from(JSON.stringify(input));
   if (plain.length > TRANSFER_LIMITS.payload) { plain.fill(0); bad('TOO_LARGE', '项目内容超过 10 MiB'); }
-  const h: Envelope = { format: 'willyou.project', version: 1, kdf: { ...PARAMS, salt: randomBytes(16).toString('base64') }, cipher: { name: 'aes-256-gcm', nonce: randomBytes(12).toString('base64'), tag: '' }, ciphertext: '' };
+  const h: Envelope = { format, version: 1, kdf: { ...PARAMS, salt: randomBytes(16).toString('base64') }, cipher: { name: 'aes-256-gcm', nonce: randomBytes(12).toString('base64'), tag: '' }, ciphertext: '' };
   let key: Buffer | undefined;
   try {
     key = await keyFor(password, strictBase64(h.kdf.salt));
@@ -177,8 +177,8 @@ export async function encryptProject(input: PortableProject, password: string): 
     return Buffer.from(JSON.stringify(h));
   } finally { key?.fill(0); plain.fill(0); }
 }
-export async function decryptProject(raw: Uint8Array, password: string): Promise<PortableProject> {
-  const h = inspectEnvelope(raw);
+export async function decryptTransfer(raw: Uint8Array, password: string, format: Envelope['format']): Promise<unknown> {
+  const h = inspectEnvelope(raw, format);
   if (typeof password !== 'string' || Buffer.byteLength(password) > 1024) bad('UNLOCK_FAILED', '口令不正确，或文件已经损坏');
   let key: Buffer | undefined, partial: Buffer | undefined, plain: Buffer | undefined;
   try {
@@ -187,6 +187,13 @@ export async function decryptProject(raw: Uint8Array, password: string): Promise
     decipher.setAAD(aad(h)); decipher.setAuthTag(strictBase64(h.cipher.tag));
     try { partial = decipher.update(strictBase64(h.ciphertext)); plain = Buffer.concat([partial, decipher.final()]); }
     catch { return bad('UNLOCK_FAILED', '口令不正确，或文件已经损坏'); }
-    return validatePayload(strictJson(decodeUtf8(plain)));
+    return strictJson(decodeUtf8(plain));
   } finally { key?.fill(0); partial?.fill(0); plain?.fill(0); }
+}
+
+export function encryptProject(input: PortableProject, password: string): Promise<Buffer> {
+  return encryptTransfer(validatePayload(input), password, 'willyou.project');
+}
+export async function decryptProject(raw: Uint8Array, password: string): Promise<PortableProject> {
+  return validatePayload(await decryptTransfer(raw, password, 'willyou.project'));
 }

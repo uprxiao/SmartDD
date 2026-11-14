@@ -16,12 +16,12 @@ import {readApplicationRunPlan,storeApplicationRunPlan,verifyApplicationRunPlan,
 
 const bindingSchema = z.object({ appId: z.string().regex(/^[a-z][a-z0-9-]{0,19}$/),slot: z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),connectionId: z.uuid().nullable(),identityRevision: z.number().int().positive().nullable(),bindingRevision: z.number().int().nonnegative() }).strict();
 const bindingsSchema = z.array(bindingSchema).max(64).refine(items => new Set(items.map(i => i.appId + ':' + i.slot)).size === items.length);
-const reserveSchema = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),snapshotHash: z.string().regex(/^[a-f0-9]{64}$/),bindings: bindingsSchema }).strict();
+const reserveSchema = z.object({ taskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/),snapshotHash: z.string().regex(/^[a-f0-9]{64}$/),bindings: bindingsSchema,bindingMode:z.enum(['current','run']).default('current') }).strict();
 export type RunBindingRevision = z.infer<typeof bindingSchema>;
 export interface RunRow {
   run_id: string;task_id: string;project_id: string;runner: string;state: CapabilityRunRecord['state'];snapshot_hash: string;
   owner_instance_id: string | null;owner_pid: number | null;owner_started_at: string | null;pid: number | null;process_started_at: string | null;pty_id: string;
-  bindings_json: string;started_at: string;ended_at: string | null;error_code: string | null;revocation_state: 'open' | 'revoking' | 'revoked';
+  binding_mode?:'current'|'run';bindings_json: string;started_at: string;ended_at: string | null;error_code: string | null;revocation_state: 'open' | 'revoking' | 'revoked';
 }
 export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
@@ -33,7 +33,7 @@ export interface RunContext { plan?:ApplicationRunPlan;
   /** R17 view only: CLI command prefixes of applications this project has not enabled, with their guidance. */
   notEnabledCommands?():{app:string;code:'APP_NOT_ENABLED';message:string}[];
   /** R17 view only: the session as recorded at creation (its original connections), for source-change notices. */
-  recorded?:CapabilitySessionSnapshot;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal }
+  bindingMode?:'run';recorded?:CapabilitySessionSnapshot;run: CapabilityRunRecord;snapshot: CapabilitySessionSnapshot;bindings: RunBindingRevision[];signal: AbortSignal }
 export interface RunRegistryDeps {
   /** Read current local policy/revisions; no network, filesystem or asynchronous work in C. */
   assertCurrent(snapshot: CapabilitySessionSnapshot,bindings: readonly RunBindingRevision[]): void;
@@ -41,7 +41,7 @@ export interface RunRegistryDeps {
   revoke(runId: string,reason: string): void | Promise<void>;
   processes: ProcessIdentityReader;
   /** Host-only composition. No caller or model argument can supply a plan. */
-  createPlan?(snapshot:CapabilitySessionSnapshot,snapshotHash:string,runId:string):ApplicationRunPlan;
+  createPlan?(snapshot:CapabilitySessionSnapshot,snapshotHash:string,runId:string,bindings?:readonly RunBindingRevision[]):ApplicationRunPlan;
   /** R17: per-call view of the project's current applications; the launch plan keeps only run identity and entry availability. */
   currentAuthorization?(context:RunContext):RunContext;
   revocationTimeoutMs?: number;
@@ -183,13 +183,13 @@ export class CapabilityRunRegistry {
   }
   private view(row: RunRow): CapabilityRunRecord { return { runId: row.run_id,taskId: row.task_id,projectId: row.project_id,runner: row.runner,state: row.state,snapshotHash: row.snapshot_hash,pid: row.pid,processStartedAt: row.process_started_at,startedAt: row.started_at,endedAt: row.ended_at }; }
   get(runId: string): CapabilityRunRecord { return this.view(this.row(runId)); }
-  async reserve(input: z.infer<typeof reserveSchema>,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation);}
-  private async reserveManaged(input: z.infer<typeof reserveSchema>,reservation?: {runId:string;ptyId:string}): Promise<OwnedCapabilityRun> {
+  async reserve(input: z.input<typeof reserveSchema>,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation);}
+  private async reserveManaged(input: z.input<typeof reserveSchema>,reservation?: {runId:string;ptyId:string}): Promise<OwnedCapabilityRun> {
     const parsed = reserveSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','运行准备参数无效或含未允许字段');
     if (this.closed) throw new ApplicationError('CANCELED','此宿主的应用运行服务已停止');
     if (reservation && (!z.uuid().safeParse(reservation.runId).success || !z.uuid().safeParse(reservation.ptyId).success)) throw new ApplicationError('INVALID_INPUT','宿主预留运行身份无效');
     const value = parsed.data, runId = reservation?.runId ?? randomUUID(), ptyId = reservation?.ptyId ?? randomUUID(), processId = randomUUID(), leaseId = randomUUID(); let selectionHash = '';
-    const plan=this.deps.createPlan?verifyApplicationRunPlan(this.deps.createPlan((await this.sessions.get(value.taskId)).snapshot,value.snapshotHash,runId)):undefined;
+    const plan=this.deps.createPlan?verifyApplicationRunPlan(this.deps.createPlan((await this.sessions.get(value.taskId)).snapshot,value.snapshotHash,runId,value.bindingMode==='run'?value.bindings:undefined)):undefined;
     if(plan&&(plan.runId!==runId||plan.taskId!==value.taskId||plan.snapshotHash!==value.snapshotHash))throw new ApplicationError('SCOPE_DENIED','宿主运行计划身份不匹配');
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       if (this.closed) throw new ApplicationError('CANCELED','运行准备已取消');
@@ -200,7 +200,7 @@ export class CapabilityRunRegistry {
       if (this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND state NOT IN ('stopped','failed')").get(value.taskId)) throw new ApplicationError('RESOURCE_BUSY','原任务仍有运行或待核查占用');
       this.deps.assertCurrent(session.snapshot,value.bindings);const timestamp=now();
       const resources=this.closure(value.taskId);
-      this.store.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,revocation_state) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,'open')").run(runId,value.taskId,session.snapshot.projectId,session.snapshot.runner,timestamp,value.snapshotHash,this.instanceId,this.host.pid,this.host.startedAt,canonicalJson(value.bindings),ptyId);
+      this.store.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,binding_mode,revocation_state) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,?,'open')").run(runId,value.taskId,session.snapshot.projectId,session.snapshot.runner,timestamp,value.snapshotHash,this.instanceId,this.host.pid,this.host.startedAt,canonicalJson(value.bindings),ptyId,value.bindingMode);
       // R17: the host composes the plan from the project's current applications; it only has to belong to this project.
       if(plan){if(plan.projectId!==session.snapshot.projectId)throw new ApplicationError('SCOPE_DENIED','运行计划不属于本项目');storeApplicationRunPlan(this.store,plan);}
       this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId,resources[0].resourceId,runId,this.instanceId,this.host.pid,this.host.startedAt,timestamp);
@@ -407,13 +407,13 @@ export class CapabilityRunRegistry {
     const { row,owned,session,plan } = this.mine(runId);
     if (owned.abort.signal.aborted || row.state !== 'active' || row.revocation_state !== 'open') throw new ApplicationError('SCOPE_DENIED','当前运行已停止或尚未激活');
     const bindings = this.current(row,session); this.checkProtection(row,owned);
-    const context:RunContext = { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal };
+    const context:RunContext = { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,...(row.binding_mode==='run'?{bindingMode:'run' as const}:{}),signal: owned.abort.signal };
     return this.deps.currentAuthorization?this.deps.currentAuthorization(context):context;
   }
   bridgePreparation(runId: string): RunContext {
     const { row,owned,session,plan } = this.mine(runId);
     if (owned.abort.signal.aborted || !['prepared','active'].includes(row.state)) throw new ApplicationError('SCOPE_DENIED','当前运行不能准备工具桥');
-    const bindings = this.current(row,session); this.checkProtection(row,owned); return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,signal: owned.abort.signal };
+    const bindings = this.current(row,session); this.checkProtection(row,owned); return { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,...(row.binding_mode==='run'?{bindingMode:'run' as const}:{}),signal: owned.abort.signal };
   }
   assertBridge(runId: string,processId: string): RunContext {
     const context = this.assertActive(runId), child = this.processRow(runId,processId);

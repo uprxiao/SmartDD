@@ -1,5 +1,5 @@
 // M6 shell follows the approved local prototype; task terminals remain mounted.
-import { ArrowLeft, Download, FolderOpen, Moon, PanelLeft, Plus, Sun } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Moon, PanelLeft, Plus, Sun } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,6 @@ import { RuntimeBar, TaskHeader } from '@renderer/views/task-chrome';
 import { TaskView } from '@renderer/views/task-view';
 import { FileWorkspacePanel } from '@renderer/features/files/workspace-panel';
 import {TaskBrowserWorkspace,useBrowserShortcuts} from '@renderer/features/browser/workspace';
-import appIcon from '../../../assets/branding/app-icon.png';
 
 export const Workspace = observer(function Workspace() {
   const { t } = useTranslation();
@@ -37,11 +36,8 @@ export const Workspace = observer(function Workspace() {
   const resize = (value: number) => navigation.setSidebarWidth(value);
   const resourceProject = (view === 'task' ? tasksStore.current?.projectId : null)
     ?? navigation.currentProjectId ?? navigation.homePreset?.projectId;
-  const railSelection: RailIconName | null = view === 'home' || view === 'task' ? 'home'
-    : scheduled ? 'clock' : view === 'project' ? 'branch'
-    : settings && navigation.settingsSection === 'aiProfiles' ? 'bot'
-    : apps || settings && navigation.settingsSection === 'capabilities' ? 'grid'
-    : settings && navigation.settingsSection === 'about' ? 'more' : null;
+  const railSelection: RailIconName | null = view === 'home' || view === 'task' || view === 'project' ? 'home'
+    : scheduled ? 'clock' : settings ? 'settings' : apps ? 'grid' : null;
   const railButton = (name: RailIconName, label: string, onClick: () => void) => <button type="button" className={`rail-link ${name === 'home' ? 'rail-home' : ''}`} aria-label={label} aria-current={railSelection === name ? 'page' : undefined} title={label} onClick={onClick}><RailIcon name={name} selected={railSelection === name} /></button>;
   return (
     <div className={`app codex-frame ${apps ? 'apps-mode' : settings ? 'settings-mode' : scheduled ? 'scheduled-mode' : view === 'home' ? 'home-mode' : ''} ${!isLeftOpen ? 'sidebar-collapsed' : ''} ${navigation.filePanelOpen && (view === 'task' || view === 'project') ? 'm9-active' : ''}`} style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
@@ -54,14 +50,8 @@ export const Workspace = observer(function Workspace() {
       <nav className="app-rail" aria-label={t('m6.navigation')}><div className="rail-links">
         {railButton('home', t('nav.home'), () => navigation.newTask())}
         {railButton('clock', t('m6.scheduled'), () => navigation.navigate('scheduled'))}
-        {railButton('bot', t('settings.sections.aiProfiles'), () => navigation.openSettings('aiProfiles'))}
-        {railButton('more', t('m6.about'), () => navigation.openSettings('about'))}
-        <span className="rail-divider" />
-        {railButton('branch', t('m6.projectResources'), () => resourceProject ? navigation.openProject(resourceProject) : navigation.newTask())}
+        {railButton('settings', t('nav.settings'), () => navigation.openSettings('general'))}
         {railButton('grid', t('settings.sections.applications'), () => navigation.openApplications('catalog',resourceProject??undefined))}
-        </div><div className="rail-bottom">
-          <button className="rail-download" title={t('m6.about')} onClick={() => navigation.openSettings('about')}><Download size={18} /></button>
-          <button className="rail-avatar" title={t('nav.settings')} onClick={() => navigation.openSettings()}><img src={appIcon} alt="WillYou" /></button>
         </div>
       </nav>
       {!settings && !scheduled && !apps && isLeftOpen && <LeftSidebar key="sidebar" />}

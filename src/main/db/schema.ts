@@ -1,6 +1,22 @@
 import { sql } from 'drizzle-orm';
 import { blob, foreignKey, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
+export const capabilityRegistry = sqliteTable('capability_registry', {
+  id: text('id').primaryKey(), kind: text('kind').notNull(), name: text('name').notNull(), runner: text('runner').notNull(),
+  sourcePath: text('source_path').notNull(), sourceScope: text('source_scope').notNull(), projectRoot: text('project_root'),
+  sourceLabel: text('source_label').notNull(), version: text('version'), validity: text('validity').notNull(), issues: text('issues').notNull(),
+  managed: integer('managed', {mode:'boolean'}).notNull().default(false), enabled: integer('enabled', {mode:'boolean'}).notNull().default(true),
+  autoApprove: integer('auto_approve', {mode:'boolean'}).notNull().default(false), present: integer('present', {mode:'boolean'}).notNull().default(true),
+  discoveredAt: integer('discovered_at').notNull(), scannedAt: integer('scanned_at').notNull(),
+});
+export const capabilityRegistryPreferences = sqliteTable('capability_registry_preferences', {
+  id: integer('id').primaryKey(), autoManage: integer('auto_manage', {mode:'boolean'}).notNull().default(false),builtinDisabled:text('builtin_disabled').notNull().default('[]'),
+});
+export const capabilitySkillPlacements=sqliteTable('capability_skill_placements',{
+  id:text('id').primaryKey(), capabilityId:text('capability_id').notNull().references(()=>capabilityRegistry.id),
+  targetRoot:text('target_root').notNull(), name:text('name').notNull(), projectRoot:text('project_root'),
+});
+
 // Column layout of `sessions` / `app_secrets` matches the M0 tables so the first
 // migration (CREATE TABLE IF NOT EXISTS) adopts existing databases unchanged.
 
@@ -158,6 +174,48 @@ export const aiProfiles = sqliteTable('ai_profiles', {
   ...timestamps,
 });
 
+/** M13 keeps profile IDs stable so existing task references and encrypted keys survive migration. */
+export const aiTools = sqliteTable('ai_tools', {
+  id: text('id').primaryKey(),
+  kind: text('kind').notNull(),
+  executable: text('executable').notNull(),
+  customPath: text('custom_path'),
+  version: text('version'),
+  installed: integer('installed', { mode: 'boolean' }).notNull().default(false),
+  login: text('login', { enum: ['none', 'subscription', 'api', 'local'] }).notNull().default('none'),
+  ...timestamps,
+});
+
+export const aiProviders = sqliteTable('ai_providers', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  preset: text('preset'),
+  endpoints: text('endpoints').notNull(),
+  authType: text('auth_type', { enum: ['bearer', 'api-key'] }).notNull().default('bearer'),
+  secretRef: text('secret_ref'),
+  keyHint: text('key_hint'),
+  identityRevision: integer('identity_revision').notNull().default(1),
+  models: text('models').notNull().default('[]'),
+  recommended: text('recommended').notNull().default('{}'),
+  refreshedAt: integer('refreshed_at'),
+  ...timestamps,
+});
+
+export const aiRunConfigs = sqliteTable('ai_run_configs', {
+  profileId: text('profile_id').primaryKey().references(() => aiProfiles.id, { onDelete: 'cascade' }),
+  toolId: text('tool_id').notNull().references(() => aiTools.id),
+  source: text('source', { enum: ['login', 'provider', 'legacy'] }).notNull(),
+  providerId: text('provider_id').references(() => aiProviders.id),
+  models: text('models').notNull().default('[]'),
+  defaultModel: text('default_model'),
+  homeVisible: integer('home_visible', { mode: 'boolean' }).notNull().default(true),
+  loggedOut: integer('logged_out', { mode: 'boolean' }).notNull().default(false),
+  nameCustomized: integer('name_customized', { mode: 'boolean' }).notNull().default(true),
+  sortOrder: integer('sort_order').notNull(),
+  legacyReason: text('legacy_reason'),
+  migrationVersion: integer('migration_version').notNull().default(1),
+});
+
 /**
  * A task is one CLI conversation (PRD F05; called "session" in the PRD). Only metadata is kept,
  * never terminal output. Profile and project fields are snapshots taken at launch.
@@ -192,6 +250,11 @@ export const tasks = sqliteTable(
 );
 
 // Installed standard packages are immutable; upgrading switches the active version only.
+export const aiTaskSnapshots = sqliteTable('ai_task_snapshots', {
+  taskId: text('task_id').primaryKey().references(() => tasks.id, { onDelete: 'cascade' }),
+  snapshot: text('snapshot').notNull(),
+});
+
 export const skillVersions = sqliteTable('skill_versions', {
   id: text('id').primaryKey(),
   skillId: text('skill_id').notNull(),
@@ -265,7 +328,7 @@ export const capabilitySessionRefs = sqliteTable('capability_session_refs', {
   taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), refKind: text('ref_kind').notNull(), refId: text('ref_id').notNull().references(() => capabilityResources.resourceId), refHash: text('ref_hash').notNull(), relativePath: text('relative_path').notNull(),
 }, t => ({ pk: primaryKey({ columns: [t.taskId, t.refKind, t.refId] }), byResource: index('capability_session_refs_resource_idx').on(t.refId) }));
 export const capabilityRuns = sqliteTable('capability_runs', {
-  runId: text('run_id').primaryKey(), taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), projectId: text('project_id').notNull(), runner: text('runner').notNull(), pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), startedAt: text('started_at').notNull(), endedAt: text('ended_at'), errorCode: text('error_code'), snapshotHash: text('snapshot_hash'),ownerInstanceId: text('owner_instance_id'),ownerPid: integer('owner_pid'),ownerStartedAt: text('owner_started_at'),bindingsJson: text('bindings_json').notNull().default('[]'),ptyId: text('pty_id'),revocationState: text('revocation_state').notNull().default('open'),
+  runId: text('run_id').primaryKey(), taskId: text('task_id').notNull().references(() => capabilitySessionSnapshots.taskId), projectId: text('project_id').notNull(), runner: text('runner').notNull(), pid: integer('pid'), processStartedAt: text('process_started_at'), state: text('state').notNull(), startedAt: text('started_at').notNull(), endedAt: text('ended_at'), errorCode: text('error_code'), snapshotHash: text('snapshot_hash'),ownerInstanceId: text('owner_instance_id'),ownerPid: integer('owner_pid'),ownerStartedAt: text('owner_started_at'),bindingsJson: text('bindings_json').notNull().default('[]'),bindingMode:text('binding_mode',{enum:['current','run']}).notNull().default('current'),ptyId: text('pty_id'),revocationState: text('revocation_state').notNull().default('open'),
 });
 export const capabilitySchemaMigrations = sqliteTable('capability_schema_migrations', {
   appId: text('app_id').notNull(), migrationId: text('migration_id').notNull(), checksum: text('checksum').notNull(), fromVersion: integer('from_version').notNull(), toVersion: integer('to_version').notNull(), appliedAt: text('applied_at').notNull(), hostBuild: text('host_build').notNull(),
@@ -274,7 +337,7 @@ export const capabilitySchemaMigrations = sqliteTable('capability_schema_migrati
 export const applicationConnections = sqliteTable('application_connections', {
   id: text('id').primaryKey(), appId: text('app_id').notNull(), providerId: text('provider_id').notNull(), name: text('name').notNull(), configSchemaVersion: integer('config_schema_version').notNull().default(1), configJson: text('config_json').notNull(),
   revision: integer('revision').notNull(), configRevision: integer('config_revision').notNull(), identityRevision: integer('identity_revision').notNull(), verifiedIdentityJson: text('verified_identity_json').notNull(), identityHash: text('identity_hash').notNull(),
-  secretRef: text('secret_ref'), secretRevision: integer('secret_revision').notNull(), policyRevision: integer('policy_revision').notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), authState: text('auth_state').notNull(), health: text('health').notNull(), healthCode: text('health_code'), healthMessage: text('health_message'), testedAt: text('tested_at'), cleanupPending: integer('cleanup_pending', { mode: 'boolean' }).notNull().default(false), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
+  secretRef: text('secret_ref'), secretRevision: integer('secret_revision').notNull(), policyRevision: integer('policy_revision').notNull(), enabled: integer('enabled', { mode: 'boolean' }).notNull(), authState: text('auth_state').notNull(), health: text('health').notNull(), healthCode: text('health_code'), healthMessage: text('health_message'), testedAt: text('tested_at'), deletedAt: text('deleted_at'), cleanupPending: integer('cleanup_pending', { mode: 'boolean' }).notNull().default(false), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
 }, t => ({ byProvider: index('application_connections_provider_idx').on(t.providerId, t.appId), identityKey: uniqueIndex('application_connections_identity_key').on(t.id, t.providerId, t.appId) }));
 export const applicationSecretChanges = sqliteTable('application_secret_changes', {
   operationId: text('operation_id').primaryKey(), connectionId: text('connection_id').notNull(), expectedRevision: integer('expected_revision').notNull(), oldSecretRef: text('old_secret_ref'), newSecretRef: text('new_secret_ref'), candidateHash: text('candidate_hash').notNull(), candidateJson: text('candidate_json').notNull(), verifiedIdentityJson: text('verified_identity_json'), compatibilityPlanJson: text('compatibility_plan_json'), expiresAt: text('expires_at').notNull(), state: text('state').notNull(), errorCode: text('error_code'), createdAt: text('created_at').notNull(), updatedAt: text('updated_at').notNull(),
@@ -457,6 +520,8 @@ export const capabilitySkillObservations=sqliteTable('capability_skill_observati
 
 export const mailSenderConfirmations=sqliteTable('mail_sender_confirmations',{projectId:text('project_id').primaryKey(),bindingHash:text('binding_hash').notNull(),bindingJson:text('binding_json').notNull(),method:text('method').notNull(),receiptId:text('receipt_id').notNull().unique(),senderId:text('sender_id'),confirmedAt:text('confirmed_at').notNull(),recordHash:text('record_hash').notNull()});
 
+export const mailSenderConfirmationVersions=sqliteTable('mail_sender_confirmation_versions',{projectId:text('project_id').notNull(),bindingHash:text('binding_hash').notNull(),bindingJson:text('binding_json').notNull(),method:text('method').notNull(),receiptId:text('receipt_id').notNull().unique(),senderId:text('sender_id'),confirmedAt:text('confirmed_at').notNull(),recordHash:text('record_hash').notNull()},t=>({pk:primaryKey({columns:[t.projectId,t.bindingHash,t.receiptId]})}));
+
 export const pluginPackages=sqliteTable('plugin_packages',{
   packageHash:text('package_hash').primaryKey(),bundleHash:text('bundle_hash').notNull(),appId:text('app_id').notNull(),version:text('version').notNull(),relativePath:text('relative_path').notNull().unique(),manifestJson:text('manifest_json').notNull(),createdAt:text('created_at').notNull(),
 });
@@ -487,3 +552,10 @@ export const pluginProjectPreferences=sqliteTable('plugin_project_preferences',{
 export const pluginBuiltinMigrations=sqliteTable('plugin_builtin_migrations',{
   appId:text('app_id').primaryKey(),migrationVersion:integer('migration_version').notNull(),packageHash:text('package_hash').notNull(),sourceHash:text('source_hash').notNull(),tablesJson:text('tables_json').notNull(),completedAt:text('completed_at').notNull(),
 });
+
+export const builtinPluginDefaults=sqliteTable('builtin_plugin_defaults',{
+  appId:text('app_id').notNull(),slot:text('slot').notNull(),connectionId:text('connection_id').references(()=>applicationConnections.id),revision:integer('revision').notNull().default(0),
+},t=>({pk:primaryKey({columns:[t.appId,t.slot]})}));
+export const builtinPluginProjectPreferences=sqliteTable('builtin_plugin_project_preferences',{
+  projectId:text('project_id').notNull(),appId:text('app_id').notNull(),slot:text('slot').notNull(),mode:text('mode',{enum:['follow','individual']}).notNull(),
+},t=>({pk:primaryKey({columns:[t.projectId,t.appId,t.slot]}),project:foreignKey({columns:[t.projectId,t.appId],foreignColumns:[applicationProjectSettings.projectId,applicationProjectSettings.appId]}).onDelete('cascade')}));

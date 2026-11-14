@@ -269,3 +269,35 @@
 .m10-plan-app { padding-top: 10px; border-top: 1px solid var(--border); }
 .m10-plan-app > .m10-state { justify-self: start; }
 .m10-plan-app[data-active="none"] > strong { color: var(--muted); }
+
+/* Shared sidebar: discovery marker stays visible before opening Skills. */
+.m10-sidebar .m13-nav-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;margin-left:auto}
+
+.m13-session-plugin-list{display:flex;flex-direction:column;border-top:1px solid var(--border)}
+.m13-session-plugin-row{display:flex;align-items:center;gap:14px;padding:12px 6px;border-bottom:1px solid var(--border);font-size:13px;min-height:62px}
+.m13-session-plugin-main{flex:1;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.m13-session-plugin-main b{font-size:14px;font-weight:500}
+.m13-session-plugin-main small{flex-basis:100%;color:var(--secondary);font-size:12px;line-height:19px;overflow-wrap:anywhere}
+.m13-session-plugin-state{display:inline-flex;font-size:11px;line-height:16px;font-weight:500;padding:2px 8px;border-radius:10px;max-width:50%;background:var(--hover);color:var(--secondary)}
+.m13-session-plugin-state.ok{background:var(--success-bg);color:var(--success)}
+.m13-session-plugin-state.warn{background:#fdf1e3;color:#a65a0b}
+:root.ydark .m13-session-plugin-state.warn{background:#3a2c18;color:#f0b467}
+
+/* M13 confirmed compact session-plugin dialog; full diagnostics stay opt-in. */
+.m10-dialog.m13-session-compact{width:min(480px,calc(100vw - 40px));max-height:calc(100dvh - 60px);padding:0;border:1px solid var(--border-strong,var(--border));border-radius:17px;font-family:inherit;line-height:1.5;flex-direction:column;overflow:hidden}
+.m10-dialog.m13-session-compact[open]{display:flex}
+.m13-session-compact>header{position:static;flex:0 0 auto;gap:12px;padding:20px 22px 12px;margin:0;border:0}
+.m13-session-compact>header>div{flex:1;min-width:0}
+.m13-session-compact>header h2{font-size:16px;line-height:1.5;letter-spacing:normal}
+.m13-session-compact .m10-dialog-subtitle{margin:3px 0 0;font-size:12px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m13-session-compact>header .m10-icon{margin:0;width:24px;height:24px}
+.m13-session-compact>.m10-session-applications{flex:1;min-height:0;padding:4px 22px 8px;overflow:auto}
+.m13-session-compact .m13-session-plugin-main{display:block;overflow:hidden}
+.m13-session-compact .m13-session-plugin-main b{margin-right:7px}
+.m13-session-compact .m13-session-plugin-main small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+.m13-session-compact .m13-session-plugin-state{flex-shrink:0;max-width:none;white-space:nowrap}
+.m13-session-hint{margin:12px 0 0;color:var(--secondary);font-size:12px;line-height:1.5}
+.m13-session-diagnostics{margin-top:12px;font-size:12px}
+.m13-session-diagnostics>summary{cursor:pointer;color:var(--secondary)}
+.m13-session-diagnostics-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:12px}
+.m13-session-compact>footer.m10-session-footer{flex:0 0 auto;padding:14px 22px 18px;margin:0;justify-content:flex-end}

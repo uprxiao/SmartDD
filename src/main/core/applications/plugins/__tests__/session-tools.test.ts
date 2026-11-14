@@ -1,3 +1,6 @@
+import {ApplicationSessionDiagnostics} from '../../session-diagnostics';
+import type {ApplicationConnectionService} from '../../connection-service';
+import type {ApplicationSelectionService} from '../../selection-service';
 import {drizzle} from 'drizzle-orm/better-sqlite3';
 import {SecretsStore} from '../../../../secrets';
 import * as dbSchema from '../../../../db/schema';
@@ -228,7 +231,10 @@ describe('external plugin through production run authorization and invocation le
     await install(candidate('0.2.0',{connection:true}));const [first]=connectionRows();await launch('mcp',false,[{slot:'tracker-api',connectionId:first,identityRevision:1}]);
     const get=vi.fn(()=> 'synthetic'),policy=new PluginProjectPolicy(f.store,life,{get},{assertRun:id=>runs.assertActive(id),approve:async()=>{}}),context=runs.assertActive(run!.runId),cap=selection.capabilities.find(c=>c.id===read)!;
     f.sqlite.prepare("UPDATE application_project_settings SET enabled=0 WHERE project_id='p1' AND app_id='demo-tracker'").run();
-    await expect(policy.connection(context,selection,cap,context.signal)).rejects.toMatchObject({code:'APP_NOT_ENABLED'});
+    await expect(policy.connection(context,selection,cap,context.signal)).rejects.toMatchObject({code:'APP_NOT_ENABLED',message:'本项目已关闭该插件'});expect(get).not.toHaveBeenCalled();
+    f.sqlite.prepare("UPDATE application_catalog_state SET enabled=0 WHERE app_id='demo-tracker'").run();
+    await expect(policy.connection(context,selection,cap,context.signal)).rejects.toMatchObject({code:'APP_NOT_ENABLED',message:'插件已停用'});expect(get).not.toHaveBeenCalled();
+    f.sqlite.prepare("UPDATE application_catalog_state SET enabled=1 WHERE app_id='demo-tracker'").run();
     f.sqlite.prepare("UPDATE application_project_settings SET enabled=1 WHERE project_id='p1' AND app_id='demo-tracker'").run();
     f.sqlite.prepare('UPDATE application_connections SET config_json=? WHERE id=?').run('{"kind":"tracker-api","authMode":"token","baseUrl":123}',first);
     await expect(policy.connection(context,selection,cap,context.signal)).rejects.toMatchObject({code:'CONFIG_INCOMPATIBLE'});expect(get).not.toHaveBeenCalled();
@@ -342,4 +348,44 @@ describe('production default write confirmation with real run ledger and sandbox
       expect(s.host.approvals.recover()).toEqual({recovered:[],pending:[]});expect(f.sqlite.prepare('SELECT state,effect_state FROM application_invocations WHERE operation_id=?').get(review.operationId)).toEqual({state:'unknown',effect_state:'unknown'});expect(calls()).toHaveLength(0);
     }finally{state.mockRestore();}
   });
+});
+
+function diagnosticTask(taskId:string){
+ f.sqlite.prepare("INSERT OR IGNORE INTO tasks(id,project_id,cwd,runner,title,native_session_id,created_at,updated_at) VALUES(?,'p1',?,'claude','T080 public diagnostic','public-history',1,1)").run(taskId,f.root);
+}
+function readOnlyPluginDiagnostic(){
+ const deps={runs:()=>runs,activePty:(id:string)=>run&&runs.get(run.runId).taskId===id?run.ptyId:null,
+  externalPluginState:(id:string,_projectId:string)=>{
+   const state=life.state(id),manifest=state.installed&&state.hash?life.packages.get(state.hash).plugin.manifest:null;
+   return {state,manifest,projectEnabled};
+  }};
+ return new ApplicationSessionDiagnostics(f.store,{get:(id:string)=>{const row=f.sqlite.prepare('SELECT id,name FROM application_connections WHERE id=?').get(id);if(!row)throw new Error('No public connection metadata');return row;}} as unknown as ApplicationConnectionService,{} as ApplicationSelectionService,deps);
+}
+describe('M13 session plugin metadata follows current execution state without changing launch selection',()=>{
+ it('includes an external selection and reports installed/updated/disabled/project-disabled/uninstalled against its original launch version',async()=>{
+  await launch();const taskId=runs.assertActive(run!.runId).run.taskId;diagnosticTask(taskId);const d=readOnlyPluginDiagnostic(),original=f.sessions.inspectCoordinated(taskId).pointer.snapshotHash,before=count();
+  const inspect=async()=>{const value=await d.inspect(taskId);expect(value.selection).toBe('fixed');return value;};
+  expect(await inspect()).toMatchObject({plugins:[{appId:'demo-tracker',launchVersion:'0.1.0',currentVersion:'0.1.0',state:'available'}]});
+  await install(candidate('0.2.0',{extra:true}));
+  expect(await inspect()).toMatchObject({plugins:[{appId:'demo-tracker',launchVersion:'0.1.0',currentVersion:'0.2.0',state:'available'}]});
+  await life.setEnabled('demo-tracker',false,life.state('demo-tracker').revision);
+  expect(await inspect()).toMatchObject({plugins:[{appId:'demo-tracker',launchVersion:'0.1.0',state:'disabled'}]});
+  await life.setEnabled('demo-tracker',true,life.state('demo-tracker').revision);projectEnabled=false;
+  expect(await inspect()).toMatchObject({plugins:[{appId:'demo-tracker',state:'project-disabled'}]});projectEnabled=true;
+  await life.uninstall('demo-tracker',false,life.state('demo-tracker').revision);
+  expect(await inspect()).toMatchObject({plugins:[{appId:'demo-tracker',launchVersion:'0.1.0',currentVersion:null,state:'uninstalled'}]});
+  expect(f.sessions.inspectCoordinated(taskId).pointer.snapshotHash).toBe(original);expect(count()).toEqual(before);expect(calls()).toHaveLength(0);expect(approve).not.toHaveBeenCalled();expect(connection).not.toHaveBeenCalled();
+ });
+ it('reports only the startup-bound connection after a real host binding table default changes, with no credential lookup',async()=>{
+  const ids=connectionRows();await launch('mcp',false,[{slot:'tracker-api',connectionId:ids[0],identityRevision:1}]);const taskId=runs.assertActive(run!.runId).run.taskId;diagnosticTask(taskId);const d=readOnlyPluginDiagnostic();
+  f.sqlite.prepare("UPDATE application_project_bindings SET connection_id=?,identity_revision=1 WHERE project_id='p1' AND app_id='demo-tracker' AND slot='tracker-api'").run(ids[1]);
+  expect(await d.inspect(taskId)).toMatchObject({plugins:[{appId:'demo-tracker',connections:[{slot:'tracker-api',id:ids[0],name:'Synthetic 0'}]}]});
+  expect(f.sessions.inspectCoordinated(taskId).snapshot).toMatchObject({schema:3,externalPlugins:[{connections:[{connectionId:ids[0],identityRevision:1}]}]});expect(connection).not.toHaveBeenCalled();expect(approve).not.toHaveBeenCalled();expect(count()).toEqual({n:0});
+ });
+ it('does not backfill currently installed plugins into unknown native history',async()=>{
+  const taskId=randomUUID();diagnosticTask(taskId);const d=readOnlyPluginDiagnostic();
+  const before=f.sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(taskId);
+  expect(await d.inspect(taskId)).toMatchObject({selection:'unknown-history',plugins:[]});
+  expect(f.sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(taskId)).toEqual(before);expect(f.sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(taskId)).toBeUndefined();expect(count()).toEqual({n:0});
+ });
 });

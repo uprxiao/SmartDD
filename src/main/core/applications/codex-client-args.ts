@@ -1,5 +1,6 @@
 import {parse as parseToml} from 'smol-toml';
 import {ApplicationError} from '@shared/applications';
+import {expandCodexPermissionShorthands} from '@shared/agent-permissions';
 
 export const codexPermissionKeys=['approval_policy','approvals_reviewer','sandbox_mode','sandbox_workspace_write','default_permissions','permissions','network'] as const;
 export type CodexPermissionKey=typeof codexPermissionKeys[number];
@@ -10,6 +11,7 @@ const unsupported=()=>new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','本次 C
  * native thread/resume request instead. No setting is written to user config.
  */
 export function codexClientArgs(profile:readonly string[],managed:readonly string[],resume:boolean):{profile:string[];managed:string[];permissionKeys:CodexPermissionKey[]}{
+  try{profile=expandCodexPermissionShorthands(profile);}catch{throw unsupported();}
   const selected=new Set<CodexPermissionKey>();
   const project=(source:readonly string[])=>{
     const output:string[]=[];
@@ -26,13 +28,13 @@ export function codexClientArgs(profile:readonly string[],managed:readonly strin
         try{const parsed=parseToml(value.slice(0,split)+'=true'),roots=Object.keys(parsed);if(roots.length!==1)throw unsupported();if(codexPermissionKeys.includes(roots[0] as CodexPermissionKey))key=roots[0] as CodexPermissionKey;}
         catch{throw unsupported();}
       }
-      if(resume&&key){if(value===undefined)throw unsupported();selected.add(key);}
+      if(key){if(value===undefined)throw unsupported();selected.add(key);}
       // A dedicated per-run server replaces implicit daemon selection. Native
       // --no-daemon and --remote are mutually exclusive even for new tasks.
-      else if(flag!=='--no-daemon')output.push(...source.slice(i,i+width));
+      if(!(resume&&key)&&flag!=='--no-daemon')output.push(...source.slice(i,i+width));
       i+=width-1;
     }
     return output;
   };
-  const p=project(profile),m=project(managed);return{profile:p,managed:m,permissionKeys:[...selected]};
+  const p=project(profile),m=project(managed);return{profile:p,managed:m,permissionKeys:resume||selected.has('default_permissions')?[...selected]:[]};
 }

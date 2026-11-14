@@ -22,6 +22,29 @@ beforeEach(()=>{
 });
 afterEach(()=>{cleanup();client?.clear();vi.restoreAllMocks();Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');Reflect.deleteProperty(HTMLDialogElement.prototype,'close');});
 describe('real renderer for data-only plugin declarations',()=>{
+it('T077 page switches host connection name/mode across projects with the same username without mixing sources',async()=>{
+ const selection=(projectId:string)=>({mode:projectId==='p1'?'follow':'individual',connections:[{slot:'tracker-api',connectionId:projectId==='p1'?'connection-A':'connection-B',name:projectId==='p1'?'T077 connection A':'T077 connection B'}]});
+ api.pluginPageContext.mockImplementation(input=>Promise.resolve(ok({connectionScope:input.projectId==='p1'?'c'.repeat(64):'d'.repeat(64),connectionSummary:{username:'qa',name:'SPOOF_FROM_PLUGIN_CONFIG',mode:'untrusted'},connectionSelection:selection(input.projectId)})));
+ api.pluginRead.mockImplementation(input=>{const r=reply(input,list());return Promise.resolve({...r,value:{...r.value,connectionScope:input.projectId==='p1'?'c'.repeat(64):'d'.repeat(64),connectionSelection:selection(input.projectId)}});});
+ mount();await project('p1');await screen.findByRole('button',{name:'1'});
+ await waitFor(()=>expect(document.querySelector('.m13-plugin-pages')?.textContent).toContain('使用连接：T077 connection A'));
+ expect(document.querySelector('.m13-plugin-pages')?.textContent).toContain('跟随全局默认');
+ await project('p2');await screen.findByRole('button',{name:'1'});
+ await waitFor(()=>expect(document.querySelector('.m13-plugin-pages')?.textContent).toContain('使用连接：T077 connection B'));
+ expect(document.querySelector('.m13-plugin-pages')?.textContent).toContain('本项目个性化');
+ expect(document.querySelector('.m13-plugin-pages')?.textContent).not.toContain('T077 connection A');
+ expect(document.querySelector('.m13-plugin-pages')?.textContent).not.toContain('SPOOF_FROM_PLUGIN_CONFIG');
+ expect(document.querySelector('.m13-plugin-pages')?.textContent).not.toContain('跟随全局默认');
+});
+it('T077 next-page timeout uses approved unfinished-list notice and retains previous rows',async()=>{
+ api.pluginRead.mockImplementation(input=>Promise.resolve(input.input.cursor?{ok:false,code:'SOURCE_UNAVAILABLE',message:'第 2 页读取超时'}:reply(input,list(undefined,'cursor2',false))));
+ mount();await project();await screen.findByRole('button',{name:'1'});fireEvent.click(screen.getByRole('button',{name:/^(加载更多|读取下一页)$/}));
+ await screen.findByText(/列表读取未完成/);
+ expect(screen.getByRole('button',{name:'1'})).toBeTruthy();
+ expect(screen.getByText(/第 2 页读取超时/)).toBeTruthy();
+ expect(screen.getByRole('button',{name:'重试'})).toBeTruthy();
+});
+
   it('does not restart page reads when a child runtime closes or updates its health',async()=>{
     mount();await project();await screen.findByRole('button',{name:'1'});client.setQueryData(['applications','plugins'],[]);
     await act(async()=>{notifications.listener?.({kind:'plugin-runtime',appId:'demo-tracker'});await Promise.resolve();});
@@ -35,8 +58,8 @@ describe('real renderer for data-only plugin declarations',()=>{
   });
   it('preserves partial rows, uses the source cursor, and keeps previous rows when the next page fails',async()=>{
     api.pluginRead.mockImplementation(input=>Promise.resolve(input.input.cursor?{ok:false,code:'SOURCE_UNAVAILABLE',message:'第二页离线'}:reply(input,list(undefined,'cursor2',false))));
-    mount();await project();await screen.findByText(/PARTIAL_SOURCE/);fireEvent.click(screen.getByRole('button',{name:'加载更多'}));await screen.findByText(/第二页离线/);
-    expect(screen.getByRole('button',{name:'1'})).toBeTruthy();expect(screen.getByRole('button',{name:'重试下一页'})).toBeTruthy();expect(api.pluginRead).toHaveBeenLastCalledWith(expect.objectContaining({input:{kind:'bug',account:'qa',cursor:'cursor2'},connectionScope:'c'.repeat(64)}));
+    mount();await project();await screen.findByText(/PARTIAL_SOURCE/);fireEvent.click(screen.getByRole('button',{name:'读取下一页'}));await screen.findByText(/第二页离线/);
+    expect(screen.getByRole('button',{name:'1'})).toBeTruthy();expect(screen.getByRole('button',{name:'重试'})).toBeTruthy();expect(api.pluginRead).toHaveBeenLastCalledWith(expect.objectContaining({input:{kind:'bug',account:'qa',cursor:'cursor2'},connectionScope:'c'.repeat(64)}));
   });
   it('opens details using the opaque reference object and reads inert resource text under the same account scope',async()=>{
     api.pluginRead.mockImplementation(input=>Promise.resolve(reply(input,input.capability==='demo-tracker.object.get'?{id:'1',fields:{status:'open'},labels:{status:'状态'},body:{opaque:'BODY1'}}:input.capability==='demo-tracker.resource.read'?{mediaType:'text/html',encoding:'utf8',data:'<script>alert(1)</script><p>正文安全内容</p><img src="https://example.invalid/tracker">'}:list())));

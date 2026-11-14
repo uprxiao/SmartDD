@@ -17,7 +17,8 @@ import { ApplicationExecutionContexts, type ApplicationExecutionContext } from '
 import { ApplicationDataResources } from './data-resources';
 import { canonicalJson } from './manifest';
 import { PackageConfigViews } from './package-config-views';
-const listSchema=z.object({cursor:z.string().max(8192).nullable().optional(),limit:z.number().int().min(1).max(200).default(50)}).strict();
+const draftStateSchema=z.enum(['draft','sending','sent','failed','unknown']);
+const listSchema=z.object({state:draftStateSchema.optional(),cursor:z.string().max(8192).nullable().optional(),limit:z.number().int().min(1).max(200).default(50)}).strict();
 const getSchema=z.object({draftId:z.uuid(),revision:z.number().int().positive().optional()}).strict();
 const createSchema=z.object({content:draftContentSchema,queryDays:mailQueryDaysSchema.optional()}).strict();
 const updateSchema=z.object({draftId:z.uuid(),expectedRevision:z.number().int().positive(),content:draftContentSchema,queryDays:mailQueryDaysSchema.optional()}).strict();
@@ -25,12 +26,12 @@ const copySchema=z.object({draftId:z.uuid(),expectedRevision:z.number().int().po
 const replySchema=z.object({queryDays:mailQueryDaysSchema.optional(),reference:mailSourceRefSchema,mode:z.enum(['reply','reply-all']),senderConnectionId:z.uuid().nullable(),text:z.string().max(131072),html:z.string().max(131072).nullable().optional()}).strict();
 const safeMetadata=z.string().min(1).refine(value=>!/[\x00-\x1f\x7f]/.test(value));
 const importSchema=z.object({queryDays:mailQueryDaysSchema.optional(),source:z.discriminatedUnion('kind',[z.object({kind:z.literal('resource'),resource:applicationResourceRefSchema,filename:safeMetadata.max(1024),contentType:safeMetadata.max(200)}).strict(),z.object({kind:z.literal('workspace-file'),referenceId:z.uuid(),expectedHash:z.string().regex(/^[a-f0-9]{64}$/),filename:safeMetadata.max(1024),contentType:safeMetadata.max(200)}).strict()])}).strict();
-const cursorSchema=z.object({schema:z.literal(1),projectId:z.string(),updatedAt:z.iso.datetime(),id:z.uuid()}).strict();
+const cursorSchema=z.object({state:draftStateSchema.optional(),schema:z.literal(1),projectId:z.string(),updatedAt:z.iso.datetime(),id:z.uuid()}).strict();
 const methods=new Set(['mail.draft.list','mail.draft.get','mail.draft.create','mail.draft.update','mail.draft.copy','mail.resource.read','mail.reply.create','mail.attachment.import']);
 /** One backend for UI and supported Agent drafts. It stores no copy of a mail cache. */
 export class MailDraftDataService implements ApplicationDataHost {
   private readonly views:PackageConfigViews;
-  constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly drafts:MailDraftService,private readonly blobs:MailBlobStore,private readonly selections:ApplicationSelectionService,private readonly options:{readSource?:(context:ApplicationExecutionContext,reference:MailSourceRef,queryDays?:number)=>Promise<LocalMailContent>;readResource?:(context:ApplicationExecutionContext,resource:ApplicationResourceRef,queryDays?:number)=>Promise<Uint8Array>;workspace?:WorkspaceAttachmentReferences}={}){
+  constructor(private readonly contexts:ApplicationExecutionContexts,private readonly resources:ApplicationDataResources,private readonly drafts:MailDraftService,private readonly blobs:MailBlobStore,private readonly selections:ApplicationSelectionService,private readonly options:{manualSentDraftIds?:(context:ApplicationExecutionContext)=>readonly string[];readSource?:(context:ApplicationExecutionContext,reference:MailSourceRef,queryDays?:number)=>Promise<LocalMailContent>;readResource?:(context:ApplicationExecutionContext,resource:ApplicationResourceRef,queryDays?:number)=>Promise<Uint8Array>;workspace?:WorkspaceAttachmentReferences}={}){
     this.views=new PackageConfigViews(contexts);
     resources.registerProvider({kind:'mail-draft-v1',appId:'mail',contractMajor:1,permission:'mail.draft',read:async(context,backing)=>{
       const revision=Number(backing.objectRevision);if(!Number.isInteger(revision)||revision<1||!['text','html'].includes(backing.part))throw new ApplicationError('INVALID_INPUT','草稿正文修订或字段无效');
@@ -86,9 +87,9 @@ export class MailDraftDataService implements ApplicationDataHost {
       return{attachment:{id,filename,contentType,size,contentHash}};
     }
     if(method==='mail.draft.list'){
-      const value=listSchema.safeParse(input);if(!value.success)throw new ApplicationError('INVALID_INPUT','草稿列表参数无效');let cursor:{updatedAt:string;id:string}|undefined;
-      if(value.data.cursor)try{const parsed=cursorSchema.parse(JSON.parse(Buffer.from(value.data.cursor,'base64url').toString('utf8')));if(parsed.projectId!==actor.projectId)throw new Error();cursor={updatedAt:parsed.updatedAt,id:parsed.id};}catch{throw new ApplicationError('INVALID_INPUT','草稿游标不属于当前项目或格式无效');}
-      const page=this.drafts.list(actor,value.data.limit,cursor);return{items:page.items.map(({id,revision,state,subject,attachmentCount,createdAt,updatedAt})=>({id,revision,state,subject,attachmentCount,createdAt,updatedAt})),nextCursor:page.nextCursor?Buffer.from(canonicalJson({schema:1,projectId:actor.projectId,...page.nextCursor})).toString('base64url'):null};
+      const value=listSchema.safeParse(input);if(!value.success||value.data.state!==undefined&&context.callerKind!=='ui')throw new ApplicationError('INVALID_INPUT','草稿列表参数无效');let cursor:{updatedAt:string;id:string}|undefined;
+      if(value.data.cursor)try{const parsed=cursorSchema.parse(JSON.parse(Buffer.from(value.data.cursor,'base64url').toString('utf8')));if(parsed.projectId!==actor.projectId||parsed.state!==value.data.state)throw new Error();cursor={updatedAt:parsed.updatedAt,id:parsed.id};}catch{throw new ApplicationError('INVALID_INPUT','草稿游标不属于当前项目和状态或格式无效');}
+      const page=this.drafts.list(actor,value.data.limit,cursor,value.data.state,context.callerKind==='ui'?this.options.manualSentDraftIds?.(context):undefined);return{items:page.items.map(({id,revision,state,subject,attachmentCount,createdAt,updatedAt})=>({id,revision,state,subject,attachmentCount,createdAt,updatedAt})),nextCursor:page.nextCursor?Buffer.from(canonicalJson({schema:1,projectId:actor.projectId,...(value.data.state?{state:value.data.state}:{}),...page.nextCursor})).toString('base64url'):null};
     }
     if(method==='mail.draft.get'){const value=getSchema.safeParse(input);if(!value.success)throw new ApplicationError('INVALID_INPUT','草稿读取参数无效');return{draft:await this.view(context,this.drafts.get(actor,value.data.draftId,value.data.revision))};}
     if(method==='mail.draft.create'){const value=createSchema.safeParse(input);if(!value.success)throw new ApplicationError('INVALID_INPUT','草稿创建字段无效');await this.source(context,value.data.content,undefined,value.data.queryDays);return{draft:await this.view(context,await this.drafts.create(actor,{operationId:context.operationId,content:value.data.content}))};}

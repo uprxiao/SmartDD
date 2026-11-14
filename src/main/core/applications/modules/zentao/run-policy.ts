@@ -5,7 +5,7 @@ export function zentaoConnectionNotice(store:ResourceStore,snapshot:CapabilitySe
  const selected=snapshot.packages.find(p=>p.appId===appId);if(!selected)return null;
  const row=store.sqlite.prepare(`SELECT s.pending_operation_id,b.connection_id,b.identity_revision,c.name,c.app_id,c.provider_id,c.identity_revision AS actual_identity_revision
   FROM application_project_settings s LEFT JOIN application_project_bindings b ON b.project_id=s.project_id AND b.app_id=s.app_id AND b.slot='zentao'
-  LEFT JOIN application_connections c ON c.id=b.connection_id WHERE s.project_id=? AND s.app_id='zentao'`).get(snapshot.projectId) as {pending_operation_id:string|null;connection_id:string|null;identity_revision:number|null;name:string|null;app_id:string|null;provider_id:string|null;actual_identity_revision:number|null}|undefined;
+  LEFT JOIN application_connections c ON c.id=b.connection_id AND c.deleted_at IS NULL WHERE s.project_id=? AND s.app_id='zentao'`).get(snapshot.projectId) as {pending_operation_id:string|null;connection_id:string|null;identity_revision:number|null;name:string|null;app_id:string|null;provider_id:string|null;actual_identity_revision:number|null}|undefined;
  if(row&&row.pending_operation_id!==null)return '项目正在切换禅道连接；本次相关新调用暂不可用，不要自动重放旧请求。';
  if(selected.bindings.length>1)return '原会话禅道来源身份待核验；请检查项目选用，不要推定来源或改投旧请求。';
  const original=selected.bindings[0]??null,current=row?.connection_id??null;

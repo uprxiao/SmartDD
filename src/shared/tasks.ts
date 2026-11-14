@@ -1,5 +1,7 @@
 import type { Runner } from './types';
 import type { RuntimeSnapshot } from './capabilities';
+import type { AgentPermission } from './agent-permissions';
+import type { AgentRunSnapshot, AgentSourceIdentity } from './agent-run-state';
 
 /**
  * What "open" will do for a task that is not running (PRD F05):
@@ -26,6 +28,9 @@ export interface TaskView {
   firstMessage: string;
   injectedEnvNames: string[];
   runtimeSnapshot?: RuntimeSnapshot | null;
+  agentSnapshot?: AgentRunSnapshot | null;
+  /** Active-run observation only; contains no raw CLI errors or credentials. */
+  serviceFailure?: { consecutiveFailures: number; since: number } | null;
   configVersion: number | null;
   /** The project's version now; differs from configVersion when it changed after launch. */
   projectConfigVersion: number | null;
@@ -47,6 +52,7 @@ export interface CreateTaskRequest {
   dirId: string | null;
   aiProfileId: string;
   firstMessage: string;
+  permission?: AgentPermission;
   cols?: number;
   rows?: number;
 }
@@ -55,6 +61,10 @@ export interface OpenTaskRequest {
   taskId: string;
   /** Resume with another profile (PRD F04: allowed, with a warning in the UI). */
   aiProfileId?: string;
+  /** UI has shown the model fallback reason from the restore preview. */
+  acceptModelChange?: boolean;
+  expectedModel?: string | null;
+  sourceConfirmation?: AgentSourceIdentity;
   cols?: number;
   rows?: number;
 }

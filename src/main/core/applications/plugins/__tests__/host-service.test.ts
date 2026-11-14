@@ -69,6 +69,32 @@ describe('declaration UI reads through project authority and the real sandbox ru
     sqlite.prepare("UPDATE application_connections SET revision=revision+1,config_revision=config_revision+1 WHERE app_id='demo-tracker'").run();
     await expect(host.ui.read('renderer-1',{...input,connectionScope:context.connectionScope})).rejects.toMatchObject({code:'REVISION_CONFLICT'});expect(sqlite.prepare('SELECT count(*) AS n FROM application_data_operations').get()).toEqual({n:0});
   });
+it('T077 page metadata separates host connection name/mode when public config and account are identical',async()=>{
+ const input=await ready({actions:true});
+ const binding=sqlite.prepare("SELECT slot,connection_id FROM application_project_bindings WHERE project_id='p1' AND app_id='demo-tracker'").get() as {slot:string;connection_id:string};
+ sqlite.prepare('UPDATE application_connections SET name=? WHERE id=?').run('T077 connection A',binding.connection_id);
+ sqlite.prepare("INSERT OR REPLACE INTO plugin_connection_defaults VALUES('demo-tracker',?,1)").run(binding.connection_id);
+ sqlite.prepare("INSERT INTO plugin_project_preferences VALUES('p1','demo-tracker','follow') ON CONFLICT(project_id,app_id) DO UPDATE SET mode='follow'").run();
+ const get=vi.spyOn(secrets,'get'),contextInput={projectId:input.projectId,appId:input.appId,panelId:input.panelId,packageHash:input.packageHash};
+ const first=await host.ui.context(contextInput);
+ expect(first).toMatchObject({connectionSelection:{mode:'follow',connections:[{slot:binding.slot,connectionId:binding.connection_id,name:'T077 connection A'}]}});
+ const old=sqlite.prepare('SELECT * FROM application_connections WHERE id=?').get(binding.connection_id) as Record<string,unknown>;
+ const next:Record<string,unknown>&{id:string;name:string}={...old,id:randomUUID(),name:'T077 connection B'};
+ sqlite.prepare('INSERT INTO application_connections('+Object.keys(next).join(',')+') VALUES('+Object.keys(next).map(()=>'?').join(',')+')').run(...Object.values(next));
+ // The same actual verified account/config and public summary, with a different real connection and project selection.
+ expect(next.config_json).toEqual(old.config_json);expect(next.verified_identity_json).toEqual(old.verified_identity_json);
+ sqlite.prepare("UPDATE application_project_bindings SET connection_id=? WHERE project_id='p1' AND app_id='demo-tracker'").run(next.id);
+ sqlite.prepare("UPDATE plugin_project_preferences SET mode='individual' WHERE project_id='p1' AND app_id='demo-tracker'").run();
+ sqlite.prepare("UPDATE application_project_settings SET binding_revision=binding_revision+1 WHERE project_id='p1' AND app_id='demo-tracker'").run();
+ const second=await host.ui.context(contextInput);
+ expect(second).toMatchObject({connectionSelection:{mode:'individual',connections:[{slot:binding.slot,connectionId:next.id,name:'T077 connection B'}]}});
+ expect(first).toMatchObject({connectionSelection:{mode:'follow',connections:[{name:'T077 connection A'}]}});
+ expect(first.connectionSummary).toEqual(second.connectionSummary);expect(second.connectionSummary).toEqual({baseUrl:'http://127.0.0.1'});
+ expect(first.connectionScope).not.toBe(second.connectionScope);
+ expect(JSON.stringify([first,second])).not.toContain('ui-synthetic');expect(get).not.toHaveBeenCalled();
+ expect(sqlite.prepare("SELECT count(*) n FROM plugin_runtime_leases WHERE kind='invocation' AND pid IS NOT NULL").get()).toEqual({n:0});
+});
+
   it('discards a result after the project connection changed in flight',async()=>{
     const input=await ready({delay:150}),result=host.ui.read('renderer-1',input);const rejected=expect(result).rejects.toMatchObject({code:'REVISION_CONFLICT'});
     await vi.waitFor(()=>expect(sqlite.prepare("SELECT count(*) AS n FROM application_data_operations WHERE state='running'").get()).toEqual({n:1}));

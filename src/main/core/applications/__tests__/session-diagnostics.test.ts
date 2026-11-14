@@ -27,6 +27,23 @@ beforeEach(async()=>{f=await runFixture(new FixtureProcessReader(),{application:
 });
 afterEach(async()=>{f.sqlite.prepare('UPDATE capability_session_snapshots SET snapshot_json=?,snapshot_hash=? WHERE task_id=?').run(JSON.stringify(f.snapshot),f.session.pointer.snapshotHash,f.snapshot.taskId);for(const child of bridges)await child.exited().catch(()=>{});for(const run of handles){await run.cli.exited().catch(()=>{});await run.stop().catch(()=>{});}await f.runs.dispose();f.cleanup();});
 describe('run-scoped read-only session diagnostics',()=>{
+ it.each([
+  {added:true,enabled:true,projectEnabled:1,state:'available'},
+  {added:true,enabled:false,projectEnabled:1,state:'disabled'},
+  {added:true,enabled:true,projectEnabled:0,state:'project-disabled'},
+  {added:false,enabled:false,projectEnabled:1,state:'uninstalled'},
+ ])('T073 distinguishes current builtin $state from the immutable launch selection',async({added,enabled,projectEnabled,state})=>{
+  const fixed=f.snapshot.packages[0];
+  f.sqlite.prepare('INSERT INTO application_project_settings(project_id,app_id,enabled,binding_revision,updated_at,policy_revision) VALUES(?,?,?,?,?,?) ON CONFLICT(project_id,app_id) DO UPDATE SET enabled=excluded.enabled').run('p1',fixed.appId,projectEnabled,0,'fixture',0);
+  const selections={catalogState:()=>({appId:fixed.appId,added,enabled,revision:1}),requireEnabled:()=>{if(!added||!enabled||!projectEnabled)throw new ApplicationError('SCOPE_DENIED','fixture disabled');return{enabled:true};},connectionSlot:()=>({connectionId:null,identityRevision:null,revision:0})} as unknown as ApplicationSelectionService;
+  const reader=new ApplicationSessionDiagnostics(f.store,{} as ApplicationConnectionService,selections,{runs:()=>f.runs});
+  reader.attach({channelConnected:()=>false,recoveryIssue:()=>null,verify:resource=>{const bytes=readFileSync(join(f.store.root,resource.relativePath,'entry.cjs'));if(digest(bytes)!==resource.contentHash)throw new Error('fixture bytes');}});
+  const original=f.sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId),value=await reader.inspect(f.snapshot.taskId);
+  expect(value.applications.find(a=>a.appId===fixed.appId)).toMatchObject({fixedVersion:fixed.version,currentState:state});
+  expect(f.sqlite.prepare('SELECT * FROM capability_session_snapshots WHERE task_id=?').get(f.snapshot.taskId)).toEqual(original);
+  expect(f.sqlite.prepare('SELECT count(*) n FROM application_data_operations').get()).toEqual({n:0});
+ });
+
  it('reports compatibility from the connection service fixed-package resolver without exposing its view',async()=>{
   const fixed=f.snapshot.packages[0],connection={id:'fixture-current',name:'Current source',enabled:true,authorization:'connected',health:'healthy',testedAt:null};
   const resolve=vi.fn(()=>({view:{privateSetting:'must-not-be-diagnostic-output'}}));

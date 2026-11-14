@@ -110,7 +110,7 @@
     "panels": [
       {
         "id": "my-work",
-        "title": "指派给我",
+        "title": "我的工作",
         "subtitle": "当前连接账号：{connection.summary.username} · 只读本人指派的 Bug 与研发需求",
         "requires": {
           "projectConnection": "zentao",
@@ -141,13 +141,16 @@
             "type": "cursor",
             "inputField": "cursor",
             "nextField": "nextCursor",
-            "pageSize": 50
+            "pageSize": 5
           },
           "partial": {
             "completeField": "complete",
             "problemsField": "problems"
           },
-          "presentationField": "presentation"
+          "presentationField": "presentation",
+          "input": {
+            "limit": 5
+          }
         },
         "rowKey": "id",
         "columns": [
@@ -265,5 +268,19 @@
         "eof"
       ]
     }
-  }
+  },
+  "author": {
+    "name": "WillYou"
+  },
+  "category": "研发协作",
+  "examples": [
+    {
+      "title": "分析指派给我的高优先级 Bug，并给出最可能的根因",
+      "prompt": "分析指派给我的高优先级 Bug，并给出最可能的根因"
+    },
+    {
+      "title": "检查研发需求 #482 的验收标准是否完整",
+      "prompt": "检查研发需求 #482 的验收标准是否完整"
+    }
+  ]
 }

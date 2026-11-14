@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {closeSync,constants,fstatSync,openSync,readFileSync} from 'node:fs';
 import {dirname} from 'node:path';
+import {pluginCatalogIcons} from './catalog-assets';
 import {ApplicationError} from '@shared/applications';
 import {PLUGIN_LIMITS,pluginManifestSchema} from '@shared/plugins';
 import type {SecretsStore} from '../../../secrets';
@@ -100,7 +101,7 @@ export class PluginHostService {
   }
   catalog(){return this.lifecycle.list().filter(state=>state.installed).map(state=>{
     const stored=this.lifecycle.packages.get(state.hash!),m=stored.plugin.manifest;
-    return{...state,displayName:m.displayName,description:m.description,author:m.author??null,permissions:m.permissions,capabilities:Object.entries(m.capabilities).map(([id,c])=>({id,title:c.title,semantics:c.semantics})),skills:stored.plugin.skills.map(s=>({id:s.id})),panels:m.ui.panels};
+    return{...state,displayName:m.displayName,description:m.description,author:m.author??null,hostApi:m.hostApi,category:m.category??null,examples:m.examples,providers:m.providers.map(p=>({id:p.id,displayName:p.displayName})),icons:pluginCatalogIcons(stored.plugin),packageDirectory:stored.directory,dataDirectory:this.lifecycle.dataDirectory(state.appId),permissions:m.permissions,capabilities:Object.entries(m.capabilities).map(([id,c])=>({id,title:c.title,semantics:c.semantics})),skills:stored.plugin.skills.map(s=>({id:s.id})),panels:m.ui.panels};
   });}
   private prune():void {for(const[token,value]of this.inspections)if(value.expiresAt<=Date.now())this.inspections.delete(token);}
   async inspect(owner:string,path:string,kind:'directory'|'zip',target?:string){

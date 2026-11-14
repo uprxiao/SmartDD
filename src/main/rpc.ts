@@ -1,3 +1,6 @@
+import { createAgentTransferController } from './core/ai/agent-transfer-controller';
+import { createProviderSetupController } from './core/ai/provider-setup-controller';
+import type { AgentTransferService } from './core/ai/agent-transfer';
 import { createVoiceController } from './core/voice/controller';
 import type { VoiceService } from './core/voice/voice-service';
 import { app, BrowserWindow, dialog, shell, type IpcMainInvokeEvent } from 'electron';
@@ -5,9 +8,14 @@ import type { AppSettingsKey } from '@shared/app-settings';
 import { createRPCController, createRPCRouter, createScopedRPCController } from '@shared/ipc/rpc';
 import { createAiProfileController } from './core/ai/controller';
 import type { AiProfileService } from './core/ai/ai-profile-service';
+import { createAgentController } from './core/ai/agent-controller';
+import type { AgentService } from './core/ai/agent-service';
+import type { AgentToolService } from './core/ai/agent-tools';
+import type { ProviderService } from './core/ai/provider-service';
 import type { ProfileHealth } from './core/ai/profile-health';
 import { createCapabilityController } from './core/capabilities/controller';
 import type { CapabilityService } from './core/capabilities/capability-service';
+import type { CapabilityRegistryService } from './core/capabilities/capability-registry';
 import { createProjectControllers } from './core/projects/controller';
 import type { ProjectService } from './core/projects/project-service';
 import { createAppSettingsController } from './core/settings/controller';
@@ -42,9 +50,15 @@ export interface RpcDeps {
   settings: SettingsStore;
   projects: ProjectService;
   aiProfiles: AiProfileService;
+  agents: AgentService;
+  agentTransfer: AgentTransferService;
+  agentTools: AgentToolService;
+  providers: ProviderService;
   health: ProfileHealth;
   tasks: TaskService;
   capabilities: CapabilityService;
+  capabilityRegistry?:CapabilityRegistryService;
+  onCapabilityChanged?:()=>void;
   agentSupport?: AgentSupportService;
   applications?: ApplicationService;
   browser?:BrowserService;
@@ -87,8 +101,11 @@ export function createRpcRouter(d: RpcDeps) {
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
     ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id),deleted:()=>d.onProjectDeleted?.() }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
-    ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event)),
-    ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv),
+    ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles),
+    agentTransfer: createAgentTransferController(d.agentTransfer),
+    providerSetup: createProviderSetupController(d.providers),
+    ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event),path=>shell.openPath(path)),
+    ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv,d.capabilityRegistry,d.onCapabilityChanged),
     dialog: createRPCController({
       /** Native folder picker; null when cancelled. */
       pickDirectory: async (defaultPath?: string) => {

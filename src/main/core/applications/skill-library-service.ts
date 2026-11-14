@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-import {join} from 'node:path';
+import {isAbsolute,join,relative,resolve} from 'node:path';
 import {ApplicationError} from '@shared/applications';
 import {libraryName,syncAgentSkillLibrary,type AgentSkillTarget,type LibrarySkill,type LibrarySyncResult} from './agent-skill-library';
 import {libraryFrontMatter,renderLibrarySkill} from './application-skill-template';
@@ -47,8 +47,16 @@ export class SkillLibraryService {
   }
 
   /** Idempotent: unchanged copies are not rewritten. Synchronous, so calls never interleave. */
-  sync():LibrarySyncResult{
-    this.last=syncAgentSkillLibrary({home:this.options.home,targets:this.options.targets(),skills:this.skills()});
+  sync(claudeStateRoot?:string):LibrarySyncResult{
+    if(claudeStateRoot!==undefined&&!isAbsolute(claudeStateRoot))throw new ApplicationError('INVALID_INPUT','Claude 配置目录必须是绝对路径');
+    const targets=[...this.options.targets()];
+    if(claudeStateRoot){
+      const skillRoot=resolve(claudeStateRoot,'skills');
+      // Host-verified effective CLI root, not renderer data. Keep a single shared
+      // library and reuse its conservative owned-link/conflict/removal rules.
+      if(!targets.some(t=>!t.readsSharedAgentSkills&&t.skillDirectory&&resolve(this.options.home,t.skillDirectory)===skillRoot))targets.push({agentId:'claude-code',readsSharedAgentSkills:false,skillDirectory:relative(this.options.home,skillRoot)});
+    }
+    this.last=syncAgentSkillLibrary({home:this.options.home,targets,skills:this.skills()});
     return this.last;
   }
   /** Names another owner already holds; shown on the application page instead of overwriting. */

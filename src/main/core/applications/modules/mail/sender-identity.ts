@@ -1,3 +1,4 @@
+import type {RunContext} from '../../run-registry';
 import {basename,dirname} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
@@ -18,8 +19,14 @@ const revision=(connection:ApplicationConnection)=>({id:connection.id,revision:c
 /** Mail policy, never connection authentication. Reading status cannot mint a confirmation. */
 export class MailSenderIdentity {
   constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly contexts:ApplicationExecutionContexts){}
-  private binding(projectId:string,proposed?:Readonly<Record<string,string|null|undefined>>):Binding|null{
-    const selection=this.selections.projectView(projectId,'mail');
+  private binding(projectId:string,proposed?:Readonly<Record<string,string|null|undefined>>,scope?:ApplicationExecutionContext|RunContext):Binding|null{
+    const selection=scope?(()=>{
+      if('run'in scope&&scope.run.projectId!==projectId||'projectId'in scope&&scope.projectId!==projectId)throw new ApplicationError('SCOPE_DENIED','发件身份项目不同');
+      if('callerKind'in scope)this.contexts.assertActive(scope);
+      const smtp='run'in scope?this.contexts.runConnectionSelection(scope,'mail','smtp'):this.contexts.connectionSelection(scope,'smtp');
+      const foxmail='run'in scope?this.contexts.runConnectionSelection(scope,'mail','foxmail'):this.contexts.connectionSelection(scope,'foxmail');
+      return{connections:{smtp:smtp.connectionId,foxmail:foxmail.connectionId},slotRevisions:{smtp:smtp.revision,foxmail:foxmail.revision},repair:undefined};
+    })():this.selections.projectView(projectId,'mail');
     if(selection.repair&&!proposed)throw new ApplicationError('CONFIG_COMPATIBILITY_UNVERIFIED','请先修复项目邮件连接选择');
     const slots=proposed??selection.connections,smtpId=slots.smtp;if(!smtpId)return null;
     const smtp=this.connections.get(smtpId);
@@ -34,8 +41,8 @@ export class MailSenderIdentity {
     }
     return{projectId,smtp:{...revision(smtp),bindingRevision:selection.slotRevisions.smtp??0},foxmail,fromAddress,accountDirectory,eligibility};
   }
-  private record(projectId:string):ConfirmationRow|undefined{
-    const row=this.store.sqlite.prepare('SELECT * FROM mail_sender_confirmations WHERE project_id=?').get(projectId) as ConfirmationRow|undefined;
+  private record(projectId:string,bindingHash?:string):ConfirmationRow|undefined{
+    const row=(bindingHash?this.store.sqlite.prepare('SELECT * FROM mail_sender_confirmation_versions WHERE project_id=? AND binding_hash=? ORDER BY confirmed_at DESC,receipt_id DESC LIMIT 1').get(projectId,bindingHash):this.store.sqlite.prepare('SELECT * FROM mail_sender_confirmations WHERE project_id=?').get(projectId)) as ConfirmationRow|undefined;
     if(row){const{record_hash,...content}=row;if(record_hash!==digest(canonicalJson(content)))throw new ApplicationError('HASH_MISMATCH','发件身份确认记录无法核验，请重新核查原记录');}
     return row;
   }
@@ -58,6 +65,8 @@ export class MailSenderIdentity {
   }
   private write(binding:Binding,method:ConfirmationRow['method'],senderId:string|null):void{
     const row={project_id:binding.projectId,binding_hash:digest(canonicalJson(binding)),binding_json:canonicalJson(binding),method,receipt_id:randomUUID(),sender_id:senderId,confirmed_at:new Date().toISOString()},hash=digest(canonicalJson(row));
+    this.store.sqlite.prepare('INSERT OR IGNORE INTO mail_sender_confirmation_versions SELECT project_id,binding_hash,binding_json,method,receipt_id,sender_id,confirmed_at,record_hash FROM mail_sender_confirmations WHERE project_id=?').run(binding.projectId);
+    this.store.sqlite.prepare('INSERT INTO mail_sender_confirmation_versions(project_id,binding_hash,binding_json,method,receipt_id,sender_id,confirmed_at,record_hash) VALUES(?,?,?,?,?,?,?,?)').run(row.project_id,row.binding_hash,row.binding_json,row.method,row.receipt_id,row.sender_id,row.confirmed_at,hash);
     this.store.sqlite.prepare('INSERT INTO mail_sender_confirmations(project_id,binding_hash,binding_json,method,receipt_id,sender_id,confirmed_at,record_hash) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET binding_hash=excluded.binding_hash,binding_json=excluded.binding_json,method=excluded.method,receipt_id=excluded.receipt_id,sender_id=excluded.sender_id,confirmed_at=excluded.confirmed_at,record_hash=excluded.record_hash').run(row.project_id,row.binding_hash,row.binding_json,row.method,row.receipt_id,row.sender_id,row.confirmed_at,hash);
   }
   async confirm(context:ApplicationExecutionContext,senderId:string,input:unknown):Promise<MailSenderIdentityStatus>{
@@ -71,8 +80,10 @@ export class MailSenderIdentity {
       this.write(binding,binding.eligibility==='automatic'?'automatic':'user',binding.eligibility==='automatic'?null:senderId);return this.status(context.projectId!);
     }).immediate());
   }
-  requireConfirmed(projectId:string,expectedConnectionId?:string|null):string{
-    const binding=this.binding(projectId),status=this.status(projectId);
+  requireConfirmed(projectId:string,expectedConnectionId?:string|null,scope?:ApplicationExecutionContext|RunContext):string{
+    const binding=this.binding(projectId,undefined,scope);
+    const hash=binding?digest(canonicalJson(binding)):null,record=hash&&scope?this.record(projectId,hash):undefined;
+    const status=scope?{state:record?(record.method==='automatic'?'automatic':'confirmed'):'needs-confirmation',message:'本次运行的发件身份尚未确认，请核对原账号后重新启动任务',bindingHash:hash,receiptId:record?.receipt_id??null}:this.status(projectId);
     if(binding?.eligibility==='mismatch')throw new ApplicationError('SENDER_IDENTITY_MISMATCH',status.message);
     if(!binding)throw new ApplicationError('AUTH_REQUIRED','请先明确选用SMTP发件账号');
     if(expectedConnectionId&&binding.smtp.id!==expectedConnectionId)throw new ApplicationError('SCOPE_DENIED','所选草稿发件身份不是当前项目SMTP连接');

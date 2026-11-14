@@ -26,7 +26,11 @@ export const nativeLaunchFieldSchemas={
   native: z.object({ runner: agentIdSchema,sessionId: z.string().nullable(),stateRoot: absolute,cwd: absolute,home: absolute }).strict(),
   userSkillConfig: z.array(z.record(z.string(),z.unknown()).refine(boundedJson)).max(4096),
   inventory: z.array(z.object({ kind: z.enum(['plugin','skill','mcp','native-tool']),name: z.string().min(1).max(256),path: z.string().max(4096),ownerStoreId: z.uuid().nullable(),contentHash: hash.nullable() }).strict()).max(12000),
-  cliSandbox:z.object({endpoint:absolute,kind:z.enum(['unchanged','inherit']),parent:z.string().min(1).max(128).nullable(),networkProxy:z.boolean(),enableNetwork:z.boolean(),existingNames:z.array(z.string().max(128)).max(128),source:z.string().min(1).max(128),digest:hash}).strict().optional(),
+  cliSandbox:z.union([
+    // Retained Codex planners keep their exact input shape and immutable bytes.
+    z.object({endpoint:absolute,kind:z.enum(['unchanged','inherit']),parent:z.string().min(1).max(128).nullable(),networkProxy:z.boolean(),enableNetwork:z.boolean(),existingNames:z.array(z.string().max(128)).max(128),source:z.string().min(1).max(128),digest:hash}).strict(),
+    z.object({runner:z.literal('claude-code'),endpoint:absolute,kind:z.enum(['unchanged','allow-unix']),source:z.string().min(1).max(128),digest:hash}).strict(),
+  ]).optional(),
   mcp: z.array(z.object({ kind: z.enum(['applications','legacy-project-context']),serverName: name,command: z.string().min(1).max(4096).refine(s => !/[\x00\r\n]/.test(s)),args: z.array(z.string().max(4096).refine(s => !/[\x00\r\n]/.test(s))).max(32),env: z.record(z.string().regex(/^[A-Z_][A-Z0-9_]*$/),z.string().max(4096)) }).strict()).max(2),
 };
 export type NativeInventory=z.infer<typeof nativeLaunchFieldSchemas.inventory>;

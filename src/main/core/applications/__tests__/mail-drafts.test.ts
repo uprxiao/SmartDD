@@ -108,3 +108,12 @@ describe('persistent drafts with empty bindings, immutable revisions and stable 
     expect(() => drafts.list(claude,201)).toThrow();
   });
 });
+
+
+it('T076 filters before paging, returns full project state counts and never crosses project rows',async()=>{
+ const ids=[];for(let i=0;i<5;i++){const d=await drafts.create(claude,create(content({subject:'filter '+i})));ids.push(d.id);sqlite.prepare('UPDATE mail_drafts SET state=? WHERE id=?').run(i===0?'draft':i===4?'unknown':'failed',d.id);}
+ await drafts.create(other,create(content({subject:'other project'})));
+ const first=drafts.list(claude,2,undefined,'failed');expect(first.items).toHaveLength(2);expect(first.items.every(d=>d.state==='failed')).toBe(true);expect(first.nextCursor).not.toBeNull();
+ const last=drafts.list(claude,2,first.nextCursor!,'failed');expect(last.items).toHaveLength(1);expect(last.nextCursor).toBeNull();expect(new Set([...first.items,...last.items].map(d=>d.id)).size).toBe(3);
+ expect(first.stateCounts).toEqual({draft:1,sending:0,sent:0,failed:3,unknown:1});expect(drafts.list(other,2,undefined,'failed').items).toEqual([]);expect(()=>drafts.list(claude,2,undefined,'bad' as never)).toThrow();
+});

@@ -1,5 +1,6 @@
 // Read-only identity probe for an explicit owned PID, or the kernel peer of an
-// inherited host-owned Unix socket. Never enumerates processes, argv or env.
+// inherited host-owned Unix socket. Bounded owned-child inspection never lists
+// global processes or inspects argv/environment.
 // Explicit restore-owned-directory mode anchors a private store and atomically
 // moves its original owned directory only if the target does not exist.
 #include <libproc.h>
@@ -87,7 +88,84 @@ static int restore_owned(int argc,char **argv,bool discovery=false){
   if(status==0&&(fsync(src)!=0||fsync(dst)!=0)){status=-1;error=EIO;}close(src);close(dst);
   if(status!=0)return failed(error==EEXIST||error==ENOTEMPTY?"EEXIST":error==EXDEV?"EXDEV":"OWNERSHIP");std::puts("{\"schema\":1,\"restored\":true}");return 0;
 }
+
+// Read-only metadata for a caller-owned, birth/image-bound explicit PID.
+// Never enumerate processes, argv, env or file contents; report known SQLite vnodes only.
+static int sqlite_files(int argc,char **argv) {
+ const char *unknown="{\"schema\":3,\"state\":\"unknown\"}";
+ if(argc!=5){std::puts(unknown);return 0;}
+ char *end=nullptr;errno=0;long parsed=std::strtol(argv[2],&end,10);
+ if(errno||!end||*end||parsed<1||parsed>INT_MAX||argv[4][0]!='/'){std::puts(unknown);return 0;}
+ const pid_t pid=static_cast<pid_t>(parsed);proc_bsdinfo before={},after={};
+ if(!inspect(pid,before)){std::puts(errno==ESRCH?"{\"schema\":3,\"state\":\"stopped\"}":unknown);return 0;}
+ char expectedBirth[128]={},image[PROC_PIDPATHINFO_MAXSIZE]={},again[PROC_PIDPATHINFO_MAXSIZE]={};
+ std::snprintf(expectedBirth,sizeof(expectedBirth),"darwin-proc-v1:%llu:%llu",static_cast<unsigned long long>(before.pbi_start_tvsec),static_cast<unsigned long long>(before.pbi_start_tvusec));
+ if(before.pbi_uid!=getuid()||std::strcmp(expectedBirth,argv[3])!=0||proc_pidpath(pid,image,sizeof(image))<=0||std::strcmp(image,argv[4])!=0){std::puts(unknown);return 0;}
+ int need=proc_pidinfo(pid,PROC_PIDLISTFDS,0,nullptr,0);
+ if(need<0||need>static_cast<int>(8192*sizeof(proc_fdinfo))){std::puts(unknown);return 0;}
+ std::vector<proc_fdinfo> descriptors(static_cast<size_t>(need)/sizeof(proc_fdinfo)+64);
+ int got=proc_pidinfo(pid,PROC_PIDLISTFDS,0,descriptors.data(),static_cast<int>(descriptors.size()*sizeof(proc_fdinfo)));
+ if(got<0||got%sizeof(proc_fdinfo)||got>=static_cast<int>(descriptors.size()*sizeof(proc_fdinfo))){std::puts(unknown);return 0;}
+ struct Metadata {std::string path;unsigned long long dev,ino;};std::vector<Metadata> files;
+ for(size_t index=0;index<static_cast<size_t>(got)/sizeof(proc_fdinfo);index++) {
+  const auto &fd=descriptors[index];if(fd.proc_fdtype!=PROX_FDTYPE_VNODE)continue;
+  vnode_fdinfowithpath node={};
+  if(proc_pidfdinfo(pid,fd.proc_fd,PROC_PIDFDVNODEPATHINFO,&node,sizeof(node))!=sizeof(node))continue;
+  const char *path=node.pvip.vip_path;if(!std::memchr(path,0,sizeof(node.pvip.vip_path))||path[0]!='/')continue;
+  const char *name=std::strrchr(path,'/');if(!name)continue;name++;
+  bool known=false;for(const char *allowed:{"state_5.sqlite","logs_2.sqlite","goals_1.sqlite","memories_1.sqlite","queue_1.sqlite","memories_v2_1.sqlite","thread_history_1.sqlite"})if(std::strcmp(name,allowed)==0)known=true;
+  const auto &st=node.pvip.vip_vi.vi_stat;if(!known||(st.vst_mode&S_IFMT)!=S_IFREG)continue;
+  Metadata item{path,static_cast<unsigned long long>(st.vst_dev),static_cast<unsigned long long>(st.vst_ino)};
+  bool duplicate=false;for(const auto &old:files)if(old.path==item.path&&old.dev==item.dev&&old.ino==item.ino)duplicate=true;
+  if(!duplicate)files.push_back(item);if(files.size()>256){std::puts(unknown);return 0;}
+ }
+ if(!inspect(pid,after)||!same(before,after)||proc_pidpath(pid,again,sizeof(again))<=0||std::strcmp(image,again)!=0){std::puts(unknown);return 0;}
+ std::printf("{\"schema\":3,\"state\":\"running\",\"pid\":%u,\"startedAt\":",before.pbi_pid);birth(before);
+ std::printf(",\"executable\":%s,\"files\":[",escaped(image).c_str());
+ for(size_t i=0;i<files.size();i++){const auto &f=files[i];std::printf("%s{\"path\":%s,\"dev\":\"%llu\",\"ino\":\"%llu\"}",i?",":"",escaped(f.path.c_str()).c_str(),f.dev,f.ino);}
+ std::puts("]}");return 0;
+}
+
+
+// Bounded descent from a caller-owned exact launch identity. Never enumerate
+// global PIDs or inspect argv/environment. Stop descending at the expected image.
+static int owned_native_child(int argc,char **argv) {
+ const char *unknown="{\"schema\":4,\"state\":\"unknown\"}";
+ if(argc!=5){std::puts(unknown);return 0;}
+ char *end=nullptr;errno=0;long parsed=std::strtol(argv[2],&end,10);
+ if(errno||!end||*end||parsed<1||parsed>INT_MAX||argv[4][0]!='/'){std::puts(unknown);return 0;}
+ struct Node {proc_bsdinfo identity;unsigned depth;};std::vector<Node> nodes;
+ proc_bsdinfo root={};if(!inspect(static_cast<pid_t>(parsed),root)){std::puts(errno==ESRCH?"{\"schema\":4,\"state\":\"stopped\"}":unknown);return 0;}
+ char rootBirth[128]={};std::snprintf(rootBirth,sizeof(rootBirth),"darwin-proc-v1:%llu:%llu",static_cast<unsigned long long>(root.pbi_start_tvsec),static_cast<unsigned long long>(root.pbi_start_tvusec));
+ if(root.pbi_uid!=getuid()||std::strcmp(rootBirth,argv[3])!=0){std::puts(unknown);return 0;}
+ nodes.push_back({root,0});std::vector<proc_bsdinfo> matches;
+ for(size_t i=0;i<nodes.size();i++) {
+  const auto node=nodes[i];char image[PROC_PIDPATHINFO_MAXSIZE]={};
+  if(proc_pidpath(node.identity.pbi_pid,image,sizeof(image))<=0){std::puts(unknown);return 0;}
+  if(std::strcmp(image,argv[4])==0){matches.push_back(node.identity);continue;}
+  if(node.depth>=12){std::puts(unknown);return 0;}
+  pid_t children[65]={};errno=0;int count=proc_listchildpids(node.identity.pbi_pid,children,sizeof(children));
+  if(count<0||(count==0&&errno)||count>=65){std::puts(unknown);return 0;}
+  for(size_t c=0;c<static_cast<size_t>(count);c++) {
+   if(children[c]<=0)continue;proc_bsdinfo child={};
+   if(!inspect(children[c],child)||child.pbi_ppid!=node.identity.pbi_pid||child.pbi_uid!=getuid()){std::puts(unknown);return 0;}
+   for(const auto &old:nodes)if(old.identity.pbi_pid==child.pbi_pid){std::puts(unknown);return 0;}
+   if(nodes.size()>=64){std::puts(unknown);return 0;}nodes.push_back({child,node.depth+1});
+  }
+ }
+ if(matches.size()!=1){std::puts(unknown);return 0;}
+ // Recheck every visited identity and parent relation after traversal. New peers
+ // can only cause a later call to refuse; they never grant a different target.
+ for(const auto &node:nodes){proc_bsdinfo after={};if(!inspect(node.identity.pbi_pid,after)||!same(node.identity,after)||after.pbi_uid!=getuid()){std::puts(unknown);return 0;}}
+ char finalImage[PROC_PIDPATHINFO_MAXSIZE]={};const auto &target=matches[0];
+ if(proc_pidpath(target.pbi_pid,finalImage,sizeof(finalImage))<=0||std::strcmp(finalImage,argv[4])!=0){std::puts(unknown);return 0;}
+ std::printf("{\"schema\":4,\"state\":\"running\",\"rootPid\":%u,\"rootStartedAt\":",root.pbi_pid);birth(root);
+ std::printf(",\"pid\":%u,\"startedAt\":",target.pbi_pid);birth(target);std::printf(",\"executable\":%s}\n",escaped(finalImage).c_str());return 0;
+}
+
 int main(int argc, char **argv) {
+  if(argc>=2&&std::strcmp(argv[1],"--owned-native-child")==0)return owned_native_child(argc,argv);
+  if(argc>=2&&std::strcmp(argv[1],"--sqlite-files")==0)return sqlite_files(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--restore-owned-directory")==0)return restore_owned(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--move-discovery-directory")==0)return restore_owned(argc,argv,true);
   char *end = nullptr; errno = 0;

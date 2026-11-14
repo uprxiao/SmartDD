@@ -84,7 +84,10 @@ export class PluginLifecycle {
   }
   inspect(plugin:ValidatedPlugin,targetAppId?:string):PluginInstallPlan {
     const appId=plugin.manifest.id;this.assertReady(appId);
-    if(targetAppId&&idSchema.parse(targetAppId)!==appId)throw new ApplicationError('VERSION_CONFLICT','这不是所选插件的插件包');
+    if(targetAppId&&idSchema.parse(targetAppId)!==appId){
+      const target=this.row(targetAppId),name=target?.installed===1&&target.package_hash?this.packages.get(target.package_hash).plugin.manifest.displayName:targetAppId;
+      throw new ApplicationError('VERSION_CONFLICT',`这不是${name}的插件包`);
+    }
     const current=this.row(appId),old=current?.installed===1&&current.package_hash?this.packages.get(current.package_hash).plugin:undefined;
     if(old){const comparison=compareVersion(plugin.manifest.version,old.manifest.version);if(comparison<0)throw new ApplicationError('VERSION_CONFLICT','不支持安装更低的版本');if(comparison===0)throw new ApplicationError('VERSION_CONFLICT','已是当前版本，无需更新');}
     const previous=old?.manifest,newCaps=Object.keys(plugin.manifest.capabilities),oldCaps=Object.keys(previous?.capabilities??{});

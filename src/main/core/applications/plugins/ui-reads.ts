@@ -22,7 +22,7 @@ export class PluginUiReads {
       if(stored.plugin.hash!==input.packageHash)throw new ApplicationError('REVISION_CONFLICT','插件页面版本已变化，请刷新');
       const panel=stored.plugin.manifest.ui.panels.find(p=>p.id===input.panelId);if(!panel)throw new ApplicationError('SCOPE_DENIED','当前插件没有此页面');
       // Metadata-only preparation. This reservation never dispatches a child or calls the external service.
-      return this.policy.withUiRead(input.projectId,stored,panel.source.capability,new AbortController().signal,async scope=>({connectionSummary:scope.summary,connectionScope:scope.scopeHash}),false);
+      return this.policy.withUiRead(input.projectId,stored,panel.source.capability,new AbortController().signal,async scope=>({connectionSummary:scope.summary,connectionSelection:scope.connectionSelection,connectionScope:scope.scopeHash}),false);
     });
   }
   read(owner:string,raw:PluginUiRead){
@@ -65,7 +65,7 @@ export class PluginUiReads {
           if(!boundedJson(value)||!validators.output(value).valid)throw new ApplicationError('INVALID_RESPONSE','插件页面结果不符合能力契约');
           const actionReceipt=this.actions.remember(owner,input,panel,stored.plugin.manifest.displayName,value,scope.summary,scope.scopeHash,scope.check);
           this.finish(operationId,'succeeded',null);
-          return{requestId:input.requestId,operationId,packageHash:stored.plugin.hash,value,connectionSummary:scope.summary,connectionScope:scope.scopeHash,...(actionReceipt?{actionReceipt}:{})};
+          return{requestId:input.requestId,operationId,packageHash:stored.plugin.hash,value,connectionSummary:scope.summary,connectionSelection:scope.connectionSelection,connectionScope:scope.scopeHash,...(actionReceipt?{actionReceipt}:{})};
         });
       });
     }catch(error){

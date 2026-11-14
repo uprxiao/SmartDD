@@ -9,7 +9,7 @@ import { canonicalJson, digest } from './manifest';
 import { ensureStoreDirectory } from './package-files';
 import type { ResourceStore } from './resource-store';
 import { withResourceLock } from './resource-lock';
-export interface MailPolicy { requireDrafts(actor: MailActor): void }
+export interface MailPolicy { requireDrafts(actor: MailActor): void; requireWrite?(actor:MailActor):void }
 interface BlobMetadata { attachmentId: string; projectId: string; filename: string; contentType: string; hash: string; size: number; kind?: 'attachment' | 'message' }
 interface WriteRow { operation_id: string; attachment_id: string; project_id: string; request_hash: string; metadata_json: string; state: string }
 const safeName = z.string().min(1).max(1024).refine(s => !/[\x00-\x1f\x7f]/.test(s));
@@ -17,6 +17,7 @@ const writeMetadataSchema = z.object({ attachmentId: z.uuid(),projectId: z.strin
 const inputSchema = z.object({ operationId: z.uuid(),filename: safeName,contentType: safeName.max(256) }).strict();
 /** Persistent business blobs are physically separate from all rebuildable mail caches. */
 export class MailBlobStore {
+  private writeAccess(actor:MailActor){this.policy.requireDrafts(actor);this.policy.requireWrite?.(actor);}
   readonly root: string;
   constructor(readonly store: ResourceStore,root: string,private readonly policy: MailPolicy,private readonly checkpoint?: (phase: 'staged' | 'published') => void) {
     this.root = resolve(root);
@@ -49,13 +50,13 @@ export class MailBlobStore {
   saveMessage(actor: MailActor,operationId: string,bytes: Uint8Array,signal?: AbortSignal): Promise<MailAttachment> { return this.saveInternal(actor,{ operationId,filename: 'message.eml',contentType: 'message/rfc822' },bytes,'message',signal); }
   save(actor: MailActor,input: z.infer<typeof inputSchema>,bytes: Uint8Array,signal?: AbortSignal): Promise<MailAttachment> { return this.saveInternal(actor,input,bytes,'attachment',signal); }
   private async saveInternal(actor: MailActor,input: z.infer<typeof inputSchema>,bytes: Uint8Array,kind: 'attachment' | 'message',signal?: AbortSignal): Promise<MailAttachment> {
-    this.policy.requireDrafts(actor); const parsed = inputSchema.safeParse(input);
+    this.writeAccess(actor); const parsed = inputSchema.safeParse(input);
     if (!parsed.success || !(bytes instanceof Uint8Array) || bytes.byteLength > (kind === 'message' ? 40 : 25) * 1024 * 1024) throw new ApplicationError('INVALID_INPUT','附件字段无效或超过25MiB');
     if (signal?.aborted) throw new ApplicationError('CANCELED','附件保存已取消');
     const value = parsed.data, stable = Buffer.from(bytes), hash = digest(stable), requestHash = digest(canonicalJson({ projectId: actor.projectId,filename: value.filename,contentType: value.contentType,hash,size: stable.length,...(kind === 'message' ? { kind } : {}) }));
     let attachmentId: string = randomUUID(), state = '';
     await withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
-      this.policy.requireDrafts(actor); const old = this.store.sqlite.prepare('SELECT * FROM mail_blob_writes WHERE operation_id=?').get(value.operationId) as WriteRow | undefined;
+      this.writeAccess(actor); const old = this.store.sqlite.prepare('SELECT * FROM mail_blob_writes WHERE operation_id=?').get(value.operationId) as WriteRow | undefined;
       if (old) { if (old.project_id !== actor.projectId || old.request_hash !== requestHash) throw new ApplicationError('REVISION_CONFLICT','附件操作编号已用于不同内容'); attachmentId = old.attachment_id; state = old.state; return; }
       const now = new Date().toISOString(), metadata: BlobMetadata = { attachmentId,projectId: actor.projectId,filename: value.filename,contentType: value.contentType,hash,size: stable.length,kind };
       this.store.sqlite.prepare("INSERT INTO mail_blob_writes(operation_id,attachment_id,project_id,request_hash,metadata_json,state,created_at,updated_at) VALUES(?,?,?,?,?,'preparing',?,?)").run(value.operationId,attachmentId,actor.projectId,requestHash,canonicalJson(metadata),now,now);
@@ -69,14 +70,14 @@ export class MailBlobStore {
       await withResourceLock(this.store.root,() => this.store.sqlite.prepare("UPDATE mail_blob_writes SET state='staged',cleanup_pending=1,updated_at=? WHERE operation_id=? AND state='preparing'").run(new Date().toISOString(),value.operationId));
       this.checkpoint?.('staged');
       if (signal?.aborted) throw new ApplicationError('CANCELED','附件保存已取消');
-      this.policy.requireDrafts(actor); await this.finish(value.operationId,actor,signal); return this.owned(actor,attachmentId,kind);
+      this.writeAccess(actor); await this.finish(value.operationId,actor,signal); return this.owned(actor,attachmentId,kind);
     } catch (error) {
       await withResourceLock(this.store.root,() => this.store.sqlite.prepare("UPDATE mail_blob_writes SET error_code=?,updated_at=? WHERE operation_id=? AND state<>'committed'").run(error instanceof ApplicationError ? error.code : 'RESOURCE_RECOVERY_REQUIRED',new Date().toISOString(),value.operationId)); throw error;
     }
   }
   private async finish(operationId: string,actor?: MailActor,signal?: AbortSignal): Promise<void> {
     await withResourceLock(this.store.root,() => {
-      if (actor) this.policy.requireDrafts(actor);
+      if (actor) this.writeAccess(actor);
       if (signal?.aborted) throw new ApplicationError('CANCELED','附件保存已取消');
       const op = this.store.sqlite.prepare('SELECT * FROM mail_blob_writes WHERE operation_id=?').get(operationId) as WriteRow | undefined;
       if (!op) return;

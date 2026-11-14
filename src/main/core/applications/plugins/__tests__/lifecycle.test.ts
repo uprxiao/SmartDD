@@ -74,6 +74,11 @@ async function waitStarted(version:string,mode:string) {
 }
 
 describe('external plugin lifecycle using real sandboxed Electron children',()=>{
+  it('names the installed target when an update selects another plugin package',async()=>{
+    const target=plugin();await install(target);const other=plugin('0.2.0');
+    expect(()=>life.inspect({...other,manifest:{...other.manifest,id:'unrelated'}},'demo-tracker')).toThrow('这不是Demo Tracker的插件包');
+    expect(life.state('demo-tracker')).toMatchObject({hash:target.hash,version:'0.1.0',revision:1});
+  });
   it('atomically installs initialized private data, records process identities and reuses the active generation',async()=>{
     const first=plugin();expect(await install(first)).toMatchObject({installed:true,enabled:true,version:'0.1.0',revision:1});
     expect(readFileSync(join(life.dataDirectory('demo-tracker'),'init-version'),'utf8')).toBe('0.1.0');

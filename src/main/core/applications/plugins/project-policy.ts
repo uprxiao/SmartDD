@@ -11,7 +11,7 @@ import type {PluginLifecycle} from './lifecycle';
 import {capturePluginSession,type PluginToolPolicy} from './session-tools';
 import {pluginMcpToolName} from './session-tools';
 import type {StoredPlugin} from './package-store';
-import {pluginUiField} from '@shared/plugin-ui';
+import {pluginUiField,type PluginUiConnectionSelection} from '@shared/plugin-ui';
 import type {PluginWriteScope} from './write-approvals';
 import type {ApplicationOperationContext} from '../tool-service';
 import {hostedIdentitySchema} from '../host-application-registry';
@@ -26,7 +26,9 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     private readonly options:{assertRun(runId:string):RunContext;approve:PluginToolPolicy['approve']}){}
   private project(projectId:string,appId:string):string {
     const row=this.store.sqlite.prepare('SELECT p.archived_at,s.enabled,s.binding_revision,s.policy_revision,c.added,c.enabled AS global_enabled,c.revision AS global_revision FROM projects p JOIN application_project_settings s ON s.project_id=p.id JOIN application_catalog_state c ON c.app_id=s.app_id WHERE p.id=? AND s.app_id=?').get(projectId,appId) as {archived_at:number|null;enabled:number;added:number;global_enabled:number;binding_revision:number;policy_revision:number;global_revision:number}|undefined;
-    if(!row||row.archived_at!==null||row.enabled!==1||row.added!==1||row.global_enabled!==1)throw new ApplicationError('APP_NOT_ENABLED','此项目未启用插件或插件已停用');
+    if(!row||row.archived_at!==null)throw new ApplicationError('APP_NOT_ENABLED','此项目未启用插件');
+    if(row.added!==1||row.global_enabled!==1)throw new ApplicationError('APP_NOT_ENABLED','插件已停用');
+    if(row.enabled!==1)throw new ApplicationError('APP_NOT_ENABLED','本项目已关闭该插件');
     return canonicalJson(row);
   }
   capture(projectId:string,entry:ApplicationEntry='mcp'):PluginSessionSelection[] {
@@ -65,7 +67,7 @@ export class PluginProjectPolicy implements PluginToolPolicy {
   }
   private connectionRow(selection:PluginSessionSelection,slot:string):ConnectionRow {
     const binding=selection.connections.find(c=>c.slot===slot);if(!binding)throw new ApplicationError('AUTH_REQUIRED','启动时未选择此插件连接，请配置后重启会话');
-    const row=this.store.sqlite.prepare('SELECT * FROM application_connections WHERE id=? AND app_id=? AND provider_id=?').get(binding.connectionId,selection.appId,slot) as ConnectionRow|undefined;
+    const row=this.store.sqlite.prepare('SELECT * FROM application_connections WHERE deleted_at IS NULL AND id=? AND app_id=? AND provider_id=?').get(binding.connectionId,selection.appId,slot) as ConnectionRow|undefined;
     if(!row)throw new ApplicationError('AUTH_REQUIRED','启动时选择的插件连接已删除');
     if(row.identity_revision!==binding.identityRevision)throw new ApplicationError('REVISION_CONFLICT','启动连接的账号身份已变化，请重启会话');
     if(row.enabled!==1||row.auth_state!=='connected'||row.cleanup_pending!==0)throw new ApplicationError('AUTH_REQUIRED','启动连接已停用或退出登录，不会自动切换账号');
@@ -108,16 +110,23 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     return result;
   }
   /** A real UI call has project authority, not a fabricated Agent run. Hold the original current-page account until delivery. */
-  async withUiRead<T>(projectId:string,stored:StoredPlugin,capabilityId:string,signal:AbortSignal,work:(scope:{connection:unknown;summary:Record<string,unknown>;targets:unknown[];scopeHash:string;check():void})=>Promise<T>,includeCredentials=true):Promise<T> {
+  async withUiRead<T>(projectId:string,stored:StoredPlugin,capabilityId:string,signal:AbortSignal,work:(scope:{connection:unknown;summary:Record<string,unknown>;connectionSelection:PluginUiConnectionSelection;targets:unknown[];scopeHash:string;check():void})=>Promise<T>,includeCredentials=true):Promise<T> {
     const {manifest}=stored.plugin,cap=manifest.capabilities[capabilityId];
     if(!cap||cap.semantics!=='read')throw new ApplicationError('SCOPE_DENIED','插件页面只允许声明的读取能力');
     const stamp=this.project(projectId,manifest.id),connections=this.store.sqlite.prepare('SELECT slot,connection_id AS connectionId,identity_revision AS identityRevision FROM application_project_bindings WHERE project_id=? AND app_id=? ORDER BY slot').all(projectId,manifest.id) as PluginSessionSelection['connections'];
     const declaration={id:capabilityId,permission:cap.permission,semantics:cap.semantics,slots:cap.slots,mcpTool:pluginMcpToolName(capabilityId),aliases:[]};
     const selection:PluginSessionSelection={appId:manifest.id,version:manifest.version,packageHash:stored.plugin.hash,entry:'mcp',capabilities:[declaration],connections};
-    const revisions=()=>connections.map(c=>{const row=this.store.sqlite.prepare('SELECT revision,config_revision,secret_revision,policy_revision FROM application_connections WHERE id=?').get(c.connectionId);return{...c,revisions:row??null};}),originalRevisions=revisions();
+    const revisions=()=>connections.map(c=>{const row=this.store.sqlite.prepare('SELECT revision,config_revision,secret_revision,policy_revision FROM application_connections WHERE deleted_at IS NULL AND id=?').get(c.connectionId);return{...c,revisions:row??null};}),originalRevisions=revisions();
     const targets=cap.slots.map(slot=>{const row=this.connectionRow(selection,slot);return{slot,connectionId:row.id,identityRevision:row.identity_revision,revision:row.revision,configRevision:row.config_revision,policyRevision:row.policy_revision,secretRevision:row.secret_revision};});
+    const readMode=():PluginUiConnectionSelection['mode']=>{
+      const row=this.store.sqlite.prepare('SELECT mode FROM plugin_project_preferences WHERE project_id=? AND app_id=?').get(projectId,manifest.id) as {mode:string}|undefined;
+      if(row&&row.mode!=='follow'&&row.mode!=='individual')throw new ApplicationError('CONFIG_INCOMPATIBLE','项目连接选用模式待核查');
+      return row?.mode==='individual'?'individual':'follow';
+    };
+    const connectionSelection:PluginUiConnectionSelection={mode:readMode(),connections:cap.slots.map(slot=>{const row=this.connectionRow(selection,slot);return{slot,connectionId:row.id,name:row.name};})};
     const check=()=>{
       if(signal.aborted)throw new ApplicationError('CANCELED','插件页面读取已取消');
+      if(readMode()!==connectionSelection.mode)throw new ApplicationError('REVISION_CONFLICT','页面读取期间连接选用模式已变化，请刷新');
       if(this.project(projectId,manifest.id)!==stamp)throw new ApplicationError('REVISION_CONFLICT','插件页面的项目连接或授权已变化，请刷新');
       const currentBindings=this.store.sqlite.prepare('SELECT slot,connection_id AS connectionId,identity_revision AS identityRevision FROM application_project_bindings WHERE project_id=? AND app_id=? ORDER BY slot').all(projectId,manifest.id);
       if(canonicalJson(currentBindings)!==canonicalJson(connections))throw new ApplicationError('REVISION_CONFLICT','插件页面连接已切换，请刷新');
@@ -130,7 +139,7 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     for(const slot of cap.slots){const source=(connection[slot] as {config:Record<string,unknown>}).config,provider=manifest.providers.find(p=>p.id===slot)!;
       for(const field of provider.summaryFields){const value=pluginUiField(source,field);if(value===undefined)continue;let cursor=summary;const parts=field.split('.');for(const key of parts.slice(0,-1)){cursor[key]??={};if(!cursor[key]||typeof cursor[key]!=='object'||Array.isArray(cursor[key]))throw new ApplicationError('INVALID_PACKAGE','连接摘要字段冲突');cursor=cursor[key] as Record<string,unknown>;}const key=parts.at(-1)!;if(Object.hasOwn(cursor,key)&&canonicalJson(cursor[key])!==canonicalJson(value))throw new ApplicationError('INVALID_PACKAGE','多个连接摘要字段冲突');cursor[key]=structuredClone(value);}}
     // All bound connection revisions, not just this capability's slots, bind list/detail/resource reads to one page account.
-    check();return work({connection,summary,targets,scopeHash:digest(canonicalJson({projectId,appId:manifest.id,stamp,connections:originalRevisions})),check});
+    check();return work({connection,summary,connectionSelection,targets,scopeHash:digest(canonicalJson({projectId,appId:manifest.id,stamp,connections:originalRevisions})),check});
   }
   approve:PluginToolPolicy['approve']=(...args)=>{this.authorize(args[0],args[1],args[2]);return this.options.approve(...args);};
 }

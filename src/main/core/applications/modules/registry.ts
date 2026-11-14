@@ -1,3 +1,4 @@
+import type {RunContext} from '../run-registry';
 import { z } from 'zod';
 import { ApplicationError, type ApplicationManifestV1 } from '@shared/applications';
 import { applicationCapabilityViews, type LegacyCapabilityResolver, type LegacyCapabilityPolicy,type ApplicationPackageManifest } from '@shared/application-capabilities';
@@ -27,7 +28,7 @@ export interface ApplicationProjectPolicy {
   validateSelection?(projectId:string,slots:Readonly<Record<string,string|null|undefined>>):void;
   afterSelection?(projectId:string):void;
   action?(context:ApplicationExecutionContext,sender:ApplicationUiSender,input:unknown):Promise<unknown>;
-  stamp?(projectId:string,permission:string):string|null;
+  stamp?(projectId:string,permission:string,scope?:ApplicationExecutionContext|RunContext):string|null;
 }
 export interface ApplicationModuleServices {
   store: ResourceStore; contexts: ApplicationExecutionContexts; resources: ApplicationDataResources; selections: ApplicationSelectionService;connections:ApplicationConnectionService;

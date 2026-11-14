@@ -129,6 +129,7 @@ export class AgentAdapterRegistry {
     if(input.native.runner!==snapshot.runner||input.native.stateRoot!==snapshot.native.stateRoot||input.native.cwd!==snapshot.native.cwd||input.native.sessionId!==snapshot.native.sessionId)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','加载时的原生身份或目录已改变');
     const runPlan=readApplicationRunPlan(this.store,input.runId,input.planHash);
     if(runPlan.taskId!==snapshot.taskId||runPlan.projectId!==snapshot.projectId)throw new ApplicationError('SCOPE_DENIED','运行计划不属于本任务');
+    if(input.cliSandbox&&('runner'in input.cliSandbox?input.cliSandbox.runner:'codex')!==snapshot.runner)throw new ApplicationError('SCOPE_DENIED','CLI沙箱不属于本次Agent');
     if(input.cliSandbox&&(meta.cliEntry!=='supported'||!runPlan.grades.cli||input.cliSandbox.digest!==runPlan.sandbox.digest||input.cliSandbox.source!==runPlan.sandbox.source))throw new ApplicationError('SCOPE_DENIED','沙箱交付不等于本次运行策略');
     this.assertBridges(snapshot,input);
     for(const item of input.inventory)if(item.kind==='mcp'&&input.mcp.some(m=>m.serverName===item.name)&&item.ownerStoreId!==this.store.storeId)throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户MCP名称与受管工具桥冲突，保留用户配置且不自动改名');

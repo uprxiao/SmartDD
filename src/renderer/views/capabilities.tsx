@@ -11,15 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@renderer/lib/ui/switch';
 
 const issueLabels: Record<string, [string, string]> = {
-  managed_launch_payload_too_large: ['本次应用能力内容超过启动容量，已停用应用注入；Agent 可继续工作', 'Application capabilities exceed launch capacity; disabled for this run. The Agent can continue.'],
-  AGENT_ADAPTER_UNSUPPORTED: ['此 Agent 配置的应用能力暂不可用，其他工作可继续', 'Application capabilities are unavailable for this Agent configuration; other work can continue.'],
-  HISTORY_CAPABILITIES_UNKNOWN: ['无法确认历史会话的应用能力，已保留原会话并停用应用授权', 'Historical application capabilities could not be verified; the original session is preserved with application access disabled.'],
+  managed_launch_payload_too_large: ['本次插件能力内容超过启动容量，已停用插件注入；Agent 可继续工作', 'Plugin capabilities exceed launch capacity; disabled for this run. The Agent can continue.'],
+  AGENT_ADAPTER_UNSUPPORTED: ['此智能体的插件能力暂不可用，其他工作可继续', 'Plugin capabilities are unavailable for this Agent configuration; other work can continue.'],
+  HISTORY_CAPABILITIES_UNKNOWN: ['无法确认历史会话的插件能力，已保留原会话并停用插件授权', 'Historical plugin capabilities could not be verified; the original session is preserved with plugin access disabled.'],
   file_hash_mismatch: ['投影内容已改变，请重新启动任务', 'Projection changed; restart the task'],
   file_unreadable: ['投影文件不可读取', 'Projection file unreadable'],
   manifest_invalid: ['投影清单无效', 'Invalid projection manifest'],
   manifest_hash_mismatch: ['投影清单已改变', 'Projection manifest changed'],
   resource_path_unreadable: ['私钥等资源文件不可读取', 'Resource file (such as a private key) unreadable'],
-  runner_not_found: ['终端中找不到 CLI，请检查 AI 配置', 'CLI not found in terminal; check the AI profile'],
+  runner_not_found: ['终端中找不到 CLI，请检查智能体配置', 'CLI not found in terminal; check the agent configuration'],
   self_check_timeout: ['终端自检超时，启动已停止', 'Terminal check timed out; launch stopped'],
   self_check_not_received: ['未收到终端自检结果，请检查 Python 3 和终端输出', 'No terminal check result; check Python 3 and terminal output'],
   self_check_report_invalid: ['终端自检结果无效', 'Invalid terminal check result'],

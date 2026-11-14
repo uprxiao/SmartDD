@@ -3,9 +3,13 @@ import type { LaunchMode } from '@shared/runner-args';
 import type { RuntimeSnapshot } from '@shared/capabilities';
 import type { PreparedRuntime } from '../capabilities/capability-service';
 import type { ResolvedProfile } from '../ai/ai-profile-service';
+import type {ClaudeRestoreReceipt} from '../ai/agent-native-state';
+import type {CapabilitySessionSnapshot,CapabilitySessionPointer} from '@shared/application-session';
 export type TaskInputSender = Pick<IpcMainInvokeEvent, 'sender' | 'senderFrame'>;
 /** Host-owned callbacks. No runtime identity or process receipt is accepted from RPC. */
 export interface TaskCapabilityLaunch {
+  /** Existing owned backend only; never accepts a renderer process receipt. */
+  codexInitializer?():import('../applications/codex-initialization').CodexInitializerProcess;
   ptyId: string;
   runtime?: PreparedRuntime;
   args: string[];
@@ -28,11 +32,16 @@ export interface TaskCapabilityLaunch {
   bindNative?(sessionId: string): Promise<void>;
 }
 export interface TaskCapabilityLauncher {
+  /** Independent history H gate; C remains short metadata-only coordination. */
+  coordinateRestore?<T>(work:()=>Promise<T>,signal:AbortSignal):Promise<T>;
+  assertHistoryCopyAllowed?(input:{taskId:string;from:string;to:string;cwd:string;sessionId:string;home:string}):Promise<void>;
   prepare(input: {
     projectId: string;taskId: string;profile: ResolvedProfile;cwd: string;
     home: string;stateRoot: string;claudeConfigExplicit: boolean;
     mode: LaunchMode;sessionId: string | null;previous: RuntimeSnapshot | null;
     newTask: boolean;signal: AbortSignal;environment: Record<string,string>;
+    nativeRestore?:ClaudeRestoreReceipt;
+    commitSessionSnapshot?(before:{pointer:CapabilitySessionPointer;native:CapabilitySessionSnapshot['native']},after:{pointer:CapabilitySessionPointer;native:CapabilitySessionSnapshot['native']}):void;
   }): Promise<TaskCapabilityLaunch>;
   tombstone(taskId: string): Promise<void>;
   activeTaskIds?(projectId: string): ReadonlySet<string>;

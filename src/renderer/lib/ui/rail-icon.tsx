@@ -1,11 +1,12 @@
-import { Bot, Clock3, Ellipsis, GitBranch, House, LayoutGrid } from 'lucide-react';
+import { Bot, Clock3, Ellipsis, GitBranch, House, LayoutGrid, Settings } from 'lucide-react';
 
-export type RailIconName = 'home' | 'clock' | 'bot' | 'branch' | 'grid' | 'more';
-const outlines = { home: House, clock: Clock3, bot: Bot, branch: GitBranch, grid: LayoutGrid, more: Ellipsis };
+export type RailIconName = 'home' | 'clock' | 'bot' | 'branch' | 'grid' | 'more' | 'settings';
+const outlines = { home: House, clock: Clock3, bot: Bot, branch: GitBranch, grid: LayoutGrid, more: Ellipsis, settings: Settings };
 
 /** Selected icons have a solid silhouette and retain their inner cutouts. */
 export function RailIcon({ name, selected = false }: { name: RailIconName; selected?: boolean }) {
   const Outline = outlines[name];
+  if(name==='settings')return <Outline aria-hidden="true" size={22} strokeWidth={selected?2:1.7}/>;
   if (!selected) return <Outline aria-hidden="true" size={22} strokeWidth={1.7} />;
   return <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none">
     {name === 'home' && <path d="M10.5 2.7a2.4 2.4 0 0 1 3 0l8 6.6c1.2 1 .5 2.7-1 2.7H20v7.2a2.3 2.3 0 0 1-2.3 2.3H15v-6a3 3 0 0 0-6 0v6H6.3A2.3 2.3 0 0 1 4 19.2V12h-.5c-1.5 0-2.2-1.7-1-2.7z" />}

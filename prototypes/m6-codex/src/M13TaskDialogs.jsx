@@ -1,8 +1,20 @@
 // M13 原型 P0.16（审核 review-20261111-1500 N01）：M13 预览下的任务信息、恢复任务、任务配置与会话插件弹窗。
 // 都读任务创建时记录的智能体快照与插件快照（task.agent、task.pluginSnapshot），不再回查旧 AI 配置。全部为合成数据。
 import React, { useState } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { AGENTS, LOGIN_LABEL, identityChange, launchBlock, projectBinding, resumeAgents, resumeDecision } from './m13-model.mjs';
 import { Dialog, Pill } from './m13-ui.jsx';
+
+/** ?m13Failure=1: synthetic preview only; no model, request or terminal action. */
+export function M13ServiceFailurePreview({ onStop }) {
+  const [visible, setVisible] = useState(() => new URLSearchParams(location.search).get('m13Failure') === '1');
+  if (!visible) return null;
+  return <div role="alert" className="m13-service-failure-notice" data-testid="service-failure-notice">
+    <TriangleAlert size={16} aria-hidden="true" /><div><p>服务异常，是否中断或切换配置？</p><small>CLI 正在持续重试。中断后可在恢复页选择智能体。WillYou 不会自动重发写操作。</small></div>
+    <button className="m10-button secondary" onClick={() => setVisible(false)}>继续等待</button>
+    <button className="m10-button primary" onClick={() => { setVisible(false); onStop(); }}>中断并选择配置</button>
+  </div>;
+}
 
 const sourceText = a => a.source === 'login' ? `${LOGIN_LABEL[a.method || 'subscription'] || '订阅'}（CLI 自己的登录）` : a.source === 'legacy' ? '旧配置（保留原环境变量与参数）' : a.providerName || '供应商已删除';
 const modelText = a => a.source === 'login' ? 'CLI 默认模型' : a.source === 'legacy' ? '按原配置' : (a.modelNames || []).map((n, i) => i === 0 ? `${n}（默认）` : n).join('、') || '—';

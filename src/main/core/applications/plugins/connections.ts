@@ -33,7 +33,7 @@ export class PluginConnections {
   }
   private default(appId:string):DefaultRow {return this.store.sqlite.prepare('SELECT connection_id,revision FROM plugin_connection_defaults WHERE app_id=?').get(appId) as DefaultRow??{connection_id:null,revision:0};}
   private rawConnection(appId:string,id:string){
-    const row=this.store.sqlite.prepare('SELECT id,provider_id,identity_revision,revision FROM application_connections WHERE app_id=? AND id=?').get(appId,id) as {id:string;provider_id:string;identity_revision:number;revision:number}|undefined;
+    const row=this.store.sqlite.prepare('SELECT id,provider_id,identity_revision,revision FROM application_connections WHERE deleted_at IS NULL AND app_id=? AND id=?').get(appId,id) as {id:string;provider_id:string;identity_revision:number;revision:number}|undefined;
     if(!row)throw new ApplicationError('NOT_FOUND','原插件连接不存在');return row;
   }
   private projects(appId:string):ProjectRow[]{return this.store.sqlite.prepare("SELECT p.id,p.name,s.enabled,s.binding_revision,s.policy_revision,COALESCE(f.mode,'follow') mode FROM projects p JOIN application_project_settings s ON s.project_id=p.id LEFT JOIN plugin_project_preferences f ON f.project_id=s.project_id AND f.app_id=s.app_id WHERE s.app_id=? AND p.archived_at IS NULL ORDER BY p.id").all(appId) as ProjectRow[];}
@@ -45,7 +45,7 @@ export class PluginConnections {
   initializeProjects(appId:string,projectId?:string){
     if(!this.store.sqlite.inTransaction){this.store.sqlite.transaction(()=>this.initializeProjects(appId,projectId)).immediate();return;}
     const created=this.store.sqlite.prepare('INSERT OR IGNORE INTO plugin_connection_defaults VALUES(?,NULL,0)').run(appId);
-    if(created.changes){const existing=this.store.sqlite.prepare('SELECT id FROM application_connections WHERE app_id=? ORDER BY id LIMIT 2').all(appId) as {id:string}[];if(existing.length===1)this.store.sqlite.prepare('UPDATE plugin_connection_defaults SET connection_id=?,revision=1 WHERE app_id=?').run(existing[0].id,appId);}
+    if(created.changes){const existing=this.store.sqlite.prepare('SELECT id FROM application_connections WHERE deleted_at IS NULL AND app_id=? ORDER BY id LIMIT 2').all(appId) as {id:string}[];if(existing.length===1)this.store.sqlite.prepare('UPDATE plugin_connection_defaults SET connection_id=?,revision=1 WHERE app_id=?').run(existing[0].id,appId);}
     const rows=this.store.sqlite.prepare('SELECT id FROM projects WHERE archived_at IS NULL'+(projectId?' AND id=?':'')).all(...(projectId?[projectId]:[])) as {id:string}[];
     for(const p of rows){
       this.store.sqlite.prepare('INSERT OR IGNORE INTO application_project_settings(project_id,app_id,enabled,binding_revision,updated_at,policy_revision) VALUES(?,?,1,0,?,0)').run(p.id,appId,new Date().toISOString());
@@ -72,7 +72,7 @@ export class PluginConnections {
       plan:(id,expectedRevision,config)=>{assert();const value={sourceSchemaVersion:1,conversions:[],connectionId:id??null,expectedRevision,configHash:digest(canonicalJson(config)),referenceHash:digest(canonicalJson({hash:stored.plugin.hash,provider:config.kind})),impacts:[]};return{...value,planHash:digest(canonicalJson(value))};},
       beforeCommit:assert,
       committed:(id,created)=>{
-        if(created&&this.default(manifest.id).connection_id===null&&(this.store.sqlite.prepare('SELECT count(*) n FROM application_connections WHERE app_id=?').get(manifest.id) as {n:number}).n===1){
+        if(created&&this.default(manifest.id).connection_id===null&&(this.store.sqlite.prepare('SELECT count(*) n FROM application_connections WHERE deleted_at IS NULL AND app_id=?').get(manifest.id) as {n:number}).n===1){
           this.store.sqlite.prepare('UPDATE plugin_connection_defaults SET connection_id=?,revision=revision+1 WHERE app_id=?').run(id,manifest.id);
           for(const project of this.projects(manifest.id).filter(p=>p.mode==='follow'&&p.enabled===1)){this.bind(project.id,manifest.id,id);this.bumpProject(project.id,manifest.id);}
         }
@@ -83,12 +83,12 @@ export class PluginConnections {
   private view(service:Service,appId:string,id:string):HostedConnection<Config,string>&{issue:string|null}{
     try{return{...service.get(id),issue:null};}catch(error){
       if(!(error instanceof SyntaxError)&&(!(error instanceof ApplicationError)||!['CONFIG_INCOMPATIBLE','INVALID_INPUT','AUTH_REQUIRED'].includes(error.code)))throw error;
-      const row=this.store.sqlite.prepare('SELECT * FROM application_connections WHERE app_id=? AND id=?').get(appId,id) as Record<string,unknown>;
+      const row=this.store.sqlite.prepare('SELECT * FROM application_connections WHERE deleted_at IS NULL AND app_id=? AND id=?').get(appId,id) as Record<string,unknown>;
       if(!row)throw new ApplicationError('NOT_FOUND','原连接不存在');
       return{id,appId,providerId:String(row.provider_id),name:String(row.name),config:{kind:String(row.provider_id)},identity:{providerId:String(row.provider_id),serviceId:'配置与当前插件不兼容',accountId:'待重新核验',contractMajor:1},configSchemaVersion:Number(row.config_schema_version),revision:Number(row.revision),configRevision:Number(row.config_revision),identityRevision:Number(row.identity_revision),secretRevision:Number(row.secret_revision),policyRevision:Number(row.policy_revision),enabled:row.enabled===1,authorization:row.auth_state==='connected'?'connected':'disconnected',health:'unavailable',healthCode:'CONFIG_INCOMPATIBLE',healthMessage:'配置与当前插件不兼容，原数据保留',testedAt:typeof row.tested_at==='string'?row.tested_at:null,hasSecret:typeof row.secret_ref==='string'&&this.secrets.has(row.secret_ref),cleanupPending:row.cleanup_pending===1,createdAt:String(row.created_at),updatedAt:String(row.updated_at),issue:'配置与当前插件不兼容，原数据保留；可更新插件或删除后重新配置'};
     }
   }
-  list(raw:PluginConnectionTarget){const input=pluginConnectionTargetSchema.parse(raw),stored=this.current(input),service=this.service(stored),rows=this.store.sqlite.prepare('SELECT id FROM application_connections WHERE app_id=? ORDER BY created_at,id').all(input.appId) as {id:string}[],globalDefault=this.default(input.appId);return{...input,providers:stored.plugin.manifest.providers,default:globalDefault,requiresDefault:rows.length>0&&globalDefault.connection_id===null,connections:rows.map(row=>this.view(service,input.appId,row.id))};}
+  list(raw:PluginConnectionTarget){const input=pluginConnectionTargetSchema.parse(raw),stored=this.current(input),service=this.service(stored),rows=this.store.sqlite.prepare('SELECT id FROM application_connections WHERE deleted_at IS NULL AND app_id=? ORDER BY created_at,id').all(input.appId) as {id:string}[],globalDefault=this.default(input.appId);return{...input,providers:stored.plugin.manifest.providers,default:globalDefault,requiresDefault:rows.length>0&&globalDefault.connection_id===null,connections:rows.map(row=>this.view(service,input.appId,row.id))};}
   test(owner:string,raw:PluginConnectionTest){
     const input=pluginConnectionTestSchema.parse(raw),stored=this.current(input),key=owner+':'+input.requestId;
     if(this.pending.has(key)||this.pending.size>=4)throw new ApplicationError('RESOURCE_BUSY','已有连接测试正在执行');
@@ -110,7 +110,7 @@ export class PluginConnections {
     if(!candidate||candidate.owner!==owner||candidate.appId!==input.appId||candidate.hash!==input.packageHash||candidate.expiresAt<=Date.now())throw new ApplicationError('CONFIG_PLAN_STALE','该窗口没有本次有效连接测试');
     try{const result=await candidate.service.commitCandidate(input.operationId,input.candidateHash);this.changed();return result;}finally{this.candidates.delete(input.operationId);}
   }
-  private snapshot(appId:string){return{default:this.default(appId),projects:this.projects(appId),bindings:this.store.sqlite.prepare('SELECT project_id,slot,connection_id,identity_revision FROM application_project_bindings WHERE app_id=? ORDER BY project_id,slot').all(appId),connections:this.store.sqlite.prepare('SELECT id,provider_id,revision,identity_revision FROM application_connections WHERE app_id=? ORDER BY id').all(appId)};}
+  private snapshot(appId:string){return{default:this.default(appId),projects:this.projects(appId),bindings:this.store.sqlite.prepare('SELECT project_id,slot,connection_id,identity_revision FROM application_project_bindings WHERE app_id=? ORDER BY project_id,slot').all(appId),connections:this.store.sqlite.prepare('SELECT id,provider_id,revision,identity_revision FROM application_connections WHERE deleted_at IS NULL AND app_id=? ORDER BY id').all(appId)};}
   planDefault(raw:PluginDefaultInput){const input=pluginDefaultInputSchema.parse(raw),stored=this.current(input);this.rawConnection(input.appId,input.connectionId);this.service(stored).get(input.connectionId);const state=this.snapshot(input.appId);return{planHash:digest(canonicalJson({target:input.connectionId,hash:input.packageHash,state})),synchronized:state.projects.filter(p=>p.enabled===1&&p.mode==='follow').map(p=>({id:p.id,name:p.name})),unchanged:state.projects.filter(p=>p.enabled===1&&p.mode==='individual').map(p=>({id:p.id,name:p.name}))};}
   async setDefault(raw:PluginDefaultInput){const input=pluginDefaultInputSchema.parse(raw);await withResourceLock(this.store.root,()=>this.store.sqlite.transaction(()=>{
     const plan=this.planDefault(input);if(input.planHash!==plan.planHash)throw new ApplicationError('CONFIG_PLAN_STALE','项目或默认连接已变化，请重新查看影响');
@@ -145,10 +145,10 @@ export class PluginConnections {
       const bound=this.store.sqlite.prepare('SELECT project_id FROM application_project_bindings WHERE app_id=? AND connection_id=?').all(input.appId,input.connectionId) as {project_id:string}[];
       if(this.default(input.appId).connection_id===input.connectionId){this.store.sqlite.prepare('UPDATE plugin_connection_defaults SET connection_id=?,revision=revision+1 WHERE app_id=?').run(plan.replacementId,input.appId);for(const p of this.projects(input.appId).filter(p=>p.mode==='follow')){this.bind(p.id,input.appId,plan.replacementId);this.bumpProject(p.id,input.appId);}}
       for(const p of bound){this.store.sqlite.prepare("UPDATE plugin_project_preferences SET mode='follow' WHERE project_id=? AND app_id=?").run(p.project_id,input.appId);this.bind(p.project_id,input.appId,plan.replacementId);this.bumpProject(p.project_id,input.appId);}
-      const row=this.store.sqlite.prepare('SELECT secret_ref FROM application_connections WHERE id=?').get(input.connectionId) as {secret_ref:string|null};
+      const row=this.store.sqlite.prepare('SELECT secret_ref FROM application_connections WHERE deleted_at IS NULL AND id=?').get(input.connectionId) as {secret_ref:string|null};
       const changes=this.store.sqlite.prepare('SELECT old_secret_ref,new_secret_ref FROM application_secret_changes WHERE connection_id=?').all(input.connectionId) as {old_secret_ref:string|null;new_secret_ref:string|null}[];
-      this.store.sqlite.prepare('DELETE FROM application_secret_changes WHERE connection_id=?').run(input.connectionId);this.store.sqlite.prepare('DELETE FROM application_connections WHERE id=? AND app_id=?').run(input.connectionId,input.appId);
-      for(const ref of new Set([row.secret_ref,...changes.flatMap(c=>[c.old_secret_ref,c.new_secret_ref])].filter((s):s is string=>!!s)))if(!this.store.sqlite.prepare('SELECT 1 FROM application_connections WHERE secret_ref=?').get(ref))this.secrets.delete(ref);
+      this.store.sqlite.prepare('DELETE FROM application_secret_changes WHERE connection_id=?').run(input.connectionId);this.store.sqlite.prepare('DELETE FROM application_connections WHERE deleted_at IS NULL AND id=? AND app_id=?').run(input.connectionId,input.appId);
+      for(const ref of new Set([row.secret_ref,...changes.flatMap(c=>[c.old_secret_ref,c.new_secret_ref])].filter((s):s is string=>!!s)))if(!this.store.sqlite.prepare('SELECT 1 FROM application_connections WHERE deleted_at IS NULL AND secret_ref=?').get(ref))this.secrets.delete(ref);
     }).immediate());this.changed();return this.list({appId:input.appId,packageHash:input.packageHash});
   }
   async close(){this.closed=true;for(const p of this.pending.values())p.controller.abort();await Promise.allSettled([...this.pending.values()].map(p=>p.done));await Promise.allSettled([...this.candidates.entries()].map(([id,c])=>c.service.discardCandidate(id)));this.candidates.clear();}

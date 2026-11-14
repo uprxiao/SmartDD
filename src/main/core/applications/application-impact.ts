@@ -18,12 +18,12 @@ export class ApplicationImpactService {
   const db=this.store.sqlite;let appId:ApplicationId,projectIds:string[];
   const columns='id,name,provider_id AS providerId,enabled,auth_state AS authorization';let connections:Connection[];
   if(q.kind==='disconnect'){
-   const row=db.prepare('SELECT app_id AS appId,revision,'+columns+' FROM application_connections WHERE id=?').get(q.connectionId) as (Connection&{appId:ApplicationId;revision:number})|undefined;
+   const row=db.prepare('SELECT app_id AS appId,revision,'+columns+' FROM application_connections WHERE deleted_at IS NULL AND id=?').get(q.connectionId) as (Connection&{appId:ApplicationId;revision:number})|undefined;
    if(!row)throw new ApplicationError('NOT_FOUND','该连接不存在');if(row.revision!==q.expectedRevision)throw changed();appId=row.appId;
    connections=[row];projectIds=(db.prepare('SELECT DISTINCT project_id AS id FROM application_project_bindings WHERE app_id=? AND connection_id=? ORDER BY project_id').all(appId,q.connectionId) as {id:string}[]).map(p=>p.id);
   }else if(q.kind==='remove'){
    appId=q.appId;const row=db.prepare('SELECT revision FROM application_catalog_state WHERE app_id=?').get(appId) as {revision:number}|undefined;if((row?.revision??0)!==q.expectedRevision)throw changed();
-   connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE app_id=? ORDER BY name,id').all(appId) as Connection[];
+   connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE deleted_at IS NULL AND app_id=? ORDER BY name,id').all(appId) as Connection[];
    projectIds=(db.prepare('SELECT project_id AS id FROM application_project_settings WHERE app_id=? ORDER BY project_id').all(appId) as {id:string}[]).map(p=>p.id);
   }else{
    // Pre-M11 callers omitted the application because only one module required a stop.
@@ -32,7 +32,7 @@ export class ApplicationImpactService {
    appId=q.appId??legacy[0];const module=builtinApplicationModules.module(appId),project=db.prepare('SELECT 1 FROM projects WHERE id=?').get(q.projectId);if(!project)throw new ApplicationError('NOT_FOUND','该项目不存在');
    const setting=db.prepare('SELECT binding_revision AS revision,pending_operation_id AS pending FROM application_project_settings WHERE project_id=? AND app_id=?').get(q.projectId,appId) as {revision:number;pending:string|null}|undefined;
    if((setting?.revision??0)!==q.expectedRevision)throw changed();if(setting&&setting.pending!==null)throw new ApplicationError('RESOURCE_BUSY','此项目正在切换'+module.presentation.displayName+'连接，请稍后核对');
-   connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE id IN (SELECT connection_id FROM application_project_bindings WHERE project_id=? AND app_id=?) ORDER BY name,id').all(q.projectId,appId) as Connection[];projectIds=[q.projectId];
+   connections=db.prepare('SELECT '+columns+' FROM application_connections WHERE deleted_at IS NULL AND id IN (SELECT connection_id FROM application_project_bindings WHERE project_id=? AND app_id=?) ORDER BY name,id').all(q.projectId,appId) as Connection[];projectIds=[q.projectId];
   }
   const projects=projectIds.map(id=>{
    const p=db.prepare('SELECT p.name,p.archived_at AS archived,s.enabled FROM projects p LEFT JOIN application_project_settings s ON s.project_id=p.id AND s.app_id=? WHERE p.id=?').get(appId,id) as {name:string;archived:number|null;enabled:number|null}|undefined;

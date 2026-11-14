@@ -26,6 +26,13 @@ let svc: CapabilityService;
 let a: ProjectDetail;
 let b: ProjectDetail;
 const services: CapabilityService[] = [];
+it('M13 global builtin switches apply to all projects and retain the independent automatic-adoption preference',()=>{
+  db.insert(schema.capabilityRegistryPreferences).values({id:1,autoManage:true}).run();
+  svc.setGlobalEnabled('project-db-diagnostics',false);expect(svc.enabled(a.id,'project-db-diagnostics')).toBe(false);expect(svc.enabled(b.id,'project-db-diagnostics')).toBe(false);
+  expect(svc.list().find(x=>x.id==='project-db-diagnostics')?.enabled).toBe(false);expect(svc.list().find(x=>x.id==='remote-password-ssh')?.enabled).toBe(true);
+  svc.setGlobalEnabled('smartdd-project-context',false);expect(svc.enabled(a.id,'smartdd-project-context')).toBe(false);svc.setGlobalEnabled('project-db-diagnostics',true);expect(svc.enabled(b.id,'project-db-diagnostics')).toBe(true);
+  expect(db.select().from(schema.capabilityRegistryPreferences).get()?.autoManage).toBe(true);expect(()=>svc.setGlobalEnabled('unknown',false)).toThrow();
+});
 const dbInput = (password: string, over: Partial<DatabaseInput> = {}): DatabaseInput => ({ env: 'test', label: 'primary', aliases: [], vendor: 'postgres', host: '127.0.0.1', port: 5432, database: 'alpha', schema: 'custom', username: 'tester', accessLevel: 'readonly', isDefault: true, note: '', password, ...over });
 const filesIn = (dir: string): string[] => readdirSync(dir).flatMap((n) => { const p = join(dir, n); return statSync(p).isDirectory() ? filesIn(p) : [p]; });
 
@@ -255,6 +262,38 @@ function managedPlacement(service = svc): ManagedCapabilityPlacement {
   return { runId: randomUUID(),runtimeHash: service.runtimeIdentity().hash,mcpName: 'smartdd_project_original_name' };
 }
 describe('M10 managed placement through the existing production project runtime', () => {
+  it.each(['claude','codex'] as const)('gives library-delivered %s Skills current project resources without copying the Skills', runner => {
+    const resource = projects.createDatabase(a.id, dbInput('managed-alpha-password'));
+    const server = projects.createServer(a.id,{env:'test',label:'managed-web',aliases:[],host:'127.0.0.1',port:22,username:'deploy',authType:'password',privateKeyPath:null,defaultRoot:true,sudoPolicy:'none',appRoot:'/app',logsPath:'',note:'',password:'managed-ssh-password'});
+    projects.createDatabase(b.id, dbInput('managed-beta-password', {database:'beta'}));
+    const input = {projectId:a.id,taskId:'managed-resources',runner,cwd:a.dirs[0].path,home:join(tmp,'home'),profileArgs:[]};
+    const run = svc.prepare({...input,managed:managedPlacement()});
+    expect(run.env.PROJECT_DB_CONFIG).toEqual(expect.any(String));
+    const data = JSON.parse(readFileSync(run.env.PROJECT_DB_CONFIG,'utf8'));
+    expect(data.projects[0].databases.map((d:{resourceId:string})=>d.resourceId)).toEqual([resource.id]);
+    expect(Object.values(run.env)).toContain('managed-alpha-password');
+    expect(Object.values(run.env)).not.toContain('managed-beta-password');
+    expect(JSON.parse(readFileSync(run.env.REMOTE_SERVERS_CONFIG,'utf8')).servers.map((s:{resourceId:string})=>s.resourceId)).toEqual([server.id]);
+    expect(Object.values(run.env)).toContain('managed-ssh-password');
+    const context = JSON.parse(readFileSync(run.env.SMARTDD_PROJECT_CONTEXT,'utf8'));
+    expect(context.databases.map((d:{resourceId:string})=>d.resourceId)).toEqual([resource.id]);
+    expect(context.configPaths.PROJECT_DB_CONFIG).toBe(run.env.PROJECT_DB_CONFIG);
+    expect(run.snapshot.skills).toEqual([]);
+    expect(filesIn(dirname(run.snapshot.manifestPath)).some(p=>p.endsWith('SKILL.md'))).toBe(false);
+    expect(filesIn(dirname(run.snapshot.manifestPath)).map(p=>readFileSync(p,'utf8')).join('')).not.toContain('managed-alpha-password');
+    run.release();
+    svc.setGlobalEnabled('project-db-diagnostics',false);
+    const disabled = svc.prepare({...input,managed:managedPlacement()});
+    expect(disabled.env.PROJECT_DB_CONFIG).toBeUndefined();
+    expect(Object.values(disabled.env)).not.toContain('managed-alpha-password');
+    expect(JSON.parse(readFileSync(disabled.env.SMARTDD_PROJECT_CONTEXT,'utf8')).databases).toEqual([]);
+    expect(disabled.env.REMOTE_SERVERS_CONFIG).toEqual(expect.any(String));
+    expect(Object.values(disabled.env)).toContain('managed-ssh-password');
+    disabled.release();
+    svc.setGlobalEnabled('remote-password-ssh',false);
+    const off=svc.prepare({...input,managed:managedPlacement()});
+    expect(off.env.REMOTE_SERVERS_CONFIG).toBeUndefined();expect(Object.values(off.env)).not.toContain('managed-ssh-password');off.release();
+  });
   it.each(['claude','codex'] as const)('prepares a managed %s run without per-run Skill copies, discovery directories or replacing user overrides', runner => {
     const placement = managedPlacement(), home = join(tmp,'home'), userConfig = join(home,'user-config.txt'); writeFileSync(userConfig,'existing user configuration');
     const run = svc.prepare({ projectId: a.id,taskId: 'task',runner,cwd: a.dirs[0].path,home,profileArgs: ['-c','skills.config=[{path="user",enabled=true}]'],managed: placement });

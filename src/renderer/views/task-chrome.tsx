@@ -1,3 +1,4 @@
+import { AgentTaskInfo } from '@renderer/features/agents/task-agent';
 import { runnerDescription } from '@shared/ai-profiles';
 import {SessionApplicationsPanel} from '@renderer/features/applications/session-applications';
 import {openNewBrowserTab} from '@renderer/features/browser/store';
@@ -9,7 +10,6 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { observeTaskHeaderLayout, type TaskHeaderLayout } from '@shared/task-header-layout.mjs';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { profileModel } from '@shared/ai-profiles';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import type { TaskView as Task } from '@shared/tasks';
 import type { Runner } from '@shared/types';
@@ -62,7 +62,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
     </div>
     <div className="task-window-actions app-no-drag">
       {task.projectId&&<button type="button" className="m9-file-entry" data-testid="task-new-browser" title="新建标签页（⇧⌘B）" onClick={()=>openNewBrowserTab(task.id)}><SquarePlus size={16}/><span className="task-entry-label">新建标签页</span></button>}
-      <button type="button" className="m9-file-entry" data-testid="task-applications" onClick={()=>setSessionApps(true)}><SlidersHorizontal size={16}/><span className="task-entry-label">应用</span></button>
+      <button type="button" className="m9-file-entry" data-testid="task-applications" aria-label="会话插件" onClick={()=>setSessionApps(true)}><SlidersHorizontal size={16}/><span className="task-entry-label">插件</span></button>
       <button type="button" className="m9-file-entry" data-testid="task-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} /><span className="task-entry-label">文件</span></button>
       <DropdownMenu>
         <DropdownMenuTrigger className="icon-button" data-testid="task-actions" aria-label={t('m6.more')} title={t('m6.more')}><Ellipsis size={18} /></DropdownMenuTrigger>
@@ -82,7 +82,7 @@ export const TaskHeader = observer(function TaskHeader({ task }: { task: Task })
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <TaskInfo task={task} />
+      {task.agentSnapshot ? <AgentTaskInfo task={task} /> : <TaskInfo task={task} />}
       <span className="task-window-divider" />
       <button type="button" className="icon-button" title={t('nav.newTask')} aria-label={t('nav.newTask')} onClick={() => navigation.newTask(task.projectId ?? undefined)}><SquarePlus size={17} /></button>
     </div>
@@ -104,7 +104,8 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
   const { data: profiles = [] } = useAiProfiles();
   const { data: project } = useProject(task.projectId);
   const profile = profiles.find((p) => p.id === task.aiProfileId);
-  const model = profile ? profileModel(profile) : null;
+  // A present-day profile is not evidence of a pre-M13 task's historical model.
+  const model = task.agentSnapshot?.model ?? null;
   const running = Boolean(task.ptyId);
   // Project writes refresh this query independently of the task-list cache.
   // Config revisions only increase; an older query cache must not suppress a
@@ -135,7 +136,7 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
         <InfoRow label={t('task.fields.profile')}>
           <span className="flex items-center gap-1.5">
             <span className="inline-block size-2 shrink-0 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-foreground-passive)' }} />
-            <span className="truncate">{task.aiProfileName ?? '—'}</span>
+            <span className="truncate">{task.agentSnapshot?.name ?? task.aiProfileName ?? '—'}</span>
             {profile && <ProfileHealthMark profile={profile} withLabel />}
             {task.aiProfileId === null && task.aiProfileName && <span className="text-foreground-passive">（{t('task.profileDeleted')}）</span>}
           </span>
@@ -145,19 +146,6 @@ const TaskInfo = observer(function TaskInfo({ task }: { task: Task }) {
         </InfoRow>
         <InfoRow label={t('task.fields.cwd')}>
           <span className="block font-mono break-all select-text">{task.cwd}</span>
-        </InfoRow>
-        <InfoRow label={t('task.fields.env')}>
-          <div data-testid="task-env" className="flex flex-wrap gap-1">
-            {task.injectedEnvNames.length === 0 ? (
-              <span className="text-foreground-passive">{t('task.injectedNone')}</span>
-            ) : (
-              task.injectedEnvNames.map((n) => (
-                <code key={n} className="rounded bg-background-2 px-1.5 py-0.5 font-mono text-[11px] select-text">
-                  {n}
-                </code>
-              ))
-            )}
-          </div>
         </InfoRow>
         {task.runtimeSnapshot && <InfoRow label={t('capabilities.label')}><RuntimeCapabilities snapshot={task.runtimeSnapshot} /></InfoRow>}
         {changed && (
@@ -190,7 +178,7 @@ export const RuntimeBar = observer(function RuntimeBar({ task }: { task: Task })
   const { t } = useTranslation();
   const { data: profiles = [] } = useAiProfiles();
   const profile = profiles.find((p) => p.id === task.aiProfileId);
-  const model = profile ? profileModel(profile) : null;
+  const model = task.agentSnapshot?.model ?? null;
   const runningCount = tasksStore.tasks.filter((x) => x.ptyId).length;
   return (
     <div
@@ -202,7 +190,7 @@ export const RuntimeBar = observer(function RuntimeBar({ task }: { task: Task })
       <span className="text-foreground-passive @max-[720px]:hidden">·</span>
       <span data-testid="runtime-profile" className="flex min-w-0 items-center gap-1">
         <span className="inline-block size-2 shrink-0 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-foreground-passive)' }} />
-        <span className="truncate">{task.aiProfileName ?? '—'}</span>
+        <span className="truncate">{task.agentSnapshot?.name ?? task.aiProfileName ?? '—'}</span>
         {profile && <HealthDot profile={profile} className="size-1.5" />}
       </span>
       {model && (

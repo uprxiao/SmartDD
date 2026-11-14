@@ -19,11 +19,10 @@ import { ConfirmDeleteDialog, EnvBadge, TestResultLine } from './projects/form-p
 import { DirDialog, ProjectDialog } from './projects/project-dialogs';
 import { ProjectDeleteDialog, useProjectAction } from './projects/project-actions';
 import { DatabaseDialog, ServerDialog } from './projects/resource-dialogs';
-import { CapabilitiesSection } from './capabilities';
 import { projectTransferNavigation } from '@renderer/core/project-transfer';
 
 type SectionId = ProjectSectionId;
-const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'applications', 'capabilities', 'tasks'];
+const SECTIONS: SectionId[] = ['overview', 'dirs', 'databases', 'servers', 'applications', 'tasks'];
 
 /** Dialog state: which item a dialog is open for (`null` = create). Closed when undefined. */
 function useDialogTarget<T>() {
@@ -48,7 +47,7 @@ export const ProjectView = observer(function ProjectView() {
   const { t } = useTranslation();
   const id = navigation.currentProjectId;
   const { data: project, error, isLoading } = useProject(id);
-  const section=navigation.projectSection,setSection=(value:SectionId)=>navigation.setProjectSection(value);
+  const section=navigation.projectSection==='capabilities'?'overview':navigation.projectSection,setSection=(value:SectionId)=>navigation.setProjectSection(value);
 
   if (!id) return null;
   if (isLoading) return null;
@@ -79,7 +78,6 @@ export const ProjectView = observer(function ProjectView() {
       {section === 'databases' && <Databases project={project} />}
       {section === 'servers' && <Servers project={project} />}
       {section === 'applications' && <ProjectApplications key={project.id} project={project} />}
-      {section === 'capabilities' && <CapabilitiesSection key={project.id} projectId={project.id} />}
       {section === 'tasks' && <Tasks project={project} />}
     </SectionPage>
   );

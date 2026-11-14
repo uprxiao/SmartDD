@@ -8,7 +8,7 @@ import type { CapabilityPreview, RuntimeSkill, RuntimeSnapshot, SkillVersion, St
 import { DB_VENDORS } from '@shared/projects';
 import type { Runner } from '@shared/types';
 import type { AppDb } from '../../db/client';
-import { projectCapabilities, projects, skillVersions } from '../../db/schema';
+import { capabilityRegistryPreferences, projectCapabilities, projects, skillVersions } from '../../db/schema';
 import type { SecretsStore } from '../../secrets';
 import type { AiProfileService, ResolvedProfile } from '../ai/ai-profile-service';
 import type { ProjectService } from '../projects/project-service';
@@ -95,14 +95,29 @@ export class CapabilityService {
       const versions = installed.filter((v) => v.skillId === bundle.id);
       const current = versions.find((v) => v.active);
       if (!current) throw new Error(`Skill 没有活动版本：${bundle.id}`);
-      return { id: bundle.id, name: bundle.name, description: bundle.description, source: bundle.source, enabled: projectId ? this.enabled(projectId, bundle.id) : true,
+      return { id: bundle.id, name: bundle.name, description: bundle.description, source: bundle.source, enabled: projectId ? this.enabled(projectId, bundle.id) : this.globalEnabled(bundle.id),
         current, versions, availableVersion: bundle.version, updateAvailable: current.hash !== bundle.hash };
     });
   }
 
   enabled(projectId: string, capabilityId: string): boolean {
+    if(this.d.db.select().from(capabilityRegistryPreferences).get())return this.globalEnabled(capabilityId);
     const rows = this.d.db.select().from(projectCapabilities).where(and(eq(projectCapabilities.projectId, projectId), eq(projectCapabilities.capabilityId, capabilityId))).all();
     return projectCapabilityEnabled(rows, projectId, capabilityId);
+  }
+
+  globalEnabled(capabilityId:string):boolean {
+    const row=this.d.db.select().from(capabilityRegistryPreferences).get();if(!row)return true;
+    const disabled:unknown=JSON.parse(row.builtinDisabled);if(!Array.isArray(disabled)||disabled.some(x=>typeof x!=='string'))throw new Error('内置能力设置已损坏，请恢复后重试');
+    return !disabled.includes(capabilityId);
+  }
+  setGlobalEnabled(capabilityId:string,enabled:boolean):void {
+    if(typeof enabled!=='boolean'||(!this.bundles.some(x=>x.id===capabilityId)&&capabilityId!==MCP_CAPABILITY))throw new Error('内置能力设置无效');
+    this.d.db.transaction(()=>{
+      const row=this.d.db.select().from(capabilityRegistryPreferences).get();const value:unknown=JSON.parse(row?.builtinDisabled??'[]');if(!Array.isArray(value)||value.some(x=>typeof x!=='string'))throw new Error('内置能力设置已损坏');
+      const set=new Set(value as string[]);if(enabled)set.delete(capabilityId);else set.add(capabilityId);const builtinDisabled=JSON.stringify([...set]);
+      this.d.db.insert(capabilityRegistryPreferences).values({id:1,builtinDisabled}).onConflictDoUpdate({target:capabilityRegistryPreferences.id,set:{builtinDisabled}}).run();
+    });
   }
 
   setEnabled(projectId: string, capabilityId: string, enabled: boolean): void {
@@ -178,7 +193,9 @@ export class CapabilityService {
     const runRoot = join(capabilityRoot, 'runs', project.id, input.taskId, runId);
     const auditPath = join(capabilityRoot, 'resource-audit', project.id, `${input.taskId}.jsonl`);
     mkdirSync(dirname(auditPath), { recursive: true, mode: 0o700 });
-    const hasSkill = (id: string) => selected.some((s) => s.skillId === id && s.enabled);
+    // Library delivery removes per-run Skill copies, not their project resource
+    // contracts. Resolve resources from the current global switches on each run.
+    const hasSkill = (id: string) => input.managed ? this.globalEnabled(id) : selected.some((s) => s.skillId === id && s.enabled);
     const env: Record<string, string> = {};
     const secretValues: string[] = [];
     const bindSecret = (name: string, key: string, required = true): string | undefined => {

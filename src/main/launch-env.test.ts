@@ -1,9 +1,10 @@
+import { capabilityScanContexts } from './core/capabilities/scan-contexts';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { PARENT_AGENT_VARS, planLaunchEnv, VALUE_PREFIX } from './launch-env';
+import { PARENT_AGENT_VARS, applicationChildEnvironment, planLaunchEnv, VALUE_PREFIX } from './launch-env';
 import { shellWrapped } from './pty-manager';
 
 // A fake home whose rc files export the same variables globally, like the user's ~/.zshrc does.
@@ -13,6 +14,8 @@ const RC = [
   'export ANTHROPIC_AUTH_TOKEN=rc-token',
   'export ANTHROPIC_API_KEY=rc-key',
   'export RC_ONLY=1',
+  'export CLAUDE_CODE_OAUTH_TOKEN=rc-oauth',
+  'export CLAUDE_CODE_OAUTH_TOKEN_NOTE=keep-related-name',
   'claude() { echo FUNCTION; }',
   "alias env='echo ALIAS'",
   '',
@@ -39,6 +42,13 @@ function runEnv(shell: string, injected: Record<string, string>, extraArgs: stri
 const tricky = `a b"c'$HOME;\`x\`\\n`;
 
 describe.each(['/bin/zsh', '/bin/bash'].filter(existsSync))('launch through %s', (shell) => {
+  it('clears exact authentication names after rc without clearing related names', () => {
+    const plan = planLaunchEnv({ PATH: '/usr/bin:/bin', HOME: home }, {}, [], ['CLAUDE_CODE_OAUTH_TOKEN']);
+    const wrapped = shellWrapped('/usr/bin/env', [], plan.scriptArgs, shell);
+    const r = spawnSync(wrapped.file, wrapped.args, { env: plan.env, encoding: 'utf8', timeout: 10000 });
+    expect(r.status).toBe(0); expect(r.stdout).not.toContain('CLAUDE_CODE_OAUTH_TOKEN=');
+    expect(r.stdout).toContain('CLAUDE_CODE_OAUTH_TOKEN_NOTE=keep-related-name');
+  });
   it('profile values win over rc exports; other ANTHROPIC_* are cleared', () => {
     const { vars, status } = runEnv(shell, {
       ANTHROPIC_BASE_URL: 'https://profile.invalid',
@@ -88,6 +98,7 @@ describe('planLaunchEnv', () => {
   it('rejects names that are not identifiers', () => {
     expect(() => planLaunchEnv({}, { 'A;rm': 'x' }, [])).toThrow('无效的变量名');
     expect(() => planLaunchEnv({}, {}, ['A B'])).toThrow('无效的变量前缀');
+    expect(() => planLaunchEnv({}, {}, [], ['A;wrong'])).toThrow('无效的变量名');
   });
 
   it('drops stale carriers from the base env and lists names sorted', () => {
@@ -107,4 +118,31 @@ describe('planLaunchEnv', () => {
   it('names parent-agent variables to strip', () => {
     expect(PARENT_AGENT_VARS).toContain('CLAUDECODE');
   });
+});
+
+
+describe('application child HOME isolation', () => {
+  it('keeps the ordinary App environment contract when no child HOME is configured', () => {
+    expect(applicationChildEnvironment({HOME:'/public/system-home',PATH:'/usr/bin:/bin',ELECTRON_RUN_AS_NODE:'1',SMARTDD_USER_DATA:'/public/data',SMARTDD_PROBE:'1'})).toEqual({HOME:'/public/system-home',PATH:'/usr/bin:/bin',TERM:'xterm-256color',COLORTERM:'truecolor'});
+  });
+  it('isolates actual child HOME without mutating the App HOME or passing the control variable', () => {
+    const original=Object.freeze({HOME:'/public/system-home',PATH:'/usr/bin:/bin',SMARTDD_CLI_HOME:home});
+    const child=applicationChildEnvironment(original);
+    expect(child.HOME).toBe(home);expect(original.HOME).toBe('/public/system-home');
+    expect(child).not.toHaveProperty('SMARTDD_CLI_HOME');
+    const run=spawnSync('/usr/bin/env',[],{env:child,encoding:'utf8'});
+    expect(run.status).toBe(0);expect(run.stdout.split('\n')).toContain('HOME='+home);
+    expect(run.stdout).not.toContain('SMARTDD_CLI_HOME=');
+  });
+  it.each(['relative-home','~/private-home'])('refuses a nonabsolute child HOME before discovery or launch: %s', value => {
+    expect(()=>applicationChildEnvironment({HOME:'/public/system-home',SMARTDD_CLI_HOME:value})).toThrow('SMARTDD_CLI_HOME');
+  });
+});
+
+it('routes both real discovery context kinds through the child HOME while preserving the App HOME',()=>{
+ const original=Object.freeze({HOME:'/public/system-home',PATH:'/usr/bin:/bin',SMARTDD_CLI_HOME:home});
+ const contexts=capabilityScanContexts(home,applicationChildEnvironment(original),[],[home+'/project']);
+ expect(new Set(contexts.map(x=>x.runner))).toEqual(new Set(['claude','codex']));
+ for(const context of contexts){expect(context.home).toBe(home);expect(context.stateRoot).toBe(join(home,context.runner==='codex'?'.codex':'.claude'));expect(context.sourceEnvironment!.HOME).toBe(home);}
+ expect(JSON.stringify(contexts)).not.toContain('/public/system-home');expect(original.HOME).toBe('/public/system-home');
 });

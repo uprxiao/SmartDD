@@ -1,4 +1,5 @@
 import {recordedAttemptCount} from '@shared/application-call-feedback';
+import {hasExternalPluginOwner} from './plugins/legacy-routing';
 import type {NativeUserMessages} from './native-user-messages';
 import {nativeCapabilityPreparationSchema,assertNativeCapabilityPreparation} from './native-preparation-diagnostics';
 import {lstatSync,openSync,closeSync,fstatSync,readSync,constants} from 'node:fs';
@@ -26,6 +27,8 @@ import type {ApplicationRunPlan} from '@shared/application-run-plan';
 import {AgentAdapterRegistry} from './agent-adapter-registry';
 import {builtinCapabilityDeliveryAdapters,type CapabilityDeliveryAdapterRegistry} from './capability-delivery-adapters';
 import type {SessionRunPlanDiagnostic} from '@shared/application-session-diagnostics';
+import type {SessionPluginDiagnostic} from '@shared/application-session-diagnostics';
+import type {PluginInstallation} from './plugins/lifecycle';
 const LEVELS=['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const;
 function storedRunPlan(store:ResourceStore,runId:string):ApplicationRunPlan|null{
  const row=store.sqlite.prepare("SELECT kind,owner_store_id,state,plan_json FROM capability_resource_operations WHERE operation_id=?").get('application-run-plan:'+runId) as {kind:string;owner_store_id:string;state:string;plan_json:string}|undefined;
@@ -61,7 +64,7 @@ const code=(e:unknown)=>e instanceof ApplicationError?e.code:'RESOURCE_RECOVERY_
 export class ApplicationSessionDiagnostics {
  private readonly sessions:CapabilitySessionRegistry;private readonly packages:PackageRegistry;private inspector?:Inspector;
  private readonly observationPolls=new Map<string,{taskId:string;snapshotHash:string;revision:string|null}>();
- constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;prepareStoppedSkillRead?:NativeUserMessages['prepareStoppedSkillRead'];skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillDiscoveries?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillObservationRevision?:NativeUserMessages['skillObservationRevision']}){
+ constructor(private readonly store:ResourceStore,private readonly connections:ApplicationConnectionService,private readonly selections:ApplicationSelectionService,private readonly deps:{runs:()=>CapabilityRunRegistry|undefined;activePty?:(taskId:string)=>string|null;prepareStoppedSkillRead?:NativeUserMessages['prepareStoppedSkillRead'];skillReads?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillDiscoveries?:(runId:string,targets:readonly SkillReadTarget[])=>Promise<SkillReadObservation[]>;skillObservationRevision?:NativeUserMessages['skillObservationRevision'];externalPluginState?:(appId:string,projectId:string)=>{state:PluginInstallation;manifest:{displayName:string}|null;projectEnabled:boolean}|null}){
   this.sessions=new CapabilitySessionRegistry(store,{assertInitialSelection:()=>{throw new Error('read only');},verifyExtraResource:()=>{throw new Error('read only');}});this.packages=new PackageRegistry(store,'diagnostic-reader');
  }
  attach(inspector:Inspector){if(this.inspector&&this.inspector!==inspector)throw new ApplicationError('RESOURCE_BUSY','会话诊断已有所属宿主');this.inspector=inspector;}
@@ -249,8 +252,27 @@ export class ApplicationSessionDiagnostics {
   const resourceIssue=session?this.resourceIssue(session):null;if(resourceIssue)issues.push(resourceIssue);
   const selected=task.project_id?db.prepare('SELECT app_id FROM application_project_settings WHERE project_id=? AND enabled=1').all(task.project_id) as {app_id:string}[]:[];
   const appIds=new Set([...selected.map(s=>s.app_id),...session?.snapshot.packages.map(p=>p.appId)??[]]);
+  const plugins:SessionPluginDiagnostic[]=[];
+  if(session?.snapshot.schema===3)for(const selected of session.snapshot.externalPlugins??[]){
+   let state:SessionPluginDiagnostic['state']='unverified',name=selected.appId,currentVersion:string|null=null;
+   try{
+    const current=task.project_id?this.deps.externalPluginState?.(selected.appId,task.project_id):null;
+    if(current){
+     const live=current.state;name=current.manifest?.displayName??name;
+     currentVersion=live.installed?live.version:null;
+     state=!live.installed?'uninstalled':!live.enabled?'disabled':!current.projectEnabled?'project-disabled':live.paused||!live.hash||!currentVersion?'unavailable':'available';
+    }
+   }catch{state='unavailable';}
+   // A renamed/deleted account never substitutes a project's current default or reads its secret.
+   const connections=selected.connections.map(bound=>{
+    const row=db.prepare('SELECT name FROM application_connections WHERE id=? AND app_id=? AND provider_id=? AND identity_revision=?').get(bound.connectionId,selected.appId,bound.slot,bound.identityRevision) as {name:string}|undefined;
+    return{slot:bound.slot,id:bound.connectionId,name:row?.name??null};
+   });
+   plugins.push({appId:selected.appId,name,launchVersion:selected.version,currentVersion,state,connections});
+  }
   const applications:SessionApplicationDiagnostic[]=[];
   for(const name of appIds){const appId=builtinApplicationModules.appIds().find(id=>id===name);if(!appId)continue;const fixed=session?.snapshot.packages.find(p=>p.appId===appId);let defaultVersion:string|null=null;try{const active=this.packages.active(appId);if(active)defaultVersion=this.packages.get(active.packageHash).version;}catch{/* keep fixed identity, do not substitute default */}
+   if(plugins.some(plugin=>plugin.appId===appId))continue;
    let policy:SessionApplicationDiagnostic['policy']='unverified';try{if(task.project_id){this.selections.requireEnabled(task.project_id,appId);policy='enabled';}}catch{policy='disabled';}
    const connections:SessionApplicationDiagnostic['connections']=[];
    for(const slot of builtinApplicationModules.module(appId).slots as readonly ApplicationProvider[]){
@@ -263,10 +285,15 @@ export class ApplicationSessionDiagnostics {
    const usage=currentRun&&fixed?db.prepare('SELECT COUNT(*) AS total,SUM(CASE WHEN state=\'succeeded\' THEN 1 ELSE 0 END) AS successes,MAX(started_at) AS latest FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=?').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {total:number;successes:number|null;latest:string|null}:null;
    const latest=currentRun&&fixed?db.prepare('SELECT error_code,effect_state,attempt_count FROM application_invocations WHERE task_id=? AND project_id=? AND run_id=? AND app_id=? AND package_hash=? ORDER BY started_at DESC,operation_id DESC LIMIT 1').get(taskId,task.project_id,currentRun.id,appId,fixed.packageHash) as {error_code:string|null;effect_state:string|null;attempt_count:number}|undefined:undefined;
    const appResourceIssue=session&&fixed?this.resourceIssue(session,appId):null;if(appResourceIssue)issues.push(appResourceIssue);
-   applications.push({appId,name:builtinApplicationModules.module(appId).presentation.displayName,fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null,latestAttemptCount:recordedAttemptCount(latest?.attempt_count)}});
+   let currentState:SessionPluginDiagnostic['state']='unverified';
+   try{
+    const catalog=this.selections.catalogState(appId),project=task.project_id?db.prepare('SELECT enabled FROM application_project_settings WHERE project_id=? AND app_id=?').get(task.project_id,appId) as {enabled:number}|undefined:undefined;
+    currentState=hasExternalPluginOwner(db,appId)?'unavailable':!catalog.added?'uninstalled':!catalog.enabled?'disabled':project?.enabled===0?'project-disabled':policy!=='enabled'?'unverified':!defaultVersion||appResourceIssue||currentRun?.restriction||currentRun?.restrictionIssue?'unavailable':'available';
+   }catch{/* Missing current metadata never implies availability or changes the launch record. */}
+   applications.push({appId,name:builtinApplicationModules.module(appId).presentation.displayName,fixedVersion:fixed?.version??null,defaultVersion,packageHash:fixed?.packageHash??null,currentState,policy,resourceState:fixed?(appResourceIssue?'unavailable':'verified'):'unverified',issueCode:(currentRun?.preparation?.issueCode==='RESOURCE_BUSY'&&!currentRun.restrictionIssue?'RESOURCE_BUSY':appResourceIssue??currentRun?.restrictionIssue??currentRun?.restriction?.issueCode??currentRun?.preparation?.issueCode??null),skills:fixed?.skills.map(s=>({id:s.skillId,name:s.nativeName,sourceHash:s.contentHash,projectionPath:s.projectionPath}))??[],permissions:fixed?.allowedOperations??[],connections,evidence:{skillDiscovery:'unverified',skillRead:'unverified',toolRequests:usage?.total??0,successfulToolRequests:usage?.successes??0,latestToolAt:usage?.latest??null,latestErrorCode:latest?.error_code??null,latestEffectState:latest?.effect_state??null,latestAttemptCount:recordedAttemptCount(latest?.attempt_count)}});
   }
   // Per-task Claude plugin copies ended with R1.0 (S3d-c2); the field stays for the existing page and is always empty.
   const deliveryCopies=null;
-  return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,deliveryCopies,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
+  return{taskId,projectId:task.project_id,title:task.title,runner:task.runner,selection,snapshotHash:row?.snapshot_hash??null,agentState:this.deps.activePty?(this.deps.activePty(taskId)?'running':'stopped'):'unverified',canNewSession:!!task.project_id&&!!db.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(task.project_id),createdCliVersion:session?.snapshot.agentAtCreation.version??null,currentRun,recentRuns:runs.filter(r=>!r.current).slice(0,5),applications,plugins,deliveryCopies,issues:[...new Set(issues)],checkedAt:new Date().toISOString()};
  });}
 }

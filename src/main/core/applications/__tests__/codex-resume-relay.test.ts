@@ -25,6 +25,18 @@ describe.skipIf(process.platform!=='darwin')('per-run Codex permission relay, sy
   expect(JSON.parse(nativeFrames[1])).toEqual({id:2,method:'thread/resume',params:{threadId:id,model:'synthetic',excludeTurns:true,initialTurnsPage:{limit:5},approvalPolicy:'on-request',sandbox:'read-only',config:{model_reasoning_effort:'low',approval_policy:'on-request',sandbox_mode:'read-only'}}});
   peer!.send(JSON.stringify({id:2,result:{thread:{id},approvalPolicy:'on-request',sandbox:{type:'read-only'}}}));await vi.waitFor(()=>expect(clientFrames).toHaveLength(2));expect(receipts).toHaveLength(2);
  });
+ it('projects the named startup choice over the native legacy sandbox while preserving dynamic tools and approvals',async()=>{
+  await relay.stop();
+  const permissions={approvalPolicy:'on-request',approvalsReviewer:'user',permissions:'wy_cli_test',config:{approval_policy:'on-request',approvals_reviewer:'user',default_permissions:'wy_cli_test',permissions:{t100_parent:{filesystem:{'/synthetic/deny':'deny'},network:{domains:{'forbidden.invalid':'deny'}}},wy_cli_test:{extends:'t100_parent',network:{unix_sockets:{'/private/tmp/wy-cli-test/only.sock':'allow'}}}}}};
+  relay=new CodexResumeRelay({storeId:'synthetic-relay-test',runId:crypto.randomUUID(),method:'thread/start',upstream:native.url,verifyUpstream:()=>native.verifySocket(),permissions:()=>permissions,allow:()=>allowed,observe:r=>receipts.push(r)});await relay.start();
+  const c=await connect(),dynamicTools=[{name:'synthetic_tool',description:'preserve native tool declaration',inputSchema:{type:'object'}}];
+  c.send(JSON.stringify({id:2,method:'thread/start',params:{model:'synthetic',modelProvider:'local',cwd:'/synthetic/project',dynamicTools,sandbox:'workspace-write',permissions:null,config:{model_reasoning_effort:'high',sandbox_mode:'workspace-write'}}}));await vi.waitFor(()=>expect(nativeFrames).toHaveLength(2));
+  expect(JSON.parse(nativeFrames[1])).toEqual({id:2,method:'thread/start',params:{model:'synthetic',modelProvider:'local',cwd:'/synthetic/project',dynamicTools,...permissions,config:{model_reasoning_effort:'high',...permissions.config}}});
+  const approval=JSON.stringify({id:2,method:'item/commandExecution/requestApproval',params:{threadId:id,command:'synthetic'}});peer!.send(approval);await vi.waitFor(()=>expect(clientFrames.at(-1)).toBe(approval));expect(receipts).toHaveLength(1);
+  const refusal='{ "id": 2, "result": { "decision": "decline" } }';c.send(refusal);await vi.waitFor(()=>expect(nativeFrames.at(-1)).toBe(refusal));
+  const success=JSON.stringify({id:2,result:{thread:{id},activePermissionProfile:{id:'wy_cli_test',extends:'t100_parent'}}});peer!.send(success);await vi.waitFor(()=>expect(clientFrames.at(-1)).toBe(success));expect(receipts).toHaveLength(2);
+  const later='{ "id": 3, "method": "thread/start", "params": { "sandbox": "read-only" } }';c.send(later);await vi.waitFor(()=>expect(nativeFrames.at(-1)).toBe(later));
+ });
  it('forwards approval requests and user refusal byte-for-byte; never answers them itself',async()=>{
   const c=await connect(),request='{ "id": "approve-qa", "method": "item/commandExecution/requestApproval", "params": {"threadId":"'+id+'","command":"synthetic"} }';peer!.send(request);await vi.waitFor(()=>expect(clientFrames.at(-1)).toBe(request));expect(nativeFrames).toHaveLength(1);
   const refusal='{ "id": "approve-qa", "result": { "decision": "decline" } }';c.send(refusal);await vi.waitFor(()=>expect(nativeFrames.at(-1)).toBe(refusal));expect(receipts).toEqual([]);

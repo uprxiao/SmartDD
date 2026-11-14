@@ -27,8 +27,12 @@ import type { ProjectService } from '../projects/project-service';
 import { builtinRunnerAdapters, type RunnerAdapterRegistry, type ObservedRunnerSession } from './runner-adapters';
 import { ApplicationError } from '@shared/applications';
 import { SessionTail } from './session-health';
+import { ServiceFailureStreak } from './service-failure';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
 import { imageInputCapability, type TerminalImageCapability } from '@shared/terminal-image';
+import type { AgentRuntimeService, PreparedAgentRun, AgentRestoreInput } from '../ai/agent-runtime';
+import type { AgentPermission } from '@shared/agent-permissions';
+import type {CodexInitializationGate,CodexInitializationLease} from '../applications/codex-initialization';
 
 type TaskRow = typeof tasks.$inferSelect;
 
@@ -46,6 +50,7 @@ export interface TaskServiceDeps {
   db: AppDb;
   ptys: PtyHost;
   profiles: AiProfileService;
+  agentRuns?: AgentRuntimeService;
   projects: ProjectService;
   baseEnv: () => Record<string, string>;
   /** Fired whenever the list or a running state changes; the renderer re-reads. */
@@ -54,6 +59,7 @@ export interface TaskServiceDeps {
   health?: Pick<ProfileHealth, 'report'>;
   capabilities?: CapabilityService;
   managedCapabilities?: TaskCapabilityLauncher;
+  codexInitialization?:CodexInitializationGate;
   now?: () => number;
   codexPollMs?: number;
   healthPollMs?: number;
@@ -83,6 +89,7 @@ interface CodexWatch {
 
 interface Follow {
   tail: SessionTail;
+  serviceFailures: ServiceFailureStreak;
   timer: NodeJS.Timeout;
   ptyId: string;
   profileId: string;
@@ -104,6 +111,7 @@ const parseNames = (json: string): string[] => {
 };
 
 export class TaskService {
+  private readonly initializationPrimary=new Map<string,'backend'|'terminal'>();
   private readonly running = new Map<string, string>(); // taskId → ptyId
   private readonly codexWatchers = new Map<string, CodexWatch>();
   private readonly watchedPty = new Map<string, string>(); // ptyId → taskId, for the grace period after exit
@@ -138,6 +146,16 @@ export class TaskService {
   resumeAdvice(id: string): import('@shared/tasks').TaskResumeAdvice | null {
     if (!this.running.has(id)) return null;
     try { return this.d.managedCapabilities?.resumeAdvice?.(id) ?? null; } catch { return null; }
+  }
+
+  codexGlobalNotices(){return this.d.agentRuns?.globalNotices()??[];}
+  dismissCodexGlobalNotice(id:string){this.require(id);this.d.agentRuns?.dismissGlobalNotice(id);this.d.onChanged();}
+  codexGlobalConfigPath(id:string){this.require(id);if(!this.d.agentRuns)throw new Error('智能体运行服务不可用');return this.d.agentRuns.globalConfigPath(id);}
+  agentResumePreview(id:string,profileId?:string){
+    const row=this.require(id),selected=profileId??row.aiProfileId;
+    if(!selected)throw new Error('原智能体已删除，请重新选择');
+    const {recovery}=this.recoveryOf(row);
+    return this.d.agentRuns?.preview(selected,row.cwd,{taskId:row.id,runner:row.runner,stateRoot:row.stateRoot,sessionId:row.nativeSessionId,since:row.lastLaunchedAt??row.createdAt,recovery})??null;
   }
   attachManagedCapabilities(launcher: TaskCapabilityLauncher): void {
     if (this.closed || this.running.size || this.launching.size || this.opening.size || this.managed.size || this.d.managedCapabilities && this.d.managedCapabilities !== launcher) throw new Error('任务运行时已经固定，不能替换');
@@ -175,7 +193,9 @@ export class TaskService {
     if(token!==undefined&&(!/^[a-f0-9-]{36}$/i.test(token)||this.creations.has(token)))throw new Error('启动请求标识无效或已在使用');
     const id=randomUUID();
     if(token)this.creations.set(token,{taskId:id,senderId:sender?.sender.id??null});
-    try{return await this.createOnce(req,sender,id);}finally{if(token)this.creations.delete(token);}
+    const abort=new AbortController();
+    this.launching.set(id,{projectId:req.projectId,abort});
+    try{return await this.createOnce(req,sender,id,abort);}finally{if(token)this.creations.delete(token);if(this.launching.get(id)?.abort===abort)this.launching.delete(id);}
   }
 
   /** Only the initiating renderer may cancel its pending creation; settled tokens are inert. */
@@ -185,23 +205,26 @@ export class TaskService {
     this.kill(pending.taskId);return true;
   }
 
-  private async createOnce(req: CreateTaskRequest, sender: TaskInputSender|undefined,id:string): Promise<OpenResult> {
+  private async createOnce(req: CreateTaskRequest, sender: TaskInputSender|undefined,id:string,abort:AbortController): Promise<OpenResult> {
     if (this.closed) throw new Error('应用正在退出，不能启动任务');
     const project = this.d.projects.getProject(req.projectId);
     if (project.archivedAt != null) throw new Error(`项目「${project.name}」已归档，不能新建任务`);
     const dir = req.dirId ? project.dirs.find((x) => x.id === req.dirId) : (project.dirs.find((x) => x.isDefault) ?? project.dirs[0]);
     if (!dir) throw new Error(`项目「${project.name}」还没有登记代码目录`);
     if (!dir.status.available) throw new Error(`代码目录不可用：${dir.path}`);
-    const profile = this.d.profiles.resolve(req.aiProfileId);
+    const agentRun = this.d.agentRuns ? await this.prepareAgentRun(req.aiProfileId,dir.path,req.permission,project.id,id,undefined,abort.signal) : null;
+    const profile = agentRun?.profile ?? this.d.profiles.resolve(req.aiProfileId);
 
+    if(abort.signal.aborted||this.closed)throw new Error('任务启动已取消');
+    return this.coordinateCodex(profile,dir.path,abort.signal,async initialization=>{
     const ts = this.now();
     const firstMessage = req.firstMessage.trim();
     // Claude takes our id, so the task id doubles as its session id.
     const sessionId = this.adapter(profile.runner).sessionIdStrategy === 'host' ? id : null;
-    const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id,newTask:true,initialSender:sender });
+    const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, dir.path, 'new', sessionId, firstMessage, req, null, { projectId: project.id, taskId: id,newTask:true,initialSender:sender,dirId:dir.id },agentRun??undefined,abort,initialization);
 
     try {
-      this.d.db
+      this.d.db.transaction(()=>{this.d.db
         .insert(tasks)
         .values({
           id,
@@ -224,14 +247,18 @@ export class TaskService {
           updatedAt: ts,
         })
         .run();
+        if(agentRun)this.d.agentRuns!.save(id,agentRun.snapshot(stateRoot,launchedAt));
+      });
       if (!this.managed.get(ptyId)?.exited) this.running.set(id, ptyId);
       if (runtime) this.trackRuntime(id, ptyId, runtime);
       if (this.adapter(profile.runner).sessionIdStrategy === 'observed') this.watchNativeSession(id, ptyId, profile.runner, dir.path, stateRoot, launchedAt, firstMessage);
       this.follow(id, ptyId, profile, dir.path, stateRoot, launchedAt, runtime?.secretValues);
       const exited=this.managed.get(ptyId);if(exited?.exited)this.onPtyExit(ptyId,exited.exitCode??0);
       this.d.onChanged();
-      return { task: this.get(id), ptyId };
     } catch(error){await this.abortSpawn(ptyId,runtime,'task-record-failed');throw error;}
+    await this.finishCodexInitialization(initialization,ptyId,runtime);
+    return {task:this.get(id),ptyId};
+    });
   }
 
   /** Resume / reopen a task that is not running; a running task just returns its terminal. */
@@ -242,11 +269,13 @@ export class TaskService {
     if(current){if(req.aiProfileId&&req.aiProfileId!==current.profileId)return Promise.reject(new Error('任务正在准备启动，完成后才能换 AI 配置'));return current.promise;}
     const row=this.d.db.select({profileId:tasks.aiProfileId,projectId:tasks.projectId}).from(tasks).where(eq(tasks.id,req.taskId)).get();
     const profileId=req.aiProfileId??row?.profileId??null,abort=new AbortController();
-    const promise=this.openOnce(req,abort.signal).finally(()=>{if(this.opening.get(req.taskId)?.promise===promise)this.opening.delete(req.taskId);});
+    const work=()=>this.openOnce(req,abort);
+    const promise=(this.d.managedCapabilities?.coordinateRestore?.(work,abort.signal)??work()).finally(()=>{if(this.opening.get(req.taskId)?.promise===promise)this.opening.delete(req.taskId);if(this.launching.get(req.taskId)?.abort===abort)this.launching.delete(req.taskId);});
     this.opening.set(req.taskId,{profileId,projectId:row?.projectId??null,abort,promise});return promise;
   }
 
-  private async openOnce(req: OpenTaskRequest, signal:AbortSignal): Promise<OpenResult> {
+  private async openOnce(req: OpenTaskRequest, abort:AbortController): Promise<OpenResult> {
+    const signal=abort.signal;
     if(this.closed)throw new Error('应用正在退出，不能恢复任务');
     await this.bindingNative.get(req.taskId)?.catch(()=>undefined);
     if(this.closed)throw new Error('应用正在退出，不能恢复任务');
@@ -262,22 +291,30 @@ export class TaskService {
     }
     const profileId = req.aiProfileId ?? row.aiProfileId;
     if (!profileId) throw new Error('原 AI 配置已删除，请选择一个 AI 配置来恢复');
-    const profile = this.d.profiles.resolve(profileId);
-    if (profile.runner !== row.runner) throw new Error(`不能用 ${profile.runner} 的 AI 配置恢复 ${row.runner} 任务`);
     if (!existsSync(row.cwd) || !statSync(row.cwd).isDirectory()) throw new Error(`工作目录不存在：${row.cwd}`);
 
     const { recovery, reason } = this.recoveryOf(row);
     if (recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${reason}`);
+    const agentRun=this.d.agentRuns?await this.prepareAgentRun(profileId,row.cwd,undefined,row.projectId,row.id,{
+      taskId:row.id,runner:row.runner,stateRoot:row.stateRoot,sessionId:row.nativeSessionId,since:row.lastLaunchedAt??row.createdAt,
+      recovery,explicitlySelected:Boolean(req.aiProfileId),acceptModelChange:req.acceptModelChange===true,
+      expectedModel:req.expectedModel,sourceConfirmation:req.sourceConfirmation,
+    },signal):null;
+    if(signal.aborted||this.closed)throw new Error('任务启动已取消');
+    const profile = agentRun?.profile ?? this.d.profiles.resolve(profileId);
+    if (profile.runner !== row.runner) throw new Error(`不能用 ${profile.runner} 的 AI 配置恢复 ${row.runner} 任务`);
     const mode: LaunchMode = recovery === 'resumable' ? 'resume' : recovery === 'fresh' ? 'reopen' : 'new';
     // The session lives where it was written: resuming under another profile keeps that directory (M0 §5.4).
-    const keepRoot = (mode === 'resume' || mode === 'reopen') && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes(this.adapter(row.runner).stateEnvVar) } : null;
+    const keepRoot = agentRun?.restoreRoot ? {path:agentRun.restoreRoot.to,explicit:Boolean(profile.env[this.adapter(row.runner).stateEnvVar])} : (mode === 'resume' || mode === 'reopen') && row.stateRoot ? { path: row.stateRoot, explicit: parseNames(row.injectedEnvNames).includes(this.adapter(row.runner).stateEnvVar) } : null;
+    if(row.projectId)this.launching.set(row.id,{projectId:row.projectId,abort});
+    return this.coordinateCodex(profile,row.cwd,signal,async initialization=>{
     const { ptyId, injectedNames, stateRoot, runtime, launchedAt } = await this.spawn(profile, row.cwd, mode, row.nativeSessionId, '', req, keepRoot,
-      row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row),newTask:false } : undefined);
+      row.projectId ? { projectId: row.projectId, taskId: row.id, previous: this.runtimeOf(row),newTask:false } : undefined,agentRun??undefined,abort,initialization);
 
     try {
       const ts = this.now();
       const project = row.projectId ? this.d.db.select().from(projects).where(eq(projects.id, row.projectId)).get() : undefined;
-      this.d.db
+      this.d.db.transaction(()=>{this.d.db
         .update(tasks)
         .set({
           aiProfileId: profile.id,
@@ -291,14 +328,18 @@ export class TaskService {
         })
         .where(eq(tasks.id, row.id))
         .run();
+        if(agentRun)this.d.agentRuns!.save(row.id,agentRun.snapshot(stateRoot,launchedAt));
+      });
       if (!this.managed.get(ptyId)?.exited) this.running.set(row.id, ptyId);
       if (runtime) this.trackRuntime(row.id, ptyId, runtime);
       if (this.adapter(row.runner).sessionIdStrategy === 'observed' && mode === 'new') this.watchNativeSession(row.id, ptyId, row.runner, row.cwd, stateRoot, launchedAt, '');
       this.follow(row.id, ptyId, profile, row.cwd, stateRoot, launchedAt, runtime?.secretValues);
       const exited=this.managed.get(ptyId);if(exited?.exited)this.onPtyExit(ptyId,exited.exitCode??0);
       this.d.onChanged();
-      return { task: this.get(row.id), ptyId };
     } catch(error){await this.abortSpawn(ptyId,runtime,'task-record-failed');throw error;}
+    await this.finishCodexInitialization(initialization,ptyId,runtime);
+    return {task:this.get(row.id),ptyId};
+    });
   }
 
   rename(id: string, title: string): TaskView {
@@ -421,6 +462,15 @@ export class TaskService {
     catch (error) { if (!alreadyStopping) this.killedPtys.delete(ptyId); throw error; }
   }
 
+  /** A stale warning must never stop a later run of the same task. */
+  stopForServiceFailure(id: string, expectedPtyId: string): void {
+    const follow = this.follows.get(id);
+    if (this.running.get(id) !== expectedPtyId || follow?.ptyId !== expectedPtyId || !follow.serviceFailures.notice) {
+      throw new Error('会话状态已改变，请刷新后再操作');
+    }
+    this.kill(id);
+  }
+
   /** Stop only this project's owned tasks/preparations; uncertain owners keep the project busy. */
   async stopProject(projectId:string,timeoutMs=5000,matches?:(taskId:string)=>boolean):Promise<boolean>{
     for(const id of this.projectActiveTaskIds(projectId))if(!matches||matches(id))this.kill(id);
@@ -481,6 +531,25 @@ export class TaskService {
 
   // ---- internals ----
 
+  private async prepareAgentRun(profileId:string,cwd:string,permission:AgentPermission|undefined,projectId:string|null,taskId:string,restore?:AgentRestoreInput,signal?:AbortSignal):Promise<PreparedAgentRun|null>{
+    const abort=new AbortController(),cancel=()=>abort.abort();
+    if(signal?.aborted)abort.abort();else signal?.addEventListener('abort',cancel,{once:true});
+    const owner=this.launching.get(taskId);
+    if(projectId&&!owner)this.launching.set(taskId,{projectId,abort});
+    try{
+      const result=await this.d.agentRuns!.prepare({profileId,cwd,permission,signal:abort.signal,restore:restore?{...restore,beforeHistoryCopy:this.d.managedCapabilities?async input=>{
+        const check=this.d.managedCapabilities!.assertHistoryCopyAllowed;
+        if(!check)throw new Error('受管会话尚不支持已确认的历史复制');
+        await check.call(this.d.managedCapabilities,{...input,taskId});
+      }:undefined}:undefined});
+      if(abort.signal.aborted||this.closed)throw new Error('任务启动已取消');
+      return result;
+    }finally{
+      signal?.removeEventListener('abort',cancel);
+      if(this.launching.get(taskId)?.abort===abort)this.launching.delete(taskId);
+    }
+  }
+
   private async spawn(
     profile: ResolvedProfile,
     cwd: string,
@@ -489,7 +558,10 @@ export class TaskService {
     firstMessage: string,
     size: { cols?: number; rows?: number },
     keepRoot: { path: string; explicit: boolean } | null = null,
-    context?: { projectId: string; taskId: string; previous?: RuntimeSnapshot | null; newTask: boolean; initialSender?: TaskInputSender }
+    context?: { projectId: string; taskId: string; previous?: RuntimeSnapshot | null; newTask: boolean; initialSender?: TaskInputSender;dirId?:string },
+    agentRun?: PreparedAgentRun,
+    launchAbort?:AbortController,
+    initialization?:CodexInitializationLease
   ): Promise<{ ptyId: string; injectedNames: string[]; stateRoot: string; runtime?: PreparedRuntime; launchedAt: number }> {
     const base = { ...this.d.baseEnv() };
     for (const key of PARENT_AGENT_VARS) delete base[key];
@@ -516,8 +588,9 @@ export class TaskService {
     if (hasCapabilities && Object.keys(profile.env).some(key => RUNTIME_ISOLATION.some(prefix => key.startsWith(prefix)))) {
       throw new Error('AI 配置使用了 WillYou 项目注入保留变量，请在项目中配置资源');
     }
-    const abort = new AbortController();
-    if (context) this.launching.set(context.taskId, { projectId: context.projectId, abort });
+    const abort = launchAbort??new AbortController();
+    if(abort.signal.aborted||this.closed)throw new Error('任务启动已取消');
+    if (context&&!launchAbort) this.launching.set(context.taskId, { projectId: context.projectId, abort });
     let launch: TaskCapabilityLaunch | undefined;
     let runtime: PreparedRuntime | undefined;
     let nativePtyId: string | undefined;
@@ -530,6 +603,14 @@ export class TaskService {
           home: env.HOME ?? base.HOME ?? homedir(), stateRoot: this.adapter(profile.runner).stateRoot(env, base),
           claudeConfigExplicit: Boolean(env.CLAUDE_CONFIG_DIR || base.CLAUDE_CONFIG_DIR),
           mode, sessionId, previous: context.previous ?? null, newTask: context.newTask, signal: abort.signal, environment: { ...base, ...env },
+          nativeRestore:agentRun?.restoreRoot,
+          commitSessionSnapshot:context.newTask?undefined:(before,after)=>{
+            if(abort.signal.aborted||this.closed)throw new Error('任务启动已取消');
+            const current=this.require(context.taskId),previous=this.runtimeOf(current),pointer=previous?.sessionCapabilities;
+            if(!previous||pointer?.taskId!==context.taskId||pointer.snapshotHash!==before.pointer.snapshotHash||current.stateRoot!==before.native.stateRoot||current.cwd!==before.native.cwd||current.nativeSessionId!==before.native.sessionId)throw new ApplicationError('RESOURCE_STATE_CHANGED','历史目录提交前任务身份或指针已变化');
+            // This commits a verified history location, not a successful new run/account.
+            this.d.db.update(tasks).set({stateRoot:after.native.stateRoot,runtimeSnapshot:JSON.stringify({...previous,sessionCapabilities:after.pointer})}).where(eq(tasks.id,current.id)).run();
+          },
         });
       }
       if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
@@ -540,7 +621,7 @@ export class TaskService {
         const plan = planLaunchEnv(base, { ...env, ...runtime?.env, ...launch?.env }, [
           ...profile.isolatePrefixes, ...RUNTIME_ISOLATION,
           ...(context && hasCapabilities ? ['CLAUDE_CONFIG_DIR', 'CODEX_HOME', this.adapter(profile.runner).stateEnvVar] : []),
-        ]);
+        ], profile.isolateNames);
         const args = this.adapter(profile.runner).launchArgs({
           mode, sessionId, cwd, profileArgs: launch?.profileArgs ?? profile.args, runtimeArgs: launch?.args ?? runtime?.args, firstMessage,
         });
@@ -561,19 +642,28 @@ export class TaskService {
       }
       if (launch) {
         this.managed.set(launch.ptyId, { taskId: context!.taskId, launch, exited: false });
-        await launch.beforeSpawn();
+        if(initialization&&launch.codexInitializer)initialization.arm('backend');
+        try{await launch.beforeSpawn();}finally{if(initialization&&launch.codexInitializer)initialization.observe('backend',launch.codexInitializer());}
         if (abort.signal.aborted || this.closed) throw new Error('任务启动已取消');
       }
       let ptyId: string;
       try {
+        if(context?.newTask){
+          const project=this.d.projects.getProject(context.projectId),dir=project.dirs.find((item)=>item.id===context.dirId);
+          if(project.archivedAt!==null||!dir||dir.path!==cwd||!dir.status.available)throw new Error('项目或代码目录在启动前已变化，请重新选择');
+        }
         // Recheck after asynchronous preparation/arming and immediately before the
         // native fork. A late loss must follow the known no-fork failure path.
         if (context && !context.newTask) {
           const current = this.require(context.taskId), recovery = this.recoveryOf(current);
           if (recovery.recovery === 'unrecoverable') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', `无法恢复：${recovery.reason}`);
           if (recovery.recovery === 'resumable' && mode !== 'resume') throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话历史在准备时发生变化，请重试原会话恢复');
-          if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== this.adapter(profile.runner).stateRoot(env, base))) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
+          const currentRoot=this.adapter(profile.runner).stateRoot(env,base),receipt=agentRun?.restoreRoot;
+          const copied=receipt&&receipt.from===current.stateRoot&&receipt.to===currentRoot&&receipt.sessionId===sessionId;
+          if(copied)receipt.assertCurrent();
+          if (current.nativeSessionId !== sessionId || (current.stateRoot && current.stateRoot !== currentRoot&&!copied)) throw new ApplicationError('NATIVE_IDENTITY_CONFLICT', '原生会话身份或状态目录在准备时已变化');
         }
+        agentRun?.assertCurrent();
         launch?.assertBeforeFork?.();
         if (context && !context.newTask && this.adapter(profile.runner).sessionIdStrategy === 'host' && mode === 'reopen') {
           // Persist uncertainty before fork: a host crash must not leave a reusable
@@ -581,11 +671,13 @@ export class TaskService {
           this.d.db.update(tasks).set({ nativeHistoryObserved: null }).where(eq(tasks.id, context.taskId)).run();
         }
         launchedAt = this.now();
+        initialization?.arm('terminal');
         forkAttempted = true;
         ptyId = this.d.ptys.spawn({
           id: launch?.ptyId, ...command, cwd, env: plan.env, scriptArgs: plan.scriptArgs, cols: size.cols, rows: size.rows,
         });
         nativePtyId = ptyId;
+        initialization?.captureTerminal(this.d.ptys.nativePid?.(ptyId)??this.d.ptys.processId?.(ptyId)??null);
         if (context && this.adapter(profile.runner).sessionIdStrategy === 'host' && (mode === 'new' || mode === 'reopen')) this.freshNativeTasks.add(context.taskId);
       } catch (error) {
         if (launch) {
@@ -604,6 +696,7 @@ export class TaskService {
           catch { /* Origin evidence is optional; never replay a prompt already given to the native process. */ }
         }
       }
+      if(initialization)this.initializationPrimary.set(ptyId,launch?.codexInitializer?.().attempted?'backend':'terminal');
       return { ptyId, injectedNames: plan.injectedNames, stateRoot: this.adapter(profile.runner).stateRoot(env, base), runtime, launchedAt };
     } catch (error) {
       // Arming may itself await or fail. Only this closure knows whether the OS
@@ -627,11 +720,24 @@ export class TaskService {
       await stopping;
       throw error;
     } finally {
-      if (context && this.launching.get(context.taskId)?.abort === abort) this.launching.delete(context.taskId);
+      if (!launchAbort&&context && this.launching.get(context.taskId)?.abort === abort) this.launching.delete(context.taskId);
     }
   }
 
+  private coordinateCodex<T>(profile:ResolvedProfile,cwd:string,signal:AbortSignal,work:(lease?:CodexInitializationLease)=>Promise<T>):Promise<T>{
+    if(signal.aborted||this.closed)return Promise.reject(new Error('任务启动已取消'));
+    return this.d.codexInitialization?.coordinate({profile,cwd,environment:{...this.d.baseEnv(),...profile.env},signal},work)??work();
+  }
+
+  private async finishCodexInitialization(initialization:CodexInitializationLease|undefined,ptyId:string,runtime:PreparedRuntime|undefined):Promise<void>{
+    if(!initialization)return;
+    try{await initialization.waitReady(this.initializationPrimary.get(ptyId)??'terminal');}
+    catch(error){await this.abortSpawn(ptyId,runtime,'native-initialization-failed');this.d.onChanged();throw error;}
+    finally{this.initializationPrimary.delete(ptyId);}
+  }
+
   private async abortSpawn(ptyId:string,runtime:PreparedRuntime|undefined,reason:string):Promise<void>{
+    this.initializationPrimary.delete(ptyId);
     const managed=this.managed.get(ptyId);let stopping:Promise<void>|undefined;
     if(managed){try{stopping=managed.launch.stop(reason).catch(()=>undefined);}catch{}}
     else if(runtime&&!this.runtimes.has(ptyId)){const release=(id:string)=>{if(id===ptyId){this.d.ptys.off('exit',release);runtime.release();}};this.d.ptys.on('exit',release);}
@@ -769,9 +875,11 @@ export class TaskService {
     const health = this.d.health;
     this.unfollow(taskId);
     let scanned = false;
+    let nativeSessionId: string | null = null;
     const locate = (): string | null => {
       const row = this.d.db.select({ sid: tasks.nativeSessionId }).from(tasks).where(eq(tasks.id, taskId)).get();
       if (!row?.sid) return null; // Codex: known once watchCodex has matched the rollout
+      nativeSessionId = row.sid;
       const file = this.adapter(profile.runner).sessionFile(root, cwd, row.sid, { sinceMs: launchedAt, scan: this.adapter(profile.runner).sessionIdStrategy === 'host' ? false : !scanned });
       // A resumed Codex session lives in the day folder it was created in: look everywhere, once.
       scanned = true;
@@ -781,15 +889,21 @@ export class TaskService {
     };
     // Bound to the settings this run started with: its answers say nothing about an edited profile.
     const signature = this.d.profiles.launchSignature(profile.id);
-    const secrets = [...this.d.profiles.secretValues(profile.id), ...resourceSecrets];
+    const secrets = [...this.d.profiles.secretValues(profile.id), ...profile.secretValues??[], ...resourceSecrets];
+    const serviceFailures = new ServiceFailureStreak();
     const tail = new SessionTail({
       runner: profile.runner,
       locate,
       launchedAt,
+      sessionId: () => nativeSessionId,
       onEvent: (ev) => health?.report(profile.id, { ...ev, message: redact(ev.message, secrets) }, `task:${taskId}`, signature),
+      onServiceEvent: event => {
+        if (this.running.get(taskId) !== ptyId || this.follows.get(taskId)?.ptyId !== ptyId || this.closed) return;
+        if (serviceFailures.take(event, this.now())) this.d.onChanged();
+      },
     });
     const timer = setInterval(() => this.pollFollow(tail), this.d.healthPollMs ?? 2000);
-    this.follows.set(taskId, { tail, timer, ptyId, profileId: profile.id, launchedAt });
+    this.follows.set(taskId, { tail, serviceFailures, timer, ptyId, profileId: profile.id, launchedAt });
   }
 
   private pollFollow(tail: SessionTail): void {
@@ -832,6 +946,7 @@ export class TaskService {
           if (readableRoot) this.d.db.update(tasks).set({ nativeHistoryObserved: false }).where(eq(tasks.id, taskId)).run();
         }
       }
+      try { this.d.agentRuns?.finish(taskId); } catch { console.warn('Codex 全局偏好变化记录失败；任务收尾继续'); }
       this.running.delete(taskId);
       this.d.onChanged();
     }
@@ -886,6 +1001,8 @@ export class TaskService {
       firstMessage: row.firstMessage,
       injectedEnvNames: parseNames(row.injectedEnvNames),
       runtimeSnapshot: currentRuntime?.persistSnapshot===false?currentRuntime.snapshot:this.runtimeOf(row),
+      agentSnapshot: this.d.agentRuns?.snapshot(row.id)??null,
+      serviceFailure: ptyId && this.follows.get(row.id)?.ptyId === ptyId ? this.follows.get(row.id)!.serviceFailures.notice : null,
       configVersion: row.configVersion,
       projectConfigVersion: projectVersion,
       archivedAt: row.archivedAt,

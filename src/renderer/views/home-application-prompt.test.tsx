@@ -6,16 +6,25 @@ import {navigation} from '@renderer/core/navigation';
 const m=vi.hoisted(()=>({create:vi.fn(),cancelCreate:vi.fn(),update:vi.fn(),projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string)=>key})}));
 vi.mock('@renderer/lib/hooks/useProjects',()=>({useProjectList:()=>({data:m.projects}),useProject:()=>({data:m.project})}));
-vi.mock('@renderer/lib/hooks/useAiProfiles',()=>({useAiProfiles:()=>({data:m.profiles})}));
-vi.mock('@renderer/lib/hooks/useAppSettingsKey',()=>({useAppSettingsKey:()=>({value:m.draft,update:m.update})}));
+vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'legacy',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:[]}})}));
+vi.mock('@renderer/lib/hooks/useAppSettingsKey',()=>({useAppSettingsKey:(key:string)=>({value:key==='agentPermissions'?{selected:'ask',fullConfirmed:false}:m.draft,update:m.update})}));
 vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{create:m.create,cancelCreate:m.cancelCreate}}));
 vi.mock('./voice-controls',()=>({VoiceButton:()=>null}));
 vi.mock('./capabilities',()=>({CapabilityLaunchPreview:()=>null}));
 vi.mock('./projects/project-dialogs',()=>({ProjectDialog:()=>null}));
 vi.mock('@renderer/lib/profile-health',()=>({ProfileHealthMark:()=>null}));
-beforeEach(()=>{vi.clearAllMocks();navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.currentProjectId=null;navigation.currentTaskId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
+beforeEach(()=>{vi.clearAllMocks();navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.pluginPromptRequest=null;navigation.currentProjectId=null;navigation.currentTaskId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
 afterEach(()=>cleanup());
 describe('application example handoff to the real home composer',()=>{
+ it.each([false,true])('M13 appends one exact plugin example without submitting, Home already mounted=%s',async alreadyMounted=>{
+  navigation.setHomeInput('p1','unsent prefix');let view:ReturnType<typeof render>;
+  if(alreadyMounted){view=render(<HomeView/>);await waitFor(()=>expect(screen.getByTestId('home-input')).toHaveProperty('value','unsent prefix'));}
+  act(()=>navigation.preparePluginTask('  exact plugin example\nsecond line'));
+  if(!alreadyMounted)view=render(<HomeView/>);
+  await waitFor(()=>expect(screen.getByTestId('home-input')).toHaveProperty('value','unsent prefix\n  exact plugin example\nsecond line'));
+  expect(navigation.pluginPromptRequest).toBeNull();expect(m.create).not.toHaveBeenCalled();expect(m.update).not.toHaveBeenCalled();
+  view!.rerender(<HomeView/>);expect(screen.getByTestId('home-input')).toHaveProperty('value','unsent prefix\n  exact plugin example\nsecond line');
+ });
  it('preserves unsent input across actual composer unmount and appends a later summary once',async()=>{
   const view=render(<HomeView/>);const input=await screen.findByTestId('home-input');fireEvent.change(input,{target:{value:'unsubmitted original text'}});view.unmount();
   act(()=>navigation.prepareApplicationTask('p1','selected summary\n  exact second line'));render(<HomeView/>);const restored=await screen.findByTestId('home-input');
@@ -46,11 +55,14 @@ describe('home composer profile default',()=>{
   m.profiles.splice(0,m.profiles.length,{id:'cc-work',name:'CC-work',runner:'claude',isDefault:false,check:{status:'ok'}},{id:'codex',name:'Codex',runner:'codex',isDefault:true,check:{status:'ok'}});m.draft.aiProfileId='cc-work';m.create.mockResolvedValue(undefined);
   render(<HomeView/>);await screen.findByTestId('home-input');expect(await launchWith()).toBe('codex');
  });
- it('yields to the last choice when the default health check fails after the composer opened',async()=>{
+ it('keeps the selected available default on an authentication/preflight failure instead of silently switching accounts (M13 R1.0)',async()=>{
   m.profiles.splice(0,m.profiles.length,{id:'cc-work',name:'CC-work',runner:'claude',isDefault:false,check:{status:'ok'}},{id:'codex',name:'Codex',runner:'codex',isDefault:true,checking:true,check:null});m.draft.aiProfileId='cc-work';m.create.mockResolvedValue(undefined);
   render(<HomeView/>);const input=await screen.findByTestId('home-input');
   m.profiles=[m.profiles[0],{id:'codex',name:'Codex',runner:'codex',isDefault:true,checking:false,check:{status:'failed'}}];fireEvent.change(input,{target:{value:'re-render after the health result'}});
-  expect(await launchWith()).toBe('cc-work');
+  m.create.mockRejectedValueOnce(new Error('供应商 Key 失效，请填写后再启动'));
+  expect(await launchWith()).toBe('codex');
+  await waitFor(()=>expect(screen.getByTestId('home-error').textContent).toContain('Key 失效'));
+  expect(m.create).toHaveBeenCalledTimes(1);
  });
 });
 describe('home composer Enter key',()=>{

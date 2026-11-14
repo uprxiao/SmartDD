@@ -39,6 +39,7 @@ export interface SessionConnectionDiagnostic {
 }
 export interface SessionApplicationDiagnostic {
  appId:ApplicationId;name:string;fixedVersion:string|null;defaultVersion:string|null;packageHash:string|null;
+ currentState?:SessionPluginDiagnostic['state'];
  policy:'enabled'|'disabled'|'unverified';resourceState:'verified'|'unavailable'|'unverified';issueCode:string|null;
  skills:{id:string;name:string;sourceHash:string;projectionPath:string}[];permissions:string[];connections:SessionConnectionDiagnostic[];
  evidence:{skillDiscovery:'unverified'|'verified';skillDiscoveryObservations?:{skillId:string;observedAt:string;callId:string|null;recordHash:string;runId:string}[];skillRead:'unverified'|'verified';skillReadObservations?:{skillId:string;observedAt:string;callId:string|null;recordHash:string;runId:string}[];toolRequests:number;successfulToolRequests:number;latestToolAt:string|null;latestErrorCode:string|null;latestEffectState:string|null;latestAttemptCount?:number|null};
@@ -51,8 +52,14 @@ export interface DeliveryCopyDiagnostic {
 export interface DeliveryCopyDiagnostics {
  records:DeliveryCopyDiagnostic[];incomplete:boolean;issueCode:string|null;
 }
+/** Launch selection and current call availability are separate; this grants no execution authority. */
+export interface SessionPluginDiagnostic {
+ appId:string;name:string;launchVersion:string;currentVersion:string|null;
+ state:'available'|'disabled'|'project-disabled'|'uninstalled'|'unverified'|'unavailable';
+ connections:{slot:string;id:string;name:string|null}[];
+}
 export interface ApplicationSessionDiagnostic {
  taskId:string;projectId:string|null;title:string;runner:string;selection:'fixed'|'unknown-history'|'unsupported-schema'|'corrupt'|'not-recorded';
  snapshotHash:string|null;agentState:'running'|'stopped'|'unverified';canNewSession:boolean;createdCliVersion:string|null;currentRun:SessionRunDiagnostic|null;recentRuns:SessionRunDiagnostic[];
- applications:SessionApplicationDiagnostic[];deliveryCopies:DeliveryCopyDiagnostics|null;issues:string[];checkedAt:string;
+ applications:SessionApplicationDiagnostic[];plugins?:SessionPluginDiagnostic[];deliveryCopies:DeliveryCopyDiagnostics|null;issues:string[];checkedAt:string;
 }

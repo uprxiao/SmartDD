@@ -21,8 +21,14 @@ describe('private Codex server argv and environment preserve the selected native
     expect(mapped.slice(-6)).toEqual(['-c','model="chosen"','-c','sandbox_mode="read-only"','-c','approval_policy="on-request"']);
     expect(mapped.indexOf('sandbox_mode="read-only"')).toBeGreaterThan(mapped.indexOf('sandbox_mode="danger-full-access"'));
   });
-  it.each([['--remote','unix:///other'],['--profile','work'],['--worktree'],['--dangerously-bypass-hook-trust'],['--approve-for-me'],['--sandbox','unknown'],['-a','untrusted'],['--'],['prompt text'],['-m'],['--search=false']].map(args=>[args]))('refuses an unverified native argument combination %j without silently changing it',args=>{
+  it.each([['--remote','unix:///other'],['--profile','work'],['--worktree'],['--dangerously-bypass-hook-trust'],['--sandbox','unknown'],['-a','untrusted'],['--'],['prompt text'],['-m'],['--search=false']].map(args=>[args]))('refuses an unverified native argument combination %j without silently changing it',args=>{
     expect(()=>codexServerArgs(args,[])).toThrowError(expect.objectContaining({code:'AGENT_ADAPTER_UNSUPPORTED'}));
+  });
+  it('projects both confirmed M13 permission shorthands to the exact private-server settings',()=>{
+    expect(codexServerArgs(['--approve-for-me'],[])).toEqual(['-c','approvals_reviewer="auto_review"','-c','approval_policy="on-request"','-c','sandbox_mode="workspace-write"']);
+    expect(codexServerArgs(['--dangerously-bypass-approvals-and-sandbox'],[])).toEqual(['-c','approval_policy="never"','-c','sandbox_mode="danger-full-access"']);
+    expect(()=>codexServerArgs(['--approve-for-me','-s','read-only'],[])).toThrow();
+    expect(()=>codexServerArgs(['--approve-for-me','--dangerously-bypass-approvals-and-sandbox'],[])).toThrow();
   });
   it('refuses a subcommand/endpoint/prompt in generated host arguments',()=>{expect(()=>codexServerArgs([],['--remote','unix:///other'])).toThrow();expect(()=>codexServerArgs([],['-c'])).toThrow();});
   it('strips inherited credentials/carriers and pins only the selected HOME/state root and current host injection',()=>{

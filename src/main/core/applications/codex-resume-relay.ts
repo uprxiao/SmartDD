@@ -7,7 +7,17 @@ import type {CodexPermissionKey} from './codex-client-args';
 
 type JsonObject=Record<string,unknown>;
 const object=(v:unknown):v is JsonObject=>!!v&&typeof v==='object'&&!Array.isArray(v);
-const invalid=()=>new ApplicationError('INVALID_RESPONSE','Codex 恢复权限未能准确交付');
+const invalid=()=>new ApplicationError('INVALID_RESPONSE','Codex 权限未能准确交付');
+
+// Native config/read serializes absent Option fields as null. TOML has no
+// null: replaying it becomes an empty string and can invalidate a permission
+// profile. Omit absent object fields; never drop array entries or false/zero.
+function permissionOverride(value:unknown):unknown{
+  if(object(value))return Object.fromEntries(Object.entries(value).filter(([,v])=>v!==null).map(([k,v])=>[k,permissionOverride(v)]));
+  if(Array.isArray(value))return value.map(permissionOverride);
+  if(typeof value==='string'||typeof value==='boolean'||typeof value==='number'&&Number.isFinite(value))return value;
+  throw invalid();
+}
 
 /** Exact 0.167.1 config/read -> thread/resume projection. Defaults absent from
  * the original invocation are not converted into explicit permission choices.
@@ -18,7 +28,7 @@ export function codexResumePermissions(response:unknown,keys:readonly CodexPermi
   const config=response.config,result:JsonObject={},overrides:JsonObject={};
   for(const key of keys){
     if(!Object.hasOwn(config,key)||config[key]===undefined)throw invalid();
-    overrides[key]=config[key];
+    overrides[key]=permissionOverride(config[key]);
   }
   if(keys.includes('approval_policy'))result.approvalPolicy=config.approval_policy;
   if(keys.includes('approvals_reviewer'))result.approvalsReviewer=config.approvals_reviewer;
@@ -34,7 +44,7 @@ export function codexResumePermissions(response:unknown,keys:readonly CodexPermi
   return JSON.parse(JSON.stringify(result));
 }
 
-/** A per-run local transport shim for one initial, host-selected resume. All
+/** A per-run local transport shim for one initial, host-selected thread request. All
  * approval requests and their replies travel unchanged between native TUI and
  * native server. This component never starts a turn or answers an approval.
  */
@@ -47,8 +57,8 @@ export class CodexResumeRelay {
   private closed=false;
   private claimed=false;
   private stopWork?:Promise<void>;
-  constructor(private readonly input:{storeId:string;runId:string;threadId:string;upstream:string;verifyUpstream:()=>void;permissions:()=>JsonObject;allow:()=>boolean;observe?:(receipt:JsonObject)=>void}){
-    if(!/^[a-f0-9-]{36}$/.test(input.threadId))throw invalid();
+  constructor(private readonly input:{storeId:string;runId:string;method?:'thread/start'|'thread/resume';threadId?:string;upstream:string;verifyUpstream:()=>void;permissions:()=>JsonObject;allow:()=>boolean;observe?:(receipt:JsonObject)=>void}){
+    if(input.method==='thread/start'?input.threadId!==undefined:!/^[a-f0-9-]{36}$/.test(input.threadId??''))throw invalid();
     this.endpoint=new PrivateAgentEndpoint({storeId:input.storeId,runId:input.runId});
     this.http.on('error',()=>{if(this.listening)void this.stop().catch(()=>{});});
     this.http.on('upgrade',(request,socket,head)=>{
@@ -85,8 +95,9 @@ export class CodexResumeRelay {
             if(object(message)&&message.id===resumeId&&!Object.hasOwn(message,'method')){
               const result=Object.hasOwn(message,'result'),error=Object.hasOwn(message,'error');
               if(result===error)throw invalid();
-              if(result){if(!object(message.result)||!object(message.result.thread)||message.result.thread.id!==this.input.threadId)throw invalid();this.claimed=true;}
-              this.input.observe?.({threadId:this.input.threadId,result:message.result,error:message.error});resumeId=undefined;
+              let threadId=this.input.threadId;
+              if(result){if(!object(message.result)||!object(message.result.thread)||typeof message.result.thread.id!=='string'||!/^[a-f0-9-]{36}$/.test(message.result.thread.id)||this.input.method!=='thread/start'&&message.result.thread.id!==this.input.threadId)throw invalid();threadId=message.result.thread.id;this.claimed=true;}
+              this.input.observe?.({method:this.input.method??'thread/resume',threadId,result:message.result,error:message.error});resumeId=undefined;
             }
           }
           if(client.readyState===WebSocket.OPEN)client.send(bytes,{binary});
@@ -100,16 +111,23 @@ export class CodexResumeRelay {
           let payload:WebSocket.RawData|string=bytes;
           if(!binary){
             const message=JSON.parse(bytes.toString());
-            if(object(message)&&message.method==='thread/resume'&&!this.claimed){
+            if(object(message)&&message.method===(this.input.method??'thread/resume')&&!this.claimed){
               const params=message.params;
-              if(!object(params)||params.threadId!==this.input.threadId||params.history!=null||params.path!=null&&params.path!==''||!['string','number'].includes(typeof message.id))throw invalid();
+              if(!object(params)||params.history!=null||params.path!=null&&params.path!==''||!['string','number'].includes(typeof message.id))throw invalid();
+              if(this.input.method==='thread/start'?params.threadId!=null:params.threadId!==this.input.threadId)throw invalid();
               // A failed/lost preparation is still the initial resume. Keep
               // delivering its selected permissions until native success.
               resumeId=message.id as string|number;
               // Host-frozen permission choices take precedence; preserve all
               // unrelated model/cwd/history fields sent by the native TUI.
               const permissions=this.input.permissions();
+              if(permissions.permissions!==undefined&&permissions.sandbox!==undefined)throw invalid();
               message.params={...params,...permissions,config:{...(object(params.config)?params.config:{}),...(permissions.config as JsonObject??{})}};
+              // Native remote startup sends a legacy sandbox even when the
+              // server has an explicit named profile. Deliver one selector.
+              const projected=message.params as JsonObject,config=projected.config as JsonObject;
+              if(permissions.permissions!==undefined){delete projected.sandbox;delete config.sandbox_mode;}
+              else if(permissions.sandbox!==undefined){delete projected.permissions;delete config.default_permissions;}
               payload=JSON.stringify(message);this.input.observe?.({threadId:this.input.threadId,request:message.params});
             }
           }

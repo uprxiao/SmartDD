@@ -26,6 +26,13 @@ const putRaw = (key: string, value: string) =>
   client.sqlite.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)').run(key, value);
 
 describe('SettingsStore', () => {
+  it('persists the remembered Agent permission and first full-access confirmation independently',async()=>{
+    expect(store.get('agentPermissions')).toEqual({selected:'ask',fullConfirmed:false});
+    await store.update('agentPermissions',{selected:'auto'});await store.update('agentPermissions',{fullConfirmed:true});
+    expect(new SettingsStore(client.db).get('agentPermissions')).toEqual({selected:'auto',fullConfirmed:true});
+    await expect(store.update('agentPermissions',{selected:'custom' as never})).rejects.toThrow();
+    expect(new SettingsStore(client.db).get('agentPermissions').selected).toBe('auto');
+  });
   it('keeps DOCX rollout policy independent, persistent, and separate from file write permissions', async () => {
     expect(store.get('fileOffice')).toEqual({docx:{documentHostFlag:false,renderFlag:false,redlinesEnabled:true}});
     await store.update('fileOffice', {docx:{documentHostFlag:false,renderFlag:false,redlinesEnabled:false}});

@@ -15,6 +15,7 @@ import type { HealthEvent } from '../ai/health-classify';
 import { ProjectService } from '../projects/project-service';
 import { ARCHIVE_STOP_TIMEOUT_MS, TaskService, type PtyHost } from './task-service';
 import { builtinRunnerAdapters, RunnerAdapterRegistry, type RunnerAdapter } from './runner-adapters';
+import type {CodexInitializationGate,CodexInitializationLease} from '../applications/codex-initialization';
 
 const cipher: SecretCipher = {
   isAvailable: () => true,
@@ -127,6 +128,53 @@ const codexProfile = () =>
   });
 const project = (dirs = [{ label: '主目录', path: mk('code') }]) =>
   projects.createProject({ name: 'AIS', aliases: [], description: '', rulesPath: null }, dirs);
+
+describe('Codex initialization lifecycle',()=>{
+  function install(gate:CodexInitializationGate){
+    svc.dispose();svc=new TaskService({db:drizzle(sqlite,{schema}),ptys,profiles,projects,baseEnv:()=>({PATH:'/usr/bin',HOME:tmp}),onChanged:()=>changed++,codexPollMs:5,healthPollMs:5,codexInitialization:gate});
+  }
+  function lease(waitReady:CodexInitializationLease['waitReady']):CodexInitializationLease{
+    return {executable:'/public/native/codex',arm:vi.fn(),observe:vi.fn(),captureTerminal:vi.fn(),waitReady};
+  }
+  it('cancelCreate reaches the queued gate before any PTY or task record exists',async()=>{
+    let arrived!:()=>void;const queued=new Promise<void>(done=>arrived=done),fork=vi.fn();
+    install({coordinate:async({signal},work)=>{arrived();await new Promise<void>((_resolve,reject)=>{signal.addEventListener('abort',()=>reject(Error('queued-canceled')),{once:true});});fork();return work();}});
+    const p=project(),id=codexProfile().id,token='4e5003f9-612b-4c01-8d31-9b4e8d0b7411';
+    const request=svc.create({projectId:p.id,dirId:null,aiProfileId:id,firstMessage:'only-once',launchToken:token});
+    await queued;expect(svc.cancelCreate(token)).toBe(true);await expect(request).rejects.toThrow('queued-canceled');
+    expect(fork).not.toHaveBeenCalled();expect(ptys.spawned).toHaveLength(0);expect(svc.list()).toHaveLength(0);
+  });
+  it('commits the task and runs its native SID watcher before pending DDL, then preserves history on failure',async()=>{
+    const p=project(),id=codexProfile().id,sid='f754214c-53c9-445e-8cc3-17f40d0d2ae2';
+    const l=lease(async()=>{
+      const [task]=svc.list();expect(task.ptyId).toBe('pty-1');expect(task.firstMessage).toBe('only-once');
+      writeCodexRollout(task.cwd,sid,task.createdAt);
+      await vi.waitFor(()=>expect(svc.get(task.id).nativeSessionId).toBe(sid));
+      throw Error('post-commit-metadata-failure');
+    });
+    install({coordinate:async(_input,work)=>work(l)});
+    await expect(svc.create({projectId:p.id,dirId:null,aiProfileId:id,firstMessage:'only-once'})).rejects.toThrow('post-commit-metadata-failure');
+    const [task]=svc.list();expect(task.nativeSessionId).toBe(sid);expect(task.ptyId).toBeNull();expect(task.firstMessage).toBe('only-once');
+    expect(ptys.spawned).toHaveLength(1);expect(ptys.last.args.filter(arg=>arg==='only-once')).toHaveLength(1);expect(ptys.killed).toEqual(['pty-1']);
+  });
+  it('the same controller remains cancelable after the task commit during initialization',async()=>{
+    let arrived!:()=>void;const pending=new Promise<void>(done=>arrived=done);
+    install({coordinate:async({signal},work)=>work(lease(async()=>{expect(svc.list()).toHaveLength(1);arrived();await new Promise<void>((_resolve,reject)=>signal.addEventListener('abort',()=>reject(Error('post-commit-canceled')),{once:true}));}))});
+    const p=project(),id=codexProfile().id,token='91052a4b-125c-4ae0-ac37-744456769220';
+    const request=svc.create({projectId:p.id,dirId:null,aiProfileId:id,firstMessage:'one',launchToken:token});
+    await pending;expect(svc.cancelCreate(token)).toBe(true);await expect(request).rejects.toThrow('post-commit-canceled');expect(svc.list()).toHaveLength(1);expect(ptys.spawned).toHaveLength(1);
+  });
+  it('arms the backend before beforeSpawn and checks its DB only after the task is committed',async()=>{
+    const order:string[]=[],p=project(),id=codexProfile().id;
+    let attempted=false;
+    const l=lease(async primary=>{expect(primary).toBe('backend');expect(svc.list()[0].ptyId).toBe('pty-1');order.push('metadata');});
+    l.arm=slot=>order.push('arm-'+slot);l.observe=(slot,source)=>{expect(source.attempted).toBe(true);order.push('observe-'+slot);};l.captureTerminal=()=>order.push('terminal-captured');
+    install({coordinate:async(_input,work)=>work(l)});
+    svc.attachManagedCapabilities({tombstone:async()=>{},prepare:async()=>({ptyId:'pty-1',args:[],env:{},codexInitializer:()=>({attempted,root:attempted?{pid:12345,startedAt:'darwin-proc-v1:123:456'}:null,executable:l.executable}),beforeSpawn:async()=>{order.push('backend-fork');attempted=true;},spawned:async()=>{order.push('terminal-attached');},spawnFailed:async()=>{},exited:async()=>{},stop:async()=>{}})});
+    await svc.create({projectId:p.id,dirId:null,aiProfileId:id,firstMessage:'one'});
+    expect(order).toEqual(['arm-backend','backend-fork','observe-backend','arm-terminal','terminal-captured','terminal-attached','metadata']);
+  });
+});
 
 // Same layout Claude uses: <root>/projects/<cwd with non-alphanumerics → "-">/<id>.jsonl
 const writeClaudeSession = (cwd: string, id: string) => {
@@ -748,4 +796,37 @@ describe('unusable no-message native artifacts',()=>{
   await expect(svc.open({taskId:first.task.id})).rejects.toMatchObject({code:'NATIVE_IDENTITY_CONFLICT'});
   expect(ptys.spawned).toHaveLength(1);
  });
+});
+
+describe('runtime provider service failure notice', () => {
+  const serverError = () => JSON.stringify({ type: 'assistant', isApiErrorMessage: true, error: 'server_error', apiErrorStatus: 503, message: { model: '<synthetic>', content: [{ type: 'text', text: '503 fixture only' }] } }) + '\n';
+
+  it('isolates consecutive failures to the active task, clears on recovery and never stops or relaunches automatically', async () => {
+    const p = project(), prof = claudeProfile();
+    const first = await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'first' });
+    const second = await svc.create({ projectId: p.id, dirId: null, aiProfileId: prof.id, firstMessage: 'second' });
+    writeClaudeSession(first.task.cwd, first.task.id);
+    const file = claudeSessionPath(first.task.cwd, first.task.id);
+    appendFileSync(file, serverError() + serverError());
+    await vi.waitFor(() => expect(reports).toHaveLength(2));
+    expect(svc.get(first.task.id).serviceFailure ?? null).toBeNull();
+    appendFileSync(file, serverError());
+    await vi.waitFor(() => expect(svc.get(first.task.id).serviceFailure?.consecutiveFailures).toBe(3));
+    expect(svc.get(second.task.id).serviceFailure ?? null).toBeNull();
+    expect(ptys.killed).toEqual([]);
+    expect(ptys.spawned).toHaveLength(2);
+    expect(() => svc.stopForServiceFailure(first.task.id, 'obsolete-pty')).toThrow('会话状态已改变');
+    expect(ptys.killed).toEqual([]);
+    appendFileSync(file, JSON.stringify({ type: 'user', message: { content: 'service recovered' } }) + '\n');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(svc.get(first.task.id).serviceFailure?.consecutiveFailures).toBe(3);
+    appendFileSync(file, JSON.stringify({ type: 'assistant', message: { model: 'ds', content: [{ type: 'text', text: 'actual reply' }] } }) + '\n');
+    await vi.waitFor(() => expect(svc.get(first.task.id).serviceFailure ?? null).toBeNull());
+    expect(() => svc.stopForServiceFailure(first.task.id, first.ptyId)).toThrow('会话状态已改变');
+    appendFileSync(file, serverError() + serverError() + serverError());
+    await vi.waitFor(() => expect(svc.get(first.task.id).serviceFailure).toBeTruthy());
+    svc.stopForServiceFailure(first.task.id, first.ptyId);
+    expect(svc.get(first.task.id).serviceFailure ?? null).toBeNull();
+    expect(ptys.spawned).toHaveLength(2);
+  });
 });

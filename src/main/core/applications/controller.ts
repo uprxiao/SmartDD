@@ -1,6 +1,8 @@
+import type {BuiltinPluginId,BuiltinPluginDefault,BuiltinPluginDelete,BuiltinPluginProject} from '@shared/builtin-plugin-preferences';
 import {BrowserWindow,dialog} from 'electron';
 import {FileError} from '@shared/files';
 import type {ApplicationImpactQuery} from '@shared/application-impact';
+import type {SessionChangeQuery} from '@shared/session-change-impact';
 import type {ApplicationTerminalBind,ApplicationTerminalInsert} from '@shared/application-terminal';
 import type {ApplicationVersionCleanup,ApplicationCleanupCancel} from '@shared/application-maintenance';
 import type {ApplicationActivityQuery} from '@shared/application-activity';
@@ -66,6 +68,7 @@ export function createApplicationController(service:ApplicationService|undefined
     pluginReleaseAction:(event,id:string)=>run(event,current=>current.pluginReleaseAction(event,id)),
     pluginReviewAction:(event,id:string)=>run(event,current=>current.pluginReviewAction(event,id)),
     pluginOpenAction:(event,id:string)=>run(event,current=>current.pluginOpenAction(event,id)),
+    sessionChangeImpact:(event,input:SessionChangeQuery)=>run(event,current=>current.sessionChangeImpact(event,input)),
     impact:(event,input:ApplicationImpactQuery)=>run(event,current=>current.impact(event,input)),
     terminalBind:(event,input:ApplicationTerminalBind)=>run(event,current=>current.bindTerminal(event,input)),
     terminalInsert:(event,input:ApplicationTerminalInsert)=>run(event,current=>current.insertTerminal(event,input)),
@@ -85,13 +88,20 @@ export function createApplicationController(service:ApplicationService|undefined
     invokeCapability:(event,projectId:string,appId:ApplicationId,capabilityId:string,input:unknown)=>run(event,current=>current.invokeCapability(event,projectId,appId,capabilityId,input)),
     projectAction:(event,projectId:string,appId:ApplicationId,input:unknown)=>run(event,current=>current.projectAction(event,projectId,appId,input)),
     select:(event,input:ProjectApplicationSelectionInput)=>run(event,current=>current.select(event,input)),
+    builtinDefaults:(event,appId:BuiltinPluginId)=>run(event,current=>current.builtinDefaults(event,appId)),
+    builtinDefaultPlan:(event,input:BuiltinPluginDefault)=>run(event,current=>current.builtinDefaultPlan(event,input)),
+    builtinDefaultSave:(event,input:BuiltinPluginDefault)=>run(event,current=>current.builtinDefaultSave(event,input)),
+    builtinDeletePlan:(event,input:BuiltinPluginDelete)=>run(event,current=>current.builtinDeletePlan(event,input)),
+    builtinDelete:(event,input:BuiltinPluginDelete)=>run(event,current=>current.builtinDelete(event,input)),
+    builtinProject:(event,appId:BuiltinPluginId,projectId:string)=>run(event,current=>current.builtinProject(event,appId,projectId)),
+    builtinProjectSave:(event,input:BuiltinPluginProject)=>run(event,current=>current.builtinProjectSave(event,input)),
     connections:(event,appId:ApplicationId)=>run(event,current=>current.listConnections(event,appId)),
     testConnection:(event,input:SaveApplicationConnection)=>run(event,current=>current.testConnection(event,input)),
     discardConnectionTest:(event,appId:ApplicationId,operationId:string)=>run(event,current=>current.discardConnectionTest(event,appId,operationId)),
     saveConnection:(event,appId:ApplicationId,operationId:string,candidateHash:string,acceptedImpactHash?:string)=>run(event,current=>current.saveConnection(event,appId,operationId,candidateHash,acceptedImpactHash)),
     setConnectionEnabled:(event,id:string,enabled:boolean,revision:number)=>run(event,current=>current.setConnectionEnabled(event,id,enabled,revision)),
     disconnect:(event,id:string,revision:number)=>run(event,current=>current.disconnect(event,id,revision)),
-    drafts:(event,projectId:string,input?:{limit?:number;cursor?:string|null})=>run(event,current=>current.viewDrafts(event,projectId,input)),
+    drafts:(event,projectId:string,input?:import('@shared/application-data').MailDraftListInput)=>run(event,current=>current.viewDrafts(event,projectId,input)),
     draft:(event,projectId:string,draftId:string,revision?:number)=>run(event,current=>current.viewDraft(event,projectId,draftId,revision)),
     cancelUiRead:(event,requestId:string)=>run(event,current=>current.cancelUiRead(event,requestId)),
     zentaoWork:(event,projectId:string,input:ZentaoWorkInput,requestId?:string)=>run(event,current=>current.zentaoWork(event,projectId,input,requestId)),
@@ -102,6 +112,9 @@ export function createApplicationController(service:ApplicationService|undefined
     send:(event,projectId:string,intentId:string)=>run(event,current=>current.viewSend(event,projectId,intentId)),
     reviewSend:(event,projectId:string,intentId:string)=>run(event,current=>current.reviewSend(event,projectId,intentId)),
     authorizeSend:(event,projectId:string,input:unknown)=>run(event,current=>current.authorizeSend(event,projectId,input)),
+    reviewUnknownSend:(event,projectId:string,executionId:string)=>run(event,current=>current.reviewUnknownSend(event,projectId,executionId)),
+    discardUnknownSend:(event,projectId:string,displayReceiptId:string)=>run(event,current=>current.discardUnknownSend(event,projectId,displayReceiptId)),
+    confirmUnknownSend:(event,projectId:string,input:unknown)=>run(event,current=>current.confirmUnknownSend(event,projectId,input)),
     cancelSend:(event,projectId:string,intentId:string)=>run(event,current=>current.cancelSend(event,projectId,intentId)),
     captureAttachment:(event,projectId:string,input:unknown)=>run(event,current=>current.captureAttachment(event,projectId,input)),
     replyDraft:(event,projectId:string,input:unknown)=>run(event,current=>current.replyDraft(event,projectId,input)),

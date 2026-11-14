@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import {describe,expect,it} from 'vitest';
 import {pluginPanelSchema} from './plugins';
 import {pluginListView,pluginPanelInput,pluginUiField,resolvePluginUiTemplate} from './plugin-ui';
@@ -25,4 +26,13 @@ describe('data-only plugin declaration presentation',()=>{
   const p=panel(),base={items:[],nextCursor:null,complete:true,problems:[]};expect(pluginListView(p,base)).toMatchObject({rows:[],complete:true,nextCursor:null});
   for(const value of [{...base,items:undefined},{...base,items:[{id:'same'},{id:'same'}]},{...base,nextCursor:0},{...base,complete:'yes'}])expect(()=>pluginListView(p,value)).toThrow();
  });
+});
+
+
+it.each(['bug','story'])('uses five-row pages from the real Zentao declaration for %s requests',kind=>{
+ const manifest=JSON.parse(readFileSync(new URL('../../plugins/zentao/package/.willyou-plugin/plugin.json',import.meta.url),'utf8'));
+ const declaration=pluginPanelSchema.parse(manifest.ui.panels.find((p:{id:string})=>p.id==='my-work'));
+ const tab=declaration.tabs.find(t=>t.id===kind);
+ expect(pluginPanelInput(declaration,{tab})).toEqual({kind,limit:5});
+ expect(declaration.source.pagination?.pageSize).toBe(5);
 });

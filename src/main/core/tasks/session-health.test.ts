@@ -24,6 +24,39 @@ const tail = (launchedAt: number, locate: () => string | null = () => file) =>
   new SessionTail({ runner: 'claude', locate, launchedAt, onEvent: (e) => events.push(e) });
 
 describe('SessionTail', () => {
+  it('ignores pre-launch interactive requests even when the resumed file was created just now', () => {
+    const launchedAt = Date.now(), service: unknown[] = [];
+    const request = (id: string, at: number) => ({ type: 'api-request', id, timestamp: new Date(at).toISOString(), querySource: 'repl_main_thread', sessionId: 'owned-session', requestDigest: 'a'.repeat(64), shapeHash: 'b'.repeat(64) });
+    writeFileSync(file, line(request('old', launchedAt - 1000)));
+    const t = new SessionTail({ runner: 'claude', locate: () => file, launchedAt, sessionId: () => 'owned-session', onEvent: () => {}, onServiceEvent: e => service.push(e) });
+    t.poll();
+    expect(service).toEqual([]);
+    appendFileSync(file, line({ ...request('foreign', launchedAt + 1), sessionId: 'another-session' }));
+    t.poll();
+    expect(service).toEqual([]);
+    appendFileSync(file, line(request('new', launchedAt + 1)));
+    t.poll();
+    expect(service).toHaveLength(1);
+    expect(service[0]).toMatchObject({ kind: 'request', id: 'request:new' });
+  });
+  it('observes Native retry records separately from profile health and skips old history on resume', () => {
+    const retry = { type: 'system', subtype: 'api_error', level: 'error', source: 'request_retry', retryAttempt: 1, uuid: 'old', error: { status: 503 } };
+    writeFileSync(file, line(retry));
+    const service: unknown[] = [];
+    const t = new SessionTail({ runner: 'claude', locate: () => file, launchedAt: Date.now() + 10_000, onEvent: e => events.push(e), onServiceEvent: e => service.push(e) });
+    t.poll();
+    expect(service).toEqual([]);
+    appendFileSync(file, line({ ...retry, uuid: 'new', retryAttempt: 2 }));
+    t.poll();
+    expect(service).toEqual([{ kind: 'failure', id: 'new' }]);
+    expect(events).toEqual([]);
+    appendFileSync(file, line({ type: 'user', message: { content: JSON.stringify(retry) } }));
+    t.poll();
+    expect(service).toHaveLength(1);
+    appendFileSync(file, reply());
+    t.poll();
+    expect(service[1]).toEqual({ kind: 'success', id: undefined });
+  });
   it('waits for the file, then reports replies and API errors in order', () => {
     let exists = false;
     const t = tail(Date.now() - 1000, () => (exists ? file : null));

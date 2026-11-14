@@ -1,6 +1,7 @@
 import { languageConfigurationSchema } from './file-lsp';
 import { viewerConfigurationSchema } from './file-viewer';
 import { z } from 'zod';
+import { agentPermissionSchema } from './agent-permissions';
 
 export const SUPPORTED_LANGUAGES = ['zh-CN', 'en'] as const;
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
@@ -37,6 +38,7 @@ export const APP_SETTINGS_STRICT_SCHEMA_MAP = {
     dirId: z.string().nullable(),
     aiProfileId: z.string().nullable(),
   }),
+  agentPermissions: z.object({ selected: agentPermissionSchema, fullConfirmed: z.boolean() }),
   fileLanguages: languageConfigurationSchema,
   fileViewers: viewerConfigurationSchema,
   // Independent host rollout capabilities. These never grant DOCX write access
@@ -59,6 +61,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettings = {
   theme: null,
   terminal: { fontFamily: 'Menlo, Monaco, monospace', fontSize: 13 },
   homeDraft: { projectId: null, dirId: null, aiProfileId: null },
+  agentPermissions: { selected: 'ask', fullConfirmed: false },
   fileLanguages: { enabled: true, servers: [] },
   fileViewers: { adapters: [], preferred: {} },
   fileOffice: { docx: { documentHostFlag: false, renderFlag: false, redlinesEnabled: true } },
@@ -80,6 +83,7 @@ export const APP_SETTINGS_SCHEMA_MAP: { [K in AppSettingsKey]: z.ZodType<AppSett
   theme: strict.theme.catch(APP_SETTINGS_DEFAULTS.theme),
   terminal: lenientObject(strict.terminal, APP_SETTINGS_DEFAULTS.terminal),
   homeDraft: lenientObject(strict.homeDraft, APP_SETTINGS_DEFAULTS.homeDraft),
+  agentPermissions: lenientObject(strict.agentPermissions,APP_SETTINGS_DEFAULTS.agentPermissions),
   fileLanguages: strict.fileLanguages.catch(APP_SETTINGS_DEFAULTS.fileLanguages),
   fileViewers: strict.fileViewers.catch(APP_SETTINGS_DEFAULTS.fileViewers),
   fileOffice: strict.fileOffice.catch(APP_SETTINGS_DEFAULTS.fileOffice),

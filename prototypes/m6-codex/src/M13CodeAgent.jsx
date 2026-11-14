@@ -163,6 +163,7 @@ export function AgentDialog({ initial, preset, copy, store, onClose, onSave, onA
       <label className="m13-field"><span>名称</span><input aria-label="名称" value={effName} onChange={e => { setTouched(true); setName(e.target.value); }} placeholder={autoN} />{dupName && <small className="m13-hint m13-err">名称已被“{dupName.name}”使用，请换一个。</small>}</label>
       <div className="m13-field"><span>首页显示</span><span className="m13-switch-row m13-plain"><Switch on={visible} label="在首页显示" disabled={initial?.default} onChange={() => setVisible(v => !v)} /><span>{initial?.default ? '默认智能体必须在首页显示' : visible ? '在首页的智能体下拉中显示' : '不在首页显示'}</span></span></div>
       </>}
+      {!login && tool === 'codex' && provider && <div className="m13-alert info"><Info size={16} /><div><strong>第三方 Provider 下 Codex 原生插件不可用</strong><p>插件自带的 Skill／MCP 可在“技能”页发现并纳管；新建或重启会话后生效。</p></div></div>}
     </section>
   </Dialog>;
 }
@@ -173,6 +174,7 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
   const { providers } = store;
   const [step, setStep] = useState('catalog'), [item, setItem] = useState(null), [query, setQuery] = useState('');
   const [key, setKey] = useState(''), [showKey, setShowKey] = useState(false);
+  const [context,setContext]=useState(''),[efforts,setEfforts]=useState(''),[reasoning,setReasoning]=useState('');
   const [cName, setCName] = useState(''), [proto, setProto] = useState('responses'), [url, setUrl] = useState(''), [more, setMore] = useState({}), [detected, setDetected] = useState(null), [demo, setDemo] = useState('ok'), [manual, setManual] = useState('');
   const [result, setResult] = useState(null), [models, setModels] = useState([]), [busy, setBusy] = useState(false), [done, setDone] = useState(null), [err, setErr] = useState('');
   const connected = id => providers.find(p => p.catalog === id);
@@ -217,6 +219,12 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
       if (!passed.length) return setErr('没有可用的协议：模型列表可读，但最小工具调用失败（400 tools not supported）。这个服务不能作为智能体的模型服务，不会接入。');
       const chosen = models.length ? result.models.filter(m => models.includes(m.id)) : [{ id: manual.trim(), name: manual.trim(), ctx: '—' }];
       let p = { id: custom ? 'custom-' + Math.random().toString(36).slice(2, 6) : item.id, name: custom ? cName.trim() : item.name, type: custom ? 'custom' : 'preset', catalog: custom ? 'custom-' + cName.trim() : item.id, url: endpoints[passed[0]] || url, endpoints: Object.fromEntries(passed.map(k => [k, endpoints[k]])), protocols: passed, key: item.id === 'magpie' ? key : 'sk-•••• ' + key.slice(-4), refreshed: '刚刚', recommended: custom ? chosen[0]?.id : item.recommended, models: chosen.map(m => ({ ...m, avail: {} })) };
+      if(custom&&(context||efforts||reasoning)){
+        const window=context?Number(context):null,levels=efforts.split(/[,，\s]+/).filter(Boolean);
+        if(window!==null&&(!Number.isSafeInteger(window)||window<=0)){setErr('上下文窗口必须是正整数');setBusy(false);return;}
+        if(reasoning&&!levels.includes(reasoning)){setErr('默认推理档位必须在支持档位中');setBusy(false);return;}
+        p={...p,models:p.models.map(m=>({...m,...(window?{ctx:String(window)}:{}),reasoningLevels:levels,defaultReasoning:reasoning||null}))};
+      }
       const tests = autoTest(p, demo === 'model-fail' ? 'tools-fail' : 'ok');
       p = applyTest(p, tests);
       onConnect(p);
@@ -260,6 +268,7 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
       <span className="m13-form-label">API 密钥</span><div className="m13-key"><input type={showKey ? 'text' : 'password'} aria-label="API 密钥" value={key} onChange={e => { setKey(e.target.value); setResult(null); }} placeholder="粘贴 API 密钥" /><button type="button" className="m13-link" onClick={() => setShowKey(!showKey)}>{showKey ? <EyeOff size={14} /> : <Eye size={14} />}{showKey ? '隐藏' : '显示'}</button></div>
       <span className="m13-form-label">图标</span><div className="m13-inline-actions"><ProviderIcon catalog={'custom-' + cName} name={cName || '?'} size={28} /><span className="m13-hint">默认使用名称首字母</span></div>
       <span className="m13-form-label">模型</span><div><input className="m13-input" aria-label="模型 ID" value={manual} onChange={e => setManual(e.target.value)} placeholder="模型 ID，逗号分隔；留空则从服务获取" /></div>
+      <span className="m13-form-label">高级设置</span><details className="m13-adv"><summary>Codex 模型元数据</summary><label className="m13-field"><span>上下文窗口（tokens）</span><input inputMode="numeric" value={context} onChange={e=>setContext(e.target.value)} placeholder="使用目录或通用默认值" /></label><label className="m13-field"><span>支持的推理档位</span><input value={efforts} onChange={e=>setEfforts(e.target.value)} placeholder="例如 low, medium, high" /></label><label className="m13-field"><span>默认推理档位</span><input value={reasoning} onChange={e=>setReasoning(e.target.value)} /></label></details>
       <span className="m13-form-label m13-demo-label">结果</span><select className="m13-select" aria-label="演示结果" value={demo} onChange={e => { setDemo(e.target.value); setResult(null); }}><option value="ok">成功</option><option value="empty">模型列表为空</option><option value="bad-key">Key 无效（401）</option><option value="unreachable">服务不可达</option><option value="partial">只有 Responses 确认通过</option><option value="tools-fail">能列出模型但工具调用失败</option><option value="model-fail">推荐模型在 Claude Code 中测试失败</option></select>
     </div>}
     {step === 'form' && result && <section className="m13-fetched"><h3 className="m13-sub">已获取 {result.models.length} 个模型{result.models.length > 0 && <span>取消勾选的不会接入</span>}</h3>
@@ -284,6 +293,7 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
 export function ProviderDialog({ provider: p, store, scene, onClose, notify, onRemove, onNewAgent }) {
   const { configs, setProviders } = store;
   const [keyEdit, setKeyEdit] = useState(p.needKey ? '' : null), [refreshing, setRefreshing] = useState(false), [confirmDel, setConfirmDel] = useState(false), [ptab, setPtab] = useState('overview');
+  const [editingAddress,setEditingAddress]=useState(false),[addresses,setAddresses]=useState({...p.endpoints});
   const refs = configs.filter(c => c.provider === p.id);
   const down = scene === 'magpie-down' && p.catalog === 'magpie';
   const cat = catalogItem(p.catalog), ts = toolsFor(p);
@@ -319,7 +329,7 @@ export function ProviderDialog({ provider: p, store, scene, onClose, notify, onR
     {p.needKey && <div className="m13-alert warn"><Info size={16} /><div><strong>需要填写 Key</strong><p>这个供应商从导入文件创建，文件里不含 Key。填写后才能启动任务和测试模型。</p></div></div>}
     <dl className="m13-info compact">
       <dt>适用工具</dt><dd className="m13-fit-line"><FitChips provider={p} />{ts.length < 2 && <small className="m13-hint">{TOOL_IDS.filter(t => !ts.includes(t)).map(t => compatible(t, p).reason).join('；')}</small>}</dd>
-      <dt>服务地址</dt><dd>{Object.entries(p.endpoints || { [p.protocols[0]]: p.url }).map(([k, v]) => <div key={k} className="m13-endpoint"><Pill tone={k === 'openai' ? 'muted' : 'info'}>{PROTOCOL_LABEL_FULL[k]}</Pill><code>{v}</code></div>)}</dd>
+      <dt>服务地址</dt><dd>{editingAddress?<><div className="m13-form-grid">{Object.keys(PROTOCOL_LABEL_FULL).map(k=><label key={k} className="m13-field"><span>{PROTOCOL_LABEL_FULL[k]}</span><input aria-label={PROTOCOL_LABEL_FULL[k]+' 地址'} value={addresses[k]||''} onChange={e=>setAddresses(a=>({...a,[k]:e.target.value}))}/></label>)}</div><button className="m10-button secondary m13-row-btn" onClick={()=>{const next=Object.fromEntries(Object.entries(addresses).filter(([,v])=>v.trim()));if(!Object.keys(next).length)return notify('至少填写一个服务地址');try{for(const v of Object.values(next)){const u=new URL(v);if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error();}}catch{return notify('请填写不含凭据的 HTTP(S) 地址');}patch(x=>({...x,endpoints:next,protocols:Object.keys(next),url:Object.values(next)[0],rev:(x.rev||0)+(JSON.stringify(x.endpoints)!==JSON.stringify(next)?1:0)}));setEditingAddress(false);notify('地址已保存（原型合成数据）');}}>保存地址</button><button className="m13-link" onClick={()=>setEditingAddress(false)}>取消</button></>:<>{Object.entries(p.endpoints || { [p.protocols[0]]: p.url }).map(([k,v])=><div key={k} className="m13-endpoint"><Pill tone={k==='openai'?'muted':'info'}>{PROTOCOL_LABEL_FULL[k]}</Pill><code>{v}</code></div>)}<button className="m13-link" onClick={()=>{setAddresses({...p.endpoints});setEditingAddress(true);}}>编辑地址</button></>}</dd>
       <dt>Key</dt><dd>{keyEdit === null ? <><code>{p.key || '未填写'}</code><button className="m13-link" onClick={() => setKeyEdit('')}>{p.key ? '更换' : '填写'}</button></> : <span className="m13-inline-edit"><input type="password" aria-label="新的 Key" value={keyEdit} onChange={e => setKeyEdit(e.target.value)} placeholder="加密保存，只在启动时注入" /><button className="m10-button secondary m13-row-btn" disabled={!keyEdit.trim()} onClick={() => { if (live) setLiveKey(p.id, keyEdit.trim()); patch(x => applyProviderKey(x, keyEdit)); setKeyEdit(null); notify('Key 已更新（原型只保留脱敏后四位）'); }}>保存</button>{!p.needKey && <button className="m13-link" onClick={() => setKeyEdit(null)}>取消</button>}</span>}</dd>
       <dt>模型目录</dt><dd>{p.refreshed} 刷新 · 每次启动任务前自动比对<button className="m13-link" disabled={refreshing || down} onClick={refresh}>{refreshing ? '刷新中…' : '刷新模型'}</button></dd></dl>
     <h3 className="m13-sub m13-sub-row">模型在各工具中的可用性{untested.length > 0 && <button className="m13-link" disabled={down || p.needKey} onClick={() => untested.forEach(([m, t]) => test(m, t))}>测试全部未测试（{untested.length}）</button>}</h3>

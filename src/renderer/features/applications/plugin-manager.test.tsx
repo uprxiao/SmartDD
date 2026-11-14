@@ -4,7 +4,9 @@ import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {useRef} from 'react';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {PluginManager,type PluginManagerHandle} from './plugin-manager';
-const api=vi.hoisted(()=>({pluginStartupStatus:vi.fn(async()=>({ok:true,value:null})),pluginCatalog:vi.fn(),pluginChoose:vi.fn(),pluginInstall:vi.fn(),pluginDiscard:vi.fn(),pluginSetEnabled:vi.fn(),pluginUninstall:vi.fn(),pluginRestart:vi.fn(),projectList:vi.fn(async()=>[])}));
+const notice=vi.hoisted(()=>({success:vi.fn()}));
+vi.mock('sonner',()=>({toast:notice}));
+const api=vi.hoisted(()=>({sessionChangeImpact:vi.fn(async()=>({ok:true,value:{runningCount:0,globalDisabled:false,checkedAt:"fixed"}})),pluginStartupStatus:vi.fn(async()=>({ok:true,value:null})),pluginCatalog:vi.fn(),pluginChoose:vi.fn(),pluginInstall:vi.fn(),pluginDiscard:vi.fn(),pluginSetEnabled:vi.fn(),pluginUninstall:vi.fn(),pluginRestart:vi.fn(),projectList:vi.fn(async()=>[])}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:api,projects:{list:api.projectList}},events:{on:()=>()=>{}}}));
 const ok=(value:unknown)=>({ok:true,value});
 const plugin={appId:'demo-tracker',hash:'a'.repeat(64),version:'0.1.0',installed:true,enabled:true,revision:4,paused:false,displayName:'Demo Tracker',description:'合成插件说明',author:null,permissions:['network'],capabilities:[{id:'demo-tracker.items.list',title:'列出待办',semantics:'read'}],skills:[],panels:[]};
@@ -37,7 +39,19 @@ describe('production external plugin install and lifecycle interface',()=>{
   it('shows update permission changes and preserves the disabled state on the review',async()=>{
     api.pluginCatalog.mockResolvedValue(ok([plugin]));api.pluginChoose.mockResolvedValue(ok({...review,plan:{...review.plan,kind:'update',enabled:false,previousVersion:'0.1.0',nextVersion:'0.2.0',breakingCapabilities:['demo-tracker.old.read']}}));
     mount();await screen.findByText('Demo Tracker');fireEvent.click(screen.getByRole('button',{name:'管理插件Demo Tracker'}));fireEvent.click(screen.getByRole('menuitem',{name:'从 .zip 更新…'}));const dialog=await screen.findByRole('dialog',{name:'更新 Demo Tracker'});
-    expect(api.pluginChoose).toHaveBeenCalledWith('zip','demo-tracker');expect(within(dialog).getByText('0.1.0 → 0.2.0')).toBeTruthy();expect(within(dialog).getByText(/更新后仍保持停用/)).toBeTruthy();expect(within(dialog).getByText(/老任务调用这些能力会失败/)).toBeTruthy();expect(within(dialog).getByText('新增权限')).toBeTruthy();
+    expect(api.pluginChoose).toHaveBeenCalledWith('zip','demo-tracker');expect(within(dialog).getByText('0.1.0 → 0.2.0')).toBeTruthy();expect(within(dialog).getByText(/更新后仍保持停用/)).toBeTruthy();expect(within(dialog).getByText(/老任务调用这些能力会失败/)).toBeTruthy();expect(within(dialog).getByText('新增权限，点“更新”即表示同意')).toBeTruthy();
+  });
+  it('requires explicit consent for newly added update permissions, without repeating all permissions',async()=>{
+    api.pluginCatalog.mockResolvedValue(ok([plugin]));api.pluginChoose.mockResolvedValue(ok({...review,permissions:['network','new-access'],plan:{...review.plan,kind:'update',previousVersion:'0.1.0',nextVersion:'0.2.0',addedPermissions:['new-access']}}));
+    mount();fireEvent.click(await screen.findByRole('button',{name:'管理插件Demo Tracker'}));fireEvent.click(screen.getByRole('menuitem',{name:'从 .zip 更新…'}));const dialog=await screen.findByRole('dialog',{name:'更新 Demo Tracker'});
+    expect(within(dialog).getByText('新增权限，点“更新”即表示同意')).toBeTruthy();expect(within(dialog).queryByText('network')).toBeNull();expect(api.pluginInstall).not.toHaveBeenCalled();
+  });
+  it.each([true,false])('announces disabled updates only after a successful commit; success=%s',async success=>{
+    api.pluginCatalog.mockResolvedValue(ok([plugin]));api.pluginChoose.mockResolvedValue(ok({...review,plan:{...review.plan,kind:'update',enabled:false,previousVersion:'0.1.0',nextVersion:'0.2.0'}}));
+    api.pluginInstall.mockResolvedValueOnce(success?ok({...plugin,version:'0.2.0',enabled:false}):{ok:false,code:'RESOURCE_RECOVERY_REQUIRED',message:'更新未完成'});
+    mount();fireEvent.click(await screen.findByRole('button',{name:'管理插件Demo Tracker'}));fireEvent.click(screen.getByRole('menuitem',{name:'从 .zip 更新…'}));const dialog=await screen.findByRole('dialog',{name:'更新 Demo Tracker'});expect(notice.success).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button',{name:'更新'}));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
+    if(success)expect(notice.success).toHaveBeenCalledExactlyOnceWith('Demo Tracker 已更新到 0.2.0，仍为停用状态');else expect(notice.success).not.toHaveBeenCalled();
   });
   it.each([false,true])('requires an explicit uninstall decision; deleteData=%s is sent with the displayed revision',async deleteData=>{
     api.pluginCatalog.mockResolvedValue(ok([plugin]));mount();await screen.findByText('Demo Tracker');fireEvent.click(screen.getByRole('button',{name:'管理插件Demo Tracker'}));fireEvent.click(screen.getByRole('menuitem',{name:'卸载…'}));const dialog=await screen.findByRole('dialog',{name:'卸载 Demo Tracker'});
