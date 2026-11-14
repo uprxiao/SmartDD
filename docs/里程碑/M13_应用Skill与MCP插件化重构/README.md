@@ -217,3 +217,9 @@ T042 Claude非交互默认审批的[真实I尾段](验收/证据/M13-T042-Claude
 
 
 2026-11-15 当前接续：T030第三方用户Skill实际App A已补齐（[424](验收/证据/M13-T030-third-party-user-Skill-complete-App057-A-424-20261115-a1/coordinator-verdict.json)），本人订阅R仍缺；T064原③实际App已齐（[425](验收/证据/M13-T064-crossroot-III-complete-and-default-welcome-fixture-red-425-20261115-a1/coordinator-verdict.json)），仅接④默认目录业务/同名保护。原红保留，同包继续，不重复已通过部分。正式状态只取唯一账，M13尚未完成。
+
+
+2026-11-15 最新：[427默认恢复与同名拒绝、原历史追加差异](验收/证据/M13-T064-default-ACK-collision-and-Native-history-criterion-gap-427-20261115-a1/coordinator-verdict.json)已完成原默认恢复/同名保护业务；仅“CLI自身正常追加全局历史”与原hash判据的边界待用户确认，原结果仍部分通过。继续自主T094模型菜单缺项准备，不重跑T064有效结果。检查点`9c186738c`已推送；原包不变。
+
+
+2026-11-15 最新正式收口：[430原完整U/I/A联合与用户边界确认](验收/证据/M13-T064-original-full-contract-union-user-clarified-history-430-20261115-a1/coordinator-verdict.json)已归账。用户确认CLI正常追加历史与宿主保护的边界，原需求/方案/用例同步，原红保留且无重跑。继续T094自主菜单缺项，真实账号/服务输入留后；正式数量只取唯一用例账，M13尚未完成。
