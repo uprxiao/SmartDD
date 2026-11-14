@@ -14,219 +14,36 @@ const fixture=(more:Partial<ApplicationSessionDiagnostic>={}):ApplicationSession
 function mount(projectName?:string){client=new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}});return render(<QueryClientProvider client={client}><SessionApplicationsPanel taskId="t1" projectName={projectName} onClose={m.close}/></QueryClientProvider>);}
 beforeEach(()=>{vi.clearAllMocks();m.session.mockResolvedValue({ok:true,value:fixture()});Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.setAttribute('open','');}});Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:()=>{}});});
 afterEach(()=>{cleanup();client?.clear();Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');Reflect.deleteProperty(HTMLDialogElement.prototype,'close');});
-describe('P09 real session diagnostic presentation',()=>{
- it.each([false,true])('keeps diagnostic copy feedback outside the long scrolling report (rejected=%s)',async rejected=>{
-  const previous=Object.getOwnPropertyDescriptor(navigator,'clipboard'),writeText=rejected?vi.fn().mockRejectedValue(new Error('clipboard unavailable')):vi.fn().mockResolvedValue(undefined);
-  Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText}});
-  try{mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'复制脱敏诊断'}));
-   const feedback=await screen.findByText(rejected?'复制未完成，可展开追溯信息查看':'已复制脱敏诊断信息');
-   expect(feedback.getAttribute('role')).toBe('status');expect(feedback.closest('[data-testid="session-applications"]')).toBeNull();
-   expect(writeText).toHaveBeenCalledWith(JSON.stringify(fixture(),null,2));expect(screen.getByRole('button',{name:'完成'})).toBeTruthy();expect(m.newTask).not.toHaveBeenCalled();
-  }finally{if(previous)Object.defineProperty(navigator,'clipboard',previous);else Reflect.deleteProperty(navigator,'clipboard');}
- });
 
- it.each([{code:'TRANSIENT_FAILURE',attempts:3,effect:'read-only',reason:'临时服务或网络错误',next:'稍后明确发起新调用'},{code:'AUTH_FAILED',attempts:1,effect:'not-started',reason:'连接认证失败',next:'检查原连接并重新认证'},{code:'SCOPE_DENIED',attempts:0,effect:'not-started',reason:'当前调用没有所需授权',next:'检查项目选用与连接授权'},{code:'CANCELED',attempts:1,effect:'read-only',reason:'本次调用已取消',next:'需要继续时，明确发起新调用'},{code:'TRANSIENT_FAILURE',attempts:null,effect:'unknown',reason:'外部执行结果未知',next:'先核实原执行，不自动重发'},{code:'SOURCE_BUSY',attempts:3,effect:'read-only',reason:'本地邮件来源暂时被占用',next:'解除来源占用后，再明确发起新调用'},{code:'SOURCE_UNAVAILABLE',attempts:1,effect:'read-only',reason:'本地邮件来源暂不可读',next:'检查原来源路径和读取权限'},{code:'UNLISTED_ERROR',attempts:undefined,effect:'not-started',reason:'本次插件调用未完成',next:'核对原连接条件和调用记录'}])('PD exposes $code attempts/reason/next-step without restarting or replaying',async({code,attempts,effect,reason,next})=>{
-  const value=fixture();value.applications[0].evidence={...value.applications[0].evidence,successfulToolRequests:0,latestErrorCode:code,latestEffectState:effect,latestAttemptCount:attempts};m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();const notice=await screen.findByLabelText('邮件最近调用结果');expect(notice.textContent).toContain(reason);expect(notice.textContent).toContain(next);expect(notice.textContent).toContain(attempts==null?'尝试次数未记录':'本次记录 '+attempts+' 次尝试');expect(notice.textContent).toContain(code);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
+const originalTaskIdentity=()=>{expect(screen.getByTestId('session-current-title').textContent).toBe('原会话');expect(m.session).toHaveBeenCalledExactlyOnceWith('t1');for(const f of[m.create,m.open,m.kill,m.newTask,m.prepareApplicationTask,m.openApplications,m.openApplicationActivity,m.openProject])expect(f).not.toHaveBeenCalled();};
+describe('T073 confirmed compact session-plugin prototype, not an unapproved diagnostics workspace',()=>{
+ it('has the original launch selection and only completion, with no retained diagnostic/management tree even when closed',async()=>{
+  const value=fixture();value.applications[0].currentState='available';m.session.mockResolvedValue({ok:true,value});const view=mount();await screen.findByText('原会话');const dialog=screen.getByRole('dialog',{name:'会话插件'}),body=screen.getByTestId('session-applications'),row=body.querySelector('[data-session-plugin="mail"]')!;
+  expect(row).not.toBeNull();expect(row.textContent).toContain('本次启动时 v1.0.0');expect(row.textContent).toContain('原发件');expect(row.textContent).not.toContain('当前发件');expect(row.textContent).toContain('已更新到 2.0.0');expect(body.textContent).toContain('启动时已加载的 Skill 与 MCP 在重启会话后才按最新状态变化；插件调用立即按最新状态执行。');
+  // Presence, not visibility: merely closing <details> must not make the removed surface pass.
+  expect(body.querySelector('[data-session-diagnostics]')).toBeNull();expect(body.querySelector('summary')).toBeNull();expect(body.querySelectorAll('button,a,input,select,textarea')).toHaveLength(0);
+  for(const text of['诊断与管理','复制脱敏诊断','重新核对','使用当前版本新建会话','项目插件','固定包与 Skill 来源','运行追溯与配置路径'])expect(within(dialog).queryByText(text)).toBeNull();
+  expect(within(dialog.querySelector('footer')!).getAllByRole('button').map(x=>x.textContent)).toEqual(['完成']);originalTaskIdentity();fireEvent.click(screen.getByRole('button',{name:'完成'}));expect(m.close).toHaveBeenCalledTimes(1);expect(view.container.querySelector('[data-session-diagnostics]')).toBeNull();
  });
- it.each(['success','failure'])('PD-02 hides stale current evidence until explicit refresh settles (%s)',async outcome=>{
-  const old=fixture();old.applications[0].evidence={...old.applications[0].evidence,latestErrorCode:'TRANSIENT_FAILURE',latestAttemptCount:1,latestEffectState:'read-only'};m.session.mockResolvedValueOnce({ok:true,value:old});mount();await openSessionDiagnostics();await screen.findByLabelText('邮件最近调用结果');let finish!:(v:{ok:true;value:ApplicationSessionDiagnostic})=>void,fail!:(e:Error)=>void;m.session.mockReturnValueOnce(new Promise((resolve,reject)=>{finish=resolve;fail=reject;}));fireEvent.click(screen.getByRole('button',{name:'重新核对'}));await screen.findByText('正在核对原会话');expect(screen.queryByLabelText('邮件最近调用结果')).toBeNull();expect(screen.queryByText('本次启动时 v1.0.0')).toBeNull();if(outcome==='success'){await act(async()=>{finish({ok:true,value:fixture()});});await screen.findByText('本次启动时 v1.0.0');expect(screen.queryByLabelText('邮件最近调用结果')).toBeNull();}else{await act(async()=>{fail(new Error('PD explicit diagnostic read failed'));});await screen.findByText('会话诊断未完成');expect(screen.queryByText('本次启动时 v1.0.0')).toBeNull();expect(screen.queryByLabelText('邮件最近调用结果')).toBeNull();}expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
+ it.each([['unknown-history','历史能力未知'],['corrupt','固定能力快照损坏'],['unsupported-schema','原能力快照格式暂不支持']] as const)('keeps %s safety visible without implying current catalog was selected',async(selection,expected)=>{
+  m.session.mockResolvedValue({ok:true,value:fixture({selection,applications:[],currentRun:null,recentRuns:[]})});mount();const warning=await screen.findByText(new RegExp(expected));expect(warning.closest('details')).toBeNull();expect(warning.textContent).toContain('查看当前项目可用版本不表示本会话已选用');expect(document.querySelectorAll('[data-session-plugin]')).toHaveLength(0);expect(document.querySelector('[data-session-diagnostics]')).toBeNull();originalTaskIdentity();
  });
- it('PD-02 preserves an already-entered new-session summary while its source diagnostic refreshes',async()=>{
-  mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));const input=screen.getByRole('textbox',{name:'任务摘要（可选）'});fireEvent.change(input,{target:{value:'PD keep this explicit summary'}});let finish!:(v:{ok:true;value:ApplicationSessionDiagnostic})=>void;m.session.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));await act(async()=>{void client!.invalidateQueries({queryKey:['applications','session','t1']});await Promise.resolve();});expect(screen.getByRole('textbox',{name:'任务摘要（可选）'})).toBe(input);expect(input).toHaveProperty('value','PD keep this explicit summary');await act(async()=>{finish({ok:true,value:fixture()});});expect(input).toHaveProperty('value','PD keep this explicit summary');expect(m.newTask).not.toHaveBeenCalled();expect(m.create).not.toHaveBeenCalled();
+ it('keeps the exact current-run name conflict warning outside removed diagnostics, never resolves it or starts a task',async()=>{
+  const value=fixture();value.applications[0].issueCode='AGENT_CAPABILITY_NAME_CONFLICT';value.applications[0].resourceState='unavailable';m.session.mockResolvedValue({ok:true,value});mount();const warning=await screen.findByText(/本轮此插件与用户原生能力名称或启停配置冲突/);expect(warning.closest('details')).toBeNull();expect(warning.textContent).toContain('保留用户配置及原会话选择');expect(document.querySelector('[data-session-diagnostics]')).toBeNull();originalTaskIdentity();
  });
- it('opens copy retention reasons and historical receipts without starting cleanup or a task',async()=>{
-  m.session.mockResolvedValue({ok:true,value:fixture({runner:'claude',deliveryCopies:{incomplete:false,issueCode:null,records:[{deliveryId:'delivery-original',relativePath:'claude-deliveries/t1/delivery-original/previous',contentHash:'e'.repeat(64),state:'held',issueCode:'OWNERSHIP_CONFLICT',updatedAt:'2026-10-23T12:00:00.000Z'}]}})});mount();await openSessionDiagnostics();
-  await screen.findByText('交付副本保留与清理记录');fireEvent.click(screen.getByText('交付副本保留与清理记录'));
-  expect(screen.getByText(/当前内容或目录归属与原记录不符/)).toBeTruthy();expect(screen.getByText(/相对路径：claude-deliveries\/t1\/delivery-original\/previous/)).toBeTruthy();expect(screen.getByText(/仅有完成记录不证明当前路径已不存在/)).toBeTruthy();expect(m.session).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();
- });
- it('displays truncated or damaged evidence as incomplete without hiding a healthy App',async()=>{
-  m.session.mockResolvedValue({ok:true,value:fixture({deliveryCopies:{incomplete:true,issueCode:'RESOURCE_RECOVERY_REQUIRED',records:[]}})});mount();await openSessionDiagnostics();await screen.findByText(/未完整核对全部记录/);expect(screen.getByText(/原处理记录待核查，不推断副本已清理/)).toBeTruthy();expect(screen.getByText('本次启动时 v1.0.0')).toBeTruthy();expect(m.kill).not.toHaveBeenCalled();expect(m.create).not.toHaveBeenCalled();
- });
- it.each(['verified','unavailable'] as const)('keeps a conflicted App unavailable in P09 while the healthy Mail example remains usable (%s original resources)',async resourceState=>{
-  const value=fixture(),mail=value.applications[0],zen={...mail,appId:'zentao' as const,name:'禅道',resourceState,issueCode:'AGENT_CAPABILITY_NAME_CONFLICT',skills:[{...mail.skills[0],id:'bug-analysis',name:'original-zen'}],connections:[]};value.applications.push(zen);m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();await screen.findByRole('region',{name:'禅道会话插件'});const section=within(screen.getByRole('region',{name:'禅道会话插件'})),healthy=within(screen.getByRole('region',{name:'邮件会话插件'}));expect(section.getByText(/本轮此插件与用户原生能力名称或启停配置冲突/)).toBeTruthy();expect(section.queryByRole('button',{name:/插入示例到终端/})).toBeNull();expect(healthy.getByRole('button',{name:/插入示例到终端/}).hasAttribute('disabled')).toBe(false);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
-
- it('shows unavailable original resources as a native continuation without reporting capacity overflow or replacing the session',async()=>{
-  const value=fixture(),current=value.currentRun!;current.preparation!.state='unavailable';current.preparation!.issueCode='CAPABILITY_UNAVAILABLE';current.bridge.connected=false;current.restriction={schema:1,runId:current.id,taskId:value.taskId,snapshotHash:value.snapshotHash!,selectionHash:current.preparation!.selectionHash,reason:'fixed_application_resources_unavailable',issueCode:'CAPABILITY_UNAVAILABLE',restrictedAt:current.startedAt};m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();
-  await screen.findByText(/原固定插件资源不可用，本次保留原会话继续工作/);expect(screen.queryByText(/本次插件能力内容超过启动容量/)).toBeNull();expect(screen.getByText(/未改用其他版本/)).toBeTruthy();expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
- it('distinguishes a recorded unsupported snapshot from genuinely unrecorded history and never starts or replaces its task',async()=>{
-  m.session.mockResolvedValue({ok:true,value:fixture({selection:'unsupported-schema',currentRun:null,applications:[],issues:['HOST_INCOMPATIBLE']})});mount();await openSessionDiagnostics();await screen.findByText(/原能力快照格式暂不支持/);expect(screen.queryByText(/历史能力未知，不自动补入当前插件/)).toBeNull();expect(screen.getByText(/原记录已保留，不自动迁移或替换/)).toBeTruthy();expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
- it('shows capacity-disabled injection separately from initial preparation while the native terminal continues, without lifecycle actions',async()=>{
-  const native={...run(),restriction:{schema:1 as const,runId:'run-current',taskId:'t1',snapshotHash:'a'.repeat(64),selectionHash:'b'.repeat(64),reason:'managed_launch_payload_too_large' as const,issueCode:'AGENT_ADAPTER_UNSUPPORTED' as const,restrictedAt:'2026-10-20T14:00:02.000Z'},bridge:{connected:false,observedAt:null,issueCode:null}};
-  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:native,recentRuns:[]})});mount();await openSessionDiagnostics();await screen.findByText(/本次插件能力内容超过启动容量/);expect(screen.getByText(/Agent 终端：运行中/)).toBeTruthy();expect(screen.getByText(/原文件准备记录保留/)).toBeTruthy();expect(screen.queryByRole('button',{name:/插入示例到终端/})).toBeNull();expect(screen.getByRole('button',{name:/准备新任务/})).toBeTruthy();expect(screen.getByText(/当前未核实连接/)).toBeTruthy();expect(screen.getByText('本次启动时 v1.0.0')).toBeTruthy();expect(m.kill).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.create).not.toHaveBeenCalled();
- });
- it('reports corrupt restriction evidence without presenting it as a healthy or authenticated channel',async()=>{
-  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:{...run(),restrictionIssue:'RESOURCE_RECOVERY_REQUIRED',bridge:{connected:false,observedAt:null,issueCode:null}},recentRuns:[]})});mount();await openSessionDiagnostics();await screen.findByText(/启动限制记录待核查/);expect(screen.queryByText(/当前连接有效/)).toBeNull();expect(m.kill).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();
- });
- it('explains unverified capability loading while keeping the original native terminal and selection',async()=>{
-  const current=run();current.preparation!.state='unavailable';current.preparation!.issueCode='AGENT_ADAPTER_UNSUPPORTED';current.bridge={connected:false,observedAt:null,issueCode:null};current.restriction={schema:1,runId:current.id,taskId:'t1',snapshotHash:'a'.repeat(64),selectionHash:current.preparation!.selectionHash,reason:'managed_capabilities_unavailable',issueCode:'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:current.startedAt};m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current,recentRuns:[]})});mount();await openSessionDiagnostics();await screen.findByText(/本次插件能力未完成加载核验/);expect(screen.getByText(/Agent 终端：运行中/)).toBeTruthy();expect(screen.getByText(/原会话选择与历史保留/)).toBeTruthy();expect(screen.getByText('本次启动时 v1.0.0')).toBeTruthy();expect(screen.queryByRole('button',{name:/插入示例到终端/})).toBeNull();expect(m.kill).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.create).not.toHaveBeenCalled();
- });
- it('keeps fixed/default/CLI evidence separate and never equates a call or bridge with Skill discovery or reading',async()=>{mount();await openSessionDiagnostics();await screen.findByText('本次启动时 v1.0.0');expect(screen.getByText(/当前插件 v2.0.0/)).toBeTruthy();expect(screen.getByText(/Agent 发现 Skill：未验证/)).toBeTruthy();expect(screen.getByText(/Agent 读取 Skill：未验证/)).toBeTruthy();expect(screen.getByText(/本次运行工具请求：1 次/)).toBeTruthy();expect(screen.queryByRole('button',{name:/同步|更换版本|重启 Agent/})).toBeNull();expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();});
- it('keeps network health distinct from original-package configuration compatibility and preserves the original identity',async()=>{mount();await openSessionDiagnostics();await screen.findByText(/发件账号：当前发件 · 当前不可用/);expect(screen.getByText(/创建时：原发件/)).toBeTruthy();expect(screen.getByText(/原包配置兼容/)).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'检查邮件与连接'}));expect(m.openApplications).toHaveBeenCalledWith('mail','p1');expect(m.kill).not.toHaveBeenCalled();});
- it('refreshes only the read RPC and starts a new-session composer only on an explicit action',async()=>{mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'重新核对'}));await waitFor(()=>expect(m.session).toHaveBeenCalledTimes(2));expect(m.newTask).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));expect(m.newTask).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'前往新会话输入框'}));expect(m.newTask).toHaveBeenCalledWith('p1');expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();});
- it('shows unknown history and old-run evidence without giving the old run current connectivity',async()=>{m.session.mockResolvedValue({ok:true,value:fixture({selection:'unknown-history',currentRun:null,applications:[]})});mount();await openSessionDiagnostics();await screen.findByText(/历史能力未知，不自动补入当前插件/);expect(screen.getByText(/当前没有可核实的插件运行证据/)).toBeTruthy();fireEvent.click(screen.getByText('最近 1 次历史运行证据'));expect(screen.getByText(/历史运行，不作为当前就绪依据/)).toBeTruthy();expect(screen.queryByText('本次启动时 v1.0.0')).toBeNull();});
- it('keeps an orphaned or foreign active record uncertain instead of labelling it a stopped historical run',async()=>{m.session.mockResolvedValue({ok:true,value:fixture({currentRun:null,recentRuns:[{...run(false),state:'orphaned',endedAt:null}]})});mount();await openSessionDiagnostics();await screen.findByText('最近 1 次其他运行记录');expect(screen.getByText(/运行归属或退出状态待核查/)).toBeTruthy();expect(screen.queryByText(/历史运行，不作为当前就绪依据/)).toBeNull();});
- it('drops cached current-run claims and re-reads when the owned task terminal/run identity changes',async()=>{const view=mount();await openSessionDiagnostics();await screen.findByText(/本次运行工具请求：1 次/);const next=fixture({currentRun:null});next.applications[0].evidence.toolRequests=0;next.applications[0].evidence.successfulToolRequests=0;m.session.mockResolvedValue({ok:true,value:next});view.rerender(<QueryClientProvider client={client}><SessionApplicationsPanel taskId="t1" runIdentity="new-run" onClose={m.close}/></QueryClientProvider>);await screen.findByText(/当前没有可核实的插件运行证据/);await waitFor(()=>expect(m.session).toHaveBeenCalledTimes(2));expect(screen.queryByText(/本次运行工具请求：1 次/)).toBeNull();expect(m.open).not.toHaveBeenCalled();});
- it('shows corruption and read failures without taking the place of the original session or enabling new-session actions for a deleted project',async()=>{m.session.mockResolvedValue({ok:true,value:fixture({selection:'corrupt',canNewSession:false,currentRun:null,applications:[],issues:['SNAPSHOT_CORRUPT']})});mount();await openSessionDiagnostics();await screen.findByText(/固定能力快照损坏/);expect(screen.queryByRole('button',{name:'使用当前版本新建会话'})).toBeNull();expect(m.create).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();});
-});
-
-describe('visible per-capability preparation and exact conflict locations',()=>{
- function detailed(){const value=fixture(),current=value.currentRun!,base=current.preparation!;current.preparation={...base,schema:2,capabilities:[{kind:'standard-skill',id:'database-query',name:'database-query',selectedHash:'e'.repeat(64),paths:['/private/selected/DB/SKILL.md'],state:'unavailable',issueCode:'AGENT_CAPABILITY_NAME_CONFLICT',sources:[{kind:'skill-config',name:'database-query',path:'/private/selected/DB/SKILL.md',configurationPath:'/private/project/.codex/config.toml',location:'file'}]},{kind:'project-mcp',id:'smartdd-project-original',name:'smartdd-project-original',selectedHash:'f'.repeat(64),paths:[],state:'unavailable',issueCode:'AGENT_CAPABILITY_NAME_CONFLICT',sources:[{kind:'mcp',name:'smartdd-project-original',path:'/private/project/.codex/config.toml',configurationPath:null,location:'file'}]}]} as unknown as NonNullable<SessionRunDiagnostic['preparation']>;return value;}
- it('shows omitted independent Skill/MCP and their exact paths without claiming Agent use or modifying configuration',async()=>{
-  m.session.mockResolvedValue({ok:true,value:detailed()});mount();await openSessionDiagnostics();await screen.findByText('本次能力准备与冲突来源');fireEvent.click(screen.getByText('本次能力准备与冲突来源'));expect(screen.getByText('database-query')).toBeTruthy();expect(screen.getByText('smartdd-project-original')).toBeTruthy();expect(screen.getAllByText(/\/private\/project\/\.codex\/config.toml/).length).toBeGreaterThan(0);expect(screen.getByText(/仅记录准备结果，不证明 Agent 已发现或读取/)).toBeTruthy();expect(m.open).not.toHaveBeenCalled();expect(m.create).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
- it('keeps an earlier prepared item unavailable after native-only restriction',async()=>{
-  const value=detailed(),current=value.currentRun!,capabilities=(current.preparation as unknown as {capabilities:{state:string;issueCode:string|null}[]}).capabilities;for(const item of capabilities){item.state='prepared';item.issueCode=null;}current.restriction={schema:1,runId:current.id,taskId:value.taskId,snapshotHash:value.snapshotHash!,selectionHash:current.preparation!.selectionHash,reason:'managed_launch_payload_too_large',issueCode:'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:current.startedAt};m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();await screen.findByText('本次能力准备与冲突来源');expect(screen.getAllByText(/本轮已停用；保留原准备记录/)).toHaveLength(2);expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
- it('labels schema1 preparation as missing per-capability evidence instead of inferring current defaults',async()=>{
-  m.session.mockResolvedValue({ok:true,value:fixture({recentRuns:[]})});mount();await openSessionDiagnostics();await screen.findByText(/该运行未记录逐项准备证据/);expect(m.session).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();
+ it('keeps a current native-only restriction visibly unavailable instead of deleting safety with the diagnostics tree',async()=>{
+  const value=fixture(),run=value.currentRun!;run.restriction={schema:1,runId:run.id,taskId:value.taskId,snapshotHash:value.snapshotHash!,selectionHash:run.preparation!.selectionHash,reason:'managed_launch_payload_too_large',issueCode:'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:run.startedAt};m.session.mockResolvedValue({ok:true,value});mount();const warning=await screen.findByText(/本次插件能力内容超过启动容量，已停用插件注入/);expect(warning.closest('details')).toBeNull();expect(warning.textContent).toContain('Agent 可继续工作');expect(document.querySelector('[data-session-diagnostics]')).toBeNull();originalTaskIdentity();
  });
 });
 
-describe('application conflict source disclosure uses this run only',()=>{
- it.each([true,false])('opens captured source or explicit missing evidence without mutation (%s captured)',async recorded=>{
-  const value=fixture({recentRuns:[]}),app=value.applications[0];app.issueCode='AGENT_CAPABILITY_NAME_CONFLICT';if(recorded)value.currentRun!.preparation={...value.currentRun!.preparation!,schema:2,capabilities:[{kind:'application',id:'mail',name:'mail',selectedHash:app.packageHash!,paths:app.skills.map(s=>s.projectionPath),state:'unavailable',issueCode:app.issueCode,sources:[{kind:'mcp',name:'mail-user-mcp-conflict',path:'/private/user/.mcp.json',configurationPath:null,location:'file'}]}]} as unknown as NonNullable<SessionRunDiagnostic['preparation']>;
-  m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();await screen.findByRole('button',{name:'查看冲突'});expect(screen.queryByText('以下为本轮准备时记录的冲突来源；不会修改配置或重新启动 Agent。')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'查看冲突'}));expect(screen.getByRole('button',{name:'查看冲突'}).getAttribute('aria-expanded')).toBe('true');if(recorded)expect(screen.getByText(/来源路径：\/private\/user\/\.mcp.json/)).toBeTruthy();else expect(screen.getByText(/本轮未记录具体冲突来源/)).toBeTruthy();expect(m.session).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
-});
 
-it('shows verified current Skill reads without claiming discovery or adding tool use',async()=>{const value=fixture();value.applications[0].evidence.skillRead='verified';value.applications[0].evidence.toolRequests=0;m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();await screen.findByText(/已核验本次原生读取/);expect(screen.getByText(/Agent 发现 Skill：未验证/)).toBeTruthy();expect(m.create).not.toHaveBeenCalled();});
-
-it('shows catalog discovery without claiming Skill body reading',async()=>{const value=fixture();value.applications[0].evidence.skillDiscovery='verified';m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();await screen.findByText(/已核验本次原生清单/);expect(screen.getByText(/Agent 读取 Skill：未验证/)).toBeTruthy();});
-
-it('labels retained Skill observations as historical and warns on damaged records',async()=>{const value=fixture();value.recentRuns[0].skillObservations=[{runId:value.recentRuns[0].id,appId:'mail',skillId:'work-assistant',kind:'read',packageHash:'c'.repeat(64),recordHash:'d'.repeat(64),observedAt:'2026-10-20T14:00:00.000Z',cliVersion:'0.162.1'}];value.recentRuns[0].skillObservationIssue='RESOURCE_RECOVERY_REQUIRED';m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();await screen.findByText(/Skill 历史证据不完整或已损坏/);expect(screen.getByText(/仅表示原运行曾观察到的证据/)).toBeTruthy();expect(screen.getByText(/Agent 读取 Skill：未验证/)).toBeTruthy();expect(m.open).not.toHaveBeenCalled();});
-
-
-describe('T66 explicit optional summary handoff',()=>{
- it('passes only the user selected multiline text to the same project composer without reading or mutating old history',async()=>{
-  mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));
-  const input=screen.getByRole('textbox',{name:'任务摘要（可选）'});expect(input).toHaveProperty('value','');expect(m.newTask).not.toHaveBeenCalled();expect(m.close).not.toHaveBeenCalled();
-  const summary='保留我选择的摘要\n  第二行：原样传递，不包含诊断配置。';fireEvent.change(input,{target:{value:summary}});fireEvent.click(screen.getByRole('button',{name:'前往新会话输入框'}));
-  expect(m.prepareApplicationTask).toHaveBeenCalledExactlyOnceWith('p1',summary);expect(m.newTask).not.toHaveBeenCalled();expect(m.session).toHaveBeenCalledTimes(1);expect(m.close).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
- it('discards a canceled summary and reopens the original fixed-version diagnostic without navigation',async()=>{
-  mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));fireEvent.change(screen.getByRole('textbox',{name:'任务摘要（可选）'}),{target:{value:'取消的文字'}});fireEvent.click(screen.getByRole('button',{name:'返回原会话'}));
-  expect(screen.getByText('本次启动时 v1.0.0')).toBeTruthy();expect(m.prepareApplicationTask).not.toHaveBeenCalled();expect(m.newTask).not.toHaveBeenCalled();expect(m.close).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));expect(screen.getByRole('textbox',{name:'任务摘要（可选）'})).toHaveProperty('value','');
- });
- it('treats whitespace as no summary and closes Escape back to the original diagnostic',async()=>{
-  mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));fireEvent(screen.getByRole('dialog',{name:'使用当前版本新建会话'}),new Event('cancel',{bubbles:false,cancelable:true}));
-  expect(screen.getByText('本次启动时 v1.0.0')).toBeTruthy();expect(m.newTask).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));fireEvent.change(screen.getByRole('textbox',{name:'任务摘要（可选）'}),{target:{value:' \n  '}});fireEvent.click(screen.getByRole('button',{name:'前往新会话输入框'}));
-  expect(m.newTask).toHaveBeenCalledExactlyOnceWith('p1');expect(m.prepareApplicationTask).not.toHaveBeenCalled();expect(m.create).not.toHaveBeenCalled();
- });
- it('cannot carry the old summary into a different task or project when the panel changes identity',async()=>{
-  const view=mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));fireEvent.change(screen.getByRole('textbox',{name:'任务摘要（可选）'}),{target:{value:'旧项目内容'}});
-  m.session.mockResolvedValue({ok:true,value:fixture({taskId:'t2',projectId:'p2',title:'另一项目会话'})});view.rerender(<QueryClientProvider client={client}><SessionApplicationsPanel taskId="t2" onClose={m.close}/></QueryClientProvider>);await screen.findByText('另一项目会话');
-  expect(screen.queryByRole('textbox',{name:'任务摘要（可选）'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));expect(screen.getByRole('textbox',{name:'任务摘要（可选）'})).toHaveProperty('value','');fireEvent.click(screen.getByRole('button',{name:'前往新会话输入框'}));expect(m.newTask).toHaveBeenCalledExactlyOnceWith('p2');expect(m.prepareApplicationTask).not.toHaveBeenCalled();
- });
-});
-
-it('focuses the optional summary after the native dialog initial focus is established',async()=>{
- Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.setAttribute('open','');this.querySelector<HTMLButtonElement>('button')?.focus();}});
- mount();await openSessionDiagnostics();await screen.findByText('原会话');fireEvent.click(screen.getByRole('button',{name:'使用当前版本新建会话'}));const summary=screen.getByRole('textbox',{name:'任务摘要（可选）'});expect(document.activeElement).toBe(summary);expect(m.newTask).not.toHaveBeenCalled();expect(m.prepareApplicationTask).not.toHaveBeenCalled();
-});
-
-
-describe('QA P09 confirmed header grouping with real evidence boundaries',()=>{
- it('groups the App mark, original fixed version and current default without calling file verification Agent use',async()=>{
-  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:null})});const view=mount();await openSessionDiagnostics();const card=await screen.findByLabelText('邮件会话插件'),header=card.querySelector('header')!;
-  expect(header.querySelector('.m10-appmark.mail svg')).toBeTruthy();expect(header.querySelector('div>strong .m10-package-version')?.textContent).toContain('固定资源 v1.0.0');expect(header.querySelector('div>small')?.textContent).toContain('当前插件 v2.0.0');expect(header.querySelector('div>small')?.textContent).toContain('当前项目已启用');expect(header.querySelector('.m10-state')?.textContent).toBe('原资源已核对');
-  expect(view.container.textContent).toContain('当前没有可核实的插件运行证据');expect(view.container.textContent).toContain('Agent 读取 Skill：未验证');expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
- it('keeps the current task title in the compact dialog heading and retains original data',async()=>{
-  const value=fixture();m.session.mockResolvedValue({ok:true,value});const view=mount('测试项目');await openSessionDiagnostics();await screen.findByText('原会话');const d=view.container.querySelector('dialog')!;expect(d.classList.contains('m10-session-dialog')).toBe(true);expect(d.querySelector('header [data-testid=session-current-title]')?.textContent).toBe('原会话');expect(d.querySelector('.m10-dialog-subtitle')?.textContent).toBe('原会话');expect(d.querySelector('[data-testid=session-applications] h3')?.textContent).not.toBe('原会话');expect(m.session).toHaveBeenCalledTimes(1);expect(value.applications[0].fixedVersion).toBe('1.0.0');expect(m.create).not.toHaveBeenCalled();
- });
-});
-
-it('QA project applications entry opens only the diagnosed original project without starting or switching the task',async()=>{mount();await openSessionDiagnostics();await screen.findByText('原会话');expect(screen.getByRole('heading',{name:'会话插件'})).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'项目插件'}));expect(m.openProject).toHaveBeenCalledExactlyOnceWith('p1','applications');expect(m.close).toHaveBeenCalledTimes(1);expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();});
-describe('M11 S8 run plan diagnostics',()=>{
- it('keeps observed Skill reading distinct from the still-unverified chat authorization level',async()=>{
-  const current={...run(),runPlan:{cliVersion:'0.166.0',verified:true,nativeSendEvidence:false,sandboxSource:'inherited-named-permissions',levels:(['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const).map(level=>({level,state:level==='L3'?'unverified' as const:'declared' as const})),applications:[]},runPlanIssue:null};
-  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current})});mount();await openSessionDiagnostics();
-  const plan=await screen.findByLabelText('本次运行计划');
-  expect(within(plan).getByText('聊天原话授权在此版本上尚未验证，保持关闭：发送使用页面授权。')).toBeTruthy();
-  expect(plan.textContent).not.toContain('聊天原话授权与「已确认读取 Skill」在此版本上尚未验证');
-  expect(plan.querySelector('li[data-state=declared] code')?.textContent).toBe('L0.skill');
- });
- it('shows declared levels, CLI entry and closed L2/L3 with page authorization note',async()=>{
-  const current={...run(),runPlan:{cliVersion:'0.166.0',verified:true,nativeSendEvidence:false,sandboxSource:'inherited-named-permissions',levels:(['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const).map(level=>({level,state:['L2','L3'].includes(level)?'unverified' as const:'declared' as const})),applications:[{appId:'zentao',primaryEntry:'cli' as const,effectiveEntry:'cli' as const,fallback:false,reason:null}]},runPlanIssue:null};
-  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current})});mount();await openSessionDiagnostics();
-  const plan=await screen.findByLabelText('本次运行计划');
-  expect(within(plan).getByText(/Codex 0\.166\.0 · 已声明版本/)).toBeTruthy();
-  const levels=within(plan).getByLabelText('适配等级').querySelectorAll('li');expect(levels).toHaveLength(6);
-  expect([...levels].filter(li=>li.getAttribute('data-state')==='unverified').map(li=>li.querySelector('code')?.textContent)).toEqual(['L2','L3']);
-  expect(within(plan).getByText('生效入口 · CLI')).toBeTruthy();expect(within(plan).getByText(/发送使用页面授权/)).toBeTruthy();
- });
- it('shows an undeclared version as degraded with the fallback reason',async()=>{
-  const current={...run(),runPlan:{cliVersion:'0.199.0',verified:false,nativeSendEvidence:false,sandboxSource:'unchanged-user-policy',levels:(['L0.skill','L0.mcp','L0.cli','L1','L2','L3'] as const).map(level=>({level,state:['L0.skill','L0.mcp'].includes(level)?'best-effort' as const:'unverified' as const})),applications:[{appId:'zentao',primaryEntry:'cli' as const,effectiveEntry:'mcp' as const,fallback:true,reason:'该 Agent 版本未声明 CLI 交付'}]},runPlanIssue:null};
-  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:current})});mount();await openSessionDiagnostics();
-  const plan=await screen.findByLabelText('本次运行计划');
-  expect(within(plan).getByText(/未声明版本，按降级处理/)).toBeTruthy();expect(within(plan).getByText(/已降级为只读 MCP：该 Agent 版本未声明 CLI 交付/)).toBeTruthy();
- });
- it('does not invent a plan for legacy runs and flags an unverifiable plan',async()=>{
-  mount();await openSessionDiagnostics();await screen.findByText('原会话');expect(screen.queryByLabelText('本次运行计划')).toBeNull();cleanup();client.clear();
-  m.session.mockResolvedValue({ok:true,value:fixture({currentRun:{...run(),runPlan:null,runPlanIssue:'RESOURCE_RECOVERY_REQUIRED'}})});mount();await openSessionDiagnostics();
-  expect(await screen.findByText(/本次运行计划无法核验/)).toBeTruthy();
- });
-});
-
-it('M13 removes the old project call-history entry while keeping project plugin navigation',async()=>{
- mount();await openSessionDiagnostics();await screen.findByText('原会话');
- expect(screen.queryByRole('button',{name:'查看项目调用记录'})).toBeNull();
- expect(screen.getByRole('button',{name:'项目插件'})).toBeTruthy();
- expect(m.openApplicationActivity).not.toHaveBeenCalled();
-});
-
-describe('M13 prototype session-plugin semantics',()=>{
- function pluginValue(state='available',currentVersion:string|null='0.1.0'){
-  const value=fixture({applications:[]});
-  Object.assign(value,{plugins:[{appId:'demo-tracker',name:'Demo Tracker',launchVersion:'0.1.0',currentVersion,state,connections:[{slot:'tracker-api',id:'launch-account',name:'启动账号'}]}]});return value;
- }
- it.each([
-  ['available','0.1.0','可用'],
-  ['available','0.2.0','可用 · 已更新到 0.2.0，下一次调用即用新版本'],
-  ['disabled','0.2.0','已停用，调用会被拒绝'],
-  ['project-disabled','0.2.0','本项目已关闭，调用会被拒绝'],
-  ['uninstalled',null,'已卸载'],
-  ['unavailable','0.2.0','当前不可用，调用会被拒绝'],
- ] as const)('renders %s against the actual launch selection, never claiming a new default was loaded',async(state,version,text)=>{
-  m.session.mockResolvedValue({ok:true,value:pluginValue(state,version)});mount();await openSessionDiagnostics();
-  await screen.findByText('Demo Tracker');expect(screen.getByText('本次启动时 v0.1.0')).toBeTruthy();expect(screen.getByText(text)).toBeTruthy();
-  expect(screen.getByText(/连接：启动账号.*运行中继续用这个连接/)).toBeTruthy();
-  expect(screen.getByText('启动时已加载的 Skill 与 MCP 在重启会话后才按最新状态变化；插件调用立即按最新状态执行。')).toBeTruthy();
-  expect(screen.queryByText(/恢复时继续引用原包，不同步替换新版/)).toBeNull();expect(screen.queryByText(/新会话默认 v/)).toBeNull();
-  expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
- it('keeps unknown history empty even when the catalog has plugins, without creating/restarting a task',async()=>{
-  const value=fixture({selection:'unknown-history',applications:[],currentRun:null});Object.assign(value,{plugins:[]});m.session.mockResolvedValue({ok:true,value});mount();await openSessionDiagnostics();
-  await screen.findByText(/历史能力未知/);expect(screen.queryByText('Demo Tracker')).toBeNull();expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
- });
-});
-
-// T073: default launch snapshot stays compact; all original diagnostics remain reachable.
-function compactLaunchList(container:HTMLElement):HTMLElement {
- const list=container.querySelector<HTMLElement>('.m13-session-plugin-list');
- expect(list,'actual compact launch list').not.toBeNull();if(!list)throw Error('compact launch list absent');return list;
-}
-async function openSessionDiagnostics(){
- await screen.findByRole('dialog',{name:'会话插件'});
- await waitFor(()=>expect(document.querySelector('details[data-session-diagnostics]')).not.toBeNull());
- // Stable non-business hook on the outer retained report; also works when currentRun is null.
- const disclosure=document.querySelector<HTMLDetailsElement>('details[data-session-diagnostics]');expect(disclosure,'technical report remains in a disclosure').not.toBeNull();
- if(!disclosure)throw Error('technical report not disclosed');
- if(!disclosure.open){const summary=disclosure.querySelector('summary');expect(summary).not.toBeNull();fireEvent.click(summary!);}
- expect(disclosure.open).toBe(true);return disclosure;
-}
-describe('T073 default compact launch snapshot',()=>{
+describe('compact session identity, status and read failures',()=>{
  it('includes fixed builtin and external launch selections, excludes builtin catalog-only entries and uses original connection identity',async()=>{
   const value=fixture();
   value.applications.push({...value.applications[0],appId:'browser',name:'浏览器',fixedVersion:null,packageHash:null,skills:[],connections:[]});
   value.plugins=[{appId:'demo-tracker',name:'Demo Tracker',launchVersion:'0.1.0',currentVersion:'0.2.0',state:'available',connections:[{slot:'tracker-api',id:'launch-account',name:'启动账号'}]}];
   m.session.mockResolvedValue({ok:true,value});const view=mount();await screen.findByText('原会话');
-  const list=compactLaunchList(view.container);
+  const list=view.container.querySelector<HTMLElement>('.m13-session-plugin-list')!;expect(list).not.toBeNull();
   expect([...list.querySelectorAll<HTMLElement>('[data-session-plugin]')].map(row=>row.dataset.sessionPlugin).sort()).toEqual(['demo-tracker','mail']);
   const mail=list.querySelector<HTMLElement>('[data-session-plugin="mail"]')!;
   expect(mail.textContent).toContain('邮件');expect(mail.textContent).toContain('本次启动时 v1.0.0');
@@ -236,21 +53,32 @@ describe('T073 default compact launch snapshot',()=>{
   expect(list.querySelector('[data-session-plugin="demo-tracker"]')?.textContent).toContain('启动账号');
   expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
  });
- it('keeps one 完成 footer and the technical report initially closed but fully reachable without lifecycle side effects',async()=>{
-  const view=mount('测试项目');await screen.findByText('原会话');
-  const dialog=screen.getByRole('dialog',{name:'会话插件'});
-  expect(dialog.querySelector('.m10-dialog-subtitle')?.textContent).toBe('原会话');
-  const footer=dialog.querySelector<HTMLElement>('footer.m10-session-footer')!;expect(footer).not.toBeNull();
-  expect(within(footer).getAllByRole('button').map(button=>button.textContent)).toEqual(['完成']);
-  const heading=screen.getByRole('heading',{name:'当前运行证据',hidden:true});const disclosure=heading.closest('details');
-  expect(disclosure).not.toBeNull();expect(disclosure?.open).toBe(false);
-  await openSessionDiagnostics();
-  // Preserve every existing evidence/management function after explicit expansion.
-  expect(screen.getByText(/Agent 发现 Skill：未验证/)).toBeTruthy();expect(screen.getByText(/Agent 读取 Skill：未验证/)).toBeTruthy();
-  expect(screen.getByText(/本次运行工具请求：1 次/)).toBeTruthy();
-  for(const name of ['项目插件','复制脱敏诊断','重新核对','使用当前版本新建会话'])expect(within(disclosure!).getByRole('button',{name})).toBeTruthy();
-  expect(within(disclosure!).queryByRole('button',{name:'查看项目调用记录'})).toBeNull();
-  fireEvent.click(within(footer).getByRole('button',{name:'完成'}));expect(m.close).toHaveBeenCalledOnce();
-  expect(m.session).toHaveBeenCalledOnce();expect(m.create).not.toHaveBeenCalled();expect(m.open).not.toHaveBeenCalled();expect(m.kill).not.toHaveBeenCalled();
+ it.each(['unknown-history','corrupt','unsupported-schema'] as const)('does not display untrusted launch rows or claim empty selection for %s',async selection=>{
+  const value=fixture({selection});value.applications[0].currentState='available';m.session.mockResolvedValue({ok:true,value});mount();await screen.findByText('原会话');
+  expect(document.querySelector('[data-session-plugin]')).toBeNull();expect(screen.queryByText('这个任务启动时没有可用的插件。')).toBeNull();originalTaskIdentity();
+ });
+ it('does not turn a past restriction into a current restriction',async()=>{
+  const value=fixture({currentRun:null});const prior=value.recentRuns[0];prior.restriction={schema:1,runId:prior.id,taskId:value.taskId,snapshotHash:value.snapshotHash!,selectionHash:prior.preparation!.selectionHash,reason:'managed_launch_payload_too_large',issueCode:'AGENT_ADAPTER_UNSUPPORTED',restrictedAt:prior.startedAt};m.session.mockResolvedValue({ok:true,value});mount();
+  await screen.findByText(/当前没有可核实的插件运行证据/);expect(screen.queryByText(/本次插件能力内容超过启动容量/)).toBeNull();expect(document.querySelector('details')).toBeNull();originalTaskIdentity();
+ });
+ it('keeps damaged current evidence conservative without exposing internal paths or management controls',async()=>{
+  const value=fixture();value.currentRun!.restrictionIssue='RESOURCE_RECOVERY_REQUIRED';value.currentRun!.preparationIssue='RESOURCE_RECOVERY_REQUIRED';value.currentRun!.skillObservationIssue='RESOURCE_RECOVERY_REQUIRED';m.session.mockResolvedValue({ok:true,value});mount();
+  await screen.findByText(/启动限制记录待核查/);expect(screen.getByText(/本次插件准备或连接状态暂无法核实/)).toBeTruthy();expect(screen.getByText(/Skill 历史证据不完整/)).toBeTruthy();expect(screen.queryByText(/private\/owned/)).toBeNull();expect(document.querySelector('details')).toBeNull();originalTaskIdentity();
+ });
+ it('keeps independent Skill or MCP conflicts visible without reconfiguring them',async()=>{
+  const value=fixture();value.currentRun!.preparation={...value.currentRun!.preparation!,schema:2,capabilities:[{kind:'project-mcp',id:'conflict',name:'private conflict',state:'unavailable',issueCode:'AGENT_CAPABILITY_NAME_CONFLICT',selectedHash:'e'.repeat(64),paths:[],sources:[]}]};m.session.mockResolvedValue({ok:true,value});mount();
+  await screen.findByText(/本轮 Skill 或 MCP 与用户原生能力名称或启停配置冲突/);expect(document.querySelector('details')).toBeNull();originalTaskIdentity();
+ });
+ it('hides prior run rows while a new owned run is being read',async()=>{
+  const view=mount();await screen.findByText('原会话');let finish!:(result:{ok:true;value:ApplicationSessionDiagnostic})=>void;m.session.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));
+  view.rerender(<QueryClientProvider client={client}><SessionApplicationsPanel taskId="t1" runIdentity="next-owned-run" onClose={m.close}/></QueryClientProvider>);
+  await screen.findByText('正在读取会话插件');expect(screen.queryByTestId('session-current-title')).toBeNull();expect(document.querySelector('[data-session-plugin]')).toBeNull();
+  await act(async()=>{finish({ok:true,value:fixture({title:'新运行原会话',applications:[],currentRun:null,recentRuns:[]})});});await screen.findByText('新运行原会话');expect(screen.queryByText('本次启动时 v1.0.0')).toBeNull();expect(m.session).toHaveBeenCalledTimes(2);for(const f of[m.create,m.open,m.kill,m.newTask])expect(f).not.toHaveBeenCalled();
+ });
+ it('can retry a failed read without opening or replacing a task',async()=>{
+  m.session.mockRejectedValueOnce(new Error('public read failed'));mount();await screen.findByText('会话插件读取未完成');expect(document.querySelector('[data-session-plugin]')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'重试读取'}));await screen.findByText('原会话');expect(m.session).toHaveBeenCalledTimes(2);for(const f of[m.create,m.open,m.kill,m.newTask])expect(f).not.toHaveBeenCalled();
+ });
+ it('closes the compact dialog with Escape without a task lifecycle action',async()=>{
+  mount();await screen.findByText('原会话');fireEvent(screen.getByRole('dialog',{name:'会话插件'}),new Event('cancel',{bubbles:false,cancelable:true}));expect(m.close).toHaveBeenCalledTimes(1);originalTaskIdentity();
  });
 });
