@@ -1,0 +1,171 @@
+{
+  "out": "/private/tmp/willyou-m14-binding-schema-probe/attempt-MjnCG3",
+  "checks": [
+    {
+      "id": "I01",
+      "label": "legal v2/v3 history, holds, business run IDs and exact bytes survive migration",
+      "status": "passed",
+      "evidence": {
+        "historyRevisions": 3,
+        "heldRetained": true,
+        "unknownRunUnlinked": true,
+        "unchangedTables": [
+          "capability_session_snapshots",
+          "capability_snapshot_versions",
+          "capability_session_refs",
+          "capability_session_identities",
+          "capability_session_mcp_names",
+          "capability_session_holds",
+          "application_invocations",
+          "capability_run_preparations"
+        ]
+      }
+    },
+    {
+      "id": "I02",
+      "label": "scoped reads reject copied IDs, wrong runner, extra fields and nonpositive generations",
+      "status": "passed",
+      "evidence": {
+        "rejected": 7,
+        "oldNativeNullRevisionReadable": true,
+        "generationScope": "positive structural value only; live run equality remains caller responsibility"
+      }
+    },
+    {
+      "id": "I03",
+      "label": "programmatic rows require complete binding, snapshot, runner and generation linkage",
+      "status": "passed",
+      "evidence": {
+        "negativeCases": 9
+      }
+    },
+    {
+      "id": "I04",
+      "label": "same task may retain another validated binding without replacing the legacy snapshot",
+      "status": "passed",
+      "evidence": {
+        "bindings": 2,
+        "projectionNotMaterialized": true,
+        "executabilityNotClaimed": true
+      }
+    },
+    {
+      "id": "I05",
+      "label": "native and MCP claims conflict across old/new paths",
+      "status": "passed",
+      "evidence": {
+        "crossPathRejections": 4
+      }
+    },
+    {
+      "id": "I06",
+      "label": "actual legacy reserve is sealed after activation, legacy reads retained",
+      "status": "passed",
+      "evidence": {
+        "actualReserveRejected": true,
+        "legacyReaderRetained": true,
+        "extraResourceVerifier": "unused by reserve; later prepare not executed"
+      }
+    },
+    {
+      "id": "I07",
+      "label": "old native first-bind cannot mutate an activated mapped task",
+      "status": "passed",
+      "evidence": {
+        "actualBindRejected": true,
+        "transactionRolledBack": true
+      }
+    },
+    {
+      "id": "I08",
+      "label": "existing GC retains original references and legacy history bytes",
+      "status": "passed",
+      "evidence": {
+        "canCollect": false,
+        "oldRefsKept": true,
+        "holdAlsoBlocks": true,
+        "newOnlyGCPending": true
+      }
+    },
+    {
+      "id": "I09",
+      "label": "preflight refuses unresolved run inside write transaction",
+      "status": "passed",
+      "evidence": {
+        "noPartialSchema": true,
+        "kernelExitGateNotCovered": true
+      }
+    },
+    {
+      "id": "I10",
+      "label": "invalid exact hash and missing resource references abort without partial migration",
+      "status": "passed",
+      "evidence": {
+        "negativeCases": 2
+      }
+    },
+    {
+      "id": "I12",
+      "label": "actual old native UPDATE cannot claim a new-path native identity",
+      "status": "passed",
+      "evidence": {
+        "actualOldFirstBindRejected": true
+      }
+    },
+    {
+      "id": "I13",
+      "label": "different historical selections retain exact bytes without borrowing current capability authority",
+      "status": "passed",
+      "evidence": {
+        "preservedLegacyReadOnly": true,
+        "currentAuthorityNotBorrowed": true,
+        "mappingHistoricalSelectionNotClaimed": true
+      }
+    },
+    {
+      "id": "I14",
+      "label": "resource edges cannot name another task and stale generation is not an executable token",
+      "status": "passed",
+      "evidence": {
+        "crossTaskRefRejected": true,
+        "structuralParserDoesNotGrantRunAuthority": true
+      }
+    },
+    {
+      "id": "I11-before-drop",
+      "label": "captured Node host SIGKILL and SQLite reopen at before-drop",
+      "status": "passed",
+      "evidence": {
+        "pid": 48822,
+        "signal": "SIGKILL",
+        "checkpoint": "before-drop",
+        "recovered": "migrated"
+      }
+    },
+    {
+      "id": "I11-after-drop",
+      "label": "captured Node host SIGKILL and SQLite reopen at after-drop",
+      "status": "passed",
+      "evidence": {
+        "pid": 48823,
+        "signal": "SIGKILL",
+        "checkpoint": "after-drop",
+        "recovered": "migrated"
+      }
+    },
+    {
+      "id": "I11-after-commit",
+      "label": "captured Node host SIGKILL and SQLite reopen at after-commit",
+      "status": "passed",
+      "evidence": {
+        "pid": 48824,
+        "signal": "SIGKILL",
+        "checkpoint": "after-commit",
+        "recovered": "already-migrated"
+      }
+    }
+  ],
+  "passed": 16,
+  "failed": 0,
+  "scope": "Actual v2/v3 schema, seeded session/run preparation, reserve/bind/GC modules and all 32 DDL; candidate binding catalogue/migration/sealing; synthetic historical invocation rows, no new native execution, live kernel migration exclusion or product integration."
+}

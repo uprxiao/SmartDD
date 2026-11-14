@@ -1,0 +1,92 @@
+{
+  "smartddHead": "40ea344a930aec37e36a803b7c621d3632d2d75a",
+  "t3Head": "f313d0a6cb843551fb60e57a454a71e71a3a8c04",
+  "sourceInputs": 708,
+  "outputs": [
+    {
+      "file": "/private/tmp/willyou-m14-cli-diagnostics-probe/actual.cjs",
+      "sha256": "5436ecd343c24e319b797ececd1741d0820ce098d509d172fd432ae3f3926d6e",
+      "patches": []
+    },
+    {
+      "file": "/private/tmp/willyou-m14-cli-diagnostics-probe/candidate.cjs",
+      "sha256": "aebcc4217c4f246b37b7cbbfac49a8626d2bab7137a2667bafe8e34c0d61e680",
+      "patches": [
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/resource-graph-maintenance.ts",
+          "beforeHash": "0185cf5a61ebddd4d596e7633d4a1e13c11259d9807119335f4dbbba6b176137",
+          "afterHash": "563b0d977e5f5bc4faecd0ff13fffafdd0c190152da62f9715a894fe7339794c"
+        },
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/cli-gateway.ts",
+          "beforeHash": "4bc387ca10c7bd78b3d420fa0dadbfa14bf5735943b50a8b456799562f55b9ae",
+          "afterHash": "443d43d43e08bc5c5724c328ec373b9054f6ee1eb28f5cc0def19da0ebef34c0"
+        },
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/session-registry.ts",
+          "beforeHash": "a125d570d4620f45121a88d4a6a4bbb6f37e10c276fc5887d7218f6d0f1c47cb",
+          "afterHash": "a5a9bbe34a321c0fbefc1f6f615308c04e0928b8ec910fad4652d6f5ac78e63f"
+        },
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/resource-gc-plan.ts",
+          "beforeHash": "42df5194f4f5482fb958068d5da9cbaa6ef2eb7b76ebe200014545f654fc6da9",
+          "afterHash": "d0f18afdc0621b5cbadcf31132cc91a0ac2c81897f1e80456bdf5f1ee45a8e3c"
+        },
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/run-plan.ts",
+          "beforeHash": "34abfac6ae9b794fdc897b9d5e5fd07c23ee1a27517b30a63e6fa8f45c65c1f4",
+          "afterHash": "c9c79c83dddaff98bfc4d4e0215b3fc76aea1abbe309b57f04e52549892da1c0"
+        },
+        {
+          "path": "/Users/hx/projects/SmartDD/src/main/core/applications/run-registry.ts",
+          "beforeHash": "83f097157e666f2dde4e57fa0b37a8e0d51271154c1494fa0c0278a13c15502f",
+          "afterHash": "086873800de91a857402bff0fc645d35159fb09e5dceb975f49528377ffc72d2"
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "path": "/Users/hx/projects/SmartDD/src/main/core/applications/cli-gateway.ts",
+      "sha256": "4bc387ca10c7bd78b3d420fa0dadbfa14bf5735943b50a8b456799562f55b9ae"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/native/applications/cli.mm",
+      "sha256": "1fcbd52230269f00057e3897963ff9e8fe796219a1226633d49d639ac72cd4cf"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/src/shared/application-cli.ts",
+      "sha256": "c42236b654d1d4f162c6f447d97becd1befc82ac278e0e869fa9c8c8caa9627a"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/src/shared/application-bridge.ts",
+      "sha256": "3afe44e29c235a2532e9e31bfea347743cb566866556e11fbafa74700ad6f460"
+    },
+    {
+      "path": "/Users/hx/projects/SmartDD/drizzle/0028_capability_broker_denials.sql",
+      "sha256": "6bf80e62b46289877ea457758ea6bbb825968ef903b6f58c3907dd52e44af8b7"
+    },
+    {
+      "path": "/Users/hx/projects/t3code/apps/server/src/orchestration-v2/RuntimeRequestService.ts",
+      "sha256": "0d37fa1f7bc1336ee24f75ce1e4829ec6fefc74b23e30f6db4c1b90e09645291"
+    }
+  ],
+  "baselineBundle": {
+    "file": "baseline.cjs",
+    "sha256": "f14389b2713ab98fb3ff8de77a1138783b6437d8373b8a5148775fc4d61ab3fe",
+    "origin": "Prior 4.69 candidate bundle; current gateway unchanged there."
+  },
+  "dependencyArchive": {
+    "path": "docs/里程碑/M14_统一Agent工作区/技研/实验/20261114_原生浏览器CLI与拒绝审计验证/raw-evidence.tar.gz",
+    "sha256": "d8315f73d9db492dc995317ecc7aa802e4421c02fdbcebcd4fdaf218c2cafb13"
+  },
+  "variants": [
+    "Gateway auth checks unchanged; remove connection-level authenticatedRun assignment and use receive-local context only after authenticate succeeds.",
+    "Native CLI optional auditId/auditUnavailable validation+copy; sequence-cli adds test-only invalid second token and FIFO-synchronized pipelining.",
+    "Candidate CLI/MCP denial CHECK Schema reused from 4.69.",
+    "Post-auth list failures and storage trigger are explicit injected faults; real kernel reader and ancestor identity are not mocked.",
+    "Programmatic registry attaches a captured generic Node process; does not exercise provider launcher or model.",
+    "Host diagnostic association verified by real SQLite join only; new UI/IPC diagnostics service not implemented."
+  ],
+  "t3Boundary": "T3 scopes live native requests to exact runtime/session. This experiment complements WillYou business CLI diagnostics; T3 is not claimed to provide this exact denial schema or return contract."
+}

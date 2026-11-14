@@ -1,0 +1,52 @@
+{
+  "out": "/private/tmp/willyou-m14-notice-race-probe/attempt-Z4hCZ1",
+  "checks": [
+    {
+      "id": "N01",
+      "title": "negative control: original candidate observation erases actual in-flight notice",
+      "status": "passed",
+      "evidence": {
+        "defectReproduced": true,
+        "nativeTurnActuallyAccepted": true,
+        "hostReceiptWithheld": true,
+        "observationErasesSending": true,
+        "providerSwitchIncorrectlyAllowed": true
+      }
+    },
+    {
+      "id": "N02",
+      "title": "corrected candidate retains unresolved dispatch after observation and native drain",
+      "status": "passed",
+      "evidence": {
+        "observationPreserved": true,
+        "sendingPreserved": true,
+        "stoppedDoesNotProveUnsent": true,
+        "unknownBlocksSwitch": true,
+        "explicitFixtureDispositionRequired": true
+      }
+    },
+    {
+      "id": "N03",
+      "title": "read and ack before dispatch invalidate old claim without another native turn",
+      "status": "passed",
+      "evidence": {
+        "oldClaimInvalid": true,
+        "noAdditionalTurn": true
+      }
+    },
+    {
+      "id": "N04",
+      "title": "actual delayed acceptance receipt survives prior observation and is idempotent",
+      "status": "passed",
+      "evidence": {
+        "nativeAcceptanceSeparateFromObservation": true,
+        "oneReceipt": true,
+        "receiptReplayIdempotent": true,
+        "lateObservationDoesNotEraseReceipt": true,
+        "knownDeliveryAndStoppedOwnerPermitSwitch": true
+      }
+    }
+  ],
+  "passed": 4,
+  "scope": "Actual Codex native turn/start and current private programmatic owner; seeded results, direct host read/ack calls, controlled local model response withheld and host acceptance write delayed. Original candidate defect reproduced and minimal isolated candidate correction verified. No real model, child task, business effect, actual UI or production code."
+}

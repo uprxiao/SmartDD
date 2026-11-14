@@ -1,0 +1,192 @@
+{
+  "scope": "Actual extracted T3 group helper and actual Claude SDK with fake loopback model; no full T3 descendant tracker or WillYou launcher.",
+  "rows": [
+    {
+      "id": "G01-registration-gate-and-normal-group-exit",
+      "passed": true,
+      "trace": [
+        {
+          "event": "registered-before-execution",
+          "pid": 19467,
+          "identity": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19467,
+            "startedAt": "darwin-proc-v1:1794622900:149333"
+          }
+        },
+        {
+          "event": "ready",
+          "pid": 19470,
+          "ppid": 19467,
+          "identity": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19470,
+            "startedAt": "darwin-proc-v1:1794622900:178173"
+          }
+        },
+        {
+          "event": "registration-forgotten"
+        },
+        {
+          "event": "root-exit",
+          "code": 0,
+          "signal": null
+        },
+        {
+          "event": "writer-after-group-exit",
+          "schema": 1,
+          "state": "stopped"
+        }
+      ]
+    },
+    {
+      "id": "G02-register-failure-does-not-execute-target",
+      "passed": true,
+      "trace": [
+        {
+          "event": "failed-registration-cleaned",
+          "pid": 19473,
+          "identity": {
+            "schema": 1,
+            "state": "stopped"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G03-host-crash-EOF-watcher-cleans-ordinary-group",
+      "passed": true,
+      "trace": [
+        {
+          "event": "live-before-host-crash",
+          "host": 19475,
+          "root": 19476,
+          "writer": 19478
+        },
+        {
+          "event": "writer-after-host-crash",
+          "schema": 1,
+          "state": "stopped"
+        },
+        {
+          "event": "root-after-host-crash",
+          "schema": 1,
+          "state": "stopped"
+        }
+      ]
+    },
+    {
+      "id": "G04-group-only-negative-control-escaped-writer",
+      "passed": true,
+      "trace": [
+        {
+          "event": "written",
+          "id": "after-root-and-group-exit",
+          "pid": 19486,
+          "identity": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19486,
+            "startedAt": "darwin-proc-v1:1794622900:318848"
+          }
+        },
+        {
+          "event": "explicit-control-pipe-cleanup",
+          "schema": 1,
+          "state": "stopped"
+        }
+      ]
+    },
+    {
+      "id": "G05-real-SDK-background-Bash-and-session-close",
+      "passed": true,
+      "trace": [
+        {
+          "event": "SDK-registered-before-release",
+          "pid": 19489,
+          "identity": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19489,
+            "startedAt": "darwin-proc-v1:1794622900:349591"
+          }
+        },
+        {
+          "event": "SDK-system",
+          "subtype": "init"
+        },
+        {
+          "event": "fake-model-request",
+          "ordinal": 1,
+          "model": "claude-sonnet-4-6",
+          "toolResults": []
+        },
+        {
+          "event": "permission-callback",
+          "tool": "Bash",
+          "exactCommand": true
+        },
+        {
+          "event": "SDK-system",
+          "subtype": "background_tasks_changed"
+        },
+        {
+          "event": "SDK-system",
+          "subtype": "task_started",
+          "task_id": "bu13fs497"
+        },
+        {
+          "event": "fake-model-request",
+          "ordinal": 2,
+          "model": "claude-sonnet-4-6",
+          "toolResults": [
+            {
+              "tool_use_id": "toolu_bg",
+              "type": "tool_result",
+              "content": "Command running in background with ID: bu13fs497. Output is being written to: /private/tmp/claude-501/-private-tmp-willyou-m14-scope-probe-attempt-1/2e5d112c-e875-47d4-814b-b4c66beb53db/tasks/bu13fs497.output. You will be notified when it completes. To check interim output, use Read on that file path.\n\n<system-reminder>\n<total_tokens>14999998 tokens left</total_tokens>\n</system-reminder>",
+              "is_error": false,
+              "cache_control": {
+                "type": "ephemeral"
+              }
+            }
+          ]
+        },
+        {
+          "event": "SDK-result",
+          "subtype": "success",
+          "result": "BACKGROUND_STARTED"
+        },
+        {
+          "event": "writes-after-turn-result",
+          "writer": 19502,
+          "identity": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19502,
+            "startedAt": "darwin-proc-v1:1794622900:862006"
+          }
+        },
+        {
+          "event": "SDK-process-exit",
+          "code": 143,
+          "signal": null
+        },
+        {
+          "event": "background-after-session-close",
+          "socketClosed": true,
+          "identity": {
+            "schema": 1,
+            "state": "stopped"
+          }
+        },
+        {
+          "event": "explicit-final-cleanup",
+          "schema": 1,
+          "state": "stopped"
+        }
+      ]
+    }
+  ]
+}

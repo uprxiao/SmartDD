@@ -1,0 +1,98 @@
+{
+  "out": "/private/tmp/willyou-m14-mail-entry-probe/attempt-PhjrjA",
+  "checks": [
+    {
+      "id": "E01",
+      "title": "actual sender identity preflight rejects before user confirmation",
+      "status": "passed",
+      "evidence": {
+        "preflightRejectedBeforeIntent": true,
+        "confirmedThroughActualProjectAction": true,
+        "realUser": false
+      }
+    },
+    {
+      "id": "E02",
+      "title": "host-issued contexts and actors cannot be serialized or reused after return",
+      "status": "passed",
+      "evidence": {
+        "clonedContextDenied": true,
+        "clonedActorDenied": true,
+        "expiredContextAndActorDenied": true
+      }
+    },
+    {
+      "id": "E03",
+      "title": "actual review receipt is window-bound and sending succeeds once",
+      "status": "passed",
+      "evidence": {
+        "wrongFrameDenied": true,
+        "executionId": "6a02dbc6-2aa2-4416-8fa0-c3cee9595d17",
+        "submissions": 1,
+        "actualSubjectLinks": 5
+      }
+    },
+    {
+      "id": "E04",
+      "title": "agent run preparation and UI authorization retain exact originating run",
+      "status": "passed",
+      "evidence": {
+        "otherRunDenied": true,
+        "originalRunSucceeded": true,
+        "realContextAndToolService": true,
+        "processIdentity": "controlled fixture, no native process",
+        "linkedOperationRows": 4
+      }
+    },
+    {
+      "id": "E05",
+      "title": "connection revocation after review prevents execution and does not switch accounts",
+      "status": "passed",
+      "evidence": {
+        "disabledRejected": true,
+        "reenableDoesNotRestoreOldGrant": true,
+        "noFallbackConnection": true
+      }
+    },
+    {
+      "id": "E06",
+      "title": "pinned credential handle rechecks policy at consumption",
+      "status": "passed",
+      "evidence": {
+        "oldHandleRejectedAfterPolicyChange": true,
+        "noSubmission": true,
+        "secretNotReturned": true
+      }
+    },
+    {
+      "id": "E07",
+      "title": "review receipt cannot authorize after its originating run exits",
+      "status": "passed",
+      "evidence": {
+        "originRunState": "stopped",
+        "oldDisplayCannotGrant": true,
+        "noSubmission": true
+      }
+    },
+    {
+      "id": "E08",
+      "title": "in-flight cancellation retains independent mail activity until its producer drains",
+      "status": "passed",
+      "evidence": {
+        "independentMailLeaseBefore": "active",
+        "independentMailLeaseAfter": "released",
+        "whileProducerPending": "stopped",
+        "afterActualServiceDrain": "stopped",
+        "mailOutcome": "unknown",
+        "submissions": 1,
+        "lateSuccessDoesNotRewrite": true
+      }
+    }
+  ],
+  "passed": 8,
+  "error": null,
+  "submissions": 3,
+  "authentications": 1,
+  "unexpectedData": 0,
+  "scope": "Actual ApplicationService, execution contexts, mail preflight/authorization/data/ToolService. Synthetic cipher and renderer event; controlled ProcessIdentityReader, no native agent. Loopback SMTP verifies credentials only; submit is controlled function; synthetic trusted distribution uses non-executing bridge. No product edits."
+}

@@ -1,0 +1,115 @@
+{
+  "out": "/private/tmp/willyou-m14-runtime-lease-probe/attempt-4Zz48L",
+  "passed": 8,
+  "checks": [
+    {
+      "id": "L01",
+      "label": "actual native-only guard pins runtime as a lease member",
+      "status": "passed",
+      "evidence": {
+        "runId": "89af48ea-4fc6-4286-8f8b-d6ee553127fa",
+        "leaseRoot": "fixture-dependency:3e7e199cf0ef7f4146e757231d5beda3ed8e855f678ed19450ede66640f7aa6b",
+        "runtimeMember": "agent-native-runtime:0637966a35d19bb0a8b2418f0c3b50c7c1482e8b55869faf00246a3d02ffde8c",
+        "baselinePlannerRejects": true,
+        "baselineCaptureRejects": {
+          "code": "HASH_MISMATCH",
+          "message": "受管资源缺失、链接或元数据损坏"
+        }
+      }
+    },
+    {
+      "id": "L02",
+      "label": "negative control: enabling only kind/root misses actual run member",
+      "status": "passed",
+      "evidence": {
+        "unsafeCanCollect": true,
+        "liveLease": "21565d42-5321-48d2-b3c0-391eb5e7ad4d",
+        "noDeletionExecuted": true
+      }
+    },
+    {
+      "id": "L03",
+      "label": "candidate retains members and default while default changes A to B",
+      "status": "passed",
+      "evidence": {
+        "oldRunStillA": true,
+        "newDefaultB": true,
+        "AReasons": [
+          {
+            "resourceId": "agent-native-runtime:0637966a35d19bb0a8b2418f0c3b50c7c1482e8b55869faf00246a3d02ffde8c",
+            "reasons": [
+              "lease-member:21565d42-5321-48d2-b3c0-391eb5e7ad4d"
+            ]
+          }
+        ],
+        "BReasons": [
+          {
+            "resourceId": "agent-native-runtime:9610f1e7b9c532fe2c1edf65544dbe88f7d81aa0a5f442d04cfb15cebd6db56a",
+            "reasons": [
+              "native-default:fixture:darwin:arm64"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "L04",
+      "label": "stop intent retains runtime until actual child exits",
+      "status": "passed",
+      "evidence": {
+        "stopIntentNotExit": true,
+        "ownedExitReleasesLease": true,
+        "defaultBRetained": true
+      }
+    },
+    {
+      "id": "L05",
+      "label": "new reservation invalidates an earlier cleanup plan",
+      "status": "passed",
+      "evidence": {
+        "staleHashRejectedBeforeCapture": true,
+        "retainedPlanRejected": true,
+        "noFilesMoved": true
+      }
+    },
+    {
+      "id": "L06",
+      "label": "runtime generation mutation blocks launch and invalidates candidate GC basis",
+      "status": "passed",
+      "evidence": {
+        "actualRunCheckRejectsChangedGeneration": true,
+        "candidateRetainsUnresolved": true
+      }
+    },
+    {
+      "id": "L07",
+      "label": "unknown owner and armed/no-PID recovery preserve runtime lease",
+      "status": "passed",
+      "evidence": {
+        "fixtureKernelObservations": true,
+        "unknownPreserved": true,
+        "armedNoPidPreserved": true,
+        "cleanupUsesDriverKnownNoFork": true
+      }
+    },
+    {
+      "id": "L08",
+      "label": "actual Codex process initializes while its complete native package is pinned",
+      "status": "passed",
+      "evidence": {
+        "nativeInitialization": {
+          "userAgent": "m14-lease-research/0.167.1 (Mac OS 26.6.1; arm64) unknown (m14-lease-research; 0)",
+          "codexHome": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-QAkMFO/home/.codex",
+          "platformFamily": "unix",
+          "platformOs": "macos"
+        },
+        "files": 41,
+        "leaseBeforeExit": true,
+        "releaseAfterActualExit": true,
+        "notBusinessAuthorized": true,
+        "noTurnSent": true
+      }
+    }
+  ],
+  "scope": "Actual native-only guard and lifecycle with candidate GC planner only. Naive variant is an intentional negative control. No deletion or product change. Does not demonstrate business-authorized run integration or native collector."
+}

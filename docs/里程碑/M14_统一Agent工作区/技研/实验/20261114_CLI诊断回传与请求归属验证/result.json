@@ -1,0 +1,58 @@
+{
+  "out": "/private/tmp/willyou-m14-cli-diagnostics-probe/attempt-om5rPS",
+  "checks": [
+    {
+      "id": "D01",
+      "title": "original schema and CLI omit audit failure while denial remains effective",
+      "status": "passed",
+      "evidence": {
+        "denied": true,
+        "gatewayAuditUnavailable": true,
+        "currentCliDropsAuditState": true
+      }
+    },
+    {
+      "id": "D02",
+      "title": "optional CLI audit fields survive real socket denial and unavailable storage",
+      "status": "passed",
+      "evidence": {
+        "receiptMatchesSqlite": true,
+        "unknownRunHostOnly": true,
+        "unavailablePreserved": true,
+        "rejectionExitUnchanged": true
+      }
+    },
+    {
+      "id": "D03",
+      "title": "persistent connection stale attribution reproduced with real kernel-authenticated first request",
+      "status": "passed",
+      "evidence": {
+        "firstRequestAuthenticated": true,
+        "secondTokenInvalid": true,
+        "wronglyInheritedRun": true
+      }
+    },
+    {
+      "id": "D04",
+      "title": "candidate request-local identity removes stale association and retains authenticated failure",
+      "status": "passed",
+      "evidence": {
+        "failedAuthenticationHostOnly": true,
+        "successfulAuthenticationTaskMapped": true,
+        "actualKernelProof": true
+      }
+    },
+    {
+      "id": "D05",
+      "title": "concurrent requests retain only their own authenticated attribution",
+      "status": "passed",
+      "evidence": {
+        "invalidRequestHostOnly": true,
+        "concurrentAuthenticatedFailureRetainsRun": true,
+        "responseAfterClientCloseAudited": true
+      }
+    }
+  ],
+  "passed": 5,
+  "scope": "Real compiled CLI/Unix sockets/kernel identity/current programmatic registry. Owned generic Node process fixture, not a Codex or Claude turn. Candidate optional CLI fields, denial Schema and request-local gateway attribution only; no product changes."
+}

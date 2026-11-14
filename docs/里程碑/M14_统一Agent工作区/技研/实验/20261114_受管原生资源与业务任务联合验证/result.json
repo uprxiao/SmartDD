@@ -1,0 +1,74 @@
+{
+  "out": "/private/tmp/willyou-m14-managed-business-probe/attempt-bIScVV",
+  "checks": [
+    {
+      "id": "M01",
+      "label": "baseline managed execution rejects missing runtime delivery pins",
+      "status": "passed",
+      "evidence": {
+        "baselineRejectedMissingPin": true,
+        "transactionRolledBack": true
+      }
+    },
+    {
+      "id": "M02",
+      "label": "runtime preparation references and execution plan commit atomically",
+      "status": "passed",
+      "evidence": {
+        "runId": "5a570d37-055e-40a1-b4d2-11238a5d695b",
+        "preparationProtectsBeforeAdoption": true,
+        "twoFailurePointsRollback": true,
+        "sameRetryPlan": true,
+        "otherVersionRejected": true
+      }
+    },
+    {
+      "id": "M03",
+      "label": "managed Codex retains business authorization and live R17 checks",
+      "status": "passed",
+      "evidence": {
+        "runId": "b63c55fb-cb09-4682-9d2e-71e29c5b96b1",
+        "nativeInitialized": true,
+        "runtimeAdoptedIntoActualLease": true,
+        "businessToolSucceeded": true,
+        "livePolicyDeniedAfterDisable": true,
+        "immutableApplicationPlan": true,
+        "hostCallNotNativeMcp": true
+      }
+    },
+    {
+      "id": "M04",
+      "label": "auxiliary file replacement before spawn blocks execution",
+      "status": "passed",
+      "evidence": {
+        "sameBytesNewInodeRejected": true,
+        "auxiliaryNotOnlyMainEntry": true,
+        "spawnCount": 0
+      }
+    },
+    {
+      "id": "M05",
+      "label": "replacement after gated wrapper spawn prevents native payload release",
+      "status": "passed",
+      "evidence": {
+        "wrapperCreated": true,
+        "payloadNotReleased": true,
+        "ownedExitDrained": true
+      }
+    },
+    {
+      "id": "M06",
+      "label": "managed Claude SDK initializes with runtime pins and business-capable run",
+      "status": "passed",
+      "evidence": {
+        "runId": "e082ce29-3670-47d8-98b9-a60bda0b86c6",
+        "sdkInitialized": true,
+        "businessRunContextAvailable": true,
+        "managedRuntimeLeased": true,
+        "modelTurns": 0
+      }
+    }
+  ],
+  "passed": 6,
+  "scope": "Managed runtime preparation/adoption and gated native launch in existing programmatic business-run candidate. Real Codex/Claude initialization; direct host ToolService with synthetic read executor. No SDK-origin business MCP/model turn, GC deletion, crash migration or product implementation."
+}

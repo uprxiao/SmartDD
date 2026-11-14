@@ -1,0 +1,57 @@
+{
+  "out": "/private/tmp/willyou-m14-claude-notice-probe/attempt-1MLYiP",
+  "checks": [
+    {
+      "id": "C01",
+      "title": "SDK input yield and model request do not become a durable native receipt",
+      "status": "passed",
+      "evidence": {
+        "inputYielded": true,
+        "modelRequestArrived": true,
+        "correlatedFramesBeforeStream": 2,
+        "noDurableReceiptInvented": true,
+        "observationDidNotEraseSending": true,
+        "stoppedOwnerStillBlocksUnknown": true
+      }
+    },
+    {
+      "id": "C02",
+      "title": "exact Claude stream echo binds acceptance before terminal completion",
+      "status": "passed",
+      "evidence": {
+        "exactInputUuid": true,
+        "exactNativeSession": true,
+        "privateSendHandle": true,
+        "rootStreamOnly": true,
+        "acceptedWhileTurnStillOpen": true,
+        "receiptReplayIdempotent": true
+      }
+    },
+    {
+      "id": "C03",
+      "title": "terminal completion remains distinct and observation cannot overwrite receipt",
+      "status": "passed",
+      "evidence": {
+        "matchingTerminal": true,
+        "nativeAcceptanceWasEarlier": true,
+        "observationIdempotent": true,
+        "knownReceiptAndDrainedOwnerPermitSwitch": true
+      }
+    },
+    {
+      "id": "C04",
+      "title": "advertised native queued and started receipts avoid waiting for model output",
+      "status": "passed",
+      "evidence": {
+        "capabilityRequired": true,
+        "exactInputAndSession": true,
+        "twoNativeLifecycleFactsBeforeModelOutput": true,
+        "replayDoesNotDuplicate": true,
+        "acceptedDoesNotMeanCompleted": true,
+        "knownReceiptAndStoppedOwnerPermitSwitch": true
+      }
+    }
+  ],
+  "passed": 4,
+  "scope": "Actual Claude SDK/native input, partial stream echo and terminal result with current private programmatic owner; synthetic local model, seeded child results and direct host read/ack. No real model, actual child/business MCP, UI, host crash or product source changes."
+}

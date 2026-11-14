@@ -1,0 +1,232 @@
+{
+  "checks": [
+    {
+      "id": "D01",
+      "label": "combined history, delivery pins and actual run member lifetime",
+      "status": "passed",
+      "evidence": {
+        "historyUnchanged": true,
+        "deliveryAuditPreserved": true,
+        "runMembersProtect": true,
+        "physicalDeleteAfterRelease": true
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D02",
+      "label": "strict identity, exact receipt and owned handle",
+      "status": "passed",
+      "evidence": {
+        "copiedHandleRejected": true,
+        "staleTokenRejected": true,
+        "rehashedScopeSubstitutionRejected": true
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D03",
+      "label": "release requires adopted members; retry of the same adoption is idempotent",
+      "status": "passed",
+      "evidence": {
+        "sameReceiptIdempotent": true,
+        "missingMemberCannotReleasePins": true
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D04",
+      "label": "profile and live policy are rechecked without restoring revoked execution",
+      "status": "passed",
+      "evidence": {
+        "currentPolicyChecked": true,
+        "targetRevisionChecked": true,
+        "liveHostNotReclaimed": true
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D05",
+      "label": "transaction rollback retains preparation; member-only change invalidates prior GC plan",
+      "status": "passed",
+      "evidence": {
+        "rollbackAndStaleGcPlan": true
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D06",
+      "label": "actual host SIGKILL at prepared",
+      "status": "passed",
+      "evidence": {
+        "exit": {
+          "pid": 60281,
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "checkpoint": {
+          "checkpoint": "prepared-committed",
+          "pid": 60281
+        },
+        "recovery": [
+          {
+            "runId": "47560fe2-4d05-4910-adb3-2fffdfb9b6b1",
+            "state": "stopped"
+          }
+        ],
+        "after": {
+          "state": "abandoned"
+        },
+        "sourceHistoryPreserved": true,
+        "noAgentSpawned": true,
+        "transactionRollback": false
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D07",
+      "label": "actual host SIGKILL at transaction",
+      "status": "passed",
+      "evidence": {
+        "exit": {
+          "pid": 60302,
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "checkpoint": {
+          "checkpoint": "inside-adopt",
+          "pid": 60302
+        },
+        "recovery": [
+          {
+            "runId": "9d6377a3-9a05-4402-b6f5-5fe0867eff9a",
+            "state": "stopped"
+          }
+        ],
+        "after": {
+          "state": "abandoned"
+        },
+        "sourceHistoryPreserved": true,
+        "noAgentSpawned": true,
+        "transactionRollback": true
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D08",
+      "label": "actual host SIGKILL at overlap",
+      "status": "passed",
+      "evidence": {
+        "exit": {
+          "pid": 60315,
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "checkpoint": {
+          "checkpoint": "adoption-committed",
+          "pid": 60315
+        },
+        "recovery": [
+          {
+            "runId": "0eeca8c2-83b2-4b04-bf74-1d454535d5cc",
+            "state": "stopped"
+          }
+        ],
+        "after": {
+          "state": "abandoned"
+        },
+        "sourceHistoryPreserved": true,
+        "noAgentSpawned": true,
+        "transactionRollback": false
+      },
+      "sourceAttempt": "attempt-y5cth9"
+    },
+    {
+      "id": "D09",
+      "label": "actual host SIGKILL at released",
+      "status": "passed",
+      "evidence": {
+        "exit": {
+          "pid": 60367,
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "checkpoint": {
+          "checkpoint": "preparation-released",
+          "pid": 60367
+        },
+        "recovery": [
+          {
+            "runId": "240d2645-007b-40d0-8dcf-3adfac64f917",
+            "state": "stopped"
+          }
+        ],
+        "after": {
+          "state": "released"
+        },
+        "sourceHistoryPreserved": true,
+        "noAgentSpawned": true,
+        "transactionRollback": false
+      },
+      "sourceAttempt": "attempt-k8Hp9O"
+    },
+    {
+      "id": "D10",
+      "label": "actual host SIGKILL at unknown",
+      "status": "passed",
+      "evidence": {
+        "exit": {
+          "pid": 60378,
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "checkpoint": {
+          "checkpoint": "armed-without-attach",
+          "pid": 60378
+        },
+        "recovery": [
+          {
+            "runId": "464ca5d5-d686-42b8-9344-6ac8dd797bae",
+            "state": "orphaned"
+          }
+        ],
+        "after": {
+          "state": "held",
+          "reason": "RUN_UNRESOLVED"
+        },
+        "sourceHistoryPreserved": true,
+        "noAgentSpawned": true,
+        "transactionRollback": false
+      },
+      "sourceAttempt": "attempt-k8Hp9O"
+    }
+  ],
+  "passed": 10,
+  "failed": 0,
+  "scope": "Isolated durable delivery receipt ties migrated binding/revision and legacy actual run, combined candidate GC reader, actual owned handles and Mac process recovery. Synthetic packages; no native Agent, full programmatic launcher, business operation or product implementation.",
+  "attempts": [
+    "attempt-y5cth9",
+    "attempt-k8Hp9O"
+  ],
+  "reusedChecks": "D01-D08 from unchanged candidate; D09-D10 after driver-only correction",
+  "unchangedFiles": [
+    "contract.mjs",
+    "delivery.mjs",
+    "delivery.sql",
+    "candidate.sql",
+    "migration.mjs",
+    "fixture.mjs",
+    "retention.ts",
+    "history-retention.ts",
+    "member-retention.ts",
+    "build.mjs",
+    "build.json",
+    "worker.mjs",
+    "resource-gc-plan.ts.variant",
+    "resource-graph-maintenance.ts.variant"
+  ],
+  "knownFailedAttempt": {
+    "attempt": "attempt-y5cth9",
+    "case": "D09",
+    "reason": "Driver expected held for an already released preparation receipt; run lease still retained resources. Corrected only receipt-state assertion; all retention and real recovery assertions kept."
+  }
+}

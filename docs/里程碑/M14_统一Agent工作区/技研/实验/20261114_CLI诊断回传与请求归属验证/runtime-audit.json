@@ -1,0 +1,204 @@
+{
+  "finalAttempt": "attempt-om5rPS",
+  "attempts": [
+    {
+      "attempt": "attempt-X8FkLZ",
+      "passed": 4,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'PEER_UNVERIFIABLE'\n- 'CAPABILITY_UNAVAILABLE'\n\n    at file:///private/tmp/willyou-m14-cli-diagnostics-probe/probe.mjs:17:658\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async check (file:///private/tmp/willyou-m14-cli-diagnostics-probe/probe.mjs:9:88)\n    at async file:///private/tmp/willyou-m14-cli-diagnostics-probe/probe.mjs:17:2",
+      "exit": {
+        "type": "owned-root-exit",
+        "pid": 1488,
+        "code": 0,
+        "signal": null
+      },
+      "kernelProofs": 4,
+      "unverifiablePeers": 1,
+      "allRunResourcesSettled": true
+    },
+    {
+      "attempt": "attempt-fwpwDy",
+      "passed": 4,
+      "error": null,
+      "exit": {
+        "type": "owned-root-exit",
+        "pid": 1224,
+        "code": 0,
+        "signal": null
+      },
+      "kernelProofs": 3,
+      "unverifiablePeers": 0,
+      "allRunResourcesSettled": true
+    },
+    {
+      "attempt": "attempt-om5rPS",
+      "passed": 5,
+      "error": null,
+      "exit": {
+        "type": "owned-root-exit",
+        "pid": 1631,
+        "code": 0,
+        "signal": null
+      },
+      "kernelProofs": 5,
+      "unverifiablePeers": 0,
+      "allRunResourcesSettled": true
+    }
+  ],
+  "checks": [
+    {
+      "id": "D01",
+      "title": "original schema and CLI omit audit failure while denial remains effective",
+      "status": "passed",
+      "evidence": {
+        "denied": true,
+        "gatewayAuditUnavailable": true,
+        "currentCliDropsAuditState": true
+      }
+    },
+    {
+      "id": "D02",
+      "title": "optional CLI audit fields survive real socket denial and unavailable storage",
+      "status": "passed",
+      "evidence": {
+        "receiptMatchesSqlite": true,
+        "unknownRunHostOnly": true,
+        "unavailablePreserved": true,
+        "rejectionExitUnchanged": true
+      }
+    },
+    {
+      "id": "D03",
+      "title": "persistent connection stale attribution reproduced with real kernel-authenticated first request",
+      "status": "passed",
+      "evidence": {
+        "firstRequestAuthenticated": true,
+        "secondTokenInvalid": true,
+        "wronglyInheritedRun": true
+      }
+    },
+    {
+      "id": "D04",
+      "title": "candidate request-local identity removes stale association and retains authenticated failure",
+      "status": "passed",
+      "evidence": {
+        "failedAuthenticationHostOnly": true,
+        "successfulAuthenticationTaskMapped": true,
+        "actualKernelProof": true
+      }
+    },
+    {
+      "id": "D05",
+      "title": "concurrent requests retain only their own authenticated attribution",
+      "status": "passed",
+      "evidence": {
+        "invalidRequestHostOnly": true,
+        "concurrentAuthenticatedFailureRetainsRun": true,
+        "responseAfterClientCloseAudited": true
+      }
+    }
+  ],
+  "wireContract": {
+    "passed": 9,
+    "receipts": [
+      {
+        "name": "legacy-no-fields",
+        "code": 2,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"Synthetic response contract\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"Do not automatically retry\",\"retryExhausted\":false},\"requestId\":\"357b310e-b42b-481f-ab06-2ca64f2f2a27\"}\n",
+        "stderr": "willyou-app: SCOPE_DENIED\n"
+      },
+      {
+        "name": "valid-receipt",
+        "code": 2,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"Synthetic response contract\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"Do not automatically retry\",\"retryExhausted\":false},\"requestId\":\"824c02f0-c74d-466a-b851-701c03db1293\",\"auditId\":\"527d79a8-fdf9-4d97-babf-6debce4b57a8\"}\n",
+        "stderr": "willyou-app: SCOPE_DENIED\n"
+      },
+      {
+        "name": "unavailable",
+        "code": 2,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"Synthetic response contract\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"Do not automatically retry\",\"retryExhausted\":false},\"requestId\":\"2bf19ad2-bd57-4397-b078-927a5bce03c2\",\"auditUnavailable\":true}\n",
+        "stderr": "willyou-app: SCOPE_DENIED\n"
+      },
+      {
+        "name": "false-is-boolean",
+        "code": 2,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"Synthetic response contract\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"Do not automatically retry\",\"retryExhausted\":false},\"requestId\":\"1dee2194-5929-4a0c-81ef-8dd345bf65cf\",\"auditUnavailable\":false}\n",
+        "stderr": "willyou-app: SCOPE_DENIED\n"
+      },
+      {
+        "name": "unknown-effect-preserved",
+        "code": 5,
+        "stdout": "{\"error\":{\"effectState\":\"unknown\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"Synthetic response contract\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"Do not automatically retry\",\"retryExhausted\":false},\"requestId\":\"e418fea5-048f-4002-88da-93ef387cd66e\",\"auditId\":\"527d79a8-fdf9-4d97-babf-6debce4b57a8\"}\n",
+        "stderr": "willyou-app: SCOPE_DENIED\n"
+      },
+      {
+        "name": "malformed-id",
+        "code": 4,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"INVALID_RESPONSE\",\"layer\":\"bridge\",\"message\":\"审计标识无效\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+        "stderr": "willyou-app: INVALID_RESPONSE\n"
+      },
+      {
+        "name": "numeric-boolean",
+        "code": 4,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"INVALID_RESPONSE\",\"layer\":\"bridge\",\"message\":\"审计状态无效\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+        "stderr": "willyou-app: INVALID_RESPONSE\n"
+      },
+      {
+        "name": "string-boolean",
+        "code": 4,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"INVALID_RESPONSE\",\"layer\":\"bridge\",\"message\":\"审计状态无效\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+        "stderr": "willyou-app: INVALID_RESPONSE\n"
+      },
+      {
+        "name": "conflicting-state",
+        "code": 4,
+        "stdout": "{\"error\":{\"effectState\":\"not-started\",\"code\":\"INVALID_RESPONSE\",\"layer\":\"bridge\",\"message\":\"审计状态冲突\",\"retryable\":false,\"attemptCount\":0,\"nextAction\":\"核对当前应用状态后再明确操作\",\"retryExhausted\":false}}\n",
+        "stderr": "willyou-app: INVALID_RESPONSE\n"
+      }
+    ],
+    "scope": "Compiled candidate CLI over controlled local socket responses; validates serialization/legacy/invalid fields only, not gateway authentication or UI.",
+    "binary": {
+      "file": "diagnostic-cli",
+      "sha256": "59653dcaf588b9fbe71310ce5eed5bd8ae014b490dbd7cdd33dc7a26fd8f8fe8",
+      "sourceSha256": "9ee479e16b473247416dae971b01080314746bb67bf3fa5fe0fea8f5bcb3943b"
+    },
+    "provenance": "Binary and source hash match first real-gateway batch and final rebuild; the nine wire checks used this unchanged diagnostic CLI."
+  },
+  "cli": {
+    "source": "/Users/hx/projects/SmartDD/native/applications/cli.mm",
+    "sourceSha256": "1fcbd52230269f00057e3897963ff9e8fe796219a1226633d49d639ac72cd4cf",
+    "outputs": [
+      {
+        "file": "original-cli",
+        "sha256": "f92fa14fb920a1b0ac4205299b2e7d1b6e547b9119fb7134bcedf029789ce8f1",
+        "sourceSha256": "1fcbd52230269f00057e3897963ff9e8fe796219a1226633d49d639ac72cd4cf"
+      },
+      {
+        "file": "diagnostic-cli",
+        "sha256": "59653dcaf588b9fbe71310ce5eed5bd8ae014b490dbd7cdd33dc7a26fd8f8fe8",
+        "sourceSha256": "9ee479e16b473247416dae971b01080314746bb67bf3fa5fe0fea8f5bcb3943b"
+      },
+      {
+        "file": "sequence-cli",
+        "sha256": "dad5367c6ad419c4afccacb598aeb8a817c42a2d9cb5f8468090f3c2ba215d65",
+        "sourceSha256": "10f78a248ea7f9dbfa51cc55416d69e2cf7f8cd8ccb9afb798061e0107419c71"
+      }
+    ]
+  },
+  "finalDenialRows": 6,
+  "expectedWrongBaselineRow": "df33ec56-f1b5-44be-8c25-88e1340cc469",
+  "knownAssociation": {
+    "audit_id": "e2e25e8a-a16b-413e-97ab-de3425aa9b9a",
+    "host_generation": "a9079ed9-0de8-4f62-9ec3-90291d414367",
+    "run_id": "81dec8fb-e696-4c5c-867c-febb3407e880",
+    "bridge_id": null,
+    "method": "cli-list",
+    "error_code": "CAPABILITY_UNAVAILABLE",
+    "observed_at": "2026-11-14T09:43:02.606Z",
+    "task_id": "3a25d12e-bd01-4e3e-9346-482d73005880",
+    "project_id": "p1"
+  },
+  "scope": "Real compiled CLI/Unix sockets/kernel identity/current programmatic registry. Owned generic Node process fixture, not a Codex or Claude turn. Candidate optional CLI fields, denial Schema and request-local gateway attribution only; no product changes.",
+  "modelsCalled": 0,
+  "nativeAgentTurns": 0,
+  "note": "One intentionally wrong baseline row remains as counterexample; not all six rows represent corrected behavior. Five final kernel proofs from genuine sockets; generic owned Node fixture is not an Agent SDK launch."
+}

@@ -1,0 +1,539 @@
+{
+  "checksPassed": 5,
+  "results": [
+    {
+      "out": "/private/tmp/willyou-m14-native-child-stop-probe/attempt-G4l67w",
+      "driver": "claude",
+      "passed": true,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 6,
+      "parentRequests": 4,
+      "childA": "a72e5d6e5ad1e57dd",
+      "childB": "a232866197629c264",
+      "controls": [
+        {
+          "name": "parent-completed-with-two-pending-children",
+          "frameCount": 11,
+          "childA": "a72e5d6e5ad1e57dd",
+          "childB": "a232866197629c264"
+        },
+        {
+          "name": "stop-A-requested",
+          "frameCount": 11
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 11,
+          "which": "A"
+        },
+        {
+          "name": "stop-A-acknowledged",
+          "frameCount": 14
+        },
+        {
+          "name": "stop-A-native-terminal",
+          "frameCount": 14,
+          "status": "stopped"
+        },
+        {
+          "name": "sibling-B-still-pending",
+          "frameCount": 14
+        },
+        {
+          "name": "sibling-B-response-released",
+          "frameCount": 14
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 14,
+          "which": "B"
+        },
+        {
+          "name": "sibling-B-native-completed",
+          "frameCount": 18
+        }
+      ],
+      "processes": [
+        {
+          "pid": 10121,
+          "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64/claude",
+          "args": [
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "--input-format",
+            "stream-json",
+            "--model=claude-haiku-4-5",
+            "--allowedTools=Agent",
+            "--tools=Agent",
+            "--setting-sources=",
+            "--strict-mcp-config"
+          ],
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Fixed native versions, two child model calls paused at localhost HTTP; stop one after parent turn completed, confirm native terminal and sibling unaffected. No tools/business writes inside child, recursive descendants, crash recovery, OS containment or actual T3/WillYou adapters."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-native-child-stop-probe/attempt-M6hPFw",
+      "driver": "codex",
+      "passed": true,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 5,
+      "parentRequests": 3,
+      "rootThread": "01a1d995-893d-77c2-a681-708010b6484e",
+      "childA": "01a1d995-8955-7851-9914-c2a29e92d00a",
+      "childB": "01a1d995-895f-7cd2-93d9-d4a5a5a16d6c",
+      "controls": [
+        {
+          "name": "parent-completed-with-two-pending-children",
+          "frameCount": 38,
+          "childA": "01a1d995-8955-7851-9914-c2a29e92d00a",
+          "childB": "01a1d995-895f-7cd2-93d9-d4a5a5a16d6c"
+        },
+        {
+          "name": "stop-A-requested",
+          "frameCount": 38
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 38,
+          "which": "A"
+        },
+        {
+          "name": "stop-A-acknowledged",
+          "frameCount": 39
+        },
+        {
+          "name": "stop-A-native-terminal",
+          "frameCount": 41,
+          "status": "interrupted"
+        },
+        {
+          "name": "sibling-B-still-pending",
+          "frameCount": 41
+        },
+        {
+          "name": "sibling-B-response-released",
+          "frameCount": 41
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 41,
+          "which": "B"
+        },
+        {
+          "name": "sibling-B-native-completed",
+          "frameCount": 48
+        }
+      ],
+      "processes": [
+        {
+          "pid": 10141,
+          "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+          "args": [
+            "app-server",
+            "--enable",
+            "multi_agent",
+            "--disable",
+            "plugins",
+            "-c",
+            "analytics.enabled=false",
+            "-c",
+            "thread_unload_delay_secs=0",
+            "-c",
+            "model_provider=\"m14\"",
+            "-c",
+            "model_providers.m14={name=\"m14\",base_url=\"http://127.0.0.1:61616/codex/v1\",wire_api=\"responses\",env_key=\"WY_MODEL_KEY\",request_max_retries=0,stream_max_retries=0}"
+          ],
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Fixed native versions, two child model calls paused at localhost HTTP; stop one after parent turn completed, confirm native terminal and sibling unaffected. No tools/business writes inside child, recursive descendants, crash recovery, OS containment or actual T3/WillYou adapters."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-native-child-stop-probe/attempt-ZxJfsd",
+      "driver": "claude",
+      "passed": true,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 7,
+      "parentRequests": 4,
+      "childA": "a2b3d0a15bbc1872a",
+      "childB": "aad28f66fe0471b08",
+      "childC": "a13ae798cb5149209",
+      "controls": [
+        {
+          "name": "parent-completed-with-two-pending-children",
+          "frameCount": 14,
+          "childA": "a2b3d0a15bbc1872a",
+          "childB": "aad28f66fe0471b08",
+          "childC": "a13ae798cb5149209",
+          "childAWaiting": "grandchild-tool"
+        },
+        {
+          "name": "stop-A-requested",
+          "frameCount": 14
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 14,
+          "which": "C"
+        },
+        {
+          "name": "stop-A-acknowledged",
+          "frameCount": 17
+        },
+        {
+          "name": "stop-A-native-terminal",
+          "frameCount": 17,
+          "status": "stopped"
+        },
+        {
+          "name": "sibling-B-still-pending",
+          "frameCount": 17
+        },
+        {
+          "name": "grandchild-C-terminal",
+          "frameCount": 19,
+          "status": "stopped"
+        },
+        {
+          "name": "sibling-B-response-released",
+          "frameCount": 19
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 19,
+          "which": "B"
+        },
+        {
+          "name": "sibling-B-native-completed",
+          "frameCount": 24
+        }
+      ],
+      "processes": [
+        {
+          "pid": 10518,
+          "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64/claude",
+          "args": [
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "--input-format",
+            "stream-json",
+            "--model=claude-haiku-4-5",
+            "--allowedTools=Agent",
+            "--tools=Agent",
+            "--setting-sources=",
+            "--strict-mcp-config"
+          ],
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Fixed native versions with A owning one native grandchild C and sibling B. Pause leaf model HTTP (Claude A waits for foreground C tool, Codex A waits for model HTTP); stop A after parent completion, record C outcome and sibling continuation. No shell, business writes, deeper descendants, stop races, crash recovery, OS containment or full product adapters."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-native-child-stop-probe/attempt-lEUbiA",
+      "driver": "codex",
+      "passed": true,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 7,
+      "parentRequests": 3,
+      "rootThread": "01a1d996-8394-7a60-a65f-773bfbc82c0a",
+      "childA": "01a1d996-83ac-7652-bfaf-36fc3a68fffe",
+      "childB": "01a1d996-83b6-7942-909d-6f1a0215d8b5",
+      "childC": "01a1d996-83b7-7963-a0f6-249660fe3aca",
+      "controls": [
+        {
+          "name": "parent-completed-with-two-pending-children",
+          "frameCount": 48,
+          "childA": "01a1d996-83ac-7652-bfaf-36fc3a68fffe",
+          "childB": "01a1d996-83b6-7942-909d-6f1a0215d8b5",
+          "childC": "01a1d996-83b7-7963-a0f6-249660fe3aca"
+        },
+        {
+          "name": "stop-A-requested",
+          "frameCount": 48
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 48,
+          "which": "A"
+        },
+        {
+          "name": "stop-A-acknowledged",
+          "frameCount": 49
+        },
+        {
+          "name": "stop-A-native-terminal",
+          "frameCount": 51,
+          "status": "interrupted"
+        },
+        {
+          "name": "sibling-B-still-pending",
+          "frameCount": 51
+        },
+        {
+          "name": "grandchild-C-response-released-after-A-terminal",
+          "frameCount": 51
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 51,
+          "which": "C"
+        },
+        {
+          "name": "grandchild-C-terminal",
+          "frameCount": 58,
+          "status": "completed"
+        },
+        {
+          "name": "sibling-B-response-released",
+          "frameCount": 58
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 58,
+          "which": "B"
+        },
+        {
+          "name": "sibling-B-native-completed",
+          "frameCount": 65
+        }
+      ],
+      "processes": [
+        {
+          "pid": 10308,
+          "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+          "args": [
+            "app-server",
+            "--enable",
+            "multi_agent",
+            "--disable",
+            "plugins",
+            "-c",
+            "agents.max_depth=2",
+            "-c",
+            "analytics.enabled=false",
+            "-c",
+            "thread_unload_delay_secs=0",
+            "-c",
+            "model_provider=\"m14\"",
+            "-c",
+            "model_providers.m14={name=\"m14\",base_url=\"http://127.0.0.1:61729/codex/v1\",wire_api=\"responses\",env_key=\"WY_MODEL_KEY\",request_max_retries=0,stream_max_retries=0}"
+          ],
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Fixed native versions with A owning one native grandchild C and sibling B. Pause model HTTP; stop A after parent completion, record C outcome and sibling continuation. No shell, business writes, deeper descendants, stop races, crash recovery, OS containment or full product adapters."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-native-child-stop-probe/attempt-yV9arQ",
+      "driver": "codex",
+      "passed": true,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 7,
+      "parentRequests": 3,
+      "rootThread": "01a1d997-4d8b-7762-848d-047e6dd09725",
+      "childA": "01a1d997-4da3-7370-aa0b-2eee458fce2c",
+      "childB": "01a1d997-4dad-7ff2-a871-6a3ef9125af7",
+      "childC": "01a1d997-4dae-7402-a7b8-f07005ba52c0",
+      "controls": [
+        {
+          "name": "parent-completed-with-two-pending-children",
+          "frameCount": 48,
+          "childA": "01a1d997-4da3-7370-aa0b-2eee458fce2c",
+          "childB": "01a1d997-4dad-7ff2-a871-6a3ef9125af7",
+          "childC": "01a1d997-4dae-7402-a7b8-f07005ba52c0",
+          "childAWaiting": "model-http"
+        },
+        {
+          "name": "stop-A-requested",
+          "frameCount": 48
+        },
+        {
+          "name": "explicit-descendant-C-interrupt",
+          "frameCount": 48,
+          "threadId": "01a1d997-4dae-7402-a7b8-f07005ba52c0",
+          "turnId": "01a1d997-4daf-7f40-819b-f94a970a79fe"
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 48,
+          "which": "C"
+        },
+        {
+          "name": "explicit-parent-A-interrupt",
+          "frameCount": 51,
+          "threadId": "01a1d997-4da3-7370-aa0b-2eee458fce2c",
+          "turnId": "01a1d997-4da5-71d3-9ebc-fe9b12e81830"
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 51,
+          "which": "A"
+        },
+        {
+          "name": "stop-A-acknowledged",
+          "frameCount": 52
+        },
+        {
+          "name": "stop-A-native-terminal",
+          "frameCount": 54,
+          "status": "interrupted"
+        },
+        {
+          "name": "sibling-B-still-pending",
+          "frameCount": 54
+        },
+        {
+          "name": "grandchild-C-terminal",
+          "frameCount": 54,
+          "status": "interrupted"
+        },
+        {
+          "name": "sibling-B-response-released",
+          "frameCount": 54
+        },
+        {
+          "name": "child-http-closed",
+          "frameCount": 54,
+          "which": "B"
+        },
+        {
+          "name": "sibling-B-native-completed",
+          "frameCount": 61
+        }
+      ],
+      "processes": [
+        {
+          "pid": 10574,
+          "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+          "args": [
+            "app-server",
+            "--enable",
+            "multi_agent",
+            "--disable",
+            "plugins",
+            "-c",
+            "agents.max_depth=2",
+            "-c",
+            "analytics.enabled=false",
+            "-c",
+            "thread_unload_delay_secs=0",
+            "-c",
+            "model_provider=\"m14\"",
+            "-c",
+            "model_providers.m14={name=\"m14\",base_url=\"http://127.0.0.1:61865/codex/v1\",wire_api=\"responses\",env_key=\"WY_MODEL_KEY\",request_max_retries=0,stream_max_retries=0}"
+          ],
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Fixed native versions with A owning one native grandchild C and sibling B. Pause leaf model HTTP (Claude A waits for foreground C tool, Codex A waits for model HTTP); explicitly stop known C then A after parent completion, assert both interrupted and sibling continuation. No shell, business writes, deeper descendants, stop races, crash recovery, OS containment or full product adapters."
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": "attempt-G4l67w",
+      "passed": true,
+      "driver": "claude",
+      "error": null,
+      "requests": 6,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-KO9H1F",
+      "passed": false,
+      "driver": "claude",
+      "error": "Error: WATCHDOG:two children and parent completion\n    at Timeout.<anonymous> (file:///private/tmp/willyou-m14-native-child-stop-probe/nested.mjs:13:103)\n    at listOnTimeout (node:internal/timers:635:17)\n    at process.processTimers (node:internal/timers:571:7)",
+      "requests": 6,
+      "exits": [
+        {
+          "code": 143,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-M6hPFw",
+      "passed": true,
+      "driver": "codex",
+      "error": null,
+      "requests": 5,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-ZxJfsd",
+      "passed": true,
+      "driver": "claude",
+      "error": null,
+      "requests": 7,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-lEUbiA",
+      "passed": true,
+      "driver": "codex",
+      "error": null,
+      "requests": 7,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-yV9arQ",
+      "passed": true,
+      "driver": "codex",
+      "error": null,
+      "requests": 7,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    }
+  ],
+  "conclusion": "Parent turn completion does not drain native children. Directed stop can preserve sibling. In tested nested paths Claude stopTask stopped foreground grandchild; Codex interrupt(A) left C running/completed. Explicit interrupt(C) then interrupt(A) stopped both, sibling B completed.",
+  "scope": "Local synthetic models; fixed native versions on macOS arm64. No shell or business work inside children; no runtime-native subtree freeze, late-spawn race, deeper recursion, crash recovery, permission or UI proof.",
+  "paidModelCalls": 0,
+  "productChanges": 0
+}

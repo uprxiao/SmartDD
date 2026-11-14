@@ -1,0 +1,178 @@
+{
+  "final": {
+    "out": "/private/tmp/willyou-m14-retained-claims-probe/attempt-6m5HQI",
+    "checks": [
+      {
+        "id": "K01",
+        "title": "prior projection skips held historical root",
+        "status": "passed",
+        "evidence": {
+          "negative": true,
+          "heldOldRootReclaimedByOldCandidate": true,
+          "productNotAffected": true
+        }
+      },
+      {
+        "id": "K02",
+        "title": "known hold and schema0 retain identity without capability session",
+        "status": "passed",
+        "evidence": {
+          "retainedOwners": 2,
+          "claims": 3,
+          "capabilitySessions": 0,
+          "oldRowsUnchanged": true
+        }
+      },
+      {
+        "id": "K03",
+        "title": "hold denies business run while existing schema0 native guard lifecycle remains separate",
+        "status": "passed",
+        "evidence": {
+          "businessRunRejected": true,
+          "nativeOnlyGuardPreparedAndStopped": true,
+          "businessContextAndBridgeRejected": true,
+          "syntheticResourceVerifier": true,
+          "noNativeProcessLaunched": true
+        }
+      },
+      {
+        "id": "K04",
+        "title": "unknown future retention format rolls back migration preserving bytes",
+        "status": "passed",
+        "evidence": {
+          "unsupportedPreserved": true,
+          "noMigrationReceipt": true
+        }
+      },
+      {
+        "id": "K05",
+        "title": "corrupt held historical source does not silently free its identity",
+        "status": "passed",
+        "evidence": {
+          "corruptBytesPreserved": true,
+          "migrationRejectedWithoutClaims": true
+        }
+      },
+      {
+        "id": "K06",
+        "title": "ambiguous schema0 duplicate with no own identity refuses migration",
+        "status": "passed",
+        "evidence": {
+          "actualDuplicateHoldProduced": true,
+          "originalIdentityKept": true,
+          "ambiguousRecordPreserved": true
+        }
+      }
+    ],
+    "passed": 6,
+    "error": null,
+    "scope": "Actual holdUnknown/session registry/native-only guard over isolated current databases, candidate retention-owner claim projection. Known v2/v3 hold and verified schema0 shape only; unknown/corrupt/ambiguous records reject migration preserving source. No product modification, actual native launch, TaskService integration, recovery/GC wiring or repair UI."
+  },
+  "attempts": [
+    {
+      "out": "/private/tmp/willyou-m14-retained-claims-probe/attempt-6m5HQI",
+      "checks": [
+        {
+          "id": "K01",
+          "title": "prior projection skips held historical root",
+          "status": "passed",
+          "evidence": {
+            "negative": true,
+            "heldOldRootReclaimedByOldCandidate": true,
+            "productNotAffected": true
+          }
+        },
+        {
+          "id": "K02",
+          "title": "known hold and schema0 retain identity without capability session",
+          "status": "passed",
+          "evidence": {
+            "retainedOwners": 2,
+            "claims": 3,
+            "capabilitySessions": 0,
+            "oldRowsUnchanged": true
+          }
+        },
+        {
+          "id": "K03",
+          "title": "hold denies business run while existing schema0 native guard lifecycle remains separate",
+          "status": "passed",
+          "evidence": {
+            "businessRunRejected": true,
+            "nativeOnlyGuardPreparedAndStopped": true,
+            "businessContextAndBridgeRejected": true,
+            "syntheticResourceVerifier": true,
+            "noNativeProcessLaunched": true
+          }
+        },
+        {
+          "id": "K04",
+          "title": "unknown future retention format rolls back migration preserving bytes",
+          "status": "passed",
+          "evidence": {
+            "unsupportedPreserved": true,
+            "noMigrationReceipt": true
+          }
+        },
+        {
+          "id": "K05",
+          "title": "corrupt held historical source does not silently free its identity",
+          "status": "passed",
+          "evidence": {
+            "corruptBytesPreserved": true,
+            "migrationRejectedWithoutClaims": true
+          }
+        },
+        {
+          "id": "K06",
+          "title": "ambiguous schema0 duplicate with no own identity refuses migration",
+          "status": "passed",
+          "evidence": {
+            "actualDuplicateHoldProduced": true,
+            "originalIdentityKept": true,
+            "ambiguousRecordPreserved": true
+          }
+        }
+      ],
+      "passed": 6,
+      "error": null,
+      "scope": "Actual holdUnknown/session registry/native-only guard over isolated current databases, candidate retention-owner claim projection. Known v2/v3 hold and verified schema0 shape only; unknown/corrupt/ambiguous records reject migration preserving source. No product modification, actual native launch, TaskService integration, recovery/GC wiring or repair UI."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-retained-claims-probe/attempt-hw9NKr",
+      "checks": [
+        {
+          "id": "K01",
+          "title": "prior projection skips held historical root",
+          "status": "passed",
+          "evidence": {
+            "negative": true,
+            "heldOldRootReclaimedByOldCandidate": true,
+            "productNotAffected": true
+          }
+        },
+        {
+          "id": "K02",
+          "title": "known hold and schema0 retain identity without capability session",
+          "status": "passed",
+          "evidence": {
+            "retainedOwners": 2,
+            "claims": 3,
+            "capabilitySessions": 0,
+            "oldRowsUnchanged": true
+          }
+        },
+        {
+          "id": "K03",
+          "title": "hold denies business run while existing schema0 native guard lifecycle remains separate",
+          "status": "failed",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  Comparison {\n+   code: 'RESOURCE_STATE_CHANGED'\n-   code: 'SESSION_ON_HOLD'\n  }\n\n    at async file:///private/tmp/willyou-m14-retained-claims-probe/probe.mjs:37:32\n    at async run (file:///private/tmp/willyou-m14-retained-claims-probe/probe.mjs:23:76)\n    at async file:///private/tmp/willyou-m14-retained-claims-probe/probe.mjs:36:2"
+        }
+      ],
+      "passed": 2,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  Comparison {\n+   code: 'RESOURCE_STATE_CHANGED'\n-   code: 'SESSION_ON_HOLD'\n  }\n\n    at async file:///private/tmp/willyou-m14-retained-claims-probe/probe.mjs:37:32\n    at async run (file:///private/tmp/willyou-m14-retained-claims-probe/probe.mjs:23:76)\n    at async file:///private/tmp/willyou-m14-retained-claims-probe/probe.mjs:36:2",
+      "scope": "Actual holdUnknown/session registry/native-only guard over isolated current databases, candidate retention-owner claim projection. Known v2/v3 hold and verified schema0 shape only; unknown/corrupt/ambiguous records reject migration preserving source. No product modification, actual native launch, TaskService integration, recovery/GC wiring or repair UI."
+    }
+  ],
+  "driverCorrection": "First run expected SESSION_ON_HOLD at reserve; current reserveManaged explicitly emits RESOURCE_STATE_CHANGED for non-active retention. Assertion corrected to actual stable code and strengthened to assert no run inserted; original failure preserved."
+}

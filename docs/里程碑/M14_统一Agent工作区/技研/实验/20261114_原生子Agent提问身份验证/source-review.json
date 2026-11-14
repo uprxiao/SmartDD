@@ -1,0 +1,38 @@
+{
+  "smartddHead": "5a9e04382441e24624cb94635f9d902c543a03d7",
+  "t3Head": "f313d0a6cb843551fb60e57a454a71e71a3a8c04",
+  "sources": [
+    {
+      "path": "/Users/hx/projects/t3code/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts",
+      "sha256": "a9736522033b535594ed18863545770e0bc146024a9e962df9041e7ddc388db8"
+    },
+    {
+      "path": "/Users/hx/projects/t3code/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts",
+      "sha256": "6df2a902218ee40a14bad5178cefdb5efe5ea09de404a7fa1323b25e8213bca1"
+    },
+    {
+      "path": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk/sdk.d.ts",
+      "sha256": "a770e964aa5ba76adf24f4927f5ba5bbd4113ab08ecda5a8ddc71f106d7f9487"
+    }
+  ],
+  "runtimes": [
+    {
+      "kind": "external",
+      "path": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64/claude",
+      "sha256": "abc9feeeca8091d51b623291e044cf0528c2f6b74e0c1d6ef671d52c73f7cd3c",
+      "sdkVersion": "0.3.321",
+      "nativeVersion": "2.1.321",
+      "protocol": "claude-sdk-initialization"
+    },
+    {
+      "kind": "external",
+      "path": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+      "sha256": "ebabe5f0d79145a9e61274ce9ecf7c02c9021b7b04bfa59b7e61ad4461c32b0b",
+      "sdkVersion": "not-used",
+      "nativeVersion": "0.167.1",
+      "protocol": "codex-app-server-initialize"
+    }
+  ],
+  "t3Boundary": "Source only: Claude callback uses active turn context and requestId, Codex handler resolves active turn. Neither T3 adapter was executed by this probe.",
+  "identityBoundary": "Native child is not a separate host-delegated task. Claude MCP call metadata carries toolUseId, but form callback and raw elicitation envelope do not directly carry it or agentId in this fixed version; a trusted bridge association would require additional evidence."
+}

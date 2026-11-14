@@ -1,0 +1,84 @@
+{
+  "out": "/private/tmp/willyou-m14-claimed-native-resume-probe/attempt-P8gdYT",
+  "checks": [
+    {
+      "id": "R01",
+      "title": "real thread history and shared first-native claim survive owner exit",
+      "status": "passed",
+      "evidence": {
+        "nativeId": "01a1da09-5fbd-7cc2-8854-d1c07d7bd995",
+        "sourceHash": "275ea9b2d9af070935f6d0d8620f991ad5c724679fcae793b829832df166476f",
+        "currentHash": "46fd2da0edf6ff79cad54973d59cc65674515c5831b08240e836070c9282a9e7",
+        "rolloutHash": "2d1b6ca96af5458f78c764c4753ef85c668017e07cf3447ce98956351c76327e",
+        "recordCount": 7,
+        "claimRetained": true
+      }
+    },
+    {
+      "id": "R02",
+      "title": "new owned run resumes original thread without rewriting binding source",
+      "status": "passed",
+      "evidence": {
+        "newRun": "5d5a168f-1169-4d2e-ac9c-2ffdcf49dcba",
+        "generation": 2,
+        "sameNativeId": true,
+        "identityAndRevisionsUnchanged": true
+      }
+    },
+    {
+      "id": "R03",
+      "title": "legitimate native history append changes bytes but preserves next resume identity",
+      "status": "passed",
+      "evidence": {
+        "beforeHash": "2d1b6ca96af5458f78c764c4753ef85c668017e07cf3447ce98956351c76327e",
+        "afterHash": "172148e6b5fc4ecdb7398bcef3e11dcc6de0901b9b538460184c8a17e167d2bb",
+        "sameClaimAndSource": true,
+        "thirdRunResumed": true,
+        "historyDigestNotAuthority": true
+      }
+    },
+    {
+      "id": "R04",
+      "title": "missing native root is rejected without creating replacement identity",
+      "status": "passed",
+      "evidence": {
+        "nativeResumeRejected": true,
+        "originalIdentityAndRevisionsRetained": true,
+        "replacementThreadNotCreated": true,
+        "failedRunStopped": true
+      }
+    },
+    {
+      "id": "R05",
+      "title": "restored history supports explicit next-run resume of the same identity",
+      "status": "passed",
+      "evidence": {
+        "sameNativeId": true,
+        "generation": 5,
+        "priorRejectionStillRecorded": true,
+        "explicitNewRun": true
+      }
+    },
+    {
+      "id": "R06",
+      "title": "archived history needs exact unarchive and resume instead of thread start",
+      "status": "passed",
+      "evidence": {
+        "archivedErrorObserved": true,
+        "sameNativeIdUnarchived": true,
+        "noReplacementThread": true,
+        "observationSequence": [
+          {
+            "status": "rejected"
+          },
+          {
+            "status": "confirmed"
+          }
+        ]
+      }
+    }
+  ],
+  "passed": 6,
+  "error": null,
+  "scope": "Current-source programmatic registry variants/shared identity claims with real Codex 0.167.1 process restart/resume/inject/archive/unarchive. Synthetic developer history and adapter/prepared sources; no model turns, business writes, provider switch, host crash recovery, product implementation or UI acceptance."
+}

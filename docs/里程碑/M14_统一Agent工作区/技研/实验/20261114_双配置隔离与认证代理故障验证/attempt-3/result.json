@@ -1,0 +1,555 @@
+{
+  "scope": "Real native programs; explicit per-child environment, isolated accounts, fake local model endpoints. Not production configuration resolver, login/Keychain, or provider-switch UI.",
+  "checks": [
+    {
+      "id": "claude-401-does-not-switch-account",
+      "status": "passed",
+      "detail": [
+        {
+          "driver": "claude",
+          "id": "claude-authfailure-A",
+          "uid": "8ad24087-44f0-4ef0-b170-f6ff6ed8c6f8",
+          "nativeId": "8cf5509b-eb52-4487-b3eb-8ec2b4fe6324",
+          "success": false,
+          "terminal": {
+            "duration_api_ms": 0,
+            "stop_reason": null,
+            "session_id": "8cf5509b-eb52-4487-b3eb-8ec2b4fe6324",
+            "total_cost_usd": 0,
+            "usage": {
+              "output_tokens_details": {
+                "thinking_tokens": 0
+              },
+              "input_tokens": 0,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 0,
+              "output_tokens": 0,
+              "server_tool_use": {
+                "web_search_requests": 0,
+                "web_fetch_requests": 0
+              },
+              "service_tier": "standard",
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 0,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "inference_geo": "",
+              "iterations": [],
+              "speed": "standard",
+              "fallback_credit": null
+            },
+            "modelUsage": {},
+            "permission_denials": [],
+            "terminal_reason": "aborted_streaming",
+            "fast_mode_state": "off",
+            "fast_mode_disabled_reason": "sdk_opt_in_required",
+            "subagent_stats": {
+              "spawned": 0,
+              "requested": {
+                "background": 0,
+                "foreground": 0,
+                "unset": 0
+              },
+              "started_in_background": 0,
+              "max_depth": 0,
+              "spawned_by_subagents": 0,
+              "completed": 0,
+              "failed": 0,
+              "killed": {
+                "parent": 0,
+                "user": 0,
+                "system": 0
+              },
+              "refused": {
+                "depth_limit": 0,
+                "concurrency_limit": 0,
+                "budget": 0
+              },
+              "by_type": {}
+            },
+            "safety_stops": 0,
+            "is_error": true,
+            "num_turns": 2,
+            "subtype": "error_during_execution",
+            "errors": [
+              "[ede_diagnostic] result_type=user last_content_type=n/a stop_reason=null"
+            ],
+            "user_message_uuid": "8ad24087-44f0-4ef0-b170-f6ff6ed8c6f8",
+            "type": "result",
+            "duration_ms": 43,
+            "uuid": "953783c7-531d-481f-9b59-e5fdc97b38bb",
+            "user_message_uuids": [
+              "8ad24087-44f0-4ef0-b170-f6ff6ed8c6f8"
+            ],
+            "queued_turn_count": 0,
+            "result_index": 0,
+            "model_usage_since_last_result": {}
+          },
+          "transportError": "Claude Code process exited with code 1",
+          "hostCancellationRequested": true,
+          "retries": [
+            {
+              "type": "system",
+              "subtype": "api_retry",
+              "attempt": 1,
+              "max_retries": 10,
+              "retry_delay_ms": 577,
+              "error_status": 401,
+              "error": "authentication_failed",
+              "session_id": "8cf5509b-eb52-4487-b3eb-8ec2b4fe6324",
+              "uuid": "f2a20250-73dc-4ebf-94da-92d6bdb38945"
+            }
+          ],
+          "cancelledLifecycle": [
+            {
+              "type": "command_lifecycle",
+              "command_uuid": "8ad24087-44f0-4ef0-b170-f6ff6ed8c6f8",
+              "state": "cancelled",
+              "uuid": "26f2b218-3b68-4140-840a-14b14cb7d4c3",
+              "session_id": "8cf5509b-eb52-4487-b3eb-8ec2b4fe6324"
+            }
+          ],
+          "requestCount": 1
+        },
+        {
+          "driver": "claude",
+          "id": "claude-authfailure-B",
+          "uid": "7ed714d7-96cb-4ba6-9b00-1c0f74bedcb9",
+          "nativeId": "0a91bde4-f269-4e1f-9cca-404fd027f8cf",
+          "success": true,
+          "terminal": {
+            "duration_api_ms": 11,
+            "stop_reason": "end_turn",
+            "session_id": "0a91bde4-f269-4e1f-9cca-404fd027f8cf",
+            "total_cost_usd": 0.000029999999999999997,
+            "usage": {
+              "input_tokens": 1,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 0,
+              "output_tokens": 1,
+              "output_tokens_details": {
+                "thinking_tokens": 0
+              },
+              "server_tool_use": {
+                "web_search_requests": 0,
+                "web_fetch_requests": 0
+              },
+              "service_tier": "standard",
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 0,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "inference_geo": "",
+              "iterations": [],
+              "speed": "standard",
+              "fallback_credit": null
+            },
+            "modelUsage": {
+              "mock-b": {
+                "inputTokens": 1,
+                "outputTokens": 1,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0,
+                "webSearchRequests": 0,
+                "costUSD": 0.000029999999999999997,
+                "contextWindow": 200000,
+                "maxOutputTokens": 32000,
+                "thinkingTokens": 0,
+                "cacheCreationEphemeral5mInputTokens": 0,
+                "cacheCreationEphemeral1hInputTokens": 0,
+                "canonicalModel": "mock-b",
+                "provider": "firstParty",
+                "costBasis": "unknown"
+              }
+            },
+            "permission_denials": [],
+            "terminal_reason": "completed",
+            "fast_mode_state": "off",
+            "fast_mode_disabled_reason": "sdk_opt_in_required",
+            "subagent_stats": {
+              "spawned": 0,
+              "requested": {
+                "background": 0,
+                "foreground": 0,
+                "unset": 0
+              },
+              "started_in_background": 0,
+              "max_depth": 0,
+              "spawned_by_subagents": 0,
+              "completed": 0,
+              "failed": 0,
+              "killed": {
+                "parent": 0,
+                "user": 0,
+                "system": 0
+              },
+              "refused": {
+                "depth_limit": 0,
+                "concurrency_limit": 0,
+                "budget": 0
+              },
+              "by_type": {}
+            },
+            "safety_stops": 0,
+            "is_error": false,
+            "num_turns": 1,
+            "subtype": "success",
+            "api_error_status": null,
+            "result": "ANSWER_claude-authfailure-B",
+            "ttft_ms": 32,
+            "type": "result",
+            "duration_ms": 35,
+            "uuid": "c9c3be94-66d3-41c5-8f5f-c8890fc8015d",
+            "ttft_stream_ms": 32,
+            "time_to_request_ms": 25,
+            "first_content_frame_ms": 32,
+            "user_message_uuid": "7ed714d7-96cb-4ba6-9b00-1c0f74bedcb9",
+            "user_message_uuids": [
+              "7ed714d7-96cb-4ba6-9b00-1c0f74bedcb9"
+            ],
+            "request_sent_wall_ms": 1794626200524,
+            "first_request_input_tokens": 1,
+            "first_request_cache_read_input_tokens": 0,
+            "queued_turn_count": 0,
+            "result_index": 0,
+            "model_usage_since_last_result": {
+              "mock-b": {
+                "inputTokens": 1,
+                "outputTokens": 1,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0,
+                "webSearchRequests": 0,
+                "costUSD": 0.000029999999999999997,
+                "contextWindow": 200000,
+                "maxOutputTokens": 32000,
+                "thinkingTokens": 0,
+                "cacheCreationEphemeral5mInputTokens": 0,
+                "cacheCreationEphemeral1hInputTokens": 0,
+                "canonicalModel": "mock-b",
+                "provider": "firstParty",
+                "costBasis": "unknown"
+              }
+            }
+          },
+          "hostCancellationRequested": false,
+          "retries": [],
+          "cancelledLifecycle": [],
+          "requestCount": 1
+        }
+      ]
+    },
+    {
+      "id": "codex-parallel-accounts",
+      "status": "passed",
+      "detail": [
+        {
+          "driver": "codex",
+          "id": "codex-parallel-A",
+          "nativeId": "01a1d80e-a4d8-7501-9d98-316c507d1cab",
+          "success": true,
+          "terminal": {
+            "id": "01a1d80e-a530-7c43-b62f-6059f89961e7",
+            "rootTurnId": "01a1d80e-a530-7c43-b62f-6059f89961e7",
+            "items": [
+              {
+                "type": "agentMessage",
+                "id": "md65074a0-3bec-47b0-aa63-b13720b32ffa",
+                "text": "ANSWER_codex-parallel-A",
+                "phase": null,
+                "memoryCitation": null,
+                "delivery": null,
+                "questions": null,
+                "startedAtMs": 1794626200940,
+                "completedAtMs": 1794626200941
+              }
+            ],
+            "itemsView": "summary",
+            "status": "completed",
+            "error": null,
+            "startedAt": 1794626200,
+            "completedAt": 1794626200,
+            "durationMs": 59
+          },
+          "errors": [],
+          "requestCount": 1
+        },
+        {
+          "driver": "codex",
+          "id": "codex-parallel-B",
+          "nativeId": "01a1d80e-a4d8-7161-9e25-f84cd9a6c409",
+          "success": true,
+          "terminal": {
+            "id": "01a1d80e-a530-7370-b568-f372627e971d",
+            "rootTurnId": "01a1d80e-a530-7370-b568-f372627e971d",
+            "items": [
+              {
+                "type": "agentMessage",
+                "id": "m6bff9fa7-5cb7-41af-8770-820d1c8718b5",
+                "text": "ANSWER_codex-parallel-B",
+                "phase": null,
+                "memoryCitation": null,
+                "delivery": null,
+                "questions": null,
+                "startedAtMs": 1794626200940,
+                "completedAtMs": 1794626200941
+              }
+            ],
+            "itemsView": "summary",
+            "status": "completed",
+            "error": null,
+            "startedAt": 1794626200,
+            "completedAt": 1794626200,
+            "durationMs": 59
+          },
+          "errors": [],
+          "requestCount": 1
+        }
+      ]
+    },
+    {
+      "id": "codex-401-does-not-switch-account",
+      "status": "passed",
+      "detail": [
+        {
+          "driver": "codex",
+          "id": "codex-authfailure-A",
+          "nativeId": "01a1d80e-a5b4-7ac2-90ed-89ddcea0debe",
+          "success": false,
+          "terminal": {
+            "id": "01a1d80e-a5be-7572-a7f9-417ad88fcbdc",
+            "rootTurnId": "01a1d80e-a5be-7572-a7f9-417ad88fcbdc",
+            "items": [],
+            "itemsView": "notLoaded",
+            "status": "failed",
+            "error": {
+              "message": "unexpected status 401 Unauthorized: synthetic invalid selected key, url: http://127.0.0.1:49429/codex-authfailure-A/v1/responses",
+              "codexErrorInfo": {
+                "httpConnectionFailed": {
+                  "httpStatusCode": 401
+                }
+              },
+              "additionalDetails": null,
+              "misalignment": null
+            },
+            "startedAt": 1794626201,
+            "completedAt": 1794626201,
+            "durationMs": 16
+          },
+          "errors": [
+            {
+              "method": "error",
+              "params": {
+                "error": {
+                  "message": "unexpected status 401 Unauthorized: synthetic invalid selected key, url: http://127.0.0.1:49429/codex-authfailure-A/v1/responses",
+                  "codexErrorInfo": {
+                    "httpConnectionFailed": {
+                      "httpStatusCode": 401
+                    }
+                  },
+                  "additionalDetails": null,
+                  "misalignment": null
+                },
+                "willRetry": false,
+                "threadId": "01a1d80e-a5b4-7ac2-90ed-89ddcea0debe",
+                "turnId": "01a1d80e-a5be-7572-a7f9-417ad88fcbdc"
+              },
+              "emittedAtMs": 1794626201040
+            }
+          ],
+          "requestCount": 1
+        },
+        {
+          "driver": "codex",
+          "id": "codex-authfailure-B",
+          "nativeId": "01a1d80e-a5b3-7032-a6f6-08aabfe73eb0",
+          "success": true,
+          "terminal": {
+            "id": "01a1d80e-a5be-7c40-83a6-be8596aca2da",
+            "rootTurnId": "01a1d80e-a5be-7c40-83a6-be8596aca2da",
+            "items": [
+              {
+                "type": "agentMessage",
+                "id": "m2464eea8-188d-4594-84f9-5b69bfc04d56",
+                "text": "ANSWER_codex-authfailure-B",
+                "phase": null,
+                "memoryCitation": null,
+                "delivery": null,
+                "questions": null,
+                "startedAtMs": 1794626201039,
+                "completedAtMs": 1794626201039
+              }
+            ],
+            "itemsView": "summary",
+            "status": "completed",
+            "error": null,
+            "startedAt": 1794626201,
+            "completedAt": 1794626201,
+            "durationMs": 17
+          },
+          "errors": [],
+          "requestCount": 1
+        }
+      ]
+    },
+    {
+      "id": "claude-proxy-denial-no-direct-fallback",
+      "status": "passed",
+      "detail": {
+        "driver": "claude",
+        "id": "claude-proxy-A",
+        "uid": "ffacde5b-bfa0-43c7-ae4b-84ea512d263a",
+        "nativeId": "bdc0a008-4ef3-4157-9653-0ffc6bcc1c0a",
+        "success": false,
+        "terminal": {
+          "duration_api_ms": 0,
+          "stop_reason": "stop_sequence",
+          "session_id": "bdc0a008-4ef3-4157-9653-0ffc6bcc1c0a",
+          "total_cost_usd": 0,
+          "usage": {
+            "output_tokens_details": {
+              "thinking_tokens": 0
+            },
+            "input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 0,
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "",
+            "iterations": [],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "modelUsage": {},
+          "permission_denials": [],
+          "terminal_reason": "api_error",
+          "fast_mode_state": "off",
+          "fast_mode_disabled_reason": "sdk_opt_in_required",
+          "subagent_stats": {
+            "spawned": 0,
+            "requested": {
+              "background": 0,
+              "foreground": 0,
+              "unset": 0
+            },
+            "started_in_background": 0,
+            "max_depth": 0,
+            "spawned_by_subagents": 0,
+            "completed": 0,
+            "failed": 0,
+            "killed": {
+              "parent": 0,
+              "user": 0,
+              "system": 0
+            },
+            "refused": {
+              "depth_limit": 0,
+              "concurrency_limit": 0,
+              "budget": 0
+            },
+            "by_type": {}
+          },
+          "safety_stops": 0,
+          "is_error": true,
+          "num_turns": 1,
+          "subtype": "success",
+          "api_error_status": 407,
+          "result": "API Error: 407 synthetic proxy authentication required",
+          "type": "result",
+          "duration_ms": 31,
+          "uuid": "ce2f2bbd-be89-45c3-8767-d2a451b77b3b",
+          "user_message_uuid": "ffacde5b-bfa0-43c7-ae4b-84ea512d263a",
+          "user_message_uuids": [
+            "ffacde5b-bfa0-43c7-ae4b-84ea512d263a"
+          ],
+          "queued_turn_count": 0,
+          "result_index": 0,
+          "model_usage_since_last_result": {}
+        },
+        "transportError": "Claude Code process exited with code 1",
+        "hostCancellationRequested": false,
+        "retries": [],
+        "cancelledLifecycle": [
+          {
+            "type": "command_lifecycle",
+            "command_uuid": "ffacde5b-bfa0-43c7-ae4b-84ea512d263a",
+            "state": "cancelled",
+            "uuid": "95f917e7-f0b5-43f9-9301-6c63a323e239",
+            "session_id": "bdc0a008-4ef3-4157-9653-0ffc6bcc1c0a"
+          }
+        ],
+        "requestCount": 0
+      }
+    },
+    {
+      "id": "codex-proxy-denial-no-direct-fallback",
+      "status": "passed",
+      "detail": {
+        "driver": "codex",
+        "id": "codex-proxy-A",
+        "nativeId": "01a1d80e-a6e3-7f12-8f87-c61ea5082750",
+        "success": false,
+        "terminal": {
+          "id": "01a1d80e-a6eb-7243-b782-5a646429f4d3",
+          "rootTurnId": "01a1d80e-a6eb-7243-b782-5a646429f4d3",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "failed",
+          "error": {
+            "message": "unexpected status 407 Proxy Authentication Required: synthetic proxy authentication required, url: http://127.0.0.1:49429/codex-proxy-A/v1/responses",
+            "codexErrorInfo": {
+              "httpConnectionFailed": {
+                "httpStatusCode": 407
+              }
+            },
+            "additionalDetails": null,
+            "misalignment": null
+          },
+          "startedAt": 1794626201,
+          "completedAt": 1794626201,
+          "durationMs": 12
+        },
+        "errors": [
+          {
+            "method": "error",
+            "params": {
+              "error": {
+                "message": "unexpected status 407 Proxy Authentication Required: synthetic proxy authentication required, url: http://127.0.0.1:49429/codex-proxy-A/v1/responses",
+                "codexErrorInfo": {
+                  "httpConnectionFailed": {
+                    "httpStatusCode": 407
+                  }
+                },
+                "additionalDetails": null,
+                "misalignment": null
+              },
+              "willRetry": false,
+              "threadId": "01a1d80e-a6e3-7f12-8f87-c61ea5082750",
+              "turnId": "01a1d80e-a6eb-7243-b782-5a646429f4d3"
+            },
+            "emittedAtMs": 1794626201336
+          }
+        ],
+        "requestCount": 0
+      }
+    },
+    {
+      "id": "config-files-and-unselected-endpoint-untouched",
+      "status": "passed",
+      "detail": {
+        "configFiles": 13,
+        "unselectedRequests": 0,
+        "hostGlobalEnvironmentModified": false
+      }
+    }
+  ],
+  "passed": 6,
+  "failed": 0
+}

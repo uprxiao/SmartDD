@@ -1,0 +1,8 @@
+import {build} from 'esbuild';
+import {readFileSync,writeFileSync,readdirSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const repo='/Users/hx/projects/SmartDD', root='/private/tmp/willyou-m14-owner-probe';
+const sql=Object.fromEntries(readdirSync(repo+'/drizzle').filter(x=>x.endsWith('.sql')).map(x=>['/drizzle/'+x,readFileSync(repo+'/drizzle/'+x,'utf8')]));
+const result=await build({stdin:{contents:`export {runFixture,FixtureProcessReader} from '${repo}/src/main/core/applications/__tests__/run-fixture.ts';export {assertOwnedCapabilityRun} from '${repo}/src/main/core/applications/run-registry.ts';export {MacProcessIdentityReader} from '${repo}/src/main/core/applications/process-identity.ts';`,resolveDir:repo,loader:'ts'},bundle:true,platform:'node',format:'cjs',target:'node22',outfile:root+'/actual.cjs',metafile:true,nodePaths:[root+'/node_modules'],external:['better-sqlite3'],tsconfig:repo+'/tsconfig.node.json',plugins:[{name:'vite-raw-sql',setup(b){b.onLoad({filter:/\/db\/migrations\.ts$/},({path})=>({loader:'ts',contents:readFileSync(path,'utf8').replace(/import\.meta\.glob\('@root\/drizzle\/\*\.sql',\s*\{[\s\S]*?\}\)/,'('+JSON.stringify(sql)+')')}));}}]});
+const sources=Object.keys(result.metafile.inputs).filter(x=>!x.startsWith('<')).map(x=>{const path=x.startsWith('/')?x:process.cwd()+'/'+x;return {path,sha256:createHash('sha256').update(readFileSync(path)).digest('hex')};});
+writeFileSync(root+'/build.json',JSON.stringify({substitution:'Vite import.meta.glob replaced with exact current raw SQL content; no runtime source modules mocked',sources},null,2));

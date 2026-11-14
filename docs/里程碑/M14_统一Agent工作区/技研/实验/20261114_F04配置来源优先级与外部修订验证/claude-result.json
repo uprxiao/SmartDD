@@ -1,0 +1,109 @@
+{
+  "out": "/private/tmp/willyou-m14-f04-config-contract/claude-pYbPg7",
+  "checks": [
+    {
+      "id": "F04-C01 env-only counterexample",
+      "status": "passed",
+      "evidence": {
+        "label": "env-only",
+        "requests": [
+          {
+            "label": "env-only",
+            "layer": "local",
+            "model": "f04-selected-model",
+            "auth": "Bearer synthetic-local",
+            "instructionSeen": true,
+            "denialSeen": true
+          }
+        ],
+        "nativeProcess": {
+          "pid": 62197,
+          "exitCode": 0,
+          "signal": null
+        },
+        "workerExit": {
+          "code": 0,
+          "signal": null
+        },
+        "resolverIsRawCascade": true,
+        "selectedMcpOnly": true,
+        "projectInstructionsPreserved": true,
+        "permissionMode": "default",
+        "writePrevented": true
+      }
+    },
+    {
+      "id": "F04-C02 explicit settings plus selected MCP and native policy",
+      "status": "passed",
+      "evidence": {
+        "label": "flag-fixed",
+        "requests": [
+          {
+            "label": "flag-fixed",
+            "layer": "selected",
+            "model": "f04-selected-model",
+            "auth": "Bearer synthetic-selected",
+            "instructionSeen": true,
+            "denialSeen": true
+          },
+          {
+            "label": "flag-fixed",
+            "layer": "selected",
+            "model": "f04-selected-model",
+            "auth": "Bearer synthetic-selected",
+            "instructionSeen": true,
+            "denialSeen": true
+          }
+        ],
+        "nativeProcess": {
+          "pid": 62205,
+          "exitCode": 0,
+          "signal": null
+        },
+        "workerExit": {
+          "code": 0,
+          "signal": null
+        },
+        "resolverIsRawCascade": true,
+        "selectedMcpOnly": true,
+        "projectInstructionsPreserved": true,
+        "permissionMode": "default",
+        "writePrevented": true
+      }
+    },
+    {
+      "id": "F04-C03 external root cascade source",
+      "status": "passed",
+      "evidence": {
+        "label": "external-root",
+        "requests": [
+          {
+            "label": "external-root",
+            "layer": "local",
+            "model": "f04-selected-model",
+            "auth": "Bearer synthetic-local",
+            "instructionSeen": true,
+            "denialSeen": true
+          }
+        ],
+        "nativeProcess": {
+          "pid": 62213,
+          "exitCode": 0,
+          "signal": null
+        },
+        "workerExit": {
+          "code": 0,
+          "signal": null
+        },
+        "resolverIsRawCascade": true,
+        "selectedMcpOnly": true,
+        "projectInstructionsPreserved": true,
+        "permissionMode": "default",
+        "writePrevented": true
+      }
+    }
+  ],
+  "passed": 3,
+  "error": null,
+  "scope": "Fixed real Claude SDK/native with isolated file configs, synthetic local model and MCP; no actual account/Keychain, managed enterprise policy or product integration"
+}

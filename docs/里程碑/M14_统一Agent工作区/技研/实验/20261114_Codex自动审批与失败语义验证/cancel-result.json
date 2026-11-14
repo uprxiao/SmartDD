@@ -1,0 +1,127 @@
+{
+  "out": "/private/tmp/willyou-m14-auto-review-cancel-probe/attempt-67VxNN",
+  "passed": true,
+  "error": null,
+  "serverError": null,
+  "thread": "01a1d9a2-7651-7ef0-aef7-a7f8d1da3113",
+  "turns": [
+    "01a1d9a2-765a-7a82-9551-cc0653b19d35",
+    "01a1d9a2-767b-7b83-8725-8670cb77922e"
+  ],
+  "reviews": [
+    {
+      "threadId": "01a1d9a2-7651-7ef0-aef7-a7f8d1da3113",
+      "turnId": "01a1d9a2-765a-7a82-9551-cc0653b19d35",
+      "startedAtMs": 1794652665456,
+      "reviewId": "bc676502-c1b1-493e-9fbe-0681fce16a12",
+      "targetItemId": "call339ca143-d3bc-45f4-a475-d57d22cb3c7c",
+      "review": {
+        "status": "inProgress",
+        "riskLevel": null,
+        "userAuthorization": null,
+        "rationale": null
+      },
+      "action": {
+        "type": "command",
+        "source": "unifiedExec",
+        "command": "/bin/zsh -c \"printf '%s' 'CANCEL_MARKER_0' > '/private/tmp/willyou-m14-auto-review-cancel-probe/attempt-67VxNN/first-canceled.txt'\"",
+        "cwd": "/private/tmp/willyou-m14-auto-review-cancel-probe/attempt-67VxNN/workspace"
+      }
+    },
+    {
+      "threadId": "01a1d9a2-7651-7ef0-aef7-a7f8d1da3113",
+      "turnId": "01a1d9a2-767b-7b83-8725-8670cb77922e",
+      "startedAtMs": 1794652665477,
+      "reviewId": "3c11a160-c4b2-4939-9e60-ed5c96dca83a",
+      "targetItemId": "call6c8c8b3e-eb0c-40e0-9410-a67e5fb1beee",
+      "review": {
+        "status": "inProgress",
+        "riskLevel": null,
+        "userAuthorization": null,
+        "rationale": null
+      },
+      "action": {
+        "type": "command",
+        "source": "unifiedExec",
+        "command": "/bin/zsh -c \"printf '%s' 'CANCEL_MARKER_1' > '/private/tmp/willyou-m14-auto-review-cancel-probe/attempt-67VxNN/second-allowed.txt'\"",
+        "cwd": "/private/tmp/willyou-m14-auto-review-cancel-probe/attempt-67VxNN/workspace"
+      }
+    }
+  ],
+  "primaryCounts": [
+    1,
+    2
+  ],
+  "reviewCounts": [
+    1,
+    1
+  ],
+  "controls": [
+    {
+      "name": "first-review-held-before-response",
+      "frameCount": 12,
+      "phase": 0
+    },
+    {
+      "name": "interrupt-first-requested",
+      "frameCount": 12,
+      "phase": 0,
+      "turnId": "01a1d9a2-765a-7a82-9551-cc0653b19d35"
+    },
+    {
+      "name": "old-review-http-closed",
+      "frameCount": 12,
+      "phase": 0
+    },
+    {
+      "name": "interrupt-first-acknowledged",
+      "frameCount": 17,
+      "phase": 0
+    },
+    {
+      "name": "first-native-terminal",
+      "frameCount": 19,
+      "phase": 0,
+      "turnStatus": "interrupted",
+      "reviewStatus": "aborted"
+    },
+    {
+      "name": "late-response-not-deliverable",
+      "frameCount": 19,
+      "phase": 0,
+      "destroyed": true,
+      "writableEnded": false
+    },
+    {
+      "name": "new-review-and-turn-completed",
+      "frameCount": 40,
+      "phase": 1
+    }
+  ],
+  "firstFileExists": false,
+  "secondFileExists": true,
+  "processes": [
+    {
+      "pid": 13499,
+      "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+      "args": [
+        "app-server",
+        "--disable",
+        "plugins",
+        "-c",
+        "analytics.enabled=false",
+        "-c",
+        "thread_unload_delay_secs=0",
+        "-c",
+        "model_provider=\"m14\"",
+        "-c",
+        "model_providers.m14={name=\"m14\",base_url=\"http://127.0.0.1:63410/codex/v1\",wire_api=\"responses\",env_key=\"WY_MODEL_KEY\",request_max_retries=0,stream_max_retries=0}"
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "scope": "Native Codex 0.167.1 auto-review canceled before any review response, followed by new turn in same live thread. Local controlled model, no business bridge or crash; old socket closed, no successful late response delivery claimed."
+}

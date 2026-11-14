@@ -1,0 +1,1375 @@
+{
+  "out": "/private/tmp/willyou-m14-history-recovery-probe/attempt-zocDXv",
+  "checks": [
+    {
+      "id": "C01",
+      "pause": "after-copy",
+      "status": "passed",
+      "evidence": {
+        "classification": "revalidated-and-recopied",
+        "newReceipt": true,
+        "repeatNoReplay": true,
+        "liveOwnerRefusal": true
+      }
+    },
+    {
+      "id": "C02",
+      "pause": "in-commit",
+      "status": "passed",
+      "evidence": {
+        "classification": "revalidated-and-recopied",
+        "newReceipt": true,
+        "repeatNoReplay": true,
+        "liveOwnerRefusal": false
+      }
+    },
+    {
+      "id": "C03",
+      "pause": "after-commit",
+      "status": "passed",
+      "evidence": {
+        "classification": "committed-no-replay",
+        "newReceipt": false,
+        "repeatNoReplay": true,
+        "liveOwnerRefusal": false
+      }
+    },
+    {
+      "id": "C04",
+      "pause": "after-copy",
+      "tamper": true,
+      "status": "passed",
+      "evidence": {
+        "tamperRefused": true,
+        "externalBytesPreserved": true,
+        "committedMetadataNotRolledBack": false
+      }
+    },
+    {
+      "id": "C05",
+      "pause": "after-commit",
+      "tamper": true,
+      "status": "passed",
+      "evidence": {
+        "tamperRefused": true,
+        "externalBytesPreserved": true,
+        "committedMetadataNotRolledBack": true
+      }
+    }
+  ],
+  "passed": 5,
+  "error": null,
+  "workers": [
+    {
+      "label": "C01-owner",
+      "pid": 22657,
+      "mode": "prepare",
+      "events": [
+        {
+          "type": "checkpoint",
+          "point": "after-copy",
+          "descriptor": {
+            "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ",
+            "db": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/state.sqlite",
+            "targetFile": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history/projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl"
+          },
+          "pid": 22657,
+          "owner": {
+            "pid": 22657,
+            "startedAt": "darwin-proc-v1:1794654907:840660"
+          }
+        }
+      ],
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C01-live-refusal",
+      "pid": 22662,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "error",
+          "message": "ORIGINAL_OWNER_NOT_STOPPED\n+ actual - expected\n\n+ 'running'\n- 'stopped'\n",
+          "code": "ERR_ASSERTION",
+          "stack": "AssertionError [ERR_ASSERTION]: ORIGINAL_OWNER_NOT_STOPPED\n+ actual - expected\n\n+ 'running'\n- 'stopped'\n\n    at file:///private/tmp/willyou-m14-history-recovery-probe/worker.mjs:49:10\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\n    at async node:internal/modules/esm/loader:650:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)",
+          "state": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "copied",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ\",\"storeId\":\"609a9767-c020-44da-b4be-ffe535820306\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home\",\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"id\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"owner\":{\"pid\":22657,\"startedAt\":\"darwin-proc-v1:1794654907:840660\"},\"oldHash\":\"dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf\",\"newHash\":\"26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b\",\"next\":{\"schema\":3,\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788160\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788163\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude",
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude",
+                "session_id": "d8ca416b-0e06-4c3d-8526-b58d509f419a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "updated_at": "2026-11-14T11:15:08.136Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "created_at": "2026-11-14T11:15:08.050Z"
+              },
+              {
+                "snapshot_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.094Z"
+              },
+              {
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.136Z"
+              }
+            ]
+          }
+        }
+      ],
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C01-recovery",
+      "pid": 22665,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "result",
+          "classification": "revalidated-and-recopied",
+          "before": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "copied",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ\",\"storeId\":\"609a9767-c020-44da-b4be-ffe535820306\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home\",\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"id\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"owner\":{\"pid\":22657,\"startedAt\":\"darwin-proc-v1:1794654907:840660\"},\"oldHash\":\"dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf\",\"newHash\":\"26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b\",\"next\":{\"schema\":3,\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788160\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788163\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude",
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude",
+                "session_id": "d8ca416b-0e06-4c3d-8526-b58d509f419a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "updated_at": "2026-11-14T11:15:08.136Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "created_at": "2026-11-14T11:15:08.050Z"
+              },
+              {
+                "snapshot_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.094Z"
+              },
+              {
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.136Z"
+              }
+            ]
+          },
+          "after": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ\",\"storeId\":\"609a9767-c020-44da-b4be-ffe535820306\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home\",\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"id\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"owner\":{\"pid\":22657,\"startedAt\":\"darwin-proc-v1:1794654907:840660\"},\"oldHash\":\"dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf\",\"newHash\":\"26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b\",\"next\":{\"schema\":3,\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788160\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788163\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history",
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history",
+                "session_id": "d8ca416b-0e06-4c3d-8526-b58d509f419a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home",
+                "selection_hash": "692695d0bcba18830fda82c349890e9f155fd32905518eadf8ac70ca500a23ed",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "updated_at": "2026-11-14T11:15:08.407Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "created_at": "2026-11-14T11:15:08.050Z"
+              },
+              {
+                "snapshot_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.094Z"
+              },
+              {
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "692695d0bcba18830fda82c349890e9f155fd32905518eadf8ac70ca500a23ed",
+                "created_at": "2026-11-14T11:15:08.407Z"
+              },
+              {
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.136Z"
+              }
+            ]
+          },
+          "receiptRehydrated": false,
+          "freshReceipt": true
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C01-repeat",
+      "pid": 22668,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "result",
+          "classification": "committed-no-replay",
+          "before": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ\",\"storeId\":\"609a9767-c020-44da-b4be-ffe535820306\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home\",\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"id\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"owner\":{\"pid\":22657,\"startedAt\":\"darwin-proc-v1:1794654907:840660\"},\"oldHash\":\"dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf\",\"newHash\":\"26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b\",\"next\":{\"schema\":3,\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788160\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788163\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history",
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history",
+                "session_id": "d8ca416b-0e06-4c3d-8526-b58d509f419a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home",
+                "selection_hash": "692695d0bcba18830fda82c349890e9f155fd32905518eadf8ac70ca500a23ed",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "updated_at": "2026-11-14T11:15:08.407Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "created_at": "2026-11-14T11:15:08.050Z"
+              },
+              {
+                "snapshot_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.094Z"
+              },
+              {
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "692695d0bcba18830fda82c349890e9f155fd32905518eadf8ac70ca500a23ed",
+                "created_at": "2026-11-14T11:15:08.407Z"
+              },
+              {
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.136Z"
+              }
+            ]
+          },
+          "after": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ\",\"storeId\":\"609a9767-c020-44da-b4be-ffe535820306\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home\",\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"id\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"owner\":{\"pid\":22657,\"startedAt\":\"darwin-proc-v1:1794654907:840660\"},\"oldHash\":\"dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf\",\"newHash\":\"26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b\",\"next\":{\"schema\":3,\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788160\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788163\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-XRoVUJ-project/d8ca416b-0e06-4c3d-8526-b58d509f419a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history",
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history",
+                "session_id": "d8ca416b-0e06-4c3d-8526-b58d509f419a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home",
+                "selection_hash": "692695d0bcba18830fda82c349890e9f155fd32905518eadf8ac70ca500a23ed",
+                "created_at": "2026-11-14T11:15:08.050Z",
+                "updated_at": "2026-11-14T11:15:08.407Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "107a661420e227893f1d25eb14c5ed811c32cd323f7df0a904591eeaa06ad431",
+                "created_at": "2026-11-14T11:15:08.050Z"
+              },
+              {
+                "snapshot_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.094Z"
+              },
+              {
+                "snapshot_hash": "26116a39096bc19e693be3b45f6aafc4818019fca83f3a7323b013e7211b573b",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "692695d0bcba18830fda82c349890e9f155fd32905518eadf8ac70ca500a23ed",
+                "created_at": "2026-11-14T11:15:08.407Z"
+              },
+              {
+                "snapshot_hash": "dbf7fbab4d1749cdf32ee6e7befec32b6ff3d08b1d0f9042157a5fd943425bbf",
+                "task_id": "663c493c-11cf-4d24-8227-34214569fc85",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.050Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/project\",\"sessionId\":\"d8ca416b-0e06-4c3d-8526-b58d509f419a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-XRoVUJ/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"663c493c-11cf-4d24-8227-34214569fc85\"}",
+                "selection_hash": "1d5fda064c4e92743e9247eb912112e489cf5f0079485a168689156a29a80314",
+                "created_at": "2026-11-14T11:15:08.136Z"
+              }
+            ]
+          },
+          "receiptRehydrated": false
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C02-owner",
+      "pid": 22671,
+      "mode": "prepare",
+      "events": [
+        {
+          "type": "checkpoint",
+          "point": "in-commit",
+          "descriptor": {
+            "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy",
+            "db": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/state.sqlite",
+            "targetFile": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history/projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl"
+          },
+          "pid": 22671,
+          "owner": {
+            "pid": 22671,
+            "startedAt": "darwin-proc-v1:1794654908:569613"
+          }
+        }
+      ],
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C02-recovery",
+      "pid": 22678,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "result",
+          "classification": "revalidated-and-recopied",
+          "before": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "copied",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy\",\"storeId\":\"a24763ed-7ecc-4ba2-930c-1061c83c8726\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home\",\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"id\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"owner\":{\"pid\":22671,\"startedAt\":\"darwin-proc-v1:1794654908:569613\"},\"oldHash\":\"81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5\",\"newHash\":\"cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90\",\"next\":{\"schema\":3,\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788290\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788293\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude",
+                "snapshot_hash": "81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "snapshot_hash": "81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude",
+                "session_id": "e45af388-5b22-4cac-89d3-7fedec621ff5",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "updated_at": "2026-11-14T11:15:08.859Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.816Z"
+              },
+              {
+                "snapshot_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "created_at": "2026-11-14T11:15:08.774Z"
+              },
+              {
+                "snapshot_hash": "81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.859Z"
+              }
+            ]
+          },
+          "after": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy\",\"storeId\":\"a24763ed-7ecc-4ba2-930c-1061c83c8726\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home\",\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"id\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"owner\":{\"pid\":22671,\"startedAt\":\"darwin-proc-v1:1794654908:569613\"},\"oldHash\":\"81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5\",\"newHash\":\"cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90\",\"next\":{\"schema\":3,\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788290\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788293\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history",
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history",
+                "session_id": "e45af388-5b22-4cac-89d3-7fedec621ff5",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home",
+                "selection_hash": "dc6fef72d88cc245aaa262b7dcbc2236dd95d8b4186f8aed819782ad8147ddb6",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "updated_at": "2026-11-14T11:15:09.040Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.816Z"
+              },
+              {
+                "snapshot_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "created_at": "2026-11-14T11:15:08.774Z"
+              },
+              {
+                "snapshot_hash": "81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.859Z"
+              },
+              {
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "dc6fef72d88cc245aaa262b7dcbc2236dd95d8b4186f8aed819782ad8147ddb6",
+                "created_at": "2026-11-14T11:15:09.040Z"
+              }
+            ]
+          },
+          "receiptRehydrated": false,
+          "freshReceipt": true
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C02-repeat",
+      "pid": 22682,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "result",
+          "classification": "committed-no-replay",
+          "before": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy\",\"storeId\":\"a24763ed-7ecc-4ba2-930c-1061c83c8726\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home\",\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"id\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"owner\":{\"pid\":22671,\"startedAt\":\"darwin-proc-v1:1794654908:569613\"},\"oldHash\":\"81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5\",\"newHash\":\"cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90\",\"next\":{\"schema\":3,\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788290\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788293\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history",
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history",
+                "session_id": "e45af388-5b22-4cac-89d3-7fedec621ff5",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home",
+                "selection_hash": "dc6fef72d88cc245aaa262b7dcbc2236dd95d8b4186f8aed819782ad8147ddb6",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "updated_at": "2026-11-14T11:15:09.040Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.816Z"
+              },
+              {
+                "snapshot_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "created_at": "2026-11-14T11:15:08.774Z"
+              },
+              {
+                "snapshot_hash": "81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.859Z"
+              },
+              {
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "dc6fef72d88cc245aaa262b7dcbc2236dd95d8b4186f8aed819782ad8147ddb6",
+                "created_at": "2026-11-14T11:15:09.040Z"
+              }
+            ]
+          },
+          "after": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy\",\"storeId\":\"a24763ed-7ecc-4ba2-930c-1061c83c8726\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home\",\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"id\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"owner\":{\"pid\":22671,\"startedAt\":\"darwin-proc-v1:1794654908:569613\"},\"oldHash\":\"81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5\",\"newHash\":\"cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90\",\"next\":{\"schema\":3,\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788290\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788293\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-VYESmy-project/e45af388-5b22-4cac-89d3-7fedec621ff5.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history",
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history",
+                "session_id": "e45af388-5b22-4cac-89d3-7fedec621ff5",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home",
+                "selection_hash": "dc6fef72d88cc245aaa262b7dcbc2236dd95d8b4186f8aed819782ad8147ddb6",
+                "created_at": "2026-11-14T11:15:08.774Z",
+                "updated_at": "2026-11-14T11:15:09.040Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.816Z"
+              },
+              {
+                "snapshot_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "51768251ac77c4379abb79b3b8309b76662fd8644adfc92b589de5dccb49efd1",
+                "created_at": "2026-11-14T11:15:08.774Z"
+              },
+              {
+                "snapshot_hash": "81ee55afce828ab8eaea3e81a8dde78d018e89bd0cdd9b1214df1a18027f3ac5",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "27f2b282788d5854c20995a8d3b837ea62fe621f115268dfa89c087670a77bc3",
+                "created_at": "2026-11-14T11:15:08.859Z"
+              },
+              {
+                "snapshot_hash": "cc60f2b2d947db03caafed70c2353c975462cab674a6e9b52e56e55ee38a9d90",
+                "task_id": "70983f1f-3e74-418c-a7a5-7718a88d5bc3",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:08.774Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/project\",\"sessionId\":\"e45af388-5b22-4cac-89d3-7fedec621ff5\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-VYESmy/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"70983f1f-3e74-418c-a7a5-7718a88d5bc3\"}",
+                "selection_hash": "dc6fef72d88cc245aaa262b7dcbc2236dd95d8b4186f8aed819782ad8147ddb6",
+                "created_at": "2026-11-14T11:15:09.040Z"
+              }
+            ]
+          },
+          "receiptRehydrated": false
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C03-owner",
+      "pid": 22685,
+      "mode": "prepare",
+      "events": [
+        {
+          "type": "checkpoint",
+          "point": "after-commit",
+          "descriptor": {
+            "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp",
+            "db": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/state.sqlite",
+            "targetFile": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history/projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl"
+          },
+          "pid": 22685,
+          "owner": {
+            "pid": 22685,
+            "startedAt": "darwin-proc-v1:1794654909:191997"
+          }
+        }
+      ],
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C03-recovery",
+      "pid": 22691,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "result",
+          "classification": "committed-no-replay",
+          "before": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp\",\"storeId\":\"0f281d78-d640-4a41-92c1-e9a650fe0237\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home\",\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"id\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"owner\":{\"pid\":22685,\"startedAt\":\"darwin-proc-v1:1794654909:191997\"},\"oldHash\":\"1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90\",\"newHash\":\"4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37\",\"next\":{\"schema\":3,\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788420\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788423\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "session_id": "1e989b17-7594-4595-9a2d-b4a82124535a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "updated_at": "2026-11-14T11:15:09.525Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.431Z"
+              },
+              {
+                "snapshot_hash": "1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.475Z"
+              },
+              {
+                "snapshot_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "created_at": "2026-11-14T11:15:09.390Z"
+              },
+              {
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.525Z"
+              }
+            ]
+          },
+          "after": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp\",\"storeId\":\"0f281d78-d640-4a41-92c1-e9a650fe0237\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home\",\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"id\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"owner\":{\"pid\":22685,\"startedAt\":\"darwin-proc-v1:1794654909:191997\"},\"oldHash\":\"1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90\",\"newHash\":\"4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37\",\"next\":{\"schema\":3,\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788420\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788423\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "session_id": "1e989b17-7594-4595-9a2d-b4a82124535a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "updated_at": "2026-11-14T11:15:09.525Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.431Z"
+              },
+              {
+                "snapshot_hash": "1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.475Z"
+              },
+              {
+                "snapshot_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "created_at": "2026-11-14T11:15:09.390Z"
+              },
+              {
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.525Z"
+              }
+            ]
+          },
+          "receiptRehydrated": false
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C03-repeat",
+      "pid": 22694,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "result",
+          "classification": "committed-no-replay",
+          "before": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp\",\"storeId\":\"0f281d78-d640-4a41-92c1-e9a650fe0237\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home\",\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"id\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"owner\":{\"pid\":22685,\"startedAt\":\"darwin-proc-v1:1794654909:191997\"},\"oldHash\":\"1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90\",\"newHash\":\"4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37\",\"next\":{\"schema\":3,\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788420\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788423\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "session_id": "1e989b17-7594-4595-9a2d-b4a82124535a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "updated_at": "2026-11-14T11:15:09.525Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.431Z"
+              },
+              {
+                "snapshot_hash": "1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.475Z"
+              },
+              {
+                "snapshot_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "created_at": "2026-11-14T11:15:09.390Z"
+              },
+              {
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.525Z"
+              }
+            ]
+          },
+          "after": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp\",\"storeId\":\"0f281d78-d640-4a41-92c1-e9a650fe0237\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home\",\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"id\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"owner\":{\"pid\":22685,\"startedAt\":\"darwin-proc-v1:1794654909:191997\"},\"oldHash\":\"1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90\",\"newHash\":\"4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37\",\"next\":{\"schema\":3,\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788420\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788423\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-MuakWp-project/1e989b17-7594-4595-9a2d-b4a82124535a.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history",
+                "session_id": "1e989b17-7594-4595-9a2d-b4a82124535a",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.390Z",
+                "updated_at": "2026-11-14T11:15:09.525Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.431Z"
+              },
+              {
+                "snapshot_hash": "1bcc24c7200c1649b608f53f6cd34f600154b6a6a5f7e7590cde028f9e20de90",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "075b3ab6ffcdae34bc34a62e63ebc5e203a996a14971aa07ee78a977d38ac440",
+                "created_at": "2026-11-14T11:15:09.475Z"
+              },
+              {
+                "snapshot_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "2c9349fdf569e0bbf1fe5ed0afc2a3004cada384337356181b925e797c2ad7c8",
+                "created_at": "2026-11-14T11:15:09.390Z"
+              },
+              {
+                "snapshot_hash": "4e8d181d8ce423148f60c151e3e5fdc6edff6401305973cbc19c8ab5cc99bf37",
+                "task_id": "bfae4894-8721-4cd4-85c0-7ba88ba64389",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:09.390Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/project\",\"sessionId\":\"1e989b17-7594-4595-9a2d-b4a82124535a\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-MuakWp/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"bfae4894-8721-4cd4-85c0-7ba88ba64389\"}",
+                "selection_hash": "7cbf8ba802cbe4c4a1afa635bb1b7087785986e2d0b946a2459b45a13f6ac152",
+                "created_at": "2026-11-14T11:15:09.525Z"
+              }
+            ]
+          },
+          "receiptRehydrated": false
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C04-owner",
+      "pid": 22697,
+      "mode": "prepare",
+      "events": [
+        {
+          "type": "checkpoint",
+          "point": "after-copy",
+          "descriptor": {
+            "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP",
+            "db": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/state.sqlite",
+            "targetFile": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/copied-history/projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b.jsonl"
+          },
+          "pid": 22697,
+          "owner": {
+            "pid": 22697,
+            "startedAt": "darwin-proc-v1:1794654909:818608"
+          }
+        }
+      ],
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C04-recovery",
+      "pid": 22703,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "error",
+          "message": "TARGET_CHANGED\n+ actual - expected\n... Skipped lines\n\n  {\n    dev: '16777234',\n    entries: [\n      {\n        kind: 'dir',\n...\n      {\n+       hash: '4343a1563e437de561c764f7087b90b0924f944d30be195e06246946978df559',\n-       hash: 'a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71',\n        kind: 'file',\n        path: 'projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b.jsonl'\n      }\n    ],\n    ino: '77788548'\n",
+          "code": "ERR_ASSERTION",
+          "stack": "AssertionError [ERR_ASSERTION]: TARGET_CHANGED\n+ actual - expected\n... Skipped lines\n\n  {\n    dev: '16777234',\n    entries: [\n      {\n        kind: 'dir',\n...\n      {\n+       hash: '4343a1563e437de561c764f7087b90b0924f944d30be195e06246946978df559',\n-       hash: 'a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71',\n        kind: 'file',\n        path: 'projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b.jsonl'\n      }\n    ],\n    ino: '77788548'\n\n    at file:///private/tmp/willyou-m14-history-recovery-probe/worker.mjs:51:73\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\n    at async node:internal/modules/esm/loader:650:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)",
+          "state": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "copied",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP\",\"storeId\":\"637ad9a8-a33c-4404-b46a-d26de3a725b4\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home\",\"taskId\":\"528b685a-5fbb-4591-aa03-6f26bea874ba\",\"id\":\"e320f742-2112-453e-b823-c59f4de6d41b\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/copied-history\",\"owner\":{\"pid\":22697,\"startedAt\":\"darwin-proc-v1:1794654909:818608\"},\"oldHash\":\"1ea629aa2151147df232441fc0478f12d4f224da3ac52df551d7993733f81d5f\",\"newHash\":\"c836cf1a0b6950e7c2a36960f64b4b35798ef0b8a47dd55f2d42b8f0fb769b3e\",\"next\":{\"schema\":3,\"taskId\":\"528b685a-5fbb-4591-aa03-6f26bea874ba\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:10.027Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"e320f742-2112-453e-b823-c59f4de6d41b\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788545\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788548\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-7oQrfP-project/e320f742-2112-453e-b823-c59f4de6d41b.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "528b685a-5fbb-4591-aa03-6f26bea874ba",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home/.claude",
+                "snapshot_hash": "1ea629aa2151147df232441fc0478f12d4f224da3ac52df551d7993733f81d5f"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "528b685a-5fbb-4591-aa03-6f26bea874ba",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.027Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/project\",\"sessionId\":\"e320f742-2112-453e-b823-c59f4de6d41b\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"528b685a-5fbb-4591-aa03-6f26bea874ba\"}",
+                "snapshot_hash": "1ea629aa2151147df232441fc0478f12d4f224da3ac52df551d7993733f81d5f",
+                "created_at": "2026-11-14T11:15:10.027Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "528b685a-5fbb-4591-aa03-6f26bea874ba",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home/.claude",
+                "session_id": "e320f742-2112-453e-b823-c59f4de6d41b",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home",
+                "selection_hash": "d5c089a7838c14ffa1fd32ab673f22491ac6ee1f7cafdaaf0170c10c0a80705c",
+                "created_at": "2026-11-14T11:15:10.027Z",
+                "updated_at": "2026-11-14T11:15:10.113Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "1ea629aa2151147df232441fc0478f12d4f224da3ac52df551d7993733f81d5f",
+                "task_id": "528b685a-5fbb-4591-aa03-6f26bea874ba",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.027Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/project\",\"sessionId\":\"e320f742-2112-453e-b823-c59f4de6d41b\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"528b685a-5fbb-4591-aa03-6f26bea874ba\"}",
+                "selection_hash": "d5c089a7838c14ffa1fd32ab673f22491ac6ee1f7cafdaaf0170c10c0a80705c",
+                "created_at": "2026-11-14T11:15:10.113Z"
+              },
+              {
+                "snapshot_hash": "5abdcfe695f293251bc81aa9ca84811d48c1887ebbe1bc84cb3fd2ad46afe924",
+                "task_id": "528b685a-5fbb-4591-aa03-6f26bea874ba",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.027Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"528b685a-5fbb-4591-aa03-6f26bea874ba\"}",
+                "selection_hash": "5abdcfe695f293251bc81aa9ca84811d48c1887ebbe1bc84cb3fd2ad46afe924",
+                "created_at": "2026-11-14T11:15:10.027Z"
+              },
+              {
+                "snapshot_hash": "d5c089a7838c14ffa1fd32ab673f22491ac6ee1f7cafdaaf0170c10c0a80705c",
+                "task_id": "528b685a-5fbb-4591-aa03-6f26bea874ba",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.027Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-7oQrfP/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"528b685a-5fbb-4591-aa03-6f26bea874ba\"}",
+                "selection_hash": "d5c089a7838c14ffa1fd32ab673f22491ac6ee1f7cafdaaf0170c10c0a80705c",
+                "created_at": "2026-11-14T11:15:10.071Z"
+              }
+            ]
+          }
+        }
+      ],
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C05-owner",
+      "pid": 22706,
+      "mode": "prepare",
+      "events": [
+        {
+          "type": "checkpoint",
+          "point": "after-commit",
+          "descriptor": {
+            "root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS",
+            "db": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/state.sqlite",
+            "targetFile": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/copied-history/projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39.jsonl"
+          },
+          "pid": 22706,
+          "owner": {
+            "pid": 22706,
+            "startedAt": "darwin-proc-v1:1794654910:273360"
+          }
+        }
+      ],
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "stderr": ""
+    },
+    {
+      "label": "C05-recovery",
+      "pid": 22712,
+      "mode": "recover",
+      "events": [
+        {
+          "type": "error",
+          "message": "TARGET_CHANGED\n+ actual - expected\n... Skipped lines\n\n  {\n    dev: '16777234',\n    entries: [\n      {\n        kind: 'dir',\n...\n      {\n+       hash: '4343a1563e437de561c764f7087b90b0924f944d30be195e06246946978df559',\n-       hash: 'a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71',\n        kind: 'file',\n        path: 'projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39.jsonl'\n      }\n    ],\n    ino: '77788656'\n",
+          "code": "ERR_ASSERTION",
+          "stack": "AssertionError [ERR_ASSERTION]: TARGET_CHANGED\n+ actual - expected\n... Skipped lines\n\n  {\n    dev: '16777234',\n    entries: [\n      {\n        kind: 'dir',\n...\n      {\n+       hash: '4343a1563e437de561c764f7087b90b0924f944d30be195e06246946978df559',\n-       hash: 'a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71',\n        kind: 'file',\n        path: 'projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39.jsonl'\n      }\n    ],\n    ino: '77788656'\n\n    at file:///private/tmp/willyou-m14-history-recovery-probe/worker.mjs:51:73\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\n    at async node:internal/modules/esm/loader:650:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)",
+          "state": {
+            "copy_handoff": [
+              {
+                "id": "copy-1",
+                "state": "committed",
+                "payload_json": "{\"root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS\",\"storeId\":\"a3d4b5d5-811a-444b-a8cd-295317d0b597\",\"home\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/home\",\"taskId\":\"f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa\",\"id\":\"32c2bf19-d216-4495-9e29-e14fba9e0d39\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project\",\"from\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/home/.claude\",\"to\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/copied-history\",\"owner\":{\"pid\":22706,\"startedAt\":\"darwin-proc-v1:1794654910:273360\"},\"oldHash\":\"ee0346fbd13b72b48d923f890722278e2eba2fbfa5ba379b5f71ee74d876b26f\",\"newHash\":\"ef5e9cd56051e5b4869e463a142fcf4c9830a142fd3cc60867108ff77e1e9ea3\",\"next\":{\"schema\":3,\"taskId\":\"f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa\",\"projectId\":\"p1\",\"createdAt\":\"2026-11-14T11:15:10.474Z\",\"runner\":\"claude-code\",\"adapterBinding\":{\"id\":\"claude-code\",\"version\":\"1.0.0\",\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"projectionFormatVersion\":1,\"nativeToolNames\":{}},\"native\":{\"sessionId\":\"32c2bf19-d216-4495-9e29-e14fba9e0d39\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/copied-history\",\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project\"},\"agentAtCreation\":{\"version\":\"controlled-fixture\",\"adapterRevision\":1},\"catalogGeneration\":\"isolated-fixture\",\"packages\":[],\"standardSkills\":[],\"mcp\":[],\"provenance\":\"created\"},\"sourceState\":{\"dev\":\"16777234\",\"ino\":\"77788653\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]},\"targetState\":{\"dev\":\"16777234\",\"ino\":\"77788656\",\"entries\":[{\"path\":\"projects\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39/subagents\",\"kind\":\"dir\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39/subagents/agent.jsonl\",\"kind\":\"file\",\"hash\":\"914cbe26d94168539601c011cf603d13d961e6831d7f0e97e7497ec0ca7b4974\"},{\"path\":\"projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-vLArcS-project/32c2bf19-d216-4495-9e29-e14fba9e0d39.jsonl\",\"kind\":\"file\",\"hash\":\"a67d520fe5c25784b06cea86fa9ea511b8bc71cb22545cc556be29a07e444a71\"}]}}"
+              }
+            ],
+            "copy_task_pointer": [
+              {
+                "task_id": "f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa",
+                "state_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/copied-history",
+                "snapshot_hash": "ef5e9cd56051e5b4869e463a142fcf4c9830a142fd3cc60867108ff77e1e9ea3"
+              }
+            ],
+            "capability_session_snapshots": [
+              {
+                "task_id": "f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa",
+                "schema_version": 3,
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.474Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project\",\"sessionId\":\"32c2bf19-d216-4495-9e29-e14fba9e0d39\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa\"}",
+                "snapshot_hash": "ef5e9cd56051e5b4869e463a142fcf4c9830a142fd3cc60867108ff77e1e9ea3",
+                "created_at": "2026-11-14T11:15:10.474Z",
+                "legacy_status": "created",
+                "retention_state": "active"
+              }
+            ],
+            "capability_session_identities": [
+              {
+                "task_id": "f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa",
+                "runner": "claude-code",
+                "identity_root": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/copied-history",
+                "session_id": "32c2bf19-d216-4495-9e29-e14fba9e0d39",
+                "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project",
+                "discovery_home": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/home",
+                "selection_hash": "e375ce224ecdcaf2fb2cbeb7a548874988387823def816c097d769de7d6cc5a0",
+                "created_at": "2026-11-14T11:15:10.474Z",
+                "updated_at": "2026-11-14T11:15:10.606Z"
+              }
+            ],
+            "capability_snapshot_versions": [
+              {
+                "snapshot_hash": "7b6d924bafadca85d958948ac458246606a1d83e8e02c5a97f58f9f247f4baeb",
+                "task_id": "f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.474Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":2,\"standardSkills\":[],\"taskId\":\"f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa\"}",
+                "selection_hash": "7b6d924bafadca85d958948ac458246606a1d83e8e02c5a97f58f9f247f4baeb",
+                "created_at": "2026-11-14T11:15:10.474Z"
+              },
+              {
+                "snapshot_hash": "84bd399fb1818cf85ef5b80ddd380b3fe1f49f1f0e0c82dabb18cd85aae604ff",
+                "task_id": "f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.474Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project\",\"sessionId\":null,\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa\"}",
+                "selection_hash": "84bd399fb1818cf85ef5b80ddd380b3fe1f49f1f0e0c82dabb18cd85aae604ff",
+                "created_at": "2026-11-14T11:15:10.518Z"
+              },
+              {
+                "snapshot_hash": "ee0346fbd13b72b48d923f890722278e2eba2fbfa5ba379b5f71ee74d876b26f",
+                "task_id": "f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.474Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project\",\"sessionId\":\"32c2bf19-d216-4495-9e29-e14fba9e0d39\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/home/.claude\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa\"}",
+                "selection_hash": "84bd399fb1818cf85ef5b80ddd380b3fe1f49f1f0e0c82dabb18cd85aae604ff",
+                "created_at": "2026-11-14T11:15:10.561Z"
+              },
+              {
+                "snapshot_hash": "ef5e9cd56051e5b4869e463a142fcf4c9830a142fd3cc60867108ff77e1e9ea3",
+                "task_id": "f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa",
+                "snapshot_json": "{\"adapterBinding\":{\"hash\":\"b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e\",\"id\":\"claude-code\",\"nativeToolNames\":{},\"projectionFormatVersion\":1,\"version\":\"1.0.0\"},\"agentAtCreation\":{\"adapterRevision\":1,\"version\":\"controlled-fixture\"},\"catalogGeneration\":\"isolated-fixture\",\"createdAt\":\"2026-11-14T11:15:10.474Z\",\"mcp\":[],\"native\":{\"cwd\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/project\",\"sessionId\":\"32c2bf19-d216-4495-9e29-e14fba9e0d39\",\"stateRoot\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-vLArcS/copied-history\"},\"packages\":[],\"projectId\":\"p1\",\"provenance\":\"created\",\"runner\":\"claude-code\",\"schema\":3,\"standardSkills\":[],\"taskId\":\"f6b01e42-b94e-4fd6-8edc-f4d8f50eecaa\"}",
+                "selection_hash": "e375ce224ecdcaf2fb2cbeb7a548874988387823def816c097d769de7d6cc5a0",
+                "created_at": "2026-11-14T11:15:10.606Z"
+              }
+            ]
+          }
+        }
+      ],
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "stderr": ""
+    }
+  ],
+  "scope": "Actual copy/session registry across owned process SIGKILL with candidate SQLite handoff ledger and synthetic task pointer. No actual TaskService, final multi-binding claims, simultaneous recovery contenders, partial-file-copy checkpoint, native Provider, product edit or power-loss durability."
+}

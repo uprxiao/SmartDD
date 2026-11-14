@@ -1,0 +1,55 @@
+{
+  "out": "/private/tmp/willyou-m14-plugin-concurrent-probe/attempt-YFbdYm",
+  "checks": [
+    {
+      "id": "P01",
+      "title": "concurrent parent and child native calls keep distinct approval owners",
+      "status": "passed",
+      "evidence": {
+        "twoLiveNativeOwners": true,
+        "separateTaskAndCwd": true,
+        "twoPendingApprovals": true,
+        "crossApprovalDenied": true,
+        "zeroWritesBeforeAllow": true
+      }
+    },
+    {
+      "id": "P02",
+      "title": "update drains both reservations while child completion cannot release parent authority",
+      "status": "passed",
+      "evidence": {
+        "updateWaitedForBothReservations": true,
+        "childStopDidNotCancelParentApproval": true,
+        "oldCallsUsedOldPackage": true,
+        "updateCommittedOnlyAfterDrain": true,
+        "privateDataPreserved": true
+      }
+    },
+    {
+      "id": "P03",
+      "title": "same active parent uses compatible new plugin version with fresh approval",
+      "status": "passed",
+      "evidence": {
+        "sameActiveRun": true,
+        "sameNativeCodexThread": true,
+        "launchSnapshotUnchanged": true,
+        "currentCompatiblePluginExecuted": true,
+        "freshVersionSpecificApproval": true,
+        "oldReviewRejected": true
+      }
+    },
+    {
+      "id": "P04",
+      "title": "parent child bridge and pooled plugin resources close under their own owners",
+      "status": "passed",
+      "evidence": {
+        "allRunLeasesReleased": true,
+        "allPluginProcessesConfirmedStopped": true,
+        "noSecretReads": true,
+        "threeWritesOnly": true
+      }
+    }
+  ],
+  "passed": 4,
+  "scope": "Actual Codex parent and Claude child private MCP, existing plugin approvals, shared supervisor and real update transaction with two pending reservations. Candidate delegation/programmatic launch; synthetic localhost models and plugin private-data writes. No real user UI, external business connection, complete orchestration, SVN shared writer or crash."
+}

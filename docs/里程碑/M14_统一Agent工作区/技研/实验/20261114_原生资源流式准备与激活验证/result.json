@@ -1,0 +1,118 @@
+{
+  "out": "/private/tmp/willyou-m14-native-artifact-probe/attempt-SGYR4d",
+  "checks": [
+    {
+      "id": "S01",
+      "label": "manifest rejects invalid paths, duplicate names and platform mismatch",
+      "status": "passed",
+      "evidence": {
+        "schemaAndPlatformChecked": true
+      }
+    },
+    {
+      "id": "S02",
+      "label": "full local Codex package streams into a verified resource without a large buffer",
+      "status": "passed",
+      "evidence": {
+        "resourceId": "agent-native-runtime:28aa52adbb85b1d1642e09dcc0e2ac68ed2db3c4b9e032fc9bb0bb68b5a4a24d",
+        "files": 41,
+        "totalBytes": 366515155,
+        "maxChunk": 262144,
+        "source": "Existing local package; no network archive extraction"
+      }
+    },
+    {
+      "id": "S03",
+      "label": "published native executable starts from its managed content path",
+      "status": "passed",
+      "evidence": {
+        "version": "codex-cli 0.167.1",
+        "ownedProcessClosed": true
+      }
+    },
+    {
+      "id": "S04",
+      "label": "new activation preserves a pinned older resource and supports explicit rollback",
+      "status": "passed",
+      "evidence": {
+        "oldPinnedResourcePreserved": true,
+        "defaultRevisions": [
+          1,
+          2,
+          3
+        ],
+        "limit": "Pinned lookup is not yet a real run resource lease."
+      }
+    },
+    {
+      "id": "S05",
+      "label": "stale activation revision cannot overwrite a newer selection",
+      "status": "passed",
+      "evidence": {
+        "staleActivationRejected": true
+      }
+    },
+    {
+      "id": "S06",
+      "label": "corrupt source bytes reject preparation and preserve the active selection",
+      "status": "passed",
+      "evidence": {
+        "checksumRejected": true,
+        "defaultUnchanged": true
+      }
+    },
+    {
+      "id": "S07",
+      "label": "abort during large-file streaming leaves no newly prepared stage",
+      "status": "passed",
+      "evidence": {
+        "canceledAfterBytes": 262144,
+        "privateStageRemoved": true
+      }
+    },
+    {
+      "id": "S08",
+      "label": "injected disk exhaustion during streaming cannot change the default",
+      "status": "passed",
+      "evidence": {
+        "injectedWriteFailure": true,
+        "noDefaultChange": true
+      }
+    },
+    {
+      "id": "S09",
+      "label": "post-hash file replacement is rejected by final file identity validation",
+      "status": "passed",
+      "evidence": {
+        "lateChangeRejected": true
+      }
+    },
+    {
+      "id": "S10",
+      "label": "offline missing bytes fail without selecting another runtime",
+      "status": "passed",
+      "evidence": {
+        "cacheMissExplicit": true,
+        "noFallback": true
+      }
+    },
+    {
+      "id": "S11",
+      "label": "serialized preparation metadata cannot act as a verified live handle",
+      "status": "passed",
+      "evidence": {
+        "privatePreparationRequired": true
+      }
+    },
+    {
+      "id": "S12",
+      "label": "reinstalling identical content reuses the existing ready directory",
+      "status": "passed",
+      "evidence": {
+        "sameContentIdentity": true
+      }
+    }
+  ],
+  "passed": 12,
+  "scope": "Temporary streaming artifact/activation candidate over actual ResourceStore. Full local Codex package and --version only; no network archive extraction, real run lease/GC, host crash recovery, SDK model turn, user configuration or product changes."
+}

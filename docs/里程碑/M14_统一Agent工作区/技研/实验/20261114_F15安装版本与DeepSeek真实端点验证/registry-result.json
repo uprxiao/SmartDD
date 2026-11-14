@@ -1,0 +1,111 @@
+{
+  "checks": [
+    {
+      "id": "V01 actual immutable resource install and exact version support",
+      "status": "passed",
+      "evidence": {
+        "packages": 4
+      }
+    },
+    {
+      "id": "V02 pinned research native versions are best-effort and have no L3",
+      "status": "passed",
+      "evidence": [
+        {
+          "key": "claude-code:1.2.0",
+          "native": "2.1.321",
+          "support": "best-effort",
+          "levels": [],
+          "effective": {
+            "levels": [
+              "L0.skill",
+              "L0.mcp"
+            ],
+            "verified": false,
+            "nativeSendEvidence": false
+          }
+        },
+        {
+          "key": "codex:1.4.0",
+          "native": "0.167.1",
+          "support": "best-effort",
+          "levels": [],
+          "effective": {
+            "levels": [
+              "L0.skill",
+              "L0.mcp"
+            ],
+            "verified": false,
+            "nativeSendEvidence": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "V03 declared version is not equivalent to native send evidence",
+      "status": "passed",
+      "evidence": [
+        {
+          "key": "claude-code:1.2.0",
+          "native": "2.1.318",
+          "effective": {
+            "levels": [
+              "L0.skill",
+              "L0.mcp"
+            ],
+            "verified": false,
+            "nativeSendEvidence": false
+          }
+        },
+        {
+          "key": "codex:1.4.0",
+          "native": "0.166.0",
+          "effective": {
+            "levels": [
+              "L0.skill",
+              "L0.mcp",
+              "L0.cli",
+              "L1",
+              "L2"
+            ],
+            "verified": true,
+            "nativeSendEvidence": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "V04 retained published legacy levels remain version-specific",
+      "status": "passed",
+      "evidence": {
+        "oldDeclaredBehaviorPreserved": true,
+        "noFutureVersionPromotion": true
+      }
+    },
+    {
+      "id": "V05 malformed and unknown versions are distinct",
+      "status": "passed",
+      "evidence": {
+        "unknownIsNotVerified": true,
+        "noImplicitLegacyFallback": true
+      }
+    },
+    {
+      "id": "V06 declared version with missing resource does not pass verification",
+      "status": "passed",
+      "evidence": {
+        "metadataDoesNotProveInstalledBytes": true,
+        "onlyOwnedIsolatedDirectoryMoved": true
+      }
+    },
+    {
+      "id": "V07 same published adapter version cannot be silently overwritten",
+      "status": "passed",
+      "evidence": {
+        "fixedPublishedBytesPreserved": true
+      }
+    }
+  ],
+  "passed": 7,
+  "scope": "Actual current registry/resource store with repository metadata in isolated synthetic database; no native/model runs, no modified adapter declarations"
+}

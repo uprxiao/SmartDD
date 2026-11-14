@@ -1,0 +1,113 @@
+{
+  "out": "/private/tmp/willyou-m14-delegation-launch-joint-probe/attempt-OhDFnc",
+  "checks": [
+    {
+      "id": "K01",
+      "label": "durable child receipt survives lost acceptance reply and rejects changed request",
+      "status": "passed",
+      "evidence": {
+        "childId": "8841b7a2-3d23-42c9-bd71-7944f8f7d619",
+        "sameReceipt": true,
+        "realParentOwnedActive": true
+      }
+    },
+    {
+      "id": "K02",
+      "label": "publication commit retry returns same scope and old candidate is a negative control",
+      "status": "passed",
+      "evidence": {
+        "sameCapId": "30d8bc27-a5d8-4f5d-8edb-f8c0474d899b",
+        "legacyCandidateRetryRejected": true
+      }
+    },
+    {
+      "id": "K03",
+      "label": "lost run reservation reply reuses same private owner and persisted run",
+      "status": "passed",
+      "evidence": {
+        "sameRun": "e602984d-5542-4cb3-b103-e9519bef6a70",
+        "samePrivateHandle": true,
+        "noGenerationIncrease": true
+      }
+    },
+    {
+      "id": "K04",
+      "label": "atomic request receipt failure rolls back run and effect transition",
+      "status": "passed",
+      "evidence": {
+        "retryRun": "ee0040d2-f18c-4ae6-abc2-13eaa39cb561",
+        "atomicReceiptAndOutbox": true
+      }
+    },
+    {
+      "id": "K05",
+      "label": "execution plan failure retries same reserved run without duplicate delivery",
+      "status": "passed",
+      "evidence": {
+        "sameRun": "6fa3f1f9-1f1b-4e79-8fd7-20fe2da8d091",
+        "oneDelivery": 1
+      }
+    },
+    {
+      "id": "K06",
+      "label": "Claude child reaches native initialization and lost reply cannot launch twice",
+      "status": "passed",
+      "evidence": {
+        "native": "claude",
+        "sameRun": "f9cc5c55-037b-4eff-a34d-512ce910d2f2",
+        "oneSpawn": true,
+        "modelTurns": 0
+      }
+    },
+    {
+      "id": "K07",
+      "label": "concurrent dispatch requests share one Codex native initialization",
+      "status": "passed",
+      "evidence": {
+        "native": "codex",
+        "sameRun": "480708e2-05d0-4769-980d-40e94eb89f83",
+        "oneSpawn": true,
+        "modelTurns": 0
+      }
+    },
+    {
+      "id": "K08",
+      "label": "another registry cannot turn a persisted receipt into an owned handle",
+      "status": "passed",
+      "evidence": {
+        "readableReceiptNotOwnership": true
+      }
+    },
+    {
+      "id": "K09",
+      "label": "changed target before claim blocks launch and preserves original child receipt",
+      "status": "passed",
+      "evidence": {
+        "noFallback": true,
+        "noReservedRun": true
+      }
+    },
+    {
+      "id": "K10",
+      "label": "target change after run reservation cannot silently choose a newer execution config",
+      "status": "passed",
+      "evidence": {
+        "acceptedRevisionEnforcedAtPlanCommit": true
+      }
+    },
+    {
+      "id": "K11",
+      "label": "acceptance failure rolls back complete child bundle",
+      "status": "passed",
+      "evidence": {
+        "taskBindingTurnReceiptOutboxAtomic": true
+      }
+    }
+  ],
+  "passed": 11,
+  "sdk": {
+    "path": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs",
+    "sha256": "20524b5de1d5e69f4b98005994e0970f0426c99ec55e9b9dae1af1f270d86ab7"
+  },
+  "scope": "Isolated joint child acceptance, scoped publication, actual programmatic run/ownership, actual profile service and revision, ExecutionPlan/delivery, real native initializations only. Source candidates, synthetic resources/credentials, independent child directories; no model tasks, full business bridge, process-crash recovery, shared-SVN policy or product implementation."
+}

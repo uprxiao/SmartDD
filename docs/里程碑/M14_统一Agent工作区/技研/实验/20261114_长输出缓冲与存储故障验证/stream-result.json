@@ -1,0 +1,66 @@
+{
+  "attempt": "/private/tmp/willyou-m14-output-probe/stream-attempt-TDfYNt",
+  "scope": "Candidate Node byte framer and file+SQLite sink. Synthetic subprocess and local files only, no native Agent, IPC or production lifecycle.",
+  "results": [
+    {
+      "id": "O01-all-byte-splits-utf8-crlf",
+      "passed": true,
+      "splits": 38
+    },
+    {
+      "id": "O02-many-frames-in-single-large-chunk",
+      "passed": true,
+      "frames": 10000,
+      "chunkBytes": 80000,
+      "frameBudget": 32
+    },
+    {
+      "id": "O03-overlimit-and-failed-state",
+      "passed": true
+    },
+    {
+      "id": "O04-exact-boundary-and-no-newline",
+      "passed": true
+    },
+    {
+      "id": "O05-malformed-utf8-and-json",
+      "passed": true
+    },
+    {
+      "id": "O06-real-subprocess-long-stream-to-artifact",
+      "passed": true,
+      "frames": 1536,
+      "artifactBytes": 11010048,
+      "maxPendingFrameBytes": 7193,
+      "maxPreviewBytes": 128,
+      "childPid": 40718,
+      "exitCode": 0
+    },
+    {
+      "id": "O07-write-error-no-event-before-commit",
+      "passed": true
+    },
+    {
+      "id": "O07-after-file-no-event-before-commit",
+      "passed": true
+    },
+    {
+      "id": "O07-before-commit-no-event-before-commit",
+      "passed": true
+    },
+    {
+      "id": "O08-artifact-quota-does-not-publish-truncated-result",
+      "passed": true
+    },
+    {
+      "id": "O09-real-sqlite-full-preserves-committed-prefix",
+      "passed": true,
+      "sqliteFailure": "Error: database or disk is full",
+      "committedRows": 34
+    },
+    {
+      "id": "O10-missing-committed-content-refuses-recovery",
+      "passed": true
+    }
+  ]
+}

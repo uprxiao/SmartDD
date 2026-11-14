@@ -1,0 +1,170 @@
+{
+  "final": {
+    "out": "/private/tmp/willyou-m14-host-question-probe/attempt-0IosaX",
+    "checks": [
+      {
+        "id": "J01",
+        "title": "identical concurrent host-child forms reject wrong child/run and parent scope",
+        "status": "passed",
+        "evidence": {
+          "sameForm": true,
+          "differentHostTasks": true,
+          "wrongChildAndParentRejected": true
+        }
+      },
+      {
+        "id": "J02",
+        "title": "logical parent binding change leaves child question owner unchanged",
+        "status": "passed",
+        "evidence": {
+          "candidateParentPointerOnly": true,
+          "childRunUnaffected": true,
+          "notNativeProviderSwitch": true
+        }
+      },
+      {
+        "id": "J03",
+        "title": "stopped child refuses old response while sibling completes",
+        "status": "passed",
+        "evidence": {
+          "oldAnswerNotSent": true,
+          "siblingAnswerObservedByActualMcp": true,
+          "decisionRepeatNoDuplicateSend": true
+        }
+      },
+      {
+        "id": "J04",
+        "title": "same child native session next run keeps prior response expired",
+        "status": "passed",
+        "evidence": {
+          "actualSdkResumeSameNativeId": true,
+          "hostRunAndGenerationChanged": true,
+          "oldResponseIsolated": true,
+          "newAnswerObserved": true
+        }
+      }
+    ],
+    "passed": 4,
+    "error": null,
+    "serverError": null,
+    "modelRequests": 5,
+    "processes": [
+      {
+        "id": "a-1",
+        "pid": 26178,
+        "exit": {
+          "code": 1,
+          "signal": null
+        }
+      },
+      {
+        "id": "b-1",
+        "pid": 26190,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      },
+      {
+        "id": "a-2",
+        "pid": 26214,
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    ],
+    "scope": "Actual Claude SDK forms/resume, actual child run ownership, candidate parent-child pointers and response ledger in one current store. Synthetic forms/answers/local model. No actual delegation creation/outbox service, real parent provider switch, user UI, business approval, request-ledger crash or Codex pair."
+  },
+  "attempts": [
+    {
+      "out": "/private/tmp/willyou-m14-host-question-probe/attempt-0IosaX",
+      "checks": [
+        {
+          "id": "J01",
+          "title": "identical concurrent host-child forms reject wrong child/run and parent scope",
+          "status": "passed",
+          "evidence": {
+            "sameForm": true,
+            "differentHostTasks": true,
+            "wrongChildAndParentRejected": true
+          }
+        },
+        {
+          "id": "J02",
+          "title": "logical parent binding change leaves child question owner unchanged",
+          "status": "passed",
+          "evidence": {
+            "candidateParentPointerOnly": true,
+            "childRunUnaffected": true,
+            "notNativeProviderSwitch": true
+          }
+        },
+        {
+          "id": "J03",
+          "title": "stopped child refuses old response while sibling completes",
+          "status": "passed",
+          "evidence": {
+            "oldAnswerNotSent": true,
+            "siblingAnswerObservedByActualMcp": true,
+            "decisionRepeatNoDuplicateSend": true
+          }
+        },
+        {
+          "id": "J04",
+          "title": "same child native session next run keeps prior response expired",
+          "status": "passed",
+          "evidence": {
+            "actualSdkResumeSameNativeId": true,
+            "hostRunAndGenerationChanged": true,
+            "oldResponseIsolated": true,
+            "newAnswerObserved": true
+          }
+        }
+      ],
+      "passed": 4,
+      "error": null,
+      "serverError": null,
+      "modelRequests": 5,
+      "processes": [
+        {
+          "id": "a-1",
+          "pid": 26178,
+          "exit": {
+            "code": 1,
+            "signal": null
+          }
+        },
+        {
+          "id": "b-1",
+          "pid": 26190,
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "id": "a-2",
+          "pid": 26214,
+          "exit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "scope": "Actual Claude SDK forms/resume, actual child run ownership, candidate parent-child pointers and response ledger in one current store. Synthetic forms/answers/local model. No actual delegation creation/outbox service, real parent provider switch, user UI, business approval, request-ledger crash or Codex pair."
+    },
+    {
+      "out": "/private/tmp/willyou-m14-host-question-probe/attempt-u1zcPh",
+      "checks": [],
+      "passed": 0,
+      "error": "Error: listen EPERM: operation not permitted 127.0.0.1\n    at Server.setupListenHandle [as _listen2] (node:net:2145:21)\n    at listenInCluster (node:net:2224:12)\n    at node:net:2448:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "serverError": null,
+      "modelRequests": 0,
+      "processes": [],
+      "scope": "Actual Claude SDK forms/resume, actual child run ownership, candidate parent-child pointers and response ledger in one current store. Synthetic forms/answers/local model. No actual delegation creation/outbox service, real parent provider switch, user UI, business approval, request-ledger crash or Codex pair."
+    }
+  ],
+  "terminalStateLimitation": "正常完成的 B／A2 也被驱动 stop() 调用 ledger.cancel，最终 expired＋cancel_requested=1；证明路由和投递，不证明正常关闭语义。不得将清理动作当作用户取消或原生 resolved 证据。",
+  "firstAttempt": "沙箱 localhost listen EPERM，零模型请求／原生进程；获准本机隔离执行后四项通过，保留失败。"
+}

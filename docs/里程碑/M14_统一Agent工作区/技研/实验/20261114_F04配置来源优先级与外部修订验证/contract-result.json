@@ -1,0 +1,59 @@
+{
+  "checks": [
+    {
+      "id": "F04-S01 actual native discovery preserves implicit versus explicit default root",
+      "status": "passed",
+      "evidence": {
+        "separateConfigIdentity": true,
+        "rawMcpValuesMainOnly": true
+      }
+    },
+    {
+      "id": "F04-S02 actual isolation and SVN project layers are retained",
+      "status": "passed",
+      "evidence": {
+        "secretNotInArgv": true,
+        "parentIdentityRemoved": true,
+        "svnBoundaryRespected": true
+      }
+    },
+    {
+      "id": "F04-S03 content revisions cannot be hidden by restoring size and mtime",
+      "status": "passed",
+      "evidence": {
+        "credentialContentNotPublished": true,
+        "sameLengthChangeDetected": true
+      }
+    },
+    {
+      "id": "F04-S04 creation, removal and root identity are revision inputs",
+      "status": "passed",
+      "evidence": {
+        "missingFilesTracked": true,
+        "sameBytesNewRootRejected": true
+      }
+    },
+    {
+      "id": "F04-S05 replacement during capture and selection changes invalidate prepared source",
+      "status": "passed",
+      "evidence": {
+        "noPrecheckHandleSurvivesDifferentIdentity": true
+      }
+    },
+    {
+      "id": "F04-S06 only enumerated configuration is read; oversized sources reject rather than truncate",
+      "status": "passed",
+      "evidence": {
+        "noProjectTreeHash": true,
+        "filesRead": 1,
+        "bytesRead": 70,
+        "perFileLimit": 1048576,
+        "totalLimit": 8388608,
+        "sourceListLimit": 128
+      }
+    }
+  ],
+  "passed": 6,
+  "sourceInputsVerified": 131,
+  "scope": "Actual read-only discovery/launch-env helpers plus bounded source revision candidate; synthetic paths and secrets, no native or product integration"
+}

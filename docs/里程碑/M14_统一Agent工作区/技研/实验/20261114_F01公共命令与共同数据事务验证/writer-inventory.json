@@ -1,0 +1,960 @@
+{
+  "scope": "Static literal SQL and named Drizzle writes in src/main, excluding test files; not proof of all dynamic SQL, cascade or runtime paths. Direct and indirect callers separately reviewed in README.",
+  "tables": [
+    "tasks",
+    "projects",
+    "capability_runs",
+    "capability_run_processes",
+    "capability_run_activities",
+    "capability_resource_leases",
+    "capability_session_snapshots",
+    "capability_session_identities",
+    "capability_session_refs",
+    "capability_snapshot_versions",
+    "capability_session_mcp_names",
+    "capability_session_holds",
+    "ai_profiles",
+    "ai_run_configs",
+    "ai_providers",
+    "ai_tools",
+    "app_secrets"
+  ],
+  "files": [
+    {
+      "file": "src/main/core/ai/agent-migration.ts",
+      "sha256": "13ad6dc7352aec1f43d9dedc10b0ef654b8fa826eb38a1b53b0ce421b999fe59",
+      "matches": [
+        {
+          "line": 77,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_tools",
+          "matched": ".insert(aiTools)"
+        },
+        {
+          "line": 94,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_providers",
+          "matched": ".insert(aiProviders)"
+        },
+        {
+          "line": 97,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_run_configs",
+          "matched": ".insert(aiRunConfigs)"
+        },
+        {
+          "line": 114,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_run_configs",
+          "matched": ".update(aiRunConfigs)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/ai/agent-service.ts",
+      "sha256": "1e065fa0a9137168dec570dff0a906f6b5f3409b9419ab167d6e8dfe2169ef31",
+      "matches": [
+        {
+          "line": 46,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_tools",
+          "matched": ".insert(aiTools)"
+        },
+        {
+          "line": 53,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_run_configs",
+          "matched": ".update(aiRunConfigs)"
+        },
+        {
+          "line": 59,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_profiles",
+          "matched": ".update(aiProfiles)"
+        },
+        {
+          "line": 99,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_providers",
+          "matched": ".insert(aiProviders)"
+        },
+        {
+          "line": 143,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_profiles",
+          "matched": ".insert(aiProfiles)"
+        },
+        {
+          "line": 145,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_run_configs",
+          "matched": ".insert(aiRunConfigs)"
+        },
+        {
+          "line": 172,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_run_configs",
+          "matched": ".update(aiRunConfigs)"
+        },
+        {
+          "line": 198,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "ai_providers",
+          "matched": ".delete(aiProviders)"
+        },
+        {
+          "line": 223,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_profiles",
+          "matched": ".update(aiProfiles)"
+        },
+        {
+          "line": 224,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_profiles",
+          "matched": ".update(aiProfiles)"
+        },
+        {
+          "line": 231,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_profiles",
+          "matched": ".update(aiProfiles)"
+        },
+        {
+          "line": 233,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_run_configs",
+          "matched": ".update(aiRunConfigs)"
+        },
+        {
+          "line": 238,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "ai_profiles",
+          "matched": ".delete(aiProfiles)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/ai/agent-transfer.ts",
+      "sha256": "9b0d16ce92e6581efbb8fd79e8804d312cbb1e63d31e0b7c720e9e5c70cda742",
+      "matches": [
+        {
+          "line": 134,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_tools",
+          "matched": ".insert(aiTools)"
+        },
+        {
+          "line": 136,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_profiles",
+          "matched": ".insert(aiProfiles)"
+        },
+        {
+          "line": 139,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_run_configs",
+          "matched": ".insert(aiRunConfigs)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/ai/ai-profile-service.ts",
+      "sha256": "60c995e183ce25784c533d94f0a1644c163b4e78f7c76c1a54f829067e04fdd8",
+      "matches": [
+        {
+          "line": 119,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_profiles",
+          "matched": ".insert(aiProfiles)"
+        },
+        {
+          "line": 147,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_profiles",
+          "matched": ".update(aiProfiles)"
+        },
+        {
+          "line": 190,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "ai_profiles",
+          "matched": ".delete(aiProfiles)"
+        },
+        {
+          "line": 302,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_profiles",
+          "matched": ".update(aiProfiles)"
+        },
+        {
+          "line": 352,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "app_secrets",
+          "matched": ".delete(appSecrets)"
+        },
+        {
+          "line": 356,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_profiles",
+          "matched": ".update(aiProfiles)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/ai/provider-service.ts",
+      "sha256": "9d8b949017249b637c2e807aa767410669c5e3fa047e0190a5c7f033f7b5b740",
+      "matches": [
+        {
+          "line": 128,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_providers",
+          "matched": ".update(aiProviders)"
+        },
+        {
+          "line": 155,
+          "kind": "orm",
+          "operation": "update",
+          "table": "ai_providers",
+          "matched": ".update(aiProviders)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/cache-context-recovery.ts",
+      "sha256": "f6d985f2ba4bf9a8c1a3c2baef8ddce96a2a9f3c93b07ca808920f491111bd28",
+      "matches": [
+        {
+          "line": 55,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/mail-execution-service.ts",
+      "sha256": "3006274bb057f5ca31b8dc39f7b680fa8cebfbadac81014d014520ad8f1f48dd",
+      "matches": [
+        {
+          "line": 307,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/read-context-recovery.ts",
+      "sha256": "d6c646b58bb1298028a769eb020306e70213b17410b3833af6d8fe71a6359c9b",
+      "matches": [
+        {
+          "line": 84,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/resource-store.ts",
+      "sha256": "11e483613fc6b7ff1c8dfafaf6f4399c56ef67c4139d909a6093e6b3b67f5112",
+      "matches": [
+        {
+          "line": 88,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_resource_leases",
+          "matched": "INSERT INTO capability_resource_leases"
+        },
+        {
+          "line": 102,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        },
+        {
+          "line": 155,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        },
+        {
+          "line": 357,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/retire-pre-library-resources.ts",
+      "sha256": "54f1163e2a9d1d4d7440b86a9dc213841302f3a1c1b2157efb5b8ec9ccb3ff62",
+      "matches": [
+        {
+          "line": 45,
+          "kind": "literal-sql",
+          "operation": "DELETE FROM",
+          "table": "capability_session_refs",
+          "matched": "DELETE FROM capability_session_refs"
+        },
+        {
+          "line": 46,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/run-recovery.ts",
+      "sha256": "f3fd283544902264b7766487dc3ca5f7641e553588d27b545de3561468d125cc",
+      "matches": [
+        {
+          "line": 14,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 15,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        },
+        {
+          "line": 31,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 32,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_activities",
+          "matched": "UPDATE capability_run_activities"
+        },
+        {
+          "line": 33,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 36,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/run-registry.ts",
+      "sha256": "91f7b7dd8f16f885631f0399af585dae46c14a662b2da2d7a9c05299479431c8",
+      "matches": [
+        {
+          "line": 203,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_runs",
+          "matched": "INSERT INTO capability_runs"
+        },
+        {
+          "line": 206,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_resource_leases",
+          "matched": "INSERT INTO capability_resource_leases"
+        },
+        {
+          "line": 208,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_run_processes",
+          "matched": "INSERT INTO capability_run_processes"
+        },
+        {
+          "line": 246,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_runs",
+          "matched": "INSERT INTO capability_runs"
+        },
+        {
+          "line": 247,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_resource_leases",
+          "matched": "INSERT INTO capability_resource_leases"
+        },
+        {
+          "line": 249,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_run_processes",
+          "matched": "INSERT INTO capability_run_processes"
+        },
+        {
+          "line": 283,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 300,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 314,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 315,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_resource_leases",
+          "matched": "UPDATE capability_resource_leases"
+        },
+        {
+          "line": 325,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_run_processes",
+          "matched": "INSERT INTO capability_run_processes"
+        },
+        {
+          "line": 339,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 348,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 351,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 355,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 356,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 365,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 373,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 379,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 425,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_run_activities",
+          "matched": "INSERT INTO capability_run_activities"
+        },
+        {
+          "line": 428,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_activities",
+          "matched": "UPDATE capability_run_activities"
+        },
+        {
+          "line": 436,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 445,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 446,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_run_processes",
+          "matched": "UPDATE capability_run_processes"
+        },
+        {
+          "line": 451,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 453,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/applications/session-registry.ts",
+      "sha256": "91406685d2e0809c0e312cf06ef6528788c62779b2253e52612ef9c66781e463",
+      "matches": [
+        {
+          "line": 158,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_snapshots",
+          "matched": "INSERT INTO capability_session_snapshots"
+        },
+        {
+          "line": 159,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_snapshot_versions",
+          "matched": "INSERT INTO capability_snapshot_versions"
+        },
+        {
+          "line": 160,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_identities",
+          "matched": "INSERT INTO capability_session_identities"
+        },
+        {
+          "line": 161,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_refs",
+          "matched": "INSERT INTO capability_session_refs"
+        },
+        {
+          "line": 163,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_mcp_names",
+          "matched": "INSERT INTO capability_session_mcp_names"
+        },
+        {
+          "line": 179,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_snapshots",
+          "matched": "UPDATE capability_session_snapshots"
+        },
+        {
+          "line": 180,
+          "kind": "literal-sql",
+          "operation": "INSERT OR IGNORE INTO",
+          "table": "capability_snapshot_versions",
+          "matched": "INSERT OR IGNORE INTO capability_snapshot_versions"
+        },
+        {
+          "line": 181,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_identities",
+          "matched": "UPDATE capability_session_identities"
+        },
+        {
+          "line": 182,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_runs",
+          "matched": "UPDATE capability_runs"
+        },
+        {
+          "line": 213,
+          "kind": "literal-sql",
+          "operation": "INSERT OR IGNORE INTO",
+          "table": "capability_snapshot_versions",
+          "matched": "INSERT OR IGNORE INTO capability_snapshot_versions"
+        },
+        {
+          "line": 215,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_snapshots",
+          "matched": "UPDATE capability_session_snapshots"
+        },
+        {
+          "line": 216,
+          "kind": "literal-sql",
+          "operation": "INSERT OR IGNORE INTO",
+          "table": "capability_snapshot_versions",
+          "matched": "INSERT OR IGNORE INTO capability_snapshot_versions"
+        },
+        {
+          "line": 217,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_identities",
+          "matched": "UPDATE capability_session_identities"
+        },
+        {
+          "line": 219,
+          "kind": "literal-sql",
+          "operation": "DELETE FROM",
+          "table": "capability_session_refs",
+          "matched": "DELETE FROM capability_session_refs"
+        },
+        {
+          "line": 220,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_refs",
+          "matched": "INSERT INTO capability_session_refs"
+        },
+        {
+          "line": 222,
+          "kind": "literal-sql",
+          "operation": "DELETE FROM",
+          "table": "capability_session_mcp_names",
+          "matched": "DELETE FROM capability_session_mcp_names"
+        },
+        {
+          "line": 223,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_mcp_names",
+          "matched": "INSERT INTO capability_session_mcp_names"
+        },
+        {
+          "line": 271,
+          "kind": "literal-sql",
+          "operation": "INSERT OR IGNORE INTO",
+          "table": "capability_session_refs",
+          "matched": "INSERT OR IGNORE INTO capability_session_refs"
+        },
+        {
+          "line": 286,
+          "kind": "literal-sql",
+          "operation": "INSERT OR IGNORE INTO",
+          "table": "capability_session_refs",
+          "matched": "INSERT OR IGNORE INTO capability_session_refs"
+        },
+        {
+          "line": 291,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_holds",
+          "matched": "UPDATE capability_session_holds"
+        },
+        {
+          "line": 292,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_snapshots",
+          "matched": "UPDATE capability_session_snapshots"
+        },
+        {
+          "line": 304,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_snapshots",
+          "matched": "INSERT INTO capability_session_snapshots"
+        },
+        {
+          "line": 307,
+          "kind": "literal-sql",
+          "operation": "INSERT INTO",
+          "table": "capability_session_identities",
+          "matched": "INSERT INTO capability_session_identities"
+        },
+        {
+          "line": 314,
+          "kind": "literal-sql",
+          "operation": "INSERT OR IGNORE INTO",
+          "table": "capability_session_holds",
+          "matched": "INSERT OR IGNORE INTO capability_session_holds"
+        },
+        {
+          "line": 315,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_snapshots",
+          "matched": "UPDATE capability_session_snapshots"
+        },
+        {
+          "line": 327,
+          "kind": "literal-sql",
+          "operation": "UPDATE",
+          "table": "capability_session_snapshots",
+          "matched": "UPDATE capability_session_snapshots"
+        },
+        {
+          "line": 328,
+          "kind": "literal-sql",
+          "operation": "DELETE FROM",
+          "table": "capability_session_holds",
+          "matched": "DELETE FROM capability_session_holds"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/capabilities/capability-service.ts",
+      "sha256": "2c2993221d4096786f6b1e45a47b0a43cdf8d1279c0abc6b1d8f9b0019d5818d",
+      "matches": [
+        {
+          "line": 130,
+          "kind": "orm",
+          "operation": "update",
+          "table": "projects",
+          "matched": ".update(projects)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/projects/project-service.ts",
+      "sha256": "8cc37ec1b7dfe2e15129d7916e16136507a476651fd91bc336e19c8893b112aa",
+      "matches": [
+        {
+          "line": 126,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "projects",
+          "matched": ".insert(projects)"
+        },
+        {
+          "line": 141,
+          "kind": "orm",
+          "operation": "update",
+          "table": "projects",
+          "matched": ".update(projects)"
+        },
+        {
+          "line": 157,
+          "kind": "orm",
+          "operation": "update",
+          "table": "projects",
+          "matched": ".update(projects)"
+        },
+        {
+          "line": 179,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "projects",
+          "matched": ".delete(projects)"
+        },
+        {
+          "line": 476,
+          "kind": "orm",
+          "operation": "update",
+          "table": "projects",
+          "matched": ".update(projects)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/projects/transfer-service.ts",
+      "sha256": "c9059c8540d4a169ef533e0d6421ed99593b0c80710fef93eae33c0356a6883e",
+      "matches": [
+        {
+          "line": 281,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "projects",
+          "matched": ".insert(projects)"
+        },
+        {
+          "line": 307,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "ai_profiles",
+          "matched": ".insert(aiProfiles)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/core/tasks/task-service.ts",
+      "sha256": "9f28b824e3886912485ef4f6b72ed9caef7738e969ffcdbfa0f137d5c188adf8",
+      "matches": [
+        {
+          "line": 228,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "tasks",
+          "matched": ".insert(tasks)"
+        },
+        {
+          "line": 318,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 350,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 362,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 448,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "tasks",
+          "matched": ".delete(tasks)"
+        },
+        {
+          "line": 612,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 671,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 771,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 780,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 845,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        },
+        {
+          "line": 946,
+          "kind": "orm",
+          "operation": "update",
+          "table": "tasks",
+          "matched": ".update(tasks)"
+        }
+      ]
+    },
+    {
+      "file": "src/main/secrets.ts",
+      "sha256": "e2c8e99dcd0f11dfbfca2218977cc9bf2c99115ed6c08455ebb79510d23f54be",
+      "matches": [
+        {
+          "line": 26,
+          "kind": "orm",
+          "operation": "insert",
+          "table": "app_secrets",
+          "matched": ".insert(appSecrets)"
+        },
+        {
+          "line": 45,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "app_secrets",
+          "matched": ".delete(appSecrets)"
+        },
+        {
+          "line": 49,
+          "kind": "orm",
+          "operation": "delete",
+          "table": "app_secrets",
+          "matched": ".delete(appSecrets)"
+        }
+      ]
+    }
+  ],
+  "fileCount": 18,
+  "matchCount": 118
+}

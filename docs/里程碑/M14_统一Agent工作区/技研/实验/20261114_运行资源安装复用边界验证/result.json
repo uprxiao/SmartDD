@@ -1,0 +1,113 @@
+{
+  "out": "/private/tmp/willyou-m14-runtime-boundary-probe/attempt-l3u46x",
+  "checks": [
+    {
+      "id": "R01",
+      "label": "real native program sizes exceed the existing bridge runtime single-file budget",
+      "status": "passed",
+      "evidence": {
+        "nativeSizes": [
+          {
+            "driver": "claude",
+            "path": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64/claude",
+            "size": 323686048
+          },
+          {
+            "driver": "codex",
+            "path": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+            "size": 271011440
+          }
+        ],
+        "singleFileBudget": 67108864,
+        "boundaryRejected": true
+      }
+    },
+    {
+      "id": "R02",
+      "label": "existing runtime registry requires a cjs bridge entry",
+      "status": "passed",
+      "evidence": {
+        "nativeEntrypointRejected": true
+      }
+    },
+    {
+      "id": "R03",
+      "label": "existing bridge verification rejects executable permissions",
+      "status": "passed",
+      "evidence": {
+        "installedMode": "0600",
+        "executableModeRejected": true,
+        "restored": true
+      }
+    },
+    {
+      "id": "R04",
+      "label": "generic ResourceStore can publish a separately verified executable artifact",
+      "status": "passed",
+      "evidence": {
+        "resource": {
+          "resourceId": "m14-runtime-probe:fa21d3648ed4989c7ac7ee29d673fa751e3df7117375e200a1280f730b6116b6",
+          "kind": "agent-native-runtime-probe",
+          "contentHash": "fa21d3648ed4989c7ac7ee29d673fa751e3df7117375e200a1280f730b6116b6",
+          "ownerStoreId": "654694e5-90e4-4675-b285-a20692a708cb",
+          "relativePath": "agent-runtime-probe/fa21d3648ed4989c7ac7ee29d673fa751e3df7117375e200a1280f730b6116b6",
+          "pathScope": "C",
+          "scopeIdentity": "654694e5-90e4-4675-b285-a20692a708cb",
+          "state": "ready",
+          "generation": 1,
+          "integrity": "valid",
+          "operationId": "31b24b97-8926-49eb-a3fb-50650ad2fc0b"
+        },
+        "callbacksOutsideSqlTransaction": true,
+        "limit": "Synthetic file; publication verification callback is synchronous and final verification is under the C resource coordinator lock."
+      }
+    },
+    {
+      "id": "R05",
+      "label": "concurrent publication preserves one artifact identity",
+      "status": "passed",
+      "evidence": {
+        "statuses": [
+          {
+            "status": "fulfilled",
+            "resourceId": "m14-runtime-probe:d7b9ce9b3963d348ed3a2bed9e330e35ba7b8d8fa651eeb1b9f948e95cd9d675"
+          },
+          {
+            "status": "fulfilled",
+            "resourceId": "m14-runtime-probe:d7b9ce9b3963d348ed3a2bed9e330e35ba7b8d8fa651eeb1b9f948e95cd9d675"
+          }
+        ],
+        "materializations": 1
+      }
+    },
+    {
+      "id": "R06",
+      "label": "new-version disk failure preserves the old ready artifact",
+      "status": "passed",
+      "evidence": {
+        "oldStillReady": true,
+        "newState": "recovery-required",
+        "limit": "ENOSPC injected in materialize callback; no real disk exhaustion, active-version switch or in-use run tested."
+      }
+    },
+    {
+      "id": "R07",
+      "label": "late byte changes after rename cannot publish ready",
+      "status": "passed",
+      "evidence": {
+        "state": "recovery-required",
+        "lateChangeRejected": true
+      }
+    },
+    {
+      "id": "R08",
+      "label": "same resource id cannot silently select different content",
+      "status": "passed",
+      "evidence": {
+        "identityConflictRejected": true
+      }
+    }
+  ],
+  "passed": 8,
+  "scope": "Unmodified actual SmartDD RuntimeRegistry and ResourceStore with isolated synthetic artifacts; native program files only statted. No native execution, downloads, UI, installation package, GC, real ENOSPC or production changes."
+}

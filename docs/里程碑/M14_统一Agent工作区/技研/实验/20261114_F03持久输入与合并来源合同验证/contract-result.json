@@ -1,0 +1,179 @@
+{
+  "checks": [
+    {
+      "id": "F03-01 real merged frame requires all IDs, preserves mixed origin and cannot be reduced to last UUID",
+      "status": "passed",
+      "evidence": {
+        "nativeMergeObserved": true,
+        "ids": 3,
+        "legacyLastIdDrops": 2
+      }
+    },
+    {
+      "id": "F03-02 capability and exact identity guards reject malformed, unrelated, subagent and partial groups",
+      "status": "passed",
+      "evidence": {
+        "noPartialAcceptance": true,
+        "privateChannelRequired": true,
+        "rawFrameConflictRejected": true
+      }
+    },
+    {
+      "id": "F03-03 queued and started establish delivery audit, echo remains distinct and does not complete logical turns",
+      "status": "passed",
+      "evidence": {
+        "nativeAcceptanceNotToolAuthorization": true,
+        "logicalTurnsNotFalselyCompleted": true,
+        "idempotentFanout": true
+      }
+    },
+    {
+      "id": "F03-04 same text and mixed group never transfer live user origin; fresh source gate cannot load grants",
+      "status": "passed",
+      "evidence": {
+        "sourceGateUnchangedFrom108": true,
+        "UIAndCurrentRunAreExplicitFixtures": true,
+        "journalDoesNotRecreateRAMReceipt": true,
+        "originalSourceRetained": true
+      }
+    },
+    {
+      "id": "F03-05 before-journal writer SIGKILL and audit-only recovery",
+      "status": "passed",
+      "evidence": {
+        "stage": "before-journal",
+        "actualWriterExit": "SIGKILL",
+        "recordedNativeFrame": true,
+        "nativeNotRunningInThisWorker": true,
+        "rowsBeforeRecovery": [
+          {
+            "input_id": "22aa7fdc-7653-4517-a052-c7496dcd2013",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "5734ac56-b308-4e8d-9659-4042ea3d7170",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "b81c7e22-6b58-4b29-b46a-eb28e49645bc",
+            "state": "dispatching"
+          }
+        ],
+        "inbox": 0,
+        "decision": "unknown-do-not-resend",
+        "liveGrant": false
+      }
+    },
+    {
+      "id": "F03-05 journal-member-0 writer SIGKILL and audit-only recovery",
+      "status": "passed",
+      "evidence": {
+        "stage": "journal-member-0",
+        "actualWriterExit": "SIGKILL",
+        "recordedNativeFrame": true,
+        "nativeNotRunningInThisWorker": true,
+        "rowsBeforeRecovery": [
+          {
+            "input_id": "22aa7fdc-7653-4517-a052-c7496dcd2013",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "5734ac56-b308-4e8d-9659-4042ea3d7170",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "b81c7e22-6b58-4b29-b46a-eb28e49645bc",
+            "state": "dispatching"
+          }
+        ],
+        "inbox": 0,
+        "decision": "unknown-do-not-resend",
+        "liveGrant": false
+      }
+    },
+    {
+      "id": "F03-05 after-journal writer SIGKILL and audit-only recovery",
+      "status": "passed",
+      "evidence": {
+        "stage": "after-journal",
+        "actualWriterExit": "SIGKILL",
+        "recordedNativeFrame": true,
+        "nativeNotRunningInThisWorker": true,
+        "rowsBeforeRecovery": [
+          {
+            "input_id": "22aa7fdc-7653-4517-a052-c7496dcd2013",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "5734ac56-b308-4e8d-9659-4042ea3d7170",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "b81c7e22-6b58-4b29-b46a-eb28e49645bc",
+            "state": "dispatching"
+          }
+        ],
+        "inbox": 3,
+        "decision": "accepted-audit-only",
+        "liveGrant": false
+      }
+    },
+    {
+      "id": "F03-05 apply-member-0 writer SIGKILL and audit-only recovery",
+      "status": "passed",
+      "evidence": {
+        "stage": "apply-member-0",
+        "actualWriterExit": "SIGKILL",
+        "recordedNativeFrame": true,
+        "nativeNotRunningInThisWorker": true,
+        "rowsBeforeRecovery": [
+          {
+            "input_id": "22aa7fdc-7653-4517-a052-c7496dcd2013",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "5734ac56-b308-4e8d-9659-4042ea3d7170",
+            "state": "dispatching"
+          },
+          {
+            "input_id": "b81c7e22-6b58-4b29-b46a-eb28e49645bc",
+            "state": "dispatching"
+          }
+        ],
+        "inbox": 3,
+        "decision": "accepted-audit-only",
+        "liveGrant": false
+      }
+    },
+    {
+      "id": "F03-05 after-apply writer SIGKILL and audit-only recovery",
+      "status": "passed",
+      "evidence": {
+        "stage": "after-apply",
+        "actualWriterExit": "SIGKILL",
+        "recordedNativeFrame": true,
+        "nativeNotRunningInThisWorker": true,
+        "rowsBeforeRecovery": [
+          {
+            "input_id": "22aa7fdc-7653-4517-a052-c7496dcd2013",
+            "state": "accepted"
+          },
+          {
+            "input_id": "5734ac56-b308-4e8d-9659-4042ea3d7170",
+            "state": "accepted"
+          },
+          {
+            "input_id": "b81c7e22-6b58-4b29-b46a-eb28e49645bc",
+            "state": "accepted"
+          }
+        ],
+        "inbox": 3,
+        "decision": "accepted-audit-only",
+        "liveGrant": false
+      }
+    }
+  ],
+  "passed": 9,
+  "sourceInputsVerified": 681,
+  "scope": "Real recorded Claude frames, unchanged C1.2 tables, isolated source-gate candidate and actual SQLite writer SIGKILL; relational run fixture is stopped and grants no real business authority"
+}

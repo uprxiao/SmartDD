@@ -1,0 +1,99 @@
+{
+  "out": "/private/tmp/willyou-m14-database-version-probe/attempt-eVEcQD",
+  "checks": [
+    {
+      "id": "V01",
+      "title": "actual maintenance coordinator backs up and commits a future migration",
+      "status": "passed",
+      "evidence": {
+        "oldMigrationCount": 37,
+        "newMigrationCount": 38,
+        "backupHashVerified": true,
+        "backupPermission": "0600",
+        "actualForeignHolderChecks": 2,
+        "coordinatorCommitted": true
+      }
+    },
+    {
+      "id": "V02",
+      "title": "current old reader and actual managed startup reject the newer journal",
+      "status": "passed",
+      "evidence": {
+        "oldPlannerRejected": true,
+        "oldMigratorRejected": true,
+        "actualManagedStartupRejected": true,
+        "logicalDatabaseUnchanged": true
+      }
+    },
+    {
+      "id": "V03",
+      "title": "commit recovery repairs journal mirror and preserves post-upgrade business data",
+      "status": "passed",
+      "evidence": {
+        "mirrorStateInjected": true,
+        "actualCoordinatorRepair": true,
+        "noBackupRestore": true,
+        "laterBusinessAndHistoryPreserved": true
+      }
+    },
+    {
+      "id": "V04",
+      "title": "old backup omits later rows and is not an automatic rollback package",
+      "status": "passed",
+      "evidence": {
+        "backupPredatesLaterBusiness": true,
+        "backupStillContainsMaintenanceState": true,
+        "readOnlyInspectionOnly": true,
+        "originalDatabaseNeverOverwritten": true,
+        "nativeHistoryNotPartOfSqliteBackup": true,
+        "noWorkingCopySnapshot": true
+      }
+    },
+    {
+      "id": "V05",
+      "title": "unregistered research tables are invisible to version guard",
+      "status": "passed",
+      "evidence": {
+        "currentGuardDoesNotInspectArbitraryExtraTables": true,
+        "notProofAdditiveTableIsIncompatible": true,
+        "m14ProductionMustRegisterMigration": true
+      }
+    },
+    {
+      "id": "V06",
+      "title": "failed commit receipt rolls back new schema data and migration watermark together",
+      "status": "passed",
+      "evidence": {
+        "receiptFaultInjected": true,
+        "schemaRolledBack": true,
+        "businessRowRolledBack": true,
+        "journalRolledBack": true
+      }
+    },
+    {
+      "id": "V07",
+      "title": "same-length conflicting migration history is rejected before mutation",
+      "status": "passed",
+      "evidence": {
+        "countAloneInsufficient": true,
+        "conflictingHashRejected": true,
+        "databaseUnchanged": true
+      }
+    }
+  ],
+  "passed": 7,
+  "error": null,
+  "preflights": [
+    {
+      "platform": "darwin",
+      "checkedFiles": 3,
+      "foreignPids": []
+    },
+    {
+      "platform": "darwin",
+      "checkedFiles": 3,
+      "foreignPids": []
+    }
+  ],
+  "scope": "Actual current migration planner/runner, macOS managed startup, persistent maintenance gate, foreign-holder preflight, backup and coordinator. Synthetic future suffix and isolated data; journal-mirror and commit failures injected, no host SIGKILL or packaged application rollback. No live database touched."
+}

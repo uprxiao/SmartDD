@@ -1,0 +1,160 @@
+{
+  "scope": "Actual extracted T3 group helper and actual Claude SDK with fake loopback model; no full T3 descendant tracker or WillYou launcher.",
+  "rows": [
+    {
+      "id": "G06-two-owned-groups-do-not-kill-sibling",
+      "passed": true,
+      "trace": [
+        {
+          "firstWriter": {
+            "schema": 1,
+            "state": "stopped"
+          },
+          "secondWriter": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19640,
+            "startedAt": "darwin-proc-v1:1794622959:730364"
+          },
+          "event": "sibling-still-running"
+        },
+        {
+          "event": "both-cleaned"
+        }
+      ]
+    },
+    {
+      "id": "G07-real-SDK-targeted-background-stop",
+      "passed": true,
+      "trace": [
+        {
+          "pid": 19646,
+          "identity": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19646,
+            "startedAt": "darwin-proc-v1:1794622959:767816"
+          },
+          "event": "SDK-registered-before-release"
+        },
+        {
+          "subtype": "init",
+          "event": "SDK-system"
+        },
+        {
+          "ordinal": 1,
+          "model": "claude-sonnet-4-6",
+          "toolResults": [],
+          "event": "fake-model-request"
+        },
+        {
+          "tool": "Bash",
+          "exactCommand": true,
+          "event": "permission-callback"
+        },
+        {
+          "subtype": "background_tasks_changed",
+          "tasks": [
+            {
+              "task_id": "brjyr4sau",
+              "run_id": "0mwfs6aa1-fe7b5b1b",
+              "task_type": "local_bash",
+              "description": "Start isolated local probe writer"
+            }
+          ],
+          "event": "SDK-system"
+        },
+        {
+          "subtype": "task_started",
+          "task_id": "brjyr4sau",
+          "run_id": "0mwfs6aa1-fe7b5b1b",
+          "event": "SDK-system"
+        },
+        {
+          "ordinal": 2,
+          "model": "claude-sonnet-4-6",
+          "toolResults": [
+            {
+              "tool_use_id": "toolu_bg",
+              "type": "tool_result",
+              "content": "Command running in background with ID: brjyr4sau. Output is being written to: /private/tmp/claude-501/-private-tmp-willyou-m14-scope-probe-attempt-2/6dddb2be-5f73-4261-a26f-b9605611b447/tasks/brjyr4sau.output. You will be notified when it completes. To check interim output, use Read on that file path.\n\n<system-reminder>\n<total_tokens>14999998 tokens left</total_tokens>\n</system-reminder>",
+              "is_error": false,
+              "cache_control": {
+                "type": "ephemeral"
+              }
+            }
+          ],
+          "event": "fake-model-request"
+        },
+        {
+          "subtype": "success",
+          "result": "BACKGROUND_STARTED",
+          "event": "SDK-result"
+        },
+        {
+          "writer": 19660,
+          "identity": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19660,
+            "startedAt": "darwin-proc-v1:1794622960:11377"
+          },
+          "event": "writes-after-turn-result"
+        },
+        {
+          "subtype": "task_updated",
+          "task_id": "brjyr4sau",
+          "run_id": "0mwfs6aa1-fe7b5b1b",
+          "event": "SDK-system"
+        },
+        {
+          "subtype": "task_notification",
+          "task_id": "brjyr4sau",
+          "run_id": "0mwfs6aa1-fe7b5b1b",
+          "status": "stopped",
+          "event": "SDK-system"
+        },
+        {
+          "subtype": "background_tasks_changed",
+          "tasks": [],
+          "event": "SDK-system"
+        },
+        {
+          "taskId": "brjyr4sau",
+          "event": "stopTask-control-returned"
+        },
+        {
+          "writer": {
+            "schema": 1,
+            "state": "stopped"
+          },
+          "cli": {
+            "schema": 1,
+            "state": "running",
+            "pid": 19646,
+            "startedAt": "darwin-proc-v1:1794622959:767816"
+          },
+          "event": "native-task-stopped-process-still-running"
+        },
+        {
+          "code": 0,
+          "signal": null,
+          "event": "SDK-process-exit"
+        },
+        {
+          "socketClosed": true,
+          "identity": {
+            "schema": 1,
+            "state": "stopped"
+          },
+          "event": "background-after-session-close"
+        },
+        {
+          "schema": 1,
+          "state": "stopped",
+          "event": "explicit-final-cleanup"
+        }
+      ]
+    }
+  ]
+}

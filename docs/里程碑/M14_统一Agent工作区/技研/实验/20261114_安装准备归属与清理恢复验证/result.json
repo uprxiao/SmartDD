@@ -1,0 +1,126 @@
+{
+  "out": "/private/tmp/willyou-m14-install-attempt-probe/attempt-dIJ6oI",
+  "checks": [
+    {
+      "id": "T01",
+      "label": "recover attempt-planned with durable attempt lineage",
+      "status": "passed",
+      "evidence": {
+        "point": "attempt-planned",
+        "priorDefaultRetainedBeforeRecovery": true,
+        "oldAttempt": "b6463f12-1afd-404d-8f33-fea0776a2dfe",
+        "newAttempt": "3bad67f0-5cd8-448d-9f2d-3d1ef71ecf1f",
+        "oldStageRemoved": true,
+        "newPublished": true
+      }
+    },
+    {
+      "id": "T02",
+      "label": "recover attempt-copying with durable attempt lineage",
+      "status": "passed",
+      "evidence": {
+        "point": "attempt-copying",
+        "priorDefaultRetainedBeforeRecovery": true,
+        "oldAttempt": "56bc7385-ae4f-4c06-bc40-c9c70693c375",
+        "newAttempt": "15020dc6-027d-4e3c-9e48-9a74e604a99a",
+        "oldStageRemoved": true,
+        "newPublished": true
+      }
+    },
+    {
+      "id": "T03",
+      "label": "recover copy-in-progress with durable attempt lineage",
+      "status": "passed",
+      "evidence": {
+        "point": "copy-in-progress",
+        "priorDefaultRetainedBeforeRecovery": true,
+        "oldAttempt": "a532c12a-42d7-4259-bfc8-ba932642e713",
+        "newAttempt": "d6c55bd4-bd22-458c-a089-c633bdcfe228",
+        "oldStageRemoved": true,
+        "newPublished": true
+      }
+    },
+    {
+      "id": "T04",
+      "label": "allocated directory without committed physical identity remains uncertain",
+      "status": "passed",
+      "evidence": {
+        "attempt": "3be40a48-100b-479c-930e-face0a7f6657",
+        "error": {
+          "type": "error",
+          "message": "STAGE_ALLOCATION_UNCERTAIN",
+          "code": "ERR_ASSERTION",
+          "stack": "AssertionError [ERR_ASSERTION]: STAGE_ALLOCATION_UNCERTAIN\n    at inspectPartial (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:10:68)\n    at file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:16:3\n    at /private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28296:19\n    at withCoordinatorLock (/private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28277:20)\n    at Object.withResourceLock (/private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28295:10)\n    at recoverAttempts (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:13:37)\n    at execute (file:///private/tmp/willyou-m14-install-attempt-probe/job.mjs:15:8)\n    at async file:///private/tmp/willyou-m14-install-attempt-probe/worker.mjs:7:118"
+        },
+        "unknownStagePreserved": true,
+        "noSilentRetry": true
+      }
+    },
+    {
+      "id": "T05",
+      "label": "cleanup interruption partial-cleanup-intent resumes from the same attempt",
+      "status": "passed",
+      "evidence": {
+        "point": "partial-cleanup-intent",
+        "sameAttemptRecovered": true,
+        "noLostStage": true
+      }
+    },
+    {
+      "id": "T06",
+      "label": "cleanup interruption partial-cleanup-removed resumes from the same attempt",
+      "status": "passed",
+      "evidence": {
+        "point": "partial-cleanup-removed",
+        "sameAttemptRecovered": true,
+        "noLostStage": true
+      }
+    },
+    {
+      "id": "T07",
+      "label": "unknown contents refuse automatic deletion",
+      "status": "passed",
+      "evidence": {
+        "error": {
+          "type": "error",
+          "message": "UNEXPECTED_STAGE_FILE",
+          "code": "ERR_ASSERTION",
+          "stack": "AssertionError [ERR_ASSERTION]: UNEXPECTED_STAGE_FILE\n    at walk (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:11:310)\n    at inspectPartial (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:11:420)\n    at file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:16:3\n    at /private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28296:19\n    at withCoordinatorLock (/private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28277:20)\n    at Object.withResourceLock (/private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28295:10)\n    at recoverAttempts (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:13:37)\n    at execute (file:///private/tmp/willyou-m14-install-attempt-probe/job.mjs:15:8)\n    at async file:///private/tmp/willyou-m14-install-attempt-probe/worker.mjs:7:118"
+        },
+        "unknownFilePreserved": true
+      }
+    },
+    {
+      "id": "T08",
+      "label": "same-path replacement refuses cleanup of a new directory",
+      "status": "passed",
+      "evidence": {
+        "error": {
+          "type": "error",
+          "message": "STAGE_IDENTITY_CHANGED\n+ actual - expected\n\n  {\n    dev: '16777234',\n+   ino: '77780422'\n-   ino: '77780415'\n  }\n",
+          "code": "ERR_ASSERTION",
+          "stack": "AssertionError [ERR_ASSERTION]: STAGE_IDENTITY_CHANGED\n+ actual - expected\n\n  {\n    dev: '16777234',\n+   ino: '77780422'\n-   ino: '77780415'\n  }\n\n    at same (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:7:26)\n    at inspectPartial (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:10:124)\n    at file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:16:3\n    at /private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28296:19\n    at withCoordinatorLock (/private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28277:20)\n    at Object.withResourceLock (/private/tmp/willyou-m14-install-attempt-probe/actual.cjs:28295:10)\n    at recoverAttempts (file:///private/tmp/willyou-m14-install-attempt-probe/attempt.mjs:13:37)\n    at execute (file:///private/tmp/willyou-m14-install-attempt-probe/job.mjs:15:8)\n    at async file:///private/tmp/willyou-m14-install-attempt-probe/worker.mjs:7:118"
+        },
+        "replacementPreserved": true,
+        "originalPreserved": true
+      }
+    },
+    {
+      "id": "T09",
+      "label": "a corrupt complete preparation is not treated as disposable partial data",
+      "status": "passed",
+      "evidence": {
+        "error": {
+          "type": "error",
+          "message": "TARGET_HASH_CHANGED\n+ actual - expected\n\n+ '2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74'\n- 'd2bb6faf8558ea7b02a8617141d254e0adc45f1418b4dd82c483d1f756310830'\n",
+          "code": "ERR_ASSERTION",
+          "stack": "AssertionError [ERR_ASSERTION]: TARGET_HASH_CHANGED\n+ actual - expected\n\n+ '2daeb1f36095b44b318410b3f4e8b5d989dcc7bb023d1426c492dab0a3053e74'\n- 'd2bb6faf8558ea7b02a8617141d254e0adc45f1418b4dd82c483d1f756310830'\n\n    at verifiedExistingPins (file:///private/tmp/willyou-m14-install-attempt-probe/artifact.mjs:27:483)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async reopenPrepared (file:///private/tmp/willyou-m14-install-attempt-probe/artifact.mjs:39:408)\n    at async execute (file:///private/tmp/willyou-m14-install-attempt-probe/job.mjs:20:82)\n    at async file:///private/tmp/willyou-m14-install-attempt-probe/worker.mjs:7:118"
+        },
+        "preparedFailurePreserved": true
+      }
+    }
+  ],
+  "passed": 9,
+  "error": null,
+  "scope": "Temporary durable install-attempt candidate with actual ResourceStore and captured worker SIGKILL. Synthetic local artifacts only, no real Agent/run lease/GC. Known partial stages recovered; unconfirmed allocation, unknown files/replaced directories and corrupt prepared data are retained, not deleted. Not proof of OS power-loss durability or atomic hostile-filesystem deletion."
+}

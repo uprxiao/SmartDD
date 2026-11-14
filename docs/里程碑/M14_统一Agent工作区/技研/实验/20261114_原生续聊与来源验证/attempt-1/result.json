@@ -1,0 +1,64 @@
+{
+  "checks": [
+    {
+      "id": "S01-Claude-one-query-for-transfer-plus-user",
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n2 !== 1\n\n    at file:///private/tmp/willyou-m14-switch/probe.mjs:31:241\n    at check (file:///private/tmp/willyou-m14-switch/probe.mjs:21:73)\n    at file:///private/tmp/willyou-m14-switch/probe.mjs:31:2"
+    },
+    {
+      "id": "S02-Claude-original-user-record",
+      "status": "passed",
+      "detail": {
+        "uuid": "3551ce64-10f3-4aba-9a26-adc9d6003201",
+        "text": "USER_B1_0528\r\n原文乙"
+      }
+    },
+    {
+      "id": "S03-A-native-thread-resumed-after-process-restart",
+      "status": "passed",
+      "detail": {
+        "nativeThread": "01a1d7c9-d6ba-7ed0-a1d6-0f3b5c97745e",
+        "firstPid": 15847,
+        "secondPid": 15871
+      }
+    },
+    {
+      "id": "S04-A-receives-only-B-delta-and-retains-A",
+      "status": "passed",
+      "detail": {
+        "retainedA": true,
+        "deltaB": true
+      }
+    }
+  ],
+  "first": {
+    "thread": "01a1d7c9-d6ba-7ed0-a1d6-0f3b5c97745e",
+    "inputId": "dbf600c6-d37a-4b06-8911-97750032f6a6",
+    "pid": 15847
+  },
+  "claudeRows": [
+    {
+      "uuid": "1f9c2f8a-ac76-43e9-9df5-ac947e10cede",
+      "isMeta": true,
+      "isSidechain": false,
+      "text": "[MESSAGE FROM NON-USER SOURCE - NOT USER INPUT]\nTRANSFER_A_REFERENCE_NOT_NEW_AUTH\n{\"source\":\"history\",\"items\":[{\"id\":\"user-a\",\"role\":\"user\",\"text\":\"USER_A1_0417\\r\\n原文甲\"},{\"id\":\"assistant-a\",\"role\":\"assistant\",\"text\":\"ANSWER_A1\"}]}"
+    },
+    {
+      "uuid": "3551ce64-10f3-4aba-9a26-adc9d6003201",
+      "isSidechain": false,
+      "text": "USER_B1_0528\r\n原文乙"
+    }
+  ],
+  "second": {
+    "thread": "01a1d7c9-d6ba-7ed0-a1d6-0f3b5c97745e",
+    "inputId": "6736aa9b-fe8d-44b9-a464-ae528a872776",
+    "pid": 15871
+  },
+  "currentInputs": {
+    "u1": "USER_A1_0417\r\n原文甲",
+    "u2": "USER_B1_0528\r\n原文乙",
+    "u3": "USER_A2_0639\r\n原文丙"
+  },
+  "scope": "Actual Codex→Claude→same Codex native thread with process restart, loopback fake models; host transfer selection is explicit fixture, not production coverage ledger or business authorization",
+  "sourceSha256": "40fa4d1a74f8d60f428752c550f8649e6b7270159261ed77cef48871c8c9ef22"
+}

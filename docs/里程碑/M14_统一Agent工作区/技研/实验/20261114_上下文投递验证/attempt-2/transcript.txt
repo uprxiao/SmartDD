@@ -1,0 +1,35 @@
+test_H00_naive_retry_duplicates_receiver_effect (__main__.Probe.test_H00_naive_retry_duplicates_receiver_effect) ... ok
+test_H01_A_B_A_delta_and_no_reimport (__main__.Probe.test_H01_A_B_A_delta_and_no_reimport) ... ok
+test_H02_idempotency_conflict_and_frozen_payload (__main__.Probe.test_H02_idempotency_conflict_and_frozen_payload) ... ok
+test_H03_crash_before_send_conservatively_unknown (__main__.Probe.test_H03_crash_before_send_conservatively_unknown) ... ok
+test_H04_crash_after_receive_no_blind_replay (__main__.Probe.test_H04_crash_after_receive_no_blind_replay) ... ok
+test_H05_proven_unsent_can_retry (__main__.Probe.test_H05_proven_unsent_can_retry) ... ok
+test_H06_explicit_unsupported_inline_fallback (__main__.Probe.test_H06_explicit_unsupported_inline_fallback) ... ok
+test_H07_inline_ack_loss_also_unknown (__main__.Probe.test_H07_inline_ack_loss_also_unknown) ... ok
+test_H08_coverage_and_status_are_atomic (__main__.Probe.test_H08_coverage_and_status_are_atomic) ... ok
+test_H09_duplicate_ack_idempotent (__main__.Probe.test_H09_duplicate_ack_idempotent) ... ok
+test_H10_config_revision_rechecked_before_dispatch (__main__.Probe.test_H10_config_revision_rechecked_before_dispatch) ... ok
+test_H11_two_dispatchers_only_one_claim (__main__.Probe.test_H11_two_dispatchers_only_one_claim) ... ok
+test_H12_omitted_items_not_marked_covered (__main__.Probe.test_H12_omitted_items_not_marked_covered) ... ok
+test_H13_new_native_identity_does_not_inherit_coverage (__main__.Probe.test_H13_new_native_identity_does_not_inherit_coverage) ... ok
+test_H14_history_echo_never_mints_user_authority (__main__.Probe.test_H14_history_echo_never_mints_user_authority) ... ok
+test_H15_restart_recovery_is_idempotent (__main__.Probe.test_H15_restart_recovery_is_idempotent) ... ok
+test_H16_native_and_generation_mismatch_cannot_ack (__main__.Probe.test_H16_native_and_generation_mismatch_cannot_ack) ... ok
+test_H17_inline_refused_before_consumption_stays_inline (__main__.Probe.test_H17_inline_refused_before_consumption_stays_inline) ... FAIL
+
+======================================================================
+FAIL: test_H17_inline_refused_before_consumption_stays_inline (__main__.Probe.test_H17_inline_refused_before_consumption_stays_inline)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/willyou-m14-handoff/handoff_probe.py", line 321, in test_H17_inline_refused_before_consumption_stays_inline
+    self.assertEqual(self.ledger.row(tid)['method'],'inline')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inject' != 'inline'
+- inject
++ inline
+
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.167s
+
+FAILED (failures=1)

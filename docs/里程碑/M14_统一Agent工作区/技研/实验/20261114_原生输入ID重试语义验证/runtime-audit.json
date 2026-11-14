@@ -1,0 +1,100 @@
+{
+  "codex": {
+    "out": "/private/tmp/willyou-m14-native-retry-probe/attempt-bY8SGV",
+    "checks": [
+      {
+        "driver": "codex",
+        "sameInputIdAttempts": "two completed",
+        "inputId": "dcdbd0d4-6126-47bc-9687-13e2e67de998",
+        "scope": "Deliberate diagnostic resend of identical text and UUID/clientUserMessageId; not an automatic production retry policy",
+        "modelRequests": 2
+      }
+    ],
+    "scope": "Native input identity is not presumed idempotent: two sequential diagnostic sends use the identical UUID/clientUserMessageId in one native session. Local synthetic text response only, no business tools or paid model. Does not prove cross-host recovery or queued retries."
+  },
+  "claude": {
+    "out": "/private/tmp/willyou-m14-native-retry-probe/attempt-JDgfxW",
+    "checks": [
+      {
+        "driver": "claude",
+        "sameInputIdAttempts": "first and fresh control completed; duplicate observed separately",
+        "duplicateResultCount": 1,
+        "controlResultCount": 1,
+        "inputId": "f5dde883-b0e7-45e3-93a9-95c0cd89a06d",
+        "scope": "Deliberate diagnostic resend of identical text and UUID/clientUserMessageId; not an automatic production retry policy",
+        "modelRequests": 2
+      }
+    ],
+    "scope": "Native input identity is not presumed idempotent: two sequential diagnostic sends use the identical UUID/clientUserMessageId in one native session. Local synthetic text response only, no business tools or paid model. Does not prove cross-host recovery or queued retries."
+  },
+  "attempts": [
+    {
+      "attempt": "attempt-JDgfxW",
+      "error": null,
+      "checks": [
+        {
+          "driver": "claude",
+          "sameInputIdAttempts": "first and fresh control completed; duplicate observed separately",
+          "duplicateResultCount": 1,
+          "controlResultCount": 1,
+          "inputId": "f5dde883-b0e7-45e3-93a9-95c0cd89a06d",
+          "scope": "Deliberate diagnostic resend of identical text and UUID/clientUserMessageId; not an automatic production retry policy",
+          "modelRequests": 2
+        }
+      ],
+      "modelRequests": 2,
+      "exits": [
+        {
+          "pid": 81147,
+          "exitCode": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-bY8SGV",
+      "error": null,
+      "checks": [
+        {
+          "driver": "codex",
+          "sameInputIdAttempts": "two completed",
+          "inputId": "dcdbd0d4-6126-47bc-9687-13e2e67de998",
+          "scope": "Deliberate diagnostic resend of identical text and UUID/clientUserMessageId; not an automatic production retry policy",
+          "modelRequests": 2
+        }
+      ],
+      "modelRequests": 2,
+      "exits": [
+        {
+          "pid": 81075,
+          "exitCode": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-kofNNM",
+      "error": "Error: native observation deadline\n    at Timeout.<anonymous> (file:///private/tmp/willyou-m14-native-retry-probe/native.mjs:11:97)\n    at listOnTimeout (node:internal/timers:635:17)\n    at process.processTimers (node:internal/timers:571:7)",
+      "checks": [],
+      "modelRequests": 1,
+      "exits": [
+        {
+          "pid": 80946,
+          "exitCode": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-l0neDl",
+      "error": "Error: listen EPERM: operation not permitted 127.0.0.1\n    at Server.setupListenHandle [as _listen2] (node:net:2145:21)\n    at listenInCluster (node:net:2224:12)\n    at node:net:2448:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "checks": [],
+      "modelRequests": 0,
+      "exits": []
+    }
+  ],
+  "totalLocalModelRequests": 5,
+  "realNativeProcesses": 3,
+  "supplierModelCalls": 0,
+  "scope": "Native sequential duplicate-ID diagnostic with local synthetic text responses. No business tools, no host crash, no cross-host replay, no proof of vendor exactly-once guarantees."
+}

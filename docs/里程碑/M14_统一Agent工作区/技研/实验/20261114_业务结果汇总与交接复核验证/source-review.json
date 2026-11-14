@@ -1,0 +1,56 @@
+{
+  "smartddHead": "5a9e04382441e24624cb94635f9d902c543a03d7",
+  "sources": [
+    {
+      "path": "src/main/core/applications/execution-context.ts",
+      "sha256": "222ef15bd4121f9a86900db6d44372ba1a4aa3fe5d14c0b9474475ca4fb6d817"
+    },
+    {
+      "path": "src/main/core/applications/mail-execution-service.ts",
+      "sha256": "3006274bb057f5ca31b8dc39f7b680fa8cebfbadac81014d014520ad8f1f48dd"
+    },
+    {
+      "path": "src/main/core/browser/operations.ts",
+      "sha256": "d9b2b4b846949af99426abb294f2c67ef0982a596915c886ce26377ebd9cfbf8"
+    },
+    {
+      "path": "src/main/core/applications/run-registry.ts",
+      "sha256": "91f7b7dd8f16f885631f0399af585dae46c14a662b2da2d7a9c05299479431c8"
+    },
+    {
+      "path": "drizzle/0012_application_invocations.sql",
+      "sha256": "af86db1bccbb4ae4bf177f381def368089a481c725050a85748de2040d86a707"
+    },
+    {
+      "path": "drizzle/0016_application_data_operations.sql",
+      "sha256": "53f4acac1b3fd243baac7f78b10ca361dd9264fb6a242a8547f08fb5bcc01f47"
+    },
+    {
+      "path": "drizzle/0030_browser_operations.sql",
+      "sha256": "4a24c1123d81dea27e1c3cd185c5ada6a7bc593f5f7626a8dd366ceab7599a70"
+    }
+  ],
+  "t3": {
+    "path": "/Users/hx/projects/t3code/apps/server/src/orchestration-v2/ProviderSessionManager.ts",
+    "sha256": "8c117d9bab9a7b0a774e2f5e1fe2b8419f5c74598e1d20c49791b67fc60f7a80",
+    "head": "f313d0a6cb843551fb60e57a454a71e71a3a8c04",
+    "observation": "releaseEntry separately drains subscribers, closes scope and writes release records; tool items interrupted is not proof of external business outcome; source inspection only"
+  },
+  "scope": "Current actual migrations, run registry prepare/cancel-before-fork and mail recovery with controlled dead owner; candidate summary/admission over synthetic rows. No SDK/native fork, SMTP, business writes, UI or product changes.",
+  "findings": [
+    "Current data execution-context records CANCELED as cancelled even for write without a separate effect field; cancellation alone is insufficient evidence of no external effect.",
+    "Read-only semantics establish no-write-effect, not successful delivery.",
+    "Four business ledgers need independent source coverage; required-source failure cannot be an empty list.",
+    "Source content fingerprint recheck in immediate transaction detects tested precommit changes, but no proof of complete launch arbitration or postcommit business exclusion."
+  ],
+  "candidateLimits": [
+    "Selected metadata only, no production event projection or native launch",
+    "No real mailbox, browser or plugin write",
+    "OwnerState for mail recovery controlled",
+    "Unknown/nonempty module targets intentionally unverified; object-level scope not implemented",
+    "Terminal executed mail result decoder not integrated; such rows conservatively unverified",
+    "Reads all historical source rows in candidate; no performance or migration coverage proof",
+    "No proof that schema-empty database contains complete prior history",
+    "No binding/generation/command admission integration; run-state DB check is not OS-process proof"
+  ]
+}

@@ -1,0 +1,4 @@
+ALTER TABLE capability_runs ADD COLUMN execution_scope_required INTEGER NOT NULL DEFAULT 0 CHECK(execution_scope_required IN (0,1));
+CREATE TABLE m14_execution_scope(run_id TEXT PRIMARY KEY REFERENCES capability_runs(run_id),launch_id TEXT NOT NULL UNIQUE,phase TEXT NOT NULL CHECK(phase IN ('open','closing','unknown','drained')),coverage TEXT NOT NULL CHECK(coverage IN ('known','unknown')),revision INTEGER NOT NULL,drained_revision INTEGER,reason TEXT);
+CREATE TABLE m14_scope_member(run_id TEXT NOT NULL REFERENCES m14_execution_scope(run_id),pid INTEGER NOT NULL,birth TEXT NOT NULL,kind TEXT NOT NULL,PRIMARY KEY(run_id,pid,birth));
+CREATE TABLE m14_workspace_hold(run_id TEXT PRIMARY KEY REFERENCES m14_execution_scope(run_id),descriptor TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('held','released')));

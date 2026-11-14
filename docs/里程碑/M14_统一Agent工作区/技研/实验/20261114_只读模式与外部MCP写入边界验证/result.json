@@ -1,0 +1,48 @@
+{
+  "out": "/private/tmp/willyou-m14-readonly-mcp-probe/attempt-K5x2dR",
+  "scope": "Negative boundary: native read-only/tool restrictions do not sandbox a separately hosted preapproved MCP handler. Synthetic local files only; not T3 or WillYou integration, not proof of their policy bypass.",
+  "checks": [
+    {
+      "id": "claude-readonly-external-mcp",
+      "status": "passed",
+      "detail": {
+        "sessionId": "d4636f62-9f61-4e65-8ce9-885d07445317",
+        "userId": "8c249773-8ada-44d1-8f5d-862ceb7fd0da",
+        "terminal": "success",
+        "restriction": {
+          "permissionMode": "dontAsk",
+          "tools": [
+            "Read",
+            "Glob",
+            "Grep"
+          ],
+          "preapprovedMcp": [
+            "mcp__wy__wy_form"
+          ]
+        },
+        "modelRequests": 2,
+        "mcpCalls": 1,
+        "externalMcpWroteWorkspace": true
+      }
+    },
+    {
+      "id": "codex-readonly-external-mcp",
+      "status": "passed",
+      "detail": {
+        "threadId": "01a1d9a7-0a86-7b32-b4f1-cad7fd62a86b",
+        "turnId": "01a1d9a7-0a91-7fa3-aa5b-2dd7e01e3c1a",
+        "terminal": "completed",
+        "restriction": {
+          "sandbox": "read-only",
+          "approvalPolicy": "never",
+          "mcpApproval": "approve"
+        },
+        "modelRequests": 2,
+        "mcpCalls": 1,
+        "externalMcpWroteWorkspace": true
+      }
+    }
+  ],
+  "passed": 2,
+  "failed": 0
+}

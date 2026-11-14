@@ -1,0 +1,86 @@
+{
+  "out": "/private/tmp/willyou-m14-plan-policy-probe/attempt-ytcs8U",
+  "checks": [
+    {
+      "id": "P01",
+      "label": "actual v1 plan rejects adding programmatic binding fields or relabelling the schema",
+      "status": "passed",
+      "evidence": {
+        "oldPlanStillReadable": true,
+        "extensionRequiresVersionedContract": true
+      }
+    },
+    {
+      "id": "P02",
+      "label": "recorded capability snapshot differs from disabled launch selection without corrupting source identity",
+      "status": "passed",
+      "evidence": {
+        "recordedPackages": 1,
+        "launchPackages": 0,
+        "disabledCallCode": "APP_NOT_ENABLED"
+      }
+    },
+    {
+      "id": "P03",
+      "label": "enabling application after launch exposes it in same active run without rewriting launch audit",
+      "status": "passed",
+      "evidence": {
+        "sameRun": "0198f0b6-39c2-4206-9d6b-dfd3f824f853",
+        "currentPlanDiffersFromLaunch": true,
+        "readHandler": "synthetic",
+        "executed": 1
+      }
+    },
+    {
+      "id": "P04",
+      "label": "disabling application also blocks cached successful request without another execution",
+      "status": "passed",
+      "evidence": {
+        "cachedRequestDenied": true,
+        "executeCount": 1
+      }
+    },
+    {
+      "id": "P05",
+      "label": "reactivation and upgrade use current package while retaining original launch and snapshot bytes",
+      "status": "passed",
+      "evidence": {
+        "oldPackage": "eb17adac0d8445fb636c4dd3e8ff8845b5fa15d7f333b1a523107693b766d76d",
+        "currentPackage": "9cf270fbc33fd345e520ac10e6416ef156c489829b3cc27047f8f0ffad41d2b8",
+        "originalAuditUnchanged": true
+      }
+    },
+    {
+      "id": "P06",
+      "label": "catalog disable dominates project enablement for current calls",
+      "status": "passed",
+      "evidence": {
+        "catalogRevocationRespected": true
+      }
+    },
+    {
+      "id": "P07",
+      "label": "new run records current launch selection while stopped run cannot grant execution",
+      "status": "passed",
+      "evidence": {
+        "priorRun": "0198f0b6-39c2-4206-9d6b-dfd3f824f853",
+        "newRun": "1307c8cb-e554-4079-97fb-a2e04c1b4c97",
+        "currentLaunchPackage": "9cf270fbc33fd345e520ac10e6416ef156c489829b3cc27047f8f0ffad41d2b8",
+        "sameHistoricalSnapshotHash": true,
+        "stoppedRunRejected": true
+      }
+    },
+    {
+      "id": "P08",
+      "label": "current view retains launch transport availability when application is enabled",
+      "status": "passed",
+      "evidence": {
+        "noImplicitCliEnablement": true,
+        "sharedSkillPerRunCopies": 0
+      }
+    }
+  ],
+  "passed": 8,
+  "failed": 0,
+  "scope": "Actual v1 plan, v3 sessions, current-authorization, run registry and tool service. Fixture process identities, SQL settings, synthetic read executor and PackageRegistry metadata facade; no UI, Agent, external business or full SDK migration."
+}

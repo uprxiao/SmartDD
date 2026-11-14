@@ -1,0 +1,209 @@
+{
+  "out": "/private/tmp/willyou-m14-native-request-probe/attempt-EQVTjb",
+  "checks": [
+    {
+      "id": "E01",
+      "label": "codex cancellation expires pending native request before a later generation",
+      "status": "passed",
+      "evidence": {
+        "oldScopeExpired": true,
+        "lateSendRejectedByActualRun": true,
+        "generationAdvanced": true,
+        "oldRawId": 0,
+        "newRawId": 0,
+        "nativeClosedRequests": [
+          {
+            "threadId": "01a1d92c-80b3-72c0-93c4-a735837cf794",
+            "requestId": 0
+          }
+        ],
+        "callbackSignalAborted": false,
+        "terminal": {
+          "id": "01a1d92c-80c6-7e50-81c4-1ff274fc1e23",
+          "rootTurnId": "01a1d92c-80c6-7e50-81c4-1ff274fc1e23",
+          "items": [],
+          "itemsView": "notLoaded",
+          "status": "interrupted",
+          "error": null,
+          "startedAt": 1794644934,
+          "completedAt": 1794644934,
+          "durationMs": 19
+        }
+      }
+    },
+    {
+      "id": "E02",
+      "label": "claude cancellation expires pending native request before a later generation",
+      "status": "passed",
+      "evidence": {
+        "oldScopeExpired": true,
+        "lateSendRejectedByActualRun": true,
+        "generationAdvanced": true,
+        "oldRawId": "26ef5422-0312-45ed-90e3-8bef116cb8f3",
+        "newRawId": "15ce7530-908e-4e8c-b85c-8b1c0bba5a25",
+        "nativeClosedRequests": [],
+        "callbackSignalAborted": true,
+        "terminal": {
+          "duration_api_ms": 11,
+          "stop_reason": "tool_use",
+          "session_id": "d6edb33e-93c5-4954-b50a-e3699e613093",
+          "total_cost_usd": 5.999999999999999e-06,
+          "usage": {
+            "input_tokens": 1,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "output_tokens": 1,
+            "output_tokens_details": {
+              "thinking_tokens": 0
+            },
+            "server_tool_use": {
+              "web_search_requests": 0,
+              "web_fetch_requests": 0
+            },
+            "service_tier": "standard",
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "inference_geo": "",
+            "iterations": [],
+            "speed": "standard",
+            "fallback_credit": null
+          },
+          "modelUsage": {
+            "claude-haiku-4-5": {
+              "inputTokens": 1,
+              "outputTokens": 1,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0,
+              "webSearchRequests": 0,
+              "costUSD": 5.999999999999999e-06,
+              "contextWindow": 200000,
+              "maxOutputTokens": 32000,
+              "thinkingTokens": 0,
+              "cacheCreationEphemeral5mInputTokens": 0,
+              "cacheCreationEphemeral1hInputTokens": 0,
+              "canonicalModel": "claude-haiku-4-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          },
+          "permission_denials": [],
+          "terminal_reason": "aborted_tools",
+          "fast_mode_state": "off",
+          "fast_mode_disabled_reason": "sdk_opt_in_required",
+          "subagent_stats": {
+            "spawned": 0,
+            "requested": {
+              "background": 0,
+              "foreground": 0,
+              "unset": 0
+            },
+            "started_in_background": 0,
+            "max_depth": 0,
+            "spawned_by_subagents": 0,
+            "completed": 0,
+            "failed": 0,
+            "killed": {
+              "parent": 0,
+              "user": 0,
+              "system": 0
+            },
+            "refused": {
+              "depth_limit": 0,
+              "concurrency_limit": 0,
+              "budget": 0
+            },
+            "by_type": {}
+          },
+          "safety_stops": 0,
+          "is_error": true,
+          "num_turns": 3,
+          "subtype": "error_during_execution",
+          "errors": [
+            "[ede_diagnostic] result_type=user last_content_type=n/a stop_reason=tool_use"
+          ],
+          "user_message_uuid": "c4da885b-e7b5-469d-941b-85eeffd9b6fb",
+          "type": "result",
+          "duration_ms": 40,
+          "uuid": "1a96cb6d-230e-4643-9043-1a5a1724ac0e",
+          "user_message_uuids": [
+            "c4da885b-e7b5-469d-941b-85eeffd9b6fb"
+          ],
+          "queued_turn_count": 0,
+          "result_index": 0,
+          "model_usage_since_last_result": {
+            "claude-haiku-4-5": {
+              "inputTokens": 1,
+              "outputTokens": 1,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0,
+              "webSearchRequests": 0,
+              "costUSD": 5.999999999999999e-06,
+              "contextWindow": 200000,
+              "maxOutputTokens": 32000,
+              "thinkingTokens": 0,
+              "cacheCreationEphemeral5mInputTokens": 0,
+              "cacheCreationEphemeral1hInputTokens": 0,
+              "canonicalModel": "claude-haiku-4-5",
+              "provider": "firstParty",
+              "costBasis": "list"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "E03",
+      "label": "current callbacks reject cross-provider scope, old ID and invalid form without dispatch",
+      "status": "passed",
+      "evidence": {
+        "simultaneousLiveScopes": true,
+        "typedNativeIdPreserved": true,
+        "crossProviderAndOldRunDenied": true,
+        "invalidFieldNotSent": true
+      }
+    },
+    {
+      "id": "E04",
+      "label": "valid form delivery is once per command and closure is not used as generic approval proof",
+      "status": "passed",
+      "evidence": {
+        "oneNativeSendPerCommand": true,
+        "actualMcpAndNextModelObserveAnswer": true,
+        "codexCancelledClosure": [
+          {
+            "threadId": "01a1d92c-80b3-72c0-93c4-a735837cf794",
+            "requestId": 0
+          }
+        ],
+        "codexAcceptedClosure": [
+          {
+            "threadId": "01a1d92c-848c-7950-97aa-e931ce25cf34",
+            "requestId": 0
+          }
+        ],
+        "claudeResultHooks": [
+          {
+            "session_id": "b779b9f7-db9d-4d0b-894e-968719468db4",
+            "transcript_path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-l48mIQ/home/.claude/projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-l48mIQ-project/b779b9f7-db9d-4d0b-894e-968719468db4.jsonl",
+            "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-l48mIQ/project",
+            "prompt_id": "5970b4cc-9b69-4a59-8188-c47689e26c6f",
+            "hook_event_name": "ElicitationResult",
+            "mcp_server_name": "wy",
+            "mode": "form",
+            "action": "accept",
+            "content": {
+              "label": "isolated-choice",
+              "count": 2,
+              "enabled": true
+            }
+          }
+        ],
+        "receiptConservativeUntilAdapterProof": true
+      }
+    }
+  ],
+  "passed": 4,
+  "scope": "Actual Codex/Claude native HTTP MCP elicitation and interrupt, real programmatic run ownership, reused candidate request kernel with guarded send. Independent logical task per provider, next generation and simultaneously pending forms. Synthetic model/form/window; no real UI, business approval, parent-child tree or crash."
+}

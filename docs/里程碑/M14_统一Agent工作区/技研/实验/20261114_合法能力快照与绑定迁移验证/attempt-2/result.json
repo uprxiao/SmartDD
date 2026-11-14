@@ -1,0 +1,144 @@
+{
+  "node": "v26.5.0",
+  "boundary": "Actual schema, session/resource/plan/GC services with controlled packages and isolated SQLite; candidate envelope is not production implementation.",
+  "results": [
+    {
+      "id": "B01",
+      "name": "actual v2 registry reads installed package, skill projection and references",
+      "status": "pass",
+      "evidence": {
+        "snapshotHash": "5d6b2733e9af88d725fad348c2ef8634a8f3539449e23ad5cfb6af5a35429b60",
+        "skillBytes": 80,
+        "refs": [
+          {
+            "ref_id": "agent-adapter:claude-code:b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e",
+            "ref_kind": "agent-adapter",
+            "ref_hash": "b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e",
+            "relative_path": "run-fixtures/agent-adapter/b703c40ae4776b2d65fbaf3cee3b9fa9f99e2ab1f0510faf142d8a8ab1c96a4e"
+          },
+          {
+            "ref_id": "app:9cda35fe693a25ae5e7bd3df55ceb26e8f0936481f06cba75c6af217739c5825",
+            "ref_kind": "application-package",
+            "ref_hash": "9cda35fe693a25ae5e7bd3df55ceb26e8f0936481f06cba75c6af217739c5825",
+            "relative_path": "apps/zentao/1.0.0/9cda35fe693a25ae5e7bd3df55ceb26e8f0936481f06cba75c6af217739c5825"
+          },
+          {
+            "ref_id": "runtime:c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793",
+            "ref_kind": "runtime",
+            "ref_hash": "c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793",
+            "relative_path": "runtime/c53352079a139c7191b560aec87e1f1b131764e431fc68769f22bcd22fbe6793"
+          }
+        ]
+      }
+    },
+    {
+      "id": "B02",
+      "name": "actual v3 registry accepts valid capability contracts and preserves omitted optional plugins",
+      "status": "pass",
+      "evidence": {
+        "omittedHash": "d62ca6b0e161a3cf53e1c5d43a1374becf6105fee899518c080898a34fd71d7f",
+        "emptyArrayHash": "a3421646cddae49df4b87bd4fa018200b615a278c32f1f022f3bbfb36ce04fc3"
+      }
+    },
+    {
+      "id": "B03",
+      "name": "old schema and registry refuse additive binding fields and same-task replacement",
+      "status": "pass",
+      "evidence": {
+        "extraFieldRejected": true,
+        "sameTaskReplacementRejected": true
+      }
+    },
+    {
+      "id": "B04",
+      "name": "native binding preserves original revision and source-plan compatibility",
+      "status": "pass",
+      "evidence": {
+        "before": "5d6b2733e9af88d725fad348c2ef8634a8f3539449e23ad5cfb6af5a35429b60",
+        "after": "ab1237e819696589dab15a69ef97705c1cd6a29b5242076b112d441782025c98",
+        "selectionHash": "5d6b2733e9af88d725fad348c2ef8634a8f3539449e23ad5cfb6af5a35429b60",
+        "history": [
+          "5d6b2733e9af88d725fad348c2ef8634a8f3539449e23ad5cfb6af5a35429b60",
+          "ab1237e819696589dab15a69ef97705c1cd6a29b5242076b112d441782025c98"
+        ]
+      }
+    },
+    {
+      "id": "B05",
+      "name": "run plan v1 is strict; unrelated selection change cannot borrow native-bind exception",
+      "status": "pass",
+      "evidence": {
+        "planExtraFieldRejected": true,
+        "unrelatedSelectionRejected": true
+      }
+    },
+    {
+      "id": "B06",
+      "name": "old registry retains global MCP-name and native-identity uniqueness",
+      "status": "pass",
+      "evidence": {
+        "mcpConflict": true,
+        "nativeConflict": true
+      }
+    },
+    {
+      "id": "B07",
+      "name": "binding envelopes retain legal v2 and v3 bytes and all native history revisions",
+      "status": "pass",
+      "evidence": {
+        "revisions": 3,
+        "legacyRowsUnchanged": true,
+        "legacyReadersStillWork": true
+      }
+    },
+    {
+      "id": "B08",
+      "name": "equal content hashes do not grant access to another binding or task",
+      "status": "pass",
+      "evidence": {
+        "contentHash": "5d6b2733e9af88d725fad348c2ef8634a8f3539449e23ad5cfb6af5a35429b60",
+        "distinctBindingScopes": true,
+        "notAnExecutableClone": "Native identity and projection conflict checks remain separately required; this case only tests content-addressed history."
+      }
+    },
+    {
+      "id": "B09",
+      "name": "candidate relation constraints and resource identity reject cross-binding or tampered refs",
+      "status": "pass",
+      "evidence": {
+        "foreignKeysChecked": true,
+        "resourceIdentityRejected": true
+      }
+    },
+    {
+      "id": "B10",
+      "name": "actual reader rejects corrupt hashes, missing refs and MCP name mismatch without repairing history",
+      "status": "pass",
+      "evidence": {
+        "negativeCases": 3,
+        "rollbackUsedToPreserveFixture": true
+      }
+    },
+    {
+      "id": "B11",
+      "name": "actual GC sees old tombstone refs but misses candidate-only binding refs",
+      "status": "pass",
+      "evidence": {
+        "legacyTombstoneProtected": true,
+        "candidateOnlyIncorrectlyCollectible": true,
+        "performedDeletion": false
+      }
+    },
+    {
+      "id": "B12",
+      "name": "native run-plan source lookup does not read new-only revision storage",
+      "status": "pass",
+      "evidence": {
+        "legacySourceLookupMissesCandidate": true,
+        "productionSourceLookupMustBeMigrated": true
+      }
+    }
+  ],
+  "passed": 12,
+  "failed": 0
+}

@@ -1,0 +1,206 @@
+[
+  {
+    "path": "src/renderer/lib/layout/sidebar-tasks.tsx",
+    "sha256": "ae78aed13d2320ee153641ca8c073b90f0e7c461683913a3ebd7b18fed2479df",
+    "observedLines": [
+      {
+        "line": 68,
+        "text": "if (task.ptyId || tasksStore.terminals.has(task.id)) {"
+      },
+      {
+        "line": 69,
+        "text": "const running = Boolean(task.ptyId);"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/lib/layout/left-sidebar.tsx",
+    "sha256": "dfbba539748bd0689cba68a57ba3ad3311831da893b57d4a0c81d5b0faeed41a",
+    "observedLines": [
+      {
+        "line": 10,
+        "text": "const running = tasksStore.tasks.filter((task) => task.ptyId).length;"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/views/project-view.tsx",
+    "sha256": "e722bda284e3818cf4884145b62822c305f6bcc8890d33cc78dac30e174e14f2",
+    "observedLines": [
+      {
+        "line": 210,
+        "text": "{task.ptyId ? t('task.running') : task.archivedAt !== null ? t('search.archived') : t(`task.recovery.${task.recovery}`)}"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/views/task-archive.tsx",
+    "sha256": "0245ab78c44aa4f1f0059722ea85292faa958417c75b7ddb66a7b272dfa819b7",
+    "observedLines": [
+      {
+        "line": 45,
+        "text": "if (task.archivedAt === null && (task.ptyId || tasksStore.resuming.has(task.id))) {"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/views/resume-advice.tsx",
+    "sha256": "839fe8df2dd876cfc0c328e550ffb09f15102e7d1581c6527900d6af741158b8",
+    "observedLines": [
+      {
+        "line": 21,
+        "text": "const running = Boolean(task.ptyId) && task.archivedAt === null;"
+      },
+      {
+        "line": 29,
+        "text": "try { await rpc.tasks.kill(task.id); await stopped(task.id); await tasksStore.resume({ taskId: task.id }); setConfirm(false); }"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/features/applications/plugin-actions.tsx",
+    "sha256": "5ec0fce24a47bb107a850e61ebe3177decdf00ae98bcd9169ba2b475500ffa9d",
+    "observedLines": [
+      {
+        "line": 11,
+        "text": "const TerminalChoice=observer(function TerminalChoice({value,onClose,onDone}:{value:Extract<PreparedPluginUiAction,{kind:'insertTerminal'}>;onClose():void;onDone():void}){"
+      },
+      {
+        "line": 14,
+        "text": "const tasks=tasksStore.tasks.filter(t=>t.projectId===value.projectId&&t.archivedAt===null&&t.ptyId&&tasksStore.terminals.get(t.id)===t.ptyId);"
+      },
+      {
+        "line": 15,
+        "text": "const prepare=async()=>{if(busy)return;setBusy(true);setError('');try{const latest=unwrap(await rpc.applications.pluginReviewAction(value.id));if(!live.current)return;if(latest.kind!=='insertTerminal'||latest.projectId!==value.projectId)throw new Error('原插件引用已变化');onDone();navigation.prepareApplicationTask(value.projectId,latest.text);}catch(e){if(live.current)setError(e instanceof Error?e.message:'引用未准备');}finally{if(live.current)setBusy(false);}};"
+      },
+      {
+        "line": 17,
+        "text": "{target&&<ApplicationTerminalButton key={target.taskId+':'+target.ptyId} projectId={value.projectId} target={target} source={{kind:'pluginAction',appId:value.appId,actionId:value.id}} label=\"插入所选会话\" onInserted={onDone}/>}"
+      },
+      {
+        "line": 23,
+        "text": "const [value,setValue]=useState<Extract<PreparedPluginUiAction,{kind:'insertTerminal'}>|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);"
+      },
+      {
+        "line": 30,
+        "text": "if(prepared.kind==='insertTerminal'){setValue(prepared);return;}"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/features/applications/terminal-insertion.tsx",
+    "sha256": "38dafe3d1cb7c35d4c5a0dff979dc7dabaa4b82407bd2c928ce58808ba15af33",
+    "observedLines": [
+      {
+        "line": 13,
+        "text": "const [target]=useState(()=>{if(explicitTarget)return{...explicitTarget};const task=tasksStore.current;return task&&task.projectId===projectId&&task.ptyId&&task.archivedAt===null&&tasksStore.terminals.get(task.id)===task.ptyId?{taskId:task.id,ptyId:task.ptyId}:null;}),[state,setState]=useState<'idle'|'inserting'|'inserted'|'failed'|'unknown'>('idle'),[notice,setNotice]=useState('');"
+      },
+      {
+        "line": 14,
+        "text": "const live=useRef(true),busy=useRef(false),binding=useRef<ApplicationTerminalBinding|null>(null),sourceKey=JSON.stringify(source),initialSource=useRef(sourceKey),epoch=useRef(0);"
+      },
+      {
+        "line": 15,
+        "text": "const selected=explicitTarget?tasksStore.byId.get(explicitTarget.taskId):tasksStore.current,current=!!target&&selected?.id===target.taskId&&selected.projectId===projectId&&selected.ptyId===target.ptyId&&selected.archivedAt===null&&tasksStore.terminals.get(target.taskId)===target.ptyId&&sourceKey===initialSource.current&&(!explicitTarget||explicitTarget.taskId===target.taskId&&explicitTarget.ptyId===target.ptyId);"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/core/auto-resume.ts",
+    "sha256": "0a01a408d25ac32b80e1f757eda6754861f87fab0b0b0e9fb256d0176920da42",
+    "observedLines": [
+      {
+        "line": 14,
+        "text": "if (task.ptyId !== null) return false;"
+      },
+      {
+        "line": 17,
+        "text": "if (task.nativeSessionId && !task.runtimeSnapshot) return false;"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/core/tasks-store.ts",
+    "sha256": "7ff3529423574813d883f5e5882a4eeb5849392b356f98e70c018ee5842ba845",
+    "observedLines": [
+      {
+        "line": 6,
+        "text": "import { shouldAutoResume } from './auto-resume';"
+      },
+      {
+        "line": 31,
+        "text": "/** Tabs already auto-resumed (or that must not be, until reopened): see shouldAutoResume. */"
+      },
+      {
+        "line": 93,
+        "text": "if (!shouldAutoResume(task, this.autoResumed)) return false;"
+      },
+      {
+        "line": 113,
+        "text": "const opening = rpc.tasks.open({ ...terminalSize(), ...req });"
+      },
+      {
+        "line": 166,
+        "text": "let preparation: Awaited<ReturnType<(typeof import('../features/files/workspace-store'))['prepareFileWorkspaceClose']>> | undefined;"
+      },
+      {
+        "line": 173,
+        "text": "const { prepareFileWorkspaceClose } = await import('../features/files/workspace-store');"
+      },
+      {
+        "line": 174,
+        "text": "preparation = await prepareFileWorkspaceClose({ kind: 'task', taskId }, action);"
+      }
+    ]
+  },
+  {
+    "path": "src/renderer/core/voice-store.ts",
+    "sha256": "ab0c5a08dc25e8f59352884bdad3dd2c3abb14c021f25de58cb9b744902287b1",
+    "observedLines": [
+      {
+        "line": 39,
+        "text": "const offRoute = reaction(() => [navigation.currentViewId, navigation.currentTaskId, navigation.currentProjectId, navigation.settingsSection, navigation.homePreset?.seq], () => this.clear());"
+      },
+      {
+        "line": 61,
+        "text": "const timer = window.setInterval(() => { if (!target.available()) cancel(); }, 50);"
+      },
+      {
+        "line": 64,
+        "text": "const result = await rpc.voice.trigger({ requestId, origin, ptyId });"
+      }
+    ]
+  },
+  {
+    "path": "src/shared/voice.ts",
+    "sha256": "a562bcb5dbc0ad63ee0288af0d02d92af669ce21bdca6eaa257d1a2bc9bd7f89",
+    "observedLines": [
+      {
+        "line": 7,
+        "text": "origin: z.enum(['home', 'terminal', 'settings']),"
+      }
+    ]
+  },
+  {
+    "path": "src/main/core/voice/voice-service.ts",
+    "sha256": "99269320dbe3b14180200e219f84a6a442d6e3f4f79b1a063e32facd4137bd6f",
+    "observedLines": [
+      {
+        "line": 127,
+        "text": "const validTarget = () => input.origin === 'global' || (this.d.focused() && (input.origin !== 'terminal' || Boolean(input.ptyId && this.d.ptyAlive(input.ptyId))));"
+      },
+      {
+        "line": 128,
+        "text": "if (!validTarget()) return { ok: false, error: input.origin === 'terminal' ? 'TASK_STOPPED' : 'TARGET_CHANGED' };"
+      },
+      {
+        "line": 132,
+        "text": "const timer = setInterval(() => { if (!validTarget()) abort.abort(); }, 50);"
+      },
+      {
+        "line": 139,
+        "text": "if (abort.signal.aborted || !validTarget()) return { ok: false, error: 'TARGET_CHANGED' };"
+      }
+    ]
+  }
+]

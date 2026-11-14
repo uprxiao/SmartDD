@@ -1,0 +1,77 @@
+{
+  "scope": "Actual SVN WC, actual SmartDD path inspection and owner registry, candidate SQLite path gate; not full launcher or hostile OS confinement",
+  "checks": [
+    {
+      "id": "W01-real-SVN-and-path-alias",
+      "status": "passed",
+      "detail": {
+        "wcRootMatches": true
+      }
+    },
+    {
+      "id": "W02-same-WC-siblings-and-alias-conflict",
+      "status": "passed"
+    },
+    {
+      "id": "W03-ordinary-ancestor-overlap-and-sibling-independence",
+      "status": "passed"
+    },
+    {
+      "id": "W04-multi-window-shared-DB-sees-held-lease",
+      "status": "passed"
+    },
+    {
+      "id": "W05-retargeted-symlink-rejected-before-fork",
+      "status": "passed"
+    },
+    {
+      "id": "W06-missing-path-not-locked-as-guessed-string",
+      "status": "passed"
+    },
+    {
+      "id": "W07-real-owner-bridge-exit-gates-next-writer",
+      "status": "passed",
+      "detail": {
+        "scope": "Actual run/resource registry + real processes + candidate path gate; fixture snapshots keep their own temp cwd, execution cwd is explicitly selected WC by test harness, no full launcher"
+      }
+    },
+    {
+      "id": "W08-stopped-run-alone-does-not-prove-descendant-exit",
+      "status": "passed",
+      "detail": {
+        "rootPid": 16709,
+        "grandchild": {
+          "pid": 16710,
+          "startedAt": "darwin-proc-v1:1794621984:777260"
+        },
+        "rootRunStoppedBeforeGrandchild": true,
+        "backgroundWriteObserved": true,
+        "cleanup": "Explicit inherited control pipe asked only this owned grandchild to exit; no PID-based kill"
+      }
+    }
+  ],
+  "sourceSha256": "a22ebc608c2daea3a0a553080c0dc49d476b118262f53a0de73ecb9b0b961a0e",
+  "pathSourceSha256": "f4c6bef8553000dcd248da93ea8b88f673026f1c22b5a7fd37dc7eaf1fa407e3",
+  "processes": [
+    {
+      "pid": 16698,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 16701,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 16706,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 16709,
+      "exitCode": 0,
+      "signal": null
+    }
+  ]
+}

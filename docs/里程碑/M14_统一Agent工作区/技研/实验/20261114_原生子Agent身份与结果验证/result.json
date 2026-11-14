@@ -1,0 +1,146 @@
+{
+  "checksPassed": 2,
+  "claude": {
+    "out": "/private/tmp/willyou-m14-native-child-probe/attempt-yT3SD0",
+    "driver": "claude",
+    "passed": true,
+    "error": null,
+    "serverError": null,
+    "parentRequests": 3,
+    "childRequests": 1,
+    "processes": [
+      {
+        "pid": 9394,
+        "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64/claude",
+        "args": [
+          "--output-format",
+          "stream-json",
+          "--verbose",
+          "--input-format",
+          "stream-json",
+          "--model=claude-haiku-4-5",
+          "--allowedTools=Agent",
+          "--tools=Agent",
+          "--setting-sources=",
+          "--strict-mcp-config"
+        ],
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    ],
+    "scope": "Fixed-version native child with controlled loopback model. No host delegation, product UI, permission enforcement or crash/stop guarantees."
+  },
+  "codex": {
+    "out": "/private/tmp/willyou-m14-native-child-probe/attempt-EAq8GZ",
+    "driver": "codex",
+    "passed": true,
+    "error": null,
+    "serverError": null,
+    "parentRequests": 3,
+    "childRequests": 1,
+    "rootThread": "01a1d992-3e9f-7730-b35c-cb355c50eac2",
+    "childId": "01a1d992-3eb7-7700-8d4e-0f18177358a6",
+    "processes": [
+      {
+        "pid": 9351,
+        "command": "/private/tmp/willyou-m14-global-f3zh527k/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+        "args": [
+          "app-server",
+          "--enable",
+          "multi_agent",
+          "--disable",
+          "plugins",
+          "-c",
+          "analytics.enabled=false",
+          "-c",
+          "thread_unload_delay_secs=0",
+          "-c",
+          "model_provider=\"m14\"",
+          "-c",
+          "model_providers.m14={name=\"m14\",base_url=\"http://127.0.0.1:61175/codex/v1\",wire_api=\"responses\",env_key=\"WY_MODEL_KEY\",request_max_retries=0,stream_max_retries=0}"
+        ],
+        "exit": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    ],
+    "scope": "Fixed-version native child with controlled loopback model. No host delegation, product UI, permission enforcement or crash/stop guarantees."
+  },
+  "attempts": [
+    {
+      "attempt": "attempt-5JNhu6",
+      "driver": "claude",
+      "passed": false,
+      "error": "Error: WATCHDOG:claude native child\n    at Timeout.<anonymous> (file:///private/tmp/willyou-m14-native-child-probe/probe.mjs:13:103)\n    at listOnTimeout (node:internal/timers:635:17)\n    at process.processTimers (node:internal/timers:571:7)",
+      "requests": 9,
+      "exits": [
+        {
+          "code": 143,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-7pt6tv",
+      "driver": "codex",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'failed'\n- 'completed'\n\n    at file:///private/tmp/willyou-m14-native-child-probe/probe.mjs:39:444\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "requests": 3,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-EAq8GZ",
+      "driver": "codex",
+      "passed": true,
+      "error": null,
+      "requests": 4,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-gKXc43",
+      "driver": "codex",
+      "passed": false,
+      "error": "Error: listen EPERM: operation not permitted 127.0.0.1\n    at Server.setupListenHandle [as _listen2] (node:net:2145:21)\n    at listenInCluster (node:net:2224:12)\n    at node:net:2448:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "requests": 0,
+      "exits": []
+    },
+    {
+      "attempt": "attempt-xTivIn",
+      "driver": "claude",
+      "passed": false,
+      "error": "Error: listen EPERM: operation not permitted 127.0.0.1\n    at Server.setupListenHandle [as _listen2] (node:net:2145:21)\n    at listenInCluster (node:net:2224:12)\n    at node:net:2448:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "requests": 0,
+      "exits": []
+    },
+    {
+      "attempt": "attempt-yT3SD0",
+      "driver": "claude",
+      "passed": true,
+      "error": null,
+      "requests": 4,
+      "exits": [
+        {
+          "code": 0,
+          "signal": null
+        }
+      ]
+    }
+  ],
+  "paidModelCalls": 0,
+  "productChanges": 0,
+  "validated": "Native child creation, identity correlation, inherited model on selected localhost endpoint, result delivered to parent, native process exit.",
+  "notValidated": "Native cancellation, recursive stop, permission inheritance, child business MCP, crash/restart, full T3/WillYou adapters, UI, other versions/providers."
+}

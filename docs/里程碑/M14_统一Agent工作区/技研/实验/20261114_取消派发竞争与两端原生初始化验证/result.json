@@ -1,0 +1,226 @@
+{
+  "out": "/private/tmp/willyou-m14-launch-cancel-probe/attempt-xDDuq4",
+  "checks": [
+    {
+      "id": "C01",
+      "label": "revoked configuration does not prevent owned pre-fork cleanup",
+      "status": "passed",
+      "evidence": {
+        "revokedProfileAndPolicy": true,
+        "copiedHandleRejected": true,
+        "physicalDeliveryDeleted": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": false,
+        "spawnCount": 0,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C02",
+      "label": "cancel during adopted preparation drains work before releasing pins",
+      "status": "passed",
+      "evidence": {
+        "cancelAndPreparationSerialized": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": false,
+        "spawnCount": 0,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C03",
+      "label": "live closure may cancel an armed but never attempted fork",
+      "status": "passed",
+      "evidence": {
+        "armedRecorded": true,
+        "actualLaunchClosureClosedBeforeFork": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": false,
+        "spawnCount": 0,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C04",
+      "label": "policy changes in the armed window block spawn but permit cleanup",
+      "status": "passed",
+      "evidence": {
+        "freshPolicyBeforeSpawn": true,
+        "cleanupWithoutRestoringPermission": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": false,
+        "spawnCount": 0,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C05",
+      "label": "a delayed provider spawn callback cannot reopen a canceled launch",
+      "status": "passed",
+      "evidence": {
+        "lateCallbackBlocked": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": false,
+        "spawnCount": 0,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C06",
+      "label": "forked wrapper cancellation waits for actual exit and never claims no-fork",
+      "status": "passed",
+      "evidence": {
+        "wrapperSpawned": true,
+        "payloadNotReleased": true,
+        "exitObserved": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": true,
+        "spawnCount": 1,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C07",
+      "label": "running owned process can stop after policy revocation",
+      "status": "passed",
+      "evidence": {
+        "actualNodePayloadRan": true,
+        "kernelExitConfirmed": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": true,
+        "spawnCount": 1,
+        "payloadReleased": true,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C08",
+      "label": "duplicate start cannot allocate another process; cancel is shared",
+      "status": "passed",
+      "evidence": {
+        "singleStartAndCancellation": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": false,
+        "spawnCount": 0,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "C09",
+      "label": "provider setup failure before spawn returns through owned cancellation",
+      "status": "passed",
+      "evidence": {
+        "initializationFailedBeforeCallback": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": false,
+        "spawnCount": 0,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "N01",
+      "label": "claude cancellation before-attach",
+      "status": "passed",
+      "evidence": {
+        "driver": "claude",
+        "runner": "claude-code",
+        "when": "before-attach",
+        "modelTurns": 0,
+        "ownedExit": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": true,
+        "spawnCount": 1,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "N02",
+      "label": "claude cancellation initialized",
+      "status": "passed",
+      "evidence": {
+        "driver": "claude",
+        "runner": "claude-code",
+        "when": "initialized",
+        "modelTurns": 0,
+        "ownedExit": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": true,
+        "spawnCount": 1,
+        "payloadReleased": true,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "N03",
+      "label": "codex cancellation before-attach",
+      "status": "passed",
+      "evidence": {
+        "driver": "codex",
+        "runner": "codex",
+        "when": "before-attach",
+        "modelTurns": 0,
+        "ownedExit": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": true,
+        "spawnCount": 1,
+        "payloadReleased": false,
+        "runState": "stopped"
+      }
+    },
+    {
+      "id": "N04",
+      "label": "codex cancellation initialized",
+      "status": "passed",
+      "evidence": {
+        "driver": "codex",
+        "runner": "codex",
+        "when": "initialized",
+        "modelTurns": 0,
+        "ownedExit": true
+      },
+      "final": {
+        "closed": true,
+        "attempted": true,
+        "spawnCount": 1,
+        "payloadReleased": true,
+        "runState": "stopped"
+      }
+    }
+  ],
+  "passed": 13,
+  "failed": 0,
+  "scope": "Owned cancellation cell plus durable delivery receipt, actual registry/GC/Mac identity, controlled Node child and real Claude SDK/Codex app-server initialization. Gated shell is candidate; Codex test fixture changes runner only. No model turns, business tools, full launcher or product changes."
+}

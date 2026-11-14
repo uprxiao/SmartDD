@@ -1,0 +1,126 @@
+{
+  "scope": "Actual managed Codex 0.167.1 app-server and native execution tools; fake local model, isolated files/home; not WillYou/T3 production lifecycle.",
+  "checks": [
+    {
+      "id": "C01-native-exec-session-survives-turn-completion",
+      "status": "passed",
+      "detail": {
+        "thread": "01a1d7e2-b066-7123-bcbb-48ac54294c0d",
+        "turn": "01a1d7e2-b06e-7301-bdaf-b264136054bf",
+        "writer": 20671,
+        "identity": {
+          "schema": 1,
+          "state": "running",
+          "pid": 20671,
+          "startedAt": "darwin-proc-v1:1794623320:194082"
+        },
+        "turnStatus": "completed"
+      }
+    },
+    {
+      "id": "C02-thread-unsubscribe-versus-shared-sibling",
+      "status": "passed",
+      "detail": {
+        "ack": {
+          "status": "unsubscribed"
+        },
+        "closedAtCheck": false,
+        "loadedAfterAck": {
+          "data": [
+            "01a1d7e2-b066-7123-bcbb-48ac54294c0d",
+            "01a1d7e2-b520-7ee1-8a20-101d428b7991"
+          ],
+          "nextCursor": null
+        },
+        "loadedAfterWriterStop": {
+          "data": [
+            "01a1d7e2-b066-7123-bcbb-48ac54294c0d",
+            "01a1d7e2-b520-7ee1-8a20-101d428b7991"
+          ],
+          "nextCursor": null
+        },
+        "writerAfterUnsubscribe": {
+          "schema": 1,
+          "state": "running",
+          "pid": 20671,
+          "startedAt": "darwin-proc-v1:1794623320:194082"
+        },
+        "stillWrites": true,
+        "siblingIdentity": {
+          "schema": 1,
+          "state": "running",
+          "pid": 20697,
+          "startedAt": "darwin-proc-v1:1794623321:396539"
+        },
+        "serverIdentity": {
+          "schema": 1,
+          "state": "running",
+          "pid": 20652,
+          "startedAt": "darwin-proc-v1:1794623320:120625"
+        }
+      }
+    },
+    {
+      "id": "C03-interrupt-active-native-command",
+      "status": "passed",
+      "detail": {
+        "ack": {},
+        "status": "interrupted",
+        "writerIdentity": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "stillWrites": false,
+        "siblingIdentity": {
+          "schema": 1,
+          "state": "running",
+          "pid": 20697,
+          "startedAt": "darwin-proc-v1:1794623321:396539"
+        }
+      }
+    },
+    {
+      "id": "C04-explicit-command-exec-id-and-terminate",
+      "status": "passed",
+      "detail": {
+        "processId": "isolated-1d1b0ca3-0984-49a4-bac2-ec1ad05df616",
+        "wrongRejected": true,
+        "ack": {},
+        "end": {
+          "exitCode": 137,
+          "stdout": "",
+          "stderr": ""
+        },
+        "writerIdentity": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "siblingIdentity": {
+          "schema": 1,
+          "state": "running",
+          "pid": 20697,
+          "startedAt": "darwin-proc-v1:1794623321:396539"
+        }
+      }
+    },
+    {
+      "id": "C05-app-server-stdin-close-and-remaining-thread",
+      "status": "passed",
+      "detail": {
+        "ended": {
+          "code": 0,
+          "signal": null
+        },
+        "writerIdentity": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "stillWrites": false,
+        "appServerIdentity": {
+          "schema": 1,
+          "state": "stopped"
+        }
+      }
+    }
+  ]
+}

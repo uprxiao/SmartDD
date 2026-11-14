@@ -1,0 +1,86 @@
+{
+  "out": "/private/tmp/willyou-m14-viewer-lifetime-probe/attempt-XwPOLZ",
+  "checks": [
+    {
+      "id": "M01",
+      "title": "actual file root/broker and local MCP isolate two window owners",
+      "status": "passed",
+      "evidence": {
+        "actualFileSourceResolver": true,
+        "actualFileService": true,
+        "nativeBroker": true,
+        "actualMcpClientAndServer": true,
+        "twoOwners": true,
+        "foreignOwnerAndGenerationRejected": true
+      }
+    },
+    {
+      "id": "M02",
+      "title": "owned run exit and task provider metadata change preserve existing viewer sessions",
+      "status": "passed",
+      "evidence": {
+        "realGenericProcessExit": 0,
+        "runStopped": true,
+        "viewerIdsUnchanged": true,
+        "providerMetadataChangedInFixture": true,
+        "noActualProviderSwitchClaim": true
+      }
+    },
+    {
+      "id": "M03",
+      "title": "viewer write still uses actual file compare-and-save after agent stopped",
+      "status": "passed",
+      "evidence": {
+        "actualMcpWrite": true,
+        "actualBrokerTransaction": true,
+        "savedThenConflict": true,
+        "externalBytesPreserved": true
+      }
+    },
+    {
+      "id": "M04",
+      "title": "closing one owner releases its MCP transport and preserves the other",
+      "status": "passed",
+      "evidence": {
+        "oneTransportClosed": true,
+        "otherViewerStillReadable": true
+      }
+    },
+    {
+      "id": "M05",
+      "title": "changed task cwd invalidates old file lease instead of silently retargeting",
+      "status": "passed",
+      "evidence": {
+        "oldLeaseRejected": true,
+        "noSilentRetarget": true,
+        "newAuthorizationRequired": true
+      }
+    },
+    {
+      "id": "M06",
+      "title": "document close revokes viewer independently and all owned transports drain",
+      "status": "passed",
+      "evidence": {
+        "sourceAbortClosesViewer": true,
+        "threeActualTransportCloseCallbacks": true
+      }
+    }
+  ],
+  "passed": 6,
+  "error": null,
+  "closed": [
+    {
+      "owner": "window-a",
+      "id": "ec5c0ec6-248f-4594-94ff-da837a8d803c"
+    },
+    {
+      "owner": "window-b",
+      "id": "08b8911d-22e6-4723-894e-2183ddf11adb"
+    },
+    {
+      "owner": "window-b",
+      "id": "f933f391-b865-419b-8167-0c8cdc264bf0"
+    }
+  ],
+  "scope": "Actual FileSourceResolver/FileService/FileRoots/local MCP/native file broker and current run registry with real owned generic process. Task provider fields changed as fixture, no native SDK switch. Electron allocation forbidden; no real viewer window, stdio third-party provider or four-MCP combined lifecycle."
+}

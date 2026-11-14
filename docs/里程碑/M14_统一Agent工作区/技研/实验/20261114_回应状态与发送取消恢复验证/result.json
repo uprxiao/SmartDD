@@ -1,0 +1,154 @@
+{
+  "out": "/private/tmp/willyou-m14-response-ledger-probe/attempt-KXnlCC",
+  "checks": [
+    {
+      "id": "S01",
+      "label": "normal submitted response and exact close end waiting without inventing consumption",
+      "status": "passed",
+      "evidence": {
+        "view": {
+          "awaitingUser": false,
+          "awaitingNative": false,
+          "closed": true,
+          "decisionRecorded": true,
+          "delivery": "submitted",
+          "consumption": "unproven"
+        },
+        "oneSend": true
+      }
+    },
+    {
+      "id": "S02",
+      "label": "native cancelled closure before user decision does not produce consent",
+      "status": "passed",
+      "evidence": {
+        "liveness": "closed",
+        "decisionRecorded": false
+      }
+    },
+    {
+      "id": "S03",
+      "label": "cancellation before dispatch records definite not-sent",
+      "status": "passed",
+      "evidence": {
+        "zeroSends": true,
+        "decisionPreserved": true
+      }
+    },
+    {
+      "id": "S04",
+      "label": "cancellation after intent but before local gate prevents transport",
+      "status": "passed",
+      "evidence": {
+        "intentAloneNotTransport": true,
+        "liveClosedGateProvesNotSent": true
+      }
+    },
+    {
+      "id": "S05",
+      "label": "late transport completion after cancellation records handoff but never reopens request",
+      "status": "passed",
+      "evidence": {
+        "lateEvidencePreserved": true,
+        "requestStillExpired": true,
+        "consumptionStillUnproven": true
+      }
+    },
+    {
+      "id": "S06",
+      "label": "closure while sending and failed local response leaves closed plus unknown",
+      "status": "passed",
+      "evidence": {
+        "closedNotApplied": true,
+        "noReopenOrAutomaticRetry": true
+      }
+    },
+    {
+      "id": "S07",
+      "label": "private owner, native ID type and durable inbox scope are not replaceable",
+      "status": "passed",
+      "evidence": {
+        "copiedHandleDenied": true,
+        "stringVsNumericIdDenied": true,
+        "damagedInboxCannotCloseRequest": true
+      }
+    },
+    {
+      "id": "S08",
+      "label": "decision transaction failure cannot leave a partial response receipt",
+      "status": "passed",
+      "evidence": {
+        "atomicReceipt": true,
+        "conflictingCommandDenied": true,
+        "secondDecisionDenied": true
+      }
+    },
+    {
+      "id": "C01",
+      "label": "real host death at prepared restores audit without callback or resend",
+      "status": "passed",
+      "evidence": {
+        "cut": "prepared",
+        "delivery": "not-sent",
+        "liveness": "expired",
+        "syntheticTransportWrites": 0,
+        "recoveryIdempotent": true,
+        "noLiveGrant": true
+      }
+    },
+    {
+      "id": "C02",
+      "label": "real host death at intent restores audit without callback or resend",
+      "status": "passed",
+      "evidence": {
+        "cut": "intent",
+        "delivery": "unknown",
+        "liveness": "expired",
+        "syntheticTransportWrites": 0,
+        "recoveryIdempotent": true,
+        "noLiveGrant": true
+      }
+    },
+    {
+      "id": "C03",
+      "label": "real host death at after-send restores audit without callback or resend",
+      "status": "passed",
+      "evidence": {
+        "cut": "after-send",
+        "delivery": "unknown",
+        "liveness": "expired",
+        "syntheticTransportWrites": 1,
+        "recoveryIdempotent": true,
+        "noLiveGrant": true
+      }
+    },
+    {
+      "id": "C04",
+      "label": "real host death at submitted restores audit without callback or resend",
+      "status": "passed",
+      "evidence": {
+        "cut": "submitted",
+        "delivery": "submitted",
+        "liveness": "expired",
+        "syntheticTransportWrites": 1,
+        "recoveryIdempotent": true,
+        "noLiveGrant": true
+      }
+    },
+    {
+      "id": "C05",
+      "label": "real host death at journal restores audit without callback or resend",
+      "status": "passed",
+      "evidence": {
+        "cut": "journal",
+        "delivery": "submitted",
+        "liveness": "closed",
+        "syntheticTransportWrites": 1,
+        "recoveryIdempotent": true,
+        "noLiveGrant": true
+      }
+    }
+  ],
+  "passed": 13,
+  "scope": "Candidate decision/delivery/liveness ledger with actual ResourceStore, coordination lock and Mac identity. Replayed real Codex close frames, controlled in-process transport gates, five real worker SIGKILL cut points with synthetic append-only transport. No new native agent/model/business/UI execution; no actual CapabilityRunRegistry or request IPC wiring in this batch."
+}

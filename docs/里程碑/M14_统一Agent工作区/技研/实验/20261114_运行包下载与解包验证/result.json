@@ -1,0 +1,133 @@
+{
+  "out": "/private/tmp/willyou-m14-package-download-probe/attempt-JTiBrz",
+  "checks": [
+    {
+      "id": "P01",
+      "label": "complete local HTTP archive reaches verified publication and native version check",
+      "status": "passed",
+      "evidence": {
+        "archiveBytes": 156152756,
+        "expanded": {
+          "files": 41,
+          "bytes": 366515155,
+          "path": "/private/tmp/willyou-m14-package-download-probe/attempt-JTiBrz/data/native"
+        },
+        "publishedResource": "agent-native-runtime:28aa52adbb85b1d1642e09dcc0e2ac68ed2db3c4b9e032fc9bb0bb68b5a4a24d",
+        "version": "codex-cli 0.167.1"
+      }
+    },
+    {
+      "id": "P02",
+      "label": "approved same-origin redirect and fully verified offline cache are usable",
+      "status": "passed",
+      "evidence": {
+        "redirectAccepted": true,
+        "offlineHitNoRequest": true
+      }
+    },
+    {
+      "id": "P03",
+      "label": "unapproved redirect is rejected before following it",
+      "status": "passed",
+      "evidence": {
+        "unapprovedOriginNotRequested": true
+      }
+    },
+    {
+      "id": "P04",
+      "label": "HTTP failure, wrong length and damaged archive cannot enter the cache",
+      "status": "passed",
+      "evidence": {
+        "failures": [
+          {
+            "route": "http500",
+            "message": "DOWNLOAD_HTTP_STATUS\n\n500 !== 200\n"
+          },
+          {
+            "route": "wrong-length",
+            "message": "ARCHIVE_LENGTH_MISMATCH\n\n150 !== 149\n"
+          },
+          {
+            "route": "bad-hash",
+            "message": "ARCHIVE_HASH_MISMATCH\n+ actual - expected\n\n+ 'fe1e32bec1b239def17ba5bb379b63fe3b0783061779c1d767b8a7c954fc77e6'\n- 'cafba10ccbaae235db561a9317e44fac4e7b2980d2f595071ff730d790bf1be1'\n"
+          }
+        ],
+        "noPartialCache": true
+      }
+    },
+    {
+      "id": "P05",
+      "label": "interruption after a received chunk leaves no completed archive",
+      "status": "passed",
+      "evidence": {
+        "receivedBytes": 149,
+        "partialRemoved": true
+      }
+    },
+    {
+      "id": "P06",
+      "label": "cancel after a received chunk does not publish a cache file",
+      "status": "passed",
+      "evidence": {
+        "receivedBytes": 149,
+        "canceledAndRemoved": true
+      }
+    },
+    {
+      "id": "P07",
+      "label": "offline missing or corrupt cache fails without network fallback",
+      "status": "passed",
+      "evidence": {
+        "missingAndCorruptExplicit": true,
+        "noNetworkFallback": true
+      }
+    },
+    {
+      "id": "P08",
+      "label": "archive entries must match the complete locked file manifest",
+      "status": "passed",
+      "evidence": {
+        "rejected": [
+          {
+            "name": "traversal",
+            "code": 1,
+            "error": "AssertionError: UNSAFE_PATH"
+          },
+          {
+            "name": "symlink",
+            "code": 1,
+            "error": "AssertionError: UNSUPPORTED_ENTRY_TYPE"
+          },
+          {
+            "name": "hardlink",
+            "code": 1,
+            "error": "AssertionError: UNSUPPORTED_ENTRY_TYPE"
+          },
+          {
+            "name": "duplicate",
+            "code": 1,
+            "error": "AssertionError: DUPLICATE_FILE"
+          },
+          {
+            "name": "wrong-file",
+            "code": 1,
+            "error": "AssertionError: MEMBER_HASH_MISMATCH"
+          },
+          {
+            "name": "extra",
+            "code": 1,
+            "error": "AssertionError: EXTRA_FILE"
+          },
+          {
+            "name": "oversize",
+            "code": 1,
+            "error": "AssertionError: MEMBER_SIZE_MISMATCH"
+          }
+        ],
+        "noUnverifiedExtractedDirectory": true
+      }
+    }
+  ],
+  "passed": 8,
+  "scope": "Local HTTP fixture and synthetic archives, including an archive of actual cached Codex files; temporary download/extraction candidate joined to actual ResourceStore and --version. No public upstream/HTTPS/proxy proof, install crash recovery, real run lease/GC, supplier/model call, product code or UI."
+}

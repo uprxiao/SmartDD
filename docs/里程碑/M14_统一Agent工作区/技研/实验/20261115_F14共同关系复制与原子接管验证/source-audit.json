@@ -1,0 +1,968 @@
+{
+  "heads": {
+    "SmartDD": "5a9e04382441e24624cb94635f9d902c543a03d7",
+    "t3code": "f313d0a6cb843551fb60e57a454a71e71a3a8c04"
+  },
+  "results": {
+    "negative": {
+      "out": "/private/tmp/willyou-m14-f14-migration/negative-T8EzkN",
+      "result": {
+        "passed": true,
+        "negative": true,
+        "errorCode": "SQLITE_CONSTRAINT_TRIGGER",
+        "message": "M14_LEGACY_IDENTITY_SEALED",
+        "multiBindingOriginalAdoptionRefused": true,
+        "allMetadataRolledBack": true,
+        "sourceUnchanged": true,
+        "fixtureRoot": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-366BMp",
+        "db": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-366BMp/state.sqlite",
+        "scope": "Current unmodified registry plus exact C1.8 schema, actual copy receipt, second programmatic planned binding. Exposes research integration gap; not a production bug or approved guard removal."
+      },
+      "error": null
+    },
+    "gate": {
+      "out": "/private/tmp/willyou-m14-f14-migration/gate-qQTrFG",
+      "checks": [
+        {
+          "id": "GATE01",
+          "passed": true,
+          "ordinaryCallStillSealed": true
+        },
+        {
+          "id": "GATE02",
+          "passed": true,
+          "allCurrentPointersAndClaimsRolledBack": true,
+          "windowClosed": true
+        },
+        {
+          "id": "GATE03",
+          "passed": true,
+          "authorizedProjectionCommitsTogether": true,
+          "oldAndNewClaimsRetained": true,
+          "otherBindingUnchanged": true,
+          "oldWriterStillRefusedAfterward": true
+        },
+        {
+          "id": "GATE04",
+          "passed": true,
+          "unfinishedCopyBlocksNewRunInsert": true,
+          "committedCopyReleasesOnlyItsMaintenanceBlock": true,
+          "noAgentStarted": true
+        }
+      ],
+      "passed": 4,
+      "error": null,
+      "scope": "C1.9 isolated synchronous projection window plus original registry/copy checks. Transaction callback failure, not yet mid-copy restart or final global migration acceptance."
+    },
+    "copy": {
+      "out": "/private/tmp/willyou-m14-f14-migration/copy-wuAfIt",
+      "checks": [
+        {
+          "id": "C01",
+          "passed": true,
+          "actualCopyExitedAfterFirstStagedFile": true,
+          "newProcessFreshReceipt": true,
+          "oldSourceAndNewClaimsPreserved": true
+        },
+        {
+          "id": "C02",
+          "passed": true,
+          "changedTargetRefusedBeforeCopy": true,
+          "changedBytesPreserved": true
+        },
+        {
+          "id": "C03",
+          "passed": true,
+          "failedCommitKeepsAllOldPointers": true,
+          "subsequentProcessCanRetry": true
+        },
+        {
+          "id": "C04",
+          "passed": true,
+          "committedRecoveryDoesNotReplayOldCopy": true,
+          "laterBytesPreserved": true,
+          "notARealAgentContinuation": true
+        }
+      ],
+      "passed": 4,
+      "error": null,
+      "workers": [
+        {
+          "label": "C01-prepare",
+          "pid": 92572,
+          "exit": {
+            "code": 73,
+            "signal": null
+          },
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "label": "C01-recover",
+          "pid": 92576,
+          "exit": {
+            "code": 0,
+            "signal": null
+          },
+          "stdout": "{\"type\":\"result\",\"classification\":\"fresh-receipt-committed\",\"fileCopies\":1,\"retainedRelationsUnchanged\":true,\"sourceUnchanged\":true,\"oldAndNewClaims\":[{\"identity_root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-jumyHi/home/.claude\"},{\"identity_root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-jumyHi/copied-history\"}]}\n",
+          "stderr": ""
+        },
+        {
+          "label": "C02-prepare",
+          "pid": 92580,
+          "exit": {
+            "code": 73,
+            "signal": null
+          },
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "label": "C02-recover",
+          "pid": 92584,
+          "exit": {
+            "code": 1,
+            "signal": null
+          },
+          "stdout": "{\"type\":\"error\",\"message\":\"TARGET_CHANGED\\n+ actual - expected\\n... Skipped lines\\n\\n  {\\n    dev: '16777234',\\n    entries: [\\n      {\\n        hash: null,\\n...\\n      {\\n+       hash: 'f676dc286d1831f6e71260ef872fc2ed220e937015eccd6d5c411ec97ede082f',\\n-       hash: '0428bda77c87683ef7fbe909092fc8c62e748147dc3a0c6bd0d1661cc3b8fa8b',\\n        kind: 'file',\\n        path: 'projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-rOS1i5-project/.willyou-copy-20c87efa-508e-47af-b01d-61493d89d52e/session.jsonl'\\n      }\\n    ],\\n    ino: '78164436'\\n\",\"stack\":\"AssertionError [ERR_ASSERTION]: TARGET_CHANGED\\n+ actual - expected\\n... Skipped lines\\n\\n  {\\n    dev: '16777234',\\n    entries: [\\n      {\\n        hash: null,\\n...\\n      {\\n+       hash: 'f676dc286d1831f6e71260ef872fc2ed220e937015eccd6d5c411ec97ede082f',\\n-       hash: '0428bda77c87683ef7fbe909092fc8c62e748147dc3a0c6bd0d1661cc3b8fa8b',\\n        kind: 'file',\\n        path: 'projects/-private-var-folders-rt-7q3bp7tx7p13zgcpkcfs04080000gn-T-willyou-m10-runs-rOS1i5-project/.willyou-copy-20c87efa-508e-47af-b01d-61493d89d52e/session.jsonl'\\n      }\\n    ],\\n    ino: '78164436'\\n\\n    at file:///private/tmp/willyou-m14-f14-migration/copy-worker.mjs:28:73\\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\\n    at async node:internal/modules/esm/loader:650:26\\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\",\"fileCopies\":0}\n",
+          "stderr": ""
+        },
+        {
+          "label": "C03-prepare",
+          "pid": 92588,
+          "exit": {
+            "code": 73,
+            "signal": null
+          },
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "label": "C03-failure",
+          "pid": 92600,
+          "exit": {
+            "code": 1,
+            "signal": null
+          },
+          "stdout": "{\"type\":\"error\",\"message\":\"F14_COMMIT_FAILURE\",\"stack\":\"Error: F14_COMMIT_FAILURE\\n    at Object.commit (file:///private/tmp/willyou-m14-f14-migration/copy-worker.mjs:34:539)\\n    at sqliteTransaction.<anonymous> (/private/tmp/willyou-m14-f14-migration/candidate.cjs:70147:24)\\n    at sqliteTransaction (/private/tmp/willyou-m14-owner-probe/node_modules/better-sqlite3/lib/methods/transaction.js:65:24)\\n    at /private/tmp/willyou-m14-f14-migration/candidate.cjs:70149:8\\n    at /private/tmp/willyou-m14-f14-migration/candidate.cjs:28462:19\\n    at withCoordinatorLock (/private/tmp/willyou-m14-f14-migration/candidate.cjs:28443:20)\\n    at withResourceLock (/private/tmp/willyou-m14-f14-migration/candidate.cjs:28461:10)\\n    at CapabilitySessionRegistry.adoptLibrary (/private/tmp/willyou-m14-f14-migration/candidate.cjs:70110:25)\\n    at file:///private/tmp/willyou-m14-f14-migration/copy-worker.mjs:33:46\\n    at withCopyContext (file:///private/tmp/willyou-m14-f14-migration/gate.mjs:6:148)\",\"fileCopies\":1}\n",
+          "stderr": ""
+        },
+        {
+          "label": "C03-retry",
+          "pid": 92605,
+          "exit": {
+            "code": 0,
+            "signal": null
+          },
+          "stdout": "{\"type\":\"result\",\"classification\":\"fresh-receipt-committed\",\"fileCopies\":1,\"retainedRelationsUnchanged\":true,\"sourceUnchanged\":true,\"oldAndNewClaims\":[{\"identity_root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-ixwhYH/home/.claude\"},{\"identity_root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-ixwhYH/copied-history\"}]}\n",
+          "stderr": ""
+        },
+        {
+          "label": "C04-prepare",
+          "pid": 92609,
+          "exit": {
+            "code": 73,
+            "signal": null
+          },
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "label": "C04-commit",
+          "pid": 92613,
+          "exit": {
+            "code": 0,
+            "signal": null
+          },
+          "stdout": "{\"type\":\"result\",\"classification\":\"fresh-receipt-committed\",\"fileCopies\":1,\"retainedRelationsUnchanged\":true,\"sourceUnchanged\":true,\"oldAndNewClaims\":[{\"identity_root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-UMfRoe/home/.claude\"},{\"identity_root\":\"/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-UMfRoe/copied-history\"}]}\n",
+          "stderr": ""
+        },
+        {
+          "label": "C04-repeat",
+          "pid": 92617,
+          "exit": {
+            "code": 0,
+            "signal": null
+          },
+          "stdout": "{\"type\":\"result\",\"classification\":\"committed-no-replay\",\"fileCopies\":0,\"retainedRelationsUnchanged\":true}\n",
+          "stderr": ""
+        }
+      ],
+      "scope": "Actual current copy function interrupted by process.exit after first copied staging file, new-process recovery and scoped registry variant, C1.9 full metadata schema with synthetic retained Git/history sentinels. No power loss, real resumed Agent, full UI or automatic orphan-stage cleanup."
+    },
+    "graph": {
+      "out": "/private/tmp/willyou-m14-f14-migration/graph-rkUM18",
+      "passed": true,
+      "tables": 153,
+      "nonemptyTables": 81,
+      "nonemptyM14Tables": [
+        "m14_binding",
+        "m14_business_admission",
+        "m14_business_epoch",
+        "m14_cap",
+        "m14_command_receipt",
+        "m14_completion_delivery",
+        "m14_context_object",
+        "m14_context_object_ref",
+        "m14_context_transfer",
+        "m14_delegation",
+        "m14_draft",
+        "m14_event",
+        "m14_execution_scope",
+        "m14_history_record",
+        "m14_history_revision",
+        "m14_history_source",
+        "m14_input",
+        "m14_mcp",
+        "m14_migration",
+        "m14_native_claim",
+        "m14_outbox",
+        "m14_programmatic_claim_source",
+        "m14_receipt",
+        "m14_ref",
+        "m14_resource_publication",
+        "m14_response",
+        "m14_revision",
+        "m14_run_request",
+        "m14_runtime_request",
+        "m14_submission",
+        "m14_task_state",
+        "m14_turn",
+        "m14_worktree_binding",
+        "m14_worktree_intent"
+      ],
+      "allPriorRowsUnchanged": true,
+      "existingRetentionIssues": [],
+      "source": "/private/tmp/willyou-m14-f13-history/attempt-2sw0dmwt/state.sqlite",
+      "sourceHash": "67dd8b3800331fde93ebb9c13a7ff75564bf551076cf4d1341716f5b30d010aa",
+      "before": {
+        "__drizzle_migrations": {
+          "rows": 37,
+          "hash": "c24a6c7e2bad086f9a396773e000341dd54ad7646deab3f2b017388541b5c8f4"
+        },
+        "ai_profiles": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "ai_providers": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "ai_run_configs": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "ai_task_snapshots": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "ai_tools": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "app_secrets": {
+          "rows": 3,
+          "hash": "1e9459e4ba06651a3e4abbf2c669e34fb4fe104a332d5a96565f6d0fbd387dfc"
+        },
+        "app_settings": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_activity_subjects": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_binding_changes": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_binding_slot_revisions": {
+          "rows": 2,
+          "hash": "229e575c6b7f10615e3902dee1a84572e9cc1961f80587cfa80d71ed7bd872b0"
+        },
+        "application_catalog_state": {
+          "rows": 1,
+          "hash": "f9d3f5a83b8d966410f1d87840f1d6b3c460db34d5db7fca276912afd98fef30"
+        },
+        "application_connections": {
+          "rows": 4,
+          "hash": "dd6c172cce35bb1b1f1b93b2eddf14853b1f2c1621c84025d74cec4705c8377e"
+        },
+        "application_data_operations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_data_resources": {
+          "rows": 2,
+          "hash": "e4f5244af197d2f028aedfdc6750183ceb94b40507566bbb400dcf60288ed7aa"
+        },
+        "application_host_applications": {
+          "rows": 4,
+          "hash": "90717905509428ad29b6323b94c52637efc08807936e91e4d9c77c45ce18f78b"
+        },
+        "application_host_providers": {
+          "rows": 4,
+          "hash": "4d1a07e9f987d257bf544fef9545b8f1ac3fad6f557a364a3d4ad0e39c4e9d53"
+        },
+        "application_index_waiters": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_invocations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_mail_operation_sources": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_project_bindings": {
+          "rows": 1,
+          "hash": "6c53726f66eee78804bfbc7063b4134d3581ca5524c1255fab2b91a744e10d59"
+        },
+        "application_project_settings": {
+          "rows": 1,
+          "hash": "9bc3e5cf71caeb4825953ac77d2de34ae8c093d840bbadd43ce8e1607d00c4b0"
+        },
+        "application_read_receipt_checks": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_secret_changes": {
+          "rows": 3,
+          "hash": "bdf53fc735e78ebe2f8e53dcf5bd09b58de03bb06de174e7f9fe31dcbf5761db"
+        },
+        "application_zentao_cursors": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_zentao_files": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_zentao_operation_objects": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_zentao_operation_resources": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "application_zentao_revisions": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "browser_operations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "builtin_plugin_defaults": {
+          "rows": 2,
+          "hash": "379224cc6a18173b715de782317f58fa11e71e0ea70ac96000ac3f4e77f24c4e"
+        },
+        "builtin_plugin_project_preferences": {
+          "rows": 2,
+          "hash": "42f66180dd05a20a0a03fa09882b21ccdc63362ed77777f9bb30959f1eb5ea9b"
+        },
+        "capability_active_packages": {
+          "rows": 1,
+          "hash": "8dc89af19247fff93d3e0b797e6bd6adc4c2b5806a96d75d16e583118198b18b"
+        },
+        "capability_agent_adapters": {
+          "rows": 1,
+          "hash": "17350d7f60eafdda763a4e9f11dfeafb326a1d00fa65cb2f724cb547ed1060a8"
+        },
+        "capability_bridge_observations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_broker_denials": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_builtin_package_sources": {
+          "rows": 1,
+          "hash": "c76edb38343bb07a36fa1ceae4b11e023a39687b2fe9f7e624a3d9cc8d8566fd"
+        },
+        "capability_discovery_roots": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_install_journal": {
+          "rows": 1,
+          "hash": "dc5a6bbebc284c09ef60e76297f0cae5e45647d1c6045e6b998dc068d8bec782"
+        },
+        "capability_lease_resources": {
+          "rows": 3,
+          "hash": "edf40a41a4a909d5dd745efdc2deb2db7c674870e50eda237ff99874644ff697"
+        },
+        "capability_legacy_h_bindings": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_legacy_migration_preparations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_package_contracts": {
+          "rows": 14,
+          "hash": "29fa8fa5a5aa2d578b5ab05fafbae72412d68d96f45f49be842d362c4770a61b"
+        },
+        "capability_packages": {
+          "rows": 1,
+          "hash": "84de9762edcb7c69a3ce735d25a054a87e175609ed06935cb98e3143755a5190"
+        },
+        "capability_registry": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_registry_preferences": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_resource_dependencies": {
+          "rows": 1,
+          "hash": "26a47ebf87d587abdc7e8a134939bfe213bbfd05f62b79a9045311e9f4dc1912"
+        },
+        "capability_resource_leases": {
+          "rows": 25,
+          "hash": "d453b573f0d0b02cba3ac887efd7118b7f017edadbfd417c22a45f177abd780d"
+        },
+        "capability_resource_operations": {
+          "rows": 4,
+          "hash": "61ee61a6e2a9a7a01e206984d7c9de692a8cb1ac398f66eb62346ec42f607bfd"
+        },
+        "capability_resources": {
+          "rows": 3,
+          "hash": "642d40f1438d4fac6d49e0476fab3d662867918c3f0ae51d8a67401daa87c7f4"
+        },
+        "capability_run_activities": {
+          "rows": 6,
+          "hash": "c283310e5b9b64dbe801ec6adcca3db27a8266b7f67006a55454535bab6078e0"
+        },
+        "capability_run_preparations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_run_processes": {
+          "rows": 2,
+          "hash": "1f0960513559b87f45f34b63140a608f756aa6b2f83cffd50cbfdfaf7b34820e"
+        },
+        "capability_run_restrictions": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_runs": {
+          "rows": 5,
+          "hash": "1bc8388af042e8524dc882d1774df792d8e3ea5a9ecea73c8f92346544a08644"
+        },
+        "capability_schema_migrations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_session_holds": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_session_identities": {
+          "rows": 1,
+          "hash": "50788cb4f3c5553cd4ba24bbaedb8ad2921aec7406704beb9016d9a04f5cfdfa"
+        },
+        "capability_session_mcp_names": {
+          "rows": 1,
+          "hash": "993a3a99fb388bfaeb712046f876d11143d50f29ec61f9c1915a1ff745a53e15"
+        },
+        "capability_session_refs": {
+          "rows": 3,
+          "hash": "a1201719b1a50eee7ab16ba849ba8bd93e116c56729c2fc0d3bbbf4c2ce04898"
+        },
+        "capability_session_snapshots": {
+          "rows": 1,
+          "hash": "dd629a80582affdefe20db2375bb4a9dc0d56731912bd4f3b4423fb07e32f9a2"
+        },
+        "capability_skill_observations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_skill_placements": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "capability_snapshot_versions": {
+          "rows": 1,
+          "hash": "8b1623e1614117d5bc55fe37cc0a7bb6766c696f0c9b54120c85c46057fe73ba"
+        },
+        "capability_store_state": {
+          "rows": 1,
+          "hash": "9c76b6a1f7b094f8f41e9f01f78a5b4a9e82fd6268d2cec21b8a9a7fcc72964a"
+        },
+        "imported_keys": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_binding": {
+          "rows": 14,
+          "hash": "d587a4ec827ba0d04f24f55372a2a55e8616504105d4899038ed0e787311b034"
+        },
+        "m14_business_admission": {
+          "rows": 1,
+          "hash": "b88e1b94918f8665a005c71262435a16f8aa0b4e7db07be449a24f6983ef11c9"
+        },
+        "m14_business_epoch": {
+          "rows": 1,
+          "hash": "dadc8e74595779c07e7584b83f50bee758fefd6a92aca10c62ce39788122d2ac"
+        },
+        "m14_business_gap": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_cap": {
+          "rows": 5,
+          "hash": "8dddf51c478736169cb47de5e9b5052e8aab5faaf80f9dcabc3369d859ffc723"
+        },
+        "m14_command_receipt": {
+          "rows": 1,
+          "hash": "773f682ea87688aa493f8227ab5886da76b6da566833a7ca6cfe487453060540"
+        },
+        "m14_completion_delivery": {
+          "rows": 1,
+          "hash": "554920d7599140e683e13837c308a710e82d15cea213dcf00f05364249600988"
+        },
+        "m14_context_descriptor": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_context_object": {
+          "rows": 1,
+          "hash": "744acff9849073d6cff58d1bbbfe4787a0f580de0ee4eceb518dc74975c0fa0a"
+        },
+        "m14_context_object_ref": {
+          "rows": 1,
+          "hash": "2c630fe90247935dc72d95b5c06a4c1fc3275209502206a9bda5a93e63fa8f8f"
+        },
+        "m14_context_transfer": {
+          "rows": 1,
+          "hash": "7c6d623b3fe88f98f869ccd07e0ac39f2a0c92661d07eb3bf6cdb1f94035d74b"
+        },
+        "m14_delegation": {
+          "rows": 2,
+          "hash": "a1a4b0f0c478765bbdf8d4d2ad30e1c688fd27202498454018a51c4872ffbdd8"
+        },
+        "m14_delivery": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_delivery_ref": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_draft": {
+          "rows": 1,
+          "hash": "ed1d0a001caff0bec7dd795cde60155693d5c289498c6c6d8ca1037e5e9d0225"
+        },
+        "m14_event": {
+          "rows": 2,
+          "hash": "5471e1612fb564ca9d08bb2e10397554be969932d1d40ea1ad4f408b29bcecd8"
+        },
+        "m14_execution_plan": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_execution_scope": {
+          "rows": 1,
+          "hash": "2d67f992a8e48266ead97f7c2086da8218963ee1e5eb40efb5ef9eb72fbb98b6"
+        },
+        "m14_frozen_resource": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_history_record": {
+          "rows": 298,
+          "hash": "2331340edda1c1592d3eec4e3af7cf6f8ad0a700e608bbaed33136cfd4f01bc7"
+        },
+        "m14_history_revision": {
+          "rows": 21,
+          "hash": "4c044da524c62ef953aee1cc94df85c1acd0e91a67ce978f91b2955ba7d13ef5"
+        },
+        "m14_history_source": {
+          "rows": 19,
+          "hash": "cf03f5b650f1503b4aa2f2d11c19872aeb33061b21f66e2229f0711ddf9da9c5"
+        },
+        "m14_input": {
+          "rows": 4,
+          "hash": "1d83accf3d0302bfd315d621c76123384eb7b7200bcf8568836c4056325f4c53"
+        },
+        "m14_input_inbox": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_install_attempt": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_install_job": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_mcp": {
+          "rows": 2,
+          "hash": "8aa3a83168e20681d0530f42eaddb4dc7a5e9d25b85319a77792336be1ee3558"
+        },
+        "m14_migration": {
+          "rows": 1,
+          "hash": "16182b48ac46d97ac259f7f68e23627f39e0ba7cf58451f1c0a63a0233e1ea95"
+        },
+        "m14_native_claim": {
+          "rows": 1,
+          "hash": "64053728b6710260429e61f5fefde20cb18b9f11291f7e666c7def16938e640b"
+        },
+        "m14_native_claim_source": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_outbox": {
+          "rows": 1,
+          "hash": "eb0d933ce1baa90e83e49e82d5edf283ddc70a3d89647fc08cb880f593b63412"
+        },
+        "m14_preparation": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_preparation_ref": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_profile_execution_revision": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_programmatic_claim_source": {
+          "rows": 1,
+          "hash": "4d56581b2c7b101d36be4cf8bd48054f39a479276e7123df12893a074958280f"
+        },
+        "m14_publication": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_receipt": {
+          "rows": 1,
+          "hash": "dd14b81e23dfb20d4a962ca7ccba91ec34865d05bc435c15603f61a7ab472494"
+        },
+        "m14_ref": {
+          "rows": 18,
+          "hash": "4c8190501b14ad842da975bc3905a3f9e39bfc408a83c9c8fe1b8f9b0252bc72"
+        },
+        "m14_resource_publication": {
+          "rows": 4,
+          "hash": "0fa5e7a053910ade0004bed015490777da32504ad7772f130b6f424b55c8f6ac"
+        },
+        "m14_response": {
+          "rows": 1,
+          "hash": "9a09555fc9d9fff11ef587de047c1f929abaf46e2a2467cb3df530312de65ddf"
+        },
+        "m14_retained_identity_source": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_retention_cleanup": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_retention_read": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_revision": {
+          "rows": 6,
+          "hash": "c00626d2f3a2b9df5961f194b5efd3b711cd83d5b68131081a5dfe76cb8b2e2b"
+        },
+        "m14_run_request": {
+          "rows": 1,
+          "hash": "73f2bc579b4dbf06fc14a01507ac2cc76b62cc4be1995ef2d82adad658c3f9d5"
+        },
+        "m14_runtime_default": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_runtime_request": {
+          "rows": 2,
+          "hash": "9d8e73d75f38505070dcd473a172f8a50ff1783c08fdda31aedd935ea2ad6488"
+        },
+        "m14_scope_member": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_submission": {
+          "rows": 1,
+          "hash": "4611e5c79c1bdb233958b3c541f465e5c1bf44cfcb2dfe66ab710497acf46100"
+        },
+        "m14_task_state": {
+          "rows": 3,
+          "hash": "798dbf8adf7631adbe70d0a3c9de9ad81df4ddc5adb9cc24ae2ebef14393e989"
+        },
+        "m14_turn": {
+          "rows": 5,
+          "hash": "95b33892c54ace5f2cfb86c709675b689bede240ac425bd14b46734744e08787"
+        },
+        "m14_unmapped": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_unmapped_version": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_workspace_hold": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "m14_worktree_binding": {
+          "rows": 1,
+          "hash": "05b1af17281345ae19ab7261636113f08c9d40ac11804345532ef700ebefd133"
+        },
+        "m14_worktree_intent": {
+          "rows": 1,
+          "hash": "1d1ecea58077ecbb2ff776f9ccf1e598e50d52a7f94f53773aaafd943b7321d6"
+        },
+        "mail_attachment_objects": {
+          "rows": 8,
+          "hash": "9795a9fb4f26e3ca4294811c18f253ad9cfc09787d95e99e5e4f0974136b472c"
+        },
+        "mail_blob_objects": {
+          "rows": 8,
+          "hash": "1266c23cd645d4f64ff23c776bf586d525ffcc251063f0bff2f6689f8dc055c3"
+        },
+        "mail_blob_writes": {
+          "rows": 1,
+          "hash": "d75545411a099ac6f6276f59bb6e6d3aa5a536a5bd6de417f1a7ae126427e03f"
+        },
+        "mail_draft_mutations": {
+          "rows": 10,
+          "hash": "df5794c906aa2c0b1a4f19b4f5c7db0ab3f66d0900a992769fa8b81972589a01"
+        },
+        "mail_draft_revisions": {
+          "rows": 8,
+          "hash": "a5750fc0f706308834d610586ad5700b80c9ccab1eb8a801ecfa6553e3699fbb"
+        },
+        "mail_drafts": {
+          "rows": 8,
+          "hash": "2d5fd6bdf7868049d93f40491e42484c4cdb3d92b16530f9238ec64b98d21db6"
+        },
+        "mail_send_executions": {
+          "rows": 5,
+          "hash": "43c27dc358f8de33417ffd60710940422f8cff5d8834019cba87b643799cec93"
+        },
+        "mail_send_grants": {
+          "rows": 7,
+          "hash": "52853a7f087e094cdf82d37ff5bc36ea7263fd35704e3944b181ad45222ae7dd"
+        },
+        "mail_send_intents": {
+          "rows": 8,
+          "hash": "58b7688d0ddee1c5ddb191190799fd5a8a54b651ecbd3b9ee083859b29a675f3"
+        },
+        "mail_sender_confirmation_versions": {
+          "rows": 2,
+          "hash": "cd15520e647ede634fd1274c320ee9213ad6cc7240a7b710a992637efe071d3e"
+        },
+        "mail_sender_confirmations": {
+          "rows": 1,
+          "hash": "8ce35640ebab06601161b1d45192baf15fa9044c210370f9066d80e265882b2e"
+        },
+        "mail_user_action_sources": {
+          "rows": 1,
+          "hash": "02e0b1df87e58c5daf9830690eccbda56a9a111ef80682f42e5fd850c4c6f48b"
+        },
+        "plugin_builtin_migrations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_connection_defaults": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_installations": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_lifecycle_changes": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_packages": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_project_preferences": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_runtime_health": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_runtime_leases": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_ui_reads": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "plugin_write_approvals": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "project_capabilities": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "project_databases": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "project_dirs": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "project_import_receipts": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "project_servers": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "projects": {
+          "rows": 2,
+          "hash": "2a3f2e6b1956ea7e6ca533afb54f81430571fa67d644baa6254bbd9351f244c9"
+        },
+        "sessions": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "skill_versions": {
+          "rows": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "tasks": {
+          "rows": 4,
+          "hash": "ff86a08e094f3822a8e37033ecec5896affa5f4b815b020f12ae96a8e06564c1"
+        }
+      },
+      "scope": "Copy of full C1.8 evidence database plus exact C1.9 schema increment; no transfer of directory ownership or product migration runner invocation."
+    }
+  },
+  "builds": [
+    {
+      "path": "/private/tmp/willyou-m14-f14-migration/build.json",
+      "sha256": "f2fcc5c1bc7ebbe2bbfe7c0bf2175e4485d4bc4e49040eaa4ec95bf14a26822d",
+      "inputs": 379,
+      "changed": []
+    },
+    {
+      "path": "/private/tmp/willyou-m14-f14-migration/candidate-build.json",
+      "sha256": "8cd4b42856633797cccb4b634faa3e60d3721d4b4227d6787b3780ffb735468b",
+      "inputs": 327,
+      "changed": []
+    },
+    {
+      "path": "/private/tmp/willyou-m14-database-version-probe/build.json",
+      "sha256": "207e51a7960f4d049bbac445939dbbc01f42230c59d5b549160163a5a1974bbc",
+      "inputs": 460,
+      "changed": []
+    },
+    {
+      "path": "/private/tmp/willyou-m14-history-recovery-claim-probe/build.json",
+      "sha256": "0a5992cb35b6f92e0b42fd5e1b682d6ef28c444b5f89895eff80f9847f021474",
+      "inputs": 379,
+      "changed": []
+    },
+    {
+      "path": "/private/tmp/willyou-m14-claimed-native-resume-probe/build.json",
+      "sha256": "469ade5552c34814cc98e1d8fe0b18de67cedf3d5c2f861580f5c92fd573b8bb",
+      "inputs": 383,
+      "changed": []
+    }
+  ],
+  "databases": [
+    {
+      "path": "/private/tmp/willyou-m14-f14-migration/gate-qQTrFG/state.sqlite",
+      "baseline": "C1.9",
+      "retentionIssues": [],
+      "integrity": "ok"
+    },
+    {
+      "path": "/private/tmp/willyou-m14-f14-migration/graph-rkUM18/state.sqlite",
+      "baseline": "C1.9",
+      "retentionIssues": [],
+      "integrity": "ok"
+    },
+    {
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-jumyHi/state.sqlite",
+      "baseline": "C1.9",
+      "retentionIssues": [],
+      "integrity": "ok"
+    },
+    {
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-rOS1i5/state.sqlite",
+      "baseline": "C1.9",
+      "retentionIssues": [],
+      "integrity": "ok"
+    },
+    {
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-ixwhYH/state.sqlite",
+      "baseline": "C1.9",
+      "retentionIssues": [],
+      "integrity": "ok"
+    },
+    {
+      "path": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-UMfRoe/state.sqlite",
+      "baseline": "C1.9",
+      "retentionIssues": [],
+      "integrity": "ok"
+    }
+  ],
+  "sources": [
+    {
+      "repository": "SmartDD",
+      "path": "src/main/core/ai/agent-native-state.ts",
+      "sha256": "5d15d92faea9656d11b75a00311c29aca0cfce70af8e6b5d2f880b2af3d2f04d"
+    },
+    {
+      "repository": "SmartDD",
+      "path": "src/main/core/applications/session-registry.ts",
+      "sha256": "91406685d2e0809c0e312cf06ef6528788c62779b2253e52612ef9c66781e463"
+    },
+    {
+      "repository": "SmartDD",
+      "path": "src/main/core/applications/process-identity.ts",
+      "sha256": "4ccc0598f645efe51a881fd1475851d1146b26249c866e81d1d3ab0122f66252"
+    },
+    {
+      "repository": "SmartDD",
+      "path": "src/main/core/applications/resource-lock.ts",
+      "sha256": "d1570a83fbd57db35c8caa1e6ec91b207952884bf4a0bd93a73d7a1495dc569b"
+    },
+    {
+      "repository": "SmartDD",
+      "path": "src/main/core/applications/coordinator-lock.ts",
+      "sha256": "55476146c93eba8b18fabdb40221b803c08a09e2f0be68d736840827ef061bd8"
+    }
+  ],
+  "counts": {
+    "expectedNegative": 1,
+    "scopedProjection": 4,
+    "copyRecovery": 4,
+    "fullGraphPreservation": 1
+  },
+  "scriptHashes": {
+    "copy.sql": "97a768c94e911b694d1c97be92f30e6e92d9a5ee87aac6f09e1492ab1f99890f",
+    "gate.mjs": "3a910c3b02fee00d984f288f64e073ce24b8ee740a1680239a1b1e385d24546c",
+    "copy-worker.mjs": "5f4606ec98c36cde8f78df5ee3aac250d6b256266e4ec28fa682de4d236591ef",
+    "copy-probe.mjs": "db210ee60e2a31232694e6333cb6cb0dc2d54c26b7353174eb9ed553c77c36d1",
+    "gate-probe.mjs": "eee1234bc854b2c45ca63c53e3378313da7dba061dfe895909d3f75aa22405f4",
+    "final-schema.mjs": "b1771ca976c8fc0a314d49220ae9d9ab90ad2a17757bf65dd06a6f587a30d788",
+    "fixture.mjs": "44c2afc75d6d2ea241d4aef6dc44bd3c36470e801122b1f88f390a6329bf4ae5",
+    "native-receipt.cjs": "0e16da0598f1316c30fbcb413f1267db5bc8a7806cf2ffb19908adc76364f9a9"
+  }
+}

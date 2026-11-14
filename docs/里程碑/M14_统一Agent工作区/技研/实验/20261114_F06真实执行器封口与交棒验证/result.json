@@ -1,0 +1,94 @@
+{
+  "out": "/private/tmp/willyou-m14-f06-native-seal/attempt-m62oi2",
+  "checks": [
+    {
+      "id": "N01-Claude-native-closing-waits-for-inflight-observation",
+      "status": "passed",
+      "detail": {
+        "runId": "e6907ac4-30f7-4e9f-a9cd-c72f03fe38e0",
+        "members": [
+          {
+            "pid": 70901,
+            "startedAt": "darwin-proc-v1:1794668466:16933",
+            "kind": "root"
+          },
+          {
+            "pid": 70904,
+            "startedAt": "darwin-proc-v1:1794668466:46056",
+            "kind": "observed-native-descendant"
+          },
+          {
+            "pid": 70916,
+            "startedAt": "darwin-proc-v1:1794668466:307672",
+            "kind": "observed-native-descendant"
+          },
+          {
+            "pid": 70917,
+            "startedAt": "darwin-proc-v1:1794668466:310277",
+            "kind": "observed-native-descendant"
+          }
+        ],
+        "late": 3,
+        "observations": 2,
+        "coverage": "managed-observed",
+        "terminal": "stopped",
+        "writer": 70917,
+        "inFlightBlockedSeal": true,
+        "lateObservationCommittedBeforeSeal": true,
+        "requests": 2
+      }
+    },
+    {
+      "id": "N02-Codex-acquires-same-workspace-after-Claude-drain",
+      "status": "passed",
+      "detail": {
+        "runId": "44e4452d-2f96-483c-ace5-20431fb519ba",
+        "members": [
+          {
+            "pid": 70956,
+            "startedAt": "darwin-proc-v1:1794668468:535631",
+            "kind": "root"
+          },
+          {
+            "pid": 70959,
+            "startedAt": "darwin-proc-v1:1794668468:553331",
+            "kind": "observed-native-descendant"
+          },
+          {
+            "pid": 70977,
+            "startedAt": "darwin-proc-v1:1794668468:657108",
+            "kind": "observed-native-descendant"
+          }
+        ],
+        "late": 0,
+        "observations": 2,
+        "coverage": "managed-observed",
+        "terminal": "stopped",
+        "writer": 70977,
+        "actualNextNativeRan": true,
+        "requests": 2
+      }
+    },
+    {
+      "id": "N03-observation-failure-retains-run-and-directory",
+      "status": "passed",
+      "detail": {
+        "runState": "stopping",
+        "scope": {
+          "run_id": "4be0b6aa-ee64-41da-ae3d-49444980bfbe",
+          "launch_id": "94b085bd-abe9-4694-a152-49abe70ab6e6",
+          "phase": "unknown",
+          "coverage": "unknown",
+          "revision": 3,
+          "drained_revision": null,
+          "reason": "OBSERVATION_UNKNOWN"
+        },
+        "rootStopped": "stopped",
+        "nextQueued": true
+      }
+    }
+  ],
+  "passed": 3,
+  "scope": "Actual fixed Claude SDK/native and Codex app-server with loopback synthetic models; current actual owner/finisher plus isolated scope and collector. managed-observed coverage, NOT OS containment. No product edits or real model charges.",
+  "node": "v26.5.0"
+}

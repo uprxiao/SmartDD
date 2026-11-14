@@ -1,0 +1,94 @@
+{
+  "out": "/private/tmp/willyou-m14-native-revision-probe/attempt-0tc0YC",
+  "checks": [
+    {
+      "id": "R01",
+      "label": "old candidate cannot accept actual first native identity update",
+      "status": "passed",
+      "evidence": {
+        "riskReproduced": true,
+        "actualOldMethodRejected": true,
+        "atomicRollback": true,
+        "receiptId": "8c98ab9d-c067-4631-9746-d83085e6164c"
+      }
+    },
+    {
+      "id": "R02",
+      "label": "even a preexisting next revision cannot move a run hash pinned by old delivery FK",
+      "status": "passed",
+      "evidence": {
+        "isolatesDeliveryFk": true,
+        "nextRevisionAlreadyExists": true,
+        "rawFixturePrestageNotValidExecution": true
+      }
+    },
+    {
+      "id": "R03",
+      "label": "claude first native binding keeps immutable launch/delivery source and current revision",
+      "status": "passed",
+      "evidence": {
+        "runner": "claude-code",
+        "sourceHash": "68c1ebf94d96c1c88708bc6da1c597c5f19633884da4a9ccb1ed7faf393f614a",
+        "currentHash": "4a11e8edb8a90ac25ab6c70fa841e3551c755efeebf1b95587effa1af91321cc",
+        "sameRunId": true,
+        "launchAuditUnchanged": true,
+        "deliveryAuditUnchanged": true,
+        "repeatIdempotent": true
+      }
+    },
+    {
+      "id": "R04",
+      "label": "codex first native binding keeps immutable launch/delivery source and current revision",
+      "status": "passed",
+      "evidence": {
+        "runner": "codex",
+        "sourceHash": "da94386ce65e7e1a160beb3e0b0f24d5002e580613f0325ee9700f233198d8a9",
+        "currentHash": "4467af853cafab117d4baf914a652e3652d69a57257a29e8022979d2892f7ae8",
+        "sameRunId": true,
+        "launchAuditUnchanged": true,
+        "deliveryAuditUnchanged": true,
+        "repeatIdempotent": true
+      }
+    },
+    {
+      "id": "R05",
+      "label": "projection failure rolls back legacy identity, current run and new history together",
+      "status": "passed",
+      "evidence": {
+        "allRelationsRolledBack": true,
+        "retryBoundHash": "5e084d668b112d9a9472826b4e6cb7f6dbbff899d9e328866cb6cb40e8d4f60f"
+      }
+    },
+    {
+      "id": "R06",
+      "label": "native projection cannot smuggle a changed capability selection",
+      "status": "passed",
+      "evidence": {
+        "sameResourceDifferentPermissionRejected": true
+      }
+    },
+    {
+      "id": "R07",
+      "label": "new binding native claim blocks legacy first-bind before either side changes",
+      "status": "passed",
+      "evidence": {
+        "sharedConflictDomain": true,
+        "otherBindingIsClaimFixtureOnly": true
+      }
+    },
+    {
+      "id": "R08",
+      "label": "later run starts from bound revision without rewriting prior launch source",
+      "status": "passed",
+      "evidence": {
+        "firstId": "10765a34-b18d-4b63-ab0a-00e8c65c3a4a",
+        "nextId": "9ff84fd3-8a84-4d77-9bcf-635e55167d48",
+        "distinctLaunchSources": true,
+        "currentNativeRevisionShared": true
+      }
+    }
+  ],
+  "passed": 8,
+  "failed": 0,
+  "scope": "Actual legacy first-native binding plus isolated in-transaction projection hook, candidate source/current split, real v1 application plan source check, two runner fixtures and combined GC. No native Agent turn, full execution-plan schema, programmatic reserve or product change."
+}

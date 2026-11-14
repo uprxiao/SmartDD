@@ -1,0 +1,169 @@
+{
+  "modes": [
+    {
+      "mode": "deny",
+      "out": "/private/tmp/willyou-m14-plugin-exceptions-probe/attempt-deny-pknWiY",
+      "checks": [
+        {
+          "id": "P01",
+          "title": "concurrent parent and child native calls keep distinct approval owners",
+          "status": "passed",
+          "evidence": {
+            "twoLiveNativeOwners": true,
+            "separateTaskAndCwd": true,
+            "twoPendingApprovals": true,
+            "crossApprovalDenied": true,
+            "zeroWritesBeforeAllow": true
+          }
+        },
+        {
+          "id": "E02",
+          "title": "pending calls settle safely through deny",
+          "status": "passed",
+          "evidence": {
+            "changeWaitedBothReservations": true,
+            "childDidNotClearParent": true,
+            "failedEffectsNotStarted": true,
+            "writeCount": 1
+          }
+        },
+        {
+          "id": "E03",
+          "title": "same parent next turn respects changed authority deny",
+          "status": "passed",
+          "evidence": {
+            "oldReviewRejected": true,
+            "launchPlanUnchanged": true,
+            "oldRunDidNotGainChangedCapability": true,
+            "newWriteOnlyAfterFreshApproval": true,
+            "writeCount": 2
+          }
+        },
+        {
+          "id": "P04",
+          "title": "parent child bridge and pooled plugin resources close under their own owners",
+          "status": "passed",
+          "evidence": {
+            "allRunLeasesReleased": true,
+            "allPluginProcessesConfirmedStopped": true,
+            "noSecretReads": true,
+            "writeCount": 2
+          }
+        }
+      ],
+      "passed": 4,
+      "scope": "Actual Codex parent and Claude child private MCP with denial, uninstall or incompatible update while two reservations await approval. Candidate delegation/programmatic launch; synthetic localhost models and plugin private-data writes. No real user UI, external business connection, complete orchestration, SVN shared writer or crash."
+    },
+    {
+      "mode": "uninstall",
+      "out": "/private/tmp/willyou-m14-plugin-exceptions-probe/attempt-uninstall-ChcUox",
+      "checks": [
+        {
+          "id": "P01",
+          "title": "concurrent parent and child native calls keep distinct approval owners",
+          "status": "passed",
+          "evidence": {
+            "twoLiveNativeOwners": true,
+            "separateTaskAndCwd": true,
+            "twoPendingApprovals": true,
+            "crossApprovalDenied": true,
+            "zeroWritesBeforeAllow": true
+          }
+        },
+        {
+          "id": "E02",
+          "title": "pending calls settle safely through uninstall",
+          "status": "passed",
+          "evidence": {
+            "changeWaitedBothReservations": true,
+            "childDidNotClearParent": true,
+            "failedEffectsNotStarted": true,
+            "writeCount": 0
+          }
+        },
+        {
+          "id": "E03",
+          "title": "same parent next turn respects changed authority uninstall",
+          "status": "passed",
+          "evidence": {
+            "oldReviewRejected": true,
+            "launchPlanUnchanged": true,
+            "oldRunDidNotGainChangedCapability": true,
+            "newWriteOnlyAfterFreshApproval": false,
+            "writeCount": 0
+          }
+        },
+        {
+          "id": "P04",
+          "title": "parent child bridge and pooled plugin resources close under their own owners",
+          "status": "passed",
+          "evidence": {
+            "allRunLeasesReleased": true,
+            "allPluginProcessesConfirmedStopped": true,
+            "noSecretReads": true,
+            "writeCount": 0
+          }
+        }
+      ],
+      "passed": 4,
+      "scope": "Actual Codex parent and Claude child private MCP with denial, uninstall or incompatible update while two reservations await approval. Candidate delegation/programmatic launch; synthetic localhost models and plugin private-data writes. No real user UI, external business connection, complete orchestration, SVN shared writer or crash."
+    },
+    {
+      "mode": "incompatible",
+      "out": "/private/tmp/willyou-m14-plugin-exceptions-probe/attempt-incompatible-ThjHSo",
+      "checks": [
+        {
+          "id": "P01",
+          "title": "concurrent parent and child native calls keep distinct approval owners",
+          "status": "passed",
+          "evidence": {
+            "twoLiveNativeOwners": true,
+            "separateTaskAndCwd": true,
+            "twoPendingApprovals": true,
+            "crossApprovalDenied": true,
+            "zeroWritesBeforeAllow": true
+          }
+        },
+        {
+          "id": "E02",
+          "title": "pending calls settle safely through incompatible",
+          "status": "passed",
+          "evidence": {
+            "changeWaitedBothReservations": true,
+            "childDidNotClearParent": true,
+            "failedEffectsNotStarted": true,
+            "writeCount": 2
+          }
+        },
+        {
+          "id": "E03",
+          "title": "same parent next turn respects changed authority incompatible",
+          "status": "passed",
+          "evidence": {
+            "oldReviewRejected": true,
+            "launchPlanUnchanged": true,
+            "oldRunDidNotGainChangedCapability": true,
+            "newWriteOnlyAfterFreshApproval": false,
+            "writeCount": 2
+          }
+        },
+        {
+          "id": "P04",
+          "title": "parent child bridge and pooled plugin resources close under their own owners",
+          "status": "passed",
+          "evidence": {
+            "allRunLeasesReleased": true,
+            "allPluginProcessesConfirmedStopped": true,
+            "noSecretReads": true,
+            "writeCount": 2
+          }
+        }
+      ],
+      "passed": 4,
+      "scope": "Actual Codex parent and Claude child private MCP with denial, uninstall or incompatible update while two reservations await approval. Candidate delegation/programmatic launch; synthetic localhost models and plugin private-data writes. No real user UI, external business connection, complete orchestration, SVN shared writer or crash."
+    }
+  ],
+  "finalChecks": 12,
+  "failedAttemptsPreserved": 1,
+  "scope": "Isolated research, not product acceptance"
+}

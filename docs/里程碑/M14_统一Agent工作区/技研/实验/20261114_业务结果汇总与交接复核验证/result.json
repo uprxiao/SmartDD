@@ -1,0 +1,231 @@
+{
+  "out": "/private/tmp/willyou-m14-business-summary-probe/attempt-xxtGFP",
+  "checks": [
+    {
+      "id": "S01",
+      "title": "actual stopped registry is separate from candidate business admission",
+      "status": "passed",
+      "evidence": {
+        "run": {
+          "state": "stopped"
+        },
+        "receipt": {
+          "id": "7934d03c-f197-4a98-a6f5-7de7208d676c",
+          "summaryDigest": "11dbfb109e8176adeab035cc72025b86bb5a3ee38d2a8d9ee14c6294f719790b",
+          "scope": "research receipt only; no native launch or authorization"
+        },
+        "nativeForked": false
+      }
+    },
+    {
+      "id": "S02",
+      "title": "four independent ledgers survive stopped run and released mail lease",
+      "status": "passed",
+      "evidence": {
+        "count": 4,
+        "sameIdNotMerged": true,
+        "mailLeaseReleased": true,
+        "unknownMailRetained": true
+      }
+    },
+    {
+      "id": "S03",
+      "title": "state labels and cancelled writes do not erase uncertain effects",
+      "status": "passed",
+      "evidence": {
+        "items": [
+          {
+            "source": "browser",
+            "id": "ee2f5d27-c09b-493e-a86e-9eab6f05e3c8:1133beb0-c85c-4ba9-bf91-547a70be1355",
+            "scope": {
+              "projectId": "p1",
+              "taskId": "95b5658e-93b6-4171-b185-ace549220b7b",
+              "runId": "ee2f5d27-c09b-493e-a86e-9eab6f05e3c8",
+              "verified": true
+            },
+            "outcome": "unknown",
+            "blocked": true,
+            "evidence": {
+              "run_id": "ee2f5d27-c09b-493e-a86e-9eab6f05e3c8",
+              "request_id": "1133beb0-c85c-4ba9-bf91-547a70be1355",
+              "task_id": "95b5658e-93b6-4171-b185-ace549220b7b",
+              "page_id": null,
+              "command": "click",
+              "state": "succeeded",
+              "effect_state": "unknown",
+              "updated_at": 1
+            }
+          },
+          {
+            "source": "browser",
+            "id": "ee2f5d27-c09b-493e-a86e-9eab6f05e3c8:8a649ba7-e844-43d2-b710-2a9dfa2d6a2f",
+            "scope": {
+              "projectId": "p1",
+              "taskId": "95b5658e-93b6-4171-b185-ace549220b7b",
+              "runId": "ee2f5d27-c09b-493e-a86e-9eab6f05e3c8",
+              "verified": true
+            },
+            "outcome": "unverified",
+            "blocked": true,
+            "evidence": {
+              "run_id": "ee2f5d27-c09b-493e-a86e-9eab6f05e3c8",
+              "request_id": "8a649ba7-e844-43d2-b710-2a9dfa2d6a2f",
+              "task_id": "95b5658e-93b6-4171-b185-ace549220b7b",
+              "page_id": null,
+              "command": "click",
+              "state": "failed",
+              "effect_state": "future-effect",
+              "updated_at": 1
+            }
+          },
+          {
+            "source": "data",
+            "id": "50068d79-9ba2-4545-8a75-9f3131314246",
+            "scope": {
+              "projectId": "p1",
+              "taskId": null,
+              "runId": null,
+              "verified": true
+            },
+            "outcome": "read-incomplete",
+            "blocked": false,
+            "evidence": {
+              "operation_id": "50068d79-9ba2-4545-8a75-9f3131314246",
+              "caller_kind": "ui",
+              "scope_kind": "project",
+              "project_id": "p1",
+              "task_id": null,
+              "run_id": null,
+              "app_id": "zentao",
+              "package_hash": "0559fd95e88b9c0e03d91eb4829ab48b3462e4a663f97fbcb701d0b83da5805f",
+              "data_api": 1,
+              "action": "ui.zentao.work",
+              "semantics": "read",
+              "state": "cancelled",
+              "targets_json": "[]",
+              "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "error_code": null,
+              "attempt_count": 1,
+              "ended_at": null
+            },
+            "noWriteEffect": true
+          },
+          {
+            "source": "data",
+            "id": "6481335f-c927-4bb4-9909-2b12bab2a008",
+            "scope": {
+              "projectId": "p1",
+              "taskId": null,
+              "runId": null,
+              "verified": true
+            },
+            "outcome": "unknown",
+            "blocked": true,
+            "evidence": {
+              "operation_id": "6481335f-c927-4bb4-9909-2b12bab2a008",
+              "caller_kind": "ui",
+              "scope_kind": "project",
+              "project_id": "p1",
+              "task_id": null,
+              "run_id": null,
+              "app_id": "zentao",
+              "package_hash": "0559fd95e88b9c0e03d91eb4829ab48b3462e4a663f97fbcb701d0b83da5805f",
+              "data_api": 1,
+              "action": "ui.zentao.work",
+              "semantics": "write",
+              "state": "cancelled",
+              "targets_json": "[]",
+              "scope_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "error_code": null,
+              "attempt_count": 1,
+              "ended_at": null
+            },
+            "noWriteEffect": false
+          }
+        ],
+        "writeCancellationMapping": "current execution-context catch branch plus synthetic legal row; not real external write"
+      }
+    },
+    {
+      "id": "S04",
+      "title": "known unrelated project excluded; unidentified and conflicting ownership retained",
+      "status": "passed",
+      "evidence": {
+        "otherProjectNotBlocked": true,
+        "missingIdentityRetained": true,
+        "conflictRetained": true,
+        "connectionManagementUnscoped": true,
+        "scope": "No module-specific object resolver; unresolved ownership conservatively blocks this candidate"
+      }
+    },
+    {
+      "id": "S05",
+      "title": "mail intent and revoked approval form one non-executable result",
+      "status": "passed",
+      "evidence": {
+        "singleMailItem": true,
+        "unusedApprovalRevoked": true,
+        "brokenExecutionReferenceBlocks": true,
+        "noSendAuthorityCreated": true
+      }
+    },
+    {
+      "id": "S06",
+      "title": "final source reread detects late insertion, mutation and removal without timestamps",
+      "status": "passed",
+      "evidence": {
+        "insertionDetected": true,
+        "mutationDetectedWithoutTimestamp": true,
+        "deletionDetected": true,
+        "receipt": {
+          "id": "f5a4419a-6406-419a-a004-b63bdaed8c15",
+          "summaryDigest": "11dbfb109e8176adeab035cc72025b86bb5a3ee38d2a8d9ee14c6294f719790b",
+          "scope": "research receipt only; no native launch or authorization"
+        },
+        "settlement": "synthetic SQL transition only; not a validated business reconciliation endpoint"
+      }
+    },
+    {
+      "id": "S07",
+      "title": "candidate receipt transaction rolls back and actual registry preparation blocks admission",
+      "status": "passed",
+      "evidence": {
+        "receiptRollback": true,
+        "actualPreparedRunBlocks": true,
+        "newNativeNotForked": true
+      }
+    },
+    {
+      "id": "S08",
+      "title": "missing required source is an explicit coverage error, never an empty result",
+      "status": "passed",
+      "evidence": {
+        "coverageError": {
+          "source": "coverage",
+          "id": "required-source",
+          "scope": {
+            "projectId": "p1",
+            "verified": false
+          },
+          "outcome": "unverified",
+          "blocked": true,
+          "error": "no such table: browser_operations"
+        },
+        "allowed": false
+      }
+    },
+    {
+      "id": "S09",
+      "title": "module-specific targets remain unverified until their decoder supplies scope",
+      "status": "passed",
+      "evidence": {
+        "unrecognizedTargetBlocked": true,
+        "nonemptyTargetsNeedActualModuleDecoder": true
+      }
+    }
+  ],
+  "passed": 9,
+  "error": null,
+  "submissions": 0,
+  "scope": "Current actual migrations, run registry prepare/cancel-before-fork and mail recovery with controlled dead owner; candidate summary/admission over synthetic rows. No SDK/native fork, SMTP, business writes, UI or product changes."
+}

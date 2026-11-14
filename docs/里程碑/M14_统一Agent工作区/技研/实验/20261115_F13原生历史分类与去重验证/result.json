@@ -1,0 +1,196 @@
+{
+  "out": "/private/tmp/willyou-m14-f13-history/attempt-2sw0dmwt",
+  "checks": [
+    {
+      "id": "I01-recorded-two-provider-formats",
+      "passed": true,
+      "result": {
+        "sources": 10,
+        "records": 271,
+        "statistics": [
+          {
+            "name": "claude-tool-history",
+            "records": 55,
+            "counts": {
+              "metadata": 43,
+              "message": 6,
+              "tool-result": 3,
+              "tool-call": 3
+            },
+            "state": "readable"
+          },
+          {
+            "name": "codex-tool-history",
+            "records": 48,
+            "counts": {
+              "lineage": 1,
+              "turn-history": 6,
+              "metadata": 18,
+              "native-mirror": 9,
+              "tool-result": 3,
+              "message": 8,
+              "tool-call": 3
+            },
+            "state": "readable"
+          },
+          {
+            "name": "codex-lineage-rollout-2026-11-14T18-20-02-01a1d992-3e9f-7730-b35c-cb355c50eac2",
+            "records": 26,
+            "counts": {
+              "lineage": 1,
+              "turn-history": 2,
+              "metadata": 10,
+              "native-mirror": 4,
+              "tool-result": 2,
+              "tool-call": 2,
+              "message": 5
+            },
+            "state": "readable"
+          },
+          {
+            "name": "codex-lineage-rollout-2026-11-14T18-20-02-01a1d992-3eb7-7700-8d4e-0f18177358a6",
+            "records": 14,
+            "counts": {
+              "lineage": 1,
+              "turn-history": 2,
+              "message": 4,
+              "metadata": 5,
+              "native-mirror": 2
+            },
+            "state": "readable"
+          },
+          {
+            "name": "claude-lineage-agent-a9e0ca9d32043753e",
+            "records": 11,
+            "counts": {
+              "metadata": 9,
+              "message": 2
+            },
+            "state": "readable"
+          },
+          {
+            "name": "claude-lineage-814a5306-cff2-4653-84a4-807a86e7c6df",
+            "records": 32,
+            "counts": {
+              "metadata": 26,
+              "tool-call": 1,
+              "tool-result": 1,
+              "message": 4
+            },
+            "state": "readable"
+          },
+          {
+            "name": "codex-child-rpc",
+            "records": 39,
+            "counts": {
+              "metadata": 23,
+              "turn-history": 4,
+              "child-history": 4,
+              "native-mirror": 8
+            },
+            "state": "readable"
+          },
+          {
+            "name": "claude-child-stream",
+            "records": 14,
+            "counts": {
+              "tool-call": 1,
+              "message": 3,
+              "turn-history": 2,
+              "metadata": 2,
+              "child-history": 3,
+              "unknown": 2,
+              "tool-result": 1
+            },
+            "state": "partial"
+          },
+          {
+            "name": "codex-request-rpc",
+            "records": 28,
+            "counts": {
+              "metadata": 18,
+              "turn-history": 2,
+              "native-mirror": 6,
+              "request-resolution-history": 1,
+              "request-history": 1
+            },
+            "state": "readable"
+          },
+          {
+            "name": "request-scope-recording",
+            "records": 4,
+            "counts": {
+              "request-history": 4
+            },
+            "state": "readable"
+          }
+        ],
+        "allRawBytesReconstructed": true,
+        "noNativeResumeOrLiveGrant": true
+      }
+    },
+    {
+      "id": "I02-replay-and-append",
+      "passed": true,
+      "result": {
+        "exactReplayAddsZero": true,
+        "sameTextDifferentNativeIdPreserved": true,
+        "appendAddsOne": true,
+        "oldRevisionStillReadable": true
+      }
+    },
+    {
+      "id": "I03-native-key-conflict",
+      "passed": true,
+      "result": {
+        "sameIdDifferentRawPreservesBoth": true,
+        "conflictVisible": true,
+        "sameIdOtherLineageNotCollapsed": true
+      }
+    },
+    {
+      "id": "I04-unknown-corrupt-missing",
+      "passed": true,
+      "result": {
+        "unknownNotSuccess": true,
+        "corruptBytesPreserved": true,
+        "partialMessageReadable": true,
+        "missingDoesNotCreateFreshSession": true,
+        "previousImportedBytesSurvive": true,
+        "missingChildDoesNotHideParentOrClaimCompleteTree": true
+      }
+    },
+    {
+      "id": "I05-origin-request-and-mirror",
+      "passed": true,
+      "result": {
+        "userToolResultNotHumanInput": true,
+        "mirrorsNotDuplicateBubbles": true,
+        "historicalRequestHasNoReplyPath": true,
+        "claimedReceiptNotTrusted": true,
+        "submissionsRunsAndTaskEventsUnchanged": true
+      }
+    },
+    {
+      "id": "I06-import-transaction-rollback",
+      "passed": true,
+      "result": {
+        "recordsRevisionAndPointerAtomic": true,
+        "retryExactlyOnce": true
+      }
+    },
+    {
+      "id": "I07-version-identity-and-budget",
+      "passed": true,
+      "result": {
+        "unknownVersionRawOnly": true,
+        "foreignHeaderNeverMappedAsSelectedSession": true,
+        "symlinkRefused": true,
+        "budgetRefusalLeavesSourceAndOldImport": true
+      }
+    }
+  ],
+  "passed": 7,
+  "error": null,
+  "scope": "Recorded fixed-version native transcripts and wire events, controlled loopback model evidence reused. C1.7 copied DB plus isolated C1.8 import candidate. No new model calls, production parser integration, native resume, live authorization, UI or large-history product throughput."
+}

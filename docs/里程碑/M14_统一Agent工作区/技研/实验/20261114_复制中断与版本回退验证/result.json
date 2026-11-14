@@ -1,0 +1,48 @@
+{
+  "out": "/private/tmp/willyou-m14-install-copy-interrupt-probe/attempt-iQvn5K",
+  "checks": [
+    {
+      "id": "C01",
+      "label": "mid-copy death keeps previous default and leaves no ready partial resource",
+      "status": "passed",
+      "evidence": {
+        "jobId": "8fd6e5d9-5829-4d09-ae85-8d2e332515de",
+        "phase": "requested",
+        "preparedPath": null,
+        "partialStage": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-L6IyCv/capabilities/native-preparation/artifact-1eNIlD",
+        "bytesCopied": 262144,
+        "expectedBytes": 8388608,
+        "oldDefaultRetained": true,
+        "partialNotPublished": true,
+        "ownerStopped": true
+      }
+    },
+    {
+      "id": "C02",
+      "label": "recovery recopies verified resource but cannot identify old partial stage from job record",
+      "status": "passed",
+      "evidence": {
+        "installedResource": "agent-native-runtime:587bc78b312dcf27e156310212b28b02859b0d55c40bbb130aaa5e57cd0a4c12",
+        "partialRemains": true,
+        "partialBytes": 262144,
+        "oldStageNotTrackedByJob": true,
+        "oldVersionUnchanged": true,
+        "notInPlaceResume": true
+      }
+    },
+    {
+      "id": "C03",
+      "label": "explicit default rollback reuses old immutable version and replay does not reactivate B",
+      "status": "passed",
+      "evidence": {
+        "rollbackToA": true,
+        "oldDirectoryReused": true,
+        "replayedBReceiptIsHistorical": true,
+        "noImplicitReactivation": true
+      }
+    }
+  ],
+  "passed": 3,
+  "error": null,
+  "scope": "Actual installation worker SIGKILL during local artifact copying, real ResourceStore with prior candidate job/activation schema; synthetic 8 MiB fixture versions, no native SDK or real run leases. Existing algorithm unchanged except observation checkpoint. Untracked stage leak is a confirmed unresolved candidate gap."
+}

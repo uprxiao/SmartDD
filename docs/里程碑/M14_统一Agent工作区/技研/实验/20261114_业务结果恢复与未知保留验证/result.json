@@ -1,0 +1,132 @@
+{
+  "out": "/private/tmp/willyou-m14-business-recovery-probe/attempt-icUdWH",
+  "checks": [
+    {
+      "id": "B01",
+      "title": "actual seven-day browser cleanup removes unresolved evidence",
+      "status": "passed",
+      "evidence": {
+        "oldRunningRecordDeleted": true,
+        "notFound": true,
+        "sameKeyNoLongerRecognized": true,
+        "noBrowserCommandExecuted": true,
+        "liveRunAuthorizationNotBypassed": true
+      }
+    },
+    {
+      "id": "B02",
+      "title": "candidate keeps unknown results while pruning only old proven terminal rows",
+      "status": "passed",
+      "evidence": {
+        "cases": [
+          {
+            "state": "accepted",
+            "effect": "not-started",
+            "old": true,
+            "retained": true,
+            "requestId": "69c58c79-1210-48de-ac83-a86cd4c24f30"
+          },
+          {
+            "state": "running",
+            "effect": "unknown",
+            "old": true,
+            "retained": true,
+            "requestId": "c1c0ffe1-2403-4108-9313-77a333044c94"
+          },
+          {
+            "state": "unknown",
+            "effect": "unknown",
+            "old": true,
+            "retained": true,
+            "requestId": "61e479a1-9221-4923-8d06-ccd123e817cc"
+          },
+          {
+            "state": "failed",
+            "effect": "unknown",
+            "old": true,
+            "retained": true,
+            "requestId": "1ad02e07-03eb-4d86-b8f8-45395eed8442"
+          },
+          {
+            "state": "succeeded",
+            "effect": "unknown",
+            "old": true,
+            "retained": true,
+            "requestId": "5ac615d1-dd26-4f31-99b6-59515aa0b1f6"
+          },
+          {
+            "state": "succeeded",
+            "effect": "completed",
+            "old": true,
+            "retained": false,
+            "requestId": "7ec2e26c-0a3a-4d54-80eb-0836e09257f9"
+          },
+          {
+            "state": "failed",
+            "effect": "not-started",
+            "old": true,
+            "retained": false,
+            "requestId": "a36a8db9-b719-4b21-98f6-0fe5aae94ede"
+          },
+          {
+            "state": "succeeded",
+            "effect": "completed",
+            "old": false,
+            "retained": true,
+            "requestId": "8d5d2ead-7c33-4837-a942-4f1afe2303cc"
+          },
+          {
+            "state": "failed",
+            "effect": "future-effect",
+            "old": true,
+            "retained": true,
+            "requestId": "5764f431-d6c4-4568-a88d-fd9eb4ca6a73"
+          }
+        ],
+        "unknownKeyRetained": true,
+        "idempotentRecovery": true,
+        "fullRetentionPolicyStillRequired": true
+      }
+    },
+    {
+      "id": "B03",
+      "title": "actual read recovery cancels proven stopped reads but preserves unknown writes",
+      "status": "passed",
+      "evidence": {
+        "ownerStatesControlled": true,
+        "readCancelled": true,
+        "writeUnknownPreserved": true,
+        "writeLeaseRetained": true
+      }
+    },
+    {
+      "id": "B04",
+      "title": "actual mail recovery releases dead-owner leases while retaining execution unknown and revoking unused grants",
+      "status": "passed",
+      "evidence": {
+        "ownerStatesControlled": true,
+        "seededLegalRecoveryRows": true,
+        "noPreparationOrActualSmtp": true,
+        "executedUnknownRetained": true,
+        "unexecutedApprovalStale": true,
+        "leasesReleased": true
+      }
+    },
+    {
+      "id": "B05",
+      "title": "invocation-only gate misses independent browser/mail/project-write records",
+      "status": "passed",
+      "evidence": {
+        "invocationOnlyEmpty": true,
+        "browserUnknown": true,
+        "mailUnknownAfterLeaseRelease": true,
+        "projectUiWriteWithoutTaskId": true,
+        "queryEvidenceNotCompleteAdmissionService": true
+      }
+    }
+  ],
+  "passed": 5,
+  "error": null,
+  "submissions": 0,
+  "scope": "Actual browser/read/mail recovery over isolated current SQLite with synthetic legal rows and controlled owner states; one candidate retention SQL predicate. No SMTP/browser action/native Agent/host crash or product edit."
+}

@@ -1,0 +1,199 @@
+{
+  "out": "/private/tmp/willyou-m14-atomic-delegation-probe/attempt-1HiuRa",
+  "checks": [
+    {
+      "id": "T01",
+      "label": "actual legacy create starts PTY before inserting task; launchToken is not durable idempotency",
+      "status": "passed",
+      "evidence": {
+        "actualTaskService": true,
+        "pty": "fake, no CLI launched",
+        "sameTokenAfterCompletionCreatesDistinctTasks": true,
+        "spawnPrecedesInsert": true,
+        "failedSpawnLeavesNoTask": true
+      }
+    },
+    {
+      "id": "T02",
+      "label": "candidate accepts one logical child with receipt, planned binding, turn and outbox",
+      "status": "passed",
+      "evidence": {
+        "response": {
+          "status": "accepted",
+          "delegationId": "19c1acae-42c9-4b3f-ab85-a32d1d47a92a",
+          "childTaskId": "4f35025f-670b-4070-9d5f-1a0742245127",
+          "bindingId": "0afc4918-d3a4-40de-96e2-262c5db19515",
+          "turnId": "e4b88316-0067-4b64-892f-fad62f9585c0",
+          "effectId": "2d2027a9-413d-457e-ab5e-3e56f73ac6df"
+        },
+        "counts": {
+          "tasks": 4,
+          "m14_binding": 1,
+          "m14_turn": 1,
+          "m14_delegation": 1,
+          "m14_receipt": 1,
+          "m14_outbox": 1
+        },
+        "nativeStarted": false
+      }
+    },
+    {
+      "id": "T03",
+      "label": "two concurrent worker submissions return one durable child",
+      "status": "passed",
+      "evidence": {
+        "workers": [
+          {
+            "pid": 53092,
+            "point": "race",
+            "response": {
+              "status": "accepted",
+              "delegationId": "f705eaf5-1984-4e65-a4c1-851cf5d9ecb8",
+              "childTaskId": "3966ada5-cb4f-42c2-be69-8684835b24a7",
+              "bindingId": "4f4603fc-7700-4740-a9fb-baa394f50d86",
+              "turnId": "aac88ab2-502a-48bb-8e2f-84de579ac611",
+              "effectId": "b1e24eb8-ccfb-48c7-a208-fb0c120243b6"
+            },
+            "code": 0,
+            "signal": null,
+            "stderr": ""
+          },
+          {
+            "pid": 53093,
+            "point": "race",
+            "response": {
+              "status": "accepted",
+              "delegationId": "f705eaf5-1984-4e65-a4c1-851cf5d9ecb8",
+              "childTaskId": "3966ada5-cb4f-42c2-be69-8684835b24a7",
+              "bindingId": "4f4603fc-7700-4740-a9fb-baa394f50d86",
+              "turnId": "aac88ab2-502a-48bb-8e2f-84de579ac611",
+              "effectId": "b1e24eb8-ccfb-48c7-a208-fb0c120243b6"
+            },
+            "code": 0,
+            "signal": null,
+            "stderr": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "T04-after-task",
+      "label": "captured worker SIGKILL at after-task",
+      "status": "passed",
+      "evidence": {
+        "worker": {
+          "pid": 53094,
+          "point": "after-task",
+          "reached": "after-task",
+          "code": null,
+          "signal": "SIGKILL",
+          "stderr": ""
+        },
+        "committed": false,
+        "recoveredResponse": {
+          "status": "accepted",
+          "delegationId": "1bdf3c0c-1919-48ff-a5fc-a20c71467924",
+          "childTaskId": "129ca042-3608-46cd-96b7-e445733e3711",
+          "bindingId": "6aedb3d8-9868-421c-9024-91bcfb27adc6",
+          "turnId": "8989b429-1320-40ce-9f69-dce51359147a",
+          "effectId": "39e76c55-3c26-45e9-a8f8-05de4984d493"
+        }
+      }
+    },
+    {
+      "id": "T04-after-outbox",
+      "label": "captured worker SIGKILL at after-outbox",
+      "status": "passed",
+      "evidence": {
+        "worker": {
+          "pid": 53099,
+          "point": "after-outbox",
+          "reached": "after-outbox",
+          "code": null,
+          "signal": "SIGKILL",
+          "stderr": ""
+        },
+        "committed": false,
+        "recoveredResponse": {
+          "status": "accepted",
+          "delegationId": "1d6f7ea2-a19e-4f4a-aa1b-13a8c895cacd",
+          "childTaskId": "80ed916b-ead9-46cf-ac79-a67a319741f9",
+          "bindingId": "5583514c-eb5f-4a54-a63b-3439023b3f0b",
+          "turnId": "c41f7a9b-6374-4d61-9bf8-055b75472ad5",
+          "effectId": "9fee3fb5-7194-4dbe-891f-4a5d05608ba5"
+        }
+      }
+    },
+    {
+      "id": "T04-after-commit",
+      "label": "captured worker SIGKILL at after-commit",
+      "status": "passed",
+      "evidence": {
+        "worker": {
+          "pid": 53103,
+          "point": "after-commit",
+          "reached": "after-commit",
+          "code": null,
+          "signal": "SIGKILL",
+          "stderr": ""
+        },
+        "committed": true,
+        "recoveredResponse": {
+          "status": "accepted",
+          "delegationId": "8aba98dc-adb0-48d9-938f-9871edef6d60",
+          "childTaskId": "e544e4b0-4c3c-4ead-9d13-29d4315d3a38",
+          "bindingId": "7bff75cf-53f4-4df7-97c9-ec1577ad9d1b",
+          "turnId": "159effad-5fcd-4f8f-b7d8-b0c959e4ef70",
+          "effectId": "155d456b-e285-4cab-93af-b8a7fdeaa009"
+        }
+      }
+    },
+    {
+      "id": "T05",
+      "label": "target deletion after acceptance blocks dispatch without changing child or falling back",
+      "status": "passed",
+      "evidence": {
+        "sameReceiptAfterTargetDeletion": true,
+        "plannedTargetRetained": true,
+        "existingTaskForeignKeySetNull": true,
+        "noFallback": true
+      }
+    },
+    {
+      "id": "T06",
+      "label": "revoked parent cannot reuse acceptance authority even with a previous receipt",
+      "status": "passed",
+      "evidence": {
+        "persistedScopeGateRejected": true,
+        "actualRunRegistryCurrentPolicyRejected": true,
+        "receiptDoesNotGrantAuthority": true
+      }
+    },
+    {
+      "id": "T07",
+      "label": "shared workspace wait, stale claims and unknown launch are separate",
+      "status": "passed",
+      "evidence": {
+        "waitingDoesNotCreateAnotherChild": true,
+        "claimTokenFenced": true,
+        "dispatchingNotAutomaticallyRetried": true,
+        "noActualNativeOrKernelProofInThisCheck": true
+      }
+    },
+    {
+      "id": "T08",
+      "label": "same logical request survives a new real run without creating a second child",
+      "status": "passed",
+      "evidence": {
+        "oldRun": "c4418687-e05c-48cf-bf28-d934915aaa72",
+        "newRun": "a913593e-50a3-4521-8925-c039ffb04553",
+        "sameChild": "5286052e-ced9-4d68-a1e3-10616e908858",
+        "realRegistryCreatedSecondRun": true,
+        "clonedSqlStateUsedForCandidate": true
+      }
+    }
+  ],
+  "passed": 10,
+  "failed": 0,
+  "scope": "Actual TaskService with fake PTY; actual schemas/migrations/profile/project services and prepared owner with FixtureProcessReader. Candidate logical creation/outbox on same DB and actual tasks table. Concurrent Node workers and SIGKILL are real; no native agents, final capability projection or production integration."
+}

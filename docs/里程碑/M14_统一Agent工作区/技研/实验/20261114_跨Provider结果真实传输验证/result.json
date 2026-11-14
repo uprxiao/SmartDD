@@ -1,0 +1,54 @@
+{
+  "out": "/private/tmp/willyou-m14-result-transport-probe/attempt-YtlGCF",
+  "checks": [
+    {
+      "id": "T01",
+      "label": "real Codex result tool commits but response is held before native consumption",
+      "status": "passed",
+      "evidence": {
+        "actualDynamicToolCall": true,
+        "bodyNotInModelRequest": true,
+        "readCommittedButUnobserved": true,
+        "drainDoesNotClearUnresolvedObservation": true
+      }
+    },
+    {
+      "id": "T02",
+      "label": "explicit stopped-run observation disposition preserves unread result and permits switch",
+      "status": "passed",
+      "evidence": {
+        "unknownBlocksSwitch": true,
+        "fixtureExplicitDisposition": true,
+        "noChildRestart": true,
+        "noObservationInvented": true
+      }
+    },
+    {
+      "id": "T03",
+      "label": "Claude SDK MCP consumes same result and rejects old Codex observation token",
+      "status": "passed",
+      "evidence": {
+        "sdkInProcessMcp": true,
+        "sameLogicalTask": true,
+        "sameResult": true,
+        "resultTokenInModelRequest": true,
+        "oldTokenRejected": true,
+        "ackCount": 1
+      }
+    },
+    {
+      "id": "T04",
+      "label": "switch back to Codex uses same result service and consumes second unread result",
+      "status": "passed",
+      "evidence": {
+        "appServerDynamicTool": true,
+        "oneSharedService": true,
+        "resultTokenInModelRequest": true,
+        "ackReplayIdempotent": true
+      }
+    }
+  ],
+  "passed": 4,
+  "modelRequests": 8,
+  "scope": "Real programmatic owner, actual Codex dynamic tools and Claude SDK in-process MCP, same logical parent and candidate result service. Seeded child results and deterministic local model, held read response then actual native cancellation; explicit disposition is fixture host command, not production approval. No real child, automatic notice, business MCP, host crash or UI integration."
+}

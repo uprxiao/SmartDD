@@ -1,0 +1,105 @@
+{
+  "out": "/private/tmp/willyou-m14-f07-context/contract-XSQrxz",
+  "checks": [
+    {
+      "id": "B01-current-terminal-cache-lifetime-is-not-task-context-lifetime",
+      "passed": true,
+      "result": {
+        "actualPtyExitRemovesBytes": true,
+        "newSdkHashDoesNotBorrowLegacySupport": true,
+        "oldLimit": 20971520
+      }
+    },
+    {
+      "id": "B02-real-T3-budget-functions-and-zero-envelope",
+      "passed": true,
+      "result": {
+        "zeroBudgetStillHasContextEnvelope": true,
+        "hostMustSkipEnvelopeRatherThanSendOverLimit": true,
+        "imageAllowanceIsEstimate": 8192
+      }
+    },
+    {
+      "id": "B03-total-budget-preserves-current-input-and-whole-unicode-history",
+      "passed": true,
+      "result": {
+        "mode": "window-estimate",
+        "window": 128000,
+        "nativeUsage": 0,
+        "reserve": 32000,
+        "mandatoryUnits": 8496,
+        "historyBudget": 16000,
+        "historyUnits": 1517,
+        "wireBytes": 1606,
+        "exactTokens": false
+      }
+    },
+    {
+      "id": "B04-unsupported-oversize-missing-and-mandatory-overflow-reject-before-plan",
+      "passed": true,
+      "result": {
+        "silentDrop": false,
+        "draftMutation": false
+      }
+    },
+    {
+      "id": "B05-tiny-budget-has-no-hidden-context-envelope-and-unknown-is-labelled",
+      "passed": true,
+      "result": {
+        "emptyHistoryBytes": 0,
+        "unknownMode": "host-bounded-estimate"
+      }
+    },
+    {
+      "id": "B06-file-reference-and-historical-image-never-claim-content-coverage",
+      "passed": true,
+      "result": {
+        "fileReferenceOnly": true,
+        "historyAttachmentOmission": [
+          {
+            "itemId": "historic-image",
+            "attachmentId": "old-image",
+            "reason": "historical-attachment-not-replayed",
+            "representation": "attachment"
+          }
+        ]
+      }
+    },
+    {
+      "id": "B07-C1-4-plan-and-content-pins-commit-together-persist-unknown",
+      "passed": true,
+      "result": {
+        "marker": {
+          "revision": "C1.4",
+          "inputs_hash": "99509474e8b7457922eb82eed9571e6a044106ea9e34e03a117704c3eda6d298",
+          "schema_hash": "93712bc11b7160a0f09225ec93023417ea75af0a6f5ebeab1ac4eb011c2bad73"
+        },
+        "transferId": "f51add4f-26b7-4788-bebd-3714671b2e2d",
+        "inputId": "61dd3787-8395-40ad-b04f-b055d1f3c91d",
+        "pins": [
+          {
+            "transfer_id": "f51add4f-26b7-4788-bebd-3714671b2e2d",
+            "content_hash": "becf0cf30d6978325d9ccdea315923e2dbbf7e591c2857b92b5f82e41957bb98"
+          }
+        ],
+        "unknownDoesNotRelease": true,
+        "historyRefsRemainAfterAcceptedByPolicy": true,
+        "oldStoppedInputIsRelationalFixture": true,
+        "actualGCDeletionStillF10": true
+      }
+    },
+    {
+      "id": "B08-separate-history-receipt-controls-part-coverage-and-accepted-pins-remain",
+      "passed": true,
+      "result": {
+        "unknownCoverageEmpty": true,
+        "currentAckNotHistoryAck": true,
+        "onlyTextPartCovered": true,
+        "acceptedDoesNotDropHistoryPins": true,
+        "receiptInputsExplicitFixture": true
+      }
+    }
+  ],
+  "passed": 8,
+  "scope": "Actual legacy cache + T3 budget functions; candidate bounded context and C1.4 relation prototype. No product UI, GC worker, model cognition or live grant."
+}

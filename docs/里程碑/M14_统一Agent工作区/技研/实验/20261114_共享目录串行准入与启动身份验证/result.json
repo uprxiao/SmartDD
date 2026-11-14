@@ -1,0 +1,236 @@
+{
+  "out": "/private/tmp/willyou-m14-serial-admission-probe/attempt-wBqnbl",
+  "checks": [
+    {
+      "id": "A01",
+      "title": "different project labels and SVN alias siblings queue read-only claims",
+      "status": "passed",
+      "evidence": {
+        "results": [
+          {
+            "state": "queued",
+            "blockedBy": "bdc498e1-58bc-4d53-8099-cd1437975de8",
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-a",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "nativeSandbox": "read-only",
+                "mcpReadOnlyHint": true
+              }
+            }
+          },
+          {
+            "state": "queued",
+            "blockedBy": "bdc498e1-58bc-4d53-8099-cd1437975de8",
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-b",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "prompt": "only analyze",
+                "capability": "unverified"
+              }
+            }
+          }
+        ],
+        "agentLaunches": 1
+      }
+    },
+    {
+      "id": "A02",
+      "title": "native exit while actual activity remains cannot release workspace",
+      "status": "passed",
+      "evidence": {
+        "runState": "stopping",
+        "activeActivities": 1,
+        "results": [
+          {
+            "state": "queued",
+            "blockedBy": "bdc498e1-58bc-4d53-8099-cd1437975de8",
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-a",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "nativeSandbox": "read-only",
+                "mcpReadOnlyHint": true
+              }
+            }
+          },
+          {
+            "state": "queued",
+            "blockedBy": "bdc498e1-58bc-4d53-8099-cd1437975de8",
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-b",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "prompt": "only analyze",
+                "capability": "unverified"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "A03",
+      "title": "stopped owner with unknown scope retains lease",
+      "status": "passed",
+      "evidence": {
+        "runState": "stopped",
+        "scopeEvidence": "unknown",
+        "results": [
+          {
+            "state": "queued",
+            "blockedBy": "bdc498e1-58bc-4d53-8099-cd1437975de8",
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-a",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "nativeSandbox": "read-only",
+                "mcpReadOnlyHint": true
+              }
+            }
+          },
+          {
+            "state": "queued",
+            "blockedBy": "bdc498e1-58bc-4d53-8099-cd1437975de8",
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-b",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "prompt": "only analyze",
+                "capability": "unverified"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "A04",
+      "title": "two host processes contend and only one acquires after verified drain",
+      "status": "passed",
+      "evidence": {
+        "results": [
+          {
+            "state": "held",
+            "descriptor": {
+              "input": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-CvR638/project/a",
+              "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-CvR638/project/a",
+              "scope": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-CvR638/project",
+              "device": "16777234",
+              "inode": "77779146",
+              "cwdDevice": "16777234",
+              "cwdInode": "77779207"
+            },
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-a",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "nativeSandbox": "read-only",
+                "mcpReadOnlyHint": true
+              }
+            }
+          },
+          {
+            "state": "queued",
+            "blockedBy": "fcbf2226-4a40-466e-9491-c0bf8d4689ce",
+            "policy": {
+              "requestedAccess": "read-only",
+              "projectId": "project-b",
+              "effectiveAccess": "potential-writer",
+              "reason": "parallel-readonly-not-enabled",
+              "claims": {
+                "prompt": "only analyze",
+                "capability": "unverified"
+              }
+            }
+          }
+        ],
+        "winner": 0,
+        "loser": 1,
+        "otherRemainedQueued": true,
+        "onlyWinnerLaunched": true
+      }
+    },
+    {
+      "id": "A05",
+      "title": "same-path SVN subdirectory replacement must invalidate launch identity",
+      "status": "passed",
+      "evidence": {
+        "samePathDifferentInodeRejected": true,
+        "originalRestored": true
+      }
+    },
+    {
+      "id": "A06",
+      "title": "queued request can acquire then path retarget blocks launch",
+      "status": "passed",
+      "evidence": {
+        "acquiredAfterPredecessor": true,
+        "pathChangedBeforeFork": true,
+        "agentNotLaunched": true
+      }
+    }
+  ],
+  "passed": 6,
+  "error": null,
+  "launches": [
+    {
+      "runId": "bdc498e1-58bc-4d53-8099-cd1437975de8",
+      "label": "parent",
+      "pid": 16348,
+      "identity": {
+        "pid": 16348,
+        "startedAt": "darwin-proc-v1:1794653397:303353"
+      },
+      "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-CvR638/project"
+    },
+    {
+      "runId": "fcbf2226-4a40-466e-9491-c0bf8d4689ce",
+      "label": "winner",
+      "pid": 16355,
+      "identity": {
+        "pid": 16355,
+        "startedAt": "darwin-proc-v1:1794653397:504400"
+      },
+      "cwd": "/private/var/folders/rt/7q3bp7tx7p13zgcpkcfs04080000gn/T/willyou-m10-runs-CvR638/project/a"
+    }
+  ],
+  "processes": [
+    {
+      "pid": 16348,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 16351,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 16352,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "pid": 16355,
+      "exitCode": 0,
+      "signal": null
+    }
+  ],
+  "scope": "Candidate serial-only SQLite path admission, actual run registry/activity/process identity and synthetic owned Node writers in SVN. No SDK, parallel-reader capability, complete OS descendant containment, atomic owner/lease transaction or full launcher integration."
+}

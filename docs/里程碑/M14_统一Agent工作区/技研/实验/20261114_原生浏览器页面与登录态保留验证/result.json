@@ -1,0 +1,72 @@
+{
+  "out": "/private/tmp/willyou-m14-browser-pages-probe/attempt-7LK12j",
+  "checks": [
+    {
+      "id": "N01",
+      "title": "real managed CLI rejects a matching token outside native ancestry",
+      "status": "passed",
+      "evidence": {
+        "sameTokenInsufficient": true,
+        "realBinaryAndKernelPeer": true,
+        "noAdditionalRootBypass": true
+      }
+    },
+    {
+      "id": "N02",
+      "title": "both natives execute browser CLI through real gateway and separate approvals",
+      "status": "passed",
+      "evidence": {
+        "twoNativeShells": true,
+        "managedCliBinary": true,
+        "kernelPeerAuthenticated": true,
+        "businessApprovalRequired": true,
+        "toolResultsReachedNextModel": true
+      }
+    },
+    {
+      "id": "N03",
+      "title": "provider switch revokes old CLI token and preserves only child-owned grant",
+      "status": "passed",
+      "evidence": {
+        "parentStopped": true,
+        "oldTokenRejectedByRealCli": true,
+        "childGrantPreserved": true,
+        "oldOwnerDenied": true
+      }
+    },
+    {
+      "id": "N04",
+      "title": "new provider repeats real CLI chain and must obtain its own grant",
+      "status": "passed",
+      "evidence": {
+        "sameTaskNewProvider": true,
+        "noInheritedGrant": true,
+        "freshNativeCliProof": true
+      }
+    },
+    {
+      "id": "N05",
+      "title": "all native and CLI activity settles without destroying shared browser early",
+      "status": "passed",
+      "evidence": {
+        "allNativeRunsStopped": true,
+        "noActiveBusiness": true,
+        "allBrowserGrantsRevoked": true,
+        "allCliPeerIdentitiesStopped": true,
+        "realCliProofCount": 25
+      }
+    },
+    {
+      "id": "P06",
+      "title": "explicit page close preserves sibling page and shared project session",
+      "status": "passed",
+      "evidence": {
+        "closedOnlyRequestedPage": true,
+        "siblingDomAlive": true,
+        "sharedProjectLoginPreserved": true
+      }
+    }
+  ],
+  "passed": 6,
+  "scope": "Actual native shell -> compiled current managed CLI -> actual kernel peer gateway -> CLI ToolService/context/BrowserService. Local controlled model, candidate programmatic launch and host approval; Real Electron pages, CDP proxies and synthetic local HttpOnly login cookie; host-controlled approval, no product UI or real external business/account."
+}

@@ -1,0 +1,73 @@
+{
+  "out": "/private/tmp/willyou-m14-result-route-probe/attempt-6yqTNU",
+  "checks": [
+    {
+      "id": "R01",
+      "label": "busy parent does not claim pending result and live run prevents provider switch",
+      "status": "passed",
+      "evidence": {
+        "busyStateProjectedFromActualTurnEvents": true,
+        "turnId": "01a1d91b-752d-7611-932a-3f9a5d18cddd",
+        "noDispatchWhileBusy": true,
+        "liveOwnerBlocksSwitch": true
+      }
+    },
+    {
+      "id": "R02",
+      "label": "unsent claim moves to new provider only after actual parent drain",
+      "status": "passed",
+      "evidence": {
+        "sameLogicalTask": true,
+        "codexToClaude": true,
+        "oldProcessesDrained": true,
+        "oldClaimDenied": true,
+        "resultAndDelegationIdentityPreserved": true
+      }
+    },
+    {
+      "id": "R03",
+      "label": "automatic claim competes with explicit result read on one ledger",
+      "status": "passed",
+      "evidence": {
+        "claimStatus": "claimed",
+        "oneObservationToken": true,
+        "readNotAcknowledgement": true,
+        "obsoleteAutomaticClaimBlocked": true
+      }
+    },
+    {
+      "id": "R04",
+      "label": "observation requires current private run, exact token and result revision",
+      "status": "passed",
+      "evidence": {
+        "privateOwnerRequired": true,
+        "revisionRequired": true,
+        "oneAcknowledgement": true
+      }
+    },
+    {
+      "id": "R05",
+      "label": "unknown dispatch cannot be bypassed by switching provider",
+      "status": "passed",
+      "evidence": {
+        "stoppedDoesNotMeanUnsent": true,
+        "unknownBlocksSwitch": true,
+        "resultStillUnobserved": true,
+        "nativeNoticeNotSentInThisFixture": true
+      }
+    },
+    {
+      "id": "R06",
+      "label": "explicitly stopping notification preserves unread result for new provider",
+      "status": "passed",
+      "evidence": {
+        "fixtureHostDisposition": true,
+        "dispositionNotObservation": true,
+        "oldRunTokenRejected": true,
+        "sameResultReadByNewGeneration": true
+      }
+    }
+  ],
+  "passed": 6,
+  "scope": "Actual programmatic ownership, Codex/Claude initialization and drain; candidate result routing/observation store with seeded results, actual Codex busy turn with local synthetic response, synthetic dispatch intent and explicit host disposition. No live notice or result MCP transport, UI switch, actual child execution or crash."
+}
