@@ -5,6 +5,7 @@ import { realpathSync } from 'node:fs';
 import { eq } from 'drizzle-orm';
 import { agentRunSnapshotSchema, agentSourceIdentitySchema, type AgentRunSnapshot, type AgentSourceIdentity } from '@shared/agent-run-state';
 import type { AgentPermission } from '@shared/agent-permissions';
+import type { CodeAgentKind } from '@shared/ai-agents';
 import type { TaskRecovery } from '@shared/tasks';
 import type { AppDb } from '../../db/client';
 import { aiProfiles, aiTaskSnapshots, appSecrets } from '../../db/schema';
@@ -144,7 +145,7 @@ export class AgentRuntimeService {
     let provider = config.providerId ? this.d.agents.providers().find((row) => row.id === config!.providerId) : undefined;
     if(config.source==='provider') {
       if (!provider) throw new Error('原供应商已删除，请重新选择智能体');
-      provider = await this.d.providers.refresh(provider.id,input.signal); checkCanceled();
+      provider = await this.d.providers.refreshForLaunch(provider.id,tool.kind as CodeAgentKind,input.signal); checkCanceled();
       config = this.d.agents.configs().find((row) => row.id === input.profileId);
       if (!config || config.providerId !== provider.id) throw new Error('智能体配置已变化，请重新选择');
     }

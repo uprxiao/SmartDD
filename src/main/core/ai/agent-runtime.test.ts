@@ -125,6 +125,21 @@ async function setup(changes: Partial<RunConfigInput> = {}, providerChanges: Par
   return { provider, config };
 }
 const create = (configId: string, permission: 'ask' | 'auto' | 'full' = 'ask', launchToken?: string) => tasks.create({ projectId: project.id, dirId: null, aiProfileId: configId, permission, firstMessage: 'P1 synthetic TaskService boundary', ...(launchToken ? { launchToken } : {}) });
+it('launches a manual-model task after endpoint preflight without depending on its broken directory',async()=>{
+  const {config}=await setup({}, {models:[MODEL_A,MODEL_B,MODEL_C].map(id=>({id,name:id,catalogSource:'manual'}))});
+  vi.mocked(syntheticFetch).mockImplementation(async(url,init)=>{
+    fetches.push({url:String(url),headers:new Headers(init?.headers)});
+    expect(init?.method).toBe('POST');expect(init?.body).toBe('{}');
+    expect(String(url)).not.toContain('models');
+    return new Response(JSON.stringify({error:{type:'invalid_request_error'}}),{status:400,headers:{'content-type':'application/json'}});
+  });
+  const result=await create(config.id);
+  expect(ptys.spawned).toHaveLength(1);
+  expect(injected(ptys.last,'ANTHROPIC_AUTH_TOKEN')).toBe(KEY_A);
+  expect(option(ptys.last,'--model')).toBe(MODEL_A);
+  expect(runtime.snapshot(result.task.id)?.model).toBe(MODEL_A);
+  expect(fetches).toHaveLength(1);
+});
 it('passes the actual managed project Skill plugin through TaskService into owned PTY argv and records preparation separately from loading',async()=>{
   const source=join(cwd,'.agents/skills/project-echo');mkdirSync(source,{recursive:true});writeFileSync(join(source,'SKILL.md'),'---\nname: project-echo\ndescription: public synthetic\n---\n');
   const registry=new CapabilityRegistryService(db,()=>[{runner:'codex',cwd,home,stateRoot:join(home,'.codex'),path:'',projectRoot:cwd}]);registry.scan();const id=registry.adoptAll().items.find(x=>x.name==='project-echo')!.id;

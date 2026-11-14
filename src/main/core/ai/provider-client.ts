@@ -23,7 +23,15 @@ export const CLAUDE_PROTOCOL_BETAS = 'claude-code-20250219,interleaved-thinking-
 const PROBE_TOOL = 'wy_ping';
 
 export class ProviderRequestError extends Error {
-  constructor(message: string, readonly status: number | null = null) { super(message); }
+  constructor(message: string, readonly status: number | null = null, readonly networkCode: 'ECONNREFUSED' | null = null) { super(message); }
+}
+
+function connectionRefused(error: unknown, depth = 0): boolean {
+  if (!error || typeof error !== 'object' || depth > 4) return false;
+  const cause = error as { code?: unknown; cause?: unknown; errors?: unknown };
+  if (cause.code === 'ECONNREFUSED') return true;
+  if (Array.isArray(cause.errors) && cause.errors.length) return cause.errors.every(item => connectionRefused(item, depth + 1));
+  return connectionRefused(cause.cause, depth + 1);
 }
 
 const secretForms = (key: string) => new Set([key, encodeURIComponent(key), JSON.stringify(key).slice(1, -1)]);
@@ -86,7 +94,7 @@ async function request(target: ProviderTarget, url: string, init: RequestInit, o
   } catch (error) {
     if (error instanceof ProviderRequestError) throw error;
     if (signal.aborted) throw signal.reason instanceof ProviderRequestError ? signal.reason : new ProviderRequestError('请求已取消');
-    throw new ProviderRequestError(redact(error instanceof Error ? error.message : '服务不可达', target.key));
+    throw new ProviderRequestError(redact(error instanceof Error ? error.message : '服务不可达', target.key), null, connectionRefused(error) ? 'ECONNREFUSED' : null);
   } finally {
     clearTimeout(timer); if (abort) signal.removeEventListener('abort', abort);
     void reader?.cancel().catch(() => undefined);
@@ -209,7 +217,12 @@ async function fetchMagpieModels(target:ProviderTarget,options:ProviderClientOpt
     const scoped=providerTargetForTool(target,kind),base=kind==='codex'?target.endpoints.responses!:target.endpoints.anthropic!;
     const url=new URL(serviceUrl(base,kind==='codex'?'codex/models':'v1/models'));
     if(kind==='codex')url.searchParams.set('client_version',CODEX_CATALOG_VERSION);
-    const response=await request(scoped,url.toString(),{headers:{...auth(scoped,kind),Accept:'application/json'}},{...options,maxBytes:options.maxBytes??8*1024*1024});
+    let response;
+    try{response=await request(scoped,url.toString(),{headers:{...auth(scoped,kind),Accept:'application/json'}},{...options,maxBytes:options.maxBytes??8*1024*1024});}
+    catch(error){
+      if(error instanceof ProviderRequestError&&error.networkCode==='ECONNREFUSED')throw new ProviderRequestError('Magpie 未运行，请先启动本机 Magpie。',null,'ECONNREFUSED');
+      throw error;
+    }
     if(response.status<200||response.status>=300)throw responseError(response.status,response.text,scoped.key);
     if(response.leftOut!==null&&response.leftOut!=='0')throw new ProviderRequestError('Magpie 模型目录被截断，请升级网关或减少模型后重试');
     let body:unknown;try{body=JSON.parse(response.text);}catch{throw new ProviderRequestError('模型列表 JSON 无效');}

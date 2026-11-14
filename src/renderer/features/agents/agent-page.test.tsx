@@ -39,6 +39,19 @@ function config(changes:Partial<RunConfigView>={}):RunConfigView{return {id:'c',
 function deferred<T>(){let resolve!:(v:T)=>void;const promise=new Promise<T>(r=>resolve=r);return {promise,resolve};}
 function catalog(extra:Partial<Parameters<typeof ProviderCatalogDialog>[0]>={}){const props={providers:[],onClose:vi.fn(),onConnected:vi.fn(async()=>{}),onNewAgent:vi.fn(),...extra};return {props,...render(<ProviderCatalogDialog {...props}/>)};}
 function detail(p=provider(),configs:RunConfigView[]=[]){const props={provider:p,configs,onClose:vi.fn(),onRefresh:vi.fn(async()=>{}),onNewAgent:vi.fn()};return {props,...render(<ProviderDetail {...props}/>)};}
+
+it('SMG upstream errors remain unavailable with the original message and an explicit retry action',()=>{
+ const message='SMG synthetic upstream is temporarily unavailable';
+ const p=provider({preset:'smg',endpoints:{anthropic:'http://smg.example.invalid/v1'},models:[{...model('a'),availability:{claude:'unavailable',codex:'untested'},checks:{claude:{status:'unavailable',attempts:2,durationMs:10,checkedAt:1,message,failures:[{status:503,message},{status:503,message}]}}}]});
+ detail(p);
+ const cell=document.querySelector('[data-model="a"] [data-tool="claude"]') as HTMLElement;
+ expect(cell.dataset.avail).toBe('unavailable');
+ expect(cell.title).toBe(message);
+ expect(within(cell).getByText('不可用')).toBeTruthy();
+ expect(within(cell).getByRole('button',{name:'重测'})).toBeTruthy();
+ expect(document.querySelector('[data-model="a"] [data-tool="codex"]')).toBeNull();
+ expect(api.check).not.toHaveBeenCalled();
+});
 const footer=()=>document.querySelector('.m13-dialog-foot') as HTMLElement;
 function custom(){fireEvent.click(screen.getByRole('button',{name:/^自定义供应商/}));fireEvent.change(screen.getByLabelText('名称'),{target:{value:'Custom Provider'}});fireEvent.change(screen.getByLabelText('服务地址'),{target:{value:'https://custom.example.invalid/v1'}});fireEvent.change(screen.getByLabelText('API 密钥'),{target:{value:'PUBLIC_UI_KEY_ONLY'}});}
 function profile():AiProfileView{return {id:'legacy',name:'Old Agent',runner:'codex',executable:'/synthetic/legacy/bin/codex',env:[{name:'MODE',secret:false,value:'old-value',hasValue:true},{name:'OPENAI_API_KEY',secret:true,value:'PUBLIC_SECRET_NEVER_RENDER',hasValue:true}],args:['--label','two words','--flag'],color:'#c59be8',isDefault:false,check:null,checking:false,createdAt:1,updatedAt:2};}
@@ -49,7 +62,7 @@ it('catalog three-step flow waits for real models/connect RPC, never saves Provi
  await act(async()=>pending.resolve({ok:true,value:{models:[model('a'),model('b')],recommended:{claude:'a',codex:'b'},note:null}}));await waitFor(()=>expect(screen.getByRole('checkbox',{name:/Model A/})).toBeTruthy());fireEvent.click(screen.getByRole('checkbox',{name:/Model B/}));fireEvent.click(screen.getByRole('button',{name:'接入'}));await waitFor(()=>expect(screen.getByRole('heading',{name:'已添加'})).toBeTruthy());expect(api.connect.mock.calls[0][0]).toMatchObject({preset:'deepseek',key:'PUBLIC_UI_KEY_ONLY',models:[expect.objectContaining({id:'a'})]});expect(api.saveProvider).not.toHaveBeenCalled();expect(api.save).not.toHaveBeenCalled();expect(props.onConnected).toHaveBeenCalledOnce();expect(props.onNewAgent).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'创建智能体'}));expect(props.onNewAgent).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({id:'p'}),'codex');
 });
 it('custom probe is readonly candidate RPC; empty models permits manual selected IDs and does not manufacture availability',async()=>{
- api.models.mockResolvedValue({ok:true,value:{models:[],recommended:{},note:'请手动填写'}});catalog();custom();fireEvent.click(screen.getByRole('button',{name:'检测协议'}));await waitFor(()=>expect(api.probe).toHaveBeenCalledOnce());expect(api.probe.mock.calls[0][1]).toBe('codex');expect(api.saveProvider).not.toHaveBeenCalled();fireEvent.click(within(footer()).getByRole('button',{name:'获取模型'}));await waitFor(()=>expect(screen.getByText(/请手动填写.*模型 ID/)).toBeTruthy());fireEvent.change(screen.getByLabelText('模型'),{target:{value:'a, b a'}});fireEvent.click(screen.getByRole('button',{name:'接入'}));await waitFor(()=>expect(api.connect).toHaveBeenCalledOnce());expect(api.connect.mock.calls[0][0].models.map((m:any)=>[m.id,m.availability])).toEqual([['a',{claude:'untested',codex:'untested'}],['b',{claude:'untested',codex:'untested'}]]);
+ api.models.mockResolvedValue({ok:true,value:{models:[],recommended:{},note:'请手动填写'}});catalog();custom();fireEvent.click(screen.getByRole('button',{name:'检测协议'}));await waitFor(()=>expect(api.probe).toHaveBeenCalledOnce());expect(api.probe.mock.calls[0][1]).toBe('codex');expect(api.saveProvider).not.toHaveBeenCalled();fireEvent.click(within(footer()).getByRole('button',{name:'获取模型'}));await waitFor(()=>expect(screen.getByText(/请手动填写.*模型 ID/)).toBeTruthy());fireEvent.change(screen.getByLabelText('模型'),{target:{value:'a, b a'}});fireEvent.click(screen.getByRole('button',{name:'接入'}));await waitFor(()=>expect(api.connect).toHaveBeenCalledOnce());expect(api.connect.mock.calls[0][0].models.every((m:any)=>m.catalogSource==='manual')).toBe(true);expect(api.connect.mock.calls[0][0].models.map((m:any)=>[m.id,m.availability])).toEqual([['a',{claude:'untested',codex:'untested'}],['b',{claude:'untested',codex:'untested'}]]);
 });
 it('catalog real RPC errors preserve address/Key/manual data and cancellation delegates to owner cleanup',async()=>{
  api.models.mockResolvedValue({ok:false,code:'INVALID_DRAFT',message:'服务不可达'});const rendered=catalog();custom();fireEvent.click(within(footer()).getByRole('button',{name:'获取模型'}));await waitFor(()=>expect(screen.getByRole('alert').textContent).toContain('服务不可达'));expect((screen.getByLabelText('服务地址') as HTMLInputElement).value).toContain('custom.example.invalid');expect((screen.getByLabelText('API 密钥') as HTMLInputElement).value).toBe('PUBLIC_UI_KEY_ONLY');expect(api.connect).not.toHaveBeenCalled();rendered.unmount();expect(api.cancel).toHaveBeenCalledOnce();
@@ -180,4 +193,13 @@ it('T088 installed Codex login becomes selectable without implicitly creating an
  expect(api.query.data.configs).toEqual([]);
  const source=within(screen.getByRole('radiogroup',{name:'订阅或供应商'}));
  expect(source.getByRole('radio',{name:/订阅/})).toBeTruthy();
+});
+
+
+it('explains manual model startup checks and keeps an explicit directory refresh available',()=>{
+ const p=provider({models:[{...model('a'),catalogSource:'manual'}]});
+ render(<ProviderDetail provider={p} configs={[]} onClose={vi.fn()} onRefresh={vi.fn()} onNewAgent={vi.fn()}/>);
+ expect(screen.getByText('手填模型 · 启动前检查服务可达性')).toBeTruthy();
+ expect(screen.queryByText(/每次启动任务前自动比对/)).toBeNull();
+ expect(screen.getByRole('button',{name:'刷新模型'})).toBeTruthy();
 });

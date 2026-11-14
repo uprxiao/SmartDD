@@ -20,7 +20,7 @@ export const protocolLabels={responses:'OpenAI Responses',anthropic:'Anthropic',
 type Protocol=keyof typeof protocolLabels;
 const protocols=Object.keys(protocolLabels) as Protocol[];
 export const contextLabel=(tokens:number|null)=>tokens===null?'—':tokens>=1048576?`${Math.round(tokens/1048576)}M`:tokens>=1000?`${Math.round(tokens/1000)}K`:String(tokens);
-const blankModel=(id:string):ProviderModel=>({id,name:id,contextWindow:null,offline:false,availability:{claude:'untested',codex:'untested'}});
+const blankModel=(id:string):ProviderModel=>({id,name:id,catalogSource:'manual',contextWindow:null,offline:false,availability:{claude:'untested',codex:'untested'}});
 const pairing=(tools:CodeAgentKind[])=>tools.length?`可用于 ${tools.map(t=>agentLabels[t]).join('、')}`:'需确认兼容协议';
 
 /** The three approved setup steps use main-process network work. No mock

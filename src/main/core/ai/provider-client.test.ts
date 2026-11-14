@@ -16,6 +16,16 @@ function codexStream() {
 const streamed = (text: string) => new Response(text, { status: 200, headers: { 'content-type': 'text/event-stream; charset=utf-8' } });
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
 
+it('SMG upstream errors retry once and preserve the final error without exposing the Key', async () => {
+  const message = 'SMG synthetic upstream is temporarily unavailable';
+  const fake = vi.fn(async () => json({ error: { message } }, 503));
+  const result = await verifyProviderModel({ ...target, preset: 'smg' }, 'claude', 'deepseek-v4-pro-0813', { fetch: fake });
+  expect(fake).toHaveBeenCalledTimes(2);
+  expect(result).toMatchObject({ status: 'unavailable', attempts: 2, message,
+    failures: [{ status: 503, message }, { status: 503, message }] });
+  expect(JSON.stringify(result)).not.toContain(target.key);
+});
+
 describe('Provider model list', () => {
   it('reads OpenAI/Anthropic and catalog forms, retaining metadata without guessing availability', async () => {
     const fake = vi.fn(async () => json({ data: [{ id: 'one', display_name: 'One', context_window: 12345 }, { id: 'one', name: 'Last name' }, { id: 'two' }, { id: '\ninvalid' }] }));

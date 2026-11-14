@@ -26,6 +26,7 @@ export const providerEndpointsSchema = z.object({
 export const providerModelSchema = z.object({
   id: z.string().trim().min(1).max(256),
   name: z.string().trim().min(1).max(256),
+  catalogSource: z.literal('manual').optional(),
   contextWindow: z.number().int().positive().nullable().default(null),
   offline: z.boolean().default(false),
   availability: z.object({

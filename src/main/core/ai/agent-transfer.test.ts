@@ -45,11 +45,13 @@ it('default export automatically carries only selected agent Provider once, omit
 });
 it('roundtrips models, selected order, default, protocol endpoints and recommendations into fresh independent IDs without trusting checks',()=>{
  const p=payload();p.providers[0].models[0].checks={codex:{status:'available',attempts:1,durationMs:1,checkedAt:1,message:'foreign report',failures:[]}};
+ p.providers[0].models[0].catalogSource='manual';
  const original=state(), pv=inspect(p);expect(pv.preview?.providers[0].needsKey).toBe(true);expect(state()).toBe(original);
  const result=transfer.commit(1,pv.token);const imported=agents.providers()[0], c=agents.configs()[0];
  expect(result.providerIds).toEqual([imported.id]);expect(imported.id).not.toBe('p1');expect(c.id).not.toBe('a1');expect(c.providerId).toBe(imported.id);expect(c.toolId).toBe('recipient-codex');expect(c.models).toEqual(['b','a']);expect(c.defaultModel).toBe('a');
  expect(imported.endpoints).toEqual(p.providers[0].endpoints);expect(imported.recommended).toEqual(p.providers[0].recommended);expect(imported.models.map(m=>[m.id,m.name,m.contextWindow])).toEqual(p.providers[0].models.map(m=>[m.id,m.name,m.contextWindow]));
  expect(imported.models.every(m=>m.availability.codex==='untested'&&m.availability.claude==='untested'&&!m.checks)).toBe(true);expect(imported.hasKey).toBe(false);
+ expect(imported.models[0].catalogSource).toBe('manual');
 });
 it('skips foreign native-login entries with explanation, while importing valid Provider agent without changing local login',()=>{
  const p=payload();p.agents.push({ref:'native',name:'Native incoming',source:'login',kind:'claude'});const before=agents.tools();

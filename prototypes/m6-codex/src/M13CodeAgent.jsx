@@ -181,7 +181,7 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
   const custom = item?.group === 'custom', live = !!item?.live;
   const endpoints = custom ? Object.fromEntries([[proto, url], ...Object.entries(more).filter(([, v]) => v.trim())].filter(([, v]) => v)) : item?.endpoints || {};
   const protocols = Object.keys(endpoints);
-  const choose = c => { setErr(''); setItem(c); setKey(c.defaultKey || ''); setResult(null); setStep('form'); };
+  const choose = c => { setErr(''); setItem(c); setKey(c.defaultKey || ''); setManual(''); setModels([]); setResult(null); setStep('form'); };
   const fetchModels = () => {
     setErr('');
     if (custom && !cName.trim()) return setErr('请填写名称');
@@ -189,7 +189,7 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
     if (!key.trim()) return setErr(`请填写${item.keyLabel || 'API 密钥'}`);
     if (item.id === 'magpie' && scene === 'magpie-down') return setErr('Magpie 未运行：无法连接 http://127.0.0.1:3425。请先打开 Magpie。');
     if (live) return (async () => { setBusy('fetch'); const r = await liveModels(item.id, key.trim()); setBusy(false); if (!r.ok) return setErr(r.error); setResult({ models: r.models, note: r.models.length ? null : '网关返回的模型列表为空' }); setModels(r.models.map(m => m.id)); })();
-    const r = custom ? (manual.trim() ? { ok: true, models: manual.split(/[,，\s]+/).filter(Boolean).map(id => ({ id, name: id, ctx: '—' })) } : probe(url, key, demo === 'model-fail' || demo === 'partial' || demo === 'tools-fail' ? 'ok' : demo)) : { ok: true, models: item.models };
+    const r = custom ? (manual.trim() ? { ok: true, models: manual.split(/[,，\s]+/).filter(Boolean).map(id => ({ id, name: id, ctx: '—', catalogSource: 'manual' })) } : probe(url, key, demo === 'model-fail' || demo === 'partial' || demo === 'tools-fail' ? 'ok' : demo)) : { ok: true, models: item.models };
     if (!r.ok) return setErr(r.error);
     setResult({ models: r.models, note: r.note }); setModels(r.models.map(m => m.id));
   };
@@ -210,14 +210,14 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
     setDone({ provider: p, tests, probed }); setStep('done');
   };
   const connect = () => {
-    if (live) return connectLive();
+    if (live && (!manual.trim() || models.length)) return connectLive();
     setErr(''); setBusy(true);
     setTimeout(() => {
       setBusy(false);
       // 接入前用最小流式＋工具调用确认接口（自定义演示：tools-fail 全部失败，partial 只有 Responses 通过；OpenAI 兼容只保存，不确认）
       const passed = protocols.filter(pr => pr === 'openai' || !(custom && (demo === 'tools-fail' || (demo === 'partial' && pr === 'anthropic'))));
       if (!passed.length) return setErr('没有可用的协议：模型列表可读，但最小工具调用失败（400 tools not supported）。这个服务不能作为智能体的模型服务，不会接入。');
-      const chosen = models.length ? result.models.filter(m => models.includes(m.id)) : [{ id: manual.trim(), name: manual.trim(), ctx: '—' }];
+      const chosen = models.length ? result.models.filter(m => models.includes(m.id)) : [...new Set(manual.split(/[,，\s]+/).filter(Boolean))].map(id=>({id,name:id,ctx:'—',catalogSource:'manual'}));
       let p = { id: custom ? 'custom-' + Math.random().toString(36).slice(2, 6) : item.id, name: custom ? cName.trim() : item.name, type: custom ? 'custom' : 'preset', catalog: custom ? 'custom-' + cName.trim() : item.id, url: endpoints[passed[0]] || url, endpoints: Object.fromEntries(passed.map(k => [k, endpoints[k]])), protocols: passed, key: item.id === 'magpie' ? key : 'sk-•••• ' + key.slice(-4), refreshed: '刚刚', recommended: custom ? chosen[0]?.id : item.recommended, models: chosen.map(m => ({ ...m, avail: {} })) };
       if(custom&&(context||efforts||reasoning)){
         const window=context?Number(context):null,levels=efforts.split(/[,，\s]+/).filter(Boolean);
@@ -238,7 +238,7 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
     footer={step === 'catalog' ? <button className="m10-button secondary" onClick={onClose}>取消</button>
       : step === 'done' ? <>{toolsFor(done.provider).length > 0 && <button className="m10-button secondary" onClick={() => onNewAgent({ tool: forTool && toolsFor(done.provider).includes(forTool) ? forTool : toolsFor(done.provider)[0], provider: done.provider.id })}><Plus size={14} />创建智能体</button>}<button className="m10-button primary" onClick={onClose}>完成</button></>
         : <><button className="m10-button secondary m13-foot-left" onClick={() => { setErr(''); setStep('catalog'); }}><ArrowLeft size={14} />返回</button><button className="m10-button secondary" onClick={onClose}>取消</button>
-          {!result ? <button className="m10-button primary" disabled={!!busy} onClick={fetchModels}>{busy === 'fetch' ? '获取中…' : '获取模型'}</button> : <button className="m10-button primary" disabled={busy || (!models.length && !manual.trim())} onClick={connect}>{busy ? '正在确认…' : '接入'}</button>}</>}>
+          {!result && !manual.trim() ? <button className="m10-button primary" disabled={!!busy} onClick={fetchModels}>{busy === 'fetch' ? '获取中…' : '获取模型'}</button> : <button className="m10-button primary" disabled={busy || (!models.length && !manual.trim())} onClick={connect}>{busy ? '正在确认…' : '接入'}</button>}</>}>
     <ol className="m13-steps" aria-label="步骤">{['选择', '填写 Key 并获取模型', '完成'].map((s, i) => <li key={s} className={(si >= i ? 'on' : '') + (si === i ? ' cur' : '')} aria-current={si === i ? 'step' : undefined}><i>{si > i ? <Check size={11} /> : i + 1}</i>{s}</li>)}</ol>
     {step === 'catalog' && <>
       <label className="m10-search m13-cat-search"><Search size={14} /><input aria-label="查找供应商" placeholder="查找供应商" value={query} onChange={e => setQuery(e.target.value)} /></label>
@@ -250,11 +250,12 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
       <p className="m13-hint m13-cat-foot">订阅或 CLI 里登录的 API Key 不需要在这里添加：在终端登录后，新建智能体时可以直接选“订阅”。</p>
     </>}
     {step === 'form' && !custom && <>
-      {live && <div className="m13-alert info"><Info size={16} /><div><strong>原型中真实接入</strong><p>这一家会真的请求 SMG 网关：获取模型列表、探测接口，并用推荐模型做一次 Claude Code 工具调用测试（会产生少量用量）。Key 只保存在本页内存，刷新即丢失，不写入任何文件。</p></div></div>}
+      {live && !manual.trim() && <div className="m13-alert info"><Info size={16} /><div><strong>原型中真实接入</strong><p>这一家会真的请求 SMG 网关：获取模型列表、探测接口，并用推荐模型做一次 Claude Code 工具调用测试（会产生少量用量）。Key 只保存在本页内存，刷新即丢失，不写入任何文件。</p></div></div>}
       {item.verified === false && <div className="m13-alert warn"><Info size={16} /><div><strong>占位数据</strong><p>{item.name} 的地址与协议尚未核实，正式版以官方资料或你提供的信息为准。</p></div></div>}
       <div className="m13-form-grid">
         <span className="m13-form-label">服务地址</span><div>{Object.entries(item.endpoints).map(([k, v]) => <div key={k} className="m13-endpoint"><Pill tone={k === 'openai' ? 'muted' : 'info'}>{PROTOCOL_LABEL_FULL[k]}</Pill><code>{v}</code></div>)}<small className="m13-hint">{pairingNote(item)}</small></div>
         <span className="m13-form-label">{item.keyLabel}</span><div className="m13-key"><input type={showKey ? 'text' : 'password'} aria-label={item.keyLabel} value={key} onChange={e => { setKey(e.target.value); setResult(null); }} placeholder="粘贴 Key，加密保存，只在启动时注入" /><button type="button" className="m13-link" onClick={() => setShowKey(!showKey)}>{showKey ? <EyeOff size={14} /> : <Eye size={14} />}{showKey ? '隐藏' : '显示'}</button></div>
+        {live&&<><span className="m13-form-label">模型</span><div><input className="m13-input" aria-label="模型 ID" value={manual} onChange={e=>setManual(e.target.value)} placeholder="模型 ID，逗号分隔；留空则从服务获取"/><small className="m13-hint">手填模式为原型合成演示；正式 App 启动前检查服务可达性。</small></div></>}
       </div>
     </>}
     {step === 'form' && custom && <div className="m13-form-grid">
@@ -331,7 +332,7 @@ export function ProviderDialog({ provider: p, store, scene, onClose, notify, onR
       <dt>适用工具</dt><dd className="m13-fit-line"><FitChips provider={p} />{ts.length < 2 && <small className="m13-hint">{TOOL_IDS.filter(t => !ts.includes(t)).map(t => compatible(t, p).reason).join('；')}</small>}</dd>
       <dt>服务地址</dt><dd>{editingAddress?<><div className="m13-form-grid">{Object.keys(PROTOCOL_LABEL_FULL).map(k=><label key={k} className="m13-field"><span>{PROTOCOL_LABEL_FULL[k]}</span><input aria-label={PROTOCOL_LABEL_FULL[k]+' 地址'} value={addresses[k]||''} onChange={e=>setAddresses(a=>({...a,[k]:e.target.value}))}/></label>)}</div><button className="m10-button secondary m13-row-btn" onClick={()=>{const next=Object.fromEntries(Object.entries(addresses).filter(([,v])=>v.trim()));if(!Object.keys(next).length)return notify('至少填写一个服务地址');try{for(const v of Object.values(next)){const u=new URL(v);if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error();}}catch{return notify('请填写不含凭据的 HTTP(S) 地址');}patch(x=>({...x,endpoints:next,protocols:Object.keys(next),url:Object.values(next)[0],rev:(x.rev||0)+(JSON.stringify(x.endpoints)!==JSON.stringify(next)?1:0)}));setEditingAddress(false);notify('地址已保存（原型合成数据）');}}>保存地址</button><button className="m13-link" onClick={()=>setEditingAddress(false)}>取消</button></>:<>{Object.entries(p.endpoints || { [p.protocols[0]]: p.url }).map(([k,v])=><div key={k} className="m13-endpoint"><Pill tone={k==='openai'?'muted':'info'}>{PROTOCOL_LABEL_FULL[k]}</Pill><code>{v}</code></div>)}<button className="m13-link" onClick={()=>{setAddresses({...p.endpoints});setEditingAddress(true);}}>编辑地址</button></>}</dd>
       <dt>Key</dt><dd>{keyEdit === null ? <><code>{p.key || '未填写'}</code><button className="m13-link" onClick={() => setKeyEdit('')}>{p.key ? '更换' : '填写'}</button></> : <span className="m13-inline-edit"><input type="password" aria-label="新的 Key" value={keyEdit} onChange={e => setKeyEdit(e.target.value)} placeholder="加密保存，只在启动时注入" /><button className="m10-button secondary m13-row-btn" disabled={!keyEdit.trim()} onClick={() => { if (live) setLiveKey(p.id, keyEdit.trim()); patch(x => applyProviderKey(x, keyEdit)); setKeyEdit(null); notify('Key 已更新（原型只保留脱敏后四位）'); }}>保存</button>{!p.needKey && <button className="m13-link" onClick={() => setKeyEdit(null)}>取消</button>}</span>}</dd>
-      <dt>模型目录</dt><dd>{p.refreshed} 刷新 · 每次启动任务前自动比对<button className="m13-link" disabled={refreshing || down} onClick={refresh}>{refreshing ? '刷新中…' : '刷新模型'}</button></dd></dl>
+      <dt>模型目录</dt><dd>{p.models.length>0&&p.models.every(m=>m.catalogSource==='manual')?'手填模型 · 启动前检查服务可达性':`${p.refreshed} 刷新 · 每次启动任务前自动比对`}<button className="m13-link" disabled={refreshing || down} onClick={refresh}>{refreshing ? '刷新中…' : '刷新模型'}</button></dd></dl>
     <h3 className="m13-sub m13-sub-row">模型在各工具中的可用性{untested.length > 0 && <button className="m13-link" disabled={down || p.needKey} onClick={() => untested.forEach(([m, t]) => test(m, t))}>测试全部未测试（{untested.length}）</button>}</h3>
     <div className="m13-table matrix" role="table" aria-label="模型可用性"><div role="row" className="m13-th"><span>模型</span><span>上下文</span>{TOOL_IDS.map(t => <span key={t} className="m13-th-tool"><ToolIcon tool={t} size={14} />{AGENTS[t]}</span>)}</div>
       {p.models.map(m => <div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name">{m.name}{recs.includes(m.id) && <Pill tone="info">推荐</Pill>}</span><span>{m.ctx}</span>

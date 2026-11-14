@@ -30,6 +30,53 @@ function stream(kind: 'claude' | 'codex') {
 }
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>((r) => { resolve = r; }); return { promise, resolve }; }
 
+it('keeps a manual model list at launch and checks the protocol without calling a broken model directory', async () => {
+  const p = agents.saveProvider(input({ models: [{ id: 'a', name: 'A', catalogSource: 'manual' }] }));
+  const before = agents.providers().find(x => x.id === p.id)!;
+  const requests: {url:string;method:string;body:unknown}[] = [];
+  const manual = new ProviderService(db, secrets, agents, { fetch: async (url, init) => {
+    requests.push({url:String(url),method:init?.method??'GET',body:JSON.parse(String(init?.body??'{}'))});
+    if (String(url).includes('models')) throw new Error('BROKEN_DIRECTORY_MUST_NOT_BE_CALLED');
+    return json({error:{type:'invalid_request_error',message:'model is required'}},400);
+  } });
+  const ready = await manual.refreshForLaunch(p.id, 'claude');
+  expect(requests).toEqual([{url:'https://synthetic.invalid/v1/messages',method:'POST',body:{}}]);
+  expect(ready.models).toEqual(before.models);
+  expect(ready.refreshedAt).toBe(before.refreshedAt);
+  expect(agents.providers().find(x => x.id === p.id)?.models[0].catalogSource).toBe('manual');
+});
+
+it.each([401,403,503])('blocks a manual-model launch on endpoint failure %s without falling back to its directory', async status => {
+  const p=agents.saveProvider(input({models:[{id:'a',name:'A',catalogSource:'manual'}]}));
+  const calls:string[]=[];
+  const manual=new ProviderService(db,secrets,agents,{fetch:async(url)=>{calls.push(String(url));return json({error:{type:'upstream_error',message:'PUBLIC_FAILURE'}},status);}});
+  await expect(manual.refreshForLaunch(p.id,'claude')).rejects.toThrow();
+  expect(calls).toEqual(['https://synthetic.invalid/v1/messages']);
+  expect(agents.providers().find(x=>x.id===p.id)?.models[0].availability.claude).toBe('untested');
+});
+
+it('rejects a stale manual preflight when the Provider key changes while it is in flight',async()=>{
+  const entered=deferred<void>(),wait=deferred<Response>();
+  const manual=new ProviderService(db,secrets,agents,{fetch:async()=>{entered.resolve();return wait.promise;}});
+  const data=input({models:[{id:'a',name:'A',catalogSource:'manual'}]});
+  const p=manual.save(data),pending=manual.refreshForLaunch(p.id,'claude');
+  await entered.promise;
+  manual.save({...data,key:'PUBLIC_REPLACED_KEY'},p.id);
+  wait.resolve(json({error:{type:'invalid_request_error'}},400));
+  await expect(pending).rejects.toThrow('供应商已变更');
+  expect(agents.providers()[0].models[0].availability.claude).toBe('untested');
+});
+
+it('switches a manual list to the actual remote directory only on explicit refresh',async()=>{
+  const p=agents.saveProvider(input({models:[{id:'a',name:'A',catalogSource:'manual'}]}));
+  const service=new ProviderService(db,secrets,agents,{fetch:async()=>json({data:[{id:'a',name:'From directory'}]})});
+  const refreshed=await service.refresh(p.id);
+  expect(refreshed.models).toHaveLength(1);
+  expect(refreshed.models[0]).toMatchObject({id:'a',name:'From directory'});
+  expect(refreshed.models[0].catalogSource).toBeUndefined();
+  expect(refreshed.refreshedAt).not.toBeNull();
+});
+
 it('merges directory changes without losing per-tool checks or selected config identities', async () => {
   const old = agents.saveProvider(input({ models: [
     { id: 'a', name: 'A', availability: { claude: 'available', codex: 'unavailable' } },

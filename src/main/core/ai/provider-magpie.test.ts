@@ -60,6 +60,28 @@ afterEach(() => { expect(globalThis.fetch).not.toHaveBeenCalled(); sqlite.close(
 const rawProvider = (id: string) => sqlite.prepare('SELECT * FROM ai_providers WHERE id=?').get(id) as Record<string,unknown>;
 
 describe('Magpie exact canonical tool identity and full service/client integration', () => {
+  it('always checks the canonical local Magpie catalog even if a draft marks its models manual',async()=>{
+    const p=service.save(input({models:[{id:'shared',name:'Shared',catalogSource:'manual'}]}));
+    await service.refreshForLaunch(p.id,'claude');
+    expect(seen.map(x=>x.url.pathname)).toEqual([codexPath,claudePath]);
+    expect(seen.every(x=>x.init?.method!=='POST')).toBe(true);
+  });
+  it.each(['direct', 'aggregate'] as const)('explains a stopped local Magpie for a %s connection refusal before launch', async shape => {
+    const p = service.save(input());
+    const refused = Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:3425'), { code: 'ECONNREFUSED' });
+    route = () => { throw new TypeError('fetch failed', { cause: shape === 'direct' ? refused : new AggregateError([refused]) }); };
+    await expect(service.refresh(p.id)).rejects.toThrow('Magpie 未运行');
+    expect(seen).toHaveLength(1);
+    expect(seen[0].url.pathname).toBe(codexPath);
+  });
+  it('preserves gateway authentication failures and does not call a remote provider a stopped Magpie', async () => {
+    const local = service.save(input());
+    route = () => json({ error: { message: 'denied' } }, 401);
+    await expect(service.refresh(local.id)).rejects.toThrow('Key 可能无效');
+    const remote = service.save(input({ name: 'Remote', preset: null, endpoints: { responses: 'https://provider.invalid/v1' }, key: 'PUBLIC_REMOTE_KEY' }));
+    route = () => { throw new TypeError('fetch failed', { cause: Object.assign(new Error('refused'), { code: 'ECONNREFUSED' }) }); };
+    await expect(service.refresh(remote.id)).rejects.toThrow('fetch failed');
+  });
   it.each(['magpie', 'magpie-codex', 'magpie-claude'])('selects public token by kind from %s without mutating the original target', key => {
     const target: ProviderTarget = { endpoints, key, authType: 'bearer', preset: 'magpie' };
     expect(providerTargetForTool(target, 'codex').key).toBe('magpie-codex');

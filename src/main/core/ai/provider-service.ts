@@ -130,6 +130,27 @@ export class ProviderService {
     });
   }
 
+  async refreshForLaunch(id:string,kind:CodeAgentKind,signal?:AbortSignal):Promise<ProviderView>{
+    codeAgentKindSchema.parse(kind);
+    if(signal?.aborted||this.client.signal?.aborted)throw new Error('请求已取消');
+    const provider=this.view(id);
+    const manual=provider.models.length>0&&provider.models.every(model=>model.catalogSource==='manual')&&!publicLocalMagpie(provider.preset,provider.endpoints);
+    if(!manual)return this.refresh(id,signal);
+    return this.serial(id,async()=>{
+      if(signal?.aborted||this.client.signal?.aborted)throw new Error('请求已取消');
+      const captured=this.capture(id),models=this.models(captured.row);
+      if(!models.length||!models.every(model=>model.catalogSource==='manual')||publicLocalMagpie(captured.row.preset,captured.target.endpoints))throw new Error('模型列表来源已变化，请重新启动');
+      const options={...this.client,...(signal?{signal:this.client.signal?AbortSignal.any([this.client.signal,signal]):signal}:{})};
+      const result=await probeProviderProtocol(captured.target,kind,options);
+      if(signal?.aborted||this.client.signal?.aborted)throw new Error('请求已取消');
+      this.assertCurrent(id,captured.fingerprint);
+      // This is endpoint reachability only. It neither promotes model checks nor
+      // replaces the user's manual list with a failed/empty remote directory.
+      if(!(result.status>=200&&result.status<300)&&![400,422].includes(result.status))throw new ProviderRequestError(`供应商接口不可用（HTTP ${result.status}）`,result.status);
+      return this.view(id);
+    });
+  }
+
   probe(id: string, kind: CodeAgentKind) {
     codeAgentKindSchema.parse(kind);
     return this.serial(id, async () => {
