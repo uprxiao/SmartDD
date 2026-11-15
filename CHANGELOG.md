@@ -2,6 +2,11 @@
 
 版本是否已发布以 GitHub Release 为准。
 
+## 未发布
+
+- 修复从 Dock／访达启动时，Codex 等以 `#!/usr/bin/env node` 安装的 CLI 在任务启动前版本核对失败、顶部显示“注入失败”且应用能力未加载的问题；版本核对改为与终端相同的登录 shell 环境。
+- 修复从 Dock 启动时 CLI 沙箱核对与发给 Agent 的 `willyou-app` PATH 仍使用裸 PATH 的问题：沙箱核对失败导致 `willyou-app` 不可用，CLI 发放后 `#!/usr/bin/env node` 的 Agent 也会因找不到 node 无法启动；任务启动前的原生核对与 CLI PATH 统一使用登录 shell 的 PATH。
+
 ## 0.1.3
 
 - M12 内置浏览器：任务网页标签、持久与独立登录态、受管 CLI 自动化、任务级观察／控制授权、下载、Cookie 导入及 Bug 复现 SOP。

@@ -58,6 +58,7 @@ let pluginWrites:{id:string;data:string}[]=[],pluginUrls:string[]=[];
 let argMax:number|null;
 let applicationRuntimeAvailable:boolean;
 let cliPolicyAvailable:boolean;
+let sandboxPaths:string[]=[];
 let codexRequests:CodexTaskServerRequest[]=[],codexStarted:string[]=[],codexStopped:string[]=[],codexStartFailure=false;
 const fixtureCliPolicy={available:true as const,kind:'inherit' as const,parent:':read-only',networkProxy:true,enableNetwork:true,existingNames:[],source:'controlled-effective-policy-fixture',digest:digest('controlled-effective-policy-fixture')};
 // TestPtys has no native bridge child. Its synthetic exit callbacks must settle
@@ -89,7 +90,7 @@ class TestPtys extends EventEmitter implements PtyHost{
  kill(id:string){const pid=this.live.get(id);if(pid){reader.identities.delete(pid);this.live.delete(id);this.emit('exit',id,0);}}
 }
 beforeEach(async({task})=>{
- codexFreshnessProbe=undefined;codexFreshnessReads=[];pluginWrites=[];pluginUrls=[];codexRequests=[];codexStarted=[];codexStopped=[];codexStartFailure=false;cliPolicyAvailable=true;const withPlugins=task.suite?.name==='M13 P1 plugins through production task startup',withClaudeCandidate=task.suite?.name==='M13 Claude CLI through indexed production resource';const withCli=withPlugins||withClaudeCandidate||['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
+ sandboxPaths=[];codexFreshnessProbe=undefined;codexFreshnessReads=[];pluginWrites=[];pluginUrls=[];codexRequests=[];codexStarted=[];codexStopped=[];codexStartFailure=false;cliPolicyAvailable=true;const withPlugins=task.suite?.name==='M13 P1 plugins through production task startup',withClaudeCandidate=task.suite?.name==='M13 Claude CLI through indexed production resource';const withCli=withPlugins||withClaudeCandidate||['M11 S5 CLI delivery through the production task entry','M11 R1.0 library launch through the production task entry'].includes(task.suite?.name??'');
  fixtureBridgeExits=[];expectedDisposeError=undefined;applicationRuntimeAvailable=true;argMax=1048576;root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-m10-launch-')));home=join(root,'home');cwd=join(root,'project');mkdirSync(home);mkdirSync(cwd);mkdirSync(join(cwd,'.git'));mkdirSync(join(home,'.claude'));
  sqlite=new Database(join(root,'state.sqlite'));sqlite.pragma('foreign_keys=ON');runBundledMigrations(sqlite);const db=drizzle(sqlite,{schema}),secrets=new SecretsStore(db,{isAvailable:()=>true,encrypt:s=>Buffer.from(s),decrypt:b=>b.toString()});projects=new ProjectService(db,secrets);profiles=new AiProfileService(db,secrets);projectId=projects.createProject({name:'isolated production composition',aliases:[],description:'',rulesPath:null},[{label:'',path:cwd}]).id;
  // Only this private, harmless version fixture is executed. It does not emulate a native Agent session.
@@ -102,7 +103,7 @@ beforeEach(async({task})=>{
  // M13's automatic builtin onboarding is exercised by builtin-plugin-preferences and App tests.
  // Reset only this private fixture's non-tested onboarding rows, retaining the real recovered service.
  sqlite.exec("DELETE FROM application_project_bindings WHERE app_id IN ('mail','browser'); DELETE FROM application_binding_slot_revisions WHERE app_id IN ('mail','browser'); DELETE FROM application_project_settings WHERE app_id IN ('mail','browser'); UPDATE application_catalog_state SET added=0,enabled=0,revision=0 WHERE app_id IN ('mail','browser');");
- managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(task.suite?.name==='M13 standard library in independent Claude state'?{skillLibraryHome:home}:{}),...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:withClaudeCandidate?(input:TaskLaunchInput,native:NativeLaunchContext)=>inspectClaudeCliSandbox(input,native,()=>({known:true,empty:true,hash:digest('synthetic-managed-empty-source')})):async()=>cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,...(withPlugins?{prepareCodexServer:prepareSyntheticCodexServer}:{}),stopPty:id=>ptys.kill(id),pollMs:20,...(task.name===codexFreshnessCase?{
+ managed=await ManagedTaskCapabilities.open(support,capabilities,applications,{helper:join(root,'unused-helper'),processes:reader,...(task.suite?.name==='M13 standard library in independent Claude state'?{skillLibraryHome:home}:{}),...(withCli?{cliPath:realpathSync(resolve('out/native/willyou-app')),inspectSandbox:async(input:TaskLaunchInput,native:NativeLaunchContext)=>{sandboxPaths.push(input.environment.PATH);return withClaudeCandidate?inspectClaudeCliSandbox(input,native,()=>({known:true,empty:true,hash:digest('synthetic-managed-empty-source')})):cliPolicyAvailable?fixtureCliPolicy:{available:false as const,reason:'controlled-unverified-policy',source:'unverified-effective-policy',digest:null};}}:{}),peers:{read:async()=>withCli?{schema:2,state:'running',uid:process.getuid!(),peer:{pid:32001,startedAt:'darwin-proc-v1:300:32001',executable:realpathSync(resolve('out/native/willyou-app'))},ancestors:[{pid:32001,startedAt:'darwin-proc-v1:300:32001',ppid:31000+ptys.launches.length},{pid:31000+ptys.launches.length,startedAt:'darwin-proc-v1:300:'+(31000+ptys.launches.length),ppid:1}]}:null},probeApplicationRuntime:async()=>applicationRuntimeAvailable,...(withPlugins?{prepareCodexServer:prepareSyntheticCodexServer}:{}),stopPty:id=>ptys.kill(id),pollMs:20,...(task.name===codexFreshnessCase?{
   // Only process metadata/requirements transport is synthetic U input. Real policy inspector reads private files.
   inspectNative:async(input:TaskLaunchInput)=>({command:input.profile.command,version:'0.166.0',inventory:[],userSkillConfig:[]}),
   inspectSandbox:async(input:TaskLaunchInput,native:NativeLaunchContext)=>{
@@ -187,6 +188,12 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   await applications.selections.setAdded('browser',true,0);
   await applications.selections.select({projectId,appId:'browser',enabled:false,expectedRevision:0,connections:{}});
  }
+ it('hands the CLI and the sandbox check the login-shell PATH, not the bare app PATH, so env-node Agents still start',async()=>{
+  const rcBin=join(root,'rc-bin');mkdirSync(rcBin);writeFileSync(join(home,'.zshrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');writeFileSync(join(home,'.bashrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');
+  await create();const launch=ptys.launches[0];
+  expect(sandboxPaths).toEqual([rcBin+':/usr/bin:/bin']);
+  expect(launch.env![VALUE_PREFIX+'PATH']).toBe(dirname(realpathSync(resolve('out/native/willyou-app')))+':'+rcBin+':/usr/bin:/bin');
+ });
  it('keeps identity and snapshot protection with no enabled apps, then authorizes an app enabled in the same run',async()=>{
   await deselectLastCliApp();const running=await create(),launch=ptys.launches[0],runId=running.task.runtimeSnapshot!.runId;
   expect(managed.runs.assertActive(runId).snapshot.packages).toEqual([]);

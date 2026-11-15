@@ -9,6 +9,7 @@ import { loginShell } from '../../pty-manager';
 // Markers separate our output from whatever the rc files print. A PATH-only lookup (not
 // `command -v`, which reports aliases) matches the launch, where `exec` skips aliases too.
 const DETECT_SCRIPT = [
+  'printf "__SMARTDD_SHELL_PATH__%s\\n" "$PATH"',
   'if [ -n "$ZSH_VERSION" ]; then p=$(whence -p -- "$1" 2>/dev/null); else p=$(type -P -- "$1" 2>/dev/null); fi',
   '[ -n "$p" ] || { printf "__SMARTDD_MISSING__\\n"; exit 0; }',
   'case "$p" in /*) ;; *) printf "__SMARTDD_MISSING__\\n"; exit 0;; esac',
@@ -20,6 +21,7 @@ export interface DetectOptions {
   env: Record<string, string>;
   shell?: string;
   timeoutMs?: number;
+  signal?: AbortSignal;
 }
 
 /** Parse the script output; exported for tests. */
@@ -39,19 +41,30 @@ export function parseDetectOutput(runner: Runner, command: string, stdout: strin
     : { runner, command, path, version: null, error: `${command} --version 没有输出` };
 }
 
-export function detectRunner(runner: Runner, executable: string | null, o: DetectOptions): Promise<RunnerInfo> {
+/** detectRunner plus the login shell's PATH, which every later native step must share with the launch. */
+export async function detectNativeCli(runner: Runner, executable: string | null, o: DetectOptions): Promise<RunnerInfo & { shellPath: string | null }> {
+  const { info, stdout } = await runDetect(runner, executable, o);
+  const line = stdout.split(/\r?\n/).find((l) => l.startsWith('__SMARTDD_SHELL_PATH__'));
+  return { ...info, shellPath: line ? line.slice('__SMARTDD_SHELL_PATH__'.length) : null };
+}
+
+export async function detectRunner(runner: Runner, executable: string | null, o: DetectOptions): Promise<RunnerInfo> {
+  return (await runDetect(runner, executable, o)).info;
+}
+
+function runDetect(runner: Runner, executable: string | null, o: DetectOptions): Promise<{ info: RunnerInfo; stdout: string }> {
   const command = executable?.trim() || RUNNERS[runner].command;
   return new Promise((resolve) => {
     execFile(
       o.shell ?? loginShell(),
       ['-l', '-i', '-c', DETECT_SCRIPT, 'smartdd-detect', command],
-      { env: o.env, timeout: o.timeoutMs ?? 15_000, maxBuffer: 1024 * 1024 },
+      { env: o.env, timeout: o.timeoutMs ?? 15_000, maxBuffer: 1024 * 1024, signal: o.signal },
       (err, stdout) => {
-        const info = parseDetectOutput(runner, command, String(stdout ?? ''));
+        const text = String(stdout ?? ''), info = parseDetectOutput(runner, command, text);
         if (err && !info.path) {
           const timedOut = (err as NodeJS.ErrnoException & { killed?: boolean }).killed;
-          resolve({ ...info, error: timedOut ? `检测 ${command} 超时` : (info.error ?? err.message) });
-        } else resolve(info);
+          resolve({ info: { ...info, error: timedOut ? `检测 ${command} 超时` : (info.error ?? err.message) }, stdout: text });
+        } else resolve({ info, stdout: text });
       }
     );
   });

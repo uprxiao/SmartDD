@@ -2,6 +2,7 @@ import {constants, closeSync, fstatSync, lstatSync, openSync, readSync, readdirS
 import {join, relative, resolve, sep} from 'node:path';
 import {Ajv, addFormats} from '@modelcontextprotocol/server/validators/ajv';
 import {ApplicationError, isPackagePath} from '@shared/applications';
+import moduleCatalog from '@shared/application-module-catalog.json';
 import {PLUGIN_HOST_API, PLUGIN_LIMITS, PLUGIN_MANIFEST_PATH, pluginManifestSchema, type PluginManifest} from '@shared/plugins';
 import {canonicalJson, digest} from '../manifest';
 import {validatePluginUi} from './ui-validation';
@@ -19,7 +20,9 @@ export interface ValidatedPlugin {
   skills: readonly {id: string; path: string; entry: string}[];
   executables: ReadonlySet<string>;
 }
-const reserved = new Set(['mail', 'browser', 'sample-kv']);
+// ZenTao alone has an explicit built-in-to-plugin migration; every other catalog ID
+// stays reserved automatically, including modules added without host-code changes.
+const reserved = new Set(moduleCatalog.applications.map(module => module.appId).filter(id => id !== 'zentao'));
 const reject = (message: string): never => {throw new ApplicationError('INVALID_PACKAGE', message);};
 export function parsePluginJson(bytes: Buffer, path: string, maxBytes = PLUGIN_LIMITS.schemaBytes): JsonSchema {
   if (bytes.length > maxBytes) reject(`插件声明超过大小限制：${path}`);

@@ -5,6 +5,7 @@ import {join} from 'node:path';
 import {inspectPluginDirectory, validatePluginBundle} from '../package';
 
 import {fixture} from './fixture';
+import moduleCatalog from '@shared/application-module-catalog.json';
 
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, {recursive: true, force: true}); });
@@ -36,7 +37,7 @@ describe('external plugin install validation', () => {
     f.files.set('runtime/main.mjs', Buffer.from('// changed'));
     expect(validatePluginBundle(f.bundle()).hash).not.toBe(checked.hash);
   });
-  it.each(['mail', 'browser', 'sample-kv'])('rejects reserved built-in ID %s', id => {
+  it.each(moduleCatalog.applications.map(module => module.appId).filter(id => id !== 'zentao'))('rejects reserved built-in ID %s', id => {
     const f = fixture(); f.manifest.id = id;
     expect(() => validatePluginBundle(f.bundle())).toThrow('内置');
   });

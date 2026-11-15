@@ -209,7 +209,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     let native:NativeLaunchContext|undefined,unavailable:string|undefined;
     try{const delivery=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner);native=await(this.options.inspectNative??delivery.inspectNative).call(delivery,input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
     if(native)this.planningAgents.set(input.taskId,native);
-    return this.prepareCurrent(input,native,unavailable);
+    // Later native checks and the CLI PATH must see the terminal's PATH; the app's own PATH is bare when started from the Dock.
+    return this.prepareCurrent(native?.shellPath?{...input,environment:{...input.environment,PATH:native.shellPath}}:input,native,unavailable);
   }
   /** R1.0 production launch: the library when the Agent can use it, otherwise native only; never the shared discovery catalog. */
   private async prepareCurrent(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined):Promise<TaskCapabilityLaunch>{
