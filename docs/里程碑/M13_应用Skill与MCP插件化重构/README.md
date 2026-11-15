@@ -1,5 +1,9 @@
 # M13 插件化、能力统一管理与 AI 配置优化
 
+2026-11-15 兼容修复：[source016／App062已统一构建、审计并通过六项原生检查](验收/证据/M13-DeepSeek-Claude-MCP-schema-fix-source016-App062-563-20261115-a1/coordinator-verdict.json)。仅DeepSeek官方Claude运行直接提供MCP工具schema；renderer/preload和原生库存与App061逐hash一致。[正式默认环境C及full联合复验已通过](验收/证据/M13-T100-Claude-full-real-C-production-fix-union-App062-564-20261115-a1/coordinator-verdict.json)；T100目前只缺三个Codex真实档位。
+
+2026-11-15 T100增量：[Claude请求批准真实档位A/B/C/D已联合完成](验收/证据/M13-T100-Claude-ask-real-D-App061-558-20261115-a1/coordinator-verdict.json)；继续其余真实档位，复用App061，无新包。状态仍取唯一用例账，尚未完成M13。
+
 当前接续（2026-11-15）：**[T056已按用户确认的新功能基线完整通过](验收/证据/M13-T056-functional-R11-I-A-union-App061-557-20261115-a1/coordinator-verdict.json)**，原失败及背景请求观察保留；按次配置、真实任务和完整config哈希证据已联合复核，无新包。现在回到T100剩余真实权限矩阵，其他正式状态只取唯一账，M13尚未完成。
 
 此前接续记录（T056复验开始时，现已收口）：用户已确认**允许经验证的固定公告请求**，目标已恢复active；需求R1.1／技术方案T1.1／用例V0.2已同步，T056按新基线复验，原零请求失败保留。继续补存量订阅凭据隔离与既有I/A证据联合核验；T100暂放至本项收口。详见[处理决定与补证](技研/T056_针对性复核与处理选项_20261115.md)。

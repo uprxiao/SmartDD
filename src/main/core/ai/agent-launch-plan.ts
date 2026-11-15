@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { isAbsolute, join } from 'node:path';
 import { codeAgentKindSchema, type CodeAgentTool, type ProviderView, type RunConfigView } from '@shared/ai-agents';
 import { agentPermission, type AgentPermission } from '@shared/agent-permissions';
+import { verifiedPresetProtocol } from '@shared/ai-provider-presets';
 import type { ResolvedProfile } from './ai-profile-service';
 import { buildCodexModelCatalog } from './codex-model-catalog';
 
@@ -115,6 +116,11 @@ export function planAgentLaunch(input: AgentLaunchInput): AgentLaunchPlan {
     [provider.authType === 'api-key' ? 'ANTHROPIC_API_KEY' : 'ANTHROPIC_AUTH_TOKEN']: input.key,
     CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1', CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL: '1',
     CLAUDE_CODE_DISABLE_1M_CONTEXT: '1', CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD: '1' };
+  // DeepSeek can return tool references without making deferred MCP tools callable.
+  // Keep the complete schema available; this does not change either approval layer.
+  if (provider.preset === 'deepseek' && verifiedPresetProtocol(provider.preset, provider.endpoints, 'claude')) {
+    profile.env.ENABLE_TOOL_SEARCH = 'false';
+  }
   for (const variable of CLAUDE_MODEL_VARIABLES) profile.env[variable] = model;
   profile.isolatePrefixes = ['ANTHROPIC_'];
   profile.isolateNames = ['CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY'];

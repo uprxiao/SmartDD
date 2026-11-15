@@ -81,3 +81,15 @@ it('cannot traverse private paths through config ids or change the native type a
   const p = planAgentLaunch(input({ config: { ...config, id: '../../outside' } })); expect(p.claudeRoot).not.toContain('outside');
   expect(() => planAgentLaunch(input({ tool: { ...tool, kind: 'codex' } }))).toThrow('工具已变化');
 });
+
+it.each(['ask','full'] as const)('keeps DeepSeek MCP tools directly available in Claude %s without changing permission or persisted settings', permission => {
+  const current={...provider,preset:'deepseek',endpoints:{...provider.endpoints,anthropic:'https://api.deepseek.com/anthropic'}};
+  const p=planAgentLaunch(input({provider:current,permission}));
+  expect(p.profile.env.ENABLE_TOOL_SEARCH).toBe('false');
+  expect(p.profile.args.slice(0,2)).toEqual(['--permission-mode',permission==='full'?'bypassPermissions':'default']);
+  expect(JSON.stringify(p.files)).not.toContain('ENABLE_TOOL_SEARCH');
+  const custom=planAgentLaunch(input({provider:{...current,endpoints:{...current.endpoints,anthropic:'https://custom.invalid/anthropic'}},permission}));
+  expect(custom.profile.env).not.toHaveProperty('ENABLE_TOOL_SEARCH');
+  const codex=planAgentLaunch(input({provider:current,config:{...config,kind:'codex'},tool:{...tool,kind:'codex'},permission}));
+  expect(codex.profile.env).not.toHaveProperty('ENABLE_TOOL_SEARCH');
+});
