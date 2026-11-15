@@ -31,6 +31,22 @@ it('uses a per-Agent Claude root, selected models only, fixed auth/tier routing,
   expect(p.files[0].value).toEqual({ modelPicker: { options: [{ model: 'a', label: 'a' }, { model: 'b', label: 'b' }], replaceBuiltInOptions: true } });
   expect(JSON.stringify([p.files,p.profile.args])).not.toContain('PUBLIC_MODEL_TEST_KEY');
 });
+it.each([
+  ['http://127.0.0.1:18123/v1','http://127.0.0.1:18123'],
+  ['http://127.0.0.1:18123/v1/','http://127.0.0.1:18123'],
+  ['https://synthetic.invalid/v1/messages','https://synthetic.invalid'],
+  ['https://synthetic.invalid/gateway/v1/messages/','https://synthetic.invalid/gateway'],
+  ['https://synthetic.invalid/anthropic/v1','https://synthetic.invalid/anthropic'],
+  ['https://synthetic.invalid/anthropic','https://synthetic.invalid/anthropic'],
+])('supplies Claude the API root for %s so its /v1/messages suffix is not duplicated', (endpoint,base) => {
+  const current={...provider,endpoints:{...provider.endpoints,anthropic:endpoint}},before=structuredClone(current);
+  const p=planAgentLaunch(input({provider:current}));
+  expect(p.profile.env.ANTHROPIC_BASE_URL).toBe(base);
+  expect(new URL(p.profile.env.ANTHROPIC_BASE_URL+'/v1/messages').pathname).not.toContain('/v1/v1/');
+  expect(current).toEqual(before);
+  const codex=planAgentLaunch(input({provider:current,config:{...config,kind:'codex'},tool:{...tool,kind:'codex'}}));
+  expect(codex.profile.args.find(a=>a.startsWith('model_providers.'))).toContain('base_url="https://synthetic.invalid/v1"');
+});
 it('clears exact OAuth/cloud variables independently of the ANTHROPIC prefix and preserves unrelated names', () => {
   const p = planAgentLaunch(input()), env = planLaunchEnv({ ANTHROPIC_API_KEY: 'outer', CLAUDE_CODE_OAUTH_TOKEN: 'outer', CLAUDE_CODE_USE_VERTEX: '1', CLAUDE_CODE_OAUTH_TOKEN_NOTE: 'unrelated' },p.profile.env,p.profile.isolatePrefixes,p.profile.isolateNames);
   expect(env.env).not.toHaveProperty('CLAUDE_CODE_OAUTH_TOKEN'); expect(env.env).not.toHaveProperty('CLAUDE_CODE_USE_VERTEX'); expect(env.env).not.toHaveProperty('ANTHROPIC_API_KEY');

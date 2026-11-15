@@ -8,6 +8,14 @@ import { buildCodexModelCatalog } from './codex-model-catalog';
 export const CLAUDE_MODEL_VARIABLES = ['ANTHROPIC_MODEL', 'ANTHROPIC_DEFAULT_OPUS_MODEL', 'ANTHROPIC_DEFAULT_SONNET_MODEL',
   'ANTHROPIC_DEFAULT_HAIKU_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_SMALL_FAST_MODEL', 'CLAUDE_CODE_SUBAGENT_MODEL'] as const;
 export const managedClaudeRoot=(userData:string,configId:string)=>join(userData,'agents','claude',createHash('sha256').update(configId).digest('hex').slice(0,32));
+/** Claude appends /v1/messages itself; saved provider endpoints may already
+ * include the API version or the full Messages path used by availability checks. */
+function claudeApiRoot(endpoint:string):string {
+  const url=new URL(endpoint),path=url.pathname.replace(/\/v1(?:\/messages)?\/?$/,'');
+  if(path===url.pathname)return endpoint;
+  url.pathname=path||'/';
+  return url.toString().replace(/\/$/,'');
+}
 export interface AgentLaunchPlan {
   profile: ResolvedProfile;
   permission: ReturnType<typeof agentPermission>;
@@ -103,7 +111,7 @@ export function planAgentLaunch(input: AgentLaunchInput): AgentLaunchPlan {
   }
   if (!provider.endpoints.anthropic) throw new Error('供应商没有 Anthropic 协议');
   const claudeRoot = managedClaudeRoot(input.userData,config.id);
-  profile.env = { ...profile.env, CLAUDE_CONFIG_DIR: claudeRoot, ANTHROPIC_BASE_URL: provider.endpoints.anthropic,
+  profile.env = { ...profile.env, CLAUDE_CONFIG_DIR: claudeRoot, ANTHROPIC_BASE_URL: claudeApiRoot(provider.endpoints.anthropic),
     [provider.authType === 'api-key' ? 'ANTHROPIC_API_KEY' : 'ANTHROPIC_AUTH_TOKEN']: input.key,
     CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1', CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL: '1',
     CLAUDE_CODE_DISABLE_1M_CONTEXT: '1', CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD: '1' };

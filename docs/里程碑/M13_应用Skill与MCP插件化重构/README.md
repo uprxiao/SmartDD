@@ -1,6 +1,6 @@
 # M13 插件化、能力统一管理与 AI 配置优化
 
-当前统一基线：[source014／App060 双端正式适配资源](验收/证据/M13-both-finite-CLI-adapters-source014-App060-build-510-20261115-a1/coordinator-verdict.json)已完成必要软件回归、包完整性与原生检查。接下来按[四条原用例缺项清单](验收/证据/M13-final-four-original-acceptance-frontier-prepared-509-20261115-a1/FRONTIER.md)合并共用前置补真实App／Provider，先收T096及T094 Claude；整条状态只取唯一账，尚未完成M13。
+当前统一基线：[source015／App061 Claude启动地址修复](验收/证据/M13-Claude-native-baseURL-normalization-source015-App061-513-20261115-a1/coordinator-verdict.json)。[T096原完整合同已联合通过](验收/证据/M13-T096-original-complete-manual-SMG-real-two-models-App061-518-20261115-a1/coordinator-verdict.json)，自动目录故障保留用户确认的手填边界；[原失败与根因](验收/证据/M13-SMG-launch-path-and-driver-root-causes-511-516-20261115-a1/coordinator-verdict.json)均保留。下一步补T094模型切换与恢复、T069双CLI真实DeepSeek、T100剩余真实R；整条状态只取[唯一账](验收/测试用例.md)，尚未完成M13。
 
 最新自主补验：[Claude ask 三组拒绝／单次允许I](验收/证据/M13-T100-Claude-ask-three-deny-allow-union-I-488-20261115-a1/coordinator-verdict.json)已联合归档；原驱动红、跨SID边界与清理事实保留。继续Codex审批与浏览器独立项，整条状态仍取唯一账。
 
