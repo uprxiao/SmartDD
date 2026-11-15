@@ -423,7 +423,8 @@ describe('M11 unified capability execution with host-issued callers',()=>{
  it('M11 sends UI and MCP through the same executor while keeping the original v1 result and request identity',async()=>{
   const execute=vi.spyOn(app.capabilities,'execute'),primitive=vi.spyOn(app.data,'execute');
   expect(await call(codex,'draft_list',{})).toMatchObject({status:'ok',value:{items:[],nextCursor:null}});
-  expect(await app.viewDrafts(sender,'p1')).toEqual({items:[],nextCursor:null,readOnly:false,stateCounts:{draft:0,sending:0,sent:0,failed:0,unknown:0}});
+  // Exercise the shared capability contract; UI-only state filters/counters have a separate local-read contract.
+  expect(await ui(context=>app.capabilities.forUi(context,'mail.draft.list',{}))).toEqual({items:[],nextCursor:null});
   expect(execute).toHaveBeenCalledTimes(2);expect(primitive).toHaveBeenCalledTimes(2);
   const caller=execute.mock.calls[0][0];expect(caller).toMatchObject({kind:'agent',entry:'mcp',runId:codex.runId,requestId:expect.any(String),plan:{kind:'snapshot-v2',hash:runs.assertActive(codex.runId).run.snapshotHash}});
   expect(execute.mock.calls[1][0]).toMatchObject({kind:'ui',projectId:'p1'});

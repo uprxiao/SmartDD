@@ -46,6 +46,7 @@ beforeEach(() => {
   // A Finder-launched app has a bare PATH; the interpreter is only reachable after the rc files,
   // exactly like `#!/usr/bin/env node` with node in /usr/local/bin.
   writeFileSync(join(root, '.zshrc'), `echo "rc noise"\nexport PATH="${bin}:/usr/bin:/bin"\n`);
+  writeFileSync(join(root, '.bash_profile'), `echo "rc noise"\nexport PATH="${bin}:/usr/bin:/bin"\n`);
   writeFileSync(join(bin, 'fakenode'), '#!/bin/sh\necho "codex-cli 0.166.0"\n');
   writeFileSync(join(bin, 'codex'), '#!/usr/bin/env fakenode\n');
   chmodSync(join(bin, 'fakenode'), 0o755);

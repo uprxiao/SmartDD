@@ -20,6 +20,22 @@
 - 首轮 Electron 单测在受限沙箱内出现原生身份读取失败，保留日志；按准确本轮 PID 收尾后改为正常原生进程权限运行，不以首轮结果计通过。
 - 不安装到日常 `/Applications/WillYou.app`，不改日常项目、认证、钥匙串或其他进程。系统密码／登录步骤不自动代用户输入。
 
+## 完整 CI 首轮与合同同步
+
+[候选 CI 43721512380](https://github.com/uprxiao/SmartDD/actions/runs/43721512380) 完成全量单测，32 项失败，原日志保留。邮件发送 132 项通过，未把本机高 I/O 并发的 4 个时序失败追认成通过；其独立 5 项定向／配对场景也实际通过。
+
+32 项的实际分类与修复：
+
+- 22 项旧夹具在内置插件初始化（catalog revision=1）后仍传 0：读取真实当前修订，保留 CAS 冲突保护与全部业务断言。
+- 5 项迁移测试仍假定末条为 0030：真实恢复至 0035 的列结构与 watermark，再核对 0036 补回 deleted_at，保留浏览器表与业务数据。
+- 1 项 RPC 精确名单遗漏三个发送核验端点：补端点及主窗口／子帧／已销毁窗口的授权和原样参数检查。
+- 1 项共享执行器测试误调用已经分离的本地 UI 分页读：改为真正的 UI capability 入口，仍严格断言两次 executor／backend 调用及两侧 caller 身份。
+- 3 项 shell 测试只写了 zshrc/bashrc，CI 使用 bash 登录 shell：补私有 bash_profile，保留裸 PATH 和解释器发现断言。
+
+集中复验 79 项通过；bash 环境定向 6 项通过（139 项因过滤未执行，不重复计数）；类型检查通过。该批仅修改九份测试文件，生产代码未变，已核 [App 复用依据](release-0.1.4-evidence/test-only-package-reuse.json)，不重复打包。
+
+新包的签名完整性、六项原生组件和空主页启动／正常退出通过，见 [启动结果](release-0.1.4-evidence/candidate-empty-startup.json)。Dock 首次驱动在项目创建后未实际选择项目，任务尚未创建即超时，正常收尾；保留 [原失败](release-0.1.4-evidence/dock-001-driver-failure.json)，后续仅修私有驱动，复用既有项目，不重 seed 或重建 App。
+
 ## 发布结果
 
 待实际执行后填写 tag、发布提交、CI／Actions、Release、资产校验及安装启动结果。

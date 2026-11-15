@@ -167,7 +167,7 @@ beforeEach(async () => {
     mailWorker: join(f.root, 'unused-mail-worker'), foxmailNative: join(f.root, 'unused-foxmail-native'), processes: reader, browser,
   });
   await app.recover();
-  await app.selections.setAdded('browser', true, 0);
+  await app.selections.setAdded('browser', true, app.selections.catalogState('browser').revision);
   await app.selections.select({projectId: 'p1', appId: 'browser', enabled: true, expectedRevision: 0, connections: {}});
   const service = app;
   runs = new CapabilityRunRegistry(f.store, f.sessions, {processes: reader, assertCurrent: context => service.selections.requireApplicationEnabled(context.projectId, 'browser'), revoke: () => {},

@@ -189,7 +189,7 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   await applications.selections.select({projectId,appId:'browser',enabled:false,expectedRevision:0,connections:{}});
  }
  it('hands the CLI and the sandbox check the login-shell PATH, not the bare app PATH, so env-node Agents still start',async()=>{
-  const rcBin=join(root,'rc-bin');mkdirSync(rcBin);writeFileSync(join(home,'.zshrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');writeFileSync(join(home,'.bashrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');
+  const rcBin=join(root,'rc-bin');mkdirSync(rcBin);writeFileSync(join(home,'.zshrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');writeFileSync(join(home,'.bashrc'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');writeFileSync(join(home,'.bash_profile'),'export PATH="'+rcBin+':/usr/bin:/bin"\n');
   await create();const launch=ptys.launches[0];
   expect(sandboxPaths).toEqual([rcBin+':/usr/bin:/bin']);
   expect(launch.env![VALUE_PREFIX+'PATH']).toBe(dirname(realpathSync(resolve('out/native/willyou-app')))+':'+rcBin+':/usr/bin:/bin');
