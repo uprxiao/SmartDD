@@ -36,6 +36,14 @@
 
 新包的签名完整性、六项原生组件和空主页启动／正常退出通过，见 [启动结果](release-0.1.4-evidence/candidate-empty-startup.json)。Dock 首次驱动在项目创建后未实际选择项目，任务尚未创建即超时，正常收尾；保留 [原失败](release-0.1.4-evidence/dock-001-driver-failure.json)，后续仅修私有驱动，复用既有项目，不重 seed 或重建 App。
 
+## CI 次轮的单一时限失败
+
+[完整复验 43723900977](https://github.com/uprxiao/SmartDD/actions/runs/43723900977) 中原 32 项全部消除：6687 项通过、1009 项按既有条件跳过，仅邮件真实持久化／SMTP 并发用例触及默认 5 秒测试时限。相同用例首轮 1748ms 通过，次轮 7789ms 超时；邮件组总耗时从约 220s 增至 411s，完整测试从约 11min 增至约 21min。未把它写成产品业务通过。
+
+将该真实 I/O 集成组的测试运行上限设为 20s（沿用本仓库真实 SQLite 传输集成测试的预算），不改产品内部期限、竞态排序、授权、锁与实际发送次数断言。该项及原发送配对场景的 7 项定向复验通过；125 项因过滤未执行。继续执行全量 CI，不以局部通过代替完整发布检查。[首轮原日志](release-0.1.4-evidence/ci-first-contract-failures.txt)、[次轮原日志](release-0.1.4-evidence/ci-second-single-timeout.txt)、[定向复验](release-0.1.4-evidence/mail-integration-budget-targeted.txt)。
+
+Dock 回归实际启动与 UI 停止已完成；后续只读驱动误用不存在的 created_at，正确列为 started_at。协调者在原 App 正常关闭后核对原任务的持久化计划、revoked/stopped 状态和全部进程 ended，未重放任务。该判断补充保存于本轮私有 coordinator-verdict，交付时归档。
+
 ## 发布结果
 
 待实际执行后填写 tag、发布提交、CI／Actions、Release、资产校验及安装启动结果。

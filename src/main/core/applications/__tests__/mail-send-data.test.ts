@@ -74,7 +74,10 @@ async function nativeTurn(run:OwnedCapabilityRun,prompt:string){
  const record=runner==='codex'?{timestamp,type:'response_item',payload:{type:'message',role:'user',content:[{type:'input_text',text:prompt}]}}:{timestamp,type:'user',sessionId:id,cwd:current.snapshot.native.cwd,message:{role:'user',content:prompt}};
  appendFileSync(file,JSON.stringify(record)+'\n');return{file,target:{taskId:current.run.taskId,ptyId:run.ptyId}};
 }
-describe.skipIf(process.platform!=='darwin')('original immutable mail package send through actual host and private SMTP',()=>{
+// These are durable SQLite/native-file/loopback-SMTP flows. Shared CI disk latency
+// can exceed the 5s unit-test default; keep a bounded integration budget without
+// changing transaction deadlines, authority checks, race ordering or assertions.
+describe.skipIf(process.platform!=='darwin')('original immutable mail package send through actual host and private SMTP',{timeout:20_000},()=>{
  beforeAll(()=>{build=mkdtempSync(join(tmpdir(),'willyou-m10-send-data-build-'));execFileSync('xcrun',['clang++','-std=c++17','-O2',resolve('native/applications/process-identity.cc'),'-o',join(build,'willyou-process-identity')]);execFileSync(process.execPath,['scripts/applications/build-runtime.mjs',join(build,'runtime')],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});execFileSync(process.execPath,['scripts/applications/build-bundles.mjs',join(build,'bundles'),join(build,'runtime/mcp-bridge.cjs'),'--retained-v1-test-fixture'],{env:{...process.env,ELECTRON_RUN_AS_NODE:'1'},stdio:'pipe',timeout:30000});bundles=new CapabilityBundleSource(join(build,'bundles'));});
  afterAll(()=>rmSync(build,{recursive:true,force:true}));
  beforeEach(async()=>{
