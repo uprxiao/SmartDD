@@ -1,5 +1,7 @@
 # M13 插件化、能力统一管理与 AI 配置优化
 
+2026-11-15 最新增量：[T100真实Claude ask B/C](验收/证据/M13-T100-Claude-ask-real-BC-union-App061-548-553-20261115-a1/coordinator-verdict.json)已联合归档，原任务权限恢复及两层插件审批已完成。钥匙串等待超时和终端显示空格导致的驱动失败均已定位并保留，只补剩余浏览器项；完整状态仍取唯一用例账，无新App打包。
+
 2026-11-15 最新接续：[T100 共用真实 App 前置](验收/证据/M13-T100-real-App-UI-foundation-complete-540-20261115-a1/coordinator-verdict.json)已完成；隔离订阅配置、新项目、Demo 连接测试与安全存储保存、项目启用均已实际执行，App 正常收尾。前置不计整条通过；继续原真实权限矩阵，已成功步骤不重播，原驱动失败保留。生产源码与 App061 未变，没有重新打包。
 
 当前统一基线：[source015／App061](验收/证据/M13-Claude-native-baseURL-normalization-source015-App061-513-20261115-a1/coordinator-verdict.json)。[T069双端真实DeepSeek已完整通过](验收/证据/M13-T069-original-complete-dual-CLI-real-DeepSeek-union-App061-531-20261115-a1/coordinator-verdict.json)，[T094模型切换/恢复已完整通过](验收/证据/M13-T094-original-complete-model-selection-resume-union-App061-535-20261115-a1/coordinator-verdict.json)。现在仅继续T100完整真实权限矩阵与T056上游外连阻塞，Claude订阅取消边界保留。所有原驱动红、533来源未知及私有窗口观察范围仍按证据保留，不追认旧失败；没有重新打包。状态只取[唯一账](验收/测试用例.md)，尚未完成M13。
