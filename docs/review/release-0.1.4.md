@@ -1,6 +1,6 @@
 # 0.1.4 整合与发布记录
 
-状态：发布执行中，尚未打 tag 或发布安装包。最终结果以本记录后续实际回执为准。
+状态：候选 CI 与本机回归曾通过；tag 发布门禁发现浏览器首个 Esc 注册时序缺陷与另一项重型用例 5s 超时，构建／发布跳过，未公开 Release。v0.1.4 tag 保留，修复后按[0.1.5 发布记录](release-0.1.5.md)继续，不移动旧 tag。
 
 ## 范围与依据
 
@@ -46,4 +46,9 @@ Dock 回归实际启动与 UI 停止已完成；后续只读驱动误用不存�
 
 ## 发布结果
 
-待实际执行后填写 tag、发布提交、CI／Actions、Release、资产校验及安装启动结果。
+- 最终发布提交：`4601b13620f4785e6a2ad9c92e4f7ce1bda2d63f`，已快进合入并推送 main；v0.1.4 为附注 tag，指向同一提交。
+- [完整候选 CI 43726873619](https://github.com/uprxiao/SmartDD/actions/runs/43726873619) 成功：642 文件通过、145 按既有条件跳过；6688 项通过、1009 按既有条件跳过。最后编译成功，冷构建含 agent-browser Rust 编译约 7min，非卡死或额外重跑。
+- 精确同 SHA 的 main 推送又触发独立 CI，已取消该冗余运行；以上完整候选 CI 仍成功，tag 工作流中的必需检查全部保留。
+- [Release 43730368330](https://github.com/uprxiao/SmartDD/actions/runs/43730368330) 已由 tag 自动触发，正在执行检查与四平台构建；没有重复手动 dispatch。
+- [Dock 原任务独立复核](release-0.1.4-evidence/candidate-dock-verdict.json) 通过。保留原只读驱动 SQL 失败，不重建 App 或重放业务任务。
+- tag 内门禁实际失败：浏览器下载面板首个 Esc 在 passive effect 注册前可能丢失；Profiler 提交回调的真实组件红测已确定性复现。另有 T11 持久化用例触及默认 5s 时限。平台包构建与 publish 均跳过；没有公开 Release 或供安装的 0.1.4 包。后续见 0.1.5，不追认该 tag 成功。

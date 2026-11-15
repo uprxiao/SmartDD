@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {Profiler} from 'react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import type {BrowserWorkspaceState} from '@shared/browser-workspace';
 import {TaskBrowserWorkspace} from './workspace';
@@ -65,6 +66,24 @@ it('closes downloads with Escape after the focused menu item is removed, without
   const item=await screen.findByRole('menuitem',{name:'下载'});item.focus();fireEvent.click(item);
   await screen.findByRole('region',{name:'下载'});expect(document.activeElement).toBe(document.body);
   fireEvent.keyDown(document.body,{key:'Escape',code:'Escape',keyCode:27});
+  await waitFor(()=>expect(screen.queryByRole('region',{name:'下载'})).toBeNull());
+  expect(f.api.overlay).toHaveBeenLastCalledWith({taskId:'t1',tabId:'page1',open:false});
+  expect(document.activeElement).toBe(document.body);
+  expect(fireEvent.keyDown(document.body,{key:'Escape',code:'Escape'})).toBe(true);
+});
+it('handles the first body Escape as soon as downloads commit, before passive effects',async()=>{
+  f.value.state.downloads=[{id:'d1',taskId:'t1',pageId:'page1',url:'https://fixture.example/orders',name:'订单.csv',path:'/synthetic/Downloads/订单.csv',destination:'downloads',state:'done',receivedBytes:24,totalBytes:24,updatedAt:Date.now(),error:null}];
+  const captured:{event:KeyboardEvent|null;focus:Element|null}={event:null,focus:null};
+  render(<Profiler id="download-first-input" onRender={()=>{
+    if(captured.event||!document.querySelector('.bw-downloads'))return;
+    captured.focus=document.activeElement;
+    captured.event=new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true});
+    document.body.dispatchEvent(captured.event);
+  }}><TaskBrowserWorkspace taskId="t1" onClose={()=>{}}/></Profiler>);
+  fireEvent.click(screen.getByRole('button',{name:'浏览器菜单'}));
+  const item=await screen.findByRole('menuitem',{name:'下载'});item.focus();fireEvent.click(item);
+  await waitFor(()=>expect(captured.event).not.toBeNull());
+  expect(captured.focus).toBe(document.body);expect(captured.event?.defaultPrevented).toBe(true);
   await waitFor(()=>expect(screen.queryByRole('region',{name:'下载'})).toBeNull());
   expect(f.api.overlay).toHaveBeenLastCalledWith({taskId:'t1',tabId:'page1',open:false});
   expect(document.activeElement).toBe(document.body);

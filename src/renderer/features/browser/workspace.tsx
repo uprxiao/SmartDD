@@ -1,7 +1,7 @@
 import {useTreePathTooltip} from '@renderer/features/files/tree-path-tooltip';
 import {useBrowserTabTooltip,type BrowserTabTooltip} from './tab-tooltip';
 import {BrowserJavascriptDialogView} from './javascript-dialog';
-import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowLeft,ArrowRight,RotateCw,X,Search,Files,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,AlertTriangle,WifiOff,UserRound,Download,KeyRound,Pause,Play,Bot,ExternalLink} from 'lucide-react';
 import {browserChangedEvent,browserShortcutEvent} from '@shared/events';
 import type {BrowserWorkspaceState,BrowserShortcut} from '@shared/browser-workspace';
@@ -116,10 +116,11 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
   const closeMenu=(after?:()=>void)=>{settingsGeneration.current++;run(async()=>{await rpc.browser.overlay({taskId,tabId,open:false});setMenu(false);setPageImage(null);after?.();});};
   const toggleMenu=()=>{if(menu){closeMenu();return;}run(async()=>{const generation=++settingsGeneration.current,image=await rpc.browser.overlay({taskId,tabId,open:true});if(generation!==settingsGeneration.current){await rpc.browser.overlay({taskId,tabId,open:false});return;}setPageImage(image);setDownloadsOpen(false);setMenu(true);});};
   const closeSettings=()=>{settingsGeneration.current++;run(async()=>{try{await rpc.browser.overlay({taskId,tabId,open:false});}finally{setPreferences(null);setProfileRecords(null);setDownloadsOpen(false);setPageImage(null);}});};
-  useEffect(()=>{
+  useLayoutEffect(()=>{
     if(!downloadsOpen)return;
     // Removing the focused menu item leaves focus on body. Keep Escape working
     // without taking keyboard focus away when a download opens automatically.
+    // Register in the commit before the visible panel can receive its first key.
     const escape=(event:KeyboardEvent)=>{
       if(event.key!=='Escape'||event.defaultPrevented||event.isComposing||event.target instanceof Element&&event.target.closest('[role="dialog"]'))return;
       event.preventDefault();closeSettings();

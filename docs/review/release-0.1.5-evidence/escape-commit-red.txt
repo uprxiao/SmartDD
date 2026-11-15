@@ -1,0 +1,54 @@
+
+> smartdd@0.1.4 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/browser/workspace.test.tsx --maxWorkers=1 --reporter=verbose -t 'first body Escape as soon'
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ↓ src/renderer/features/browser/workspace.test.tsx > shows an initial failed navigation rather than hiding it behind the blank startup page, and binds approval to its nonce
+ ↓ src/renderer/features/browser/workspace.test.tsx > offers no certificate approval for an ordinary failed navigation
+ ↓ src/renderer/features/browser/workspace.test.tsx > restores the last committed address after an ordinary failed navigation, while retaining the failure explanation
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps invalid input selected with an error surface, without replacing the current document: javascript:alert(1)
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps invalid input selected with an error surface, without replacing the current document: data:text/html,not-a-navigation
+ ↓ src/renderer/features/browser/workspace.test.tsx > dismisses an old input error when the host commits a different URL
+ ↓ src/renderer/features/browser/workspace.test.tsx > closes downloads with Escape after the focused menu item is removed, without moving focus
+ × src/renderer/features/browser/workspace.test.tsx > handles the first body Escape as soon as downloads commit, before passive effects 54ms
+   → expected false to be true // Object.is equality
+ ↓ src/renderer/features/browser/workspace.test.tsx > renders activity and routes pause/resume as trusted user actions without blocking manual navigation
+ ↓ src/renderer/features/browser/workspace.test.tsx > displays the host activity deadline across remounts and tab switches without extending its lifetime
+ ↓ src/renderer/features/browser/workspace.test.tsx > waits for native overlay parking acknowledgement before exposing a scoped authorization dialog
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps native page geometry constant when activity starts or expires
+ ↓ src/renderer/features/browser/workspace.test.tsx > shows the current host profile and opens its management through the badge after parking the native page
+ ↓ src/renderer/features/browser/workspace.test.tsx > does not display an obsolete profile response after switching the active profile
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps an unavailable profile unknown and recovers through explicit management
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps the importing recovery explanation visible when a menu captures the parked page
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps the needs-attention recovery explanation visible when a menu captures the parked page
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/browser/workspace.test.tsx > handles the first body Escape as soon as downloads commit, before passive effects
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/features/browser/workspace.test.tsx:86:87
+     84|   const item=await screen.findByRole('menuitem',{name:'下载'});item.focu…
+     85|   await waitFor(()=>expect(captured.event).not.toBeNull());
+     86|   expect(captured.focus).toBe(document.body);expect(captured.event?.de…
+       |                                                                                       ^
+     87|   await waitFor(()=>expect(screen.queryByRole('region',{name:'下载'})).t…
+     88|   expect(f.api.overlay).toHaveBeenLastCalledWith({taskId:'t1',tabId:'p…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 skipped (17)
+   Start at  00:17:12
+   Duration  567ms (transform 96ms, setup 0ms, import 246ms, tests 54ms, environment 188ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

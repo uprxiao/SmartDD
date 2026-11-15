@@ -441,7 +441,7 @@ describe('M11 S4 data-only Mail v2 through the production task composition',()=>
   expect(await call(service,runId,'send_execute',{intentId:intent.id,expectedReviewHash:'f'.repeat(64)})).toMatchObject({status:'error',error:{code:'INTENT_STALE'}});
   expect(await call(service,runId,'send_execute',{intentId:intent.id,expectedReviewHash:intent.reviewHash})).toMatchObject({status:'error',error:{code:'AUTHORIZATION_REQUIRED'}});
   expect(decrypt).not.toHaveBeenCalled();expect(sqlite.prepare('SELECT count(*) n FROM mail_send_executions').get()).toEqual({n:0});
- });
+ },20000);
  // R1.0 R10/R17 (2026-11-04) replace "a running session keeps its fixed v1 tools" (T12): every call uses the current package.
  it('serves a running session from the current package after v2 activation and advises a resume for its tool list',async()=>{
   await selectMail();const running=await create(),runId=running.task.runtimeSnapshot!.runId,fixed=await managed.sessions.get(running.task.id),service=tools();

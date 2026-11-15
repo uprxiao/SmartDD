@@ -1,0 +1,110 @@
+
+> smartdd@0.1.4 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/browser/workspace.test.tsx src/main/core/applications/__tests__/task-capability-launcher.test.ts --maxWorkers=2 --reporter=verbose -t 'Escape|M11-T11 rejects self approval'
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ↓ src/renderer/features/browser/workspace.test.tsx > shows an initial failed navigation rather than hiding it behind the blank startup page, and binds approval to its nonce
+ ↓ src/renderer/features/browser/workspace.test.tsx > offers no certificate approval for an ordinary failed navigation
+ ↓ src/renderer/features/browser/workspace.test.tsx > restores the last committed address after an ordinary failed navigation, while retaining the failure explanation
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps invalid input selected with an error surface, without replacing the current document: javascript:alert(1)
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps invalid input selected with an error surface, without replacing the current document: data:text/html,not-a-navigation
+ ↓ src/renderer/features/browser/workspace.test.tsx > dismisses an old input error when the host commits a different URL
+ ✓ src/renderer/features/browser/workspace.test.tsx > closes downloads with Escape after the focused menu item is removed, without moving focus 60ms
+ ✓ src/renderer/features/browser/workspace.test.tsx > handles the first body Escape as soon as downloads commit, before passive effects 18ms
+ ↓ src/renderer/features/browser/workspace.test.tsx > renders activity and routes pause/resume as trusted user actions without blocking manual navigation
+ ↓ src/renderer/features/browser/workspace.test.tsx > displays the host activity deadline across remounts and tab switches without extending its lifetime
+ ↓ src/renderer/features/browser/workspace.test.tsx > waits for native overlay parking acknowledgement before exposing a scoped authorization dialog
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps native page geometry constant when activity starts or expires
+ ↓ src/renderer/features/browser/workspace.test.tsx > shows the current host profile and opens its management through the badge after parking the native page
+ ↓ src/renderer/features/browser/workspace.test.tsx > does not display an obsolete profile response after switching the active profile
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps an unavailable profile unknown and recovers through explicit management
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps the importing recovery explanation visible when a menu captures the parked page
+ ↓ src/renderer/features/browser/workspace.test.tsx > keeps the needs-attention recovery explanation visible when a menu captures the parked page
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > refuses a Codex fork when project policy changes after real inspection
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > fixes a CLI plan without per-run Skill copies and supplies an environment-only token that dies at stop
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > hands the CLI and the sandbox check the login-shell PATH, not the bare app PATH, so env-node Agents still start
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > keeps identity and snapshot protection with no enabled apps, then authorizes an app enabled in the same run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > does not deliver the inactive CLI mode for unverified-policy
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > does not deliver the inactive CLI mode for unknown-version
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > rejects an AI profile trying to inject the host inactive marker
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > uses the declared MCP fallback without a token or policy injection when effective sandbox is unverified
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > T25 unknown version actually reads through the declared MCP fallback and receives only the matching SOP
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > T25 unknown version marks a CLI-only capability unavailable without injecting another entry or changing the installed original package
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > T25 unknown version delivers no CLI token or socket policy and closes L2 L3/native authorization while leaving page authorization as an A-layer requirement
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > T25 fixed session resumes under an unknown version via MCP fallback without changing its original selection
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S5 CLI delivery through the production task entry > follows the current project setting with the same token: disabled is refused with guidance, re-enabled works again
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > T41: a task started before the project enables an application uses it in the same run once enabled
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > serves an unverified Codex version from the library with MCP only, never the CLI sandbox
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > S3d: an Agent whose version cannot be read starts native only, without the shared discovery catalog
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > S5: advises a resume only where the Agent cannot see the new application in the running session
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > serves Claude Code 2.1.303 from the library with an MCP config and no per-task plugin directory
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > S4: a pre-R1.0 session becomes a library session on resume, keeping its native identity
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > ends a run whose Agent exits on its own before starting its MCP servers
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > ends a user-stopped run whose Agent never started its MCP servers
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > clears the resume advice once the session is resumed after an application change
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 R1.0 library launch through the production task entry > records the enabled application without per-run Skill copies and resumes on the same library path
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S7 project stop and host disposal reach the actual shared upstream > stops only project A calls, preserves project B and reaps all reference MCP children on host disposal
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S4 data-only Mail v2 through the production task composition > maps all fourteen legacy tools without package executables and preserves the bridge runtime identity
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S4 data-only Mail v2 through the production task composition > creates a schema-3 task with a fixed plan and no per-run Skill copies
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S4 data-only Mail v2 through the production task composition > returns unified v2 data and resources while the page reads the same draft and CAS rejects stale updates
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S4 data-only Mail v2 through the production task composition > limits missing slots to their dependent capabilities and keeps the result/cancel capabilities slot-free
+ ✓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S4 data-only Mail v2 through the production task composition > M11-T11 rejects self approval, a forged review hash and missing observed approval before any send execution 3633ms
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M11 S4 data-only Mail v2 through the production task composition > serves a running session from the current package after v2 activation and advises a resume for its tool list
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > task cancellation before the native fork > settles the known unspawned CLI and bridge after cancel during arming
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > task cancellation before the native fork > settles the known unspawned CLI and bridge after prepare-error during arming
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > task cancellation before the native fork > settles the known unspawned CLI and bridge after host-shutdown during arming
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > task cancellation before the native fork > settles the known unspawned CLI and bridge after host-shutdown-before-arming during arming
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > native history loss after managed preparation is armed > refuses a late claude-code history loss before fork and cancels the known unspawned run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > native history loss after managed preparation is armed > refuses a late codex history loss before fork and cancels the known unspawned run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > late native history arrival before fork > does not reopen a fresh Claude UUID after its original history appears during preparation
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > ZenTao switch only affects loaded application runs and gates their fork > keeps an unrelated task and another project running while stopping the loaded ZenTao task
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > ZenTao switch only affects loaded application runs and gates their fork > rejects every claude-code new/resume in the project while the switch is pending (R17: every session may use ZenTao)
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > ZenTao switch only affects loaded application runs and gates their fork > rejects every codex new/resume in the project while the switch is pending (R17: every session may use ZenTao)
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > ZenTao switch only affects loaded application runs and gates their fork > checks a switch that begins after arming immediately before the native fork
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > ZenTao switch only affects loaded application runs and gates their fork > preserves A after one of two loaded runs fails to stop, gates resume during the wait and requires explicit retry
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > ZenTao switch only affects loaded application runs and gates their fork > rolls back a B binding commit after both loaded runs stopped and never restarts them automatically
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > ZenTao switch retains already narrowed native-only running work > does not stop a selected but un-injected native-only task while stopping a loaded one
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > actual host preparation records independent native diagnostics > records truthful native-conflicts diagnostics, keeps the user configuration and persists no secrets
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > actual host preparation records independent native diagnostics > records truthful app-and-independent-conflicts diagnostics, keeps the user configuration and persists no secrets
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > actual host preparation records independent native diagnostics > records truthful unknown-cli diagnostics, keeps the user configuration and persists no secrets
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > embedded runtime failure narrows only application execution > keeps native capabilities on codex new without the application bridge, then restores applications in a new run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > embedded runtime failure narrows only application execution > keeps native capabilities on codex resume without the application bridge, then restores applications in a new run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > embedded runtime failure narrows only application execution > keeps native capabilities on claude-code new without the application bridge, then restores applications in a new run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > embedded runtime failure narrows only application execution > keeps native capabilities on claude-code resume without the application bridge, then restores applications in a new run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > delivers Codex frozen roots and run plan before the actual task terminal connects to its own backend
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > keeps a running Codex Skill frozen while host calls use the new package, then refreshes private roots on resume
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > closes a backend which started before a terminal fork failure without using the whole-run no-fork receipt
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > narrows a prepared Codex launch before any backend fork and retains the ordinary native Agent
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > preserves unsupported profile arguments in a native-only launch and does not start a private backend
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > does not prepare private Codex roots for a project-closed plugin
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > refuses changed Codex Skill bytes before backend/terminal forks and closes prepared windows
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > delivers a private Claude Skill at the actual task launch, keeps it frozen after update, and refreshes on resume
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > does not inject a project-closed Claude plugin into a new or resumed task
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > refuses a changed Skill projection before the native fork and closes the unspawned run
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > routes a real sandbox page result into the chosen task through host-owned proof and the existing exactly-once paste transport
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > captures an installed plugin in the actual task snapshot/plan and dispatches its sandbox process
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > refreshes plugin discovery on native-session resume and retains the original native identity/history
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 standard library in independent Claude state > T070 links the effective private Claude root at each real TaskService prepare, follows toggles and retains unrelated user content
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > T064 carries a verified Claude history copy through the fixed capability identity and retries the same destination
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > retains the committed copied history and consistent task pointer after before-spawn, then retries
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > retains the committed copied history and consistent task pointer after fork-error, then retries
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > retains the committed copied history and consistent task pointer after cancel-after-commit, then retries
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > rolls back both registry identity and task pointer when the host CAS callback refuses a commit
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > keeps the current committed target if its bytes change before fork, without overwriting that change from the old source
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > retains the original native root claim after a copied session moves to another configuration
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > refuses another task owning the target before any history bytes are copied there
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > serializes restore preparation across independent coordinator calls while allowing inner C metadata operations
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > keeps fixed identity strict with a missing copy receipt
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > keeps fixed identity strict with a structural copy receipt
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > refuses to copy before touching target history when an earlier run is still preparing
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 Claude CLI through indexed production resource > keeps Claude argv and the exact false sandbox behavior without Codex flags
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 Claude CLI through indexed production resource > keeps Claude argv and the exact true sandbox behavior without Codex flags
+ ↓ src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 Claude CLI through indexed production resource > rechecks the inspected source after prepare and rejects mutation before the synthetic fork
+
+ Test Files  2 passed (2)
+      Tests  3 passed | 94 skipped (97)
+   Start at  00:18:57
+   Duration  5.07s (transform 1.02s, setup 0ms, import 1.57s, tests 3.71s, environment 391ms)
+
