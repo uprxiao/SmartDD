@@ -1,0 +1,290 @@
+{
+  "scope": "Exact release/CI arm64 DMG readonly mount + OWN ditto + complete file/link inventory + actual native-smoke; no Applications install or UI/model",
+  "startedAt": "2026-11-15T19:21:44.073Z",
+  "actualTagCommit": "463935bddd00cdb0e09ac8391bb29241cd2fa830",
+  "source": "public-release",
+  "sourceURL": "https://github.com/uprxiao/SmartDD/releases/download/v0.1.5/WillYou-0.1.5-mac-arm64.dmg",
+  "dmg": "/private/tmp/willyou-release-0.1.5-delivery-001/downloads/WillYou-0.1.5-mac-arm64.dmg",
+  "dmgSha256": "3611ed7fa2998c749b46e2ce6fbeb50cede26acb26c6d00b55340582234e2c74",
+  "dmgBytes": 617779124,
+  "ciManifestSha256": "dba2a35b05b9e477820bc48b2275e8fc81c1d5c7849976de35e14182189f6509",
+  "ciManifest": {
+    "schemaVersion": 2,
+    "version": "0.1.5",
+    "commit": "463935bddd00cdb0e09ac8391bb29241cd2fa830",
+    "platform": "mac",
+    "arch": "arm64",
+    "signed": false,
+    "dirty": false,
+    "verification": "packaged-electron-sqlite-pty",
+    "files": [
+      {
+        "file": "WillYou-0.1.5-mac-arm64.dmg",
+        "size": 617779124,
+        "sha256": "3611ed7fa2998c749b46e2ce6fbeb50cede26acb26c6d00b55340582234e2c74"
+      }
+    ]
+  },
+  "checksumFileSha256": "c575ebac141f77de5f3e295ae87cb36ffec5858b68bdb7ad5c687122ab73a7a0",
+  "commands": [
+    {
+      "file": "/usr/bin/hdiutil",
+      "args": [
+        "verify",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/downloads/WillYou-0.1.5-mac-arm64.dmg"
+      ],
+      "pid": 51270,
+      "code": 0,
+      "signal": null,
+      "stdout": "正在检查“Protective Master Boot Record (MBR : 0)”的校验和…\nProtective Master Boot Record (MBR :：已验证CRC32 $88D34FDD\n正在检查“GPT Header (Primary GPT Header : 1)”的校验和…\n GPT Header (Primary GPT Header : 1)：已验证CRC32 $0A89B4A9\n正在检查“GPT Partition Data (Primary GPT Table : 2)”的校验和…\nGPT Partition Data (Primary GPT Tabl：已验证CRC32 $A7263772\n正在检查“ (Apple_Free : 3)”的校验和…\n                    (Apple_Free : 3)：已验证CRC32 $00000000\n正在检查“disk image (Apple_HFS : 4)”的校验和…\n          disk image (Apple_HFS : 4)：已验证CRC32 $587495A8\n正在检查“ (Apple_Free : 5)”的校验和…\n                    (Apple_Free : 5)：已验证CRC32 $00000000\n正在检查“GPT Partition Data (Backup GPT Table : 6)”的校验和…\nGPT Partition Data (Backup GPT Table：已验证CRC32 $A7263772\n正在检查“GPT Header (Backup GPT Header : 7)”的校验和…\n  GPT Header (Backup GPT Header : 7)：已验证CRC32 $B92AE550\n已验证CRC32 $6A8B99FE\n",
+      "stderr": "hdiutil: verify: checksum of \"/private/tmp/willyou-release-0.1.5-delivery-001/downloads/WillYou-0.1.5-mac-arm64.dmg\" is VALID\n",
+      "error": null
+    },
+    {
+      "file": "/usr/bin/hdiutil",
+      "args": [
+        "attach",
+        "-readonly",
+        "-nobrowse",
+        "-noautoopen",
+        "-mountpoint",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/mount-001",
+        "-plist",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/downloads/WillYou-0.1.5-mac-arm64.dmg"
+      ],
+      "pid": 51289,
+      "code": 0,
+      "signal": null,
+      "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>system-entities</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>content-hint</key>\n\t\t\t<string>Apple_HFS</string>\n\t\t\t<key>dev-entry</key>\n\t\t\t<string>/dev/disk4s1</string>\n\t\t\t<key>mount-point</key>\n\t\t\t<string>/private/tmp/willyou-release-0.1.5-delivery-001/mount-001</string>\n\t\t\t<key>potentially-mountable</key>\n\t\t\t<true/>\n\t\t\t<key>unmapped-content-hint</key>\n\t\t\t<string>48465300-0000-11AA-AA11-00306543ECAC</string>\n\t\t\t<key>volume-kind</key>\n\t\t\t<string>hfs</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>content-hint</key>\n\t\t\t<string>GUID_partition_scheme</string>\n\t\t\t<key>dev-entry</key>\n\t\t\t<string>/dev/disk4</string>\n\t\t\t<key>potentially-mountable</key>\n\t\t\t<false/>\n\t\t\t<key>unmapped-content-hint</key>\n\t\t\t<string>GUID_partition_scheme</string>\n\t\t</dict>\n\t</array>\n</dict>\n</plist>\n",
+      "stderr": "",
+      "error": null
+    },
+    {
+      "file": "/usr/bin/ditto",
+      "args": [
+        "/private/tmp/willyou-release-0.1.5-delivery-001/mount-001/WillYou.app",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app"
+      ],
+      "pid": 51322,
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "error": null
+    },
+    {
+      "file": "/usr/bin/codesign",
+      "args": [
+        "--verify",
+        "--deep",
+        "--strict",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app"
+      ],
+      "pid": 51348,
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "error": null
+    },
+    {
+      "file": "/usr/bin/codesign",
+      "args": [
+        "-d",
+        "--verbose=2",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app"
+      ],
+      "pid": 51359,
+      "code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "Executable=/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/MacOS/WillYou\nIdentifier=com.smartdd.desktop\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20500 size=436 flags=0x10002(adhoc,runtime) hashes=3+7 location=embedded\nSignature=adhoc\nInfo.plist entries=32\nTeamIdentifier=not set\nRuntime Version=26.2.0\nSealed Resources version=2 rules=13 files=18468\nInternal requirements count=0 size=12\n",
+      "error": null
+    },
+    {
+      "file": "/usr/libexec/PlistBuddy",
+      "args": [
+        "-c",
+        "Print :CFBundleIdentifier",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/Info.plist"
+      ],
+      "pid": 51360,
+      "code": 0,
+      "signal": null,
+      "stdout": "com.smartdd.desktop\n",
+      "stderr": "",
+      "error": null
+    },
+    {
+      "file": "/usr/libexec/PlistBuddy",
+      "args": [
+        "-c",
+        "Print :CFBundleShortVersionString",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/Info.plist"
+      ],
+      "pid": 51361,
+      "code": 0,
+      "signal": null,
+      "stdout": "0.1.5\n",
+      "stderr": "",
+      "error": null
+    },
+    {
+      "file": "/usr/bin/hdiutil",
+      "args": [
+        "detach",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/mount-001"
+      ],
+      "pid": 51386,
+      "code": 0,
+      "signal": null,
+      "stdout": "\"disk4\" ejected.\n",
+      "stderr": "",
+      "error": null
+    },
+    {
+      "file": "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/MacOS/WillYou",
+      "args": [
+        "/private/tmp/willyou-release-0.1.5-delivery-001/tag-source/scripts/release/native-smoke.cjs",
+        "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/Resources",
+        "0.1.5",
+        "arm64"
+      ],
+      "pid": 51391,
+      "code": 0,
+      "signal": null,
+      "stdout": "{\"version\":\"0.1.5\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"sqlite\":\"passed\",\"pty\":\"passed\",\"voiceBridge\":\"passed\",\"fileBroker\":\"passed\",\"officeRenderer\":\"passed\",\"fileWatcher\":\"passed\"}\n",
+      "stderr": "",
+      "error": null
+    }
+  ],
+  "unknown": [],
+  "dmgVerify": {
+    "file": "/usr/bin/hdiutil",
+    "args": [
+      "verify",
+      "/private/tmp/willyou-release-0.1.5-delivery-001/downloads/WillYou-0.1.5-mac-arm64.dmg"
+    ],
+    "pid": 51270,
+    "code": 0,
+    "signal": null,
+    "stdout": "正在检查“Protective Master Boot Record (MBR : 0)”的校验和…\nProtective Master Boot Record (MBR :：已验证CRC32 $88D34FDD\n正在检查“GPT Header (Primary GPT Header : 1)”的校验和…\n GPT Header (Primary GPT Header : 1)：已验证CRC32 $0A89B4A9\n正在检查“GPT Partition Data (Primary GPT Table : 2)”的校验和…\nGPT Partition Data (Primary GPT Tabl：已验证CRC32 $A7263772\n正在检查“ (Apple_Free : 3)”的校验和…\n                    (Apple_Free : 3)：已验证CRC32 $00000000\n正在检查“disk image (Apple_HFS : 4)”的校验和…\n          disk image (Apple_HFS : 4)：已验证CRC32 $587495A8\n正在检查“ (Apple_Free : 5)”的校验和…\n                    (Apple_Free : 5)：已验证CRC32 $00000000\n正在检查“GPT Partition Data (Backup GPT Table : 6)”的校验和…\nGPT Partition Data (Backup GPT Table：已验证CRC32 $A7263772\n正在检查“GPT Header (Backup GPT Header : 7)”的校验和…\n  GPT Header (Backup GPT Header : 7)：已验证CRC32 $B92AE550\n已验证CRC32 $6A8B99FE\n",
+    "stderr": "hdiutil: verify: checksum of \"/private/tmp/willyou-release-0.1.5-delivery-001/downloads/WillYou-0.1.5-mac-arm64.dmg\" is VALID\n",
+    "error": null
+  },
+  "attachPlistSha256": "b9ba6b19591b024469c5fb983c5fe2f4efc139812692c4b60b936dc626c34a06",
+  "sourceTreeSha256": "19eaa405982d21fa68c8f3fb226eeb2f2f8b6969fac520c9d683f8297e75214d",
+  "copy": {
+    "file": "/usr/bin/ditto",
+    "args": [
+      "/private/tmp/willyou-release-0.1.5-delivery-001/mount-001/WillYou.app",
+      "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app"
+    ],
+    "pid": 51322,
+    "code": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": "",
+    "error": null
+  },
+  "bundleEntries": 20295,
+  "installedTreeSha256": "19eaa405982d21fa68c8f3fb226eeb2f2f8b6969fac520c9d683f8297e75214d",
+  "signature": {
+    "file": "/usr/bin/codesign",
+    "args": [
+      "--verify",
+      "--deep",
+      "--strict",
+      "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app"
+    ],
+    "pid": 51348,
+    "code": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": "",
+    "error": null
+  },
+  "codeIdentity": {
+    "file": "/usr/bin/codesign",
+    "args": [
+      "-d",
+      "--verbose=2",
+      "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app"
+    ],
+    "pid": 51359,
+    "code": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": "Executable=/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/MacOS/WillYou\nIdentifier=com.smartdd.desktop\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20500 size=436 flags=0x10002(adhoc,runtime) hashes=3+7 location=embedded\nSignature=adhoc\nInfo.plist entries=32\nTeamIdentifier=not set\nRuntime Version=26.2.0\nSealed Resources version=2 rules=13 files=18468\nInternal requirements count=0 size=12\n",
+    "error": null
+  },
+  "bundleVersion": "0.1.5",
+  "sourceUnchanged": true,
+  "installedHashes": {
+    "asarSha256": "029878307a37ec7e2508fb49b19a4e1504d90eb5525cbad7b01fc9ace1584336",
+    "executableSha256": "2660b91ed4f56e39102f25e4658d079342977091892a14e4d61a0fcec9c90661",
+    "nativeHelperSha256": "c8c6e65ee06216c59e8b4c9742065c60ab25923ed0e95a55c8d60b115a2582ca"
+  },
+  "status": "PASSED_DMG_INSTALL_NATIVE_VERIFICATION",
+  "detach": {
+    "file": "/usr/bin/hdiutil",
+    "args": [
+      "detach",
+      "/private/tmp/willyou-release-0.1.5-delivery-001/mount-001"
+    ],
+    "pid": 51386,
+    "code": 0,
+    "signal": null,
+    "stdout": "\"disk4\" ejected.\n",
+    "stderr": "",
+    "error": null
+  },
+  "detached": true,
+  "nativeSmokeSource": [
+    {
+      "path": "scripts/release/native-smoke.cjs",
+      "commit": "463935bddd00cdb0e09ac8391bb29241cd2fa830",
+      "bytes": 15635,
+      "sha256": "e0f076a3c8cc3315e0779eecccec55299b950a6577ff0ebce514adaeec967542"
+    },
+    {
+      "path": "scripts/applications/verify-bundles.cjs",
+      "commit": "463935bddd00cdb0e09ac8391bb29241cd2fa830",
+      "bytes": 9619,
+      "sha256": "dad46dd91225f12136f0fc37e51d7a41636b3bdbfe9505fa0ac2b8964190cc01"
+    },
+    {
+      "path": "src/shared/application-module-catalog.json",
+      "commit": "463935bddd00cdb0e09ac8391bb29241cd2fa830",
+      "bytes": 63218,
+      "sha256": "031414fefc66ef375833e6bfef368ee8d3a4fe81168b8da66251563e36314ad2"
+    }
+  ],
+  "nativeSmoke": {
+    "file": "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/MacOS/WillYou",
+    "args": [
+      "/private/tmp/willyou-release-0.1.5-delivery-001/tag-source/scripts/release/native-smoke.cjs",
+      "/private/tmp/willyou-release-0.1.5-delivery-001/install/WillYou.app/Contents/Resources",
+      "0.1.5",
+      "arm64"
+    ],
+    "pid": 51391,
+    "code": 0,
+    "signal": null,
+    "stdout": "{\"version\":\"0.1.5\",\"platform\":\"darwin\",\"arch\":\"arm64\",\"sqlite\":\"passed\",\"pty\":\"passed\",\"voiceBridge\":\"passed\",\"fileBroker\":\"passed\",\"officeRenderer\":\"passed\",\"fileWatcher\":\"passed\"}\n",
+    "stderr": "",
+    "error": null
+  },
+  "nativeSmokeResult": {
+    "version": "0.1.5",
+    "platform": "darwin",
+    "arch": "arm64",
+    "sqlite": "passed",
+    "pty": "passed",
+    "voiceBridge": "passed",
+    "fileBroker": "passed",
+    "officeRenderer": "passed",
+    "fileWatcher": "passed"
+  },
+  "finishedAt": "2026-11-15T19:22:15.554Z"
+}

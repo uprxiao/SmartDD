@@ -1,0 +1,81 @@
+{
+  "scope": "intentional stop of exact owned sequential downloader before parallel resumption; preserve all files",
+  "bound": {
+    "parent": {
+      "pid": 38944,
+      "line": "38944 52907 Mon Nov 16 02:35:07 2026     /Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python /private/tmp/willyou-release-0.1.5-delivery-001/download-verify.py",
+      "identity": {
+        "schema": 1,
+        "state": "running",
+        "pid": 38944,
+        "startedAt": "darwin-proc-v1:1794767707:394955"
+      }
+    },
+    "children": [
+      {
+        "pid": 39032,
+        "line": "39032 38944 Mon Nov 16 02:35:26 2026     curl --location --fail --retry 2 --connect-timeout 20 --max-time 1200 --continue-at - --output /private/tmp/willyou-release-0.1.5-delivery-001/downloads/WillYou-0.1.5-linux-amd64.deb.part https://github.com/uprxiao/SmartDD/releases/download/v0.1.5/WillYou-0.1.5-linux-amd64.deb",
+        "identity": {
+          "schema": 1,
+          "state": "running",
+          "pid": 39032,
+          "startedAt": "darwin-proc-v1:1794767726:160763"
+        }
+      }
+    ]
+  },
+  "signals": [
+    {
+      "pid": 38944,
+      "birth": "darwin-proc-v1:1794767707:394955",
+      "signal": 15
+    },
+    {
+      "pid": 39032,
+      "birth": "darwin-proc-v1:1794767726:160763",
+      "signal": 2
+    }
+  ],
+  "after": [
+    {
+      "schema": 1,
+      "state": "stopped"
+    },
+    {
+      "schema": 1,
+      "state": "stopped"
+    }
+  ],
+  "preservedFiles": [
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 665,
+      "sha256": "c575ebac141f77de5f3e295ae87cb36ffec5858b68bdb7ad5c687122ab73a7a0"
+    },
+    {
+      "name": "WillYou-0.1.5-linux-amd64.deb.part",
+      "bytes": 99041280,
+      "sha256": "2654bc686a0018631d17226b6dde56b18f8110d24fa5023f3e4e08c199187164"
+    },
+    {
+      "name": "manifest-linux-x64.json",
+      "bytes": 758,
+      "sha256": "8126cfff77761366157cb6a129a38f18e6006b63475795a78bfd821abccf19e0"
+    },
+    {
+      "name": "manifest-mac-arm64.json",
+      "bytes": 413,
+      "sha256": "dba2a35b05b9e477820bc48b2275e8fc81c1d5c7849976de35e14182189f6509"
+    },
+    {
+      "name": "manifest-mac-x64.json",
+      "bytes": 409,
+      "sha256": "a8d73aa067c63a38055bd4df5436559f9295f155b8ae505b6031b138fe19d8c8"
+    },
+    {
+      "name": "manifest-win-x64.json",
+      "bytes": 573,
+      "sha256": "270336887f402c3fe1f707734097659597ec3701df99e3792f405ceea6841f26"
+    }
+  ]
+}
