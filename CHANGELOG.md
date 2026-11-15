@@ -2,8 +2,12 @@
 
 版本是否已发布以 GitHub Release 为准。
 
-## 未发布
+## 0.1.4
 
+- M13 插件化重构：供应商与智能体配置、统一 Skill／MCP 管理、插件安装更新与回滚、插件页面，以及旧配置迁移和会话恢复。按已确认原型同步新增与移除的入口。
+- M13 macOS arm64 验收为 99 条通过、1 条由用户取消；Claude 纯订阅验证按用户决定排除，Claude＋DeepSeek API 与 Codex 订阅／API 的实际验证范围见阶段交付。
+- 继续采用个人自测 preview 预发布，无 Apple Developer ID 签名、无公证，不设为 latest；Windows／Linux 为实验性安装包，完整业务尚未验收。Intel Mac 真机及既有阶段暂缓边界沿用原交付记录。
+- 修复插件包内置 ID 保护中的硬编码：自动读取模块目录，新模块无需修改通用宿主安装器。实际发布检查及安装验证见 docs/review/release-0.1.4.md。
 - 修复从 Dock／访达启动时，Codex 等以 `#!/usr/bin/env node` 安装的 CLI 在任务启动前版本核对失败、顶部显示“注入失败”且应用能力未加载的问题；版本核对改为与终端相同的登录 shell 环境。
 - 修复从 Dock 启动时 CLI 沙箱核对与发给 Agent 的 `willyou-app` PATH 仍使用裸 PATH 的问题：沙箱核对失败导致 `willyou-app` 不可用，CLI 发放后 `#!/usr/bin/env node` 的 Agent 也会因找不到 node 无法启动；任务启动前的原生核对与 CLI PATH 统一使用登录 shell 的 PATH。
 
