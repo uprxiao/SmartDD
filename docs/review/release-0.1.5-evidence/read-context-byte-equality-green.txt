@@ -1,0 +1,26 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/read-context-recovery.test.ts --maxWorkers=1 --reporter=verbose
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > allows an empty pre-M10 database to migrate without inventing read records 684ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > recovers known UI reads before the optional shared-waiter table existed 732ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > holds unsupported ownership columns and foreign C ownership without changing records 797ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > rolls back the entire read group when an owned lease update fails, then retries from the original proof 750ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > cancels interrupted UI/index records in parent-first order without losing either original lease proof 763ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > cancels interrupted UI/index records in index-first order without losing either original lease proof 730ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > retains an original running kernel owner without changing its read outcome 717ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > retains an original unknown kernel owner without changing its read outcome 736ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > uses the original kernel birth identity when the numeric PID has been reused 736ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > does not reinterpret ISO/PID-only identities, missing operations or mismatched resource bindings as stopped read owners 694ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > preserves write/Agent/installer reservations and never converts a write unknown into a successful or cancelled receipt 691ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > releases an already completed read lease without rewriting its actual successful result 713ms
+ ✓ src/main/core/applications/__tests__/read-context-recovery.test.ts > proved stopped host recovery for read-only UI/index C consumers > samples process state outside SQLite transactions and refuses a row changed before the final transaction 819ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  00:56:18
+   Duration  10.01s (transform 260ms, setup 0ms, import 390ms, tests 9.56s, environment 0ms)
+
