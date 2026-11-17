@@ -14,7 +14,8 @@ export const sha256 = (text: string) => createHash('sha256').update(text).digest
 export function boundedJson(value: unknown, limit = EVENT_PAYLOAD_LIMIT): string {
   const text = JSON.stringify(value ?? null);
   if (Buffer.byteLength(text) <= limit) return text;
-  return JSON.stringify({ truncated: true, bytes: Buffer.byteLength(text), sha256: sha256(text), head: text.slice(0, Math.floor(limit / 2)) });
+  // 前缀按字节截取并预留 JSON 转义余量，保证结果确实不超过上限（复核 FR02）。
+  return JSON.stringify({ truncated: true, bytes: Buffer.byteLength(text), sha256: sha256(text), head: Buffer.from(text).subarray(0, Math.floor(limit / 4)).toString('utf8') });
 }
 
 /** 历史正文：上限 1 MiB，超限保留前缀并标记（完整产物存储属后续容量合同）。 */
@@ -38,8 +39,10 @@ export class AgentStore {
   /** 在事务内追加事件；返回已提交事件，由调用方在事务外 notify。 */
   private appendIn(taskId: string, type: string, payload: unknown, itemId: string | null = null, revision: number | null = null): StoredEvent {
     const { seq } = this.sqlite.prepare('SELECT COALESCE(MAX(seq),0)+1 AS seq FROM agent_events WHERE task_id=?').get(taskId) as { seq: number };
-    this.sqlite.prepare('INSERT INTO agent_events(task_id,seq,event_type,item_id,revision,payload,created_at) VALUES(?,?,?,?,?,?,?)').run(taskId, seq, type, itemId, revision, boundedJson(payload), now());
-    return { taskId, seq, type, itemId, payload };
+    const stored = boundedJson(payload);
+    this.sqlite.prepare('INSERT INTO agent_events(task_id,seq,event_type,item_id,revision,payload,created_at) VALUES(?,?,?,?,?,?,?)').run(taskId, seq, type, itemId, revision, stored, now());
+    // 即时通知与持久事件同一有界形状：超过 32 KiB 的事件只带截断标记，订阅者按水位重读（复核 FR02）。
+    return { taskId, seq, type, itemId, payload: stored === JSON.stringify(payload ?? null) ? payload : JSON.parse(stored) };
   }
   /** 写库与事件在同一事务；提交成功后才通知。 */
   tx<T>(fn: (emit: (taskId: string, type: string, payload: unknown, itemId?: string | null, revision?: number | null) => void) => T): T {

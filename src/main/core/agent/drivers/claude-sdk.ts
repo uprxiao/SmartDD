@@ -148,6 +148,8 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (this.activeTurn && m?.type !== 'result' && m?.type !== 'active_goal') this.markStarted();
     // 目标以原生事实为准（复核 CR14）：SDK active_goal 与 CLI 回复的 Goal set／cleared 文字（研究 V14／V17 已验）。
     if (m?.type === 'active_goal') {
+      // 结构化事实到达后，本轮的兼容文字解析失效，不能再覆盖原生事实（复核 FR07）。
+      this.goalCommandTurn = null;
       this.emitter.emit(m.value ? { type: 'goal', objective: String(m.value.condition ?? ''), status: 'active' } : { type: 'goal', objective: null, status: 'cleared' });
       return;
     }

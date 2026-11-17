@@ -66,6 +66,30 @@ describe('复核 1755：目标确认只认目标命令那一轮', () => {
   });
 });
 
+describe('复核 2127：结构化目标事实优先', () => {
+  it('FR07：同一 /goal 轮次先到 active_goal，后到的兼容文字不覆盖；较晚的结构化清除仍生效', async () => {
+    const { inst, events } = make([
+      async ({ emit }) => {
+        emit({ type: 'active_goal', value: { condition: 'native canonical target' } });
+        emit({ type: 'assistant', uuid: 'a', message: { content: [{ type: 'text', text: 'Goal set: other target' }] } });
+        emit({ type: 'active_goal', value: null });
+        emit({ type: 'result', subtype: 'success' });
+      },
+      async ({ emit }) => { emit({ type: 'assistant', uuid: 'b', message: { content: [{ type: 'text', text: 'Goal set: 文字后备' }] } }); emit({ type: 'result', subtype: 'success' }); },
+    ]);
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: '1', text: '/goal native canonical target', tier: 'ask' });
+    await until(() => events.filter(e => e.type === 'turn.completed').length === 1);
+    await inst.startTurn({ clientInputId: '2', text: '/goal 文字后备', tier: 'ask' });
+    await until(() => events.filter(e => e.type === 'turn.completed').length === 2);
+    expect(events.filter(e => e.type === 'goal')).toEqual([
+      { type: 'goal', objective: 'native canonical target', status: 'active' },
+      { type: 'goal', objective: null, status: 'cleared' },
+      { type: 'goal', objective: '文字后备', status: 'active' },
+    ]);
+  });
+});
+
 describe('Claude SDK 驱动', () => {
   it('使用本机 claude、预分配会话 ID，等 system/init 才确认原生身份', async () => {
     const { inst, sdk, events } = make([ok('好')]);

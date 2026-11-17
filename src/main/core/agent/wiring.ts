@@ -8,7 +8,7 @@ import type { ProcessIdentityReader } from '../applications/process-identity';
 import { materializeAgentPlan } from '../ai/agent-launch-files';
 import { AgentStore, type StoredEvent } from './agent-store';
 import { AgentRunService, type LiveListener } from './agent-run-service';
-import { AgentTaskService, type LaunchResolver } from './agent-task-service';
+import { AgentTaskService, boundedEvent, type LaunchResolver } from './agent-task-service';
 import { probeAndRecord } from './discovery';
 import { resolveProfileLaunch } from './profile-launch';
 import { DRIVERS } from './registry';
@@ -67,7 +67,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities };
   };
   const tasks = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: id => driverForKind(config(id).kind), userData: d.userData });
-  store.subscribe((e: StoredEvent) => d.emitEvent(e));
+  store.subscribe((e: StoredEvent) => d.emitEvent(boundedEvent(e)));
   const live: LiveListener = ({ taskId, runId, event }) => { if (event.type === 'message.delta') d.emitLive({ taskId, runId, itemKey: event.nativeItemId, text: event.text }); };
   runs.onLive(live);
   /** 首页与任务页的智能体列表：只列可用于新任务的配置，带执行器与可选档位。 */

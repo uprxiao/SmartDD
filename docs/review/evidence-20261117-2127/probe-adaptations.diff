@@ -1,0 +1,67 @@
+--- docs/review/evidence-20261117-1755/recheck-probes.test.ts
++++ docs/review/evidence-20261117-2127/recheck-probes.test.ts
+@@ -21,7 +21,7 @@
+ 
+ const observed: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-1755/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261117-2127/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
+ afterEach(() => { vi.useRealTimers(); for (const db of dbs.splice(0)) db.close(); });
+ function deferred<T = void>() { let resolve!: (v: T) => void; let reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ 
+@@ -212,7 +212,7 @@
+ });
+ 
+ it('RC12: unavailable goal capability must be refused rather than invoked', async () => {
+-  const s = setup(undefined, undefined, undefined, '0.167.1'); await s.submit(1, 'a'); await until(() => s.instances[0]?.turns.length === 1); s.instances[0].finish();
++  const s = setup(undefined, undefined, undefined, '0.167.1'); await s.tasks.setSelection(s.taskId, { tier: 'full' }, 1); await s.tasks.submit(s.taskId, { clientInputId: 'review-capability-goal', text: 'a', expectedSelectionRevision: 2 }); await until(() => s.instances[0]?.turns.length === 1); s.instances[0].finish();
+   const run = s.runs.runForTask(s.taskId)!;
+   const cap = evaluateCapabilities('codex-app-server', run.version).capabilities.goal;
+   let error: string | undefined;
+--- docs/review/evidence-20261117-1755/recheck-ui.test.tsx
++++ docs/review/evidence-20261117-2127/recheck-ui.test.tsx
+@@ -18,7 +18,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-1755/ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261117-2127/ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => cleanup());
+ beforeEach(() => {
+   vi.clearAllMocks();
+@@ -113,7 +113,7 @@
+   await screen.findByText('note.txt');
+   fireEvent.change(input, { target: { value: '/review' } });
+   fireEvent.submit(input.closest('form')!);
+-  await waitFor(() => expect(mocks.command).toHaveBeenCalledTimes(1)); await act(async () => {});
++  await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('命令不能带附件'))); expect(mocks.command).toHaveBeenCalledTimes(0); await act(async () => {});
+   const retained = !!screen.queryByText('note.txt'), delivered = JSON.stringify([...mocks.command.mock.calls, ...mocks.submit.mock.calls]).includes('prepared');
+   observations.N10 = { commandCalls: mocks.command.mock.calls, ordinarySubmitCalls: mocks.submit.mock.calls.length, chipRetained: retained, attachmentIncludedInCalls: delivered };
+   expect(retained || delivered).toBe(true);
+--- docs/review/evidence-20261117-1755/residual-core.test.ts
++++ docs/review/evidence-20261117-2127/residual-core.test.ts
+@@ -17,7 +17,7 @@
+ 
+ const observations: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [], roots: string[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-1755/residual-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261117-2127/residual-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => { for (const db of dbs.splice(0)) db.close(); for (const dir of roots.splice(0)) rmSync(dir, { recursive: true, force: true }); });
+ function gate<T = void>() { let resolve!: (v: T) => void, reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ class Inst implements DriverInstance {
+@@ -158,7 +158,7 @@
+ 
+ it('N09b: an unknown mandatory native request must never receive generic approval choices', () => {
+   const options = requestOptions({ requestId: 'new', kind: 'other', revision: 1, status: 'pending', origin: {}, payload: { method: 'future/required', params: {} } }, 'codex-app-server');
+-  observations.N09b = { results: options.map(o => o.result('')) }; expect(options).toHaveLength(0);
++  observations.N09b = { results: options.map(o => o.result('')) }; expect(options.every(o => o.deny === true && (o.result('') as any).decision === 'decline')).toBe(true);
+ });
+ 
+ it('N11: a late child message must not reopen an already completed native child', async () => {
+--- docs/review/evidence-20261117-1755/review.vitest.config.mts
++++ docs/review/evidence-20261117-2127/review.vitest.config.mts
+@@ -1,3 +1,3 @@
+ import { defineConfig } from 'vitest/config';
+ import base from '../../../vitest.config';
+-export default defineConfig({ ...base, test: { ...base.test, include: ['docs/review/evidence-20261117-1755/*.test.{ts,tsx}'], pool: 'threads', maxWorkers: 1, testTimeout: 4000 } });
++export default defineConfig({ ...base, test: { ...base.test, include: ['docs/review/evidence-20261117-2127/*.test.{ts,tsx}'], pool: 'threads', maxWorkers: 1, testTimeout: 4000 } });

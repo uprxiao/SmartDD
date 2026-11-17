@@ -5,7 +5,7 @@ import type { DriverId } from './capabilities';
 import type { DriverExecutable } from './driver';
 import { DriverError } from './driver';
 import { AgentStore, type AgentSelection, type StoredEvent } from './agent-store';
-import { AgentRunService } from './agent-run-service';
+import { AgentRunService, type RunHandle } from './agent-run-service';
 import { isTier, resolveTier, type Tier } from './permissions';
 import { attachmentNote, freezeImages, prepareAttachment, verifyAttachments, type Attachment } from './attachments';
 import type { CapabilityName, CapabilityResult } from './capabilities';
@@ -26,26 +26,46 @@ export interface ResolvedLaunch {
 export type LaunchResolver = (input: { profileId: string; cwd: string; runId: string; model?: string }) => Promise<ResolvedLaunch>;
 export type ProfileDriver = (profileId: string) => DriverId;
 
-const SNAPSHOT_ITEM_BUDGET = 160 * 1024, HISTORY_BUDGET = 224 * 1024, ITEM_PREVIEW = 24 * 1024, REQUEST_PREVIEW = 96 * 1024, RANGE = 128 * 1024;
-/** 过大的正文给预览：长字符串截短并标 truncated，完整内容经 itemBody／requestBody 范围读取。 */
+/** 容量合同（技术方案 §3.1、A45）：IPC 响应 256 KiB、事件 32 KiB、正文段 128 KiB，全部按最终序列化后的 UTF-8 字节计。 */
+export const RESPONSE_LIMIT = 256 * 1024, EVENT_LIMIT = 32 * 1024, RANGE_LIMIT = 128 * 1024;
+const ITEM_PREVIEW = 24 * 1024, REQUEST_PREVIEW = 96 * 1024, REQUESTS_BUDGET = 96 * 1024, DRAFT_INLINE = 48 * 1024;
+export const jsonBytes = (v: unknown) => Buffer.byteLength(JSON.stringify(v ?? null));
+/** 过大的正文给预览：长字符串截短并标 truncated，完整内容经范围读取接口取得。 */
 function shorten(v: unknown, depth = 0): unknown {
-  if (typeof v === 'string') return v.length > 4000 ? v.slice(0, 4000) : v;
-  if (Array.isArray(v)) return v.slice(0, 50).map(x => shorten(x, depth + 1));
-  if (v && typeof v === 'object' && depth < 4) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, shorten(x, depth + 1)]));
+  if (typeof v === 'string') return v.length > 2000 ? v.slice(0, 2000) : v;
+  if (Array.isArray(v)) return v.slice(0, 20).map(x => shorten(x, depth + 1));
+  if (v && typeof v === 'object') return depth < 3 ? Object.fromEntries(Object.entries(v).slice(0, 40).map(([k, x]) => [k, shorten(x, depth + 1)])) : {};
   return v;
 }
+/** 预览仍超限时只留顶层短字段，保证单项不超过上限。 */
+function boundedPreview(payload: unknown, limit: number): Record<string, unknown> {
+  const p = shorten(payload) as Record<string, unknown>;
+  if (jsonBytes(p) <= limit) return p ?? {};
+  return Object.fromEntries(Object.entries(payload as Record<string, unknown>).filter(([, v]) => typeof v !== 'object' || v === null).map(([k, v]) => [k, typeof v === 'string' ? v.slice(0, 500) : v]));
+}
 function previewItem<T extends { payload: any }>(it: T): T {
-  const bytes = Buffer.byteLength(JSON.stringify(it.payload));
-  return bytes <= ITEM_PREVIEW ? it : { ...it, payload: { ...(shorten(it.payload) as object), truncated: true, bytes } };
+  const bytes = jsonBytes(it.payload);
+  return bytes <= ITEM_PREVIEW ? it : { ...it, payload: { ...boundedPreview(it.payload, ITEM_PREVIEW), truncated: true, bytes } };
 }
-function previewRequest<T extends { payload: any }>(r: T): T & { detailTruncated?: boolean; bytes?: number } {
-  const bytes = Buffer.byteLength(JSON.stringify(r.payload));
+function previewRequest<T extends { payload: any }>(r: T, limit = REQUEST_PREVIEW): T & { detailTruncated?: boolean; bytes?: number } {
+  const bytes = jsonBytes(r.payload);
   // 关键请求不截断：过大的请求只给预览，界面读完完整内容后才开放批准（复核 NR06）。
-  return bytes <= REQUEST_PREVIEW && !r.payload?.truncated ? r : { ...r, payload: shorten(r.payload), detailTruncated: true, bytes };
+  return bytes <= limit && !r.payload?.truncated ? r : { ...r, payload: boundedPreview(r.payload, 8 * 1024), detailTruncated: true, bytes };
 }
-function rangeOf(text: string, offset: number) {
-  const start = Math.max(0, Math.floor(offset) || 0);
-  return { chunk: text.slice(start, start + RANGE), total: text.length, done: start + RANGE >= text.length };
+/** 按 UTF-8 字节偏移分段：不切断多字节字符，段的序列化大小（含 JSON 转义）不超过 128 KiB。 */
+export function rangeOf(text: string, offset: number) {
+  const buf = Buffer.from(text, 'utf8');
+  const start = Math.min(buf.length, Math.max(0, Math.floor(offset) || 0));
+  if (start < buf.length && (buf[start] & 0xc0) === 0x80) throw new DriverError('REJECTED', '偏移不在字符边界');
+  const cut = (end: number) => { while (end > start && end < buf.length && (buf[end] & 0xc0) === 0x80) end--; return end; };
+  let end = cut(Math.min(buf.length, start + RANGE_LIMIT - 64));
+  let chunk = buf.subarray(start, end).toString('utf8');
+  while (end > start && jsonBytes(chunk) > RANGE_LIMIT - 64) { end = cut(start + Math.floor((end - start) * 0.7)); chunk = buf.subarray(start, end).toString('utf8'); }
+  return { chunk, next: end, totalBytes: buf.length, done: end >= buf.length };
+}
+/** 事件出进程前有界化：超过 32 KiB 只发信封，界面按水位重新读取快照（复核 FR02）。 */
+export function boundedEvent(e: StoredEvent): StoredEvent {
+  return jsonBytes(e) <= EVENT_LIMIT ? e : { taskId: e.taskId, seq: e.seq, type: e.type, itemId: e.itemId, payload: { truncated: true, bytes: jsonBytes(e.payload) } };
 }
 
 export type TaskStatus = 'idle' | 'working' | 'waiting' | 'completed' | 'stopped' | 'failed' | 'limited';
@@ -55,7 +75,7 @@ export class AgentTaskService {
   private readonly paused = new Set<string>();
   private readonly dispatching = new Set<string>();
   private readonly missedPump = new Set<string>();
-  private readonly blockedByClosing = new Set<string>();
+  private readonly blockedByClosing = new Map<string, number>();
   /** 每次停止递增：异步打开运行期间按了停止，返回后不再派发（复核 CR03）。 */
   private readonly stopSeq = new Map<string, number>();
   /** Claude 目标命令已发出、尚未得到原生确认（复核 CR14）；确认后以原生事实为准。 */
@@ -67,7 +87,8 @@ export class AgentTaskService {
     d.store.subscribe(e => {
       if (e.type === 'goal.changed') this.goalPending.delete(e.taskId);
       if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g?.turnId === (e.payload as { turnId?: string }).turnId) this.goalPending.delete(e.taskId); }
-      if (e.type === 'run.ended' && this.blockedByClosing.delete(e.taskId)) this.paused.delete(e.taskId);
+      // 只解除“等待旧运行退出”这一原因；等待期间用户又按了停止，则保持暂停（复核 FR01）。
+      if (e.type === 'run.ended' && this.blockedByClosing.has(e.taskId)) { const since = this.blockedByClosing.get(e.taskId); this.blockedByClosing.delete(e.taskId); if (since === (this.stopSeq.get(e.taskId) ?? 0)) this.paused.delete(e.taskId); }
       if (e.type === 'turn.ended' || e.type === 'run.ended') {
         // 派发进行中到达的终态会被门闩挡掉：记下来，门闩释放后补一次调度（复核 NR03）。
         if (this.dispatching.has(e.taskId)) this.missedPump.add(e.taskId);
@@ -114,10 +135,10 @@ export class AgentTaskService {
   /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。mode=steer 时尝试插话，不支持则保留在排队并说明原因。 */
   async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) {
     const { revision, task } = this.selection(taskId);
-    if (input.expectedSelectionRevision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
-    // 幂等命中直接返回原收据，不再准备或冻结附件（复核 NR01）。
+    // 幂等命中直接返回原收据，不再核对选择修订、准备或冻结附件（复核 NR01、FR06）。
     const existing = this.d.store.turnByClientInput(taskId, input.clientInputId);
     if (existing) return { turnId: existing.turn_id, duplicate: true, status: existing.status };
+    if (input.expectedSelectionRevision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
     if (Buffer.byteLength(input.text) > 256 * 1024) throw new DriverError('REJECTED', '输入超过 256 KB，请拆分或改用附件');
     const verified = this.d.userData ? verifyAttachments(input.attachments, task.cwd, this.d.userData) : [];
     // 图片在接受时冻结副本，派发只读副本（复核 CR01）。
@@ -167,6 +188,11 @@ export class AgentTaskService {
     if (c.state !== 'enabled') throw new DriverError('UNSUPPORTED', `${label}不可用：${c.reason === 'below-minimum' ? `版本低于最低已验证版本 ${c.minVersion}` : c.reason === 'probe-unavailable' ? '执行器没有公布该方法' : c.reason ?? '未声明'}`);
   }
 
+  /** 无法保证把审批交给用户的版本不能运行“请求批准／帮我批准”（复核 NR09、FR08，技术方案 §7.1）。 */
+  private gateTier(run: RunHandle, tier: Tier) {
+    if (run.driverId === 'codex-app-server' && tier !== 'full') this.requireCapability(run, 'approvalsReviewer', `${tier === 'ask' ? '请求批准' : '帮我批准'}档位`);
+  }
+
   /** 打开或恢复本任务的运行（不派发输入）。 */
   private async ensureRun(taskId: string) {
     const existing = this.d.runs.runForTask(taskId);
@@ -186,6 +212,10 @@ export class AgentTaskService {
     const { selection, revision } = this.selection(taskId);
     if (selection.driverId === 'codex-app-server' && (name === 'compact' || name === 'review')) {
       const run = await this.ensureRun(taskId);
+      // 会开始原生工作的命令与普通发送同一档位／能力门禁（复核 FR08）。
+      this.gateTier(run, selection.tier as Tier);
+      // 原生命令沿用线程上一次生效的档位：与当前选择不一致时先发一条消息让新档位生效，不借用旧配置。
+      if (run.appliedTier && run.appliedTier !== selection.tier) throw new DriverError('STATE', '档位已变化，新档位要在下一条消息生效；请先发送一条消息再执行该命令');
       if (this.d.runs.busy(run.runId)) throw new DriverError('STATE', '本轮结束后再执行该命令');
       this.paused.delete(taskId);
       await this.d.runs.command(run.runId, name);
@@ -238,12 +268,15 @@ export class AgentTaskService {
       // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
       if (run && run.driverId === 'claude-sdk' && run.tier !== selection.tier) { await this.d.runs.close(run.runId); run = undefined; }
       run = await this.ensureRun(taskId);
-      // 无法保证把审批交给用户的版本不能运行“请求批准／帮我批准”（复核 NR09，技术方案 §7.1）。
-      if (run.driverId === 'codex-app-server' && selection.tier !== 'full') this.requireCapability(run, 'approvalsReviewer', `${selection.tier === 'ask' ? '请求批准' : '帮我批准'}档位`);
+      this.gateTier(run, selection.tier as Tier);
       // 异步打开期间用户按了停止：输入保留在排队，不派发（复核 CR03）。
       if (stoppedSince()) return;
       const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[] };
-      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...this.agentInput(frozen.text, frozen.attachments ?? []), tier: selection.tier as Tier, model: selection.model ?? run.defaultModel });
+      let model = selection.model ?? run.defaultModel;
+      if (!model && run.driverId === 'codex-app-server' && run.sentModel) model = await this.d.runs.resolveDefaultModel(run.runId);
+      // Codex 的模型覆盖会延续：已发过显式模型、又解析不到默认时，不能靠省略字段“恢复默认”（复核 FR03）。
+      if (!model && run.driverId === 'codex-app-server' && run.sentModel) throw new DriverError('UNSUPPORTED', '无法确定执行器默认模型，请在模型菜单里明确选择一个模型');
+      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...this.agentInput(frozen.text, frozen.attachments ?? []), tier: selection.tier as Tier, model });
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
     } catch (e) {
       const t = this.d.store.turn(next.turn_id);
@@ -251,7 +284,7 @@ export class AgentTaskService {
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.runForTask(taskId)) return;
       // 上一运行已不可用、仍在等真实退出：输入保留但暂停，明确告知原因；退出后自动恢复派发（复核 NR04）。
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.closingForTask(taskId)) {
-        if (!this.blockedByClosing.has(taskId)) { this.blockedByClosing.add(taskId); this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { severity: 'warning', code: 'waitingPreviousRun', detail: '上一会话已不可用、正在等待它退出；输入已保留，退出后会自动发送。也可以取消这条输入。' }); }
+        if (!this.blockedByClosing.has(taskId)) { this.blockedByClosing.set(taskId, this.stopSeq.get(taskId) ?? 0); this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { severity: 'warning', code: 'waitingPreviousRun', detail: '上一会话已不可用、正在等待它退出；输入已保留，退出后会自动发送。也可以取消这条输入。' }); }
         this.paused.add(taskId);
         return;
       }
@@ -331,31 +364,51 @@ export class AgentTaskService {
   snapshot(taskId: string) {
     const { task, selection, revision } = this.selection(taskId);
     const run = this.d.runs.runForTask(taskId);
+    // 草稿过大时只给修订与大小，界面经 draftBody 分段读取（不丢草稿，复核 FR02）。
+    const draft = this.d.store.draft(taskId);
+    const draftShown = draft && jsonBytes(draft.draft) > DRAFT_INLINE ? { ...draft, draft: null, truncated: true, bytes: jsonBytes(draft.draft) } : draft;
+    // 待处理请求合计守预算：放不下的给预览，界面读完全文才能批准。
+    let reqBytes = 0;
+    const requests = this.d.store.pendingRequests(taskId).map(r => {
+      const full = previewRequest(r), size = jsonBytes(full);
+      if (!full.detailTruncated && reqBytes + size <= REQUESTS_BUDGET) { reqBytes += size; return full; }
+      const p = previewRequest(r, 0); reqBytes += jsonBytes(p); return p;
+    });
+    const queuedAll = this.d.store.queuedTurns(taskId);
     const base = {
       taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, selection, selectionRevision: revision,
-      draft: this.d.store.draft(taskId), items: [] as ReturnType<AgentStore['items']>, hasOlder: false, turns: this.d.store.turns(taskId).slice(-500),
-      requests: this.d.store.pendingRequests(taskId).map(previewRequest), queued: this.d.store.queuedTurns(taskId).slice(0, 50).map(q => { const t = (JSON.parse(q.input_ref) as { text: string }).text; return { turnId: q.turn_id, text: t.length > 2000 ? t.slice(0, 2000) : t, ...(t.length > 2000 ? { truncated: true } : {}) }; }),
+      draft: draftShown, requests,
+      queued: queuedAll.slice(0, 10).map(q => { const t = (JSON.parse(q.input_ref) as { text: string }).text; return { turnId: q.turn_id, text: t.length > 1000 ? t.slice(0, 1000) : t, ...(t.length > 1000 ? { truncated: true } : {}) }; }),
+      queuedTotal: queuedAll.length,
       run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: this.d.runs.active(run.runId)?.catalog ?? null } : null,
       goal: this.d.store.goal(taskId), goalPending: this.goalPending.get(taskId) ?? null,
       status: this.status(taskId), seq: this.d.store.watermark(taskId),
     };
-    // 整体响应守 256 KiB：先算除条目外的部分，剩余预算装入最近的条目（复核 NR06）。
-    const rest = Buffer.byteLength(JSON.stringify(base));
-    return { ...base, ...this.itemsPage(taskId, Math.max(16 * 1024, 240 * 1024 - rest)) };
+    // 整份响应按最终字节守 256 KiB：其余字段之后，剩余预算装入最近的条目及其回合。
+    const allTurns = this.d.store.turns(taskId);
+    const recentTurns = allTurns.slice(-20);
+    let budget = RESPONSE_LIMIT - 4 * 1024 - jsonBytes(base) - jsonBytes(recentTurns);
+    const page = this.itemsPage(taskId, Math.max(0, budget), allTurns, recentTurns);
+    const out = { ...base, ...page };
+    while (jsonBytes(out) > RESPONSE_LIMIT && out.items.length) { out.items.shift(); out.hasOlder = true; }
+    return out;
   }
 
-  /** 快照只带最近 2000 条；更早的按 100 条一页、响应不超过 256 KiB 读取（技术方案 §3.1）。 */
-  private itemsPage(taskId: string, budget = SNAPSHOT_ITEM_BUDGET) {
-    // 快照条目按字节预算从新到旧装入，单项过大给预览（复核 NR06，IPC 响应 256 KiB）。
-    const all = this.d.store.items(taskId);
+  /** 从新到旧装入条目（单项过大给预览），并带上这些条目所属的回合；字节与条数（2000）双重边界。 */
+  private itemsPage(taskId: string, budget: number, allTurns: ReturnType<AgentStore['turns']>, keepTurns: ReturnType<AgentStore['turns']> = [], beforeOrdinal?: number) {
+    const all = this.d.store.items(taskId, beforeOrdinal !== undefined ? { beforeOrdinal, limit: 100 } : undefined);
+    const turnMap = new Map(allTurns.map(t => [t.turn_id, t]));
+    const turnIds = new Set(keepTurns.map(t => t.turn_id));
     const out: typeof all = []; let bytes = 0;
     for (const it of [...all].reverse()) {
       const shown = previewItem(it);
-      const size = Buffer.byteLength(JSON.stringify(shown));
-      if (bytes + size > budget && out.length) break;
-      bytes += size; out.unshift(shown);
+      const t = it.turnId && !turnIds.has(it.turnId) ? turnMap.get(it.turnId) : undefined;
+      const size = jsonBytes(shown) + (t ? jsonBytes(t) : 0) + 1;
+      if (bytes + size > budget) break;
+      bytes += size; out.unshift(shown); if (t) turnIds.add(t.turn_id);
     }
-    return { items: out, hasOlder: out.length > 0 && out[0].ordinal > 1 };
+    const turns = allTurns.filter(t => turnIds.has(t.turn_id));
+    return { items: out, turns, hasOlder: out.length ? out[0].ordinal > 1 : all.length > 0 };
   }
   /** 正文范围读取（复核 NR06）：截断预览的条目与过大的请求按 128 KiB 分段读取完整内容。 */
   itemBody(taskId: string, itemId: string, offset: number) {
@@ -371,11 +424,24 @@ export class AgentTaskService {
   }
   history(taskId: string, beforeOrdinal: number) {
     this.selection(taskId);
-    const page = this.d.store.items(taskId, { beforeOrdinal, limit: 100 });
-    const out: typeof page = []; let bytes = 0;
-    for (const it of [...page].reverse()) { const shown = previewItem(it); const size = Buffer.byteLength(JSON.stringify(shown)); if (bytes + size > HISTORY_BUDGET && out.length) break; bytes += size; out.unshift(shown); }
-    return { items: out, hasOlder: out.length > 0 && out[0].ordinal > 1 };
+    const page = this.itemsPage(taskId, RESPONSE_LIMIT - 8 * 1024, this.d.store.turns(taskId), [], beforeOrdinal);
+    while (jsonBytes(page) > RESPONSE_LIMIT && page.items.length > 1) page.items.shift();
+    return page;
+  }
+  draftBody(taskId: string, offset: number) {
+    this.selection(taskId);
+    const d = this.d.store.draft(taskId);
+    return { ...rangeOf(JSON.stringify(d?.draft ?? null), offset), revision: d?.revision ?? 0 };
   }
 
-  events(taskId: string, afterSeq: number, limit = 128): StoredEvent[] { return this.d.store.events(taskId, afterSeq, Math.min(limit, 128)); }
+  /** 事件页按字节守 256 KiB，单个事件超过 32 KiB 只给信封（复核 FR02）。 */
+  events(taskId: string, afterSeq: number, limit = 128): StoredEvent[] {
+    const out: StoredEvent[] = []; let bytes = 2;
+    for (const e of this.d.store.events(taskId, afterSeq, Math.min(limit, 128))) {
+      const b = boundedEvent(e), size = jsonBytes(b) + 1;
+      if (bytes + size > RESPONSE_LIMIT && out.length) break;
+      bytes += size; out.push(b);
+    }
+    return out;
+  }
 }

@@ -66,7 +66,9 @@ export interface DriverInstance {
    * 打开或恢复原生会话。confirmed=false 表示宿主预分配的 ID（如 Claude 新会话），
    * 须等原生 session 事件确认后才能写入绑定的 native_confirmed_at（技术方案 §2：预分配 ID 不等于已确认）。
    */
-  open(options: DriverOpenOptions): Promise<{ nativeId: string; confirmed: boolean }>;
+  /** 解析执行器自己的默认模型（Codex：配置与模型目录）。 */
+  defaultModel?(): Promise<string | undefined>;
+  open(options: DriverOpenOptions): Promise<{ nativeId: string; confirmed: boolean; defaultModel?: string }>;
   /** 等原生开始信号后才 resolve。 */
   startTurn(input: TurnInput): Promise<{ nativeTurnId: string }>;
   /** 原样回传原生选项或结构化回答，不压成布尔值。 */

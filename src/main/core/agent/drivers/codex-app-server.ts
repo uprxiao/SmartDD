@@ -62,10 +62,11 @@ export class CodexAppServerInstance implements DriverInstance {
     const work = (async () => {
       await this.rpc!.call('initialize', { clientInfo: { name: 'willyou', version: '1' }, capabilities: { experimentalApi: true } });
       this.rpc!.notify('initialized');
-      const common = { cwd: o.cwd, approvalPolicy: tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandbox: SANDBOX_MODE[tier.sandboxPolicy.type], ...(o.model ? { model: o.model } : {}) };
+      // 新线程不带模型打开，响应里的 model 即执行器默认；所选模型随每轮显式发送（模型覆盖对后续轮次持续生效，复核 FR03）。
+      const common = { cwd: o.cwd, approvalPolicy: tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandbox: SANDBOX_MODE[tier.sandboxPolicy.type] };
       const r = o.resumeNativeId
-        ? await this.rpc!.call<{ thread: { id: string } }>('thread/resume', { threadId: o.resumeNativeId, excludeTurns: true, ...common })
-        : await this.rpc!.call<{ thread: { id: string } }>('thread/start', common);
+        ? await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/resume', { threadId: o.resumeNativeId, excludeTurns: true, ...common, ...(o.model ? { model: o.model } : {}) })
+        : await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/start', common);
       if (!r?.thread?.id) throw new DriverError('PROTOCOL', 'thread 响应缺少 id');
       this.threadId = r.thread.id;
       this.emitter.emit({ type: 'session', nativeId: r.thread.id });
@@ -73,9 +74,23 @@ export class CodexAppServerInstance implements DriverInstance {
       void this.rpc!.call<{ data?: { skills?: { name: string; description?: string; enabled?: boolean }[] }[] }>('skills/list', { cwds: [o.cwd] }, 15_000)
         .then(s => this.emitter.emit({ type: 'catalog', commands: ['goal', 'compact', 'review'], skills: (s?.data ?? []).flatMap(e => e.skills ?? []).filter(k => k.enabled !== false).map(k => ({ name: k.name, description: k.description })) }))
         .catch(() => this.emitter.emit({ type: 'catalog', commands: ['goal', 'compact', 'review'], skills: [] }));
-      return { nativeId: r.thread.id, confirmed: true };
+      // 恢复的线程带着上次的模型覆盖，不能当默认；需要时再经 defaultModel() 从配置与模型目录读取。
+      const defaultModel = !o.resumeNativeId && typeof r.model === 'string' && r.model ? r.model : undefined;
+      return { nativeId: r.thread.id, confirmed: true, ...(defaultModel ? { defaultModel } : {}) };
     })();
     return Promise.race([work, spawnError]);
+  }
+
+  /** 执行器默认模型：用户配置的 model，否则模型目录里标记为默认的那个；读不到返回 undefined。 */
+  async defaultModel(): Promise<string | undefined> {
+    if (!this.rpc) return undefined;
+    try {
+      const c = await this.rpc.call<{ config?: { model?: string | null } }>('config/read', { cwd: this.cwd }, 5_000);
+      if (c?.config?.model) return c.config.model;
+      const l = await this.rpc.call<{ data?: { model?: string; id?: string; isDefault?: boolean }[] }>('model/list', {}, 5_000);
+      const d = l?.data?.find(m => m.isDefault);
+      return d ? d.model ?? d.id : undefined;
+    } catch { return undefined; }
   }
 
   async startTurn(input: TurnInput) {

@@ -29,7 +29,7 @@ describe('Codex app-server 驱动', () => {
     expect(r).toEqual({ nativeId: 'thr-1', confirmed: true });
     expect(spawned()).toMatchObject({ command: '/opt/codex', args: ['app-server', '--disable', 'plugins'], options: { cwd: '/w', env: { PATH: '/bin' } } });
     expect(server.received.map(m => m.method)).toEqual(['initialize', 'initialized', 'thread/start', 'skills/list']);
-    expect(server.calls('thread/start')[0].params).toEqual({ cwd: '/w', approvalPolicy: 'on-request', approvalsReviewer: 'user', sandbox: 'workspace-write', model: 'gpt-x' });
+    expect(server.calls('thread/start')[0].params).toEqual({ cwd: '/w', approvalPolicy: 'on-request', approvalsReviewer: 'user', sandbox: 'workspace-write' });
     expect(events).toContainEqual({ type: 'process', pid: 4242 });
     expect(events).toContainEqual({ type: 'session', nativeId: 'thr-1' });
   });
@@ -189,6 +189,23 @@ describe('Codex app-server 驱动', () => {
     expect(server.received.find(m => m.id === 41)).toMatchObject({ error: { code: -32601 } });
     expect(events.some(e => e.type === 'request')).toBe(false);
     expect(events).toContainEqual({ type: 'native', name: 'request/unsupported', payload: { method: 'future/required' } });
+  });
+
+  it('FR03：新线程不带模型打开并报告原生默认；恢复的线程按需从配置／模型目录读取默认', async () => {
+    const a = setup((m, s) => { if (m.method === 'thread/start') { s.reply(m.id, { thread: { id: 'thr-1' }, model: 'native-default' }); return true; } return false; });
+    const r = await a.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', model: 'explicit' });
+    expect(r).toEqual({ nativeId: 'thr-1', confirmed: true, defaultModel: 'native-default' });
+    expect(a.server.calls('thread/start')[0].params.model).toBeUndefined();
+    const b = setup((m, s) => {
+      if (m.method === 'config/read') { s.reply(m.id, { config: { model: null } }); return true; }
+      if (m.method === 'model/list') { s.reply(m.id, { data: [{ id: 'x', model: 'x', isDefault: false }, { id: 'd', model: 'gpt-default', isDefault: true }] }); return true; }
+      return false;
+    });
+    const rb = await b.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', resumeNativeId: 'thr-old', model: 'sticky' });
+    expect(rb.defaultModel).toBeUndefined();
+    expect(b.server.calls('thread/resume')[0].params.model).toBe('sticky');
+    expect(await b.inst.defaultModel()).toBe('gpt-default');
+    expect(b.server.calls('config/read')[0].params).toEqual({ cwd: '/w' });
   });
 
   it('线程响应缺少 id 判协议错误', async () => {
