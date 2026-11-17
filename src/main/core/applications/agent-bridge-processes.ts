@@ -34,6 +34,17 @@ export class AgentBridgeProcesses {
   if(!old){const aborted=()=>this.signal(identity),entry:Tracked={runId,handle,identity,detach:()=>context.signal.removeEventListener('abort',aborted),state:'active'};this.tracked.set(handle.processId,entry);context.signal.addEventListener('abort',aborted,{once:true});if(context.signal.aborted||this.closed||socket.destroyed)this.signal(identity);}
   if(this.closed||socket.destroyed||context.signal.aborted)throw new ApplicationError('CANCELED','桥启动核验已取消');this.runs.assertBridge(runId,handle.processId);
  }
+ /** Cleanup receipt only: a rejected M14 handshake must still account for its real child, without granting bridge authority. */
+ observeRejected(socket:Socket,runId:string,handle:OwnedRunProcess):Promise<void>{const work=this.observeRejectedOnce(socket,runId,handle);this.pending.add(work);void work.finally(()=>this.pending.delete(work)).catch(()=>{});return work;}
+ private async observeRejectedOnce(socket:Socket,runId:string,handle:OwnedRunProcess){
+  const existing=this.tracked.get(handle.processId);if(existing){if(existing.runId!==runId)throw new ApplicationError('SCOPE_DENIED','桥清理来源不符');this.signal(existing.identity);return;}
+  const run=this.runs.get(runId),child=this.runs.store.sqlite.prepare("SELECT r.binding_id,p.state FROM capability_runs r JOIN capability_run_processes p ON p.run_id=r.run_id WHERE r.run_id=? AND p.process_id=? AND p.kind='bridge'").get(runId,handle.processId) as {binding_id:string|null;state:string}|undefined;
+  if(!child?.binding_id||!['armed','unknown'].includes(child.state)||!run.pid||!run.processStartedAt)throw new ApplicationError('SCOPE_DENIED','没有可核对的任务桥启动窗口');
+  const proof=await this.peers.read(socket);if(!proof||proof.uid!==process.getuid?.()||proof.peer.pid===run.pid||realpathSync(proof.peer.executable)!==realpathSync(process.execPath)||!proof.ancestors.some(p=>p.pid===run.pid&&p.startedAt===run.processStartedAt))throw new ApplicationError('SCOPE_DENIED','拒绝的连接没有本任务进程来源');
+  const latest=this.runs.get(runId);if(latest.pid!==run.pid||latest.processStartedAt!==run.processStartedAt)throw new ApplicationError('NATIVE_IDENTITY_CONFLICT','原任务进程来源已变化');
+  const identity={pid:proof.peer.pid,startedAt:proof.peer.startedAt};await handle.attach(identity.pid,identity.startedAt);
+  this.tracked.set(handle.processId,{runId,handle,identity,detach:()=>{},state:'active'});this.signal(identity);
+ }
  revokeBridge(runId:string,processId:string):void {const entry=this.tracked.get(processId);if(entry?.runId===runId)this.signal(entry.identity);}
  private signal(identity:ProcessIdentity):void{if(this.processes.state(identity)!=='running')return;try{if(this.options.signal)this.options.signal(identity);else process.kill(identity.pid,'SIGTERM');}catch{/* Recheck actual identity later,never infer exit from signalling. */}}
  revokeRun(runId:string):void{for(const entry of this.tracked.values())if(entry.runId===runId)this.signal(entry.identity);}

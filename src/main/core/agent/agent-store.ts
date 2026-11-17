@@ -333,7 +333,7 @@ export class AgentStore {
   }
 
   /** 规范条目：ordinal 稳定；原生键包含 binding/run/generation，同一原生条目重复到达只升修订。 */
-  upsertItem(i: { taskId: string; turnId: string | null; runId: string; nativeKey: string; nodeId?: string; type: string; payload: unknown; terminalState?: string | null }): string {
+  upsertItem(i: { taskId: string; turnId: string | null; runId: string | null; nativeKey: string; nodeId?: string; type: string; payload: unknown; terminalState?: string | null }): string {
     return this.itemTx((written, replaced, emit) => {
       const existing = this.sqlite.prepare('SELECT item_id,revision,payload_ref FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number; payload_ref: string } | undefined;
       if (existing) {

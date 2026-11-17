@@ -1,3 +1,5 @@
+import type { HostBusinessRequests } from './host-business-requests';
+import type { TurnDiffs } from './turn-diffs';
 // M14 任务命令服务（技术方案 T1.5 §3 TaskCommandService）：输入框、IPC 与（后续）MCP 共用。
 // 阶段 2：新任务、草稿／选择 CAS、提交与排队、停止、请求回应、快照与订阅、归档。切换执行器属阶段 3。
 import { randomUUID } from 'node:crypto';
@@ -124,6 +126,13 @@ function boundGoal<T extends { objective?: string | null }>(g: T): T {
 export type TaskStatus = 'idle' | 'working' | 'waiting' | 'completed' | 'stopped' | 'failed' | 'limited' | 'needs_attention';
 
 export class AgentTaskService {
+  private readonly trustedInputs=new Map<string,import('../applications/execution-context').ApplicationUiSender>();private readonly humanSequences=new Map<string,number>();private recordHuman?: (runId:string,sender:import('../applications/execution-context').ApplicationUiSender,text:string,sequence:number)=>void;
+  attachHumanRecorder(record:NonNullable<AgentTaskService['recordHuman']>){this.recordHuman=record;}
+  private humanSent(turnId:string,run:RunHandle,text:string){const sender=this.trustedInputs.get(turnId);this.trustedInputs.delete(turnId);if(sender){const n=(this.humanSequences.get(run.runId)??0)+1;this.humanSequences.set(run.runId,n);try{this.recordHuman?.(run.runId,sender,text,n);}catch{/* Unavailable source evidence grants no authority; business approval remains explicit. */}}}
+  private business?: HostBusinessRequests; private diffs?: TurnDiffs;private diffBusy?:(taskId:string)=>boolean; private readonly finishingTurns=new Set<string>();
+  attachBusiness(value:HostBusinessRequests){this.business=value;}
+  attachDiffs(value:TurnDiffs,busy?:(taskId:string)=>boolean){this.diffs=value;this.diffBusy=busy;}
+  private async finishDiff(taskId:string,turnId:string){while(this.diffBusy?.(taskId))await new Promise(r=>setTimeout(r,50));await this.diffs?.after(taskId,turnId);}
   private coordination?: TaskCoordination;
   attachCoordination(value: TaskCoordination) { this.coordination = value; }
   kick(taskId: string) { queueMicrotask(() => void this.advance(taskId)); }
@@ -157,6 +166,7 @@ export class AgentTaskService {
       if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g?.turnId === (e.payload as { turnId?: string }).turnId) this.goalPending.delete(e.taskId); }
       // 只解除“等待旧运行退出”这一原因；等待期间用户又按了停止，则保持暂停（复核 FR01）。
       if (e.type === 'run.ended' && this.blockedByClosing.has(e.taskId)) { const since = this.blockedByClosing.get(e.taskId); this.blockedByClosing.delete(e.taskId); if (since === (this.stopSeq.get(e.taskId) ?? 0)) this.paused.delete(e.taskId); }
+      if (e.type === 'turn.ended' && this.diffs) { const turnId=(e.payload as {turnId:string}).turnId;this.finishingTurns.add(e.taskId);void this.finishDiff(e.taskId,turnId).catch(()=>{}).finally(()=>{this.finishingTurns.delete(e.taskId);void this.advance(e.taskId);}); }
       if (e.type === 'turn.ended' || e.type === 'run.ended') {
         // 派发进行中到达的终态会被门闩挡掉：记下来，门闩释放后补一次调度（复核 NR03）。
         if (this.dispatching.has(e.taskId)) this.missedPump.add(e.taskId);
@@ -267,7 +277,7 @@ export class AgentTaskService {
 
   private async advance(taskId: string) {
     const task = this.d.store.task(taskId); if (!task || task.archived_at) return;
-    if (this.paused.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
+    if (this.paused.has(taskId) || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
     const { selection, revision } = this.selection(taskId), run = this.d.runs.runForTask(taskId);
     if (selection.pendingSwitch && !this.d.store.queuedTurns(taskId).length && !this.d.runs.respondingForTask(taskId) && !(run && this.d.runs.busy(run.runId)) && !this.d.runs.closingForTask(taskId)) {
       try { await this.switchProfile(taskId, selection.pendingSwitch.profileId, revision, selection.pendingSwitch.model); }
@@ -294,7 +304,7 @@ export class AgentTaskService {
   }
 
   /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。mode=steer 时尝试插话，不支持则保留在排队并说明原因。 */
-  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) {
+  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] },sender?:import('../applications/execution-context').ApplicationUiSender) {
     let { revision, task } = this.selection(taskId);
     // 幂等命中直接返回原收据，不再核对选择修订、准备或冻结附件（复核 NR01、FR06）。
     const existing = this.d.store.turnByClientInput(taskId, input.clientInputId);
@@ -316,6 +326,7 @@ export class AgentTaskService {
     if (!/^[A-Za-z0-9_-]{8,128}$/.test(input.clientInputId)) throw new DriverError('REJECTED', '输入标识无效');
     const accepted = this.d.store.acceptTurn({ taskId, clientInputId: input.clientInputId, text: input.text, sourceKind: 'user', attachments });
     if (accepted.duplicate) return { turnId: accepted.turn.turn_id, duplicate: true, status: accepted.turn.status };
+    if(sender)this.trustedInputs.set(accepted.turn.turn_id,sender);
     this.paused.delete(taskId);
     this.stoppedByUser.delete(taskId);
     this.coordination?.userContinued(taskId);
@@ -323,7 +334,7 @@ export class AgentTaskService {
     const run = this.d.runs.runForTask(taskId);
     if (input.mode === 'steer' && run && this.d.runs.busy(run.runId)) {
       if (!this.steerable(run)) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: '该执行器版本没有插话的验证证据，已排队' };
-      try { await this.d.runs.steer(run.runId, accepted.turn.turn_id, { clientInputId: input.clientInputId, ...this.agentInput(input.text, attachments) }); return { turnId: accepted.turn.turn_id, duplicate: false, status: 'steered' }; }
+      try { await this.d.runs.steer(run.runId, accepted.turn.turn_id, { clientInputId: input.clientInputId, ...this.agentInput(input.text, attachments) });this.humanSent(accepted.turn.turn_id,run,input.text); return { turnId: accepted.turn.turn_id, duplicate: false, status: 'steered' }; }
       catch (e) {
         // 只有能证明未发出（协议明确拒绝、状态不符、不支持）才转排队；超时或断线可能已被接受，记未知、不自动重发（复核 CR02）。
         if (e instanceof DriverError && (e.code === 'REJECTED' || e.code === 'STATE' || e.code === 'UNSUPPORTED')) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: `插话未被接受（${e.message.slice(0, 120)}），已排队` };
@@ -447,7 +458,7 @@ export class AgentTaskService {
 
   /** 按接受顺序派发下一条排队输入；必要时先打开或恢复运行。 */
   private async pump(taskId: string) {
-    if (this.paused.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
+    if (this.paused.has(taskId) || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
     const next = this.d.store.queuedTurns(taskId)[0];
     if (!next) return;
     let run = this.d.runs.runForTask(taskId);
@@ -464,6 +475,7 @@ export class AgentTaskService {
       // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
       if (run && run.driverId === 'claude-sdk' && run.tier !== selection.tier) { await this.d.runs.close(run.runId); run = undefined; }
       run = await this.ensureRun(taskId);
+      await this.business?.bindPending(taskId,run);
       this.gateTier(run, selection.tier as Tier);
       // 异步打开期间用户按了停止：输入保留在排队，不派发（复核 CR03）。
       if (stoppedSince()) return;
@@ -483,8 +495,11 @@ export class AgentTaskService {
         else this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${selection.effort}：执行器未公布该模型的此选项。` });
       }
       transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, INPUT_TEXT_LIMIT - Buffer.byteLength(input.text));
-      const context = [transfer?.text, this.coordination?.dispatchContext?.(taskId)].filter(Boolean).join('\n\n');
+      const context = [transfer?.text, this.coordination?.dispatchContext?.(taskId),this.business?'宿主业务约定：工具返回 awaiting_user 表示请求已持久等待用户，不会超时；不要轮询、重发或在 shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。':undefined].filter(Boolean).join('\n\n');
+      await this.diffs?.before(taskId,next.turn_id,run.runId);
+      if(stoppedSince())return;
       await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort });
+      if(this.d.store.turn(next.turn_id)?.source_kind==='user')this.humanSent(next.turn_id,run,frozen.text);
       if (transfer) this.handoffs.delivered(transfer.id, 'accepted');
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
     } catch (e) {
@@ -521,6 +536,7 @@ export class AgentTaskService {
     const selected = this.selection(taskId);
     if (selected.selection.pendingSwitch) this.d.store.updateSelection(taskId, { pendingSwitch: undefined }, selected.revision);
     this.d.runs.hold(taskId, true);
+    this.business?.stop(taskId);
     await this.coordination?.userStopped(taskId, subtree);
     const run = this.d.runs.runForTask(taskId);
     if (!run) return { stopped: this.dispatching.has(taskId) };
@@ -535,13 +551,14 @@ export class AgentTaskService {
   cancelQueued(taskId: string, turnId: string) {
     const t = this.d.store.turn(turnId);
     if (!t || t.task_id !== taskId || t.status !== 'accepted') throw new DriverError('REJECTED', '该输入已发出或不存在');
-    this.d.store.endTurn(turnId, 'canceled', 'USER_CANCELED');
+    this.trustedInputs.delete(turnId);this.d.store.endTurn(turnId, 'canceled', 'USER_CANCELED');
   }
 
   /** 原生请求回应：宿主按当前运行确定作用域，旧代次由运行服务拒绝。 */
-  async respond(taskId: string, requestId: string, revision: number, result: unknown) {
+  async respond(taskId: string, requestId: string, revision: number, result: unknown,sender?:import('../applications/execution-context').ApplicationUiSender) {
     const req = this.d.store.request(requestId);
     if (!req || req.task_id !== taskId) throw new DriverError('REJECTED', '请求不存在');
+    if(req.class==='host_business'){if(!this.business)throw new DriverError('UNSUPPORTED','宿主业务请求尚未接入');return this.business.respond(taskId,requestId,revision,result,sender);}
     // 批准以宿主保存的完整请求为准：客户端交回的入参（可能来自预览）不能替换原文，提问类只取答案（复核 NR06）。
     const r = result as { behavior?: string; updatedInput?: Record<string, unknown> } | null;
     if (r && r.behavior === 'allow' && r.updatedInput) {
@@ -557,11 +574,13 @@ export class AgentTaskService {
   }
 
   async archive(taskId: string) {
+    if(this.business?.busy(taskId))throw new DriverError('STATE','业务请求或操作仍在处理，请先停止并等待收口');
     if (this.coordination?.hasUnfinishedChildren(taskId) || this.coordination?.blocked(taskId)) throw new DriverError('STATE', '子任务或目录占用尚未收口，请先停止并等待排空');
     if (this.d.store.queuedTurns(taskId).length) throw new DriverError('STATE', '仍有排队输入或结果通知，请先处理或取消');
     const run = this.d.runs.runForTask(taskId);
     if (run && this.d.runs.busy(run.runId)) throw new DriverError('STATE', '任务仍在运行，请先停止');
     if (run) await this.d.runs.close(run.runId);
+    await this.diffs?.archive(taskId);
     this.d.store.archiveTask(taskId);
   }
 

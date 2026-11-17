@@ -59,6 +59,11 @@ const text=(value:unknown):string=>{
 
 /** Host-owned pages only. Both authenticated module calls and future UI placement share this service. */
 export class BrowserService {
+  private taskAccess?:{accept(scope:BrowserScope,targetTaskId:string,mode:BrowserAccessMode):unknown|undefined;revoke(id:string):boolean};
+  attachTaskAccess(value:NonNullable<BrowserService['taskAccess']>){this.taskAccess=value;}
+  accessTarget(taskId:string){return {projectId:this.options.taskProject(taskId),pages:this.pages.all().filter(p=>p.taskId===taskId).map(p=>({id:p.id,url:p.contents.getURL()})).sort((a,b)=>a.id.localeCompare(b.id))};}
+  bindTaskAccess(binding:import('./access').BrowserAccessRun,targetTaskId:string,mode:BrowserAccessMode,id:string){const grant=this.access.bindApproved(binding,targetTaskId,mode,id);this.automation.track(binding);this.automation.target(binding.runId,targetTaskId);return grant;}
+
   readonly pages:BrowserPageRegistry;
   readonly operations:BrowserOperations;
   readonly workspace:BrowserWorkspace;
@@ -217,6 +222,7 @@ export class BrowserService {
       if(taskId!==scope.taskId&&command!=='access request')recordGrant();
       if(command==='access request'){
         const mode=args.mode;if(mode!=='observe'&&mode!=='control')throw new ApplicationError('INVALID_INPUT','授权模式须为observe或control');
+        const durable=this.taskAccess?.accept(scope,taskId,mode);if(durable)return {result:durable};
         const receipt=begin(null);if(receipt.replay)return{operation:this.operations.receipt(scope.runId,scope.requestId),replayed:true};send();
         try{const grant=await this.access.request({runId:scope.runId,taskId:scope.taskId,projectId:scope.projectId,signal:scope.runSignal!},taskId,mode,scope.signal,scope.requestId);this.automation.target(scope.runId,taskId);const result={grantId:grant.id,taskId,mode:grant.mode};this.operations.update(scope.runId,scope.requestId,'succeeded','completed',{summary:result});return{result};}
         catch(error){if(error instanceof ApplicationError&&error.code==='SCOPE_DENIED')dispatched=false;throw error;}
@@ -547,7 +553,7 @@ export class BrowserService {
     return{requests:state.requests.map(describe),grants:state.grants.map(describe)};
   }
   respondAccess(id:string,allow:boolean,mode?:BrowserAccessMode):void{this.access.respond(id,allow,mode);}
-  revokeAccess(id:string):void{this.access.revoke(id);}
+  revokeAccess(id:string):void{if(this.taskAccess?.revoke(id))return;this.access.revoke(id);}
   pauseFromUi(taskId:string,paused:boolean){this.workspace.snapshot(taskId);this.pause(taskId,paused);return this.workspace.snapshot(taskId);}
   /** UI-only; never part of the browser command module. Bind approval to the
    * exact outstanding failed navigation so a stale click cannot trust a new host. */

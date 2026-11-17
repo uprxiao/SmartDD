@@ -1,3 +1,4 @@
+import { homeWorkspace } from '@renderer/features/agent-tasks/workspace-panels-store';
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
@@ -114,6 +115,7 @@ export const HomeView = observer(function HomeView() {
   // A stale or missing directory falls back to the project's default one.
   const dirs = project?.id === projectId ? (project?.dirs ?? []) : [];
   const dir = dirs.find((d) => d.id === dirId) ?? dirs.find((d) => d.isDefault) ?? dirs[0] ?? null;
+  useEffect(()=>homeWorkspace.set(projectId,dir?.id??null,dir?.path??null),[projectId,dir?.id,dir?.path]);
   const profile = profiles?.find((p) => p.id === profileId) ?? null;
   const selectedProvider=agents?.providers.find(p=>p.id===profile?.providerId);
   const missingProviderKey=profile?.source==='provider'&&selectedProvider&&!selectedProvider.hasKey;

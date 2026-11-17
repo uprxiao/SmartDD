@@ -39,6 +39,12 @@ export class BrowserAccess {
     const grant=run.grants.get(targetTaskId);return!!grant&&(semantics==='read'||grant.mode==='control');
   }
   require(runId:string,targetTaskId:string,semantics:'read'|'write'):void{if(!this.can(runId,targetTaskId,semantics))throw new ApplicationError('SCOPE_DENIED','本次运行没有该任务的浏览器授权');}
+  /** Durable M14 request has already been reviewed by the trusted host. No old pending promise is reused. */
+  bindApproved(binding:BrowserAccessRun,targetTaskId:string,mode:BrowserAccessMode,id:string):BrowserAccessGrant{
+    this.track(binding);const run=this.run(binding.runId);if(!['observe','control'].includes(mode)||targetTaskId===binding.taskId||this.options.taskProject(targetTaskId)!==binding.projectId)throw new ApplicationError('SCOPE_DENIED','浏览器授权范围已变化');
+    const grant:BrowserAccessGrant={id,runId:binding.runId,projectId:binding.projectId,requesterTaskId:binding.taskId,targetTaskId,mode,requestedMode:mode,createdAt:Date.now(),grantedAt:Date.now()};
+    if(!this.event(grant,'allowed','user'))throw new ApplicationError('BROWSER_UNAVAILABLE','授权审计保存失败');this.run(binding.runId);run.grants.set(targetTaskId,grant);this.changed();return {...grant};
+  }
   request(binding:BrowserAccessRun,targetTaskId:string,mode:BrowserAccessMode,signal:AbortSignal,requestId?:string):Promise<BrowserAccessGrant>{
     this.track(binding);this.run(binding.runId);
     if(!['observe','control'].includes(mode))throw new ApplicationError('INVALID_INPUT','授权模式须为observe或control');
@@ -78,6 +84,7 @@ export class BrowserAccess {
     const pending=this.pending.get(id);if(!pending)throw new ApplicationError('RESOURCE_STATE_CHANGED','授权申请已结束，请核对当前请求');
     pending.finish(allow,'user',mode);
   }
+  revokeTaskGrants(taskId:string):void{for(const run of this.runs.values())if(run.binding.taskId===taskId){for(const grant of run.grants.values())this.event(grant,'revoked','user');run.grants.clear();}this.changed();}
   revoke(id:string):void{
     for(const run of this.runs.values())for(const [target,grant]of run.grants)if(grant.id===id){run.grants.delete(target);this.event(grant,'revoked','user');this.changed();return;}
     throw new ApplicationError('RESOURCE_STATE_CHANGED','原授权已失效');

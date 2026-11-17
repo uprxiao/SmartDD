@@ -8,7 +8,7 @@ export interface NativeInputTarget {taskId:string;ptyId:string}
 export interface HostUserInputReceipt {
  readonly id:string;readonly projectId:string;readonly taskId:string;readonly runId:string;readonly ptyId:string;
  readonly selectionHash:string;readonly textHash:string;readonly observedAt:number;readonly inputSequence:number;
- readonly mailSendScope:NativeMailSendScope|null;readonly transport:'terminal'|'launch-argument';readonly senderId:number;readonly frameProcessId:number;readonly frameRoutingId:number;
+ readonly mailSendScope:NativeMailSendScope|null;readonly transport:'terminal'|'launch-argument'|'agent-input';readonly senderId:number;readonly frameProcessId:number;readonly frameRoutingId:number;
 }
 interface Captured {receipt:HostUserInputReceipt;text:string;signal:AbortSignal;usedBy:string|null;boundSessionId:string|null}
 interface Editor {runId:string;selectionHash:string;text:string;bytes:number;escape:string;paste:boolean;known:boolean;launchCaptured:boolean;inputSequence:number;lastCr:boolean;signal:AbortSignal;detach:()=>void}
@@ -75,6 +75,7 @@ export class NativeUserInputs {
   this.prune();
  }
  /** Called only after the host passes this exact argument to its owned, active process. */
+ observeAgent(sender:ApplicationUiSender,context:RunContext,streamId:string,text:string,sequence:number):void{this.deps.requireSender(sender);if(this.closed||!this.eligible(context)||typeof text!=='string'||!text.trim()||Buffer.byteLength(text)>1024*1024||!Number.isSafeInteger(sequence)||sequence<1)return;const stamp=selection(context),prior=this.editors.get(streamId);if(prior&&(prior.runId!==context.run.runId||prior.selectionHash!==stamp))this.clear(streamId);let editor=this.editors.get(streamId);if(editor&&sequence<=editor.inputSequence)return;if(!editor){const remove=()=>this.clear(streamId);editor={runId:context.run.runId,selectionHash:stamp,text:'',bytes:0,escape:'',paste:false,known:true,launchCaptured:false,inputSequence:sequence,lastCr:false,signal:context.signal,detach:()=>context.signal.removeEventListener('abort',remove)};this.editors.set(streamId,editor);context.signal.addEventListener('abort',remove,{once:true});}else editor.inputSequence=sequence;this.capture(sender,{taskId:context.run.taskId,ptyId:streamId},context,text,stamp,'agent-input',sequence);this.prune();}
  observeLaunch(sender:ApplicationUiSender,target:NativeInputTarget,text:string):void{
   this.deps.requireSender(sender);if(this.closed||typeof text!=='string'||!text.trim()||Buffer.byteLength(text)>1024*1024)return;
   this.observe(sender,target,'');const editor=this.editors.get(target.ptyId),context=this.deps.current(target);

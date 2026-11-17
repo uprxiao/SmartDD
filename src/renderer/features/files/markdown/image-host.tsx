@@ -26,7 +26,7 @@ const snapshot = (source: Picture): PreviewPicture => ({ id: source.id, alt: sou
 export function useMarkdownImages(buffer: FileBuffer, enabled: boolean, hasContext: boolean, onOpen?: (href: string) => Promise<void>) {
   const terminal = useFileTerminalContext();
   useSyncExternalStore(terminal?.subscribe ?? idleSubscribe, terminal?.snapshot ?? idleSnapshot);
-  const settings = useRef({ hasContext, onOpen }); settings.current = { hasContext: hasContext || Boolean(terminal?.target), onOpen };
+  const settings = useRef({ hasContext, onOpen }); settings.current = { hasContext: hasContext || Boolean(terminal?.target||terminal?.composer), onOpen };
   const records = useRef(new Map<HTMLImageElement, Picture>()), serial = useRef(0), origin = useRef<HTMLImageElement | null>(null);
   const [gallery, setGallery] = useState<Gallery | null>(null), [menu, setMenu] = useState<MenuState | null>(null), [notice, setNotice] = useState('');
   useEffect(() => { if (!enabled) { setGallery(null); setMenu(null); } else if (!settings.current.hasContext) setMenu(null); }, [enabled, hasContext, terminal?.target]);

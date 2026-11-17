@@ -1,7 +1,15 @@
+import { observer } from 'mobx-react-lite';
+import { inlineCodeFilePathCandidate,absoluteFilePathMatches } from '@shared/t3-links/markdownLinks';
+import { openMessageLink,resolveMessageLink } from './message-links';
+import {VoiceButton} from '@renderer/views/voice-controls';
+import {voiceStore,textareaVoiceTarget} from '@renderer/core/voice-store';
+import {FILE_TERMINAL_DRAG_TYPE,dropFileToAgentComposer} from '@renderer/features/files/terminal-context/store';
+import {agentComposerTargets} from './composer-target';
+import { panelsFor } from './workspace-panels-store';
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, ChevronRight, CircleStop, Loader2, Send, SquareTerminal, Target, X, Zap } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelRight, ChevronRight, CircleStop, Loader2, Send, SquareTerminal, Target, X, Zap } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
 import { AgentRelations, type Relations } from './agent-relations';
@@ -13,7 +21,7 @@ import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { AgentDialog } from '@renderer/features/agents/ui';
 import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { agentTaskEvent, agentTaskLiveEvent } from '@shared/events';
+import { agentTaskEvent, agentTaskLiveEvent,applicationsChangedEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { events, rpc } from '@renderer/lib/ipc';
 import { buildTimeline, formatDuration, requestForm, requestOptions, requestTitle, workLabel, type RequestForm, type TimelineItem, type TimelineRequest } from './agent-timeline';
@@ -27,12 +35,15 @@ const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', w
 const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限', output: '输出长度到上限' };
 
 // 消息里的链接在阶段 5 按 T3 规则接入路由；此前只显示为文字，不打开任何地址。
-const md = new MarkdownIt({ html: false, linkify: false, breaks: false });
+const md = new MarkdownIt({ html: false, linkify: true, breaks: false });
 // 本项目的 markdown-it 类型声明只含最小接口；这里只覆盖链接与图片的渲染规则。
 const mdRules = (md as unknown as { renderer: { rules: Record<string, (tokens: { content: string }[], idx: number) => string> } }).renderer.rules;
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
-mdRules.link_open = () => '<span class="agent-link-text">';
-mdRules.link_close = () => '</span>';
+const anchor=(href:string,label:string)=>`<a href="#" data-agent-link="${escapeHtml(encodeURIComponent(href))}">${label}</a>`;
+mdRules.link_open = (tokens,idx) => `<a href="#" data-agent-link="${escapeHtml(encodeURIComponent((tokens[idx] as any).attrGet('href')??''))}">`;
+mdRules.link_close = () => '</a>';
+mdRules.code_inline=(tokens,idx)=>{const text=tokens[idx].content,path=inlineCodeFilePathCandidate(text);return '<code>'+(path?anchor(path,escapeHtml(text)):escapeHtml(text))+'</code>';};
+mdRules.text=(tokens,idx)=>{const text=tokens[idx].content;if(tokens.slice(0,idx).reduce((n,t)=>n+((t as any).type==='link_open'?1:(t as any).type==='link_close'?-1:0),0)>0)return escapeHtml(text);const matches=absoluteFilePathMatches(text);let pos=0,out='';for(const m of matches){out+=escapeHtml(text.slice(pos,m.index))+anchor(m.path,escapeHtml(m.path));pos=m.index+m.path.length;}return out+escapeHtml(text.slice(pos));};
 // 代码块带“在终端运行”：把完整命令送入本任务手动终端的输入行，不自动执行（用例 A52）。
 mdRules.fence = (tokens, idx) => {
   const t = tokens[idx] as { content: string; info?: string };
@@ -46,13 +57,16 @@ export { newClientInputId } from './agent-ids';
 import { newClientInputId } from './agent-ids';
 
 /** 由任务区提供：把代码块命令送进手动终端。 */
-const RunInTerminal = { current: null as null | ((code: string) => void) };
-function Markdown({ text }: { text: string }) {
+const RunInTerminal = createContext<null|((code:string)=>void)>(null);
+function Markdown({ text,itemId }: { text: string;itemId?:string }) {
+  const taskId=useContext(TaskScope),terminal=useContext(RunInTerminal);const [menu,setMenu]=useState<{href:string;x:number;y:number}|null>(null);
+  const route=(href:string,external=false)=>{if(!itemId){toast.message('这条内容仍在生成，完成后再打开链接');return;}void openMessageLink(taskId,itemId,href,external).catch(e=>toast.error(rpcErrorMessage(e)));};
   const html = useMemo(() => md.render(text), [text]);
-  return <div className="agent-md" dangerouslySetInnerHTML={{ __html: html }} onClick={e => {
+  return <><div className="agent-md" onContextMenu={e=>{const link=(e.target as HTMLElement).closest<HTMLElement>('[data-agent-link]');if(link?.dataset.agentLink){e.preventDefault();setMenu({href:decodeURIComponent(link.dataset.agentLink),x:Math.min(e.clientX,window.innerWidth-210),y:Math.min(e.clientY,window.innerHeight-180)});}}} dangerouslySetInnerHTML={{ __html: html }} onClick={e => {
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.agent-run-in-terminal');
-    if (btn?.dataset.code) RunInTerminal.current?.(decodeURIComponent(btn.dataset.code));
-  }} />;
+    if (btn?.dataset.code) terminal?.(decodeURIComponent(btn.dataset.code));
+    const link=(e.target as HTMLElement).closest<HTMLElement>('[data-agent-link]');if(link?.dataset.agentLink){e.preventDefault();route(decodeURIComponent(link.dataset.agentLink),e.metaKey||e.ctrlKey);}
+  }} />{menu&&<><button type='button' className='agent-context-scrim' aria-label='关闭链接菜单' onClick={()=>setMenu(null)}/><div className='agent-link-menu' style={{left:menu.x,top:menu.y}}><button type='button' onClick={()=>{route(menu.href);setMenu(null);}}>打开</button><button type='button' onClick={()=>{route(menu.href,true);setMenu(null);}}>在外部编辑器打开</button><button type='button' onClick={()=>{if(itemId)void resolveMessageLink(taskId,itemId,menu.href).then(r=>navigator.clipboard.writeText(r.kind==='file'?r.absolutePath:r.url)).then(()=>toast.success('已复制完整路径')).catch(e=>toast.error(rpcErrorMessage(e)));setMenu(null);}}>复制完整路径</button></div></>}</>;
 }
 
 const DEFAULT_COMMANDS: Record<string, string[]> = { 'codex-app-server': ['goal', 'compact', 'review'], 'claude-sdk': ['goal', 'compact', 'init'] };
@@ -131,6 +145,7 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
 }
 
 function ItemRow({ item }: { item: TimelineItem }) {
+  const useTaskId=useContext(TaskScope);
   const { payload: p, truncated, load } = useFullPayload(item);
   // 复制／下载计划先取得全文；读不到就提示失败，不输出残缺内容（复核 FR04）。
   // 正文不完整（超过保存上限）或读不到计划字段时提示失败，不复制／下载空的或残缺的内容（复核 T02）。
@@ -146,13 +161,14 @@ function ItemRow({ item }: { item: TimelineItem }) {
   const more = <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />;
   switch (item.type) {
     case 'user_message': return <div className="agent-user"><div className="agent-user-bubble">{p.text}{more}{p.attachments?.length ? <div className="agent-user-attachments">{p.attachments.map((a: any, i: number) => <span key={i} className="agent-chip-name">{a.kind === 'path' ? a.relativePath : a.name}</span>)}</div> : null}</div></div>;
-    case 'assistant_message': return <div className="agent-assistant"><Markdown text={String(p.text ?? '')} />{more}</div>;
-    case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划</div><Markdown text={String(p.plan ?? '')} />{more}
+    case 'assistant_message': return <div className="agent-assistant"><Markdown itemId={item.itemId} text={String(p.text ?? '')} />{more}</div>;
+    case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划</div><Markdown itemId={item.itemId} text={String(p.plan ?? '')} />{more}
       <div className="agent-plan-actions"><button type="button" onClick={() => void copyPlan()}>复制</button>
         <button type="button" onClick={() => void downloadPlan()}>下载</button></div></div>;
     case 'todo_list': return <div className="agent-todo">{(p.entries ?? []).map((e: any) => <div key={e.id} className={`agent-todo-row ${e.status}`}><span className="agent-todo-box" aria-hidden>{e.status === 'completed' ? '✓' : ''}</span>{e.subject}</div>)}{more}</div>;
     case 'subtask': return <div className="agent-child-result"><button type="button" onClick={() => navigation.openAgentTask(p.childTaskId)}>宿主子任务 · {p.title}</button><small>已持久接受委派{p.notice ? ` · ${p.notice}` : ''}</small>{more}</div>;
-    case 'notification': return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => navigation.openAgentTask(p.childTaskId)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{p.summary && <pre>{p.summary}</pre>}{more}</div>;
+    case 'files_changed': return <button type='button' className='agent-change-card' onClick={()=>{const panel=panelsFor({kind:'task',taskId:useTaskId});panel.diffTurn=p.turnId;panel.open('diff');}}>本轮改动 · {p.status==='incomplete'?'差异不完整':p.fileCount+' 个文件'} · 查看差异<small>观察到的变化可能包含用户或外部写入</small></button>;
+    case 'notification': return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => navigation.openAgentTask(p.childTaskId)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{(p.summary||p.error||p.result)&&<pre>{p.summary??p.error??JSON.stringify(p.result,null,2)}</pre>}{more}</div>;
     case 'error': return <div className="agent-error" role="alert">{p.message ?? p.code}{more}</div>;
     case 'compaction': return <div className="agent-divider">上下文已压缩</div>;
     case 'provider_switch': return <div className="agent-divider">此处切换到 {p.toName ?? p.to}{more}</div>;
@@ -208,7 +224,7 @@ function WorkItem({ it }: { it: TimelineItem }) {
   const [nativeOpen, setNativeOpen] = useState(false);
   return <details className={`agent-work-row ${p.status ?? ''}`}>
     <summary>{workLabel({ ...it, payload: p })}</summary>
-    {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' || it.type === 'assistant_message' ? <Markdown text={String(p.text ?? '')} /> : null}
+    {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' || it.type === 'assistant_message' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
     {it.type === 'subagent' && <><button type="button" className="agent-older" onClick={() => setNativeOpen(true)}>查看执行器原生子 Agent</button>{nativeOpen && <AgentDialog title="执行器原生子 Agent" sub="属于当前运行，和宿主委派子任务分别记录" onClose={() => setNativeOpen(false)} footer={<button type="button" className="m10-button" onClick={() => void rpc.agentTasks.stop(taskId).then(() => setNativeOpen(false)).catch(e => toast.error(rpcErrorMessage(e)))}>停止所属运行</button>}>
       <p>{p.input?.description ?? p.tool ?? p.name} · {p.status ?? '状态未知'}</p>
       {p.prompt && <pre>{p.prompt}</pre>}
@@ -287,7 +303,11 @@ function RequestPanel({ requests, more = 0, driverId, onRespond, onStop }: { req
   const r = loaded && loaded !== 'error' ? { ...shown, payload: loaded } : shown;
   const form = incomplete ? null : requestForm(r, effectiveDriver);
   const options = form ? [] : incomplete ? requestOptions(r, effectiveDriver).filter(o => o.deny) : requestOptions(r, effectiveDriver);
-  const head = requestTitle(r);
+  const head = r.kind==='host_business'?{title:r.payload.title??'宿主业务请求',detail:r.payload.phase==='approved_pending_bind'?'已批准，待新运行登记后重新核对并绑定；目前尚无可用权限。':r.payload.phase==='executing'?'业务正在执行，结果以业务回执为准。':r.payload.businessKind==='mail_send'?'邮件内容见下方；修改并保存后需要重新批准。':JSON.stringify(r.payload.review,null,2)}:requestTitle(r);
+  const [mailDisplay,setMailDisplay]=useState<{key:string;value:any}|null>(null),[mailEditing,setMailEditing]=useState(false),[mailEdits,setMailEdits]=useState({to:'',cc:'',bcc:'',subject:'',text:''}),[unknownConfirmed,setUnknownConfirmed]=useState(false);
+  const isMail=r.kind==='host_business'&&r.payload.businessKind==='mail_send';
+  useEffect(()=>{let alive=true;setMailDisplay(null);setMailEditing(false);setUnknownConfirmed(false);if(isMail&&!incomplete)void rpc.agentTasks.businessReview(r.ownerTaskId??taskId,r.requestId,r.revision).then(value=>{if(!alive)return;setMailDisplay({key:reqKey,value});const c=(value as any).draft?.content??r.payload.review?.content;if(c)setMailEdits({to:(c.to??[]).join(', '),cc:(c.cc??[]).join(', '),bcc:(c.bcc??[]).join(', '),subject:c.subject??'',text:c.text??''});}).catch(e=>{if(alive)toast.error(rpcErrorMessage(e));});return()=>{alive=false;};},[reqKey,isMail,incomplete]);
+
   useEffect(() => { setSelected(null); panel.current?.focus(); }, [r.requestId]);
   const send = async (result: unknown) => {
     setBusy(true);
@@ -296,6 +316,7 @@ function RequestPanel({ requests, more = 0, driverId, onRespond, onStop }: { req
   const choose = (i: number) => {
     const o = options[i]; if (!o || busy) return;
     const why = reason[r.requestId] ?? '';
+    if(isMail){if(o.key==='edit'){setMailEditing(true);return;}if(o.key==='agentedit'){if(!why.trim()){toast.warning('请先写邮件修改要求');return;}void send({choice:'agentedit',instructions:why});return;}if(o.key==='allow'){if(mailEditing||!mailDisplay||mailDisplay.key!==reqKey){toast.warning('请先读完邮件并保存修改');return;}const unknown=r.payload.review?.priorUnknownExecutionIds??[];if(unknown.length&&!unknownConfirmed){toast.warning('需先核实原未知发送结果');return;}void rpc.agentTasks.businessReview(r.ownerTaskId??taskId,r.requestId,r.revision).then(v=>send({choice:'allow',displayReceiptId:(v as any).displayReceiptId,reviewedUnknownExecutionIds:unknownConfirmed?unknown:[]})).catch(e=>toast.error(rpcErrorMessage(e)));return;}}
     if (o.key === 'revise' && !why.trim()) { toast.warning('先在下方写修改意见'); return; }
     void send(o.result(why));
   };
@@ -311,8 +332,9 @@ function RequestPanel({ requests, more = 0, driverId, onRespond, onStop }: { req
     <div className="agent-request-head"><b>{head.title}</b>{r.ownerName && <small>来自子任务 · {r.ownerName}</small>}{r.origin.nodeId && <small>来自执行器原生子 Agent</small>}{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{index + 1}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}{more > 0 && <small className="agent-request-more">另有 {more} 个请求，处理完前面的会继续显示</small>}</div>
     {incomplete && <div className="agent-limited">{loaded === 'error' ? '请求内容过大或读取失败，只能拒绝或停止' : '正在读取完整内容，读完后才能批准…'}</div>}
     {!form && head.detail && <pre className="agent-request-detail">{head.detail}</pre>}
+    {isMail&&<div className="agent-mail-review" aria-label="邮件审阅"><p>发件人：{r.payload.review?.fromAddress} · 第 {r.payload.review?.draftRevision} 版</p>{mailDisplay?.key!==reqKey?<p role="status">正在读取完整邮件审阅…</p>:mailEditing?<>{(['to','cc','bcc','subject','text'] as const).map(key=><label key={key}>{({to:'收件人',cc:'抄送',bcc:'密送',subject:'主题',text:'正文'})[key]}{key==='text'?<textarea value={mailEdits[key]} rows={8} onChange={e=>setMailEdits(v=>({...v,[key]:e.target.value}))}/>:<input value={mailEdits[key]} onChange={e=>setMailEdits(v=>({...v,[key]:e.target.value}))}/>}</label>)}<button type="button" disabled={busy} onClick={()=>void send({choice:'edit',edits:mailEdits})}>保存修改并重新审阅</button><button type="button" disabled={busy} onClick={()=>setMailEditing(false)}>取消修改</button></>:<><dl><dt>收件人</dt><dd>{(r.payload.review?.content?.to??[]).join(', ')}</dd><dt>抄送</dt><dd>{(r.payload.review?.content?.cc??[]).join(', ')}</dd><dt>密送</dt><dd>{(r.payload.review?.content?.bcc??[]).join(', ')}</dd><dt>主题</dt><dd>{r.payload.review?.content?.subject}</dd></dl><pre>{r.payload.review?.content?.text}</pre>{r.payload.review?.content?.html&&<details><summary>HTML 正文源文（不会加载远程内容）</summary><pre>{r.payload.review.content.html}</pre></details>}{r.payload.review?.attachments?.map((a:any)=><p key={a.id}>附件：{a.filename} · {a.size} 字节 · {a.contentHash}</p>)}{r.payload.review?.priorUnknownExecutionIds?.length>0&&<label><input type="checkbox" checked={unknownConfirmed} onChange={e=>setUnknownConfirmed(e.target.checked)}/>我已核实原未知发送结果，仍明确要发送此修订</label>}</>}</div>}
     {form ? <RequestFormView key={r.requestId} form={form} busy={busy} onSubmit={result => void send(result)} /> : <>
-      <div className="agent-request-options" role="listbox">{options.map((o, i) => <button key={o.key} type="button" role="option" aria-selected={selected === i} disabled={busy} className={`${o.deny ? 'deny' : ''}${selected === i ? ' on' : ''}`} onClick={() => choose(i)}><kbd>{i + 1}</kbd>{o.label}</button>)}</div>
+      <div className="agent-request-options" role="listbox">{options.map((o, i) => <button key={o.key} type="button" role="option" aria-selected={selected === i} disabled={busy||isMail&&o.key==='allow'&&(mailEditing||mailDisplay?.key!==reqKey)} className={`${o.deny ? 'deny' : ''}${selected === i ? ' on' : ''}`} onClick={() => choose(i)}><kbd>{i + 1}</kbd>{o.label}</button>)}</div>
       <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />
     </>}
     <div className="agent-request-foot">{selected !== null && !form && <span className="agent-request-hint">按 Enter 确认“{options[selected]?.label}”</span>}<button type="button" className="agent-stop" onClick={() => onStop(r)}><CircleStop size={14} />{r.origin.nodeId ? '停止所属运行' : r.ownerTaskId ? '停止子任务本轮' : '停止'}</button></div>
@@ -333,7 +355,7 @@ function GoalRow({ goal, driverId, onOp }: { goal: NonNullable<Snapshot['goal']>
   </div>;
 }
 
-export function AgentTaskView({ taskId }: { taskId: string }) {
+export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId: string }) {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [relations, setRelations] = useState<Relations | null>(null);
   const [childRequests, setChildRequests] = useState<TimelineRequest[]>([]);
@@ -342,6 +364,8 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     void rpc.agentTasks.relations?.(taskId)?.then(setRelations).catch(() => {});
     void rpc.agentTasks.treeRequests?.(taskId)?.then(v => { setChildRequests(v.requests as TimelineRequest[]); setChildRequestsMore(v.more); }).catch(() => {});
   }, [taskId]);
+  const [plugins,setPlugins]=useState<{id:string;name:string}[]>([]),[pluginsOpen,setPluginsOpen]=useState(false);
+  useEffect(()=>{let alive=true;const load=()=>void rpc.agentTasks.plugins?.(taskId)?.then(v=>{if(alive)setPlugins(v);}).catch(()=>{});load();const off=events.on(applicationsChangedEvent,load);return()=>{alive=false;off();};},[taskId]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [text, setText] = useState('');
   const [chips, setChips] = useState<Chip[]>([]);
@@ -352,16 +376,12 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const [now, setNow] = useState(Date.now());
   const permissionPref = useAppSettingsKey('agentPermissions');
   const [confirmFull, setConfirmFull] = useState(false);
-  const [terminalOpen, setTerminalOpen] = useState(false);
+  const panels=panelsFor({kind:'task',taskId}),terminalOpen=panels.drawer,setTerminalOpen=(value:boolean|((v:boolean)=>boolean))=>{panels.drawer=typeof value==='function'?value(panels.drawer):value;};const[moreMenu,setMoreMenu]=useState(false);
   const [trigger, setTrigger] = useState<MenuTrigger | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const [fileHits, setFileHits] = useState<string[]>([]);
   const textarea = useRef<HTMLTextAreaElement>(null);
   const modelSelect = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    RunInTerminal.current = code => { setTerminalOpen(true); void rpc.agentTasks.pasteToTerminal(taskId, code).then(() => toast.message('已送入终端输入行，按回车执行')).catch(e => toast.error(rpcErrorMessage(e))); };
-    return () => { RunInTerminal.current = null; };
-  }, [taskId]);
   useEffect(() => {
     if (trigger?.kind !== '@') return;
     const q = trigger.query, h = setTimeout(() => { void rpc.agentTasks.searchFiles(taskId, null, q).then(setFileHits).catch(() => setFileHits([])); }, 120);
@@ -455,6 +475,15 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     }, 400);
   };
 
+  const insertDraftRef=useRef<(value:string)=>void>(()=>{});
+  insertDraftRef.current=value=>{const start=textarea.current?.selectionStart??textRef.current.length,end=textarea.current?.selectionEnd??start,next=textRef.current.slice(0,start)+value+textRef.current.slice(end);textRef.current=next;setText(next);saveDraft(next);requestAnimationFrame(()=>{textarea.current?.focus();textarea.current?.setSelectionRange(start+value.length,start+value.length);});};
+  useEffect(()=>{
+    const target={taskId,projectId:snap?.projectId??null,insert:(value:string)=>insertDraftRef.current(value),focus:()=>textarea.current?.focus(),attachFile:async(file:import('@shared/files').FileDocument,baseHash:string,signal:AbortSignal)=>{
+      const original=await rpc.files.read(file.ref);signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');if(original.document.revision.hash!==baseHash)throw Error('图片内容已变化，请重新打开后附加');
+      const data=await rpc.agentTasks.prepareAttachment(taskId,null,{name:file.name,mime:file.content?.kind==='image'?file.content.mime:undefined,dataBase64:original.base64});signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');editedRef.current=true;setChips(value=>[...value,{localId:data.id,name:data.name,status:'ready',data}]);saveDraft(textRef.current);
+    }};return agentComposerTargets.register(target);
+  },[taskId,snap?.projectId]);
+
   if (!snap) return <div className="agent-task-view loading"><Loader2 className="spin" size={18} /></div>;
   const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
   // 目标命令只在运行冻结的能力允许时出现（复核 CR15）。
@@ -546,8 +575,8 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     catch (e) { toast.error(rpcErrorMessage(e)); }
   };
 
-  return <TaskScope.Provider value={taskId}><section className="agent-task-view" aria-label="统一任务区">
-    <header className="agent-task-head"><h1>{snap.title}</h1>{STATUS_LABEL[snap.status] && <span className={`agent-status ${snap.status}`}>{STATUS_LABEL[snap.status]}</span>}<span className="push" /><button type="button" className="agent-head-btn" title="底部终端" data-testid="agent-terminal-toggle" aria-pressed={terminalOpen} onClick={() => setTerminalOpen(o => !o)}><SquareTerminal size={15} /></button><button type="button" className="agent-head-btn" title="归档任务" data-testid="agent-archive" onClick={() => void archive()}><Archive size={15} /></button></header>
+  return <RunInTerminal.Provider value={code=>{setTerminalOpen(true);void rpc.agentTasks.pasteToTerminal(taskId,code).then(()=>toast.message('已送入终端输入行，按回车执行')).catch(e=>toast.error(rpcErrorMessage(e)));}}><TaskScope.Provider value={taskId}><section className="agent-task-view" aria-label="统一任务区">
+    <header className="agent-task-head"><h1>{snap.title}</h1>{STATUS_LABEL[snap.status] && <span className={`agent-status ${snap.status}`}>{STATUS_LABEL[snap.status]}</span>}<span className="push" /><button type="button" className="agent-head-btn agent-plugin-btn" title="项目插件" onClick={()=>setPluginsOpen(true)}><Plug size={15}/>插件 {plugins.length}</button><button type="button" className="agent-head-btn" title="更多" aria-expanded={moreMenu} onClick={()=>setMoreMenu(v=>!v)}><MoreHorizontal size={16}/></button><button type="button" className="agent-head-btn" title="打开右侧面板" onClick={()=>navigation.toggleFilePanel()}><PanelRight size={15}/></button>{moreMenu&&<div className="agent-head-menu"><button type="button" data-testid="agent-terminal-toggle" onClick={()=>{panels.terminalDrawer();setMoreMenu(false);}}>底部终端</button><button type="button" data-testid="agent-archive" onClick={()=>{setMoreMenu(false);void archive();}}>归档任务</button></div>}</header>
     <AgentRelations taskId={taskId} value={relations} reload={() => { loadRelations(); void reload(); }} />
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline">
       {hasOlder && <button type="button" className="agent-older" onClick={() => void loadOlder()}>加载更早的记录</button>}
@@ -570,7 +599,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
           <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
-            onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
+            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
             onKeyDown={e => {
               if (menuItems.length && !e.nativeEvent.isComposing) {
@@ -588,6 +617,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
               onPick={async (id, model) => { try { const r = await rpc.agentTasks.switchProfile(taskId, id, snap.selectionRevision, model); if (!r.ok) toast.warning('选择已在别处变化，请重试'); else if (r.selection.pendingSwitch) toast.message('本轮和已有排队输入结束后切换'); void reload(); return r.ok; } catch (e) { toast.error(rpcErrorMessage(e)); return false; } }}
               onExtensions={async (id, enabled) => { try { const r = await rpc.agentTasks.setExtensions(taskId, id, enabled, snap.selectionRevision); if (!r.ok) toast.warning('选择已在别处变化，请重试'); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } }} />
             <span className="push" />
+            <VoiceButton compact disabled={sending} onClick={()=>void voiceStore.trigger(textareaVoiceTarget(textarea.current),'home')}/>
             {working && snap.run?.steer && <button type="button" className="agent-stop" disabled={!text.trim()} onClick={() => void send('steer')} title="插话：并入当前这一轮（⌘Enter）"><Zap size={14} />插话</button>}
             {working && snap.run && !snap.run.steer && <span className="agent-composer-agent" title="该执行器版本没有插话的验证证据">运行中发送会排队</span>}
             {working && <button type="button" className="agent-stop" onClick={() => void stop()} title="停止本轮"><CircleStop size={15} /></button>}
@@ -596,9 +626,10 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
         </form>}
     </div>
     {terminalOpen && <AgentTerminalDrawer taskId={taskId} onClose={() => setTerminalOpen(false)} />}
+    {pluginsOpen&&<AgentDialog title='项目插件' sub='业务操作仍按当前档位和插件最高档位裁定；等待中的请求会重新核对版本与账号。' onClose={()=>setPluginsOpen(false)} footer={<button type='button' className='m10-button' onClick={()=>{setPluginsOpen(false);if(snap.projectId)navigation.openProject(snap.projectId,'applications');else toast.message('先关联项目以配置插件');}}>管理项目插件</button>}>{plugins.length?<ul>{plugins.map(p=><li key={p.id}>{p.name}</li>)}</ul>:<p>当前任务没有可用的项目插件</p>}</AgentDialog>}
     {confirmFull && <AgentDialog title="使用完全访问权限？" onClose={() => setConfirmFull(false)} footer={<><button className="m10-button" onClick={() => setConfirmFull(false)}>取消</button><button className="m10-button primary" data-testid="agent-confirm-full" onClick={() => { void permissionPref.update({ fullConfirmed: true }); setConfirmFull(false); void setSelection({ tier: 'full' }); }}>继续使用完全访问</button></>}>
       <p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。</p>
-      <div className="m13-note">Claude 交出的计划仍会请你批准。插件写操作按插件声明的上限处理（阶段 5 接入前仍逐次询问）。</div>
+      <div className="m13-note">插件的写操作也不再询问，发送邮件仍会每次询问。插件声明了更低权限上限时仍按该上限处理；Claude 交出的计划仍需批准。</div>
     </AgentDialog>}
-  </section></TaskScope.Provider>;
-}
+  </section></TaskScope.Provider></RunInTerminal.Provider>;
+});

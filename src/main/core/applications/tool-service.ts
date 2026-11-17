@@ -61,6 +61,9 @@ export class ApplicationToolService {
   private readonly pending = new Map<string,{ hash: string;work: Promise<BridgeResponse> }>();
   private readonly cache = new Map<string,{ hash: string;response: BridgeResponse;bytes: number }>();
   private cacheBytes = 0;
+  private intercept?: (runId:string,id:string,call:BridgeToolCall,entry:ApplicationEntry)=>Promise<BridgeResponse>|undefined;
+  attachTaskInterceptor(value:NonNullable<ApplicationToolService['intercept']>){this.intercept=value;}
+  inspectCall(runId:string,call:BridgeToolCall){const context=this.runs.assertActive(runId),selected=this.selected(context,call),handler=this.selectedHandler(selected);handler.authorize(context,call.connectionId);if(!this.contractValidator(selected,'input')(call.arguments).valid)throw new ApplicationError('INVALID_INPUT','参数不符合固定契约');return{context,selected,semantics:handler.semantics};}
   constructor(readonly store: ResourceStore,private readonly runs: CapabilityRunRegistry,private readonly host: ApplicationToolHost,private readonly options: { retryDelays?: readonly number[];now?: () => number;entry?:ApplicationEntry;additional?:AdditionalApplicationTools } = {}) { this.packages = new PackageRegistry(store,'tool-reader'); }
   private get entry():ApplicationEntry{return this.options.entry??'mcp';}
   get invocationEntry():ApplicationEntry{return this.entry;}
@@ -129,7 +132,7 @@ export class ApplicationToolService {
         catch (error) { unavailable.push({ appId: application.appId,code: error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE' }); }
       }
       const additional=this.options.additional?.list(context,this.entry);if(additional){tools.push(...additional.tools);unavailable.push(...additional.unavailable);}
-      this.runs.assertActive(runId); return { tools,unavailable };
+      this.runs.assertActive(runId);const agent=this.store.sqlite.prepare('SELECT binding_id FROM capability_runs WHERE run_id=?').get(runId) as {binding_id:string|null}|undefined;if(agent?.binding_id&&this.intercept)for(const tool of tools)if(!tool.annotations.readOnlyHint)tool.outputSchema={type:'object',anyOf:[tool.outputSchema,{type:'object',properties:{status:{enum:['awaiting_user','pending','approved_pending_bind','resolved','retired']},requestId:{type:'string'},next:{type:'string'}},required:['status','requestId'],additionalProperties:true}]}; return { tools,unavailable };
     });
   }
   call(runId: string,requestId: string,input: BridgeToolCall,signal?: AbortSignal): Promise<BridgeResponse> {
@@ -139,6 +142,7 @@ export class ApplicationToolService {
       const parsed = (this.entry==='cli'?cliInvocationCallSchema:bridgeCallSchema).safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','能力调用包含未允许字段或契约无效');
       const call = parsed.data, context = this.runs.assertActive(runId), selected = this.selected(context,call);
       const handler = this.selectedHandler(selected);
+      const intercepted=this.intercept?.(runId,requestId,call,this.entry);if(intercepted)return intercepted;
       const hash = digest(canonicalJson(call)), key = runId + ':' + requestId, previous = this.pending.get(key) ?? this.cache.get(key);
       if (previous) {
         if (previous.hash !== hash) throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已经用于其他输入');
@@ -149,7 +153,7 @@ export class ApplicationToolService {
       let onAbort!: () => void;
       const interrupted = new Promise<BridgeResponse>(resolve => { onAbort = () => { const row = this.store.sqlite.prepare('SELECT operation_id,effect_state,attempt_count FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,requestId) as InvocationRow | undefined; resolve({ schema: 1,id: requestId,status: 'error',error: failure(new ApplicationError(interruptionCode(operationSignal,timeout),'本次等待已结束，执行者尚未返回时须核对已有业务记录'),row?.attempt_count ?? 0,row?.effect_state ?? 'not-started'),...(row ? { operationId: row.operation_id } : {}) }); }; operationSignal.addEventListener('abort',onAbort,{ once: true }); if (operationSignal.aborted) onAbort(); });
       const execution = Promise.resolve().then(() => this.execute(runId,requestId,call,hash,{ signal: operationSignal,deadline,timeout }));
-      const work = Promise.race([execution,interrupted]).finally(() => operationSignal.removeEventListener('abort',onAbort)); this.pending.set(key,{ hash,work });
+      const work = (context.taskBusiness?execution:Promise.race([execution,interrupted])).finally(() => operationSignal.removeEventListener('abort',onAbort)); this.pending.set(key,{ hash,work });
       void work.then(response => { const bytes = Buffer.byteLength(JSON.stringify(response)); this.cache.set(key,{ hash,response,bytes }); this.cacheBytes += bytes; while (this.cache.size > 256 || this.cacheBytes > 16 * 1024 * 1024) { const first = this.cache.keys().next().value!; this.cacheBytes -= this.cache.get(first)!.bytes; this.cache.delete(first); } },() => undefined).finally(() => this.pending.delete(key));
       return work;
     } catch (error) { return Promise.resolve({ schema: 1,id: requestId,status: 'error',error: failure(error) }); }
@@ -186,7 +190,7 @@ export class ApplicationToolService {
           this.runs.assertActive(runId); handler.authorize(context,call.connectionId);
           const old = this.store.sqlite.prepare('SELECT * FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,requestId) as InvocationRow | undefined;
           if (old) { if (old.request_hash !== hash) throw new ApplicationError('REQUEST_CONFLICT','同一调用编号内容已改变'); return old; }
-          operationId = randomUUID();
+          operationId = context.taskBusiness?.operationId ?? randomUUID();
           this.store.sqlite.prepare("INSERT INTO application_invocations(operation_id,run_id,request_id,request_hash,project_id,task_id,app_id,package_hash,tool_name,contract_major,connection_id,semantics,state,effect_state,started_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,'running','not-started',?)").run(operationId,runId,requestId,hash,context.run.projectId,context.run.taskId,selected.application.appId,selected.application.packageHash,call.operation,call.contractMajor,call.connectionId,handler.semantics,new Date(this.clock()).toISOString()); return null;
         }).immediate());
         if (recorded) { operationId = recorded.operation_id; attempts = recorded.attempt_count; effect = recorded.effect_state; throw new ApplicationError('REPLAY_UNAVAILABLE','已有执行账，原回执不在本次内存中；请查看业务记录，不重新执行'); }

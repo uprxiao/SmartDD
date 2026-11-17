@@ -101,7 +101,7 @@ export class PluginHostService {
   }
   catalog(){return this.lifecycle.list().filter(state=>state.installed).map(state=>{
     const stored=this.lifecycle.packages.get(state.hash!),m=stored.plugin.manifest;
-    return{...state,displayName:m.displayName,description:m.description,author:m.author??null,hostApi:m.hostApi,category:m.category??null,examples:m.examples,providers:m.providers.map(p=>({id:p.id,displayName:p.displayName})),icons:pluginCatalogIcons(stored.plugin),packageDirectory:stored.directory,dataDirectory:this.lifecycle.dataDirectory(state.appId),permissions:m.permissions,capabilities:Object.entries(m.capabilities).map(([id,c])=>({id,title:c.title,semantics:c.semantics})),skills:stored.plugin.skills.map(s=>({id:s.id})),panels:m.ui.panels};
+    return{...state,displayName:m.displayName,description:m.description,author:m.author??null,hostApi:m.hostApi,category:m.category??null,examples:m.examples,providers:m.providers.map(p=>({id:p.id,displayName:p.displayName})),icons:pluginCatalogIcons(stored.plugin),packageDirectory:stored.directory,dataDirectory:this.lifecycle.dataDirectory(state.appId),permissions:m.permissions,capabilities:Object.entries(m.capabilities).map(([id,c])=>({id,title:c.title,semantics:c.semantics,maxTier:c.maxTier??'full'})),skills:stored.plugin.skills.map(s=>({id:s.id})),panels:m.ui.panels};
   });}
   private prune():void {for(const[token,value]of this.inspections)if(value.expiresAt<=Date.now())this.inspections.delete(token);}
   async inspect(owner:string,path:string,kind:'directory'|'zip',target?:string){
@@ -126,7 +126,7 @@ export class PluginHostService {
     for(const[token,value]of this.inspections)if(value.owner===owner)this.inspections.delete(token);
     if(this.inspections.size>=8||[...this.inspections.values()].reduce((n,v)=>n+v.size,0)+size>PLUGIN_LIMITS.packageBytes)throw new ApplicationError('RESOURCE_BUSY','已有插件检查待确认，请先关闭其他检查页');
     const token=randomUUID();this.inspections.set(token,{owner,plugin,plan,target,expiresAt:Date.now()+600000,size});
-    return{token,plan,displayName:plugin.manifest.displayName,description:plugin.manifest.description,author:plugin.manifest.author??null,hostApi:plugin.manifest.hostApi,permissions:plugin.manifest.permissions,capabilities:Object.entries(plugin.manifest.capabilities).map(([id,c])=>({id,title:c.title,semantics:c.semantics})),skills:plugin.skills.map(s=>s.id)};
+    return{token,plan,displayName:plugin.manifest.displayName,description:plugin.manifest.description,author:plugin.manifest.author??null,hostApi:plugin.manifest.hostApi,permissions:plugin.manifest.permissions,capabilities:Object.entries(plugin.manifest.capabilities).map(([id,c])=>({id,title:c.title,semantics:c.semantics,maxTier:c.maxTier??'full'})),skills:plugin.skills.map(s=>s.id)};
   }
   discard(owner:string,token:string):void {const value=this.inspections.get(token);if(value?.owner===owner)this.inspections.delete(token);}
   async install(owner:string,token:string){

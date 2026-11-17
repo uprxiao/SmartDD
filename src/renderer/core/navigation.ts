@@ -23,6 +23,7 @@ class NavigationStore {
   currentTaskId: string | null = null;
   /** M14 新任务区显示的任务。 */
   currentAgentTaskId: string | null = null;
+  applicationAgentTaskId:string|null=null;
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
   /** Unsubmitted composer text, kept in memory across views and scoped to its project. */
@@ -53,7 +54,7 @@ class NavigationStore {
 
   newTask(projectId?: string): void {
     if (projectId) this.homePreset = { projectId, seq: (this.homePreset?.seq ?? 0) + 1 };
-    this.currentViewId = 'home';
+    this.applicationAgentTaskId=null;this.currentViewId = 'home';
   }
 
   prepareApplicationTask(projectId:string,prompt:string):void{this.newTask(projectId);this.homePreset={...this.homePreset!,applicationPrompt:prompt};}
@@ -99,6 +100,7 @@ class NavigationStore {
   consumeAgentProviderRequest(seq:number):void{if(this.agentProviderRequest?.seq===seq)this.agentProviderRequest=null;}
 
   openApplications(page:ApplicationPage='catalog',projectId?:string):void {
+    if(this.currentViewId==='agentTask')this.applicationAgentTaskId=this.currentAgentTaskId;else if(!['apps','project'].includes(this.currentViewId))this.applicationAgentTaskId=null;
     if(projectId)this.currentProjectId=projectId;
     this.applicationPage=page;this.currentViewId='apps';
   }
@@ -108,6 +110,7 @@ class NavigationStore {
   setProjectSection(section:ProjectSectionId):void{this.projectSection=section;}
 
   openProject(id: string,section:ProjectSectionId='overview'): void {
+    if(this.currentViewId==='agentTask')this.applicationAgentTaskId=this.currentAgentTaskId;else if(!['apps','project'].includes(this.currentViewId))this.applicationAgentTaskId=null;
     this.projectSection=section;
     this.currentProjectId = id;
     this.currentViewId = 'project';

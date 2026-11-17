@@ -94,7 +94,7 @@ export function codexProfileArgsForCli(args:readonly string[],policy:CodexCliSan
 
 /** Hash the complete security input. Named rules are inherited, never rebuilt from a mode label. */
 export function planCodexCliSandbox(input:{version:string;layers:readonly {source:string;config:ObjectValue;hash:string}[];args:readonly string[];requirements:CodexRequirementsProof}):CodexCliSandboxPlan{
-  if(!['0.166.0','0.167.1'].includes(input.version))return unsupported('cli-version-unverified');
+  if(!['0.166.0','0.167.1','0.169.0'].includes(input.version))return unsupported('cli-version-unverified');
   if(!input.requirements.known||!input.requirements.empty||input.requirements.version!==input.version||!/^[a-f0-9]{64}$/.test(input.requirements.hash??''))return unsupported('managed-requirements-unverified');
   let valid=true,settings:ObjectValue={};const parsed=codexConfigurationArgs([...input.args],()=>{valid=false;});
   for(const layer of input.layers){if(!boundedJson(layer.config))return unsupported('configuration-budget');const selected=Object.fromEntries(keys.filter(k=>Object.hasOwn(layer.config,k)).map(k=>[k,layer.config[k]]));if(layer.source==='system'&&Object.keys(selected).length)return unsupported('system-policy-unverified');settings=merge(settings,selected);}
@@ -181,7 +181,7 @@ export function codexRequirementsArgs(args:readonly string[]):string[]|null{
 
 /** Executes native configuration validation only, without a thread, model or MCP command. */
 export async function readCodexRequirements(input:TaskLaunchInput,native:NativeLaunchContext):Promise<CodexRequirementsProof>{
-  const unavailable:CodexRequirementsProof={version:native.version,known:false,empty:false,hash:null};if(!['0.166.0','0.167.1'].includes(native.version)||input.signal.aborted)return unavailable;
+  const unavailable:CodexRequirementsProof={version:native.version,known:false,empty:false,hash:null};if(!['0.166.0','0.167.1','0.169.0'].includes(native.version)||input.signal.aborted)return unavailable;
   const args=codexRequirementsArgs(input.profile.args);if(!args)return unavailable;
   return new Promise(resolve=>execFile(native.command,args,{cwd:input.cwd,env:input.environment,signal:input.signal,timeout:5000,maxBuffer:128*1024,encoding:'utf8',windowsHide:true},(error,stdout)=>{
     if(error)return resolve(unavailable);
@@ -189,7 +189,7 @@ export async function readCodexRequirements(input:TaskLaunchInput,native:NativeL
   }));
 }
 export async function inspectCodexCliSandbox(input:TaskLaunchInput,native:NativeLaunchContext,readRequirements=readCodexRequirements):Promise<CodexCliSandboxPlan>{
-  if(input.profile.runner!=='codex'||!['0.166.0','0.167.1'].includes(native.version))return unsupported('agent-cli-unverified');
+  if(input.profile.runner!=='codex'||!['0.166.0','0.167.1','0.169.0'].includes(native.version))return unsupported('agent-cli-unverified');
   let valid=true;const args=codexConfigurationArgs(input.profile.args,()=>{valid=false;});if(!valid)return unsupported('effective-arguments-unverified');
   const context=()=>canonicalJson({cwd:input.cwd,home:input.home,stateRoot:input.stateRoot,args:input.profile.args,command:native.command,version:native.version});
   const originalContext=context();

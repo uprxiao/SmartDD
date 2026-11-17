@@ -17,7 +17,7 @@ export interface ClaudePolicyInput {version:string;runner:string;cwd:string;args
  * permission/deny/domain rules; the native settings source remains authoritative.
  */
 export function planClaudeCliSandbox(input:ClaudePolicyInput):ClaudeCliSandboxPlan{
- if(input.runner!=='claude'||input.version!=='2.1.322')return unavailable('agent-cli-unverified');
+ if(input.runner!=='claude'||!['2.1.322','2.1.326'].includes(input.version))return unavailable('agent-cli-unverified');
  if(!input.managed.known||!input.managed.empty||!/^[a-f0-9]{64}$/.test(input.managed.hash))return unavailable('managed-policy-unverified');
  if(!input.source.regular||!input.source.stable||!/^[a-f0-9]{64}$/.test(input.source.hash)||!object(input.settings)||!boundedJson(input.settings))return unavailable('settings-source-unverified');
  if(['env','apiKeyHelper','headersHelper','awsAuthRefresh','awsCredentialExport','forceLoginMethod'].some(key=>Object.hasOwn(input.settings as ObjectValue,key)))return unavailable('settings-routing-unverified');
@@ -69,7 +69,7 @@ export function readClaudeManagedPolicy(root:string,probe?:{username:string;exis
  * No login helper/model/subprocess is invoked and no credential store is read.
  */
 export async function inspectClaudeCliSandbox(input:TaskLaunchInput,native:NativeLaunchContext,managedProbe=readClaudeManagedPolicy):Promise<ClaudeCliSandboxPlan>{
- if(input.profile.runner!=='claude'||native.version!=='2.1.322')return unavailable('agent-cli-unverified');
+ if(input.profile.runner!=='claude'||!['2.1.322','2.1.326'].includes(native.version))return unavailable('agent-cli-unverified');
  const root=input.stateRoot;
  const safeEnvironment=new Set(['CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC','CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL','CLAUDE_CODE_DISABLE_1M_CONTEXT','CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD','CLAUDE_CODE_SUBAGENT_MODEL']);
  // The normal launch planner pins this model variable alongside --model. It

@@ -26,6 +26,7 @@ export function resourceGcPlans(store:ResourceStore):(rootResourceId:string)=>Re
  const rawStates=new Map(raw.map(r=>[r.resource_id,r.state]));
  const edges=db.prepare('SELECT resource_id,dependency_id FROM capability_resource_dependencies ORDER BY resource_id,dependency_id').all() as {resource_id:string;dependency_id:string}[];
  const refs=db.prepare('SELECT * FROM capability_session_refs ORDER BY task_id,ref_kind,ref_id').all() as {task_id:string;ref_id:string;ref_kind:string;ref_hash:string;relative_path:string}[];
+ const agentRefs=db.prepare('SELECT * FROM agent_resource_refs ORDER BY owner_kind,owner_id,resource_id').all() as {owner_kind:string;owner_id:string;resource_id:string;resource_kind:string;hold_reason:string}[];
  const leases=db.prepare("SELECT * FROM capability_resource_leases WHERE state<>'released' ORDER BY lease_id").all() as {resource_id:string;lease_id:string}[];
  const active=db.prepare('SELECT * FROM capability_active_packages ORDER BY app_id').all() as {app_id:string;package_hash:string}[];
  const snapshots=db.prepare('SELECT * FROM capability_session_snapshots ORDER BY task_id').all() as {task_id:string}[];
@@ -38,6 +39,7 @@ export function resourceGcPlans(store:ResourceStore):(rootResourceId:string)=>Re
  const runs=db.prepare("SELECT * FROM capability_runs WHERE state NOT IN ('stopped','failed') ORDER BY run_id").all() as {task_id:string;run_id:string}[];
  const records=new Map<string,ResourceRecord>(),issues=new Set<string>(),reasons=new Map<string,Set<string>>();
  const retain=(id:string,reason:string)=>{let held=reasons.get(id);if(!held){held=new Set();reasons.set(id,held);}held.add(reason);};
+ for(const ref of agentRefs){retain(ref.resource_id,'agent-'+ref.owner_kind+':'+ref.owner_id);try{const r=store.get(ref.resource_id),saved=JSON.parse(ref.hold_reason);if(r.kind!==ref.resource_kind||r.contentHash!==saved.contentHash||r.generation!==saved.generation)issues.add('agent-reference-integrity:'+ref.owner_id);}catch{issues.add('agent-reference-integrity:'+ref.owner_id);}}
  for(const row of raw)try{records.set(row.resource_id,store.get(row.resource_id));}catch{issues.add('resource-identity:'+row.resource_id);}
  const dependencies=new Map<string,Set<string>>(),consumers=new Map<string,Set<string>>();
  for(const edge of edges){
@@ -70,9 +72,9 @@ export function resourceGcPlans(store:ResourceStore):(rootResourceId:string)=>Re
  for(const row of nativeUnknown)issues.add('history-unmapped:'+row.id);
  for(const ref of refs){const resource=records.get(ref.ref_id);retain(ref.ref_id,'session-reference:'+ref.task_id);if(!resource||resource.kind!==ref.ref_kind||resource.contentHash!==ref.ref_hash||resource.relativePath!==ref.relative_path||!snapshots.some(s=>s.task_id===ref.task_id))issues.add('reference-integrity:'+ref.task_id+':'+ref.ref_id);}
  for(const lease of leases){retain(lease.resource_id,'lease:'+lease.lease_id);if(!records.has(lease.resource_id))issues.add('lease-resource-missing:'+lease.lease_id);}
- for(const run of runs)if(!snapshots.some(s=>s.task_id===run.task_id)||!refs.some(r=>r.task_id===run.task_id))issues.add('run-history-unresolved:'+run.run_id);
+ for(const run of runs)if(!agentRefs.some(r=>r.owner_kind==='run'&&r.owner_id===run.run_id)&&(!snapshots.some(s=>s.task_id===run.task_id)||!refs.some(r=>r.task_id===run.task_id)))issues.add('run-history-unresolved:'+run.run_id);
  const baseReasons=reasons,baseIssues=issues;
- const basisHash=digest(canonicalJson({storeId:store.storeId,raw,edges,refs,leases,active,snapshots,histories,mcpNames,packages,storeState,nativeUnknown,holds,runs,issues:sorted(baseIssues)}));
+ const basisHash=digest(canonicalJson({storeId:store.storeId,raw,edges,refs,agentRefs,leases,active,snapshots,histories,mcpNames,packages,storeState,nativeUnknown,holds,runs,issues:sorted(baseIssues)}));
  return(rootResourceId:string)=>{
  const root=records.get(rootResourceId);
  if(!root||root.kind!=='application-package')throw new ApplicationError('NOT_FOUND','清理计划的原应用资源不存在或归属不符');

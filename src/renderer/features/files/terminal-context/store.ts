@@ -1,3 +1,5 @@
+import {agentComposerTargets,type AgentComposerTarget} from '@renderer/features/agent-tasks/composer-target';
+import type {FileScope} from '@shared/files';
 import type { FileDocument, FileIdentity, FileRef, FileRoot, PathRequest } from '@shared/files';
 import { formatTerminalReferences, terminalPptxContextSchema, terminalDocxContextSchema, terminalPdfContextSchema, TERMINAL_CONTEXT_LIMITS, type TerminalBinding, type TerminalDeliveryState, type TerminalInsertionReceipt, type TerminalReferenceInput, type TerminalTarget, type TerminalPdfContext, type TerminalDocxContext, type TerminalPptxContext } from '@shared/file-terminal';
 import { rpc } from '@renderer/lib/ipc';
@@ -29,13 +31,13 @@ export class FileTerminalContextStore {
   private bindingPromise: Promise<TerminalBinding> | null = null;
   private additions: Promise<unknown> = Promise.resolve();
   private readonly listeners = new Set<() => void>();
-  constructor(private readonly api: Api = rpc.files) {}
+  constructor(private readonly api: Api = rpc.files,private readonly scope?:FileScope) {}
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   snapshot = () => this.revision;
   private changed(): void { this.revision++; this.listeners.forEach(listener => listener()); }
   attach(): () => void {
     const changed = () => { this.invalidate(); this.changed(); };
-    targetListeners.add(changed); return () => { targetListeners.delete(changed); this.clear(); this.root = null; };
+    targetListeners.add(changed);const off=agentComposerTargets.subscribe(changed); return () => {off();targetListeners.delete(changed); this.clear(); this.root = null; };
   }
   setRoot(root: FileRoot | null): void {
     if (this.root?.lease === root?.lease && this.root?.generation === root?.generation) {
@@ -50,7 +52,8 @@ export class FileTerminalContextStore {
     if (this.state === 'inserting') { this.state = 'unknown'; this.notice = '文件或终端已切换；原投递结果未知，不会自动重发'; }
   }
   get target(): VisibleTerminal | null { return currentFileTerminal(); }
-  get canInsert(): boolean { return Boolean(this.target && this.references.length && this.references.every(reference => reference.state !== 'missing') && this.state !== 'inserting' && this.state !== 'unknown'); }
+  get composer():AgentComposerTarget|null {const t=agentComposerTargets.current;return t&&this.scope&&(this.scope.kind==='task'?this.scope.taskId===t.taskId:this.scope.projectId===t.projectId)?t:null;}
+  get canInsert(): boolean { return Boolean((this.composer||this.target) && this.references.length && this.references.every(reference => reference.state !== 'missing') && this.state !== 'inserting' && this.state !== 'unknown'); }
   clear(): void {
     this.invalidate(); for (const reference of this.references) void this.api.closeDocument(reference.file.ref).catch(() => undefined);
     this.references = []; this.state = 'idle'; this.notice = ''; this.changed();
@@ -154,16 +157,19 @@ export class FileTerminalContextStore {
     if (!this.canInsert) return;
     const references = [...this.references], preview = this.preview, includeText = this.includeText, style = this.style;
     if (!preview.text) { this.notice = preview.note; this.changed(); return; }
+    const composer=this.composer;if(composer){const epoch=this.epoch;this.state='inserting';this.changed();try{await this.refresh();if(epoch!==this.epoch||this.composer!==composer)throw Error('引用目标已切换，未插入');if(this.references.some(r=>r.state==='missing'||r.selection&&!r.selection.current()))throw Error('文件或选区已不可用，请重新选择');composer.insert(preview.text);this.state='inserted';this.notice='已插入任务草稿，尚未发送'+(this.references.some(r=>r.state==='stale')?'；来源已有变化，请核对原引用':'');for(const r of references)this.remove(r.id);composer.focus();}catch(e){this.state='failed';this.notice=message(e);}this.changed();return;}
     await this.deliver(async binding => {
       const inputs = await Promise.all(references.map(async reference => this.reference(reference, await this.prepared(binding, reference.file))));
       return { kind: 'context' as const, bindingId: binding.id, operationId: crypto.randomUUID(), references: inputs, includeText, style };
     }, () => { for (const reference of references) this.remove(reference.id); });
   }
-  async insertPath(file: FileDocument, epoch: number, target: VisibleTerminal, notice?: (message: string) => void): Promise<void> {
+  async insertPath(file: FileDocument, epoch: number, target: VisibleTerminal|AgentComposerTarget, notice?: (message: string) => void): Promise<void> {
+    if('insert'in target){if(epoch!==this.epoch||this.composer!==target)throw Error('拖动目标已经改变');const latest=await this.api.refresh(file.ref);if(epoch!==this.epoch||this.composer!==target||latest.revision.device!==file.revision.device||latest.revision.inode!==file.revision.inode)throw Error('拖动来源或目标已变化');target.insert(file.absolutePath);target.focus();notice?.('已插入文件路径，尚未发送');return;}
     if (epoch !== this.epoch || this.target !== target) throw new Error('拖动来源或目标已改变，请重新拖动');
     await this.deliver(async binding => ({ kind: 'path' as const, bindingId: binding.id, operationId: crypto.randomUUID(), sourceId: await this.prepared(binding, file) }), () => undefined, notice);
   }
   imageInput(signal: AbortSignal): (file: FileDocument, baseHash: string, notify: (message: string) => void) => Promise<void> {
+    const composer=this.composer;if(composer?.attachFile){const epoch=this.epoch;return async(file,baseHash,notify)=>{if(epoch!==this.epoch||this.composer!==composer)throw Error('目标任务已切换');await composer.attachFile!(file,baseHash,signal);notify('图片已附加到任务草稿，尚未发送');};}
     const epoch = this.epoch, target = this.target;
     if (!target || !this.root) throw new Error('当前没有可用的任务终端，未附加图片');
     return async (file, baseHash, notify) => {
@@ -209,7 +215,7 @@ export class FileTerminalContextStore {
     finally { clearTimeout(timer); }
   }
   startDrag(path: PathRequest, identity?: FileIdentity): { token: string; end(): void } | null {
-    const target = this.target; if (!target) { this.notice = '当前没有可用的任务终端'; this.changed(); return null; }
+    const target = this.composer??this.target; if (!target) { this.notice = '当前没有可用的任务终端'; this.changed(); return null; }
     endFileDrag(); cancelledDragToken = null;
     const token = crypto.randomUUID(), epoch = this.epoch, file = this.capture(path, identity);
     // Capture errors are displayed only if the user actually drops this item.
@@ -221,7 +227,7 @@ export class FileTerminalContextStore {
 }
 export const FILE_TERMINAL_DRAG_TYPE = 'application/x-willyou-terminal-file';
 let cancelledDragToken: string | null = null;
-let activeDrag: { token: string; target: VisibleTerminal; owner: FileTerminalContextStore; epoch: number; file: Promise<FileDocument>; consumed: boolean } | null = null;
+let activeDrag: { token: string; target: VisibleTerminal|AgentComposerTarget; owner: FileTerminalContextStore; epoch: number; file: Promise<FileDocument>; consumed: boolean } | null = null;
 export function endFileDrag(): void { const drag = activeDrag; activeDrag = null; if (drag && !drag.consumed) { cancelledDragToken = drag.token; void drag.file.then(file => drag.owner.releaseFile(file)).catch(() => undefined); } }
 export async function dropFileToTerminal(token: string, target: TerminalTarget, notice: (message: string) => void): Promise<void> {
   const drag = activeDrag;
@@ -232,8 +238,13 @@ export async function dropFileToTerminal(token: string, target: TerminalTarget, 
   activeDrag = null; drag.consumed = true;
   let file: FileDocument | undefined;
   try {
-    if (drag.target !== currentFileTerminal() || target.taskId !== drag.target.taskId || target.ptyId !== drag.target.ptyId) throw new Error('拖动目标已改变，请重新拖动');
+    if (!('ptyId'in drag.target)||drag.target !== currentFileTerminal() || target.taskId !== drag.target.taskId || target.ptyId !== drag.target.ptyId) throw new Error('拖动目标已改变，请重新拖动');
     file = await drag.file; await drag.owner.insertPath(file, drag.epoch, drag.target, notice);
   } catch (error) { notice(message(error)); }
   finally { if (file) drag.owner.releaseFile(file); }
+}
+
+export async function dropFileToAgentComposer(token:string,taskId:string,notice:(message:string)=>void){
+ const drag=activeDrag;if(!drag||drag.token!==token||drag.consumed)return;activeDrag=null;drag.consumed=true;let file:FileDocument|undefined;
+ try{if(!('insert'in drag.target)||agentComposerTargets.current!==drag.target||drag.target.taskId!==taskId)throw Error('拖动目标已经改变，未插入');file=await drag.file;await drag.owner.insertPath(file,drag.epoch,drag.target,notice);}catch(e){notice(message(e));}finally{if(file)drag.owner.releaseFile(file);}
 }

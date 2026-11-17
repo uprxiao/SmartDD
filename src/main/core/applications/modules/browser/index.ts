@@ -38,11 +38,11 @@ class BrowserModuleData implements ApplicationModuleData {
     if(caller.kind!=='agent'||caller.entry!=='cli'||!context.projectId||!context.taskId||!context.runId)
       throw new ApplicationError('SCOPE_DENIED','浏览器需要宿主签发的项目任务CLI运行身份');
     this.services.selections.requireApplicationEnabled(context.projectId,'browser');
-    const runSignal=this.services.contexts.agentRunSignal(context);
+    const runtime=this.services.contexts.agentRuntime(context),runSignal=runtime.signal;
     if(!input||typeof input!=='object'||Array.isArray(input))throw new ApplicationError('INVALID_INPUT','浏览器参数必须为对象');
     const service=this.services.retained.get('browser') as BrowserService|undefined;
     if(!service)throw new ApplicationError('BROWSER_UNAVAILABLE','浏览器主进程服务尚未就绪');
-    return service.execute({projectId:context.projectId,taskId:context.taskId,runId:context.runId,requestId:caller.requestId,
+    return service.execute({projectId:context.projectId,taskId:context.taskId,runId:runtime.runId,requestId:caller.requestId,
       operationId:context.operationId,signal:context.signal,runSignal,assertActive:()=>this.services.contexts.require(context,rule.permission)},
       command.command.slice(1).join(' '),input as Record<string,unknown>);
   }

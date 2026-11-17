@@ -23,6 +23,14 @@ interface Attempt { attempt_id: string; delegation_id: string; ordinal: number; 
 /** Public delegation and UI use the same persistent command service. A caller's identity is always host-derived. */
 export class DelegationService implements TaskCoordination, AgentHostTools {
   readonly queue: DirectoryQueue;
+  private readonly businessWaiters=new Map<string,number>();
+  private readonly businessLeases = new Map<string,number>();
+  businessBusy(taskId:string){return (this.businessLeases.get(taskId)??0)>0;}
+  async acquireBusiness(taskId:string,signal:AbortSignal){
+    const task=this.selection(taskId).task,root=directoryIdentity(task.cwd,this.d.roots(taskId));
+    this.businessWaiters.set(taskId,(this.businessWaiters.get(taskId)??0)+1);let admitted=false;try{while(true){if(signal.aborted||this.closed||this.stopped(taskId))throw new DriverError('REJECTED','业务操作已取消');const q=this.queue.enter(taskId,root.identity);if(!this.draining.has(taskId)&&!this.d.runs.closingForTask(taskId)&&this.queue.acquire(q.queue_id)){admitted=true;break;}this.schedule();await new Promise(r=>setTimeout(r,50));}}finally{const n=(this.businessWaiters.get(taskId)??1)-1;if(n)this.businessWaiters.set(taskId,n);else{this.businessWaiters.delete(taskId);if(!admitted&&!this.d.store.queuedTurns(taskId).length)this.queue.cancel(taskId);}this.schedule();}
+    this.businessLeases.set(taskId,(this.businessLeases.get(taskId)??0)+1);let released=false;return()=>{if(released)return;released=true;const n=(this.businessLeases.get(taskId)??1)-1;if(n)this.businessLeases.set(taskId,n);else{this.businessLeases.delete(taskId);const q=this.queue.forTask(taskId);if(q?.state==='active'&&!this.d.runs.runForTask(taskId)&&!this.d.runs.closingForTask(taskId)&&!this.draining.has(taskId))this.queue.release(q.queue_id,{nativeExited:true,descendantsDrained:true,businessDrained:true,admissionFrozen:true});}this.schedule();};
+  }
   private readonly draining = new Map<string, string>();
   private readonly preparing = new Set<string>();
   private readonly prepareAbort = new Map<string, AbortController>();
@@ -284,7 +292,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     } catch (e) { this.d.store.sqlite.prepare("UPDATE agent_intents SET state='needs_review',result_json=?,updated_at=? WHERE intent_id=?").run(JSON.stringify({ ...evidence, error: (e as Error).message }), at(), id); const g = this.d.store.goal(taskId); if (g && g.revision === goal.revision) this.d.store.upsertGoal({ taskId, bindingId: g.bindingId, objective: g.objective, status: 'paused', pausedReason: 'user' }); this.warnOnce(taskId, `goal-pause:${id}`, '目标暂停状态未能核实，不会自动恢复；原写入资格仍按退出与排空处理。'); }
   }
   private async drain(taskId: string, runId: string) {
-    if (this.finishing.has(taskId)) return; this.finishing.add(taskId);
+    if (this.finishing.has(taskId) || this.businessBusy(taskId)) return; this.finishing.add(taskId);
     try {
       const run = this.d.runs.active(runId);
       if (run && this.d.runs.busy(runId) && !this.stopped(taskId)) return;

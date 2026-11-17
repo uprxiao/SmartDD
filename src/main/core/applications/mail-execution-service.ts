@@ -270,6 +270,12 @@ export class MailExecutionService {
     }).immediate());
   }
   async cancel(actor: MailSendActor,id: string): Promise<MailSendIntent> { this.row(actor,id); await this.invalidate([id],'canceled','USER_CANCELED'); return this.get(actor,id); }
+  /** Host-only retirement of a durable task request, including after its original native owner ended. */
+  async retireTaskIntent(taskId:string,runId:string,id:string){
+    const row=this.store.sqlite.prepare('SELECT source_task_id,source_run_id FROM mail_send_intents WHERE id=?').get(id) as {source_task_id:string|null;source_run_id:string|null}|undefined;
+    if(!row||row.source_task_id!==taskId||row.source_run_id!==runId)throw new ApplicationError('SCOPE_DENIED','发送意图不是原任务请求');
+    await this.invalidate([id],'canceled','TASK_REQUEST_RETIRED');
+  }
   async invalidateRun(runId: string): Promise<void> { const ids = this.store.sqlite.prepare('SELECT id FROM mail_send_intents WHERE source_run_id=?').all(runId) as { id: string }[]; await this.invalidate(ids.map(r => r.id),'stale','RUN_ENDED'); }
   async invalidateConnection(id: string): Promise<void> { const ids = this.store.sqlite.prepare('SELECT id FROM mail_send_intents WHERE connection_id=?').all(id) as { id: string }[]; await this.invalidate(ids.map(r => r.id),'stale','CONNECTION_REVOKED'); }
   /** Recheck public policy only; never decrypt credentials or probe native processes inside C. */
@@ -291,6 +297,13 @@ export class MailExecutionService {
         const owned=row.owner_instance_id===this.instanceId,live=owned&&(this.preparing.has(row.id)||this.running.has(row.id)||this.producers.has(row.id))?'running':states.get(row.id)!;
         if (live !== 'stopped') { result.pending.push(row.id); continue; }
         const now = new Date().toISOString();
+        const retained=this.store.sqlite.prepare("SELECT 1 FROM agent_requests q JOIN agent_tasks t ON t.task_id=q.task_id WHERE q.task_id=? AND q.class='host_business' AND q.status='pending' AND t.archived_at IS NULL AND json_extract(q.payload_ref,'$.businessKind')='mail_send' AND json_extract(q.payload_ref,'$.phase')='waiting_user' AND json_extract(q.payload_ref,'$.data.mailIntentId')=? AND json_extract(q.payload_ref,'$.review.reviewHash')=? AND json_extract(q.origin_json,'$.runId')=?").get(row.source_task_id,row.id,row.review_hash,row.source_run_id);
+        if(retained&&!row.execution_id&&['awaiting-authorization','authorized'].includes(row.state)){
+          this.store.sqlite.prepare("UPDATE mail_send_intents SET state='awaiting-authorization',grant_id=NULL,owner_instance_id=?,owner_pid=?,owner_started_at=?,updated_at=? WHERE id=?").run(this.instanceId,process.pid,this.born,now,row.id);
+          if(row.grant_id)this.store.sqlite.prepare("UPDATE mail_send_grants SET state='revoked' WHERE id=? AND state='active'").run(row.grant_id);
+          this.store.sqlite.prepare("UPDATE capability_resource_leases SET host_instance_id=?,pid=?,process_started_at=? WHERE owner_kind='mail-send' AND owner_id=? AND pid=? AND process_started_at=? AND state='active'").run(this.instanceId,process.pid,this.born,row.id,row.owner_pid,row.owner_started_at);
+          result.recovered.push(row.id);continue; // Waiting survives. No send/authorization is replayed.
+        }
         if (row.state === 'preparing') {
           this.store.sqlite.prepare("UPDATE mail_send_intents SET state='failed',error_code='PREPARATION_INTERRUPTED',updated_at=? WHERE id=?").run(now,row.id);
           this.store.sqlite.prepare('UPDATE mail_drafts SET active_intent_id=NULL,updated_at=? WHERE active_intent_id=?').run(now,row.id);

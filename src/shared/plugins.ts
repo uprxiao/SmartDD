@@ -67,7 +67,7 @@ export const pluginManifestSchema = z.object({
   projectPolicy: z.object({connectionsPerProject: z.literal(1), note: text.optional()}).strict().optional(),
   capabilities: z.record(capabilityId, z.object({
     title: text, permission: capabilityId, semantics: z.enum(['read', 'write', 'external-write']),
-    retry: z.enum(['safe-read', 'never']), slots: z.array(id).max(32),
+    retry: z.enum(['safe-read', 'never']), maxTier:z.enum(['ask','auto','full']).optional(), slots: z.array(id).max(32),
     input: path, output: path, agentVisible: z.boolean().optional(),
   }).strict()),
   legacyToolNames: z.record(z.string().regex(/^[a-z][a-z0-9_.-]{0,127}$/), capabilityId).default({}),

@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { storedCapabilitySessionSnapshotSchema } from '@shared/application-session-v3';
 import { agentIdSchema } from '@shared/agent-id';
 import {finishCapabilityRun,recoverCapabilityRuns} from './run-recovery';
 import { randomUUID } from 'node:crypto';
@@ -29,7 +31,7 @@ interface NativeGuardRequest {taskId:string;projectId:string;runner:string;snaps
 interface OwnedRun { planHash?:string;guard?:NativeGuard;agent?:AgentRunSource;unclaimed?:Set<string>;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
 /** M14 host-only run source. Frozen per binding/run; it never replaces an M13 task's immutable session. */
 export interface AgentRunSource { session: StoredCapabilitySession; resourceIds: readonly string[]; bindings: RunBindingRevision[]; plan: ApplicationRunPlan; verify(): Promise<void>; assertCurrent(): void }
-export interface RunContext { plan?:ApplicationRunPlan;
+export interface RunContext { taskBusiness?:{operationId:string;callHash:string;runtime?:{runId:string;signal:AbortSignal}}; plan?:ApplicationRunPlan;
   /** R17: set by the current-authorization view; names the project page to enable an application that owns this operation. */
   unavailableApplication?(operation:string,entry:ApplicationEntry):ApplicationError|null;
   /** R17 view only: CLI command prefixes of applications this project has not enabled, with their guidance. */
@@ -99,6 +101,7 @@ const bounded = async (work: Promise<void>,ms: number): Promise<void> => {
 };
 /** Resource registration precedes all file consumption and OS forks. No PID signalling here. */
 export class CapabilityRunRegistry {
+  private readonly taskOperations=new AsyncLocalStorage<{runId:string;context:RunContext;check():void}>();
   readonly instanceId = randomUUID();
   readonly host: ProcessIdentity;
   private readonly owned = new Map<string,OwnedRun>();
@@ -440,12 +443,23 @@ export class CapabilityRunRegistry {
     if(rows.length!==1||this.owned.get(rows[0].run_id)?.guard)return null;const context=this.assertActive(rows[0].run_id);return context.run.taskId===taskId?context:null;
   }
   /** Synchronous host policy hook; tools never choose their project/task/package context. */
+  async withTaskOperation<T>(runId:string,operation:{operationId:string;callHash:string;signal:AbortSignal;boundRunId?:string;assertCurrent():void},work:()=>Promise<T>):Promise<T>{
+    const row=this.row(runId),frozen=this.store.sqlite.prepare('SELECT c.snapshot_json,c.content_hash FROM capability_runs r JOIN agent_capability_sessions c ON c.capability_session_id=r.capability_session_id AND c.binding_id=r.binding_id WHERE r.run_id=? AND r.binding_id IS NOT NULL').get(runId) as {snapshot_json:string;content_hash:string}|undefined;
+    if(!frozen||digest(frozen.snapshot_json)!==frozen.content_hash)throw new ApplicationError('SNAPSHOT_CORRUPT','业务发起来源不可恢复');const source=JSON.parse(frozen.snapshot_json);if(source.kind!=='business'||source.runId!==runId)throw new ApplicationError('SCOPE_DENIED','不是已冻结的任务业务来源');const snapshot=storedCapabilitySessionSnapshotSchema.parse(source.snapshot);
+    const planRow=this.store.sqlite.prepare('SELECT plan_json FROM capability_resource_operations WHERE operation_id=?').get('application-run-plan:'+runId) as {plan_json:string}|undefined;if(!planRow)throw new ApplicationError('SNAPSHOT_CORRUPT','原运行计划缺失');const plan=readApplicationRunPlan(this.store,runId,JSON.parse(planRow.plan_json).planHash);if(plan.snapshotHash!==row.snapshot_hash||snapshot.taskId!==row.task_id||snapshot.projectId!==row.project_id)throw new ApplicationError('SCOPE_DENIED','任务业务来源与原运行不同');
+    const refs=this.store.sqlite.prepare("SELECT resource_id,hold_reason FROM agent_resource_refs WHERE owner_kind='run' AND owner_id=?").all(runId) as {resource_id:string;hold_reason:string}[];if(!refs.length)throw new ApplicationError('RESOURCE_RECOVERY_REQUIRED','任务资源引用未保留');
+    const actual=operation.boundRunId?this.assertActive(operation.boundRunId):undefined;if(actual&&(actual.run.taskId!==row.task_id||actual.run.projectId!==row.project_id))throw new ApplicationError('SCOPE_DENIED','浏览器后继运行不属于原任务');
+    const check=()=>{this.gate();operation.assertCurrent();if(actual&&(actual.signal.aborted||this.row(actual.run.runId).state!=='active'))throw new ApplicationError('CANCELED','绑定的实际运行已结束');if(operation.signal.aborted)throw new ApplicationError('CANCELED','任务业务已取消');for(const ref of refs){const r=this.store.get(ref.resource_id),saved=JSON.parse(ref.hold_reason);if(r.state!=='ready'||r.integrity!=='valid'||r.contentHash!==saved.contentHash||r.generation!==saved.generation)throw new ApplicationError('RESOURCE_STATE_CHANGED','业务依赖已变化');}this.deps.assertCurrent(snapshot,bindingsSchema.parse(JSON.parse(row.bindings_json)));};check();
+    const context:RunContext={run:this.view(row),snapshot,bindings:bindingsSchema.parse(JSON.parse(row.bindings_json)),plan,bindingMode:'run',signal:operation.signal,taskBusiness:{operationId:operation.operationId,callHash:operation.callHash,...(actual?{runtime:{runId:actual.run.runId,signal:actual.signal}}:{})}};
+    const hold=(i:number):Promise<T>=>i<refs.length?this.store.use(refs[i].resource_id,'task-business',operation.operationId,()=>hold(i+1)):this.taskOperations.run({runId,context,check},work);return hold(0);
+  }
   assertActive(runId: string): RunContext {
+    const business=this.taskOperations.getStore();if(business?.runId===runId){business.check();return this.deps.currentAuthorization?.(business.context)??business.context;}
     const { row,owned,session,plan } = this.mine(runId);
     if (owned.abort.signal.aborted || row.state !== 'active' || row.revocation_state !== 'open') throw new ApplicationError('SCOPE_DENIED','当前运行已停止或尚未激活');
     const bindings = this.current(row,session); this.checkProtection(row,owned);
     const context:RunContext = { ...(plan?{plan}:{}),run: this.view(row),snapshot: session.snapshot,bindings,...(row.binding_mode==='run'?{bindingMode:'run' as const}:{}),signal: owned.abort.signal };
-    return this.deps.currentAuthorization?this.deps.currentAuthorization(context):context;
+    const current=this.deps.currentAuthorization?this.deps.currentAuthorization(context):context;const binding=this.store.sqlite.prepare('SELECT b.native_id FROM capability_runs r JOIN agent_bindings b ON b.binding_id=r.binding_id WHERE r.run_id=? AND b.native_confirmed_at IS NOT NULL').get(runId) as {native_id:string|null}|undefined;return binding?.native_id?{...current,snapshot:{...current.snapshot,native:{...current.snapshot.native,sessionId:binding.native_id}}}:current;
   }
   bridgePreparation(runId: string): RunContext {
     const { row,owned,session,plan } = this.mine(runId);

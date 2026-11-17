@@ -1,0 +1,116 @@
+{
+  "layer": "development App + real Codex + synthetic local model; no packaged acceptance",
+  "root": "/private/tmp/willyou-m14-workspace-celkEh",
+  "assertions": [
+    "real native file command captured by before/after trees; HEAD and user index unchanged",
+    "T3 links route to task file/line; bare names and spaced inline paths remain text; local edits survive read-only diff switch (M9 autosave retained)",
+    "HTTP link creates a task browser page in its own surface",
+    "code block opens the task manual terminal without leaving the task",
+    "manual terminal closed through its own UI before App quit"
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"ab2303ac-22ca-49c6-95aa-22630c7a4f29\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-md a",
+      "text": "打开文件",
+      "x": 532,
+      "y": 267.5390625
+    },
+    {
+      "selector": ".fw-editor-host .cm-content",
+      "x": 997.4609375,
+      "y": 508.5
+    },
+    {
+      "selector": ".agent-change-card",
+      "x": 537.9609375,
+      "y": 452.18359375
+    },
+    {
+      "selector": ".agent-panel-tabs [role=tab]",
+      "text": "文件",
+      "x": 822.921875,
+      "y": 63.5
+    },
+    {
+      "selector": ".agent-md a",
+      "text": "打开网页",
+      "x": 407.5859375,
+      "y": 289.234375
+    },
+    {
+      "selector": ".agent-panel-tabs [role=tab]",
+      "text": "文件",
+      "x": 822.921875,
+      "y": 63.5
+    },
+    {
+      "selector": ".agent-run-in-terminal",
+      "x": 721.421875,
+      "y": 388.43359375
+    },
+    {
+      "selector": "[data-testid=agent-terminal] button[title=\"关闭终端\"]",
+      "x": 767.421875,
+      "y": 671
+    }
+  ],
+  "model": [
+    {
+      "path": "/v1/responses",
+      "toolPresent": true,
+      "invoke": true
+    },
+    {
+      "path": "/v1/responses",
+      "toolPresent": true,
+      "invoke": false
+    }
+  ],
+  "changes": [
+    {
+      "turnId": "880762a7-aefe-4120-a95f-4b0655ca3615",
+      "status": "complete",
+      "reason": null,
+      "files": [
+        {
+          "path": "a.txt",
+          "added": 1,
+          "removed": 1,
+          "binary": false
+        }
+      ],
+      "filesTotal": 1,
+      "observed": true,
+      "preparing": false,
+      "progress": {
+        "files": 1,
+        "bytes": 26
+      }
+    }
+  ],
+  "diskAfterPanelSwitch": "UNSAVED_LOCAL_BUFFER\n",
+  "modelError": "SyntaxError: Unexpected end of JSON input",
+  "passed": true,
+  "appLogs": "Debugger listening on ws://127.0.0.1:51420/8bf7c2d5-b5f9-480f-a7bc-211c82feddd7\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:51410/devtools/browser/a2b8fee4-f0ce-4a0c-a187-344c469f0087\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:63711:35)\n    at cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:52033:45)\n    at /Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:63711:35)\n    at cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:52033:45)\n    at /Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:34078:19)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:63711:35)\n    at cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:52033:45)\n    at /Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:34078:19)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:63711:35)\n    at cancelResource (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:52033:45)\n    at /Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'agentTasks.pasteToTerminal': Error: TERMINAL_TARGET_DENIED\n    at PtyManager.bracketedPaste (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:18142:46)\n    at AgentManualTerminals.paste (/Users/liubu/hx/4.uprxiao/SmartDD/out/main/index.js:56489:81)\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processTimers (node:internal/timers:568:9)\n    at async Session.<anonymous> (node:electron/js2c/browser_init:2:118661)\n",
+  "exit": {
+    "pid": 54550,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

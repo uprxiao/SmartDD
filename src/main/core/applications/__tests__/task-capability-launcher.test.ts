@@ -940,6 +940,8 @@ describe('M13 Claude CLI through indexed production resource',()=>{
 
 it('M14: a new agent run uses its own frozen capability source without requiring or overwriting an M13 task snapshot', async () => {
   writeFileSync(profiles.resolve(codexId).command, '#!/bin/sh\ncase "$1" in --version) echo "codex-cli 0.169.0";; *) exit 70;; esac\n', {mode:0o700});
+  // This fixture intentionally loads the retained M13 distribution (verified library version 0.166.0), not the current App resources.
+  expect(managed.supportsAgentDelivery('codex','0.166.0')).toBe(true);expect(managed.supportsAgentDelivery('codex','0.999.0')).toBe(false);
   const store = new AgentStore(sqlite), taskId = store.createTask({projectId,dirId:null,cwd,title:'M14 native source',selection:{driverId:'codex-app-server',profileId:'fixture',tier:'ask'}});
   const bindingId=store.createBinding({task_id:taskId,driver_id:'codex-app-server',profile_id:'fixture',continuation_hash:digest('native-source'),cwd_identity:cwd,state_root:join(home,'.codex')});
   const runId=randomUUID();store.insertRun({runId,taskId,projectId,bindingId,generation:1,driverId:'codex-app-server',owner:{instanceId:randomUUID(),pid:process.pid,startedAt:reader.read(process.pid)?.startedAt??null},launchPlanHash:digest('M14-native-launch')});
@@ -949,4 +951,30 @@ it('M14: a new agent run uses its own frozen capability source without requiring
   expect(integration.extraArgs?.join(' ')).toContain('mcp_servers');
   await integration.cancelBeforeFork();
   expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'stopped'});
+  expect(()=>managed.runs.assertActive(runId)).toThrow();
+  const operationId=randomUUID();let live=true;
+  await managed.runs.withTaskOperation(runId,{operationId,callHash:digest('frozen-call'),signal:new AbortController().signal,assertCurrent:()=>{if(!live)throw Error('request retired');}},async()=>{
+    const context=managed.runs.assertActive(runId);expect(context.run.state).toBe('stopped');expect(context.run.pid).toBeNull();expect(context.taskBusiness).toEqual({operationId,callHash:digest('frozen-call')});
+    await managed.runs.withActivity(runId,async own=>{expect(own.run.taskId).toBe(taskId);});live=false;expect(()=>managed.runs.assertActive(runId)).toThrow('retired');
+  });
+  expect(()=>managed.runs.assertActive(runId)).toThrow();
+});
+
+it('M14 E12: production builtin draft write waits durably, then uses its retained task scope after the original owner exits',async()=>{
+  const {HostBusinessRequests}=await import('../../agent/host-business-requests'),{AgentBusinessTools}=await import('../agent-business-tools');
+  await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
+  writeFileSync(profiles.resolve(codexId).command,'#!/bin/sh\ncase "$1" in --version) echo "codex-cli 0.169.0";; *) exit 70;; esac\n',{mode:0o700});
+  const store=new AgentStore(sqlite),taskId=store.createTask({projectId,dirId:null,cwd,title:'M14 durable builtin',selection:{driverId:'codex-app-server',profileId:'fixture',tier:'ask'}}),bindingId=store.createBinding({task_id:taskId,driver_id:'codex-app-server',profile_id:'fixture',continuation_hash:digest('durable-source'),cwd_identity:cwd,state_root:join(home,'.codex')}),runId=randomUUID();store.insertRun({runId,taskId,projectId,bindingId,generation:1,driverId:'codex-app-server',owner:{instanceId:randomUUID(),pid:process.pid,startedAt:reader.read(process.pid)?.startedAt??null},launchPlanHash:digest('durable-launch')});
+  const integration=await managed.prepareAgent({runId,bindingId,generation:1,version:'0.169.0',assertCurrent:()=>{},task:{projectId,taskId,profile:profiles.resolve(codexId),cwd,home,stateRoot:join(home,'.codex'),claudeConfigExplicit:false,mode:'new',sessionId:null,previous:null,newTask:true,signal:new AbortController().signal,environment:{HOME:home,PATH:'/usr/bin:/bin'}}});
+  await integration.beforeFork();reader.identities.set(59001,'darwin-proc-v1:900:59001');await integration.attached(59001);
+  const service=new ApplicationToolService(support.store,managed.runs,new ApplicationAdapterRegistry(support.store,applications.data)),notices:string[]=[],requests=new HostBusinessRequests({store,run:()=>undefined,hasOwner:()=>false,notify:(_t,_id,text)=>notices.push(text)});
+  new AgentBusinessTools({store,requests,runs:managed.runs,applications,services:new Map([['mcp',service]]),notify:()=>{}});
+  try{
+    const call={operation:'smartdd_mail_draft_create_v1',contractMajor:1,connectionId:null,arguments:{content:{mode:'new',sourceMessageRef:null,senderConnectionId:null,to:[],cc:[],bcc:[],subject:'Original frozen draft',text:'literal body',html:null,inReplyTo:null,references:[],attachmentIds:[]}}},id=randomUUID(),response=await service.call(runId,id,call);expect(response).toMatchObject({status:'ok',value:{status:'awaiting_user'}});if(response.status!=='ok')throw Error(JSON.stringify(response));const requestId=(response.value as {requestId:string}).requestId;
+    expect(sqlite.prepare('SELECT count(*) AS n FROM mail_drafts').get()).toEqual({n:0});expect((await service.call(runId,id,call))).toMatchObject({value:{requestId}});
+    reader.identities.delete(59001);await managed.runs.stop(runId,'synthetic-owner-ended');await integration.exited();expect(managed.runs.get(runId).state).toBe('stopped');
+    expect(await requests.respond(taskId,requestId,1,{choice:'allow'})).toMatchObject({state:'finished'});expect(sqlite.prepare('SELECT count(*) AS n FROM mail_drafts').get()).toEqual({n:1});expect(notices.at(-1)).toContain('不是新的真人授权');
+    const row=sqlite.prepare('SELECT operation_id FROM application_invocations WHERE run_id=? AND request_id=?').get(runId,id) as {operation_id:string};expect(row.operation_id).toBe((store.request(requestId) as any).operation_id);
+    await expect(requests.respond(taskId,requestId,1,{choice:'allow'})).rejects.toThrow();expect(sqlite.prepare('SELECT count(*) AS n FROM mail_drafts').get()).toEqual({n:1});
+  }finally{await requests.close();reader.identities.delete(59001);if(managed.runs.get(runId).state==='active'){await managed.runs.stop(runId,'fixture-finished');await integration.exited();}}
 });

@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {observer} from 'mobx-react-lite';
 import type {PluginUiActionRequest,PreparedPluginUiAction} from '@shared/plugin-actions';
 import {rpc} from '@renderer/lib/ipc';
+import {agentTasksStore} from '@renderer/core/agent-tasks-store';
 import {tasksStore} from '@renderer/core/tasks-store';
 import {navigation} from '@renderer/core/navigation';
 import {ApplicationTerminalButton} from './terminal-insertion';
@@ -11,11 +12,12 @@ import {unwrap} from './api';
 const TerminalChoice=observer(function TerminalChoice({value,onClose,onDone}:{value:Extract<PreparedPluginUiAction,{kind:'insertTerminal'}>;onClose():void;onDone():void}){
   const [target,setTarget]=useState<{taskId:string;ptyId:string}|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),live=useRef(true);
   useEffect(()=>()=>{live.current=false;},[]);
+  const agentTasks=agentTasksStore.enabled?agentTasksStore.tasks.filter(t=>t.projectId===value.projectId):[];
   const tasks=tasksStore.tasks.filter(t=>t.projectId===value.projectId&&t.archivedAt===null&&t.ptyId&&tasksStore.terminals.get(t.id)===t.ptyId);
   const prepare=async()=>{if(busy)return;setBusy(true);setError('');try{const latest=unwrap(await rpc.applications.pluginReviewAction(value.id));if(!live.current)return;if(latest.kind!=='insertTerminal'||latest.projectId!==value.projectId)throw new Error('原插件引用已变化');onDone();navigation.prepareApplicationTask(value.projectId,latest.text);}catch(e){if(live.current)setError(e instanceof Error?e.message:'引用未准备');}finally{if(live.current)setBusy(false);}};
-  return <AppDialog title="选择插入会话" onClose={onClose}><p>只插入输入，不自动发送。请选择本项目正在运行的会话。</p>{tasks.length?<label>会话<select aria-label="插件引用目标会话" value={target?.taskId??''} onChange={e=>{const task=tasks.find(t=>t.id===e.target.value);setTarget(task?.ptyId?{taskId:task.id,ptyId:task.ptyId}:null);}}><option value="">选择会话</option>{tasks.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></label>:<p>本项目没有运行中的会话。</p>}
-    {target&&<ApplicationTerminalButton key={target.taskId+':'+target.ptyId} projectId={value.projectId} target={target} source={{kind:'pluginAction',appId:value.appId,actionId:value.id}} label="插入所选会话" onInserted={onDone}/>}
-    {error&&<p role="alert">{error}</p>}<footer>{!tasks.length&&<button className="m10-button secondary" disabled={busy} onClick={()=>void prepare()}>{busy?'正在准备…':'新建会话并插入'}</button>}<button className="m10-button secondary" onClick={onClose}>取消</button></footer></AppDialog>;
+  return <AppDialog title="选择插入会话" onClose={onClose}><p>只插入输入，不自动发送。请选择本项目正在运行的会话。</p>{agentTasks.length>0&&<label>新任务<select aria-label="插件引用目标任务" value={target?.ptyId==='agent-draft'?target.taskId:''} onChange={e=>setTarget(e.target.value?{taskId:e.target.value,ptyId:'agent-draft'}:null)}><option value="">选择任务</option>{agentTasks.map(t=><option key={t.taskId} value={t.taskId}>{t.title}</option>)}</select></label>}{tasks.length?<label>会话<select aria-label="插件引用目标会话" value={target?.taskId??''} onChange={e=>{const task=tasks.find(t=>t.id===e.target.value);setTarget(task?.ptyId?{taskId:task.id,ptyId:task.ptyId}:null);}}><option value="">选择会话</option>{tasks.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></label>:<p>本项目没有运行中的会话。</p>}
+    {target&&<ApplicationTerminalButton agentTaskId={target.ptyId==='agent-draft'?target.taskId:undefined} key={target.taskId+':'+target.ptyId} projectId={value.projectId} target={target.ptyId==='agent-draft'?undefined:target} source={{kind:'pluginAction',appId:value.appId,actionId:value.id}} label="插入所选会话" onInserted={onDone}/>}
+    {error&&<p role="alert">{error}</p>}<footer>{!tasks.length&&!agentTasks.length&&<button className="m10-button secondary" disabled={busy} onClick={()=>void prepare()}>{busy?'正在准备…':'新建会话并插入'}</button>}<button className="m10-button secondary" onClick={onClose}>取消</button></footer></AppDialog>;
 });
 
 /** A click selects a declared action; the host resolves it from its own original read, never client text/URL. */

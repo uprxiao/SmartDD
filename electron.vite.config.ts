@@ -38,7 +38,7 @@ export default defineConfig({
       }
     } }],
     resolve: { alias },
-    build: { rollupOptions: { input: { index: resolve('src/main/index.ts'), 'm9-html-resources': resolve('src/main/core/files/html/worker.ts'), 'm9-tex-resources': resolve('src/main/core/files/tex/worker.ts'), 'm9-office-document': resolve('src/main/core/files/office/worker.ts'), 'm9-office-pages': resolve('src/main/core/files/office/pages-worker.ts'), 'm9-pptx-document': resolve('src/main/core/files/office/pptx-worker.ts'), 'm10-mail-reader': resolve('src/main/core/applications/providers/mail-worker.ts') } } },
+    build: { rollupOptions: { input: { index: resolve('src/main/index.ts'), 'agent-diff-worker': resolve('src/main/core/agent/turn-diff-worker.ts'), 'm9-html-resources': resolve('src/main/core/files/html/worker.ts'), 'm9-tex-resources': resolve('src/main/core/files/tex/worker.ts'), 'm9-office-document': resolve('src/main/core/files/office/worker.ts'), 'm9-office-pages': resolve('src/main/core/files/office/pages-worker.ts'), 'm9-pptx-document': resolve('src/main/core/files/office/pptx-worker.ts'), 'm10-mail-reader': resolve('src/main/core/applications/providers/mail-worker.ts') } } },
   },
   preload: {
     plugins: [externalizeDepsPlugin()],

@@ -1,3 +1,9 @@
+import { realpathSync } from 'node:fs';
+import { attachAgentBrowserRequests } from './business-browser';
+import { HostBusinessRequests } from './host-business-requests';
+import { MessageLinks } from './message-links';
+import type { SourceResolver } from '../files/roots';
+import { TurnDiffs } from './turn-diffs';
 // M14 统一 Agent 工作区的主进程装配：配置档案解析、本机程序发现、托管文件落盘与事件推送。
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
@@ -95,6 +101,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         assertCurrent();
         const actual = resolveProfileLaunch({ ...input, runId: context.runId, carryExtensions: launch.compatibility.extensions !== false });
         materializeAgentPlan(actual.plan, d.userData, cwd);
+        if(!business.supportsAgentDelivery(actual.plan.profile.runner,probe.version!)){store.addHostItem(taskId,null,'system_notice',{code:'businessCapabilitiesUnverified',detail:'当前执行器版本的业务 Skill／MCP／CLI 交付尚未验证；本轮保留对话与代码能力，不注入未经验证的业务通道。'});return undefined;}
         const result = await business.prepareAgent({ ...context, version: probe.version!, assertCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home: base.HOME ?? homedir(), stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: context.nativeId ? 'resume' : 'new', sessionId: context.nativeId ?? null, previous: null, newTask: !context.nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
         return { ...result, env: { ...actual.env, ...result.env }, extraArgs: [...actual.extraArgs, ...(result.extraArgs ?? [])] };
       },
@@ -116,6 +123,9 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     project: id => id ? (store.sqlite.prepare('SELECT id,name FROM projects WHERE id=?').get(id) as { id: string; name: string } | undefined) ?? { id, name: 'project' } : { id: 'unscoped', name: 'project' },
     drained: async runId => { if (!await runs.drainNativeGroup(runId)) return false; if (store.run(runId)?.state === 'orphaned') await business?.recoverAgentRun(runId); const processes = store.sqlite.prepare("SELECT 1 FROM capability_run_processes WHERE run_id=? AND state NOT IN ('exited','canceled')").get(runId); const activities = store.sqlite.prepare("SELECT 1 FROM capability_run_activities WHERE run_id=? AND state='active'").get(runId); return !processes && !activities; },
   });
+  const requests = new HostBusinessRequests({store,run:taskId=>runs.runForTask(taskId),hasOwner:taskId=>!!runs.runForTask(taskId)||!!runs.closingForTask(taskId),notify:(taskId,id,text,wake)=>tasks.enqueueHost(taskId,id,text,'notification',wake),acquire:(taskId,_operation,signal)=>delegations.acquireBusiness(taskId,signal)});tasks.attachBusiness(requests);
+  const diffs=new TurnDiffs({store,storage:join(d.userData,'agent-diffs'),excluded:[d.userData,join(d.baseEnv().HOME??homedir(),'.willyou')],stable:(taskId,turnId)=>{const run=runs.runForTask(taskId);return !delegations.businessBusy(taskId)&&(!run||!runs.busy(run.runId)&&!runs.nativeBusy(run.runId))&&!store.sqlite.prepare("SELECT 1 FROM agent_turns WHERE task_id=? AND turn_id<>? AND status IN ('dispatching','started')").get(taskId,turnId);},changed:taskId=>store.tx(emit=>emit(taskId,'diff.changed',{}))});tasks.attachDiffs(diffs,taskId=>{const run=runs.runForTask(taskId);return delegations.businessBusy(taskId)||!!run&&runs.nativeBusy(run.runId);});
+  let links:MessageLinks|undefined;
   void git.recoverIntents().catch(() => { /* explicit needs_review records retain ownership */ });
   store.subscribe((e: StoredEvent) => d.emitEvent(boundedEvent(e)));
   const live: LiveListener = ({ taskId, runId, event }) => { if (event.type === 'message.delta') d.emitLive({ taskId, runId, itemKey: event.nativeItemId, text: event.text }); };
@@ -126,6 +136,6 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const };
   });
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskCwd: id => { const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
-  return { store, runs, tasks, profiles, terminals, git, delegations, attachBusiness: (value: ManagedTaskCapabilities) => { business = value; value.attachAgentTools(delegations); }, closeAll: async () => { await delegations.close(); terminals?.closeAll(); await runs.closeAll(); } };
+  return { store, runs, tasks, profiles, terminals, git, delegations, requests, diffs,applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const dir=store.sqlite.prepare('SELECT d.path FROM project_dirs d JOIN projects p ON p.id=d.project_id WHERE d.id=? AND p.id=? AND p.archived_at IS NULL').get(dirId,projectId) as {path:string}|undefined;if(!dir)throw new Error('首页目录没有登记在当前项目');const cwd=realpathSync(dir.path),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await diffs.close(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

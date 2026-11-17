@@ -1,3 +1,4 @@
+import { AgentBusinessTools } from './agent-business-tools';
 import {SkillObservationMonitor} from './skill-observation-monitor';
 import {BridgeSupervisor} from './bridge-supervisor';
 import {nativeCapabilityPreparation} from './native-preparation-diagnostics';
@@ -74,6 +75,10 @@ export interface TaskCapabilityLauncherOptions {
 }
 /** Production composition. Credentials, native PIDs and resource identities never come from RPC. */
 export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
+  private readonly agentServices=new Map<import('@shared/application-capabilities').ApplicationEntry,ApplicationToolService>();
+  private agentBusiness?:AgentBusinessTools;
+  attachAgentRequests(store:import('../agent/agent-store').AgentStore,requests:import('../agent/host-business-requests').HostBusinessRequests,notify:(taskId:string,id:string,text:string)=>void){if(this.agentBusiness)return;this.agentBusiness=new AgentBusinessTools({store,requests,runs:this.runs,applications:this.applications,services:this.agentServices,notify});}
+
   private hostTools?: AgentHostTools;
   attachAgentTools(tools: AgentHostTools) { this.hostTools = tools; }
   private readonly planningAgents=new Map<string,NativeLaunchContext>();
@@ -125,7 +130,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     },revoke:runId=>{const recoveryService=this.recoveryServices.get(runId);if(recoveryService)this.bridgeRecovery.revoke(runId,recoveryService);this.broker?.revokeRun(runId);this.cli?.revokeRun(runId);this.bridges?.revokeRun(runId);this.backends?.revokeRun(runId);const entry=this.active.get(runId),backend=entry?.codex?.stop();if(entry)this.options.stopPty(entry.run.ptyId);return backend;}});
     this.backends=new RunBackendAuthority(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs});
     this.bridges=new AgentBridgeProcesses(this.runs,options.peers??new MacUnixPeerIdentityReader(options.helper),this.processes,{pollMs:options.pollMs,additionalRoot:this.backends});
-    const applicationTools = new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{additional:applications.plugins?.tools});
+    const applicationTools = new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{additional:applications.plugins?.tools});this.agentServices.set('mcp',applicationTools);
     const agentRun = (runId: string) => !!(store.sqlite.prepare('SELECT binding_id FROM capability_runs WHERE run_id=?').get(runId) as { binding_id?: string } | undefined)?.binding_id;
     this.broker=new PrivateApplicationBroker(this.runs,{
       clearMemory: runId => applicationTools.clearMemory(runId),
@@ -146,8 +151,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
           return { schema: 1, id, status: 'ok', value } as BridgeResponse;
         } catch (e) { return { schema: 1, id, status: 'error', error: { code: e instanceof ApplicationError ? e.code : 'INVALID_INPUT', message: (e as Error).message.slice(0, 1000), layer: 'auth', retryable: false, attemptCount: 0, retryExhausted: false, effectState: 'not-started', nextAction: '核对收据及子任务状态后再操作' } } as BridgeResponse; }
       },
-    },{attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId),rejectedReplacement:(runId,bridgeId)=>this.bridges.revokeBridge(runId,bridgeId)});
-    if(options.cliPath)try{this.cli=new ApplicationCliGateway(this.runs,new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{entry:'cli',additional:applications.plugins?.tools}),options.peers??new MacUnixPeerIdentityReader(options.helper),{executable:{path:canonicalFuturePath(options.cliPath),sha256:digest(readFileSync(options.cliPath))},additionalRoot:this.backends});}catch{/* Missing CLI resources retain the approved read-only MCP fallback. */}
+    },{rejectedPeer:async(socket,runId,bridge)=>{if(agentRun(runId))await this.bridges.observeRejected(socket,runId,bridge);},attachPeer:(socket,runId,bridge)=>this.bridges.attach(socket,runId,bridge),authenticated:(runId,bridgeId)=>applications.sessionDiagnostics.bridgeAuthenticated(runId,bridgeId),disconnected:(runId)=>this.bridgeDisconnected(runId),rejectedReplacement:(runId,bridgeId)=>this.bridges.revokeBridge(runId,bridgeId)});
+    if(options.cliPath)try{const cliTools=new ApplicationToolService(store,this.runs,new ApplicationAdapterRegistry(store,applications.data),{entry:'cli',additional:applications.plugins?.tools});this.agentServices.set('cli',cliTools);const identity={path:canonicalFuturePath(options.cliPath),sha256:digest(readFileSync(options.cliPath))};this.cli=new ApplicationCliGateway(this.runs,cliTools,options.peers??new MacUnixPeerIdentityReader(options.helper),{executable:identity,additionalRoot:this.backends});this.cliProof=Object.freeze(identity);}catch{/* Missing CLI resources retain the approved read-only MCP fallback. */}
     applications.sessionDiagnostics.attach({deliveryAdapters:support.adapters.deliveryAdapters,channelConnected:id=>this.broker.hasAuthenticated(id),recoveryIssue:id=>{const server=this.recoveryServices.get(id);const result=server?this.bridgeRecovery.inspect(id,server)?.result:undefined;return result&&result.code!=='CONNECTED'?result.code:null;},verify:(resource,snapshot)=>this.verifyResource(resource,snapshot)});
     this.timer=setInterval(()=>{void this.sweep();},Math.max(20,options.pollMs??500));this.timer.unref();
   }
@@ -326,6 +331,26 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(toolNames.map(name=>[name,'mcp__'+appMcp+'__'+name]))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:agentVersion,adapterRevision:1},catalogGeneration:'library',packages,...(externalPlugins?{externalPlugins}:{}),standardSkills:[],mcp,provenance:'created'};
   }
   /** M14 binds capabilities to a real SDK/app-server run, never to a synthetic PTY process. */
+  private cliProof?:import('../agent/host-cli-command').HostBusinessCli;
+  supportsAgentDelivery(runner:string,version:string){const adapter=this.libraryAdapter(this.support.adapters.deliveryAdapters.forRunner(runner).id,version);return !!adapter&&this.support.adapters.levels(adapter.hash,version).includes('L0.mcp');}
+  taskPlugins(taskId:string){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string|null}|undefined;if(!task?.project_id)return[];const result=this.selectedApps(task.project_id).map(p=>({id:p.appId,name:this.applications.builtin.retainedMetadata(p.packageHash).manifest.displayName}));for(const p of this.applications.plugins?.selections(task.project_id)??[]){const state=this.applications.plugins!.lifecycle.state(p.appId);if(state.hash)result.push({id:p.appId,name:this.applications.plugins!.lifecycle.packages.get(state.hash).plugin.manifest.displayName});}return result;}
+  async agentReference(sender:import('./execution-context').ApplicationUiSender,taskId:string,raw:import('@shared/application-terminal').ApplicationTerminalSource){
+    const {applicationTerminalSourceSchema,applicationReferenceText,terminalSourceApp}=await import('@shared/application-terminal');
+    const source=applicationTerminalSourceSchema.parse(raw),store=this.support.store;
+    const task=()=>{const t=store.sqlite.prepare('SELECT t.project_id,a.archived_at FROM agent_tasks a JOIN tasks t ON t.id=a.task_id WHERE a.task_id=?').get(taskId) as {project_id:string|null;archived_at:string|null}|undefined;if(!t?.project_id||t.archived_at||!store.sqlite.prepare('SELECT 1 FROM projects WHERE id=? AND archived_at IS NULL').get(t.project_id))throw new ApplicationError('SCOPE_DENIED','引用目标任务或项目已不可用');return t;};
+    const projectId=task().project_id!;
+    if(source.kind==='pluginAction'){const value=this.applications.pluginReviewAction(sender,source.actionId);if(value.kind!=='insertTerminal'||value.appId!==source.appId||value.projectId!==projectId)throw new ApplicationError('SCOPE_DENIED','插件原对象不属于目标项目');task();return{taskId,projectId,text:value.text};}
+    const appId=terminalSourceApp(source);this.applications.selections.requireEnabled(projectId,appId);
+    const selected=this.selectedApps(projectId).find(p=>p.appId===appId);if(!selected)throw new ApplicationError('SCOPE_DENIED','目标项目没有选用此应用');const pack=this.applications.builtin.retainedMetadata(selected.packageHash),policy=canonicalJson(this.applications.selections.policyStamp(projectId,appId));
+    if(source.kind==='skill'){if(!pack.manifest.skills.some(s=>s.id===source.skillId))throw new ApplicationError('SCOPE_DENIED','此应用没有声明该Skill');}
+    else if(source.kind==='draft'){const value=await this.applications.viewDraft(sender,projectId,source.draftId,source.revision);if(value.draft.contentHash!==source.contentHash||(store.sqlite.prepare('SELECT current_revision FROM mail_drafts WHERE id=? AND project_id=?').get(source.draftId,projectId) as {current_revision:number}|undefined)?.current_revision!==source.revision)throw new ApplicationError('REVISION_CONFLICT','草稿已更新，请重新查看后插入');}
+    else {const slot=source.kind==='zentao'?'zentao':'foxmail',binding=this.applications.selections.connectionSlot(projectId,appId,slot),connection=this.applications.connections.get(source.reference.connectionId);if(binding.connectionId!==connection.id||binding.identityRevision!==source.reference.identityRevision||connection.identityRevision!==source.reference.identityRevision||!connection.enabled||connection.authorization!=='connected')throw new ApplicationError('SCOPE_DENIED','引用不是目标项目当前选用的来源');if(source.kind==='zentao')this.applications.data.zentao.assertStoredReference(projectId,source.objectKind,source.reference);else await this.applications.contexts.withUi(sender,{projectId,appId:'mail',action:'ui.mail.reference.prepare',operations:['mail.read'],semantics:'read'},context=>this.applications.mailReads.source(context,source.reference));}
+    if(task().project_id!==projectId||canonicalJson(this.applications.selections.policyStamp(projectId,appId))!==policy)throw new ApplicationError('RESOURCE_STATE_CHANGED','准备引用期间项目授权已经变化');
+    return{taskId,projectId,text:applicationReferenceText(source)};
+  }
+  recordAgentHumanInput(runId:string,sender:import('./execution-context').ApplicationUiSender,text:string,sequence:number){const context=this.runs.assertActive(runId),row=this.support.store.sqlite.prepare('SELECT pty_id FROM capability_runs WHERE run_id=? AND binding_id IS NOT NULL').get(runId) as {pty_id:string}|undefined;if(row)this.applications.nativeInputs.observeAgent(sender,context,row.pty_id,text,sequence);}
+  agentContext(runId:string){return this.runs.assertActive(runId);}
+  assertAgentApplication(taskId:string,appId:'browser'|'mail'|'zentao'|'sample-kv'){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string}|undefined;if(!task)throw new ApplicationError('SCOPE_DENIED','任务不存在');this.applications.selections.requireApplicationEnabled(task.project_id,appId);}
   async prepareAgent(input: { runId: string; bindingId: string; generation: number; task: TaskLaunchInput; version: string; assertCurrent(): void }): Promise<RunIntegration> {
     if (this.closed) throw new ApplicationError('CANCELED', '应用服务已关闭');
     const store = this.support.store, task = input.task, runner = this.support.adapters.deliveryAdapters.forRunner(task.profile.runner).id;
@@ -337,11 +362,18 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if (!server) throw new ApplicationError('CAPABILITY_UNAVAILABLE', '应用桥资源尚未准备');
     if (native.inventory.some(x => x.kind === 'mcp' && x.name === server.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT', '用户 MCP 已使用 WillYou 服务名，未覆盖');
     const bindings = this.applications.builtinPreferences.capture(task.projectId);
-    const available: RunPlanAvailability = { cli: false, mcp: true };
+    const selection=JSON.parse((store.sqlite.prepare('SELECT selection_json FROM agent_tasks WHERE task_id=?').get(task.taskId) as {selection_json:string}).selection_json),role=store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(task.taskId) as {access:string}|undefined;
+    // The driver supplies the effective per-turn tier. Inspect the same host choice, retaining all other source flags.
+    const args:string[]=[];for(let i=0;i<task.profile.args.length;i++){const a=task.profile.args[i];if(['--permission-mode','--sandbox','-s','--ask-for-approval','-a','--setting-sources'].includes(a)){i++;continue;}if(['--dangerously-bypass-approvals-and-sandbox','--yolo','--approve-for-me','--not-so-yolo','--full-auto'].includes(a))continue;args.push(a);}
+    if(task.profile.runner==='codex')args.push('--sandbox',selection.tier==='full'?'danger-full-access':'workspace-write');else args.push('--setting-sources','user','--permission-mode',selection.tier==='full'?'bypassPermissions':'default');
+    const cliTask={...task,profile:{...task.profile,args}};
+    if(role?.access!=='read')await this.configureCli(cliTask,native,snapshot);
+    const cliPolicy=this.planningCliPolicies.get(task.taskId);
+    const available: RunPlanAvailability = { cli: !!this.cli&&this.cliReady&&cliPolicy?.available===true&&role?.access!=='read', mcp: true };
     const skills = this.pluginSkills?.describe(snapshot, input.runId, available);
     if (skills) { this.pluginSkills!.checkNative(skills, native); this.pluginSkills!.materialize(skills); }
     const sources = snapshot.packages.map(p => { const application = this.applications.builtin.retainedMetadata(p.packageHash); return { packageHash: p.packageHash, manifest: application.manifest, capabilities: builtinApplicationModules.capabilityViews(application.manifest) }; });
-    const plan = createApplicationRunPlan({ runId: input.runId, snapshotHash: hash, snapshot, applications: sources, skills: skills?.skills ?? [], available, cliVersion: input.version });
+    const plan = createApplicationRunPlan({ runId: input.runId, snapshotHash: hash, snapshot, applications: sources, skills: skills?.skills ?? [], available, sandbox:cliPolicy?.available?{source:cliPolicy.source,digest:cliPolicy.digest}:undefined, cliVersion: input.version });
     const resourceIds = [...new Set([`agent-adapter:${snapshot.runner}:${adapter.hash}`, ...snapshot.packages.flatMap(p => ['app:' + p.packageHash, 'runtime:' + p.runtimeHash]), ...snapshot.mcp.map(m => (m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash)])];
     const verify = async () => {
       this.support.adapters.verify(adapter.hash);
@@ -349,7 +381,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       new RuntimeRegistry(store).verify(server.runtimeHash);
       if (skills) this.pluginSkills!.verify(skills);
     };
-    const assertCurrent = () => { input.assertCurrent(); assertNoPendingApplicationSwitch(store, snapshot); if (skills) this.pluginSkills!.verify(skills); };
+    let nativeStarted=false;
+    const assertCurrent = () => { input.assertCurrent();if(!nativeStarted&&cliPolicy?.available){if('runner' in cliPolicy)verifyClaudeCliSandbox(cliPolicy);else verifyCodexCliSandbox(cliPolicy);} assertNoPendingApplicationSwitch(store, snapshot); if (skills) this.pluginSkills!.verify(skills); };
     // Per-binding version records coexist with M13's task snapshots; no global session pointer is rewritten.
     store.sqlite.transaction(() => {
       const reserved = store.sqlite.prepare("SELECT c.capability_session_id,c.snapshot_json FROM capability_runs r JOIN agent_capability_sessions c ON c.capability_session_id=r.capability_session_id WHERE r.run_id=? AND r.binding_id=? AND r.state='preparing' AND r.pid IS NULL").get(input.runId, input.bindingId) as { capability_session_id: string; snapshot_json: string } | undefined;
@@ -361,19 +394,29 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     let bridge: Awaited<ReturnType<PrivateApplicationBroker['prepare']>> | undefined;
     try {
       await run.prepare();
+      store.sqlite.transaction(()=>{for(const resourceId of resourceIds){const resource=store.get(resourceId);for(const [ownerKind,ownerId] of [['run',input.runId],['binding',input.bindingId]])store.sqlite.prepare('INSERT OR IGNORE INTO agent_resource_refs(owner_kind,owner_id,resource_kind,resource_id,hold_reason,created_at) VALUES(?,?,?,?,?,?)').run(ownerKind,ownerId,resource.kind,resourceId,JSON.stringify({contentHash:resource.contentHash,generation:resource.generation}),new Date().toISOString());}})();
       bridge = await this.broker.prepare(run, server.serverName, assertCurrent);
+      const projectMcp=snapshot.mcp.find(m=>m.kind==='legacy-project-context');let runtime:PreparedRuntime|undefined;
+      if(projectMcp){if(native.inventory.some(x=>x.kind==='mcp'&&x.name===projectMcp.serverName))throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户 MCP 已使用项目上下文名称');runtime=this.capabilities.prepare({projectId:task.projectId,taskId:task.taskId,runner:task.profile.runner,cwd:task.cwd,home:task.home,profileArgs:task.profile.args,previous:task.previous,managed:{runId:run.runId,runtimeHash:projectMcp.runtimeHash,mcpName:projectMcp.serverName}});}
       const mcpServers: NonNullable<DriverOpenOptions['mcpServers']> = { [server.serverName]: { command: process.execPath, args: [join(store.root, 'runtime', server.runtimeHash, 'mcp-bridge.cjs'), '--bootstrap', bridge.bootstrapPath], env: { ELECTRON_RUN_AS_NODE: '1' } } };
-      const extraArgs: string[] = [];
+      if(projectMcp&&runtime)mcpServers[projectMcp.serverName]={command:'python3',args:[join(store.root,'runtime',projectMcp.runtimeHash,'context_mcp.py'),join(store.root,'runs',task.projectId,task.taskId,run.runId,'context.json')],env:{}};
+      const extraArgs: string[] = [];let cliEnvironment:Record<string,string>={},claudeSettings:Record<string,unknown>|undefined;
+      if(available.cli&&this.cli&&cliPolicy?.available){
+        const cliSandbox='runner' in cliPolicy?{runner:'claude-code' as const,endpoint:this.cli.endpoint,kind:cliPolicy.kind,source:cliPolicy.source,digest:cliPolicy.digest}:{endpoint:this.cli.endpoint,kind:cliPolicy.kind,parent:cliPolicy.parent,networkProxy:cliPolicy.networkProxy,enableNetwork:cliPolicy.enableNetwork,existingNames:cliPolicy.existingNames,source:cliPolicy.source,digest:cliPolicy.digest};
+        const overlay=this.support.adapters.planLibrary(adapter.hash,{snapshot,runId:run.runId,cliVersion:input.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:task.home},inventory:native.inventory,planHash:plan.planHash,cliSandbox,mcp:[]});
+        if(task.profile.runner==='codex')extraArgs.push(...overlay.args);else{const at=overlay.args.indexOf('--settings');if(at>=0)claudeSettings=JSON.parse(overlay.args[at+1]);}
+        cliEnvironment={...this.cli.issue(run).environment,PATH:dirname(this.options.cliPath!)+delimiter+(task.environment.PATH??'')};
+      }
       const role = store.sqlite.prepare("SELECT access FROM agent_delegations WHERE child_task_id=?").get(task.taskId) as { access: string } | undefined;
       if (role?.access === 'read' && task.profile.runner === 'codex') { const disabled = native.inventory.filter(e => e.kind === 'mcp' && e.name !== server.serverName); if (disabled.length) extraArgs.push('-c', `mcp_servers={${disabled.map(e => `${JSON.stringify(e.name)}={enabled=false}`).join(',')}}`); }
       if (task.profile.runner === 'codex') for (const [name, m] of Object.entries(mcpServers)) extraArgs.push('-c', `mcp_servers.${name}={command=${JSON.stringify(m.command)},args=${JSON.stringify(m.args)},env={ELECTRON_RUN_AS_NODE="1"},default_tools_approval_mode="approve",startup_timeout_sec=30,tool_timeout_sec=120}`);
-      this.active.set(run.runId, { run });
+      this.active.set(run.runId, { run,...(runtime?{runtime}:{}) });
       return {
-        extraArgs, mcpServers,
+        extraArgs, mcpServers,env:{...runtime?.env,...cliEnvironment},claudeSettings,...(available.cli&&this.options.cliPath?{hostBusinessCli:this.cliProof}:{}),
         plugins: task.profile.runner === 'claude' ? skills?.claudeRoots.map(path => ({ type: 'local' as const, path })) : undefined,
         skillRoots: task.profile.runner === 'codex' ? skills?.codexRoots.map((path, i) => ({ path, name: skills.skills[i].nativeName })) : undefined,
         assertCurrent, beforeFork: async () => { assertCurrent(); await bridge!.bridge.arm(); await run.cli.arm(); },
-        attached: pid => run.cli.attach(pid),
+        attached: async pid => {await run.cli.attach(pid);nativeStarted=true;this.applications.nativeMessages.register(run.runId,input.version,run.signal);},
         exited: async () => { await run.cli.exited(); const deadline = Date.now() + 20_000; while (!['stopped', 'failed'].includes(this.runs.get(run.runId).state)) { if (Date.now() >= deadline) throw new ApplicationError('RESOURCE_BUSY', '业务或桥进程尚未排空'); await new Promise(r => setTimeout(r, 50)); } },
         cancelBeforeFork: async () => { this.broker.revokeRun(run.runId); await run.cli.cancelUnforked!(); await bridge!.bridge.releaseUnclaimed?.(); await run.stop('agent-unforked'); },
       };

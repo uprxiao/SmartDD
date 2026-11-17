@@ -1,0 +1,10 @@
+import {it,expect,vi} from 'vitest';import {realpathSync} from 'node:fs';
+import {AgentBridgeProcesses} from '../applications/agent-bridge-processes';
+it('M14: rejected policy still records a kernel-proved child for cleanup, without authenticating it or inventing an exit',async()=>{
+ let stopped=false;const signals:number[]=[],attached=vi.fn(async()=>{}),exited=vi.fn(async()=>{}),handle:any={processId:'bridge',attach:attached,exited},run={runId:'run',pid:101,processStartedAt:'darwin-proc-v1:1:101'},runs:any={get:()=>run,store:{sqlite:{prepare:()=>({get:()=>({binding_id:'binding',state:'armed'})})}}},peers:any={read:async()=>({uid:process.getuid!(),peer:{pid:202,startedAt:'darwin-proc-v1:1:202',executable:realpathSync(process.execPath)},ancestors:[{pid:101,startedAt:run.processStartedAt}]})},reader:any={state:()=>stopped?'stopped':'running'};
+ const supervisor=new AgentBridgeProcesses(runs,peers,reader,{pollMs:10000,signal:id=>signals.push(id.pid)});
+ try{await supervisor.observeRejected({} as any,'run',handle);expect(attached).toHaveBeenCalledWith(202,'darwin-proc-v1:1:202');expect(signals).toEqual([202]);await supervisor.poll();expect(exited).not.toHaveBeenCalled();stopped=true;await supervisor.poll();expect(exited).toHaveBeenCalledOnce();expect(supervisor.status()).toEqual([]);}finally{await supervisor.dispose();}
+});
+it('M14: an unrelated peer cannot be recorded or signalled even with a leaked rejected-handshake ticket',async()=>{
+ const attach=vi.fn(),signal=vi.fn(),runs:any={get:()=>({pid:101,processStartedAt:'darwin-proc-v1:1:101'}),store:{sqlite:{prepare:()=>({get:()=>({binding_id:'binding',state:'armed'})})}}},peers:any={read:async()=>({uid:process.getuid!(),peer:{pid:202,startedAt:'darwin-proc-v1:1:202',executable:realpathSync(process.execPath)},ancestors:[{pid:999,startedAt:'darwin-proc-v1:1:999'}]})},supervisor=new AgentBridgeProcesses(runs,peers,{state:()=> 'running'} as any,{signal});try{await expect(supervisor.observeRejected({} as any,'run',{processId:'bridge',attach} as any)).rejects.toThrow('本任务进程来源');expect(attach).not.toHaveBeenCalled();expect(signal).not.toHaveBeenCalled();}finally{await supervisor.dispose();}
+});

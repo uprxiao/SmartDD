@@ -21,6 +21,8 @@ export interface DriverOpenOptions {
   /** 宿主追加给原生进程的参数（如 Codex 隔离 -c 配置）。 */
   extraArgs?: readonly string[];
   /** Claude settingSources；关闭“沿用我的扩展”时去掉 user。 */
+  hostBusinessCli?:import('./host-cli-command').HostBusinessCli;
+  claudeSettings?:Record<string,unknown>;
   settingSources?: readonly ('user' | 'project' | 'local')[];
   mcpServers?: Record<string, { command: string; args: string[]; env?: Record<string, string> }>;
   skillRoots?: readonly { name: string; path: string }[];

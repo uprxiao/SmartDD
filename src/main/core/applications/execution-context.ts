@@ -327,6 +327,8 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     this.deps.requireSender(sender);if(!managementActions.has(input.action))throw new ApplicationError('SCOPE_DENIED','连接管理只允许明确的配置动作');const application=this.activePackage(input.appId);
     return this.begin(application,{operationId:randomUUID(),callerKind:'ui',scopeKind:'connection-management',projectId:input.projectId??null,taskId:null,runId:null,jobId:null,parentOperationId:null,appId:input.appId,packageHash:application.packageHash,dataApi:1,action:input.action,semantics:input.semantics,allowedOperations:[input.action],signal:input.signal??new AbortController().signal,startedAt:new Date(this.now()).toISOString()},()=>this.deps.requireSender(sender),null,work,true);
   }
+  private readonly taskAgentRuntimes=new WeakMap<ApplicationExecutionContext<A>,{runId:string;signal:AbortSignal}>();
+  agentRuntime(context:ApplicationExecutionContext<A>){this.assertActive(context);return this.taskAgentRuntimes.get(context)??{runId:context.runId!,signal:this.agentRunSignal(context)};}
   withAgent<T>(claim:RunContext,binding:Readonly<ApplicationDataBinding>,operation:ApplicationOperationContext,semantics:'read'|'write',work:(context:ApplicationExecutionContext<A>)=>Promise<T>):Promise<T>{
     const known=this.deps.assertRun(claim.run.runId);const selected=known.snapshot.packages.find(p=>p.packageHash===binding.packageHash&&p.appId===binding.appId);
     const entry=binding.entry??'mcp';
@@ -337,6 +339,7 @@ export class ApplicationExecutionContexts<C extends HostedConfiguration=Connecti
     const application=this.builtin.assertTrusted(binding.packageHash),appId=this.registry.appId(application.appId),stamp=this.selections.policyStamp(known.run.projectId,appId);
     const check=()=>{const current=this.deps.assertRun(known.run.runId);if(current.run.taskId!==known.run.taskId||current.run.projectId!==known.run.projectId||canonicalJson(this.selections.policyStamp(known.run.projectId,appId))!==canonicalJson(stamp))throw new ApplicationError('SCOPE_DENIED','当前运行或应用授权已变化');};
     return this.begin(application,{operationId:operation.operationId,callerKind:'agent-run',scopeKind:'project',projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,jobId:null,parentOperationId:null,appId,packageHash:binding.packageHash,dataApi:1,action:binding.toolName,semantics,allowedOperations:selected.allowedOperations,signal:AbortSignal.any([known.signal,operation.signal]),startedAt:new Date(this.now()).toISOString()},check,stamp,context=>{
+      if(known.taskBusiness?.runtime)this.taskAgentRuntimes.set(context,known.taskBusiness.runtime);
       this.agentCalls.set(context,Object.freeze({kind:'agent',operationId:context.operationId,appId,packageHash:binding.packageHash,action:context.action,projectId:known.run.projectId,taskId:known.run.taskId,runId:known.run.runId,entry,requestId:operation.requestId,plan:Object.freeze(known.plan?{kind:'run-plan',hash:known.plan.planHash}:{kind:'snapshot-v2',hash:known.run.snapshotHash})}));
       return work(context);
     },false);

@@ -3,6 +3,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import {isHostBusinessCli} from '../host-cli-command';
 import { CLAUDE_TIERS } from '../permissions';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import type { Tier } from '../permissions';
@@ -43,6 +44,7 @@ const requestKind = (tool: string): DriverRequestKind =>
   tool === 'ExitPlanMode' ? 'plan_approval' : tool === 'AskUserQuestion' ? 'user_input' : tool === 'Bash' ? 'command_approval' : /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool) ? 'file_approval' : 'tool_approval';
 
 export class ClaudeSdkInstance implements DriverInstance {
+  private openOptions?:DriverOpenOptions;
   private readonly nodeStates = new Map<string, { runId?: string; terminal: boolean }>();
   readonly driverId = 'claude-sdk' as const;
   private readonly emitter = new Emitter();
@@ -85,6 +87,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
 
   async open(o: DriverOpenOptions) {
+    this.openOptions=o;
     if (this.query) throw new DriverError('STATE', '实例已打开');
     const params = CLAUDE_TIERS[o.tier];
     if (!params) throw new DriverError('REJECTED', 'Claude 不支持该档位');
@@ -99,6 +102,7 @@ export class ClaudeSdkInstance implements DriverInstance {
       cwd: o.cwd,
       env: o.env,
       ...(o.model ? { model: o.model } : {}),
+      ...(o.claudeSettings?{settings:o.claudeSettings}:{}),
       permissionMode: params.permissionMode,
       ...(params.permissionMode === 'bypassPermissions' ? { allowDangerouslySkipPermissions: true } : {}),
       settingSources: [...(o.settingSources ?? ['user', 'project', 'local'])],
@@ -225,6 +229,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
 
   private onPermission(tool: string, input: Record<string, unknown>, ctx: { signal: AbortSignal; title?: string; decisionReason?: string; blockedPath?: string; agentID?: string }): Promise<PermissionResult> {
+    if(tool==='Bash'&&isHostBusinessCli(input,this.openOptions?.hostBusinessCli,this.openOptions?.env??{}))return Promise.resolve({behavior:'allow',updatedInput:input});
     const key = randomUUID();
     return new Promise<PermissionResult>(resolve => {
       this.pending.set(key, { resolve, input });

@@ -1,3 +1,4 @@
+import {agentComposerTargets} from '@renderer/features/agent-tasks/composer-target';
 import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FileDocument, FileRoot } from '@shared/files';
@@ -6,7 +7,7 @@ import { FileTerminalContextStore, registerFileTerminal, dropFileToTerminal, end
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { files: {} } }));
 const disposers: (() => void)[] = [];
 const deferred = <T>() => { let resolve!: (value: T) => void, reject!: (error: unknown) => void; const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
-function fixture(running = true) {
+function fixture(running = true, agent=false) {
   const root: FileRoot = { lease: randomUUID(), generation: 1, source: 'task-cwd', sourceId: 'source', path: '/tmp/project', canonicalPath: '/tmp/project', identity: { device: '1', inode: '2' }, label: 'Fixture' };
   const file: FileDocument = { ref: { lease: root.lease, generation: 1, id: randomUUID() }, documentKey: 'local:1:3', name: 'a.ts', relativePath: 'a.ts', absolutePath: '/tmp/project/a.ts', writable: true, revision: { device: '1', inode: '3', hash: 'a'.repeat(64), size: 4, modifiedNs: '1', changedNs: '1' }, content: { kind: 'text', mime: 'text/plain', language: 'typescript' } as never };
   const target = { taskId: 'task', ptyId: 'pty', focus: vi.fn() };
@@ -19,7 +20,7 @@ function fixture(running = true) {
     terminalImageCapability: vi.fn(async () => ({ state: 'supported' as 'supported' | 'unsupported' | 'unknown', reason: 'known PNG adapter', acceptedMimeTypes: ['image/png'] })),
     terminalInsert: vi.fn(async (input: { operationId: string }): Promise<TerminalInsertionReceipt> => ({ operationId: input.operationId, state: 'inserted' as const, characters: 4, removed: 0, replaced: 0, truncated: 0, stale: [], bracketed: false })),
   };
-  const store = new FileTerminalContextStore(api as never); store.setRoot(root); disposers.push(store.attach());
+  const store = new FileTerminalContextStore(api as never,agent?{kind:'task',taskId:'task'}:undefined); store.setRoot(root); disposers.push(store.attach());
   const path = { lease: root.lease, generation: root.generation, relativePath: file.relativePath };
   return { store, api, root, file, target, path };
 }
@@ -261,4 +262,9 @@ describe('terminal context lifecycle without model execution', () => {
     expect(notice).not.toHaveBeenCalled(); expect(f.store.notice).toBe(before); expect(f.api.terminalInsert).toHaveBeenCalledOnce();
   });
 
+});
+
+it('M14 A38: files and quoted selections insert into the exact task draft without a PTY, and a late result cannot reach a different task',async()=>{
+ const f=fixture(false,true),insert=vi.fn(),target={taskId:'task',projectId:'p',insert,focus:vi.fn()};disposers.push(agentComposerTargets.register(target));await f.store.add(f.path);await f.store.insert();expect(insert).toHaveBeenCalledWith('a.ts');expect(f.api.terminalBind).not.toHaveBeenCalled();expect(f.store.notice).toContain('尚未发送');
+ await f.store.add(f.path);const reply=deferred<FileDocument>();f.api.refresh.mockImplementationOnce(()=>reply.promise);const work=f.store.insert();disposers.push(agentComposerTargets.register({taskId:'other',projectId:'p',insert:vi.fn(),focus:vi.fn()}));reply.resolve(f.file);await work;expect(insert).toHaveBeenCalledTimes(1);expect(f.store.references).toHaveLength(1);
 });

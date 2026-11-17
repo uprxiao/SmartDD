@@ -1,0 +1,38 @@
+[1118/052023.549230:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1118/052023.712020:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1118/052023.712034:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/bridge-cleanup.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/bridge-cleanup.test.ts [ src/main/core/agent/bridge-cleanup.test.ts ]
+Error: Transform failed with 1 error:
+/Users/liubu/hx/4.uprxiao/SmartDD/src/main/core/agent/bridge-cleanup.test.ts:4:567: ERROR: Expected "}" but found ";"
+  Plugin: vite:esbuild
+  File: /Users/liubu/hx/4.uprxiao/SmartDD/src/main/core/agent/bridge-cleanup.test.ts:4:567
+  
+  Expected "}" but found ";"
+  2  |  import {AgentBridgeProcesses} from '../applications/agent-bridge-processes';
+  3  |  it('M14: rejected policy still records a kernel-proved child for cleanup, without authenticating it or inventing an exit',async()=>{
+  4  |   let stopped=false;const signals:number[]=[],attached=vi.fn(async()=>{}),exited=vi.fn(async()=>{}),handle:any={processId:'bridge',attach:attached,exited},run={runId:'run',pid:101,processStartedAt:'darwin-proc-v1:1:101'},runs:any={get:()=>run,store:{sqlite:{prepare:()=>({get:()=>({binding_id:'binding',state:'armed'})})}},peers:any={read:async()=>({uid:process.getuid!(),peer:{pid:202,startedAt:'darwin-proc-v1:1:202',executable:realpathSync(process.execPath)},ancestors:[{pid:101,startedAt:run.processStartedAt}]})},reader:any={state:()=>stopped?'stopped':'running'};
+     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ^
+  5  |   const supervisor=new AgentBridgeProcesses(runs,peers,reader,{pollMs:10000,signal:id=>signals.push(id.pid)});
+  6  |   try{await supervisor.observeRejected({} as any,'run',handle);expect(attached).toHaveBeenCalledWith(202,'darwin-proc-v1:1:202');expect(signals).toEqual([202]);await supervisor.poll();expect(exited).not.toHaveBeenCalled();stopped=true;await supervisor.poll();expect(exited).toHaveBeenCalledOnce();expect(supervisor.status()).toEqual([]);}finally{await supervisor.dispose();}
+  
+ ❯ failureErrorWithLog node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:1467:15
+ ❯ node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:736:50
+ ❯ responseCallbacks.<computed> node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:603:9
+ ❯ handleIncomingPacket node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:658:12
+ ❯ Socket.readFromStdout node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:581:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  5 passed (5)
+   Start at  05:20:23
+   Duration  2.37s (transform 268ms, setup 0ms, import 294ms, tests 2.00s, environment 0ms)
+

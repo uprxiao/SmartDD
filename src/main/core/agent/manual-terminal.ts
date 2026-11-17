@@ -18,9 +18,12 @@ export class AgentManualTerminals {
   }
   activePty(taskId: string) { const id = this.byTask.get(taskId); return id && this.d.ptys.has(id) ? id : null; }
   open(taskId: string, size?: { cols: number; rows: number }) {
+    return this.openAt(taskId,this.d.taskCwd(taskId),size);
+  }
+  /** Host-only named shell (e.g. a selected registered home directory), not an Agent identity. */
+  openAt(taskId:string,cwd:string,size?:{cols:number;rows:number}){
     const existing = this.activePty(taskId);
     if (existing) return { ptyId: existing };
-    const cwd = this.d.taskCwd(taskId);
     const cols = Math.min(Math.max(size?.cols ?? 120, 20), 500), rows = Math.min(Math.max(size?.rows ?? 24, 5), 200);
     const ptyId = this.d.ptys.spawn({ command: loginShell(), args: ['-i'], cwd, env: { ...this.d.baseEnv(), TERM: 'xterm-256color' }, cols, rows });
     this.byTask.set(taskId, ptyId);

@@ -234,3 +234,9 @@ describe('durable specific mail intents and one-attempt execution', () => {
     let closed=false;const closing=service.dispose().then(()=>{closed=true;});expect((await pending).state).toBe('unknown');try{expect(closed).toBe(false);}finally{finish();}await closing; await expect(service.execute(actor,next.intent.id)).rejects.toMatchObject({ code: 'CANCELED' });
   });
 });
+
+it('M14: retiring a task request after native exit cancels only its original mail intent and revokes prior evidence without sending',async()=>{
+ const {intent}=await prepare();await authorize(intent);live.clear();
+ await expect(service.retireTaskIntent('other-task',actor.runId!,intent.id)).rejects.toThrow('原任务请求');expect(service.get(actor,intent.id).state).toBe('authorized');
+ await service.retireTaskIntent(actor.taskId!,actor.runId!,intent.id);expect(service.get(actor,intent.id)).toMatchObject({state:'canceled',authorized:false});expect(submit).not.toHaveBeenCalled();
+});

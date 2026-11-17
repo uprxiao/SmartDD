@@ -1,5 +1,9 @@
+import {AgentWorkspacePanels} from '@renderer/features/agent-tasks/workspace-panels';
+import {AgentTerminalDrawer} from '@renderer/features/agent-tasks/agent-terminal';
+import {homeWorkspace,panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
+import {agentTasksStore} from '@renderer/core/agent-tasks-store';
 // M6 shell follows the approved local prototype; task terminals remain mounted.
-import { ArrowLeft, FolderOpen, Moon, PanelLeft, Plus, Sun } from 'lucide-react';
+import { ArrowLeft, FolderOpen, PanelBottom, Moon, PanelLeft, Plus, Sun } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -73,7 +77,11 @@ const MainContent = observer(function MainContent() {
   const view = navigation.currentViewId;
   const { data: project } = useProject(view === 'project' ? navigation.currentProjectId : null);
   const task = view === 'task' ? tasksStore.current : null;
-  const fileScope = task ? { kind: 'task' as const, taskId: task.id } : view === 'project' && navigation.currentProjectId ? { kind: 'project' as const, projectId: navigation.currentProjectId } : null;
+  const agentTask=view==='agentTask'?agentTasksStore.tasks.find(t=>t.taskId===navigation.currentAgentTaskId):null;
+  const agentPanel=view==='agentTask'||view==='home'&&agentTasksStore.enabled;
+  const fileScope = view==='agentTask'&&navigation.currentAgentTaskId?{kind:'task' as const,taskId:navigation.currentAgentTaskId}:view==='home'&&agentTasksStore.enabled?{kind:'project' as const,projectId:homeWorkspace.projectId??'m14-home-unselected'}:task ? { kind: 'task' as const, taskId: task.id } : view === 'project' && navigation.currentProjectId ? { kind: 'project' as const, projectId: navigation.currentProjectId } : null;
+  const homePanels=panelsFor({kind:'project',projectId:homeWorkspace.projectId??'m14-home-unselected'});
+  useEffect(()=>{const key=(e:KeyboardEvent)=>{if(!agentPanel||e.isComposing||e.defaultPrevented||!e.ctrlKey||e.metaKey||e.altKey||!['`','Backquote'].includes(e.code==='Backquote'?'Backquote':e.key)||e.target instanceof Element&&e.target.closest('dialog,[role=dialog]'))return;const scope=view==='agentTask'&&navigation.currentAgentTaskId?{kind:'task' as const,taskId:navigation.currentAgentTaskId}:{kind:'project' as const,projectId:homeWorkspace.projectId??'m14-home-unselected'};if(scope.kind==='project'&&!homeWorkspace.cwd)return;e.preventDefault();panelsFor(scope).terminalDrawer();};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[view,agentPanel,homeWorkspace.projectId,homeWorkspace.cwd]);
   const split = useRef<HTMLDivElement>(null), [available, setAvailable] = useState(1000);
   useEffect(() => {
     const node = split.current; if (!node) return;
@@ -86,7 +94,7 @@ const MainContent = observer(function MainContent() {
   return <main className={`workspace ${fileScope ? `m9-${fileScope.kind}-scope` : ''}`}>
     {view === 'project' && <header className="topbar"><div className="breadcrumbs"><button onClick={() => navigation.newTask()}>{t('nav.home')}</button><span>›</span><span>{project?.name}</span></div><div className="topbar-actions"><button type="button" className="m9-file-entry" data-testid="project-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button><button className="icon-button" title={t('settings.theme')} onClick={() => setTheme((theme ?? (document.documentElement.classList.contains('ydark') ? 'ydark' : 'ylight')) === 'ydark' ? 'ylight' : 'ydark')} >{theme === 'ydark' ? <Sun size={17} /> : <Moon size={17} />}</button></div></header>}
     <div ref={split} className="m9-workspace-split" style={{ '--file-panel-width': `${fileWidth}px` } as CSSProperties}><div data-testid="main-body" className="m6-main-body">
-      <ViewSlot active={view === 'home'}><HomeView /></ViewSlot>
+      <ViewSlot active={view === 'home'}><HomeView />{agentTasksStore.enabled&&!navigation.filePanelOpen&&<div className='agent-home-panels'><button type='button' title='打开右侧面板' onClick={()=>navigation.toggleFilePanel()}><FolderOpen size={16}/></button><button type='button' title='底部终端抽屉（⌃`）' disabled={!homeWorkspace.cwd} aria-pressed={homePanels.drawer} onClick={()=>homePanels.terminalDrawer()}><PanelBottom size={16}/></button></div>}{agentTasksStore.enabled&&homePanels.drawer&&homeWorkspace.projectId&&homeWorkspace.dirId&&<AgentTerminalDrawer key={homeWorkspace.projectId+homeWorkspace.dirId} home={{projectId:homeWorkspace.projectId,dirId:homeWorkspace.dirId}} onClose={()=>{homePanels.drawer=false;}}/>}</ViewSlot>
       <ViewSlot active={view === 'task'} keepMounted><TaskView /></ViewSlot>
       <ViewSlot active={view === 'agentTask'}>{navigation.currentAgentTaskId && <AgentTaskView key={navigation.currentAgentTaskId} taskId={navigation.currentAgentTaskId} />}</ViewSlot>
       <ViewSlot active={view === 'apps'}><ApplicationsWorkspace /></ViewSlot>
@@ -97,7 +105,7 @@ const MainContent = observer(function MainContent() {
     {navigation.filePanelOpen && fileScope && <><div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
       onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) navigation.setFilePanelWidth((split.current?.getBoundingClientRect().right ?? 0) - event.clientX, available); }}
       onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available); } }} />
-      {fileScope.kind==='task'&&task?.projectId?<TaskBrowserWorkspace key={fileScope.taskId} taskId={fileScope.taskId} onClose={()=>navigation.toggleFilePanel()}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
+      {agentPanel?<AgentWorkspacePanels key={fileScope.kind==='task'?fileScope.taskId:fileScope.projectId} scope={fileScope} projectId={view==='home'?homeWorkspace.projectId:agentTask?.projectId??null} onClose={()=>navigation.toggleFilePanel()}/>:fileScope.kind==='task'&&task?.projectId?<TaskBrowserWorkspace key={fileScope.taskId} taskId={fileScope.taskId} onClose={()=>navigation.toggleFilePanel()}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
     </div>
     {task && <RuntimeBar task={task} />}
   </main>;

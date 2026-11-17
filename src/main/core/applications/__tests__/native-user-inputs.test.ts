@@ -105,3 +105,5 @@ describe('bounded host-observed native user input origin; no send grant',()=>{
  });
 
 });
+
+it('M14: an accepted structured human input has exact provenance and a monotonically scoped sequence, never a PTY or reusable authorization',()=>{ledger.observeAgent(sender,current,target.ptyId,'用户原话',1);const receipt=match('用户原话')!;expect(receipt.transport).toBe('agent-input');expect(ledger.isLatest(receipt)).toBe(true);ledger.observeAgent(sender,current,target.ptyId,'伪造的重复序号',1);expect(match('伪造的重复序号')).toBeNull();ledger.observeAgent(sender,current,target.ptyId,'下一条用户输入',2);expect(ledger.isLatest(receipt)).toBe(false);expect(ledger.isRetained(receipt)).toBe(true);abort.abort();expect(ledger.isRetained(receipt)).toBe(false);expect(()=>ledger.observeAgent({} as ApplicationUiSender,current,target.ptyId,'不可信来源',3)).toThrow('untrusted');});

@@ -11,6 +11,8 @@ import {events,rpc} from '@renderer/lib/ipc';
 import {FileWorkspacePanel} from '@renderer/features/files/workspace-panel';
 import {browserWorkspaceFor,openNewBrowserTab,type BrowserWorkspaceStore} from './store';
 import './workspace.css';
+import {agentTasksStore} from '@renderer/core/agent-tasks-store';
+import {panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
 import {navigation} from '@renderer/core/navigation';
 import {tasksStore} from '@renderer/core/tasks-store';
 import {BrowserSettingsDialog,type BrowserPreferences} from './settings-dialog';
@@ -26,6 +28,7 @@ export function useBrowserShortcuts(){
     const key=(event:KeyboardEvent)=>{
       if(event.defaultPrevented||event.isComposing||!(event.metaKey||event.ctrlKey)||!event.shiftKey||event.altKey||event.key.toLowerCase()!=='b')return;
       if(event.target instanceof Element&&event.target.closest('[data-browser-shortcut-owner]'))return;
+      if(navigation.currentViewId==='agentTask'&&navigation.currentAgentTaskId){const id=navigation.currentAgentTaskId;if(!agentTasksStore.tasks.find(t=>t.taskId===id)?.projectId)return;event.preventDefault();panelsFor({kind:'task',taskId:id}).open('browser');void browserWorkspaceFor(id).create();return;}
       const taskId=document.querySelector<HTMLElement>('[data-browser-task]')?.dataset.browserTask;
       // The title-bar entry exists even when the right workspace is closed.
       const header=document.querySelector<HTMLButtonElement>('[data-testid=task-new-browser]');
@@ -35,6 +38,7 @@ export function useBrowserShortcuts(){
     const off=events.on(browserShortcutEvent,event=>{
       if(event.action!=='show')return;
       const generation=++showGeneration;
+      const agent=agentTasksStore.tasks.find(t=>t.taskId===event.taskId);if(agent?.projectId){navigation.openAgentTask(agent.taskId);panelsFor({kind:'task',taskId:agent.taskId}).open('browser');return;}
       const reveal=()=>{
         const task=tasksStore.byId.get(event.taskId);
         if(generation!==showGeneration||!task?.projectId||tasksStore.closing.has(event.taskId))return;
@@ -55,6 +59,12 @@ export function TaskBrowserWorkspace({taskId,onClose}:{taskId:string;onClose:()=
   const titleTooltip:BrowserTabTooltip|null=titleTip.target?{target:titleTip.target,element:titleTip.element,dismiss:titleTip.dismiss}:null;
   const web={tabTooltip:titleTip.bind,inactiveTooltip:titleTooltip&&<div className="bw-tab-tooltip">{titleTooltip.element}</div>,tabs:state?.tabs??[],paused:state?.paused??false,activeId:state?.activeId??null,onSelect:(id:string)=>void store.select(id),onFiles:()=>void store.select(null),onClose:(id:string)=>void store.close(id),onNew:()=>openNewBrowserTab(taskId),view:state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={titleTooltip}/>:null};
   return <FileWorkspacePanel scope={{kind:'task',taskId}} onClose={onClose} web={web}/>;
+}
+/** M14: page tabs belong to the browser surface, separate from file document tabs. */
+export function AgentBrowserSurface({taskId}:{taskId:string}){
+ const store=browserWorkspaceFor(taskId),{state,error}=useSyncExternalStore(store.subscribe,store.snapshot);
+ useEffect(()=>{void store.refresh();return events.on(browserChangedEvent,e=>{if(e.taskId===taskId)void store.refresh();});},[store,taskId]);
+ return <div className="agent-browser-surface"><div className="agent-webtabs" role="tablist" aria-label="网页标签">{state?.tabs.map(tab=><div key={tab.id}><button type="button" role="tab" aria-selected={tab.id===state.activeId} title={tab.url} onClick={()=>void store.select(tab.id)}><Globe size={12}/>{tab.title||'新标签页'}{tab.agentActive&&<span aria-label="Agent 活动">●</span>}</button><button type="button" aria-label={'关闭网页 '+tab.title} onClick={()=>void store.close(tab.id)}><X size={11}/></button></div>)}<button type="button" title="新建网页标签" onClick={()=>void store.create()}>+</button></div>{state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={null}/>:<div className="agent-panel-empty"><p>{error||'还没有网页'}</p><button type="button" onClick={()=>void store.create()}>新建网页标签</button></div>}</div>;
 }
 function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string;titleTooltip:BrowserTabTooltip|null}){
   const access=useSyncExternalStore(browserAccess.subscribe,browserAccess.snapshot),accessOpen=!!access.state.requests.length||access.grantsOpen,[accessReady,setAccessReady]=useState(false);

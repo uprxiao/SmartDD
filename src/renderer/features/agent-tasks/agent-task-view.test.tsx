@@ -11,6 +11,7 @@ vi.mock('@renderer/lib/hooks/useAppSettingsKey', () => ({ useAppSettingsKey: () 
 vi.mock('@renderer/features/agents/ui', () => ({ AgentDialog: () => null }));
 vi.mock('./agent-terminal', () => ({ AgentTerminalDrawer: () => null }));
 vi.mock('sonner', () => ({ toast: { warning: mocks.toast, error: mocks.toast, message: mocks.toast, success: mocks.toast } }));
+import {agentComposerTargets} from './composer-target';
 import { AgentTaskView } from './agent-task-view';
 
 afterEach(() => cleanup());
@@ -242,4 +243,8 @@ describe('复核 2354：工作过程正文的完整性', () => {
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('原文文件丢失')));
     expect(screen.getByRole('button', { name: /展开全文/ })).toBeTruthy();
   });
+});
+
+it('M14 A38/A42: a host reference appends at the current draft selection, preserves existing text, saves only the draft and never submits',async()=>{
+ mocks.snapshot.mockResolvedValue(snapshot({projectId:'p'}));render(<AgentTaskView taskId="task"/>);const input=await screen.findByPlaceholderText('随心输入') as HTMLTextAreaElement;fireEvent.change(input,{target:{value:'prefix tail'}});input.setSelectionRange(7,7);await act(async()=>agentComposerTargets.current!.insert('[原邮件引用]'));expect(input.value).toBe('prefix [原邮件引用]tail');await waitFor(()=>expect(mocks.saveDraft).toHaveBeenCalledWith('task',expect.objectContaining({text:input.value}),expect.any(Number)));expect(mocks.submit).not.toHaveBeenCalled();
 });

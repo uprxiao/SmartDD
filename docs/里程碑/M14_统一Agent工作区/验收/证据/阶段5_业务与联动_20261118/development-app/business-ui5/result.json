@@ -1,0 +1,89 @@
+{
+  "layer": "development App + native CLI + authenticated private MCP + synthetic loopback model; no real model and no packaged acceptance",
+  "root": "/private/tmp/willyou-m14-business-m7fTnc",
+  "assertions": [
+    "codex native MCP returns durable awaiting_user immediately, normal turn end preserves request, one UI approval executes the frozen builtin draft once and wakes the current binding with a result",
+    "claude native MCP returns durable awaiting_user immediately, normal turn end preserves request, one UI approval executes the frozen builtin draft once and wakes the current binding with a result"
+  ],
+  "model": [
+    {
+      "path": "/v1/responses",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "search": false,
+      "invoke": true,
+      "woke": false,
+      "receipt": false,
+      "toolCount": 37
+    },
+    {
+      "path": "/v1/responses",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "search": false,
+      "invoke": false,
+      "woke": false,
+      "receipt": false,
+      "toolCount": 37
+    },
+    {
+      "path": "/v1/responses",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "search": false,
+      "invoke": false,
+      "woke": true,
+      "receipt": false,
+      "toolCount": 37
+    },
+    {
+      "path": "/v1/messages?beta=true",
+      "model": "parent-fixture",
+      "toolPresent": false,
+      "search": true,
+      "invoke": true,
+      "woke": false,
+      "receipt": false,
+      "toolCount": 13
+    },
+    {
+      "path": "/v1/messages?beta=true",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "search": false,
+      "invoke": true,
+      "woke": false,
+      "receipt": false,
+      "toolCount": 14
+    },
+    {
+      "path": "/v1/messages?beta=true",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "search": false,
+      "invoke": false,
+      "woke": false,
+      "receipt": true,
+      "toolCount": 14
+    },
+    {
+      "path": "/v1/messages?beta=true",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "search": false,
+      "invoke": false,
+      "woke": true,
+      "receipt": true,
+      "toolCount": 14
+    }
+  ],
+  "waitedMs": 61154,
+  "passed": true,
+  "exit": {
+    "pid": 57942,
+    "code": 0,
+    "signal": null
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:61983/dff38c56-aab3-43fd-97d1-26b00f9b4867\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:61980/devtools/browser/d9bf0569-1969-456d-a62f-c3007f7440cb\n(node:57942) [CLAUDE_SDK_CAN_USE_TOOL_SHADOWED] Warning: canUseTool will not be invoked for: mcp__wy_fac879d9c74be79407b16975__*, mcp__smartdd_project_fac879d9c74b__*. Bare allowedTools entries auto-approve the whole tool before the callback is consulted. To gate every tool call, use a PreToolUse hook; or remove the bare names from allowedTools so they fall through to canUseTool. Allow rules from settings files can also shadow the callback but are not visible here.\n(Use `Electron --trace-warnings ...` to show where the warning was created)\nDebugger attached.\nDebugger ending on ws://127.0.0.1:61983/dff38c56-aab3-43fd-97d1-26b00f9b4867\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n",
+  "rendererErrors": []
+}

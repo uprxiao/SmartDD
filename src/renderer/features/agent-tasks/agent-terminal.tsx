@@ -9,28 +9,29 @@ import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { attachPty } from '@renderer/core/pty-buffer';
 import { events, rpc } from '@renderer/lib/ipc';
 
-export function AgentTerminalDrawer({ taskId, onClose }: { taskId: string; onClose: () => void }) {
+export function AgentTerminalDrawer({ taskId,home, onClose }: { taskId?: string;home?:{projectId:string;dirId:string}; onClose: () => void }) {
   const host = useRef<HTMLDivElement>(null);
+  const [terminalKey,setTerminalKey]=useState(taskId??'');
   const [ptyId, setPtyId] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
-    void rpc.agentTasks.openTerminal(taskId, { cols: 120, rows: 14 }).then(r => { if (alive) setPtyId(r.ptyId); }).catch(e => { toast.error(rpcErrorMessage(e)); onClose(); });
+    setPtyId(null);void (taskId?rpc.agentTasks.openTerminal(taskId,{cols:120,rows:14}):home?rpc.agentTasks.openHomeTerminal(home.projectId,home.dirId,{cols:120,rows:14}):Promise.reject(Error('先选择项目目录'))).then(r=>{if(alive){setTerminalKey('terminalKey' in r?String(r.terminalKey):taskId!);setPtyId(r.ptyId);}}).catch(e => { toast.error(rpcErrorMessage(e)); onClose(); });
     return () => { alive = false; };
-  }, [taskId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [taskId,home?.projectId,home?.dirId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!ptyId || !host.current) return;
     const term = new Terminal({ scrollback: 5000, convertEol: false, fontSize: 12.5, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', allowProposedApi: true });
     const fit = new FitAddon(); term.loadAddon(fit); term.open(host.current);
-    const resize = () => { try { fit.fit(); events.emit(ptyResizeEvent, { taskId, ptyId, cols: term.cols, rows: term.rows }); } catch { /* 隐藏时不可测量 */ } };
+    const resize = () => { try { fit.fit(); events.emit(ptyResizeEvent, { taskId:terminalKey, ptyId, cols: term.cols, rows: term.rows }); } catch { /* 隐藏时不可测量 */ } };
     resize();
-    const offInput = term.onData(data => events.emit(ptyInputEvent, { taskId, ptyId, data }));
+    const offInput = term.onData(data => events.emit(ptyInputEvent, { taskId:terminalKey, ptyId, data }));
     const detach = attachPty(ptyId, { data: d => term.write(d), exit: code => term.write(`\r\n[shell 已退出 ${code}]\r\n`) });
     const ro = new ResizeObserver(resize); ro.observe(host.current);
     term.focus();
     return () => { ro.disconnect(); detach(); offInput.dispose(); term.dispose(); };
-  }, [taskId, ptyId]);
+  }, [terminalKey, ptyId]);
   return <div className="agent-terminal" data-testid="agent-terminal">
-    <div className="agent-terminal-head"><span>终端 · 手动</span><button type="button" title="关闭终端" onClick={() => { void rpc.agentTasks.closeTerminal(taskId); onClose(); }}><X size={13} /></button></div>
+    <div className="agent-terminal-head"><span>终端 · 手动</span><button type="button" title="关闭终端" onClick={() => { void rpc.agentTasks.closeTerminal(terminalKey); onClose(); }}><X size={13} /></button></div>
     <div className="agent-terminal-host" ref={host} />
   </div>;
 }

@@ -60,10 +60,10 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     const rows=capability.slots.map(slot=>({slot,row:this.connectionRow(selection,slot)}));
     // Binding edits apply to the next run. A pending approval still targets this run's original account.
     const {binding_revision:_,...projectAuthorization}=JSON.parse(this.project(context.run.projectId,selection.appId)) as Record<string,unknown>;
-    const run=this.store.sqlite.prepare("SELECT pty_id FROM capability_runs WHERE run_id=? AND task_id=? AND project_id=? AND state='active'").get(context.run.runId,context.run.taskId,context.run.projectId) as {pty_id:string}|undefined;
+    const run=this.store.sqlite.prepare("SELECT pty_id FROM capability_runs WHERE run_id=? AND task_id=? AND project_id=? AND (state='active' OR ?=1)").get(context.run.runId,context.run.taskId,context.run.projectId,context.taskBusiness?1:0) as {pty_id:string}|undefined;
     if(!run)throw new ApplicationError('SCOPE_DENIED','插件写确认没有当前真实终端');
     return{displayName:manifest.displayName,version:manifest.version,capability:id,title:current.title,ptyId:run.pty_id,targets:rows.map(({slot,row})=>({slot,connectionId:row.id,name:row.name})),
-      stamp:digest(canonicalJson({runId:context.run.runId,taskId:context.run.taskId,ptyId:run.pty_id,projectId:context.run.projectId,project:projectAuthorization,state,capability,connections:rows.map(({slot,row})=>({slot,id:row.id,name:row.name,revision:row.revision,identityRevision:row.identity_revision,configRevision:row.config_revision,configHash:digest(row.config_json),secretRevision:row.secret_revision,policyRevision:row.policy_revision}))}))};
+      stamp:digest(canonicalJson({runId:context.run.runId,taskId:context.run.taskId,ptyId:run.pty_id,projectId:context.run.projectId,project:projectAuthorization,state,capability,maxTier:current.maxTier??'full',connections:rows.map(({slot,row})=>({slot,id:row.id,name:row.name,revision:row.revision,identityRevision:row.identity_revision,configRevision:row.config_revision,configHash:digest(row.config_json),secretRevision:row.secret_revision,policyRevision:row.policy_revision}))}))};
   }
   private connectionRow(selection:PluginSessionSelection,slot:string):ConnectionRow {
     const binding=selection.connections.find(c=>c.slot===slot);if(!binding)throw new ApplicationError('AUTH_REQUIRED','启动时未选择此插件连接，请配置后重启会话');
@@ -141,5 +141,5 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     // All bound connection revisions, not just this capability's slots, bind list/detail/resource reads to one page account.
     check();return work({connection,summary,connectionSelection,targets,scopeHash:digest(canonicalJson({projectId,appId:manifest.id,stamp,connections:originalRevisions})),check});
   }
-  approve:PluginToolPolicy['approve']=(...args)=>{this.authorize(args[0],args[1],args[2]);return this.options.approve(...args);};
+  approve:PluginToolPolicy['approve']=async(...args)=>{const[context,selection,capability,input,operation]=args;this.authorize(context,selection,capability);const task=this.store.sqlite.prepare('SELECT a.selection_json,p.selection_json AS parent_selection FROM agent_tasks a LEFT JOIN agent_tasks p ON p.task_id=a.parent_task_id WHERE a.task_id=?').get(context.run.taskId) as {selection_json:string;parent_selection:string|null}|undefined;if(task){const manifest=this.lifecycle.packages.get(operation.packageHash).plugin.manifest,cap=manifest.capabilities[capability.id],tiers=[JSON.parse(task.selection_json).tier,task.parent_selection?JSON.parse(task.parent_selection).tier:'full',cap?.maxTier??'full'];if(tiers.every(t=>t==='full')||context.taskBusiness?.operationId===operation.operationId)return ()=>this.authorize(this.options.assertRun(context.run.runId),selection,capability);throw new ApplicationError('AUTHORIZATION_REQUIRED','插件写操作需要持久请求批准');}return this.options.approve(...args);};
 }

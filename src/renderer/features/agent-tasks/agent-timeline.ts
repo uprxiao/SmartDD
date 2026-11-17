@@ -5,7 +5,7 @@ export interface TimelineItem { itemId: string; turnId: string | null; type: str
 export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null }
 export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string }
 
-const VISIBLE = new Set(['user_message', 'assistant_message', 'proposed_plan', 'error', 'todo_list', 'compaction', 'system_notice']);
+const VISIBLE = new Set(['user_message', 'assistant_message', 'proposed_plan', 'error', 'todo_list', 'compaction', 'system_notice', 'files_changed']);
 const WORK = new Set(['reasoning', 'command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'subagent']);
 
 export type Row =
@@ -85,6 +85,7 @@ export function workLabel(it: TimelineItem): string {
 export interface RequestOption { key: string; label: string; result: (reason: string) => unknown; deny?: boolean }
 export function requestOptions(r: TimelineRequest, driverId: string): RequestOption[] {
   // 提问与 MCP 表单由 requestForm 处理，不套用批准选项（复核 CR09）。
+  if (r.kind==='host_business') {if(r.payload.phase==='executing')return [];const deny={key:'deny',label:r.status==='approved_pending_bind'?'撤销授权':'拒绝',result:()=>({choice:'deny'}),deny:true};if(r.status==='approved_pending_bind')return [deny];return [...(r.payload.options??[{label:'批准',value:'allow'}]).map((o:{label:string;value:string})=>({key:o.value,label:o.label,result:()=>({choice:o.value})})),deny];}
   if (requestForm(r, driverId)) return [];
   // 未知种类的请求不给通用批准，只能拒绝（复核 NR09）。
   if (r.kind === 'other') return [{ key: 'deny', label: '拒绝（WillYou 不支持该请求）', result: () => (driverId === 'claude-sdk' ? { behavior: 'deny', message: 'WillYou 不支持该请求' } : { decision: 'decline' }), deny: true }];

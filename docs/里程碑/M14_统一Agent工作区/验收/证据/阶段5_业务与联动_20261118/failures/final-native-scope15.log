@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (82 tests | 1 failed | 80 skipped) 3462ms
+   × M14: a new agent run uses its own frozen capability source without requiring or overwriting an M13 task snapshot 1336ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > M14: a new agent run uses its own frozen capability source without requiring or overwriting an M13 task snapshot
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:943:60
+    941| it('M14: a new agent run uses its own frozen capability source without…
+    942|   writeFileSync(profiles.resolve(codexId).command, '#!/bin/sh\ncase "$…
+    943|   expect(managed.supportsAgentDelivery('codex','0.169.0')).toBe(true);…
+       |                                                            ^
+    944|   const store = new AgentStore(sqlite), taskId = store.createTask({pro…
+    945|   const bindingId=store.createBinding({task_id:taskId,driver_id:'codex…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 80 skipped (82)
+   Start at  05:33:03
+   Duration  4.63s (transform 810ms, setup 0ms, import 1.10s, tests 3.46s, environment 0ms)
+
