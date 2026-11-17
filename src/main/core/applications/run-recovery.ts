@@ -16,8 +16,8 @@ export function finishCapabilityRun(store:ResourceStore,runId:string):void {
 }
 /** Shared by normal run recovery and exclusive startup before distribution activation.
  * Unknown/missing kernel identities remain protected by the original protocol. */
-export async function recoverCapabilityRuns(store:ResourceStore,identities:ProcessIdentityReader,owned:(runId:string)=>boolean=()=>false):Promise<{runId:string;state:'running'|'unknown'|'stopped'|'orphaned'}[]> {
-    const rows = store.sqlite.prepare("SELECT * FROM capability_runs WHERE state NOT IN ('stopped','failed')").all() as RunRow[], result: { runId: string;state: 'running' | 'unknown' | 'stopped' | 'orphaned' }[] = [];
+export async function recoverCapabilityRuns(store:ResourceStore,identities:ProcessIdentityReader,owned:(runId:string)=>boolean=()=>false,onlyRunId?:string):Promise<{runId:string;state:'running'|'unknown'|'stopped'|'orphaned'}[]> {
+    const rows = store.sqlite.prepare("SELECT * FROM capability_runs WHERE state NOT IN ('stopped','failed')"+(onlyRunId?' AND run_id=?':'')).all(...(onlyRunId?[onlyRunId]:[])) as RunRow[], result: { runId: string;state: 'running' | 'unknown' | 'stopped' | 'orphaned' }[] = [];
     for (const row of rows) {
       if (owned(row.run_id)) { result.push({ runId: row.run_id,state: 'running' }); continue; }
       const owner = row.owner_pid && row.owner_started_at ? identities.state({ pid: row.owner_pid,startedAt: row.owner_started_at }) : 'unknown';

@@ -10,6 +10,8 @@ export interface ProcessIdentityReader {
   /** Only descend from an exact host-owned launch; ambiguous targets grant nothing. */
   nativeChild?(root:ProcessIdentity,executable:string):OwnedNativeProcess|null;
   sqliteFiles?(identity:ProcessIdentity,executable:string):NativeSqliteFile[]|null;
+  /** Exact group created by our own detached spawn, never a caller-selected group. */
+  ownedGroup?(root: ProcessIdentity): { state: 'running' | 'stopped'; processes: ProcessIdentity[] } | null;
 }
 const response = z.discriminatedUnion('state',[
   z.object({ schema: z.literal(1),state: z.literal('running'),pid: z.number().int().positive().max(2147483647),startedAt: z.string().regex(/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/) }).strict(),
@@ -29,6 +31,15 @@ export class MacProcessIdentityReader implements ProcessIdentityReader {
     catch { return { schema: 1,state: 'unknown' }; }
   }
   read(pid: number): ProcessIdentity | null { const result = this.inspect(pid); return result.state === 'running' && result.pid === pid ? { pid: result.pid,startedAt: result.startedAt } : null; }
+  ownedGroup(root: ProcessIdentity) {
+    if (process.platform !== 'darwin' || !pidSchema.safeParse(root.pid).success || !birthSchema.safeParse(root.startedAt).success) return null;
+    try {
+      const schema = z.object({ schema: z.literal(5), state: z.enum(['running', 'stopped']), rootPid: pidSchema, rootStartedAt: birthSchema, processes: z.array(z.object({ pid: pidSchema, startedAt: birthSchema }).strict()).max(256) }).strict();
+      const value = schema.parse(JSON.parse(execFileSync(this.helper, ['--owned-process-group', String(root.pid), root.startedAt], { timeout: 2000, maxBuffer: 64 * 1024, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })));
+      if (value.rootPid !== root.pid || value.rootStartedAt !== root.startedAt || (value.state === 'stopped') !== !value.processes.length) return null;
+      return { state: value.state, processes: value.processes };
+    } catch { return null; }
+  }
   state(identity: ProcessIdentity): ProcessState {
     if (!/^darwin-proc-v1:[1-9][0-9]*:[0-9]+$/.test(identity.startedAt)) return 'unknown';
     const result = this.inspect(identity.pid);

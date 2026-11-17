@@ -11,6 +11,8 @@ import { attachmentNote, freezeImages, prepareAttachment, verifyAttachments, typ
 import type { CapabilityName, CapabilityResult } from './capabilities';
 import { searchProjectFiles } from './file-search';
 import { HandoffService, type Transfer } from './handoff';
+import type { RunIntegration } from './run-integration';
+import type { TaskCoordination } from './task-coordination';
 
 export interface ResolvedLaunch {
   driverId: DriverId;
@@ -23,6 +25,7 @@ export interface ResolvedLaunch {
   settingSources?: ('user' | 'project' | 'local')[];
   capabilities?: Record<CapabilityName, CapabilityResult>;
   assertCurrent?(): void;
+  integrate?(context: { runId: string; bindingId: string; generation: number; nativeId?: string }): Promise<RunIntegration | undefined>;
 }
 /** 由宿主按配置档案解析（发现服务＋凭据服务＋托管文件），不接受客户端提供的路径或凭据。 */
 export type LaunchResolver = (input: { taskId?: string; profileId: string; cwd: string; runId: string; model?: string; carryExtensions?: boolean }) => Promise<ResolvedLaunch>;
@@ -118,13 +121,25 @@ function boundGoal<T extends { objective?: string | null }>(g: T): T {
   return typeof g.objective === 'string' && g.objective.length > 4000 ? { ...g, objective: g.objective.slice(0, 4000), objectiveTruncated: true } : g;
 }
 
-export type TaskStatus = 'idle' | 'working' | 'waiting' | 'completed' | 'stopped' | 'failed' | 'limited';
+export type TaskStatus = 'idle' | 'working' | 'waiting' | 'completed' | 'stopped' | 'failed' | 'limited' | 'needs_attention';
 
 export class AgentTaskService {
+  private coordination?: TaskCoordination;
+  attachCoordination(value: TaskCoordination) { this.coordination = value; }
+  kick(taskId: string) { queueMicrotask(() => void this.advance(taskId)); }
+  /** Trusted host messages retain their source and stable receipt; they never become fresh human authorization. */
+  enqueueHost(taskId: string, clientInputId: string, text: string, sourceKind: 'delegation' | 'notification' | 'system', wake = false) {
+    this.selection(taskId);
+    if (Buffer.byteLength(text) > INPUT_TEXT_LIMIT) throw new DriverError('REJECTED', '宿主输入超出预算');
+    const receipt = this.d.store.acceptTurn({ taskId, clientInputId, text, sourceKind });
+    if (wake) { this.paused.delete(taskId); this.stoppedByUser.delete(taskId); this.d.runs.hold(taskId, this.coordination?.blocked(taskId) ?? false); }
+    this.kick(taskId); return receipt;
+  }
   private readonly switching = new Set<string>();
   private readonly handoffs: HandoffService;
   /** 用户按停止后暂停自动派发排队输入，直到下一次提交（停止只停本轮，不吞掉排队）。 */
   private readonly paused = new Set<string>();
+  private readonly stoppedByUser = new Set<string>();
   private readonly dispatching = new Set<string>();
   private readonly missedPump = new Set<string>();
   private readonly blockedByClosing = new Map<string, number>();
@@ -213,7 +228,7 @@ export class AgentTaskService {
     };
     const busy = () => {
       const run = this.d.runs.runForTask(taskId);
-      return this.dispatching.has(taskId) || this.d.runs.respondingForTask(taskId) || this.d.store.queuedTurns(taskId).length > 0 || !!(run && this.d.runs.busy(run.runId));
+      return !!this.coordination?.blocked(taskId) || this.dispatching.has(taskId) || this.d.runs.respondingForTask(taskId) || this.d.store.queuedTurns(taskId).length > 0 || !!(run && this.d.runs.busy(run.runId));
     };
     goalLock();
     if (busy()) return this.d.store.updateSelection(taskId, { pendingSwitch: { profileId, ...(model ? { model } : {}) } }, expectedRevision);
@@ -302,7 +317,9 @@ export class AgentTaskService {
     const accepted = this.d.store.acceptTurn({ taskId, clientInputId: input.clientInputId, text: input.text, sourceKind: 'user', attachments });
     if (accepted.duplicate) return { turnId: accepted.turn.turn_id, duplicate: true, status: accepted.turn.status };
     this.paused.delete(taskId);
-    this.d.runs.hold(taskId, false);
+    this.stoppedByUser.delete(taskId);
+    this.coordination?.userContinued(taskId);
+    this.d.runs.hold(taskId, this.coordination?.blocked(taskId) ?? false);
     const run = this.d.runs.runForTask(taskId);
     if (input.mode === 'steer' && run && this.d.runs.busy(run.runId)) {
       if (!this.steerable(run)) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: '该执行器版本没有插话的验证证据，已排队' };
@@ -349,6 +366,7 @@ export class AgentTaskService {
 
   /** 打开或恢复本任务的运行（不派发输入）。 */
   private async ensureRun(taskId: string) {
+    if (this.coordination && !await this.coordination.beforeDispatch(taskId)) throw new DriverError('STATE', '正在等待工作目录写入资格，请稍后再执行命令');
     const existing = this.d.runs.runForTask(taskId);
     if (existing) {
       try { existing.assertCurrent?.(); return existing; }
@@ -360,7 +378,8 @@ export class AgentTaskService {
     if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
     if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一运行仍在退出，请稍后');
     launch.assertCurrent?.();
-    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, assertCurrent: launch.assertCurrent });
+    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, assertCurrent: launch.assertCurrent, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
+    this.coordination?.opened(taskId, this.d.runs.runForTask(taskId)!);
     return this.d.runs.runForTask(taskId)!;
   }
 
@@ -375,6 +394,7 @@ export class AgentTaskService {
   /** 输入框原生命令：Codex 的 compact／review 走协议；Claude 及其他公布的命令作为文字输入发送。 */
   async command(taskId: string, name: string, args = '') {
     this.requireStableSelection(taskId);
+    this.coordination?.userContinued(taskId);
     if (!/^[A-Za-z0-9_:.-]{1,64}$/.test(name)) throw new DriverError('REJECTED', '命令无效');
     const { selection, revision } = this.selection(taskId);
     if (selection.driverId === 'codex-app-server' && (name === 'compact' || name === 'review')) {
@@ -403,6 +423,8 @@ export class AgentTaskService {
   /** 目标（需求 R02）：Codex 用原生目标接口，可暂停／继续；Claude 以 /goal 文字设定与清除，不能暂停。 */
   async goal(taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) {
     this.requireStableSelection(taskId);
+    this.d.store.tx(emit => emit(taskId, 'goal.user_action', { kind: op.kind }));
+    if (op.kind !== 'pause') this.coordination?.userContinued(taskId);
     const { selection } = this.selection(taskId);
     if (op.kind === 'set' && (!op.objective.trim() || op.objective.length > 4000)) throw new DriverError('REJECTED', '目标内容无效');
     if (selection.driverId === 'claude-sdk') {
@@ -418,7 +440,7 @@ export class AgentTaskService {
     const run = await this.ensureRun(taskId);
     this.requireCapability(run, 'goal', '目标');
     if (op.kind === 'set') await this.commandContext(taskId, run);
-    if (op.kind === 'resume' || op.kind === 'set') { this.paused.delete(taskId); this.d.runs.hold(taskId, false); }
+    if (op.kind === 'resume' || op.kind === 'set') { this.stoppedByUser.delete(taskId); this.paused.delete(taskId); this.d.runs.hold(taskId, false); }
     await this.d.runs.goal(run.runId, op);
     return { ok: true };
   }
@@ -435,7 +457,10 @@ export class AgentTaskService {
     const stoppedSince = () => (this.stopSeq.get(taskId) ?? 0) !== seq || this.paused.has(taskId);
     let transfer: Transfer | null = null;
     try {
-      const { selection } = this.selection(taskId);
+      let { selection } = this.selection(taskId);
+      if (this.coordination && !await this.coordination.beforeDispatch(taskId)) return;
+      if (stoppedSince()) return;
+      selection = this.selection(taskId).selection;
       // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
       if (run && run.driverId === 'claude-sdk' && run.tier !== selection.tier) { await this.d.runs.close(run.runId); run = undefined; }
       run = await this.ensureRun(taskId);
@@ -458,7 +483,8 @@ export class AgentTaskService {
         else this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${selection.effort}：执行器未公布该模型的此选项。` });
       }
       transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, INPUT_TEXT_LIMIT - Buffer.byteLength(input.text));
-      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: transfer?.text, tier: selection.tier as Tier, model, effort });
+      const context = [transfer?.text, this.coordination?.dispatchContext?.(taskId)].filter(Boolean).join('\n\n');
+      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort });
       if (transfer) this.handoffs.delivered(transfer.id, 'accepted');
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
     } catch (e) {
@@ -488,12 +514,14 @@ export class AgentTaskService {
     }
   }
 
-  async stop(taskId: string) {
+  async stop(taskId: string, subtree = false) {
     this.paused.add(taskId);
+    this.stoppedByUser.add(taskId);
     this.stopSeq.set(taskId, (this.stopSeq.get(taskId) ?? 0) + 1);
     const selected = this.selection(taskId);
     if (selected.selection.pendingSwitch) this.d.store.updateSelection(taskId, { pendingSwitch: undefined }, selected.revision);
     this.d.runs.hold(taskId, true);
+    await this.coordination?.userStopped(taskId, subtree);
     const run = this.d.runs.runForTask(taskId);
     if (!run) return { stopped: this.dispatching.has(taskId) };
     // Codex：停止键＝停止本轮并暂停目标（需求 R02）。
@@ -529,6 +557,8 @@ export class AgentTaskService {
   }
 
   async archive(taskId: string) {
+    if (this.coordination?.hasUnfinishedChildren(taskId) || this.coordination?.blocked(taskId)) throw new DriverError('STATE', '子任务或目录占用尚未收口，请先停止并等待排空');
+    if (this.d.store.queuedTurns(taskId).length) throw new DriverError('STATE', '仍有排队输入或结果通知，请先处理或取消');
     const run = this.d.runs.runForTask(taskId);
     if (run && this.d.runs.busy(run.runId)) throw new DriverError('STATE', '任务仍在运行，请先停止');
     if (run) await this.d.runs.close(run.runId);
@@ -538,8 +568,12 @@ export class AgentTaskService {
   status(taskId: string): TaskStatus {
     const pending = this.d.store.pendingRequests(taskId).some(r => r.status === 'pending');
     if (pending) return 'waiting';
+    const native = this.d.runs.runForTask(taskId); if (native && this.d.runs.nativeBusy(native.runId)) return 'working';
     const turns = this.d.store.turns(taskId);
+    if (this.coordination?.hasUnfinishedChildren(taskId) && !this.paused.has(taskId)) return 'working';
+    if (this.stoppedByUser.has(taskId) && !turns.some(t => ['dispatching','started'].includes(t.status))) return 'stopped';
     if (turns.some(t => ['accepted', 'dispatching', 'started'].includes(t.status))) return this.paused.has(taskId) && !turns.some(t => ['dispatching', 'started'].includes(t.status)) ? 'stopped' : 'working';
+    if (this.coordination?.needsAttention?.(taskId)) return 'needs_attention';
     const last = turns.filter(t => t.status !== 'canceled').at(-1);
     if (!last) return 'idle';
     if ((last.status === 'failed' || last.status === 'completed') && this.d.store.items(taskId, { limit: 200 }).some(i => i.turnId === last.turn_id && i.type === 'error' && i.payload?.limited)) return 'limited';
@@ -547,7 +581,23 @@ export class AgentTaskService {
   }
 
   list() {
-    return this.d.store.listTasks().map(t => ({ taskId: t.id, projectId: t.project_id, dirId: t.dir_id, cwd: t.cwd, title: t.title, selection: JSON.parse(t.selection_json) as AgentSelection, createdAt: t.created_at, updatedAt: t.updated_at, status: this.status(t.id) }));
+    return this.d.store.listTasks().map(t => ({ taskId: t.id, parentTaskId: t.parent_task_id, projectId: t.project_id, dirId: t.dir_id, cwd: t.cwd, title: t.title, selection: JSON.parse(t.selection_json) as AgentSelection, createdAt: t.created_at, updatedAt: t.updated_at, status: this.status(t.id) }));
+  }
+  /** Parent item fixes run/node identity. The renderer cannot provide a foreign native thread ID. */
+  nativeHistory(taskId: string, itemId: string, beforeOrdinal = Number.MAX_SAFE_INTEGER) {
+    this.selection(taskId);
+    if (!Number.isSafeInteger(beforeOrdinal) || beforeOrdinal < 1) throw new DriverError('REJECTED', '消息分页游标无效');
+    const parent = this.d.store.sqlite.prepare("SELECT run_id FROM agent_items WHERE task_id=? AND item_id=? AND type='subagent'").get(taskId, itemId) as { run_id: string } | undefined;
+    if (!parent) throw new DriverError('REJECTED', '原生子节点不属于本任务');
+    const body = this.d.store.readItemBody(taskId, itemId); const payload = body ? JSON.parse(body.text) : {};
+    const ids = Array.isArray(payload.nativeNodeIds) ? payload.nativeNodeIds.filter((x: unknown) => typeof x === 'string' && x.length <= 256).slice(0, 128) : [];
+    if (!ids.length) return { items: [], hasMore: false, total: 0, nextOrdinal: null as number | null, states: [] as string[], partial: true };
+    const params = ids.map(() => '?').join(',');
+    const rows = this.d.store.sqlite.prepare(`SELECT * FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_message' AND ordinal<? ORDER BY ordinal DESC LIMIT 51`).all(taskId, parent.run_id, ...ids, beforeOrdinal) as { item_id: string; turn_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string }[];
+    const total = (this.d.store.sqlite.prepare(`SELECT COUNT(*) AS n FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_message'`).get(taskId, parent.run_id, ...ids) as { n: number }).n;
+    const states = (this.d.store.sqlite.prepare(`SELECT payload_ref FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_status'`).all(taskId, parent.run_id, ...ids) as { payload_ref: string }[]).map(r => String(JSON.parse(r.payload_ref).state));
+    const items = rows.slice(0, 50).reverse().map(r => { const p = JSON.parse(r.payload_ref); return { itemId: r.item_id, turnId: r.turn_id, type: r.type, ordinal: r.ordinal, revision: r.revision, terminal: r.terminal_state, createdAt: r.created_at, updatedAt: r.updated_at, payload: Buffer.byteLength(r.payload_ref) <= 4096 && !p.artifact ? p : { truncated: true, bytes: p.artifact?.bytes ?? Buffer.byteLength(r.payload_ref) } }; });
+    return { items, hasMore: rows.length > 50, total, nextOrdinal: (items[0]?.ordinal ?? null) as number | null, states, partial: !items.length && !!payload.childLog?.length };
   }
 
   /** 一致快照与已提交水位；订阅方先订阅再读快照，随后补拉 (seq, …]（技术方案 §3.1）。 */
@@ -598,7 +648,7 @@ export class AgentTaskService {
       bytes += size; out.unshift(shown); if (t) turnIds.add(t.turn_id);
     }
     const turns = allTurns.filter(t => turnIds.has(t.turn_id));
-    return { items: out, turns, hasOlder: out.length ? out[0].ordinal > 1 : all.length > 0 };
+    return { items: out, turns, hasOlder: out.length ? !!this.d.store.sqlite.prepare("SELECT 1 FROM agent_items WHERE task_id=? AND ordinal<? AND type NOT IN ('subagent_message','subagent_status') LIMIT 1").get(taskId,out[0].ordinal) : all.length > 0 };
   }
   /** 正文范围读取（复核 NR06）：截断预览的条目与过大的请求按 128 KiB 分段读取完整内容。 */
   itemBody(taskId: string, itemId: string, offset: number, revision?: number) {

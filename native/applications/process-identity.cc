@@ -163,7 +163,24 @@ static int owned_native_child(int argc,char **argv) {
  std::printf(",\"pid\":%u,\"startedAt\":",target.pbi_pid);birth(target);std::printf(",\"executable\":%s}\n",escaped(finalImage).c_str());return 0;
 }
 
+// An explicit host-created detached process group only. No global PID/argv scan.
+static int owned_group(int argc,char **argv) {
+ const char *unknown="{\"schema\":5,\"state\":\"unknown\"}";
+ if(argc!=4){std::puts(unknown);return 0;}char *end=nullptr;errno=0;long pid=std::strtol(argv[2],&end,10);
+ if(errno||!end||*end||pid<1||pid>INT_MAX){std::puts(unknown);return 0;}
+ proc_bsdinfo root={};bool live=inspect(static_cast<pid_t>(pid),root);const int rootError=errno;
+ if(live){char stamp[128]={};std::snprintf(stamp,sizeof(stamp),"darwin-proc-v1:%llu:%llu",static_cast<unsigned long long>(root.pbi_start_tvsec),static_cast<unsigned long long>(root.pbi_start_tvusec));if(root.pbi_uid!=getuid()||root.pbi_pgid!=pid||std::strcmp(stamp,argv[3])!=0){std::puts(unknown);return 0;}}
+ else if(rootError!=ESRCH){std::puts(unknown);return 0;}
+ pid_t ids[257]={};errno=0;int n=proc_listpgrppids(static_cast<pid_t>(pid),ids,sizeof(ids));if(n<0||(n==0&&errno)||n>=257){std::puts(unknown);return 0;}
+ std::vector<proc_bsdinfo> group;
+ for(int i=0;i<n;i++){proc_bsdinfo member={};if(!inspect(ids[i],member)||member.pbi_uid!=getuid()||member.pbi_pgid!=pid){std::puts(unknown);return 0;}group.push_back(member);}
+ for(const auto &before:group){proc_bsdinfo after={};if(!inspect(before.pbi_pid,after)||!same(before,after)||after.pbi_pgid!=pid){std::puts(unknown);return 0;}}
+ pid_t again[257]={};errno=0;int last=proc_listpgrppids(static_cast<pid_t>(pid),again,sizeof(again));if(last!=n||(last==0&&errno)){std::puts(unknown);return 0;}for(int i=0;i<n;i++){bool found=false;for(int j=0;j<n;j++)if(ids[i]==again[j])found=true;if(!found){std::puts(unknown);return 0;}}
+ std::printf("{\"schema\":5,\"state\":\"%s\",\"rootPid\":%ld,\"rootStartedAt\":%s,\"processes\":[",group.empty()?"stopped":"running",pid,escaped(argv[3]).c_str());
+ for(size_t i=0;i<group.size();i++){std::printf("%s{\"pid\":%u,\"startedAt\":",i?",":"",group[i].pbi_pid);birth(group[i]);std::printf("}");}std::puts("]}");return 0;
+}
 int main(int argc, char **argv) {
+  if(argc>=2&&std::strcmp(argv[1],"--owned-process-group")==0)return owned_group(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--owned-native-child")==0)return owned_native_child(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--sqlite-files")==0)return sqlite_files(argc,argv);
   if(argc>=2&&std::strcmp(argv[1],"--restore-owned-directory")==0)return restore_owned(argc,argv);

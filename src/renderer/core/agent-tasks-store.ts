@@ -45,7 +45,7 @@ class AgentTasksStore {
     try { const list = await rpc.agentTasks.list(); runInAction(() => { this.tasks = list; }); }
     catch { /* 主进程未就绪时保留旧列表 */ }
   }
-  of(projectId: string) { return this.tasks.filter(t => t.projectId === projectId); }
+  of(projectId: string) { const rows = this.tasks.filter(t => t.projectId === projectId); const ids = new Set(rows.map(t => t.taskId)); return rows.filter(t => !t.parentTaskId || !ids.has(t.parentTaskId)).flatMap(t => [t, ...rows.filter(c => c.parentTaskId === t.taskId)]); }
 }
 
 export const agentTasksStore = new AgentTasksStore();

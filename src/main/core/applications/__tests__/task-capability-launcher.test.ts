@@ -1,3 +1,4 @@
+import { AgentStore } from '../../agent/agent-store';
 import {inspectCodexCliSandbox} from '../codex-effective-sandbox';
 import {inspectClaudeCliSandbox} from '../claude-effective-sandbox';
 import type {TaskLaunchInput,NativeLaunchContext} from '../native-launch-context';
@@ -935,4 +936,17 @@ describe('M13 Claude CLI through indexed production resource',()=>{
   const prepare=managed.prepare.bind(managed);vi.spyOn(managed,'prepare').mockImplementation(async input=>{const launch=await prepare(input);writeFileSync(join(stateRoot,'settings.json'),JSON.stringify({sandbox:{enabled:true}}));return launch;});
   await expect(create(claudeId)).rejects.toMatchObject({code:'RESOURCE_STATE_CHANGED'});expect(ptys.launches).toEqual([]);
  });
+});
+
+it('M14: a new agent run uses its own frozen capability source without requiring or overwriting an M13 task snapshot', async () => {
+  writeFileSync(profiles.resolve(codexId).command, '#!/bin/sh\ncase "$1" in --version) echo "codex-cli 0.169.0";; *) exit 70;; esac\n', {mode:0o700});
+  const store = new AgentStore(sqlite), taskId = store.createTask({projectId,dirId:null,cwd,title:'M14 native source',selection:{driverId:'codex-app-server',profileId:'fixture',tier:'ask'}});
+  const bindingId=store.createBinding({task_id:taskId,driver_id:'codex-app-server',profile_id:'fixture',continuation_hash:digest('native-source'),cwd_identity:cwd,state_root:join(home,'.codex')});
+  const runId=randomUUID();store.insertRun({runId,taskId,projectId,bindingId,generation:1,driverId:'codex-app-server',owner:{instanceId:randomUUID(),pid:process.pid,startedAt:reader.read(process.pid)?.startedAt??null},launchPlanHash:digest('M14-native-launch')});
+  const integration=await managed.prepareAgent({runId,bindingId,generation:1,version:'0.169.0',assertCurrent:()=>{},task:{projectId,taskId,profile:profiles.resolve(codexId),cwd,home,stateRoot:join(home,'.codex'),claudeConfigExplicit:false,mode:'new',sessionId:null,previous:null,newTask:true,signal:new AbortController().signal,environment:{HOME:home,PATH:process.env.PATH??'/usr/bin:/bin'}}});
+  expect(sqlite.prepare('SELECT 1 FROM capability_session_snapshots WHERE task_id=?').get(taskId)).toBeUndefined();
+  expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'prepared'});
+  expect(integration.extraArgs?.join(' ')).toContain('mcp_servers');
+  await integration.cancelBeforeFork();
+  expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'stopped'});
 });

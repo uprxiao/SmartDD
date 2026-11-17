@@ -23,6 +23,8 @@ export interface AgentLaunchPlan {
   model: string | null;
   /** Only this host-owned Claude root is materialized; native-login state is inherited. */
   claudeRoot: string | null;
+  /** M14 isolated native Codex state, materialized before app-server starts. */
+  codexRoot?: string;
   files: { path: string; value: unknown }[];
 }
 export interface AgentLaunchInput {

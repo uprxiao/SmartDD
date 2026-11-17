@@ -63,11 +63,11 @@ function Toggle({ open, onClick, label, testId }: { open: boolean; onClick: () =
   );
 }
 
-const AGENT_STATUS: Record<string, string> = { working: '工作中', waiting: '等待批准', stopped: '已停止', failed: '失败', limited: '受限', completed: '' };
+const AGENT_STATUS: Record<string, string> = { working: '工作中', waiting: '等待批准', stopped: '已停止', failed: '失败', limited: '受限', needs_attention: '需要你处理', completed: '' };
 /** M14 新任务行：只列新任务（旧任务不迁移，需求 R10）。 */
 const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskSummary }) {
   const active = navigation.currentViewId === 'agentTask' && navigation.currentAgentTaskId === task.taskId;
-  return <button type="button" data-testid="sidebar-agent-task" data-task-id={task.taskId} aria-current={active ? 'page' : undefined} className="reference-task-row" onClick={() => navigation.openAgentTask(task.taskId)}>
+  return <button type="button" data-testid="sidebar-agent-task" data-task-id={task.taskId} aria-current={active ? 'page' : undefined} className="reference-task-row" style={task.parentTaskId ? { paddingLeft: 28 } : undefined} onClick={() => navigation.openAgentTask(task.taskId)}>
     <span className="truncate flex-1 text-left">{task.title}</span>{AGENT_STATUS[task.status] && <span className={`task-state-tail agent-tail ${task.status}`}>{AGENT_STATUS[task.status]}</span>}
   </button>;
 });

@@ -17,7 +17,7 @@ function fakeSdk(turns: Turn[]) {
       let n = 0;
       for await (const msg of prompt) {
         state.prompts.push(msg);
-        if (msg.shouldQuery === false) continue;
+        if (msg.shouldQuery === false) { emit({type:'result',subtype:'success',is_error:false,num_turns:0,user_message_uuid:msg.uuid,user_message_uuids:[msg.uuid]}); continue; }
         if (n === 0) emit({ type: 'system', subtype: 'init', session_id: options.resume ?? options.sessionId, slash_commands: ['compact', 'init', 'statusline', 'pdf'], terminal_slash_commands: ['statusline'], skills: ['pdf'] });
         interrupted = false;
         await turns[n++]?.({ options, emit, ask: (tool, input) => (options as any).canUseTool(tool, input, { signal: new AbortController().signal, title: `想用 ${tool}` }), interrupted: () => interrupted });
@@ -55,7 +55,7 @@ describe('复核 1755：目标确认只认目标命令那一轮', () => {
     await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
     await inst.injectHistory('历史事实，只作为上下文');
     await until(() => sdk.state.prompts.length === 1);
-    expect(events.some(e => e.type === 'turn.started')).toBe(false);
+    expect(events.some(e => e.type === 'turn.started' || e.type === 'turn.completed')).toBe(false);
     await inst.startTurn({ clientInputId: 'goal-input', text: '/goal exact goal', tier: 'ask' });
     await until(() => events.some(e => e.type === 'turn.completed'));
     expect(sdk.state.prompts[0]).toMatchObject({ isSynthetic: true, shouldQuery: false });

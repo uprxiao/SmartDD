@@ -39,7 +39,7 @@ function atomicJson(path: string, value: unknown): void {
  * the user's native CLI root as a destination and never writes any credentials.
  */
 export function materializeAgentPlan(plan: AgentLaunchPlan, userData: string, cwd: string): void {
-  if (!plan.files.length && !plan.claudeRoot) return;
+  if (!plan.files.length && !plan.claudeRoot && !plan.codexRoot) return;
   const base = realpathSync(userData), managed = join(base, 'agents');
   const keyValues = Object.entries(plan.profile.env).filter(([name]) => ['OPENAI_API_KEY','ANTHROPIC_API_KEY','ANTHROPIC_AUTH_TOKEN'].includes(name)).map(([,value]) => value);
   const serialized = JSON.stringify(plan.files);
@@ -47,6 +47,12 @@ export function materializeAgentPlan(plan: AgentLaunchPlan, userData: string, cw
   for (const file of plan.files) {
     const rest = relative(managed, resolve(file.path));
     if (!rest || rest === '..' || rest.startsWith(`..${sep}`)) throw new Error('管理配置超出 WillYou 私有目录');
+  }
+  if (plan.codexRoot) {
+    const rest = relative(join(managed, 'codex'), resolve(plan.codexRoot));
+    if (!/^[a-f0-9]{32}$/.test(rest)) throw new Error('Codex 管理目录身份异常');
+    privateDirectory(base, plan.codexRoot);
+    if (existsSync(join(plan.codexRoot, 'auth.json'))) throw new Error('Codex 管理目录含有残留认证，请移除后重试');
   }
   if (plan.claudeRoot) {
     const rest = relative(join(managed, 'claude'), resolve(plan.claudeRoot));

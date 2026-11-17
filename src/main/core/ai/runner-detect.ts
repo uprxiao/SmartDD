@@ -32,10 +32,10 @@ export function parseDetectOutput(runner: Runner, command: string, stdout: strin
     return { runner, command, path: null, version: null, error: `找不到 ${command}，请确认已安装，或在配置中手工指定路径` };
   }
   const path = lines[at].slice('__SMARTDD_PATH__'.length).trim();
-  const version = lines
-    .slice(at + 1)
-    .map((l) => l.trim())
-    .find(Boolean);
+  const output = lines.slice(at + 1).map(l => l.trim()).filter(Boolean);
+  // Native CLIs may print a startup/config warning before --version (notably a fresh CODEX_HOME).
+  // Prefer the native version line, keeping unknown output only for the diagnostic path.
+  const version = output.find(l => /^(?:codex-cli\s+)?\d+\.\d+\.\d+(?:[-+\w.]*)?(?:\s+\(Claude Code\))?$/.test(l)) ?? output[0];
   return version
     ? { runner, command, path, version, error: null }
     : { runner, command, path, version: null, error: `${command} --version 没有输出` };

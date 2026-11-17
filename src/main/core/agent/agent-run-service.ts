@@ -9,6 +9,7 @@ import { resolveTier, type Tier } from './permissions';
 import { TimelineProjector } from './timeline';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { canonicalPath } from './identity';
+import type { RunIntegration } from './run-integration';
 
 export interface HostIdentity { instanceId: string; pid: number; startedAt: string | null }
 export interface OpenRunInput {
@@ -31,12 +32,16 @@ export interface OpenRunInput {
   /** 配置档案的默认模型（托管供应商为档案默认，订阅登录为空＝执行器默认）；“恢复默认”用它，不用最初的显式选择（复核 NR05）。 */
   defaultModel?: string;
   assertCurrent?(): void;
+  stopWhenWaiting?(): boolean;
+  readOnly?: boolean;
+  integrate?(context: { runId: string; bindingId: string; generation: number; nativeId?: string }): Promise<RunIntegration | undefined>;
 }
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; models?: DriverModel[]; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
 interface ActiveRun extends RunHandle { assertCurrent?(): void; openError?: string; catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
 
+interface ActiveRun { integration?: RunIntegration; registration?: Promise<void>; exitFinishing?: Promise<void>; nodeReads?: Set<Promise<void>>; nativeNodes?: Set<string> }
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
   private readonly live = new Set<LiveListener>();
@@ -66,14 +71,14 @@ export class AgentRunService {
     for (const r of this.runs.values()) if (r.taskId === input.taskId) throw new DriverError('STATE', r.closing ? '上一运行仍在退出，请稍后' : '该任务已有运行中的执行器');
 
     const cwdIdentity = canonicalPath(input.cwd), stateIdentity = canonicalPath(input.stateRoot);
-    const continuationHash = sha256(JSON.stringify({ driver: input.driverId, profile: input.profileId, stateRoot: stateIdentity, cwd: cwdIdentity, compatibility: input.compatibility }));
+    const continuationHash = sha256(JSON.stringify({ driver: input.driverId, profile: input.profileId, stateRoot: stateIdentity, cwd: cwdIdentity, compatibility: input.compatibility, ...(input.readOnly ? { readOnly: true } : {}) }));
     const existing = store.findBinding(input.taskId, input.driverId, continuationHash);
     const bindingId = existing?.binding_id ?? store.createBinding({ task_id: input.taskId, driver_id: input.driverId, profile_id: input.profileId, continuation_hash: continuationHash, state_root: stateIdentity, cwd_identity: cwdIdentity });
     store.freezeBinding(bindingId, { compatibility: input.compatibility, stateRoot: stateIdentity, cwd: cwdIdentity });
     const resumeNativeId = existing?.native_confirmed_at ? existing.native_id ?? undefined : undefined;
     const generation = store.nextGeneration(bindingId);
     const runId = randomUUID();
-    const launchPlanHash = sha256(JSON.stringify({ driver: input.driverId, executable: input.executable, cwd: input.cwd, tier: tier.tier, model: input.model ?? null, extraArgs: input.extraArgs ?? [], settingSources: input.settingSources ?? null, envNames: Object.keys(input.env).sort() }));
+    const launchPlanHash = sha256(JSON.stringify({ driver: input.driverId, executable: input.executable, cwd: input.cwd, tier: tier.tier, model: input.model ?? null, extraArgs: input.extraArgs ?? [], settingSources: input.settingSources ?? null, readOnly: input.readOnly === true, envNames: Object.keys(input.env).sort() }));
     store.insertRun({ runId, taskId: input.taskId, projectId: task.project_id, driverId: input.driverId, bindingId, generation, owner: this.deps.host, launchPlanHash });
 
     const instance = driver.create();
@@ -84,8 +89,16 @@ export class AgentRunService {
     this.runs.set(runId, run);
     run.assertCurrent = input.assertCurrent;
     instance.on(e => this.onDriverEvent(run, e));
+    let forkAttempted = false;
     try {
-      const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: input.env, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: input.extraArgs, settingSources: input.settingSources });
+      run.integration = await input.integrate?.({ runId, bindingId, generation, nativeId: resumeNativeId });
+      const finalLaunchHash = sha256(JSON.stringify({ initial: launchPlanHash, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], envNames: Object.keys({ ...input.env, ...run.integration?.env }).sort(), mcp: run.integration?.mcpServers, skills: run.integration?.skillRoots, plugins: run.integration?.plugins }));
+      if (store.sqlite.prepare("UPDATE capability_runs SET launch_plan_hash=? WHERE run_id=? AND launch_plan_hash=? AND state IN ('preparing','prepared') AND pid IS NULL").run(finalLaunchHash, runId, launchPlanHash).changes !== 1) throw new DriverError('REJECTED', '启动计划已变化或已经启动');
+      if (!run.integration) store.freezeNativeRun(runId, { version: input.executable.version, capabilities, launchPlanHash: finalLaunchHash });
+      await run.integration?.beforeFork();
+      forkAttempted = true;
+      const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, skillRoots: run.integration?.skillRoots, plugins: run.integration?.plugins, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), beforeInitialize: async () => { await run.registration; } });
+      await run.registration;
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
       if (!run.defaultModel && opened.defaultModel) run.defaultModel = opened.defaultModel;
@@ -97,10 +110,11 @@ export class AgentRunService {
     } catch (e) {
       // 打开失败也按真实退出收口（复核 NR02）：先关闭；观察到退出才记失败并释放，否则保留 stopping 占用。
       run.closing = true;
-      run.openError = e instanceof DriverError ? e.code : 'OPEN_FAILED';
+      run.openError = !forkAttempted ? 'OPEN_FAILED_UNFORKED' : e instanceof DriverError ? e.code : 'OPEN_FAILED';
       await instance.close().catch(() => {});
+      if (!store.run(runId)?.pid) await run.integration?.cancelBeforeFork().catch(() => {});
       if (this.runs.has(runId)) {
-        if (!store.run(runId)?.pid) { store.finishRun(runId, input.taskId, 'failed', e instanceof DriverError ? e.code : 'OPEN_FAILED'); this.runs.delete(runId); run.markEnded(); }
+        if (!store.run(runId)?.pid) { store.finishRun(runId, input.taskId, 'failed', !forkAttempted ? 'OPEN_FAILED_UNFORKED' : e instanceof DriverError ? e.code : 'OPEN_FAILED'); this.runs.delete(runId); run.markEnded(); }
         else store.markRunStopping(runId, input.taskId);
       }
       throw e;
@@ -112,13 +126,19 @@ export class AgentRunService {
     const { store } = this.deps;
     for (const l of [...this.live]) { try { l({ taskId: run.taskId, runId: run.runId, event: e }); } catch { /* 订阅者自身负责 */ } }
     try {
-      for (const item of run.projector.project(e))
+      for (const item of run.projector.project(e)) {
         store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:${item.key}`, type: item.type, payload: item.payload, terminalState: item.terminal ?? null });
+        if (item.type === 'subagent' && item.payload.nativeNodeIds && run.instance.nativeChildHistory) for (const nodeId of item.payload.nativeNodeIds as string[]) this.captureNode(run, nodeId);
+      }
       switch (e.type) {
         case 'process': {
           // PID 来自本宿主自己启动的 ChildProcess；出生身份由进程身份读取器核对（取不到时只记 PID）。
           const identity = this.deps.processes.read(e.pid);
           store.attachRunProcess(run.runId, run.taskId, e.pid, identity?.pid === e.pid ? identity.startedAt : null);
+          if (run.integration) {
+            run.registration = run.integration.attached(e.pid);
+            void run.registration.catch(error => { run.openError = 'IDENTITY_REGISTRATION_FAILED'; store.addHostItem(run.taskId, run.turnId, 'error', { message: `业务运行身份登记失败：${(error as Error).message}` }); void this.close(run.runId); });
+          }
           break;
         }
         case 'session': store.confirmNative(run.bindingId, e.nativeId); break;
@@ -133,15 +153,22 @@ export class AgentRunService {
         case 'catalog': run.catalog = { commands: e.commands.slice(0, 200), skills: e.skills.slice(0, 500) }; break;
         case 'goal': {
           const before = store.goal(run.taskId);
-          store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: e.status, timeUsedSeconds: e.timeUsedSeconds });
+          const heldActive = this.held.has(run.taskId) && e.status === 'active' && run.driverId === 'codex-app-server';
+          if (heldActive) void run.instance.goal?.({ kind: 'pause' }).catch(() => {});
+          store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: heldActive ? 'paused' : e.status, pausedReason: heldActive ? before?.pausedReason ?? 'user' : undefined, timeUsedSeconds: e.timeUsedSeconds, nativeCreatedAt: e.nativeCreatedAt, nativeUpdatedAt: e.nativeUpdatedAt });
           // 目标在回合进行中设定：这一轮计入目标轮次（宿主计数）。
           const after = store.goal(run.taskId);
           if (after?.status === 'active' && run.turnId && (!before || before.status !== 'active' || before.revision !== after.revision)) store.countGoalTurn(run.taskId);
           break;
         }
         case 'request':
-          store.insertNativeRequest({ taskId: run.taskId, kind: e.kind, payload: e.payload, origin: { taskId: run.taskId, bindingId: run.bindingId, runId: run.runId, generation: run.generation, turnId: run.turnId, nativeRequest: e.requestKey } });
+          store.insertNativeRequest({ taskId: run.taskId, kind: e.kind, payload: e.payload, origin: { taskId: run.taskId, bindingId: run.bindingId, runId: run.runId, generation: run.generation, turnId: e.nodeId ? null : run.turnId, nativeRequest: e.requestKey, nodeId: e.nodeId } });
           break;
+        case 'node.message': store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node:${e.nodeId}:${e.key}`, nodeId: e.nodeId, type: 'subagent_message', payload: e.payload, terminalState: 'completed' }); break;
+        case 'node.state': {
+          if (e.state === 'running') (run.nativeNodes ??= new Set()).add(e.nodeId); else run.nativeNodes?.delete(e.nodeId);
+          store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${e.nodeId}`, nodeId: e.nodeId, type: 'subagent_status', payload: { state: e.state, nativeRunId: e.nativeRunId }, terminalState: e.state === 'running' ? null : e.state === 'completed' ? 'completed' : 'failed' }); break;
+        }
         case 'request.resolved': {
           const row = store.requestByNative(run.runId, e.requestKey);
           // 原生侧自行结束的请求（超时、回合结束等）不算用户回应。
@@ -169,11 +196,13 @@ export class AgentRunService {
             void run.instance.close().then(() => { if (this.runs.has(run.runId)) store.markRunStopping(run.runId, run.taskId); }).catch(() => {});
           }
           break;
-        case 'exit':
-          store.finishRun(run.runId, run.taskId, run.openError ? 'failed' : run.closing ? 'stopped' : 'failed', run.openError ?? (run.closing ? null : `EXIT_${e.code ?? e.signal}`));
-          this.runs.delete(run.runId);
-          run.markEnded();
+        case 'exit': {
+          const closing = run.closing; run.closing = true;
+          const finish = () => { for (const nodeId of run.nativeNodes ?? []) store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${nodeId}`, nodeId, type: 'subagent_status', payload: { state: 'interrupted', reason: 'owner-exited' }, terminalState: 'failed' }); run.nativeNodes?.clear(); store.finishRun(run.runId, run.taskId, run.openError ? 'failed' : closing ? 'stopped' : 'failed', run.openError ?? (closing ? null : `EXIT_${e.code ?? e.signal}`)); this.runs.delete(run.runId); run.markEnded(); };
+          if (!run.integration) finish();
+          else if (!run.exitFinishing) { run.exitFinishing = Promise.resolve(run.registration).catch(() => {}).then(async () => { if (!await this.drainNativeGroup(run.runId)) throw new Error('原生进程组退出不明'); await run.integration!.exited(); }).then(finish); void run.exitFinishing.catch(error => { store.markRunStopping(run.runId, run.taskId); store.addHostItem(run.taskId, run.turnId, 'error', { message: `进程已退出，业务或后代尚未排空，保留占用：${(error as Error).message}` }); }); }
           break;
+        }
       }
     } catch (err) {
       for (const l of [...this.live]) { try { l({ taskId: run.taskId, runId: run.runId, event: { type: 'diagnostic', message: `持久化失败：${(err as Error).message}` } }); } catch { /* ignore */ } }
@@ -251,6 +280,8 @@ export class AgentRunService {
   }
 
   busy(runId: string) { const r = this.runs.get(runId); return !!r?.turnId; }
+  nativeBusy(runId: string) { return !!this.runs.get(runId)?.nativeNodes?.size; }
+  async readGoal(runId: string) { return this.runs.get(runId)?.instance.goalState?.(); }
   respondingForTask(taskId: string) { return [...this.responding].some(id => this.deps.store.request(id)?.task_id === taskId); }
   /** 运行的默认模型：档案或打开时得到的优先，否则向执行器查询并缓存（复核 FR03）。 */
   async resolveDefaultModel(runId: string) {
@@ -291,10 +322,31 @@ export class AgentRunService {
     const run = this.runs.get(runId);
     if (!run) return;
     run.closing = true;
+    await Promise.allSettled([...(run.nodeReads ?? [])]);
     await run.instance.close();
+    if (run.exitFinishing) await run.exitFinishing.catch(() => {});
     // 只有观察到真实退出（exit 事件）才收口；仍未退出则保留占用并标 stopping，不冒充已退出（复核 CR04）。
     if (this.runs.has(runId)) this.deps.store.markRunStopping(runId, run.taskId);
   }
 
   async closeAll() { await Promise.all([...this.runs.keys()].map(id => this.close(id))); }
+  private captureNode(run: ActiveRun, nodeId: string) {
+    const read = run.instance.nativeChildHistory!(nodeId).then(items => { for (const i of items) this.deps.store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node:${nodeId}:history:${i.key}`, nodeId, type: 'subagent_message', payload: i.payload, terminalState: 'completed' }); }).catch(() => { /* missing native messages remain explicit; never invent content */ });
+    (run.nodeReads ??= new Set()).add(read); void read.finally(() => run.nodeReads?.delete(read));
+  }
+  /** Exact detached launch group only. Unknown proof retains ownership; never release on a timer. */
+  async drainNativeGroup(runId: string): Promise<boolean> {
+    const row = this.deps.store.run(runId);
+    if (row && row.pid === null && row.error_code === 'OPEN_FAILED_UNFORKED') return true;
+    if (!row?.pid || !row.process_started_at || !this.deps.processes.ownedGroup) return false;
+    const root = { pid: row.pid as number, startedAt: row.process_started_at as string };
+    const deadline = Date.now() + 10_000;
+    do {
+      const group = this.deps.processes.ownedGroup(root); if (!group) return false;
+      if (group.state === 'stopped') return true;
+      for (const p of group.processes) if (p.pid !== root.pid && this.deps.processes.state(p) === 'running') { try { process.kill(p.pid, 'SIGTERM'); } catch { /* independently observe below */ } }
+      if (Date.now() >= deadline) return false;
+      await new Promise(r => setTimeout(r, 50));
+    } while (true);
+  }
 }

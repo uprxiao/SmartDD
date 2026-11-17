@@ -82,7 +82,8 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   }
   if (p.runner === 'codex') {
     const { extraArgs, model } = codexArgsToDriver(p.args);
-    const stateRoot = env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
+    const stateRoot = managed ? join(i.userData, 'agents', 'codex', createHash('sha256').update(i.config.id).digest('hex').slice(0, 32)) : env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
+    if (managed) { env.CODEX_HOME = stateRoot; p.env.CODEX_HOME = stateRoot; plan.codexRoot = stateRoot; }
     if (!carry && !managed) {
       const file = join(stateRoot, 'config.toml');
       if (existsSync(file)) {
@@ -90,7 +91,8 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
         const config = parseToml(readFileSync(file, 'utf8'));
         const servers = config.mcp_servers;
         if (servers && typeof servers === 'object' && !Array.isArray(servers)) {
-          for (const name of Object.keys(servers)) extraArgs.push('-c', `mcp_servers.${JSON.stringify(name)}.enabled=false`);
+          const names = Object.keys(servers);
+          if (names.length) extraArgs.push('-c', `mcp_servers={${names.map(name => `${JSON.stringify(name)}={enabled=false}`).join(',')}}`);
         }
       }
     }

@@ -1,12 +1,20 @@
+import { z } from 'zod';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { chmodSync, lstatSync, mkdtempSync, renameSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { createServer, type Server, type Socket } from 'node:net';
 import { join } from 'node:path';
 import { ApplicationError } from '@shared/applications';
-import { BRIDGE_LIMITS, boundedJson, bridgeRequestSchema, type BridgeBootstrap, type BridgeRequest, type BridgeResponse } from '@shared/application-bridge';
+import { BRIDGE_LIMITS, boundedJson, bridgeCallSchema, bridgeRequestSchema, type BridgeBootstrap, type BridgeRequest, type BridgeResponse } from '@shared/application-bridge';
 import { digest } from './manifest';
 import type { CapabilityRunRegistry, OwnedCapabilityRun, OwnedRunProcess } from './run-registry';
 import type { ApplicationToolService } from './tool-service';
+// Host-only extension: the immutable M13 MCP runtime already relays discovered names.
+// Keep its shipped bytes and pins unchanged; authenticated admissions know wy_*.
+const brokerRequestSchema = z.discriminatedUnion('method', [
+  bridgeRequestSchema.options[0], bridgeRequestSchema.options[1], bridgeRequestSchema.options[2],
+  bridgeRequestSchema.options[3].extend({ call: bridgeCallSchema.extend({ operation: z.string().regex(/^(?:smartdd_[a-z0-9_]+_v[1-9][0-9]*|wy_(?:targets|delegate|observe|send|cancel|request_write))$/).max(128) }) }),
+  bridgeRequestSchema.options[4],
+]);
 interface Ticket { runId: string;bridge: OwnedRunProcess;path: string;dev: number;ino: number;expiresAt: number;authorize?:()=>void;claiming?:boolean;expiry?:ReturnType<typeof setTimeout> }
 interface Binding { runId: string;bridgeId: string;digest: string;expiresAt: number;revoked: boolean;ready:boolean;authorize?:()=>void }
 interface Peer { socket: Socket;binding?: Binding;buffer: Buffer;controllers: Map<string,AbortController>;inFlight: number }
@@ -23,7 +31,7 @@ export class PrivateApplicationBroker {
   private closed = false;
   private readonly handshakeWaiters=new Set<{runId:string;bridgeId:string;finish:(value:boolean)=>void}>();
   private readonly expiredReservations=new Set<Promise<void>>();
-  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: ApplicationToolService,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;authenticated?:(runId:string,bridgeId:string)=>Promise<void>;disconnected?:(runId:string,bridgeId:string)=>void;rejectedReplacement?:(runId:string,bridgeId:string)=>void;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
+  constructor(private readonly runs: CapabilityRunRegistry,private readonly tools: Pick<ApplicationToolService, 'list' | 'call' | 'clearMemory'>,private readonly options: { now?: () => number;tokenTtlMs?: number;ticketTtlMs?: number;authenticated?:(runId:string,bridgeId:string)=>Promise<void>;disconnected?:(runId:string,bridgeId:string)=>void;rejectedReplacement?:(runId:string,bridgeId:string)=>void;attachPeer?:(socket:Socket,runId:string,bridge:OwnedRunProcess)=>Promise<void> } = {}) {}
   private clock(): number { return this.options.now?.() ?? Date.now(); }
   get endpoint(): string { if (!this.server || this.closed) throw new ApplicationError('CAPABILITY_UNAVAILABLE','本机应用通道尚未启动'); return join(this.directory,'broker.sock'); }
   async start(): Promise<void> {
@@ -139,7 +147,7 @@ export class PrivateApplicationBroker {
       if (input && typeof input === 'object' && 'id' in input && typeof input.id === 'string' && /^[a-f0-9-]{36}$/.test(input.id)) id = input.id;
       if(input&&typeof input==='object'&&'method' in input&&typeof input.method==='string'&&['exchange','renew','tools/list','tools/call','cancel'].includes(input.method))method=input.method;
       if (!boundedJson(input)) throw new ApplicationError('INVALID_INPUT','通道JSON结构超过预算');
-      const parsed = bridgeRequestSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','通道请求包含未允许字段或格式无效');
+      const parsed = brokerRequestSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','通道请求包含未允许字段或格式无效');
       const request = parsed.data; id = request.id;
       if (request.method === 'exchange') return await this.exchange(peer,request);
       const binding = this.authenticate(peer,request.token);

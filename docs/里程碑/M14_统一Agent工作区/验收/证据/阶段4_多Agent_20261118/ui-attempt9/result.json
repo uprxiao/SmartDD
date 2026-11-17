@@ -1,0 +1,1138 @@
+{
+  "layer": "development App + native CLI + authenticated private MCP + synthetic loopback model; no real model and no packaged acceptance",
+  "root": "/private/tmp/willyou-m14-delegate-VBR6gF",
+  "assertions": [],
+  "model": [
+    {
+      "path": "/v1/responses",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "invoke": true,
+      "woke": false,
+      "receipt": false,
+      "tools": [
+        {
+          "type": "function",
+          "name": "exec_command",
+          "properties": [
+            "cmd",
+            "justification",
+            "login",
+            "max_output_tokens",
+            "prefix_rule",
+            "sandbox_permissions",
+            "shell",
+            "tty",
+            "workdir",
+            "yield_time_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "write_stdin",
+          "properties": [
+            "chars",
+            "max_output_tokens",
+            "session_id",
+            "yield_time_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "list_mcp_resources",
+          "properties": [
+            "cursor",
+            "server"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "list_mcp_resource_templates",
+          "properties": [
+            "cursor",
+            "server"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "read_mcp_resource",
+          "properties": [
+            "server",
+            "uri"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "request_user_input",
+          "properties": [
+            "questions"
+          ]
+        },
+        {
+          "type": "custom",
+          "name": "apply_patch",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "view_image",
+          "properties": [
+            "path"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "close_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "target"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "resume_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "id"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "send_input",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "interrupt",
+            "items",
+            "message",
+            "target"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "spawn_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "fork_context",
+            "items",
+            "message",
+            "model",
+            "reasoning_effort"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wait_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "targets",
+            "timeout_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_attach_import_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "queryDays",
+            "source"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_copy_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "expectedRevision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_create_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "content",
+            "queryDays"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_get_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "revision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_list_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "cursor",
+            "limit"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_update_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "content",
+            "draftId",
+            "expectedRevision",
+            "queryDays"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_query_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "connectionId",
+            "cursor",
+            "limit",
+            "queryDays",
+            "refresh",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_read_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "queryDays",
+            "reference"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_reply_create_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "html",
+            "mode",
+            "queryDays",
+            "reference",
+            "senderConnectionId",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_resource_read_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "length",
+            "offset",
+            "queryDays",
+            "resource"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_cancel_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_execute_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "expectedReviewHash",
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_get_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_prepare_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "expectedContentHash",
+            "expectedRevision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_cancel",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_delegate",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "access",
+            "instructions",
+            "model",
+            "profileId",
+            "requestKey",
+            "title"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_observe",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId",
+            "offset"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_send",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId",
+            "requestKey",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_targets",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "get_goal",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "create_goal",
+          "properties": [
+            "objective",
+            "token_budget"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "update_goal",
+          "properties": [
+            "status"
+          ]
+        },
+        {
+          "type": "web_search",
+          "properties": []
+        }
+      ]
+    },
+    {
+      "path": "/v1/responses",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "invoke": false,
+      "woke": false,
+      "receipt": true,
+      "tools": [
+        {
+          "type": "function",
+          "name": "exec_command",
+          "properties": [
+            "cmd",
+            "justification",
+            "login",
+            "max_output_tokens",
+            "prefix_rule",
+            "sandbox_permissions",
+            "shell",
+            "tty",
+            "workdir",
+            "yield_time_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "write_stdin",
+          "properties": [
+            "chars",
+            "max_output_tokens",
+            "session_id",
+            "yield_time_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "list_mcp_resources",
+          "properties": [
+            "cursor",
+            "server"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "list_mcp_resource_templates",
+          "properties": [
+            "cursor",
+            "server"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "read_mcp_resource",
+          "properties": [
+            "server",
+            "uri"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "request_user_input",
+          "properties": [
+            "questions"
+          ]
+        },
+        {
+          "type": "custom",
+          "name": "apply_patch",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "view_image",
+          "properties": [
+            "path"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "close_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "target"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "resume_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "id"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "send_input",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "interrupt",
+            "items",
+            "message",
+            "target"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "spawn_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "fork_context",
+            "items",
+            "message",
+            "model",
+            "reasoning_effort"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wait_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "targets",
+            "timeout_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_attach_import_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "queryDays",
+            "source"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_copy_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "expectedRevision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_create_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "content",
+            "queryDays"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_get_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "revision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_list_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "cursor",
+            "limit"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_update_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "content",
+            "draftId",
+            "expectedRevision",
+            "queryDays"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_query_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "connectionId",
+            "cursor",
+            "limit",
+            "queryDays",
+            "refresh",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_read_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "queryDays",
+            "reference"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_reply_create_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "html",
+            "mode",
+            "queryDays",
+            "reference",
+            "senderConnectionId",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_resource_read_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "length",
+            "offset",
+            "queryDays",
+            "resource"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_cancel_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_execute_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "expectedReviewHash",
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_get_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_prepare_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "expectedContentHash",
+            "expectedRevision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_cancel",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_delegate",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "access",
+            "instructions",
+            "model",
+            "profileId",
+            "requestKey",
+            "title"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_observe",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId",
+            "offset"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_send",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId",
+            "requestKey",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_targets",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "get_goal",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "create_goal",
+          "properties": [
+            "objective",
+            "token_budget"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "update_goal",
+          "properties": [
+            "status"
+          ]
+        },
+        {
+          "type": "web_search",
+          "properties": []
+        }
+      ]
+    },
+    {
+      "path": "/v1/messages?beta=true",
+      "model": "child-fixture",
+      "toolPresent": false,
+      "invoke": false,
+      "woke": false,
+      "receipt": false,
+      "tools": [
+        {
+          "name": "Agent",
+          "properties": [
+            "description",
+            "prompt",
+            "subagent_type",
+            "model",
+            "effort",
+            "run_in_background",
+            "isolation"
+          ]
+        },
+        {
+          "name": "AskUserQuestion",
+          "properties": [
+            "questions",
+            "answers",
+            "annotations",
+            "metadata"
+          ]
+        },
+        {
+          "name": "Bash",
+          "properties": [
+            "command",
+            "timeout",
+            "description",
+            "run_in_background",
+            "dangerouslyDisableSandbox"
+          ]
+        },
+        {
+          "name": "Edit",
+          "properties": [
+            "file_path",
+            "old_string",
+            "new_string",
+            "replace_all"
+          ]
+        },
+        {
+          "name": "ListAgents",
+          "properties": [
+            "channel",
+            "q"
+          ]
+        },
+        {
+          "name": "Read",
+          "properties": [
+            "file_path",
+            "offset",
+            "limit",
+            "pages",
+            "allow_large"
+          ]
+        },
+        {
+          "name": "ReportFindings",
+          "properties": [
+            "level",
+            "findings"
+          ]
+        },
+        {
+          "name": "ScheduleWakeup",
+          "properties": [
+            "delaySeconds",
+            "reason",
+            "prompt",
+            "stop",
+            "noop"
+          ]
+        },
+        {
+          "name": "Skill",
+          "properties": [
+            "skill",
+            "args"
+          ]
+        },
+        {
+          "name": "ToolSearch",
+          "properties": [
+            "query",
+            "max_results"
+          ]
+        },
+        {
+          "name": "Workflow",
+          "properties": [
+            "script",
+            "name",
+            "description",
+            "title",
+            "args",
+            "scriptPath",
+            "resumeFromRunId"
+          ]
+        },
+        {
+          "name": "DeferredToolPlaceholder",
+          "properties": []
+        },
+        {
+          "name": "Write",
+          "properties": [
+            "file_path",
+            "content"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/v1/responses",
+      "model": "parent-fixture",
+      "toolPresent": true,
+      "invoke": false,
+      "woke": true,
+      "receipt": true,
+      "tools": [
+        {
+          "type": "function",
+          "name": "exec_command",
+          "properties": [
+            "cmd",
+            "justification",
+            "login",
+            "max_output_tokens",
+            "prefix_rule",
+            "sandbox_permissions",
+            "shell",
+            "tty",
+            "workdir",
+            "yield_time_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "write_stdin",
+          "properties": [
+            "chars",
+            "max_output_tokens",
+            "session_id",
+            "yield_time_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "list_mcp_resources",
+          "properties": [
+            "cursor",
+            "server"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "list_mcp_resource_templates",
+          "properties": [
+            "cursor",
+            "server"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "read_mcp_resource",
+          "properties": [
+            "server",
+            "uri"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "request_user_input",
+          "properties": [
+            "questions"
+          ]
+        },
+        {
+          "type": "custom",
+          "name": "apply_patch",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "view_image",
+          "properties": [
+            "path"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "close_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "target"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "resume_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "id"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "send_input",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "interrupt",
+            "items",
+            "message",
+            "target"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "spawn_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "fork_context",
+            "items",
+            "message",
+            "model",
+            "reasoning_effort"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wait_agent",
+          "namespace": "multi_agent_v1",
+          "properties": [
+            "targets",
+            "timeout_ms"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_attach_import_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "queryDays",
+            "source"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_copy_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "expectedRevision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_create_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "content",
+            "queryDays"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_get_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "revision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_list_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "cursor",
+            "limit"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_draft_update_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "content",
+            "draftId",
+            "expectedRevision",
+            "queryDays"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_query_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "connectionId",
+            "cursor",
+            "limit",
+            "queryDays",
+            "refresh",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_read_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "queryDays",
+            "reference"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_reply_create_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "html",
+            "mode",
+            "queryDays",
+            "reference",
+            "senderConnectionId",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_resource_read_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "length",
+            "offset",
+            "queryDays",
+            "resource"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_cancel_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_execute_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "expectedReviewHash",
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_get_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "intentId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "smartdd_mail_send_prepare_v2",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "draftId",
+            "expectedContentHash",
+            "expectedRevision"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_cancel",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_delegate",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "access",
+            "instructions",
+            "model",
+            "profileId",
+            "requestKey",
+            "title"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_observe",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId",
+            "offset"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_send",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": [
+            "childTaskId",
+            "requestKey",
+            "text"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "wy_targets",
+          "namespace": "mcp__wy_b029494e565fe0e515a6ed25",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "get_goal",
+          "properties": []
+        },
+        {
+          "type": "function",
+          "name": "create_goal",
+          "properties": [
+            "objective",
+            "token_budget"
+          ]
+        },
+        {
+          "type": "function",
+          "name": "update_goal",
+          "properties": [
+            "status"
+          ]
+        },
+        {
+          "type": "web_search",
+          "properties": []
+        }
+      ]
+    }
+  ],
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(child.items.some(i=>i.type==='assistant_message'&&i.payload.text?.includes('CHILD_DONE')))\n\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/scripts/m14/delegation-smoke.mjs:56:65",
+  "body": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nDelegation fixture\nParent codex\n工作中\nNative child codex\n设置\nParent codex\n工作中\n允许新委派\n停止任务树\nNative child codex\nFixture claude\n已完成 · 等主任务领取\nDelegate the fixture child then finish.\n已工作 0 秒\n宿主子任务 · Native child codex\n已持久接受委派\n\nPARENT_WAIT\n\nNative child codex · completed查看子任务\n来源：子任务结果\n宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 6fb4bb9b-223a-40c6-935e-e7b091835754；子任务 Native child codex / 807c716f-57ec-45c6-b6b7-8001fb5b9bc6，attempt 1 状态 completed。正文通过 wy_observe 领取；此通知不含新授权。\n提示\n\nPARENT_DONE\n\n排队中 · 宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 6fb4bb9b-223a-40c6-935e-e7b091835754；子任务 Native child codex / 807c716f-57ec-45c6-b6b7-8001fb5b9bc6，attempt 1 状态 completed。正文通过 wy_observe 领取；此通知不含新授权。\n请求批准\n帮我批准\n完全访问\nFixture codex\nparent-fixture\n插话",
+  "exit": {
+    "pid": 83005,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

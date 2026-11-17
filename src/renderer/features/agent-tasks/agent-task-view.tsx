@@ -4,13 +4,14 @@ import MarkdownIt from 'markdown-it';
 import { Archive, ChevronRight, CircleStop, Loader2, Send, SquareTerminal, Target, X, Zap } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
+import { AgentRelations, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { AgentDialog } from '@renderer/features/agents/ui';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { agentTaskEvent, agentTaskLiveEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
@@ -22,7 +23,7 @@ type Snapshot = Awaited<ReturnType<typeof rpc.agentTasks.snapshot>>;
 type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
 const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
 const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示' };
-const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
+const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', needs_attention: '需要你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
 const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限', output: '输出长度到上限' };
 
 // 消息里的链接在阶段 5 按 T3 规则接入路由；此前只显示为文字，不打开任何地址。
@@ -84,14 +85,16 @@ async function readRange(read: (offset: number, revision?: number) => Promise<Ra
   throw new Error('读取完整内容失败');
 }
 /** 读取指定修订的条目全文；条目已推进到其他修订时服务端拒绝，不返回别的修订的内容。 */
-const fetchItemPayload = (itemId: string, revision: number) => readRange((off) => rpc.agentTasks.itemBody(CurrentTask.id, itemId, off, revision));
+const TaskScope = createContext('');
+const fetchItemPayload = (taskId: string, itemId: string, revision: number) => readRange((off) => rpc.agentTasks.itemBody(taskId, itemId, off, revision));
 
 /**
  * 截断条目的全文（复核 FR04）。缓存按条目＋修订有效（复核 SR05）：修订推进后旧全文作废，已展开的自动按新修订重取；
  * 迟到的旧读取结果不写回；复制等操作只用当前修订的全文。
  */
 function useFullPayload(item: TimelineItem) {
-  const key = `${item.itemId}:${item.revision}`;
+  const taskId = useContext(TaskScope);
+  const key = `${taskId}:${item.itemId}:${item.revision}`;
   const [full, setFull] = useState<{ key: string; payload: any } | null>(null);
   const [expanded, setExpanded] = useState(false);
   const current = useRef(key); current.current = key;
@@ -100,7 +103,7 @@ function useFullPayload(item: TimelineItem) {
   const load = async (): Promise<any> => {
     const want = key;
     try {
-      const { value } = await fetchItemPayload(item.itemId, item.revision);
+      const { value } = await fetchItemPayload(taskId, item.itemId, item.revision);
       // 读取期间条目已更新：旧结果不写回，也不交给复制／下载。
       if (current.current !== want) { toast.message('内容已更新，请重试'); return null; }
       // 旧版本只剩前缀与摘要的截断记录不是全文：不缓存，明确失败（复核 T02）。
@@ -148,6 +151,8 @@ function ItemRow({ item }: { item: TimelineItem }) {
       <div className="agent-plan-actions"><button type="button" onClick={() => void copyPlan()}>复制</button>
         <button type="button" onClick={() => void downloadPlan()}>下载</button></div></div>;
     case 'todo_list': return <div className="agent-todo">{(p.entries ?? []).map((e: any) => <div key={e.id} className={`agent-todo-row ${e.status}`}><span className="agent-todo-box" aria-hidden>{e.status === 'completed' ? '✓' : ''}</span>{e.subject}</div>)}{more}</div>;
+    case 'subtask': return <div className="agent-child-result"><button type="button" onClick={() => navigation.openAgentTask(p.childTaskId)}>宿主子任务 · {p.title}</button><small>已持久接受委派{p.notice ? ` · ${p.notice}` : ''}</small>{more}</div>;
+    case 'notification': return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => navigation.openAgentTask(p.childTaskId)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{p.summary && <pre>{p.summary}</pre>}{more}</div>;
     case 'error': return <div className="agent-error" role="alert">{p.message ?? p.code}{more}</div>;
     case 'compaction': return <div className="agent-divider">上下文已压缩</div>;
     case 'provider_switch': return <div className="agent-divider">此处切换到 {p.toName ?? p.to}{more}</div>;
@@ -157,13 +162,62 @@ function ItemRow({ item }: { item: TimelineItem }) {
     default: return null;
   }
 }
-const CurrentTask = { id: '' };
+
+
+function NativeMessage({ item }: { item: TimelineItem }) {
+  const { payload: p, truncated, load } = useFullPayload(item);
+  const content = p.message?.content ?? p.content;
+  const text = p.text ?? p.summary ?? (Array.isArray(content) ? content.map((b: any) => b.text ?? (b.type === 'tool_use' ? `调用 ${b.name}\n${JSON.stringify(b.input)}` : b.content ?? '')).join('\n') : typeof content === 'string' ? content : JSON.stringify(p));
+  return <div className="agent-native-message"><pre>{String(text)}</pre><Completeness truncated={truncated} payload={p} onExpand={() => void load()} /></div>;
+}
+function NativeMessages({ parent }: { parent: TimelineItem }) {
+  const [value, setValue] = useState<Awaited<ReturnType<typeof rpc.agentTasks.nativeHistory>> | null>(null);
+  const [error, setError] = useState('');
+  const taskId = useContext(TaskScope);
+  const epoch = useRef(0), reading = useRef(false), pendingRefresh = useRef(false);
+  const read = async (before?: number) => {
+    const mine = ++epoch.current; reading.current = true;
+    try {
+      const r = await rpc.agentTasks.nativeHistory(taskId, parent.itemId, before);
+      if (mine !== epoch.current) return;
+      setValue(v => {
+        const map = new Map((v?.items ?? []).map(i => [i.itemId, i]));
+        for (const i of r.items) if (!map.has(i.itemId) || map.get(i.itemId)!.revision <= i.revision) map.set(i.itemId, i);
+        return { ...r, hasMore: map.size < r.total, items: [...map.values()].sort((a,b) => a.ordinal - b.ordinal) };
+      }); setError('');
+    } catch (e) { if (mine === epoch.current) setError(rpcErrorMessage(e)); }
+    finally { if (mine === epoch.current) { reading.current = false; if (pendingRefresh.current) { pendingRefresh.current = false; void read(); } } }
+  };
+  useEffect(() => {
+    setValue(null); void read();
+    const off = events.on(agentTaskEvent, e => { if (e.taskId === taskId) { if (reading.current) pendingRefresh.current = true; else void read(); } });
+    return () => { ++epoch.current; pendingRefresh.current = false; off(); };
+  }, [taskId, parent.itemId]);
+  return <div className="agent-native-messages">
+    {error && <p role="alert">子消息读取失败：{error}<button type="button" onClick={() => void read()}>重试</button></p>}
+    {value?.states.length ? <small>原生节点：{value.states.map(s => ({ running: '工作中', needs_attention: '需要你处理', completed: '已完成', interrupted: '已停止', failed: '失败' }[s] ?? s)).join('、')}</small> : null}
+    {value?.hasMore && <button type="button" className="agent-older" onClick={() => void read(value.nextOrdinal ?? undefined)}>加载更早的子消息</button>}
+    {value?.items.map(item => <NativeMessage item={item} key={item.itemId} />)}
+    {value && !value.items.length && <p>{value.partial ? '这份旧记录仅保留了子消息预览，没有可恢复的完整记录。' : '执行器尚未返回子消息。'}</p>}
+  </div>;
+}
 
 function WorkItem({ it }: { it: TimelineItem }) {
   const { payload: p, truncated, load } = useFullPayload(it);
+  const taskId = useContext(TaskScope);
+  const [nativeOpen, setNativeOpen] = useState(false);
   return <details className={`agent-work-row ${p.status ?? ''}`}>
     <summary>{workLabel({ ...it, payload: p })}</summary>
     {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' || it.type === 'assistant_message' ? <Markdown text={String(p.text ?? '')} /> : null}
+    {it.type === 'subagent' && <><button type="button" className="agent-older" onClick={() => setNativeOpen(true)}>查看执行器原生子 Agent</button>{nativeOpen && <AgentDialog title="执行器原生子 Agent" sub="属于当前运行，和宿主委派子任务分别记录" onClose={() => setNativeOpen(false)} footer={<button type="button" className="m10-button" onClick={() => void rpc.agentTasks.stop(taskId).then(() => setNativeOpen(false)).catch(e => toast.error(rpcErrorMessage(e)))}>停止所属运行</button>}>
+      <p>{p.input?.description ?? p.tool ?? p.name} · {p.status ?? '状态未知'}</p>
+      {p.prompt && <pre>{p.prompt}</pre>}
+      {p.childLog?.length ? p.childLog.map((line: string, i: number) => <pre key={i}>{line}</pre>) : <p>当前执行器没有返回更多子消息，已保留收到的原生事件。</p>}
+      {p.childLogPreviewOnly && <small>以上为最近消息预览；完整记录如下。</small>}
+      <NativeMessages parent={it} />
+      {p.output && <pre>{String(p.output)}</pre>}
+      <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
+    </AgentDialog>}</>}
     <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
   </details>;
 }
@@ -209,28 +263,30 @@ function RequestFormView({ form, busy, onSubmit }: { form: RequestForm; busy: bo
   </div>;
 }
 
-function RequestPanel({ requests, more = 0, driverId, onRespond, onStop }: { requests: TimelineRequest[]; more?: number; driverId: string; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: () => void }) {
+function RequestPanel({ requests, more = 0, driverId, onRespond, onStop }: { requests: TimelineRequest[]; more?: number; driverId: string; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: (r: TimelineRequest) => void }) {
   const [index, setIndex] = useState(0);
   const [reason, setReason] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
+  const taskId = useContext(TaskScope);
   const panel = useRef<HTMLDivElement>(null);
   const shown = requests[Math.min(index, requests.length - 1)];
+  const effectiveDriver = shown.driverId ?? driverId;
   // 过大的关键请求：先读完整内容再开放批准（复核 NR06）；读不全只能拒绝或停止。
   const [full, setFull] = useState<Record<string, TimelineRequest['payload'] | 'error'>>({});
   const reqKey = `${shown.requestId}:${shown.revision}`;
   useEffect(() => {
     if (!(shown as any).detailTruncated || full[reqKey]) return;
     void (async () => {
-      try { const { value } = await readRange((off, rev) => rpc.agentTasks.requestBody(CurrentTask.id, shown.requestId, off, rev)); setFull(f => ({ ...f, [reqKey]: value?.truncated ? 'error' : value })); }
+      try { const { value } = await readRange((off, rev) => rpc.agentTasks.requestBody(shown.ownerTaskId ?? taskId, shown.requestId, off, rev)); setFull(f => ({ ...f, [reqKey]: value?.truncated ? 'error' : value })); }
       catch { setFull(f => ({ ...f, [reqKey]: 'error' })); }
     })();
   }, [reqKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const loaded = full[reqKey];
   const incomplete = !!(shown as any).detailTruncated && (loaded === undefined || loaded === 'error');
   const r = loaded && loaded !== 'error' ? { ...shown, payload: loaded } : shown;
-  const form = incomplete ? null : requestForm(r, driverId);
-  const options = form ? [] : incomplete ? requestOptions(r, driverId).filter(o => o.deny) : requestOptions(r, driverId);
+  const form = incomplete ? null : requestForm(r, effectiveDriver);
+  const options = form ? [] : incomplete ? requestOptions(r, effectiveDriver).filter(o => o.deny) : requestOptions(r, effectiveDriver);
   const head = requestTitle(r);
   useEffect(() => { setSelected(null); panel.current?.focus(); }, [r.requestId]);
   const send = async (result: unknown) => {
@@ -252,14 +308,14 @@ function RequestPanel({ requests, more = 0, driverId, onRespond, onStop }: { req
     if (e.key === 'Enter' && selected !== null) { e.preventDefault(); choose(selected); }
   };
   return <div className="agent-request" role="dialog" aria-label="待处理请求" tabIndex={-1} ref={panel} onKeyDown={onKey}>
-    <div className="agent-request-head"><b>{head.title}</b>{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{index + 1}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}{more > 0 && <small className="agent-request-more">另有 {more} 个请求，处理完前面的会继续显示</small>}</div>
+    <div className="agent-request-head"><b>{head.title}</b>{r.ownerName && <small>来自子任务 · {r.ownerName}</small>}{r.origin.nodeId && <small>来自执行器原生子 Agent</small>}{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{index + 1}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}{more > 0 && <small className="agent-request-more">另有 {more} 个请求，处理完前面的会继续显示</small>}</div>
     {incomplete && <div className="agent-limited">{loaded === 'error' ? '请求内容过大或读取失败，只能拒绝或停止' : '正在读取完整内容，读完后才能批准…'}</div>}
     {!form && head.detail && <pre className="agent-request-detail">{head.detail}</pre>}
     {form ? <RequestFormView key={r.requestId} form={form} busy={busy} onSubmit={result => void send(result)} /> : <>
       <div className="agent-request-options" role="listbox">{options.map((o, i) => <button key={o.key} type="button" role="option" aria-selected={selected === i} disabled={busy} className={`${o.deny ? 'deny' : ''}${selected === i ? ' on' : ''}`} onClick={() => choose(i)}><kbd>{i + 1}</kbd>{o.label}</button>)}</div>
       <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />
     </>}
-    <div className="agent-request-foot">{selected !== null && !form && <span className="agent-request-hint">按 Enter 确认“{options[selected]?.label}”</span>}<button type="button" className="agent-stop" onClick={onStop}><CircleStop size={14} />停止</button></div>
+    <div className="agent-request-foot">{selected !== null && !form && <span className="agent-request-hint">按 Enter 确认“{options[selected]?.label}”</span>}<button type="button" className="agent-stop" onClick={() => onStop(r)}><CircleStop size={14} />{r.origin.nodeId ? '停止所属运行' : r.ownerTaskId ? '停止子任务本轮' : '停止'}</button></div>
   </div>;
 }
 
@@ -278,8 +334,14 @@ function GoalRow({ goal, driverId, onOp }: { goal: NonNullable<Snapshot['goal']>
 }
 
 export function AgentTaskView({ taskId }: { taskId: string }) {
-  CurrentTask.id = taskId;
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  const [relations, setRelations] = useState<Relations | null>(null);
+  const [childRequests, setChildRequests] = useState<TimelineRequest[]>([]);
+  const [childRequestsMore, setChildRequestsMore] = useState(0);
+  const loadRelations = useCallback(() => {
+    void rpc.agentTasks.relations?.(taskId)?.then(setRelations).catch(() => {});
+    void rpc.agentTasks.treeRequests?.(taskId)?.then(v => { setChildRequests(v.requests as TimelineRequest[]); setChildRequestsMore(v.more); }).catch(() => {});
+  }, [taskId]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [text, setText] = useState('');
   const [chips, setChips] = useState<Chip[]>([]);
@@ -343,9 +405,9 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
       seqRef.current = s.seq;
       setSnap(s);
       setLive({});
-      void adoptDraft(s);
+      void adoptDraft(s); loadRelations();
     } catch (e) { toast.error(rpcErrorMessage(e)); }
-  }, [taskId, adoptDraft]);
+  }, [taskId, adoptDraft, loadRelations]);
 
   useEffect(() => {
     let alive = true;
@@ -362,12 +424,12 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
       // 初始化同样做水位保护：已有更新的快照不覆盖；用户已开始编辑则不用服务端草稿覆盖本地内容（复核 NR07）。
       if (s.seq < seqRef.current) return;
       seqRef.current = s.seq; setSnap(s);
-      void adoptDraft(s);
+      void adoptDraft(s); loadRelations();
     })();
     void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {});
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => { alive = false; offEvent(); offLive(); clearInterval(tick); window.removeEventListener('focus', onVisible); document.removeEventListener('visibilitychange', onVisible); if (reloadTimer.current) clearTimeout(reloadTimer.current); };
-  }, [taskId, reload, adoptDraft]);
+  }, [taskId, reload, adoptDraft, loadRelations]);
 
   useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [snap?.seq, Object.keys(live).length]);
 
@@ -415,7 +477,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     const first = older[0] ?? (snap.items as TimelineItem[])[0]; if (!first) return;
     try { const page = await rpc.agentTasks.history(taskId, first.ordinal); setOlder(o => [...(page.items as TimelineItem[]), ...o]); setOlderTurns(t => [...page.turns, ...t]); setOlderMore(page.hasOlder); } catch (e) { toast.error(rpcErrorMessage(e)); }
   };
-  const requests = (snap.requests as TimelineRequest[]).filter(r => r.status === 'pending');
+  const requests = [...snap.requests as TimelineRequest[], ...childRequests].filter(r => r.status === 'pending');
   const working = snap.status === 'working' || snap.status === 'waiting';
   const liveText = Object.values(live).join('');
 
@@ -484,8 +546,9 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     catch (e) { toast.error(rpcErrorMessage(e)); }
   };
 
-  return <section className="agent-task-view" aria-label="统一任务区">
+  return <TaskScope.Provider value={taskId}><section className="agent-task-view" aria-label="统一任务区">
     <header className="agent-task-head"><h1>{snap.title}</h1>{STATUS_LABEL[snap.status] && <span className={`agent-status ${snap.status}`}>{STATUS_LABEL[snap.status]}</span>}<span className="push" /><button type="button" className="agent-head-btn" title="底部终端" data-testid="agent-terminal-toggle" aria-pressed={terminalOpen} onClick={() => setTerminalOpen(o => !o)}><SquareTerminal size={15} /></button><button type="button" className="agent-head-btn" title="归档任务" data-testid="agent-archive" onClick={() => void archive()}><Archive size={15} /></button></header>
+    <AgentRelations taskId={taskId} value={relations} reload={() => { loadRelations(); void reload(); }} />
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline">
       {hasOlder && <button type="button" className="agent-older" onClick={() => void loadOlder()}>加载更早的记录</button>}
       {groups.map(g => <div key={g.key} className="agent-turn" data-turn-id={g.turnId ?? undefined} data-status={g.status ?? undefined}>{g.rows.map(row =>
@@ -501,8 +564,8 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     </div></div>
     <div className="agent-bottom">
       {snap.status === 'limited' && (() => { const err = [...snap.items].reverse().find(i => i.type === 'error' && i.payload?.limited); return err ? <div className="agent-limited" role="status">{LIMIT_LABEL[err.payload.limited.kind] ?? '受限'}：本轮已暂停，部分结果已保留。{err.payload.limited.resetAt ? `可在 ${err.payload.limited.resetAt} 后` : '稍后'}手动继续（不会自动换账号或到点重跑）。</div> : null; })()}
-      {requests.length > 0 && snap.run
-        ? <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? requests.length) - snap.requests.length)} driverId={snap.run.driverId} onStop={() => void stop()} onRespond={async (r, result) => { await rpc.agentTasks.respond(taskId, r.requestId, r.revision, result); void reload(); }} />
+      {requests.length > 0
+        ? <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />
         : <form className="agent-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
           <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />
@@ -537,5 +600,5 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
       <p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。</p>
       <div className="m13-note">Claude 交出的计划仍会请你批准。插件写操作按插件声明的上限处理（阶段 5 接入前仍逐次询问）。</div>
     </AgentDialog>}
-  </section>;
+  </section></TaskScope.Provider>;
 }

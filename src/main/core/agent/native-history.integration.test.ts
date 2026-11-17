@@ -68,3 +68,19 @@ it.skipIf(!enabled)('Claude native shouldQuery=false records synthetic history w
     if (!error) expect(matches.length).toBeGreaterThan(0);
   }
 }, 45_000);
+
+it.skipIf(!enabled)('Codex native recovery reads a persisted paused goal before loading its thread; read-only sandbox remains independent of full tier', async () => {
+  const f = fixture('codex'), state = join(f.home, '.codex'); mkdirSync(state);
+  const options = { executable: { path: f.executable, version: f.version }, cwd: f.cwd, env: { ...f.env, CODEX_HOME: state }, tier: 'full' as const, readOnly: true, extraArgs: ['-c', 'analytics.enabled=false'] };
+  const first = new CodexAppServerInstance(), second = new CodexAppServerInstance(), events: DriverEvent[] = [];
+  first.on(e => events.push(e)); second.on(e => events.push(e));
+  try {
+    const opened = await first.open(options); await first.injectHistory('RECOVERY_NATIVE_PROBE');
+    const goal = await (first as any).rpc.call('thread/goal/set', { threadId: opened.nativeId, objective: 'Do not run during this probe', status: 'paused', origin: 'user' });
+    await first.close();
+    await second.open({ ...options, resumeNativeId: opened.nativeId, recoverGoals: true });
+    expect(await second.goalState()).toMatchObject({ objective: 'Do not run during this probe', status: 'paused' });
+    expect(events.some(e => e.type === 'turn.started')).toBe(false);
+    save('codex-native-recovery-role', { layer: 'native CLI; persisted goal; no model', version: f.version, goal, events });
+  } finally { await first.close(); await second.close(); rmSync(f.root, { recursive: true, force: true }); }
+}, 45_000);

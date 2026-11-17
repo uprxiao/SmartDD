@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { afterEach, describe, expect, it } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
-import { AgentStore } from './agent-store';
+import { AgentStore, sha256 } from './agent-store';
 import { AgentRunService, type OpenRunInput } from './agent-run-service';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
@@ -38,6 +38,18 @@ function setup() {
 }
 
 describe('运行服务', () => {
+  it('A15/A33: ordinary bindings keep the phase-3 identity, while a read role cannot resume a writable native binding', async () => {
+    const f=setup(), hash=sha256(JSON.stringify({driver:f.base.driverId,profile:f.base.profileId,stateRoot:f.base.stateRoot,cwd:f.base.cwd,compatibility:f.base.compatibility}));
+    const binding=f.store.createBinding({task_id:f.taskId,driver_id:f.base.driverId,profile_id:f.base.profileId,continuation_hash:hash,state_root:f.base.stateRoot,cwd_identity:f.base.cwd});
+    f.store.freezeBinding(binding,{compatibility:f.base.compatibility,stateRoot:f.base.stateRoot,cwd:f.base.cwd});f.store.confirmNative(binding,'original-thread');
+    const write=await f.service.open(f.base);expect(write.bindingId).toBe(binding);expect(f.instances[0].opened?.resumeNativeId).toBe('original-thread');await f.service.close(write.runId);
+    const read=await f.service.open({...f.base,readOnly:true});expect(read.bindingId).not.toBe(binding);expect(f.instances[1].opened?.readOnly).toBe(true);await f.service.close(read.runId);
+  });
+  it('A04/A32: an integration failure before any native open has an explicit unforked drain receipt', async () => {
+    const f=setup();await expect(f.service.open({...f.base,integrate:async()=>{throw Error('prepare failed before fork');}})).rejects.toThrow('prepare failed');
+    const row=f.db.prepare('SELECT run_id,error_code,pid FROM capability_runs').get() as {run_id:string;error_code:string;pid:null};
+    expect(row.error_code).toBe('OPEN_FAILED_UNFORKED');expect(row.pid).toBeNull();expect(await f.service.drainNativeGroup(row.run_id)).toBe(true);
+  });
   it('新任务在同一事务写 tasks 与 agent_tasks，旧列表不受影响', () => {
     const { db, taskId } = setup();
     expect(db.prepare('SELECT runner,title FROM tasks WHERE id=?').get(taskId)).toEqual({ runner: 'codex', title: '新任务' });

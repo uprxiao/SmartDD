@@ -3,7 +3,7 @@
 
 export interface TimelineItem { itemId: string; turnId: string | null; type: string; ordinal: number; revision: number; payload: any; terminal: string | null; createdAt: string; updatedAt: string }
 export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null }
-export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null }; status: string }
+export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string }
 
 const VISIBLE = new Set(['user_message', 'assistant_message', 'proposed_plan', 'error', 'todo_list', 'compaction', 'system_notice']);
 const WORK = new Set(['reasoning', 'command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'subagent']);

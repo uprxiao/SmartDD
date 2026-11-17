@@ -246,6 +246,7 @@ async function main(): Promise<void> {
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),skillLibraryHome:app.getPath('home'),cleanupUnattributable:app.isPackaged,stopPty:id=>ptys.kill(id)});
         tasks.attachManagedCapabilities(managedTasks);
+        agentWorkspace.attachBusiness(managedTasks);
       }
     }
   } catch {console.warn('[applications] Local business recovery pending; check application diagnostics');}

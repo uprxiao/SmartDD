@@ -43,6 +43,7 @@ const requestKind = (tool: string): DriverRequestKind =>
   tool === 'ExitPlanMode' ? 'plan_approval' : tool === 'AskUserQuestion' ? 'user_input' : tool === 'Bash' ? 'command_approval' : /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool) ? 'file_approval' : 'tool_approval';
 
 export class ClaudeSdkInstance implements DriverInstance {
+  private readonly nodeStates = new Map<string, { runId?: string; terminal: boolean }>();
   readonly driverId = 'claude-sdk' as const;
   private readonly emitter = new Emitter();
   private query?: SdkQuery;
@@ -60,6 +61,8 @@ export class ClaudeSdkInstance implements DriverInstance {
   private readonly pending = new Map<string, PendingRequest>();
   private pump?: Promise<void>;
   private exited = false;
+  private historyPending?: { id: string; resolve(): void; reject(error: Error): void };
+  private historyBroken = false;
 
   constructor(private readonly sdk: () => Promise<SdkQueryFn> = loadSdk) {}
 
@@ -72,7 +75,13 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
   async injectHistory(text: string) {
     if (!this.input || this.activeTurn || this.ended || this.exited) throw new DriverError('STATE', '历史交接需要空闲会话');
-    this.input.push({ type: 'user', message: { role: 'user', content: text }, parent_tool_use_id: null, uuid: randomUUID(), isSynthetic: true, shouldQuery: false });
+    if (this.historyPending || this.historyBroken) throw new DriverError('STATE', '历史追加尚未确认或已失效');
+    const id = randomUUID();
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => { this.historyPending = undefined; this.historyBroken = true; reject(new DriverError('TIMEOUT', '历史追加未收到原生确认，未发送新输入')); this.emitter.emit({ type: 'unusable', reason: '历史追加确认超时' }); }, 20_000);
+      this.historyPending = { id, resolve: () => { clearTimeout(timer); this.historyPending = undefined; resolve(); }, reject: error => { clearTimeout(timer); this.historyPending = undefined; this.historyBroken = true; reject(error); } };
+      this.input!.push({ type: 'user', message: { role: 'user', content: text }, parent_tool_use_id: null, uuid: id, isSynthetic: true, shouldQuery: false });
+    });
   }
 
   async open(o: DriverOpenOptions) {
@@ -93,12 +102,16 @@ export class ClaudeSdkInstance implements DriverInstance {
       permissionMode: params.permissionMode,
       ...(params.permissionMode === 'bypassPermissions' ? { allowDangerouslySkipPermissions: true } : {}),
       settingSources: [...(o.settingSources ?? ['user', 'project', 'local'])],
+      ...(o.mcpServers ? { mcpServers: o.mcpServers } : {}),
+      ...(o.mcpServers ? { allowedTools: Object.keys(o.mcpServers).map(name => `mcp__${name}__*`) } : {}),
+      ...(o.plugins ? { plugins: o.plugins } : {}),
+      ...(o.stopWhenWaiting ? { hooks: { Stop: [{ hooks: [async () => o.stopWhenWaiting?.() ? { continue: false } : {}] }] } } : {}),
       includePartialMessages: true,
       ...(o.resumeNativeId ? { resume: o.resumeNativeId } : { sessionId: nativeId }),
-      canUseTool: (tool: string, input: Record<string, unknown>, ctx: { signal: AbortSignal; title?: string; decisionReason?: string; blockedPath?: string }) => this.onPermission(tool, input, ctx),
+      canUseTool: (tool: string, input: Record<string, unknown>, ctx: { signal: AbortSignal; title?: string; decisionReason?: string; blockedPath?: string; agentID?: string }) => this.onPermission(tool, input, ctx),
       stderr: (data: string) => this.emitter.emit({ type: 'diagnostic', message: data.slice(0, 4000) }),
       spawnClaudeCodeProcess: (s: { command: string; args: string[]; cwd?: string; env: Record<string, string | undefined>; signal?: AbortSignal }) => {
-        const child = spawn(s.command, s.args, { cwd: s.cwd, env: s.env as NodeJS.ProcessEnv, signal: s.signal, stdio: ['pipe', 'pipe', 'pipe'] });
+        const child = spawn(s.command, s.args, { cwd: s.cwd, env: s.env as NodeJS.ProcessEnv, signal: s.signal, detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] });
         this.child = child;
         child.stderr?.on('data', (b: Buffer) => this.emitter.emit({ type: 'diagnostic', message: b.toString('utf8').slice(0, 4000) }));
         child.once('exit', (code, signal) => this.onExit(code, signal));
@@ -114,7 +127,7 @@ export class ClaudeSdkInstance implements DriverInstance {
 
   private onExit(code: number | null, signal: string | null) {
     if (this.exited) return;
-    this.exited = true;
+    this.exited = true; this.historyPending?.reject(new DriverError('EXITED', '历史追加期间执行器退出'));
     for (const [key, p] of this.pending) { p.resolve({ behavior: 'deny', message: '执行器已退出' }); this.pending.delete(key); this.emitter.emit({ type: 'request.resolved', requestKey: key }); }
     this.failTurn('执行器退出', 'failed');
     this.emitter.emit({ type: 'exit', code, signal });
@@ -124,6 +137,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     try {
       for await (const m of this.query!) this.onMessage(m);
     } catch (e) {
+      this.historyPending?.reject(new DriverError('EXITED', '历史追加期间 SDK 流异常'));
       this.emitter.emit({ type: 'diagnostic', message: `SDK 流异常：${(e as Error).message}` });
       this.failTurn((e as Error).message.slice(0, 2000), this.activeTurn?.interrupted ? 'interrupted' : 'failed');
     }
@@ -152,13 +166,31 @@ export class ClaudeSdkInstance implements DriverInstance {
 
   private onMessage(m: any) {
     this.emitter.emit({ type: 'native', name: m?.type === 'system' ? `system/${m.subtype}` : String(m?.type ?? 'unknown'), payload: m });
+    if (m?.type === 'system' && ['task_started', 'task_notification'].includes(m.subtype) && typeof m.task_id === 'string') {
+      const id = String(m.tool_use_id ?? m.task_id), runId = typeof m.run_id === 'string' ? m.run_id : undefined, old = this.nodeStates.get(id), running = m.subtype === 'task_started';
+      const late = old && (old.runId && runId && runId < old.runId || old.terminal && running && (!runId || runId === old.runId));
+      if (!late) { this.nodeStates.set(id, { runId, terminal: !running }); this.emitter.emit({ type: 'node.state', nodeId: id, nativeRunId: runId, state: running ? 'running' : m.status === 'failed' ? 'failed' : m.status === 'stopped' ? 'interrupted' : 'completed' }); }
+      this.emitter.emit({ type: 'node.message', nodeId: id, key: String(m.uuid ?? `${m.subtype}:${runId ?? m.task_id}`), payload: m });
+    }
+    if (typeof m?.parent_tool_use_id === 'string' && m.parent_tool_use_id) {
+      if (m.type !== 'stream_event') this.emitter.emit({ type: 'node.message', nodeId: m.parent_tool_use_id, key: String(m.uuid ?? `${m.type}:${JSON.stringify(m).slice(0, 80)}`), payload: m });
+      if (m.type === 'assistant') this.emitter.emit({ type: 'item.completed', nativeItemId: String(m.uuid ?? randomUUID()), itemType: 'assistant', payload: { content: m.message?.content, model: m.message?.model, parentToolUseId: m.parent_tool_use_id } });
+      return; // Native child messages never start/end the parent's pending turn or enter its answer stream.
+    }
     if (m?.type === 'system' && m.subtype === 'init' && typeof m.session_id === 'string') {
       if (!this.confirmed) { this.confirmed = true; this.sessionId = m.session_id; this.emitter.emit({ type: 'session', nativeId: m.session_id }); }
       const terminalOnly = new Set<string>(Array.isArray(m.terminal_slash_commands) ? m.terminal_slash_commands : []);
       const skills = new Set<string>(Array.isArray(m.skills) ? m.skills : []);
       this.emitter.emit({ type: 'catalog', commands: (Array.isArray(m.slash_commands) ? m.slash_commands as string[] : []).filter(c => !terminalOnly.has(c) && !skills.has(c)), skills: [...skills].map(name => ({ name })) });
     }
-    if (this.activeTurn && m?.type !== 'result' && m?.type !== 'active_goal') this.markStarted();
+    if (this.historyPending && m?.type === 'result') {
+      const pending = this.historyPending;
+      if (m.user_message_uuid === pending.id || m.user_message_uuids?.includes(pending.id)) {
+        if (m.is_error || m.subtype !== 'success') pending.reject(new DriverError('REJECTED', '原生未接受历史追加')); else pending.resolve();
+      }
+      return; // shouldQuery=false has a zero-turn result; it cannot end the next real turn.
+    }
+    if (this.activeTurn && !this.historyPending && m?.type !== 'result' && m?.type !== 'active_goal') this.markStarted();
     // 目标以原生事实为准（复核 CR14）：SDK active_goal 与 CLI 回复的 Goal set／cleared 文字（研究 V14／V17 已验）。
     if (m?.type === 'active_goal') {
       // 结构化事实到达后，本轮的兼容文字解析失效，不能再覆盖原生事实（复核 FR07）。
@@ -192,18 +224,19 @@ export class ClaudeSdkInstance implements DriverInstance {
     }
   }
 
-  private onPermission(tool: string, input: Record<string, unknown>, ctx: { signal: AbortSignal; title?: string; decisionReason?: string; blockedPath?: string }): Promise<PermissionResult> {
+  private onPermission(tool: string, input: Record<string, unknown>, ctx: { signal: AbortSignal; title?: string; decisionReason?: string; blockedPath?: string; agentID?: string }): Promise<PermissionResult> {
     const key = randomUUID();
     return new Promise<PermissionResult>(resolve => {
       this.pending.set(key, { resolve, input });
       ctx.signal.addEventListener('abort', () => { if (this.pending.delete(key)) { resolve({ behavior: 'deny', message: '已取消' }); this.emitter.emit({ type: 'request.resolved', requestKey: key }); } }, { once: true });
-      this.emitter.emit({ type: 'request', requestKey: key, kind: requestKind(tool), payload: { tool, input, title: ctx.title, decisionReason: ctx.decisionReason, blockedPath: ctx.blockedPath } });
+      this.emitter.emit({ type: 'request', requestKey: key, kind: requestKind(tool), nodeId: ctx.agentID, payload: { tool, input, title: ctx.title, decisionReason: ctx.decisionReason, blockedPath: ctx.blockedPath } });
     });
   }
 
   async startTurn(input: TurnInput) {
     if (!this.query || !this.input) throw new DriverError('STATE', '会话尚未打开');
     // 已结束的会话不能再派发；输入尚未写出，按未发出处理（复核 NR04）。
+    if (this.historyPending || this.historyBroken) throw new DriverError('STATE', '历史追加尚未确认，不能发送新输入');
     if (this.exited || this.ended) throw new DriverError('STATE', '会话已结束，将恢复后发送');
     if (this.activeTurn) throw new DriverError('STATE', '上一轮尚未结束');
     const params = CLAUDE_TIERS[input.tier];
@@ -224,6 +257,7 @@ export class ClaudeSdkInstance implements DriverInstance {
       await this.query.applyFlagSettings({ effortLevel: input.effort ?? null }); this.effort = input.effort;
       if (this.stopPending) { this.stopPending = false; throw new DriverError('STATE', '已停止，输入保留在排队'); }
     }
+    if (this.historyPending || this.historyBroken) throw new DriverError('STATE', '历史追加尚未确认，不能发送新输入');
     if (this.exited || this.ended) throw new DriverError('STATE', '会话已结束，将恢复后发送');
     const nativeTurnId = `${this.sessionId}:${++this.turnSerial}`;
     this.goalCommandTurn = /^\/goal(\s|$)/.test(input.text.trimStart()) ? nativeTurnId : null;

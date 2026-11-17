@@ -22,6 +22,16 @@ export interface DriverOpenOptions {
   extraArgs?: readonly string[];
   /** Claude settingSources；关闭“沿用我的扩展”时去掉 user。 */
   settingSources?: readonly ('user' | 'project' | 'local')[];
+  mcpServers?: Record<string, { command: string; args: string[]; env?: Record<string, string> }>;
+  skillRoots?: readonly { name: string; path: string }[];
+  plugins?: { type: 'local'; path: string }[];
+  /** Host lifecycle hook, never a model-supplied setting. */
+  stopWhenWaiting?(): boolean;
+  recoverGoals?: boolean;
+  /** Host-enforced role, independent of permission tier. */
+  readOnly?: boolean;
+  requiredMcpServers?: readonly string[];
+  beforeInitialize?(): Promise<void>;
   signal?: AbortSignal;
 }
 
@@ -43,13 +53,15 @@ export type DriverEvent =
   | { type: 'session'; nativeId: string }
   /** clientInputId 为空表示原生自行开始的回合（如 Codex 目标自动续跑）。 */
   | { type: 'turn.started'; nativeTurnId: string; clientInputId: string }
-  | { type: 'goal'; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number }
+  | { type: 'goal'; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number; nativeCreatedAt?: number; nativeUpdatedAt?: number }
   | { type: 'steer.accepted'; clientInputId: string; nativeTurnId: string }
   /** 执行器公布的命令与 Skill（输入框 /命令、$Skill 只列这些）。 */
   | { type: 'catalog'; commands: string[]; skills: { name: string; description?: string }[] }
   | { type: 'message.delta'; nativeItemId: string; text: string }
   | { type: 'item.completed'; nativeItemId: string; itemType: string; payload: unknown }
-  | { type: 'request'; requestKey: string; kind: DriverRequestKind; payload: unknown }
+  | { type: 'request'; requestKey: string; kind: DriverRequestKind; payload: unknown; nodeId?: string }
+  | { type: 'node.message'; nodeId: string; key: string; payload: unknown }
+  | { type: 'node.state'; nodeId: string; state: 'running' | 'completed' | 'failed' | 'interrupted'; nativeRunId?: string }
   | { type: 'request.resolved'; requestKey: string }
   | { type: 'turn.completed'; nativeTurnId: string; status: TurnStatus; error?: string }
   /** 所有原生通知原样保留，供时间线（阶段 2）与诊断使用；不在此处解释。 */
@@ -82,6 +94,8 @@ export interface DriverInstance {
   steer?(input: TurnInput): Promise<void>;
   /** 目标：Codex 用 thread/goal/*；不支持暂停的执行器对 pause/resume 抛 UNSUPPORTED。 */
   goal?(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }): Promise<void>;
+  goalState?(): Promise<{ objective: string; status: string; createdAt: number; updatedAt: number } | null>;
+  nativeChildHistory?(nodeId: string): Promise<{ key: string; payload: unknown }[]>;
   /** 原生命令（Codex compact／review 走协议；其余由调用方作为文字输入发送）。 */
   command?(name: 'compact' | 'review'): Promise<void>;
   close(): Promise<void>;

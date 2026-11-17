@@ -26,7 +26,9 @@ export interface RunRow {
 export interface ProcessRow { process_id: string;run_id: string;kind: 'cli' | 'bridge';launch_key: string;state: 'reserved' | 'armed' | 'active' | 'exited' | 'canceled' | 'unknown';pid: number | null;process_started_at: string | null;armed_at: string | null }
 interface NativeGuard { kind:'history'|'fixed';snapshotHash:string;resources:readonly string[];verify:()=>Promise<void> }
 interface NativeGuardRequest {taskId:string;projectId:string;runner:string;snapshotHash:string;resourceIds:readonly string[];restriction?:ManagedCapabilityRestriction;verify:()=>Promise<void>}
-interface OwnedRun { planHash?:string;guard?:NativeGuard;unclaimed?:Set<string>;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+interface OwnedRun { planHash?:string;guard?:NativeGuard;agent?:AgentRunSource;unclaimed?:Set<string>;selectionHash: string;leaseId: string;abort: AbortController;processes: Set<string>;revocation?: Promise<void> }
+/** M14 host-only run source. Frozen per binding/run; it never replaces an M13 task's immutable session. */
+export interface AgentRunSource { session: StoredCapabilitySession; resourceIds: readonly string[]; bindings: RunBindingRevision[]; plan: ApplicationRunPlan; verify(): Promise<void>; assertCurrent(): void }
 export interface RunContext { plan?:ApplicationRunPlan;
   /** R17: set by the current-authorization view; names the project page to enable an application that owns this operation. */
   unavailableApplication?(operation:string,entry:ApplicationEntry):ApplicationError|null;
@@ -118,7 +120,13 @@ export class CapabilityRunRegistry {
   private mine(runId: string): { row: RunRow;owned: OwnedRun;session: StoredCapabilitySession;plan?:ApplicationRunPlan } {
     const { row,owned } = this.owner(runId);
     if(owned.guard)throw new ApplicationError('SCOPE_DENIED','原生守护不签发应用工具、业务来源或凭据');
-    const session = this.sessions.inspectCoordinated(row.task_id);
+    const session = owned.agent?.session ?? this.sessions.inspectCoordinated(row.task_id);
+    if (owned.agent) {
+      const frozen = this.store.sqlite.prepare('SELECT c.content_hash,c.snapshot_json FROM capability_runs r JOIN agent_capability_sessions c ON c.capability_session_id=r.capability_session_id AND c.binding_id=r.binding_id WHERE r.run_id=?').get(runId) as { content_hash: string; snapshot_json: string } | undefined;
+      if (!frozen || digest(frozen.snapshot_json) !== frozen.content_hash) throw new ApplicationError('SNAPSHOT_CORRUPT', 'M14 运行能力快照缺失或摘要不同');
+      const value = JSON.parse(frozen.snapshot_json);
+      if (value.kind !== 'business' || value.runId !== runId || canonicalJson(value.snapshot) !== canonicalJson(session.snapshot)) throw new ApplicationError('SNAPSHOT_CORRUPT', 'M14 运行能力来源被替换');
+    }
     if (session.selectionHash !== owned.selectionHash || session.snapshot.projectId !== row.project_id || session.snapshot.runner !== row.runner || session.pointer.snapshotHash !== row.snapshot_hash) throw new ApplicationError('SNAPSHOT_CORRUPT','运行与固定会话身份不同');
     const plan=owned.planHash?readApplicationRunPlan(this.store,runId,owned.planHash):undefined;
     if(plan)assertRunPlanSnapshotSource(this.store,plan,session.snapshot,row.snapshot_hash);
@@ -147,11 +155,13 @@ export class CapabilityRunRegistry {
   }
   private current(row: RunRow,session: StoredCapabilitySession): RunBindingRevision[] {
     this.gate();
+    this.owned.get(row.run_id)?.agent?.assertCurrent();
     if (session.retention !== 'active') throw new ApplicationError('SESSION_ON_HOLD','此会话能力已保留或待核查');
     const bindings = bindingsSchema.parse(JSON.parse(row.bindings_json)); this.deps.assertCurrent(session.snapshot,bindings); return bindings;
   }
-  private closure(taskId: string,guard?:NativeGuard): ResourceRecord[] {
-    const roots = guard?guard.resources.map(id=>{const r=this.store.get(id);return{ref_id:id,ref_hash:r.contentHash,ref_kind:r.kind,relative_path:r.relativePath};}):this.store.sqlite.prepare('SELECT ref_id,ref_hash,ref_kind,relative_path FROM capability_session_refs WHERE task_id=?').all(taskId) as { ref_id: string;ref_hash: string;ref_kind: string;relative_path: string }[];
+  private closure(taskId: string,guard?:NativeGuard,agentResources?:readonly string[]): ResourceRecord[] {
+    const ids = guard?.resources ?? agentResources;
+    const roots = ids?ids.map(id=>{const r=this.store.get(id);return{ref_id:id,ref_hash:r.contentHash,ref_kind:r.kind,relative_path:r.relativePath};}):this.store.sqlite.prepare('SELECT ref_id,ref_hash,ref_kind,relative_path FROM capability_session_refs WHERE task_id=?').all(taskId) as { ref_id: string;ref_hash: string;ref_kind: string;relative_path: string }[];
     if (!roots.length) throw new ApplicationError('SNAPSHOT_CORRUPT','原会话资源引用缺失');
     const visited = new Map<string,ResourceRecord>(), visiting = new Set<string>();
     const visit = (id: string,depth = 0): void => {
@@ -169,7 +179,7 @@ export class CapabilityRunRegistry {
     return [...visited.values()];
   }
   private protect(runId: string,owned: OwnedRun): void {
-    const row = this.row(runId), resources = this.closure(row.task_id,owned.guard);
+    const row = this.row(runId), resources = this.closure(row.task_id,owned.guard,owned.agent?.resourceIds);
     const put = this.store.sqlite.prepare('INSERT OR IGNORE INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)');
     for (const resource of resources) put.run(owned.leaseId,resource.resourceId,resource.contentHash,resource.generation);
     this.checkProtection(row,owned);
@@ -178,11 +188,38 @@ export class CapabilityRunRegistry {
     const lease = this.store.sqlite.prepare('SELECT state,owner_id,host_instance_id FROM capability_resource_leases WHERE lease_id=?').get(owned.leaseId) as { state: string;owner_id: string;host_instance_id: string } | undefined;
     if (!lease || lease.owner_id !== row.run_id || lease.host_instance_id !== this.instanceId || !['preparing','active'].includes(lease.state)) throw new ApplicationError('RESOURCE_STATE_CHANGED','运行资源占用已改变');
     const protectedRows = this.store.sqlite.prepare('SELECT resource_id,content_hash,generation FROM capability_lease_resources WHERE lease_id=?').all(owned.leaseId) as { resource_id: string;content_hash: string;generation: number }[];
-    for (const resource of this.closure(row.task_id,owned.guard)) if (!protectedRows.some(r => r.resource_id === resource.resourceId && r.content_hash === resource.contentHash && r.generation === resource.generation)) throw new ApplicationError('RESOURCE_STATE_CHANGED','原资源依赖或代次已改变，保留占用但拒绝启动');
+    for (const resource of this.closure(row.task_id,owned.guard,owned.agent?.resourceIds)) if (!protectedRows.some(r => r.resource_id === resource.resourceId && r.content_hash === resource.contentHash && r.generation === resource.generation)) throw new ApplicationError('RESOURCE_STATE_CHANGED','原资源依赖或代次已改变，保留占用但拒绝启动');
     for (const protectedRow of protectedRows) { const r = this.store.get(protectedRow.resource_id); if (r.state !== 'ready' || r.integrity !== 'valid' || r.contentHash !== protectedRow.content_hash || r.generation !== protectedRow.generation) throw new ApplicationError('RESOURCE_STATE_CHANGED','被占用资源状态发生改变'); }
   }
   private view(row: RunRow): CapabilityRunRecord { return { runId: row.run_id,taskId: row.task_id,projectId: row.project_id,runner: row.runner,state: row.state,snapshotHash: row.snapshot_hash,pid: row.pid,processStartedAt: row.process_started_at,startedAt: row.started_at,endedAt: row.ended_at }; }
   get(runId: string): CapabilityRunRecord { return this.view(this.row(runId)); }
+  /** Adopt only a host-created, unforked M14 record. CLI/bridge ownership and peer checks remain the same as M13. */
+  async adoptAgentRun(runId: string, bindingId: string, source: AgentRunSource): Promise<OwnedCapabilityRun> {
+    if (this.closed || this.owned.has(runId)) throw new ApplicationError('CANCELED', '运行已关闭或已登记');
+    const plan = verifyApplicationRunPlan(source.plan), session = source.session;
+    if (plan.runId !== runId || plan.taskId !== session.snapshot.taskId || plan.snapshotHash !== session.pointer.snapshotHash || digest(canonicalJson(session.snapshot)) !== session.pointer.snapshotHash) throw new ApplicationError('SCOPE_DENIED', 'M14 能力来源与运行不符');
+    const processId = randomUUID(), ptyId = randomUUID(), leaseId = randomUUID();
+    await withResourceLock(this.store.root, () => this.store.sqlite.transaction(() => {
+      const row = this.row(runId);
+      const binding = this.store.sqlite.prepare('SELECT task_id FROM agent_bindings WHERE binding_id=?').get(bindingId) as { task_id: string } | undefined;
+      const native = this.store.sqlite.prepare('SELECT binding_id FROM capability_runs WHERE run_id=?').get(runId) as { binding_id: string | null };
+      if (row.state !== 'preparing' || row.pid !== null || row.process_started_at !== null || row.owner_pid !== this.host.pid || binding?.task_id !== row.task_id || native.binding_id !== bindingId || row.task_id !== session.snapshot.taskId || row.project_id !== session.snapshot.projectId) throw new ApplicationError('SCOPE_DENIED', '不能接管非本宿主尚未启动的 M14 运行');
+      if (this.store.sqlite.prepare("SELECT 1 FROM capability_runs WHERE task_id=? AND run_id<>? AND state NOT IN ('stopped','failed')").get(row.task_id, runId)) throw new ApplicationError('RESOURCE_BUSY', '原任务仍有未排空运行');
+      this.store.sqlite.prepare("INSERT OR IGNORE INTO capability_store_state(singleton,store_id,resource_generation,maintenance_state) VALUES(?,?,1,'ready')").run(1,this.store.storeId);
+      source.assertCurrent(); this.deps.assertCurrent(session.snapshot, source.bindings); this.gate();
+      const resources = this.closure(row.task_id, undefined, source.resourceIds), timestamp = now();
+      this.store.sqlite.prepare("UPDATE capability_runs SET runner=?,snapshot_hash=?,owner_instance_id=?,owner_pid=?,owner_started_at=?,bindings_json=?,pty_id=?,revocation_state='open' WHERE run_id=?").run(session.snapshot.runner, session.pointer.snapshotHash, this.instanceId, this.host.pid, this.host.startedAt, canonicalJson(source.bindings), ptyId, runId);
+      this.store.sqlite.prepare("INSERT INTO capability_resource_leases(lease_id,resource_id,owner_kind,owner_id,host_instance_id,pid,process_started_at,state,created_at) VALUES(?,?,'run',?,?,?,?,'preparing',?)").run(leaseId, resources[0].resourceId, runId, this.instanceId, this.host.pid, this.host.startedAt, timestamp);
+      for (const r of resources) this.store.sqlite.prepare('INSERT INTO capability_lease_resources(lease_id,resource_id,content_hash,generation) VALUES(?,?,?,?)').run(leaseId, r.resourceId, r.contentHash, r.generation);
+      this.store.sqlite.prepare("INSERT INTO capability_run_processes(process_id,run_id,kind,launch_key,state) VALUES(?,?,'cli',?,'reserved')").run(processId, runId, ptyId);
+      storeApplicationRunPlan(this.store, plan);
+    }).immediate());
+    this.owned.set(runId, { agent: source, planHash: plan.planHash, selectionHash: session.selectionHash, leaseId, abort: new AbortController(), processes: new Set([processId]) });
+    const owned = this.owned.get(runId)!;
+    const handle: OwnedCapabilityRun = { runId, ptyId, signal: owned.abort.signal, cli: this.processHandle(runId, processId, ptyId), prepare: () => this.prepare(runId), reserveBridge: () => this.reserveBridge(runId), cancelBeforeFork: () => this.cancelBeforeFork(runId), stop: (reason = 'user-stop') => this.stop(runId, reason) };
+    ownedReservations.set(handle, { registry: this, runId, ptyId, signal: handle.signal, cli: handle.cli });
+    return handle;
+  }
   async reserve(input: z.input<typeof reserveSchema>,reservation?:{runId:string;ptyId:string}):Promise<OwnedCapabilityRun>{return this.reserveManaged(input,reservation);}
   private async reserveManaged(input: z.input<typeof reserveSchema>,reservation?: {runId:string;ptyId:string}): Promise<OwnedCapabilityRun> {
     const parsed = reserveSchema.safeParse(input); if (!parsed.success) throw new ApplicationError('INVALID_INPUT','运行准备参数无效或含未允许字段');
@@ -307,7 +344,7 @@ export class CapabilityRunRegistry {
       if (owned.abort.signal.aborted || !['preparing','prepared'].includes(row.state)) throw new ApplicationError('CANCELED','运行已被撤销，不能继续准备');
       this.currentLifecycle(row,session); this.protect(runId,owned); return row.task_id;
     }).immediate());
-    const owned=this.owned.get(runId)!,guard=owned.guard;if(guard)await guard.verify();else await this.sessions.verifyResources(taskId);
+    const owned=this.owned.get(runId)!,guard=owned.guard;if(guard)await guard.verify();else if(owned.agent)await owned.agent.verify();else await this.sessions.verifyResources(taskId);
     return withResourceLock(this.store.root,() => this.store.sqlite.transaction(() => {
       const { row,owned,session } = this.lifecycle(runId); if (owned.abort.signal.aborted || !['preparing','prepared'].includes(row.state)) throw new ApplicationError('CANCELED','准备期间运行已被撤销');
       this.currentLifecycle(row,session); this.checkProtection(row,owned);
@@ -457,8 +494,8 @@ export class CapabilityRunRegistry {
     await bounded(owned.revocation,Math.min(60000,Math.max(1,this.deps.revocationTimeoutMs ?? 30000))); return this.get(runId);
   }
   ownerState(owner: { instanceId: string;pid: number;startedAt: string }): ProcessState { return this.deps.processes.state({ pid: owner.pid,startedAt: owner.startedAt }); }
-  async recover(): Promise<{ runId: string;state: 'running' | 'unknown' | 'stopped' | 'orphaned' }[]> {
-    return recoverCapabilityRuns(this.store,this.deps.processes,id=>this.owned.has(id));
+  async recover(onlyRunId?: string): Promise<{ runId: string;state: 'running' | 'unknown' | 'stopped' | 'orphaned' }[]> {
+    return recoverCapabilityRuns(this.store,this.deps.processes,id=>this.owned.has(id),onlyRunId);
   }
   async dispose(): Promise<void> { this.closed = true; const results = await Promise.allSettled([...this.owned.keys()].filter(id => !TERMINAL.has(this.row(id).state)).map(id => this.stop(id,'host-shutdown'))); if (results.some(r => r.status === 'rejected')) throw new ApplicationError('RUN_STOP_FAILED','部分运行撤销尚未完成，保留占用'); }
 }

@@ -55,3 +55,7 @@ describe('parseDetectOutput', () => {
     expect(parseDetectOutput('codex', 'codex', '').path).toBeNull();
   });
 });
+
+it('recognizes the native Codex version after a fresh-config warning', () => {
+  expect(parseDetectOutput('codex', 'codex', '__SMARTDD_PATH__/opt/codex\nWARNING: CODEX_HOME points to a path that does not exist\ncodex-cli 0.169.0\n').version).toBe('codex-cli 0.169.0');
+});

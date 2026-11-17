@@ -4,6 +4,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { CODEX_TIERS, type CodexTierParams } from '../permissions';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import { JsonlRpcPeer } from '../jsonl-rpc';
+import { redact } from '../../connections/redact';
 
 const SANDBOX_MODE: Record<CodexTierParams['sandboxPolicy']['type'], string> = { workspaceWrite: 'workspace-write', dangerFullAccess: 'danger-full-access' };
 const REQUEST_KIND: Record<string, DriverRequestKind> = {
@@ -26,29 +27,37 @@ export class CodexAppServerInstance implements DriverInstance {
   private rpc?: JsonlRpcPeer;
   private threadId?: string;
   private cwd = '';
+  private readOnly = false;
   private activeTurn: { nativeTurnId: string; clientInputId: string } | null = null;
   private pendingInputId = '';
   private stopPending = false;
   private readonly startedTurns = new Set<string>();
   private readonly openRequests = new Set<string>();
+  private readonly childThreads = new Set<string>();
+  private readonly childTurns = new Map<string, string>();
+  private readonly completedChildTurns = new Set<string>();
+  private readonly finishedChildren = new Set<string>();
   private readonly emitter = new Emitter();
   private exited = false;
+  private stderrTail = '';
+  private secrets: string[] = [];
 
-  constructor(private readonly spawnFn: CodexSpawn = (c, a, o) => spawn(c, a, { ...o, stdio: ['pipe', 'pipe', 'pipe'] }), private readonly closeGraceMs = 5000) {}
+  constructor(private readonly spawnFn: CodexSpawn = (c, a, o) => spawn(c, a, { ...o, detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] }), private readonly closeGraceMs = 5000) {}
 
   on = this.emitter.on.bind(this.emitter);
 
   async open(o: DriverOpenOptions) {
     if (this.child) throw new DriverError('STATE', '实例已打开');
-    this.cwd = o.cwd;
-    const child = this.spawnFn(o.executable.path, ['app-server', ...(o.extraArgs ?? [])], { cwd: o.cwd, env: o.env });
+    this.secrets = Object.entries(o.env).filter(([name]) => /KEY|TOKEN|PASSWORD|SECRET/.test(name)).map(([,value]) => value).filter(Boolean);
+    this.cwd = o.cwd; this.readOnly = o.readOnly === true;
+    const child = this.spawnFn(o.executable.path, ['app-server', ...(o.extraArgs ?? []), ...(this.readOnly ? ['-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'] : [])], { cwd: o.cwd, env: o.env });
     this.child = child;
-    child.stderr?.on('data', (b: Buffer) => this.emitter.emit({ type: 'diagnostic', message: b.toString('utf8').slice(0, 4000) }));
+    child.stderr?.on('data', (b: Buffer) => { const message = redact(b.toString('utf8'), this.secrets); this.stderrTail = (this.stderrTail + message).slice(-2000); this.emitter.emit({ type: 'diagnostic', message: message.slice(0, 4000) }); });
     const spawnError = new Promise<never>((_, reject) => child.once('error', e => reject(new DriverError('EXITED', `无法启动 Codex：${e.message}`))));
     spawnError.catch(() => {});
     child.once('exit', (code, signal) => {
       this.exited = true;
-      this.rpc?.close(new DriverError('EXITED', `Codex 已退出（${code ?? signal}）`));
+      this.rpc?.close(new DriverError('EXITED', `Codex 已退出（${code ?? signal}）${this.stderrTail ? `：${this.stderrTail.trim()}` : ''}`));
       if (this.activeTurn) { this.emitter.emit({ type: 'turn.completed', nativeTurnId: this.activeTurn.nativeTurnId, status: 'failed', error: 'app-server 退出' }); this.activeTurn = null; }
       this.emitter.emit({ type: 'exit', code, signal });
     });
@@ -60,15 +69,40 @@ export class CodexAppServerInstance implements DriverInstance {
     });
     const tier = CODEX_TIERS[o.tier];
     const work = (async () => {
+      await o.beforeInitialize?.();
       await this.rpc!.call('initialize', { clientInfo: { name: 'willyou', version: '1' }, capabilities: { experimentalApi: true } });
       this.rpc!.notify('initialized');
+      if (o.resumeNativeId && o.recoverGoals) {
+        const state = await this.rpc!.call<{ goal?: { objective: string; status: string; createdAt: number; updatedAt: number } | null }>('thread/goal/get', { threadId: o.resumeNativeId });
+        if (state.goal?.status === 'active') {
+          await this.rpc!.call('thread/goal/set', { threadId: o.resumeNativeId, origin: 'user', status: 'paused' });
+          this.emitter.emit({ type: 'diagnostic', message: '恢复前发现原生目标仍在进行，已先暂停；不会因恢复会话自动续轮。' });
+        }
+      }
+      if (o.skillRoots?.length) {
+        await this.rpc!.call('skills/extraRoots/set', { extraRoots: o.skillRoots.map(s => s.path) });
+        const listed = await this.rpc!.call<{ data?: { skills?: { name: string; path: string; enabled: boolean }[] }[] }>('skills/list', { cwds: [o.cwd], forceReload: true });
+        const skills = listed.data?.flatMap(d => d.skills ?? []) ?? [];
+        for (const root of o.skillRoots) if (skills.filter(s => s.name === root.name && s.enabled).length !== 1 || !skills.some(s => s.name === root.name && s.path === root.path + '/SKILL.md' && s.enabled)) throw new DriverError('REJECTED', `Skill 未按冻结目录加载：${root.name}`);
+      }
       // 新线程不带模型打开，响应里的 model 即执行器默认；所选模型随每轮显式发送（模型覆盖对后续轮次持续生效，复核 FR03）。
-      const common = { cwd: o.cwd, approvalPolicy: tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandbox: SANDBOX_MODE[tier.sandboxPolicy.type] };
+      const common = { cwd: o.cwd, approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandbox: this.readOnly ? 'read-only' : SANDBOX_MODE[tier.sandboxPolicy.type] };
       const r = o.resumeNativeId
         ? await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/resume', { threadId: o.resumeNativeId, excludeTurns: true, ...common, ...(o.model ? { model: o.model } : {}) })
         : await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/start', common);
       if (!r?.thread?.id) throw new DriverError('PROTOCOL', 'thread 响应缺少 id');
       this.threadId = r.thread.id;
+      for (const name of o.requiredMcpServers ?? []) {
+        const deadline = Date.now() + 35_000;
+        while (true) {
+          const status = await this.rpc!.call<{ data?: { name: string; runtimeStatus?: string; toolsError?: string; tools?: Record<string, unknown> }[] }>('mcpServerStatus/list', { threadId: r.thread.id, serverName: name, detail: 'full' }, 30_000);
+          const server = status.data?.find(s => s.name === name);
+          if (!server) throw new DriverError('REJECTED', `宿主 MCP 未进入原生配置：${name}`);
+          if (server.tools && Object.keys(server.tools).length) break;
+          if (['failed','disabled','cancelled','authenticationRequired'].includes(server.runtimeStatus ?? '') || server.toolsError || Date.now() >= deadline) throw new DriverError('REJECTED', `宿主 MCP 未就绪：${name} / ${server.runtimeStatus ?? 'unknown'} / ${redact(server.toolsError ?? '', this.secrets).slice(0, 1000)}`);
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
       this.emitter.emit({ type: 'session', nativeId: r.thread.id });
       // Skill 目录：协议探测失败只让 $Skill 菜单为空，不影响会话。
       void this.rpc!.call<{ data?: { skills?: { name: string; description?: string; enabled?: boolean }[] }[] }>('skills/list', { cwds: [o.cwd] }, 15_000)
@@ -113,7 +147,7 @@ export class CodexAppServerInstance implements DriverInstance {
       threadId: this.threadId, cwd: this.cwd,
       input: [{ type: 'text', text: input.text, text_elements: [] }, ...(input.images ?? []).map(i => ({ type: 'localImage', path: i.path }))],
       clientUserMessageId: input.clientInputId,
-      approvalPolicy: tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandboxPolicy: tier.sandboxPolicy,
+      approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandboxPolicy: this.readOnly ? { type: 'readOnly', networkAccess: false } : tier.sandboxPolicy,
       ...(input.model ? { model: input.model } : {}),
       ...(input.effort ? { effort: input.effort } : {}),
     });
@@ -134,8 +168,23 @@ export class CodexAppServerInstance implements DriverInstance {
   }
 
   private onNotification(method: string, params: unknown) {
-    this.emitter.emit({ type: 'native', name: method, payload: params });
     const p = (params ?? {}) as Record<string, any>;
+    if (p.item?.type === 'collabAgentToolCall' && (!p.threadId || p.threadId === this.threadId) && p.item.senderThreadId === this.threadId) for (const id of p.item.receiverThreadIds ?? []) if (typeof id === 'string' && id.length <= 128) {
+      this.childThreads.add(id); const state = p.item.agentsStates?.[id]?.status;
+      if (['pendingInit','running'].includes(state) && !this.finishedChildren.has(id)) this.emitter.emit({ type: 'node.state', nodeId: id, state: 'running' });
+      if (['completed','errored','interrupted','shutdown','notFound'].includes(state)) { this.finishedChildren.add(id); this.emitter.emit({ type: 'node.state', nodeId: id, state: state === 'completed' ? 'completed' : state === 'errored' || state === 'notFound' ? 'failed' : 'interrupted' }); }
+    }
+    if (!p.threadId && p.goal?.threadId) p.threadId = p.goal.threadId;
+    if (p.threadId && this.threadId && p.threadId !== this.threadId) {
+      if (this.childThreads.has(p.threadId)) {
+        if (method === 'turn/started' && p.turn?.id && !this.completedChildTurns.has(p.turn.id)) { this.childTurns.set(p.threadId, p.turn.id); this.finishedChildren.delete(p.threadId); this.emitter.emit({ type: 'node.state', nodeId: p.threadId, nativeRunId: p.turn.id, state: 'running' }); }
+        if (method === 'turn/completed' && p.turn?.id) { this.completedChildTurns.add(p.turn.id); if (!this.childTurns.has(p.threadId) || this.childTurns.get(p.threadId) === p.turn.id) { this.finishedChildren.add(p.threadId); this.emitter.emit({ type: 'node.state', nodeId: p.threadId, nativeRunId: p.turn.id, state: p.turn.status === 'completed' ? 'completed' : p.turn.status === 'interrupted' ? 'interrupted' : 'failed' }); } }
+        if (!method.endsWith('/delta')) this.emitter.emit({ type: 'node.message', nodeId: p.threadId, key: `${method}:${p.item?.id ?? p.turn?.id ?? p.itemId ?? JSON.stringify(p).slice(0, 100)}`, payload: { method, ...p } });
+      }
+      else this.emitter.emit({ type: 'diagnostic', message: `忽略未归属主任务的原生线程事件：${method}` });
+      return;
+    }
+    this.emitter.emit({ type: 'native', name: method, payload: params });
     switch (method) {
       case 'turn/started': {
         const id = p.turn?.id;
@@ -157,7 +206,7 @@ export class CodexAppServerInstance implements DriverInstance {
       case 'thread/goal/updated': {
         const g = p.goal; if (!g) break;
         const st = g.status === 'active' || g.status === 'paused' || g.status === 'complete' ? g.status : 'limited';
-        this.emitter.emit({ type: 'goal', objective: typeof g.objective === 'string' ? g.objective : null, status: st, timeUsedSeconds: Number(g.timeUsedSeconds ?? 0) });
+        this.emitter.emit({ type: 'goal', objective: typeof g.objective === 'string' ? g.objective : null, status: st, timeUsedSeconds: Number(g.timeUsedSeconds ?? 0), ...(Number.isFinite(g.createdAt) ? { nativeCreatedAt: g.createdAt } : {}), ...(Number.isFinite(g.updatedAt) ? { nativeUpdatedAt: g.updatedAt } : {}) });
         break;
       }
       case 'thread/goal/cleared':
@@ -175,13 +224,16 @@ export class CodexAppServerInstance implements DriverInstance {
   }
 
   private onRequest(id: string | number, method: string, params: unknown) {
+    const source = params as { threadId?: string } | null;
+    if (source?.threadId && this.threadId && source.threadId !== this.threadId && !this.childThreads.has(source.threadId)) { this.rpc?.replyError(id, -32602, '请求不属于当前任务或已登记原生子线程'); return; }
     this.emitter.emit({ type: 'native', name: method, payload: { id, params } });
+    if (this.readOnly && ['command_approval', 'file_approval', 'permission_approval'].includes(REQUEST_KIND[method])) { this.rpc?.replyError(id, -32001, 'Read-only role: write/escalation denied; request wy_request_write and end this turn to enter the write queue.'); return; }
     if (REFUSED.has(method)) { this.rpc?.replyError(id, -32601, 'WillYou 不处理该请求'); return; }
     // 未知的必需请求：明确拒绝并标协议不兼容，不套通用批准（复核 NR09，技术方案 §4）。
     if (!REQUEST_KIND[method]) { this.rpc?.replyError(id, -32601, 'WillYou 不支持该请求'); this.emitter.emit({ type: 'native', name: 'request/unsupported', payload: { method } }); return; }
     const key = String(id);
     this.openRequests.add(key);
-    this.emitter.emit({ type: 'request', requestKey: key, kind: REQUEST_KIND[method] ?? 'other', payload: { method, params } });
+    this.emitter.emit({ type: 'request', requestKey: key, kind: REQUEST_KIND[method] ?? 'other', payload: { method, params }, nodeId: source?.threadId !== this.threadId ? source?.threadId : undefined });
   }
 
   async respond(requestKey: string, result: unknown) {
@@ -213,6 +265,16 @@ export class CodexAppServerInstance implements DriverInstance {
     if (op.kind === 'clear') { await this.rpc.call('thread/goal/clear', { threadId: this.threadId, origin: 'user' }); return; }
     const params = op.kind === 'set' ? { objective: op.objective, status: 'active' } : { status: op.kind === 'pause' ? 'paused' : 'active' };
     await this.rpc.call('thread/goal/set', { threadId: this.threadId, origin: 'user', ...params });
+  }
+  async goalState() {
+    if (!this.rpc || !this.threadId) throw new DriverError('STATE', '会话尚未打开');
+    const r = await this.rpc.call<{ goal: { objective: string; status: string; createdAt: number; updatedAt: number } | null }>('thread/goal/get', { threadId: this.threadId });
+    return r.goal;
+  }
+  async nativeChildHistory(nodeId: string) {
+    if (!this.rpc || !this.childThreads.has(nodeId)) throw new DriverError('REJECTED', '线程不是本运行创建的原生子 Agent');
+    const value = await this.rpc.call<{ thread: { turns?: { id: string; items?: { id: string }[] }[] } }>('thread/read', { threadId: nodeId, includeTurns: true }, 5000);
+    return (value.thread.turns ?? []).flatMap(t => (t.items ?? []).map(item => ({ key: `${t.id}:${item.id}`, payload: item })));
   }
 
   private async sendInterrupt(nativeTurnId: string) {

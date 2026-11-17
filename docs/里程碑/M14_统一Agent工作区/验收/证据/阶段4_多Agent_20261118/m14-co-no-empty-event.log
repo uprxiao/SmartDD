@@ -1,0 +1,51 @@
+[1118/040227.974938:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ✓ src/main/core/agent/delegation-service.test.ts > A19/A24/A32: delegation is durable/idempotent and returns before the child starts; release requires actual exit plus independent drain 1052ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A24/A31/A32: two children and a new parent input share FIFO; the parent cannot reacquire ahead of either child 101ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A25/A27/A28: stop cancels queued children, mode closes only after children drain, and unrelated tasks cannot observe results 59ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A66/A68: Git child runs in the mapped host worktree; child result is committed by the host and only its attempt commits are advertised 489ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A29/A32: native background work outlives the parent turn and retains the write slot until its own terminal event 93ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A70: pause intent precedes release; a child result resumes the identical native goal only after its notification turn starts 72ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A70: user stop while waiting preserves the result without waking or restoring the goal 169ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A70: a different native revision declines automatic recovery and leaves a manual continuation 80ms
+ × src/main/core/agent/delegation-service.test.ts > A33: only host-verified read roles run beside a writer; promotion closes read ownership before FIFO write admission 121ms
+   → expected undefined to be 'write' // Object.is equality
+ ✓ src/main/core/agent/delegation-service.test.ts > A28: terminal child rework is atomic, reuses its native binding, and explicitly clears an earlier stop 79ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A67/A70: an active goal still reaches a stable merge check and resumes after a proven merge 542ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A67: exactly two failed merge rounds produce a persistent needs-attention state without another automatic retry 657ms
+ ✓ src/main/core/agent/delegation-service.test.ts > E12/A05: a normal round end keeps the actual owner and binding alive when no directory handoff is needed 100ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A31/E12: an idle owner yields to a newly queued independent task and resumes its same native binding on the next input 88ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A28/A67: rework before the first result is merged includes the previous unmerged commits in its final range 588ms
+ ✓ src/main/core/agent/directory-queue.test.ts > A31/A32: physical aliases/overlap share FIFO, canceled entries do not block, and incomplete drain cannot release 21ms
+ ✓ src/main/core/agent/directory-queue.test.ts > A33: a complete host read policy can run beside a writer; a fresh queue instance preserves active ownership 15ms
+ ✓ src/main/core/agent/directory-queue.test.ts > A31: adding an outer registered root cannot open a second writer over an existing inner root; overlap keeps FIFO 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > A33: only host-verified read roles run beside a writer; promotion closes read ownership before FIFO write admission
+AssertionError: expected undefined to be 'write' // Object.is equality
+
+- Expected:
+"write"
+
++ Received:
+undefined
+
+ ❯ src/main/core/agent/delegation-service.test.ts:129:104
+    127|   expect(f.instances).toHaveLength(2); expect(f.co.queue.forTask(f.tas…
+    128|   p.finish(); await until(() => f.instances.length >= 3, 5000);
+    129|   expect(f.instances[2].options.readOnly).toBe(false); expect(f.co.que…
+       |                                                                                                        ^
+    130| });
+    131| it('A28: terminal child rework is atomic, reuses its native binding, a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 17 passed (18)
+   Start at  04:02:28
+   Duration  4.56s (transform 99ms, setup 0ms, import 146ms, tests 4.34s, environment 0ms)
+

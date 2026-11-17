@@ -7,7 +7,7 @@ import type { AgentService } from '../ai/agent-service';
 import type { ProviderService } from '../ai/provider-service';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { materializeAgentPlan } from '../ai/agent-launch-files';
-import { AgentStore, type StoredEvent } from './agent-store';
+import { AgentStore, sha256, type StoredEvent } from './agent-store';
 import { AgentRunService, type LiveListener } from './agent-run-service';
 import { AgentTaskService, boundedEvent, type LaunchResolver } from './agent-task-service';
 import { probeAndRecord } from './discovery';
@@ -18,6 +18,11 @@ import { DriverError } from './driver';
 import { tiersFor } from './permissions';
 import { AgentManualTerminals } from './manual-terminal';
 import { canonicalPath } from './identity';
+import { homedir } from 'node:os';
+import type { ManagedTaskCapabilities } from '../applications/task-capability-launcher';
+import { DelegationService } from './delegation-service';
+import { runWorkspaceCommand, GitWorkspaces } from './git-workspaces';
+import { ownedWorkspaceCommand } from './owned-command';
 
 
 export interface AgentWorkspaceDeps {
@@ -40,6 +45,7 @@ export function driverForKind(kind: string): DriverId {
 }
 
 export function createAgentWorkspace(d: AgentWorkspaceDeps) {
+  let business: ManagedTaskCapabilities | undefined;
   // 超限正文转 artifact（技术方案 §3.1，复核 U01），与附件副本同在用户数据目录。
   const store = new AgentStore(d.sqlite, { artifactDir: join(d.userData, 'agent-artifacts') });
   // 上一宿主留下的运行：先收口，再按准确出生身份结束仍在运行的原生进程（取不到身份则不动）。
@@ -82,9 +88,35 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     assertCurrent();
     materializeAgentPlan(launch.plan, d.userData, cwd);
     const env = probe.shellPath ? { ...launch.env, PATH: probe.shellPath } : launch.env;
-    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities, assertCurrent };
+    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities, assertCurrent,
+      integrate: async context => {
+        if (!business || !taskId || probe.capabilities.mcp.state !== 'enabled') return undefined;
+        const task = store.task(taskId); if (!task?.project_id) return undefined;
+        assertCurrent();
+        const actual = resolveProfileLaunch({ ...input, runId: context.runId, carryExtensions: launch.compatibility.extensions !== false });
+        materializeAgentPlan(actual.plan, d.userData, cwd);
+        const result = await business.prepareAgent({ ...context, version: probe.version!, assertCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home: base.HOME ?? homedir(), stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: context.nativeId ? 'resume' : 'new', sessionId: context.nativeId ?? null, previous: null, newTask: !context.nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
+        return { ...result, env: { ...actual.env, ...result.env }, extraArgs: [...actual.extraArgs, ...(result.extraArgs ?? [])] };
+      },
+    };
   };
   const tasks = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: id => driverForKind(config(id).kind), profileName: id => d.agents.configs().find(c => c.id === id)?.name ?? '已删除的配置', userData: d.userData });
+  const ownedCommand = ownedWorkspaceCommand({processes:d.processes,env:d.baseEnv,blocked:(options,_proof,detail)=>{if(options.taskId)store.addHostItem(options.taskId,null,'system_notice',{code:'host_job_drain_unknown',detail});}});
+  const git = new GitWorkspaces({ store, command:(cwd,command,args,timeout,options)=>options?ownedCommand(cwd,command,args,timeout,options):runWorkspaceCommand(cwd,command,args,timeout), home: d.baseEnv().HOME ?? homedir(), recoverySafe: async taskId => {
+    const rows = store.sqlite.prepare('SELECT run_id,state,pid FROM capability_runs WHERE task_id=?').all(taskId) as { run_id: string; state: string; pid: number | null }[];
+    for (const r of rows) {
+      if (!['stopped', 'failed'].includes(r.state) || r.pid && !await runs.drainNativeGroup(r.run_id)) return false;
+      if (store.sqlite.prepare("SELECT 1 FROM capability_run_processes WHERE run_id=? AND state NOT IN ('exited','canceled')").get(r.run_id) || store.sqlite.prepare("SELECT 1 FROM capability_run_activities WHERE run_id=? AND state='active'").get(r.run_id)) return false;
+    }
+    return true;
+  } });
+  const delegationProfile = (id: string) => { const c = config(id), provider = c.providerId ? d.agents.providers().find(p => p.id === c.providerId) : undefined; return { profileId: id, driverId: driverForKind(c.kind), name: c.name, models: c.models, available: c.available, trustedRead: c.kind === 'codex' && c.source === 'provider', revision: sha256(JSON.stringify({ config: c, providerRevision: provider?.identityRevision })) }; };
+  const delegations = new DelegationService({ store, runs, tasks, git, profile: delegationProfile, profiles: () => d.agents.configs().filter(c => c.source !== 'legacy' && c.available).map(c => delegationProfile(c.id)),
+    roots: taskId => { const w = git.workspace(taskId); if (w?.state === 'ready') return [w.path]; const roots = (store.sqlite.prepare('SELECT path FROM project_dirs').all() as { path: string }[]).map(r => r.path); const task = store.task(taskId); return task?.project_id ? roots : task ? [task.cwd] : []; },
+    project: id => id ? (store.sqlite.prepare('SELECT id,name FROM projects WHERE id=?').get(id) as { id: string; name: string } | undefined) ?? { id, name: 'project' } : { id: 'unscoped', name: 'project' },
+    drained: async runId => { if (!await runs.drainNativeGroup(runId)) return false; if (store.run(runId)?.state === 'orphaned') await business?.recoverAgentRun(runId); const processes = store.sqlite.prepare("SELECT 1 FROM capability_run_processes WHERE run_id=? AND state NOT IN ('exited','canceled')").get(runId); const activities = store.sqlite.prepare("SELECT 1 FROM capability_run_activities WHERE run_id=? AND state='active'").get(runId); return !processes && !activities; },
+  });
+  void git.recoverIntents().catch(() => { /* explicit needs_review records retain ownership */ });
   store.subscribe((e: StoredEvent) => d.emitEvent(boundedEvent(e)));
   const live: LiveListener = ({ taskId, runId, event }) => { if (event.type === 'message.delta') d.emitLive({ taskId, runId, itemKey: event.nativeItemId, text: event.text }); };
   runs.onLive(live);
@@ -94,6 +126,6 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const };
   });
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskCwd: id => { const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
-  return { store, runs, tasks, profiles, terminals, closeAll: async () => { terminals?.closeAll(); await runs.closeAll(); } };
+  return { store, runs, tasks, profiles, terminals, git, delegations, attachBusiness: (value: ManagedTaskCapabilities) => { business = value; value.attachAgentTools(delegations); }, closeAll: async () => { await delegations.close(); terminals?.closeAll(); await runs.closeAll(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

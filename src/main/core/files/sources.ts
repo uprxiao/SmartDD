@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { FileScope } from '@shared/files';
 import { FileError } from '@shared/files';
 import type { AppDb } from '../../db/client';
@@ -16,6 +16,15 @@ export class FileSourceResolver implements SourceResolver {
       const task = this.db.select({ id: tasks.id, projectId: tasks.projectId, cwd: tasks.cwd }).from(tasks).where(eq(tasks.id, scope.taskId)).get();
       if (!task) throw new FileError('MISSING', '任务已不存在');
       projectId = task.projectId;
+      const agent = this.db.get<{ parent_task_id: string | null }>(sql`SELECT parent_task_id FROM agent_tasks WHERE task_id=${task.id}`);
+      if (agent?.parent_task_id) {
+        const workspace = this.db.get<{ path: string; branch: string | null; state: string }>(sql`SELECT path,branch,state FROM agent_workspaces WHERE child_task_id=${task.id} ORDER BY rowid DESC LIMIT 1`);
+        const delegation = this.db.get<{ target_json: string }>(sql`SELECT target_json FROM agent_delegations WHERE child_task_id=${task.id}`);
+        if (workspace?.state === 'ready') return [{ kind: 'task-cwd', id: task.id, path: workspace.path, label: `工作副本 · ${workspace.branch ?? '未命名分支'}`, projectId }];
+        if (delegation && JSON.parse(delegation.target_json).strategy === 'git') throw new FileError('MISSING', '子任务工作副本尚未就绪');
+        // Shared-directory children still use their own task scope and buffers; never import the parent's other project roots.
+        return [{ kind: 'task-cwd', id: task.id, path: task.cwd, label: '子任务工作目录', projectId }];
+      }
       // Put the launch snapshot first. It stays distinct when a project's path
       // is edited, even if its directory record still has the same ID.
       result.push({ kind: 'task-cwd', id: task.id, path: task.cwd, label: '任务启动目录', projectId });

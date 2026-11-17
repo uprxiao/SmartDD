@@ -61,8 +61,8 @@ export class TimelineProjector {
         this.childLogs.set(msg.parentToolUseId, log.slice(-50));
         // 终态单调（复核 NR11）：子节点已有结果后，迟到的内部消息只追加记录，不恢复运行中。
         const final = this.finals.get(msg.parentToolUseId);
-        if (final) return [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { ...final.payload, childLog: log.slice(-50) }, terminal: final.terminal }];
-        return parent ? [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { name: parent.name, input: parent.input, status: 'running', childLog: log.slice(-50) }, terminal: null }] : [];
+        if (final) return [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { ...final.payload, nativeNodeIds: [msg.parentToolUseId], childLog: log.slice(-50), childLogPreviewOnly: true }, terminal: final.terminal }];
+        return parent ? [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { name: parent.name, input: parent.input, status: 'running', nativeNodeIds: [msg.parentToolUseId], childLog: log.slice(-50), childLogPreviewOnly: true }, terminal: null }] : [];
       }
       const out: ItemUpsert[] = [];
       (msg.content ?? []).forEach((block: any, idx: number) => {
@@ -73,7 +73,7 @@ export class TimelineProjector {
           const type = claudeToolType(block.name);
           this.claudeTools.set(block.id, { type, name: block.name, input: block.input });
           if (TODO_TOOLS.has(block.name)) return; // 只在成功结果后改清单（V10b，RR03）
-          out.push({ key: `tool:${block.id}`, type, payload: { name: block.name, status: 'running', ...(type === 'proposed_plan' ? planFields(block.input) : { input: block.input }) }, terminal: null });
+          out.push({ key: `tool:${block.id}`, type, payload: { name: block.name, status: 'running', ...(type === 'subagent' ? { nativeNodeIds: [block.id], kind: 'provider_native' } : {}), ...(type === 'proposed_plan' ? planFields(block.input) : { input: block.input }) }, terminal: null });
         }
       });
       return out;
@@ -101,7 +101,7 @@ export class TimelineProjector {
         const output = Array.isArray(block.content) ? block.content.map((c: any) => c?.text ?? '').join('\n') : text(block.content);
         const finalPayload = { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed' };
         if (tool.type === 'subagent') this.finals.set(block.tool_use_id, { payload: finalPayload, terminal: failed ? 'failed' : 'completed' });
-        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'subagent' ? { childLog: this.childLogs.get(block.tool_use_id) ?? [] } : {}), ...(tool.type === 'proposed_plan' ? planFields(tool.input) : { input: tool.input }) }, terminal: failed ? 'failed' : 'completed' });
+        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'subagent' ? { nativeNodeIds: [block.tool_use_id], childLog: this.childLogs.get(block.tool_use_id) ?? [], childLogPreviewOnly: true } : {}), ...(tool.type === 'proposed_plan' ? planFields(tool.input) : { input: tool.input }) }, terminal: failed ? 'failed' : 'completed' });
       }
       return out;
     }
@@ -182,7 +182,7 @@ export class TimelineProjector {
       case 'webSearch':
         return { key, type: 'web_search', payload: { query: text(item.query), status }, terminal };
       case 'collabAgentToolCall':
-        return { key, type: 'subagent', payload: { kind: 'provider_native', tool: item.tool ?? null, status, prompt: item.prompt ?? null }, terminal };
+        return { key, type: 'subagent', payload: { kind: 'provider_native', tool: item.tool ?? null, status, prompt: item.prompt ?? null, nativeNodeIds: item.receiverThreadIds ?? [], agentsStates: item.agentsStates ?? {} }, terminal };
       case 'contextCompaction':
         return done ? { key, type: 'compaction', payload: {}, terminal } : null;
       default:

@@ -7,14 +7,14 @@ const exe = { path: '/opt/codex', version: '0.169.0' };
 function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
   const child = new FakeChild();
   let spawned: { command: string; args: string[]; options: any } | undefined;
-  let turn = 0;
+  let turn = 0, threadId = 'thr-1';
   const server = new FakeAppServer(child, (msg, s) => {
     if (extra?.(msg, s)) return;
     if (msg.method === 'initialize') s.reply(msg.id, { userAgent: 'fake' });
     else if (msg.method === 'thread/start') s.reply(msg.id, { thread: { id: 'thr-1' } });
-    else if (msg.method === 'thread/resume') s.reply(msg.id, { thread: { id: msg.params.threadId } });
-    else if (msg.method === 'turn/start') { const id = `turn-${++turn}`; s.notify('turn/started', { threadId: 'thr-1', turn: { id } }); s.reply(msg.id, { turn: { id } }); }
-    else if (msg.method === 'turn/interrupt') { s.reply(msg.id, {}); s.notify('turn/completed', { threadId: 'thr-1', turn: { id: msg.params.turnId, status: 'interrupted' } }); }
+    else if (msg.method === 'thread/resume') { threadId = msg.params.threadId; s.reply(msg.id, { thread: { id: threadId } }); }
+    else if (msg.method === 'turn/start') { const id = `turn-${++turn}`; s.notify('turn/started', { threadId, turn: { id } }); s.reply(msg.id, { turn: { id } }); }
+    else if (msg.method === 'turn/interrupt') { s.reply(msg.id, {}); s.notify('turn/completed', { threadId, turn: { id: msg.params.turnId, status: 'interrupted' } }); }
   });
   const inst = new CodexAppServerInstance((command, args, options) => { spawned = { command, args, options }; return child.asChild(); });
   const events: DriverEvent[] = [];
@@ -23,6 +23,35 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it('A33: host read role overrides even full access every turn and refuses write escalation without an approval option', async () => {
+    const f = setup(); await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'full', readOnly: true });
+    expect(f.server.calls('thread/start')[0].params).toMatchObject({ approvalPolicy: 'never', sandbox: 'read-only' });
+    expect(f.spawned().args).toContain('features.hooks=false');
+    await f.inst.startTurn({ clientInputId: 'read', text: 'inspect', tier: 'full' });
+    expect(f.server.calls('turn/start')[0].params).toMatchObject({ approvalPolicy: 'never', sandboxPolicy: { type: 'readOnly', networkAccess: false } });
+    f.server.request(800, 'item/permissions/requestApproval', { threadId: 'thr-1' });
+    await until(() => f.server.received.some(m => m.id === 800 && m.error));
+    expect(f.events.some(e => e.type === 'request' && e.requestKey === '800')).toBe(false);
+  });
+  it('M14 A29: child and foreign thread notifications cannot start/end the parent; only registered child requests keep their node scope', async () => {
+    const { inst, server, events } = setup(); await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: 'parent', text: 'work', tier: 'ask' });
+    server.notify('item/started', { threadId: 'thr-1', item: { type: 'collabAgentToolCall', id: 'spawn', senderThreadId: 'thr-1', receiverThreadIds: ['child'], agentsStates: { child: { status: 'running' } } } });
+    server.notify('turn/started', { threadId: 'child', turn: { id: 'child-round' } });
+    server.notify('turn/completed', { threadId: 'child', turn: { id: 'child-round', status: 'completed' } });
+    server.notify('turn/completed', { threadId: 'foreign', turn: { id: 'foreign-round', status: 'completed' } });
+    server.request(500, 'item/commandExecution/requestApproval', { threadId: 'child' }); server.request(501, 'item/commandExecution/requestApproval', { threadId: 'foreign' });
+    await until(() => events.some(e => e.type === 'request' && e.requestKey === '500'));
+    expect(events.filter(e => e.type === 'turn.started')).toHaveLength(1); expect(events.filter(e => e.type === 'turn.completed')).toHaveLength(0);
+    expect(events.find(e => e.type === 'request' && e.requestKey === '500')).toMatchObject({ nodeId: 'child' }); expect(events.some(e => e.type === 'request' && e.requestKey === '501')).toBe(false);
+    await expect(inst.nativeChildHistory('foreign')).rejects.toThrow('本运行');
+  });
+  it('M14 A70: recovery pauses an active persisted goal before thread/resume and never creates a model turn', async () => {
+    const { inst, server } = setup((m, s) => { if (m.method === 'thread/goal/get') { s.reply(m.id, { goal: { objective: 'goal', status: 'active', createdAt: 1, updatedAt: 2 } }); return true; } if (m.method === 'thread/goal/set') { s.reply(m.id, {}); return true; } return false; });
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', resumeNativeId: 'thr-old', recoverGoals: true });
+    const methods = server.received.map(m => m.method); expect(methods.indexOf('thread/goal/set')).toBeLessThan(methods.indexOf('thread/resume'));
+    expect(server.calls('thread/goal/set')[0].params.status).toBe('paused'); expect(server.calls('turn/start')).toHaveLength(0);
+  });
   it('历史追加走已公布的 thread/inject_items，不发 turn/start，不更改后续用户文字', async () => {
     const { inst, server } = setup((msg, s) => { if (msg.method === 'thread/inject_items') { s.reply(msg.id, {}); return true; } return false; });
     await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });

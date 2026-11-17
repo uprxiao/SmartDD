@@ -62,12 +62,13 @@ export function itemJson(value: unknown): string {
 export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; effort?: string; tier: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean>; pendingSwitch?: { profileId: string; model?: string } }
 export interface CreateTaskInput { projectId: string | null; dirId: string | null; cwd: string; title: string; selection: AgentSelection; parentTaskId?: string }
 export interface BindingRow { binding_id: string; task_id: string; driver_id: string; profile_id: string; continuation_hash: string; state_root: string; cwd_identity: string; native_id: string | null; native_confirmed_at: string | null }
-export interface TurnRow { turn_id: string; task_id: string; run_id: string | null; client_input_id: string; status: string; native_turn_id: string | null }
+export interface TurnRow { turn_id: string; task_id: string; run_id: string | null; client_input_id: string; status: string; native_turn_id: string | null; source_kind: 'user' | 'delegation' | 'notification' | 'system' }
 export interface RequestRow { request_id: string; task_id: string; class: 'native' | 'host_business'; origin_json: string; revision: number; kind: string; payload_ref: string; status: string }
 export interface StoredEvent { taskId: string; seq: number; type: string; itemId: string | null; payload: unknown }
 export type EventListener = (event: StoredEvent) => void;
 
 export class AgentStore {
+  private readonly transactionEvents: StoredEvent[][] = [];
   private readonly listeners = new Set<EventListener>();
   /** 超限正文的 artifact 目录（技术方案 §3.1“超限正文转 artifact”，复核 U01）；不设时降级为结构化截短。 */
   private readonly artifactDir?: string;
@@ -160,9 +161,13 @@ export class AgentStore {
   /** 写库与事件在同一事务；提交成功后才通知。 */
   tx<T>(fn: (emit: (taskId: string, type: string, payload: unknown, itemId?: string | null, revision?: number | null) => void) => T): T {
     const pending: StoredEvent[] = [];
-    const result = this.sqlite.transaction(() => fn((taskId, type, payload, itemId = null, revision = null) => { pending.push(this.appendIn(taskId, type, payload, itemId, revision)); }))();
-    this.notify(pending);
-    return result;
+    this.transactionEvents.push(pending);
+    try {
+      const result = this.sqlite.transaction(() => fn((taskId, type, payload, itemId = null, revision = null) => { pending.push(this.appendIn(taskId, type, payload, itemId, revision)); }))();
+      this.transactionEvents.pop();
+      const parent = this.transactionEvents.at(-1); if (parent) parent.push(...pending); else this.notify(pending);
+      return result;
+    } catch (e) { this.transactionEvents.pop(); throw e; }
   }
 
   createTask(input: CreateTaskInput): string {
@@ -234,22 +239,32 @@ export class AgentStore {
   }
   insertRun(r: { runId: string; taskId: string; projectId: string | null; driverId: DriverId; bindingId: string; generation: number; owner: { instanceId: string; pid: number; startedAt: string | null }; launchPlanHash: string }) {
     this.tx(emit => {
-      this.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,owner_instance_id,owner_pid,owner_started_at,binding_id,driver_id,generation,launch_plan_hash,binding_mode) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,?,'run')")
-        .run(r.runId, r.taskId, r.projectId ?? '', r.driverId, now(), r.owner.instanceId, r.owner.pid, r.owner.startedAt, r.bindingId, r.driverId, r.generation, r.launchPlanHash);
+      const sessionId = randomUUID(), text = JSON.stringify({ kind: 'run_preparing', runId: r.runId, launchPlanHash: r.launchPlanHash });
+      const revision = (this.sqlite.prepare('SELECT COALESCE(MAX(revision),0)+1 AS n FROM agent_capability_sessions WHERE binding_id=?').get(r.bindingId) as { n: number }).n;
+      this.sqlite.prepare('INSERT INTO agent_capability_sessions(capability_session_id,binding_id,revision,content_hash,snapshot_json,created_at) VALUES(?,?,?,?,?,?)').run(sessionId, r.bindingId, revision, sha256(text), text, now());
+      this.sqlite.prepare("INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,owner_instance_id,owner_pid,owner_started_at,binding_id,capability_session_id,driver_id,generation,launch_plan_hash,binding_mode) VALUES(?,?,?,?,'preparing',?,?,?,?,?,?,?,?,?,'run')")
+        .run(r.runId, r.taskId, r.projectId ?? '', r.driverId, now(), r.owner.instanceId, r.owner.pid, r.owner.startedAt, r.bindingId, sessionId, r.driverId, r.generation, r.launchPlanHash);
       emit(r.taskId, 'run.preparing', { runId: r.runId, bindingId: r.bindingId, generation: r.generation, driverId: r.driverId });
     });
+  }
+  freezeNativeRun(runId: string, value: unknown) {
+    const r = this.run(runId); if (!r || r.pid || r.state !== 'preparing') throw new DriverError('STATE', '原生启动交付已经固定');
+    const row = this.sqlite.prepare('SELECT snapshot_json FROM agent_capability_sessions WHERE capability_session_id=?').get(r.capability_session_id) as { snapshot_json: string };
+    if (JSON.parse(row.snapshot_json).kind !== 'run_preparing') throw new DriverError('STATE', '不能替换已固定的运行能力');
+    const text = JSON.stringify({ kind: 'native', runId, value }); this.sqlite.prepare('UPDATE agent_capability_sessions SET snapshot_json=?,content_hash=? WHERE capability_session_id=?').run(text, sha256(text), r.capability_session_id);
   }
   /** 只接受本宿主自己启动的原生进程 PID（来自 ChildProcess），不接受客户端或模型自报。 */
   attachRunProcess(runId: string, taskId: string, pid: number, processStartedAt: string | null) {
     this.tx(emit => {
-      const changed = this.sqlite.prepare("UPDATE capability_runs SET pid=?,process_started_at=?,state='active' WHERE run_id=? AND state='preparing'").run(pid, processStartedAt, runId).changes;
+      const changed = this.sqlite.prepare("UPDATE capability_runs SET pid=?,process_started_at=?,state='active' WHERE run_id=? AND state IN ('preparing','prepared') AND pid IS NULL").run(pid, processStartedAt, runId).changes;
       if (changed) emit(taskId, 'run.active', { runId, pid, processStartedAt });
     });
   }
   finishRun(runId: string, taskId: string, state: 'stopped' | 'failed', errorCode: string | null) {
     this.tx(emit => {
-      const changed = this.sqlite.prepare("UPDATE capability_runs SET state=?,error_code=?,ended_at=? WHERE run_id=? AND state IN ('preparing','active','stopping')").run(state, errorCode, now(), runId).changes;
-      if (!changed) return;
+      if (this.sqlite.prepare("SELECT 1 FROM agent_events WHERE task_id=? AND event_type='run.ended' AND json_extract(payload,'$.runId')=?").get(taskId, runId)) return;
+      const row = this.run(runId); if (!row || !['preparing','prepared','active','stopping','stopped','failed'].includes(row.state)) return;
+      this.sqlite.prepare("UPDATE capability_runs SET state=?,error_code=?,ended_at=COALESCE(ended_at,?) WHERE run_id=?").run(state, errorCode, now(), runId);
       // 原生阻塞请求归属回合与运行：运行结束即退役（技术方案 §8.1 分类表）。
       const retired = this.sqlite.prepare("UPDATE agent_requests SET status='retired',updated_at=? WHERE class='native' AND status='pending' AND json_extract(origin_json,'$.runId')=?").run(now(), runId).changes;
       const open = this.sqlite.prepare("SELECT turn_id FROM agent_turns WHERE run_id=? AND status IN ('dispatching','started')").all(runId) as { turn_id: string }[];
@@ -318,7 +333,7 @@ export class AgentStore {
   }
 
   /** 规范条目：ordinal 稳定；原生键包含 binding/run/generation，同一原生条目重复到达只升修订。 */
-  upsertItem(i: { taskId: string; turnId: string | null; runId: string; nativeKey: string; type: string; payload: unknown; terminalState?: string | null }): string {
+  upsertItem(i: { taskId: string; turnId: string | null; runId: string; nativeKey: string; nodeId?: string; type: string; payload: unknown; terminalState?: string | null }): string {
     return this.itemTx((written, replaced, emit) => {
       const existing = this.sqlite.prepare('SELECT item_id,revision,payload_ref FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number; payload_ref: string } | undefined;
       if (existing) {
@@ -330,14 +345,14 @@ export class AgentStore {
       }
       const itemId = randomUUID();
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(i.taskId) as { ordinal: number };
-      this.sqlite.prepare('INSERT INTO agent_items(item_id,task_id,turn_id,run_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,?,1,?,?,?,?,?)')
-        .run(itemId, i.taskId, i.turnId, i.runId, i.type, ordinal, i.nativeKey, this.itemBody(i.taskId, itemId, 1, i.payload, written), i.terminalState ?? null, now(), now());
+      this.sqlite.prepare('INSERT INTO agent_items(item_id,task_id,turn_id,run_id,node_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,1,?,?,?,?,?)')
+        .run(itemId, i.taskId, i.turnId, i.runId, i.nodeId ?? null, i.type, ordinal, i.nativeKey, this.itemBody(i.taskId, itemId, 1, i.payload, written), i.terminalState ?? null, now(), now());
       emit(i.taskId, 'item.created', { type: i.type, ordinal, payload: i.payload }, itemId, 1);
       return itemId;
     });
   }
 
-  insertNativeRequest(r: { taskId: string; origin: { taskId: string; bindingId: string; runId: string; generation: number; turnId: string | null; nativeRequest: string }; kind: string; payload: unknown }): string {
+  insertNativeRequest(r: { taskId: string; origin: { taskId: string; bindingId: string; runId: string; generation: number; turnId: string | null; nativeRequest: string; nodeId?: string }; kind: string; payload: unknown }): string {
     return this.tx(emit => {
       const requestId = randomUUID();
       this.sqlite.prepare("INSERT INTO agent_requests(request_id,task_id,class,origin_json,kind,payload_ref,status,created_at,updated_at) VALUES(?,?,'native',?,?,?,'pending',?,?)")
@@ -415,7 +430,7 @@ export class AgentStore {
   /** 最近的条目（renderer 每任务上限 2000 条，技术方案 §3.1）；beforeOrdinal 分页读更早的。 */
   items(taskId: string, opts: { limit?: number; beforeOrdinal?: number } = {}) {
     const limit = Math.min(opts.limit ?? 2000, 2000);
-    return (this.sqlite.prepare('SELECT * FROM (SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal').all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as Record<string, any>[])
+    return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as Record<string, any>[])
       .map(r => ({ itemId: r.item_id, turnId: r.turn_id, type: r.type, ordinal: r.ordinal, revision: r.revision, payload: JSON.parse(r.payload_ref), terminal: r.terminal_state, createdAt: r.created_at, updatedAt: r.updated_at }));
   }
   pendingRequests(taskId: string) {
@@ -481,9 +496,9 @@ export class AgentStore {
     });
   }
   turnsByNative(runId: string, nativeTurnId: string) { return this.sqlite.prepare("SELECT * FROM agent_turns WHERE run_id=? AND native_turn_id=? AND status IN ('dispatching','started')").all(runId, nativeTurnId) as TurnRow[]; }
-  upsertGoal(g: { taskId: string; bindingId: string; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number; pausedReason?: 'user' | 'waiting_children' | 'limit' }) {
+  upsertGoal(g: { taskId: string; bindingId: string; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number; pausedReason?: 'user' | 'waiting_children' | 'limit'; nativeCreatedAt?: number; nativeUpdatedAt?: number }) {
     this.tx(emit => {
-      const cur = this.sqlite.prepare('SELECT objective,revision,turns FROM agent_goals WHERE task_id=?').get(g.taskId) as { objective: string; revision: number; turns: number } | undefined;
+      const cur = this.sqlite.prepare('SELECT objective,revision,turns,status FROM agent_goals WHERE task_id=?').get(g.taskId) as { objective: string; revision: number; turns: number; status: string } | undefined;
       if (g.status === 'cleared') {
         if (cur) this.sqlite.prepare("UPDATE agent_goals SET status='cleared',paused_reason=NULL,updated_at=? WHERE task_id=?").run(now(), g.taskId);
         emit(g.taskId, 'goal.changed', { status: 'cleared' });
@@ -492,19 +507,26 @@ export class AgentStore {
       const objective = g.objective ?? cur?.objective ?? '';
       const status = g.status === 'limited' ? 'paused' : g.status;
       const reason = status === 'paused' ? (g.status === 'limited' ? 'limit' : g.pausedReason ?? 'user') : null;
-      const revision = !cur ? 1 : cur.objective !== objective ? cur.revision + 1 : cur.revision;
+      const previous = this.goalNativeMeta(g.taskId);
+      const nativeCreatedAt = Number.isFinite(g.nativeCreatedAt) ? g.nativeCreatedAt : previous.nativeCreatedAt;
+      const nativeUpdatedAt = Number.isFinite(g.nativeUpdatedAt) ? g.nativeUpdatedAt : previous.nativeUpdatedAt;
+      const revision = !cur ? 1 : cur.status === 'cleared' || cur.objective !== objective || (previous.nativeCreatedAt !== undefined && nativeCreatedAt !== previous.nativeCreatedAt) ? cur.revision + 1 : cur.revision;
       this.sqlite.prepare(`INSERT INTO agent_goals(task_id,binding_id,objective,revision,status,paused_reason,turns,time_used_s,updated_at) VALUES(?,?,?,?,?,?,0,?,?)
         ON CONFLICT(task_id) DO UPDATE SET binding_id=excluded.binding_id,objective=excluded.objective,revision=excluded.revision,status=excluded.status,paused_reason=excluded.paused_reason,time_used_s=MAX(agent_goals.time_used_s,excluded.time_used_s),turns=CASE WHEN agent_goals.revision<>excluded.revision THEN 0 ELSE agent_goals.turns END,updated_at=excluded.updated_at`)
         .run(g.taskId, g.bindingId, objective, revision, status, reason, Math.round(g.timeUsedSeconds ?? 0), now());
-      emit(g.taskId, 'goal.changed', { objective, status, pausedReason: reason, revision });
+      emit(g.taskId, 'goal.changed', { objective, status, pausedReason: reason, revision, bindingId: g.bindingId, nativeCreatedAt, nativeUpdatedAt });
     });
   }
   /** 执行器不回报目标用时（Claude）时，由宿主按目标进行期间的回合用时累计。 */
   addGoalTime(taskId: string, seconds: number) { if (seconds > 0) this.sqlite.prepare("UPDATE agent_goals SET time_used_s=time_used_s+?,updated_at=? WHERE task_id=? AND status='active'").run(Math.round(seconds), now(), taskId); }
   countGoalTurn(taskId: string) { this.sqlite.prepare("UPDATE agent_goals SET turns=turns+1,updated_at=? WHERE task_id=? AND status='active'").run(now(), taskId); }
+  private goalNativeMeta(taskId: string): { nativeCreatedAt?: number; nativeUpdatedAt?: number } {
+    const r = this.sqlite.prepare("SELECT payload FROM agent_events WHERE task_id=? AND event_type='goal.changed' ORDER BY seq DESC LIMIT 1").get(taskId) as { payload: string } | undefined;
+    if (!r) return {}; const p = JSON.parse(r.payload); return { ...(Number.isFinite(p.nativeCreatedAt) ? { nativeCreatedAt: p.nativeCreatedAt } : {}), ...(Number.isFinite(p.nativeUpdatedAt) ? { nativeUpdatedAt: p.nativeUpdatedAt } : {}) };
+  }
   goal(taskId: string) {
-    const r = this.sqlite.prepare('SELECT objective,revision,status,paused_reason,turns,time_used_s,updated_at FROM agent_goals WHERE task_id=?').get(taskId) as Record<string, any> | undefined;
-    return r && r.status !== 'cleared' ? { objective: r.objective, revision: r.revision, status: r.status, pausedReason: r.paused_reason, turns: r.turns, timeUsedSeconds: r.time_used_s, updatedAt: r.updated_at } : null;
+    const r = this.sqlite.prepare('SELECT binding_id,objective,revision,status,paused_reason,turns,time_used_s,updated_at FROM agent_goals WHERE task_id=?').get(taskId) as Record<string, any> | undefined;
+    return r && r.status !== 'cleared' ? { ...this.goalNativeMeta(taskId), bindingId: r.binding_id, objective: r.objective, revision: r.revision, status: r.status, pausedReason: r.paused_reason, turns: r.turns, timeUsedSeconds: r.time_used_s, updatedAt: r.updated_at } : null;
   }
 
   /** 宿主条目（启动失败等用户可见原因，复核 CR17）：不属于任何原生运行。 */
