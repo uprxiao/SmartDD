@@ -15,6 +15,7 @@ import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
 import { DriverError } from './driver';
 import { tiersFor } from './permissions';
+import { AgentManualTerminals } from './manual-terminal';
 
 
 export interface AgentWorkspaceDeps {
@@ -27,6 +28,7 @@ export interface AgentWorkspaceDeps {
   host: { instanceId: string; pid: number; startedAt: string | null };
   emitEvent(e: StoredEvent): void;
   emitLive(e: { taskId: string; runId: string; itemKey: string; text: string }): void;
+  ptys?: import('./manual-terminal').TerminalPtys;
 }
 
 export function driverForKind(kind: string): DriverId {
@@ -73,6 +75,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const driverId = driverForKind(c.kind);
     return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, tiers: tiersFor(driverId) };
   });
-  return { store, runs, tasks, profiles, closeAll: () => runs.closeAll() };
+  const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskCwd: id => { const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
+  return { store, runs, tasks, profiles, terminals, closeAll: async () => { terminals?.closeAll(); await runs.closeAll(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

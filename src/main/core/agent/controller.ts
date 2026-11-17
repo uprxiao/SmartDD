@@ -26,6 +26,8 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       cancelQueued: (e, taskId: string, turnId: string) => run(e, w => w.tasks.cancelQueued(taskId, turnId)),
       respond: (e, taskId: string, requestId: string, revision: number, result: unknown) => run(e, w => w.tasks.respond(taskId, requestId, revision, result)),
       archive: (e, taskId: string) => run(e, w => w.tasks.archive(taskId)),
+      openTerminal: (e, taskId: string, size?: { cols: number; rows: number }) => run(e, w => { if (!w.terminals) throw new Error('终端不可用'); return w.terminals.open(taskId, size); }),
+      closeTerminal: (e, taskId: string) => run(e, w => w.terminals?.close(taskId)),
     }),
   };
 }

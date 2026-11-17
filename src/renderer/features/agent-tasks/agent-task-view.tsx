@@ -1,7 +1,8 @@
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, ChevronRight, CircleStop, FileText, Loader2, RotateCw, Send, Target, X, Zap } from 'lucide-react';
+import { Archive, ChevronRight, CircleStop, FileText, Loader2, RotateCw, Send, SquareTerminal, Target, X, Zap } from 'lucide-react';
+import { AgentTerminalDrawer } from './agent-terminal';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
@@ -141,6 +142,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const [now, setNow] = useState(Date.now());
   const permissionPref = useAppSettingsKey('agentPermissions');
   const [confirmFull, setConfirmFull] = useState(false);
+  const [terminalOpen, setTerminalOpen] = useState(false);
   const draftRev = useRef(0), draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null), reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
 
@@ -238,7 +240,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   };
 
   return <section className="agent-task-view" aria-label="统一任务区">
-    <header className="agent-task-head"><h1>{snap.title}</h1>{STATUS_LABEL[snap.status] && <span className={`agent-status ${snap.status}`}>{STATUS_LABEL[snap.status]}</span>}<span className="push" /><button type="button" className="agent-head-btn" title="归档任务" data-testid="agent-archive" onClick={() => void archive()}><Archive size={15} /></button></header>
+    <header className="agent-task-head"><h1>{snap.title}</h1>{STATUS_LABEL[snap.status] && <span className={`agent-status ${snap.status}`}>{STATUS_LABEL[snap.status]}</span>}<span className="push" /><button type="button" className="agent-head-btn" title="底部终端" data-testid="agent-terminal-toggle" aria-pressed={terminalOpen} onClick={() => setTerminalOpen(o => !o)}><SquareTerminal size={15} /></button><button type="button" className="agent-head-btn" title="归档任务" data-testid="agent-archive" onClick={() => void archive()}><Archive size={15} /></button></header>
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline">
       {groups.map(g => <div key={g.turnId ?? 'host'} className="agent-turn">{g.rows.map(row =>
         row.kind === 'item' ? <ItemRow key={row.item.itemId} item={row.item} />
@@ -274,6 +276,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
           </div>
         </form>}
     </div>
+    {terminalOpen && <AgentTerminalDrawer taskId={taskId} onClose={() => setTerminalOpen(false)} />}
     {confirmFull && <AgentDialog title="使用完全访问权限？" onClose={() => setConfirmFull(false)} footer={<><button className="m10-button" onClick={() => setConfirmFull(false)}>取消</button><button className="m10-button primary" data-testid="agent-confirm-full" onClick={() => { void permissionPref.update({ fullConfirmed: true }); setConfirmFull(false); void setSelection({ tier: 'full' }); }}>继续使用完全访问</button></>}>
       <p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。</p>
       <div className="m13-note">Claude 交出的计划仍会请你批准。插件写操作按插件声明的上限处理（阶段 5 接入前仍逐次询问）。</div>

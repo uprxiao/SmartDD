@@ -191,7 +191,7 @@ async function main(): Promise<void> {
   const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
   const agentProcesses=new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'));
   const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,providers,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,
-    host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e)});
+    host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e),ptys});
   const tasks = new TaskService({
     db: client.db,
     ptys,
@@ -221,11 +221,11 @@ async function main(): Promise<void> {
   ptys.on('exit', (ptyId: string, code: number) => events.emit(ptyExitEvent, { ptyId, code }));
   const ptyAccess = new PtyAccess({
     trusted: isMainRenderer,
-    activePty: (id) => tasks.activePty(id),
+    activePty: (id) => tasks.activePty(id) ?? agentWorkspace.terminals?.activePty(id) ?? null,
     alive: (id) => ptys.has(id),
     write: (id, data) => ptys.write(id, data),
     resize: (id, cols, rows) => ptys.resize(id, cols, rows),
-    killTask: (id) => tasks.kill(id),
+    killTask: (id) => { if (agentWorkspace.terminals?.activePty(id)) agentWorkspace.terminals.close(id); else tasks.kill(id); },
     observedInput:(event,target,data)=>applications?.observeInput(event,target,data),
   });
   registerPtyInput(ipcMain, ptyAccess);
