@@ -1,0 +1,110 @@
+--- docs/review/evidence-20261118-0018/adjacent-ui.test.tsx
++++ docs/review/evidence-20261118-0049/adjacent-ui.test.tsx
+@@ -25,7 +25,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/adjacent-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/adjacent-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ const fixtures: { db: Database.Database; runs: AgentRunService }[] = [];
+ afterEach(async () => { cleanup(); for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } });
+ beforeEach(() => {
+--- docs/review/evidence-20261118-0018/artifact-boundaries.test.ts
++++ docs/review/evidence-20261118-0049/artifact-boundaries.test.ts
+@@ -10,7 +10,7 @@
+ import { Emitter } from '../../../src/main/core/agent/driver';
+ import { until } from '../../../src/main/core/agent/test-doubles';
+ const observations: Record<string, unknown> = {}, fixtures: { db: Database.Database; runs: AgentRunService; root: string }[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/artifact-boundary-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/artifact-boundary-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(async () => { for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); rmSync(f.root, { recursive: true, force: true }); } });
+ function setup() {
+   const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-artifact-boundary-'))), artifactDir = join(root, 'artifacts');
+--- docs/review/evidence-20261118-0018/boundary-core.test.ts
++++ docs/review/evidence-20261118-0049/boundary-core.test.ts
+@@ -19,7 +19,7 @@
+ 
+ const observations: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [], roots: string[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/boundary-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/boundary-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => { for (const db of dbs.splice(0)) db.close(); for (const dir of roots.splice(0)) rmSync(dir, { recursive: true, force: true }); });
+ function gate<T = void>() { let resolve!: (v: T) => void, reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ class Inst implements DriverInstance {
+--- docs/review/evidence-20261118-0018/boundary-ui.test.tsx
++++ docs/review/evidence-20261118-0049/boundary-ui.test.tsx
+@@ -18,7 +18,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/boundary-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/boundary-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => cleanup());
+ beforeEach(() => {
+   vi.clearAllMocks();
+--- docs/review/evidence-20261118-0018/new-core.test.ts
++++ docs/review/evidence-20261118-0049/new-core.test.ts
+@@ -19,7 +19,7 @@
+ 
+ const observations: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [], roots: string[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/new-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/new-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => { for (const db of dbs.splice(0)) db.close(); for (const dir of roots.splice(0)) rmSync(dir, { recursive: true, force: true }); });
+ function gate<T = void>() { let resolve!: (v: T) => void, reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ class Inst implements DriverInstance {
+--- docs/review/evidence-20261118-0018/new-ui.test.tsx
++++ docs/review/evidence-20261118-0049/new-ui.test.tsx
+@@ -18,7 +18,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/new-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/new-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => cleanup());
+ beforeEach(() => {
+   vi.clearAllMocks();
+--- docs/review/evidence-20261118-0018/recheck-probes.test.ts
++++ docs/review/evidence-20261118-0049/recheck-probes.test.ts
+@@ -21,7 +21,7 @@
+ 
+ const observed: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
+ afterEach(() => { vi.useRealTimers(); for (const db of dbs.splice(0)) db.close(); });
+ function deferred<T = void>() { let resolve!: (v: T) => void; let reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ 
+--- docs/review/evidence-20261118-0018/recheck-ui.test.tsx
++++ docs/review/evidence-20261118-0049/recheck-ui.test.tsx
+@@ -18,7 +18,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => cleanup());
+ beforeEach(() => {
+   vi.clearAllMocks();
+--- docs/review/evidence-20261118-0018/residual-core.test.ts
++++ docs/review/evidence-20261118-0049/residual-core.test.ts
+@@ -17,7 +17,7 @@
+ 
+ const observations: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [], roots: string[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/residual-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/residual-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => { for (const db of dbs.splice(0)) db.close(); for (const dir of roots.splice(0)) rmSync(dir, { recursive: true, force: true }); });
+ function gate<T = void>() { let resolve!: (v: T) => void, reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ class Inst implements DriverInstance {
+--- docs/review/evidence-20261118-0018/retention.test.tsx
++++ docs/review/evidence-20261118-0049/retention.test.tsx
+@@ -27,7 +27,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/retention-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0049/retention-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ const roots: string[] = [];
+ const fixtures: { db: Database.Database; runs: AgentRunService }[] = [];
+ afterEach(async () => { cleanup(); for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });

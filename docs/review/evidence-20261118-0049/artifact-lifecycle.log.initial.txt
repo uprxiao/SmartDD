@@ -1,0 +1,85 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ × docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L01: a partial file write is cleaned; incomplete fallback and the next normal revision stay readable 24ms
+   → CHECK constraint failed: length(continuation_hash)=64
+ × docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L02: failure while accepting an oversized user message rolls back its turn and file; retry accepts once 18ms
+   → CHECK constraint failed: length(continuation_hash)=64
+ × docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L03: an update rollback preserves the old original; retry commits the next revision and cleans the old file 18ms
+   → CHECK constraint failed: length(continuation_hash)=64
+ × docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L04: minimal structured references and escaped inputs survive a real database reopen with idempotent receipts 18ms
+   → CHECK constraint failed: length(continuation_hash)=64
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L01: a partial file write is cleaned; incomplete fallback and the next normal revision stay readable
+SqliteError: CHECK constraint failed: length(continuation_hash)=64
+ ❯ AgentStore.createBinding src/main/core/agent/agent-store.ts:193:8
+    191|     const id = randomUUID();
+    192|     this.sqlite.prepare('INSERT INTO agent_bindings(binding_id,task_id…
+    193|       .run(id, b.task_id, b.driver_id, b.profile_id, b.continuation_ha…
+       |        ^
+    194|     return id;
+    195|   }
+ ❯ setup docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:40:27
+ ❯ docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:49:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'SQLITE_CONSTRAINT_CHECK' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L02: failure while accepting an oversized user message rolls back its turn and file; retry accepts once
+SqliteError: CHECK constraint failed: length(continuation_hash)=64
+ ❯ AgentStore.createBinding src/main/core/agent/agent-store.ts:193:8
+    191|     const id = randomUUID();
+    192|     this.sqlite.prepare('INSERT INTO agent_bindings(binding_id,task_id…
+    193|       .run(id, b.task_id, b.driver_id, b.profile_id, b.continuation_ha…
+       |        ^
+    194|     return id;
+    195|   }
+ ❯ setup docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:40:27
+ ❯ docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:63:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'SQLITE_CONSTRAINT_CHECK' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L03: an update rollback preserves the old original; retry commits the next revision and cleans the old file
+SqliteError: CHECK constraint failed: length(continuation_hash)=64
+ ❯ AgentStore.createBinding src/main/core/agent/agent-store.ts:193:8
+    191|     const id = randomUUID();
+    192|     this.sqlite.prepare('INSERT INTO agent_bindings(binding_id,task_id…
+    193|       .run(id, b.task_id, b.driver_id, b.profile_id, b.continuation_ha…
+       |        ^
+    194|     return id;
+    195|   }
+ ❯ setup docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:40:27
+ ❯ docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:80:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'SQLITE_CONSTRAINT_CHECK' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts > L04: minimal structured references and escaped inputs survive a real database reopen with idempotent receipts
+SqliteError: CHECK constraint failed: length(continuation_hash)=64
+ ❯ AgentStore.createBinding src/main/core/agent/agent-store.ts:193:8
+    191|     const id = randomUUID();
+    192|     this.sqlite.prepare('INSERT INTO agent_bindings(binding_id,task_id…
+    193|       .run(id, b.task_id, b.driver_id, b.profile_id, b.continuation_ha…
+       |        ^
+    194|     return id;
+    195|   }
+ ❯ setup docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:40:27
+ ❯ docs/review/evidence-20261118-0049/artifact-lifecycle.test.ts:95:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'SQLITE_CONSTRAINT_CHECK' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  00:53:12
+   Duration  193ms (transform 53ms, setup 0ms, import 70ms, tests 78ms, environment 0ms)
+
+JSON report written to /Users/liubu/hx/4.uprxiao/SmartDD/docs/review/evidence-20261118-0049/artifact-lifecycle.vitest.json
