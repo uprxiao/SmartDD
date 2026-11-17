@@ -1,0 +1,446 @@
+{
+  "head": "f4541b93164130423451ee7892fd03ea1de0910f",
+  "branch": "feature/0.1.6",
+  "at": "2026-11-17T23:37:20.422410+08:00",
+  "typecheck": {
+    "node": "passed",
+    "web": "passed",
+    "exitCode": 0,
+    "log": "typecheck.log"
+  },
+  "existingTests": [
+    {
+      "name": "scoped-tests",
+      "passed": 227,
+      "skipped": 2,
+      "exitCode": 0,
+      "log": "scoped-tests.log"
+    },
+    {
+      "name": "affected-ui-tests",
+      "passed": 86,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "affected-ui-tests.log"
+    }
+  ],
+  "existingTestsTotal": {
+    "passed": 313,
+    "skipped": 2
+  },
+  "reviewProbes": {
+    "total": 65,
+    "passed": 63,
+    "failed": 2,
+    "pending": 0,
+    "priorScenariosClosed": 5,
+    "oldContractsPassed": 63,
+    "newFindings": 2,
+    "highPriority": 0,
+    "mediumPriority": 2,
+    "exitCode": 1,
+    "tests": [
+      {
+        "file": "docs/review/evidence-20261117-2327/adjacent-ui.test.tsx",
+        "name": "T01: draft hydration must adopt the revision of the body it actually loaded before the first save",
+        "status": "failed",
+        "failureMessages": [
+          "AssertionError: expected false to be true // Object.is equality\n    at /Users/liubu/hx/4.uprxiao/SmartDD/docs/review/evidence-20261117-2327/adjacent-ui.test.tsx:77:42\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/adjacent-ui.test.tsx",
+        "name": "T02: incomplete stored plan must not become a cached full plan or be copied as an empty success",
+        "status": "failed",
+        "failureMessages": [
+          "AssertionError: expected false to be true // Object.is equality\n    at /Users/liubu/hx/4.uprxiao/SmartDD/docs/review/evidence-20261117-2327/adjacent-ui.test.tsx:95:58\n    at file:///Users/liubu/hx/4.uprxiao/SmartDD/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-core.test.ts",
+        "name": "Q01a: Stop during default-model lookup must prevent the next native turn from starting",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-core.test.ts",
+        "name": "Q01b: Stop during launch resolution must not be mistaken for permission to auto-resume after exit",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-core.test.ts",
+        "name": "Q02: resume in default selection must resolve and restore native default",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-core.test.ts",
+        "name": "Q02: resume in default selection must refuse when native default cannot be determined",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-core.test.ts",
+        "name": "Q03: previews of many pending requests must remain within aggregate snapshot budget",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-core.test.ts",
+        "name": "Q04: saving a valid 262144 byte draft must preserve its original",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-core.test.ts",
+        "name": "Q04: saving a valid 133120 byte draft must preserve its original",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-ui.test.tsx",
+        "name": "Q04ui: an irrecoverably truncated legacy draft must report damage and not silently save an empty draft",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/boundary-ui.test.tsx",
+        "name": "Q05: expanded todo payload must refresh when the item revision advances",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F01a: three native requests must share the overall snapshot budget",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F01b: a valid near-limit draft plus timeline must keep snapshot bounded",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F01c: Chinese request body range must respect byte rather than UTF16 length",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F02: a user Stop while waiting for unusable run exit must prevent queued auto-send",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F03: restoring Codex native default must replace the sticky explicit model",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F04: accepted input receipt must survive subsequent selection changes",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F05: SDK active_goal must outrank a later compatibility text acknowledgement",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F08: reviewer capability must guard native review command as well as ordinary submit",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F01d: event page must respect its 256 KiB byte limit",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-core.test.ts",
+        "name": "F01e: live durable notification must keep the stored event byte limit",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-ui.test.tsx",
+        "name": "F06a: previewed long user message must expose a route to its original text",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-ui.test.tsx",
+        "name": "F06b: previewed plan must expose full content before copying or downloading",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-ui.test.tsx",
+        "name": "F07a: newer first snapshot must still restore saved draft if old initialization is discarded",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-ui.test.tsx",
+        "name": "F07b: attachments edited before equal-watermark initialization must survive",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/new-ui.test.tsx",
+        "name": "F06c: plan copy must include the complete original plan rather than its preview",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC01: canceling application quit must not close running Agents",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC02a: Stop during launch resolution must prevent subsequent dispatch",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC02b: an orphan goal turn after Stop must be interrupted as well",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC03: unknown steer receipt must never be automatically resent as a new turn",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC04: a 36 KB input below the 256 KiB text contract must arrive intact",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC05: user questions and elicitation must produce their own answer shapes",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC06: approval UI must not offer decisions missing from availableDecisions",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC07: changing Claude model inside the same task must change actual SDK model",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC08: starting in ask must allow a confirmed later full tier via close and resume",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC09: nested Claude assistant output must not be persisted as the parent answer",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC10: Claude native goal clear must clear the displayed goal",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC11: close must wait for actual ChildProcess exit before dropping run ownership",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC12: unavailable goal capability must be refused rather than invoked",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC13: a queued project image must be rechecked before a host read after a symlink change",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC14: launch errors must remain visible in the snapshot-backed timeline",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC18: SDK failure before a start signal must release the task dispatch latch",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-probes.test.ts",
+        "name": "RC19: native usage limits must project a limited / paused state, not ordinary failure",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-ui.test.tsx",
+        "name": "RC15: text typed while awaiting a durable send receipt must survive that receipt",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-ui.test.tsx",
+        "name": "RC16: repeated send before a receipt must reuse one input id or be disabled",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-ui.test.tsx",
+        "name": "RC17: numeric request shortcut must select first, and wait for Enter to confirm",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-ui.test.tsx",
+        "name": "N07: initial stale snapshot must not overwrite a newer snapshot or new draft",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-ui.test.tsx",
+        "name": "N05b: a task with an explicit model must still offer the default choice",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/recheck-ui.test.tsx",
+        "name": "N10: native command must not discard ready attachments without delivery or explanation",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N01: retrying an accepted input must not replace its frozen image contents",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N02: failed open must retain an owner whose close has not observed exit",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N03: completion before the start receipt resolves must still drain the next queued input",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N04: a terminal SDK stream must not silently strand an explicit retry on the dead query",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N05: clearing an explicit model must restore default rather than the initial explicit model",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N06a: an approval must not execute a full plan while its snapshot displays a truncated shell",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N06b: snapshot IPC response must respect the documented 256 KiB boundary",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N06c: a single large history item must use a bounded reference or preview",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N08: Claude rate_limit must retain its specific limited reason",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N08: Claude max_output_tokens must retain its specific limited reason",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N09a: missing reviewer capability must stop an ask-tier launch from claiming the guarantee",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N09b: an unknown mandatory native request must never receive generic approval choices",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N11: a late child message must not reopen an already completed native child",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N12: a home attachment prepared in project A must not silently resolve against project B",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N13a: ordinary model text that quotes Goal set must not create a native goal",
+        "status": "passed",
+        "failureMessages": []
+      },
+      {
+        "file": "docs/review/evidence-20261117-2327/residual-core.test.ts",
+        "name": "N13b: ordinary model text that quotes Goal cleared must not clear a real native goal",
+        "status": "passed",
+        "failureMessages": []
+      }
+    ]
+  },
+  "commands": [
+    "pnpm typecheck",
+    "M14_LIVE=0 WILLYOU_TEST_CACHE_DIR=/private/tmp/m14-review-2327-scoped node scripts/run-tests.mjs src/main/core/agent src/renderer/features/agent-tasks src/main/db src/main/quit-flow.test.ts --pool=threads --maxWorkers=2 --reporter=verbose",
+    "M14_LIVE=0 WILLYOU_TEST_CACHE_DIR=/private/tmp/m14-review-2327-ui node scripts/run-tests.mjs src/renderer/features/agents --pool=threads --maxWorkers=2 --reporter=verbose",
+    "M14_LIVE=0 WILLYOU_TEST_CACHE_DIR=/private/tmp/m14-review-2327-final node scripts/run-tests.mjs --config docs/review/evidence-20261117-2327/review.vitest.config.mts --reporter=verbose --reporter=json --outputFile=docs/review/evidence-20261117-2327/review-tests.vitest.json"
+  ],
+  "scope": "U/I, jsdom, actual in-memory SQLite and task/run/store/projector; IPC transport and executors substituted; no real model or packaged App in this review"
+}

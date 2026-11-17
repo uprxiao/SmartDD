@@ -102,12 +102,17 @@ function useFullPayload(item: TimelineItem) {
       const { value } = await fetchItemPayload(item.itemId, item.revision);
       // 读取期间条目已更新：旧结果不写回，也不交给复制／下载。
       if (current.current !== want) { toast.message('内容已更新，请重试'); return null; }
+      // 旧版本只剩前缀与摘要的截断记录不是全文：不缓存，明确失败（复核 T02）。
+      if (isLegacyTruncated(value)) { toast.error('历史只保留了开头部分，无法读取全文'); return null; }
       setFull({ key: want, payload: value }); setExpanded(true); return value;
     } catch (e) { toast.error(`读取完整内容失败：${rpcErrorMessage(e)}`); return null; }
   };
   useEffect(() => { if (expanded && item.payload?.truncated && !valid) void load(); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   return { payload: valid ?? item.payload ?? {}, truncated, load };
 }
+/** 历史正文是否不完整：超过保存上限按结构截短（storedTruncated），或旧版本的通用截断记录。 */
+const isLegacyTruncated = (v: any) => !!v && v.truncated === true && typeof v.sha256 === 'string' && 'head' in v && !v.storedTruncated;
+const isIncomplete = (v: any) => !!v && (v.storedTruncated === true || isLegacyTruncated(v));
 function ExpandButton({ onClick }: { onClick: () => void }) {
   return <button type="button" className="agent-older" onClick={onClick}>内容较长，已截断显示 · 展开全文</button>;
 }
@@ -115,13 +120,17 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
 function ItemRow({ item }: { item: TimelineItem }) {
   const { payload: p, truncated, load } = useFullPayload(item);
   // 复制／下载计划先取得全文；读不到就提示失败，不输出残缺内容（复核 FR04）。
+  // 正文不完整（超过保存上限）或读不到计划字段时提示失败，不复制／下载空的或残缺的内容（复核 T02）。
   const planText = async (): Promise<string | null> => {
-    if (!truncated) return String(p.plan ?? '');
-    const f = await load(); return f && typeof f.plan === 'string' ? f.plan : null;
+    const src = truncated ? await load() : p;
+    if (!src) return null;
+    if (isIncomplete(src)) { toast.error('计划超过保存上限，历史只保留了开头部分，无法复制或下载全文'); return null; }
+    if (typeof src.plan !== 'string') { toast.error('读取完整计划失败'); return null; }
+    return src.plan;
   };
   const copyPlan = async () => { const t = await planText(); if (t === null) return; try { await navigator.clipboard.writeText(t); toast.success('已复制计划'); } catch (e) { toast.error(`复制失败：${rpcErrorMessage(e)}`); } };
   const downloadPlan = async () => { const t = await planText(); if (t === null) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'text/markdown' })); a.download = 'plan.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
-  const more = truncated ? <ExpandButton onClick={() => void load()} /> : null;
+  const more = truncated ? <ExpandButton onClick={() => void load()} /> : isIncomplete(p) ? <div className="agent-limited">内容超过保存上限，只保留了开头部分</div> : null;
   switch (item.type) {
     case 'user_message': return <div className="agent-user"><div className="agent-user-bubble">{p.text}{more}{p.attachments?.length ? <div className="agent-user-attachments">{p.attachments.map((a: any, i: number) => <span key={i} className="agent-chip-name">{a.kind === 'path' ? a.relativePath : a.name}</span>)}</div> : null}</div></div>;
     case 'assistant_message': return <div className="agent-assistant"><Markdown text={String(p.text ?? '')} />{more}</div>;
@@ -300,10 +309,14 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     // 旧版本截断写入的草稿已无法还原：明确提示，不当作空草稿静默加载（复核 SR02）。
     if ('damaged' in s.draft && s.draft.damaged) { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
     let draft = s.draft.draft as any;
-    if ((s.draft as any).truncated) { try { draft = (await readRange((off, rev) => rpc.agentTasks.draftBody(taskId, off, rev))).value; } catch (e) { toast.error(`草稿读取失败：${rpcErrorMessage(e)}`); return; } }
+    let bodyRevision: number | undefined;
+    if ((s.draft as any).truncated) { try { const r = await readRange((off, rev) => rpc.agentTasks.draftBody(taskId, off, rev)); draft = r.value; bodyRevision = r.revision; } catch (e) { toast.error(`草稿读取失败：${rpcErrorMessage(e)}`); return; } }
     // 兜底：读到的仍是旧版本的截断记录（只剩前缀与摘要），同样提示无法恢复，不当作空草稿。
     if (draft && draft.truncated === true && typeof draft.sha256 === 'string') { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
+    // 读取期间已开始编辑：保留本地内容，修订仍按快照比较，真实冲突交给 CAS（复核 T01）。
     if (editedRef.current) return;
+    // 采纳正文的同时采纳它实际所属的修订，首次保存才不会带着旧修订被拒（复核 T01）。
+    if (bodyRevision !== undefined) draftRev.current = bodyRevision;
     setText(String(draft?.text ?? ''));
     const saved = (draft?.attachments ?? []) as PreparedAttachment[];
     setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
@@ -358,7 +371,12 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
       // 保存被拒（如超过上限）：本地编辑保留、修订不变，并提示一次（复核 SR02）。
       const r = await rpc.agentTasks.saveDraft(taskId, { text: value, attachments }, draftRev.current).catch(e => { const m = rpcErrorMessage(e); if (draftError.current !== m) { draftError.current = m; toast.error(`草稿未保存：${m}`); } return null; });
       if (r) draftError.current = null;
-      if (r?.ok) draftRev.current = r.revision; else if (r) draftRev.current = r.revision; // 冲突：保留本地编辑，下次以服务端修订再写
+      if (r?.ok) draftRev.current = r.revision;
+      else if (r) {
+        // 冲突：草稿已在别处更新。本地编辑保留并提示；下一次编辑以服务端修订再写（需求 R01“冲突保留本地编辑”）。
+        draftRev.current = r.revision;
+        toast.warning('草稿已在别处更新，你的修改保留在输入框，继续编辑会以当前内容保存');
+      }
     }, 400);
   };
 

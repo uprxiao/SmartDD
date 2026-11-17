@@ -616,6 +616,33 @@ describe('复核 2251 回归', () => {
   });
 });
 
+describe('复核 2327 回归', () => {
+  it('T02：约 600 KiB 的计划经真实投影入库后可读回完整原文；超过上限的保留结构并标不完整', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'plan', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    const plan = '# 计划\n' + '步骤：改代码。'.repeat(600 * 1024 / 21);
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'a1', itemType: 'assistant', payload: { content: [{ type: 'tool_use', id: 'p1', name: 'ExitPlanMode', input: { plan, extra: 1 } }] } });
+    const read = (itemId: string, rev: number) => { let off = 0, body = ''; for (;;) { const c = svc.itemBody(taskId, itemId, off, rev); body += c.chunk; if (c.done) return JSON.parse(body); off = c.next; } };
+    const item = () => svc.snapshot(taskId).items.find(i => i.type === 'proposed_plan')!;
+    await until(() => !!item());
+    const full = read(item().itemId, item().revision);
+    expect(Buffer.byteLength(plan)).toBeGreaterThan(600 * 1024 - 100);
+    expect(full.plan).toBe(plan);
+    expect(full.input).toEqual({ extra: 1 });
+    expect(full.storedTruncated).toBeUndefined();
+    const huge = 'H'.repeat(1200 * 1024);
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'a2', itemType: 'assistant', payload: { content: [{ type: 'tool_use', id: 'p2', name: 'ExitPlanMode', input: { plan: huge } }] } });
+    await until(() => svc.snapshot(taskId).items.filter(i => i.type === 'proposed_plan').length === 2);
+    const big = svc.snapshot(taskId).items.filter(i => i.type === 'proposed_plan')[1];
+    const bigFull = read(big.itemId, big.revision);
+    expect(bigFull).toMatchObject({ storedTruncated: true, name: 'ExitPlanMode' });
+    expect(huge.startsWith(bigFull.plan)).toBe(true);
+    expect(bigFull.plan.length).toBeGreaterThan(1000);
+  });
+});
+
 describe('宿主重启恢复', () => {
   it('上一实例的运行收口为 orphaned，进行中的回合记未知，排队输入保留但暂停', async () => {
     const { db, store, svc, insts } = setup();

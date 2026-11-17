@@ -24,6 +24,24 @@ export function boundedJson(value: unknown, limit = EVENT_PAYLOAD_LIMIT): string
 /** 历史正文：上限 1 MiB，超限保留前缀并标记（完整产物存储属后续容量合同）。 */
 export const bodyJson = (value: unknown) => boundedJson(value, BODY_LIMIT);
 
+/**
+ * 时间线条目正文（复核 T02）：超过 1 MiB 时保留条目结构，按需截短长字符串并标 storedTruncated，
+ * 界面能显示开头并明确告知不完整，复制／下载会拒绝；不退化成只剩前缀与摘要的通用截断对象。
+ */
+export function itemJson(value: unknown): string {
+  const text = JSON.stringify(value ?? null);
+  const bytes = Buffer.byteLength(text);
+  if (bytes <= BODY_LIMIT) return text;
+  const cut = (v: unknown, cap: number): unknown => typeof v === 'string' ? (v.length > cap ? v.slice(0, cap) : v)
+    : Array.isArray(v) ? v.map(x => cut(x, cap)) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cut(x, cap)])) : v;
+  for (const cap of [128 * 1024, 32 * 1024, 8 * 1024, 1024]) {
+    const shortened = { ...(cut(value, cap) as object), storedTruncated: true, bytes, sha256: sha256(text) };
+    const out = JSON.stringify(shortened);
+    if (Buffer.byteLength(out) <= BODY_LIMIT) return out;
+  }
+  return boundedJson(value, BODY_LIMIT);
+}
+
 export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; tier: string }
 export interface CreateTaskInput { projectId: string | null; dirId: string | null; cwd: string; title: string; selection: AgentSelection; parentTaskId?: string }
 export interface BindingRow { binding_id: string; task_id: string; driver_id: string; profile_id: string; continuation_hash: string; state_root: string; cwd_identity: string; native_id: string | null; native_confirmed_at: string | null }
@@ -146,7 +164,7 @@ export class AgentStore {
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(t.taskId) as { ordinal: number };
       const itemId = randomUUID();
       this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,'user_message',?,1,?,?,'completed',?,?)")
-        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, bodyJson({ text: t.text, sourceKind: t.sourceKind, ...(t.attachments?.length ? { attachments: (t.attachments as any[]).map(a => ({ name: a.name, kind: a.kind, image: a.image, relativePath: a.relativePath })) } : {}) }), now(), now());
+        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, itemJson({ text: t.text, sourceKind: t.sourceKind, ...(t.attachments?.length ? { attachments: (t.attachments as any[]).map(a => ({ name: a.name, kind: a.kind, image: a.image, relativePath: a.relativePath })) } : {}) }), now(), now());
       emit(t.taskId, 'item.created', { type: 'user_message', ordinal, payload: { text: t.text, sourceKind: t.sourceKind } }, itemId, 1);
       return { turn: this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow, duplicate: false };
     });
@@ -188,14 +206,14 @@ export class AgentStore {
       const existing = this.sqlite.prepare('SELECT item_id,revision FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number } | undefined;
       if (existing) {
         const revision = existing.revision + 1;
-        this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(bodyJson(i.payload), revision, i.terminalState ?? null, now(), existing.item_id);
+        this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(itemJson(i.payload), revision, i.terminalState ?? null, now(), existing.item_id);
         emit(i.taskId, 'item.updated', { type: i.type, payload: i.payload }, existing.item_id, revision);
         return existing.item_id;
       }
       const itemId = randomUUID();
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(i.taskId) as { ordinal: number };
       this.sqlite.prepare('INSERT INTO agent_items(item_id,task_id,turn_id,run_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,?,1,?,?,?,?,?)')
-        .run(itemId, i.taskId, i.turnId, i.runId, i.type, ordinal, i.nativeKey, bodyJson(i.payload), i.terminalState ?? null, now(), now());
+        .run(itemId, i.taskId, i.turnId, i.runId, i.type, ordinal, i.nativeKey, itemJson(i.payload), i.terminalState ?? null, now(), now());
       emit(i.taskId, 'item.created', { type: i.type, ordinal, payload: i.payload }, itemId, 1);
       return itemId;
     });
@@ -370,7 +388,7 @@ export class AgentStore {
       const itemId = randomUUID();
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(taskId) as { ordinal: number };
       this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,1,?,?,'completed',?,?)")
-        .run(itemId, taskId, turnId, type, ordinal, `host:${itemId}`, bodyJson(payload), now(), now());
+        .run(itemId, taskId, turnId, type, ordinal, `host:${itemId}`, itemJson(payload), now(), now());
       emit(taskId, 'item.created', { type, ordinal, payload }, itemId, 1);
       return itemId;
     });

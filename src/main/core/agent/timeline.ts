@@ -24,6 +24,12 @@ function claudeToolType(name: string): ItemType {
 }
 
 /** 每个运行一个投影器实例：保存工具调用与结果的配对，以及聚合的待办清单。 */
+/** 计划条目只存一份计划正文（复核 T02）：入参里的 plan 移到顶层，不重复内联而让历史正文翻倍。 */
+function planFields(input: unknown) {
+  const { plan, ...rest } = (input ?? {}) as Record<string, unknown>;
+  return { input: rest, plan: text(plan) };
+}
+
 export class TimelineProjector {
   private readonly claudeTools = new Map<string, { type: ItemType; name: string; input: unknown }>();
   private readonly todos = new Map<string, { id: string; subject: string; status: string }>();
@@ -67,7 +73,7 @@ export class TimelineProjector {
           const type = claudeToolType(block.name);
           this.claudeTools.set(block.id, { type, name: block.name, input: block.input });
           if (TODO_TOOLS.has(block.name)) return; // 只在成功结果后改清单（V10b，RR03）
-          out.push({ key: `tool:${block.id}`, type, payload: { name: block.name, input: block.input, status: 'running', ...(type === 'proposed_plan' ? { plan: text(block.input?.plan) } : {}) }, terminal: null });
+          out.push({ key: `tool:${block.id}`, type, payload: { name: block.name, status: 'running', ...(type === 'proposed_plan' ? planFields(block.input) : { input: block.input }) }, terminal: null });
         }
       });
       return out;
@@ -95,7 +101,7 @@ export class TimelineProjector {
         const output = Array.isArray(block.content) ? block.content.map((c: any) => c?.text ?? '').join('\n') : text(block.content);
         const finalPayload = { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed' };
         if (tool.type === 'subagent') this.finals.set(block.tool_use_id, { payload: finalPayload, terminal: failed ? 'failed' : 'completed' });
-        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'subagent' ? { childLog: this.childLogs.get(block.tool_use_id) ?? [] } : {}), ...(tool.type === 'proposed_plan' ? { plan: text((tool.input as any)?.plan) } : {}) }, terminal: failed ? 'failed' : 'completed' });
+        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'subagent' ? { childLog: this.childLogs.get(block.tool_use_id) ?? [] } : {}), ...(tool.type === 'proposed_plan' ? planFields(tool.input) : { input: tool.input }) }, terminal: failed ? 'failed' : 'completed' });
       }
       return out;
     }

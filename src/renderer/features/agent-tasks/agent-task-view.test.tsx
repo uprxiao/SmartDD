@@ -153,3 +153,63 @@ it('SR02：分段读回的草稿若仍是旧版本截断记录，同样提示，
   await screen.findByPlaceholderText('随心输入');
   await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('草稿不完整')));
 });
+
+it('T01：快照修订 1、实际读回修订 2，首次编辑按修订 2 保存', async () => {
+  mocks.draftBody.mockResolvedValue({ chunk: JSON.stringify({ text: '修订二的草稿' }), next: 1, done: true, revision: 2 });
+  mocks.snapshot.mockResolvedValue(snapshot({ draft: { draft: null, truncated: true, bytes: 70000, revision: 1 } }));
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('随心输入') as HTMLTextAreaElement;
+  await waitFor(() => expect(input.value).toBe('修订二的草稿'));
+  fireEvent.change(input, { target: { value: '修订二的草稿＋改' } });
+  await waitFor(() => expect(mocks.saveDraft).toHaveBeenCalled(), { timeout: 2000 });
+  expect(mocks.saveDraft.mock.calls[0][2]).toBe(2);
+});
+
+it('T01：分段读取中途草稿更新，重读到修订 2 后首次编辑按修订 2 保存', async () => {
+  mocks.draftBody.mockImplementation((_t: string, off: number, rev?: number) => {
+    if (off === 0 && rev === undefined && mocks.draftBody.mock.calls.length === 1) return Promise.resolve({ chunk: '{"text":"旧', next: 5, done: false, revision: 1 });
+    if (rev === 1) return Promise.reject(new Error('草稿已更新，请重新读取'));
+    return Promise.resolve({ chunk: JSON.stringify({ text: '新内容' }), next: 1, done: true, revision: 2 });
+  });
+  mocks.snapshot.mockResolvedValue(snapshot({ draft: { draft: null, truncated: true, bytes: 70000, revision: 1 } }));
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('随心输入') as HTMLTextAreaElement;
+  await waitFor(() => expect(input.value).toBe('新内容'));
+  fireEvent.change(input, { target: { value: '新内容2' } });
+  await waitFor(() => expect(mocks.saveDraft).toHaveBeenCalled(), { timeout: 2000 });
+  expect(mocks.saveDraft.mock.calls[0][2]).toBe(2);
+});
+
+it('T01：读取期间已编辑，保留本地内容；真实冲突按修订比较，不被静默覆盖并提示', async () => {
+  let resolveBody!: (v: any) => void;
+  mocks.draftBody.mockImplementation(() => new Promise(r => { resolveBody = r; }));
+  mocks.saveDraft.mockResolvedValueOnce({ ok: false, revision: 2 });
+  mocks.snapshot.mockResolvedValue(snapshot({ draft: { draft: null, truncated: true, bytes: 70000, revision: 1 } }));
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('随心输入') as HTMLTextAreaElement;
+  await waitFor(() => expect(mocks.draftBody).toHaveBeenCalled());
+  fireEvent.change(input, { target: { value: '我先写的' } });
+  await act(async () => resolveBody({ chunk: JSON.stringify({ text: '别处的' }), next: 1, done: true, revision: 2 }));
+  expect(input.value).toBe('我先写的');
+  await waitFor(() => expect(mocks.saveDraft).toHaveBeenCalled(), { timeout: 2000 });
+  expect(mocks.saveDraft.mock.calls[0][2]).toBe(1);
+  await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('草稿已在别处更新')));
+  expect(input.value).toBe('我先写的');
+});
+
+for (const [name, body] of [
+  ['超过保存上限、按结构截短', { name: 'ExitPlanMode', plan: 'P'.repeat(3000), storedTruncated: true, bytes: 1_300_000, sha256: 'ab' }],
+  ['旧版本的通用截断记录', { truncated: true, bytes: 1_228_912, sha256: 'ab', head: '{"name":"ExitPlanMode"' }],
+] as const) it(`T02：计划正文不完整（${name}），连续两次复制都不写剪贴板并提示失败`, async () => {
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+  mocks.itemBody.mockImplementation(serveInTwo(body));
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [item('proposed_plan', { name: 'ExitPlanMode', plan: 'P'.repeat(2000), truncated: true, bytes: 1_300_000 })] }));
+  render(<AgentTaskView taskId="task" />);
+  const copy = await screen.findByRole('button', { name: '复制' });
+  for (let k = 0; k < 2; k++) { fireEvent.click(copy); await new Promise(r => setTimeout(r, 30)); }
+  fireEvent.click(screen.getByRole('button', { name: '下载' })); await new Promise(r => setTimeout(r, 30));
+  expect(writeText).not.toHaveBeenCalled();
+  expect(mocks.toast.mock.calls.some(c => String(c[0]).includes('已复制'))).toBe(false);
+  expect(mocks.toast.mock.calls.filter(c => /保存上限|只保留了开头/.test(String(c[0]))).length).toBeGreaterThanOrEqual(3);
+});
