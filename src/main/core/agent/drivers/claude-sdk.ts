@@ -2,6 +2,7 @@
 // 流式输入模式：一个 query 承载同一会话的多轮；canUseTool 挂起为宿主请求，所有档位下计划批准都交用户（V18）。
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { CLAUDE_TIERS } from '../permissions';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput } from '../driver';
 import type { Tier } from '../permissions';
@@ -29,6 +30,11 @@ class InputQueue<T> implements AsyncIterable<T> {
     return { next: () => this.items.length ? Promise.resolve({ value: this.items.shift()!, done: false }) : this.ended ? Promise.resolve({ value: undefined as never, done: true }) : new Promise(r => this.waiters.push(r)) };
   }
 }
+
+/** 有图片时用内容块（base64 图片）；只有文字时保持字符串。 */
+const userContent = (input: TurnInput) => input.images?.length
+  ? [{ type: 'text', text: input.text }, ...input.images.map(i => ({ type: 'image', source: { type: 'base64', media_type: i.mime, data: readFileSync(i.path).toString('base64') } }))]
+  : input.text;
 
 const requestKind = (tool: string): DriverRequestKind =>
   tool === 'ExitPlanMode' ? 'plan_approval' : tool === 'AskUserQuestion' ? 'user_input' : tool === 'Bash' ? 'command_approval' : /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool) ? 'file_approval' : 'tool_approval';
@@ -152,14 +158,14 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (input.tier !== this.tier) { await this.query.setPermissionMode(params.permissionMode); this.tier = input.tier; }
     const nativeTurnId = `${this.sessionId}:${++this.turnSerial}`;
     const started = new Promise<string>(resolve => { this.activeTurn = { nativeTurnId, clientInputId: input.clientInputId, started: false, interrupted: false, resolveStart: resolve }; });
-    this.input.push({ type: 'user', message: { role: 'user', content: input.text }, parent_tool_use_id: null });
+    this.input.push({ type: 'user', message: { role: 'user', content: userContent(input) }, parent_tool_use_id: null });
     return { nativeTurnId: await started };
   }
 
   /** 插话：流式输入在回合进行中仍开放（CLI 2.1.325 实测）；原生开始信号不重复发。 */
   async steer(input: TurnInput) {
     if (!this.input || !this.activeTurn?.started) throw new DriverError('STATE', '当前没有进行中的回合');
-    this.input.push({ type: 'user', message: { role: 'user', content: input.text }, parent_tool_use_id: null, priority: 'now' });
+    this.input.push({ type: 'user', message: { role: 'user', content: userContent(input) }, parent_tool_use_id: null, priority: 'now' });
     this.emitter.emit({ type: 'steer.accepted', clientInputId: input.clientInputId, nativeTurnId: this.activeTurn.nativeTurnId });
   }
 

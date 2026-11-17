@@ -28,6 +28,8 @@ export interface DriverOpenOptions {
 export interface TurnInput {
   clientInputId: string;
   text: string;
+  /** 已由宿主核对的图片附件（绝对路径）；非图片附件只在文字中注明。 */
+  images?: readonly { path: string; mime: string }[];
   model?: string;
   tier: Tier;
 }

@@ -1,7 +1,7 @@
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, ChevronRight, CircleStop, Loader2, Send, Target, X, Zap } from 'lucide-react';
+import { Archive, ChevronRight, CircleStop, FileText, Loader2, RotateCw, Send, Target, X, Zap } from 'lucide-react';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
@@ -29,6 +29,29 @@ mdRules.link_open = () => '<span class="agent-link-text">';
 mdRules.link_close = () => '</span>';
 mdRules.image = (tokens, idx) => `<span class="agent-link-text">[${escapeHtml(tokens[idx].content)}]</span>`;
 
+type PreparedAttachment = Awaited<ReturnType<typeof rpc.agentTasks.prepareAttachment>>;
+export interface Chip { localId: string; name: string; status: 'preparing' | 'ready' | 'failed'; error?: string; preview?: string; data?: PreparedAttachment; file?: File }
+
+/** 读取粘贴的文件：有本机路径的按路径准备（项目内引用、项目外复制），剪贴板图片等按内容准备。 */
+export async function prepareChip(file: File, prepare: (f: { name: string; mime?: string; sourcePath?: string; dataBase64?: string }) => Promise<PreparedAttachment>): Promise<PreparedAttachment> {
+  const path = window.electronAPI.pathForFile?.(file) ?? '';
+  if (path) return prepare({ name: file.name || path.split('/').pop() || 'file', mime: file.type, sourcePath: path });
+  const buf = new Uint8Array(await file.arrayBuffer());
+  let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  return prepare({ name: file.name || `粘贴的图片.${(file.type.split('/')[1] || 'png')}`, mime: file.type, dataBase64: btoa(bin) });
+}
+
+/** 附件卡片（照 Codex：图片缩略图／“预览＋文件名”，悬停出现移除）。 */
+function AttachmentChips({ chips, onRemove, onRetry }: { chips: Chip[]; onRemove: (id: string) => void; onRetry: (id: string) => void }) {
+  if (!chips.length) return null;
+  return <div className="agent-chips">{chips.map(c => <div key={c.localId} className={`agent-chip ${c.status}`} title={c.error ?? (c.data?.kind === 'path' ? `项目文件：${c.data.relativePath}` : c.data?.kind === 'file' ? '项目外文件，已复制为附件' : c.name)}>
+    {c.preview ? <img src={c.preview} alt="" /> : <span className="agent-chip-icon">{c.status === 'preparing' ? <Loader2 size={14} className="spin" /> : <FileText size={14} />}</span>}
+    <span className="agent-chip-name">{c.name}{c.data?.kind === 'file' && !c.data.image ? ' · 副本' : ''}</span>
+    {c.status === 'failed' && <button type="button" title="重试" onClick={() => onRetry(c.localId)}><RotateCw size={12} /></button>}
+    <button type="button" className="agent-chip-remove" title="移除" onClick={() => onRemove(c.localId)}><X size={12} /></button>
+  </div>)}</div>;
+}
+
 export function newClientInputId() { return `in-${crypto.randomUUID().replace(/-/g, '')}`; }
 
 function Markdown({ text }: { text: string }) {
@@ -39,7 +62,7 @@ function Markdown({ text }: { text: string }) {
 function ItemRow({ item }: { item: TimelineItem }) {
   const p = item.payload ?? {};
   switch (item.type) {
-    case 'user_message': return <div className="agent-user"><div className="agent-user-bubble">{p.text}</div></div>;
+    case 'user_message': return <div className="agent-user"><div className="agent-user-bubble">{p.text}{p.attachments?.length ? <div className="agent-user-attachments">{p.attachments.map((a: any, i: number) => <span key={i} className="agent-chip-name">{a.kind === 'path' ? a.relativePath : a.name}</span>)}</div> : null}</div></div>;
     case 'assistant_message': return <div className="agent-assistant"><Markdown text={String(p.text ?? '')} /></div>;
     case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划</div><Markdown text={String(p.plan ?? '')} />
       <div className="agent-plan-actions"><button type="button" onClick={() => { void navigator.clipboard.writeText(String(p.plan ?? '')); toast.success('已复制计划'); }}>复制</button>
@@ -113,6 +136,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [text, setText] = useState('');
+  const [chips, setChips] = useState<Chip[]>([]);
   const [live, setLive] = useState<Record<string, string>>({});
   const [now, setNow] = useState(Date.now());
   const permissionPref = useAppSettingsKey('agentPermissions');
@@ -137,6 +161,8 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
       const s = await rpc.agentTasks.snapshot(taskId).catch(e => { toast.error(rpcErrorMessage(e)); return null; });
       if (!alive || !s) return;
       setSnap(s); draftRev.current = s.draft?.revision ?? 0; setText(String((s.draft?.draft as any)?.text ?? ''));
+      const saved = ((s.draft?.draft as any)?.attachments ?? []) as PreparedAttachment[];
+      setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
     })();
     void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {});
     const tick = setInterval(() => setNow(Date.now()), 1000);
@@ -145,10 +171,14 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
 
   useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [snap?.seq, Object.keys(live).length]);
 
+  const chipsRef = useRef<Chip[]>([]); chipsRef.current = chips;
+  const textRef = useRef(''); textRef.current = text;
   const saveDraft = (value: string) => {
     if (draftTimer.current) clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(async () => {
-      const r = await rpc.agentTasks.saveDraft(taskId, { text: value }, draftRev.current).catch(() => null);
+      // 草稿中的附件归属任务：只存已就绪的元数据（需求 R01）。
+      const attachments = chipsRef.current.filter(c => c.status === 'ready' && c.data).map(c => c.data!);
+      const r = await rpc.agentTasks.saveDraft(taskId, { text: value, attachments }, draftRev.current).catch(() => null);
       if (r?.ok) draftRev.current = r.revision; else if (r) draftRev.current = r.revision; // 冲突：保留本地编辑，下次以服务端修订再写
     }, 400);
   };
@@ -160,8 +190,29 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const working = snap.status === 'working' || snap.status === 'waiting';
   const liveText = Object.values(live).join('');
 
+  const addFiles = (files: File[]) => {
+    for (const file of files) {
+      const localId = crypto.randomUUID();
+      const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', preview, file }]);
+      void prepareChip(file, f => rpc.agentTasks.prepareAttachment(taskId, null, f))
+        .then(data => { setChips(cs => cs.map(c => c.localId === localId ? { ...c, status: 'ready', data, name: data.name } : c)); setTimeout(() => saveDraft(textRef.current), 0); })
+        .catch(e => setChips(cs => cs.map(c => c.localId === localId ? { ...c, status: 'failed', error: rpcErrorMessage(e) } : c)));
+    }
+  };
+  const retryChip = (localId: string) => {
+    const chip = chips.find(c => c.localId === localId); if (!chip?.file) { toast.warning('原文件已不可用，请重新粘贴'); return; }
+    setChips(cs => cs.filter(c => c.localId !== localId)); addFiles([chip.file]);
+  };
+  const removeChip = (localId: string) => { setChips(cs => cs.filter(c => c.localId !== localId)); setTimeout(() => saveDraft(textRef.current), 0); };
+
   const send = async (mode: 'queue' | 'steer' = 'queue') => {
-    const value = text.trim(); if (!value) return;
+    const value = text.trim();
+    // 准备中或失败的附件不能发送也不能排队，给出原因且不清空输入（用例 A75）。
+    if (chips.some(c => c.status === 'preparing')) { toast.warning('附件还在准备中，准备好后再发送'); return; }
+    if (chips.some(c => c.status === 'failed')) { toast.warning('有附件准备失败，请重试或移除后再发送'); return; }
+    const attachments = chips.map(c => c.data!).filter(Boolean);
+    if (!value && !attachments.length) return;
     try {
       // /goal 命令：只对声明支持的执行器开放（需求 R02）；/goal clear 清除。
       const goalCmd = /^\/goal(?:\s+([\s\S]*))?$/.exec(value);
@@ -170,11 +221,11 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
         if (!arg) { toast.warning('在 /goal 后写目标，或用 /goal clear 清除'); return; }
         await rpc.agentTasks.goal(taskId, arg === 'clear' ? { kind: 'clear' } : { kind: 'set', objective: arg });
       } else {
-        const r = await rpc.agentTasks.submit(taskId, { clientInputId: newClientInputId(), text: value, expectedSelectionRevision: snap.selectionRevision, mode });
+        const r = await rpc.agentTasks.submit(taskId, { clientInputId: newClientInputId(), text: value, expectedSelectionRevision: snap.selectionRevision, mode, attachments });
         if ('steerRefused' in r && r.steerRefused) toast.warning(r.steerRefused);
         else if (r.status === 'queued') toast.message('已排队，本轮结束后发送');
       }
-      setText(''); saveDraft('');
+      setText(''); setChips([]); chipsRef.current = []; saveDraft('');
       void reload();
     } catch (e) { toast.error(rpcErrorMessage(e)); void reload(); }
   };
@@ -201,7 +252,9 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
       {requests.length > 0 && snap.run
         ? <RequestPanel requests={requests} driverId={snap.run.driverId} onStop={() => void stop()} onRespond={async (r, result) => { await rpc.agentTasks.respond(taskId, r.requestId, r.revision, result); void reload(); }} />
         : <form className="agent-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
-          <textarea value={text} placeholder={working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
+          <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
+          <textarea value={text} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
+            onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); }}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send((e.metaKey || e.ctrlKey) && working && snap.run?.steer ? 'steer' : 'queue'); } }} />
           <div className="agent-composer-bar">
@@ -217,7 +270,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
             {working && snap.run?.steer && <button type="button" className="agent-stop" disabled={!text.trim()} onClick={() => void send('steer')} title="插话：并入当前这一轮（⌘Enter）"><Zap size={14} />插话</button>}
             {working && snap.run && !snap.run.steer && <span className="agent-composer-agent" title="该执行器版本没有插话的验证证据">运行中发送会排队</span>}
             {working && <button type="button" className="agent-stop" onClick={() => void stop()} title="停止本轮"><CircleStop size={15} /></button>}
-            <button type="submit" className="agent-send" disabled={!text.trim()} title="发送"><Send size={15} /></button>
+            <button type="submit" className="agent-send" disabled={!text.trim() && !chips.length} title="发送"><Send size={15} /></button>
           </div>
         </form>}
     </div>

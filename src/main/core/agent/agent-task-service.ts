@@ -8,6 +8,8 @@ import { AgentStore, type AgentSelection, type StoredEvent } from './agent-store
 import { AgentRunService } from './agent-run-service';
 import { isTier, resolveTier, type Tier } from './permissions';
 import { evaluateCapabilities } from './capabilities';
+import { attachmentNote, prepareAttachment, verifyAttachments, type Attachment } from './attachments';
+import { join } from 'node:path';
 
 export interface ResolvedLaunch {
   driverId: DriverId;
@@ -30,7 +32,7 @@ export class AgentTaskService {
   private readonly paused = new Set<string>();
   private readonly dispatching = new Set<string>();
 
-  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver }) {
+  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; userData?: string }) {
     // 重启后排队的输入保留但不自动发出，等用户再次提交或取消（未知接收不自动重发）。
     for (const taskId of d.store.tasksWithQueue()) this.paused.add(taskId);
     d.store.subscribe(e => { if (e.type === 'turn.ended' || e.type === 'run.ended') queueMicrotask(() => void this.pump(e.taskId)); });
@@ -72,23 +74,37 @@ export class AgentTaskService {
   saveDraft(taskId: string, draft: unknown, expectedRevision: number) { this.selection(taskId); return this.d.store.saveDraft(taskId, draft, expectedRevision); }
 
   /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。mode=steer 时尝试插话，不支持则保留在排队并说明原因。 */
-  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer' }) {
-    const { revision } = this.selection(taskId);
+  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) {
+    const { revision, task } = this.selection(taskId);
     if (input.expectedSelectionRevision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
-    if (!input.text.trim()) throw new DriverError('REJECTED', '内容为空');
+    const attachments = this.d.userData ? verifyAttachments(input.attachments, task.cwd, this.d.userData) : [];
+    if (!input.text.trim() && !attachments.length) throw new DriverError('REJECTED', '内容为空');
     if (!/^[A-Za-z0-9_-]{8,128}$/.test(input.clientInputId)) throw new DriverError('REJECTED', '输入标识无效');
-    const accepted = this.d.store.acceptTurn({ taskId, clientInputId: input.clientInputId, text: input.text, sourceKind: 'user' });
+    const accepted = this.d.store.acceptTurn({ taskId, clientInputId: input.clientInputId, text: input.text, sourceKind: 'user', attachments });
     if (accepted.duplicate) return { turnId: accepted.turn.turn_id, duplicate: true, status: accepted.turn.status };
     this.paused.delete(taskId);
     const run = this.d.runs.runForTask(taskId);
     if (input.mode === 'steer' && run && this.d.runs.busy(run.runId)) {
       if (!this.steerable(run)) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: '该执行器版本没有插话的验证证据，已排队' };
-      try { await this.d.runs.steer(run.runId, accepted.turn.turn_id, { clientInputId: input.clientInputId, text: input.text }); return { turnId: accepted.turn.turn_id, duplicate: false, status: 'steered' }; }
+      try { await this.d.runs.steer(run.runId, accepted.turn.turn_id, { clientInputId: input.clientInputId, ...this.agentInput(task.cwd, input.text, attachments) }); return { turnId: accepted.turn.turn_id, duplicate: false, status: 'steered' }; }
       catch (e) { return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: `插话未被接受（${(e as Error).message.slice(0, 120)}），已排队` }; }
     }
     const queued = !!run && this.d.runs.busy(run.runId) || this.d.store.queuedTurns(taskId).length > 1 || this.dispatching.has(taskId);
     void this.pump(taskId);
     return { turnId: accepted.turn.turn_id, duplicate: false, status: queued ? 'queued' : 'accepted' };
+  }
+
+  /** 发给执行器的文字（附件注明）与图片路径。 */
+  private agentInput(cwd: string, text: string, attachments: Attachment[]) {
+    return { text: text + attachmentNote(attachments), images: attachments.filter(a => a.image).map(a => ({ path: a.kind === 'path' ? join(cwd, a.relativePath!) : a.storedPath!, mime: a.mime })) };
+  }
+
+  /** 输入框附件准备：taskId 为空时（首页）用所选目录。 */
+  prepareAttachment(taskId: string | null, cwd: string | null, file: { name: string; mime?: string; sourcePath?: string; dataBase64?: string }) {
+    if (!this.d.userData) throw new DriverError('UNSUPPORTED', '附件不可用');
+    const dir = taskId ? this.selection(taskId).task.cwd : cwd;
+    if (!dir) throw new DriverError('REJECTED', '先选择项目目录');
+    return prepareAttachment({ cwd: dir, userData: this.d.userData, ...file });
   }
 
   private steerable(run: { driverId: DriverId; version: string }) {
@@ -134,8 +150,9 @@ export class AgentTaskService {
     try {
       const { selection } = this.selection(taskId);
       run = await this.ensureRun(taskId);
-      const text = (JSON.parse(next.input_ref) as { text: string }).text;
-      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, text, tier: selection.tier as Tier, model: selection.model });
+      const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[] };
+      const { task } = this.selection(taskId);
+      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...this.agentInput(task.cwd, frozen.text, frozen.attachments ?? []), tier: selection.tier as Tier, model: selection.model });
     } catch (e) {
       const t = this.d.store.turn(next.turn_id);
       // 驱动在发送前拒绝且已放回排队（原生仍在跑）：等该回合结束后由 turn.ended 再派发，不算失败。

@@ -74,3 +74,14 @@
 .agent-goal-body small { color: var(--foreground-passive, #888); }
 .agent-goal-actions { display: flex; gap: 6px; }
 .agent-goal-actions button { font-size: 12px; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border, rgba(127,127,127,.25)); background: none; color: inherit; cursor: pointer; }
+
+.agent-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 0; }
+.agent-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 34px; max-width: 240px; padding: 0 8px 0 4px; border-radius: 8px; border: 1px solid var(--border, rgba(127,127,127,.25)); font-size: 12px; }
+.agent-chip img { width: 26px; height: 26px; object-fit: cover; border-radius: 5px; }
+.agent-chip-icon { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: rgba(127,127,127,.1); }
+.agent-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agent-chip.failed { border-color: #d14343; color: #d14343; }
+.agent-chip button { border: 0; background: none; color: inherit; cursor: pointer; display: inline-flex; padding: 2px; }
+.agent-chip-remove { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 8px !important; background: var(--foreground, #111) !important; color: var(--background, #fff) !important; display: none !important; align-items: center; justify-content: center; }
+.agent-chip:hover .agent-chip-remove, .agent-chip:focus-within .agent-chip-remove { display: inline-flex !important; }
+.agent-user-attachments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; font-size: 12px; opacity: .75; }

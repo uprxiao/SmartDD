@@ -120,19 +120,19 @@ export class AgentStore {
   }
 
   /** 本地接受：同一 clientInputId 只接受一次，重复提交返回原收据（幂等只保证宿主接受）。 */
-  acceptTurn(t: { taskId: string; clientInputId: string; text: string; sourceKind: 'user' | 'delegation' | 'notification' | 'system' }): { turn: TurnRow; duplicate: boolean } {
+  acceptTurn(t: { taskId: string; clientInputId: string; text: string; sourceKind: 'user' | 'delegation' | 'notification' | 'system'; attachments?: unknown[] }): { turn: TurnRow; duplicate: boolean } {
     return this.tx(emit => {
       const existing = this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(t.taskId, t.clientInputId) as TurnRow | undefined;
       if (existing) return { turn: existing, duplicate: true };
       const turnId = randomUUID();
       this.sqlite.prepare("INSERT INTO agent_turns(turn_id,task_id,client_input_id,input_ref,source_kind,status,accepted_at) VALUES(?,?,?,?,?,'accepted',?)")
-        .run(turnId, t.taskId, t.clientInputId, boundedJson({ text: t.text }), t.sourceKind, now());
+        .run(turnId, t.taskId, t.clientInputId, boundedJson({ text: t.text, ...(t.attachments?.length ? { attachments: t.attachments } : {}) }), t.sourceKind, now());
       emit(t.taskId, 'turn.accepted', { turnId, clientInputId: t.clientInputId, sourceKind: t.sourceKind });
       // 用户消息由宿主在本地接受时记录（可信出站来源），不取原生回显（技术方案 §4 user_message）。
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(t.taskId) as { ordinal: number };
       const itemId = randomUUID();
       this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,'user_message',?,1,?,?,'completed',?,?)")
-        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, boundedJson({ text: t.text, sourceKind: t.sourceKind }), now(), now());
+        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, boundedJson({ text: t.text, sourceKind: t.sourceKind, ...(t.attachments?.length ? { attachments: (t.attachments as any[]).map(a => ({ name: a.name, kind: a.kind, image: a.image, relativePath: a.relativePath })) } : {}) }), now(), now());
       emit(t.taskId, 'item.created', { type: 'user_message', ordinal, payload: { text: t.text, sourceKind: t.sourceKind } }, itemId, 1);
       return { turn: this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow, duplicate: false };
     });

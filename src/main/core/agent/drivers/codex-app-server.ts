@@ -82,7 +82,7 @@ export class CodexAppServerInstance implements DriverInstance {
     this.pendingInputId = input.clientInputId;
     const r = await this.rpc.call<{ turn: { id: string } }>('turn/start', {
       threadId: this.threadId, cwd: this.cwd,
-      input: [{ type: 'text', text: input.text, text_elements: [] }],
+      input: [{ type: 'text', text: input.text, text_elements: [] }, ...(input.images ?? []).map(i => ({ type: 'localImage', path: i.path }))],
       clientUserMessageId: input.clientInputId,
       approvalPolicy: tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandboxPolicy: tier.sandboxPolicy,
       ...(input.model ? { model: input.model } : {}),
@@ -166,7 +166,7 @@ export class CodexAppServerInstance implements DriverInstance {
     const t = this.activeTurn;
     if (!t) throw new DriverError('STATE', '当前没有进行中的回合');
     // expectedTurnId 不匹配当前回合时原生拒绝：不自动改成新回合发送（技术方案 §5）。
-    await this.rpc.call('turn/steer', { threadId: this.threadId, expectedTurnId: t.nativeTurnId, clientUserMessageId: input.clientInputId, input: [{ type: 'text', text: input.text, text_elements: [] }] });
+    await this.rpc.call('turn/steer', { threadId: this.threadId, expectedTurnId: t.nativeTurnId, clientUserMessageId: input.clientInputId, input: [{ type: 'text', text: input.text, text_elements: [] }, ...(input.images ?? []).map(i => ({ type: 'localImage', path: i.path }))] });
     this.emitter.emit({ type: 'steer.accepted', clientInputId: input.clientInputId, nativeTurnId: t.nativeTurnId });
   }
 

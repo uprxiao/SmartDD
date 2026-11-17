@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron';
 import type { ElectronAPI } from './api';
 
 // Same generic bridge as Yoda: the typed RPC client and event emitter are built on top in the renderer.
@@ -10,6 +10,7 @@ const api: ElectronAPI = {
     ipcRenderer.on(channel, wrapped);
     return () => ipcRenderer.removeListener(channel, wrapped);
   },
+  pathForFile: (file) => { try { return webUtils.getPathForFile(file); } catch { return ''; } },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

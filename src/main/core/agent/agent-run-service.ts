@@ -146,7 +146,7 @@ export class AgentRunService {
   }
 
   /** 派发一条已接受（排队中）的输入；原生开始信号到达后才确认开始。 */
-  async dispatch(runId: string, turnId: string, input: { clientInputId: string; text: string; tier?: Tier; model?: string }) {
+  async dispatch(runId: string, turnId: string, input: { clientInputId: string; text: string; images?: { path: string; mime: string }[]; tier?: Tier; model?: string }) {
     const run = this.runs.get(runId);
     if (!run || run.closing) throw new DriverError('STATE', '运行不存在或正在关闭');
     if (run.turnId) throw new DriverError('STATE', '上一轮尚未结束');
@@ -156,7 +156,7 @@ export class AgentRunService {
     store.dispatchTurn(turnId, runId);
     run.turnId = turnId;
     try {
-      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, tier: tier.tier, model: input.model });
+      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: tier.tier, model: input.model });
       store.startTurn(turnId, nativeTurnId);
       return { nativeTurnId };
     } catch (e) {
@@ -169,13 +169,13 @@ export class AgentRunService {
   }
 
   /** 插话：只在执行器支持且有进行中的回合时可用；否则抛错由调用方改为排队。 */
-  async steer(runId: string, turnId: string, input: { clientInputId: string; text: string }) {
+  async steer(runId: string, turnId: string, input: { clientInputId: string; text: string; images?: { path: string; mime: string }[] }) {
     const run = this.runs.get(runId);
     if (!run || !run.turnId) throw new DriverError('STATE', '当前没有进行中的回合');
     if (!run.instance.steer) throw new DriverError('UNSUPPORTED', '该执行器不支持插话');
     const current = this.deps.store.turn(run.turnId);
     if (!current?.native_turn_id) throw new DriverError('STATE', '回合尚未开始');
-    await run.instance.steer({ clientInputId: input.clientInputId, text: input.text, tier: run.tier });
+    await run.instance.steer({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: run.tier });
     this.deps.store.attachSteer(turnId, runId, current.native_turn_id);
   }
   async goal(runId: string, op: Parameters<NonNullable<DriverInstance['goal']>>[0]) {

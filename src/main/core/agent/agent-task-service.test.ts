@@ -7,6 +7,9 @@ import { AgentTaskService, type LaunchResolver } from './agent-task-service';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
 import { until } from './test-doubles';
+import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 // M14-A05 连续回合与中断、A11 请求面板后端、A16 发送失败、A43 草稿 CAS、A48 归档（阶段 2：U／I 层）。
 class Inst implements DriverInstance {
@@ -25,7 +28,7 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean } = {}) {
+function setup(opts: { failOpen?: boolean; userData?: string } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db);
   const insts: Inst[] = [];
@@ -33,7 +36,7 @@ function setup(opts: { failOpen?: boolean } = {}) {
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
   const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: i.profileId === 'cc' ? '2.1.326' : '0.169.0' }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [] }; };
-  const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server' });
+  const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData });
   return { db, store, runs, svc, insts, launches };
 }
 const id = (n: number) => `client-input-${n}`;
@@ -105,6 +108,27 @@ describe('目标与插话', () => {
     expect(db.prepare("SELECT status FROM agent_turns WHERE client_input_id=?").get(id(2))).toEqual({ status: 'completed' });
     await until(() => insts[0].turns.length === 2);
     expect(insts[0].turns[1].text).toBe('c');
+  });
+});
+
+describe('附件随输入冻结', () => {
+  it('排队的输入保留自己的附件；执行器收到注明附件的文字与图片路径', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-tsa-'))), cwd = join(root, 'w'), ud = join(root, 'ud');
+    mkdirSync(cwd); mkdirSync(ud); writeFileSync(join(cwd, 'a.ts'), 'x'); writeFileSync(join(root, 'pic.png'), 'png');
+    const { svc, insts } = setup({ userData: ud });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd, title: 't', profileId: 'cx', tier: 'ask' });
+    const ref = svc.prepareAttachment(taskId, null, { name: 'a.ts', sourcePath: join(cwd, 'a.ts') });
+    const pic = svc.prepareAttachment(taskId, null, { name: 'pic.png', sourcePath: join(root, 'pic.png') });
+    await svc.submit(taskId, { clientInputId: id(1), text: '先看这个', expectedSelectionRevision: 1, attachments: [ref] });
+    await until(() => insts[0]?.turns.length === 1);
+    await svc.submit(taskId, { clientInputId: id(2), text: '再看图', expectedSelectionRevision: 1, attachments: [pic] });
+    expect(insts[0].turns[0].text).toBe('先看这个\n\n附件：\n- 项目文件：a.ts');
+    expect(insts[0].turns[0].images).toEqual([]);
+    insts[0].finish();
+    await until(() => insts[0].turns.length === 2);
+    expect(insts[0].turns[1].text).toBe('再看图\n\n附件：\n- 图片：pic.png（已附上）');
+    expect(insts[0].turns[1].images).toEqual([{ path: pic.storedPath, mime: 'image/png' }]);
+    await expect(svc.submit(taskId, { clientInputId: id(3), text: 'x', expectedSelectionRevision: 1, attachments: [{ ...ref, relativePath: '../pic.png' }] })).rejects.toThrow('附件已不在项目内');
   });
 });
 
