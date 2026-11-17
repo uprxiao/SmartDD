@@ -1,0 +1,3 @@
+  result.turnFinished = await app.evaluate(`!document.querySelector('.agent-stop') && /已完成/.test(document.querySelector('.agent-task-view')?.innerText??'')`);
+  result.answer = await app.evaluate(`[...document.querySelectorAll('.agent-assistant .agent-md')].map(e=>e.textContent.trim()).at(-1)??null`);
+  result.bubble = await app.evaluate(`[...document.querySelectorAll('.agent-user-bubble')].at(-1)?.textContent??null`);

@@ -1,0 +1,5 @@
+  const before = await app.evaluate(`document.querySelectorAll('.agent-assistant .agent-md').length`);
+  // 严格等待：第二条回答出现且回合结束；超时记失败，不吞掉
+  result.waitTimedOut = false;
+  try { await app.waitFor(`document.querySelectorAll('.agent-assistant .agent-md').length>${before} && !document.querySelector('.agent-stop')`, 180000); }
+  catch (e) { result.waitTimedOut = true; step('answer-timeout', { e: String(e).slice(0, 200) }); }

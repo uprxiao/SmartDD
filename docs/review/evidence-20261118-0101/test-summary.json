@@ -1,0 +1,252 @@
+{
+  "at": "2026-11-18T01:07:54.098704+08:00",
+  "head": "90156b90fd2e04796e2d015a1dda11d4d9385163",
+  "branch": "feature/0.1.6",
+  "layer": "Original judge controls, real-source fragments in jsdom, read-only fixture/App evidence audits. No App/model execution this turn.",
+  "commands": [
+    {
+      "command": "node --check docs/review/evidence-20261118-0049-fix/driver/attach-judge.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check docs/review/evidence-20261118-0049-fix/driver/m14p2-driver-attach-v2.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/lib/check-cdp-expressions.mjs docs/review/evidence-20261118-0049-fix/driver/m14p2-driver-attach-v2.mjs",
+      "exitCode": 0,
+      "literalExpressions": 15,
+      "failures": 0,
+      "log": "cdp-preflight.log",
+      "scope": "Static syntax only; dynamic templates not covered; no CDP executed"
+    },
+    {
+      "command": "node docs/review/evidence-20261118-0049-fix/driver/attach-judge.check.mjs",
+      "exitCode": 0,
+      "checks": 13,
+      "passed": 13,
+      "log": "original-judge-check.log"
+    },
+    {
+      "command": "node docs/review/evidence-20261118-0101/driver-boundaries.check.mjs",
+      "exitCode": 1,
+      "checks": 7,
+      "matched": 3,
+      "mismatched": 4,
+      "log": "driver-boundaries.log"
+    }
+  ],
+  "findings": {
+    "high": 0,
+    "medium": 2,
+    "productionCodeDefects": 0,
+    "testDriverDefects": [
+      "X01",
+      "X02"
+    ]
+  },
+  "counterexamples": {
+    "C02": "X01",
+    "C03": "X01",
+    "C06": "X02",
+    "C07": "X02"
+  },
+  "W01": "partially closed; red fixture, genuine positive, historical correction are valid; strict judgement pending X01/X02",
+  "productionTests": "Not rerun: production input diff from eb1748fb1 is empty. Prior results retain their previous scope only.",
+  "originalCases": {
+    "good": {
+      "want": true,
+      "got": true,
+      "ok": true,
+      "failures": []
+    },
+    "timeout": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "等待回答超时"
+      ]
+    },
+    "noAnswer": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "没有回答",
+        "回答不符合预期（期望 Red，实际 null）"
+      ]
+    },
+    "emptyAnswer": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "没有回答",
+        "回答不符合预期（期望 Red，实际 \"  \"）"
+      ]
+    },
+    "wrongAnswer": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "回答不符合预期（期望 Red，实际 \"White\"）"
+      ]
+    },
+    "unfinished": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "回合未结束"
+      ]
+    },
+    "exitFailed": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "App 未正常退出"
+      ]
+    },
+    "noExit": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "App 未正常退出"
+      ]
+    },
+    "navigated": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "流程中页面离开了任务视图"
+      ]
+    },
+    "driverError": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "驱动异常：TypeError"
+      ]
+    },
+    "notRedFixture": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "夹具不是已核验的纯红图片"
+      ]
+    },
+    "frozenMismatch": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "附件副本与夹具哈希不一致"
+      ]
+    },
+    "attempt2Shape": {
+      "want": false,
+      "got": false,
+      "ok": true,
+      "failures": [
+        "夹具不是已核验的纯红图片",
+        "附件副本与夹具哈希不一致",
+        "等待回答超时",
+        "回合未结束",
+        "没有回答",
+        "回答不符合预期（期望 Red，实际 null）",
+        "用户消息未带两个附件"
+      ]
+    }
+  },
+  "newCases": {
+    "C01_saved_valid_positive": {
+      "wantPassed": true,
+      "actualPassed": true,
+      "matchesExpected": true,
+      "failures": []
+    },
+    "C02_negated_red_is_not_Red": {
+      "wantPassed": false,
+      "actualPassed": true,
+      "matchesExpected": false,
+      "failures": []
+    },
+    "C03_non_Red_answer_mentions_red": {
+      "wantPassed": false,
+      "actualPassed": true,
+      "matchesExpected": false,
+      "failures": []
+    },
+    "C04_old_empty_answer_timeout": {
+      "wantPassed": false,
+      "actualPassed": false,
+      "matchesExpected": true,
+      "failures": [
+        "等待回答超时",
+        "没有回答",
+        "回答不符合预期（期望 Red，实际 null）"
+      ]
+    },
+    "C05_reply_arrives_after_baseline_read": {
+      "wantPassed": true,
+      "actualPassed": true,
+      "matchesExpected": true,
+      "failures": [],
+      "layer": "actual driver wait fragment in jsdom; bounded polling substitute",
+      "answers": [
+        "OK",
+        "Red"
+      ],
+      "predicates": [
+        "document.querySelectorAll('.agent-assistant .agent-md').length>1 && !document.querySelector('.agent-stop')"
+      ],
+      "waitTimedOut": false,
+      "events": [],
+      "replyAlreadyCompleteWhenBaselineRead": false
+    },
+    "C06_reply_completed_before_baseline_read": {
+      "wantPassed": true,
+      "actualPassed": false,
+      "matchesExpected": false,
+      "failures": [
+        "等待回答超时"
+      ],
+      "layer": "actual driver wait fragment in jsdom; bounded polling substitute",
+      "answers": [
+        "OK",
+        "Red"
+      ],
+      "predicates": [
+        "document.querySelectorAll('.agent-assistant .agent-md').length>2 && !document.querySelector('.agent-stop')"
+      ],
+      "waitTimedOut": true,
+      "events": [
+        {
+          "name": "answer-timeout",
+          "e": "Error: review bounded timeout: predicate stays false in completed stable DOM"
+        }
+      ],
+      "replyAlreadyCompleteWhenBaselineRead": true
+    },
+    "C07_latest_turn_failed_after_Red_previous_turn_completed": {
+      "wantPassed": false,
+      "actualPassed": true,
+      "matchesExpected": false,
+      "failures": [],
+      "layer": "actual driver status fragment in jsdom",
+      "latestTurnStatus": "failed",
+      "previousTurnStatus": "completed",
+      "turnFinished": true,
+      "answer": "Red"
+    }
+  },
+  "fixtureAudit": "fixture-audit.json",
+  "positiveRunDbAudit": "positive-run-db-audit.json"
+}

@@ -1,0 +1,89 @@
+{
+  "driverSha256": "b8957037a0088ce6254c3733d36f8905b8082e96e8ff738d98e25e21d9e28505",
+  "fragment": "  const before = await app.evaluate(`document.querySelectorAll('.agent-assistant .agent-md').length`);\n  // 严格等待：第二条回答出现且回合结束；超时记失败，不吞掉\n  result.waitTimedOut = false;\n  try { await app.waitFor(`document.querySelectorAll('.agent-assistant .agent-md').length>${before} && !document.querySelector('.agent-stop')`, 180000); }\n  catch (e) { result.waitTimedOut = true; step('answer-timeout', { e: String(e).slice(0, 200) }); }\n",
+  "cases": {
+    "C01_saved_valid_positive": {
+      "wantPassed": true,
+      "actualPassed": true,
+      "matchesExpected": true,
+      "failures": []
+    },
+    "C02_negated_red_is_not_Red": {
+      "wantPassed": false,
+      "actualPassed": true,
+      "matchesExpected": false,
+      "failures": []
+    },
+    "C03_non_Red_answer_mentions_red": {
+      "wantPassed": false,
+      "actualPassed": true,
+      "matchesExpected": false,
+      "failures": []
+    },
+    "C04_old_empty_answer_timeout": {
+      "wantPassed": false,
+      "actualPassed": false,
+      "matchesExpected": true,
+      "failures": [
+        "等待回答超时",
+        "没有回答",
+        "回答不符合预期（期望 Red，实际 null）"
+      ]
+    },
+    "C05_reply_arrives_after_baseline_read": {
+      "wantPassed": true,
+      "actualPassed": true,
+      "matchesExpected": true,
+      "failures": [],
+      "layer": "actual driver wait fragment in jsdom; bounded polling substitute",
+      "answers": [
+        "OK",
+        "Red"
+      ],
+      "predicates": [
+        "document.querySelectorAll('.agent-assistant .agent-md').length>1 && !document.querySelector('.agent-stop')"
+      ],
+      "waitTimedOut": false,
+      "events": [],
+      "replyAlreadyCompleteWhenBaselineRead": false
+    },
+    "C06_reply_completed_before_baseline_read": {
+      "wantPassed": true,
+      "actualPassed": false,
+      "matchesExpected": false,
+      "failures": [
+        "等待回答超时"
+      ],
+      "layer": "actual driver wait fragment in jsdom; bounded polling substitute",
+      "answers": [
+        "OK",
+        "Red"
+      ],
+      "predicates": [
+        "document.querySelectorAll('.agent-assistant .agent-md').length>2 && !document.querySelector('.agent-stop')"
+      ],
+      "waitTimedOut": true,
+      "events": [
+        {
+          "name": "answer-timeout",
+          "e": "Error: review bounded timeout: predicate stays false in completed stable DOM"
+        }
+      ],
+      "replyAlreadyCompleteWhenBaselineRead": true
+    },
+    "C07_latest_turn_failed_after_Red_previous_turn_completed": {
+      "wantPassed": false,
+      "actualPassed": true,
+      "matchesExpected": false,
+      "failures": [],
+      "layer": "actual driver status fragment in jsdom",
+      "latestTurnStatus": "failed",
+      "previousTurnStatus": "completed",
+      "turnFinished": true,
+      "answer": "Red"
+    }
+  },
+  "total": 7,
+  "matched": 3,
+  "mismatched": 4
+}
