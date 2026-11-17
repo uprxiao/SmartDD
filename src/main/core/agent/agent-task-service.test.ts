@@ -716,6 +716,67 @@ describe('复核 2354 回归', () => {
   });
 });
 
+describe('复核 0018 回归', () => {
+  const read = (svc: AgentTaskService, taskId: string, itemId: string, rev: number) => { let off = 0, body = ''; for (;;) { const c = svc.itemBody(taskId, itemId, off, rev); body += c.chunk; if (c.done) return JSON.parse(body); off = c.next; } };
+  const files = async (dir: string) => { const { readdirSync, existsSync } = await import('node:fs'); return existsSync(dir) ? readdirSync(dir).sort() : []; };
+  it('V01：大量短字段的结构化正文也保留原文引用，可完整读回；快照守界、没有无引用文件', async () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'm14-v01-')));
+    const { svc, store } = setup({ artifactDir: dir });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    const rows = Array.from({ length: 60_000 }, (_, k) => ({ k, v: 'ab' }));
+    const itemId = store.addHostItem(taskId, null, 'system_notice', { code: 'rows', rows });
+    const row = JSON.parse(store.itemById(taskId, itemId)!.payloadJson);
+    expect(row.artifact.file).toBe(`${taskId}/${itemId}.r1.json`);
+    expect(Buffer.byteLength(store.itemById(taskId, itemId)!.payloadJson)).toBeLessThanOrEqual(256 * 1024);
+    expect(read(svc, taskId, itemId, 1).rows).toEqual(rows);
+    expect(Buffer.byteLength(JSON.stringify(svc.snapshot(taskId)))).toBeLessThanOrEqual(256 * 1024);
+    expect(svc.snapshot(taskId).items.find(i => i.itemId === itemId)!.payload.truncated).toBe(true);
+    expect(await files(join(dir, taskId))).toEqual([`${itemId}.r1.json`]);
+  });
+  it('V02：转义后超过内联上限的合法用户输入，时间线逐字读回；幂等重试不重复写文件；投递原文不变', async () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'm14-v02-')));
+    const { svc, insts, store } = setup({ artifactDir: dir });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    const text = '\u0001'.repeat(256 * 1024);
+    const a = await svc.submit(taskId, { clientInputId: id(1), text, expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    expect(insts[0].turns[0].text).toBe(text);
+    const msg = svc.snapshot(taskId).items.find(i => i.type === 'user_message')!;
+    expect(msg.payload.truncated).toBe(true);
+    expect(read(svc, taskId, msg.itemId, msg.revision).text).toBe(text);
+    await expect(svc.submit(taskId, { clientInputId: id(1), text, expectedSelectionRevision: 1 })).resolves.toMatchObject({ duplicate: true, turnId: a.turnId });
+    expect(await files(join(dir, taskId))).toEqual([`${msg.itemId}.r1.json`]);
+    expect(store.items(taskId).filter(i => i.type === 'user_message')).toHaveLength(1);
+  });
+  it('V03：改名失败时删掉临时文件并标不完整；事务回滚删掉本次写出的文件；正常更新与旧文件清理不受影响', async () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'm14-v03-')));
+    const { svc, insts, store } = setup({ artifactDir: dir });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'go', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    const big = (tag: string) => ({ content: [{ type: 'text', text: tag + 'x'.repeat(1100 * 1024) }] });
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'same', itemType: 'assistant', payload: big('V1') });
+    await until(() => svc.snapshot(taskId).items.some(i => i.type === 'assistant_message'));
+    const itemId = svc.snapshot(taskId).items.find(i => i.type === 'assistant_message')!.itemId;
+    // 让第 2 修订的目标路径变成目录，改名必然失败
+    mkdirSync(join(dir, taskId, `${itemId}.r2.json`));
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'same', itemType: 'assistant', payload: big('V2') });
+    await until(() => svc.snapshot(taskId).items.find(i => i.itemId === itemId)!.revision === 2);
+    expect(read(svc, taskId, itemId, 2)).toMatchObject({ storedTruncated: true });
+    expect((await files(join(dir, taskId))).filter(f => f.endsWith('.tmp'))).toEqual([]);
+    // 第 3 修订正常写入：引用新文件，第 1 修订的旧文件已在第 2 修订提交时清理
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'same', itemType: 'assistant', payload: big('V3') });
+    await until(() => svc.snapshot(taskId).items.find(i => i.itemId === itemId)!.revision === 3);
+    expect(read(svc, taskId, itemId, 3).text.startsWith('V3')).toBe(true);
+    // 剩下的只有注入故障用的 r2 目录与当前 r3 原文；r1 已清理
+    expect(await files(join(dir, taskId))).toEqual([`${itemId}.r2.json`, `${itemId}.r3.json`]);
+    // 事务回滚：外键不存在的运行，插入失败，本次写出的文件被删除
+    const before = await files(join(dir, taskId));
+    expect(() => store.upsertItem({ taskId, turnId: null, runId: 'no-such-run', nativeKey: 'k-rollback', type: 'assistant_message', payload: { text: 'R'.repeat(1100 * 1024) } })).toThrow();
+    expect(await files(join(dir, taskId))).toEqual(before);
+  });
+});
+
 describe('宿主重启恢复', () => {
   it('上一实例的运行收口为 orphaned，进行中的回合记未知，排队输入保留但暂停', async () => {
     const { db, store, svc, insts } = setup();

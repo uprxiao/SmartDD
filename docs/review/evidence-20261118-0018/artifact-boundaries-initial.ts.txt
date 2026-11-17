@@ -1,0 +1,61 @@
+import Database from 'better-sqlite3';
+import { afterAll, afterEach, expect, it } from 'vitest';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { runBundledMigrations } from '../../../src/main/db/migrations';
+import { AgentStore } from '../../../src/main/core/agent/agent-store';
+import { AgentRunService } from '../../../src/main/core/agent/agent-run-service';
+import { AgentTaskService } from '../../../src/main/core/agent/agent-task-service';
+import { Emitter } from '../../../src/main/core/agent/driver';
+import { until } from '../../../src/main/core/agent/test-doubles';
+const observations: Record<string, unknown> = {}, fixtures: { db: Database.Database; runs: AgentRunService; root: string }[] = [];
+afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/artifact-boundary-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+afterEach(async () => { for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); rmSync(f.root, { recursive: true, force: true }); } });
+function setup() {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-artifact-boundary-'))), artifactDir = join(root, 'artifacts');
+  const db = new Database(':memory:'); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
+  const store = new AgentStore(db, { artifactDir }), e = new Emitter();
+  const driver = { id: 'codex-app-server' as const, command: 'fake', create: () => ({ driverId: 'codex-app-server' as const, on: e.on.bind(e), open: async () => ({ nativeId: 'local-thread', confirmed: true }), startTurn: async (t: any) => { e.emit({ type: 'turn.started', nativeTurnId: 'n1', clientInputId: t.clientInputId }); return { nativeTurnId: 'n1' }; }, respond: async () => {}, interrupt: async () => {}, close: async () => { e.emit({ type: 'exit', code: 0, signal: null }); } }) };
+  const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', driver]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'artifact-review', pid: process.pid, startedAt: null } });
+  const svc = new AgentTaskService({ store, runs, profileDriver: () => 'codex-app-server', resolveLaunch: async () => ({ driverId: 'codex-app-server', executable: { path: '/synthetic/codex', version: '0.169.0' }, env: {}, stateRoot: '/synthetic/state', compatibility: {}, extraArgs: [] }) });
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/review-work', title: 'artifact review', profileId: 'p', tier: 'ask' });
+  fixtures.push({ db, runs, root }); return { root, artifactDir, db, store, runs, svc, taskId, e };
+}
+function read(s: ReturnType<typeof setup>, itemId: string) {
+  let off = 0, raw = '';
+  for (;;) { const c = s.svc.itemBody(s.taskId, itemId, off); raw += c.chunk; if (c.done) break; off = c.next; }
+  return JSON.parse(raw);
+}
+it('A01: structured tool results must keep a usable artifact reference even if their preview cannot shrink', async () => {
+  const s = setup(), rows = Array.from({ length: 60000 }, (_, i) => ({ id: i, value: 'short' }));
+  await s.svc.submit(s.taskId, { clientInputId: 'structured-result-1', text: 'fetch structured rows', expectedSelectionRevision: 1 });
+  await until(() => !!s.runs.runForTask(s.taskId) && s.runs.busy(s.runs.runForTask(s.taskId)!.runId));
+  s.e.emit({ type: 'item.completed', nativeItemId: 'rows', itemType: 'mcpToolCall', payload: { id: 'rows', type: 'mcpToolCall', server: 'fixture', tool: 'rows', arguments: {}, result: { structuredContent: { rows } } } });
+  const item = s.svc.snapshot(s.taskId).items.find(x => x.type === 'tool_call')!, stored = JSON.parse(s.store.itemById(s.taskId, item.itemId)!.payloadJson), full = read(s, item.itemId);
+  const files = readdirSync(join(s.artifactDir, s.taskId));
+  observations.A01 = { rowCount: rows.length, originalOutputBytes: Buffer.byteLength(JSON.stringify({ structuredContent: { rows } })), storedFields: Object.keys(stored), hasArtifactRef: !!stored.artifact, readableRows: full.output?.structuredContent?.rows?.length ?? 0, files, orphanFiles: files.filter(f => !stored.artifact?.file?.endsWith('/' + f)) };
+  expect(full.output?.structuredContent?.rows?.length).toBe(rows.length);
+});
+it('A02: accepted user message with legal raw length must remain readable beyond encoded body limit', async () => {
+  const s = setup(), text = '\u0001'.repeat(256 * 1024);
+  const receipt = await s.svc.submit(s.taskId, { clientInputId: 'escaped-user-input-1', text, expectedSelectionRevision: 1 });
+  const item = s.svc.snapshot(s.taskId).items.find(x => x.type === 'user_message')!, full = read(s, item.itemId);
+  const accepted = JSON.parse((s.store.turn(receipt.turnId) as any).input_ref);
+  observations.A02 = { rawTextBytes: Buffer.byteLength(text), encodedInputBytes: Buffer.byteLength(JSON.stringify({ text })), acceptedOriginalChars: accepted.text.length, timelineTextChars: full.text?.length ?? 0, incomplete: full.storedTruncated === true, artifactDirectoryCreated: existsSync(s.artifactDir) };
+  expect(full.text === text).toBe(true);
+});
+it('A03: artifact rename failure must remove the temporary file it created', async () => {
+  const s = setup();
+  await s.svc.submit(s.taskId, { clientInputId: 'rename-failure-input', text: 'start', expectedSelectionRevision: 1 });
+  await until(() => !!s.runs.runForTask(s.taskId) && s.runs.busy(s.runs.runForTask(s.taskId)!.runId));
+  const runId = s.runs.runForTask(s.taskId)!.runId, turnId = s.store.turns(s.taskId)[0].turn_id;
+  const put = (text: string) => s.store.upsertItem({ taskId: s.taskId, turnId, runId, nativeKey: 'same-item', type: 'assistant_message', payload: { text } });
+  const itemId = put('old-' + 'x'.repeat(1100 * 1024));
+  // Controlled filesystem failure: an incompatible entry blocks the final rename.
+  mkdirSync(join(s.artifactDir, s.taskId, itemId + '.r2.json'));
+  put('new-' + 'y'.repeat(1100 * 1024));
+  const files = readdirSync(join(s.artifactDir, s.taskId)), temporary = files.filter(f => f.endsWith('.tmp'));
+  observations.A03 = { revision: s.store.itemById(s.taskId, itemId)!.revision, degraded: read(s, itemId).storedTruncated === true, files, temporaryFiles: temporary, originalR1StillExists: existsSync(join(s.artifactDir, s.taskId, itemId + '.r1.json')) };
+  expect(temporary).toEqual([]);
+});

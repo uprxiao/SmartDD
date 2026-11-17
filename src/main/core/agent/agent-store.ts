@@ -39,6 +39,12 @@ function shortenedJson(value: unknown, extra: Record<string, unknown>, limit = B
   }
   return null;
 }
+/** 最小引用：只留顶层短字段（长文字截到 500 字）与原文引用，保证远小于预览预算。 */
+function minimalRef(value: unknown, artifact: { file: string; bytes: number; sha256: string }): string {
+  const top = value && typeof value === 'object' && !Array.isArray(value) ? Object.entries(value as Record<string, unknown>).slice(0, 40) : [];
+  const fields = Object.fromEntries(top.filter(([, v]) => v === null || typeof v !== 'object').map(([k, v]) => [k.slice(0, 64), typeof v === 'string' ? v.slice(0, 500) : v]));
+  return JSON.stringify({ ...fields, previewOmitted: true, artifact });
+}
 /** 单个条目原文的 artifact 上限；更大的只能结构化截短并标不完整。 */
 export const ARTIFACT_LIMIT = 64 * 1024 * 1024;
 
@@ -80,15 +86,24 @@ export class AgentStore {
     if (this.artifactDir && bytes <= ARTIFACT_LIMIT) {
       const rel = `${taskId}/${itemId}.r${revision}.json`;
       const file = join(this.artifactDir, rel);
+      // 临时文件路径在写入前确定；任何一步失败都删掉本次写出的临时／最终文件（复核 V03）。
+      const tmp = `${file}.${randomUUID()}.tmp`;
+      let renamed = false;
       try {
         mkdirSync(join(this.artifactDir, taskId), { recursive: true, mode: 0o700 });
-        const tmp = `${file}.${randomUUID()}.tmp`;
         writeFileSync(tmp, text, { mode: 0o600, flag: 'wx' });
         renameSync(tmp, file);
+        renamed = true;
+        const artifact = { file: rel, bytes, sha256: sha256(text) };
+        // 引用与预览分开（复核 V01）：结构化预览放不进预算时，只留顶层短字段与引用，绝不丢掉已保存的原文。
+        const ref = shortenedJson(value, { artifact }, 256 * 1024) ?? minimalRef(value, artifact);
         written.push(file);
-        const ref = shortenedJson(value, { artifact: { file: rel, bytes, sha256: sha256(text) } }, 256 * 1024);
-        if (ref) return ref;
-      } catch { /* 写入失败：降级为结构化截短，并如实标不完整 */ }
+        return ref;
+      } catch {
+        rmSync(tmp, { force: true });
+        if (renamed) rmSync(file, { force: true });
+        /* 写入失败：降级为结构化截短，并如实标不完整 */
+      }
     }
     return itemJson(value);
   }
@@ -228,7 +243,8 @@ export class AgentStore {
 
   /** 本地接受：同一 clientInputId 只接受一次，重复提交返回原收据（幂等只保证宿主接受）。 */
   acceptTurn(t: { taskId: string; clientInputId: string; text: string; sourceKind: 'user' | 'delegation' | 'notification' | 'system'; attachments?: unknown[] }): { turn: TurnRow; duplicate: boolean } {
-    return this.tx(emit => {
+    // 用户消息与其他条目同一正文合同：转义后超过内联上限也转 artifact，时间线能逐字读回（复核 V02）。
+    return this.itemTx((written, _replaced, emit) => {
       const existing = this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(t.taskId, t.clientInputId) as TurnRow | undefined;
       if (existing) return { turn: existing, duplicate: true };
       const turnId = randomUUID();
@@ -241,7 +257,7 @@ export class AgentStore {
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(t.taskId) as { ordinal: number };
       const itemId = randomUUID();
       this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,'user_message',?,1,?,?,'completed',?,?)")
-        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, itemJson({ text: t.text, sourceKind: t.sourceKind, ...(t.attachments?.length ? { attachments: (t.attachments as any[]).map(a => ({ name: a.name, kind: a.kind, image: a.image, relativePath: a.relativePath })) } : {}) }), now(), now());
+        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, this.itemBody(t.taskId, itemId, 1, { text: t.text, sourceKind: t.sourceKind, ...(t.attachments?.length ? { attachments: (t.attachments as any[]).map(a => ({ name: a.name, kind: a.kind, image: a.image, relativePath: a.relativePath })) } : {}) }, written), now(), now());
       emit(t.taskId, 'item.created', { type: 'user_message', ordinal, payload: { text: t.text, sourceKind: t.sourceKind } }, itemId, 1);
       return { turn: this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow, duplicate: false };
     });

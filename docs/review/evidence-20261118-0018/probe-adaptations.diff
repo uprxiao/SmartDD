@@ -1,0 +1,131 @@
+--- docs/review/evidence-20261117-2354/recheck-probes.test.ts
++++ docs/review/evidence-20261118-0018/recheck-probes.test.ts
+@@ -21,7 +21,7 @@
+ 
+ const observed: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
+ afterEach(() => { vi.useRealTimers(); for (const db of dbs.splice(0)) db.close(); });
+ function deferred<T = void>() { let resolve!: (v: T) => void; let reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ 
+--- docs/review/evidence-20261117-2354/recheck-ui.test.tsx
++++ docs/review/evidence-20261118-0018/recheck-ui.test.tsx
+@@ -18,7 +18,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => cleanup());
+ beforeEach(() => {
+   vi.clearAllMocks();
+--- docs/review/evidence-20261117-2354/residual-core.test.ts
++++ docs/review/evidence-20261118-0018/residual-core.test.ts
+@@ -17,7 +17,7 @@
+ 
+ const observations: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [], roots: string[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/residual-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/residual-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => { for (const db of dbs.splice(0)) db.close(); for (const dir of roots.splice(0)) rmSync(dir, { recursive: true, force: true }); });
+ function gate<T = void>() { let resolve!: (v: T) => void, reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ class Inst implements DriverInstance {
+--- docs/review/evidence-20261117-2354/new-core.test.ts
++++ docs/review/evidence-20261118-0018/new-core.test.ts
+@@ -19,7 +19,7 @@
+ 
+ const observations: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [], roots: string[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/new-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/new-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => { for (const db of dbs.splice(0)) db.close(); for (const dir of roots.splice(0)) rmSync(dir, { recursive: true, force: true }); });
+ function gate<T = void>() { let resolve!: (v: T) => void, reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ class Inst implements DriverInstance {
+--- docs/review/evidence-20261117-2354/new-ui.test.tsx
++++ docs/review/evidence-20261118-0018/new-ui.test.tsx
+@@ -18,7 +18,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/new-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/new-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => cleanup());
+ beforeEach(() => {
+   vi.clearAllMocks();
+--- docs/review/evidence-20261117-2354/boundary-core.test.ts
++++ docs/review/evidence-20261118-0018/boundary-core.test.ts
+@@ -19,7 +19,7 @@
+ 
+ const observations: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [], roots: string[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/boundary-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/boundary-core-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => { for (const db of dbs.splice(0)) db.close(); for (const dir of roots.splice(0)) rmSync(dir, { recursive: true, force: true }); });
+ function gate<T = void>() { let resolve!: (v: T) => void, reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ class Inst implements DriverInstance {
+--- docs/review/evidence-20261117-2354/boundary-ui.test.tsx
++++ docs/review/evidence-20261118-0018/boundary-ui.test.tsx
+@@ -18,7 +18,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/boundary-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/boundary-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ afterEach(() => cleanup());
+ beforeEach(() => {
+   vi.clearAllMocks();
+--- docs/review/evidence-20261117-2354/adjacent-ui.test.tsx
++++ docs/review/evidence-20261118-0018/adjacent-ui.test.tsx
+@@ -25,7 +25,7 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/adjacent-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/adjacent-ui-observations.json', JSON.stringify(observations, null, 2) + '\n'));
+ const fixtures: { db: Database.Database; runs: AgentRunService }[] = [];
+ afterEach(async () => { cleanup(); for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } });
+ beforeEach(() => {
+--- docs/review/evidence-20261117-2354/retention.test.tsx
++++ docs/review/evidence-20261118-0018/retention.test.tsx
+@@ -2,7 +2,9 @@
+ // Isolated component contract checks. These are NOT browser / packaged-App evidence.
+ import { afterAll, afterEach, beforeEach, expect, it, vi } from 'vitest';
+ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+-import { writeFileSync } from 'node:fs';
++import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
++import { tmpdir } from 'node:os';
++import { join } from 'node:path';
+ 
+ const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), respond: vi.fn(), stop: vi.fn(), toast: vi.fn(), on: vi.fn(), command: vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn() }));
+ vi.mock('@renderer/lib/ipc', () => ({
+@@ -25,9 +27,10 @@
+ import { AgentTaskView } from '../../../src/renderer/features/agent-tasks/agent-task-view';
+ 
+ const observations: Record<string, unknown> = {};
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-2354/retention-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261118-0018/retention-observations.json', JSON.stringify(observations, null, 2) + '\n'));
++const roots: string[] = [];
+ const fixtures: { db: Database.Database; runs: AgentRunService }[] = [];
+-afterEach(async () => { cleanup(); for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } });
++afterEach(async () => { cleanup(); for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
+ beforeEach(() => {
+   vi.clearAllMocks();
+   mocks.profiles.mockResolvedValue([{ profileId: 'p', name: 'Codex', tiers: ['ask', 'auto', 'full'], models: [], driverId: 'codex-app-server' }]);
+@@ -50,7 +53,8 @@
+ }
+ 
+ function backend() {
+-  const db = new Database(':memory:'); db.pragma('foreign_keys=ON'); runBundledMigrations(db); const store = new AgentStore(db), emitter = new Emitter();
++  const artifactDir = mkdtempSync(join(tmpdir(), 'm14-review-0018-artifact-')); roots.push(artifactDir);
++  const db = new Database(':memory:'); db.pragma('foreign_keys=ON'); runBundledMigrations(db); const store = new AgentStore(db, { artifactDir }), emitter = new Emitter();
+   const driver = { id: 'claude-sdk' as const, command: 'fake', create: () => ({ driverId: 'claude-sdk' as const, on: emitter.on.bind(emitter), open: async () => ({ nativeId: 'local-claude', confirmed: true }), startTurn: async (t: any) => { emitter.emit({ type: 'turn.started', nativeTurnId: 'n1', clientInputId: t.clientInputId }); return { nativeTurnId: 'n1' }; }, respond: async () => {}, interrupt: async () => {}, close: async () => { emitter.emit({ type: 'exit', code: 0, signal: null }); } }) };
+   const runs = new AgentRunService({ store, drivers: new Map([['claude-sdk', driver]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'review-2327', pid: process.pid, startedAt: null } });
+   const svc = new AgentTaskService({ store, runs, profileDriver: () => 'claude-sdk', resolveLaunch: async () => ({ driverId: 'claude-sdk', executable: { path: '/synthetic/claude', version: '2.1.326' }, env: {}, stateRoot: '/synthetic/state', compatibility: {}, extraArgs: [] }) });
+--- docs/review/evidence-20261117-2354/review.vitest.config.mts
++++ docs/review/evidence-20261118-0018/review.vitest.config.mts
+@@ -1,3 +1,3 @@
+ import { defineConfig } from 'vitest/config';
+ import base from '../../../vitest.config';
+-export default defineConfig({ ...base, test: { ...base.test, include: ['docs/review/evidence-20261117-2354/*.test.{ts,tsx}'], pool: 'threads', maxWorkers: 1, testTimeout: 4000 } });
++export default defineConfig({ ...base, test: { ...base.test, include: ['docs/review/evidence-20261118-0018/*.test.{ts,tsx}'], pool: 'threads', maxWorkers: 1, testTimeout: 4000 } });
