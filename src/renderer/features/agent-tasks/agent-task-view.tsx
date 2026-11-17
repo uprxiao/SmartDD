@@ -4,6 +4,8 @@ import MarkdownIt from 'markdown-it';
 import { Archive, ChevronRight, CircleStop, Loader2, Send, Target, X, Zap } from 'lucide-react';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
+import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
+import { AgentDialog } from '@renderer/features/agents/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { agentTaskEvent, agentTaskLiveEvent } from '@shared/events';
@@ -40,7 +42,8 @@ function ItemRow({ item }: { item: TimelineItem }) {
     case 'user_message': return <div className="agent-user"><div className="agent-user-bubble">{p.text}</div></div>;
     case 'assistant_message': return <div className="agent-assistant"><Markdown text={String(p.text ?? '')} /></div>;
     case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划</div><Markdown text={String(p.plan ?? '')} />
-      <div className="agent-plan-actions"><button type="button" onClick={() => { void navigator.clipboard.writeText(String(p.plan ?? '')); toast.success('已复制计划'); }}>复制</button></div></div>;
+      <div className="agent-plan-actions"><button type="button" onClick={() => { void navigator.clipboard.writeText(String(p.plan ?? '')); toast.success('已复制计划'); }}>复制</button>
+        <button type="button" onClick={() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([String(p.plan ?? '')], { type: 'text/markdown' })); a.download = 'plan.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }}>下载</button></div></div>;
     case 'todo_list': return <div className="agent-todo">{(p.entries ?? []).map((e: any) => <div key={e.id} className={`agent-todo-row ${e.status}`}><span className="agent-todo-box" aria-hidden>{e.status === 'completed' ? '✓' : ''}</span>{e.subject}</div>)}</div>;
     case 'error': return <div className="agent-error" role="alert">{p.message ?? p.code}</div>;
     case 'compaction': return <div className="agent-divider">上下文已压缩</div>;
@@ -112,6 +115,8 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const [text, setText] = useState('');
   const [live, setLive] = useState<Record<string, string>>({});
   const [now, setNow] = useState(Date.now());
+  const permissionPref = useAppSettingsKey('agentPermissions');
+  const [confirmFull, setConfirmFull] = useState(false);
   const draftRev = useRef(0), draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null), reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
 
@@ -200,7 +205,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); }}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send((e.metaKey || e.ctrlKey) && working && snap.run?.steer ? 'steer' : 'queue'); } }} />
           <div className="agent-composer-bar">
-            <select aria-label="权限档位" value={snap.selection.tier} onChange={e => void setSelection({ tier: e.target.value })}>
+            <select aria-label="权限档位" value={snap.selection.tier} onChange={e => { if (e.target.value === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true); else void setSelection({ tier: e.target.value }); }}>
               {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
             </select>
             <span className="agent-composer-agent">{profile?.name ?? snap.selection.profileId}</span>
@@ -216,5 +221,9 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
           </div>
         </form>}
     </div>
+    {confirmFull && <AgentDialog title="使用完全访问权限？" onClose={() => setConfirmFull(false)} footer={<><button className="m10-button" onClick={() => setConfirmFull(false)}>取消</button><button className="m10-button primary" data-testid="agent-confirm-full" onClick={() => { void permissionPref.update({ fullConfirmed: true }); setConfirmFull(false); void setSelection({ tier: 'full' }); }}>继续使用完全访问</button></>}>
+      <p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。</p>
+      <div className="m13-note">Claude 交出的计划仍会请你批准。插件写操作按插件声明的上限处理（阶段 5 接入前仍逐次询问）。</div>
+    </AgentDialog>}
   </section>;
 }

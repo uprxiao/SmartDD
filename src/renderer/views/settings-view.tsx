@@ -1,4 +1,4 @@
-import { agentTasksStore } from '@renderer/core/agent-tasks-store';
+import { agentTasksStore, requestNotifyEnabled, setRequestNotify } from '@renderer/core/agent-tasks-store';
 import { VoiceSettingsSection, readableVoiceKey } from './settings/voice';
 import { voiceStore } from '@renderer/core/voice-store';
 import { ChevronDown, Info, Keyboard, Mic, Search, Settings, Bot, SquareTerminal, Sun, Zap, Puzzle } from 'lucide-react';
@@ -79,6 +79,13 @@ const AgentWorkspaceToggle = observer(function AgentWorkspaceToggle() {
     <Button variant="outline" size="sm" data-testid="m14-toggle" onClick={() => agentTasksStore.setEnabled(!agentTasksStore.enabled)}>{agentTasksStore.enabled ? '已开启，点击关闭' : '开启'}</Button>
   </SettingRow>;
 });
+const RequestNotifyToggle = observer(function RequestNotifyToggle() {
+  const [on, setOn] = useState(requestNotifyEnabled());
+  if (!agentTasksStore.enabled) return null;
+  return <SettingRow label="待处理请求的系统通知" hint="窗口在后台时，任务出现需要你处理的请求就用系统通知提醒。">
+    <Button variant="outline" size="sm" onClick={() => { setRequestNotify(!on); setOn(!on); }}>{on ? '已开启，点击关闭' : '开启'}</Button>
+  </SettingRow>;
+});
 
 function GeneralSection() {
   const { t } = useTranslation();
@@ -111,6 +118,7 @@ function GeneralSection() {
         </Select>
       </SettingRow>
       <AgentWorkspaceToggle />
+      <RequestNotifyToggle />
       <SettingRow label={t('settings.probes')} hint={t('settings.probesHint')}>
         <Button
           variant="outline"
