@@ -23,6 +23,8 @@ class Inst implements DriverInstance {
   async interrupt() { this.interrupts++; this.finish('interrupted'); }
   steers: TurnInput[] = []; goals: unknown[] = []; steerFails = false;
   async steer(t: TurnInput) { if (this.steerFails) throw new DriverError('REJECTED', 'expectedTurnId 不匹配'); this.steers.push(t); }
+  commands: string[] = [];
+  async command(n: string) { this.commands.push(n); }
   async goal(op: any) { this.goals.push(op); if (op.kind === 'set') this.emit({ type: 'goal', objective: op.objective, status: 'active' }); if (op.kind === 'pause') this.emit({ type: 'goal', objective: null, status: 'paused' }); if (op.kind === 'clear') this.emit({ type: 'goal', objective: null, status: 'cleared' }); }
   async close() { this.emit({ type: 'exit', code: 0, signal: null }); }
 }
@@ -129,6 +131,21 @@ describe('附件随输入冻结', () => {
     expect(insts[0].turns[1].text).toBe('再看图\n\n附件：\n- 图片：pic.png（已附上）');
     expect(insts[0].turns[1].images).toEqual([{ path: pic.storedPath, mime: 'image/png' }]);
     await expect(svc.submit(taskId, { clientInputId: id(3), text: 'x', expectedSelectionRevision: 1, attachments: [{ ...ref, relativePath: '../pic.png' }] })).rejects.toThrow('附件已不在项目内');
+  });
+});
+
+describe('输入框命令', () => {
+  it('Codex compact／review 走协议；Claude 命令作为文字发送；Codex 未公布的命令拒绝', async () => {
+    const { svc, insts } = setup();
+    const cx = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' }).taskId;
+    await svc.command(cx, 'review');
+    expect(insts[0].commands).toEqual(['review']);
+    await expect(svc.command(cx, 'init')).rejects.toThrow('没有公布 /init');
+    const cc = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' }).taskId;
+    await svc.command(cc, 'compact');
+    await until(() => insts[1]?.turns.length === 1);
+    expect(insts[1].turns[0].text).toBe('/compact');
+    await expect(svc.command(cc, 'bad name')).rejects.toThrow('命令无效');
   });
 });
 

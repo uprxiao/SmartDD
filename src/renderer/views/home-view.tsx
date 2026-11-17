@@ -9,7 +9,8 @@ import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
-import { newClientInputId } from '@renderer/features/agent-tasks/agent-task-view';
+import { newClientInputId } from '@renderer/features/agent-tasks/agent-ids';
+import { AttachmentChips, prepareChip, type Chip } from '@renderer/features/agent-tasks/attachment-chips';
 import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
@@ -115,8 +116,22 @@ export const HomeView = observer(function HomeView() {
   const dirProblem = project && project.id === projectId && (!dir ? t('home.noDir') : !dir.status.available ? t('home.dirUnavailable', { path: dir.path }) : '');
   const ready = Boolean(projectId && profile && dir && dir.status.available && permissions.value) && !launching;
 
+  // M14 首页附件：随新任务第一条消息发送；准备中或失败时“启动任务”与 ⌘Enter 都不创建任务、不清空（用例 A75）。
+  const [chips, setChips] = useState<Chip[]>([]);
+  const addFiles = (files: File[]) => {
+    if (!agentTasksStore.enabled || !dir) return;
+    for (const file of files) {
+      const localId = crypto.randomUUID(), preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', preview, file }]);
+      void prepareChip(file, f => rpc.agentTasks.prepareAttachment(null, dir.path, f))
+        .then(data => setChips(cs => cs.map(c => c.localId === localId ? { ...c, status: 'ready', data, name: data.name } : c)))
+        .catch(e => setChips(cs => cs.map(c => c.localId === localId ? { ...c, status: 'failed', error: rpcErrorMessage(e) } : c)));
+    }
+  };
   const launch = async () => {
     if (!ready || !projectId || !profile || !dir) return;
+    if (agentTasksStore.enabled && chips.some(c => c.status === 'preparing')) { setError('附件还在准备中，准备好后再开始任务'); return; }
+    if (agentTasksStore.enabled && chips.some(c => c.status === 'failed')) { setError('有附件准备失败，请重试或移除后再开始任务'); return; }
     setError('');
     const token=crypto.randomUUID();launchToken.current=token;
     setLaunching(true);
@@ -126,7 +141,9 @@ export const HomeView = observer(function HomeView() {
         // M14 新任务区：创建任务后提交第一条消息，由主进程打开程序化运行。
         const created=await rpc.agentTasks.create({projectId,dirId:dir.id,cwd:dir.path,title:message.split('\n')[0].slice(0,60),profileId:profile.id,tier:permission});
         if(created.tierNotice)toast.message(created.tierNotice);
-        if(message.trim())await rpc.agentTasks.submit(created.taskId,{clientInputId:newClientInputId(),text:message,expectedSelectionRevision:1});
+        const attachments=chips.map(c=>c.data!).filter(Boolean);
+        if(message.trim()||attachments.length)await rpc.agentTasks.submit(created.taskId,{clientInputId:newClientInputId(),text:message,expectedSelectionRevision:1,attachments});
+        setChips([]);
         void agentTasksStore.refresh();navigation.openAgentTask(created.taskId);
       } else await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token, permission });
       draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
@@ -172,7 +189,8 @@ export const HomeView = observer(function HomeView() {
         <button data-testid="home-task-settings" className="composer-settings" title={t('m6.taskSettings')} aria-label={t('m6.taskSettings')} onClick={() => setLaunchSettings(true)}><Settings size={16} /></button>
       </div>
       <form className="reference-composer" onSubmit={(e) => { e.preventDefault(); void launch(); }}>
-        <textarea ref={inputRef} data-testid="home-input" aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void launch(); } }} />
+        {agentTasksStore.enabled && <AttachmentChips chips={chips} onRemove={id => setChips(cs => cs.filter(c => c.localId !== id))} onRetry={id => { const c = chips.find(x => x.localId === id); setChips(cs => cs.filter(x => x.localId !== id)); if (c?.file) addFiles([c.file]); }} />}
+        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length && agentTasksStore.enabled) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (agentTasksStore.enabled && e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length && agentTasksStore.enabled) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void launch(); } }} />
         <div className="reference-composer-toolbar">
           <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">
             <DropdownMenuItem onClick={() => setCreatingProject(true)}><Plus />{t('projects.new')}</DropdownMenuItem>

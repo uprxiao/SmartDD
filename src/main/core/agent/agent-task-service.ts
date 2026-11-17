@@ -10,6 +10,7 @@ import { isTier, resolveTier, type Tier } from './permissions';
 import { evaluateCapabilities } from './capabilities';
 import { attachmentNote, prepareAttachment, verifyAttachments, type Attachment } from './attachments';
 import { join } from 'node:path';
+import { searchProjectFiles } from './file-search';
 
 export interface ResolvedLaunch {
   driverId: DriverId;
@@ -122,6 +123,28 @@ export class AgentTaskService {
     return this.d.runs.runForTask(taskId)!;
   }
 
+  /** 输入框原生命令：Codex 的 compact／review 走协议；Claude 及其他公布的命令作为文字输入发送。 */
+  async command(taskId: string, name: string, args = '') {
+    if (!/^[A-Za-z0-9_:.-]{1,64}$/.test(name)) throw new DriverError('REJECTED', '命令无效');
+    const { selection, revision } = this.selection(taskId);
+    if (selection.driverId === 'codex-app-server' && (name === 'compact' || name === 'review')) {
+      const run = await this.ensureRun(taskId);
+      if (this.d.runs.busy(run.runId)) throw new DriverError('STATE', '本轮结束后再执行该命令');
+      this.paused.delete(taskId);
+      await this.d.runs.command(run.runId, name);
+      return { ok: true };
+    }
+    if (selection.driverId === 'codex-app-server') throw new DriverError('UNSUPPORTED', `Codex 没有公布 /${name} 命令`);
+    return this.submit(taskId, { clientInputId: `cmd-${randomUUID().replace(/-/g, '')}`, text: `/${name}${args ? ' ' + args : ''}`, expectedSelectionRevision: revision });
+  }
+
+  /** @文件：只在任务（或首页所选）目录内查找。 */
+  async searchFiles(taskId: string | null, cwd: string | null, query: string) {
+    const dir = taskId ? this.selection(taskId).task.cwd : cwd;
+    if (!dir) return [];
+    return searchProjectFiles(dir, String(query).slice(0, 200));
+  }
+
   /** 目标（需求 R02）：Codex 用原生目标接口，可暂停／继续；Claude 以 /goal 文字设定与清除，不能暂停。 */
   async goal(taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) {
     const { selection } = this.selection(taskId);
@@ -223,7 +246,7 @@ export class AgentTaskService {
       taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, selection, selectionRevision: revision,
       draft: this.d.store.draft(taskId), items: this.d.store.items(taskId), turns: this.d.store.turns(taskId),
       requests: this.d.store.pendingRequests(taskId), queued: this.d.store.queuedTurns(taskId).map(q => ({ turnId: q.turn_id, text: (JSON.parse(q.input_ref) as { text: string }).text })),
-      run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run) } : null,
+      run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run), catalog: this.d.runs.active(run.runId)?.catalog ?? null } : null,
       goal: this.d.store.goal(taskId),
       status: this.status(taskId), seq: this.d.store.watermark(taskId),
     };

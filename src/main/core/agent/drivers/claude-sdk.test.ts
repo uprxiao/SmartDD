@@ -17,7 +17,7 @@ function fakeSdk(turns: Turn[]) {
       let n = 0;
       for await (const msg of prompt) {
         state.prompts.push(msg);
-        if (n === 0) emit({ type: 'system', subtype: 'init', session_id: options.resume ?? options.sessionId });
+        if (n === 0) emit({ type: 'system', subtype: 'init', session_id: options.resume ?? options.sessionId, slash_commands: ['compact', 'init', 'statusline', 'pdf'], terminal_slash_commands: ['statusline'], skills: ['pdf'] });
         interrupted = false;
         await turns[n++]?.({ options, emit, ask: (tool, input) => (options as any).canUseTool(tool, input, { signal: new AbortController().signal, title: `想用 ${tool}` }), interrupted: () => interrupted });
       }
@@ -59,6 +59,7 @@ describe('Claude SDK 驱动', () => {
     expect(t.nativeTurnId).toBe(`${r.nativeId}:1`);
     await until(() => events.some(e => e.type === 'turn.completed'));
     expect(events).toContainEqual({ type: 'session', nativeId: r.nativeId });
+    expect(events).toContainEqual({ type: 'catalog', commands: ['compact', 'init'], skills: [{ name: 'pdf' }] });
     expect(events).toContainEqual({ type: 'message.delta', nativeItemId: 'u1', text: '好' });
     expect(events).toContainEqual(expect.objectContaining({ type: 'item.completed', nativeItemId: 'a1', itemType: 'assistant' }));
     expect(events).toContainEqual({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status: 'completed' });

@@ -28,7 +28,7 @@ describe('Codex app-server 驱动', () => {
     const r = await inst.open({ executable: exe, cwd: '/w', env: { PATH: '/bin' }, tier: 'ask', model: 'gpt-x', extraArgs: ['--disable', 'plugins'] });
     expect(r).toEqual({ nativeId: 'thr-1', confirmed: true });
     expect(spawned()).toMatchObject({ command: '/opt/codex', args: ['app-server', '--disable', 'plugins'], options: { cwd: '/w', env: { PATH: '/bin' } } });
-    expect(server.received.map(m => m.method)).toEqual(['initialize', 'initialized', 'thread/start']);
+    expect(server.received.map(m => m.method)).toEqual(['initialize', 'initialized', 'thread/start', 'skills/list']);
     expect(server.calls('thread/start')[0].params).toEqual({ cwd: '/w', approvalPolicy: 'on-request', approvalsReviewer: 'user', sandbox: 'workspace-write', model: 'gpt-x' });
     expect(events).toContainEqual({ type: 'process', pid: 4242 });
     expect(events).toContainEqual({ type: 'session', nativeId: 'thr-1' });
@@ -138,6 +138,20 @@ describe('Codex app-server 驱动', () => {
     server.notify('thread/goal/cleared', { threadId: 'thr-1' });
     await until(() => events.filter(e => e.type === 'goal').length === 2);
     expect(events.filter(e => e.type === 'goal')).toEqual([{ type: 'goal', objective: '全部通过', status: 'limited', timeUsedSeconds: 30 }, { type: 'goal', objective: null, status: 'cleared' }]);
+  });
+
+  it('打开后公布命令与 Skill 目录；compact／review 走协议', async () => {
+    const { inst, server, events } = setup((msg, s) => {
+      if (msg.method === 'skills/list') { s.reply(msg.id, { data: [{ cwd: '/w', errors: [], skills: [{ name: 'pdf', description: 'PDF 工具', enabled: true }, { name: 'off', enabled: false }] }] }); return true; }
+      if (msg.method === 'thread/compact/start' || msg.method === 'review/start') { s.reply(msg.id, {}); return true; }
+      return false;
+    });
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await until(() => events.some(e => e.type === 'catalog'));
+    expect(events.find(e => e.type === 'catalog')).toEqual({ type: 'catalog', commands: ['goal', 'compact', 'review'], skills: [{ name: 'pdf', description: 'PDF 工具' }] });
+    await inst.command('compact'); await inst.command('review');
+    expect(server.calls('thread/compact/start')[0].params).toEqual({ threadId: 'thr-1' });
+    expect(server.calls('review/start')[0].params).toEqual({ threadId: 'thr-1', target: { type: 'uncommittedChanges' } });
   });
 
   it('原生自行开始的回合（目标续跑）不认领上一条用户输入', async () => {

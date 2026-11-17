@@ -29,7 +29,7 @@ export interface OpenRunInput {
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
-interface ActiveRun extends RunHandle { instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
+interface ActiveRun extends RunHandle { catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
 
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
@@ -101,6 +101,7 @@ export class AgentRunService {
           else if (!e.clientInputId) run.turnId = store.acceptAutoTurn(run.taskId, run.runId, e.nativeTurnId);
           if (store.goal(run.taskId)?.status === 'active') store.countGoalTurn(run.taskId);
           break;
+        case 'catalog': run.catalog = { commands: e.commands.slice(0, 200), skills: e.skills.slice(0, 500) }; break;
         case 'goal':
           store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: e.status, timeUsedSeconds: e.timeUsedSeconds });
           break;
@@ -177,6 +178,12 @@ export class AgentRunService {
     if (!current?.native_turn_id) throw new DriverError('STATE', '回合尚未开始');
     await run.instance.steer({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: run.tier });
     this.deps.store.attachSteer(turnId, runId, current.native_turn_id);
+  }
+  async command(runId: string, name: 'compact' | 'review') {
+    const run = this.runs.get(runId);
+    if (!run) throw new DriverError('STATE', '运行不存在');
+    if (!run.instance.command) throw new DriverError('UNSUPPORTED', '该执行器不支持此命令');
+    await run.instance.command(name);
   }
   async goal(runId: string, op: Parameters<NonNullable<DriverInstance['goal']>>[0]) {
     const run = this.runs.get(runId);

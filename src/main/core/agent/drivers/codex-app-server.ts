@@ -69,6 +69,10 @@ export class CodexAppServerInstance implements DriverInstance {
       if (!r?.thread?.id) throw new DriverError('PROTOCOL', 'thread 响应缺少 id');
       this.threadId = r.thread.id;
       this.emitter.emit({ type: 'session', nativeId: r.thread.id });
+      // Skill 目录：协议探测失败只让 $Skill 菜单为空，不影响会话。
+      void this.rpc!.call<{ data?: { skills?: { name: string; description?: string; enabled?: boolean }[] }[] }>('skills/list', { cwds: [o.cwd] }, 15_000)
+        .then(s => this.emitter.emit({ type: 'catalog', commands: ['goal', 'compact', 'review'], skills: (s?.data ?? []).flatMap(e => e.skills ?? []).filter(k => k.enabled !== false).map(k => ({ name: k.name, description: k.description })) }))
+        .catch(() => this.emitter.emit({ type: 'catalog', commands: ['goal', 'compact', 'review'], skills: [] }));
       return { nativeId: r.thread.id, confirmed: true };
     })();
     return Promise.race([work, spawnError]);
@@ -168,6 +172,12 @@ export class CodexAppServerInstance implements DriverInstance {
     // expectedTurnId 不匹配当前回合时原生拒绝：不自动改成新回合发送（技术方案 §5）。
     await this.rpc.call('turn/steer', { threadId: this.threadId, expectedTurnId: t.nativeTurnId, clientUserMessageId: input.clientInputId, input: [{ type: 'text', text: input.text, text_elements: [] }, ...(input.images ?? []).map(i => ({ type: 'localImage', path: i.path }))] });
     this.emitter.emit({ type: 'steer.accepted', clientInputId: input.clientInputId, nativeTurnId: t.nativeTurnId });
+  }
+
+  async command(name: 'compact' | 'review') {
+    if (!this.rpc || !this.threadId) throw new DriverError('STATE', '会话尚未打开');
+    if (name === 'compact') await this.rpc.call('thread/compact/start', { threadId: this.threadId });
+    else await this.rpc.call('review/start', { threadId: this.threadId, target: { type: 'uncommittedChanges' } });
   }
 
   async goal(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) {

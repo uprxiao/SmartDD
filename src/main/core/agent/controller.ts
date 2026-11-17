@@ -28,6 +28,9 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       archive: (e, taskId: string) => run(e, w => w.tasks.archive(taskId)),
       openTerminal: (e, taskId: string, size?: { cols: number; rows: number }) => run(e, w => { if (!w.terminals) throw new Error('终端不可用'); return w.terminals.open(taskId, size); }),
       closeTerminal: (e, taskId: string) => run(e, w => w.terminals?.close(taskId)),
+      pasteToTerminal: (e, taskId: string, text: string) => run(e, w => { if (!w.terminals) throw new Error('终端不可用'); return w.terminals.paste(taskId, text); }),
+      command: (e, taskId: string, name: string, args?: string) => run(e, w => w.tasks.command(taskId, name, args)),
+      searchFiles: (e, taskId: string | null, cwd: string | null, query: string) => run(e, w => w.tasks.searchFiles(taskId, cwd, query)),
     }),
   };
 }

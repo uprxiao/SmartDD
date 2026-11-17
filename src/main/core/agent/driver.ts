@@ -44,6 +44,8 @@ export type DriverEvent =
   | { type: 'turn.started'; nativeTurnId: string; clientInputId: string }
   | { type: 'goal'; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number }
   | { type: 'steer.accepted'; clientInputId: string; nativeTurnId: string }
+  /** 执行器公布的命令与 Skill（输入框 /命令、$Skill 只列这些）。 */
+  | { type: 'catalog'; commands: string[]; skills: { name: string; description?: string }[] }
   | { type: 'message.delta'; nativeItemId: string; text: string }
   | { type: 'item.completed'; nativeItemId: string; itemType: string; payload: unknown }
   | { type: 'request'; requestKey: string; kind: DriverRequestKind; payload: unknown }
@@ -72,6 +74,8 @@ export interface DriverInstance {
   steer?(input: TurnInput): Promise<void>;
   /** 目标：Codex 用 thread/goal/*；不支持暂停的执行器对 pause/resume 抛 UNSUPPORTED。 */
   goal?(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }): Promise<void>;
+  /** 原生命令（Codex compact／review 走协议；其余由调用方作为文字输入发送）。 */
+  command?(name: 'compact' | 'review'): Promise<void>;
   close(): Promise<void>;
   on(listener: DriverListener): () => void;
 }

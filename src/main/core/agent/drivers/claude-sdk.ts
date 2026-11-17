@@ -125,6 +125,9 @@ export class ClaudeSdkInstance implements DriverInstance {
     this.emitter.emit({ type: 'native', name: m?.type === 'system' ? `system/${m.subtype}` : String(m?.type ?? 'unknown'), payload: m });
     if (m?.type === 'system' && m.subtype === 'init' && typeof m.session_id === 'string') {
       if (!this.confirmed) { this.confirmed = true; this.sessionId = m.session_id; this.emitter.emit({ type: 'session', nativeId: m.session_id }); }
+      const terminalOnly = new Set<string>(Array.isArray(m.terminal_slash_commands) ? m.terminal_slash_commands : []);
+      const skills = new Set<string>(Array.isArray(m.skills) ? m.skills : []);
+      this.emitter.emit({ type: 'catalog', commands: (Array.isArray(m.slash_commands) ? m.slash_commands as string[] : []).filter(c => !terminalOnly.has(c) && !skills.has(c)), skills: [...skills].map(name => ({ name })) });
     }
     if (this.activeTurn && m?.type !== 'result') this.markStarted();
     if (m?.type === 'stream_event' && m.event?.type === 'content_block_delta' && m.event.delta?.type === 'text_delta') {
