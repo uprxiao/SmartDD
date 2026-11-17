@@ -1,0 +1,42 @@
+{
+  "scope": "prototype pure/model tests, not packaged App acceptance",
+  "executed": [
+    {
+      "command": "npm run test:m14",
+      "tests": 25,
+      "passed": 25,
+      "failed": 0
+    },
+    {
+      "command": "npm run test:m9",
+      "tests": 297,
+      "passed": 297,
+      "failed": 0
+    },
+    {
+      "command": "npm run test:parity",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "command": "npm run test:m13",
+      "tests": 57,
+      "passed": 57,
+      "failed": 0
+    }
+  ],
+  "browser": {
+    "status": "unavailable",
+    "errors": [
+      "browser access host unavailable",
+      "Chrome noWindowsAvailable"
+    ],
+    "alternative": "source + React static server rendering + saved P0.13 prototype screenshots; no live clicks verified"
+  },
+  "environmentNotes": [
+    "Prototype node_modules lacks direct dependencies; Node model tests and static rendering use root-installed dependencies where needed",
+    "Static renderer JSX automatic, React 19.3.0; root Vite 6.4.4 vs prototype declaration 6.4.2; not an exact locked prototype build verification",
+    "Temporary SSR harness initially resolved esbuild via non-realpath and used classic JSX; corrected fixture setup, no product source changed"
+  ]
+}

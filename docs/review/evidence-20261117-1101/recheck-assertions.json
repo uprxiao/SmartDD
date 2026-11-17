@@ -1,0 +1,147 @@
+{
+  "scope": "Actual component JSX and event handlers on synthetic in-memory hook state; effects omitted. No live browser, provider or production execution.",
+  "checks": [
+    {
+      "id": "same-menu-claude",
+      "expected": [
+        "ask",
+        "full"
+      ],
+      "actual": [
+        "ask",
+        "full"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "same-menu-codex",
+      "expected": [
+        "ask",
+        "auto",
+        "full"
+      ],
+      "actual": [
+        "ask",
+        "auto",
+        "full"
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "request-keeps-message-draft",
+      "expected": "原有普通消息草稿：检查安装包",
+      "actual": "原有普通消息草稿：检查安装包",
+      "status": "passed"
+    },
+    {
+      "id": "second-request-reason-is-empty",
+      "expected": "",
+      "actual": "",
+      "status": "passed"
+    },
+    {
+      "id": "first-request-reason-restores",
+      "expected": "只针对请求 r1 的原因",
+      "actual": "只针对请求 r1 的原因",
+      "status": "passed"
+    },
+    {
+      "id": "home-extension-off-carries",
+      "expected": false,
+      "actual": false,
+      "status": "passed"
+    },
+    {
+      "id": "mail-review-revision",
+      "expected": [
+        2,
+        3
+      ],
+      "actual": [
+        2,
+        3
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "terminal-prefills-code",
+      "expected": true,
+      "actual": true,
+      "status": "passed"
+    },
+    {
+      "id": "codex-no-plan-card",
+      "expected": false,
+      "actual": false,
+      "status": "passed"
+    },
+    {
+      "id": "goal-lock-active",
+      "expected": {
+        "disabledForeign": 4,
+        "localModelEnabled": true
+      },
+      "actual": {
+        "status": "active",
+        "disabledForeign": 4,
+        "localModelEnabled": 1
+      },
+      "status": "passed"
+    },
+    {
+      "id": "goal-lock-paused",
+      "expected": {
+        "disabledForeign": 4,
+        "localModelEnabled": true
+      },
+      "actual": {
+        "status": "paused",
+        "disabledForeign": 4,
+        "localModelEnabled": 1
+      },
+      "status": "passed"
+    },
+    {
+      "id": "goal-lock-waiting-children",
+      "expected": {
+        "disabledForeign": 4,
+        "localModelEnabled": true
+      },
+      "actual": {
+        "status": "waiting-children",
+        "disabledForeign": 4,
+        "localModelEnabled": 1
+      },
+      "status": "passed"
+    },
+    {
+      "id": "research-ask-agrees-with-T1.3",
+      "expected": {
+        "approvalPolicy": "on-request",
+        "approvalsReviewer": "user",
+        "sandbox": "workspaceWrite"
+      },
+      "actual": {
+        "approvalPolicy": "untrusted",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "readOnly"
+        },
+        "options": {},
+        "skipped": []
+      },
+      "status": "failed"
+    },
+    {
+      "id": "clearing-A-keeps-B-locked",
+      "expected": true,
+      "actual": {
+        "lock": null,
+        "disabledForeign": 0
+      },
+      "status": "failed"
+    }
+  ],
+  "passed": 12,
+  "failed": 2
+}

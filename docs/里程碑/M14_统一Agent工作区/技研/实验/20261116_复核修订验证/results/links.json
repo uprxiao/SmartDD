@@ -1,0 +1,211 @@
+{
+  "scope": "T3 actual parser + isolated router; recorded output replay; no file workspace UI",
+  "results": [
+    {
+      "id": "codex-real",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "plain-text"
+        },
+        {
+          "target": "plain-text"
+        }
+      ]
+    },
+    {
+      "id": "claude-real",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "files.open",
+          "rel": "notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "directory",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "files.revealDirectory",
+          "rel": "."
+        }
+      ]
+    },
+    {
+      "id": "md-line",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "files.open",
+          "rel": "src/main/index.ts",
+          "line": 42
+        }
+      ]
+    },
+    {
+      "id": "inline-column",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "files.open",
+          "rel": "src/main/index.ts",
+          "line": 42,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "id": "absolute",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "files.open",
+          "rel": "src/main/index.ts"
+        }
+      ]
+    },
+    {
+      "id": "file-url",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "files.open",
+          "rel": "notes.txt"
+        }
+      ]
+    },
+    {
+      "id": "outside",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "reject",
+          "reason": "outside-root"
+        }
+      ]
+    },
+    {
+      "id": "missing",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "reject",
+          "reason": "not-found"
+        }
+      ]
+    },
+    {
+      "id": "url",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "browser.newTab+navigate",
+          "reason": null
+        },
+        {
+          "target": "browser.newTab+navigate",
+          "reason": null
+        }
+      ]
+    },
+    {
+      "id": "dangerous",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "reject",
+          "reason": "scheme-not-allowed"
+        },
+        {
+          "target": "reject",
+          "reason": "scheme-not-allowed"
+        }
+      ]
+    },
+    {
+      "id": "route-not-file",
+      "status": "passed",
+      "detail": [
+        {
+          "target": "reject",
+          "reason": "outside-root"
+        }
+      ]
+    },
+    {
+      "id": "line and column retained",
+      "status": "passed"
+    },
+    {
+      "id": "symlink escape denied",
+      "status": "passed"
+    },
+    {
+      "id": "no project cannot open browser",
+      "status": "passed"
+    },
+    {
+      "id": "modifier uses same root checks",
+      "status": "passed"
+    },
+    {
+      "id": "PDF keeps existing file viewer",
+      "status": "passed"
+    },
+    {
+      "id": "recorded-output:codex",
+      "status": "passed",
+      "detail": {
+        "text": "1. Create `notes.txt` with the requested single line.\n2. Run `ls -la` and `wc -l notes.txt`.\n3. Summarize the result and file path.\n\nCreated `notes.txt` containing the single line `hello m14`, ran `ls -la`, and confirmed with `wc -l notes.txt` that it has one line.",
+        "links": [
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          }
+        ]
+      }
+    },
+    {
+      "id": "recorded-output:claude",
+      "status": "passed",
+      "detail": {
+        "text": "I created `/var/folders/xy/r637tyl545g2yc51_mf33l3h0000gn/T/m14-links-vaxz4a/project/notes.txt` containing the single line `hello m14`, then ran `ls -la` and `wc -l notes.txt`, confirming the file exists and has one line.",
+        "links": [
+          {
+            "target": "files.open",
+            "rel": "notes.txt"
+          },
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          },
+          {
+            "target": "plain-text"
+          }
+        ]
+      }
+    }
+  ],
+  "failed": 0
+}

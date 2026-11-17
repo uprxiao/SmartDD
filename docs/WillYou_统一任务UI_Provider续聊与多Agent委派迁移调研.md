@@ -1,10 +1,10 @@
 # WillYou 统一任务 UI、Provider 续聊与多 Agent 委派迁移调研
 
-> 现行设计已收口到 [M14 技术方案 T0.1（研究收口稿）](里程碑/M14_统一Agent工作区/技研/技术方案.md)，范围以[需求 R0.2](里程碑/M14_统一Agent工作区/需求.md)为准：先跑稳 T3 式通用基座，独立模板与强制阶段流程后续扩展。本稿保留历史推导、方案比较及旧用例来源，不再并行维护现行实现规格；下方状态按形成时理解。T0.1 已按冻结范围完成研究与关闭审计，可作为实施设计依据；产品原型评审、正式开发与验收仍未完成。
+> 现行设计已收口到 [M14 技术方案 T0.1（研究收口稿）](里程碑/M14_统一Agent工作区/技研/历史/技术方案_T0.1_20261116.md)，范围以[需求 R0.2](里程碑/M14_统一Agent工作区/历史/需求_R0.2_20261116.md)为准：先跑稳 T3 式通用基座，独立模板与强制阶段流程后续扩展。本稿保留历史推导、方案比较及旧用例来源，不再并行维护现行实现规格；下方状态按形成时理解。T0.1 已按冻结范围完成研究与关闭审计，可作为实施设计依据；产品原型评审、正式开发与验收仍未完成。
 
-> 2026-11-14 阶段归属：本次优化已登记为 F32／[M14](里程碑/M14_统一Agent工作区/README.md)，阶段范围以 [M14 需求](里程碑/M14_统一Agent工作区/需求.md)为入口。本稿保留为设计评审／调研依据，待整合为正式技术方案；定时任务已顺延为 M15。
+> 2026-11-14 阶段归属：本次优化已登记为 F32／[M14](里程碑/M14_统一Agent工作区/README.md)，阶段范围以 [M14 需求](里程碑/M14_统一Agent工作区/历史/需求_R0.2_20261116.md)为入口。本稿保留为设计评审／调研依据，待整合为正式技术方案；定时任务已顺延为 M15。
 
-> 2026-11-14 后续验证：按用户要求已开始全局兼容研究，实际实验、安装／版本问题及未决项统一见[M14 全局验证账](里程碑/M14_统一Agent工作区/技研/全局设计验证账.md)。下方“未执行”等状态为该稿形成时记录，不据此覆盖后续结果；本稿仍待整合。
+> 2026-11-14 后续验证：按用户要求已开始全局兼容研究，实际实验、安装／版本问题及未决项统一见[M14 全局验证账](里程碑/M14_统一Agent工作区/技研/历史/全局设计验证账_V0.3_20261116.md)。下方“未执行”等状态为该稿形成时记录，不据此覆盖后续结果；本稿仍待整合。
 
 > 版本：R0.1 · 专项调研稿  
 > 日期：2026-11-14  
@@ -75,13 +75,13 @@
 
 ### 4.1 统一 UI 的基础是统一事件与适配器
 
-T3 的 [ProviderAdapter](../../t3code/packages/provider-core/src/server/ProviderAdapter.ts)提供会话、回合、停止、原生请求、历史等共同边界。不同 Provider 的原生输出先转换为统一项目与状态，再交给客户端展示。
+T3 的 [ProviderAdapter](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/provider-core/src/server/ProviderAdapter.ts)提供会话、回合、停止、原生请求、历史等共同边界。不同 Provider 的原生输出先转换为统一项目与状态，再交给客户端展示。
 
 它并不要求底层全部使用同一种 SDK。Claude 与 Codex 分别接自己的程序化运行接口，统一发生在宿主契约和客户端投影层。
 
 ### 4.2 多 Agent 委派是宿主能力
 
-[工具定义](../../t3code/apps/server/src/mcp/toolkits/orchestrator/tools.ts)和[处理器](../../t3code/apps/server/src/mcp/toolkits/orchestrator/handlers.ts)明确提供：
+[工具定义](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/mcp/toolkits/orchestrator/tools.ts)和[处理器](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/mcp/toolkits/orchestrator/handlers.ts)明确提供：
 
 | T3 工具 | 作用 | 对 WillYou 的启示 |
 | --- | --- | --- |
@@ -90,7 +90,7 @@ T3 的 [ProviderAdapter](../../t3code/packages/provider-core/src/server/Provider
 | task_status | 读取自己的委派状态和结果 | 返回执行与工作状态，不能只看某轮是否输出结束 |
 | task_cancel | 取消委派及其关联后续工作 | 取消包含排队、运行与后代，不能只停一个界面 |
 
-[OrchestratorMcpService](../../t3code/apps/server/src/mcp/OrchestratorMcpService.ts)的本地委派链路核对了：调用者所拥有的活动父运行、目标配置、权限模式、幂等命令和工作区，再发出 `delegated_task.request` 创建子线程／回合。
+[OrchestratorMcpService](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/mcp/OrchestratorMcpService.ts)的本地委派链路核对了：调用者所拥有的活动父运行、目标配置、权限模式、幂等命令和工作区，再发出 `delegated_task.request` 创建子线程／回合。
 
 已确认的重要行为：
 
@@ -99,25 +99,25 @@ T3 的 [ProviderAdapter](../../t3code/packages/provider-core/src/server/Provider
 - async 与 wait 分开，等待超时并不等于取消子任务；问题或审批也可以结束当前等待。
 - 原生子 Agent 与宿主拥有的子任务分开标记；跨 Provider／特殊配置／独立 checkout 使用宿主委派。
 
-这些行为来自 [委派契约](../../t3code/packages/contracts/src/orchestratorMcp.ts)、[委派模式](../../t3code/apps/server/src/mcp/delegatedTaskModes.ts)和[模型侧路由说明](../../t3code/packages/provider-core/src/server/orchestrationInstructions.ts)。
+这些行为来自 [委派契约](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/contracts/src/orchestratorMcp.ts)、[委派模式](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/mcp/delegatedTaskModes.ts)和[模型侧路由说明](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/provider-core/src/server/orchestrationInstructions.ts)。
 
 ### 4.3 子结果有独立投递和唤醒链路
 
-[ProviderContinuationService](../../t3code/apps/server/src/orchestration-v2/ProviderContinuationService.ts)处理父任务续接，[DelegatedTaskQuestionReactor](../../t3code/apps/server/src/orchestration-v2/DelegatedTaskQuestionReactor.ts)处理子任务的问题通知。
+[ProviderContinuationService](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/ProviderContinuationService.ts)处理父任务续接，[DelegatedTaskQuestionReactor](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/DelegatedTaskQuestionReactor.ts)处理子任务的问题通知。
 
-[subagentProjection](../../t3code/packages/provider-core/src/server/subagentProjection.ts)明确区分 `working`、`waiting_for_children`、`result_available`。父 Agent 一轮回复结束，或子 Agent 某轮结束但仍有后续工作，不等于整个任务树完成；结果已生成但未投递也仍有待办。
+[subagentProjection](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/provider-core/src/server/subagentProjection.ts)明确区分 `working`、`waiting_for_children`、`result_available`。父 Agent 一轮回复结束，或子 Agent 某轮结束但仍有后续工作，不等于整个任务树完成；结果已生成但未投递也仍有待办。
 
 ### 4.4 同任务切换 Provider 依赖上下文交接
 
-T3 的 [Orchestrator](../../t3code/apps/server/src/orchestration-v2/Orchestrator.ts)管理 Provider 选择，[ContextHandoffService](../../t3code/apps/server/src/orchestration-v2/ContextHandoffService.ts)准备历史覆盖范围，[ContextHandoffDelivery](../../t3code/apps/server/src/orchestration-v2/ContextHandoffDelivery.ts)执行交付。
+T3 的 [Orchestrator](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/Orchestrator.ts)管理 Provider 选择，[ContextHandoffService](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/ContextHandoffService.ts)准备历史覆盖范围，[ContextHandoffDelivery](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/ContextHandoffDelivery.ts)执行交付。
 
 核实到的实现要点是：
 
 1. 应用线程可以保存多个 Provider 原生线程及其选择状态。
 2. 切到另一 Provider 时，为目标准备它尚未收到的历史，既有增量策略也有全线程历史策略。
-3. [ProviderTurnStartService](../../t3code/apps/server/src/orchestration-v2/ProviderTurnStartService.ts)在开始实际回合前交付 handoff：适配器支持时进行原生历史注入，否则将受控上下文放在用户新输入之前。
+3. [ProviderTurnStartService](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/ProviderTurnStartService.ts)在开始实际回合前交付 handoff：适配器支持时进行原生历史注入，否则将受控上下文放在用户新输入之前。
 4. 记录投递覆盖项目、目标原生线程及状态，避免来回切换重复灌入同一历史。
-5. [handoffBudget](../../t3code/packages/provider-core/src/server/handoffBudget.ts)对历史、附件和目标上下文窗口做预算。上下文连续性不等于无限量无损复制所有内容。
+5. [handoffBudget](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/provider-core/src/server/handoffBudget.ts)对历史、附件和目标上下文窗口做预算。上下文连续性不等于无限量无损复制所有内容。
 
 已确认 Codex 适配器实现 `thread/inject_items`，仅在“不认识方法”等确定未修改历史的错误上返回不支持；运输错误导致结果不明时不能安全地再次注入。handoff 代码对不确定投递要求更换原生线程后核对处理。
 
@@ -465,7 +465,7 @@ P2 是基础里程碑，不是整个目标完成；P3 和 P4 都在本次核心�
 | 配置发现同时识别 .git／.svn 边界；文件引用有独立根与版本 | [能力发现](../src/main/core/capabilities/discovery.ts)、[文件来源](../src/main/core/files/sources.ts) | 保留既有项目指令、Skill／MCP 来源与文件授权，不能因换 cwd 漏掉配置或错投引用 |
 | 项目导入导出传配置与目录映射，不复制源码工作副本 | [导入导出格式](../src/main/core/projects/transfer-format.ts)、[导入导出服务](../src/main/core/projects/transfer-service.ts) | 不把配置导出复用成 10GB 源码快照机制 |
 
-T3 可借鉴的统一 Provider、上下文交接、委派结果投递语义与 Git 隔离实现须分开看。[VCS 类型](../../t3code/packages/contracts/src/vcs.ts)和[驱动登记](../../t3code/apps/server/src/vcs/VcsDriverRegistry.ts)没有 SVN 实现；其 worktree 委派要解析 HEAD，[checkpoint](../../t3code/apps/server/src/orchestration-v2/CheckpointService.ts)使用 Git refs。不能整体移植这些服务后宣称 SVN 已等效支持。
+T3 可借鉴的统一 Provider、上下文交接、委派结果投递语义与 Git 隔离实现须分开看。[VCS 类型](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/contracts/src/vcs.ts)和[驱动登记](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/vcs/VcsDriverRegistry.ts)没有 SVN 实现；其 worktree 委派要解析 HEAD，[checkpoint](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/CheckpointService.ts)使用 Git refs。不能整体移植这些服务后宣称 SVN 已等效支持。
 
 ### 16.2 可选方式与成本比较
 
@@ -538,3 +538,6 @@ UI 使用“共享目录，写入排队”“分析依据已变化”“独立�
 | 可选独立目录 | 未配置时基线正常可用；配置后目录身份和产物归属准确，不自动覆盖主 WC 或清理未合并修改 |
 
 **首轮先交付 SVN 共享目录串行写＋三核心能力，并验证按需读取的并行分析是否值得开放；Git worktree 可独立启用。** 全量代码快照不作为推荐路线；独立 SVN WC 保留为已有目录的可选增强。第 10 节“非 Git 串行”的基线可继续使用，但第 12 节的核心验收应明确包含 SVN，不能只跑 Git 项目。
+
+
+2026-11-16 来源链接勘误：原本机 t3code 相对链接改为原引用提交的仓库永久链接，仅调整可访问位置，不将历史源码结论更新为上游最新。

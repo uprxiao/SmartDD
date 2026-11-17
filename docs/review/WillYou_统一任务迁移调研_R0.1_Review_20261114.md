@@ -165,7 +165,7 @@
 
 **影响：**只新增聊天层 ProviderBinding，随后以同一个 taskId 调旧启动器切换 Codex→Claude，会碰到现有身份冲突。若直接放松校验，又会混淆旧原生会话的能力、资源留存和授权来源。这比只修改 tasks.runner 或新 SQL 更深一层。
 
-**T3 对照：**[Orchestrator.ts](../../../t3code/apps/server/src/orchestration-v2/Orchestrator.ts) 第 1377–1418 行分别处理 providerSessions 与 providerThreads，并按 appThreadId、providerInstanceId 选择原生线程；[ProviderAdapter.ts](../../../t3code/packages/provider-core/src/server/ProviderAdapter.ts) 第 685–735 行以 providerThread 为运行／历史边界。
+**T3 对照：**[Orchestrator.ts](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/Orchestrator.ts) 第 1377–1418 行分别处理 providerSessions 与 providerThreads，并按 appThreadId、providerInstanceId 选择原生线程；[ProviderAdapter.ts](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/provider-core/src/server/ProviderAdapter.ts) 第 685–735 行以 providerThread 为运行／历史边界。
 
 **需补设计：**明确逻辑 task、ProviderBinding、原生能力会话、run 和资源引用的对应表；决定旧 taskId 键如何映射为兼容绑定，如何保存多个能力快照及其历史；同步规划 MCP 名称、会话镜像路径、资源 hold／删除与旧记录恢复。业务 taskId 保持稳定，不用伪造另一个项目身份绕过检查。关闭判据是同 taskId 的 A→B→A 能通过真实原生身份核验，旧快照仍可追踪且不覆盖。
 
@@ -175,7 +175,7 @@
 
 **影响：**SDK 能读 CLI 配置不等于已经完成 WillYou 业务交付。只传 cwd／env，可能丢失宿主私有桥、冻结插件 Skill、项目能力或 CLI 业务入口；另造 SDK 配置则可能出现重复 MCP、同名能力覆盖和两套启停状态。
 
-**T3 对照：**[ClaudeAdapterV2.ts](../../../t3code/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts) 第 1342–1489 行显式组织 SDK 进程与 MCP 设置，第 2096–2125 行传入工具策略和 MCP；第 2260 行明确区分 allowedTools 的预批准语义与工具可用性。这说明加载、可见和允许执行须分别处理，不能把一份工具名单视为全部语义。
+**T3 对照：**[ClaudeAdapterV2.ts](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts) 第 1342–1489 行显式组织 SDK 进程与 MCP 设置，第 2096–2125 行传入工具策略和 MCP；第 2260 行明确区分 allowedTools 的预批准语义与工具可用性。这说明加载、可见和允许执行须分别处理，不能把一份工具名单视为全部语义。
 
 **需补设计：**在现有预检／能力计划之后形成程序化交付结果，逐项映射程序、完整环境、Skill 根、插件根、MCP 服务、业务 CLI 桥、真实进程登记、诊断和释放句柄。原生 CLI 和 SDK 消费同一业务选择；传输适配各自实现。分别验证“发现→交付→加载→真实调用→停止撤销”，包含名称冲突和取消启动负例。不要求将所有已有业务统一改成 MCP。
 
@@ -189,7 +189,7 @@ R0.2 §7 已正确区分插件动态更新与 Skill／MCP 的生效规则，本�
 
 **需补设计：**保留浏览器标签、会话和原业务审批服务；把查询／展示／回答目标扩展为宿主签发的实际运行身份与代际，保留 receipt／hash 校验。分别定义同任务换 Provider、创建子任务、父子切页、停止生成、结束 run 时，哪些数据保留、哪些请求失效、哪些授权需重新取得。父页面聚合子请求时仍把决定送回原子 run。
 
-**T3 对照：**[ProviderContinuationService.ts](../../../t3code/apps/server/src/orchestration-v2/ProviderContinuationService.ts) 第 27–57、174–187 行按结果消息和 generation 校验、排队续接；这种真实归属和过期检查值得复用，但不能替代 WillYou 浏览器／邮件／插件各自的授权合同。
+**T3 对照：**[ProviderContinuationService.ts](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/ProviderContinuationService.ts) 第 27–57、174–187 行按结果消息和 generation 校验、排队续接；这种真实归属和过期检查值得复用，但不能替代 WillYou 浏览器／邮件／插件各自的授权合同。
 
 #### B04｜中：MCP 与文件系统的保留范围需明确，避免把文件查看器也迁入 Agent
 
@@ -201,13 +201,13 @@ R0.2 §7 已正确区分插件动态更新与 Skill／MCP 的生效规则，本�
 
 #### B05｜高：新范围仍未整合进旧设计，T3 接续机制不能只留在调研中
 
-R0.2 §1.2、§4.3、§9、§15 的旧范围和单绑定结构尚未更新；这是前次 R01／R03 的延续，不能标为已关闭。[ContextHandoffService.ts](../../../t3code/apps/server/src/orchestration-v2/ContextHandoffService.ts) 第 500–560 行记录来源／目标原生线程、历史覆盖与预算；[ContextHandoffDelivery.ts](../../../t3code/apps/server/src/orchestration-v2/ContextHandoffDelivery.ts) 第 83–143 行区分 pending／injected／inline，并处理不确定交付。WillYou 正式设计需要把这些语义落实到表、命令、事务和恢复判据，并接上 B01 的业务能力会话。
+R0.2 §1.2、§4.3、§9、§15 的旧范围和单绑定结构尚未更新；这是前次 R01／R03 的延续，不能标为已关闭。[ContextHandoffService.ts](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/ContextHandoffService.ts) 第 500–560 行记录来源／目标原生线程、历史覆盖与预算；[ContextHandoffDelivery.ts](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/ContextHandoffDelivery.ts) 第 83–143 行区分 pending／injected／inline，并处理不确定交付。WillYou 正式设计需要把这些语义落实到表、命令、事务和恢复判据，并接上 B01 的业务能力会话。
 
 宿主委派、任务树整体完成、单／多模式转换和停止范围同样需要进入现行正文。子结果、交接历史和用户真实输入继续分来源，不能为了复用统一聊天输入而改变邮件／插件授权证据。
 
 #### B06｜中：保留 SVN／大型项目基线；T3 的 Git 隔离不应成为任务运行前置
 
-专项调研 §16 已按用户反馈收敛，这项方向正确。T3 [OrchestratorMcpService.ts](../../../t3code/apps/server/src/mcp/OrchestratorMcpService.ts) 第 2598–2625 行的 worktree 分支明确解析父 HEAD 并检查仓库提交；该具体路径不能直接套到 SVN。WillYou 采用共享目录串行写入时，仍需补实际资源锁、父子交棒和背景工作结束判据。10GB 项目不默认复制全量代码、不在每轮全量 hash；只读并发以实际权限和内容版本复核为条件。现有同路径多项目登记不应被禁止来掩盖锁模型缺口。
+专项调研 §16 已按用户反馈收敛，这项方向正确。T3 [OrchestratorMcpService.ts](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/mcp/OrchestratorMcpService.ts) 第 2598–2625 行的 worktree 分支明确解析父 HEAD 并检查仓库提交；该具体路径不能直接套到 SVN。WillYou 采用共享目录串行写入时，仍需补实际资源锁、父子交棒和背景工作结束判据。10GB 项目不默认复制全量代码、不在每轮全量 hash；只读并发以实际权限和内容版本复核为条件。现有同路径多项目登记不应被禁止来掩盖锁模型缺口。
 
 ### 6.3 保留与改造的实际边界
 
@@ -227,3 +227,6 @@ R0.2 §1.2、§4.3、§9、§15 的旧范围和单绑定结构尚未更新；这
 可以继续沿当前架构整合设计。下一版应在现有主方案中形成一份完整修订：先解决 B01 的身份／快照模型，再补 B02–B04 的业务适配合同，把 B05 的 T3 接续／委派状态写进公共契约，保留 B06 的 SVN 策略。无需新增第三份主方案。
 
 本轮只读代码并追加这份 Review 记录，未重写两份主文档，未修改代码、安装 SDK 或执行真实模型／业务验收。上述发现是设计兼容性和完整性评审，不是对新实现已发生故障的报告，也不是新路径已经通过的证据。
+
+
+2026-11-16 来源链接勘误：原本机 t3code 相对链接改为原引用提交的仓库永久链接，仅调整可访问位置，不将历史源码结论更新为上游最新。

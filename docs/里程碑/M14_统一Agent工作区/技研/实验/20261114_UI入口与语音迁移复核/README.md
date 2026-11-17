@@ -35,6 +35,6 @@ WillYou 应新增有判别字段的 legacy-terminal／programmatic 页面打开�
 
 新语音入口绑定当前窗口／输入框、task 与草稿／选择代次。编辑草稿不要求 Agent 已启动；焦点、输入目标或选定 Provider 变化时，取消尚未派发的唤起，不自动重试。现有 Typeless 的 shortcut-sent 只表示发出快捷键，不能显示已收到文本或自动提交。全局外部输入快捷键继续保留原语义，不把所有 OS 输入假定为当前任务草稿。实际 OS 焦点／转写／IME 和新接线仍待验证。
 
-本轮新增[原型说明草案](../../../原型/原型说明与变更.md)，明确保留入口与 S01–S09 状态合同；没有修改共享原型代码或生成视觉验收图。业务、原型代码保持不变，产品验收仍 0／54。
+本轮新增[原型说明草案](../../../原型/历史/原型说明与变更_P0.1_20261116.md)，明确保留入口与 S01–S09 状态合同；没有修改共享原型代码或生成视觉验收图。业务、原型代码保持不变，产品验收仍 0／54。
 
 复核用 [audit.py](audit.py)，结果见 [audit-result.json](audit-result.json)。重跑先按 build.mjs 准备已有隔离依赖路径，`node build.mjs`、`node --check probe.mjs`、`node probe.mjs`；不能替换 mocks 为真实 IPC／Typeless。换机器需更新路径，audit.py 的批次须指向新结果。

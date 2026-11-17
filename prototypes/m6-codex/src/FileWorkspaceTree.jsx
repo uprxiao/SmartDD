@@ -150,6 +150,7 @@ export function FileWorkspaceTree({ files, scope, rootPath, query, searchScenari
     if (index === undefined) { if (!rows.some(row=>row.status==='loading')) finishReveal(); return; }
     if (rows.slice(0,index).some(row=>row.status==='loading') || !scrollRef.current?.clientHeight) return;
     if (!rows[index].folder && !rows[index].status) { focusPath(revealPath, false); onSelectedChange([revealPath]); }
+    else if (revealRequest?.directory && rows[index].folder) { focusPath(revealPath, false); onSelectedChange([revealPath]); } // M14 消息里的目录链接：滚到并选中该目录；不带 directory 的请求保持 M9 行为
     finishReveal();
   }, [revealKey, revealPath, query, rowIndex, expanded, rootExpanded, height]);
   useEffect(() => { clearTooltip(); }, [rows, changedOnly, hideGenerated]);

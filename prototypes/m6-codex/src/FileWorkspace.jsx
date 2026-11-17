@@ -289,7 +289,15 @@ function LocalFileWorkspace({
   onTheme,
   onClose,
   // M12 (optional): web tabs share this strip. Omitted props keep M9 behaviour unchanged.
-  webTabs = [], webActiveId = null, onWebSelect, onWebClose, onWebNew, webView
+  webTabs = [], webActiveId = null, onWebSelect, onWebClose, onWebNew, webView,
+  // M14 (optional): message-link open requests {id, path, line, column, directory}. Omitted keeps M9 behaviour unchanged.
+  openRequest,
+  // M14 (optional): paths are dropped into the composer draft, so a running terminal is not required. Omitted keeps M9 behaviour.
+  dropToComposer = false,
+  // M14 (optional): rendered inside the unified right panel, which owns maximize/close. Omitted keeps M9 behaviour.
+  embedded = false,
+  // M14 (optional): synthetic saved text per relative path for this root (a child worktree shows its own unmerged content). Omitted keeps M9 behaviour.
+  savedSeed
 }) {
   const webTip=useTreePathTooltip(JSON.stringify([task.id,webActiveId,webTabs.map(tab=>[tab.id,tab.title,tab.url])]));
   const officeResources=useRef(new Map());
@@ -352,6 +360,7 @@ function LocalFileWorkspace({
     label: '共享文档',
     path: rootScenario==='nested' ? (task.cwd || project.path || '/workspace/SmartDD')+'/docs' : '/workspace/shared-docs'
   }])];
+  useEffect(() => { if (!savedSeed || !roots.length) return; setStore(st => { const add = {}; for (const [p, t] of Object.entries(savedSeed)) { const id = documentKey(roots, fileKey(roots[0].id, p)); if (id && !(st.saved && id in st.saved)) add[id] = t; } return Object.keys(add).length ? { ...st, saved: { ...st.saved, ...add } } : st; }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const scope = workspaceScope(task.id, roots);
   useEffect(() => {
     const prepare = event => {
@@ -375,7 +384,7 @@ function LocalFileWorkspace({
       return {...old,[scope]:next.expanded!==previous.expanded?updateRootView(next,{expanded:next.expanded}):next};
     });
   function dragFile(event, rootId, path, allowTabReorder = false) {
-    if (!task?.id || task.status !== 'running') {
+    if (!task?.id || (task.status !== 'running' && !dropToComposer)) {
       if (!allowTabReorder) event.preventDefault();
       endFileDrag(); note('当前没有可用的任务终端；路径未投递，文件浏览仍可使用。'); return;
     }
@@ -622,6 +631,7 @@ function LocalFileWorkspace({
     setRich(null);
     setMenu(null);
   }
+  useEffect(() => { if (!openRequest?.path) return; if (openRequest.directory) { const parts = openRequest.path.split('/'); set(st => ({ ...st, expanded: [...new Set([...st.expanded, ...parts.map((_, i) => parts.slice(0, i + 1).join('/'))])] })); setQuery(''); setTreeReveal({ id: crypto.randomUUID(), root: state.root, path: openRequest.path, directory: true }); } else open(openRequest.path, true, state.root, { line: openRequest.line, column: openRequest.column }); }, [openRequest?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   function save(key = state.active, override = false) {
     if (state.tabs.find(t => fileKey(t.root, t.path) === key)?.navigationView === 'review') { note('行范围只读预览'); return false; }
     if (state.tabs.find(t => fileKey(t.root, t.path) === key)?.attachment) { note('本机附件为只读，可通过来源下载或另存副本。'); return false; }
@@ -1006,7 +1016,7 @@ function LocalFileWorkspace({
           tree: true
         }));
         requestAnimationFrame(()=>filter.current?.focus());
-      }} />{onWebNew && <Button icon={WebGlobe} label="新建网页标签" onClick={onWebNew} />}<span className="fw-push" /><Button icon={full ? Minimize2 : Maximize2} label={full ? '退出文件聚焦' : '聚焦文件工作区'} onClick={() => setFull(!full)} /><Button icon={PanelRight} label="隐藏文件工作区" onClick={onClose} /></div>
+      }} />{onWebNew && <Button icon={WebGlobe} label="新建网页标签" onClick={onWebNew} />}<span className="fw-push" />{!embedded && <><Button icon={full ? Minimize2 : Maximize2} label={full ? '退出文件聚焦' : '聚焦文件工作区'} onClick={() => setFull(!full)} /><Button icon={PanelRight} label="隐藏文件工作区" onClick={onClose} /></>}</div>
   {webActiveId && <div className="fw-web-layer" onKeyDown={event => event.stopPropagation()}>{webView}</div>}
   <div className="fw-toolbar"><div className="fw-breadcrumb" onCopy={event => {
     const text = breadcrumbSelectionText(event.currentTarget, window.getSelection(), rich ? undefined : fileAbsolutePath(activeRoot, current?.path || '') || displayRoot.path);

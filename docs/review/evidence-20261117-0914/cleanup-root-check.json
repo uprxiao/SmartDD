@@ -1,0 +1,18 @@
+{
+  "scope": [
+    "需求.md",
+    "技研/技术方案.md",
+    "验收/测试用例.md"
+  ],
+  "oldRootHits": [
+    {
+      "file": "需求.md",
+      "line": 133,
+      "text": "2026-11-17 R1.2 勘误（复核 review-20261117-0828 RR04）：R06 工作副本位置由“WillYou 数据目录下”明确为 `~/.willyou/worktrees/<项目>/<分支>`。原因：macOS 数据目录含空格（Application Support），按 D2 采用的 T3 规则，含空格的行内路径不识别为链接，子任务输出的绝对路径将无法打开；T3 自身放在 `~/.t3/worktrees`。不改变其他规则。",
+      "historicalErratum": true
+    }
+  ],
+  "cleanupClause": [
+    "**副作用恢复次序（工作副本与目标）**：宿主每个外部副作用先落“意图”行（`intent_id` UUID、动作、预期父提交 `expected_parent`、执行前 HEAD）再执行，执行后写结果：①派出前自动提交——意图行→`git commit`（提交说明末尾加 trailer `WillYou-Intent: <intent_id>`，父提交必须等于 `expected_parent`）→`agent_commit_provenance`；重启时若意图在而无 provenance，在 `expected_parent..HEAD` 中按 trailer 精确查找：找到且父提交匹配则补记，找不到且 HEAD 仍为 `expected_parent`、工作区仍脏才重做，其余情况（HEAD 已被用户移动等）标“待核实”，不重做、不猜测（评审 RR09）。子任务结果提交同样带 trailer。②建工作副本——`agent_workspaces` preparing→`git worktree add`→ready；重启见 preparing 时用 `git worktree list` 核对路径与分支，存在则补置 ready，不重复创建。③子任务结果提交——provenance 意图→commit→记录；同①核对。④完成通知——只在 attempt 的 commit_range 落库后发送，`notified_at` 去重。⑤目标自动暂停／恢复——先写 `paused_reason`、目标修订（objective 与原生 updatedAt）再调原生接口；自动恢复只对同一目标修订且 `paused_reason=waiting_children` 生效，用户后来主动暂停、停止或清除的目标不被唤醒恢复；重启后以原生 `thread/goal/get` 为准校正，修订不一致时不恢复。工作副本在任务归档时保留到用户删除分支或删除任务；`wy_send` 需要原工作副本，子任务存在期间不清理；清理只删 `~/.willyou/worktrees/` 下且在 `agent_workspaces` 登记过（路径、分支、基准提交一致）的工作副本，先经 `git worktree remove` 解除登记，不删分支、不删该根外或未登记的目录；userData 中其他资源的清理边界不变。"
+  ]
+}

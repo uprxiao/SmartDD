@@ -1,0 +1,119 @@
+{
+  "commit": "fe59fa44d0f12ba1e58b1cccc2c888ac99e743da",
+  "files": [
+    {
+      "file": "packages/shared/src/markdownLinks.ts",
+      "sha256": "b370beb412d4e665612cf9c2d2b9468e5c25b0733d54aed19f6bb1901d972455",
+      "excerpts": [
+        {
+          "line": 29,
+          "text": "const POSITION_SUFFIX_PATTERN = /:\\d+(?::\\d+|-\\d+)?$/;"
+        },
+        {
+          "line": 30,
+          "text": ""
+        },
+        {
+          "line": 31,
+          "text": "const POSITION_ONLY_PATTERN = /^\\d+(?::\\d+|-\\d+)?$/;"
+        },
+        {
+          "line": 32,
+          "text": ""
+        },
+        {
+          "line": 33,
+          "text": "const INLINE_CODE_DISQUALIFIER_PATTERN = /[\\s`]/;"
+        },
+        {
+          "line": 34,
+          "text": ""
+        },
+        {
+          "line": 520,
+          "text": "      continue;"
+        },
+        {
+          "line": 521,
+          "text": "    // Prose ends a path at whitespace, so `/Users/me/Library/Application Support/...` must not link."
+        },
+        {
+          "line": 522,
+          "text": "    const basename = path.slice(path.lastIndexOf(\"/\") + 1);"
+        },
+        {
+          "line": 523,
+          "text": "    if ("
+        },
+        {
+          "line": 524,
+          "text": "      !POSITION_SUFFIX_PATTERN.test(path) &&"
+        }
+      ]
+    },
+    {
+      "file": "apps/server/src/config.ts",
+      "sha256": "c39d16115d3d75c97e7c4cdff9b9cd597e4c9e4512229b2aabc4e5cb08da4420",
+      "excerpts": [
+        {
+          "line": 160,
+          "text": "    settingsPath: join(stateDir, \"settings.json\"),"
+        },
+        {
+          "line": 161,
+          "text": "    environmentThemesDir: join(stateDir, \"themes\"),"
+        },
+        {
+          "line": 162,
+          "text": "    providerStatusCacheDir,"
+        },
+        {
+          "line": 163,
+          "text": "    worktreesDir: join(baseDir, \"worktrees\"),"
+        },
+        {
+          "line": 164,
+          "text": "    worktreeCheckoutCacheDir: join(providerStatusCacheDir, \"worktree-checkouts\"),"
+        },
+        {
+          "line": 165,
+          "text": "    attachmentsDir,"
+        }
+      ]
+    },
+    {
+      "file": "apps/server/src/os-jank.ts",
+      "sha256": "e6fcf0f1fb25bd5690644992499f9cb015bb4ecc08ed6713fc1c3156df13a069",
+      "excerpts": [
+        {
+          "line": 232,
+          "text": "export const resolveBaseDir = Effect.fn(function* (raw: string | undefined) {"
+        },
+        {
+          "line": 233,
+          "text": "  const { join, resolve } = yield* Path.Path;"
+        },
+        {
+          "line": 234,
+          "text": "  if (!raw || raw.trim().length === 0) {"
+        },
+        {
+          "line": 235,
+          "text": "    return join(yield* HostProcess.HomeDirectory, \".t3\");"
+        },
+        {
+          "line": 236,
+          "text": "  }"
+        },
+        {
+          "line": 237,
+          "text": "  return resolve(yield* expandHomePath(raw.trim()));"
+        },
+        {
+          "line": 238,
+          "text": "});"
+        }
+      ]
+    }
+  ]
+}

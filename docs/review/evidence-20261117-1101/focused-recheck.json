@@ -1,0 +1,138 @@
+{
+  "scope": "Synthetic input on actual pure exports and exact extracted handlers; not UI/model-service verification",
+  "createSource": {
+    "sha256": "79c06f81409837256fcd01a343c4573b5b2a881418a295aaf5faf73ffb6be919",
+    "source": "() => {\n    if (!project.id || !dir?.available || !profile) { setLaunchError(!project.id ? '请先添加并选择项目' : !dir?.available ? '请先添加可用的代码目录' : m13Active ? '请先新建智能体' : '请先添加 AI 配置'); return; }\n    // M14 首页：同一份选择驱动预检、运行身份、快照与权限（复核 RR05）；附件未就绪不创建任务、不清空（复核 RR06）\n    const m14Sel = m14Preview ? (m14HomeSel ?? { agent: 'cc-sub', model: 'default', effort: '中' }) : null;\n    const m14Agent = m14Sel && M14_AGENTS.find(a => a.id === m14Sel.agent);\n    if (m14Agent?.status?.kind === 'unavailable' || m14Agent?.status?.kind === 'notready') { setLaunchError(`${m14Agent.name}${m14Agent.status.label}：${m14Agent.status.reason}`); setLaunchFix({ label: '管理智能体', route: 'settings/ai/configs' }); return; }\n    if (m14Preview) { const notReady = m14HomeChips.filter(c => c.state === 'preparing' || c.state === 'failed'); if (notReady.length) { setLaunchError(notReady.some(c => c.state === 'failed') ? '有附件准备失败：重试或移除后再开始任务' : '附件还在准备中，准备好后再开始任务'); setLaunchFix(null); return; } }\n    // 审核 Q03：新建与恢复共用启动预检，供应商缺 Key／已删除时不创建运行中任务\n    const block = !m14Preview && m13Active && launchBlock(m13.configs.find(c => c.id === profile.id), m13.providers);\n    if (block) { setLaunchError(block.reason); setLaunchFix(block.providerId ? { label: '去填写 Key', route: 'settings/ai/providers/' + block.providerId } : { label: '管理智能体', route: 'settings/ai/configs' }); return; }\n    const t = { id: id(), title: prompt.trim() || '新任务', firstMessage: prompt.trim(), project: project.id, profile: profile.id, profileName: profile.name, runner: profile.runner, cwd: dir.path, configVersion: project.configVersion, time: '刚刚', status: 'running', integrationSnapshot: integrationSnapshot(integration.data, project.id),\n      // M13 P0.16（审核 N01／N07）：记录智能体快照与启动时的插件、连接快照\n      ...(m13Active ? { agent: agentSnapshot(m13.configs.find(c => c.id === profile.id), m13.providers), pluginSnapshot: pluginSnapshot(m13.plugins, m13.defaults, m13.bindings, project.id), permission: permissionSnapshot(m13Permission, m13Tool) } : {}),\n      ...(m14Preview ? (() => { const mm = m14Agent.models.find(x => x.id === m14Sel.model) || m14Agent.models[0]; return { m14Sel, m14First: { text: prompt.trim(), chips: m14HomeChips }, profile: m14Agent.id, profileName: m14Agent.name, runner: m14Agent.tool || 'claude',\n        agent: { agentId: m14Agent.id, agentName: m14Agent.name, tool: m14Agent.tool || 'claude', source: m14Agent.provider ? 'provider' : 'login', method: null, providerId: m14Agent.provider ? 'deepseek' : null, providerName: m14Agent.provider ? 'DeepSeek' : null, model: mm.id, models: [mm.id], modelNames: [mm.name], runModel: m14Agent.provider ? mm.id : null, runModelName: m14Agent.provider ? mm.name : null } }; })() : {}) };\n    if (m14Preview) t.m14Ext = carryHomeExtensions(t.id);\n    setLaunchError(''); setLaunchFix(null);\n    setTasks(old => [t, ...old]); setPrompt(''); if (m14Preview) setM14HomeChips([]); nav('task/' + t.id);\n  }"
+  },
+  "homeCreate": [
+    {
+      "inputAttachmentState": null,
+      "created": 1,
+      "promptAfter": "",
+      "chipsAfter": 0,
+      "task": {
+        "runner": "codex",
+        "agent": {
+          "agentId": "cx-ds",
+          "agentName": "Codex · DeepSeek",
+          "tool": "codex",
+          "source": "provider",
+          "method": null,
+          "providerId": "deepseek",
+          "providerName": "DeepSeek",
+          "model": "deepseek-flash",
+          "models": [
+            "deepseek-flash"
+          ],
+          "modelNames": [
+            "deepseek-flash"
+          ],
+          "runModel": "deepseek-flash",
+          "runModelName": "deepseek-flash"
+        },
+        "permission": {
+          "id": "auto",
+          "name": "帮我批准",
+          "args": "--approve-for-me"
+        },
+        "m14Sel": {
+          "agent": "cx-ds",
+          "model": "deepseek-flash",
+          "effort": "中"
+        },
+        "first": {
+          "text": "Review this image",
+          "chips": [
+            {
+              "id": "image",
+              "name": "fixture.png",
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "inputAttachmentState": "preparing",
+      "created": 0,
+      "promptAfter": "Review this image",
+      "chipsAfter": 1
+    },
+    {
+      "inputAttachmentState": "failed",
+      "created": 0,
+      "promptAfter": "Review this image",
+      "chipsAfter": 1
+    }
+  ],
+  "parentPathInChild": {
+    "ok": false,
+    "reason": "「/workspace/SmartDD/scripts/build.mjs」不在项目授权目录 /Users/demo/.willyou/worktrees/smartdd-a1b2c3/feature/0.1.6_willyou_node-pty-arch-test 内，未打开"
+  },
+  "childInlineLink": {
+    "branch": "feature/0.1.6_willyou_node-pty-arch-test",
+    "root": "/Users/demo/.willyou/worktrees/smartdd-a1b2c3/feature/0.1.6_willyou_node-pty-arch-test",
+    "message": "`/workspace/SmartDD/scripts/build.mjs:1`",
+    "replaced": "`/Users/demo/.willyou/worktrees/smartdd-a1b2c3/feature/0.1.6_willyou_node-pty-arch-test/scripts/build.mjs:1`",
+    "segments": [
+      {
+        "t": "link",
+        "v": "/Users/demo/.willyou/worktrees/smartdd-a1b2c3/feature/0.1.6_willyou_node-pty-arch-test/scripts/build.mjs:1",
+        "href": "/Users/demo/.willyou/worktrees/smartdd-a1b2c3/feature/0.1.6_willyou_node-pty-arch-test/scripts/build.mjs:1",
+        "code": true
+      }
+    ],
+    "relative": {
+      "ok": true,
+      "action": "file",
+      "path": "scripts/build.mjs",
+      "line": 1,
+      "label": "打开并定位到第 1 行"
+    }
+  },
+  "childCopy": {
+    "actual": {
+      "text": "已复制：/Users/demo/.willyou/worktrees/smartdd-a1b2c3/feature/0.1.6_willyou_node-pty-arch-test/scripts/build.mjs"
+    },
+    "expectedRoot": "/Users/demo/.willyou/worktrees/smartdd-a1b2c3/feature/0.1.6_willyou_node-pty-arch-test",
+    "source": "act => { const m = linkMenu; setLinkMenu(null); if (!m) return; if (act === 'open') onLink(m.href, false); else if (act === 'external') onLink(m.href, true); else if (act === 'copy-rel') setToast({ text: `已复制相对路径：${m.route.path}` }); else setToast({ text: `已复制：${m.route.url || ctxRoot + '/' + m.route.path}` }); }"
+  },
+  "childStop": {
+    "before": {
+      "id": "child-1",
+      "state": "waiting",
+      "approval": {
+        "title": "Review"
+      },
+      "live": "等待批准"
+    },
+    "after": {
+      "id": "child-1",
+      "state": "stopped",
+      "approval": null,
+      "live": "已停止本轮"
+    },
+    "toast": {
+      "text": "已停止该子任务本轮，挂起的请求已作废 · 合成"
+    },
+    "stopSource": "() => { setChildStopped(r => ({ ...r, [c.id]: true })); setToast({ text: '已停止该子任务本轮，挂起的请求已作废 · 合成' }); }",
+    "stateSource": "c => childStopped[c.id] ? { ...c, state: 'stopped', live: '已停止本轮', approval: null } : childResolved[c.id] ? { ...c, state: 'running', live: '继续工作', approval: null } : c"
+  },
+  "mainStop": [
+    {
+      "stopped": false,
+      "value": {
+        "kind": "waiting",
+        "label": "等待批准"
+      }
+    },
+    {
+      "stopped": true,
+      "value": {
+        "kind": "stopped",
+        "label": "已停止"
+      }
+    }
+  ],
+  "passed": true
+}

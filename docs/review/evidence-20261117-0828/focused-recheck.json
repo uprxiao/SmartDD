@@ -1,0 +1,190 @@
+{
+  "scope": "Synthetic input on actual pure exports and exact extracted handlers; not UI/model-service verification",
+  "createSource": {
+    "sha256": "5f151136905f3ad29fb58865fd916d78b9a46f888993f00a64ac137976d892a4",
+    "source": "() => {\n    if (!project.id || !dir?.available || !profile) { setLaunchError(!project.id ? '请先添加并选择项目' : !dir?.available ? '请先添加可用的代码目录' : m13Active ? '请先新建智能体' : '请先添加 AI 配置'); return; }\n    // 审核 Q03：新建与恢复共用启动预检，供应商缺 Key／已删除时不创建运行中任务\n    const block = m13Active && launchBlock(m13.configs.find(c => c.id === profile.id), m13.providers);\n    if (block) { setLaunchError(block.reason); setLaunchFix(block.providerId ? { label: '去填写 Key', route: 'settings/ai/providers/' + block.providerId } : { label: '管理智能体', route: 'settings/ai/configs' }); return; }\n    const t = { id: id(), title: prompt.trim() || '新任务', firstMessage: prompt.trim(), project: project.id, profile: profile.id, profileName: profile.name, runner: profile.runner, cwd: dir.path, configVersion: project.configVersion, time: '刚刚', status: 'running', integrationSnapshot: integrationSnapshot(integration.data, project.id),\n      // M13 P0.16（审核 N01／N07）：记录智能体快照与启动时的插件、连接快照\n      ...(m14Preview ? { m14Sel: m14HomeSel ?? undefined, m14First: { text: prompt.trim(), chips: m14HomeChips } } : {}),\n      ...(m13Active ? { agent: agentSnapshot(m13.configs.find(c => c.id === profile.id), m13.providers), pluginSnapshot: pluginSnapshot(m13.plugins, m13.defaults, m13.bindings, project.id), permission: permissionSnapshot(m13Permission, m13Tool) } : {}) };\n    setLaunchError(''); setLaunchFix(null);\n    setTasks(old => [t, ...old]); setPrompt(''); if (m14Preview) setM14HomeChips([]); nav('task/' + t.id);\n  }"
+  },
+  "homeCreate": [
+    {
+      "inputAttachmentState": null,
+      "created": 1,
+      "promptAfter": "",
+      "chipsAfter": 0,
+      "task": {
+        "runner": "claude",
+        "agent": {
+          "agentId": "legacy-claude",
+          "agentName": "Existing Claude",
+          "tool": "claude",
+          "source": "native",
+          "method": "login",
+          "providerId": null,
+          "providerName": null,
+          "providerRev": null,
+          "model": null,
+          "models": [],
+          "modelNames": [],
+          "runModel": null,
+          "runModelName": null
+        },
+        "permission": {
+          "id": "auto",
+          "name": "帮我批准",
+          "args": "--approve-for-me"
+        },
+        "m14Sel": {
+          "agent": "cx-ds",
+          "model": "deepseek-flash",
+          "effort": "中"
+        },
+        "first": {
+          "text": "Review this image",
+          "chips": [
+            {
+              "id": "image",
+              "name": "fixture.png",
+              "kind": "image"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "inputAttachmentState": "preparing",
+      "created": 1,
+      "promptAfter": "",
+      "chipsAfter": 0,
+      "task": {
+        "runner": "claude",
+        "agent": {
+          "agentId": "legacy-claude",
+          "agentName": "Existing Claude",
+          "tool": "claude",
+          "source": "native",
+          "method": "login",
+          "providerId": null,
+          "providerName": null,
+          "providerRev": null,
+          "model": null,
+          "models": [],
+          "modelNames": [],
+          "runModel": null,
+          "runModelName": null
+        },
+        "permission": {
+          "id": "auto",
+          "name": "帮我批准",
+          "args": "--approve-for-me"
+        },
+        "m14Sel": {
+          "agent": "cx-ds",
+          "model": "deepseek-flash",
+          "effort": "中"
+        },
+        "first": {
+          "text": "Review this image",
+          "chips": [
+            {
+              "id": "image",
+              "name": "fixture.png",
+              "kind": "image",
+              "state": "preparing"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "inputAttachmentState": "failed",
+      "created": 1,
+      "promptAfter": "",
+      "chipsAfter": 0,
+      "task": {
+        "runner": "claude",
+        "agent": {
+          "agentId": "legacy-claude",
+          "agentName": "Existing Claude",
+          "tool": "claude",
+          "source": "native",
+          "method": "login",
+          "providerId": null,
+          "providerName": null,
+          "providerRev": null,
+          "model": null,
+          "models": [],
+          "modelNames": [],
+          "runModel": null,
+          "runModelName": null
+        },
+        "permission": {
+          "id": "auto",
+          "name": "帮我批准",
+          "args": "--approve-for-me"
+        },
+        "m14Sel": {
+          "agent": "cx-ds",
+          "model": "deepseek-flash",
+          "effort": "中"
+        },
+        "first": {
+          "text": "Review this image",
+          "chips": [
+            {
+              "id": "image",
+              "name": "fixture.png",
+              "kind": "image",
+              "state": "failed"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "childInlineLink": {
+    "branch": "feature/0.1.6_willyou_node-pty-arch-test",
+    "root": "~/Library/Application Support/SmartDD/worktrees/SmartDD/feature/0.1.6_willyou_node-pty-arch-test",
+    "message": "`/workspace/SmartDD/scripts/build.mjs:1`",
+    "replaced": "`~/Library/Application Support/SmartDD/worktrees/SmartDD/feature/0.1.6_willyou_node-pty-arch-test/scripts/build.mjs:1`",
+    "segments": [
+      {
+        "t": "code",
+        "v": "~/Library/Application Support/SmartDD/worktrees/SmartDD/feature/0.1.6_willyou_node-pty-arch-test/scripts/build.mjs:1"
+      }
+    ],
+    "relative": {
+      "ok": true,
+      "action": "file",
+      "path": "scripts/build.mjs",
+      "line": 1,
+      "label": "打开并定位到第 1 行"
+    }
+  },
+  "childCopy": {
+    "actual": {
+      "text": "已复制：/workspace/SmartDD/scripts/build.mjs"
+    },
+    "expectedRoot": "~/Library/Application Support/SmartDD/worktrees/SmartDD/feature/0.1.6_willyou_node-pty-arch-test",
+    "source": "act => { const m = linkMenu; setLinkMenu(null); if (!m) return; if (act === 'open') onLink(m.href, false); else if (act === 'external') onLink(m.href, true); else if (act === 'copy-rel') setToast({ text: `已复制相对路径：${m.route.path}` }); else setToast({ text: `已复制：${m.route.url || projectRoot + '/' + m.route.path}` }); }"
+  },
+  "childStop": {
+    "before": {
+      "id": "child-1",
+      "state": "waiting",
+      "approval": {
+        "title": "Review"
+      },
+      "live": "等待批准"
+    },
+    "after": {
+      "id": "child-1",
+      "state": "running",
+      "approval": null,
+      "live": "继续工作"
+    },
+    "toast": {
+      "text": "已停止该子任务本轮，挂起的请求已作废 · 合成"
+    },
+    "resolveSource": "(cid, text) => { setChildResolved(r => ({ ...r, [cid]: true })); setToast({ text: text + ' · 合成' }); }",
+    "stateSource": "c => childResolved[c.id] ? { ...c, state: 'running', live: '继续工作', approval: null } : c"
+  }
+}

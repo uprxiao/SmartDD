@@ -1,0 +1,48 @@
+{
+  "reviewStartedAt": "2026-11-16T15:13:12.243108+00:00",
+  "recordedAt": "2026-11-16T15:29:21.007313+00:00",
+  "tests": [
+    {
+      "command": "npm run test:m14",
+      "tests": 25,
+      "passed": 25,
+      "failed": 0,
+      "evidence": "actual tool result at initial review; summary only, no reconstructed TAP log"
+    },
+    {
+      "command": "npm run test:m9",
+      "tests": 297,
+      "passed": 297,
+      "failed": 0,
+      "evidence": "test-m9.log"
+    },
+    {
+      "command": "npm run test:m13",
+      "tests": 57,
+      "passed": 57,
+      "failed": 0,
+      "evidence": "test-m13.log"
+    },
+    {
+      "command": "npm run test:parity",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "evidence": "test-parity.log"
+    }
+  ],
+  "browser": {
+    "status": "unavailable",
+    "errors": [
+      "browser access host unavailable",
+      "Chrome noWindowsAvailable"
+    ],
+    "alternative": "source review + React static server rendering + saved P0.13 prototype screenshots; no live clicks verified"
+  },
+  "environmentNotes": [
+    "Prototype node_modules lacks direct dependencies; Node model tests and static rendering use root-installed dependencies where needed",
+    "Static renderer uses JSX automatic, root React 19.3.0; root Vite 6.4.4 vs prototype declaration 6.4.2; not a locked-dependency prototype build verification",
+    "Temporary Vite 4189 listener no longer present on final lsof check"
+  ],
+  "scope": "review evidence; no product App acceptance"
+}

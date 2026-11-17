@@ -1,0 +1,174 @@
+{
+  "docs/里程碑/M14_统一Agent工作区/需求.md": [
+    {
+      "line": 9,
+      "text": "**M13 已交付的项目、AI 配置、凭据、插件、Skill／MCP、文件、浏览器、数据库／SSH、邮件、语音及导入导出是保留的硬约束。** 入口、数据、实时授权及生命周期继续有效，按[技术方案业务对照与回归清单](技研/技术方案.md#8-m13-业务交付与回归)核验；本期对其中两处既有规则作明确修改：插件写操作跟随权限档位（R08）、交互式任务请求不设界面超时（R01）。本期不增加独立团队模板管理、强制阶段工作流、定时任务、SVN 工作副本自动管理、额度到点自动继续或文件回退。Git 项目的写入委派使用宿主自动管理的工作副本（R06）。定时任务 F16 仍属 M15。"
+    },
+    {
+      "line": 21,
+      "text": "**待处理请求统一在输入框位置**：命令审批、Agent 提问、插件业务审批、M12 跨任务网页授权、子任务的请求用同一种面板——标题与来源、必要详情、带编号选项（数字键选择、Enter 确认）、可写原因；多个请求时 1／N 切换；命令审批不提供“拒绝并停止本轮”。不在页面里做通知卡片；窗口在后台时用系统通知提醒（设置可关）。交互式任务的请求不设界面超时，一直等待用户处理，Agent 在等待期间可以先做别的事；批准时宿主重新校验内容、账号、运行和授权仍有效（技术方案 §8.1）。**修改 M12 R06.3 的“60 秒无人处理按拒绝”，仅对交互式任务**；无人值守任务（M15）仍默认拒绝。"
+    },
+    {
+      "line": 35,
+      "text": "**目标（/goal）**：只对声明支持的执行器开放（Codex、Claude Code、OpenCode 2.2.5 及以上等）；不支持时命令菜单不显示，手动输入提示不支持。时间线末尾显示目标条目：目标、状态、时长与轮次（不显示 token），可清除；Codex 另可暂停／继续，停止键＝停止本轮并暂停目标；Claude 目标不能暂停，只提供清除。主任务等子任务结果时，宿主自动让主任务停在等待状态而不清除目标，子任务结果唤醒时自动继续，全程不需用户操作——Codex 通过暂停／恢复目标，Claude 通过宿主停止回调（均照 T3，研究见 V16）。子任务不设目标；无人值守任务（M15）不用目标。目标运行中的请求照常等待用户处理。"
+    },
+    {
+      "line": 37,
+      "text": "**计划**：不做计划模式开关或入口（照 T3 现行做法）。Claude 自己进入计划模式交出计划时，显示计划卡（复制、下载、保存）；批准计划在**所有档位**都由用户在请求面板处理：批准并开始／继续修改（须写意见）／拒绝，完全访问也不跳过（宿主截获能力待技术验证，不能截获时该执行器在完全访问下不开放计划卡批准，需回到用户确认）。Codex 不出计划卡。**待办清单**只在执行器提供结构化任务清单时出现（Claude TaskCreate／TaskUpdate），不从回答文字推断。"
+    },
+    {
+      "line": 39,
+      "text": "### M14-R03 同任务切换 Provider"
+    },
+    {
+      "line": 60,
+      "text": "- **Git 项目**：写入型子任务由**宿主程序**自动建工作副本（worktree），不由 Agent 选择，也不绑定 Agent 用 shell 自建的工作副本。宿主步骤：主目录有未提交改动先提交到当前分支（说明 `willyou: 自动提交（派出子任务前）`）→ 从该提交在 `~/.willyou/worktrees/<项目>/<分支>` 下建工作副本和分支（照 T3 的 `~/.t3/worktrees`；路径不含空格，Agent 输出的工作副本绝对路径才能按 T3 链接规则识别），分支名 `当前分支名_willyou_英文简述`（全小写，重名加 `-2`）→ 按锁文件安装依赖（pnpm／npm／yarn，Maven 跳过；失败照常启动并告知子任务；不设设置项）→ 在该目录启动子 Agent。子任务结束时宿主把其改动提交到子分支，子 Agent 只改文件。主任务与写入子任务各写各的目录，不加锁、不排队。分支只在本机，不推送；合并后不删，由用户或 Agent 删。"
+    },
+    {
+      "line": 80,
+      "text": "**子任务继承档位**：只在主任务授权一次；原生子 Agent 天然继承，宿主子任务创建时沿用主任务档位；执行器不支持时降到更严一档；主任务改档位从各自下一轮生效，插件判断即时生效。首次选完全访问的确认框写明“插件的写操作也不再询问，发送邮件仍会每次询问”，取消不改档位，确认后记住；任务页与首页使用同一确认与按执行器过滤的档位列表。调用账本与“写操作结果未知不自动重放”不变。"
+    },
+    {
+      "line": 133,
+      "text": "2026-11-17 R1.2 勘误（复核 review-20261117-0828 RR04）：R06 工作副本位置由“WillYou 数据目录下”明确为 `~/.willyou/worktrees/<项目>/<分支>`。原因：macOS 数据目录含空格（Application Support），按 D2 采用的 T3 规则，含空格的行内路径不识别为链接，子任务输出的绝对路径将无法打开；T3 自身放在 `~/.t3/worktrees`。不改变其他规则。"
+    }
+  ],
+  "docs/里程碑/M14_统一Agent工作区/技研/技术方案.md": [
+    {
+      "line": 43,
+      "text": "| `agent_goals` | taskId PK、bindingId、`objective`、status、`paused_reason`(user/waiting_children/limit)、`turns`、`time_used_s`、updatedAt | 目标投影与宿主自动暂停原因；轮次由宿主按 goal active 期间的回合计数 |"
+    },
+    {
+      "line": 49,
+      "text": "**副作用恢复次序（工作副本与目标）**：宿主每个外部副作用先落“意图”行（`intent_id` UUID、动作、预期父提交 `expected_parent`、执行前 HEAD）再执行，执行后写结果：①派出前自动提交——意图行→`git commit`（提交说明末尾加 trailer `WillYou-Intent: <intent_id>`，父提交必须等于 `expected_parent`）→`agent_commit_provenance`；重启时若意图在而无 provenance，在 `expected_parent..HEAD` 中按 trailer 精确查找：找到且父提交匹配则补记，找不到且 HEAD 仍为 `expected_parent`、工作区仍脏才重做，其余情况（HEAD 已被用户移动等）标“待核实”，不重做、不猜测（评审 RR09）。子任务结果提交同样带 trailer。②建工作副本——`agent_workspaces` preparing→`git worktree add`→ready；重启见 preparing 时用 `git worktree list` 核对路径与分支，存在则补置 ready，不重复创建。③子任务结果提交——provenance 意图→commit→记录；同①核对。④完成通知——只在 attempt 的 commit_range 落库后发送，`notified_at` 去重。⑤目标自动暂停／恢复——先写 `paused_reason`、目标修订（objective 与原生 updatedAt）再调原生接口；自动恢复只对同一目标修订且 `paused_reason=waiting_children` 生效，用户后来主动暂停、停止或清除的目标不被唤醒恢复；重启后以原生 `thread/goal/get` 为准校正，修订不一致时不恢复。工作副本在任务归档时保留到用户删除分支或删除任务；`wy_send` 需要原工作副本，子任务存在期间不清理；清理只删 `~/.willyou/worktrees/` 下且在 `agent_workspaces` 登记过（路径、分支、基准提交一致）的工作副本，先经 `git worktree remove` 解除登记，不删分支、不删该根外或未登记的目录；userData 中其他资源的清理边界不变。"
+    },
+    {
+      "line": 75,
+      "text": "| goal.set／pause／resume／clear | taskId、objective 或状态 → 原生目标调用（Codex `thread/goal/*`，Claude 发送 `/goal` 文字）与 `agent_goals` 投影；不支持的执行器拒绝 |"
+    },
+    {
+      "line": 98,
+      "text": "| proposed_plan：planRef | ExitPlanMode | plan／turn plan update | 计划与正文分离，修订更新 |"
+    },
+    {
+      "line": 167,
+      "text": "**分流**：委派写入子任务时，宿主检测主任务目录是否位于 Git 仓库（`git rev-parse --show-toplevel`，并排除 SVN 工作副本内嵌套 `.git` 的误判）。是 Git：走工作副本；否则（SVN、普通目录、检测失败）按 §6 方案 B 串行。只读子任务一律在主目录并行。"
+    },
+    {
+      "line": 169,
+      "text": "**创建（宿主执行，不接受模型提供路径，不绑定 Agent 用 shell 自建的工作副本）**：①宿主冻结主任务新写入并等到可提交的边界（复用 §6 回合边界判据）；工作区不干净则 `git add -A` 后提交，说明 `willyou: 自动提交（派出子任务前）`，忽略文件按 `.gitignore`；②`git worktree add -b <当前分支>_willyou_<slug> ~/.willyou/worktrees/<项目>/<分支>（照 T3 `~/.t3/worktrees`，路径不含空格以保证行内绝对路径可按 T3 规则识别） <该提交>`，slug 由委派标题生成英文短语，重名加序号；detached HEAD 用短提交号代替分支名；③检测锁文件安装依赖（`pnpm-lock.yaml`→`pnpm install --frozen-lockfile`，`package-lock.json`→`npm ci`，`yarn.lock`→`yarn install --frozen-lockfile`；Maven／Gradle 跳过），有超时，结果写 `agent_workspaces.deps_result`，失败写入子任务启动说明；④子 run 的 cwd、沙箱可写根、差异捕获范围、右侧文件与差异视图均绑定该工作副本（需求 R01：进入子任务视图时右侧切到子工作目录）。各步按 §2 副作用恢复次序落库。子任务不得再派子任务（照 T3）。"
+    },
+    {
+      "line": 171,
+      "text": "**子任务提交（宿主执行）**：子 run 终结后，宿主在其工作副本 `git add -A` 并提交到子分支，说明 `willyou: <子任务标题>（子任务提交）`；无改动不提交；失败或取消同样提交以保留现场，但不进入合并通知。子 Agent 不写 `.git`，不受沙箱影响。每次提交记 `agent_commit_provenance`，按 attempt 记录提交区间。"
+    },
+    {
+      "line": 177,
+      "text": "**目标**：能力 `supportsNativeGoals` 由驱动声明，命令菜单只对支持的执行器列出 `/goal`。Codex 用 app-server `thread/goal/set|get|clear`，`/goal` 由宿主拦截不作为文字发送；状态 active／paused／blocked／usage_limited／budget_limited／complete 映射到 `agent_goals` 与目标条目（时长、宿主计数的轮次，不显示 token）。停止：若 active 先 `status: paused` 再 `turn/interrupt`（V14：只中断会留下 active）。Claude：`/goal` 作为文字发送，状态从回复文字识别（“Goal set:”“Goal active: …”“Goal cleared:”），确认文字不重复成消息；不支持暂停／继续，只提供清除；识别失败显示“状态未知”。"
+    },
+    {
+      "line": 184,
+      "text": "**计划**：不下发计划模式，不做入口。Claude `ExitPlanMode` 入参 `plan`（Markdown）生成 proposed_plan 条目；计划批准在**所有档位**都进入统一请求面板（批准并开始／继续修改／拒绝）。实现上宿主用 PreToolUse 回调截获 `ExitPlanMode` 并转为宿主请求（acceptEdits 下 PreToolUse 已验证可拦截，bypassPermissions 未验证，评审 RV18）；若完全访问下不能截获，该执行器在完全访问档不开放计划批准并提示，不以原生自动通过记为通过。Codex 普通任务不产生计划条目。"
+    },
+    {
+      "line": 225,
+      "text": "首次完全访问仍走现有用户确认。托管业务写操作仍由现有插件／邮件／浏览器服务裁定，裁定输入按 §7.3 改为“生效档位”。请求批准档位在用户配置 auto_review 时，每次 turn/start 都显式 reviewer=user（thread/start 可同时覆盖）；恢复线程也重新下发，不能依赖创建时默认值。V08 证明批准到文件／拒绝不写入，见[回放与原件核对](实验/20261116_复核修订验证/fixtures/approval-evidence.json)。V09 进一步验证仅 turn/start 覆盖及新进程 resume 后重新下发均有效，见[二次复核 §3](复核_20261116/二次复核.md#3-本次补充的真实验证-v09)。“沿用我的扩展”开关已由用户确认（需求 R08）：关闭后此后新建的原生会话以 Claude `settingSources` 去掉 user、Codex 逐个禁用用户 MCP（`-c mcp_servers={}` 不能清空，复核实测）方式加载；Codex hooks、个人 Skill／插件的关闭方法，及恢复已有原生会话时沿用旧配置还是按新开关，均为待证项（E10⑤），未验证前该开关对 Codex 标“部分支持”并列出未隔离的项。"
+    },
+    {
+      "line": 257,
+      "text": "| 等待用户 | 请求持久化后**不设等待时限**；MCP 工具调用不阻塞等待，立即返回 `{status:\"awaiting_user\", requestId, next:\"批准后会通知你结果，先做别的\"}`，Agent 继续其他工作 | 直接拒绝（插件写、发送邮件、跨任务网页授权） |"
+    },
+    {
+      "line": 271,
+      "text": "| 原生完成 | 已完成 | 收口本回合工具和请求；后台／子节点仍独立活动，不据此释放目录 |"
+    },
+    {
+      "line": 283,
+      "text": "完成／停止／失败／进程退出四条回放分别验证本回合所有工具、请求和原生子节点终结；明确声明的后台节点保持其独立生命周期。业务 operationId/effectState 与 turn 终态分别展示，不因回合完成认定邮件或插件写操作成功。"
+    }
+  ],
+  "docs/里程碑/M14_统一Agent工作区/技研/全局设计验证账.md": [
+    {
+      "line": 3,
+      "text": "版本：V1.1。日期：2026-11-16。现行依据为[需求 R1.1](../需求.md)、[实施版 T1.1](技术方案.md)、[复核报告](复核_20261116/复核报告.md)。这是设计研究账；产品实际结果仅由[执行记录](../验收/执行与缺陷记录.md)统计。"
+    },
+    {
+      "line": 59,
+      "text": "| Q35 | Git worktree 脏基线、隔离成果、保留与清理正确 | **重新纳入（2026-11-16 用户修改 D4）**：Git 写入委派用宿主工作副本；研究证据 V13（宿主 Git 步骤、主 Agent 合并、核对判据修正）、V16（目标等子任务）；依赖安装与真实子 Agent 在工作副本内运行未验证（E11①b） | 旧“方案 C 延后”结论只适用于 R1.1 前基线；产品用例 M14-A66、A67（A35 保号范围外，由其替代） |"
+    },
+    {
+      "line": 106,
+      "text": "## 5. 尚未执行与接续"
+    },
+    {
+      "line": 108,
+      "text": "[三次独立复核](复核_20261116/三次复核.md)确认原 §9 与二次 §5 全部关闭，研究阶段可收口；不宣称 M14 已开发完成。可操作原型、统一 UI、每轮权限生产接线、真正方案 B 调度、隐藏引用／差异 UI、新表迁移／旧代码删除、M13 全部受影响业务及各平台真实包均按[现行用例](../验收/测试用例.md)未执行。默认 v2 邮件私有桥当前源码重打包、企业代表性非稀疏已版本化 SVN、系统本人授权和视觉体验仍保留其原验证边界。"
+    }
+  ],
+  "prototypes/m6-codex/src/App.jsx": [
+    {
+      "line": 417,
+      "text": "    const t = { id: id(), title: prompt.trim() || '新任务', firstMessage: prompt.trim(), project: project.id, profile: profile.id, profileName: profile.name, runner: profile.runner, cwd: dir.path, configVersion: project.configVersion, time: '刚刚', status: 'running', integrationSnapshot: integrationSnapshot(integration.data, project.id),"
+    },
+    {
+      "line": 505,
+      "text": "      {route === 'home' && <ReferenceHome attachmentsSlot={m14Preview ? <ComposerChips chips={m14HomeChips} onRemove={cid => setM14HomeChips(cs => cs.filter(c => c.id !== cid))} onRetry={() => {}} /> : null} onPasteFiles={m14Preview ? e => pasteToChips(e, setM14HomeChips, notify) : null} profilePicker={m14Preview ? <M14HomeModelPicker value={m14HomeSel} onChange={setM14HomeSel} /> : null} agentLabels={m13Active} preparing={preparationPreview} onCancelPreparation={() => { const url = new URL(location.href); url.searchParams.delete('m10Preparation'); history.replaceState(null, '', url); setPreparationPreview(false); notify('已取消准备，输入已保留'); }} dir={dir} onDir={setDirId} onLaunchSettings={() => setModal({ type: 'launch-settings' })} launchError={launchError} launchFix={launchFix && { label: launchFix.label, onClick: () => { setLaunchError(''); setLaunchFix(null); nav(launchFix.route); } }}  project={project} projects={projects.filter(p => !p.archived)} profile={profile} profiles={homeProfiles} prompt={prompt} setPrompt={setPrompt} inputRef={homeInput} onProject={setProjectId} onProfile={m13Active ? setM13ProfileId : setProfileId} onSubmit={createTask} onSettings={() => nav('settings/ai')} onAddProject={() => setModal({ type: 'project' })} voiceBusy={voice.busy} onVoice={() => voice.trigger(textareaTarget(homeInput.current, setPrompt))} {...(m13Active && profile ? { permission: effectivePermission(m13Permission, m13Tool), permissionOptions: permissionOptions(m13Tool), permissionAgent: AGENTS[m13Tool], onPermission: pickPermission, onPermissionHelp: () => notify('演示：权限说明页（原型不打开外部链接）。各档对应的启动参数见补验 E。') } : {})} />}"
+    }
+  ],
+  "prototypes/m6-codex/src/M14TaskArea.jsx": [
+    {
+      "line": 205,
+      "text": "const EXT = {}; // “沿用我的扩展”开关：按 任务＋智能体 保存（评审 RV09，原型内存）"
+    },
+    {
+      "line": 211,
+      "text": "  const extKey = taskId + ':' + rail;"
+    },
+    {
+      "line": 213,
+      "text": "  const setExt = v => { EXT[extKey] = v; setExtState(v); };"
+    },
+    {
+      "line": 276,
+      "text": "  const perms = PERMISSIONS.filter(p => !(p.id === 'auto' && a.tool !== 'codex')); // Claude 等没有“帮我批准”（评审 RV08）"
+    },
+    {
+      "line": 284,
+      "text": "  useEffect(() => { setPick(null); }, [req?.id]);"
+    },
+    {
+      "line": 285,
+      "text": "  const decide = (key = pick) => { if (!req) return; const opt = req.options.find(o => o.key === key); if (opt?.disabled) { onToast(opt.desc || '该选项当前不可用'); return; } if (opt?.needsText && !text.trim()) { onToast('请先在下方输入框写下要怎么改'); return; } if (!opt && !(req.kind === 'question' && text.trim())) { onToast('请先选择一项'); return; } onDecide(req, key, text.trim()); setPick(null); if (key !== 'edit' && key !== 'open') setText(''); };"
+    },
+    {
+      "line": 385,
+      "text": "  UICtx.runInTerminal = code => { onTerminal(true); setToast({ text: `已送到手动终端，未执行：${code.split('\\n')[0]}${code.includes('\\n') ? ' …' : ''}` }); };"
+    },
+    {
+      "line": 424,
+      "text": "    if (r.kind === 'business' && key === 'agentedit') { setMail(m => ({ ...m, edited: true, values: (m.values || UICtx.mailBase).map(([k, v]) => k === '正文' ? [k, `（Agent 已按你的说明改写）${text || ''}：已补上 mac x64 目标并核对原生模块架构，发布测试 15 项通过。`] : [k, v]) })); setToast({ text: 'Agent 已按你的说明重新起草，请再次确认 · 合成' }); return; }"
+    }
+  ],
+  "docs/里程碑/M14_统一Agent工作区/技研/实验/20261116_复核修订验证/编制验收文档.py": [
+    {
+      "line": 415,
+      "text": "\"steps\": \"流式输出达到 T1.1 各条数／字节上限，卡慢窗口，注入存储失败并发停止。\","
+    },
+    {
+      "line": 524,
+      "text": "\"expect\": \"逐条满足 T1.1 §9；所有所属工具／请求终结，独立后台保留；limited 按原因区分额度不足／限流和输出长度上限，仅额度／限流展示可用重置时间；旧子结果不路由到当前 run；ACP max_turn_requests／refusal／未知为 failed，max_tokens 为输出受限、保留部分回答并允许手动继续，不显示额度耗尽或重置倒计时，不自动重试／不伪造 resetAt。\","
+    },
+    {
+      "line": 583,
+      "text": "\"steps\": \"P1 Git 项目、当前分支 feature/0.1.14 且有未提交改动，分别含 pnpm-lock.yaml、package-lock.json、Maven pom.xml 三种子项目；让主 Agent（Claude、Codex 各一次）派写入子任务，并在请求批准、帮我批准、完全访问三档下各确认一次子任务结束后的提交；重复派同名任务；在 detached HEAD 下再派一次；让依赖安装失败一次；尝试让模型在委派参数中指定路径或用 shell 自建 worktree；分别在自动提交后、工作副本建好后、子任务提交后、完成通知前强制结束宿主再重启。\","
+    },
+    {
+      "line": 643,
+      "text": "\"steps\": \"准备合成插件：一个写操作未声明 maxTier、一个声明 maxTier=ask，另有邮件发送；在请求批准、自动接受编辑、帮我批准、完全访问四档分别调用；安装一个声明了较低上限的第三方合成插件；无人值守任务（M15 合成触发）调用写操作与发送邮件；运行中主任务改档位；Codex 与 Claude 各测一次。\","
+    },
+    {
+      "line": 699,
+      "text": "EXEC_HEAD=\"# M14 执行与缺陷记录\\n\\n版本：E1.5。日期：2026-11-17。依据：需求 R1.2／用例 A1.5（由生成脚本输出）。[E1.4](历史/执行与缺陷记录_E1.4_20261117.md)、[E1.3](历史/执行与缺陷记录_E1.3_20261117.md)、[E1.2](历史/执行与缺陷记录_E1.2_20261116.md)、[E1.1](历史/执行与缺陷记录_E1.1_20261116.md)、[E0.1](历史/执行与缺陷记录_E0.1_20261116.md) 保存在历史。本轮仅修订文档并做隔离研究，未启动生产 App 验收。\\n\\n## 1. 唯一统计\\n\\n当前适用用例 66 条；通过 0、失败 0、未执行 66；范围外 9 条，不进入通过率分母。产品整体通过率 0%。不得把研究回放、原 M13 结果或原实验数量记为本期产品通过。\\n\\n## 2. 环境与执行分工\\n\\n生产包／原型新基线：未形成。系统、架构、版本、分支／提交、包／原生 hash、userData、CDP 目标和系统前台身份在实际执行批次登记。自动步骤先批量完成，系统／本人前置放末尾；三 Agent 调度如需启用沿根规则，不由此表自动并发占桌面。\\n\\n## 3. 逐条权威记录\\n\\n\""
+    }
+  ]
+}

@@ -10,7 +10,7 @@ const tool = {
   name: 'wy_delegate',
   description: 'Delegate a self-contained task to another agent chosen by `target` and return its final answer. The child sees only `task`.',
   inputSchema: {type: 'object', properties: {
-    target: {type: 'string', enum: ['claude', 'codex'], description: 'Which agent runs the task'},
+    target: {type: 'string', enum: ['claude', 'codex', 'opencode'], description: 'Which agent runs the task'},
     task: {type: 'string', description: 'Complete instructions for the child agent'},
     clientRequestId: {type: 'string', description: 'Idempotency key, reuse on retry'},
   }, required: ['target', 'task', 'clientRequestId'], additionalProperties: false},

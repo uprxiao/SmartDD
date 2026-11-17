@@ -20,7 +20,7 @@ const sourceText = a => a.source === 'login' ? `${LOGIN_LABEL[a.method || 'subsc
 const modelText = a => a.source === 'login' ? 'CLI 默认模型' : a.source === 'legacy' ? '按原配置' : (a.modelNames || []).map((n, i) => i === 0 ? `${n}（默认）` : n).join('、') || '—';
 
 export function M13TaskInfo({ task, project, m13, onClose, onResume }) {
-  const a = task.agent; const live = a && m13.configs.find(c => c.id === a.agentId);
+  const a = task.agent; const live = a && (task.m14Sel ? true : m13.configs.find(c => c.id === a.agentId)); // M14 任务的智能体来自 M14 选择，不在 M13 配置列表里查（复核 RR05）
   return <Dialog title="任务信息" sub={task.title} onClose={onClose} footer={<><button className="m10-button secondary" disabled={task.archived} onClick={onResume}>切换智能体恢复</button><button className="m10-button primary" onClick={onClose}>完成</button></>}>
     <dl className="m13-info compact" data-task-info>
       <dt>项目</dt><dd>{project.name}</dd>
@@ -76,7 +76,12 @@ export function M13SessionPlugins({ task, m13, onClose }) {
 }
 
 // P0.17：第一次在首页选择“完全访问权限”时确认一次（需求补记 8 第 5 条），确认后记住；不替用户跳过 Claude 自身的风险警告。
-export function M13FullAccessConfirm({ onClose, onConfirm }) {
+export function M13FullAccessConfirm({ onClose, onConfirm, m14 }) {
+  // M14 P0.12（需求 R08 补记，2026-11-16）：插件写操作随档位不再询问；发送邮件等“最高允许＝请求批准”的操作仍每次询问
+  if (m14) return <Dialog title="使用完全访问权限？" onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" onClick={onConfirm}>继续使用完全访问</button></>}>
+    <p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网、运行任意命令；插件的写操作（如禅道建 Bug、改状态）也不再询问。发送邮件仍会每次询问。只建议在你信任当前任务和项目时使用。</p>
+    <p className="m13-hint">确认后会记住，之后选择完全访问不再询问。这个任务派出的子任务沿用同一档位。</p>
+  </Dialog>;
   return <Dialog title="使用完全访问权限？" onClose={onClose} footer={<><button className="m10-button secondary" onClick={onClose}>取消</button><button className="m10-button primary" onClick={onConfirm}>继续使用完全访问</button></>}>
     <p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。</p>
     <p className="m13-hint">确认后会记住，之后选择完全访问不再询问。Claude Code 第一次以完全访问启动时，终端里还会出现它自己的风险提示，需要你在终端里确认一次。</p>

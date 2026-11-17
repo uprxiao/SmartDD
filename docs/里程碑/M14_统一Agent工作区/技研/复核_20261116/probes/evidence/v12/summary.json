@@ -1,0 +1,125 @@
+{
+  "T1-edit-edit": {
+    "secs": 31,
+    "A": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Edit",
+        "Read",
+        "Edit"
+      ],
+      "toolErrors": [],
+      "said": "我已读取 notes.md、执行了 `sleep 10`，并用 Edit 工具将“版本：待定”改为“版本：1.0”，同时在“## 变更”列表末尾追加了“- A：修复登录”，两处修改均成功。"
+    },
+    "B": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Edit",
+        "Read",
+        "Edit",
+        "Read",
+        "Edit"
+      ],
+      "toolErrors": [
+        "<tool_use_error>File has been modified since read, either by the user or by a linter. Read it again before attempting to write it.</tool_use_error>"
+      ],
+      "said": "首次 Edit 因同事在 `sleep 10` 期间把“版本：待定”改成了“版本：1.0”而失败；我重新读取后，把“版本：1.0”改为“版本：2.0”，并在“## 变更”列表末尾（“- A：修复登录”之后）追加了“- B：优化导出”，两处均已用 Edit 成功写入。"
+    },
+    "final": "# 发布说明\n\n版本：2.0\n\n## 变更\n\n- 初始版本\n- A：修复登录\n- B：优化导出\n",
+    "hasA": true,
+    "hasB": true,
+    "version": "2.0"
+  },
+  "T2-write-write": {
+    "secs": 20,
+    "A": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Write"
+      ],
+      "toolErrors": [],
+      "said": "我读取了 notes.md，等待 10 秒后用 Write 将整个文件覆盖式重写为“版本：1.0”，并为“## 变更”追加了“- A：修复登录”；写入成功（若同事在此期间有修改，会被这次整文件覆盖）。"
+    },
+    "B": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Read",
+        "Write"
+      ],
+      "toolErrors": [],
+      "said": "读取 `notes.md` 后等待 10 秒时发现同事已把版本改为 1.0 并追加了“- A：修复登录”，于是我用 Write 重写整个文件，设为“版本：2.0”并追加“- B：优化导出”，同时保留了同事的那条变更。"
+    },
+    "final": "# 发布说明\n\n版本：2.0\n\n## 变更\n\n- 初始版本\n- A：修复登录\n- B：优化导出\n",
+    "hasA": true,
+    "hasB": true,
+    "version": "2.0"
+  },
+  "T3-script-script": {
+    "secs": 46,
+    "A": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Bash"
+      ],
+      "toolErrors": [],
+      "said": "我用一条 Bash 命令运行 Python 脚本：它先读取 notes.md，`sleep(5)` 后在内存中完成修改（“版本：待定”→“版本：1.0”，并在“## 变更”末尾追加“- A：修复登录”）；期间检测到无并发修改，于是整体写回，最终文件内容已核对无误。"
+    },
+    "B": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Bash",
+        "Read",
+        "Bash"
+      ],
+      "toolErrors": [
+        "Exit code 3\n检测到笔记在读取后被他人修改，基于最新内容重新应用（避免覆盖同事改动）\n失败：未找到目标字符串“版本：待定”，放弃写入以免破坏文件"
+      ],
+      "said": "我在第一次运行脚本时，发现 notes.md 在我执行 5 秒 sleep 期间已被同事改动，版本变为 1.0，并新增了“- A：修复登录”。因此脚本放弃写入，没有覆盖这些改动。随后我又基于最新内容重跑了一次同一段 Python 脚本，保留同事的改动，把版本改为 2.0，并在“## 变更”末尾追加“- B：优化导出”；整个过程经过原子写回和写前哈希校验，最终写回成功。"
+    },
+    "final": "# 发布说明\n\n版本：2.0\n\n## 变更\n\n- 初始版本\n- A：修复登录\n- B：优化导出\n",
+    "hasA": true,
+    "hasB": true,
+    "version": "2.0"
+  },
+  "T4-codex-claude": {
+    "secs": 31,
+    "A": {
+      "tools": [
+        "userMessage",
+        "agentMessage",
+        "commandExecution",
+        "commandExecution",
+        "commandExecution",
+        "reasoning",
+        "fileChange",
+        "commandExecution",
+        "agentMessage"
+      ],
+      "patchStatus": [
+        "completed"
+      ],
+      "said": "我会先读取文件，再执行 `sleep 10`，最后用 `apply_patch` 修改并保留同事的改动。\n\n版本替换因同事已改为“2.0”而失败，我保留了该版本及其变更，并用 apply_patch 在列表末尾追加了“- A：修复登录”。"
+    },
+    "B": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Read",
+        "Edit",
+        "Edit"
+      ],
+      "toolErrors": [],
+      "said": "已按要求读取文件、等待 10 秒后用 Edit 完成修改：将“版本：待定”改为“版本：2.0”，并在“## 变更”列表末尾追加了“- B：优化导出”。"
+    },
+    "final": "# 发布说明\n\n版本：2.0\n\n## 变更\n\n- 初始版本\n- B：优化导出\n- A：修复登录\n",
+    "hasA": true,
+    "hasB": true,
+    "version": "2.0"
+  }
+}

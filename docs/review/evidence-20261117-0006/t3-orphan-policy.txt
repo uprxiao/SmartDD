@@ -1,0 +1,34 @@
+commit fe59fa44d0f12ba1e58b1cccc2c888ac99e743da
+path apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts
+source-sha256 27ec29777474eeafd4052c4920ceb4416114f22ff81ac58a86a7c69393524a80
+
+// Pause orphan goal turns so they cannot work without an owning run.
+            if (
+              rootProviderThreads.has(payload.threadId) &&
+              (goalsByNativeThread.get(payload.threadId)?.status === "active" ||
+                goalStops.has(payload.threadId))
+            ) {
+              yield* Effect.logWarning("orchestration-v2.codex-goal-turn-without-run", {
+                nativeThreadId: payload.threadId,
+                nativeTurnId: payload.turn.id,
+              });
+              yield* client
+                .request("thread/goal/set", { threadId: payload.threadId, status: "paused" })
+                .pipe(
+                  Effect.catch((cause) =>
+                    Effect.logWarning("orchestration-v2.codex-goal-pause-failed", { cause }),
+                  ),
+                  Effect.andThen(
+                    client.request("turn/interrupt", {
+                      threadId: payload.threadId,
+                      turnId: payload.turn.id,
+                    }),
+                  ),
+                  Effect.catch((cause) =>
+                    Effect.logWarning("orchestration-v2.codex-goal-turn-stop-failed", { cause }),
+                  ),
+                  Effect.forkIn(scope),
+                );
+              return;
+            }
+            

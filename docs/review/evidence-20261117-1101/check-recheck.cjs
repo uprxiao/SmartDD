@@ -1,0 +1,22 @@
+// Current contract assertions. Known failures are retained; no source files are changed.
+const fs=require('node:fs'),path=require('node:path');
+const data=JSON.parse(fs.readFileSync(path.join(__dirname,'cross-artifact-probes.json'),'utf8'));
+const by=Object.fromEntries(data.cases.map(x=>[x.name,x])),checks=[];
+const check=(id,expected,actual,pass)=>checks.push({id,expected,actual,status:pass?'passed':'failed'});
+for(const row of by['permission-sources'].matrix)check('same-menu-'+row.tool,row.home,row.task,JSON.stringify(row.home)===JSON.stringify(row.task));
+const ordinary='原有普通消息草稿：检查安装包';
+check('request-keeps-message-draft',ordinary,by['ordinary-draft-after-request'].textarea,by['ordinary-draft-after-request'].textarea===ordinary);
+check('second-request-reason-is-empty','',by['request-reason-scope'].textarea,!by['request-reason-scope'].textarea);
+check('first-request-reason-restores','只针对请求 r1 的原因',by['request-reason-back-to-first'].textarea,by['request-reason-back-to-first'].textarea==='只针对请求 r1 的原因');
+check('home-extension-off-carries',false,by['extension-home-to-new-task'].newTaskChecked,by['extension-home-to-new-task'].newTaskChecked===false);
+const m=by['agent-mail-edit-revision'];check('mail-review-revision',[2,3],[m.afterOne.mailRevision,m.afterTwo.mailRevision],m.afterOne.mailRevision===2&&m.afterTwo.mailRevision===3);
+check('terminal-prefills-code',true,by['code-to-terminal'].sentCodeVisible,by['code-to-terminal'].sentCodeVisible);
+check('codex-no-plan-card',false,by['codex-plan-mapping'].actual.some(x=>x.type==='proposed_plan'),!by['codex-plan-mapping'].actual.some(x=>x.type==='proposed_plan'));
+for(const x of by['goal-lock-matrix'].locks)check('goal-lock-'+x.status,{disabledForeign:4,localModelEnabled:true},x,x.disabledForeign===4&&x.localModelEnabled>0);
+const p=by['research-permission-params'].ask;
+check('research-ask-agrees-with-T1.3',{approvalPolicy:'on-request',approvalsReviewer:'user',sandbox:'workspaceWrite'},p,p.approvalPolicy==='on-request'&&p.approvalsReviewer==='user'&&p.sandboxPolicy.type==='workspaceWrite');
+const g=by['goals-across-tasks'];check('clearing-A-keeps-B-locked',true,{lock:g.after.b,disabledForeign:g.taskBDisabledForeign},!!g.after.b&&g.taskBDisabledForeign===4);
+const result={scope:data.scope,checks,passed:checks.filter(x=>x.status==='passed').length,failed:checks.filter(x=>x.status==='failed').length};
+fs.writeFileSync(path.join(__dirname,'recheck-assertions.json'),JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify({checks:checks.length,passed:result.passed,failed:result.failed}));
+process.exitCode=result.failed?1:0;

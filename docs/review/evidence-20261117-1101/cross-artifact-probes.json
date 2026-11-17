@@ -1,0 +1,221 @@
+{
+  "scope": "Actual component JSX and event handlers on synthetic in-memory hook state; effects omitted. No live browser, provider or production execution.",
+  "sourceSha256": "b8523c639ca297f2bad594f7b6f5506548f9704f3ecacb6cb37bafbf33b1ef75",
+  "cases": [
+    {
+      "name": "permission-sources",
+      "matrix": [
+        {
+          "tool": "claude",
+          "home": [
+            "ask",
+            "full"
+          ],
+          "task": [
+            "ask",
+            "full"
+          ],
+          "homeAsk": {
+            "id": "ask",
+            "name": "请求批准",
+            "args": "--permission-mode default"
+          }
+        },
+        {
+          "tool": "codex",
+          "home": [
+            "ask",
+            "auto",
+            "full"
+          ],
+          "task": [
+            "ask",
+            "auto",
+            "full"
+          ],
+          "homeAsk": {
+            "id": "ask",
+            "name": "请求批准",
+            "args": "-s workspace-write -a on-request -c approvals_reviewer=\"user\""
+          }
+        }
+      ]
+    },
+    {
+      "name": "ordinary-draft-as-approval-reason",
+      "textBefore": "",
+      "decision": {
+        "requestId": "r1",
+        "key": "once",
+        "text": ""
+      },
+      "draftAfter": "原有普通消息草稿：检查安装包"
+    },
+    {
+      "name": "request-reason-scope",
+      "afterSwitchTo": "r2",
+      "textarea": ""
+    },
+    {
+      "name": "request-reason-back-to-first",
+      "request": "r1",
+      "textarea": "只针对请求 r1 的原因"
+    },
+    {
+      "name": "ordinary-draft-after-request",
+      "textarea": "原有普通消息草稿：检查安装包"
+    },
+    {
+      "name": "extension-home-to-new-task",
+      "homeStored": {
+        "home:cc-sub": false
+      },
+      "carried": {
+        "cc-sub": false
+      },
+      "newTaskChecked": false
+    },
+    {
+      "name": "agent-mail-edit-revision",
+      "before": {
+        "id": "own-business",
+        "note": "邮件内容见上方卡片"
+      },
+      "afterOne": {
+        "id": "own-business-r2",
+        "note": "已按修改更新邮件（第 2 版），请再次确认",
+        "mailRevision": 2,
+        "body": [
+          [
+            "发件账号",
+            "dev@example.com（项目 SMTP）"
+          ],
+          [
+            "收件人",
+            "qa-team@example.com"
+          ],
+          [
+            "主题",
+            "【WillYou 0.1.6】mac 多架构安装包修复"
+          ],
+          [
+            "正文",
+            "（Agent 已按你的说明改写）请改写邮件：已补上 mac x64 目标并核对原生模块架构，发布测试 15 项通过。"
+          ]
+        ]
+      },
+      "afterTwo": {
+        "id": "own-business-r3",
+        "note": "已按修改更新邮件（第 3 版），请再次确认",
+        "mailRevision": 3,
+        "body": [
+          [
+            "发件账号",
+            "dev@example.com（项目 SMTP）"
+          ],
+          [
+            "收件人",
+            "qa-team@example.com"
+          ],
+          [
+            "主题",
+            "【WillYou 0.1.6】mac 多架构安装包修复"
+          ],
+          [
+            "正文",
+            "（Agent 已按你的说明改写）第二次改写：已补上 mac x64 目标并核对原生模块架构，发布测试 15 项通过。"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "code-to-terminal",
+      "terminalOpen": true,
+      "terminalContent": "zsh手动终端 · 与 Agent 运行分离，停止 Agent 不会关闭它liubu@mac SmartDD % git status --short\n M scripts/build.mjs\n?? tests/release/arch.test.mjs\nliubu@mac SmartDD % pnpm test\necho review\n↑ 已送入输入行，未执行 · 按回车执行或修改后再执行",
+      "sentCodeVisible": true
+    },
+    {
+      "name": "codex-plan-mapping",
+      "actual": [
+        {
+          "kind": "item",
+          "type": "assistant_message",
+          "id": "review-codex:p1",
+          "ordinal": 1,
+          "revision": 1,
+          "turnId": "t1",
+          "actor": "review-codex",
+          "at": 1,
+          "startedAt": 1,
+          "final": true,
+          "text": "Plan steps",
+          "data": {
+            "id": "p1",
+            "type": "plan",
+            "text": "Plan steps",
+            "nativeType": "plan"
+          }
+        }
+      ]
+    },
+    {
+      "name": "research-permission-params",
+      "ask": {
+        "approvalPolicy": "untrusted",
+        "approvalsReviewer": "user",
+        "sandboxPolicy": {
+          "type": "readOnly"
+        },
+        "options": {},
+        "skipped": []
+      },
+      "keys": [
+        "ask",
+        "edits",
+        "auto",
+        "full"
+      ]
+    },
+    {
+      "name": "goals-across-tasks",
+      "before": {
+        "a": {
+          "status": "active",
+          "agent": "codex"
+        },
+        "b": {
+          "status": "active",
+          "agent": "codex"
+        }
+      },
+      "after": {
+        "a": null,
+        "b": null
+      },
+      "taskBDisabledForeign": 0,
+      "globalState": {
+        "codex:检查安装包直到完成": "cleared"
+      }
+    },
+    {
+      "name": "goal-lock-matrix",
+      "locks": [
+        {
+          "status": "active",
+          "disabledForeign": 4,
+          "localModelEnabled": 1
+        },
+        {
+          "status": "paused",
+          "disabledForeign": 4,
+          "localModelEnabled": 1
+        },
+        {
+          "status": "waiting-children",
+          "disabledForeign": 4,
+          "localModelEnabled": 1
+        }
+      ]
+    }
+  ]
+}

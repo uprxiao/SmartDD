@@ -73,8 +73,8 @@ export async function openCodex({cwd, out, actor, mcp, extraArgs = [], onRequest
     child, events, rpc, next,
     async start(params = {}) { const r = await rpc('thread/start', {cwd, approvalPolicy: 'never', sandbox: 'read-only', ...params}); this.threadId = r.thread.id; return r; },
     async resume(threadId, params = {}) { const r = await rpc('thread/resume', {threadId, cwd, approvalPolicy: 'never', sandbox: 'read-only', ...params}); this.threadId = r.thread.id; return r; },
-    async turn(text, ms = 240000) {
-      const t = await rpc('turn/start', {threadId: this.threadId, input: [{type: 'text', text, text_elements: []}]});
+    async turn(text, ms = 240000, turnParams = {}) {
+      const t = await rpc('turn/start', {threadId: this.threadId, input: [{type: 'text', text, text_elements: []}], ...turnParams});
       const done = await next((x) => x.method === 'turn/completed' && x.params?.turn?.id === t.turn.id, ms);
       const msgs = events.filter((x) => x.method === 'item/completed' && x.params?.turnId === t.turn.id && x.params?.item?.type === 'agentMessage');
       return {status: done.params.turn.status, text: msgs.map((m) => m.params.item.text).join('\n'), turnId: t.turn.id};
@@ -84,12 +84,12 @@ export async function openCodex({cwd, out, actor, mcp, extraArgs = [], onRequest
 }
 
 /** Claude（DeepSeek）一次查询。可选 resume；所有 SDK 消息写入 native.jsonl。 */
-export async function runClaude({cwd, out, actor, prompt, mcpServers, allowedTools = [], resume, maxTurns = 6, home, extra = {}}) {
+export async function runClaude({cwd, out, actor, prompt, mcpServers, allowedTools = [], resume, maxTurns = 6, home, extra = {}, claudeConfigDir}) {
   const {query} = await import(SDK);
   const key = process.env.DEEPSEEK_API_KEY; if (!key) throw new Error('DEEPSEEK_API_KEY missing');
   const h = home ?? join(out, actor + '-home'); mkdirSync(join(h, '.claude'), {recursive: true});
   const env = {
-    HOME: h, CLAUDE_CONFIG_DIR: join(h, '.claude'), PATH: process.env.PATH, TMPDIR: out,
+    HOME: h, CLAUDE_CONFIG_DIR: claudeConfigDir ?? join(h, '.claude'), PATH: process.env.PATH, TMPDIR: out, ENABLE_TOOL_SEARCH: 'false',
     ANTHROPIC_BASE_URL: 'https://api.deepseek.com/anthropic', ANTHROPIC_AUTH_TOKEN: key, ANTHROPIC_API_KEY: '',
     ANTHROPIC_MODEL: DEEPSEEK_MODEL, ANTHROPIC_DEFAULT_OPUS_MODEL: DEEPSEEK_MODEL, ANTHROPIC_DEFAULT_SONNET_MODEL: DEEPSEEK_MODEL,
     ANTHROPIC_DEFAULT_HAIKU_MODEL: DEEPSEEK_MODEL, CLAUDE_CODE_SUBAGENT_MODEL: DEEPSEEK_MODEL,

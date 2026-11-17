@@ -1,0 +1,146 @@
+{
+  "scope": "Pure functions + exact extracted closure with explicit synthetic state; not a browser/App test",
+  "failedTaskUpdate": {
+    "input": [
+      {
+        "driver": "claude",
+        "type": "assistant",
+        "uuid": "create",
+        "message": {
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "c1",
+              "name": "TaskCreate",
+              "input": {
+                "subject": "Keep this task pending"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "driver": "claude",
+        "type": "user",
+        "uuid": "created",
+        "tool_use_result": {
+          "task": {
+            "id": "1"
+          }
+        },
+        "message": {
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "c1",
+              "content": "Task #1 created successfully"
+            }
+          ]
+        }
+      },
+      {
+        "driver": "claude",
+        "type": "assistant",
+        "uuid": "update",
+        "message": {
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "u1",
+              "name": "TaskUpdate",
+              "input": {
+                "taskId": "1",
+                "status": "completed"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "driver": "claude",
+        "type": "user",
+        "uuid": "failed",
+        "message": {
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "u1",
+              "is_error": true,
+              "content": "TaskUpdate failed; no change was applied"
+            }
+          ]
+        }
+      }
+    ],
+    "expected": "pending",
+    "actual": "completed",
+    "lastResult": {
+      "kind": "diagnostic",
+      "reason": "task-list tool result folded into todo_list"
+    }
+  },
+  "commandMenus": {
+    "claude": [
+      "/compact",
+      "/model",
+      "/terminal",
+      "/delegate",
+      "/goal",
+      "/review",
+      "/init"
+    ],
+    "unsupported": [
+      "/model",
+      "/terminal",
+      "/delegate",
+      "/review",
+      "/init"
+    ],
+    "note": "/review and /init have no executor capability key"
+  },
+  "submitSource": {
+    "file": "prototypes/m6-codex/src/M14TaskArea.jsx",
+    "sha256": "9ee729946aa4f78466287398abf994a82af80e2b8586e249c0b63d0f1291e750",
+    "source": "() => {\n    if (!text.trim()) return;\n    if (unavailable) { onToast(`${a.name}${a.status.label}，消息未发送；请重新检测或换一个智能体`); return; }\n    if (req) { decide(req.kind === 'question' ? (pick ?? 'text') : (pick ?? 'deny')); return; }\n    if (/^\\/goal\\b/.test(text.trim()) && !a.caps?.goal) { onToast(`${a.name} 不支持目标模式，消息未发送`); return; }\n    if (running) { setQueued(q => [...q, { id: 'q' + Date.now(), text, time: '14:04', chips }]); setText(''); setChips([]); return; } // 附件随所属输入一起排队（评审 RV10）\n    onToast('已发送 · 合成'); setText(''); setChips([]); setFresh(null);\n  }"
+  },
+  "attachmentSend": [
+    {
+      "state": "preparing",
+      "running": false,
+      "queued": 0,
+      "draftAfter": "",
+      "chipsAfter": 0,
+      "toast": [
+        "已发送 · 合成"
+      ]
+    },
+    {
+      "state": "preparing",
+      "running": true,
+      "queued": 1,
+      "queuedState": "preparing",
+      "draftAfter": "",
+      "chipsAfter": 0,
+      "toast": []
+    },
+    {
+      "state": "failed",
+      "running": false,
+      "queued": 0,
+      "draftAfter": "",
+      "chipsAfter": 0,
+      "toast": [
+        "已发送 · 合成"
+      ]
+    },
+    {
+      "state": "failed",
+      "running": true,
+      "queued": 1,
+      "queuedState": "failed",
+      "draftAfter": "",
+      "chipsAfter": 0,
+      "toast": []
+    }
+  ]
+}

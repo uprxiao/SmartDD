@@ -1,0 +1,110 @@
+{
+  "v16": {
+    "path": "docs/里程碑/M14_统一Agent工作区/技研/复核_20261116/probes/evidence/v16/summary.json",
+    "sha256": "dd11e793c62d7d8c51909efd0b6bd0c83a59b6eb1d30644d3933fd071cf088cc",
+    "recorded": {
+      "A-no-hook": {
+        "firstQuery": {
+          "endedAtSec": 52,
+          "numTurns": 3,
+          "subtype": "success",
+          "toolUses": [
+            "Bash:pwd; ls -la",
+            "mcp__wy__wy_delegate",
+            "Bash:ls -la; echo '---'; cat child.txt 2>/dev",
+            "Bash:until [ -s child.txt ]; do sleep 1; done",
+            "Bash:cat child.txt; echo '---'; cp child.txt ",
+            "Bash:ls -l child.txt result.txt; echo '--- re"
+          ],
+          "delegateCalls": 1,
+          "goalLines": [
+            "Goal set: 用 wy_delegate 把“在 child.txt 写入 done-by-child”派给子任务（target codex），子任务完成后把 child.txt 的内容写进 result.txt。result.txt"
+          ],
+          "endedBeforeChildDone": false
+        },
+        "stopHookCalls": [],
+        "wake": {
+          "numTurns": 2,
+          "subtype": "success",
+          "sameSession": true
+        },
+        "resultTxt": "done-by-child"
+      },
+      "B-stop-hook": {
+        "firstQuery": {
+          "endedAtSec": 6,
+          "numTurns": 3,
+          "subtype": "success",
+          "toolUses": [
+            "mcp__wy__wy_delegate"
+          ],
+          "delegateCalls": 1,
+          "goalLines": [
+            "Goal set: 用 wy_delegate 把“在 child.txt 写入 done-by-child”派给子任务（target codex），子任务完成后把 child.txt 的内容写进 result.txt。result.txt"
+          ],
+          "endedBeforeChildDone": true
+        },
+        "stopHookCalls": [
+          {
+            "t": 4259,
+            "pending": true
+          },
+          {
+            "t": 50380,
+            "pending": false
+          }
+        ],
+        "wake": {
+          "numTurns": 4,
+          "subtype": "success",
+          "sameSession": true
+        },
+        "resultTxt": "done-by-child"
+      }
+    }
+  },
+  "v16-codex": {
+    "path": "docs/里程碑/M14_统一Agent工作区/技研/复核_20261116/probes/evidence/v16-codex/summary.json",
+    "sha256": "361026bd08d2f63c581522db9b67aca4119a8678963cbb5ad1bbe88b665446a6",
+    "recorded": {
+      "pauseResp": "paused",
+      "beforeWake": {
+        "turnsStartedAfterPause": 1,
+        "turnsStarted": 2,
+        "turnsCompleted": 2,
+        "goal": "paused",
+        "pausedForWake": true,
+        "pausedAtSec": 19,
+        "delegateCalls": 1,
+        "resultExists": false
+      },
+      "afterWake": {
+        "newTurns": 1,
+        "goal": "complete",
+        "result": "done-by-child",
+        "secs": 54
+      }
+    }
+  },
+  "v16-codex-run1-polling": {
+    "path": "docs/里程碑/M14_统一Agent工作区/技研/复核_20261116/probes/evidence/v16-codex-run1-polling/summary.json",
+    "sha256": "7978d781857ae27301bdb6707ba6b037095ebd84aeb6b9a9f5905ead06e2abfa",
+    "recorded": {
+      "beforeWake": {
+        "turnsStarted": 4,
+        "turnsCompleted": 4,
+        "goal": "blocked",
+        "pausedForWake": false,
+        "pausedAtSec": null,
+        "delegateCalls": 1,
+        "resultExists": false
+      },
+      "afterWake": {
+        "newTurns": 1,
+        "goal": "complete",
+        "result": "done-by-child",
+        "secs": 55
+      }
+    }
+  }
+}

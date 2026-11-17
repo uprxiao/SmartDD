@@ -1,0 +1,74 @@
+{
+  "scope": "Actual component JSX and event handlers on synthetic in-memory hook state; effects omitted. No live browser, provider or production execution.",
+  "checks": [
+    {
+      "id": "same-menu-claude",
+      "expected": [
+        "ask",
+        "full"
+      ],
+      "actual": [
+        "ask",
+        "edits",
+        "full"
+      ],
+      "status": "failed"
+    },
+    {
+      "id": "same-menu-codex",
+      "expected": [
+        "ask",
+        "auto",
+        "full"
+      ],
+      "actual": [
+        "ask",
+        "edits",
+        "auto",
+        "full"
+      ],
+      "status": "failed"
+    },
+    {
+      "id": "approval-preserves-message-draft",
+      "expected": "原有普通消息草稿：检查安装包",
+      "actual": "",
+      "status": "failed"
+    },
+    {
+      "id": "request-reason-isolation",
+      "expected": "",
+      "actual": "只针对请求 r1 的原因",
+      "status": "failed"
+    },
+    {
+      "id": "home-extension-choice-carries",
+      "expected": false,
+      "actual": true,
+      "status": "failed"
+    },
+    {
+      "id": "agent-edit-rotates-review-revision",
+      "expected": "different request/review revision after each edit",
+      "actual": [
+        "own-business:1",
+        "own-business:1",
+        "own-business:1"
+      ],
+      "status": "failed"
+    },
+    {
+      "id": "terminal-code-is-prefilled",
+      "expected": true,
+      "actual": false,
+      "status": "failed"
+    },
+    {
+      "id": "codex-does-not-generate-plan-card",
+      "expected": false,
+      "actual": true,
+      "status": "failed"
+    }
+  ],
+  "failed": 8
+}

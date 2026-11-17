@@ -1,0 +1,184 @@
+{
+  "runs": [
+    {
+      "id": "handoff",
+      "exitCode": 0,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+        "/private/tmp/m14-portable-run-handoff-20261116/experiment/attempt-3/handoff_probe.py",
+        "/private/tmp/m14-portable-run-handoff-20261116/output"
+      ],
+      "stdoutReceipt": {
+        "scope": "Independent SQLite candidate + synthetic receiver; no production integration or real provider",
+        "python": "3.11.9 (v3.11.9:de54cf5be3, Apr  2 2024, 07:12:50) [Clang 13.0.0 (clang-1300.0.29.30)]",
+        "sqlite": "3.45.1",
+        "platform": "macOS-26.6.1-arm64-arm-64bit",
+        "sourceSha256": "accc71c2930bb859505bda190bf1a8bd3baad66182b30855670ebc8628c81193",
+        "tests": 18,
+        "successful": true,
+        "results": [
+          {
+            "id": "test_H00_naive_retry_duplicates_receiver_effect",
+            "status": "passed"
+          },
+          {
+            "id": "test_H01_A_B_A_delta_and_no_reimport",
+            "status": "passed"
+          },
+          {
+            "id": "test_H02_idempotency_conflict_and_frozen_payload",
+            "status": "passed"
+          },
+          {
+            "id": "test_H03_crash_before_send_conservatively_unknown",
+            "status": "passed"
+          },
+          {
+            "id": "test_H04_crash_after_receive_no_blind_replay",
+            "status": "passed"
+          },
+          {
+            "id": "test_H05_proven_unsent_can_retry",
+            "status": "passed"
+          },
+          {
+            "id": "test_H06_explicit_unsupported_inline_fallback",
+            "status": "passed"
+          },
+          {
+            "id": "test_H07_inline_ack_loss_also_unknown",
+            "status": "passed"
+          },
+          {
+            "id": "test_H08_coverage_and_status_are_atomic",
+            "status": "passed"
+          },
+          {
+            "id": "test_H09_duplicate_ack_idempotent",
+            "status": "passed"
+          },
+          {
+            "id": "test_H10_config_revision_rechecked_before_dispatch",
+            "status": "passed"
+          },
+          {
+            "id": "test_H11_two_dispatchers_only_one_claim",
+            "status": "passed"
+          },
+          {
+            "id": "test_H12_omitted_items_not_marked_covered",
+            "status": "passed"
+          },
+          {
+            "id": "test_H13_new_native_identity_does_not_inherit_coverage",
+            "status": "passed"
+          },
+          {
+            "id": "test_H14_history_echo_never_mints_user_authority",
+            "status": "passed"
+          },
+          {
+            "id": "test_H15_restart_recovery_is_idempotent",
+            "status": "passed"
+          },
+          {
+            "id": "test_H16_native_and_generation_mismatch_cannot_ack",
+            "status": "passed"
+          },
+          {
+            "id": "test_H17_inline_refused_before_consumption_stays_inline",
+            "status": "passed"
+          }
+        ]
+      },
+      "logSha256": "8c04bba57f16267d54136841fdb3d368595c767df209ead913b36fbaa6fa5491",
+      "actualResults": [
+        {
+          "path": "/private/tmp/m14-portable-run-handoff-20261116/output/result.json",
+          "sha256": "f122154ef2a862bf6b64cbc9ba749a129212c80f38f8256b89e191ef4ef69612"
+        }
+      ]
+    },
+    {
+      "id": "sync",
+      "exitCode": 0,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+        "/private/tmp/m14-portable-run-sync-20261116/experiment/attempt-3/probe.py"
+      ],
+      "stdoutReceipt": {
+        "passed": 27,
+        "total": 27,
+        "failures": []
+      },
+      "logSha256": "b903e3fd39c806e1d7e720e9fc3ee933faebfd95b6f3c8afa1d7039141781932",
+      "actualResult": {
+        "path": "/private/tmp/m14-portable-run-sync-20261116/experiment/attempt-3/result.json",
+        "sha256": "9a47ad32ed355d1470735e2043ede3ebbae84eb965d83bf45a0c02856dc0837d"
+      }
+    },
+    {
+      "id": "canonical",
+      "exitCode": 0,
+      "command": [
+        "/Users/liubu/.local/bin/node",
+        "/private/tmp/m14-portable-run-canonical-20261116-a2/experiment/probe.mjs"
+      ],
+      "stdoutReceipt": {
+        "attempt": "/private/tmp/m14-portable-run-canonical-20261116-a2/experiment/attempt-FCbiMM",
+        "passed": 34,
+        "total": 34
+      },
+      "logSha256": "4832c47f92be66a6c1cab64186944883323e95e8140fdc50f617080aee2774f4",
+      "actualResult": {
+        "path": "/private/tmp/m14-portable-run-canonical-20261116-a2/experiment/attempt-FCbiMM/result.json",
+        "sha256": "9579e81faf560f1011b62174b79bdaf933131fa61e754d3b63d7565ab0999fa3"
+      }
+    },
+    {
+      "id": "current-source-build",
+      "exitCode": 0,
+      "command": [
+        "/Users/liubu/.local/bin/node",
+        "/private/tmp/m14-portable-current-build-20261116/experiment/build.mjs"
+      ],
+      "stdoutReceipt": {
+        "outputs": [
+          {
+            "file": "/private/tmp/m14-portable-current-build-20261116/experiment/actual-claude.cjs",
+            "description": "Actual runtime modules and existing test fixture; Vite raw asset loading substituted"
+          },
+          {
+            "file": "/private/tmp/m14-portable-current-build-20261116/experiment/actual-codex.cjs",
+            "description": "Actual runtime modules, test fixture only substitutes claude-code->codex and .claude->.codex"
+          },
+          {
+            "file": "/private/tmp/m14-portable-current-build-20261116/experiment/mcp-bridge.cjs",
+            "description": "Existing bridge-runtime.ts bundled without source substitution; isolated esbuild build, not release bundle"
+          }
+        ],
+        "sourceCount": 361
+      },
+      "logSha256": "59dfcbf6319a869d490efd1335f7a1a8a69d29af40a7f07b21e24c1bff3fe678",
+      "newBuildInputs": [
+        {
+          "path": "/private/tmp/m14-portable-current-build-20261116/experiment/build.json",
+          "sha256": "23cc210af130b3b7514e3e34ac20f855887bb1b65de436e7cbdbbe96e30c3971"
+        }
+      ]
+    },
+    {
+      "id": "mixed-import-build",
+      "exitCode": 0,
+      "command": [
+        "/Users/liubu/.local/bin/node",
+        "/private/tmp/m14-portable-mixed-build-20261116/experiment/probe/build.mjs"
+      ],
+      "stdoutReceipt": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "newBuildInputs": []
+    }
+  ],
+  "failed": 0,
+  "scope": "explicit execution receipts, no selection of copied historical attempt results"
+}

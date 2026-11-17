@@ -1,0 +1,4 @@
+Initial review SSR harness: exit 1 before rendering.
+esbuild: Cannot import "prototypes/m6-codex/src/voice.css" into a JavaScript file without an output path configured.
+Origin: prototypes/m6-codex/src/VoicePreview.jsx:4:7, import './voice.css'.
+Cause: missing CSS loader in the review harness. Corrected this review-only script with `.css: empty` and reran the same fixture. Product/source files were not changed; this is not a product failure.

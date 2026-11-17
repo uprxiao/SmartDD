@@ -1,0 +1,95 @@
+{
+  "source": "v08-a",
+  "evidence": "recording + retained probe filesystem; no new model call",
+  "cases": {
+    "accept": {
+      "requestCount": 1,
+      "fileExists": true,
+      "requestFile": {
+        "method": "item/commandExecution/requestApproval",
+        "params": {
+          "kind": "command",
+          "threadId": "01a1e21e-8a9e-78b0-8128-cb92d8d652a2",
+          "turnId": "01a1e21e-8af8-7883-ba99-c82cc4e96a0d",
+          "itemId": "exec-4cbb6def-78c5-4231-80f2-95578e85a486",
+          "startedAtMs": 1794795049506,
+          "environmentId": "local",
+          "reason": "Allow creating approval-probe.txt in the current directory containing approved?",
+          "command": "/bin/zsh -lc \"printf 'approved\\\\n' > approval-probe.txt\"",
+          "cwd": "<review-scratch>/runs/v08-a/codex-accept",
+          "commandActions": [
+            {
+              "type": "unknown",
+              "command": "printf 'approved\\n' > approval-probe.txt"
+            }
+          ],
+          "proposedExecpolicyAmendment": [
+            "/bin/zsh",
+            "-lc",
+            "printf 'approved\\n' > approval-probe.txt"
+          ],
+          "availableDecisions": [
+            "accept",
+            {
+              "acceptWithExecpolicyAmendment": {
+                "execpolicy_amendment": [
+                  "/bin/zsh",
+                  "-lc",
+                  "printf 'approved\\n' > approval-probe.txt"
+                ]
+              }
+            },
+            "cancel"
+          ]
+        }
+      }
+    },
+    "decline": {
+      "requestCount": 1,
+      "fileExists": false,
+      "requestFile": {
+        "method": "item/commandExecution/requestApproval",
+        "params": {
+          "kind": "command",
+          "threadId": "01a1e21f-1fec-7310-aeb1-a8a878be5420",
+          "turnId": "01a1e21f-2044-70a3-abd4-bcb0abda40c2",
+          "itemId": "exec-33a00013-75a4-4568-879f-6b50a3f312fe",
+          "startedAtMs": 1794795076436,
+          "environmentId": "local",
+          "reason": "The read-only sandbox blocked creating approval-probe.txt. Allow retrying outside the sandbox to write approved?",
+          "command": "/bin/zsh -lc \"printf 'approved\\\\n' > approval-probe.txt\"",
+          "cwd": "<review-scratch>/runs/v08-a/codex-decline",
+          "commandActions": [
+            {
+              "type": "unknown",
+              "command": "printf 'approved\\n' > approval-probe.txt"
+            }
+          ],
+          "proposedExecpolicyAmendment": [
+            "/bin/zsh",
+            "-lc",
+            "printf 'approved\\n' > approval-probe.txt"
+          ],
+          "availableDecisions": [
+            "accept",
+            {
+              "acceptWithExecpolicyAmendment": {
+                "execpolicy_amendment": [
+                  "/bin/zsh",
+                  "-lc",
+                  "printf 'approved\\n' > approval-probe.txt"
+                ]
+              }
+            },
+            "cancel"
+          ]
+        }
+      }
+    },
+    "inherit": {
+      "requestCount": 0,
+      "fileExists": true,
+      "requestFile": null
+    }
+  }
+}

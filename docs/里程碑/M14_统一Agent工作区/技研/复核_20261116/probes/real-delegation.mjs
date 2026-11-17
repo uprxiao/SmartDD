@@ -6,6 +6,7 @@ import {mkdirSync, writeFileSync, appendFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {join} from 'node:path';
 import {openCodex, runClaude, versions, redact} from './lib/agents.mjs';
+import {openAcp, opencodeLaunch} from './lib/acp.mjs';
 
 const out = process.argv[2]; mkdirSync(out, {recursive: true});
 const only = process.argv[3];
@@ -26,6 +27,12 @@ async function runAgent(driver, role, prompt, parentId) {
         mcpServers: mcp ? {wy: {command: mcp.command, args: mcp.args}} : undefined,
         allowedTools: mcp ? ['mcp__wy__wy_delegate'] : [], extra: {tools: []}});
       return {id, text: r.text, ok: r.result?.subtype === 'success'};
+    }
+    if (driver === 'opencode') {
+      // ACP：宿主 MCP 通过 session/new 的 mcpServers 注入（与 T3 ACP 适配器一致）
+      const a = await openAcp({launch: opencodeLaunch({out, actor: id}), cwd, out, actor: id,
+        mcpServers: mcp ? [{name: mcp.name, command: mcp.command, args: mcp.args, env: []}] : []});
+      try { const r = await a.prompt(prompt); return {id, text: r.text, ok: r.stopReason === 'end_turn'}; } finally { await a.close(); }
     }
     const c = await openCodex({cwd, out, actor: id, mcp});
     try { await c.start(); const r = await c.turn(prompt); return {id, text: r.text, ok: r.status === 'completed'}; } finally { await c.close(); }
@@ -49,6 +56,8 @@ const server = createServer(async (req, res) => {
 
 const cases = [
   ['R1', 'claude', 'codex'], ['R2', 'codex', 'claude'], ['R3', 'claude', 'claude'], ['R4', 'codex', 'codex'],
+  // 第三个真实 Agent（OpenCode，ACP 协议）：作主 / 作子，复用同一宿主委派工具与服务
+  ['R5', 'opencode', 'codex'], ['R6', 'claude', 'opencode'], ['R7', 'codex', 'opencode'],
 ];
 const results = [];
 await new Promise((r) => server.listen(0, '127.0.0.1', r)); port = server.address().port;

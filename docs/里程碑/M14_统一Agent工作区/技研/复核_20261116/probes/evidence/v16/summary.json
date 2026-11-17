@@ -1,0 +1,60 @@
+{
+  "A-no-hook": {
+    "firstQuery": {
+      "endedAtSec": 52,
+      "numTurns": 3,
+      "subtype": "success",
+      "toolUses": [
+        "Bash:pwd; ls -la",
+        "mcp__wy__wy_delegate",
+        "Bash:ls -la; echo '---'; cat child.txt 2>/dev",
+        "Bash:until [ -s child.txt ]; do sleep 1; done",
+        "Bash:cat child.txt; echo '---'; cp child.txt ",
+        "Bash:ls -l child.txt result.txt; echo '--- re"
+      ],
+      "delegateCalls": 1,
+      "goalLines": [
+        "Goal set: 用 wy_delegate 把“在 child.txt 写入 done-by-child”派给子任务（target codex），子任务完成后把 child.txt 的内容写进 result.txt。result.txt"
+      ],
+      "endedBeforeChildDone": false
+    },
+    "stopHookCalls": [],
+    "wake": {
+      "numTurns": 2,
+      "subtype": "success",
+      "sameSession": true
+    },
+    "resultTxt": "done-by-child"
+  },
+  "B-stop-hook": {
+    "firstQuery": {
+      "endedAtSec": 6,
+      "numTurns": 3,
+      "subtype": "success",
+      "toolUses": [
+        "mcp__wy__wy_delegate"
+      ],
+      "delegateCalls": 1,
+      "goalLines": [
+        "Goal set: 用 wy_delegate 把“在 child.txt 写入 done-by-child”派给子任务（target codex），子任务完成后把 child.txt 的内容写进 result.txt。result.txt"
+      ],
+      "endedBeforeChildDone": true
+    },
+    "stopHookCalls": [
+      {
+        "t": 4259,
+        "pending": true
+      },
+      {
+        "t": 50380,
+        "pending": false
+      }
+    ],
+    "wake": {
+      "numTurns": 4,
+      "subtype": "success",
+      "sameSession": true
+    },
+    "resultTxt": "done-by-child"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "T1-edit-edit": {
+    "secs": 28,
+    "A": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Edit",
+        "Edit"
+      ],
+      "toolErrors": [],
+      "said": "已读取 notes.md，执行了 `sleep 10`，并用 Edit 工具将“版本：待定”改为“版本：1.0”，同时在“## 变更”列表末尾追加了“- A：修复登录”。"
+    },
+    "B": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Edit",
+        "Read",
+        "Edit",
+        "Edit"
+      ],
+      "toolErrors": [
+        "<tool_use_error>File has been modified since read, either by the user or by a linter. Read it again before attempting to write it.</tool_use_error>"
+      ],
+      "said": "已按步骤执行：读取 notes.md、运行 `sleep 10`，并仅用 Edit 把版本号改为 2.0、在“## 变更”末尾追加“- B：优化导出”。需要说明的是，编辑前文件被外部改动过（版本已是“1.0”且新增了“- A：修复登录”，已无“待定”字样），我据此把现有版本行改成“2.0”并保留 A 行、在其后追加 B 行。"
+    },
+    "final": "# 发布说明\n\n版本：2.0\n\n## 变更\n\n- 初始版本\n- A：修复登录\n- B：优化导出\n",
+    "hasA": true,
+    "hasB": true,
+    "version": "2.0"
+  },
+  "T2-write-write": {
+    "secs": 26,
+    "A": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Write",
+        "Read",
+        "Bash"
+      ],
+      "toolErrors": [
+        "<tool_use_error>File has been modified since read, either by the user or by a linter. Read it again before attempting to write it.</tool_use_error>"
+      ],
+      "said": "步骤 1（读取 notes.md）和步骤 2（`sleep 10`）已完成，但步骤 3 执行前出现了冲突：写入前再次校验时，`notes.md` 已被外部修改，当前内容是“版本：2.0”，且“## 变更”下已多出“- B：优化导出”，原目标字符串“版本：待定”已不存在。因此我没有执行 Write，以免覆盖他人并发写入的内容，或把版本从 2.0 回退成 1.0。请确认你希望的处理方式，例如保留 B 行并把版本改为 1.0，还是改为其他版本号；随后我再一次性重写整个文件。"
+    },
+    "B": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Write"
+      ],
+      "toolErrors": [],
+      "said": "我先读取了 notes.md，执行了 `sleep 10`，然后用 Write 工具把整个文件重写为：版本改为“2.0”，并在“## 变更”列表末尾追加了“- B：优化导出”。"
+    },
+    "final": "# 发布说明\n\n版本：2.0\n\n## 变更\n\n- 初始版本\n- B：优化导出\n",
+    "hasA": false,
+    "hasB": true,
+    "version": "2.0"
+  },
+  "T3-script-script": {
+    "secs": 30,
+    "A": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Bash"
+      ],
+      "toolErrors": [],
+      "said": "我按照你指定的顺序完成了三步：先读取 notes.md，再运行 `sleep 10`，最后用一条 Bash 命令内嵌的 Python 脚本重读该文件、在内存中等待 5 秒，并整体写回：把“版本：待定”改为“版本：1.0”，并在“## 变更”列表末尾追加“- A：修复登录”。"
+    },
+    "B": {
+      "tools": [
+        "Read",
+        "Bash",
+        "Bash",
+        "Read"
+      ],
+      "toolErrors": [],
+      "said": "我先读取了 notes.md，按要求执行了 `sleep 10`，然后用一条 Bash 命令运行 Python 脚本：先读取文件、`time.sleep(5)`，在内存中把“版本：待定”改为“版本：2.0”并在变更列表末尾追加“- B：优化导出”，最后整体写回文件（未使用 Edit/Write）。"
+    },
+    "final": "# 发布说明\n\n版本：2.0\n\n## 变更\n\n- 初始版本\n- B：优化导出\n- A：修复登录\n",
+    "hasA": true,
+    "hasB": true,
+    "version": "2.0"
+  }
+}

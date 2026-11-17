@@ -1,10 +1,10 @@
 # WillYou（SmartDD）统一 Agent 工作区优化方案
 
-> 现行设计已收口到 [M14 技术方案 T0.1（研究收口稿）](里程碑/M14_统一Agent工作区/技研/技术方案.md)，范围以[需求 R0.2](里程碑/M14_统一Agent工作区/需求.md)为准：先跑稳 T3 式通用基座，独立模板与强制阶段流程后续扩展。本稿保留历史推导、方案比较及旧用例来源，不再并行维护现行实现规格；下方状态按形成时理解。T0.1 已按冻结范围完成研究与关闭审计，可作为实施设计依据；产品原型评审、正式开发与验收仍未完成。
+> 现行设计已收口到 [M14 技术方案 T0.1（研究收口稿）](里程碑/M14_统一Agent工作区/技研/历史/技术方案_T0.1_20261116.md)，范围以[需求 R0.2](里程碑/M14_统一Agent工作区/历史/需求_R0.2_20261116.md)为准：先跑稳 T3 式通用基座，独立模板与强制阶段流程后续扩展。本稿保留历史推导、方案比较及旧用例来源，不再并行维护现行实现规格；下方状态按形成时理解。T0.1 已按冻结范围完成研究与关闭审计，可作为实施设计依据；产品原型评审、正式开发与验收仍未完成。
 
-> 2026-11-14 阶段归属：本次优化已登记为 F32／[M14](里程碑/M14_统一Agent工作区/README.md)，阶段范围以 [M14 需求](里程碑/M14_统一Agent工作区/需求.md)为入口。本稿保留为设计评审／调研依据，待整合为正式技术方案；定时任务已顺延为 M15。
+> 2026-11-14 阶段归属：本次优化已登记为 F32／[M14](里程碑/M14_统一Agent工作区/README.md)，阶段范围以 [M14 需求](里程碑/M14_统一Agent工作区/历史/需求_R0.2_20261116.md)为入口。本稿保留为设计评审／调研依据，待整合为正式技术方案；定时任务已顺延为 M15。
 
-> 2026-11-14 后续验证：按用户要求已开始全局兼容研究，实际实验、安装／版本问题及未决项统一见[M14 全局验证账](里程碑/M14_统一Agent工作区/技研/全局设计验证账.md)。下方“未执行”等状态为该稿形成时记录，不据此覆盖后续结果；本稿仍待整合。
+> 2026-11-14 后续验证：按用户要求已开始全局兼容研究，实际实验、安装／版本问题及未决项统一见[M14 全局验证账](里程碑/M14_统一Agent工作区/技研/历史/全局设计验证账_V0.3_20261116.md)。下方“未执行”等状态为该稿形成时记录，不据此覆盖后续结果；本稿仍待整合。
 
 > 版本：R0.2 · 详细设计评审稿  
 > 日期：2026-11-14  
@@ -187,7 +187,7 @@ flowchart TD
     CAPS <--> BUSINESS[文件 / 插件 / MCP / 浏览器 / 资源]
 ```
 
-不引入 T3 的远程服务、Effect 依赖或独立调度框架。[本地 T3 ProviderAdapter](../../t3code/packages/provider-core/src/server/ProviderAdapter.ts)仅作为边界设计参考；源代码复用另核许可证和依赖。
+不引入 T3 的远程服务、Effect 依赖或独立调度框架。[本地 T3 ProviderAdapter](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/packages/provider-core/src/server/ProviderAdapter.ts)仅作为边界设计参考；源代码复用另核许可证和依赖。
 
 ### 5.2 身份、权威与锁
 
@@ -890,7 +890,7 @@ M15 将来可复用创建／提交／查询服务，但本次没有调度实现�
 - [AGENTS](../AGENTS.md)：品牌、阶段规则、真实 App、测试隔离和发布流程。
 - [M13 需求](里程碑/M13_应用Skill与MCP插件化重构/需求.md)、[技术方案](里程碑/M13_应用Skill与MCP插件化重构/技研/技术方案.md)、[用例](里程碑/M13_应用Skill与MCP插件化重构/验收/测试用例.md)：业务语义与现有阶段的权威基线。
 - [Claude 能力资源](../resources/agent-adapters/claude-code/1.2.0/adapter.json)、[Codex 能力资源](../resources/agent-adapters/codex/1.4.0/adapter.json)、[Codex 私有服务检查](../src/main/core/applications/codex-task-server.ts)：版本差异的静态依据。
-- [本地 T3 Claude](../../t3code/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts)、[本地 T3 Codex](../../t3code/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts)、[SDK 依赖声明](../../t3code/apps/server/package.json)：同级目录下的只读参考，不是 SmartDD 已验证实现。跨机器交接应记录相应源码提交或提供可追溯仓库来源。
+- [本地 T3 Claude](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts)、[本地 T3 Codex](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts)、[SDK 依赖声明](https://github.com/pingdotgg/t3code/blob/f313d0a6cb843551fb60e57a454a71e71a3a8c04/apps/server/package.json)：同级目录下的只读参考，不是 SmartDD 已验证实现。跨机器交接应记录相应源码提交或提供可追溯仓库来源。
 
 ### 17.3 官方资料
 
@@ -901,3 +901,6 @@ M15 将来可复用创建／提交／查询服务，但本次没有调度实现�
 - [Codex app-server](https://learn.chatgpt.com/docs/app-server)：会话、回合、事件、请求与原生响应；固定版本以实际生成／核对协议为准。
 
 资料核对日期为 2026-11-14。本文完成静态代码核对、规则对齐和详细设计补齐；兼容 Gate、原型、真实包、真实模型及验收用例均未执行。不得将文档结构检查或拟议 SQL 检查描述为上述功能测试通过。
+
+
+2026-11-16 来源链接勘误：原本机 t3code 相对链接改为原引用提交的仓库永久链接，仅调整可访问位置，不将历史源码结论更新为上游最新。

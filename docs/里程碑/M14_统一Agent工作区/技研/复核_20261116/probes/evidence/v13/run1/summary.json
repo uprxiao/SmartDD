@@ -1,0 +1,208 @@
+{
+  "claude-clean": {
+    "hostSteps": [
+      "worktree-add",
+      "deps:none"
+    ],
+    "branch": "feature/0.1.14_willyou_add-sub",
+    "commands": [
+      "git status && echo \"---BRANCH---\" && git branch -vv && echo \"---LOG---\" && git log --oneline -5",
+      "git log --oneline b2c1036..fac1498 && echo \"---STAT---\" && git diff --stat b2c1036 fac1498 && echo \"---DIFF---\" && git diff b2c1036 fac1498",
+      "git cherry-pick a12319d fac1498 && echo \"---STATUS---\" && git status && echo \"---LOG---\" && git log --oneline -5",
+      "git log -1 --format='%an <%ae>' fac1498; git config --local --list | head -20; git status",
+      "git config --local user.name \"willyou-test\" && git config --local user.email \"test@willyou.local\" && git cherry-pick --continue --no-edit",
+      "git status && echo \"---LOG---\" && git log --oneline -5 && echo \"---APP---\" && cat app.js && echo \"---README---\" && cat README.md && echo \"---DIFF vs subtask---\" && git diff --stat fac1498 HEAD"
+    ],
+    "dangerous": [],
+    "check": {
+      "missingCommits": 0,
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true,
+      "pass": true
+    },
+    "kept": {
+      "childSub": true,
+      "childDoc": true,
+      "parentAnnot": null,
+      "parentDirty": null,
+      "parentCommitted": null
+    },
+    "status": "",
+    "log": "4ffc351 docs: sub usage\nbd7e014 add sub\nb2c1036 init",
+    "beforeHead": "b2c1036 init",
+    "said": "已检查子任务分支的两处改动（app.js 新增 `sub`、README 补充用法）无问题，先因仓库缺少提交身份而在本地配置了 `willyou-test <test@willyou.local>`，随后将 `a12319d`、`fac1498` 依次 cherry-pick 到 `feature/0.1.14`（无冲突），最终工作树干净且内容与子任务分支完全一致。"
+  },
+  "claude-conflict": {
+    "hostSteps": [
+      "worktree-add",
+      "deps:none"
+    ],
+    "branch": "feature/0.1.14_willyou_add-sub",
+    "commands": [
+      "git status && echo \"---BRANCH---\" && git branch -vv && echo \"---LOG---\" && git log --oneline -5",
+      "git log --oneline feature/0.1.14_willyou_add-sub -5 && echo \"---DIFFSTAT vs base---\" && git diff --stat b9006df feature/0.1.14_willyou_add-sub",
+      "git show 2e79b78 && echo \"===59231e9===\" && git show 59231e9",
+      "git show 6721c30 && echo \"===FILES===\" && ls -la && echo \"===README===\" && cat README.md && echo \"===APP===\" && cat app.js",
+      "git cherry-pick 2e79b78 && git cherry-pick 59231e9; echo \"EXIT=$?\"; git status",
+      "git config user.name; git config user.email; echo \"---global---\"; git config --global user.name; git config --global user.email",
+      "git config user.name \"Claude Code\" && git config user.email \"noreply@anthropic.com\" && git cherry-pick --continue --no-edit; echo \"EXIT=$?\"; git status",
+      "git cherry-pick 59231e9; echo \"EXIT=$?\"; git status",
+      "Read /Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M14_统一Agent工作区/技研/复核_20261116/probes/evidence/v13/claude-conflict/repo/README.md",
+      "Edit /Users/liubu/hx/4.uprxiao/SmartDD/docs/里程碑/M14_统一Agent工作区/技研/复核_20261116/probes/evidence/v13/claude-conflict/repo/README.md",
+      "git add README.md && git cherry-pick --continue --no-edit; echo \"EXIT=$?\"",
+      "git status && echo \"---LOG---\" && git log --oneline -5 && echo \"---README---\" && cat README.md && echo \"---APP---\" && cat app.js && echo \"---DIFF vs old tip---\" && git diff 6721c30 HEAD --stat"
+    ],
+    "dangerous": [],
+    "check": {
+      "missingCommits": 1,
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true,
+      "pass": false
+    },
+    "kept": {
+      "childSub": true,
+      "childDoc": true,
+      "parentAnnot": true,
+      "parentDirty": null,
+      "parentCommitted": null
+    },
+    "status": "",
+    "log": "587e8ea docs: sub usage\n384bf37 add sub\n6721c30 docs: annotate add\nb9006df init",
+    "beforeHead": "6721c30 docs: annotate add\nb9006df init",
+    "said": "已把子任务的两个提交 cherry-pick 到 `feature/0.1.14`（先补了本仓库缺失的 git 身份配置），README.md 的冲突按两边意图解决为同时保留 `- add(a, b)  # 加法` 和 `- sub(a, b)`，最终 `git status` 干净。"
+  },
+  "claude-dirty": {
+    "hostSteps": [
+      "auto-commit",
+      "worktree-add",
+      "deps:none"
+    ],
+    "branch": "feature/0.1.14_willyou_add-sub",
+    "commands": [
+      "git status && echo \"---BRANCH---\" && git branch --show-current && echo \"---LOG---\" && git log --oneline -5",
+      "git branch -a && echo \"---DIFF STAT---\" && git diff --stat",
+      "git diff README.md",
+      "git log --oneline feature/0.1.14_willyou_add-sub -5 && echo \"---DIFF---\" && git diff 9659a72 feature/0.1.14_willyou_add-sub --stat && echo \"---SHOW---\" && git show --stat 3485907 && git show --stat d3e6cfa",
+      "git diff 9659a72 feature/0.1.14_willyou_add-sub",
+      "cat README.md; echo \"---APP---\"; cat app.js",
+      "git add README.md && git commit -m \"$(cat <<'EOF'\ndocs: 更新版本号至 1.1\n\nCo-Authored-By: Claude Code <noreply@anthropic.com>\nEOF\n)\"",
+      "git config --local -l; echo \"---GLOBAL---\"; git config --global -l 2>/dev/null | head -20",
+      "git -c user.name=willyou-test -c user.email=test@willyou.local commit -m \"$(cat <<'EOF'\ndocs: 更新版本号至 1.1\n\nCo-Authored-By: Claude Code <noreply@anthropic.com>\nEOF\n)\"",
+      "git -c user.name=willyou-test -c user.email=test@willyou.local cherry-pick d3e6cfa 3485907; echo \"EXIT=$?\"; echo \"---STATUS---\"; git status",
+      "git status && echo \"---LOG---\" && git log --oneline -5 && echo \"---FILES---\" && cat README.md && echo \"---APP---\" && cat app.js"
+    ],
+    "dangerous": [],
+    "check": {
+      "missingCommits": 0,
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true,
+      "pass": true
+    },
+    "kept": {
+      "childSub": true,
+      "childDoc": true,
+      "parentAnnot": null,
+      "parentDirty": true,
+      "parentCommitted": true
+    },
+    "status": "",
+    "log": "c356d18 docs: sub usage\nc4006d9 add sub\nd9f9b10 docs: 更新版本号至 1.1\n9659a72 willyou: 自动提交（派出子任务前）\nedec402 init",
+    "beforeHead": "9659a72 willyou: 自动提交（派出子任务前）\nedec402 init",
+    "said": "我已将当前 README 改动提交为 `d9f9b10`，并把子任务的两个提交 `c4006d9`（add sub）和 `c356d18`（docs: sub usage）依次 cherry-pick 到 `feature/0.1.14`，自动合并无冲突，最终 `git status` 显示工作区干净。"
+  },
+  "codex-clean": {
+    "hostSteps": [
+      "worktree-add",
+      "deps:none"
+    ],
+    "branch": "feature/0.1.14_willyou_add-sub",
+    "commands": [
+      "/bin/zsh -lc 'pwd; git status --short; git branch --show-current; git log --oneline -5; git show --stat ec2ba94; git show --stat af873e5'",
+      "/bin/zsh -lc \"rg --files -g AGENTS.md -g package.json -g '*test*'; git diff; git show af873e5; git show ec2ba94\"",
+      "/bin/zsh -lc 'git status --short; git status; git log -1 --oneline'"
+    ],
+    "dangerous": [],
+    "check": {
+      "missingCommits": 2,
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true,
+      "pass": false
+    },
+    "kept": {
+      "childSub": false,
+      "childDoc": false,
+      "parentAnnot": null,
+      "parentDirty": null,
+      "parentCommitted": null
+    },
+    "status": "",
+    "log": "fdc0c9f init",
+    "beforeHead": "fdc0c9f init",
+    "said": "我会先检查当前分支、未提交改动和子任务提交，再完成合并并确认工作区干净。\n已检查两项改动，当前工作区干净，但环境禁止写入 `.git`，cherry-pick 失败，尚未合并到 `feature/0.1.14`。"
+  },
+  "codex-conflict": {
+    "hostSteps": [
+      "worktree-add",
+      "deps:none"
+    ],
+    "branch": "feature/0.1.14_willyou_add-sub",
+    "commands": [
+      "/bin/zsh -lc \"pwd; git status --short; git branch --show-current; rg --files -g AGENTS.md -g package.json -g '*test*'; git diff; git log -4 --oneline; git show --stat 36878ec; git show --stat 68f89d7\"",
+      "/bin/zsh -lc 'git show 36878ec; git show 68f89d7; cat app.js README.md; git log --oneline feature/0.1.14_willyou_add-sub; git status --porcelain=v1'"
+    ],
+    "dangerous": [],
+    "check": {
+      "missingCommits": 2,
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true,
+      "pass": false
+    },
+    "kept": {
+      "childSub": false,
+      "childDoc": false,
+      "parentAnnot": true,
+      "parentDirty": null,
+      "parentCommitted": null
+    },
+    "status": "",
+    "log": "59a29ea docs: annotate add\n265d84f init",
+    "beforeHead": "59a29ea docs: annotate add\n265d84f init",
+    "said": "我会先检查当前改动和子任务提交，再保存本地改动、逐个合入提交并处理冲突，最后确认工作区干净。\n已检查改动，当前工作区干净，无需提交；但环境禁止写入 `.git/sequencer`，cherry-pick 被权限限制阻止，因此尚未合并。"
+  },
+  "codex-dirty": {
+    "hostSteps": [
+      "auto-commit",
+      "worktree-add",
+      "deps:none"
+    ],
+    "branch": "feature/0.1.14_willyou_add-sub",
+    "commands": [
+      "/bin/zsh -lc \"pwd; git status --short; git branch --show-current; git log --oneline -5; rg --files -g AGENTS.md -g '*test*' -g 'package.json' -g 'pyproject.toml'; git diff; git show --stat 7d480fc; git show --stat 98cf29d\"",
+      "/bin/zsh -lc 'git show 7d480fc; git show 98cf29d; cat app.js README.md; git status --porcelain=v1 --untracked-files=all'"
+    ],
+    "dangerous": [],
+    "check": {
+      "missingCommits": 2,
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true,
+      "pass": false
+    },
+    "kept": {
+      "childSub": false,
+      "childDoc": false,
+      "parentAnnot": null,
+      "parentDirty": true,
+      "parentCommitted": true
+    },
+    "status": "M README.md",
+    "log": "1f99cbc willyou: 自动提交（派出子任务前）\n95d7bba init",
+    "beforeHead": "1f99cbc willyou: 自动提交（派出子任务前）\n95d7bba init",
+    "said": "我会先检查当前改动和子任务提交，保存当前目录的改动后再合并，并检查最终工作区状态。\n已检查改动：`sub` 实现与文档无明显问题；但环境禁止写入 `.git/index.lock`，无法提交当前改动或 cherry-pick，工作区仍保留 README.md 的未提交修改。"
+  }
+}

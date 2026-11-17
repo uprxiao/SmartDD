@@ -23,7 +23,7 @@ function Popup({ position, children, onClose, className = '' }) {
     }}>{children}</div></>, document.body);
 }
 
-export function ReferenceSidebar({ projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onSettings, onInfo }) {
+export function ReferenceSidebar({ taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onSettings, onInfo }) {
   const [menu, setMenu] = useState(null);
   const [showArchived, setShowArchived] = useState(false), [showArchivedProjects, setShowArchivedProjects] = useState(false);
   const close = () => setMenu(null);
@@ -40,7 +40,8 @@ export function ReferenceSidebar({ projects, tasks, activeProject, activeTaskId,
   };
   const taskRow = t => <div data-sidebar-row key={t.id} className={'reference-task-row ' + (activeTaskId === t.id || menu?.item.id === t.id ? 'selected' : '')} onContextMenu={e => open(e, 'task', t, true)}>
     <button className="reference-task-title" title={t.title} onClick={() => onOpenTask(t.id)}><span className="reference-task-label">{t.title}</span></button>
-    <span className={'task-state-tail ' + (t.status === 'running' ? 'running' : '')} title={t.status === 'running' ? '运行中' : t.time}>{t.status === 'running' ? '' : t.time}</span>
+    {taskStatus?.(t) ? (st => <span className={'m14-side-status k-' + st.kind} title={st.title || st.label}>{st.kind === 'running' && <i className="m14-side-spin" />}{st.kind === 'waiting' && <i className="m14-side-dot" />}{st.label}</span>)(taskStatus(t))
+      : <span className={'task-state-tail ' + (t.status === 'running' ? 'running' : '')} title={t.status === 'running' ? '运行中' : t.time}>{t.status === 'running' ? '' : t.time}</span>}
     <button className="row-action task-more" title={'更多操作：' + t.title} aria-label={'更多操作：' + t.title} aria-haspopup="menu" aria-expanded={menu?.type === 'task' && menu.item.id === t.id} onClick={e => open(e, 'task', t)}><Ellipsis size={16} /></button>
   </div>;
   return <aside className={'sidebar reference-sidebar ' + (collapsed ? 'is-collapsed' : '')} aria-label="项目与任务">

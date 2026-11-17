@@ -1,0 +1,95 @@
+{
+  "scope": "Real models; T3-style switch: native resume + explicit delta handoff; handoff builder is a probe",
+  "codexThread": "01a1e207-52b5-78a0-baa4-f793397b220e",
+  "claudeSession": "e53b00ae-ef44-495c-97d3-3c71976827da",
+  "history": [
+    {
+      "run": 1,
+      "provider": "codex",
+      "role": "user",
+      "text": "Remember this project fact: the release codename is ORCHID-58. Reply with only \"noted\"."
+    },
+    {
+      "run": 1,
+      "provider": "codex",
+      "role": "assistant",
+      "text": "noted"
+    },
+    {
+      "run": 2,
+      "provider": "claude",
+      "role": "user",
+      "text": "What is the release codename? Also choose a deployment region code: use exactly EU-WEST-9. Reply as \"<codename> <region>\"."
+    },
+    {
+      "run": 2,
+      "provider": "claude",
+      "role": "assistant",
+      "text": "ORCHID-58 EU-WEST-9"
+    },
+    {
+      "run": 3,
+      "provider": "codex",
+      "role": "user",
+      "text": "Reply with exactly \"<codename> <region>\" using what you know."
+    },
+    {
+      "run": 3,
+      "provider": "codex",
+      "role": "assistant",
+      "text": "ORCHID-58 EU-WEST-9"
+    },
+    {
+      "run": 4,
+      "provider": "claude",
+      "role": "user",
+      "text": "Codex just answered. Now also add a version: use exactly v3.2. Reply exactly \"<codename> <region> <version>\"."
+    },
+    {
+      "run": 4,
+      "provider": "claude",
+      "role": "assistant",
+      "text": "ORCHID-58 EU-WEST-9 v3.2"
+    }
+  ],
+  "steps": [
+    {
+      "name": "run1 codex completed",
+      "ok": true,
+      "detail": "noted"
+    },
+    {
+      "name": "run2 claude knows codex fact via full handoff",
+      "ok": true,
+      "detail": "ORCHID-58 EU-WEST-9"
+    },
+    {
+      "name": "run3 codex native resume keeps own fact",
+      "ok": true,
+      "detail": "ORCHID-58 EU-WEST-9"
+    },
+    {
+      "name": "run3 codex gets claude fact via delta handoff",
+      "ok": true,
+      "detail": "ORCHID-58 EU-WEST-9"
+    },
+    {
+      "name": "run4 claude native resume (same session id)",
+      "ok": true,
+      "detail": {
+        "before": "e53b00ae-ef44-495c-97d3-3c71976827da",
+        "after": "e53b00ae-ef44-495c-97d3-3c71976827da"
+      }
+    },
+    {
+      "name": "run4 claude answer complete",
+      "ok": true,
+      "detail": "ORCHID-58 EU-WEST-9 v3.2"
+    },
+    {
+      "name": "negative: codex without delta does not know v3.2",
+      "ok": true,
+      "detail": "UNKNOWN"
+    }
+  ]
+}
