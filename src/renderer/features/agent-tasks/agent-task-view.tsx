@@ -14,14 +14,15 @@ import { toast } from 'sonner';
 import { agentTaskEvent, agentTaskLiveEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { events, rpc } from '@renderer/lib/ipc';
-import { buildTimeline, formatDuration, requestOptions, requestTitle, workLabel, type TimelineItem, type TimelineRequest } from './agent-timeline';
+import { buildTimeline, formatDuration, requestForm, requestOptions, requestTitle, workLabel, type RequestForm, type TimelineItem, type TimelineRequest } from './agent-timeline';
 import './agent-tasks.css';
 
 type Snapshot = Awaited<ReturnType<typeof rpc.agentTasks.snapshot>>;
 type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
 const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
 const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示' };
-const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', completed: '已完成', stopped: '已停止', failed: '失败' };
+const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
+const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限' };
 
 // 消息里的链接在阶段 5 按 T3 规则接入路由；此前只显示为文字，不打开任何地址。
 const md = new MarkdownIt({ html: false, linkify: false, breaks: false });
@@ -89,33 +90,74 @@ function WorkRow({ items, running, seconds }: { items: TimelineItem[]; running: 
   </div>;
 }
 
+/** Agent 提问与 MCP 表单（复核 CR09）：按请求种类填写，答案按各自协议回传。 */
+function RequestFormView({ form, busy, onSubmit }: { form: RequestForm; busy: boolean; onSubmit: (result: unknown) => void }) {
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [other, setOther] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, unknown>>({});
+  if (form.kind === 'questions') {
+    const final = () => Object.fromEntries(form.questions.map(q => [q.id, [...(answers[q.id] ?? []), ...(other[q.id]?.trim() ? [other[q.id].trim()] : [])]]));
+    const missing = form.questions.some(q => !(final()[q.id]?.length));
+    return <div className="agent-form">
+      {form.questions.map(q => <fieldset key={q.id} className="agent-form-q"><legend>{q.header ? `${q.header} · ` : ''}{q.question}</legend>
+        {q.options.map(o => { const on = (answers[q.id] ?? []).includes(o.label); return <label key={o.label} className={on ? 'on' : ''}>
+          <input type={q.multi ? 'checkbox' : 'radio'} name={q.id} checked={on} onChange={() => setAnswers(a => ({ ...a, [q.id]: q.multi ? (on ? (a[q.id] ?? []).filter(x => x !== o.label) : [...(a[q.id] ?? []), o.label]) : [o.label] }))} />
+          <span>{o.label}{o.description && <small>{o.description}</small>}</span></label>; })}
+        {q.allowOther && <input className="agent-form-other" type={q.secret ? 'password' : 'text'} placeholder={q.options.length ? '其他（自己填写）' : '你的回答'} value={other[q.id] ?? ''} onChange={e => setOther(o => ({ ...o, [q.id]: e.target.value }))} />}
+      </fieldset>)}
+      <div className="agent-form-actions"><button type="button" disabled={busy} onClick={() => onSubmit(form.decline())}>不回答</button><button type="button" className="primary" disabled={busy || missing} onClick={() => onSubmit(form.toResult(final()))}>提交回答</button></div>
+    </div>;
+  }
+  const missing = form.fields.some(f => f.required && (values[f.name] === undefined || values[f.name] === ''));
+  return <div className="agent-form">
+    <p className="agent-form-message">{form.message}</p>
+    {form.url && <p className="agent-form-message">需要打开：<span className="agent-link-text">{form.url}</span></p>}
+    {form.fields.map(f => <label key={f.name} className="agent-form-field"><span>{f.title}{f.required ? ' *' : ''}</span>
+      {f.type === 'boolean' ? <input type="checkbox" checked={!!values[f.name]} onChange={e => setValues(v => ({ ...v, [f.name]: e.target.checked }))} />
+        : f.type === 'enum' ? <select value={String(values[f.name] ?? '')} onChange={e => setValues(v => ({ ...v, [f.name]: e.target.value }))}><option value="">请选择</option>{f.options!.map(o => <option key={o} value={o}>{o}</option>)}</select>
+          : <input type={f.type === 'number' ? 'number' : 'text'} value={String(values[f.name] ?? '')} onChange={e => setValues(v => ({ ...v, [f.name]: f.type === 'number' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value }))} />}
+    </label>)}
+    <div className="agent-form-actions"><button type="button" disabled={busy} onClick={() => onSubmit(form.toResult('decline', null))}>拒绝</button><button type="button" className="primary" disabled={busy || missing} onClick={() => onSubmit(form.toResult('accept', values))}>提交</button></div>
+  </div>;
+}
+
 function RequestPanel({ requests, driverId, onRespond, onStop }: { requests: TimelineRequest[]; driverId: string; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: () => void }) {
   const [index, setIndex] = useState(0);
   const [reason, setReason] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [selected, setSelected] = useState<number | null>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const r = requests[Math.min(index, requests.length - 1)];
-  const options = requestOptions(r, driverId);
+  const form = requestForm(r, driverId);
+  const options = form ? [] : requestOptions(r, driverId);
   const head = requestTitle(r);
-  const choose = useCallback(async (i: number) => {
+  useEffect(() => { setSelected(null); panel.current?.focus(); }, [r.requestId]);
+  const send = async (result: unknown) => {
+    setBusy(true);
+    try { await onRespond(r, result); setIndex(0); setSelected(null); } catch (e) { toast.error(rpcErrorMessage(e)); } finally { setBusy(false); }
+  };
+  const choose = (i: number) => {
     const o = options[i]; if (!o || busy) return;
     const why = reason[r.requestId] ?? '';
     if (o.key === 'revise' && !why.trim()) { toast.warning('先在下方写修改意见'); return; }
-    setBusy(true);
-    try { await onRespond(r, o.result(why)); setIndex(0); } catch (e) { toast.error(rpcErrorMessage(e)); } finally { setBusy(false); }
-  }, [options, busy, reason, r, onRespond]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.isComposing || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return;
-      const n = Number(e.key); if (n >= 1 && n <= options.length) { e.preventDefault(); void choose(n - 1); }
-    };
-    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
-  }, [options.length, choose]);
-  return <div className="agent-request" role="dialog" aria-label="待处理请求">
+    void send(o.result(why));
+  };
+  // 数字键只选中，Enter 确认（复核 CR10）；只在面板内生效，输入框里与组合输入时不处理。
+  const onKey = (e: React.KeyboardEvent) => {
+    const tag = (e.target as HTMLElement).tagName;
+    if (e.nativeEvent.isComposing || tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT' || form) return;
+    const n = Number(e.key);
+    if (n >= 1 && n <= options.length) { e.preventDefault(); setSelected(n - 1); return; }
+    if (e.key === 'Enter' && selected !== null) { e.preventDefault(); choose(selected); }
+  };
+  return <div className="agent-request" role="dialog" aria-label="待处理请求" tabIndex={-1} ref={panel} onKeyDown={onKey}>
     <div className="agent-request-head"><b>{head.title}</b>{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{index + 1}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}</div>
-    {head.detail && <pre className="agent-request-detail">{head.detail}</pre>}
-    <div className="agent-request-options">{options.map((o, i) => <button key={o.key} type="button" disabled={busy} className={o.deny ? 'deny' : ''} onClick={() => void choose(i)}><kbd>{i + 1}</kbd>{o.label}</button>)}</div>
-    <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />
-    <div className="agent-request-foot"><button type="button" className="agent-stop" onClick={onStop}><CircleStop size={14} />停止</button></div>
+    {!form && head.detail && <pre className="agent-request-detail">{head.detail}</pre>}
+    {form ? <RequestFormView key={r.requestId} form={form} busy={busy} onSubmit={result => void send(result)} /> : <>
+      <div className="agent-request-options" role="listbox">{options.map((o, i) => <button key={o.key} type="button" role="option" aria-selected={selected === i} disabled={busy} className={`${o.deny ? 'deny' : ''}${selected === i ? ' on' : ''}`} onClick={() => choose(i)}><kbd>{i + 1}</kbd>{o.label}</button>)}</div>
+      <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />
+    </>}
+    <div className="agent-request-foot">{selected !== null && !form && <span className="agent-request-hint">按 Enter 确认“{options[selected]?.label}”</span>}<button type="button" className="agent-stop" onClick={onStop}><CircleStop size={14} />停止</button></div>
   </div>;
 }
 
@@ -138,6 +180,9 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [text, setText] = useState('');
   const [chips, setChips] = useState<Chip[]>([]);
+  const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
+  const pendingInput = useRef<{ text: string; chips: string; clientInputId: string } | null>(null);
   const [live, setLive] = useState<Record<string, string>>({});
   const [now, setNow] = useState(Date.now());
   const permissionPref = useAppSettingsKey('agentPermissions');
@@ -159,10 +204,16 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   }, [trigger?.kind, trigger?.query, taskId]);
   const draftRev = useRef(0), draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null), reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
+  const seqRef = useRef(0);
+  const [older, setOlder] = useState<TimelineItem[]>([]);
+  const [olderMore, setOlderMore] = useState<boolean | null>(null);
 
   const reload = useCallback(async () => {
     try {
       const s = await rpc.agentTasks.snapshot(taskId);
+      // 旧请求晚到的快照不覆盖新水位。
+      if (s.seq < seqRef.current) return;
+      seqRef.current = s.seq;
       setSnap(s);
       setLive({});
     } catch (e) { toast.error(rpcErrorMessage(e)); }
@@ -171,18 +222,22 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   useEffect(() => {
     let alive = true;
     // 先订阅再读快照，避免读快照与事件之间漏掉更新（技术方案 §3.1）。
-    const offEvent = events.on(agentTaskEvent, e => { if (e.taskId === taskId && !reloadTimer.current) reloadTimer.current = setTimeout(() => { reloadTimer.current = null; if (alive) void reload(); }, 80); });
+    // 按序号合并：不比当前水位新的事件（重复或迟到）忽略；其余触发补拉一致快照（技术方案 §3.1）。
+    const offEvent = events.on(agentTaskEvent, e => { if (e.taskId === taskId && e.seq > seqRef.current && !reloadTimer.current) reloadTimer.current = setTimeout(() => { reloadTimer.current = null; if (alive) void reload(); }, 80); });
+    // 窗口恢复或页面重新可见时查询最新水位，弥补尾部通知丢失。
+    const onVisible = () => { if (document.visibilityState === 'visible' && alive) void reload(); };
+    window.addEventListener('focus', onVisible); document.addEventListener('visibilitychange', onVisible);
     const offLive = events.on(agentTaskLiveEvent, e => { if (e.taskId === taskId) setLive(m => ({ ...m, [e.itemKey]: (m[e.itemKey] ?? '') + e.text })); });
     void (async () => {
       const s = await rpc.agentTasks.snapshot(taskId).catch(e => { toast.error(rpcErrorMessage(e)); return null; });
       if (!alive || !s) return;
-      setSnap(s); draftRev.current = s.draft?.revision ?? 0; setText(String((s.draft?.draft as any)?.text ?? ''));
+      seqRef.current = s.seq; setSnap(s); draftRev.current = s.draft?.revision ?? 0; setText(String((s.draft?.draft as any)?.text ?? ''));
       const saved = ((s.draft?.draft as any)?.attachments ?? []) as PreparedAttachment[];
       setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
     })();
     void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {});
     const tick = setInterval(() => setNow(Date.now()), 1000);
-    return () => { alive = false; offEvent(); offLive(); clearInterval(tick); if (reloadTimer.current) clearTimeout(reloadTimer.current); };
+    return () => { alive = false; offEvent(); offLive(); clearInterval(tick); window.removeEventListener('focus', onVisible); document.removeEventListener('visibilitychange', onVisible); if (reloadTimer.current) clearTimeout(reloadTimer.current); };
   }, [taskId, reload]);
 
   useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [snap?.seq, Object.keys(live).length]);
@@ -200,7 +255,9 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   };
 
   if (!snap) return <div className="agent-task-view loading"><Loader2 className="spin" size={18} /></div>;
-  const catalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
+  const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
+  // 目标命令只在运行冻结的能力允许时出现（复核 CR15）。
+  const catalog: Catalog = snap.run && !snap.run.goal ? { ...rawCatalog, commands: rawCatalog.commands.filter(c => c.replace(/^\//, '') !== 'goal') } : rawCatalog;
   const menuItems: MenuItem[] = !trigger ? [] : trigger.kind === '/' ? commandItems(catalog, trigger.query) : trigger.kind === '$' ? skillItems(catalog, trigger.query) : fileItems(fileHits);
   const refreshTrigger = (value: string, caret: number) => { const t = findTrigger(value, caret); setTrigger(t); setMenuIndex(0); };
   const pick = (item: MenuItem) => {
@@ -212,7 +269,12 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     requestAnimationFrame(() => { textarea.current?.focus(); textarea.current?.setSelectionRange(r.caret, r.caret); });
   };
   const profile = profiles.find(p => p.profileId === snap.selection.profileId);
-  const groups = buildTimeline(snap.items as TimelineItem[], snap.turns as any, now);
+  const groups = buildTimeline([...older, ...(snap.items as TimelineItem[])], snap.turns as any, now);
+  const hasOlder = olderMore ?? snap.hasOlder;
+  const loadOlder = async () => {
+    const first = older[0] ?? (snap.items as TimelineItem[])[0]; if (!first) return;
+    try { const page = await rpc.agentTasks.history(taskId, first.ordinal); setOlder(o => [...(page.items as TimelineItem[]), ...o]); setOlderMore(page.hasOlder); } catch (e) { toast.error(rpcErrorMessage(e)); }
+  };
   const requests = (snap.requests as TimelineRequest[]).filter(r => r.status === 'pending');
   const working = snap.status === 'working' || snap.status === 'waiting';
   const liveText = Object.values(live).join('');
@@ -240,6 +302,13 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     if (chips.some(c => c.status === 'failed')) { toast.warning('有附件准备失败，请重试或移除后再发送'); return; }
     const attachments = chips.map(c => c.data!).filter(Boolean);
     if (!value && !attachments.length) return;
+    // 同一次发送冻结草稿与输入标识（复核 CR08）：回执前不重复提交；失败后同一内容重试沿用原标识，宿主按标识去重。
+    if (sendingRef.current) return;
+    const frozenChipIds = new Set(chips.map(c => c.localId));
+    const prior = pendingInput.current;
+    const clientInputId = prior && prior.text === value && prior.chips === [...frozenChipIds].join(',') ? prior.clientInputId : newClientInputId();
+    pendingInput.current = { text: value, chips: [...frozenChipIds].join(','), clientInputId };
+    sendingRef.current = true; setSending(true);
     try {
       // /goal 命令：只对声明支持的执行器开放（需求 R02）；/goal clear 清除。
       const goalCmd = /^\/goal(?:\s+([\s\S]*))?$/.exec(value);
@@ -251,13 +320,18 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
         if (!arg) { toast.warning('在 /goal 后写目标，或用 /goal clear 清除'); return; }
         await rpc.agentTasks.goal(taskId, arg === 'clear' ? { kind: 'clear' } : { kind: 'set', objective: arg });
       } else {
-        const r = await rpc.agentTasks.submit(taskId, { clientInputId: newClientInputId(), text: value, expectedSelectionRevision: snap.selectionRevision, mode, attachments });
+        const r = await rpc.agentTasks.submit(taskId, { clientInputId, text: value, expectedSelectionRevision: snap.selectionRevision, mode, attachments });
         if ('steerRefused' in r && r.steerRefused) toast.warning(r.steerRefused);
         else if (r.status === 'queued') toast.message('已排队，本轮结束后发送');
       }
-      setText(''); setChips([]); chipsRef.current = []; saveDraft('');
+      pendingInput.current = null;
+      // 只清除这次发出的内容：回执期间新写的文字与新加的附件保留。
+      const rest = chipsRef.current.filter(c => !frozenChipIds.has(c.localId));
+      setChips(rest); chipsRef.current = rest;
+      if (textRef.current.trim() === value) { setText(''); saveDraft(''); } else saveDraft(textRef.current);
       void reload();
     } catch (e) { toast.error(rpcErrorMessage(e)); void reload(); }
+    finally { sendingRef.current = false; setSending(false); }
   };
   const goalOp = async (op: 'pause' | 'resume' | 'clear') => { try { await rpc.agentTasks.goal(taskId, { kind: op }); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } };
   const archive = async () => { try { await rpc.agentTasks.archive(taskId); void agentTasksStore.refresh(); navigation.newTask(snap.projectId ?? undefined); } catch (e) { toast.error(rpcErrorMessage(e)); } };
@@ -270,15 +344,18 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   return <section className="agent-task-view" aria-label="统一任务区">
     <header className="agent-task-head"><h1>{snap.title}</h1>{STATUS_LABEL[snap.status] && <span className={`agent-status ${snap.status}`}>{STATUS_LABEL[snap.status]}</span>}<span className="push" /><button type="button" className="agent-head-btn" title="底部终端" data-testid="agent-terminal-toggle" aria-pressed={terminalOpen} onClick={() => setTerminalOpen(o => !o)}><SquareTerminal size={15} /></button><button type="button" className="agent-head-btn" title="归档任务" data-testid="agent-archive" onClick={() => void archive()}><Archive size={15} /></button></header>
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline">
+      {hasOlder && <button type="button" className="agent-older" onClick={() => void loadOlder()}>加载更早的记录</button>}
       {groups.map(g => <div key={g.turnId ?? 'host'} className="agent-turn">{g.rows.map(row =>
         row.kind === 'item' ? <ItemRow key={row.item.itemId} item={row.item} />
           : row.kind === 'work' ? <WorkRow key={row.id} items={row.items} running={row.running} seconds={row.seconds} />
             : <div key={row.id} className={`agent-turn-footer${row.failed ? ' failed' : ''}`}>{row.label}</div>)}</div>)}
       {working && liveText && <div className="agent-assistant streaming"><Markdown text={liveText} /></div>}
       {snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
+      {snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}
       {snap.queued.length > 0 && <div className="agent-queue">{snap.queued.map(q => <div key={q.turnId} className="agent-queue-row"><span>排队中 · {q.text}</span><button type="button" title="取消排队" onClick={() => void rpc.agentTasks.cancelQueued(taskId, q.turnId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))}><X size={13} /></button></div>)}</div>}
     </div></div>
     <div className="agent-bottom">
+      {snap.status === 'limited' && (() => { const err = [...snap.items].reverse().find(i => i.type === 'error' && i.payload?.limited); return err ? <div className="agent-limited" role="status">{LIMIT_LABEL[err.payload.limited.kind] ?? '受限'}：本轮已暂停，部分结果已保留。{err.payload.limited.resetAt ? `可在 ${err.payload.limited.resetAt} 后` : '稍后'}手动继续（不会自动换账号或到点重跑）。</div> : null; })()}
       {requests.length > 0 && snap.run
         ? <RequestPanel requests={requests} driverId={snap.run.driverId} onStop={() => void stop()} onRespond={async (r, result) => { await rpc.agentTasks.respond(taskId, r.requestId, r.revision, result); void reload(); }} />
         : <form className="agent-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
@@ -308,7 +385,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
             {working && snap.run?.steer && <button type="button" className="agent-stop" disabled={!text.trim()} onClick={() => void send('steer')} title="插话：并入当前这一轮（⌘Enter）"><Zap size={14} />插话</button>}
             {working && snap.run && !snap.run.steer && <span className="agent-composer-agent" title="该执行器版本没有插话的验证证据">运行中发送会排队</span>}
             {working && <button type="button" className="agent-stop" onClick={() => void stop()} title="停止本轮"><CircleStop size={15} /></button>}
-            <button type="submit" className="agent-send" disabled={!text.trim() && !chips.length} title="发送"><Send size={15} /></button>
+            <button type="submit" className="agent-send" disabled={sending || (!text.trim() && !chips.length)} title="发送"><Send size={15} /></button>
           </div>
         </form>}
     </div>

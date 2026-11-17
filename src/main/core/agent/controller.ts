@@ -17,6 +17,7 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       create: (e, req: { projectId: string | null; dirId: string | null; cwd: string; title: string; profileId: string; tier: Tier; model?: string }) => run(e, w => w.tasks.create(req)),
       snapshot: (e, taskId: string) => run(e, w => w.tasks.snapshot(taskId)),
       events: (e, taskId: string, afterSeq: number) => run(e, w => w.tasks.events(taskId, afterSeq)),
+      history: (e, taskId: string, beforeOrdinal: number) => run(e, w => w.tasks.history(taskId, beforeOrdinal)),
       submit: (e, taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) => run(e, w => w.tasks.submit(taskId, input)),
       prepareAttachment: (e, taskId: string | null, cwd: string | null, file: { name: string; mime?: string; sourcePath?: string; dataBase64?: string }) => run(e, w => w.tasks.prepareAttachment(taskId, cwd, file)),
       goal: (e, taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) => run(e, w => w.tasks.goal(taskId, op)),

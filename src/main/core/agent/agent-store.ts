@@ -4,6 +4,9 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { DriverId } from './capabilities';
 
 export const EVENT_PAYLOAD_LIMIT = 32 * 1024;
+/** 历史正文与输入原文的上限（复核 CR06）：输入在接受前按文字预算校验，这里只防异常大对象。 */
+export const BODY_LIMIT = 1024 * 1024;
+export const INPUT_TEXT_LIMIT = 256 * 1024;
 const now = () => new Date().toISOString();
 export const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 
@@ -13,6 +16,9 @@ export function boundedJson(value: unknown, limit = EVENT_PAYLOAD_LIMIT): string
   if (Buffer.byteLength(text) <= limit) return text;
   return JSON.stringify({ truncated: true, bytes: Buffer.byteLength(text), sha256: sha256(text), head: text.slice(0, Math.floor(limit / 2)) });
 }
+
+/** 历史正文：上限 1 MiB，超限保留前缀并标记（完整产物存储属后续容量合同）。 */
+export const bodyJson = (value: unknown) => boundedJson(value, BODY_LIMIT);
 
 export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; tier: string }
 export interface CreateTaskInput { projectId: string | null; dirId: string | null; cwd: string; title: string; selection: AgentSelection; parentTaskId?: string }
@@ -125,14 +131,16 @@ export class AgentStore {
       const existing = this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(t.taskId, t.clientInputId) as TurnRow | undefined;
       if (existing) return { turn: existing, duplicate: true };
       const turnId = randomUUID();
+      if (Buffer.byteLength(t.text) > INPUT_TEXT_LIMIT) throw new Error(`输入超过 ${INPUT_TEXT_LIMIT / 1024} KB，请拆分或改用附件`);
+      // 输入原文完整保存，派发读回的就是接受时的原文（不复用事件的 32 KiB 预览限额）。
       this.sqlite.prepare("INSERT INTO agent_turns(turn_id,task_id,client_input_id,input_ref,source_kind,status,accepted_at) VALUES(?,?,?,?,?,'accepted',?)")
-        .run(turnId, t.taskId, t.clientInputId, boundedJson({ text: t.text, ...(t.attachments?.length ? { attachments: t.attachments } : {}) }), t.sourceKind, now());
+        .run(turnId, t.taskId, t.clientInputId, JSON.stringify({ text: t.text, ...(t.attachments?.length ? { attachments: t.attachments } : {}) }), t.sourceKind, now());
       emit(t.taskId, 'turn.accepted', { turnId, clientInputId: t.clientInputId, sourceKind: t.sourceKind });
       // 用户消息由宿主在本地接受时记录（可信出站来源），不取原生回显（技术方案 §4 user_message）。
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(t.taskId) as { ordinal: number };
       const itemId = randomUUID();
       this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,'user_message',?,1,?,?,'completed',?,?)")
-        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, boundedJson({ text: t.text, sourceKind: t.sourceKind, ...(t.attachments?.length ? { attachments: (t.attachments as any[]).map(a => ({ name: a.name, kind: a.kind, image: a.image, relativePath: a.relativePath })) } : {}) }), now(), now());
+        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, bodyJson({ text: t.text, sourceKind: t.sourceKind, ...(t.attachments?.length ? { attachments: (t.attachments as any[]).map(a => ({ name: a.name, kind: a.kind, image: a.image, relativePath: a.relativePath })) } : {}) }), now(), now());
       emit(t.taskId, 'item.created', { type: 'user_message', ordinal, payload: { text: t.text, sourceKind: t.sourceKind } }, itemId, 1);
       return { turn: this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow, duplicate: false };
     });
@@ -169,14 +177,14 @@ export class AgentStore {
       const existing = this.sqlite.prepare('SELECT item_id,revision FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number } | undefined;
       if (existing) {
         const revision = existing.revision + 1;
-        this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(boundedJson(i.payload), revision, i.terminalState ?? null, now(), existing.item_id);
+        this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(bodyJson(i.payload), revision, i.terminalState ?? null, now(), existing.item_id);
         emit(i.taskId, 'item.updated', { type: i.type, payload: i.payload }, existing.item_id, revision);
         return existing.item_id;
       }
       const itemId = randomUUID();
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(i.taskId) as { ordinal: number };
       this.sqlite.prepare('INSERT INTO agent_items(item_id,task_id,turn_id,run_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,?,1,?,?,?,?,?)')
-        .run(itemId, i.taskId, i.turnId, i.runId, i.type, ordinal, i.nativeKey, boundedJson(i.payload), i.terminalState ?? null, now(), now());
+        .run(itemId, i.taskId, i.turnId, i.runId, i.type, ordinal, i.nativeKey, bodyJson(i.payload), i.terminalState ?? null, now(), now());
       emit(i.taskId, 'item.created', { type: i.type, ordinal, payload: i.payload }, itemId, 1);
       return itemId;
     });
@@ -247,8 +255,10 @@ export class AgentStore {
   turns(taskId: string) {
     return this.sqlite.prepare('SELECT turn_id,client_input_id,status,native_turn_id,accepted_at,started_at,ended_at,error_code,run_id FROM agent_turns WHERE task_id=? ORDER BY accepted_at,rowid').all(taskId) as Record<string, any>[];
   }
-  items(taskId: string) {
-    return (this.sqlite.prepare('SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? ORDER BY ordinal').all(taskId) as Record<string, any>[])
+  /** 最近的条目（renderer 每任务上限 2000 条，技术方案 §3.1）；beforeOrdinal 分页读更早的。 */
+  items(taskId: string, opts: { limit?: number; beforeOrdinal?: number } = {}) {
+    const limit = Math.min(opts.limit ?? 2000, 2000);
+    return (this.sqlite.prepare('SELECT * FROM (SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal').all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as Record<string, any>[])
       .map(r => ({ itemId: r.item_id, turnId: r.turn_id, type: r.type, ordinal: r.ordinal, revision: r.revision, payload: JSON.parse(r.payload_ref), terminal: r.terminal_state, createdAt: r.created_at, updatedAt: r.updated_at }));
   }
   pendingRequests(taskId: string) {
@@ -332,6 +342,22 @@ export class AgentStore {
   goal(taskId: string) {
     const r = this.sqlite.prepare('SELECT objective,revision,status,paused_reason,turns,time_used_s,updated_at FROM agent_goals WHERE task_id=?').get(taskId) as Record<string, any> | undefined;
     return r && r.status !== 'cleared' ? { objective: r.objective, revision: r.revision, status: r.status, pausedReason: r.paused_reason, turns: r.turns, timeUsedSeconds: r.time_used_s, updatedAt: r.updated_at } : null;
+  }
+
+  /** 宿主条目（启动失败等用户可见原因，复核 CR17）：不属于任何原生运行。 */
+  addHostItem(taskId: string, turnId: string | null, type: 'error' | 'system_notice', payload: Record<string, unknown>) {
+    return this.tx(emit => {
+      const itemId = randomUUID();
+      const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(taskId) as { ordinal: number };
+      this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,1,?,?,'completed',?,?)")
+        .run(itemId, taskId, turnId, type, ordinal, `host:${itemId}`, bodyJson(payload), now(), now());
+      emit(taskId, 'item.created', { type, ordinal, payload }, itemId, 1);
+      return itemId;
+    });
+  }
+  /** 已请求关闭但尚未观察到进程退出：保留占用（复核 CR04）。 */
+  markRunStopping(runId: string, taskId: string) {
+    this.tx(emit => { if (this.sqlite.prepare("UPDATE capability_runs SET state='stopping' WHERE run_id=? AND state IN ('preparing','active')").run(runId).changes) emit(taskId, 'run.stopping', { runId }); });
   }
 
   recordProbe(p: { driverId: string; binaryPath: string; realpath: string | null; version: string | null; capabilities: unknown; state: string; reason: string | null }) {

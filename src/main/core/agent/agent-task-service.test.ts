@@ -16,7 +16,7 @@ class Inst implements DriverInstance {
   emitter = new Emitter(); turns: TurnInput[] = []; responses: [string, unknown][] = []; interrupts = 0;
   constructor(readonly driverId: DriverId) {}
   on = this.emitter.on.bind(this.emitter); emit = this.emitter.emit.bind(this.emitter);
-  async open(o: DriverOpenOptions) { this.emit({ type: 'process', pid: 9 }); return { nativeId: o.resumeNativeId ?? 'n1', confirmed: true }; }
+  async open(o: DriverOpenOptions) { this.opened = o; this.emit({ type: 'process', pid: 9 }); return { nativeId: o.resumeNativeId ?? 'n1', confirmed: true }; }
   async startTurn(t: TurnInput) { this.turns.push(t); const id = `nt-${this.turns.length}`; this.emit({ type: 'turn.started', nativeTurnId: id, clientInputId: t.clientInputId }); return { nativeTurnId: id }; }
   finish(status: 'completed' | 'interrupted' = 'completed') { this.emit({ type: 'turn.completed', nativeTurnId: `nt-${this.turns.length}`, status }); }
   async respond(k: string, r: unknown) { this.responses.push([k, r]); }
@@ -26,18 +26,19 @@ class Inst implements DriverInstance {
   commands: string[] = [];
   async command(n: string) { this.commands.push(n); }
   async goal(op: any) { this.goals.push(op); if (op.kind === 'set') this.emit({ type: 'goal', objective: op.objective, status: 'active' }); if (op.kind === 'pause') this.emit({ type: 'goal', objective: null, status: 'paused' }); if (op.kind === 'clear') this.emit({ type: 'goal', objective: null, status: 'cleared' }); }
-  async close() { this.emit({ type: 'exit', code: 0, signal: null }); }
+  noExitOnClose = false; opened?: DriverOpenOptions;
+  async close() { if (!this.noExitOnClose) this.emit({ type: 'exit', code: 0, signal: null }); }
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean; userData?: string } = {}) {
+function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void> } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db);
   const insts: Inst[] = [];
   const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
-  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: i.profileId === 'cc' ? '2.1.326' : '0.169.0' }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [] }; };
+  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [] }; };
   const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData });
   return { db, store, runs, svc, insts, launches };
 }
@@ -91,7 +92,12 @@ describe('目标与插话', () => {
     await svc.goal(taskId, { kind: 'set', objective: '修完断言' });
     await until(() => insts[0]?.turns.length === 1);
     expect(insts[0].turns[0].text).toBe('/goal 修完断言');
+    // 原生确认前只显示等待确认，不预写目标（复核 CR14）
+    expect(svc.snapshot(taskId).goal).toBeNull();
+    expect(svc.snapshot(taskId).goalPending).toMatchObject({ kind: 'set', objective: '修完断言' });
+    insts[0].emit({ type: 'goal', objective: '修完断言', status: 'active' });
     expect(svc.snapshot(taskId).goal).toMatchObject({ objective: '修完断言', status: 'active' });
+    expect(svc.snapshot(taskId).goalPending).toBeNull();
     await expect(svc.goal(taskId, { kind: 'pause' })).rejects.toThrow('不能暂停');
   });
   it('插话：支持的版本并入当前回合；被原生拒绝则保留排队并说明原因', async () => {
@@ -146,6 +152,132 @@ describe('输入框命令', () => {
     await until(() => insts[1]?.turns.length === 1);
     expect(insts[1].turns[0].text).toBe('/compact');
     await expect(svc.command(cc, 'bad name')).rejects.toThrow('命令无效');
+  });
+});
+
+describe('复核 1620 回归', () => {
+  it('CR01：排队期间项目内图片被换成指向根外的软链，派发仍只读接受时冻结的副本', async () => {
+    const { rmSync, symlinkSync, readFileSync } = await import('node:fs');
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-cr01-'))), cwd = join(root, 'w'), ud = join(root, 'ud');
+    mkdirSync(cwd); mkdirSync(ud); writeFileSync(join(cwd, 'shot.png'), 'LEGIT'); writeFileSync(join(root, 'secret.png'), 'REVIEW_SYNTHETIC_OUTSIDE_SECRET');
+    const { svc, insts } = setup({ userData: ud });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd, title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    const att = svc.prepareAttachment(taskId, null, { name: 'shot.png', sourcePath: join(cwd, 'shot.png') });
+    await svc.submit(taskId, { clientInputId: id(2), text: '看图', expectedSelectionRevision: 1, attachments: [att] });
+    rmSync(join(cwd, 'shot.png')); symlinkSync(join(root, 'secret.png'), join(cwd, 'shot.png'));
+    insts[0].finish();
+    await until(() => insts[0].turns.length === 2);
+    const img = insts[0].turns[1].images![0];
+    expect(img.path.startsWith(join(ud, 'agent-attachments'))).toBe(true);
+    expect(readFileSync(img.path, 'utf8')).toBe('LEGIT');
+  });
+  it('CR02：插话超时（可能已被接受）记未知，原回合结束后不再重发', async () => {
+    const { svc, insts, db } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].steer = async () => { throw new DriverError('TIMEOUT', 'turn/steer 超时'); };
+    const r = await svc.submit(taskId, { clientInputId: id(2), text: 'perform side effect', expectedSelectionRevision: 1, mode: 'steer' });
+    expect(r.status).toBe('unknown');
+    insts[0].finish();
+    await new Promise(res => setTimeout(res, 30));
+    expect(insts[0].turns.map(t => t.text)).toEqual(['a']);
+    expect(db.prepare('SELECT status FROM agent_turns WHERE client_input_id=?').get(id(2))).toEqual({ status: 'unknown' });
+  });
+  it('CR03：启动运行期间按停止，返回后不派发；停止后的目标自行回合立即中断', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>(r => { release = r; });
+    const { svc, insts } = setup({ openGate: gate });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'do work', expectedSelectionRevision: 1 });
+    expect(await svc.stop(taskId)).toEqual({ stopped: true });
+    release();
+    await until(() => insts.length === 1);
+    await new Promise(res => setTimeout(res, 30));
+    expect(insts[0].turns).toEqual([]);
+    expect(svc.snapshot(taskId).queued.map(q => q.text)).toEqual(['do work']);
+    // 目标被用户停止后，迟到的自行回合到达立即中断
+    insts[0].emit({ type: 'turn.started', nativeTurnId: 'late-auto', clientInputId: '' });
+    await until(() => insts[0].interrupts === 1);
+  });
+  it('CR04：关闭后进程未退出则保留占用（stopping），同任务不能开新运行', async () => {
+    const { svc, insts, db, runs } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].finish();
+    await until(() => svc.status(taskId) === 'completed');
+    insts[0].noExitOnClose = true;
+    const run = runs.runForTask(taskId)!;
+    await runs.close(run.runId);
+    expect(db.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(run.runId)).toEqual({ state: 'stopping' });
+    expect(runs.closingForTask(taskId)?.runId).toBe(run.runId);
+    await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 1 });
+    await new Promise(res => setTimeout(res, 30));
+    expect(insts).toHaveLength(1);
+    expect(svc.snapshot(taskId).queued.map(q => q.text)).toEqual(['b']);
+    insts[0].emit({ type: 'exit', code: 0, signal: null });
+    await until(() => insts.length === 2 && insts[1].turns.length === 1);
+  });
+  it('CR06：超过 32 KiB 的输入原样送达；超过 256 KB 接受前拒绝', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    const big = '中'.repeat(12_000);
+    await svc.submit(taskId, { clientInputId: id(1), text: big, expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    expect(insts[0].turns[0].text).toBe(big);
+    expect(svc.snapshot(taskId).items.find(i => i.type === 'user_message')?.payload.text).toBe(big);
+    await expect(svc.submit(taskId, { clientInputId: id(2), text: 'x'.repeat(256 * 1024 + 1), expectedSelectionRevision: 1 })).rejects.toThrow('超过 256 KB');
+  });
+  it('CR12：Claude 档位跨越完全访问时重开并恢复原会话', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].finish();
+    await until(() => svc.status(taskId) === 'completed');
+    svc.setSelection(taskId, { tier: 'full' }, 1);
+    await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 2 });
+    await until(() => insts.length === 2 && insts[1].turns.length === 1);
+    expect(insts[1].opened).toMatchObject({ tier: 'full', resumeNativeId: 'n1' });
+  });
+  it('CR15：低于最低版本的可选能力被冻结为不可用，目标命令拒绝', async () => {
+    const { svc } = setup({ version: '0.167.1' });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await expect(svc.goal(taskId, { kind: 'set', objective: 'x' })).rejects.toThrow(/目标不可用：版本低于最低已验证版本 0.169.0/);
+    expect(svc.snapshot(taskId).run).toMatchObject({ goal: false, steer: false });
+  });
+  it('CR17／CR18：启动失败原因进时间线；额度受限与普通失败分开', async () => {
+    const a = setup({ failOpen: true });
+    const t1 = a.svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' }).taskId;
+    await a.svc.submit(t1, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => a.svc.status(t1) === 'failed');
+    expect(a.svc.snapshot(t1).items.find(i => i.type === 'error')?.payload).toMatchObject({ message: '找不到 codex' });
+    const b = setup();
+    const t2 = b.svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' }).taskId;
+    await b.svc.submit(t2, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => b.insts[0]?.turns.length === 1);
+    b.insts[0].emit({ type: 'native', name: 'error', payload: { turnId: 'nt-1', error: { message: 'You have hit your usage limit', codexErrorInfo: 'usageLimitExceeded' } } });
+    b.insts[0].emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status: 'failed', error: 'usage' });
+    await until(() => b.svc.status(t2) === 'limited');
+  });
+});
+
+describe('容量与分页（技术方案 §3.1）', () => {
+  it('快照只带最近 2000 条，更早的按页读取', () => {
+    const { svc, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    for (let i = 0; i < 2105; i++) store.addHostItem(taskId, null, 'system_notice', { detail: `n${i}` });
+    const snap = svc.snapshot(taskId);
+    expect(snap.items).toHaveLength(2000);
+    expect(snap.items[0].ordinal).toBe(106);
+    expect(snap.hasOlder).toBe(true);
+    const page = svc.history(taskId, 106);
+    expect(page.items.map(i => i.ordinal)).toEqual(Array.from({ length: 100 }, (_, k) => k + 6));
+    expect(page.hasOlder).toBe(true);
+    expect(svc.history(taskId, 6)).toMatchObject({ hasOlder: false });
   });
 });
 

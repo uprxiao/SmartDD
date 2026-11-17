@@ -1,7 +1,7 @@
 // M14 运行服务（技术方案 T1.5 §3）：打开／恢复绑定、登记真实运行身份、提交输入、转发原生请求与回应。
 // 统一接口验证 task、binding、run、generation；客户端不得自报 PID、nativeId 或真人来源。
 import { randomUUID } from 'node:crypto';
-import type { DriverId } from './capabilities';
+import { evaluateCapabilities, type CapabilityName, type CapabilityResult, type DriverId } from './capabilities';
 import type { AgentDriver, DriverEvent, DriverExecutable, DriverInstance } from './driver';
 import { DriverError } from './driver';
 import { AgentStore, sha256 } from './agent-store';
@@ -25,8 +25,10 @@ export interface OpenRunInput {
   model?: string;
   extraArgs?: readonly string[];
   settingSources?: readonly ('user' | 'project' | 'local')[];
+  /** 启动探测得到的逐项能力（复核 CR15）；缺省按版本计算。冻结进运行，供命令、界面与驱动共同判定。 */
+  capabilities?: Record<CapabilityName, CapabilityResult>;
 }
-export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string }
+export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
 interface ActiveRun extends RunHandle { catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
@@ -36,6 +38,9 @@ export class AgentRunService {
   private readonly live = new Set<LiveListener>();
   /** 正在由宿主回应的请求：期间原生侧的结束通知不当作“原生自行结束”。 */
   private readonly responding = new Set<string>();
+  /** 用户已停止：迟到的原生自行开始回合（目标续跑）立即中断（复核 CR03）。 */
+  private readonly held = new Set<string>();
+  hold(taskId: string, on: boolean) { if (on) this.held.add(taskId); else this.held.delete(taskId); }
 
   constructor(private readonly deps: { store: AgentStore; drivers: ReadonlyMap<DriverId, AgentDriver>; processes: ProcessIdentityReader; host: HostIdentity }) {}
 
@@ -53,7 +58,8 @@ export class AgentRunService {
     if (!driver) throw new DriverError('UNSUPPORTED', `未登记的执行器：${input.driverId}`);
     const tier = resolveTier(input.driverId, input.tier);
     if (!tier.ok) throw new DriverError('REJECTED', `不支持的权限档位：${String(input.tier)}`);
-    for (const r of this.runs.values()) if (r.taskId === input.taskId && !r.closing) throw new DriverError('STATE', '该任务已有运行中的执行器');
+    // 正在关闭但尚未观察到退出的运行仍占用该任务（复核 CR04）。
+    for (const r of this.runs.values()) if (r.taskId === input.taskId) throw new DriverError('STATE', r.closing ? '上一运行仍在退出，请稍后' : '该任务已有运行中的执行器');
 
     const continuationHash = sha256(JSON.stringify({ driver: input.driverId, profile: input.profileId, stateRoot: input.stateRoot, compatibility: input.compatibility }));
     const existing = store.findBinding(input.taskId, input.driverId, continuationHash);
@@ -67,7 +73,8 @@ export class AgentRunService {
     const instance = driver.create();
     let markEnded!: () => void;
     const ended = new Promise<void>(r => { markEnded = r; });
-    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
+    const capabilities = input.capabilities ?? evaluateCapabilities(input.driverId, input.executable.version).capabilities;
+    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     instance.on(e => this.onDriverEvent(run, e));
     try {
@@ -79,7 +86,7 @@ export class AgentRunService {
       await instance.close().catch(() => {});
       throw e;
     }
-    return { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, ...(run.tierNotice ? { tierNotice: run.tierNotice } : {}) };
+    return { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, ...(run.tierNotice ? { tierNotice: run.tierNotice } : {}) };
   }
 
   private onDriverEvent(run: ActiveRun, e: DriverEvent) {
@@ -98,7 +105,10 @@ export class AgentRunService {
         case 'session': store.confirmNative(run.bindingId, e.nativeId); break;
         case 'turn.started':
           if (run.turnId) store.startTurn(run.turnId, e.nativeTurnId);
-          else if (!e.clientInputId) run.turnId = store.acceptAutoTurn(run.taskId, run.runId, e.nativeTurnId);
+          else if (!e.clientInputId) {
+            run.turnId = store.acceptAutoTurn(run.taskId, run.runId, e.nativeTurnId);
+            if (this.held.has(run.taskId)) void run.instance.interrupt().catch(() => {});
+          }
           if (store.goal(run.taskId)?.status === 'active') store.countGoalTurn(run.taskId);
           break;
         case 'catalog': run.catalog = { commands: e.commands.slice(0, 200), skills: e.skills.slice(0, 500) }; break;
@@ -194,6 +204,7 @@ export class AgentRunService {
 
   busy(runId: string) { const r = this.runs.get(runId); return !!r?.turnId; }
   runForTask(taskId: string) { for (const r of this.runs.values()) if (r.taskId === taskId && !r.closing) return r; return undefined; }
+  closingForTask(taskId: string) { for (const r of this.runs.values()) if (r.taskId === taskId && r.closing) return r; return undefined; }
 
   /** 原生阻塞请求的回应：按发起来源核对运行与代次，旧代次回应拒绝（技术方案 §8.1）。 */
   async respond(requestId: string, scope: { taskId: string; runId: string; generation: number; revision: number }, result: unknown) {
@@ -225,12 +236,8 @@ export class AgentRunService {
     if (!run) return;
     run.closing = true;
     await run.instance.close();
-    // 进程已退出时 exit 事件会收口；若没有收到退出事件（替身或异常），按关闭收口。
-    if (this.runs.has(runId)) {
-      this.deps.store.finishRun(runId, run.taskId, 'stopped', null);
-      this.runs.delete(runId);
-      run.markEnded();
-    }
+    // 只有观察到真实退出（exit 事件）才收口；仍未退出则保留占用并标 stopping，不冒充已退出（复核 CR04）。
+    if (this.runs.has(runId)) this.deps.store.markRunStopping(runId, run.taskId);
   }
 
   async closeAll() { await Promise.all([...this.runs.keys()].map(id => this.close(id))); }

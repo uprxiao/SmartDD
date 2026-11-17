@@ -84,6 +84,8 @@ export function workLabel(it: TimelineItem): string {
 /** 请求面板的选项：原生选项原样回传，不压成布尔值（技术方案 §3 respond）。 */
 export interface RequestOption { key: string; label: string; result: (reason: string) => unknown; deny?: boolean }
 export function requestOptions(r: TimelineRequest, driverId: string): RequestOption[] {
+  // 提问与 MCP 表单由 requestForm 处理，不套用批准选项（复核 CR09）。
+  if (requestForm(r, driverId)) return [];
   if (driverId === 'claude-sdk') {
     const input = r.payload?.input;
     if (r.kind === 'plan_approval') return [
@@ -101,6 +103,19 @@ export function requestOptions(r: TimelineRequest, driverId: string): RequestOpt
     { key: 'turn', label: '本轮允许', result: () => ({ permissions: r.payload?.params?.permissions ?? {}, scope: 'turn' }) },
     { key: 'deny', label: '拒绝', result: () => ({ permissions: {}, scope: 'turn' }), deny: true },
   ];
+  // 原生给出的可选决定按顺序原样列出（复核 CR16）；“拒绝并中断本轮”不提供（需求 R01，停止统一用停止键）。
+  const available = r.payload?.params?.availableDecisions;
+  if (Array.isArray(available) && available.length) {
+    const label = (d: unknown) => typeof d === 'string'
+      ? ({ accept: '批准一次', acceptForSession: '本会话内同类都允许', decline: '拒绝' } as Record<string, string>)[d] ?? d
+      : d && typeof d === 'object' && 'acceptWithExecpolicyAmendment' in d ? '批准并记住这条命令规则'
+        : d && typeof d === 'object' && 'applyNetworkPolicyAmendment' in d ? '批准并更新网络规则' : '其他选项';
+    const listed = available.filter(d => d !== 'cancel').map((d, i) => ({ key: `d${i}:${typeof d === 'string' ? d : Object.keys(d as object)[0]}`, label: label(d), result: () => ({ decision: d }), deny: d === 'decline' }));
+    // Codex 0.169 对提升权限的命令只列 cancel（拒绝并中断本轮）。需求不提供“拒绝并停止”，而 decline 已在真实冒烟中被接受（命令不执行、回合继续），
+    // 所以原生只给 cancel 时仍提供“拒绝”＝decline；停止本轮用停止键。
+    if (!available.includes('decline') && available.includes('cancel')) listed.push({ key: 'decline', label: '拒绝', result: () => ({ decision: 'decline' }), deny: true });
+    return listed;
+  }
   if (method === 'execCommandApproval' || method === 'applyPatchApproval') return [
     { key: 'once', label: '批准一次', result: () => ({ decision: 'approved' }) },
     { key: 'session', label: '本会话内同类都允许', result: () => ({ decision: 'approved_for_session' }) },
@@ -119,4 +134,35 @@ export function requestTitle(r: TimelineRequest): { title: string; detail: strin
   if (r.kind === 'file_approval') return { title: '是否允许修改文件？', detail: String(p.input?.file_path ?? params.reason ?? '') };
   if (r.kind === 'user_input') return { title: 'Agent 有问题要问你', detail: JSON.stringify(params.questions ?? p.input?.questions ?? params, null, 1).slice(0, 2000) };
   return { title: p.title ?? '是否允许这项操作？', detail: JSON.stringify(params ?? p.input ?? {}, null, 1).slice(0, 2000) };
+}
+
+/** 需要用户填写的请求（复核 CR09）：Agent 提问、MCP 表单。不套用“批准／拒绝”。 */
+export interface FormQuestion { id: string; header: string; question: string; options: { label: string; description?: string }[]; multi: boolean; allowOther: boolean; secret?: boolean }
+export interface FormField { name: string; title: string; type: 'string' | 'number' | 'boolean' | 'enum'; options?: string[]; required: boolean }
+export type RequestForm =
+  | { kind: 'questions'; questions: FormQuestion[]; toResult: (answers: Record<string, string[]>) => unknown; decline: () => unknown }
+  | { kind: 'elicitation'; message: string; url?: string; fields: FormField[]; toResult: (action: 'accept' | 'decline' | 'cancel', content: Record<string, unknown> | null) => unknown };
+
+export function requestForm(r: TimelineRequest, driverId: string): RequestForm | null {
+  const p = r.payload ?? {};
+  if (driverId === 'claude-sdk' && r.kind === 'user_input' && Array.isArray(p.input?.questions)) {
+    const input = p.input;
+    const questions: FormQuestion[] = input.questions.map((q: any, i: number) => ({ id: String(q.question ?? i), header: String(q.header ?? ''), question: String(q.question ?? ''), options: (q.options ?? []).map((o: any) => ({ label: String(o.label), description: o.description })), multi: !!q.multiSelect, allowOther: true }));
+    // AskUserQuestion：答案按问题原文为键、多选以逗号分隔，随原入参交回（锁定 SDK 合同）。
+    return { kind: 'questions', questions, toResult: answers => ({ behavior: 'allow', updatedInput: { ...input, answers: Object.fromEntries(questions.map(q => [q.question, (answers[q.id] ?? []).join(', ')])) } }), decline: () => ({ behavior: 'deny', message: '用户没有回答' }) };
+  }
+  if (driverId === 'codex-app-server' && r.kind === 'user_input' && Array.isArray(p.params?.questions)) {
+    const questions: FormQuestion[] = p.params.questions.map((q: any) => ({ id: String(q.id), header: String(q.header ?? ''), question: String(q.question ?? ''), options: (q.options ?? []).map((o: any) => ({ label: String(o.label), description: o.description })), multi: false, allowOther: !!q.isOther || !(q.options ?? []).length, secret: !!q.isSecret }));
+    return { kind: 'questions', questions, toResult: answers => ({ answers: Object.fromEntries(questions.map(q => [q.id, { answers: answers[q.id] ?? [] }])) }), decline: () => ({ answers: {} }) };
+  }
+  if (driverId === 'codex-app-server' && r.kind === 'elicitation') {
+    const params = p.params ?? {}, schema = params.requestedSchema ?? params.request?.requestedSchema ?? {};
+    const required = new Set<string>(Array.isArray(schema.required) ? schema.required : []);
+    const fields: FormField[] = Object.entries(schema.properties ?? {}).map(([name, s]: [string, any]) => ({
+      name, title: String(s?.title ?? s?.description ?? name), required: required.has(name),
+      type: Array.isArray(s?.enum) ? 'enum' : s?.type === 'boolean' ? 'boolean' : s?.type === 'number' || s?.type === 'integer' ? 'number' : 'string', options: Array.isArray(s?.enum) ? s.enum.map(String) : undefined,
+    }));
+    return { kind: 'elicitation', message: String(params.message ?? params.request?.message ?? `${params.serverName ?? 'MCP 服务'} 需要你提供信息`), url: typeof params.url === 'string' ? params.url : undefined, fields, toResult: (action, content) => ({ action, content: action === 'accept' ? content : null, _meta: null }) };
+  }
+  return null;
 }

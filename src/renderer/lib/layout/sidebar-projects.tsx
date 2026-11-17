@@ -63,7 +63,7 @@ function Toggle({ open, onClick, label, testId }: { open: boolean; onClick: () =
   );
 }
 
-const AGENT_STATUS: Record<string, string> = { working: '工作中', waiting: '等待批准', stopped: '已停止', failed: '失败', completed: '' };
+const AGENT_STATUS: Record<string, string> = { working: '工作中', waiting: '等待批准', stopped: '已停止', failed: '失败', limited: '受限', completed: '' };
 /** M14 新任务行：只列新任务（旧任务不迁移，需求 R10）。 */
 const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskSummary }) {
   const active = navigation.currentViewId === 'agentTask' && navigation.currentAgentTaskId === task.taskId;

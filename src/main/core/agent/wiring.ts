@@ -64,7 +64,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     connection?.assertCurrent();
     materializeAgentPlan(launch.plan, d.userData, cwd);
     const env = probe.shellPath ? { ...launch.env, PATH: probe.shellPath } : launch.env;
-    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources };
+    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities };
   };
   const tasks = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: id => driverForKind(config(id).kind), userData: d.userData });
   store.subscribe((e: StoredEvent) => d.emitEvent(e));

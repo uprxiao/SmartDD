@@ -34,7 +34,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private readonly emitter = new Emitter();
   private exited = false;
 
-  constructor(private readonly spawnFn: CodexSpawn = (c, a, o) => spawn(c, a, { ...o, stdio: ['pipe', 'pipe', 'pipe'] })) {}
+  constructor(private readonly spawnFn: CodexSpawn = (c, a, o) => spawn(c, a, { ...o, stdio: ['pipe', 'pipe', 'pipe'] }), private readonly closeGraceMs = 5000) {}
 
   on = this.emitter.on.bind(this.emitter);
 
@@ -197,15 +197,22 @@ export class CodexAppServerInstance implements DriverInstance {
     this.stopPending = true;
   }
 
+  /** 关闭以真实退出为准（复核 CR04）：结束输入后等待；超时依次 SIGTERM、SIGKILL，仍未退出则返回而不冒充已退出（不发 exit）。 */
   async close() {
     const child = this.child;
     if (!child || this.exited) return;
     child.stdin?.end();
-    await new Promise<void>(resolve => {
-      if (this.exited) return resolve();
-      const t = setTimeout(() => { child.kill('SIGTERM'); resolve(); }, 5000);
-      child.once('exit', () => { clearTimeout(t); resolve(); });
+    const waitExit = (ms: number) => new Promise<boolean>(resolve => {
+      if (this.exited) return resolve(true);
+      const t = setTimeout(() => { child.off('exit', on); resolve(this.exited); }, ms);
+      const on = () => { clearTimeout(t); resolve(true); };
+      child.once('exit', on);
     });
+    if (await waitExit(this.closeGraceMs)) return;
+    child.kill('SIGTERM');
+    if (await waitExit(this.closeGraceMs)) return;
+    child.kill('SIGKILL');
+    await waitExit(this.closeGraceMs);
   }
 }
 

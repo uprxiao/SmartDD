@@ -27,11 +27,13 @@ function fakeSdk(turns: Turn[]) {
       [Symbol.asyncIterator]: () => ({ next: () => out.length ? Promise.resolve({ value: out.shift(), done: false }) : done ? Promise.resolve({ value: undefined, done: true }) : new Promise(r => waiters.push(r)) }),
       interrupt: async () => { state.interrupts++; interrupted = true; },
       setPermissionMode: async m => { state.modes.push(m); },
+      setModel: async (m?: string) => { (wrapper as any).setModelHook?.(m); },
       close: () => { state.closed = true; },
     };
     return q;
   };
-  return { fn, state };
+  const wrapper = { fn, state } as any;
+  return wrapper as { fn: SdkQueryFn; state: typeof state };
 }
 const ok = (text: string): Turn => async ({ emit }) => {
   emit({ type: 'stream_event', uuid: 'u1', event: { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text } } });
@@ -55,7 +57,7 @@ describe('Claude SDK 驱动', () => {
     expect(sdk.state.options).toMatchObject({ pathToClaudeCodeExecutable: exe.path, cwd: '/w', env: { HOME: '/h' }, model: 'opus', permissionMode: 'default', settingSources: ['project', 'local'], includePartialMessages: true, sessionId: r.nativeId });
     expect(sdk.state.options.allowDangerouslySkipPermissions).toBeUndefined();
     expect(events.some(e => e.type === 'session')).toBe(false);
-    const t = await inst.startTurn({ clientInputId: 'in-1', text: '你好', tier: 'ask' });
+    const t = await inst.startTurn({ clientInputId: 'in-1', text: '你好', tier: 'ask', model: 'opus' });
     expect(t.nativeTurnId).toBe(`${r.nativeId}:1`);
     await until(() => events.some(e => e.type === 'turn.completed'));
     expect(events).toContainEqual({ type: 'session', nativeId: r.nativeId });
@@ -75,13 +77,44 @@ describe('Claude SDK 驱动', () => {
     await expect(b.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'auto' })).rejects.toThrow('Claude 不支持该档位');
   });
 
-  it('同一会话换档位时先切换权限模式再发送', async () => {
-    const { inst, sdk, events } = make([ok('1'), ok('2')]);
-    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
-    await inst.startTurn({ clientInputId: 'a', text: 'x', tier: 'ask' });
+  it('同一会话不切换权限档位（须重开，复核 CR12）；换模型在下一轮前用 setModel 应用（复核 CR11）', async () => {
+    const { inst, sdk, events } = make([ok('1'), ok('2'), ok('3')]);
+    const models: (string | undefined)[] = [];
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', model: 'opus' });
+    (sdk as any).setModelHook = (m: string | undefined) => models.push(m);
+    await inst.startTurn({ clientInputId: 'a', text: 'x', tier: 'ask', model: 'opus' });
     await until(() => events.filter(e => e.type === 'turn.completed').length === 1);
-    await inst.startTurn({ clientInputId: 'b', text: 'y', tier: 'full' });
-    expect(sdk.state.modes).toEqual(['bypassPermissions']);
+    await expect(inst.startTurn({ clientInputId: 'b', text: 'y', tier: 'full', model: 'opus' })).rejects.toThrow('需要重开会话');
+    expect(sdk.state.modes).toEqual([]);
+    await inst.startTurn({ clientInputId: 'c', text: 'z', tier: 'ask', model: 'sonnet' });
+    await until(() => events.filter(e => e.type === 'turn.completed').length === 2);
+    await inst.startTurn({ clientInputId: 'd', text: 'w', tier: 'ask' });
+    expect(models).toEqual(['sonnet', undefined]);
+  });
+
+  it('开始信号前流失败：startTurn 被拒绝而不是一直挂起（复核 CR07）', async () => {
+    const sdk = fakeSdk([]);
+    const failing: SdkQueryFn = (p) => { const q = sdk.fn(p); return { ...q, [Symbol.asyncIterator]: () => ({ next: () => new Promise((_, reject) => setTimeout(() => reject(new Error('boom')), 5)) }) } as SdkQuery; };
+    const inst = new ClaudeSdkInstance(async () => failing);
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await expect(inst.startTurn({ clientInputId: 'a', text: 'x', tier: 'ask' })).rejects.toThrow('回合开始前失败');
+    await expect(inst.startTurn({ clientInputId: 'b', text: 'y', tier: 'ask' })).rejects.toThrow('已结束');
+  });
+
+  it('子 Agent 消息带父工具身份，流式增量不进主任务；目标以原生确认为准（复核 CR13、CR14）', async () => {
+    const { inst, events } = make([async ({ emit }) => {
+      emit({ type: 'stream_event', uuid: 'c', parent_tool_use_id: 'agent-1', event: { type: 'content_block_delta', delta: { type: 'text_delta', text: '子过程' } } });
+      emit({ type: 'assistant', uuid: 'ca', parent_tool_use_id: 'agent-1', message: { content: [{ type: 'text', text: 'CHILD' }] } });
+      emit({ type: 'assistant', uuid: 'g', message: { content: [{ type: 'text', text: 'Goal set: 修完断言' }] } });
+      emit({ type: 'active_goal', value: null, uuid: 'x', session_id: 's' });
+      emit({ type: 'result', subtype: 'success', is_error: false });
+    }]);
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: 'a', text: '/goal 修完断言', tier: 'ask' });
+    await until(() => events.some(e => e.type === 'turn.completed'));
+    expect(events.some(e => e.type === 'message.delta')).toBe(false);
+    expect(events.find(e => e.type === 'item.completed' && e.nativeItemId === 'ca')).toMatchObject({ payload: { parentToolUseId: 'agent-1' } });
+    expect(events.filter(e => e.type === 'goal')).toEqual([{ type: 'goal', objective: '修完断言', status: 'active' }, { type: 'goal', objective: null, status: 'cleared' }]);
   });
 
   it('canUseTool 挂起为宿主请求；回应原样交回 SDK（含计划批准）', async () => {

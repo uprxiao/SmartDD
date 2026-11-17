@@ -165,6 +165,22 @@ describe('Codex app-server 驱动', () => {
     await expect(inst.startTurn({ clientInputId: 'b', text: 'y', tier: 'ask' })).rejects.toThrow('上一轮尚未结束');
   });
 
+  it('关闭以真实退出为准：忽略 SIGTERM 时升级 SIGKILL；仍不退出则不发 exit（复核 CR04）', async () => {
+    for (const mode of ['ignores-term', 'never-exits'] as const) {
+      const child = new FakeChild();
+      const signals: string[] = [];
+      child.kill = (sig: NodeJS.Signals = 'SIGTERM') => { signals.push(sig); if (mode === 'ignores-term' && sig === 'SIGKILL') child.exit(null, 'SIGKILL'); return true; };
+      new FakeAppServer(child, (msg, s) => { if (msg.method === 'initialize') s.reply(msg.id, {}); else if (msg.method === 'thread/start') s.reply(msg.id, { thread: { id: 't' } }); });
+      child.stdin.removeAllListeners('finish');
+      const inst = new CodexAppServerInstance(() => child.asChild(), 20);
+      const events: DriverEvent[] = []; inst.on(e => events.push(e));
+      await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+      await inst.close();
+      expect(signals).toEqual(['SIGTERM', 'SIGKILL']);
+      expect(events.some(e => e.type === 'exit')).toBe(mode === 'ignores-term');
+    }
+  });
+
   it('线程响应缺少 id 判协议错误', async () => {
     const { inst } = setup((msg, s) => msg.method === 'thread/start' ? (s.reply(msg.id, {}), true) : false);
     await expect(inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' })).rejects.toThrow('thread 响应缺少 id');

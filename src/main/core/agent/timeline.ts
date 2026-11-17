@@ -27,6 +27,8 @@ function claudeToolType(name: string): ItemType {
 export class TimelineProjector {
   private readonly claudeTools = new Map<string, { type: ItemType; name: string; input: unknown }>();
   private readonly todos = new Map<string, { id: string; subject: string; status: string }>();
+  private readonly childLogs = new Map<string, string[]>();
+  private readonly childToolParent = new Map<string, string>();
 
   constructor(private readonly driverId: 'claude-sdk' | 'codex-app-server') {}
 
@@ -40,7 +42,18 @@ export class TimelineProjector {
 
   private claude(e: DriverEvent): ItemUpsert[] {
     if (e.type === 'item.completed' && e.itemType === 'assistant') {
-      const msg = e.payload as { content?: any[]; model?: string };
+      const msg = e.payload as { content?: any[]; model?: string; parentToolUseId?: string | null };
+      // 原生子 Agent 的内部消息归子节点，不登记为主任务回答（复核 CR13，技术方案 §4）。
+      if (msg.parentToolUseId) {
+        const parent = this.claudeTools.get(msg.parentToolUseId);
+        const log = this.childLogs.get(msg.parentToolUseId) ?? [];
+        for (const b of msg.content ?? []) {
+          if (b?.type === 'text' && b.text) log.push(String(b.text).slice(0, 4000));
+          else if (b?.type === 'tool_use') { log.push(`调用 ${b.name}`); this.childToolParent.set(b.id, msg.parentToolUseId); }
+        }
+        this.childLogs.set(msg.parentToolUseId, log.slice(-50));
+        return parent ? [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { name: parent.name, input: parent.input, status: 'running', childLog: log.slice(-50) }, terminal: null }] : [];
+      }
       const out: ItemUpsert[] = [];
       (msg.content ?? []).forEach((block: any, idx: number) => {
         const key = `${e.nativeItemId}:${idx}`;
@@ -59,8 +72,10 @@ export class TimelineProjector {
       const content = (e.payload as any).message?.content;
       if (!Array.isArray(content)) return [];
       const out: ItemUpsert[] = [];
+      if (typeof (e.payload as any).parent_tool_use_id === 'string') return []; // 子 Agent 内部工具结果不进主时间线
       for (const block of content) {
         if (block?.type !== 'tool_result') continue;
+        if (this.childToolParent.has(block.tool_use_id)) continue;
         const tool = this.claudeTools.get(block.tool_use_id);
         if (!tool) continue;
         const failed = !!block.is_error;
@@ -74,7 +89,7 @@ export class TimelineProjector {
           continue;
         }
         const output = Array.isArray(block.content) ? block.content.map((c: any) => c?.text ?? '').join('\n') : text(block.content);
-        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'proposed_plan' ? { plan: text((tool.input as any)?.plan) } : {}) }, terminal: failed ? 'failed' : 'completed' });
+        out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'subagent' ? { childLog: this.childLogs.get(block.tool_use_id) ?? [] } : {}), ...(tool.type === 'proposed_plan' ? { plan: text((tool.input as any)?.plan) } : {}) }, terminal: failed ? 'failed' : 'completed' });
       }
       return out;
     }
@@ -111,7 +126,11 @@ export class TimelineProjector {
     }
     if (e.type === 'native' && e.name === 'error') {
       const p = e.payload as any;
-      return [{ key: `error:${p?.turnId ?? ''}:${text(p?.error?.message).slice(0, 40)}`, type: 'error', payload: { code: text(p?.error?.codexErrorInfo ?? 'error'), message: text(p?.error?.message ?? p) }, terminal: 'failed' }];
+      const info = p?.error?.codexErrorInfo;
+      const code = typeof info === 'string' ? info : info && typeof info === 'object' ? Object.keys(info)[0] : 'error';
+      // 受限与普通失败分开（复核 CR18，需求 R02）：额度／限流与输出上限各自标明，保留原生事实。
+      const limited = code === 'usageLimitExceeded' ? { kind: 'usage' } : code === 'rateLimitExceeded' || code === 'tooManyRequests' ? { kind: 'rate' } : code === 'contextWindowExceeded' ? { kind: 'context' } : null;
+      return [{ key: `error:${p?.turnId ?? ''}:${text(p?.error?.message).slice(0, 40)}`, type: 'error', payload: { code, message: text(p?.error?.message ?? p), ...(limited ? { limited } : {}) }, terminal: 'failed' }];
     }
     return [];
   }

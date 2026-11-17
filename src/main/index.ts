@@ -322,18 +322,19 @@ async function main(): Promise<void> {
   app.on('activate', () => void showWindow());
 
   let quitConfirmed = false, quitPending = false;
-  app.on('before-quit', () => { void agentWorkspace.closeAll().catch(()=>{}); });
   app.on('before-quit', (event) => {
     if (quitConfirmed) return;
     event.preventDefault();
     if (quitPending) return;
-    if (ptys.count > 0) {
+    // 新任务区正在工作或等待处理的任务也计入（复核 CR05）。
+    const agentBusy = agentWorkspace.tasks.list().filter(t => t.status === 'working' || t.status === 'waiting').length;
+    if (ptys.count > 0 || agentBusy > 0) {
       const choice = dialog.showMessageBoxSync({
         type: 'warning',
         buttons: ['退出', '取消'],
         defaultId: 1,
         cancelId: 1,
-        message: `有 ${ptys.count} 个任务正在运行`,
+        message: `有 ${ptys.count + agentBusy} 个任务正在运行`,
         detail: '退出 WillYou 会结束这些终端进程。重新打开后可在侧栏中点任务恢复（resume）。',
       });
       if (choice !== 0) {
@@ -370,6 +371,8 @@ async function main(): Promise<void> {
         const commit = await files.closer.request(owner, 'commit', send);
         if (!commit.ready) { resume(); return; }
       }
+      // 退出已确认（含未保存文件的选择）后，才关闭新任务的 Agent 运行与手动终端，并等其收口再关数据库（复核 CR05）。
+      await agentWorkspace.closeAll().catch(() => {});
       tasks.dispose();
       ptys.killAll();
       // Keep read-only native evidence and storage available until owned run

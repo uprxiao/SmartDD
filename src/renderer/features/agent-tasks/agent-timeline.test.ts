@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, requestOptions, requestTitle, workLabel, type TimelineItem } from './agent-timeline';
+import { buildTimeline, requestForm, requestOptions, requestTitle, workLabel, type TimelineItem } from './agent-timeline';
 
 // M14-A52 统一时间线与工作折叠、A60 终态尾注、A11 请求选项（界面逻辑层）。
 const item = (o: Partial<TimelineItem> & { type: string; ordinal: number }): TimelineItem => ({ itemId: `i${o.ordinal}`, turnId: 't1', revision: 1, payload: {}, terminal: 'completed', createdAt: '', updatedAt: '', ...o });
@@ -57,5 +57,32 @@ describe('请求面板选项', () => {
   it('Codex 权限提升请求：本轮允许或拒绝', () => {
     const r = { requestId: 'x', kind: 'permission_approval', revision: 1, payload: { method: 'item/permissions/requestApproval', params: { permissions: { network: true } } }, origin: {}, status: 'pending' };
     expect(requestOptions(r, 'codex-app-server').map(x => x.result(''))).toEqual([{ permissions: { network: true }, scope: 'turn' }, { permissions: {}, scope: 'turn' }]);
+  });
+});
+
+describe('复核 1620：请求表单与原生决定', () => {
+  const base = { requestId: 'r', revision: 1, origin: {}, status: 'pending' };
+  it('CR09：Codex 提问按 questions→answers 回传，Claude AskUserQuestion 带 answers 交回原入参，elicitation 按 action/content', () => {
+    const cx = requestForm({ ...base, kind: 'user_input', payload: { method: 'item/tool/requestUserInput', params: { questions: [{ id: 'q1', header: 'Pick', question: 'Which?', options: [{ label: 'A', description: 'a' }] }] } } }, 'codex-app-server')!;
+    expect(cx.kind).toBe('questions');
+    expect(cx.kind === 'questions' && cx.toResult({ q1: ['A'] })).toEqual({ answers: { q1: { answers: ['A'] } } });
+    const input = { questions: [{ header: 'Pick', question: 'Which?', options: [{ label: 'A' }, { label: 'B' }], multiSelect: true }] };
+    const cc = requestForm({ ...base, kind: 'user_input', payload: { tool: 'AskUserQuestion', input } }, 'claude-sdk')!;
+    expect(cc.kind === 'questions' && cc.toResult({ 'Which?': ['A', 'B'] })).toEqual({ behavior: 'allow', updatedInput: { ...input, answers: { 'Which?': 'A, B' } } });
+    const el = requestForm({ ...base, kind: 'elicitation', payload: { method: 'mcpServer/elicitation/request', params: { message: 'name?', requestedSchema: { type: 'object', required: ['name'], properties: { name: { type: 'string', title: '名字' }, n: { type: 'integer' } } } } } }, 'codex-app-server')!;
+    expect(el.kind === 'elicitation' && el.fields).toEqual([{ name: 'name', title: '名字', required: true, type: 'string', options: undefined }, { name: 'n', title: 'n', required: false, type: 'number', options: undefined }]);
+    expect(el.kind === 'elicitation' && el.toResult('accept', { name: 'x' })).toEqual({ action: 'accept', content: { name: 'x' }, _meta: null });
+    expect(el.kind === 'elicitation' && el.toResult('decline', { name: 'x' })).toEqual({ action: 'decline', content: null, _meta: null });
+    expect(requestOptions({ ...base, kind: 'user_input', payload: { tool: 'AskUserQuestion', input } }, 'claude-sdk')).toEqual([]);
+  });
+  it('CR16：只列原生给出的决定（不含“拒绝并中断”），修订型决定原样回传', () => {
+    const amend = { acceptWithExecpolicyAmendment: { execpolicy_amendment: ['git', 'status'] } };
+    const o = requestOptions({ ...base, kind: 'command_approval', payload: { method: 'item/commandExecution/requestApproval', params: { availableDecisions: ['accept', amend, 'decline', 'cancel'] } } }, 'codex-app-server');
+    expect(o.map(x => x.label)).toEqual(['批准一次', '批准并记住这条命令规则', '拒绝']);
+    expect(o.map(x => x.result(''))).toEqual([{ decision: 'accept' }, { decision: amend }, { decision: 'decline' }]);
+    // 真实 Codex 0.169：只列 accept、修订型与 cancel 时，仍提供“拒绝”＝decline，不提供 cancel
+    const real = requestOptions({ ...base, kind: 'command_approval', payload: { params: { availableDecisions: ['accept', amend, 'cancel'] } } }, 'codex-app-server');
+    expect(real.map(x => x.result(''))).toEqual([{ decision: 'accept' }, { decision: amend }, { decision: 'decline' }]);
+    expect(requestOptions({ ...base, kind: 'command_approval', payload: { params: { availableDecisions: ['decline'] } } }, 'codex-app-server').map(x => x.result(''))).toEqual([{ decision: 'decline' }]);
   });
 });

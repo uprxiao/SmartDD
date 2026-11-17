@@ -1,7 +1,7 @@
 // 输入框附件（需求 R01、用例 A75）：项目内文件按路径引用；项目外文件复制为附件并注明，不放开 Agent 对项目外的读取；
 // 附件随所属输入冻结（排队、编辑、发送都处理整份输入）。
 import { randomUUID } from 'node:crypto';
-import { copyFileSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, constants, copyFileSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { basename, extname, join, relative, sep } from 'node:path';
 import { DriverError } from './driver';
 
@@ -66,6 +66,30 @@ export function verifyAttachments(list: unknown, cwd: string, userData: string):
     const r = relative(store, real);
     if (!real || !r || r.startsWith('..')) throw new DriverError('REJECTED', `附件副本已丢失：${a.name ?? ''}`);
     return { id: a.id, kind: 'file', name: safeName(a.name ?? 'attachment'), mime: mimeOf(stored, a.mime), size: statSync(real).size, image: mimeOf(stored, a.mime).startsWith('image/'), storedPath: real } as Attachment;
+  });
+}
+
+/**
+ * 冻结图片副本（复核 CR01）：提交时把项目内图片按已解析的真实路径、以 O_NOFOLLOW 读出并复制进私有目录，
+ * 之后派发只读副本；排队期间项目内文件被换成软链或删除都不会读到根外内容。
+ */
+export function freezeImages(list: Attachment[], cwd: string, userData: string): Attachment[] {
+  const root = realpathSync(cwd);
+  return list.map(a => {
+    if (!a.image || a.kind !== 'path') return a;
+    const real = realpathSync(join(root, a.relativePath!));
+    const r = relative(root, real);
+    if (!r || r === '..' || r.startsWith(`..${sep}`)) throw new DriverError('REJECTED', `附件已不在项目内：${a.relativePath}`);
+    const fd = openSync(real, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+      const st = fstatSync(fd);
+      if (!st.isFile() || st.size > ATTACHMENT_LIMIT) throw new DriverError('REJECTED', '附件无效或过大');
+      const buf = Buffer.alloc(st.size); let off = 0;
+      while (off < st.size) { const n = readSync(fd, buf, off, st.size - off, off); if (!n) break; off += n; }
+      const dir = join(userData, 'agent-attachments', a.id + '-frozen'); mkdirSync(dir, { recursive: true, mode: 0o700 });
+      const storedPath = join(dir, a.name); writeFileSync(storedPath, buf.subarray(0, off), { mode: 0o600 });
+      return { ...a, storedPath };
+    } finally { closeSync(fd); }
   });
 }
 

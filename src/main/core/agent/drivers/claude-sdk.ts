@@ -11,6 +11,7 @@ import type { Tier } from '../permissions';
 export interface SdkQuery extends AsyncIterable<any> {
   interrupt(): Promise<unknown>;
   setPermissionMode(mode: string): Promise<void>;
+  setModel?(model?: string): Promise<void>;
   close?(): void;
 }
 export type SdkQueryFn = (params: { prompt: AsyncIterable<any>; options: Record<string, unknown> }) => SdkQuery;
@@ -49,7 +50,8 @@ export class ClaudeSdkInstance implements DriverInstance {
   private confirmed = false;
   private tier: Tier = 'ask';
   private turnSerial = 0;
-  private activeTurn: { nativeTurnId: string; clientInputId: string; started: boolean; interrupted: boolean; resolveStart?: (id: string) => void } | null = null;
+  private activeTurn: { nativeTurnId: string; clientInputId: string; started: boolean; interrupted: boolean; resolveStart?: (id: string) => void; rejectStart?: (e: Error) => void } | null = null;
+  private model: string | undefined;
   private stopPending = false;
   private readonly pending = new Map<string, PendingRequest>();
   private pump?: Promise<void>;
@@ -64,6 +66,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     const params = CLAUDE_TIERS[o.tier];
     if (!params) throw new DriverError('REJECTED', 'Claude 不支持该档位');
     this.tier = o.tier;
+    this.model = o.model;
     const queryFn = await this.sdk();
     this.input = new InputQueue();
     const nativeId = o.resumeNativeId ?? randomUUID();
@@ -99,7 +102,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (this.exited) return;
     this.exited = true;
     for (const [key, p] of this.pending) { p.resolve({ behavior: 'deny', message: '执行器已退出' }); this.pending.delete(key); this.emitter.emit({ type: 'request.resolved', requestKey: key }); }
-    if (this.activeTurn) { this.emitter.emit({ type: 'turn.completed', nativeTurnId: this.activeTurn.nativeTurnId, status: 'failed', error: '执行器退出' }); this.activeTurn = null; }
+    this.failTurn('执行器退出', 'failed');
     this.emitter.emit({ type: 'exit', code, signal });
   }
 
@@ -108,8 +111,19 @@ export class ClaudeSdkInstance implements DriverInstance {
       for await (const m of this.query!) this.onMessage(m);
     } catch (e) {
       this.emitter.emit({ type: 'diagnostic', message: `SDK 流异常：${(e as Error).message}` });
-      if (this.activeTurn) { this.emitter.emit({ type: 'turn.completed', nativeTurnId: this.activeTurn.nativeTurnId, status: this.activeTurn.interrupted ? 'interrupted' : 'failed', error: (e as Error).message.slice(0, 2000) }); this.activeTurn = null; }
+      this.failTurn((e as Error).message.slice(0, 2000), this.activeTurn?.interrupted ? 'interrupted' : 'failed');
     }
+    // 流结束后本实例不可再用：后续 startTurn 明确失败，不让派发门闩一直挂着（复核 CR07）。
+    this.ended = true;
+  }
+
+  private ended = false;
+  /** 回合在开始信号前失败：拒绝等待中的 startTurn（输入已写入流、是否被消费不能证明，由调用方记为未知）；已开始则发终态。 */
+  private failTurn(error: string, status: 'failed' | 'interrupted') {
+    const t = this.activeTurn; if (!t) return;
+    this.activeTurn = null;
+    if (!t.started) { t.rejectStart?.(new DriverError('EXITED', `回合开始前失败：${error}`)); return; }
+    this.emitter.emit({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status, error });
   }
 
   private markStarted() {
@@ -129,11 +143,25 @@ export class ClaudeSdkInstance implements DriverInstance {
       const skills = new Set<string>(Array.isArray(m.skills) ? m.skills : []);
       this.emitter.emit({ type: 'catalog', commands: (Array.isArray(m.slash_commands) ? m.slash_commands as string[] : []).filter(c => !terminalOnly.has(c) && !skills.has(c)), skills: [...skills].map(name => ({ name })) });
     }
-    if (this.activeTurn && m?.type !== 'result') this.markStarted();
+    if (this.activeTurn && m?.type !== 'result' && m?.type !== 'active_goal') this.markStarted();
+    // 目标以原生事实为准（复核 CR14）：SDK active_goal 与 CLI 回复的 Goal set／cleared 文字（研究 V14／V17 已验）。
+    if (m?.type === 'active_goal') {
+      this.emitter.emit(m.value ? { type: 'goal', objective: String(m.value.condition ?? ''), status: 'active' } : { type: 'goal', objective: null, status: 'cleared' });
+      return;
+    }
+    const parent = typeof m?.parent_tool_use_id === 'string' ? m.parent_tool_use_id : null;
     if (m?.type === 'stream_event' && m.event?.type === 'content_block_delta' && m.event.delta?.type === 'text_delta') {
-      this.emitter.emit({ type: 'message.delta', nativeItemId: String(m.uuid ?? m.event.index ?? 'text'), text: String(m.event.delta.text ?? '') });
+      // 原生子 Agent 的流式正文不进主任务（复核 CR13）。
+      if (!parent) this.emitter.emit({ type: 'message.delta', nativeItemId: String(m.uuid ?? m.event.index ?? 'text'), text: String(m.event.delta.text ?? '') });
     } else if (m?.type === 'assistant' && m.message) {
-      this.emitter.emit({ type: 'item.completed', nativeItemId: String(m.uuid ?? randomUUID()), itemType: 'assistant', payload: m.message });
+      if (!parent) for (const b of m.message.content ?? []) {
+        const text = b?.type === 'text' ? String(b.text ?? '') : '';
+        const set = /^Goal set: ([\s\S]+)/.exec(text), active = /^Goal active: ([\s\S]+?) \(/.exec(text);
+        if (set) this.emitter.emit({ type: 'goal', objective: set[1].trim(), status: 'active' });
+        else if (active) this.emitter.emit({ type: 'goal', objective: active[1].trim(), status: 'active' });
+        else if (/^(Goal cleared|No goal set)/.test(text)) this.emitter.emit({ type: 'goal', objective: null, status: 'cleared' });
+      }
+      this.emitter.emit({ type: 'item.completed', nativeItemId: String(m.uuid ?? randomUUID()), itemType: 'assistant', payload: { ...m.message, parentToolUseId: parent } });
     } else if (m?.type === 'result') {
       const t = this.activeTurn;
       if (!t) return;
@@ -154,23 +182,24 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
 
   async startTurn(input: TurnInput) {
-    if (!this.query || !this.input || this.exited) throw new DriverError('STATE', '会话尚未打开');
+    if (!this.query || !this.input || this.exited || this.ended) throw new DriverError('STATE', '会话尚未打开或已结束');
     if (this.activeTurn) throw new DriverError('STATE', '上一轮尚未结束');
     const params = CLAUDE_TIERS[input.tier];
     if (!params) throw new DriverError('REJECTED', 'Claude 不支持该档位');
-    if (input.tier !== this.tier) { await this.query.setPermissionMode(params.permissionMode); this.tier = input.tier; }
+    // 跨越完全访问须在启动时声明；同一会话不切换，由调用方重开并恢复（复核 CR12，CLI 实测拒绝）。
+    if (input.tier !== this.tier) throw new DriverError('UNSUPPORTED', '权限档位变化需要重开会话');
+    // 同任务换模型：下一轮前显式应用（复核 CR11）；undefined 恢复执行器默认。
+    if (input.model !== this.model) {
+      if (!this.query.setModel) throw new DriverError('UNSUPPORTED', '该 SDK 不支持切换模型');
+      await this.query.setModel(input.model); this.model = input.model;
+    }
     const nativeTurnId = `${this.sessionId}:${++this.turnSerial}`;
-    const started = new Promise<string>(resolve => { this.activeTurn = { nativeTurnId, clientInputId: input.clientInputId, started: false, interrupted: false, resolveStart: resolve }; });
+    const started = new Promise<string>((resolve, reject) => { this.activeTurn = { nativeTurnId, clientInputId: input.clientInputId, started: false, interrupted: false, resolveStart: resolve, rejectStart: reject }; });
     this.input.push({ type: 'user', message: { role: 'user', content: userContent(input) }, parent_tool_use_id: null });
     return { nativeTurnId: await started };
   }
 
-  /** 插话：流式输入在回合进行中仍开放（CLI 2.1.325 实测）；原生开始信号不重复发。 */
-  async steer(input: TurnInput) {
-    if (!this.input || !this.activeTurn?.started) throw new DriverError('STATE', '当前没有进行中的回合');
-    this.input.push({ type: 'user', message: { role: 'user', content: userContent(input) }, parent_tool_use_id: null, priority: 'now' });
-    this.emitter.emit({ type: 'steer.accepted', clientInputId: input.clientInputId, nativeTurnId: this.activeTurn.nativeTurnId });
-  }
+  // 插话：Claude 流式输入写入成功不等于原生接受，当前没有本次输入的接受关联，暂不提供（复核 CR02）。
 
   /** Claude 目标通过 /goal 文字设定与清除；不能暂停（需求 R02）。由调用方作为普通输入发送。 */
   async goal(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }): Promise<void> {
@@ -201,7 +230,14 @@ export class ClaudeSdkInstance implements DriverInstance {
     try { this.query.close?.(); } catch { /* 已关闭 */ }
     const child = this.child;
     if (child && !this.exited) {
-      await new Promise<void>(resolve => { const t = setTimeout(() => { child.kill('SIGTERM'); resolve(); }, 5000); child.once('exit', () => { clearTimeout(t); resolve(); }); });
+      // 以真实退出为准（复核 CR04）：超时依次 SIGTERM、SIGKILL，仍未退出不冒充已退出。
+      const waitExit = (ms: number) => new Promise<boolean>(resolve => {
+        if (this.exited) return resolve(true);
+        const t = setTimeout(() => { child.off('exit', on); resolve(this.exited); }, ms);
+        const on = () => { clearTimeout(t); resolve(true); };
+        child.once('exit', on);
+      });
+      if (!(await waitExit(5000))) { child.kill('SIGTERM'); if (!(await waitExit(5000))) { child.kill('SIGKILL'); await waitExit(5000); } }
     }
     await this.pump?.catch(() => {});
   }
