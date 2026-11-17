@@ -9,6 +9,8 @@
 | `ui-goal-attempt-002/` | 修复后复验：/goal 进行中→已完成（10 秒 · 1 轮，文件已建）；随后消息正常发出；中途停止，尾注“已停止 · 共工作 8 秒”；正常退出 |
 | `ui-attach-attempt-001/` | 附件：CDP 拖放项目内 README.md（路径引用）与项目外 red.png（复制、缩略图）到任务输入框；发送后卡片清空，Codex 回答 Red（实际收到图片）。系统剪贴板粘贴未做（前台模式另行取证） |
 | `ui-terminal-attempt-001/` | 手动终端：任务页顶栏打开底部终端，shell 工作目录为任务目录，执行 pwd 输出正确；关闭后抽屉消失 |
+| `ui-claude-1/` | Claude（本机 Claude Code 2.1.326＋DeepSeek 托管供应商，用户在钥匙串弹窗点“始终允许”）：首轮 PONG；AskUserQuestion 表单选 Blue、回答 Blue；EnterPlanMode→ExitPlanMode 计划进请求面板，“批准并开始”后文件建出；/goal 原生确认进行中。换模型与切完全访问两步因驱动把模型名写成 deepseek-pro（实际为 deepseek-v4-pro）报 400，属测试数据错误 |
+| `ui-claude-2/` | 修正模型名并补目标计时计轮后复跑：目标“进行中 · 3 秒 · 1 轮”、/goal clear 按原生确认清除；换 deepseek-v4-pro 正常回答（库中记录实际模型）；切完全访问出现首次确认框，会话重开为第 2 代次、恢复同一原生会话，执行命令无审批、文件建出 |
 | `driver/` | 两份冒烟驱动源码（执行时的版本；attempt-001 用的是改选择器前的版本） |
 
 第一次界面冒烟（attempt-001）因建项目缺 `rulesPath` 与退出写法错误在准备阶段失败，属驱动错误，未保留截图。

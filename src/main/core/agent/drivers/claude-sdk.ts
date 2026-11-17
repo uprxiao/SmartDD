@@ -168,7 +168,7 @@ export class ClaudeSdkInstance implements DriverInstance {
       this.markStarted();
       this.activeTurn = null;
       const status = t.interrupted ? 'interrupted' : m.subtype === 'success' && !m.is_error ? 'completed' : 'failed';
-      this.emitter.emit({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status, ...(status === 'failed' ? { error: String(m.subtype) } : {}) });
+      this.emitter.emit({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status, ...(status === 'failed' ? { error: String(m.is_error && typeof m.result === 'string' ? m.result : m.subtype).slice(0, 2000) } : {}) });
     }
   }
 

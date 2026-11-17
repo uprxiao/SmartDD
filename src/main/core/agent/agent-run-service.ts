@@ -112,9 +112,14 @@ export class AgentRunService {
           if (store.goal(run.taskId)?.status === 'active') store.countGoalTurn(run.taskId);
           break;
         case 'catalog': run.catalog = { commands: e.commands.slice(0, 200), skills: e.skills.slice(0, 500) }; break;
-        case 'goal':
+        case 'goal': {
+          const before = store.goal(run.taskId);
           store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: e.status, timeUsedSeconds: e.timeUsedSeconds });
+          // 目标在回合进行中设定：这一轮计入目标轮次（宿主计数）。
+          const after = store.goal(run.taskId);
+          if (after?.status === 'active' && run.turnId && (!before || before.status !== 'active' || before.revision !== after.revision)) store.countGoalTurn(run.taskId);
           break;
+        }
         case 'request':
           store.insertNativeRequest({ taskId: run.taskId, kind: e.kind, payload: e.payload, origin: { taskId: run.taskId, bindingId: run.bindingId, runId: run.runId, generation: run.generation, turnId: run.turnId, nativeRequest: e.requestKey } });
           break;
@@ -125,6 +130,11 @@ export class AgentRunService {
           break;
         }
         case 'turn.completed': {
+          // Claude 不回报目标用时：按目标进行期间的回合用时累计（Codex 由 thread/goal/updated 提供）。
+          if (run.driverId === 'claude-sdk' && store.goal(run.taskId)?.status === 'active' && run.turnId) {
+            const t = store.turn(run.turnId) as { started_at?: string | null } | undefined;
+            if (t?.started_at) store.addGoalTime(run.taskId, (Date.now() - Date.parse(t.started_at)) / 1000);
+          }
           const turns = store.turnsByNative(run.runId, e.nativeTurnId);
           const own = run.turnId ? store.turn(run.turnId) : undefined;
           if (own && !turns.some(t => t.turn_id === own.turn_id) && !own.native_turn_id) turns.push(own);

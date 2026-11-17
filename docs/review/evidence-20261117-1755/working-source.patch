@@ -1,0 +1,58 @@
+diff --git a/src/main/core/agent/agent-run-service.ts b/src/main/core/agent/agent-run-service.ts
+index 524a466c0..026480bbc 100644
+--- a/src/main/core/agent/agent-run-service.ts
++++ b/src/main/core/agent/agent-run-service.ts
+@@ -112,9 +112,14 @@ export class AgentRunService {
+           if (store.goal(run.taskId)?.status === 'active') store.countGoalTurn(run.taskId);
+           break;
+         case 'catalog': run.catalog = { commands: e.commands.slice(0, 200), skills: e.skills.slice(0, 500) }; break;
+-        case 'goal':
++        case 'goal': {
++          const before = store.goal(run.taskId);
+           store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: e.status, timeUsedSeconds: e.timeUsedSeconds });
++          // 目标在回合进行中设定：这一轮计入目标轮次（宿主计数）。
++          const after = store.goal(run.taskId);
++          if (after?.status === 'active' && run.turnId && (!before || before.status !== 'active' || before.revision !== after.revision)) store.countGoalTurn(run.taskId);
+           break;
++        }
+         case 'request':
+           store.insertNativeRequest({ taskId: run.taskId, kind: e.kind, payload: e.payload, origin: { taskId: run.taskId, bindingId: run.bindingId, runId: run.runId, generation: run.generation, turnId: run.turnId, nativeRequest: e.requestKey } });
+           break;
+@@ -125,6 +130,11 @@ export class AgentRunService {
+           break;
+         }
+         case 'turn.completed': {
++          // Claude 不回报目标用时：按目标进行期间的回合用时累计（Codex 由 thread/goal/updated 提供）。
++          if (run.driverId === 'claude-sdk' && store.goal(run.taskId)?.status === 'active' && run.turnId) {
++            const t = store.turn(run.turnId) as { started_at?: string | null } | undefined;
++            if (t?.started_at) store.addGoalTime(run.taskId, (Date.now() - Date.parse(t.started_at)) / 1000);
++          }
+           const turns = store.turnsByNative(run.runId, e.nativeTurnId);
+           const own = run.turnId ? store.turn(run.turnId) : undefined;
+           if (own && !turns.some(t => t.turn_id === own.turn_id) && !own.native_turn_id) turns.push(own);
+diff --git a/src/main/core/agent/agent-store.ts b/src/main/core/agent/agent-store.ts
+index d31c8c0f0..32168d09c 100644
+--- a/src/main/core/agent/agent-store.ts
++++ b/src/main/core/agent/agent-store.ts
+@@ -338,6 +338,8 @@ export class AgentStore {
+       emit(g.taskId, 'goal.changed', { objective, status, pausedReason: reason, revision });
+     });
+   }
++  /** 执行器不回报目标用时（Claude）时，由宿主按目标进行期间的回合用时累计。 */
++  addGoalTime(taskId: string, seconds: number) { if (seconds > 0) this.sqlite.prepare("UPDATE agent_goals SET time_used_s=time_used_s+?,updated_at=? WHERE task_id=? AND status='active'").run(Math.round(seconds), now(), taskId); }
+   countGoalTurn(taskId: string) { this.sqlite.prepare("UPDATE agent_goals SET turns=turns+1,updated_at=? WHERE task_id=? AND status='active'").run(now(), taskId); }
+   goal(taskId: string) {
+     const r = this.sqlite.prepare('SELECT objective,revision,status,paused_reason,turns,time_used_s,updated_at FROM agent_goals WHERE task_id=?').get(taskId) as Record<string, any> | undefined;
+diff --git a/src/main/core/agent/drivers/claude-sdk.ts b/src/main/core/agent/drivers/claude-sdk.ts
+index c6c7784db..f88491d97 100644
+--- a/src/main/core/agent/drivers/claude-sdk.ts
++++ b/src/main/core/agent/drivers/claude-sdk.ts
+@@ -168,7 +168,7 @@ export class ClaudeSdkInstance implements DriverInstance {
+       this.markStarted();
+       this.activeTurn = null;
+       const status = t.interrupted ? 'interrupted' : m.subtype === 'success' && !m.is_error ? 'completed' : 'failed';
+-      this.emitter.emit({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status, ...(status === 'failed' ? { error: String(m.subtype) } : {}) });
++      this.emitter.emit({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status, ...(status === 'failed' ? { error: String(m.is_error && typeof m.result === 'string' ? m.result : m.subtype).slice(0, 2000) } : {}) });
+     }
+   }
+ 

@@ -338,6 +338,8 @@ export class AgentStore {
       emit(g.taskId, 'goal.changed', { objective, status, pausedReason: reason, revision });
     });
   }
+  /** 执行器不回报目标用时（Claude）时，由宿主按目标进行期间的回合用时累计。 */
+  addGoalTime(taskId: string, seconds: number) { if (seconds > 0) this.sqlite.prepare("UPDATE agent_goals SET time_used_s=time_used_s+?,updated_at=? WHERE task_id=? AND status='active'").run(Math.round(seconds), now(), taskId); }
   countGoalTurn(taskId: string) { this.sqlite.prepare("UPDATE agent_goals SET turns=turns+1,updated_at=? WHERE task_id=? AND status='active'").run(now(), taskId); }
   goal(taskId: string) {
     const r = this.sqlite.prepare('SELECT objective,revision,status,paused_reason,turns,time_used_s,updated_at FROM agent_goals WHERE task_id=?').get(taskId) as Record<string, any> | undefined;
