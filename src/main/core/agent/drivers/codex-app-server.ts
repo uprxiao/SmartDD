@@ -151,6 +151,8 @@ export class CodexAppServerInstance implements DriverInstance {
   private onRequest(id: string | number, method: string, params: unknown) {
     this.emitter.emit({ type: 'native', name: method, payload: { id, params } });
     if (REFUSED.has(method)) { this.rpc?.replyError(id, -32601, 'WillYou 不处理该请求'); return; }
+    // 未知的必需请求：明确拒绝并标协议不兼容，不套通用批准（复核 NR09，技术方案 §4）。
+    if (!REQUEST_KIND[method]) { this.rpc?.replyError(id, -32601, 'WillYou 不支持该请求'); this.emitter.emit({ type: 'native', name: 'request/unsupported', payload: { method } }); return; }
     const key = String(id);
     this.openRequests.add(key);
     this.emitter.emit({ type: 'request', requestKey: key, kind: REQUEST_KIND[method] ?? 'other', payload: { method, params } });

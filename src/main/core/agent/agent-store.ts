@@ -145,6 +145,11 @@ export class AgentStore {
       return { turn: this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow, duplicate: false };
     });
   }
+  itemById(taskId: string, itemId: string) {
+    const r = this.sqlite.prepare('SELECT item_id,payload_ref FROM agent_items WHERE task_id=? AND item_id=?').get(taskId, itemId) as { item_id: string; payload_ref: string } | undefined;
+    return r ? { itemId: r.item_id, payload: JSON.parse(r.payload_ref) } : undefined;
+  }
+  turnByClientInput(taskId: string, clientInputId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(taskId, clientInputId) as TurnRow | undefined; }
   turn(turnId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow | undefined; }
   turnByNative(runId: string, nativeTurnId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE run_id=? AND native_turn_id=?').get(runId, nativeTurnId) as TurnRow | undefined; }
   dispatchTurn(turnId: string, runId: string) {
@@ -194,7 +199,7 @@ export class AgentStore {
     return this.tx(emit => {
       const requestId = randomUUID();
       this.sqlite.prepare("INSERT INTO agent_requests(request_id,task_id,class,origin_json,kind,payload_ref,status,created_at,updated_at) VALUES(?,?,'native',?,?,?,'pending',?,?)")
-        .run(requestId, r.taskId, JSON.stringify(r.origin), r.kind, boundedJson(r.payload), now(), now());
+        .run(requestId, r.taskId, JSON.stringify(r.origin), r.kind, bodyJson(r.payload), now(), now());
       emit(r.taskId, 'request.opened', { requestId, kind: r.kind, payload: r.payload, origin: r.origin });
       return requestId;
     });

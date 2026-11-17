@@ -52,6 +52,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   private turnSerial = 0;
   private activeTurn: { nativeTurnId: string; clientInputId: string; started: boolean; interrupted: boolean; resolveStart?: (id: string) => void; rejectStart?: (e: Error) => void } | null = null;
   private model: string | undefined;
+  private goalCommandTurn: string | null = null;
   private stopPending = false;
   private readonly pending = new Map<string, PendingRequest>();
   private pump?: Promise<void>;
@@ -113,8 +114,9 @@ export class ClaudeSdkInstance implements DriverInstance {
       this.emitter.emit({ type: 'diagnostic', message: `SDK 流异常：${(e as Error).message}` });
       this.failTurn((e as Error).message.slice(0, 2000), this.activeTurn?.interrupted ? 'interrupted' : 'failed');
     }
-    // 流结束后本实例不可再用：后续 startTurn 明确失败，不让派发门闩一直挂着（复核 CR07）。
+    // 流结束后本实例不可再用（复核 CR07／NR04）：结束原生进程，退出事件让宿主把这次运行退役；下一次提交会恢复会话。
     this.ended = true;
+    if (!this.exited) this.emitter.emit({ type: 'unusable', reason: 'SDK 流已结束' });
   }
 
   private ended = false;
@@ -154,7 +156,10 @@ export class ClaudeSdkInstance implements DriverInstance {
       // 原生子 Agent 的流式正文不进主任务（复核 CR13）。
       if (!parent) this.emitter.emit({ type: 'message.delta', nativeItemId: String(m.uuid ?? m.event.index ?? 'text'), text: String(m.event.delta.text ?? '') });
     } else if (m?.type === 'assistant' && m.message) {
-      if (!parent) for (const b of m.message.content ?? []) {
+      // 兼容 CLI 的目标确认文字：只认宿主发出 /goal 命令的那一轮、该轮第一段回复；普通回答不能改变目标状态（复核 NR13）。
+      const trusted = !parent && !!this.activeTurn && this.goalCommandTurn === this.activeTurn.nativeTurnId;
+      if (trusted) this.goalCommandTurn = null;
+      if (trusted) for (const b of (m.message.content ?? []).slice(0, 1)) {
         const text = b?.type === 'text' ? String(b.text ?? '') : '';
         const set = /^Goal set: ([\s\S]+)/.exec(text), active = /^Goal active: ([\s\S]+?) \(/.exec(text);
         if (set) this.emitter.emit({ type: 'goal', objective: set[1].trim(), status: 'active' });
@@ -182,7 +187,9 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
 
   async startTurn(input: TurnInput) {
-    if (!this.query || !this.input || this.exited || this.ended) throw new DriverError('STATE', '会话尚未打开或已结束');
+    if (!this.query || !this.input) throw new DriverError('STATE', '会话尚未打开');
+    // 已结束的会话不能再派发；输入尚未写出，按未发出处理（复核 NR04）。
+    if (this.exited || this.ended) throw new DriverError('STATE', '会话已结束，将恢复后发送');
     if (this.activeTurn) throw new DriverError('STATE', '上一轮尚未结束');
     const params = CLAUDE_TIERS[input.tier];
     if (!params) throw new DriverError('REJECTED', 'Claude 不支持该档位');
@@ -194,6 +201,7 @@ export class ClaudeSdkInstance implements DriverInstance {
       await this.query.setModel(input.model); this.model = input.model;
     }
     const nativeTurnId = `${this.sessionId}:${++this.turnSerial}`;
+    this.goalCommandTurn = /^\/goal(\s|$)/.test(input.text.trimStart()) ? nativeTurnId : null;
     const started = new Promise<string>((resolve, reject) => { this.activeTurn = { nativeTurnId, clientInputId: input.clientInputId, started: false, interrupted: false, resolveStart: resolve, rejectStart: reject }; });
     this.input.push({ type: 'user', message: { role: 'user', content: userContent(input) }, parent_tool_use_id: null });
     return { nativeTurnId: await started };

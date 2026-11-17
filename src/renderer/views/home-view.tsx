@@ -118,6 +118,8 @@ export const HomeView = observer(function HomeView() {
 
   // M14 首页附件：随新任务第一条消息发送；准备中或失败时“启动任务”与 ⌘Enter 都不创建任务、不清空（用例 A75）。
   const [chips, setChips] = useState<Chip[]>([]);
+  // 首页附件绑定准备时的目录：切换项目或目录时清掉，避免按新目录重新解释同名文件（复核 NR12）。
+  useEffect(() => { setChips(cs => { if (cs.length) setError('切换了项目或目录，已移除之前添加的附件'); return []; }); }, [projectId, dir?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const addFiles = (files: File[]) => {
     if (!agentTasksStore.enabled || !dir) return;
     for (const file of files) {

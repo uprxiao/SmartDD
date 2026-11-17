@@ -181,6 +181,16 @@ describe('Codex app-server 驱动', () => {
     }
   });
 
+  it('NR09：未知的必需请求明确拒绝并标不支持，不转成待批准请求', async () => {
+    const { inst, server, events } = setup();
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    server.request(41, 'future/required', { x: 1 });
+    await until(() => server.received.some(m => m.id === 41));
+    expect(server.received.find(m => m.id === 41)).toMatchObject({ error: { code: -32601 } });
+    expect(events.some(e => e.type === 'request')).toBe(false);
+    expect(events).toContainEqual({ type: 'native', name: 'request/unsupported', payload: { method: 'future/required' } });
+  });
+
   it('线程响应缺少 id 判协议错误', async () => {
     const { inst } = setup((msg, s) => msg.method === 'thread/start' ? (s.reply(msg.id, {}), true) : false);
     await expect(inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' })).rejects.toThrow('thread 响应缺少 id');

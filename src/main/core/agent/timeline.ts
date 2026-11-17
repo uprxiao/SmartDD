@@ -28,6 +28,7 @@ export class TimelineProjector {
   private readonly claudeTools = new Map<string, { type: ItemType; name: string; input: unknown }>();
   private readonly todos = new Map<string, { id: string; subject: string; status: string }>();
   private readonly childLogs = new Map<string, string[]>();
+  private readonly finals = new Map<string, { payload: Record<string, unknown>; terminal: 'completed' | 'failed' }>();
   private readonly childToolParent = new Map<string, string>();
 
   constructor(private readonly driverId: 'claude-sdk' | 'codex-app-server') {}
@@ -52,6 +53,9 @@ export class TimelineProjector {
           else if (b?.type === 'tool_use') { log.push(`调用 ${b.name}`); this.childToolParent.set(b.id, msg.parentToolUseId); }
         }
         this.childLogs.set(msg.parentToolUseId, log.slice(-50));
+        // 终态单调（复核 NR11）：子节点已有结果后，迟到的内部消息只追加记录，不恢复运行中。
+        const final = this.finals.get(msg.parentToolUseId);
+        if (final) return [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { ...final.payload, childLog: log.slice(-50) }, terminal: final.terminal }];
         return parent ? [{ key: `tool:${msg.parentToolUseId}`, type: 'subagent', payload: { name: parent.name, input: parent.input, status: 'running', childLog: log.slice(-50) }, terminal: null }] : [];
       }
       const out: ItemUpsert[] = [];
@@ -89,9 +93,23 @@ export class TimelineProjector {
           continue;
         }
         const output = Array.isArray(block.content) ? block.content.map((c: any) => c?.text ?? '').join('\n') : text(block.content);
+        const finalPayload = { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed' };
+        if (tool.type === 'subagent') this.finals.set(block.tool_use_id, { payload: finalPayload, terminal: failed ? 'failed' : 'completed' });
         out.push({ key: `tool:${block.tool_use_id}`, type: tool.type, payload: { name: tool.name, input: tool.input, output: output.slice(0, 16_000), status: failed ? 'failed' : 'completed', ...(tool.type === 'subagent' ? { childLog: this.childLogs.get(block.tool_use_id) ?? [] } : {}), ...(tool.type === 'proposed_plan' ? { plan: text((tool.input as any)?.plan) } : {}) }, terminal: failed ? 'failed' : 'completed' });
       }
       return out;
+    }
+    // Claude 受限（复核 NR08）：rate_limit_event 拒绝、assistant.error 的 rate_limit／max_output_tokens，分别标额度／限流与输出上限。
+    if (e.type === 'native' && (e.payload as any)?.type === 'rate_limit_event' && (e.payload as any).rate_limit_info?.status === 'rejected') {
+      const info = (e.payload as any).rate_limit_info;
+      const resetAt = typeof info.resetsAt === 'number' ? new Date(info.resetsAt * (info.resetsAt < 1e12 ? 1000 : 1)).toISOString() : undefined;
+      return [{ key: `limit:${(e.payload as any).uuid ?? Date.now()}`, type: 'error', payload: { code: 'rate_limit_rejected', message: `额度受限（${info.rateLimitType ?? '未知类型'}）`, limited: { kind: 'usage', ...(resetAt ? { resetAt } : {}) } }, terminal: 'failed' }];
+    }
+    if (e.type === 'native' && (e.payload as any)?.type === 'assistant' && typeof (e.payload as any).error === 'string' && !(e.payload as any).parent_tool_use_id) {
+      const err = (e.payload as any).error as string;
+      const limited = err === 'rate_limit' ? { kind: 'rate' } : err === 'max_output_tokens' ? { kind: 'output' } : err === 'billing_error' ? { kind: 'usage' } : null;
+      const text = ((e.payload as any).message?.content ?? []).map((b: any) => b?.text ?? '').join('').slice(0, 2000);
+      return [{ key: `assistant-error:${(e.payload as any).uuid ?? Date.now()}`, type: 'error', payload: { code: err, message: text || err, ...(limited ? { limited } : {}) }, terminal: 'failed' }];
     }
     if (e.type === 'native' && (e.payload as any)?.type === 'system' && (e.payload as any).subtype === 'compact_boundary') {
       return [{ key: `compact:${(e.payload as any).uuid ?? Date.now()}`, type: 'compaction', payload: {}, terminal: 'completed' }];
@@ -119,6 +137,9 @@ export class TimelineProjector {
       this.todos.clear();
       plan.forEach((s: any, i: number) => this.todos.set(String(i), { id: String(i), subject: text(s.step), status: text(s.status) }));
       return [this.todoItem()];
+    }
+    if (e.type === 'native' && e.name === 'request/unsupported') {
+      return [{ key: `unsupported:${text((e.payload as any)?.method)}:${Date.now()}`, type: 'system_notice', payload: { severity: 'warning', code: 'unsupportedRequest', detail: `执行器发来 WillYou 不支持的请求（${text((e.payload as any)?.method)}），已拒绝` }, terminal: 'completed' }];
     }
     if (e.type === 'native' && ['warning', 'configWarning', 'deprecationNotice', 'guardianWarning'].includes(e.name)) {
       const p = e.payload as any;

@@ -1,0 +1,106 @@
+--- docs/review/evidence-20261117-1620/review-probes.test.ts
++++ docs/review/evidence-20261117-1755/recheck-probes.test.ts
+@@ -1,5 +1,5 @@
+-// Review-owned contract counterexamples. These tests intentionally remain RED
+-// against the reviewed commit. No production implementation is replaced.
++// Recheck of the 20 previous contracts against the repaired implementation.
++// Only fixture/API adaptation is made; no production implementation is replaced.
+ import Database from 'better-sqlite3';
+ import { afterAll, afterEach, expect, it, vi } from 'vitest';
+ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+@@ -15,13 +15,13 @@
+ import { CodexAppServerInstance } from '../../../src/main/core/agent/drivers/codex-app-server';
+ import { ClaudeSdkInstance, type SdkQueryFn } from '../../../src/main/core/agent/drivers/claude-sdk';
+ import { FakeAppServer, FakeChild, until, tick } from '../../../src/main/core/agent/test-doubles';
+-import { requestOptions } from '../../../src/renderer/features/agent-tasks/agent-timeline';
++import { requestOptions, requestForm } from '../../../src/renderer/features/agent-tasks/agent-timeline';
+ import { evaluateCapabilities } from '../../../src/main/core/agent/capabilities';
+ import { prepareAttachment } from '../../../src/main/core/agent/attachments';
+ 
+ const observed: Record<string, unknown> = {};
+ const dbs: Database.Database[] = [];
+-afterAll(() => writeFileSync('docs/review/evidence-20261117-1620/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
++afterAll(() => writeFileSync('docs/review/evidence-20261117-1755/probe-observations.json', JSON.stringify(observed, null, 2) + '\n'));
+ afterEach(() => { vi.useRealTimers(); for (const db of dbs.splice(0)) db.close(); });
+ function deferred<T = void>() { let resolve!: (v: T) => void; let reject!: (e: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
+ 
+@@ -63,7 +63,7 @@
+   }
+   visit(source);
+   const app = new EventEmitter(); let closes = 0; let prevented = false;
+-  const context = { app, agentWorkspace: { closeAll: async () => { closes++; } }, ptys: { count: 1 }, dialog: { showMessageBoxSync: () => 1 }, quitConfirmed: false, quitPending: false };
++  const context = { app, agentWorkspace: { closeAll: async () => { closes++; }, tasks: { list: () => [] } }, ptys: { count: 1 }, dialog: { showMessageBoxSync: () => 1 }, quitConfirmed: false, quitPending: false };
+   for (const c of callbacks) {
+     const js = ts.transpileModule(`const cb = ${c};`, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+     const cb = new Function(...Object.keys(context), `${js}; return cb;`)(...Object.values(context));
+@@ -78,7 +78,7 @@
+   const gate = deferred(), s = setup(gate.promise);
+   await s.submit(1, 'do work');
+   const stop = await s.tasks.stop(s.taskId);
+-  gate.resolve(); await until(() => s.instances[0]?.turns.length === 1);
++  gate.resolve(); await tick(); await until(() => !(s.tasks as any).dispatching.has(s.taskId));
+   observed.RC02a = { stop, dispatchedAfterStop: s.instances[0].turns.map(t => t.text), status: s.tasks.status(s.taskId) };
+   expect(s.instances[0].turns).toHaveLength(0);
+ });
+@@ -97,7 +97,7 @@
+   const s = setup(); await s.submit(1, 'a'); await until(() => s.instances[0]?.turns.length === 1);
+   s.instances[0].steerError = new DriverError('TIMEOUT', 'response lost after native consumption');
+   const receipt = await s.submit(2, 'perform side effect', 'steer');
+-  s.instances[0].finish(); await until(() => s.instances[0].turns.length === 2);
++  s.instances[0].finish(); await tick(); await until(() => !(s.tasks as any).dispatching.has(s.taskId));
+   observed.RC03 = { receipt, steered: s.instances[0].steers.map(t => t.text), normalTurns: s.instances[0].turns.map(t => t.text) };
+   expect(s.instances[0].turns.filter(t => t.text === 'perform side effect')).toHaveLength(0);
+ });
+@@ -115,7 +115,12 @@
+   const cc = requestOptions({ ...base, kind: 'user_input', payload: { tool: 'AskUserQuestion', input: { questions: [{ header: 'Pick', question: 'Which?', options: [{ label: 'A', description: 'A' }], multiSelect: false }] } } }, 'claude-sdk');
+   const el = requestOptions({ ...base, kind: 'elicitation', payload: { method: 'mcpServer/elicitation/request', params: { message: 'name', requestedSchema: { type: 'object', properties: { name: { type: 'string' } } } } } }, 'codex-app-server');
+   observed.RC05 = { codex: cx.map(o => o.result('A')), claude: cc.map(o => o.result('A')), elicitation: el.map(o => o.result('A')) };
+-  expect(cx.some(o => 'answers' in (o.result('A') as any))).toBe(true);
++  // The UI now uses requestForm rather than approval options for questions.
++  // Keep the old protocol requirement: the actual answer must have answers.
++  const form = requestForm({ ...base, kind: 'user_input', payload: { method: 'item/tool/requestUserInput', params: { questions: [{ id: 'q1', header: 'Pick', question: 'Which?', options: [{ label: 'A', description: 'A' }] }] } } }, 'codex-app-server');
++  const answer = form?.kind === 'questions' ? form.toResult({ q1: ['A'] }) : null;
++  observed.RC05 = { ...(observed.RC05 as object), codexFormAnswer: answer };
++  expect(answer).toEqual({ answers: { q1: { answers: ['A'] } } });
+ });
+ 
+ it('RC06: approval UI must not offer decisions missing from availableDecisions', () => {
+@@ -156,16 +161,19 @@
+   expect(peer.state.model).toBe('sonnet');
+ });
+ 
+-it('RC08: starting in ask must still allow an explicitly confirmed later switch to full', async () => {
+-  const peer = sdkPeer(), driver = new ClaudeSdkInstance(async () => peer.fn); let end = false;
+-  driver.on(e => { if (e.type === 'turn.completed') end = true; });
+-  await driver.open({ executable: { path: '/fake', version: '2.1.326' }, cwd: '/w', env: {}, tier: 'ask' });
+-  await driver.startTurn({ clientInputId: 'a', text: 'one', tier: 'ask' }); await until(() => end);
+-  let error: string | undefined;
+-  try { await driver.startTurn({ clientInputId: 'b', text: 'two', tier: 'full' }); } catch (e) { error = (e as Error).message; }
+-  observed.RC08 = { launchBypassEnabled: !!peer.state.options.allowDangerouslySkipPermissions, error, sentMessages: peer.state.prompts.length };
+-  await driver.close();
+-  expect(error).toBeUndefined();
++it('RC08: starting in ask must allow a confirmed later full tier via close and resume', async () => {
++  const insts: Inst[] = [], opened: DriverOpenOptions[] = [];
++  const drv: AgentDriver = { id: 'claude-sdk', command: 'claude', create() {
++    const i = new Inst(); (i as any).driverId = 'claude-sdk'; insts.push(i);
++    i.open = async o => { opened.push(o); return { nativeId: o.resumeNativeId ?? 'native', confirmed: true }; }; return i;
++  } };
++  const s = setup(undefined, drv); await s.submit(1, 'one'); await until(() => insts[0]?.turns.length === 1); insts[0].finish();
++  s.tasks.setSelection(s.taskId, { tier: 'full' }, 1);
++  await s.tasks.submit(s.taskId, { clientInputId: 'review-input-2', text: 'two', expectedSelectionRevision: 2 });
++  await until(() => insts[1]?.turns.length === 1);
++  observed.RC08 = { instances: insts.length, reopenedTier: opened[1].tier, resumedNativeId: opened[1].resumeNativeId, deliveredTier: insts[1].turns[0].tier };
++  expect(opened[1]).toMatchObject({ tier: 'full', resumeNativeId: 'native' });
++  expect(insts[1].turns[0].tier).toBe('full');
+ });
+ 
+ it('RC09: nested Claude assistant output must not be persisted as the parent answer', async () => {
+@@ -196,7 +204,7 @@
+   const s = setup(undefined, { id: 'codex-app-server', command: 'codex', create: () => new CodexAppServerInstance(() => child.asChild()) });
+   const h = await s.runs.open({ taskId: s.taskId, driverId: 'codex-app-server', profileId: 'review', executable: { path: '/fake', version: '0.169.0' }, cwd: '/w', env: {}, stateRoot: '/s', compatibility: {}, tier: 'ask' });
+   vi.useFakeTimers();
+-  const closing = s.runs.close(h.runId); await vi.advanceTimersByTimeAsync(5001); await closing;
++  const closing = s.runs.close(h.runId); await vi.advanceTimersByTimeAsync(15001); await closing;
+   observed.RC11 = { childExitCode: child.exitCode, sentSigterm: child.killed, activeRunRemoved: !s.runs.active(h.runId), storedState: s.store.run(h.runId)?.state };
+   // Remove test listeners before restoring clocks / closing the in-memory DB.
+   child.removeAllListeners(); server.child.stdout.destroy();

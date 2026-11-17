@@ -61,3 +61,22 @@ describe('Codex 投影', () => {
     expect(x.project({ type: 'native', name: 'error', payload: { turnId: 't', error: { message: 'usage limit' } } })[0]).toMatchObject({ type: 'error', payload: { message: 'usage limit' } });
   });
 });
+
+describe('复核 1755 投影回归', () => {
+  it('NR08：Claude 额度拒绝与输出上限标为受限并保留重置时间', () => {
+    const p = new TimelineProjector('claude-sdk');
+    const a = p.project({ type: 'native', name: 'rate_limit_event', payload: { type: 'rate_limit_event', uuid: 'r', rate_limit_info: { status: 'rejected', resetsAt: 1800000000, rateLimitType: 'five_hour' } } });
+    expect(a[0]).toMatchObject({ type: 'error', payload: { limited: { kind: 'usage', resetAt: new Date(1800000000 * 1000).toISOString() } } });
+    expect(p.project({ type: 'native', name: 'rate_limit_event', payload: { type: 'rate_limit_event', rate_limit_info: { status: 'allowed_warning' } } })).toEqual([]);
+    const b = p.project({ type: 'native', name: 'assistant', payload: { type: 'assistant', uuid: 'x', error: 'max_output_tokens', message: { content: [{ type: 'text', text: '部分输出' }] } } });
+    expect(b[0]).toMatchObject({ type: 'error', payload: { code: 'max_output_tokens', limited: { kind: 'output' } } });
+  });
+  it('NR11：子 Agent 已有结果后，迟到的内部消息不把节点改回运行中', () => {
+    const p = new TimelineProjector('claude-sdk');
+    p.project({ type: 'item.completed', nativeItemId: 'u', itemType: 'assistant', payload: { content: [{ type: 'tool_use', id: 'ag', name: 'Agent', input: { description: 'd' } }] } });
+    const done = p.project({ type: 'native', name: 'user', payload: { type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'ag', content: '完成' }] } } });
+    expect(done[0]).toMatchObject({ terminal: 'completed', payload: { status: 'completed' } });
+    const late = p.project({ type: 'item.completed', nativeItemId: 'c', itemType: 'assistant', payload: { parentToolUseId: 'ag', content: [{ type: 'text', text: '迟到的进度' }] } });
+    expect(late[0]).toMatchObject({ terminal: 'completed', payload: { status: 'completed', childLog: ['迟到的进度'] } });
+  });
+});

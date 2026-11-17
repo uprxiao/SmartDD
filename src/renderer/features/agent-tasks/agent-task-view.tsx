@@ -22,7 +22,7 @@ type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
 const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
 const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示' };
 const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
-const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限' };
+const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限', output: '输出长度到上限' };
 
 // 消息里的链接在阶段 5 按 T3 规则接入路由；此前只显示为文字，不打开任何地址。
 const md = new MarkdownIt({ html: false, linkify: false, breaks: false });
@@ -65,7 +65,7 @@ function ItemRow({ item }: { item: TimelineItem }) {
   const p = item.payload ?? {};
   switch (item.type) {
     case 'user_message': return <div className="agent-user"><div className="agent-user-bubble">{p.text}{p.attachments?.length ? <div className="agent-user-attachments">{p.attachments.map((a: any, i: number) => <span key={i} className="agent-chip-name">{a.kind === 'path' ? a.relativePath : a.name}</span>)}</div> : null}</div></div>;
-    case 'assistant_message': return <div className="agent-assistant"><Markdown text={String(p.text ?? '')} /></div>;
+    case 'assistant_message': return <div className="agent-assistant"><Markdown text={String(p.text ?? '')} />{p.truncated && <FullBody item={item} />}</div>;
     case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划</div><Markdown text={String(p.plan ?? '')} />
       <div className="agent-plan-actions"><button type="button" onClick={() => { void navigator.clipboard.writeText(String(p.plan ?? '')); toast.success('已复制计划'); }}>复制</button>
         <button type="button" onClick={() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([String(p.plan ?? '')], { type: 'text/markdown' })); a.download = 'plan.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }}>下载</button></div></div>;
@@ -76,6 +76,20 @@ function ItemRow({ item }: { item: TimelineItem }) {
     default: return null;
   }
 }
+
+/** 截断的正文按需读取全文（复核 NR06）：分段范围读取，不一次撑大快照。 */
+function FullBody({ item }: { item: TimelineItem }) {
+  const [full, setFull] = useState<string | null>(null);
+  const load = async () => {
+    try {
+      let off = 0, text = '';
+      for (;;) { const r = await rpc.agentTasks.itemBody(CurrentTask.id, item.itemId, off); text += r.chunk; off += r.chunk.length; if (r.done) break; }
+      setFull(String(JSON.parse(text).text ?? ''));
+    } catch (e) { toast.error(rpcErrorMessage(e)); }
+  };
+  return full !== null ? <Markdown text={full} /> : <button type="button" className="agent-older" onClick={() => void load()}>内容较长，已截断显示 · 展开全文</button>;
+}
+const CurrentTask = { id: '' };
 
 function WorkRow({ items, running, seconds }: { items: TimelineItem[]; running: boolean; seconds: number }) {
   const [open, setOpen] = useState(false);
@@ -127,9 +141,22 @@ function RequestPanel({ requests, driverId, onRespond, onStop }: { requests: Tim
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const panel = useRef<HTMLDivElement>(null);
-  const r = requests[Math.min(index, requests.length - 1)];
-  const form = requestForm(r, driverId);
-  const options = form ? [] : requestOptions(r, driverId);
+  const shown = requests[Math.min(index, requests.length - 1)];
+  // 过大的关键请求：先读完整内容再开放批准（复核 NR06）；读不全只能拒绝或停止。
+  const [full, setFull] = useState<Record<string, TimelineRequest['payload'] | 'error'>>({});
+  useEffect(() => {
+    if (!(shown as any).detailTruncated || full[shown.requestId]) return;
+    void (async () => {
+      try { let off = 0, text = ''; for (;;) { const c = await rpc.agentTasks.requestBody(CurrentTask.id, shown.requestId, off); text += c.chunk; off += c.chunk.length; if (c.done) break; }
+        const payload = JSON.parse(text); setFull(f => ({ ...f, [shown.requestId]: payload?.truncated ? 'error' : payload })); }
+      catch { setFull(f => ({ ...f, [shown.requestId]: 'error' })); }
+    })();
+  }, [shown.requestId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const loaded = full[shown.requestId];
+  const incomplete = !!(shown as any).detailTruncated && (loaded === undefined || loaded === 'error');
+  const r = loaded && loaded !== 'error' ? { ...shown, payload: loaded } : shown;
+  const form = incomplete ? null : requestForm(r, driverId);
+  const options = form ? [] : incomplete ? requestOptions(r, driverId).filter(o => o.deny) : requestOptions(r, driverId);
   const head = requestTitle(r);
   useEffect(() => { setSelected(null); panel.current?.focus(); }, [r.requestId]);
   const send = async (result: unknown) => {
@@ -152,6 +179,7 @@ function RequestPanel({ requests, driverId, onRespond, onStop }: { requests: Tim
   };
   return <div className="agent-request" role="dialog" aria-label="待处理请求" tabIndex={-1} ref={panel} onKeyDown={onKey}>
     <div className="agent-request-head"><b>{head.title}</b>{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{index + 1}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}</div>
+    {incomplete && <div className="agent-limited">{loaded === 'error' ? '请求内容过大或读取失败，只能拒绝或停止' : '正在读取完整内容，读完后才能批准…'}</div>}
     {!form && head.detail && <pre className="agent-request-detail">{head.detail}</pre>}
     {form ? <RequestFormView key={r.requestId} form={form} busy={busy} onSubmit={result => void send(result)} /> : <>
       <div className="agent-request-options" role="listbox">{options.map((o, i) => <button key={o.key} type="button" role="option" aria-selected={selected === i} disabled={busy} className={`${o.deny ? 'deny' : ''}${selected === i ? ' on' : ''}`} onClick={() => choose(i)}><kbd>{i + 1}</kbd>{o.label}</button>)}</div>
@@ -176,6 +204,7 @@ function GoalRow({ goal, driverId, onOp }: { goal: NonNullable<Snapshot['goal']>
 }
 
 export function AgentTaskView({ taskId }: { taskId: string }) {
+  CurrentTask.id = taskId;
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [text, setText] = useState('');
@@ -231,9 +260,14 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     void (async () => {
       const s = await rpc.agentTasks.snapshot(taskId).catch(e => { toast.error(rpcErrorMessage(e)); return null; });
       if (!alive || !s) return;
-      seqRef.current = s.seq; setSnap(s); draftRev.current = s.draft?.revision ?? 0; setText(String((s.draft?.draft as any)?.text ?? ''));
-      const saved = ((s.draft?.draft as any)?.attachments ?? []) as PreparedAttachment[];
-      setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
+      // 初始化同样做水位保护：已有更新的快照不覆盖；用户已开始编辑则不用服务端草稿覆盖本地内容（复核 NR07）。
+      if (s.seq < seqRef.current) return;
+      seqRef.current = s.seq; setSnap(s); draftRev.current = s.draft?.revision ?? 0;
+      if (!editedRef.current) {
+        setText(String((s.draft?.draft as any)?.text ?? ''));
+        const saved = ((s.draft?.draft as any)?.attachments ?? []) as PreparedAttachment[];
+        setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
+      }
     })();
     void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {});
     const tick = setInterval(() => setNow(Date.now()), 1000);
@@ -244,6 +278,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
 
   const chipsRef = useRef<Chip[]>([]); chipsRef.current = chips;
   const textRef = useRef(''); textRef.current = text;
+  const editedRef = useRef(false);
   const saveDraft = (value: string) => {
     if (draftTimer.current) clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(async () => {
@@ -313,6 +348,8 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
       // /goal 命令：只对声明支持的执行器开放（需求 R02）；/goal clear 清除。
       const goalCmd = /^\/goal(?:\s+([\s\S]*))?$/.exec(value);
       const nativeCmd = !goalCmd && /^\/([A-Za-z0-9_:.-]+)(?:\s+([\s\S]*))?$/.exec(value);
+      // 命令不支持附件：提示并完整保留，不能成功后把附件丢掉（复核 NR10）。
+      if ((goalCmd || (nativeCmd && catalog.commands.map(c => c.replace(/^\//, '')).includes(nativeCmd[1]))) && attachments.length) { toast.warning('命令不能带附件，附件已保留；请去掉命令或附件后再发送'); return; }
       if (nativeCmd && catalog.commands.map(c => c.replace(/^\//, '')).includes(nativeCmd[1])) {
         await rpc.agentTasks.command(taskId, nativeCmd[1], (nativeCmd[2] ?? '').trim() || undefined);
       } else if (goalCmd) {
@@ -363,7 +400,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
           <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
             onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
-            onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
+            onChange={e => { editedRef.current = true; setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
             onKeyDown={e => {
               if (menuItems.length && !e.nativeEvent.isComposing) {
                 if (e.key === 'ArrowDown') { e.preventDefault(); setMenuIndex(i => (i + 1) % menuItems.length); return; }
@@ -377,8 +414,8 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
               {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
             </select>
             <span className="agent-composer-agent">{profile?.name ?? snap.selection.profileId}</span>
-            {profile && profile.models.length > 0 && <select ref={modelSelect} aria-label="模型" value={snap.selection.model ?? profile.defaultModel ?? ''} onChange={e => void setSelection({ model: e.target.value || null })}>
-              {!profile.models.includes(snap.selection.model ?? profile.defaultModel ?? '') && <option value="">执行器默认</option>}
+            {profile && profile.models.length > 0 && <select ref={modelSelect} aria-label="模型" value={snap.selection.model ?? ''} onChange={e => void setSelection({ model: e.target.value || null })}>
+              <option value="">{profile.defaultModel ? `默认（${profile.defaultModel}）` : '执行器默认'}</option>
               {profile.models.map(m => <option key={m} value={m}>{m}</option>)}
             </select>}
             <span className="push" />

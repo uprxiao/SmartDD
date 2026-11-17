@@ -86,6 +86,8 @@ export interface RequestOption { key: string; label: string; result: (reason: st
 export function requestOptions(r: TimelineRequest, driverId: string): RequestOption[] {
   // 提问与 MCP 表单由 requestForm 处理，不套用批准选项（复核 CR09）。
   if (requestForm(r, driverId)) return [];
+  // 未知种类的请求不给通用批准，只能拒绝（复核 NR09）。
+  if (r.kind === 'other') return [{ key: 'deny', label: '拒绝（WillYou 不支持该请求）', result: () => (driverId === 'claude-sdk' ? { behavior: 'deny', message: 'WillYou 不支持该请求' } : { decision: 'decline' }), deny: true }];
   if (driverId === 'claude-sdk') {
     const input = r.payload?.input;
     if (r.kind === 'plan_approval') return [

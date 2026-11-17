@@ -27,11 +27,13 @@ export interface OpenRunInput {
   settingSources?: readonly ('user' | 'project' | 'local')[];
   /** 启动探测得到的逐项能力（复核 CR15）；缺省按版本计算。冻结进运行，供命令、界面与驱动共同判定。 */
   capabilities?: Record<CapabilityName, CapabilityResult>;
+  /** 配置档案的默认模型（托管供应商为档案默认，订阅登录为空＝执行器默认）；“恢复默认”用它，不用最初的显式选择（复核 NR05）。 */
+  defaultModel?: string;
 }
-export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string }
+export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
-interface ActiveRun extends RunHandle { catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
+interface ActiveRun extends RunHandle { openError?: string; catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
 
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
@@ -74,16 +76,21 @@ export class AgentRunService {
     let markEnded!: () => void;
     const ended = new Promise<void>(r => { markEnded = r; });
     const capabilities = input.capabilities ?? evaluateCapabilities(input.driverId, input.executable.version).capabilities;
-    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
+    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     instance.on(e => this.onDriverEvent(run, e));
     try {
       const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: input.env, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: input.extraArgs, settingSources: input.settingSources });
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
     } catch (e) {
-      store.finishRun(runId, input.taskId, 'failed', e instanceof DriverError ? e.code : 'OPEN_FAILED');
-      this.runs.delete(runId);
+      // 打开失败也按真实退出收口（复核 NR02）：先关闭；观察到退出才记失败并释放，否则保留 stopping 占用。
+      run.closing = true;
+      run.openError = e instanceof DriverError ? e.code : 'OPEN_FAILED';
       await instance.close().catch(() => {});
+      if (this.runs.has(runId)) {
+        if (!store.run(runId)?.pid) { store.finishRun(runId, input.taskId, 'failed', e instanceof DriverError ? e.code : 'OPEN_FAILED'); this.runs.delete(runId); run.markEnded(); }
+        else store.markRunStopping(runId, input.taskId);
+      }
       throw e;
     }
     return { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, ...(run.tierNotice ? { tierNotice: run.tierNotice } : {}) };
@@ -142,8 +149,16 @@ export class AgentRunService {
           if (run.turnId && turns.some(t => t.turn_id === run.turnId)) run.turnId = null;
           break;
         }
+        case 'unusable':
+          // 不可再用的运行退役（复核 NR04）：不再接受派发，关闭进程；观察到退出后释放，下次提交恢复会话。
+          if (!run.closing) {
+            run.closing = true;
+            store.addHostItem(run.taskId, run.turnId, 'system_notice', { severity: 'warning', code: 'runUnusable', detail: `${e.reason}，会话将在下次发送时恢复` });
+            void run.instance.close().then(() => { if (this.runs.has(run.runId)) store.markRunStopping(run.runId, run.taskId); }).catch(() => {});
+          }
+          break;
         case 'exit':
-          store.finishRun(run.runId, run.taskId, run.closing ? 'stopped' : 'failed', run.closing ? null : `EXIT_${e.code ?? e.signal}`);
+          store.finishRun(run.runId, run.taskId, run.openError ? 'failed' : run.closing ? 'stopped' : 'failed', run.openError ?? (run.closing ? null : `EXIT_${e.code ?? e.signal}`));
           this.runs.delete(run.runId);
           run.markEnded();
           break;

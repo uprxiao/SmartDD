@@ -48,6 +48,24 @@ function make(turns: Turn[]) {
   return { inst, sdk, events };
 }
 
+describe('复核 1755：目标确认只认目标命令那一轮', () => {
+  it('NR13：普通回答引用 Goal set／Goal cleared 不改变目标；/goal 那一轮的确认才生效', async () => {
+    const { inst, events } = make([
+      async ({ emit }) => { emit({ type: 'assistant', uuid: 'a', message: { content: [{ type: 'text', text: 'Goal set: quoted example only' }] } }); emit({ type: 'result', subtype: 'success' }); },
+      async ({ emit }) => { emit({ type: 'assistant', uuid: 'b', message: { content: [{ type: 'text', text: 'Goal set: 真目标' }] } }); emit({ type: 'result', subtype: 'success' }); },
+      async ({ emit }) => { emit({ type: 'assistant', uuid: 'c', message: { content: [{ type: 'text', text: 'Goal cleared: fake' }] } }); emit({ type: 'result', subtype: 'success' }); },
+    ]);
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: '1', text: '讲讲 goal 怎么用', tier: 'ask' });
+    await until(() => events.filter(e => e.type === 'turn.completed').length === 1);
+    await inst.startTurn({ clientInputId: '2', text: '/goal 真目标', tier: 'ask' });
+    await until(() => events.filter(e => e.type === 'turn.completed').length === 2);
+    await inst.startTurn({ clientInputId: '3', text: '随便聊聊', tier: 'ask' });
+    await until(() => events.filter(e => e.type === 'turn.completed').length === 3);
+    expect(events.filter(e => e.type === 'goal')).toEqual([{ type: 'goal', objective: '真目标', status: 'active' }]);
+  });
+});
+
 describe('Claude SDK 驱动', () => {
   it('使用本机 claude、预分配会话 ID，等 system/init 才确认原生身份', async () => {
     const { inst, sdk, events } = make([ok('好')]);

@@ -26,12 +26,36 @@ export interface ResolvedLaunch {
 export type LaunchResolver = (input: { profileId: string; cwd: string; runId: string; model?: string }) => Promise<ResolvedLaunch>;
 export type ProfileDriver = (profileId: string) => DriverId;
 
+const SNAPSHOT_ITEM_BUDGET = 160 * 1024, HISTORY_BUDGET = 224 * 1024, ITEM_PREVIEW = 24 * 1024, REQUEST_PREVIEW = 96 * 1024, RANGE = 128 * 1024;
+/** 过大的正文给预览：长字符串截短并标 truncated，完整内容经 itemBody／requestBody 范围读取。 */
+function shorten(v: unknown, depth = 0): unknown {
+  if (typeof v === 'string') return v.length > 4000 ? v.slice(0, 4000) : v;
+  if (Array.isArray(v)) return v.slice(0, 50).map(x => shorten(x, depth + 1));
+  if (v && typeof v === 'object' && depth < 4) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, shorten(x, depth + 1)]));
+  return v;
+}
+function previewItem<T extends { payload: any }>(it: T): T {
+  const bytes = Buffer.byteLength(JSON.stringify(it.payload));
+  return bytes <= ITEM_PREVIEW ? it : { ...it, payload: { ...(shorten(it.payload) as object), truncated: true, bytes } };
+}
+function previewRequest<T extends { payload: any }>(r: T): T & { detailTruncated?: boolean; bytes?: number } {
+  const bytes = Buffer.byteLength(JSON.stringify(r.payload));
+  // 关键请求不截断：过大的请求只给预览，界面读完完整内容后才开放批准（复核 NR06）。
+  return bytes <= REQUEST_PREVIEW && !r.payload?.truncated ? r : { ...r, payload: shorten(r.payload), detailTruncated: true, bytes };
+}
+function rangeOf(text: string, offset: number) {
+  const start = Math.max(0, Math.floor(offset) || 0);
+  return { chunk: text.slice(start, start + RANGE), total: text.length, done: start + RANGE >= text.length };
+}
+
 export type TaskStatus = 'idle' | 'working' | 'waiting' | 'completed' | 'stopped' | 'failed' | 'limited';
 
 export class AgentTaskService {
   /** 用户按停止后暂停自动派发排队输入，直到下一次提交（停止只停本轮，不吞掉排队）。 */
   private readonly paused = new Set<string>();
   private readonly dispatching = new Set<string>();
+  private readonly missedPump = new Set<string>();
+  private readonly blockedByClosing = new Set<string>();
   /** 每次停止递增：异步打开运行期间按了停止，返回后不再派发（复核 CR03）。 */
   private readonly stopSeq = new Map<string, number>();
   /** Claude 目标命令已发出、尚未得到原生确认（复核 CR14）；确认后以原生事实为准。 */
@@ -43,7 +67,12 @@ export class AgentTaskService {
     d.store.subscribe(e => {
       if (e.type === 'goal.changed') this.goalPending.delete(e.taskId);
       if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g?.turnId === (e.payload as { turnId?: string }).turnId) this.goalPending.delete(e.taskId); }
-      if (e.type === 'turn.ended' || e.type === 'run.ended') queueMicrotask(() => void this.pump(e.taskId));
+      if (e.type === 'run.ended' && this.blockedByClosing.delete(e.taskId)) this.paused.delete(e.taskId);
+      if (e.type === 'turn.ended' || e.type === 'run.ended') {
+        // 派发进行中到达的终态会被门闩挡掉：记下来，门闩释放后补一次调度（复核 NR03）。
+        if (this.dispatching.has(e.taskId)) this.missedPump.add(e.taskId);
+        queueMicrotask(() => void this.pump(e.taskId));
+      }
     });
   }
 
@@ -86,6 +115,9 @@ export class AgentTaskService {
   async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) {
     const { revision, task } = this.selection(taskId);
     if (input.expectedSelectionRevision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
+    // 幂等命中直接返回原收据，不再准备或冻结附件（复核 NR01）。
+    const existing = this.d.store.turnByClientInput(taskId, input.clientInputId);
+    if (existing) return { turnId: existing.turn_id, duplicate: true, status: existing.status };
     if (Buffer.byteLength(input.text) > 256 * 1024) throw new DriverError('REJECTED', '输入超过 256 KB，请拆分或改用附件');
     const verified = this.d.userData ? verifyAttachments(input.attachments, task.cwd, this.d.userData) : [];
     // 图片在接受时冻结副本，派发只读副本（复核 CR01）。
@@ -140,10 +172,11 @@ export class AgentTaskService {
     const existing = this.d.runs.runForTask(taskId);
     if (existing) return existing;
     const { task, selection } = this.selection(taskId);
-    const launch = await this.d.resolveLaunch({ profileId: selection.profileId, cwd: task.cwd, runId: randomUUID(), model: selection.model });
+    // 不带当前选择解析启动参数，得到档案自己的默认模型；“恢复默认”用它（复核 NR05）。
+    const launch = await this.d.resolveLaunch({ profileId: selection.profileId, cwd: task.cwd, runId: randomUUID() });
     if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
     if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一运行仍在退出，请稍后');
-    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities });
+    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities });
     return this.d.runs.runForTask(taskId)!;
   }
 
@@ -205,15 +238,23 @@ export class AgentTaskService {
       // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
       if (run && run.driverId === 'claude-sdk' && run.tier !== selection.tier) { await this.d.runs.close(run.runId); run = undefined; }
       run = await this.ensureRun(taskId);
+      // 无法保证把审批交给用户的版本不能运行“请求批准／帮我批准”（复核 NR09，技术方案 §7.1）。
+      if (run.driverId === 'codex-app-server' && selection.tier !== 'full') this.requireCapability(run, 'approvalsReviewer', `${selection.tier === 'ask' ? '请求批准' : '帮我批准'}档位`);
       // 异步打开期间用户按了停止：输入保留在排队，不派发（复核 CR03）。
       if (stoppedSince()) return;
       const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[] };
-      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...this.agentInput(frozen.text, frozen.attachments ?? []), tier: selection.tier as Tier, model: selection.model ?? run.model });
+      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...this.agentInput(frozen.text, frozen.attachments ?? []), tier: selection.tier as Tier, model: selection.model ?? run.defaultModel });
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
     } catch (e) {
       const t = this.d.store.turn(next.turn_id);
       // 驱动在发送前拒绝且已放回排队（原生仍在跑）：等该回合结束后由 turn.ended 再派发，不算失败。
-      if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && (this.d.runs.runForTask(taskId) || this.d.runs.closingForTask(taskId))) return;
+      if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.runForTask(taskId)) return;
+      // 上一运行已不可用、仍在等真实退出：输入保留但暂停，明确告知原因；退出后自动恢复派发（复核 NR04）。
+      if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.closingForTask(taskId)) {
+        if (!this.blockedByClosing.has(taskId)) { this.blockedByClosing.add(taskId); this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { severity: 'warning', code: 'waitingPreviousRun', detail: '上一会话已不可用、正在等待它退出；输入已保留，退出后会自动发送。也可以取消这条输入。' }); }
+        this.paused.add(taskId);
+        return;
+      }
       // 打开运行失败：这条输入明确未发出，标失败并把原因写进时间线；后续排队保留，等用户处理。
       if (t?.status === 'accepted') this.d.store.endTurn(next.turn_id, 'failed', e instanceof DriverError ? e.code : 'OPEN_FAILED');
       const message = (e as Error).message.slice(0, 2000);
@@ -223,6 +264,7 @@ export class AgentTaskService {
       this.paused.add(taskId);
     } finally {
       this.dispatching.delete(taskId);
+      if (this.missedPump.delete(taskId)) queueMicrotask(() => void this.pump(taskId));
     }
   }
 
@@ -250,6 +292,13 @@ export class AgentTaskService {
   async respond(taskId: string, requestId: string, revision: number, result: unknown) {
     const req = this.d.store.request(requestId);
     if (!req || req.task_id !== taskId) throw new DriverError('REJECTED', '请求不存在');
+    // 批准以宿主保存的完整请求为准：客户端交回的入参（可能来自预览）不能替换原文，提问类只取答案（复核 NR06）。
+    const r = result as { behavior?: string; updatedInput?: Record<string, unknown> } | null;
+    if (r && r.behavior === 'allow' && r.updatedInput) {
+      const stored = JSON.parse(req.payload_ref) as { input?: Record<string, unknown>; truncated?: boolean };
+      if (stored.truncated) throw new DriverError('REJECTED', '请求内容过大，不能批准');
+      result = req.kind === 'user_input' ? { ...r, updatedInput: { ...(stored.input ?? {}), answers: (r.updatedInput as { answers?: unknown }).answers } } : { ...r, updatedInput: stored.input };
+    }
     const origin = JSON.parse(req.origin_json) as { runId: string; generation: number };
     const run = this.d.runs.runForTask(taskId);
     const scope = run ? { taskId, runId: run.runId, generation: run.generation, revision } : { taskId, runId: origin.runId, generation: -1, revision };
@@ -270,7 +319,7 @@ export class AgentTaskService {
     if (turns.some(t => ['accepted', 'dispatching', 'started'].includes(t.status))) return this.paused.has(taskId) && !turns.some(t => ['dispatching', 'started'].includes(t.status)) ? 'stopped' : 'working';
     const last = turns.filter(t => t.status !== 'canceled').at(-1);
     if (!last) return 'idle';
-    if (last.status === 'failed' && this.d.store.items(taskId).some(i => i.turnId === last.turn_id && i.type === 'error' && i.payload?.limited)) return 'limited';
+    if ((last.status === 'failed' || last.status === 'completed') && this.d.store.items(taskId, { limit: 200 }).some(i => i.turnId === last.turn_id && i.type === 'error' && i.payload?.limited)) return 'limited';
     return last.status === 'completed' ? 'completed' : last.status === 'interrupted' ? 'stopped' : last.status === 'failed' || last.status === 'unknown' ? 'failed' : 'idle';
   }
 
@@ -282,26 +331,49 @@ export class AgentTaskService {
   snapshot(taskId: string) {
     const { task, selection, revision } = this.selection(taskId);
     const run = this.d.runs.runForTask(taskId);
-    return {
+    const base = {
       taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, selection, selectionRevision: revision,
-      draft: this.d.store.draft(taskId), ...this.itemsPage(taskId), turns: this.d.store.turns(taskId),
-      requests: this.d.store.pendingRequests(taskId), queued: this.d.store.queuedTurns(taskId).map(q => ({ turnId: q.turn_id, text: (JSON.parse(q.input_ref) as { text: string }).text })),
+      draft: this.d.store.draft(taskId), items: [] as ReturnType<AgentStore['items']>, hasOlder: false, turns: this.d.store.turns(taskId).slice(-500),
+      requests: this.d.store.pendingRequests(taskId).map(previewRequest), queued: this.d.store.queuedTurns(taskId).slice(0, 50).map(q => { const t = (JSON.parse(q.input_ref) as { text: string }).text; return { turnId: q.turn_id, text: t.length > 2000 ? t.slice(0, 2000) : t, ...(t.length > 2000 ? { truncated: true } : {}) }; }),
       run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: this.d.runs.active(run.runId)?.catalog ?? null } : null,
       goal: this.d.store.goal(taskId), goalPending: this.goalPending.get(taskId) ?? null,
       status: this.status(taskId), seq: this.d.store.watermark(taskId),
     };
+    // 整体响应守 256 KiB：先算除条目外的部分，剩余预算装入最近的条目（复核 NR06）。
+    const rest = Buffer.byteLength(JSON.stringify(base));
+    return { ...base, ...this.itemsPage(taskId, Math.max(16 * 1024, 240 * 1024 - rest)) };
   }
 
   /** 快照只带最近 2000 条；更早的按 100 条一页、响应不超过 256 KiB 读取（技术方案 §3.1）。 */
-  private itemsPage(taskId: string) {
-    const items = this.d.store.items(taskId);
-    return { items, hasOlder: items.length > 0 && items[0].ordinal > 1 };
+  private itemsPage(taskId: string, budget = SNAPSHOT_ITEM_BUDGET) {
+    // 快照条目按字节预算从新到旧装入，单项过大给预览（复核 NR06，IPC 响应 256 KiB）。
+    const all = this.d.store.items(taskId);
+    const out: typeof all = []; let bytes = 0;
+    for (const it of [...all].reverse()) {
+      const shown = previewItem(it);
+      const size = Buffer.byteLength(JSON.stringify(shown));
+      if (bytes + size > budget && out.length) break;
+      bytes += size; out.unshift(shown);
+    }
+    return { items: out, hasOlder: out.length > 0 && out[0].ordinal > 1 };
+  }
+  /** 正文范围读取（复核 NR06）：截断预览的条目与过大的请求按 128 KiB 分段读取完整内容。 */
+  itemBody(taskId: string, itemId: string, offset: number) {
+    this.selection(taskId);
+    const it = this.d.store.itemById(taskId, itemId);
+    if (!it) throw new DriverError('REJECTED', '条目不存在');
+    return rangeOf(JSON.stringify(it.payload), offset);
+  }
+  requestBody(taskId: string, requestId: string, offset: number) {
+    const r = this.d.store.request(requestId);
+    if (!r || r.task_id !== taskId) throw new DriverError('REJECTED', '请求不存在');
+    return rangeOf(r.payload_ref, offset);
   }
   history(taskId: string, beforeOrdinal: number) {
     this.selection(taskId);
     const page = this.d.store.items(taskId, { beforeOrdinal, limit: 100 });
     const out: typeof page = []; let bytes = 0;
-    for (const it of [...page].reverse()) { bytes += Buffer.byteLength(JSON.stringify(it)); if (bytes > 256 * 1024 && out.length) break; out.unshift(it); }
+    for (const it of [...page].reverse()) { const shown = previewItem(it); const size = Buffer.byteLength(JSON.stringify(shown)); if (bytes + size > HISTORY_BUDGET && out.length) break; bytes += size; out.unshift(shown); }
     return { items: out, hasOlder: out.length > 0 && out[0].ordinal > 1 };
   }
 

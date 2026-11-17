@@ -54,6 +54,8 @@ export type DriverEvent =
   /** 所有原生通知原样保留，供时间线（阶段 2）与诊断使用；不在此处解释。 */
   | { type: 'native'; name: string; payload: unknown }
   | { type: 'diagnostic'; message: string }
+  /** 实例已不可再用（如 SDK 流异常结束）：宿主把运行退役，下次提交恢复会话。 */
+  | { type: 'unusable'; reason: string }
   | { type: 'exit'; code: number | null; signal: string | null };
 
 export type DriverListener = (event: DriverEvent) => void;

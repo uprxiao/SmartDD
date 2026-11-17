@@ -17,6 +17,8 @@ export interface Attachment {
   image: boolean;
   /** kind=path：相对任务工作目录的路径。 */
   relativePath?: string;
+  /** kind=path：准备时工作目录的真实路径（复核 NR12），提交时须与任务目录一致。 */
+  root?: string;
   /** kind=file：WillYou 私有目录中的副本。 */
   storedPath?: string;
 }
@@ -34,7 +36,7 @@ export function prepareAttachment(input: { cwd: string; userData: string; name: 
     if (!st.isFile()) throw new DriverError('REJECTED', '只能添加文件');
     if (st.size > ATTACHMENT_LIMIT) throw new DriverError('REJECTED', `文件超过 ${ATTACHMENT_LIMIT / 1024 / 1024} MB`);
     const root = realpathSync(input.cwd), rel = relative(root, real);
-    if (rel && rel !== '..' && !rel.startsWith(`..${sep}`)) return { id, kind: 'path', name, mime, size: st.size, image, relativePath: rel };
+    if (rel && rel !== '..' && !rel.startsWith(`..${sep}`)) return { id, kind: 'path', name, mime, size: st.size, image, relativePath: rel, root };
     const dir = join(input.userData, 'agent-attachments', id); mkdirSync(dir, { recursive: true, mode: 0o700 });
     const storedPath = join(dir, name); copyFileSync(real, storedPath);
     return { id, kind: 'file', name, mime, size: st.size, image, storedPath };
@@ -56,10 +58,12 @@ export function verifyAttachments(list: unknown, cwd: string, userData: string):
   return list.map((a: any) => {
     if (!a || typeof a.id !== 'string' || (a.kind !== 'path' && a.kind !== 'file')) throw new DriverError('REJECTED', '附件无效');
     if (a.kind === 'path') {
+      // 附件属于准备时的目录：换了项目或目录不能按新根重新解释同名文件（复核 NR12）。
+      if (a.root !== undefined && a.root !== root) throw new DriverError('REJECTED', `附件来自其他目录，请重新添加：${a.name ?? a.relativePath}`);
       const rel = String(a.relativePath ?? ''), real = (() => { try { return realpathSync(join(root, rel)); } catch { return ''; } })();
       const r = relative(root, real);
       if (!real || !r || r === '..' || r.startsWith(`..${sep}`)) throw new DriverError('REJECTED', `附件已不在项目内：${rel}`);
-      return { id: a.id, kind: 'path', name: safeName(a.name ?? rel), mime: mimeOf(rel, a.mime), size: statSync(real).size, image: mimeOf(rel, a.mime).startsWith('image/'), relativePath: r } as Attachment;
+      return { id: a.id, kind: 'path', name: safeName(a.name ?? rel), mime: mimeOf(rel, a.mime), size: statSync(real).size, image: mimeOf(rel, a.mime).startsWith('image/'), relativePath: r, root } as Attachment;
     }
     const stored = String(a.storedPath ?? '');
     const real = (() => { try { return realpathSync(stored); } catch { return ''; } })();
@@ -86,8 +90,9 @@ export function freezeImages(list: Attachment[], cwd: string, userData: string):
       if (!st.isFile() || st.size > ATTACHMENT_LIMIT) throw new DriverError('REJECTED', '附件无效或过大');
       const buf = Buffer.alloc(st.size); let off = 0;
       while (off < st.size) { const n = readSync(fd, buf, off, st.size - off, off); if (!n) break; off += n; }
-      const dir = join(userData, 'agent-attachments', a.id + '-frozen'); mkdirSync(dir, { recursive: true, mode: 0o700 });
-      const storedPath = join(dir, a.name); writeFileSync(storedPath, buf.subarray(0, off), { mode: 0o600 });
+      // 每次冻结都写入新的唯一目录、不覆盖（复核 NR01）：已接受输入引用的副本不可变。
+      const dir = join(userData, 'agent-attachments', `frozen-${randomUUID()}`); mkdirSync(dir, { recursive: true, mode: 0o700 });
+      const storedPath = join(dir, a.name); writeFileSync(storedPath, buf.subarray(0, off), { mode: 0o600, flag: 'wx' });
       return { ...a, storedPath };
     } finally { closeSync(fd); }
   });

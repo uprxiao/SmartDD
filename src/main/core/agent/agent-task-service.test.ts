@@ -31,14 +31,14 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void> } = {}) {
+function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; launchModel?: string } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db);
   const insts: Inst[] = [];
   const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
-  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [] }; };
+  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
   const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData });
   return { db, store, runs, svc, insts, launches };
 }
@@ -228,7 +228,11 @@ describe('复核 1620 回归', () => {
     await svc.submit(taskId, { clientInputId: id(1), text: big, expectedSelectionRevision: 1 });
     await until(() => insts[0]?.turns.length === 1);
     expect(insts[0].turns[0].text).toBe(big);
-    expect(svc.snapshot(taskId).items.find(i => i.type === 'user_message')?.payload.text).toBe(big);
+    const item = svc.snapshot(taskId).items.find(i => i.type === 'user_message')!;
+    expect(item.payload.truncated).toBe(true);
+    let off = 0, body = '';
+    for (;;) { const c = svc.itemBody(taskId, item.itemId, off); body += c.chunk; off += c.chunk.length; if (c.done) break; }
+    expect(JSON.parse(body).text).toBe(big);
     await expect(svc.submit(taskId, { clientInputId: id(2), text: 'x'.repeat(256 * 1024 + 1), expectedSelectionRevision: 1 })).rejects.toThrow('超过 256 KB');
   });
   it('CR12：Claude 档位跨越完全访问时重开并恢复原会话', async () => {
@@ -271,13 +275,124 @@ describe('容量与分页（技术方案 §3.1）', () => {
     const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
     for (let i = 0; i < 2105; i++) store.addHostItem(taskId, null, 'system_notice', { detail: `n${i}` });
     const snap = svc.snapshot(taskId);
-    expect(snap.items).toHaveLength(2000);
-    expect(snap.items[0].ordinal).toBe(106);
+    // 先受字节预算约束（IPC 响应 256 KiB），条数上限 2000 作为第二道边界
+    expect(Buffer.byteLength(JSON.stringify(snap))).toBeLessThan(256 * 1024);
+    expect(snap.items.at(-1)!.ordinal).toBe(2105);
     expect(snap.hasOlder).toBe(true);
-    const page = svc.history(taskId, 106);
-    expect(page.items.map(i => i.ordinal)).toEqual(Array.from({ length: 100 }, (_, k) => k + 6));
-    expect(page.hasOlder).toBe(true);
-    expect(svc.history(taskId, 6)).toMatchObject({ hasOlder: false });
+    const first = snap.items[0].ordinal;
+    const page = svc.history(taskId, first);
+    expect(page.items.at(-1)!.ordinal).toBe(first - 1);
+    expect(page.items.length).toBeLessThanOrEqual(100);
+    expect(svc.history(taskId, 1)).toMatchObject({ items: [], hasOlder: false });
+  });
+});
+
+describe('复核 1755 回归', () => {
+  it('NR01：同一输入标识重试不重新冻结，已接受的图片副本不变', async () => {
+    const { readFileSync } = await import('node:fs');
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-nr01-'))), cwd = join(root, 'w'), ud = join(root, 'ud');
+    mkdirSync(cwd); mkdirSync(ud); writeFileSync(join(cwd, 'p.png'), 'IMAGE_A');
+    const { svc, insts, db } = setup({ userData: ud });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd, title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    const att = svc.prepareAttachment(taskId, null, { name: 'p.png', sourcePath: join(cwd, 'p.png') });
+    const first = await svc.submit(taskId, { clientInputId: id(2), text: '图', expectedSelectionRevision: 1, attachments: [att] });
+    const stored = JSON.parse((db.prepare('SELECT input_ref FROM agent_turns WHERE turn_id=?').get(first.turnId) as any).input_ref).attachments[0].storedPath;
+    writeFileSync(join(cwd, 'p.png'), 'IMAGE_B');
+    const again = await svc.submit(taskId, { clientInputId: id(2), text: '图', expectedSelectionRevision: 1, attachments: [att] });
+    expect(again).toMatchObject({ duplicate: true, turnId: first.turnId });
+    expect(readFileSync(stored, 'utf8')).toBe('IMAGE_A');
+  });
+  it('NR03：上一轮先结束、start 回执后到时，排队输入仍自动发出且只发一次', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'first', expectedSelectionRevision: 1 });
+    await until(() => insts.length === 1);
+    const inst = insts[0];
+    let release!: () => void;
+    inst.startTurn = async (t) => { inst.turns.push(t); const nid = `nt-${inst.turns.length}`; inst.emit({ type: 'turn.started', nativeTurnId: nid, clientInputId: t.clientInputId }); if (inst.turns.length === 1) { await new Promise<void>(r => { release = r; }); } return { nativeTurnId: nid }; };
+    await svc.submit(taskId, { clientInputId: id(2), text: 'override', expectedSelectionRevision: 1 }).catch(() => {});
+    // 重新排一次：第一条 start 回执挂起期间原生先完成，第二条已排队
+    await until(() => inst.turns.length >= 1 && !!release);
+    inst.emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status: 'completed' });
+    release();
+    await until(() => inst.turns.length === 2);
+    await new Promise(r => setTimeout(r, 30));
+    expect(inst.turns.map(t => t.text)).toEqual(['first', 'override']);
+  });
+  it('NR04：执行器实例不可再用时运行退役，下一条输入恢复会话后发出', async () => {
+    const { svc, insts, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].finish();
+    await until(() => svc.status(taskId) === 'completed');
+    insts[0].emit({ type: 'unusable', reason: 'SDK 流已结束' });
+    await until(() => insts.length === 1 && svc.snapshot(taskId).run === null);
+    expect(store.items(taskId).some(i => i.type === 'system_notice' && i.payload.code === 'runUnusable')).toBe(true);
+    await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 1 });
+    await until(() => insts.length === 2 && insts[1].turns.length === 1);
+    expect(insts[1].opened?.resumeNativeId).toBe('n1');
+  });
+  it('NR05：指定 A→B→默认，恢复默认用档案默认模型而不是最初的显式选择', async () => {
+    const { svc, insts } = setup({ launchModel: 'profile-default' });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask', model: 'opus' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1); insts[0].finish(); await until(() => svc.status(taskId) === 'completed');
+    svc.setSelection(taskId, { model: 'sonnet' }, 1);
+    await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 2 });
+    await until(() => insts[0].turns.length === 2); insts[0].finish(); await until(() => svc.status(taskId) === 'completed');
+    svc.setSelection(taskId, { model: null }, 2);
+    await svc.submit(taskId, { clientInputId: id(3), text: 'c', expectedSelectionRevision: 3 });
+    await until(() => insts[0].turns.length === 3);
+    expect(insts[0].turns.map(t => t.model)).toEqual(['opus', 'sonnet', 'profile-default']);
+  });
+  it('NR06：40 KiB 计划完整保存，快照给预览并标截断，范围读取得到全文；快照与分页守字节上限', async () => {
+    const { svc, insts, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    // 40 KiB 计划在快照里完整显示；批准时即使客户端交回被截短的入参，执行器收到的仍是宿主保存的完整原文
+    const plan = 'P'.repeat(40 * 1024);
+    insts[0].emit({ type: 'request', requestKey: '9', kind: 'plan_approval', payload: { tool: 'ExitPlanMode', input: { plan } } });
+    const [req] = svc.snapshot(taskId).requests as any[];
+    expect(req.detailTruncated).toBeUndefined();
+    expect(req.payload.input.plan).toBe(plan);
+    await svc.respond(taskId, req.requestId, req.revision, { behavior: 'allow', updatedInput: { plan: 'P'.repeat(100) } });
+    expect(insts[0].responses.at(-1)).toEqual(['9', { behavior: 'allow', updatedInput: { plan } }]);
+    // 超过 96 KiB 的请求：快照给预览并标截断，范围读取得到全文
+    const huge = 'H'.repeat(120 * 1024);
+    insts[0].emit({ type: 'request', requestKey: '10', kind: 'plan_approval', payload: { tool: 'ExitPlanMode', input: { plan: huge } } });
+    const big = (svc.snapshot(taskId).requests as any[]).find(r => r.payload.input.plan.startsWith('H'));
+    expect(big.detailTruncated).toBe(true);
+    let off = 0, text = '';
+    for (;;) { const c = svc.requestBody(taskId, big.requestId, off); text += c.chunk; off += c.chunk.length; if (c.done) break; }
+    expect(JSON.parse(text).input.plan).toBe(huge);
+    await svc.respond(taskId, big.requestId, big.revision, { behavior: 'deny', message: 'no' });
+    insts[0].finish(); await until(() => svc.status(taskId) !== 'working' && svc.status(taskId) !== 'waiting');
+    for (let i = 0; i < 2; i++) store.addHostItem(taskId, null, 'system_notice', { detail: 'x'.repeat(150 * 1024) });
+    store.addHostItem(taskId, null, 'system_notice', { detail: 'y'.repeat(300 * 1024) });
+    expect(Buffer.byteLength(JSON.stringify(svc.snapshot(taskId)))).toBeLessThan(256 * 1024);
+    const last = svc.snapshot(taskId).items.at(-1)!;
+    expect(last.payload).toMatchObject({ truncated: true });
+    expect(Buffer.byteLength(JSON.stringify(svc.history(taskId, last.ordinal + 1)))).toBeLessThan(256 * 1024);
+  });
+  it('NR09：不能保证审批交还的 Codex 版本拒绝请求批准档位并写明原因', async () => {
+    const { svc, store } = setup({ version: '0.167.1' });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => svc.status(taskId) === 'failed');
+    expect(store.items(taskId).find(i => i.type === 'error')?.payload.message).toMatch(/请求批准档位不可用：版本低于最低已验证版本 0.169.0/);
+  });
+  it('NR12：附件来自其他目录时拒绝，不按新目录重新解释同名文件', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-nr12-'))), a = join(root, 'a'), b = join(root, 'b'), ud = join(root, 'ud');
+    for (const d of [a, b, ud]) mkdirSync(d);
+    writeFileSync(join(a, 'same.png'), 'PROJECT_A'); writeFileSync(join(b, 'same.png'), 'PROJECT_B');
+    const { svc } = setup({ userData: ud });
+    const att = svc.prepareAttachment(null, a, { name: 'same.png', sourcePath: join(a, 'same.png') });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: b, title: 't', profileId: 'cx', tier: 'ask' });
+    await expect(svc.submit(taskId, { clientInputId: id(1), text: 'x', expectedSelectionRevision: 1, attachments: [att] })).rejects.toThrow('附件来自其他目录');
   });
 });
 

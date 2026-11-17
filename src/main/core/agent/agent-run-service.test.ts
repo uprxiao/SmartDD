@@ -186,6 +186,15 @@ describe('运行服务', () => {
     expect(service.active(h.runId)).toBeUndefined();
   });
 
+  it('NR02：打开失败但原生进程已启动且未退出时保留占用，不准同任务新开运行', async () => {
+    const { db, service, base } = setup();
+    const drivers = (service as any).deps.drivers as Map<DriverId, AgentDriver>;
+    drivers.set('codex-app-server', { id: 'codex-app-server', command: 'codex', create: () => { const i = new ScriptedInstance('codex-app-server'); i.open = async () => { i.emit({ type: 'process', pid: 555 }); throw new DriverError('PROTOCOL', 'thread 响应缺少 id'); }; i.close = async () => {}; return i; } });
+    await expect(service.open(base)).rejects.toThrow('thread 响应缺少 id');
+    expect(db.prepare('SELECT state FROM capability_runs').get()).toEqual({ state: 'stopping' });
+    await expect(service.open(base)).rejects.toThrow('上一运行仍在退出');
+  });
+
   it('已归档任务与旧任务不能打开运行', async () => {
     const { db, service, base } = setup();
     db.prepare("UPDATE agent_tasks SET archived_at='2026-11-17' WHERE task_id=?").run(base.taskId);
