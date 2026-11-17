@@ -38,7 +38,10 @@ export type DriverRequestKind = 'command_approval' | 'file_approval' | 'permissi
 export type DriverEvent =
   | { type: 'process'; pid: number }
   | { type: 'session'; nativeId: string }
+  /** clientInputId 为空表示原生自行开始的回合（如 Codex 目标自动续跑）。 */
   | { type: 'turn.started'; nativeTurnId: string; clientInputId: string }
+  | { type: 'goal'; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number }
+  | { type: 'steer.accepted'; clientInputId: string; nativeTurnId: string }
   | { type: 'message.delta'; nativeItemId: string; text: string }
   | { type: 'item.completed'; nativeItemId: string; itemType: string; payload: unknown }
   | { type: 'request'; requestKey: string; kind: DriverRequestKind; payload: unknown }
@@ -63,6 +66,10 @@ export interface DriverInstance {
   /** 原样回传原生选项或结构化回答，不压成布尔值。 */
   respond(requestKey: string, result: unknown): Promise<void>;
   interrupt(): Promise<void>;
+  /** 插话：按能力探测与真实接受证据启用；不支持时抛 UNSUPPORTED，调用方改为排队。 */
+  steer?(input: TurnInput): Promise<void>;
+  /** 目标：Codex 用 thread/goal/*；不支持暂停的执行器对 pause/resume 抛 UNSUPPORTED。 */
+  goal?(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }): Promise<void>;
   close(): Promise<void>;
   on(listener: DriverListener): () => void;
 }

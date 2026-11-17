@@ -90,6 +90,7 @@ export class CodexAppServerInstance implements DriverInstance {
     const nativeTurnId = r?.turn?.id;
     if (!nativeTurnId) throw new DriverError('PROTOCOL', 'turn/start 响应缺少 turn.id');
     this.markStarted(nativeTurnId, input.clientInputId);
+    this.pendingInputId = '';
     return { nativeTurnId };
   }
 
@@ -108,7 +109,8 @@ export class CodexAppServerInstance implements DriverInstance {
     switch (method) {
       case 'turn/started': {
         const id = p.turn?.id;
-        if (typeof id === 'string' && !this.startedTurns.has(id)) this.markStarted(id, this.pendingInputId);
+        // 只有宿主正在发起的 turn/start 才认领；原生自行开始的回合（目标续跑）clientInputId 为空。
+        if (typeof id === 'string' && !this.startedTurns.has(id)) { this.markStarted(id, this.pendingInputId); this.pendingInputId = ''; }
         break;
       }
       case 'item/agentMessage/delta':
@@ -122,6 +124,15 @@ export class CodexAppServerInstance implements DriverInstance {
         if (key && this.openRequests.delete(key)) this.emitter.emit({ type: 'request.resolved', requestKey: key });
         break;
       }
+      case 'thread/goal/updated': {
+        const g = p.goal; if (!g) break;
+        const st = g.status === 'active' || g.status === 'paused' || g.status === 'complete' ? g.status : 'limited';
+        this.emitter.emit({ type: 'goal', objective: typeof g.objective === 'string' ? g.objective : null, status: st, timeUsedSeconds: Number(g.timeUsedSeconds ?? 0) });
+        break;
+      }
+      case 'thread/goal/cleared':
+        this.emitter.emit({ type: 'goal', objective: null, status: 'cleared' });
+        break;
       case 'turn/completed': {
         const id = p.turn?.id; const status = p.turn?.status;
         if (typeof id !== 'string') break;
@@ -148,6 +159,22 @@ export class CodexAppServerInstance implements DriverInstance {
     this.rpc.reply(id, result);
     // 宿主自己的回应不再发 request.resolved：该事件只表示原生侧自行结束（超时、回合结束等）。
     this.openRequests.delete(requestKey);
+  }
+
+  async steer(input: TurnInput) {
+    if (!this.rpc || !this.threadId) throw new DriverError('STATE', '会话尚未打开');
+    const t = this.activeTurn;
+    if (!t) throw new DriverError('STATE', '当前没有进行中的回合');
+    // expectedTurnId 不匹配当前回合时原生拒绝：不自动改成新回合发送（技术方案 §5）。
+    await this.rpc.call('turn/steer', { threadId: this.threadId, expectedTurnId: t.nativeTurnId, clientUserMessageId: input.clientInputId, input: [{ type: 'text', text: input.text, text_elements: [] }] });
+    this.emitter.emit({ type: 'steer.accepted', clientInputId: input.clientInputId, nativeTurnId: t.nativeTurnId });
+  }
+
+  async goal(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) {
+    if (!this.rpc || !this.threadId) throw new DriverError('STATE', '会话尚未打开');
+    if (op.kind === 'clear') { await this.rpc.call('thread/goal/clear', { threadId: this.threadId, origin: 'user' }); return; }
+    const params = op.kind === 'set' ? { objective: op.objective, status: 'active' } : { status: op.kind === 'pause' ? 'paused' : 'active' };
+    await this.rpc.call('thread/goal/set', { threadId: this.threadId, origin: 'user', ...params });
   }
 
   private async sendInterrupt(nativeTurnId: string) {

@@ -18,6 +18,9 @@ class Inst implements DriverInstance {
   finish(status: 'completed' | 'interrupted' = 'completed') { this.emit({ type: 'turn.completed', nativeTurnId: `nt-${this.turns.length}`, status }); }
   async respond(k: string, r: unknown) { this.responses.push([k, r]); }
   async interrupt() { this.interrupts++; this.finish('interrupted'); }
+  steers: TurnInput[] = []; goals: unknown[] = []; steerFails = false;
+  async steer(t: TurnInput) { if (this.steerFails) throw new DriverError('REJECTED', 'expectedTurnId 不匹配'); this.steers.push(t); }
+  async goal(op: any) { this.goals.push(op); if (op.kind === 'set') this.emit({ type: 'goal', objective: op.objective, status: 'active' }); if (op.kind === 'pause') this.emit({ type: 'goal', objective: null, status: 'paused' }); if (op.kind === 'clear') this.emit({ type: 'goal', objective: null, status: 'cleared' }); }
   async close() { this.emit({ type: 'exit', code: 0, signal: null }); }
 }
 const dbs: Database.Database[] = [];
@@ -29,11 +32,81 @@ function setup(opts: { failOpen?: boolean } = {}) {
   const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
-  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: '1.0.0' }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [] }; };
+  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: i.profileId === 'cc' ? '2.1.326' : '0.169.0' }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [] }; };
   const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server' });
   return { db, store, runs, svc, insts, launches };
 }
 const id = (n: number) => `client-input-${n}`;
+
+describe('目标与插话', () => {
+  it('Codex 目标：设定后原生自行开出的回合按系统来源记录并计轮；停止键暂停目标；清除', async () => {
+    const { svc, insts, db } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.goal(taskId, { kind: 'set', objective: '让测试全部通过' });
+    expect(insts[0].goals).toEqual([{ kind: 'set', objective: '让测试全部通过' }]);
+    expect(svc.snapshot(taskId).goal).toMatchObject({ objective: '让测试全部通过', status: 'active', revision: 1 });
+    insts[0].emit({ type: 'turn.started', nativeTurnId: 'auto-1', clientInputId: '' });
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'm', itemType: 'agentMessage', payload: { id: 'm', type: 'agentMessage', text: '第 1 轮' } });
+    expect(db.prepare("SELECT source_kind,status FROM agent_turns").get()).toEqual({ source_kind: 'system', status: 'started' });
+    expect(db.prepare("SELECT turn_id IS NOT NULL AS t FROM agent_items WHERE type='assistant_message'").get()).toEqual({ t: 1 });
+    expect(svc.snapshot(taskId).goal?.turns).toBe(1);
+    await svc.stop(taskId);
+    expect(insts[0].goals.at(-1)).toEqual({ kind: 'pause' });
+    expect(svc.snapshot(taskId).goal).toMatchObject({ status: 'paused', pausedReason: 'user' });
+    await svc.goal(taskId, { kind: 'clear' });
+    expect(svc.snapshot(taskId).goal).toBeNull();
+  });
+  it('目标续跑的回合进行中，用户新输入排队而不是记未知；续跑结束后发出', async () => {
+    const { svc, insts, db } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.goal(taskId, { kind: 'set', objective: 'x' });
+    insts[0].emit({ type: 'turn.started', nativeTurnId: 'auto-1', clientInputId: '' });
+    const r = await svc.submit(taskId, { clientInputId: id(9), text: '新问题', expectedSelectionRevision: 1 });
+    expect(r.status).toBe('queued');
+    insts[0].emit({ type: 'turn.completed', nativeTurnId: 'auto-1', status: 'completed' });
+    await until(() => insts[0].turns.length === 1);
+    expect(insts[0].turns[0].text).toBe('新问题');
+    expect(db.prepare("SELECT status FROM agent_turns WHERE client_input_id=?").get(id(9))).toEqual({ status: 'started' });
+  });
+  it('驱动在发送前拒绝时放回排队', async () => {
+    const { svc, insts, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].finish();
+    await until(() => svc.status(taskId) === 'completed');
+    insts[0].startTurn = async () => { throw new DriverError('STATE', '上一轮尚未结束'); };
+    await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 1 });
+    await until(() => store.events(taskId, 0, 128).some(e => e.type === 'turn.requeued'));
+    expect(svc.snapshot(taskId).queued.map(q => q.text)).toEqual(['b']);
+  });
+  it('Claude 目标以 /goal 文字发送，不能暂停', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.goal(taskId, { kind: 'set', objective: '修完断言' });
+    await until(() => insts[0]?.turns.length === 1);
+    expect(insts[0].turns[0].text).toBe('/goal 修完断言');
+    expect(svc.snapshot(taskId).goal).toMatchObject({ objective: '修完断言', status: 'active' });
+    await expect(svc.goal(taskId, { kind: 'pause' })).rejects.toThrow('不能暂停');
+  });
+  it('插话：支持的版本并入当前回合；被原生拒绝则保留排队并说明原因', async () => {
+    const { svc, insts, db } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    expect(svc.snapshot(taskId).run?.steer).toBe(true);
+    const s = await svc.submit(taskId, { clientInputId: id(2), text: '顺便看下 b', expectedSelectionRevision: 1, mode: 'steer' });
+    expect(s.status).toBe('steered');
+    expect(insts[0].steers.map(x => x.text)).toEqual(['顺便看下 b']);
+    insts[0].steerFails = true;
+    const q = await svc.submit(taskId, { clientInputId: id(3), text: 'c', expectedSelectionRevision: 1, mode: 'steer' });
+    expect(q).toMatchObject({ status: 'queued', steerRefused: expect.stringContaining('插话未被接受') });
+    insts[0].finish();
+    expect(db.prepare("SELECT status FROM agent_turns WHERE client_input_id=?").get(id(2))).toEqual({ status: 'completed' });
+    await until(() => insts[0].turns.length === 2);
+    expect(insts[0].turns[1].text).toBe('c');
+  });
+});
 
 describe('宿主重启恢复', () => {
   it('上一实例的运行收口为 orphaned，进行中的回合记未知，排队输入保留但暂停', async () => {

@@ -7,6 +7,7 @@ import { DriverError } from './driver';
 import { AgentStore, type AgentSelection, type StoredEvent } from './agent-store';
 import { AgentRunService } from './agent-run-service';
 import { isTier, resolveTier, type Tier } from './permissions';
+import { evaluateCapabilities } from './capabilities';
 
 export interface ResolvedLaunch {
   driverId: DriverId;
@@ -70,8 +71,8 @@ export class AgentTaskService {
 
   saveDraft(taskId: string, draft: unknown, expectedRevision: number) { this.selection(taskId); return this.d.store.saveDraft(taskId, draft, expectedRevision); }
 
-  /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。 */
-  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number }) {
+  /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。mode=steer 时尝试插话，不支持则保留在排队并说明原因。 */
+  async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer' }) {
     const { revision } = this.selection(taskId);
     if (input.expectedSelectionRevision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
     if (!input.text.trim()) throw new DriverError('REJECTED', '内容为空');
@@ -80,9 +81,46 @@ export class AgentTaskService {
     if (accepted.duplicate) return { turnId: accepted.turn.turn_id, duplicate: true, status: accepted.turn.status };
     this.paused.delete(taskId);
     const run = this.d.runs.runForTask(taskId);
+    if (input.mode === 'steer' && run && this.d.runs.busy(run.runId)) {
+      if (!this.steerable(run)) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: '该执行器版本没有插话的验证证据，已排队' };
+      try { await this.d.runs.steer(run.runId, accepted.turn.turn_id, { clientInputId: input.clientInputId, text: input.text }); return { turnId: accepted.turn.turn_id, duplicate: false, status: 'steered' }; }
+      catch (e) { return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: `插话未被接受（${(e as Error).message.slice(0, 120)}），已排队` }; }
+    }
     const queued = !!run && this.d.runs.busy(run.runId) || this.d.store.queuedTurns(taskId).length > 1 || this.dispatching.has(taskId);
     void this.pump(taskId);
     return { turnId: accepted.turn.turn_id, duplicate: false, status: queued ? 'queued' : 'accepted' };
+  }
+
+  private steerable(run: { driverId: DriverId; version: string }) {
+    return evaluateCapabilities(run.driverId, run.version).capabilities.steer.state === 'enabled';
+  }
+
+  /** 打开或恢复本任务的运行（不派发输入）。 */
+  private async ensureRun(taskId: string) {
+    const existing = this.d.runs.runForTask(taskId);
+    if (existing) return existing;
+    const { task, selection } = this.selection(taskId);
+    const launch = await this.d.resolveLaunch({ profileId: selection.profileId, cwd: task.cwd, runId: randomUUID(), model: selection.model });
+    if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
+    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources });
+    return this.d.runs.runForTask(taskId)!;
+  }
+
+  /** 目标（需求 R02）：Codex 用原生目标接口，可暂停／继续；Claude 以 /goal 文字设定与清除，不能暂停。 */
+  async goal(taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) {
+    const { selection } = this.selection(taskId);
+    if (op.kind === 'set' && (!op.objective.trim() || op.objective.length > 4000)) throw new DriverError('REJECTED', '目标内容无效');
+    if (selection.driverId === 'claude-sdk') {
+      if (op.kind === 'pause' || op.kind === 'resume') throw new DriverError('UNSUPPORTED', 'Claude 目标不能暂停，只能清除');
+      const run = await this.ensureRun(taskId);
+      const text = op.kind === 'set' ? `/goal ${op.objective.trim()}` : '/goal clear';
+      this.d.store.upsertGoal({ taskId, bindingId: run.bindingId, objective: op.kind === 'set' ? op.objective.trim() : null, status: op.kind === 'set' ? 'active' : 'cleared' });
+      return this.submit(taskId, { clientInputId: `goal-${randomUUID().replace(/-/g, '')}`, text, expectedSelectionRevision: this.selection(taskId).revision });
+    }
+    const run = await this.ensureRun(taskId);
+    if (op.kind === 'resume' || op.kind === 'set') this.paused.delete(taskId);
+    await this.d.runs.goal(run.runId, op);
+    return { ok: true };
   }
 
   /** 按接受顺序派发下一条排队输入；必要时先打开或恢复运行。 */
@@ -94,18 +132,15 @@ export class AgentTaskService {
     if (run && this.d.runs.busy(run.runId)) return;
     this.dispatching.add(taskId);
     try {
-      const { task, selection } = this.selection(taskId);
-      if (!run) {
-        const launch = await this.d.resolveLaunch({ profileId: selection.profileId, cwd: task.cwd, runId: randomUUID(), model: selection.model });
-        if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
-        await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources });
-        run = this.d.runs.runForTask(taskId)!;
-      }
+      const { selection } = this.selection(taskId);
+      run = await this.ensureRun(taskId);
       const text = (JSON.parse(next.input_ref) as { text: string }).text;
       await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, text, tier: selection.tier as Tier, model: selection.model });
     } catch (e) {
-      // 打开运行失败：这条输入明确未发出，标失败并把原因写进时间线；后续排队保留，等用户处理。
       const t = this.d.store.turn(next.turn_id);
+      // 驱动在发送前拒绝且已放回排队（原生仍在跑）：等该回合结束后由 turn.ended 再派发，不算失败。
+      if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.runForTask(taskId)) return;
+      // 打开运行失败：这条输入明确未发出，标失败并把原因写进时间线；后续排队保留，等用户处理。
       if (t?.status === 'accepted') this.d.store.endTurn(next.turn_id, 'failed', e instanceof DriverError ? e.code : 'OPEN_FAILED');
       this.d.store.tx(emit => emit(taskId, 'task.error', { turnId: next.turn_id, message: (e as Error).message.slice(0, 2000) }));
       this.paused.add(taskId);
@@ -118,6 +153,8 @@ export class AgentTaskService {
     this.paused.add(taskId);
     const run = this.d.runs.runForTask(taskId);
     if (!run) return { stopped: false };
+    // Codex：停止键＝停止本轮并暂停目标（需求 R02）。
+    if (run.driverId === 'codex-app-server' && this.d.store.goal(taskId)?.status === 'active') { try { await this.d.runs.goal(run.runId, { kind: 'pause' }); } catch { /* 目标接口失败不阻止停止 */ } }
     // 请求挂起时按停止：先退役本回合的原生请求，再中断（技术方案 §9）。
     for (const r of this.d.store.pendingRequests(taskId)) if (r.class === 'native' && r.origin.runId === run.runId) this.d.store.retireRequest(r.requestId, 'user-stop');
     await this.d.runs.interrupt(run.runId);
@@ -169,7 +206,8 @@ export class AgentTaskService {
       taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, selection, selectionRevision: revision,
       draft: this.d.store.draft(taskId), items: this.d.store.items(taskId), turns: this.d.store.turns(taskId),
       requests: this.d.store.pendingRequests(taskId), queued: this.d.store.queuedTurns(taskId).map(q => ({ turnId: q.turn_id, text: (JSON.parse(q.input_ref) as { text: string }).text })),
-      run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId) } : null,
+      run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run) } : null,
+      goal: this.d.store.goal(taskId),
       status: this.status(taskId), seq: this.d.store.watermark(taskId),
     };
   }

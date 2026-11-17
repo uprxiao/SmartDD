@@ -282,6 +282,58 @@ export class AgentStore {
   }
   tasksWithQueue() { return (this.sqlite.prepare("SELECT DISTINCT task_id FROM agent_turns WHERE status='accepted'").all() as { task_id: string }[]).map(r => r.task_id); }
 
+  /** 原生自行开始的回合（目标自动续跑等）：宿主记录为系统来源的回合，不生成用户消息。 */
+  acceptAutoTurn(taskId: string, runId: string, nativeTurnId: string): string {
+    return this.tx(emit => {
+      const existing = this.turnByNative(runId, nativeTurnId);
+      if (existing) return existing.turn_id;
+      const turnId = randomUUID();
+      this.sqlite.prepare("INSERT INTO agent_turns(turn_id,task_id,run_id,client_input_id,input_ref,source_kind,status,native_turn_id,accepted_at,started_at) VALUES(?,?,?,?,'{}','system','started',?,?,?)")
+        .run(turnId, taskId, runId, `auto:${nativeTurnId}`, nativeTurnId, now(), now());
+      emit(taskId, 'turn.started', { turnId, nativeTurnId, sourceKind: 'system' });
+      return turnId;
+    });
+  }
+  /** 插话被原生接受后并入当前原生回合；该回合结束时一起收口。 */
+  attachSteer(turnId: string, runId: string, nativeTurnId: string) {
+    const turn = this.turn(turnId)!;
+    this.tx(emit => {
+      if (this.sqlite.prepare("UPDATE agent_turns SET status='started',run_id=?,native_turn_id=?,started_at=? WHERE turn_id=? AND status='accepted'").run(runId, nativeTurnId, now(), turnId).changes)
+        emit(turn.task_id, 'turn.steered', { turnId, nativeTurnId });
+    });
+  }
+  /** 驱动在发送前就拒绝（证明未发出）：放回排队，不记未知（技术方案 §5 投递状态 not_sent）。 */
+  requeueTurn(turnId: string) {
+    const turn = this.turn(turnId)!;
+    this.tx(emit => {
+      if (this.sqlite.prepare("UPDATE agent_turns SET status='accepted',run_id=NULL WHERE turn_id=? AND status='dispatching'").run(turnId).changes) emit(turn.task_id, 'turn.requeued', { turnId });
+    });
+  }
+  turnsByNative(runId: string, nativeTurnId: string) { return this.sqlite.prepare("SELECT * FROM agent_turns WHERE run_id=? AND native_turn_id=? AND status IN ('dispatching','started')").all(runId, nativeTurnId) as TurnRow[]; }
+  upsertGoal(g: { taskId: string; bindingId: string; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number; pausedReason?: 'user' | 'waiting_children' | 'limit' }) {
+    this.tx(emit => {
+      const cur = this.sqlite.prepare('SELECT objective,revision,turns FROM agent_goals WHERE task_id=?').get(g.taskId) as { objective: string; revision: number; turns: number } | undefined;
+      if (g.status === 'cleared') {
+        if (cur) this.sqlite.prepare("UPDATE agent_goals SET status='cleared',paused_reason=NULL,updated_at=? WHERE task_id=?").run(now(), g.taskId);
+        emit(g.taskId, 'goal.changed', { status: 'cleared' });
+        return;
+      }
+      const objective = g.objective ?? cur?.objective ?? '';
+      const status = g.status === 'limited' ? 'paused' : g.status;
+      const reason = status === 'paused' ? (g.status === 'limited' ? 'limit' : g.pausedReason ?? 'user') : null;
+      const revision = !cur ? 1 : cur.objective !== objective ? cur.revision + 1 : cur.revision;
+      this.sqlite.prepare(`INSERT INTO agent_goals(task_id,binding_id,objective,revision,status,paused_reason,turns,time_used_s,updated_at) VALUES(?,?,?,?,?,?,0,?,?)
+        ON CONFLICT(task_id) DO UPDATE SET binding_id=excluded.binding_id,objective=excluded.objective,revision=excluded.revision,status=excluded.status,paused_reason=excluded.paused_reason,time_used_s=MAX(agent_goals.time_used_s,excluded.time_used_s),turns=CASE WHEN agent_goals.revision<>excluded.revision THEN 0 ELSE agent_goals.turns END,updated_at=excluded.updated_at`)
+        .run(g.taskId, g.bindingId, objective, revision, status, reason, Math.round(g.timeUsedSeconds ?? 0), now());
+      emit(g.taskId, 'goal.changed', { objective, status, pausedReason: reason, revision });
+    });
+  }
+  countGoalTurn(taskId: string) { this.sqlite.prepare("UPDATE agent_goals SET turns=turns+1,updated_at=? WHERE task_id=? AND status='active'").run(now(), taskId); }
+  goal(taskId: string) {
+    const r = this.sqlite.prepare('SELECT objective,revision,status,paused_reason,turns,time_used_s,updated_at FROM agent_goals WHERE task_id=?').get(taskId) as Record<string, any> | undefined;
+    return r && r.status !== 'cleared' ? { objective: r.objective, revision: r.revision, status: r.status, pausedReason: r.paused_reason, turns: r.turns, timeUsedSeconds: r.time_used_s, updatedAt: r.updated_at } : null;
+  }
+
   recordProbe(p: { driverId: string; binaryPath: string; realpath: string | null; version: string | null; capabilities: unknown; state: string; reason: string | null }) {
     const id = randomUUID();
     this.sqlite.prepare('INSERT INTO agent_driver_probes(probe_id,driver_id,binary_path,realpath,version,capabilities_json,state,reason,probed_at) VALUES(?,?,?,?,?,?,?,?,?)')

@@ -26,7 +26,7 @@ export interface OpenRunInput {
   extraArgs?: readonly string[];
   settingSources?: readonly ('user' | 'project' | 'local')[];
 }
-export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string }
+export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
 interface ActiveRun extends RunHandle { instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
@@ -67,7 +67,7 @@ export class AgentRunService {
     const instance = driver.create();
     let markEnded!: () => void;
     const ended = new Promise<void>(r => { markEnded = r; });
-    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
+    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     instance.on(e => this.onDriverEvent(run, e));
     try {
@@ -79,7 +79,7 @@ export class AgentRunService {
       await instance.close().catch(() => {});
       throw e;
     }
-    return { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, ...(run.tierNotice ? { tierNotice: run.tierNotice } : {}) };
+    return { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, ...(run.tierNotice ? { tierNotice: run.tierNotice } : {}) };
   }
 
   private onDriverEvent(run: ActiveRun, e: DriverEvent) {
@@ -96,7 +96,14 @@ export class AgentRunService {
           break;
         }
         case 'session': store.confirmNative(run.bindingId, e.nativeId); break;
-        case 'turn.started': if (run.turnId) store.startTurn(run.turnId, e.nativeTurnId); break;
+        case 'turn.started':
+          if (run.turnId) store.startTurn(run.turnId, e.nativeTurnId);
+          else if (!e.clientInputId) run.turnId = store.acceptAutoTurn(run.taskId, run.runId, e.nativeTurnId);
+          if (store.goal(run.taskId)?.status === 'active') store.countGoalTurn(run.taskId);
+          break;
+        case 'goal':
+          store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: e.status, timeUsedSeconds: e.timeUsedSeconds });
+          break;
         case 'request':
           store.insertNativeRequest({ taskId: run.taskId, kind: e.kind, payload: e.payload, origin: { taskId: run.taskId, bindingId: run.bindingId, runId: run.runId, generation: run.generation, turnId: run.turnId, nativeRequest: e.requestKey } });
           break;
@@ -107,9 +114,11 @@ export class AgentRunService {
           break;
         }
         case 'turn.completed': {
-          const turn = store.turnByNative(run.runId, e.nativeTurnId) ?? (run.turnId ? store.turn(run.turnId) : undefined);
-          if (turn) store.endTurn(turn.turn_id, e.status, e.error ? e.error.slice(0, 200) : null);
-          if (turn && turn.turn_id === run.turnId) run.turnId = null;
+          const turns = store.turnsByNative(run.runId, e.nativeTurnId);
+          const own = run.turnId ? store.turn(run.turnId) : undefined;
+          if (own && !turns.some(t => t.turn_id === own.turn_id) && !own.native_turn_id) turns.push(own);
+          for (const turn of turns) store.endTurn(turn.turn_id, e.status, e.error ? e.error.slice(0, 200) : null);
+          if (run.turnId && turns.some(t => t.turn_id === run.turnId)) run.turnId = null;
           break;
         }
         case 'exit':
@@ -151,10 +160,29 @@ export class AgentRunService {
       store.startTurn(turnId, nativeTurnId);
       return { nativeTurnId };
     } catch (e) {
-      store.endTurn(turnId, e instanceof DriverError && e.code === 'REJECTED' ? 'failed' : 'unknown', e instanceof DriverError ? e.code : 'START_FAILED');
       if (run.turnId === turnId) run.turnId = null;
+      // STATE：驱动在写出前拒绝（如原生仍有回合在跑），输入未发出，放回排队；REJECTED：协议明确拒绝记失败；其余记未知。
+      if (e instanceof DriverError && e.code === 'STATE') store.requeueTurn(turnId);
+      else store.endTurn(turnId, e instanceof DriverError && e.code === 'REJECTED' ? 'failed' : 'unknown', e instanceof DriverError ? e.code : 'START_FAILED');
       throw e;
     }
+  }
+
+  /** 插话：只在执行器支持且有进行中的回合时可用；否则抛错由调用方改为排队。 */
+  async steer(runId: string, turnId: string, input: { clientInputId: string; text: string }) {
+    const run = this.runs.get(runId);
+    if (!run || !run.turnId) throw new DriverError('STATE', '当前没有进行中的回合');
+    if (!run.instance.steer) throw new DriverError('UNSUPPORTED', '该执行器不支持插话');
+    const current = this.deps.store.turn(run.turnId);
+    if (!current?.native_turn_id) throw new DriverError('STATE', '回合尚未开始');
+    await run.instance.steer({ clientInputId: input.clientInputId, text: input.text, tier: run.tier });
+    this.deps.store.attachSteer(turnId, runId, current.native_turn_id);
+  }
+  async goal(runId: string, op: Parameters<NonNullable<DriverInstance['goal']>>[0]) {
+    const run = this.runs.get(runId);
+    if (!run) throw new DriverError('STATE', '运行不存在');
+    if (!run.instance.goal) throw new DriverError('UNSUPPORTED', '该执行器不支持目标');
+    await run.instance.goal(op);
   }
 
   busy(runId: string) { const r = this.runs.get(runId); return !!r?.turnId; }

@@ -118,6 +118,39 @@ describe('Codex app-server 驱动', () => {
     expect(events).toContainEqual({ type: 'exit', code: 1, signal: null });
   });
 
+  it('插话带 expectedTurnId；目标设定／暂停／清除带用户来源并转发原生目标更新', async () => {
+    const { inst, server, events } = setup((msg, s) => {
+      if (msg.method === 'turn/steer' || msg.method === 'thread/goal/set' || msg.method === 'thread/goal/clear') { s.reply(msg.id, {}); return true; }
+      return false;
+    });
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await expect(inst.steer({ clientInputId: 's0', text: 'x', tier: 'ask' })).rejects.toThrow('没有进行中的回合');
+    await inst.startTurn({ clientInputId: 'a', text: 'x', tier: 'ask' });
+    await inst.steer({ clientInputId: 's1', text: '顺便', tier: 'ask' });
+    expect(server.calls('turn/steer')[0].params).toEqual({ threadId: 'thr-1', expectedTurnId: 'turn-1', clientUserMessageId: 's1', input: [{ type: 'text', text: '顺便', text_elements: [] }] });
+    expect(events).toContainEqual({ type: 'steer.accepted', clientInputId: 's1', nativeTurnId: 'turn-1' });
+    await inst.goal({ kind: 'set', objective: '全部通过' });
+    await inst.goal({ kind: 'pause' });
+    await inst.goal({ kind: 'clear' });
+    expect(server.calls('thread/goal/set').map(m => m.params)).toEqual([{ threadId: 'thr-1', origin: 'user', objective: '全部通过', status: 'active' }, { threadId: 'thr-1', origin: 'user', status: 'paused' }]);
+    expect(server.calls('thread/goal/clear')[0].params).toEqual({ threadId: 'thr-1', origin: 'user' });
+    server.notify('thread/goal/updated', { threadId: 'thr-1', goal: { objective: '全部通过', status: 'usageLimited', timeUsedSeconds: 30 } });
+    server.notify('thread/goal/cleared', { threadId: 'thr-1' });
+    await until(() => events.filter(e => e.type === 'goal').length === 2);
+    expect(events.filter(e => e.type === 'goal')).toEqual([{ type: 'goal', objective: '全部通过', status: 'limited', timeUsedSeconds: 30 }, { type: 'goal', objective: null, status: 'cleared' }]);
+  });
+
+  it('原生自行开始的回合（目标续跑）不认领上一条用户输入', async () => {
+    const { inst, server, events } = setup();
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: 'a', text: 'x', tier: 'ask' });
+    server.notify('turn/completed', { turn: { id: 'turn-1', status: 'completed' } });
+    server.notify('turn/started', { turn: { id: 'goal-turn' } });
+    await until(() => events.filter(e => e.type === 'turn.started').length === 2);
+    expect(events.filter(e => e.type === 'turn.started').at(-1)).toEqual({ type: 'turn.started', nativeTurnId: 'goal-turn', clientInputId: '' });
+    await expect(inst.startTurn({ clientInputId: 'b', text: 'y', tier: 'ask' })).rejects.toThrow('上一轮尚未结束');
+  });
+
   it('线程响应缺少 id 判协议错误', async () => {
     const { inst } = setup((msg, s) => msg.method === 'thread/start' ? (s.reply(msg.id, {}), true) : false);
     await expect(inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' })).rejects.toThrow('thread 响应缺少 id');

@@ -156,6 +156,18 @@ export class ClaudeSdkInstance implements DriverInstance {
     return { nativeTurnId: await started };
   }
 
+  /** 插话：流式输入在回合进行中仍开放（CLI 2.1.325 实测）；原生开始信号不重复发。 */
+  async steer(input: TurnInput) {
+    if (!this.input || !this.activeTurn?.started) throw new DriverError('STATE', '当前没有进行中的回合');
+    this.input.push({ type: 'user', message: { role: 'user', content: input.text }, parent_tool_use_id: null, priority: 'now' });
+    this.emitter.emit({ type: 'steer.accepted', clientInputId: input.clientInputId, nativeTurnId: this.activeTurn.nativeTurnId });
+  }
+
+  /** Claude 目标通过 /goal 文字设定与清除；不能暂停（需求 R02）。由调用方作为普通输入发送。 */
+  async goal(op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }): Promise<void> {
+    throw new DriverError('UNSUPPORTED', op.kind === 'pause' || op.kind === 'resume' ? 'Claude 目标不能暂停，只能清除' : 'Claude 目标以 /goal 输入设定');
+  }
+
   async respond(requestKey: string, result: unknown) {
     const p = this.pending.get(requestKey);
     if (!p) throw new DriverError('STATE', '请求已结束或不存在');
