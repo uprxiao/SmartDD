@@ -19,6 +19,7 @@ import { useApplicationEvents } from '@renderer/features/applications/api';
 import { SettingsView } from '@renderer/views/settings-view';
 import { RuntimeBar, TaskHeader } from '@renderer/views/task-chrome';
 import { TaskView } from '@renderer/views/task-view';
+import { AgentTaskView } from '@renderer/features/agent-tasks/agent-task-view';
 import { FileWorkspacePanel } from '@renderer/features/files/workspace-panel';
 import {TaskBrowserWorkspace,useBrowserShortcuts} from '@renderer/features/browser/workspace';
 
@@ -87,6 +88,7 @@ const MainContent = observer(function MainContent() {
     <div ref={split} className="m9-workspace-split" style={{ '--file-panel-width': `${fileWidth}px` } as CSSProperties}><div data-testid="main-body" className="m6-main-body">
       <ViewSlot active={view === 'home'}><HomeView /></ViewSlot>
       <ViewSlot active={view === 'task'} keepMounted><TaskView /></ViewSlot>
+      <ViewSlot active={view === 'agentTask'}>{navigation.currentAgentTaskId && <AgentTaskView key={navigation.currentAgentTaskId} taskId={navigation.currentAgentTaskId} />}</ViewSlot>
       <ViewSlot active={view === 'apps'}><ApplicationsWorkspace /></ViewSlot>
       <ViewSlot active={view === 'settings'}><SettingsView /></ViewSlot>
       <ViewSlot active={view === 'project'}><ProjectView key={navigation.currentProjectId ?? ''} /></ViewSlot>

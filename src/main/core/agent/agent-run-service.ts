@@ -6,6 +6,7 @@ import type { AgentDriver, DriverEvent, DriverExecutable, DriverInstance } from 
 import { DriverError } from './driver';
 import { AgentStore, sha256 } from './agent-store';
 import { resolveTier, type Tier } from './permissions';
+import { TimelineProjector } from './timeline';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 
 export interface HostIdentity { instanceId: string; pid: number; startedAt: string | null }
@@ -28,7 +29,7 @@ export interface OpenRunInput {
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
-interface ActiveRun extends RunHandle { instance: DriverInstance; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
+interface ActiveRun extends RunHandle { instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
 
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
@@ -66,7 +67,7 @@ export class AgentRunService {
     const instance = driver.create();
     let markEnded!: () => void;
     const ended = new Promise<void>(r => { markEnded = r; });
-    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, turnId: null, closing: false, ended, markEnded };
+    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     instance.on(e => this.onDriverEvent(run, e));
     try {
@@ -85,6 +86,8 @@ export class AgentRunService {
     const { store } = this.deps;
     for (const l of [...this.live]) { try { l({ taskId: run.taskId, runId: run.runId, event: e }); } catch { /* 订阅者自身负责 */ } }
     try {
+      for (const item of run.projector.project(e))
+        store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:${item.key}`, type: item.type, payload: item.payload, terminalState: item.terminal ?? null });
       switch (e.type) {
         case 'process': {
           // PID 来自本宿主自己启动的 ChildProcess；出生身份由进程身份读取器核对（取不到时只记 PID）。
@@ -94,9 +97,6 @@ export class AgentRunService {
         }
         case 'session': store.confirmNative(run.bindingId, e.nativeId); break;
         case 'turn.started': if (run.turnId) store.startTurn(run.turnId, e.nativeTurnId); break;
-        case 'item.completed':
-          store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:${e.nativeItemId}`, type: e.itemType, payload: e.payload, terminalState: 'completed' });
-          break;
         case 'request':
           store.insertNativeRequest({ taskId: run.taskId, kind: e.kind, payload: e.payload, origin: { taskId: run.taskId, bindingId: run.bindingId, runId: run.runId, generation: run.generation, turnId: run.turnId, nativeRequest: e.requestKey } });
           break;
@@ -131,22 +131,34 @@ export class AgentRunService {
     const accepted = store.acceptTurn({ taskId: run.taskId, clientInputId: input.clientInputId, text: input.text, sourceKind: input.sourceKind ?? 'user' });
     if (accepted.duplicate) return { turnId: accepted.turn.turn_id, duplicate: true as const, status: accepted.turn.status };
     if (run.turnId) { store.endTurn(accepted.turn.turn_id, 'canceled', 'BUSY'); throw new DriverError('STATE', '上一轮尚未结束；排队与插话在阶段 2 接入'); }
-    const tier = input.tier ? resolveTier(run.driverId, input.tier) : { ok: true as const, tier: run.tier };
-    if (!tier.ok) { store.endTurn(accepted.turn.turn_id, 'canceled', 'TIER'); throw new DriverError('REJECTED', '不支持的权限档位'); }
     const turnId = accepted.turn.turn_id;
+    const { nativeTurnId } = await this.dispatch(runId, turnId, input);
+    return { turnId, duplicate: false as const, status: 'started', nativeTurnId };
+  }
+
+  /** 派发一条已接受（排队中）的输入；原生开始信号到达后才确认开始。 */
+  async dispatch(runId: string, turnId: string, input: { clientInputId: string; text: string; tier?: Tier; model?: string }) {
+    const run = this.runs.get(runId);
+    if (!run || run.closing) throw new DriverError('STATE', '运行不存在或正在关闭');
+    if (run.turnId) throw new DriverError('STATE', '上一轮尚未结束');
+    const { store } = this.deps;
+    const tier = input.tier ? resolveTier(run.driverId, input.tier) : { ok: true as const, tier: run.tier };
+    if (!tier.ok) { store.endTurn(turnId, 'canceled', 'TIER'); throw new DriverError('REJECTED', '不支持的权限档位'); }
     store.dispatchTurn(turnId, runId);
     run.turnId = turnId;
     try {
       const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, tier: tier.tier, model: input.model });
       store.startTurn(turnId, nativeTurnId);
-      return { turnId, duplicate: false as const, status: 'started', nativeTurnId };
+      return { nativeTurnId };
     } catch (e) {
-      // 发送前失败与接收未知分开：协议明确拒绝记失败；超时或连接中断记未知，不自动重发（A16）。
       store.endTurn(turnId, e instanceof DriverError && e.code === 'REJECTED' ? 'failed' : 'unknown', e instanceof DriverError ? e.code : 'START_FAILED');
       if (run.turnId === turnId) run.turnId = null;
       throw e;
     }
   }
+
+  busy(runId: string) { const r = this.runs.get(runId); return !!r?.turnId; }
+  runForTask(taskId: string) { for (const r of this.runs.values()) if (r.taskId === taskId && !r.closing) return r; return undefined; }
 
   /** 原生阻塞请求的回应：按发起来源核对运行与代次，旧代次回应拒绝（技术方案 §8.1）。 */
   async respond(requestId: string, scope: { taskId: string; runId: string; generation: number; revision: number }, result: unknown) {

@@ -101,11 +101,15 @@ describe('运行服务', () => {
     expect(instances[0].turns).toHaveLength(1);
     await expect(service.submit(h.runId, { clientInputId: 'in-2', text: '再来' })).rejects.toThrow('上一轮尚未结束');
     expect(db.prepare("SELECT status,error_code FROM agent_turns WHERE client_input_id='in-2'").get()).toEqual({ status: 'canceled', error_code: 'BUSY' });
-    instances[0].emit({ type: 'item.completed', nativeItemId: 'm1', itemType: 'agentMessage', payload: { text: '你好呀' } });
-    instances[0].emit({ type: 'item.completed', nativeItemId: 'm1', itemType: 'agentMessage', payload: { text: '你好呀！' } });
+    instances[0].emit({ type: 'item.completed', nativeItemId: 'm1', itemType: 'agentMessage', payload: { id: 'm1', type: 'agentMessage', text: '你好呀' } });
+    instances[0].emit({ type: 'item.completed', nativeItemId: 'm1', itemType: 'agentMessage', payload: { id: 'm1', type: 'agentMessage', text: '你好呀！' } });
     instances[0].emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status: 'completed' });
     expect(db.prepare('SELECT status,native_turn_id FROM agent_turns WHERE turn_id=?').get(r1.turnId)).toEqual({ status: 'completed', native_turn_id: 'nt-1' });
-    expect(db.prepare('SELECT ordinal,revision,type,payload_ref FROM agent_items').all()).toEqual([{ ordinal: 1, revision: 2, type: 'agentMessage', payload_ref: JSON.stringify({ text: '你好呀！' }) }]);
+    expect(db.prepare('SELECT ordinal,revision,type,payload_ref FROM agent_items ORDER BY ordinal').all()).toEqual([
+      { ordinal: 1, revision: 1, type: 'user_message', payload_ref: JSON.stringify({ text: '你好', sourceKind: 'user' }) },
+      { ordinal: 2, revision: 1, type: 'user_message', payload_ref: JSON.stringify({ text: '再来', sourceKind: 'user' }) },
+      { ordinal: 3, revision: 2, type: 'assistant_message', payload_ref: JSON.stringify({ text: '你好呀！', phase: null }) },
+    ]);
     const seqs = (db.prepare('SELECT seq FROM agent_events ORDER BY seq').all() as { seq: number }[]).map(r => r.seq);
     expect(seqs).toEqual(seqs.map((_, i) => i + 1));
   });

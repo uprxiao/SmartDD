@@ -128,6 +128,12 @@ export class AgentStore {
       this.sqlite.prepare("INSERT INTO agent_turns(turn_id,task_id,client_input_id,input_ref,source_kind,status,accepted_at) VALUES(?,?,?,?,?,'accepted',?)")
         .run(turnId, t.taskId, t.clientInputId, boundedJson({ text: t.text }), t.sourceKind, now());
       emit(t.taskId, 'turn.accepted', { turnId, clientInputId: t.clientInputId, sourceKind: t.sourceKind });
+      // 用户消息由宿主在本地接受时记录（可信出站来源），不取原生回显（技术方案 §4 user_message）。
+      const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(t.taskId) as { ordinal: number };
+      const itemId = randomUUID();
+      this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,'user_message',?,1,?,?,'completed',?,?)")
+        .run(itemId, t.taskId, turnId, ordinal, `input:${turnId}`, boundedJson({ text: t.text, sourceKind: t.sourceKind }), now(), now());
+      emit(t.taskId, 'item.created', { type: 'user_message', ordinal, payload: { text: t.text, sourceKind: t.sourceKind } }, itemId, 1);
       return { turn: this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow, duplicate: false };
     });
   }
@@ -203,6 +209,78 @@ export class AgentStore {
         emit(row.task_id, 'request.retired', { requestId, reason });
     });
   }
+
+  /** 草稿 CAS：修订不符返回冲突，保留调用方本地编辑（R01 草稿按任务持久保存）。 */
+  saveDraft(taskId: string, draft: unknown, expectedRevision: number): { ok: true; revision: number } | { ok: false; revision: number; draft: unknown } {
+    return this.sqlite.transaction(() => {
+      const row = this.sqlite.prepare('SELECT draft_json,draft_revision FROM agent_tasks WHERE task_id=?').get(taskId) as { draft_json: string; draft_revision: number } | undefined;
+      if (!row) throw new Error('任务不存在');
+      if (row.draft_revision !== expectedRevision) return { ok: false as const, revision: row.draft_revision, draft: JSON.parse(row.draft_json) };
+      const revision = row.draft_revision + 1;
+      this.sqlite.prepare('UPDATE agent_tasks SET draft_json=?,draft_revision=?,updated_at=? WHERE task_id=?').run(boundedJson(draft, 256 * 1024), revision, now(), taskId);
+      return { ok: true as const, revision };
+    })();
+  }
+  updateSelection(taskId: string, patch: Partial<AgentSelection>, expectedRevision: number): { ok: true; revision: number; selection: AgentSelection } | { ok: false; revision: number; selection: AgentSelection } {
+    return this.tx(emit => {
+      const row = this.sqlite.prepare('SELECT selection_json,selection_revision FROM agent_tasks WHERE task_id=?').get(taskId) as { selection_json: string; selection_revision: number } | undefined;
+      if (!row) throw new Error('任务不存在');
+      const current = JSON.parse(row.selection_json) as AgentSelection;
+      if (row.selection_revision !== expectedRevision) return { ok: false as const, revision: row.selection_revision, selection: current };
+      const selection = { ...current, ...patch }, revision = row.selection_revision + 1;
+      this.sqlite.prepare('UPDATE agent_tasks SET selection_json=?,selection_revision=?,updated_at=? WHERE task_id=?').run(JSON.stringify(selection), revision, now(), taskId);
+      emit(taskId, 'selection.changed', { selection, revision });
+      return { ok: true as const, revision, selection };
+    });
+  }
+  archiveTask(taskId: string) {
+    this.tx(emit => { if (this.sqlite.prepare('UPDATE agent_tasks SET archived_at=?,updated_at=? WHERE task_id=? AND archived_at IS NULL').run(now(), now(), taskId).changes) emit(taskId, 'task.archived', {}); });
+  }
+  listTasks(includeArchived = false) {
+    return this.sqlite.prepare(`SELECT t.id,t.project_id,t.dir_id,t.cwd,t.title,a.selection_json,a.archived_at,a.created_at,a.updated_at,a.parent_task_id FROM tasks t JOIN agent_tasks a ON a.task_id=t.id ${includeArchived ? '' : 'WHERE a.archived_at IS NULL'} ORDER BY a.created_at DESC`).all() as
+      { id: string; project_id: string | null; dir_id: string | null; cwd: string; title: string; selection_json: string; archived_at: string | null; created_at: string; updated_at: string; parent_task_id: string | null }[];
+  }
+  /** 排队中的输入：已接受、尚未派发，按接受顺序。 */
+  queuedTurns(taskId: string) {
+    return this.sqlite.prepare("SELECT turn_id,client_input_id,input_ref,accepted_at FROM agent_turns WHERE task_id=? AND status='accepted' ORDER BY accepted_at,rowid").all(taskId) as { turn_id: string; client_input_id: string; input_ref: string; accepted_at: string }[];
+  }
+  turns(taskId: string) {
+    return this.sqlite.prepare('SELECT turn_id,client_input_id,status,native_turn_id,accepted_at,started_at,ended_at,error_code,run_id FROM agent_turns WHERE task_id=? ORDER BY accepted_at,rowid').all(taskId) as Record<string, any>[];
+  }
+  items(taskId: string) {
+    return (this.sqlite.prepare('SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? ORDER BY ordinal').all(taskId) as Record<string, any>[])
+      .map(r => ({ itemId: r.item_id, turnId: r.turn_id, type: r.type, ordinal: r.ordinal, revision: r.revision, payload: JSON.parse(r.payload_ref), terminal: r.terminal_state, createdAt: r.created_at, updatedAt: r.updated_at }));
+  }
+  pendingRequests(taskId: string) {
+    return (this.sqlite.prepare("SELECT request_id,class,kind,revision,payload_ref,origin_json,status,created_at FROM agent_requests WHERE task_id=? AND status IN ('pending','approved_pending_bind') ORDER BY created_at,rowid").all(taskId) as Record<string, any>[])
+      .map(r => ({ requestId: r.request_id, class: r.class, kind: r.kind, revision: r.revision, payload: JSON.parse(r.payload_ref), origin: JSON.parse(r.origin_json), status: r.status, createdAt: r.created_at }));
+  }
+  draft(taskId: string) {
+    const r = this.sqlite.prepare('SELECT draft_json,draft_revision FROM agent_tasks WHERE task_id=?').get(taskId) as { draft_json: string; draft_revision: number } | undefined;
+    return r ? { draft: JSON.parse(r.draft_json), revision: r.draft_revision } : null;
+  }
+  watermark(taskId: string) { return (this.sqlite.prepare('SELECT COALESCE(MAX(seq),0) AS seq FROM agent_events WHERE task_id=?').get(taskId) as { seq: number }).seq; }
+
+  /**
+   * 宿主重启恢复（技术方案 §9）：上一宿主实例留下的新运行一律收口为 orphaned；原生阻塞请求退役；
+   * 已派发但无原生终态的回合标“结果未知”，不自动重发。返回需要按出生身份核对的原生进程。
+   */
+  recoverOrphanRuns(currentInstanceId: string): { runId: string; taskId: string; pid: number | null; processStartedAt: string | null }[] {
+    return this.tx(emit => {
+      const rows = this.sqlite.prepare("SELECT run_id,task_id,pid,process_started_at FROM capability_runs WHERE binding_id IS NOT NULL AND state IN ('preparing','active','stopping') AND COALESCE(owner_instance_id,'')<>?").all(currentInstanceId) as { run_id: string; task_id: string; pid: number | null; process_started_at: string | null }[];
+      for (const r of rows) {
+        this.sqlite.prepare("UPDATE capability_runs SET state='orphaned',error_code='HOST_RESTARTED',ended_at=? WHERE run_id=?").run(now(), r.run_id);
+        this.sqlite.prepare("UPDATE agent_requests SET status='retired',updated_at=? WHERE class='native' AND status='pending' AND json_extract(origin_json,'$.runId')=?").run(now(), r.run_id);
+        for (const t of this.sqlite.prepare("SELECT turn_id FROM agent_turns WHERE run_id=? AND status IN ('dispatching','started')").all(r.run_id) as { turn_id: string }[]) {
+          this.sqlite.prepare("UPDATE agent_turns SET status='unknown',ended_at=?,error_code='HOST_RESTARTED' WHERE turn_id=?").run(now(), t.turn_id);
+          emit(r.task_id, 'turn.ended', { turnId: t.turn_id, status: 'unknown', errorCode: 'HOST_RESTARTED' });
+        }
+        emit(r.task_id, 'run.ended', { runId: r.run_id, state: 'orphaned', errorCode: 'HOST_RESTARTED' });
+      }
+      return rows.map(r => ({ runId: r.run_id, taskId: r.task_id, pid: r.pid, processStartedAt: r.process_started_at }));
+    });
+  }
+  tasksWithQueue() { return (this.sqlite.prepare("SELECT DISTINCT task_id FROM agent_turns WHERE status='accepted'").all() as { task_id: string }[]).map(r => r.task_id); }
 
   recordProbe(p: { driverId: string; binaryPath: string; realpath: string | null; version: string | null; capabilities: unknown; state: string; reason: string | null }) {
     const id = randomUUID();

@@ -8,6 +8,7 @@ import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
 import { TaskRow } from '@renderer/lib/layout/sidebar-tasks';
+import { agentTasksStore, type AgentTaskSummary } from '@renderer/core/agent-tasks-store';
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/lib/ui/popover';
 import { cn } from '@renderer/utils/utils';
 import { ProjectDialog } from '@renderer/views/projects/project-dialogs';
@@ -44,7 +45,7 @@ const ProjectNode = observer(function ProjectNode({ project, tasks }: { project:
       {!archived && <button className="row-action" data-testid="sidebar-project-new-task" title={t('tasks.newInProject')} onClick={() => navigation.newTask(project.id)}><SquarePen size={15} /></button>}</div>
     </div>
     {detail && <ProjectDeleteDialog project={detail} open={deleting} onOpenChange={setDeleting} />}
-    {open && <div className="reference-project-tasks">{tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}</div>}
+    {open && <div className="reference-project-tasks">{agentTasksStore.enabled ? agentTasksStore.of(project.id).map(task => <AgentTaskRow key={task.taskId} task={task} />) : tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}</div>}
   </div>;
 });
 
@@ -61,6 +62,15 @@ function Toggle({ open, onClick, label, testId }: { open: boolean; onClick: () =
     </button>
   );
 }
+
+const AGENT_STATUS: Record<string, string> = { working: '工作中', waiting: '等待批准', stopped: '已停止', failed: '失败', completed: '' };
+/** M14 新任务行：只列新任务（旧任务不迁移，需求 R10）。 */
+const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskSummary }) {
+  const active = navigation.currentViewId === 'agentTask' && navigation.currentAgentTaskId === task.taskId;
+  return <button type="button" data-testid="sidebar-agent-task" data-task-id={task.taskId} aria-current={active ? 'page' : undefined} className="reference-task-row" onClick={() => navigation.openAgentTask(task.taskId)}>
+    <span className="truncate flex-1 text-left">{task.title}</span>{AGENT_STATUS[task.status] && <span className={`task-state-tail agent-tail ${task.status}`}>{AGENT_STATUS[task.status]}</span>}
+  </button>;
+});
 
 /** Project → task tree (PRD F05). Archived tasks and projects are folded away at the bottom. */
 export const SidebarProjects = observer(function SidebarProjects() {

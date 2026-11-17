@@ -39,6 +39,8 @@ import { FileTerminalService } from './core/files/terminal-context';
 import { TerminalImageCache } from './core/files/terminal-image-cache';
 import {createBrowserController} from './core/browser/controller';
 import type {BrowserService} from './core/browser/service';
+import { createAgentTaskController } from './core/agent/controller';
+import type { AgentWorkspace } from './core/agent/wiring';
 
 export interface RpcDeps {
   files: FileService;
@@ -62,6 +64,7 @@ export interface RpcDeps {
   agentSupport?: AgentSupportService;
   applications?: ApplicationService;
   browser?:BrowserService;
+  agentWorkspace?: AgentWorkspace;
   onProjectDeleted?:()=>void;
   onTaskProfilesChanged?:()=>void;
   ptys: PtyManager;
@@ -105,6 +108,7 @@ export function createRpcRouter(d: RpcDeps) {
     ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles,d.onTaskProfilesChanged),
     agentTransfer: createAgentTransferController(d.agentTransfer),
     providerSetup: createProviderSetupController(d.providers),
+    ...createAgentTaskController(d.agentWorkspace, (event) => d.ptyAccess.requireSender(event)),
     ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event),path=>shell.openPath(path)),
     ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv,d.capabilityRegistry,d.onCapabilityChanged),
     dialog: createRPCController({

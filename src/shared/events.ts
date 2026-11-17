@@ -14,6 +14,9 @@ export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:da
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
 export const tasksChangedEvent = defineEvent<void>('tasks:changed');
+/** M14 统一 Agent 工作区：已提交的任务事件（含 seq）与只推在线订阅者的流式增量。 */
+export const agentTaskEvent = defineEvent<{ taskId: string; seq: number; type: string; itemId: string | null; payload: unknown }>('agentTasks:event');
+export const agentTaskLiveEvent = defineEvent<{ taskId: string; runId: string; itemKey: string; text: string }>('agentTasks:live');
 export const browserChangedEvent=defineEvent<{taskId:string}>('browser:changed');
 export const browserAccessChangedEvent=defineEvent<Record<string,never>>('browser:access-changed');
 export const browserShortcutEvent=defineEvent<{taskId:string;action:BrowserShortcut}>('browser:shortcut');

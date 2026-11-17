@@ -4,7 +4,7 @@ import { makeAutoObservable } from 'mobx';
 import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
 
 /** The view registry: every top-level view the main area can show. */
-export const VIEW_IDS = ['home', 'task', 'settings', 'project', 'scheduled', 'apps'] as const;
+export const VIEW_IDS = ['home', 'task', 'agentTask', 'settings', 'project', 'scheduled', 'apps'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
 export type ApplicationPage = 'catalog' | 'skills' | 'projects' | 'activity' | ApplicationId | `plugin:${string}`;
@@ -21,6 +21,8 @@ class NavigationStore {
   currentProjectId: string | null = null;
   /** The task the 'task' view shows. */
   currentTaskId: string | null = null;
+  /** M14 新任务区显示的任务。 */
+  currentAgentTaskId: string | null = null;
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
   /** Unsubmitted composer text, kept in memory across views and scoped to its project. */
@@ -60,6 +62,11 @@ class NavigationStore {
   consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
   homeInput(projectId:string|null):string{return this.homeInputDrafts.get(projectId)??'';}
   setHomeInput(projectId:string|null,value:string):void{if(value)this.homeInputDrafts.set(projectId,value);else this.homeInputDrafts.delete(projectId);}
+
+  openAgentTask(id: string): void {
+    this.currentAgentTaskId = id;
+    this.currentViewId = 'agentTask';
+  }
 
   openTask(id: string): void {
     this.currentTaskId = id;

@@ -57,6 +57,9 @@ import { runProbes } from './probes';
 import { PtyManager } from './pty-manager';
 import { PtyAccess, registerPtyInput } from './pty-access';
 import { createRpcRouter } from './rpc';
+import { randomUUID as agentInstanceId } from 'node:crypto';
+import { createAgentWorkspace } from './core/agent/wiring';
+import { agentTaskEvent, agentTaskLiveEvent } from '@shared/events';
 import { safeStorageCipher } from './safe-storage-cipher';
 import { SecretsStore } from './secrets';
 import { VoiceService } from './core/voice/voice-service';
@@ -186,6 +189,9 @@ async function main(): Promise<void> {
   ptys.on('exit',()=>queueMicrotask(scanManagedCapabilities));
   let browser:BrowserService|undefined;
   const browserOrphans=()=>{void browser?.reconcile().catch(()=>console.warn('[browser] orphan-page/profile cleanup pending'));};
+  const agentProcesses=new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'));
+  const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,providers,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,
+    host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e)});
   const tasks = new TaskService({
     db: client.db,
     ptys,
@@ -295,6 +301,7 @@ async function main(): Promise<void> {
       agentSupport,
       applications,
       browser,
+      agentWorkspace,
       onProjectDeleted:()=>{events.emit(tasksChangedEvent,undefined);browserOrphans();},
       onTaskProfilesChanged:()=>events.emit(tasksChangedEvent,undefined),
       ptys,
@@ -315,6 +322,7 @@ async function main(): Promise<void> {
   app.on('activate', () => void showWindow());
 
   let quitConfirmed = false, quitPending = false;
+  app.on('before-quit', () => { void agentWorkspace.closeAll().catch(()=>{}); });
   app.on('before-quit', (event) => {
     if (quitConfirmed) return;
     event.preventDefault();

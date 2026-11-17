@@ -6,6 +6,7 @@ import { useEffect, type ReactNode } from 'react';
 import { menuOpenSettingsEvent } from '@shared/events';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
+import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { useGlobalShortcuts } from '@renderer/lib/hooks/useGlobalShortcuts';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { applyLanguage } from '@renderer/lib/i18n';
@@ -40,6 +41,7 @@ export function App() {
   useEffect(installFileCloseHost, []);
   useEffect(() => {
     void tasksStore.refresh();
+    agentTasksStore.start();
     return events.on(menuOpenSettingsEvent, () => navigation.openSettings());
   }, []);
   useGlobalShortcuts();

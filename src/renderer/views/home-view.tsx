@@ -8,6 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
+import { agentTasksStore } from '@renderer/core/agent-tasks-store';
+import { newClientInputId } from '@renderer/features/agent-tasks/agent-task-view';
+import { rpc } from '@renderer/lib/ipc';
+import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
 import { homeAgents, homeAgentId, HomeAgentPicker, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
 import { agentPermission } from '@shared/agent-permissions';
@@ -117,7 +121,14 @@ export const HomeView = observer(function HomeView() {
     const token=crypto.randomUUID();launchToken.current=token;
     setLaunching(true);
     try {
-      await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token, permission:agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id });
+      const permission=agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id;
+      if(agentTasksStore.enabled){
+        // M14 新任务区：创建任务后提交第一条消息，由主进程打开程序化运行。
+        const created=await rpc.agentTasks.create({projectId,dirId:dir.id,cwd:dir.path,title:message.split('\n')[0].slice(0,60),profileId:profile.id,tier:permission});
+        if(created.tierNotice)toast.message(created.tierNotice);
+        if(message.trim())await rpc.agentTasks.submit(created.taskId,{clientInputId:newClientInputId(),text:message,expectedSelectionRevision:1});
+        void agentTasksStore.refresh();navigation.openAgentTask(created.taskId);
+      } else await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token, permission });
       draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
       setMessage('');
     } catch (e) {
