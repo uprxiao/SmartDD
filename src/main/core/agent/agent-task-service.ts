@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import type { DriverId } from './capabilities';
 import type { DriverExecutable } from './driver';
 import { DriverError } from './driver';
-import { AgentStore, type AgentSelection, type StoredEvent } from './agent-store';
+import { AgentStore, INPUT_TEXT_LIMIT, type AgentSelection, type StoredEvent } from './agent-store';
 import { AgentRunService, type RunHandle } from './agent-run-service';
 import { isTier, resolveTier, type Tier } from './permissions';
 import { attachmentNote, freezeImages, prepareAttachment, verifyAttachments, type Attachment } from './attachments';
@@ -66,6 +66,52 @@ export function rangeOf(text: string, offset: number) {
 /** 事件出进程前有界化：超过 32 KiB 只发信封，界面按水位重新读取快照（复核 FR02）。 */
 export function boundedEvent(e: StoredEvent): StoredEvent {
   return jsonBytes(e) <= EVENT_LIMIT ? e : { taskId: e.taskId, seq: e.seq, type: e.type, itemId: e.itemId, payload: { truncated: true, bytes: jsonBytes(e.payload) } };
+}
+
+type DraftRow = ReturnType<AgentStore['draft']>;
+type PendingRequest = ReturnType<AgentStore['pendingRequests']>[number];
+/** 草稿：小的随快照给出；大的（或收紧档）只给修订与大小，经 draftBody 分段读取；受损记录如实标出。 */
+function draftForSnapshot(draft: DraftRow, level: number) {
+  if (!draft || 'damaged' in draft) return draft;
+  const bytes = jsonBytes(draft.draft);
+  return bytes > (level >= 2 ? 4 * 1024 : DRAFT_INLINE) ? { revision: draft.revision, draft: null, truncated: true as const, bytes } : draft;
+}
+/** 请求摘要：只留标识、种类、修订与来源，正文经 requestBody 读取。 */
+function requestStub(r: PendingRequest) {
+  return { requestId: r.requestId, class: r.class, kind: r.kind, revision: r.revision, origin: r.origin, status: r.status, createdAt: r.createdAt, payload: {}, detailTruncated: true as const, bytes: jsonBytes(r.payload) };
+}
+/**
+ * 待处理请求（复核 SR04）：先为每个请求留出摘要，保证全部可访问；剩余预算按顺序把摘要升级为完整内容或预览。
+ * 摘要本身都放不下时（数量极多）按顺序给前面的，并报总数，处理掉前面的会继续出现。
+ */
+function requestsForSnapshot(pending: PendingRequest[], level: number) {
+  const budget = [REQUESTS_BUDGET, REQUESTS_BUDGET, 48 * 1024, 32 * 1024][level];
+  const out: (PendingRequest & { detailTruncated?: boolean; bytes?: number })[] = [];
+  let used = 0;
+  for (const r of pending) { const st = requestStub(r), n = jsonBytes(st) + 1; if (used + n > budget) break; used += n; out.push(st); }
+  if (level < 2 && out.length === pending.length) {
+    pending.forEach((r, i) => {
+      const stubSize = jsonBytes(out[i]) + 1;
+      for (const c of [previewRequest(r), previewRequest(r, 0)]) {
+        const n = jsonBytes(c) + 1;
+        if (used - stubSize + n <= budget) { used += n - stubSize; out[i] = c; break; }
+      }
+    });
+  }
+  return { requests: out, requestsTotal: pending.length };
+}
+function queuedPreview(q: { turn_id: string; input_ref: string }, chars: number) {
+  const t = (JSON.parse(q.input_ref) as { text: string }).text;
+  return { turnId: q.turn_id, text: t.length > chars ? t.slice(0, chars) : t, ...(t.length > chars ? { truncated: true } : {}) };
+}
+/** 命令与 Skill 目录：条数与描述长度有界。 */
+function catalogForSnapshot(c: { commands: string[]; skills: { name: string; description?: string }[] } | null, level: number) {
+  if (!c) return null;
+  const n = [200, 200, 80, 30][level], d = [160, 160, 80, 0][level];
+  return { commands: c.commands.slice(0, 100).map(x => x.slice(0, 64)), skills: c.skills.slice(0, n).map(k => ({ name: k.name.slice(0, 128), ...(d && k.description ? { description: k.description.slice(0, d) } : {}) })) };
+}
+function boundGoal<T extends { objective?: string | null }>(g: T): T {
+  return typeof g.objective === 'string' && g.objective.length > 4000 ? { ...g, objective: g.objective.slice(0, 4000), objectiveTruncated: true } : g;
 }
 
 export type TaskStatus = 'idle' | 'working' | 'waiting' | 'completed' | 'stopped' | 'failed' | 'limited';
@@ -130,7 +176,18 @@ export class AgentTaskService {
     return this.d.store.updateSelection(taskId, next, expectedRevision);
   }
 
-  saveDraft(taskId: string, draft: unknown, expectedRevision: number) { this.selection(taskId); return this.d.store.saveDraft(taskId, draft, expectedRevision); }
+  /** 草稿与输入同一文字上限；超限明确拒绝，原记录不变（复核 SR02）。冲突回执只带修订，不回传草稿正文。 */
+  saveDraft(taskId: string, draft: unknown, expectedRevision: number) {
+    this.selection(taskId);
+    const d = draft as { text?: unknown; attachments?: unknown } | null;
+    if (!d || typeof d !== 'object' || (d.text !== undefined && typeof d.text !== 'string')) throw new DriverError('REJECTED', '草稿无效');
+    if (typeof d.text === 'string' && Buffer.byteLength(d.text) > INPUT_TEXT_LIMIT) throw new DriverError('REJECTED', '草稿超过 256 KB，未保存；请拆分或改用附件');
+    if (d.attachments !== undefined && (!Array.isArray(d.attachments) || d.attachments.length > 20)) throw new DriverError('REJECTED', '草稿附件无效');
+    const r = this.d.store.saveDraft(taskId, draft, expectedRevision);
+    if (r.ok) return r;
+    // 冲突回执带服务端版本；过大的只给修订与大小，由界面经 draftBody 读取，响应守容量上限。
+    return jsonBytes(r.draft) <= DRAFT_INLINE ? r : { ok: false as const, revision: r.revision, draft: null, draftTruncated: true as const };
+  }
 
   /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。mode=steer 时尝试插话，不支持则保留在排队并说明原因。 */
   async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) {
@@ -273,9 +330,12 @@ export class AgentTaskService {
       if (stoppedSince()) return;
       const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[] };
       let model = selection.model ?? run.defaultModel;
-      if (!model && run.driverId === 'codex-app-server' && run.sentModel) model = await this.d.runs.resolveDefaultModel(run.runId);
-      // Codex 的模型覆盖会延续：已发过显式模型、又解析不到默认时，不能靠省略字段“恢复默认”（复核 FR03）。
-      if (!model && run.driverId === 'codex-app-server' && run.sentModel) throw new DriverError('UNSUPPORTED', '无法确定执行器默认模型，请在模型菜单里明确选择一个模型');
+      // Codex 的模型覆盖会延续：恢复的线程可能带着旧覆盖，本运行也可能发过显式模型；默认选择下先查执行器默认，
+      // 查不到就拒绝，不靠省略字段“恢复默认”（复核 FR03、SR03）。
+      if (!model && run.driverId === 'codex-app-server') model = await this.d.runs.resolveDefaultModel(run.runId);
+      if (!model && run.driverId === 'codex-app-server' && (run.sentModel || run.resumed)) throw new DriverError('UNSUPPORTED', '无法确定执行器默认模型，请在模型菜单里明确选择一个模型');
+      // 派发前最后核对停止：上面每个异步前置（打开、默认模型查询）期间都可能按了停止（复核 SR01）。
+      if (stoppedSince()) return;
       await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...this.agentInput(frozen.text, frozen.attachments ?? []), tier: selection.tier as Tier, model });
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
     } catch (e) {
@@ -284,7 +344,10 @@ export class AgentTaskService {
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.runForTask(taskId)) return;
       // 上一运行已不可用、仍在等真实退出：输入保留但暂停，明确告知原因；退出后自动恢复派发（复核 NR04）。
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.closingForTask(taskId)) {
-        if (!this.blockedByClosing.has(taskId)) { this.blockedByClosing.set(taskId, this.stopSeq.get(taskId) ?? 0); this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { severity: 'warning', code: 'waitingPreviousRun', detail: '上一会话已不可用、正在等待它退出；输入已保留，退出后会自动发送。也可以取消这条输入。' }); }
+        // 本次尝试开始后已按停止：保持暂停，不取得退出后自动恢复的资格（复核 SR01）。
+        if (stoppedSince()) return;
+        // 恢复资格绑定本次尝试开始时的停止序号；之后任何停止都会使它失效。
+        if (!this.blockedByClosing.has(taskId)) { this.blockedByClosing.set(taskId, seq); this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { severity: 'warning', code: 'waitingPreviousRun', detail: '上一会话已不可用、正在等待它退出；输入已保留，退出后会自动发送。也可以取消这条输入。' }); }
         this.paused.add(taskId);
         return;
       }
@@ -364,34 +427,33 @@ export class AgentTaskService {
   snapshot(taskId: string) {
     const { task, selection, revision } = this.selection(taskId);
     const run = this.d.runs.runForTask(taskId);
-    // 草稿过大时只给修订与大小，界面经 draftBody 分段读取（不丢草稿，复核 FR02）。
     const draft = this.d.store.draft(taskId);
-    const draftShown = draft && jsonBytes(draft.draft) > DRAFT_INLINE ? { ...draft, draft: null, truncated: true, bytes: jsonBytes(draft.draft) } : draft;
-    // 待处理请求合计守预算：放不下的给预览，界面读完全文才能批准。
-    let reqBytes = 0;
-    const requests = this.d.store.pendingRequests(taskId).map(r => {
-      const full = previewRequest(r), size = jsonBytes(full);
-      if (!full.detailTruncated && reqBytes + size <= REQUESTS_BUDGET) { reqBytes += size; return full; }
-      const p = previewRequest(r, 0); reqBytes += jsonBytes(p); return p;
-    });
+    const pending = this.d.store.pendingRequests(taskId);
     const queuedAll = this.d.store.queuedTurns(taskId);
-    const base = {
-      taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, selection, selectionRevision: revision,
-      draft: draftShown, requests,
-      queued: queuedAll.slice(0, 10).map(q => { const t = (JSON.parse(q.input_ref) as { text: string }).text; return { turnId: q.turn_id, text: t.length > 1000 ? t.slice(0, 1000) : t, ...(t.length > 1000 ? { truncated: true } : {}) }; }),
-      queuedTotal: queuedAll.length,
-      run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: this.d.runs.active(run.runId)?.catalog ?? null } : null,
-      goal: this.d.store.goal(taskId), goalPending: this.goalPending.get(taskId) ?? null,
-      status: this.status(taskId), seq: this.d.store.watermark(taskId),
-    };
-    // 整份响应按最终字节守 256 KiB：其余字段之后，剩余预算装入最近的条目及其回合。
     const allTurns = this.d.store.turns(taskId);
-    const recentTurns = allTurns.slice(-20);
-    let budget = RESPONSE_LIMIT - 4 * 1024 - jsonBytes(base) - jsonBytes(recentTurns);
-    const page = this.itemsPage(taskId, Math.max(0, budget), allTurns, recentTurns);
-    const out = { ...base, ...page };
-    while (jsonBytes(out) > RESPONSE_LIMIT && out.items.length) { out.items.shift(); out.hasOlder = true; }
-    return out;
+    const goal = this.d.store.goal(taskId);
+    const catalog = run ? this.d.runs.active(run.runId)?.catalog ?? null : null;
+    // 整份响应按最终 UTF-8 字节守 256 KiB（技术方案 §3.1，复核 FR02／SR04）。基础字段按档逐级收紧，
+    // 每档都保留全部待处理请求的可访问路径（预览或只含标识的摘要，全文经 requestBody 读取）；剩余预算装最近条目。
+    for (let level = 0; level <= 3; level++) {
+      const base = {
+        taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, selection, selectionRevision: revision,
+        draft: draftForSnapshot(draft, level),
+        ...requestsForSnapshot(pending, level),
+        queued: queuedAll.slice(0, [10, 10, 5, 3][level]).map(q => queuedPreview(q, [1000, 1000, 400, 200][level])),
+        queuedTotal: queuedAll.length,
+        run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
+        goal: goal ? boundGoal(goal) : goal, goalPending: this.goalPending.get(taskId) ?? null,
+        status: this.status(taskId), seq: this.d.store.watermark(taskId),
+      };
+      const recentTurns = allTurns.slice(-[20, 20, 10, 3][level]);
+      const budget = RESPONSE_LIMIT - 4 * 1024 - jsonBytes(base) - jsonBytes(recentTurns);
+      if (budget < 0 && level < 3) continue;
+      const out = { ...base, ...this.itemsPage(taskId, Math.max(0, budget), allTurns, recentTurns) };
+      while (jsonBytes(out) > RESPONSE_LIMIT && out.items.length) { out.items.shift(); out.hasOlder = true; }
+      if (jsonBytes(out) <= RESPONSE_LIMIT) return out;
+    }
+    throw new DriverError('PROTOCOL', '任务快照超过容量上限');
   }
 
   /** 从新到旧装入条目（单项过大给预览），并带上这些条目所属的回合；字节与条数（2000）双重边界。 */
@@ -411,16 +473,19 @@ export class AgentTaskService {
     return { items: out, turns, hasOlder: out.length ? out[0].ordinal > 1 : all.length > 0 };
   }
   /** 正文范围读取（复核 NR06）：截断预览的条目与过大的请求按 128 KiB 分段读取完整内容。 */
-  itemBody(taskId: string, itemId: string, offset: number) {
+  itemBody(taskId: string, itemId: string, offset: number, revision?: number) {
     this.selection(taskId);
     const it = this.d.store.itemById(taskId, itemId);
     if (!it) throw new DriverError('REJECTED', '条目不存在');
-    return rangeOf(JSON.stringify(it.payload), offset);
+    // 分段读取期间条目被更新：拒绝拼接不同修订的片段，由界面按新修订重读（复核 SR05）。
+    if (revision !== undefined && revision !== it.revision) throw new DriverError('STATE', '条目已更新，请重新读取');
+    return { ...rangeOf(it.payloadJson, offset), revision: it.revision };
   }
-  requestBody(taskId: string, requestId: string, offset: number) {
+  requestBody(taskId: string, requestId: string, offset: number, revision?: number) {
     const r = this.d.store.request(requestId);
     if (!r || r.task_id !== taskId) throw new DriverError('REJECTED', '请求不存在');
-    return rangeOf(r.payload_ref, offset);
+    if (revision !== undefined && revision !== r.revision) throw new DriverError('STATE', '请求已更新，请重新读取');
+    return { ...rangeOf(r.payload_ref, offset), revision: r.revision };
   }
   history(taskId: string, beforeOrdinal: number) {
     this.selection(taskId);
@@ -428,9 +493,11 @@ export class AgentTaskService {
     while (jsonBytes(page) > RESPONSE_LIMIT && page.items.length > 1) page.items.shift();
     return page;
   }
-  draftBody(taskId: string, offset: number) {
+  draftBody(taskId: string, offset: number, revision?: number) {
     this.selection(taskId);
     const d = this.d.store.draft(taskId);
+    if (d && 'damaged' in d) throw new DriverError('REJECTED', '草稿已受损，无法读取');
+    if (revision !== undefined && revision !== (d?.revision ?? 0)) throw new DriverError('STATE', '草稿已更新，请重新读取');
     return { ...rangeOf(JSON.stringify(d?.draft ?? null), offset), revision: d?.revision ?? 0 };
   }
 

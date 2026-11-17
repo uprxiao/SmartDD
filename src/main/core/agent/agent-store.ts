@@ -1,5 +1,6 @@
 // M14 新表的读写（技术方案 T1.5 §2、§3.1）。投影、事件与递增 seq 同事务，提交后再通知订阅者。
 import type BetterSqlite3 from 'better-sqlite3';
+import { DriverError } from './driver';
 import { createHash, randomUUID } from 'node:crypto';
 import type { DriverId } from './capabilities';
 
@@ -7,6 +8,8 @@ export const EVENT_PAYLOAD_LIMIT = 32 * 1024;
 /** 历史正文与输入原文的上限（复核 CR06）：输入在接受前按文字预算校验，这里只防异常大对象。 */
 export const BODY_LIMIT = 1024 * 1024;
 export const INPUT_TEXT_LIMIT = 256 * 1024;
+/** 草稿存储上限：256 KiB 文字在最坏 JSON 转义（6 倍）下加 20 个附件元数据仍放得下。 */
+export const DRAFT_STORE_LIMIT = 2 * 1024 * 1024;
 const now = () => new Date().toISOString();
 export const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 
@@ -149,8 +152,8 @@ export class AgentStore {
     });
   }
   itemById(taskId: string, itemId: string) {
-    const r = this.sqlite.prepare('SELECT item_id,payload_ref FROM agent_items WHERE task_id=? AND item_id=?').get(taskId, itemId) as { item_id: string; payload_ref: string } | undefined;
-    return r ? { itemId: r.item_id, payload: JSON.parse(r.payload_ref) } : undefined;
+    const r = this.sqlite.prepare('SELECT item_id,revision,payload_ref FROM agent_items WHERE task_id=? AND item_id=?').get(taskId, itemId) as { item_id: string; revision: number; payload_ref: string } | undefined;
+    return r ? { itemId: r.item_id, revision: r.revision, payloadJson: r.payload_ref } : undefined;
   }
   turnByClientInput(taskId: string, clientInputId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(taskId, clientInputId) as TurnRow | undefined; }
   turn(turnId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow | undefined; }
@@ -233,7 +236,10 @@ export class AgentStore {
       if (!row) throw new Error('任务不存在');
       if (row.draft_revision !== expectedRevision) return { ok: false as const, revision: row.draft_revision, draft: JSON.parse(row.draft_json) };
       const revision = row.draft_revision + 1;
-      this.sqlite.prepare('UPDATE agent_tasks SET draft_json=?,draft_revision=?,updated_at=? WHERE task_id=?').run(boundedJson(draft, 256 * 1024), revision, now(), taskId);
+      // 草稿完整保存或明确拒绝，不能截断后报成功（复核 SR02）；拒绝时原记录与修订不变。
+      const text = JSON.stringify(draft ?? null);
+      if (Buffer.byteLength(text) > DRAFT_STORE_LIMIT) throw new DriverError('REJECTED', '草稿过大，未保存');
+      this.sqlite.prepare('UPDATE agent_tasks SET draft_json=?,draft_revision=?,updated_at=? WHERE task_id=?').run(text, revision, now(), taskId);
       return { ok: true as const, revision };
     })();
   }
@@ -275,7 +281,11 @@ export class AgentStore {
   }
   draft(taskId: string) {
     const r = this.sqlite.prepare('SELECT draft_json,draft_revision FROM agent_tasks WHERE task_id=?').get(taskId) as { draft_json: string; draft_revision: number } | undefined;
-    return r ? { draft: JSON.parse(r.draft_json), revision: r.draft_revision } : null;
+    if (!r) return null;
+    const draft = JSON.parse(r.draft_json);
+    // 旧版本按上限截断写入的草稿已无法还原：如实标“受损”，不当作空草稿（复核 SR02）。
+    if (draft && typeof draft === 'object' && draft.truncated === true && typeof draft.sha256 === 'string' && 'head' in draft) return { draft: null, revision: r.draft_revision, damaged: true as const, bytes: Number(draft.bytes) || 0 };
+    return { draft, revision: r.draft_revision };
   }
   watermark(taskId: string) { return (this.sqlite.prepare('SELECT COALESCE(MAX(seq),0) AS seq FROM agent_events WHERE task_id=?').get(taskId) as { seq: number }).seq; }
 

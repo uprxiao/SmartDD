@@ -27,7 +27,7 @@ function fakeSdk(turns: Turn[]) {
       [Symbol.asyncIterator]: () => ({ next: () => out.length ? Promise.resolve({ value: out.shift(), done: false }) : done ? Promise.resolve({ value: undefined, done: true }) : new Promise(r => waiters.push(r)) }),
       interrupt: async () => { state.interrupts++; interrupted = true; },
       setPermissionMode: async m => { state.modes.push(m); },
-      setModel: async (m?: string) => { (wrapper as any).setModelHook?.(m); },
+      setModel: async (m?: string) => { await (wrapper as any).setModelHook?.(m); },
       close: () => { state.closed = true; },
     };
     return q;
@@ -63,6 +63,26 @@ describe('复核 1755：目标确认只认目标命令那一轮', () => {
     await inst.startTurn({ clientInputId: '3', text: '随便聊聊', tier: 'ask' });
     await until(() => events.filter(e => e.type === 'turn.completed').length === 3);
     expect(events.filter(e => e.type === 'goal')).toEqual([{ type: 'goal', objective: '真目标', status: 'active' }]);
+  });
+});
+
+describe('复核 2251：停止只作用于正在开始的这一轮', () => {
+  it('SR01：切换模型期间按停止，输入不写出、按未发出退回；空闲时的停止不中断下一轮', async () => {
+    const { inst, sdk, events } = make([ok('一'), ok('二')]);
+    let release!: () => void;
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.interrupt(); // 空闲时按停止
+    await inst.startTurn({ clientInputId: '1', text: 'a', tier: 'ask' });
+    await until(() => events.filter(e => e.type === 'turn.completed').length === 1);
+    expect(events.find(e => e.type === 'turn.completed')).toMatchObject({ status: 'completed' });
+    expect(sdk.state.interrupts).toBe(0);
+    (sdk as any).setModelHook = () => new Promise<void>(r => { release = r; });
+    const pending = inst.startTurn({ clientInputId: '2', text: 'b', tier: 'ask', model: 'other' });
+    await until(() => !!release);
+    await inst.interrupt();
+    release();
+    await expect(pending).rejects.toMatchObject({ code: 'STATE' });
+    expect(sdk.state.prompts).toHaveLength(1);
   });
 });
 

@@ -61,20 +61,52 @@ function ComposerMenu({ items, index, onPick }: { items: MenuItem[]; index: numb
     <b>{it.label}</b>{it.detail && <small>{it.detail}</small>}</button>)}</div>;
 }
 
-/** 按字节偏移分段读取完整正文并解析（复核 NR06、FR02）。 */
-async function readRange(read: (offset: number) => Promise<{ chunk: string; next: number; done: boolean }>) {
-  let off = 0, text = '';
-  for (let i = 0; i < 1000; i++) { const r = await read(off); text += r.chunk; if (r.done) return JSON.parse(text); if (r.next <= off) break; off = r.next; }
+type RangeChunk = { chunk: string; next: number; done: boolean; revision?: number };
+/**
+ * 按字节偏移分段读取完整正文并解析（复核 NR06、FR02）。首段带回修订号，后续段按该修订读取；
+ * 读取中途内容被更新时服务端拒绝，从头按新修订重读，不拼接不同修订的片段（复核 SR05）。
+ */
+async function readRange(read: (offset: number, revision?: number) => Promise<RangeChunk>): Promise<{ value: any; revision?: number }> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let off = 0, text = '', revision: number | undefined;
+    try {
+      for (let i = 0; i < 1000; i++) {
+        const r = await read(off, revision);
+        if (i === 0) revision = r.revision;
+        text += r.chunk;
+        if (r.done) return { value: JSON.parse(text), revision };
+        if (r.next <= off) throw new Error('读取完整内容失败');
+        off = r.next;
+      }
+    } catch (e) { if (attempt < 2 && /已更新/.test(rpcErrorMessage(e))) continue; throw e; }
+  }
   throw new Error('读取完整内容失败');
 }
-const fetchItemPayload = (itemId: string) => readRange(off => rpc.agentTasks.itemBody(CurrentTask.id, itemId, off));
+/** 读取指定修订的条目全文；条目已推进到其他修订时服务端拒绝，不返回别的修订的内容。 */
+const fetchItemPayload = (itemId: string, revision: number) => readRange((off) => rpc.agentTasks.itemBody(CurrentTask.id, itemId, off, revision));
 
-/** 截断条目的全文：任何被预览的条目都能读取完整内容（复核 FR04）。 */
+/**
+ * 截断条目的全文（复核 FR04）。缓存按条目＋修订有效（复核 SR05）：修订推进后旧全文作废，已展开的自动按新修订重取；
+ * 迟到的旧读取结果不写回；复制等操作只用当前修订的全文。
+ */
 function useFullPayload(item: TimelineItem) {
-  const [full, setFull] = useState<any>(null);
-  const truncated = !!item.payload?.truncated && !full;
-  const load = async () => { try { const p = await fetchItemPayload(item.itemId); setFull(p); return p; } catch (e) { toast.error(`读取完整内容失败：${rpcErrorMessage(e)}`); return null; } };
-  return { payload: full ?? item.payload ?? {}, truncated, load };
+  const key = `${item.itemId}:${item.revision}`;
+  const [full, setFull] = useState<{ key: string; payload: any } | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const current = useRef(key); current.current = key;
+  const valid = full && full.key === key ? full.payload : null;
+  const truncated = !!item.payload?.truncated && !valid;
+  const load = async (): Promise<any> => {
+    const want = key;
+    try {
+      const { value } = await fetchItemPayload(item.itemId, item.revision);
+      // 读取期间条目已更新：旧结果不写回，也不交给复制／下载。
+      if (current.current !== want) { toast.message('内容已更新，请重试'); return null; }
+      setFull({ key: want, payload: value }); setExpanded(true); return value;
+    } catch (e) { toast.error(`读取完整内容失败：${rpcErrorMessage(e)}`); return null; }
+  };
+  useEffect(() => { if (expanded && item.payload?.truncated && !valid) void load(); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { payload: valid ?? item.payload ?? {}, truncated, load };
 }
 function ExpandButton({ onClick }: { onClick: () => void }) {
   return <button type="button" className="agent-older" onClick={onClick}>内容较长，已截断显示 · 展开全文</button>;
@@ -155,7 +187,7 @@ function RequestFormView({ form, busy, onSubmit }: { form: RequestForm; busy: bo
   </div>;
 }
 
-function RequestPanel({ requests, driverId, onRespond, onStop }: { requests: TimelineRequest[]; driverId: string; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: () => void }) {
+function RequestPanel({ requests, more = 0, driverId, onRespond, onStop }: { requests: TimelineRequest[]; more?: number; driverId: string; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: () => void }) {
   const [index, setIndex] = useState(0);
   const [reason, setReason] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -164,14 +196,15 @@ function RequestPanel({ requests, driverId, onRespond, onStop }: { requests: Tim
   const shown = requests[Math.min(index, requests.length - 1)];
   // 过大的关键请求：先读完整内容再开放批准（复核 NR06）；读不全只能拒绝或停止。
   const [full, setFull] = useState<Record<string, TimelineRequest['payload'] | 'error'>>({});
+  const reqKey = `${shown.requestId}:${shown.revision}`;
   useEffect(() => {
-    if (!(shown as any).detailTruncated || full[shown.requestId]) return;
+    if (!(shown as any).detailTruncated || full[reqKey]) return;
     void (async () => {
-      try { const payload = await readRange(off => rpc.agentTasks.requestBody(CurrentTask.id, shown.requestId, off)); setFull(f => ({ ...f, [shown.requestId]: payload?.truncated ? 'error' : payload })); }
-      catch { setFull(f => ({ ...f, [shown.requestId]: 'error' })); }
+      try { const { value } = await readRange((off, rev) => rpc.agentTasks.requestBody(CurrentTask.id, shown.requestId, off, rev)); setFull(f => ({ ...f, [reqKey]: value?.truncated ? 'error' : value })); }
+      catch { setFull(f => ({ ...f, [reqKey]: 'error' })); }
     })();
-  }, [shown.requestId]); // eslint-disable-line react-hooks/exhaustive-deps
-  const loaded = full[shown.requestId];
+  }, [reqKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const loaded = full[reqKey];
   const incomplete = !!(shown as any).detailTruncated && (loaded === undefined || loaded === 'error');
   const r = loaded && loaded !== 'error' ? { ...shown, payload: loaded } : shown;
   const form = incomplete ? null : requestForm(r, driverId);
@@ -197,7 +230,7 @@ function RequestPanel({ requests, driverId, onRespond, onStop }: { requests: Tim
     if (e.key === 'Enter' && selected !== null) { e.preventDefault(); choose(selected); }
   };
   return <div className="agent-request" role="dialog" aria-label="待处理请求" tabIndex={-1} ref={panel} onKeyDown={onKey}>
-    <div className="agent-request-head"><b>{head.title}</b>{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{index + 1}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}</div>
+    <div className="agent-request-head"><b>{head.title}</b>{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{index + 1}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}{more > 0 && <small className="agent-request-more">另有 {more} 个请求，处理完前面的会继续显示</small>}</div>
     {incomplete && <div className="agent-limited">{loaded === 'error' ? '请求内容过大或读取失败，只能拒绝或停止' : '正在读取完整内容，读完后才能批准…'}</div>}
     {!form && head.detail && <pre className="agent-request-detail">{head.detail}</pre>}
     {form ? <RequestFormView key={r.requestId} form={form} busy={busy} onSubmit={result => void send(result)} /> : <>
@@ -264,8 +297,12 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     draftInit.current = true;
     draftRev.current = s.draft?.revision ?? 0;
     if (editedRef.current || !s.draft) return;
+    // 旧版本截断写入的草稿已无法还原：明确提示，不当作空草稿静默加载（复核 SR02）。
+    if ('damaged' in s.draft && s.draft.damaged) { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
     let draft = s.draft.draft as any;
-    if ((s.draft as any).truncated) { try { draft = await readRange(off => rpc.agentTasks.draftBody(taskId, off)); } catch (e) { toast.error(`草稿读取失败：${rpcErrorMessage(e)}`); return; } }
+    if ((s.draft as any).truncated) { try { draft = (await readRange((off, rev) => rpc.agentTasks.draftBody(taskId, off, rev))).value; } catch (e) { toast.error(`草稿读取失败：${rpcErrorMessage(e)}`); return; } }
+    // 兜底：读到的仍是旧版本的截断记录（只剩前缀与摘要），同样提示无法恢复，不当作空草稿。
+    if (draft && draft.truncated === true && typeof draft.sha256 === 'string') { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
     if (editedRef.current) return;
     setText(String(draft?.text ?? ''));
     const saved = (draft?.attachments ?? []) as PreparedAttachment[];
@@ -311,13 +348,16 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const chipsRef = useRef<Chip[]>([]); chipsRef.current = chips;
   const textRef = useRef(''); textRef.current = text;
   const editedRef = useRef(false);
+  const draftError = useRef<string | null>(null);
   const saveDraft = (value: string) => {
     editedRef.current = true;
     if (draftTimer.current) clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(async () => {
       // 草稿中的附件归属任务：只存已就绪的元数据（需求 R01）。
       const attachments = chipsRef.current.filter(c => c.status === 'ready' && c.data).map(c => c.data!);
-      const r = await rpc.agentTasks.saveDraft(taskId, { text: value, attachments }, draftRev.current).catch(() => null);
+      // 保存被拒（如超过上限）：本地编辑保留、修订不变，并提示一次（复核 SR02）。
+      const r = await rpc.agentTasks.saveDraft(taskId, { text: value, attachments }, draftRev.current).catch(e => { const m = rpcErrorMessage(e); if (draftError.current !== m) { draftError.current = m; toast.error(`草稿未保存：${m}`); } return null; });
+      if (r) draftError.current = null;
       if (r?.ok) draftRev.current = r.revision; else if (r) draftRev.current = r.revision; // 冲突：保留本地编辑，下次以服务端修订再写
     }, 400);
   };
@@ -429,7 +469,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     <div className="agent-bottom">
       {snap.status === 'limited' && (() => { const err = [...snap.items].reverse().find(i => i.type === 'error' && i.payload?.limited); return err ? <div className="agent-limited" role="status">{LIMIT_LABEL[err.payload.limited.kind] ?? '受限'}：本轮已暂停，部分结果已保留。{err.payload.limited.resetAt ? `可在 ${err.payload.limited.resetAt} 后` : '稍后'}手动继续（不会自动换账号或到点重跑）。</div> : null; })()}
       {requests.length > 0 && snap.run
-        ? <RequestPanel requests={requests} driverId={snap.run.driverId} onStop={() => void stop()} onRespond={async (r, result) => { await rpc.agentTasks.respond(taskId, r.requestId, r.revision, result); void reload(); }} />
+        ? <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? requests.length) - snap.requests.length)} driverId={snap.run.driverId} onStop={() => void stop()} onRespond={async (r, result) => { await rpc.agentTasks.respond(taskId, r.requestId, r.revision, result); void reload(); }} />
         : <form className="agent-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
           <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />

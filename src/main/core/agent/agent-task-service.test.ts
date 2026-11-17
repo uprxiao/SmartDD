@@ -37,7 +37,7 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db);
   const insts: Inst[] = [];
-  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.nativeDefault = opts.nativeDefault; i.lazyDefault = opts.lazyDefault; insts.push(i); return i; } });
+  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.nativeDefault = opts.nativeDefault; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
   const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
@@ -509,6 +509,110 @@ describe('复核 2127 回归', () => {
     await until(() => insts[0].turns.length === 1); insts[0].finish(); await until(() => svc.status(taskId) === 'completed');
     await expect(svc.command(taskId, 'review')).resolves.toEqual({ ok: true });
     expect(insts[0].commands).toEqual(['review']);
+  });
+});
+
+describe('复核 2251 回归', () => {
+  const firstTurnDone = async (env: ReturnType<typeof setup>, taskId: string, n = 0) => { await until(() => env.insts[n]?.turns.length >= 1); env.insts[n].finish(); await until(() => env.svc.status(taskId) === 'completed'); };
+  it('SR01：恢复线程查询默认模型期间按停止，不再发出新输入', async () => {
+    const env = setup();
+    const { svc, insts, store, runs } = env;
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask', model: 'explicit' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await firstTurnDone(env, taskId);
+    await runs.close(svc.snapshot(taskId).run!.runId);
+    svc.setSelection(taskId, { model: null }, 1);
+    let release!: (m: string) => void;
+    const origCreate = (runs as any).deps.drivers.get('codex-app-server').create;
+    (runs as any).deps.drivers.get('codex-app-server').create = () => { const i = origCreate(); i.defaultModel = () => new Promise<string>(r => { release = r; }); return i; };
+    const queued = await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 2 });
+    await until(() => !!release);
+    await svc.stop(taskId);
+    release('cfg-default');
+    await new Promise(r => setTimeout(r, 30));
+    expect(insts[1].turns).toHaveLength(0);
+    expect(store.turn(queued.turnId)?.status).toBe('accepted');
+  });
+  it('SR01：启动解析期间按停止、随后才发现旧运行在退出，旧进程退出后仍不自动发出', async () => {
+    let releaseLaunch!: () => void;
+    const gate = new Promise<void>(r => { releaseLaunch = r; });
+    const env = setup();
+    const { svc, insts, store, runs } = env;
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await firstTurnDone(env, taskId);
+    const first = insts[0]; first.noExitOnClose = true;
+    // 第二条输入的启动解析挂起；期间旧运行变为不可用并开始退出，用户按停止
+    const origResolve = (svc as any).d.resolveLaunch;
+    (svc as any).d.resolveLaunch = async (i: any) => { await gate; return origResolve(i); };
+    await runs.close(svc.snapshot(taskId).run!.runId);
+    const queued = await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 1 });
+    await svc.stop(taskId);
+    releaseLaunch();
+    await new Promise(r => setTimeout(r, 30));
+    first.emit({ type: 'exit', code: 0, signal: null });
+    await new Promise(r => setTimeout(r, 30));
+    expect(insts).toHaveLength(1);
+    expect(store.turn(queued.turnId)?.status).toBe('accepted');
+  });
+  it('SR02：上限内的文字与大量转义字符的草稿完整保存并逐字读回；超限明确拒绝且原草稿与修订不变', () => {
+    const { svc, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    let rev = 0;
+    for (const text of ['x'.repeat(256 * 1024), '"'.repeat(130 * 1024), '\u0001'.repeat(256 * 1024)]) {
+      const r = svc.saveDraft(taskId, { text, attachments: [] }, rev) as any;
+      expect(r.ok).toBe(true); rev = r.revision;
+      let off = 0, body = '';
+      for (;;) { const c = svc.draftBody(taskId, off, rev); body += c.chunk; if (c.done) break; off = c.next; }
+      expect(JSON.parse(body).text).toBe(text);
+    }
+    const before = store.draft(taskId);
+    expect(() => svc.saveDraft(taskId, { text: 'y'.repeat(256 * 1024 + 1) }, rev)).toThrow('草稿超过 256 KB');
+    expect(store.draft(taskId)).toEqual(before);
+  });
+  it('SR02：旧版本截断写入的草稿如实标为受损，不当作空草稿', () => {
+    const { svc, db } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    db.prepare('UPDATE agent_tasks SET draft_json=?, draft_revision=3 WHERE task_id=?').run(JSON.stringify({ truncated: true, bytes: 300000, sha256: 'ab', head: '{"text":"abc' }), taskId);
+    expect(svc.snapshot(taskId).draft).toMatchObject({ damaged: true, revision: 3, draft: null });
+    expect(() => svc.draftBody(taskId, 0)).toThrow('草稿已受损');
+  });
+  it('SR03：真正关闭后恢复同一绑定，默认选择下查执行器默认；查不到则拒绝且不发出', async () => {
+    for (const lazy of ['cfg-default', undefined]) {
+      for (const order of ['before', 'after'] as const) {
+        const env = setup({ lazyDefault: lazy });
+        const { svc, insts, runs, store } = env;
+        const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask', model: 'explicit-b' });
+        await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+        await firstTurnDone(env, taskId);
+        if (order === 'before') svc.setSelection(taskId, { model: null }, 1);
+        await runs.close(svc.snapshot(taskId).run!.runId);
+        if (order === 'after') svc.setSelection(taskId, { model: null }, 1);
+        await svc.submit(taskId, { clientInputId: id(2), text: 'b', expectedSelectionRevision: 2 });
+        if (lazy) { await until(() => insts[1]?.turns.length === 1); expect(insts[1].opened?.resumeNativeId).toBe('n1'); expect(insts[1].turns[0].model).toBe('cfg-default'); }
+        else { await until(() => svc.status(taskId) === 'failed'); expect(insts[1]?.turns ?? []).toHaveLength(0); expect(store.items(taskId).find(i => i.type === 'error')?.payload.message).toMatch('无法确定执行器默认模型'); }
+      }
+    }
+  });
+  it('SR04：40 个约 90 KiB 的中文请求，快照仍守上限，全部请求可读取全文；单个正常请求仍完整显示', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'a', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].emit({ type: 'request', requestKey: 'small', kind: 'command_approval', payload: { command: 'ls' } });
+    for (let k = 0; k < 40; k++) insts[0].emit({ type: 'request', requestKey: `r${k}`, kind: 'command_approval', payload: { command: `echo ${k} ` + '中'.repeat(30 * 1024) } });
+    const snap = svc.snapshot(taskId) as any;
+    expect(Buffer.byteLength(JSON.stringify(snap))).toBeLessThanOrEqual(256 * 1024);
+    expect(snap.requestsTotal).toBe(41);
+    expect(snap.requests[0]).toMatchObject({ payload: { command: 'ls' } });
+    expect(snap.requests[0].detailTruncated).toBeUndefined();
+    expect(snap.requests.length).toBe(41);
+    for (const r of snap.requests.slice(1)) {
+      expect(r.detailTruncated).toBe(true);
+      let off = 0, body = '';
+      for (;;) { const c = svc.requestBody(taskId, r.requestId, off, r.revision); body += c.chunk; if (c.done) break; off = c.next; }
+      expect(JSON.parse(body).command.startsWith('echo ')).toBe(true);
+    }
   });
 });
 

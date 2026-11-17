@@ -30,7 +30,7 @@ export interface OpenRunInput {
   /** 配置档案的默认模型（托管供应商为档案默认，订阅登录为空＝执行器默认）；“恢复默认”用它，不用最初的显式选择（复核 NR05）。 */
   defaultModel?: string;
 }
-export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; /** 本运行已发过显式模型。 */ sentModel?: boolean }
+export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
 interface ActiveRun extends RunHandle { openError?: string; catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
@@ -76,7 +76,7 @@ export class AgentRunService {
     let markEnded!: () => void;
     const ended = new Promise<void>(r => { markEnded = r; });
     const capabilities = input.capabilities ?? evaluateCapabilities(input.driverId, input.executable.version).capabilities;
-    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, appliedTier: tier.tier, sentModel: !!(resumeNativeId && input.model && input.driverId === 'codex-app-server'), ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
+    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, appliedTier: tier.tier, sentModel: !!(resumeNativeId && input.model && input.driverId === 'codex-app-server'), resumed: !!resumeNativeId, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     instance.on(e => this.onDriverEvent(run, e));
     try {

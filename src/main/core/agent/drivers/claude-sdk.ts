@@ -197,10 +197,14 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (!params) throw new DriverError('REJECTED', 'Claude 不支持该档位');
     // 跨越完全访问须在启动时声明；同一会话不切换，由调用方重开并恢复（复核 CR12，CLI 实测拒绝）。
     if (input.tier !== this.tier) throw new DriverError('UNSUPPORTED', '权限档位变化需要重开会话');
+    // 停止只作用于之后开始的这一轮：空闲时按停止留下的标记不能中断下一轮（复核 SR01）。
+    this.stopPending = false;
     // 同任务换模型：下一轮前显式应用（复核 CR11）；undefined 恢复执行器默认。
     if (input.model !== this.model) {
       if (!this.query.setModel) throw new DriverError('UNSUPPORTED', '该 SDK 不支持切换模型');
       await this.query.setModel(input.model); this.model = input.model;
+      // 切换模型期间按了停止：输入尚未写出，按未发出退回排队（复核 SR01）。
+      if (this.stopPending) { this.stopPending = false; throw new DriverError('STATE', '已停止，输入保留在排队'); }
     }
     const nativeTurnId = `${this.sessionId}:${++this.turnSerial}`;
     this.goalCommandTurn = /^\/goal(\s|$)/.test(input.text.trimStart()) ? nativeTurnId : null;
