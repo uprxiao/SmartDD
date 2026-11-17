@@ -28,7 +28,11 @@ for row in json.loads((b/'技研/历史/实验迁移清单.json').read_text()):
         if sha(raw)!=f['sha256']:failed.append(f['path'])
     check('archived experiment '+Path(row['to']).name,not failed,failed)
 baseline=json.loads((here/'source-baseline.json').read_text())
-check('production inputs unchanged',all(sha((repo/x['path']).read_bytes())==x['sha256'] for x in baseline['smartdd']))
+# 2026-11-17 起 M14 已获准正式开发，生产代码按计划变化；这里只核对研究基线提交中的文件仍与记录一致。
+import subprocess
+def at_commit(path):
+    return subprocess.run(['git','-C',str(repo),'show',f"{baseline['smartddCommit']}:{path}"],capture_output=True,check=True).stdout
+check('research baseline inputs recorded',all(sha(at_commit(x['path']))==x['sha256'] for x in baseline['smartdd']))
 size=(b/'技研/技术方案.md').stat().st_size
 old=next(x['bytes'] for x in snapshots if x['source']=='技研/技术方案.md')
 check('implementation design within one fifth',size<=old/5,{'beforeBytes':old,'afterBytes':size,'ratio':size/old})
