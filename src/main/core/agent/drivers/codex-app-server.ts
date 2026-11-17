@@ -2,7 +2,7 @@
 // 恢复线程也重新下发，不依赖创建时默认值（技术方案 T1.5 §7.2，V08／V09）。
 import { spawn, type ChildProcess } from 'node:child_process';
 import { CODEX_TIERS, type CodexTierParams } from '../permissions';
-import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput } from '../driver';
+import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import { JsonlRpcPeer } from '../jsonl-rpc';
 
 const SANDBOX_MODE: Record<CodexTierParams['sandboxPolicy']['type'], string> = { workspaceWrite: 'workspace-write', dangerFullAccess: 'danger-full-access' };
@@ -93,6 +93,16 @@ export class CodexAppServerInstance implements DriverInstance {
     } catch { return undefined; }
   }
 
+  async modelCatalog(): Promise<DriverModel[]> {
+    if (!this.rpc) return [];
+    const response = await this.rpc.call<{ data?: { model: string; displayName?: string; supportedReasoningEfforts?: { reasoningEffort: string }[]; defaultReasoningEffort?: string }[] }>('model/list', {}, 5000);
+    return (response.data ?? []).slice(0, 200).filter(m => typeof m.model === 'string').map(m => ({ id: m.model, name: m.displayName ?? m.model, efforts: (m.supportedReasoningEfforts ?? []).map(e => e.reasoningEffort), defaultEffort: m.defaultReasoningEffort }));
+  }
+  async injectHistory(text: string) {
+    if (!this.rpc || !this.threadId || this.activeTurn) throw new DriverError('STATE', '历史交接需要空闲会话');
+    await this.rpc.call('thread/inject_items', { threadId: this.threadId, items: [{ type: 'message', role: 'user', content: [{ type: 'input_text', text }] }] });
+  }
+
   async startTurn(input: TurnInput) {
     if (!this.rpc || !this.threadId) throw new DriverError('STATE', '会话尚未打开');
     if (this.activeTurn) throw new DriverError('STATE', '上一轮尚未结束');
@@ -105,6 +115,7 @@ export class CodexAppServerInstance implements DriverInstance {
       clientUserMessageId: input.clientInputId,
       approvalPolicy: tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandboxPolicy: tier.sandboxPolicy,
       ...(input.model ? { model: input.model } : {}),
+      ...(input.effort ? { effort: input.effort } : {}),
     });
     const nativeTurnId = r?.turn?.id;
     if (!nativeTurnId) throw new DriverError('PROTOCOL', 'turn/start 响应缺少 turn.id');

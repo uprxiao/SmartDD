@@ -13,7 +13,7 @@ export type Row =
   | { kind: 'work'; id: string; items: TimelineItem[]; running: boolean; seconds: number }
   | { kind: 'footer'; id: string; label: string; failed: boolean };
 
-export interface TurnGroup { turnId: string | null; status: string | null; rows: Row[] }
+export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[] }
 
 /** 回合耗时：宿主观测的开始到结束（未结束按 now）；重叠工具不重复累计。 */
 export function turnSeconds(t: TurnInfo | undefined, now = Date.now()) {
@@ -24,18 +24,18 @@ export function turnSeconds(t: TurnInfo | undefined, now = Date.now()) {
 export function formatDuration(s: number) { return s < 60 ? `${s} 秒` : `${Math.floor(s / 60)} 分 ${s % 60} 秒`; }
 
 export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Date.now()): TurnGroup[] {
-  const byTurn = new Map<string | null, TimelineItem[]>();
+  const byTurn = new Map<string, { turnId: string | null; items: TimelineItem[] }>();
   for (const it of [...items].sort((a, b) => a.ordinal - b.ordinal)) {
-    const k = it.turnId ?? null;
-    if (!byTurn.has(k)) byTurn.set(k, []);
-    byTurn.get(k)!.push(it);
+    const k = it.turnId ?? `host:${it.itemId}`;
+    if (!byTurn.has(k)) byTurn.set(k, { turnId: it.turnId ?? null, items: [] });
+    byTurn.get(k)!.items.push(it);
   }
   const turnMap = new Map(turns.map(t => [t.turn_id, t]));
-  const order: (string | null)[] = [...byTurn.keys()];
+  const order = [...byTurn.keys()];
   const groups: TurnGroup[] = [];
   for (const key of order) {
-    const list = byTurn.get(key)!;
-    const turn = key ? turnMap.get(key) : undefined;
+    const { items: list, turnId } = byTurn.get(key)!;
+    const turn = turnId ? turnMap.get(turnId) : undefined;
     const live = !!turn && ['dispatching', 'started'].includes(turn.status);
     const rows: Row[] = [];
     let work: TimelineItem[] = [];
@@ -58,7 +58,7 @@ export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Da
       const label = turn.status === 'interrupted' ? '已停止' : turn.status === 'unknown' ? '结果未知 · 正在核对' : '已失败';
       rows.push({ kind: 'footer', id: `footer:${key}`, label: `${label} · 共工作 ${formatDuration(turnSeconds(turn, now))}`, failed: turn.status !== 'interrupted' });
     }
-    groups.push({ turnId: key, status: turn?.status ?? null, rows });
+    groups.push({ key, turnId, status: turn?.status ?? null, rows });
   }
   return groups;
 }

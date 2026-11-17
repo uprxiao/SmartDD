@@ -23,6 +23,15 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it('历史追加走已公布的 thread/inject_items，不发 turn/start，不更改后续用户文字', async () => {
+    const { inst, server } = setup((msg, s) => { if (msg.method === 'thread/inject_items') { s.reply(msg.id, {}); return true; } return false; });
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.injectHistory('历史事实，不是新的真人授权');
+    expect(server.calls('turn/start')).toHaveLength(0);
+    expect(server.calls('thread/inject_items')[0].params.items[0]).toMatchObject({ type: 'message', role: 'user', content: [{ type: 'input_text', text: '历史事实，不是新的真人授权' }] });
+    await inst.startTurn({ clientInputId: 'next', text: '原始输入', tier: 'ask', effort: 'high' });
+    expect(server.calls('turn/start')[0].params).toMatchObject({ effort: 'high', input: [{ type: 'text', text: '原始输入', text_elements: [] }] });
+  });
   it('初始化握手后新建线程，并按档位下发线程参数', async () => {
     const { inst, server, events, spawned } = setup();
     const r = await inst.open({ executable: exe, cwd: '/w', env: { PATH: '/bin' }, tier: 'ask', model: 'gpt-x', extraArgs: ['--disable', 'plugins'] });

@@ -2,6 +2,9 @@
 // 只把面向终端的命令行参数改写成驱动参数：权限参数一律丢弃（档位每轮由驱动显式下发）。
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { parse as parseToml } from 'smol-toml';
 import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
 import { planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
 import type { DriverId } from './capabilities';
@@ -63,11 +66,13 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   const env = isolatedEnv(i.baseEnv, p.isolatePrefixes ?? [], p.isolateNames ?? [], p.env);
   const managed = i.config.source === 'provider';
   const carry = managed ? false : i.carryExtensions !== false;
+  // 只保存凭据与端点来源的摘要；换账号／凭据或端点不能恢复旧账号的原生绑定。
+  const identity = createHash('sha256').update(JSON.stringify({ key: i.key ?? null, env: Object.fromEntries(Object.entries(p.env).filter(([k]) => /KEY|TOKEN|BASE_URL|ACCOUNT/.test(k))) })).digest('hex');
   if (p.runner === 'claude') {
     const stateRoot = plan.claudeRoot ?? env.CLAUDE_CONFIG_DIR ?? join(env.HOME ?? homedir(), '.claude');
     return {
       driverId: 'claude-sdk', command: i.tool.customPath || i.tool.executable, env, stateRoot,
-      compatibility: { source: i.config.source, providerId: i.config.providerId, extensions: carry },
+      compatibility: { source: i.config.source, providerId: i.config.providerId, identity, extensions: carry },
       ...(plan.model ? { model: plan.model } : {}),
       extraArgs: [],
       // 托管根本身就是隔离的 user 配置；订阅登录关闭扩展时去掉 user（技术方案 §7.2）。
@@ -78,9 +83,20 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   if (p.runner === 'codex') {
     const { extraArgs, model } = codexArgsToDriver(p.args);
     const stateRoot = env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
+    if (!carry && !managed) {
+      const file = join(stateRoot, 'config.toml');
+      if (existsSync(file)) {
+        if (statSync(file).size > 1024 * 1024) throw new Error('Codex 用户配置过大，无法核对扩展；请保持沿用或检查配置');
+        const config = parseToml(readFileSync(file, 'utf8'));
+        const servers = config.mcp_servers;
+        if (servers && typeof servers === 'object' && !Array.isArray(servers)) {
+          for (const name of Object.keys(servers)) extraArgs.push('-c', `mcp_servers.${JSON.stringify(name)}.enabled=false`);
+        }
+      }
+    }
     return {
       driverId: 'codex-app-server', command: i.tool.customPath || i.tool.executable, env, stateRoot,
-      compatibility: { source: i.config.source, providerId: i.config.providerId, extensions: carry },
+      compatibility: { source: i.config.source, providerId: i.config.providerId, identity, extensions: carry },
       ...(model ?? plan.model ? { model: model ?? plan.model! } : {}),
       extraArgs, plan,
     };

@@ -3,6 +3,7 @@
 import MarkdownIt from 'markdown-it';
 import { Archive, ChevronRight, CircleStop, Loader2, Send, SquareTerminal, Target, X, Zap } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
+import { AgentModelPicker } from './agent-model-picker';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
 import { navigation } from '@renderer/core/navigation';
@@ -149,6 +150,9 @@ function ItemRow({ item }: { item: TimelineItem }) {
     case 'todo_list': return <div className="agent-todo">{(p.entries ?? []).map((e: any) => <div key={e.id} className={`agent-todo-row ${e.status}`}><span className="agent-todo-box" aria-hidden>{e.status === 'completed' ? '✓' : ''}</span>{e.subject}</div>)}{more}</div>;
     case 'error': return <div className="agent-error" role="alert">{p.message ?? p.code}{more}</div>;
     case 'compaction': return <div className="agent-divider">上下文已压缩</div>;
+    case 'provider_switch': return <div className="agent-divider">此处切换到 {p.toName ?? p.to}{more}</div>;
+    case 'handoff': return <details className="agent-notice"><summary>{p.kind === 'full' ? '已准备全量交接' : '已准备增量交接'}{p.omissions?.length ? ` · ${p.omissions.length} 项因预算未覆盖` : ''}</summary><pre>{p.text}</pre>{p.omissions?.map((x: any) => <div key={x.itemId}>{x.itemId}：{x.reason}</div>)}{more}</details>;
+    case 'omission_notice': return <div className="agent-limited">{p.detail}{more}</div>;
     case 'system_notice': return <details className="agent-notice"><summary>{NOTICE_LABEL[String(p.code)] ?? '提示'}</summary><pre>{String(p.detail ?? '')}</pre>{more}</details>;
     default: return null;
   }
@@ -291,7 +295,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const [menuIndex, setMenuIndex] = useState(0);
   const [fileHits, setFileHits] = useState<string[]>([]);
   const textarea = useRef<HTMLTextAreaElement>(null);
-  const modelSelect = useRef<HTMLSelectElement>(null);
+  const modelSelect = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     RunInTerminal.current = code => { setTerminalOpen(true); void rpc.agentTasks.pasteToTerminal(taskId, code).then(() => toast.message('已送入终端输入行，按回车执行')).catch(e => toast.error(rpcErrorMessage(e))); };
     return () => { RunInTerminal.current = null; };
@@ -475,7 +479,7 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
   const goalOp = async (op: 'pause' | 'resume' | 'clear') => { try { await rpc.agentTasks.goal(taskId, { kind: op }); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } };
   const archive = async () => { try { await rpc.agentTasks.archive(taskId); void agentTasksStore.refresh(); navigation.newTask(snap.projectId ?? undefined); } catch (e) { toast.error(rpcErrorMessage(e)); } };
   const stop = async () => { try { await rpc.agentTasks.stop(taskId); } catch (e) { toast.error(rpcErrorMessage(e)); } };
-  const setSelection = async (patch: { tier?: string; model?: string | null }) => {
+  const setSelection = async (patch: { tier?: string; model?: string | null; effort?: string | null; carryExtensions?: boolean }) => {
     try { const r = await rpc.agentTasks.setSelection(taskId, patch as never, snap.selectionRevision); if (!r.ok) toast.warning('设置已在别处变更，已刷新'); void reload(); }
     catch (e) { toast.error(rpcErrorMessage(e)); }
   };
@@ -484,13 +488,15 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
     <header className="agent-task-head"><h1>{snap.title}</h1>{STATUS_LABEL[snap.status] && <span className={`agent-status ${snap.status}`}>{STATUS_LABEL[snap.status]}</span>}<span className="push" /><button type="button" className="agent-head-btn" title="底部终端" data-testid="agent-terminal-toggle" aria-pressed={terminalOpen} onClick={() => setTerminalOpen(o => !o)}><SquareTerminal size={15} /></button><button type="button" className="agent-head-btn" title="归档任务" data-testid="agent-archive" onClick={() => void archive()}><Archive size={15} /></button></header>
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline">
       {hasOlder && <button type="button" className="agent-older" onClick={() => void loadOlder()}>加载更早的记录</button>}
-      {groups.map(g => <div key={g.turnId ?? 'host'} className="agent-turn">{g.rows.map(row =>
+      {groups.map(g => <div key={g.key} className="agent-turn" data-turn-id={g.turnId ?? undefined} data-status={g.status ?? undefined}>{g.rows.map(row =>
         row.kind === 'item' ? <ItemRow key={row.item.itemId} item={row.item} />
           : row.kind === 'work' ? <WorkRow key={row.id} items={row.items} running={row.running} seconds={row.seconds} />
             : <div key={row.id} className={`agent-turn-footer${row.failed ? ' failed' : ''}`}>{row.label}</div>)}</div>)}
       {working && liveText && <div className="agent-assistant streaming"><Markdown text={liveText} /></div>}
       {snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
       {snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}
+      {snap.selection.pendingSwitch && <div className="agent-limited">本轮和已有排队输入结束后切换到 {profiles.find(p => p.profileId === snap.selection.pendingSwitch?.profileId)?.name ?? snap.selection.pendingSwitch.profileId}</div>}
+      {snap.switching && <div className="agent-limited">正在切换执行器，等待原运行退出…</div>}
       {snap.queued.length > 0 && <div className="agent-queue">{snap.queued.map(q => <div key={q.turnId} className="agent-queue-row"><span>排队中 · {q.text}</span><button type="button" title="取消排队" onClick={() => void rpc.agentTasks.cancelQueued(taskId, q.turnId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))}><X size={13} /></button></div>)}{snap.queuedTotal > snap.queued.length && <div className="agent-queue-row"><span>另有 {snap.queuedTotal - snap.queued.length} 条排队</span></div>}</div>}
     </div></div>
     <div className="agent-bottom">
@@ -515,11 +521,9 @@ export function AgentTaskView({ taskId }: { taskId: string }) {
             <select aria-label="权限档位" value={snap.selection.tier} onChange={e => { if (e.target.value === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true); else void setSelection({ tier: e.target.value }); }}>
               {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
             </select>
-            <span className="agent-composer-agent">{profile?.name ?? snap.selection.profileId}</span>
-            {profile && profile.models.length > 0 && <select ref={modelSelect} aria-label="模型" value={snap.selection.model ?? ''} onChange={e => void setSelection({ model: e.target.value || null })}>
-              <option value="">{profile.defaultModel ? `默认（${profile.defaultModel}）` : '执行器默认'}</option>
-              {profile.models.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>}
+            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} onEffort={effort => void setSelection({ effort })} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions}
+              onPick={async (id, model) => { try { const r = await rpc.agentTasks.switchProfile(taskId, id, snap.selectionRevision, model); if (!r.ok) toast.warning('选择已在别处变化，请重试'); else if (r.selection.pendingSwitch) toast.message('本轮和已有排队输入结束后切换'); void reload(); return r.ok; } catch (e) { toast.error(rpcErrorMessage(e)); return false; } }}
+              onExtensions={async (id, enabled) => { try { const r = await rpc.agentTasks.setExtensions(taskId, id, enabled, snap.selectionRevision); if (!r.ok) toast.warning('选择已在别处变化，请重试'); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } }} />
             <span className="push" />
             {working && snap.run?.steer && <button type="button" className="agent-stop" disabled={!text.trim()} onClick={() => void send('steer')} title="插话：并入当前这一轮（⌘Enter）"><Zap size={14} />插话</button>}
             {working && snap.run && !snap.run.steer && <span className="agent-composer-agent" title="该执行器版本没有插话的验证证据">运行中发送会排队</span>}

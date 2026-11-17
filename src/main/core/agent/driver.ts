@@ -31,6 +31,7 @@ export interface TurnInput {
   /** 已由宿主核对的图片附件（绝对路径）；非图片附件只在文字中注明。 */
   images?: readonly { path: string; mime: string }[];
   model?: string;
+  effort?: string;
   tier: Tier;
 }
 
@@ -68,6 +69,9 @@ export interface DriverInstance {
    */
   /** 解析执行器自己的默认模型（Codex：配置与模型目录）。 */
   defaultModel?(): Promise<string | undefined>;
+  modelCatalog?(): Promise<DriverModel[]>;
+  /** 只追加模型可见历史，不触发新回合；不改变真人输入的命令文本。 */
+  injectHistory?(text: string): Promise<void>;
   open(options: DriverOpenOptions): Promise<{ nativeId: string; confirmed: boolean; defaultModel?: string }>;
   /** 等原生开始信号后才 resolve。 */
   startTurn(input: TurnInput): Promise<{ nativeTurnId: string }>;
@@ -83,6 +87,8 @@ export interface DriverInstance {
   close(): Promise<void>;
   on(listener: DriverListener): () => void;
 }
+
+export interface DriverModel { id: string; name: string; efforts: string[]; defaultEffort?: string }
 
 export interface AgentDriver {
   readonly id: DriverId;

@@ -17,6 +17,7 @@ function fakeSdk(turns: Turn[]) {
       let n = 0;
       for await (const msg of prompt) {
         state.prompts.push(msg);
+        if (msg.shouldQuery === false) continue;
         if (n === 0) emit({ type: 'system', subtype: 'init', session_id: options.resume ?? options.sessionId, slash_commands: ['compact', 'init', 'statusline', 'pdf'], terminal_slash_commands: ['statusline'], skills: ['pdf'] });
         interrupted = false;
         await turns[n++]?.({ options, emit, ask: (tool, input) => (options as any).canUseTool(tool, input, { signal: new AbortController().signal, title: `想用 ${tool}` }), interrupted: () => interrupted });
@@ -49,6 +50,18 @@ function make(turns: Turn[]) {
 }
 
 describe('复核 1755：目标确认只认目标命令那一轮', () => {
+  it('历史交接用 synthetic/shouldQuery=false 追加，不触发回合，也不改写随后 /goal 命令', async () => {
+    const { inst, sdk, events } = make([ok('Goal set: exact goal')]);
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.injectHistory('历史事实，只作为上下文');
+    await until(() => sdk.state.prompts.length === 1);
+    expect(events.some(e => e.type === 'turn.started')).toBe(false);
+    await inst.startTurn({ clientInputId: 'goal-input', text: '/goal exact goal', tier: 'ask' });
+    await until(() => events.some(e => e.type === 'turn.completed'));
+    expect(sdk.state.prompts[0]).toMatchObject({ isSynthetic: true, shouldQuery: false });
+    expect(sdk.state.prompts[1].message.content).toBe('/goal exact goal');
+    expect(events).toContainEqual({ type: 'goal', objective: 'exact goal', status: 'active' });
+  });
   it('NR13：普通回答引用 Goal set／Goal cleared 不改变目标；/goal 那一轮的确认才生效', async () => {
     const { inst, events } = make([
       async ({ emit }) => { emit({ type: 'assistant', uuid: 'a', message: { content: [{ type: 'text', text: 'Goal set: quoted example only' }] } }); emit({ type: 'result', subtype: 'success' }); },

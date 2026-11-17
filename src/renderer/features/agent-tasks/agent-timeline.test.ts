@@ -6,6 +6,18 @@ const item = (o: Partial<TimelineItem> & { type: string; ordinal: number }): Tim
 const turn = (status: string, s = '2026-11-17T00:00:00Z', e: string | null = '2026-11-17T00:00:12Z') => ({ turn_id: 't1', status, accepted_at: s, started_at: s, ended_at: e, error_code: null });
 
 describe('时间线分组', () => {
+  it('任务级切换条目保持各自的时间顺序，不把后一次切换提前到第一次', () => {
+    const groups = buildTimeline([
+      item({ type: 'provider_switch', ordinal: 1, turnId: null }),
+      item({ type: 'user_message', ordinal: 2, turnId: 'a' }),
+      item({ type: 'handoff', ordinal: 3, turnId: 'a' }),
+      item({ type: 'assistant_message', ordinal: 4, turnId: 'a' }),
+      item({ type: 'provider_switch', ordinal: 5, turnId: null }),
+      item({ type: 'user_message', ordinal: 6, turnId: 'b' }),
+    ], []);
+    expect(groups.map(g => g.rows[0].kind === 'item' ? g.rows[0].item.ordinal : -1)).toEqual([1, 2, 5, 6]);
+    expect(new Set(groups.map(g => g.key)).size).toBe(4);
+  });
   it('工作条目聚合为一行，用户消息与最终回答保持可见；commentary 归入工作', () => {
     const g = buildTimeline([
       item({ type: 'user_message', ordinal: 1, payload: { text: '跑测试' } }),

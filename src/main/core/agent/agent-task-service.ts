@@ -10,6 +10,7 @@ import { isTier, resolveTier, type Tier } from './permissions';
 import { attachmentNote, freezeImages, prepareAttachment, verifyAttachments, type Attachment } from './attachments';
 import type { CapabilityName, CapabilityResult } from './capabilities';
 import { searchProjectFiles } from './file-search';
+import { HandoffService, type Transfer } from './handoff';
 
 export interface ResolvedLaunch {
   driverId: DriverId;
@@ -21,9 +22,10 @@ export interface ResolvedLaunch {
   extraArgs: string[];
   settingSources?: ('user' | 'project' | 'local')[];
   capabilities?: Record<CapabilityName, CapabilityResult>;
+  assertCurrent?(): void;
 }
 /** 由宿主按配置档案解析（发现服务＋凭据服务＋托管文件），不接受客户端提供的路径或凭据。 */
-export type LaunchResolver = (input: { profileId: string; cwd: string; runId: string; model?: string }) => Promise<ResolvedLaunch>;
+export type LaunchResolver = (input: { taskId?: string; profileId: string; cwd: string; runId: string; model?: string; carryExtensions?: boolean }) => Promise<ResolvedLaunch>;
 export type ProfileDriver = (profileId: string) => DriverId;
 
 /** 容量合同（技术方案 §3.1、A45）：IPC 响应 256 KiB、事件 32 KiB、正文段 128 KiB，全部按最终序列化后的 UTF-8 字节计。 */
@@ -119,6 +121,8 @@ function boundGoal<T extends { objective?: string | null }>(g: T): T {
 export type TaskStatus = 'idle' | 'working' | 'waiting' | 'completed' | 'stopped' | 'failed' | 'limited';
 
 export class AgentTaskService {
+  private readonly switching = new Set<string>();
+  private readonly handoffs: HandoffService;
   /** 用户按停止后暂停自动派发排队输入，直到下一次提交（停止只停本轮，不吞掉排队）。 */
   private readonly paused = new Set<string>();
   private readonly dispatching = new Set<string>();
@@ -129,7 +133,8 @@ export class AgentTaskService {
   /** Claude 目标命令已发出、尚未得到原生确认（复核 CR14）；确认后以原生事实为准。 */
   private readonly goalPending = new Map<string, { kind: 'set' | 'clear'; objective?: string; turnId?: string }>();
 
-  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; userData?: string }) {
+  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; profileName?(id: string): string; userData?: string }) {
+    this.handoffs = new HandoffService(d.store);
     // 重启后排队的输入保留但不自动发出，等用户再次提交或取消（未知接收不自动重发）。
     for (const taskId of d.store.tasksWithQueue()) this.paused.add(taskId);
     d.store.subscribe(e => {
@@ -140,16 +145,19 @@ export class AgentTaskService {
       if (e.type === 'turn.ended' || e.type === 'run.ended') {
         // 派发进行中到达的终态会被门闩挡掉：记下来，门闩释放后补一次调度（复核 NR03）。
         if (this.dispatching.has(e.taskId)) this.missedPump.add(e.taskId);
-        queueMicrotask(() => void this.pump(e.taskId));
+        queueMicrotask(() => void this.advance(e.taskId));
       }
     });
   }
 
-  create(input: { projectId: string | null; dirId: string | null; cwd: string; title: string; profileId: string; tier: Tier; model?: string }) {
+  create(input: { projectId: string | null; dirId: string | null; cwd: string; title: string; profileId: string; tier: Tier; model?: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean> }) {
     const driverId = this.d.profileDriver(input.profileId);
     const tier = resolveTier(driverId, input.tier);
     if (!tier.ok) throw new DriverError('REJECTED', '不支持的权限档位');
-    const selection: AgentSelection = { driverId, profileId: input.profileId, tier: tier.tier, ...(input.model ? { model: input.model } : {}) };
+    if (input.model && (!input.model.trim() || input.model.length > 256 || /[\x00-\x1f]/.test(input.model))) throw new DriverError('REJECTED', '模型无效');
+    const preferences: Record<string, boolean> = {};
+    for (const [id, enabled] of Object.entries(input.extensionPreferences ?? {}).slice(0, 200)) { if (typeof enabled === 'boolean') { try { this.d.profileDriver(id); preferences[id] = enabled; } catch { /* 已删除的首页配置不带入任务 */ } } }
+    const selection: AgentSelection = { driverId, profileId: input.profileId, tier: tier.tier, carryExtensions: input.carryExtensions !== false, extensionPreferences: { ...preferences, [input.profileId]: input.carryExtensions !== false }, ...(input.model ? { model: input.model } : {}) };
     const title = input.title.trim().slice(0, 120) || '新任务';
     return { taskId: this.d.store.createTask({ projectId: input.projectId, dirId: input.dirId, cwd: input.cwd, title, selection }), selection, ...(tier.downgraded ? { tierNotice: tier.reason } : {}) };
   }
@@ -161,8 +169,11 @@ export class AgentTaskService {
     return { task: t, selection: JSON.parse(t.selection_json) as AgentSelection, revision: t.selection_revision };
   }
 
-  /** 同一执行器内改档位或模型；换执行器属阶段 3（且有目标时禁止）。 */
-  setSelection(taskId: string, patch: { tier?: Tier; model?: string | null }, expectedRevision: number) {
+  private requireStableSelection(taskId: string) { if (this.switching.has(taskId)) throw new DriverError('STATE', '正在切换执行器，请稍后'); }
+
+  /** 模型／档位在下一轮生效；扩展开关只影响此后新建绑定。 */
+  setSelection(taskId: string, patch: { tier?: Tier; model?: string | null; effort?: string | null; carryExtensions?: boolean }, expectedRevision: number) {
+    this.requireStableSelection(taskId);
     const { selection } = this.selection(taskId);
     const next: Partial<AgentSelection> = {};
     if (patch.tier !== undefined) {
@@ -174,8 +185,84 @@ export class AgentTaskService {
     if (patch.model !== undefined) {
       if (patch.model !== null && (!patch.model.trim() || patch.model.length > 256 || /[\x00-\x1f]/.test(patch.model))) throw new DriverError('REJECTED', '模型无效');
       next.model = patch.model ?? undefined;
+      if (next.model !== selection.model) next.effort = undefined;
+    }
+    if (patch.effort !== undefined) {
+      if (patch.effort !== null && !/^[a-z][a-z0-9_-]{0,23}$/.test(patch.effort)) throw new DriverError('REJECTED', '推理强度无效');
+      next.effort = patch.effort ?? undefined;
+    }
+    if (patch.carryExtensions !== undefined) {
+      if (typeof patch.carryExtensions !== 'boolean') throw new DriverError('REJECTED', '扩展选择无效');
+      next.carryExtensions = patch.carryExtensions;
+      next.extensionPreferences = { ...selection.extensionPreferences, [selection.profileId]: patch.carryExtensions };
     }
     return this.d.store.updateSelection(taskId, next, expectedRevision);
+  }
+
+  /** 同任务切换：目标锁与空闲边界由服务强制，不依赖界面置灰。 */
+  async switchProfile(taskId: string, profileId: string, expectedRevision: number, model?: string | null) {
+    this.requireStableSelection(taskId);
+    const before = this.selection(taskId);
+    if (before.revision !== expectedRevision) return { ok: false as const, revision: before.revision, selection: before.selection };
+    if (model !== undefined && model !== null && (!model.trim() || model.length > 256 || /[\x00-\x1f]/.test(model))) throw new DriverError('REJECTED', '模型无效');
+    if (profileId === before.selection.profileId) return this.d.store.updateSelection(taskId, { pendingSwitch: undefined, ...(model !== undefined ? { model: model ?? undefined, ...(model !== before.selection.model ? { effort: undefined } : {}) } : {}) }, expectedRevision);
+    const driverId = this.d.profileDriver(profileId);
+    const goalLock = () => {
+      const goal = this.d.store.goal(taskId);
+      if (goal && goal.status !== 'complete') throw new DriverError('STATE', '清除目标后才能切换');
+    };
+    const busy = () => {
+      const run = this.d.runs.runForTask(taskId);
+      return this.dispatching.has(taskId) || this.d.runs.respondingForTask(taskId) || this.d.store.queuedTurns(taskId).length > 0 || !!(run && this.d.runs.busy(run.runId));
+    };
+    goalLock();
+    if (busy()) return this.d.store.updateSelection(taskId, { pendingSwitch: { profileId, ...(model ? { model } : {}) } }, expectedRevision);
+    if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一执行器仍在退出，请等待');
+    this.switching.add(taskId);
+    const seq = this.stopSeq.get(taskId) ?? 0;
+    this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: true }));
+    try {
+      const launch = await this.d.resolveLaunch({ taskId, profileId, cwd: before.task.cwd, runId: randomUUID(), carryExtensions: before.selection.extensionPreferences?.[profileId] ?? true });
+      if (launch.driverId !== driverId) throw new DriverError('REJECTED', '目标配置的执行器已变化');
+      if ((this.stopSeq.get(taskId) ?? 0) !== seq) throw new DriverError('STATE', '切换已被停止');
+      goalLock();
+      if (busy()) throw new DriverError('STATE', '切换预检已过期，请在空闲边界重试');
+      const run = this.d.runs.runForTask(taskId);
+      if (run) await this.d.runs.close(run.runId);
+      if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一执行器仍在退出，确认退出后可再次切换');
+      if ((this.stopSeq.get(taskId) ?? 0) !== seq) throw new DriverError('STATE', '切换已被停止');
+      launch.assertCurrent?.();
+      const tier = resolveTier(driverId, before.selection.tier as Tier);
+      if (!tier.ok) throw new DriverError('REJECTED', '目标不支持当前档位');
+      const changed = this.d.store.updateSelection(taskId, { driverId, profileId, model: model ?? undefined, effort: undefined, tier: tier.tier, pendingSwitch: undefined, carryExtensions: before.selection.extensionPreferences?.[profileId] ?? true, extensionPreferences: { ...before.selection.extensionPreferences, [before.selection.profileId]: before.selection.carryExtensions !== false } }, expectedRevision, { from: this.d.profileName?.(before.selection.profileId) ?? before.selection.profileId, to: this.d.profileName?.(profileId) ?? profileId });
+      return changed;
+    } finally {
+      this.switching.delete(taskId);
+      this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: false }));
+    }
+  }
+
+  setExtensions(taskId: string, profileId: string, enabled: boolean, expectedRevision: number) {
+    this.requireStableSelection(taskId);
+    if (typeof enabled !== 'boolean') throw new DriverError('REJECTED', '扩展选择无效');
+    this.d.profileDriver(profileId);
+    const { selection } = this.selection(taskId);
+    return this.d.store.updateSelection(taskId, { extensionPreferences: { ...selection.extensionPreferences, [profileId]: enabled }, ...(profileId === selection.profileId ? { carryExtensions: enabled } : {}) }, expectedRevision);
+  }
+
+  private async advance(taskId: string) {
+    const task = this.d.store.task(taskId); if (!task || task.archived_at) return;
+    if (this.paused.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
+    const { selection, revision } = this.selection(taskId), run = this.d.runs.runForTask(taskId);
+    if (selection.pendingSwitch && !this.d.store.queuedTurns(taskId).length && !this.d.runs.respondingForTask(taskId) && !(run && this.d.runs.busy(run.runId)) && !this.d.runs.closingForTask(taskId)) {
+      try { await this.switchProfile(taskId, selection.pendingSwitch.profileId, revision, selection.pendingSwitch.model); }
+      catch (e) {
+        const current = this.selection(taskId);
+        this.d.store.updateSelection(taskId, { pendingSwitch: undefined }, current.revision);
+        this.d.store.addHostItem(taskId, null, 'system_notice', { code: 'switchFailed', detail: `待切换未生效：${(e as Error).message}` });
+      }
+    }
+    await this.pump(taskId);
   }
 
   /** 草稿与输入同一文字上限；超限明确拒绝，原记录不变（复核 SR02）。冲突回执只带修订，不回传草稿正文。 */
@@ -193,10 +280,18 @@ export class AgentTaskService {
 
   /** 提交：先持久接受（幂等），忙则排队；空闲立即派发。mode=steer 时尝试插话，不支持则保留在排队并说明原因。 */
   async submit(taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) {
-    const { revision, task } = this.selection(taskId);
+    let { revision, task } = this.selection(taskId);
     // 幂等命中直接返回原收据，不再核对选择修订、准备或冻结附件（复核 NR01、FR06）。
     const existing = this.d.store.turnByClientInput(taskId, input.clientInputId);
     if (existing) return { turnId: existing.turn_id, duplicate: true, status: existing.status };
+    this.requireStableSelection(taskId);
+    // 重启后遗留的待切换先在空闲边界处理，再让用户确认新选择；不能把新输入送给旧目标。
+    const pending = (JSON.parse(task.selection_json) as AgentSelection).pendingSwitch;
+    if (pending && !this.paused.has(taskId)) {
+      await this.advance(taskId);
+      ({ revision, task } = this.selection(taskId));
+      this.requireStableSelection(taskId);
+    }
     if (input.expectedSelectionRevision !== revision) throw new DriverError('REJECTED', '模型或权限已变化，请确认后再发送');
     if (Buffer.byteLength(input.text) > 256 * 1024) throw new DriverError('REJECTED', '输入超过 256 KB，请拆分或改用附件');
     const verified = this.d.userData ? verifyAttachments(input.attachments, task.cwd, this.d.userData) : [];
@@ -255,18 +350,31 @@ export class AgentTaskService {
   /** 打开或恢复本任务的运行（不派发输入）。 */
   private async ensureRun(taskId: string) {
     const existing = this.d.runs.runForTask(taskId);
-    if (existing) return existing;
+    if (existing) {
+      try { existing.assertCurrent?.(); return existing; }
+      catch (e) { if (!this.d.runs.busy(existing.runId)) await this.d.runs.close(existing.runId); throw e; }
+    }
     const { task, selection } = this.selection(taskId);
     // 不带当前选择解析启动参数，得到档案自己的默认模型；“恢复默认”用它（复核 NR05）。
-    const launch = await this.d.resolveLaunch({ profileId: selection.profileId, cwd: task.cwd, runId: randomUUID() });
+    const launch = await this.d.resolveLaunch({ taskId, profileId: selection.profileId, cwd: task.cwd, runId: randomUUID(), carryExtensions: selection.carryExtensions });
     if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
     if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一运行仍在退出，请稍后');
-    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities });
+    launch.assertCurrent?.();
+    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, assertCurrent: launch.assertCurrent });
     return this.d.runs.runForTask(taskId)!;
+  }
+
+  private async commandContext(taskId: string, run: RunHandle) {
+    if (this.d.runs.busy(run.runId)) return;
+    const transfer = this.handoffs.prepare(taskId, run.bindingId, null, INPUT_TEXT_LIMIT);
+    if (!transfer) return;
+    try { if (transfer.text) await this.d.runs.injectHistory(run.runId, transfer.text); this.handoffs.delivered(transfer.id, 'accepted'); }
+    catch (e) { this.handoffs.delivered(transfer.id, e instanceof DriverError && ['STATE', 'REJECTED', 'UNSUPPORTED'].includes(e.code) ? 'unsent' : 'unknown'); throw e; }
   }
 
   /** 输入框原生命令：Codex 的 compact／review 走协议；Claude 及其他公布的命令作为文字输入发送。 */
   async command(taskId: string, name: string, args = '') {
+    this.requireStableSelection(taskId);
     if (!/^[A-Za-z0-9_:.-]{1,64}$/.test(name)) throw new DriverError('REJECTED', '命令无效');
     const { selection, revision } = this.selection(taskId);
     if (selection.driverId === 'codex-app-server' && (name === 'compact' || name === 'review')) {
@@ -276,6 +384,7 @@ export class AgentTaskService {
       // 原生命令沿用线程上一次生效的档位：与当前选择不一致时先发一条消息让新档位生效，不借用旧配置。
       if (run.appliedTier && run.appliedTier !== selection.tier) throw new DriverError('STATE', '档位已变化，新档位要在下一条消息生效；请先发送一条消息再执行该命令');
       if (this.d.runs.busy(run.runId)) throw new DriverError('STATE', '本轮结束后再执行该命令');
+      await this.commandContext(taskId, run);
       this.paused.delete(taskId);
       await this.d.runs.command(run.runId, name);
       return { ok: true };
@@ -293,6 +402,7 @@ export class AgentTaskService {
 
   /** 目标（需求 R02）：Codex 用原生目标接口，可暂停／继续；Claude 以 /goal 文字设定与清除，不能暂停。 */
   async goal(taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) {
+    this.requireStableSelection(taskId);
     const { selection } = this.selection(taskId);
     if (op.kind === 'set' && (!op.objective.trim() || op.objective.length > 4000)) throw new DriverError('REJECTED', '目标内容无效');
     if (selection.driverId === 'claude-sdk') {
@@ -307,6 +417,7 @@ export class AgentTaskService {
     }
     const run = await this.ensureRun(taskId);
     this.requireCapability(run, 'goal', '目标');
+    if (op.kind === 'set') await this.commandContext(taskId, run);
     if (op.kind === 'resume' || op.kind === 'set') { this.paused.delete(taskId); this.d.runs.hold(taskId, false); }
     await this.d.runs.goal(run.runId, op);
     return { ok: true };
@@ -314,7 +425,7 @@ export class AgentTaskService {
 
   /** 按接受顺序派发下一条排队输入；必要时先打开或恢复运行。 */
   private async pump(taskId: string) {
-    if (this.paused.has(taskId) || this.dispatching.has(taskId)) return;
+    if (this.paused.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
     const next = this.d.store.queuedTurns(taskId)[0];
     if (!next) return;
     let run = this.d.runs.runForTask(taskId);
@@ -322,6 +433,7 @@ export class AgentTaskService {
     this.dispatching.add(taskId);
     const seq = this.stopSeq.get(taskId) ?? 0;
     const stoppedSince = () => (this.stopSeq.get(taskId) ?? 0) !== seq || this.paused.has(taskId);
+    let transfer: Transfer | null = null;
     try {
       const { selection } = this.selection(taskId);
       // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
@@ -338,9 +450,19 @@ export class AgentTaskService {
       if (!model && run.driverId === 'codex-app-server' && (run.sentModel || run.resumed)) throw new DriverError('UNSUPPORTED', '无法确定执行器默认模型，请在模型菜单里明确选择一个模型');
       // 派发前最后核对停止：上面每个异步前置（打开、默认模型查询）期间都可能按了停止（复核 SR01）。
       if (stoppedSince()) return;
-      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...this.agentInput(frozen.text, frozen.attachments ?? []), tier: selection.tier as Tier, model });
+      const input = this.agentInput(frozen.text, frozen.attachments ?? []);
+      const modelInfo = run.models?.find(m => m.id === model);
+      let effort = modelInfo?.defaultEffort;
+      if (selection.effort) {
+        if (modelInfo?.efforts.includes(selection.effort)) effort = selection.effort;
+        else this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${selection.effort}：执行器未公布该模型的此选项。` });
+      }
+      transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, INPUT_TEXT_LIMIT - Buffer.byteLength(input.text));
+      await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: transfer?.text, tier: selection.tier as Tier, model, effort });
+      if (transfer) this.handoffs.delivered(transfer.id, 'accepted');
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
     } catch (e) {
+      if (transfer) this.handoffs.delivered(transfer.id, e instanceof DriverError && ['REJECTED', 'STATE', 'UNSUPPORTED'].includes(e.code) ? 'unsent' : 'unknown');
       const t = this.d.store.turn(next.turn_id);
       // 驱动在发送前拒绝且已放回排队（原生仍在跑）：等该回合结束后由 turn.ended 再派发，不算失败。
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.runForTask(taskId)) return;
@@ -362,13 +484,15 @@ export class AgentTaskService {
       this.paused.add(taskId);
     } finally {
       this.dispatching.delete(taskId);
-      if (this.missedPump.delete(taskId)) queueMicrotask(() => void this.pump(taskId));
+      if (this.missedPump.delete(taskId)) queueMicrotask(() => void this.advance(taskId));
     }
   }
 
   async stop(taskId: string) {
     this.paused.add(taskId);
     this.stopSeq.set(taskId, (this.stopSeq.get(taskId) ?? 0) + 1);
+    const selected = this.selection(taskId);
+    if (selected.selection.pendingSwitch) this.d.store.updateSelection(taskId, { pendingSwitch: undefined }, selected.revision);
     this.d.runs.hold(taskId, true);
     const run = this.d.runs.runForTask(taskId);
     if (!run) return { stopped: this.dispatching.has(taskId) };
@@ -400,7 +524,8 @@ export class AgentTaskService {
     const origin = JSON.parse(req.origin_json) as { runId: string; generation: number };
     const run = this.d.runs.runForTask(taskId);
     const scope = run ? { taskId, runId: run.runId, generation: run.generation, revision } : { taskId, runId: origin.runId, generation: -1, revision };
-    await this.d.runs.respond(requestId, scope, result);
+    try { await this.d.runs.respond(requestId, scope, result); }
+    finally { queueMicrotask(() => void this.advance(taskId)); }
   }
 
   async archive(taskId: string) {
@@ -440,11 +565,12 @@ export class AgentTaskService {
     for (let level = 0; level <= 3; level++) {
       const base = {
         taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, selection, selectionRevision: revision,
+        switching: this.switching.has(taskId),
         draft: draftForSnapshot(draft, level),
         ...requestsForSnapshot(pending, level),
         queued: queuedAll.slice(0, [10, 10, 5, 3][level]).map(q => queuedPreview(q, [1000, 1000, 400, 200][level])),
         queuedTotal: queuedAll.length,
-        run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, busy: this.d.runs.busy(run.runId), steer: this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
+        run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, defaultModel: run.defaultModel, models: run.models?.slice(0, [60,60,30,5][level]), busy: this.d.runs.busy(run.runId), steer: this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
         goal: goal ? boundGoal(goal) : goal, goalPending: this.goalPending.get(taskId) ?? null,
         status: this.status(taskId), seq: this.d.store.watermark(taskId),
       };

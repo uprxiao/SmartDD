@@ -1,0 +1,34 @@
+/* 布局尺寸沿用原型 m14.css 的 picker；颜色接实际主题变量。 */
+.agent-model-picker { position: relative; min-width: 0; }
+.agent-model-pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border-radius: 14px; font-size: 13px; white-space: nowrap; }
+.agent-model-pill small { color: var(--foreground-passive); max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.agent-model-pill:hover,.agent-model-pill[aria-expanded=true] { background: var(--hover); }
+.agent-picker { position: fixed; z-index: 60; width: 560px; max-width: calc(100vw - 40px); border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--foreground); box-shadow: 0 10px 32px #0004; overflow: hidden; text-align: left; }
+.agent-picker-main { display: flex; height: 340px; }
+.agent-picker-rail { width: 44px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; padding: 4px; background: color-mix(in srgb, var(--hover) 45%, transparent); overflow-y: auto; }
+.agent-picker-rail > button { position: relative; width: 36px; height: 36px; min-height: 36px; display: grid; place-items: center; border-radius: 8px; }
+.agent-picker-rail > button:hover,.agent-model-row:hover,.agent-picker-foot button:hover { background: var(--hover); }
+.agent-picker-rail > button.on::after { content: ''; position: absolute; right: -4px; top: 8px; width: 3px; height: 20px; border-radius: 2px; background: #3385ff; }
+.agent-picker button:disabled { opacity: .35; cursor: not-allowed; }
+.agent-picker-list { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 6px; overflow: auto; border-right: 1px solid var(--border); }
+.agent-picker-head { display: flex; flex-direction: column; padding: 2px 6px 6px; line-height: 1.3; }
+.agent-picker-head b { font-size: 13px; font-weight: 600; }
+.agent-picker-head small { font-size: 11px; color: var(--foreground-passive); }
+.agent-picker-search { display: flex; align-items: center; gap: 6px; min-height: 32px; margin: 0 2px 4px; padding: 0 6px; border-bottom: 1px solid var(--border); color: var(--foreground-passive); }
+.agent-picker-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 13px; color: var(--foreground); }
+.agent-model-row { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 8px; border-radius: 7px; font-size: 13px; }
+.agent-model-row > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: left; white-space: nowrap; }
+.agent-model-row kbd { font-size: 11px; color: var(--foreground-passive); }
+.agent-picker-traits { width: 180px; flex-shrink: 0; display: flex; flex-direction: column; padding: 6px; }
+.agent-traits-head { height: 32px; padding: 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; font-size: 12px; color: var(--foreground-passive); }
+.agent-picker-traits p,.agent-picker-note { padding: 8px; font-size: 12px; color: var(--foreground-passive); line-height: 1.5; }
+.agent-picker-traits > button { display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: 0 8px; border-radius: 7px; font-size: 13px; text-align: left; }
+.agent-picker-traits > button:hover { background: var(--hover); }
+.agent-picker-note { display: flex; gap: 5px; }
+.agent-picker-foot { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 4px 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--foreground-passive); }
+.agent-picker-foot > span { flex: 1; min-width: 0; }
+.agent-picker-foot button { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; }
+.agent-extension-toggle { display: flex; align-items: center; gap: 8px; margin: 0 2px 6px; padding: 6px 8px; border-radius: 8px; background: var(--hover); font-size: 12px; }
+.agent-extension-toggle > span { flex: 1; display: flex; flex-direction: column; line-height: 1.3; }
+.agent-extension-toggle small { font-size: 11px; color: var(--foreground-passive); }
+@media (max-width: 640px) { .agent-picker-traits { width: 120px; } .agent-model-pill small { display: none; } }

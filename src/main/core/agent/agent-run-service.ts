@@ -2,12 +2,13 @@
 // 统一接口验证 task、binding、run、generation；客户端不得自报 PID、nativeId 或真人来源。
 import { randomUUID } from 'node:crypto';
 import { evaluateCapabilities, type CapabilityName, type CapabilityResult, type DriverId } from './capabilities';
-import type { AgentDriver, DriverEvent, DriverExecutable, DriverInstance } from './driver';
+import type { AgentDriver, DriverEvent, DriverExecutable, DriverInstance, DriverModel } from './driver';
 import { DriverError } from './driver';
 import { AgentStore, sha256 } from './agent-store';
 import { resolveTier, type Tier } from './permissions';
 import { TimelineProjector } from './timeline';
 import type { ProcessIdentityReader } from '../applications/process-identity';
+import { canonicalPath } from './identity';
 
 export interface HostIdentity { instanceId: string; pid: number; startedAt: string | null }
 export interface OpenRunInput {
@@ -29,11 +30,12 @@ export interface OpenRunInput {
   capabilities?: Record<CapabilityName, CapabilityResult>;
   /** 配置档案的默认模型（托管供应商为档案默认，订阅登录为空＝执行器默认）；“恢复默认”用它，不用最初的显式选择（复核 NR05）。 */
   defaultModel?: string;
+  assertCurrent?(): void;
 }
-export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
+export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; models?: DriverModel[]; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 
-interface ActiveRun extends RunHandle { openError?: string; catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
+interface ActiveRun extends RunHandle { assertCurrent?(): void; openError?: string; catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
 
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
@@ -63,9 +65,11 @@ export class AgentRunService {
     // 正在关闭但尚未观察到退出的运行仍占用该任务（复核 CR04）。
     for (const r of this.runs.values()) if (r.taskId === input.taskId) throw new DriverError('STATE', r.closing ? '上一运行仍在退出，请稍后' : '该任务已有运行中的执行器');
 
-    const continuationHash = sha256(JSON.stringify({ driver: input.driverId, profile: input.profileId, stateRoot: input.stateRoot, compatibility: input.compatibility }));
+    const cwdIdentity = canonicalPath(input.cwd), stateIdentity = canonicalPath(input.stateRoot);
+    const continuationHash = sha256(JSON.stringify({ driver: input.driverId, profile: input.profileId, stateRoot: stateIdentity, cwd: cwdIdentity, compatibility: input.compatibility }));
     const existing = store.findBinding(input.taskId, input.driverId, continuationHash);
-    const bindingId = existing?.binding_id ?? store.createBinding({ task_id: input.taskId, driver_id: input.driverId, profile_id: input.profileId, continuation_hash: continuationHash, state_root: input.stateRoot, cwd_identity: input.cwd });
+    const bindingId = existing?.binding_id ?? store.createBinding({ task_id: input.taskId, driver_id: input.driverId, profile_id: input.profileId, continuation_hash: continuationHash, state_root: stateIdentity, cwd_identity: cwdIdentity });
+    store.freezeBinding(bindingId, { compatibility: input.compatibility, stateRoot: stateIdentity, cwd: cwdIdentity });
     const resumeNativeId = existing?.native_confirmed_at ? existing.native_id ?? undefined : undefined;
     const generation = store.nextGeneration(bindingId);
     const runId = randomUUID();
@@ -78,12 +82,18 @@ export class AgentRunService {
     const capabilities = input.capabilities ?? evaluateCapabilities(input.driverId, input.executable.version).capabilities;
     const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, appliedTier: tier.tier, sentModel: !!(resumeNativeId && input.model && input.driverId === 'codex-app-server'), resumed: !!resumeNativeId, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
+    run.assertCurrent = input.assertCurrent;
     instance.on(e => this.onDriverEvent(run, e));
     try {
       const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: input.env, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: input.extraArgs, settingSources: input.settingSources });
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
       if (!run.defaultModel && opened.defaultModel) run.defaultModel = opened.defaultModel;
+      if (instance.modelCatalog) void instance.modelCatalog().then(models => {
+        if (this.runs.get(runId) !== run || run.closing) return;
+        run.models = models.slice(0, 200).map(m => ({ id: m.id.slice(0, 256), name: m.name.slice(0, 160), efforts: m.efforts.slice(0, 12).map(x => x.slice(0, 24)), defaultEffort: m.defaultEffort }));
+        store.tx(emit => emit(run.taskId, 'run.models', {}));
+      }).catch(() => { /* 未公布的可选设置不应用，界面明确说明 */ });
     } catch (e) {
       // 打开失败也按真实退出收口（复核 NR02）：先关闭；观察到退出才记失败并释放，否则保留 stopping 占用。
       run.closing = true;
@@ -184,17 +194,20 @@ export class AgentRunService {
   }
 
   /** 派发一条已接受（排队中）的输入；原生开始信号到达后才确认开始。 */
-  async dispatch(runId: string, turnId: string, input: { clientInputId: string; text: string; images?: { path: string; mime: string }[]; tier?: Tier; model?: string }) {
+  async dispatch(runId: string, turnId: string, input: { clientInputId: string; text: string; images?: { path: string; mime: string }[]; tier?: Tier; model?: string; effort?: string; context?: string }) {
     const run = this.runs.get(runId);
     if (!run || run.closing) throw new DriverError('STATE', '运行不存在或正在关闭');
     if (run.turnId) throw new DriverError('STATE', '上一轮尚未结束');
     const { store } = this.deps;
+    run.assertCurrent?.();
+    if (input.context) await this.injectHistory(runId, input.context);
+    if (this.runs.get(runId) !== run || run.closing || this.held.has(run.taskId)) throw new DriverError('STATE', '已停止或会话已退出，输入保留在排队');
     const tier = input.tier ? resolveTier(run.driverId, input.tier) : { ok: true as const, tier: run.tier };
     if (!tier.ok) { store.endTurn(turnId, 'canceled', 'TIER'); throw new DriverError('REJECTED', '不支持的权限档位'); }
     store.dispatchTurn(turnId, runId);
     run.turnId = turnId;
     try {
-      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: tier.tier, model: input.model });
+      const { nativeTurnId } = await run.instance.startTurn({ clientInputId: input.clientInputId, text: input.text, images: input.images, tier: tier.tier, model: input.model, effort: input.effort });
       run.appliedTier = tier.tier; if (input.model) run.sentModel = true;
       store.startTurn(turnId, nativeTurnId);
       return { nativeTurnId };
@@ -223,6 +236,13 @@ export class AgentRunService {
     if (!run.instance.command) throw new DriverError('UNSUPPORTED', '该执行器不支持此命令');
     await run.instance.command(name);
   }
+  async injectHistory(runId: string, text: string) {
+    const run = this.runs.get(runId);
+    if (!run || run.closing || run.turnId) throw new DriverError('STATE', '历史交接需要空闲会话');
+    if (!run.instance.injectHistory) throw new DriverError('UNSUPPORTED', '该执行器未公布历史追加接口，无法安全交接');
+    run.assertCurrent?.();
+    await run.instance.injectHistory(text);
+  }
   async goal(runId: string, op: Parameters<NonNullable<DriverInstance['goal']>>[0]) {
     const run = this.runs.get(runId);
     if (!run) throw new DriverError('STATE', '运行不存在');
@@ -231,6 +251,7 @@ export class AgentRunService {
   }
 
   busy(runId: string) { const r = this.runs.get(runId); return !!r?.turnId; }
+  respondingForTask(taskId: string) { return [...this.responding].some(id => this.deps.store.request(id)?.task_id === taskId); }
   /** 运行的默认模型：档案或打开时得到的优先，否则向执行器查询并缓存（复核 FR03）。 */
   async resolveDefaultModel(runId: string) {
     const run = this.runs.get(runId);

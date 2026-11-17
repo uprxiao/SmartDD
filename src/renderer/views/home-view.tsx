@@ -10,6 +10,8 @@ import { navigation } from '@renderer/core/navigation';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { newClientInputId } from '@renderer/features/agent-tasks/agent-ids';
+import { AgentModelPicker } from '@renderer/features/agent-tasks/agent-model-picker';
+import { readHomeSelection, type HomeSelection } from '@renderer/features/agent-tasks/home-selection';
 import { AttachmentChips, prepareChip, type Chip } from '@renderer/features/agent-tasks/attachment-chips';
 import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
@@ -44,6 +46,8 @@ export const HomeView = observer(function HomeView() {
   const setMessage = (value: string) => navigation.setHomeInput(projectId, value);
   const [dirId, setDirId] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [homeSelection, setHomeSelection] = useState<HomeSelection>(() => readHomeSelection(localStorage));
+  useEffect(() => { try { localStorage.setItem('willyou-m14-home-selection', JSON.stringify(homeSelection)); } catch { /* 偏好缓存不可写不阻塞当前任务 */ } }, [homeSelection]);
   const [error, setError] = useState('');
   const [launching, setLaunching] = useState(false);
   const [canceling, setCanceling] = useState(false);
@@ -141,7 +145,7 @@ export const HomeView = observer(function HomeView() {
       const permission=agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id;
       if(agentTasksStore.enabled){
         // M14 新任务区：创建任务后提交第一条消息，由主进程打开程序化运行。
-        const created=await rpc.agentTasks.create({projectId,dirId:dir.id,cwd:dir.path,title:message.split('\n')[0].slice(0,60),profileId:profile.id,tier:permission});
+        const created=await rpc.agentTasks.create({projectId,dirId:dir.id,cwd:dir.path,title:message.split('\n')[0].slice(0,60),profileId:profile.id,tier:permission,model:homeSelection.models[profile.id]||undefined,carryExtensions:homeSelection.extensions[profile.id]!==false,extensionPreferences:homeSelection.extensions});
         if(created.tierNotice)toast.message(created.tierNotice);
         const attachments=chips.map(c=>c.data!).filter(Boolean);
         if(message.trim()||attachments.length)await rpc.agentTasks.submit(created.taskId,{clientInputId:newClientInputId(),text:message,expectedSelectionRevision:1,attachments});
@@ -175,7 +179,10 @@ export const HomeView = observer(function HomeView() {
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;
-  const profilePicker = <HomeAgentPicker configs={profiles??[]} providers={agents?.providers??[]} value={profileId} onChange={id=>{profileChosen.current=true;setProfileId(id);}} />;
+  const profilePicker = agentTasksStore.enabled && profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => ({ profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, extensionSupport: p.kind === 'codex' ? 'partial' : 'full' }))} profileId={profileId} model={homeSelection.models[profileId]} extensions={homeSelection.extensions}
+    onPick={(id, model) => { profileChosen.current = true; setProfileId(id); setHomeSelection(v => ({ ...v, models: { ...v.models, [id]: model ?? '' } })); }}
+    onExtensions={(id, enabled) => setHomeSelection(v => ({ ...v, extensions: { ...v.extensions, [id]: enabled } }))} />
+    : <HomeAgentPicker configs={profiles??[]} providers={agents?.providers??[]} value={profileId} onChange={id=>{profileChosen.current=true;setProfileId(id);}} />;
   const directoryPicker = <Select value={dir?.id ?? null} onValueChange={(v) => setDirId(v as string | null)}>
     <SelectTrigger className={CHIP} data-testid="home-dir" aria-label={t('m6.directory')} title={dir?.path}><FolderTree size={15} /><SelectValue placeholder={t('home.noDir')} /></SelectTrigger>
     <SelectContent>{dirs.map((d) => <SelectItem key={d.id} value={d.id}>{d.label || d.path}</SelectItem>)}</SelectContent>

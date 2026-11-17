@@ -4,7 +4,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { CLAUDE_TIERS } from '../permissions';
-import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput } from '../driver';
+import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import type { Tier } from '../permissions';
 
 // 只依赖 SDK 的最小形状，便于测试注入替身；生产由 loadSdk 动态加载锁定版本。
@@ -12,6 +12,8 @@ export interface SdkQuery extends AsyncIterable<any> {
   interrupt(): Promise<unknown>;
   setPermissionMode(mode: string): Promise<void>;
   setModel?(model?: string): Promise<void>;
+  supportedModels?(): Promise<{ value: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
+  applyFlagSettings?(settings: { effortLevel: string | null }): Promise<void>;
   close?(): void;
 }
 export type SdkQueryFn = (params: { prompt: AsyncIterable<any>; options: Record<string, unknown> }) => SdkQuery;
@@ -52,6 +54,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   private turnSerial = 0;
   private activeTurn: { nativeTurnId: string; clientInputId: string; started: boolean; interrupted: boolean; resolveStart?: (id: string) => void; rejectStart?: (e: Error) => void } | null = null;
   private model: string | undefined;
+  private effort: string | undefined;
   private goalCommandTurn: string | null = null;
   private stopPending = false;
   private readonly pending = new Map<string, PendingRequest>();
@@ -61,6 +64,16 @@ export class ClaudeSdkInstance implements DriverInstance {
   constructor(private readonly sdk: () => Promise<SdkQueryFn> = loadSdk) {}
 
   on = this.emitter.on.bind(this.emitter);
+
+  async modelCatalog(): Promise<DriverModel[]> {
+    if (!this.query?.supportedModels) return [];
+    const models = await this.query.supportedModels();
+    return models.slice(0, 200).map(m => ({ id: m.value, name: m.displayName, efforts: m.supportsEffort && this.query?.applyFlagSettings ? m.supportedEffortLevels ?? [] : [] }));
+  }
+  async injectHistory(text: string) {
+    if (!this.input || this.activeTurn || this.ended || this.exited) throw new DriverError('STATE', '历史交接需要空闲会话');
+    this.input.push({ type: 'user', message: { role: 'user', content: text }, parent_tool_use_id: null, uuid: randomUUID(), isSynthetic: true, shouldQuery: false });
+  }
 
   async open(o: DriverOpenOptions) {
     if (this.query) throw new DriverError('STATE', '实例已打开');
@@ -206,6 +219,12 @@ export class ClaudeSdkInstance implements DriverInstance {
       // 切换模型期间按了停止：输入尚未写出，按未发出退回排队（复核 SR01）。
       if (this.stopPending) { this.stopPending = false; throw new DriverError('STATE', '已停止，输入保留在排队'); }
     }
+    if (input.effort !== this.effort) {
+      if (!this.query.applyFlagSettings) throw new DriverError('UNSUPPORTED', '该 SDK 未公布会话推理强度设置');
+      await this.query.applyFlagSettings({ effortLevel: input.effort ?? null }); this.effort = input.effort;
+      if (this.stopPending) { this.stopPending = false; throw new DriverError('STATE', '已停止，输入保留在排队'); }
+    }
+    if (this.exited || this.ended) throw new DriverError('STATE', '会话已结束，将恢复后发送');
     const nativeTurnId = `${this.sessionId}:${++this.turnSerial}`;
     this.goalCommandTurn = /^\/goal(\s|$)/.test(input.text.trimStart()) ? nativeTurnId : null;
     const started = new Promise<string>((resolve, reject) => { this.activeTurn = { nativeTurnId, clientInputId: input.clientInputId, started: false, interrupted: false, resolveStart: resolve, rejectStart: reject }; });
