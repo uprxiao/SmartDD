@@ -7,7 +7,7 @@ import { AgentTaskService, type LaunchResolver } from './agent-task-service';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
 import { until } from './test-doubles';
-import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -33,9 +33,9 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; launchModel?: string; nativeDefault?: string; lazyDefault?: string } = {}) {
+function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
-  const store = new AgentStore(db);
+  const store = new AgentStore(db, { artifactDir: opts.artifactDir });
   const insts: Inst[] = [];
   const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.nativeDefault = opts.nativeDefault; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
@@ -640,6 +640,79 @@ describe('复核 2327 回归', () => {
     expect(bigFull).toMatchObject({ storedTruncated: true, name: 'ExitPlanMode' });
     expect(huge.startsWith(bigFull.plan)).toBe(true);
     expect(bigFull.plan.length).toBeGreaterThan(1000);
+  });
+});
+
+describe('复核 2354 回归', () => {
+  const read = (svc: AgentTaskService, taskId: string, itemId: string, rev: number) => { let off = 0, body = ''; for (;;) { const c = svc.itemBody(taskId, itemId, off, rev); expect(Buffer.byteLength(JSON.stringify(c))).toBeLessThanOrEqual(128 * 1024); body += c.chunk; if (c.done) return JSON.parse(body); off = c.next; } };
+  it('U01：超限正文转 artifact，经正文接口逐字读回首尾；快照、历史、事件仍守上限', async () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'm14-art-')));
+    const { svc, insts, store } = setup({ artifactDir: dir });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'go', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    const text = 'BEGIN_' + '中a'.repeat(500 * 1024) + '_FULL_TAIL';
+    const plan = 'PLAN_' + 'p'.repeat(1200 * 1024) + '_PLAN_TAIL';
+    const before = store.watermark(taskId);
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'big', itemType: 'assistant', payload: { content: [{ type: 'text', text }, { type: 'tool_use', id: 'p1', name: 'ExitPlanMode', input: { plan } }] } });
+    await until(() => svc.snapshot(taskId).items.some(i => i.type === 'proposed_plan'));
+    const snap = svc.snapshot(taskId);
+    expect(Buffer.byteLength(JSON.stringify(snap))).toBeLessThanOrEqual(256 * 1024);
+    const msg = snap.items.find(i => i.type === 'assistant_message' && String(i.payload.text).startsWith('BEGIN_'))!;
+    const pl = snap.items.find(i => i.type === 'proposed_plan')!;
+    expect(msg.payload.truncated).toBe(true);
+    expect(read(svc, taskId, msg.itemId, msg.revision).text).toBe(text);
+    const fullPlan = read(svc, taskId, pl.itemId, pl.revision);
+    expect(fullPlan.plan).toBe(plan);
+    expect(fullPlan.storedTruncated).toBeUndefined();
+    expect(Buffer.byteLength(JSON.stringify(svc.history(taskId, pl.ordinal + 1)))).toBeLessThanOrEqual(256 * 1024);
+    const events = svc.events(taskId, before);
+    expect(Buffer.byteLength(JSON.stringify(events))).toBeLessThanOrEqual(256 * 1024);
+    expect(events.every(e => Buffer.byteLength(JSON.stringify(e)) <= 32 * 1024)).toBe(true);
+    // 库内只存预览与引用
+    const row = store.itemById(taskId, pl.itemId)!;
+    expect(Buffer.byteLength(row.payloadJson)).toBeLessThanOrEqual(256 * 1024);
+    expect(JSON.parse(row.payloadJson).artifact.file).toBe(`${taskId}/${pl.itemId}.r1.json`);
+  });
+  it('U01：同一条目更新后引用新修订、旧文件清理；文件丢失、被改、越界引用都明确报错', async () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'm14-art-')));
+    const { readdirSync, writeFileSync: wf, rmSync } = await import('node:fs');
+    const { svc, store, db } = setup({ artifactDir: dir });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    const itemId = store.addHostItem(taskId, null, 'system_notice', { detail: 'D'.repeat(1100 * 1024) + '_END' });
+    expect(read(svc, taskId, itemId, 1).detail.endsWith('_END')).toBe(true);
+    const file = join(dir, taskId, `${itemId}.r1.json`);
+    wf(file, readFileSync(file, 'utf8').replace('_END', '_BAD'));
+    expect(() => svc.itemBody(taskId, itemId, 0, 1)).toThrow('原文文件已损坏');
+    rmSync(file);
+    expect(() => svc.itemBody(taskId, itemId, 0, 1)).toThrow('原文文件丢失');
+    const ref = JSON.parse(store.itemById(taskId, itemId)!.payloadJson);
+    db.prepare('UPDATE agent_items SET payload_ref=? WHERE item_id=?').run(JSON.stringify({ ...ref, artifact: { ...ref.artifact, file: '../../etc/passwd' } }), itemId);
+    expect(() => svc.itemBody(taskId, itemId, 0, 1)).toThrow('原文引用无效');
+    expect(readdirSync(join(dir, taskId)).filter(f => f.endsWith('.tmp'))).toEqual([]);
+  });
+  it('U01：同一原生条目更新后引用新修订的原文，旧修订文件被清理', async () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'm14-art-')));
+    const { readdirSync } = await import('node:fs');
+    const { svc, insts } = setup({ artifactDir: dir });
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'go', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    const big = (tag: string) => ({ content: [{ type: 'text', text: tag + 'x'.repeat(1100 * 1024) + tag }] });
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'same', itemType: 'assistant', payload: big('V1') });
+    await until(() => svc.snapshot(taskId).items.some(i => i.type === 'assistant_message'));
+    insts[0].emit({ type: 'item.completed', nativeItemId: 'same', itemType: 'assistant', payload: big('V2') });
+    await until(() => svc.snapshot(taskId).items.find(i => i.type === 'assistant_message')!.revision === 2);
+    const it2 = svc.snapshot(taskId).items.find(i => i.type === 'assistant_message')!;
+    expect(read(svc, taskId, it2.itemId, 2).text.startsWith('V2')).toBe(true);
+    expect(() => svc.itemBody(taskId, it2.itemId, 0, 1)).toThrow('条目已更新');
+    expect(readdirSync(join(dir, taskId)).sort()).toEqual([`${it2.itemId}.r2.json`]);
+  });
+  it('U01：没有 artifact 目录时降级为结构化截短并标不完整，不冒充完整保存', () => {
+    const { svc, store } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    const itemId = store.addHostItem(taskId, null, 'system_notice', { detail: 'D'.repeat(1100 * 1024) });
+    expect(read(svc, taskId, itemId, 1)).toMatchObject({ storedTruncated: true });
   });
 });
 

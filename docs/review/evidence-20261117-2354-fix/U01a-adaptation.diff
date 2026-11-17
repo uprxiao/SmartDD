@@ -1,0 +1,4 @@
+53c53
+<   const db = new Database(':memory:'); db.pragma('foreign_keys=ON'); runBundledMigrations(db); const store = new AgentStore(db), emitter = new Emitter();
+---
+>   const db = new Database(':memory:'); db.pragma('foreign_keys=ON'); runBundledMigrations(db); const store = new AgentStore(db, { artifactDir: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'u01-art-')) }), emitter = new Emitter();

@@ -113,6 +113,15 @@ function useFullPayload(item: TimelineItem) {
 /** 历史正文是否不完整：超过保存上限按结构截短（storedTruncated），或旧版本的通用截断记录。 */
 const isLegacyTruncated = (v: any) => !!v && v.truncated === true && typeof v.sha256 === 'string' && 'head' in v && !v.storedTruncated;
 const isIncomplete = (v: any) => !!v && (v.storedTruncated === true || isLegacyTruncated(v));
+/**
+ * 正文完整性的统一展示（复核 U02）：预览→“展开全文”；不可恢复的部分内容→明确提示；完整→不显示。
+ * 普通条目与工作过程条目共用，避免展开后把残缺内容呈现为已经完整。
+ */
+function Completeness({ truncated, payload, onExpand }: { truncated: boolean; payload: any; onExpand: () => void }) {
+  if (truncated) return <ExpandButton onClick={onExpand} />;
+  if (isIncomplete(payload)) return <div className="agent-limited" role="note">内容超过保存上限，只保留了开头部分，后面的内容无法恢复</div>;
+  return null;
+}
 function ExpandButton({ onClick }: { onClick: () => void }) {
   return <button type="button" className="agent-older" onClick={onClick}>内容较长，已截断显示 · 展开全文</button>;
 }
@@ -130,7 +139,7 @@ function ItemRow({ item }: { item: TimelineItem }) {
   };
   const copyPlan = async () => { const t = await planText(); if (t === null) return; try { await navigator.clipboard.writeText(t); toast.success('已复制计划'); } catch (e) { toast.error(`复制失败：${rpcErrorMessage(e)}`); } };
   const downloadPlan = async () => { const t = await planText(); if (t === null) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'text/markdown' })); a.download = 'plan.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
-  const more = truncated ? <ExpandButton onClick={() => void load()} /> : isIncomplete(p) ? <div className="agent-limited">内容超过保存上限，只保留了开头部分</div> : null;
+  const more = <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />;
   switch (item.type) {
     case 'user_message': return <div className="agent-user"><div className="agent-user-bubble">{p.text}{more}{p.attachments?.length ? <div className="agent-user-attachments">{p.attachments.map((a: any, i: number) => <span key={i} className="agent-chip-name">{a.kind === 'path' ? a.relativePath : a.name}</span>)}</div> : null}</div></div>;
     case 'assistant_message': return <div className="agent-assistant"><Markdown text={String(p.text ?? '')} />{more}</div>;
@@ -151,7 +160,7 @@ function WorkItem({ it }: { it: TimelineItem }) {
   return <details className={`agent-work-row ${p.status ?? ''}`}>
     <summary>{workLabel({ ...it, payload: p })}</summary>
     {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' || it.type === 'assistant_message' ? <Markdown text={String(p.text ?? '')} /> : null}
-    {truncated && <ExpandButton onClick={() => void load()} />}
+    <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
   </details>;
 }
 

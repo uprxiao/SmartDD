@@ -45,6 +45,8 @@ function boundedPreview(payload: unknown, limit: number): Record<string, unknown
 }
 function previewItem<T extends { payload: any }>(it: T): T {
   const bytes = jsonBytes(it.payload);
+  // 原文在 artifact 里的条目，库内只是预览：无论大小都标截断，界面经正文接口读全文（复核 U01）。
+  if (it.payload?.artifact) { const { artifact, ...rest } = it.payload; return { ...it, payload: { ...boundedPreview(rest, ITEM_PREVIEW), truncated: true, bytes: artifact.bytes } }; }
   return bytes <= ITEM_PREVIEW ? it : { ...it, payload: { ...boundedPreview(it.payload, ITEM_PREVIEW), truncated: true, bytes } };
 }
 function previewRequest<T extends { payload: any }>(r: T, limit = REQUEST_PREVIEW): T & { detailTruncated?: boolean; bytes?: number } {
@@ -475,11 +477,11 @@ export class AgentTaskService {
   /** 正文范围读取（复核 NR06）：截断预览的条目与过大的请求按 128 KiB 分段读取完整内容。 */
   itemBody(taskId: string, itemId: string, offset: number, revision?: number) {
     this.selection(taskId);
-    const it = this.d.store.itemById(taskId, itemId);
+    // 有 artifact 的条目从原文文件读取（复核 U01）；分段读取期间条目被更新则拒绝拼接（复核 SR05）。
+    const it = this.d.store.readItemBody(taskId, itemId);
     if (!it) throw new DriverError('REJECTED', '条目不存在');
-    // 分段读取期间条目被更新：拒绝拼接不同修订的片段，由界面按新修订重读（复核 SR05）。
     if (revision !== undefined && revision !== it.revision) throw new DriverError('STATE', '条目已更新，请重新读取');
-    return { ...rangeOf(it.payloadJson, offset), revision: it.revision };
+    return { ...rangeOf(it.text, offset), revision: it.revision };
   }
   requestBody(taskId: string, requestId: string, offset: number, revision?: number) {
     const r = this.d.store.request(requestId);

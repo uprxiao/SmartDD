@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // M14-A45 长内容全文与复制、A43 草稿初始化竞态（复核 2127 FR04／FR05）：组件层回归，不代替打包 App 验收。
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), on: vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), toast: vi.fn() }));
@@ -212,4 +212,34 @@ for (const [name, body] of [
   expect(writeText).not.toHaveBeenCalled();
   expect(mocks.toast.mock.calls.some(c => String(c[0]).includes('已复制'))).toBe(false);
   expect(mocks.toast.mock.calls.filter(c => /保存上限|只保留了开头/.test(String(c[0]))).length).toBeGreaterThanOrEqual(3);
+});
+
+describe('复核 2354：工作过程正文的完整性', () => {
+  const reasoning = { itemId: 'r1', turnId: 't1', ordinal: 1, revision: 1, type: 'reasoning', terminal: 'completed', createdAt: '', updatedAt: '', payload: { text: 'REASON_' + 'r'.repeat(2000), truncated: true, bytes: 1_300_000 } };
+  const turns = [{ turn_id: 't1', status: 'completed', accepted_at: '2026-11-18T00:00:00Z', started_at: '2026-11-18T00:00:00Z', ended_at: '2026-11-18T00:00:05Z', error_code: null }];
+  const open = async () => {
+    mocks.snapshot.mockResolvedValue(snapshot({ items: [reasoning], turns }));
+    render(<AgentTaskView taskId="task" />);
+    fireEvent.click(await screen.findByRole('button', { name: /已工作/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /展开全文/ }));
+  };
+  it('U02：读回完整原文（artifact）后显示尾部、不显示不完整提示', async () => {
+    const full = 'REASON_' + 'r'.repeat(40_000) + '_REASON_TAIL';
+    mocks.itemBody.mockImplementation(serveInTwo({ text: full }));
+    await open();
+    expect(await screen.findByText(/_REASON_TAIL/)).toBeTruthy();
+    expect(screen.queryByText(/无法恢复/)).toBeNull();
+    expect(screen.queryByRole('button', { name: /展开全文/ })).toBeNull();
+  });
+  it('U02：读回的仍是不完整正文（超过保存上限的旧记录）时明确提示后面的内容无法恢复', async () => {
+    mocks.itemBody.mockImplementation(serveInTwo({ text: 'REASON_' + 'r'.repeat(8000), storedTruncated: true, bytes: 1_300_000, sha256: 'ab' }));
+    await open();
+    expect(await screen.findByText(/只保留了开头部分，后面的内容无法恢复/)).toBeTruthy();
+  });
+  it('U02：读取失败时保留“展开全文”入口并提示失败', async () => {
+    mocks.itemBody.mockRejectedValue(new Error('原文文件丢失，无法读取全文'));
+    await open();
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('原文文件丢失')));
+    expect(screen.getByRole('button', { name: /展开全文/ })).toBeTruthy();
+  });
 });

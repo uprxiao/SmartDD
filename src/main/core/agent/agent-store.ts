@@ -2,6 +2,8 @@
 import type BetterSqlite3 from 'better-sqlite3';
 import { DriverError } from './driver';
 import { createHash, randomUUID } from 'node:crypto';
+import { mkdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import type { DriverId } from './capabilities';
 
 export const EVENT_PAYLOAD_LIMIT = 32 * 1024;
@@ -24,22 +26,31 @@ export function boundedJson(value: unknown, limit = EVENT_PAYLOAD_LIMIT): string
 /** 历史正文：上限 1 MiB，超限保留前缀并标记（完整产物存储属后续容量合同）。 */
 export const bodyJson = (value: unknown) => boundedJson(value, BODY_LIMIT);
 
+/** 按字符上限截短长字符串，保留对象结构。 */
+function cutStrings(v: unknown, cap: number): unknown {
+  return typeof v === 'string' ? (v.length > cap ? v.slice(0, cap) : v)
+    : Array.isArray(v) ? v.map(x => cutStrings(x, cap)) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cutStrings(x, cap)])) : v;
+}
+/** 结构化截短到上限内，附加 extra 字段。 */
+function shortenedJson(value: unknown, extra: Record<string, unknown>, limit = BODY_LIMIT): string | null {
+  for (const cap of [128 * 1024, 32 * 1024, 8 * 1024, 1024]) {
+    const out = JSON.stringify({ ...(cutStrings(value, cap) as object), ...extra });
+    if (Buffer.byteLength(out) <= limit) return out;
+  }
+  return null;
+}
+/** 单个条目原文的 artifact 上限；更大的只能结构化截短并标不完整。 */
+export const ARTIFACT_LIMIT = 64 * 1024 * 1024;
+
 /**
- * 时间线条目正文（复核 T02）：超过 1 MiB 时保留条目结构，按需截短长字符串并标 storedTruncated，
- * 界面能显示开头并明确告知不完整，复制／下载会拒绝；不退化成只剩前缀与摘要的通用截断对象。
+ * 时间线条目正文在没有 artifact 目录（或写入失败、超过 artifact 上限）时的降级（复核 T02）：保留条目结构，
+ * 按需截短长字符串并标 storedTruncated，界面明确告知不完整，复制／下载会拒绝。
  */
 export function itemJson(value: unknown): string {
   const text = JSON.stringify(value ?? null);
   const bytes = Buffer.byteLength(text);
   if (bytes <= BODY_LIMIT) return text;
-  const cut = (v: unknown, cap: number): unknown => typeof v === 'string' ? (v.length > cap ? v.slice(0, cap) : v)
-    : Array.isArray(v) ? v.map(x => cut(x, cap)) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cut(x, cap)])) : v;
-  for (const cap of [128 * 1024, 32 * 1024, 8 * 1024, 1024]) {
-    const shortened = { ...(cut(value, cap) as object), storedTruncated: true, bytes, sha256: sha256(text) };
-    const out = JSON.stringify(shortened);
-    if (Buffer.byteLength(out) <= BODY_LIMIT) return out;
-  }
-  return boundedJson(value, BODY_LIMIT);
+  return shortenedJson(value, { storedTruncated: true, bytes, sha256: sha256(text) }) ?? boundedJson(value, BODY_LIMIT);
 }
 
 export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; tier: string }
@@ -52,7 +63,73 @@ export type EventListener = (event: StoredEvent) => void;
 
 export class AgentStore {
   private readonly listeners = new Set<EventListener>();
-  constructor(readonly sqlite: BetterSqlite3.Database) {}
+  /** 超限正文的 artifact 目录（技术方案 §3.1“超限正文转 artifact”，复核 U01）；不设时降级为结构化截短。 */
+  private readonly artifactDir?: string;
+  /** 最近读过的一个原文（分段读取连续命中）；按文件身份与修改时间失效，改动或替换都会重新核对摘要。 */
+  private artifactCache: { key: string; text: string } | null = null;
+  constructor(readonly sqlite: BetterSqlite3.Database, opts: { artifactDir?: string } = {}) { this.artifactDir = opts.artifactDir; }
+
+  /**
+   * 条目正文：1 MiB 内直接入库；超限时把完整原文写成 artifact 文件（先写临时文件再改名），
+   * 库里只存结构化预览与受任务／条目／修订约束的引用。写入失败或超过 artifact 上限时降级并标不完整，不冒充完整保存。
+   */
+  private itemBody(taskId: string, itemId: string, revision: number, value: unknown, written: string[]): string {
+    const text = JSON.stringify(value ?? null);
+    const bytes = Buffer.byteLength(text);
+    if (bytes <= BODY_LIMIT) return text;
+    if (this.artifactDir && bytes <= ARTIFACT_LIMIT) {
+      const rel = `${taskId}/${itemId}.r${revision}.json`;
+      const file = join(this.artifactDir, rel);
+      try {
+        mkdirSync(join(this.artifactDir, taskId), { recursive: true, mode: 0o700 });
+        const tmp = `${file}.${randomUUID()}.tmp`;
+        writeFileSync(tmp, text, { mode: 0o600, flag: 'wx' });
+        renameSync(tmp, file);
+        written.push(file);
+        const ref = shortenedJson(value, { artifact: { file: rel, bytes, sha256: sha256(text) } }, 256 * 1024);
+        if (ref) return ref;
+      } catch { /* 写入失败：降级为结构化截短，并如实标不完整 */ }
+    }
+    return itemJson(value);
+  }
+  /** 带 artifact 的写事务：事务失败删除本次写出的文件；成功后删除被替换修订的旧文件。 */
+  private itemTx<T>(fn: (written: string[], replaced: string[], emit: Parameters<Parameters<AgentStore['tx']>[0]>[0]) => T): T {
+    const written: string[] = [], replaced: string[] = [];
+    let result: T;
+    try { result = this.tx(emit => fn(written, replaced, emit)); }
+    catch (e) { for (const f of written) rmSync(f, { force: true }); throw e; }
+    for (const ref of replaced) { const f = this.artifactPath(ref); if (f) rmSync(f, { force: true }); }
+    return result;
+  }
+  private artifactPath(rel: string) {
+    if (!this.artifactDir || typeof rel !== 'string') return null;
+    const f = join(this.artifactDir, rel), r = relative(this.artifactDir, f);
+    return !r || r.startsWith('..') || r.includes(`..${sep}`) ? null : f;
+  }
+  private static artifactOf(payloadJson: string): { file: string; bytes: number; sha256: string } | null {
+    try { const a = JSON.parse(payloadJson)?.artifact; return a && typeof a.file === 'string' ? a : null; } catch { return null; }
+  }
+  /** 条目完整正文：有 artifact 的读文件并核对大小与摘要；文件丢失或被改动明确报错，不返回残缺内容。 */
+  readItemBody(taskId: string, itemId: string) {
+    const r = this.itemById(taskId, itemId);
+    if (!r) return undefined;
+    const a = AgentStore.artifactOf(r.payloadJson);
+    if (!a) return { revision: r.revision, text: r.payloadJson };
+    const file = this.artifactPath(a.file);
+    // 引用只能指向本任务、本条目、当前修订的文件。
+    if (!file || a.file !== `${taskId}/${itemId}.r${r.revision}.json`) throw new DriverError('REJECTED', '原文引用无效');
+    let text: string, key: string;
+    try {
+      const real = realpathSync(file);
+      if (relative(realpathSync(this.artifactDir!), real).startsWith('..')) throw new Error('outside');
+      const st = statSync(real); key = `${real}:${st.ino}:${st.size}:${st.mtimeMs}:${a.sha256}`;
+      if (this.artifactCache?.key === key) return { revision: r.revision, text: this.artifactCache.text };
+      text = readFileSync(real, 'utf8');
+    } catch { throw new DriverError('REJECTED', '原文文件丢失，无法读取全文'); }
+    if (Buffer.byteLength(text) !== a.bytes || sha256(text) !== a.sha256) throw new DriverError('REJECTED', '原文文件已损坏，无法读取全文');
+    this.artifactCache = { key, text };
+    return { revision: r.revision, text };
+  }
 
   subscribe(listener: EventListener) { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
   private notify(events: StoredEvent[]) { for (const e of events) for (const l of [...this.listeners]) { try { l(e); } catch { /* 订阅者自身负责 */ } } }
@@ -202,18 +279,19 @@ export class AgentStore {
 
   /** 规范条目：ordinal 稳定；原生键包含 binding/run/generation，同一原生条目重复到达只升修订。 */
   upsertItem(i: { taskId: string; turnId: string | null; runId: string; nativeKey: string; type: string; payload: unknown; terminalState?: string | null }): string {
-    return this.tx(emit => {
-      const existing = this.sqlite.prepare('SELECT item_id,revision FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number } | undefined;
+    return this.itemTx((written, replaced, emit) => {
+      const existing = this.sqlite.prepare('SELECT item_id,revision,payload_ref FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number; payload_ref: string } | undefined;
       if (existing) {
         const revision = existing.revision + 1;
-        this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(itemJson(i.payload), revision, i.terminalState ?? null, now(), existing.item_id);
+        const old = AgentStore.artifactOf(existing.payload_ref); if (old) replaced.push(old.file);
+        this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(this.itemBody(i.taskId, existing.item_id, revision, i.payload, written), revision, i.terminalState ?? null, now(), existing.item_id);
         emit(i.taskId, 'item.updated', { type: i.type, payload: i.payload }, existing.item_id, revision);
         return existing.item_id;
       }
       const itemId = randomUUID();
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(i.taskId) as { ordinal: number };
       this.sqlite.prepare('INSERT INTO agent_items(item_id,task_id,turn_id,run_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,?,1,?,?,?,?,?)')
-        .run(itemId, i.taskId, i.turnId, i.runId, i.type, ordinal, i.nativeKey, itemJson(i.payload), i.terminalState ?? null, now(), now());
+        .run(itemId, i.taskId, i.turnId, i.runId, i.type, ordinal, i.nativeKey, this.itemBody(i.taskId, itemId, 1, i.payload, written), i.terminalState ?? null, now(), now());
       emit(i.taskId, 'item.created', { type: i.type, ordinal, payload: i.payload }, itemId, 1);
       return itemId;
     });
@@ -384,11 +462,11 @@ export class AgentStore {
 
   /** 宿主条目（启动失败等用户可见原因，复核 CR17）：不属于任何原生运行。 */
   addHostItem(taskId: string, turnId: string | null, type: 'error' | 'system_notice', payload: Record<string, unknown>) {
-    return this.tx(emit => {
+    return this.itemTx((written, _replaced, emit) => {
       const itemId = randomUUID();
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(taskId) as { ordinal: number };
       this.sqlite.prepare("INSERT INTO agent_items(item_id,task_id,turn_id,type,ordinal,revision,native_key,payload_ref,terminal_state,created_at,updated_at) VALUES(?,?,?,?,?,1,?,?,'completed',?,?)")
-        .run(itemId, taskId, turnId, type, ordinal, `host:${itemId}`, itemJson(payload), now(), now());
+        .run(itemId, taskId, turnId, type, ordinal, `host:${itemId}`, this.itemBody(taskId, itemId, 1, payload, written), now(), now());
       emit(taskId, 'item.created', { type, ordinal, payload }, itemId, 1);
       return itemId;
     });

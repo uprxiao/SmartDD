@@ -1,5 +1,6 @@
 // M14 统一 Agent 工作区的主进程装配：配置档案解析、本机程序发现、托管文件落盘与事件推送。
 import { randomUUID } from 'node:crypto';
+import { join } from 'node:path';
 import type BetterSqlite3 from 'better-sqlite3';
 import { codeAgentKindSchema } from '@shared/ai-agents';
 import type { AgentService } from '../ai/agent-service';
@@ -38,7 +39,8 @@ export function driverForKind(kind: string): DriverId {
 }
 
 export function createAgentWorkspace(d: AgentWorkspaceDeps) {
-  const store = new AgentStore(d.sqlite);
+  // 超限正文转 artifact（技术方案 §3.1，复核 U01），与附件副本同在用户数据目录。
+  const store = new AgentStore(d.sqlite, { artifactDir: join(d.userData, 'agent-artifacts') });
   // 上一宿主留下的运行：先收口，再按准确出生身份结束仍在运行的原生进程（取不到身份则不动）。
   for (const r of store.recoverOrphanRuns(d.host.instanceId)) {
     if (r.pid && r.processStartedAt && d.processes.state({ pid: r.pid, startedAt: r.processStartedAt }) === 'running') { try { process.kill(r.pid, 'SIGTERM'); } catch { /* 已退出 */ } }
