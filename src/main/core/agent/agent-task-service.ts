@@ -151,9 +151,9 @@ export class AgentTaskService {
   private readonly trustedInputs=new Map<string,import('../applications/execution-context').ApplicationUiSender>();private readonly humanSequences=new Map<string,number>();private recordHuman?: (runId:string,sender:import('../applications/execution-context').ApplicationUiSender,text:string,sequence:number)=>void;
   attachHumanRecorder(record:NonNullable<AgentTaskService['recordHuman']>){this.recordHuman=record;}
   private humanSent(turnId:string,run:RunHandle,text:string){const sender=this.trustedInputs.get(turnId);this.trustedInputs.delete(turnId);if(sender){const n=(this.humanSequences.get(run.runId)??0)+1;this.humanSequences.set(run.runId,n);try{this.recordHuman?.(run.runId,sender,text,n);}catch{/* Unavailable source evidence grants no authority; business approval remains explicit. */}}}
-  private business?: HostBusinessRequests; private diffs?: TurnDiffs;private diffBusy?:(taskId:string)=>boolean; private readonly finishingTurns=new Set<string>();
+  private business?: HostBusinessRequests; private diffs?: Pick<TurnDiffs, 'before' | 'after' | 'capturing' | 'beginTaskRemoval'>;private diffBusy?:(taskId:string)=>boolean; private readonly finishingTurns=new Set<string>();
   attachBusiness(value:HostBusinessRequests){this.business=value;}
-  attachDiffs(value:TurnDiffs,busy?:(taskId:string)=>boolean){this.diffs=value;this.diffBusy=busy;}
+  attachDiffs(value:NonNullable<AgentTaskService['diffs']>,busy?:(taskId:string)=>boolean){this.diffs=value;this.diffBusy=busy;}
   private async finishDiff(taskId:string,turnId:string){while(this.diffBusy?.(taskId))await new Promise(r=>setTimeout(r,50));await this.diffs?.after(taskId,turnId);}
   private discardAttachments?: (taskId: string | null, data: unknown) => void;
   attachAttachmentCleanup(discard: (taskId: string | null, data: unknown) => void) { this.discardAttachments = discard; }
@@ -204,7 +204,18 @@ export class AgentTaskService {
       if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g?.turnId === (e.payload as { turnId?: string }).turnId) this.goalPending.delete(e.taskId); }
       // 只解除“等待旧运行退出”这一原因；等待期间用户又按了停止，则保持暂停（复核 FR01）。
       if (e.type === 'run.ended' && this.blockedByClosing.has(e.taskId)) { const since = this.blockedByClosing.get(e.taskId); this.blockedByClosing.delete(e.taskId); if (since === (this.stopSeq.get(e.taskId) ?? 0)) this.paused.delete(e.taskId); }
-      if (e.type === 'turn.ended' && this.diffs) { const turnId=(e.payload as {turnId:string}).turnId;this.finishingTurns.add(e.taskId);void this.finishDiff(e.taskId,turnId).catch(()=>{}).finally(()=>{this.finishingTurns.delete(e.taskId);void this.advance(e.taskId);}); }
+      if (e.type === 'turn.ended' && this.diffs) {
+        const { turnId } = e.payload as { turnId: string };
+        const runId = this.d.store.turn(turnId)?.run_id;
+        const run = runId ? this.d.runs.active(runId) : undefined;
+        if (!(run?.readOnly ?? this.coordination?.readOnly?.(e.taskId))) {
+          this.finishingTurns.add(e.taskId);
+          void this.finishDiff(e.taskId, turnId).catch(() => {}).finally(() => {
+            this.finishingTurns.delete(e.taskId);
+            void this.advance(e.taskId);
+          });
+        }
+      }
       if (e.type === 'turn.ended' || e.type === 'run.ended') {
         // 派发进行中到达的终态会被门闩挡掉：记下来，门闩释放后补一次调度（复核 NR03）。
         if (this.dispatching.has(e.taskId)) this.missedPump.add(e.taskId);
@@ -569,7 +580,7 @@ export class AgentTaskService {
       const remaining = INPUT_TEXT_LIMIT - Buffer.byteLength(input.text) - (hostContext ? Buffer.byteLength(hostContext) + 2 : 0);
       transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, remaining);
       const context = [transfer?.text, hostContext].filter(Boolean).join('\n\n');
-      await this.diffs?.before(taskId,next.turn_id,run.runId);
+      if (!run.readOnly) await this.diffs?.before(taskId,next.turn_id,run.runId);
       if(stoppedSince())return;
       await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort });
       if(this.d.store.turn(next.turn_id)?.source_kind==='user')this.humanSent(next.turn_id,run,frozen.text);

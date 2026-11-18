@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore } from './agent-store';
 import { AgentRunService } from './agent-run-service';
@@ -45,6 +45,42 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
   return { db, store, runs, svc, insts, launches };
 }
 const id = (n: number) => `client-input-${n}`;
+
+it('A65: only a writable native run contributes a before and after snapshot', async () => {
+  const { svc, runs, store, insts } = setup();
+  const create = (title: string, profileId: string) => svc.create({ projectId: null, dirId: null, cwd: '/w', title, profileId, tier: 'ask' }).taskId;
+  const reader = create('read side of shared workspace', 'cx');
+  const writer = create('write side of shared workspace', 'cc');
+  let readOnly = true;
+  svc.attachCoordination({ beforeDispatch: async () => true, opened() {}, assertTargetCurrent() {}, settleClosedRun: async () => {},
+    waitingChildren: () => false, blocked: () => false, userContinued() {}, userStopped: async () => {}, hasUnfinishedChildren: () => false,
+    readOnly: taskId => taskId === reader && readOnly });
+  const before = vi.fn(async (_taskId: string, _turnId: string, _runId: string) => {});
+  const after = vi.fn(async (_taskId: string, _turnId: string) => {});
+  svc.attachDiffs({ before, after, capturing: () => false, beginTaskRemoval: () => () => {} });
+
+  const read = await svc.submit(reader, { clientInputId: id(12), text: 'read files', expectedSelectionRevision: 1 });
+  await until(() => insts[0]?.turns.length === 1);
+  const write = await svc.submit(writer, { clientInputId: id(13), text: 'modify files', expectedSelectionRevision: 1 });
+  await until(() => insts[1]?.turns.length === 1);
+  expect(insts[0].opened?.readOnly).toBe(true);
+  readOnly = false;
+  insts[0].finish();
+  insts[1].finish();
+  await until(() => store.turn(read.turnId)?.status === 'completed' && after.mock.calls.length > 0);
+  expect(before.mock.calls).toEqual([[writer, write.turnId, runs.runForTask(writer)?.runId]]);
+  expect(after.mock.calls).toEqual([[writer, write.turnId]]);
+
+  await runs.close(runs.runForTask(reader)!.runId);
+  vi.spyOn(runs, 'injectHistory').mockResolvedValue(undefined);
+  const promoted = await svc.submit(reader, { clientInputId: id(14), text: 'modify only after the run changes', expectedSelectionRevision: 1 });
+  await until(() => insts[2]?.turns.length === 1 || ['failed', 'unknown', 'canceled'].includes(store.turn(promoted.turnId)?.status ?? ''));
+  expect(svc.snapshot(reader).items.filter(item => item.type === 'error').map(item => item.payload)).toEqual([]);
+  expect(insts[2]?.turns).toHaveLength(1);
+  insts[2].finish();
+  expect(before).toHaveBeenLastCalledWith(reader, promoted.turnId, runs.runForTask(reader)?.runId);
+  expect(after).toHaveBeenLastCalledWith(reader, promoted.turnId);
+});
 
 it('A44 bounds event catch-up to its captured watermark and only refreshes explicitly requested history in the same task', () => {
   const { svc, store } = setup();

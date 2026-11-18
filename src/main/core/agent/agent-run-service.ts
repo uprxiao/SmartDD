@@ -41,7 +41,7 @@ export type LiveListener = (e: { taskId: string; runId: string; event: DriverEve
 interface ActiveRun extends RunHandle { assertCurrent?(): void; openError?: string; catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
 
 const FORCE_STOP_DELAY_MS = 10_000;
-interface ActiveRun { userStop?: { requestedAt: number; turnId: string | null }; integration?: RunIntegration; registration?: Promise<void>; exitFinishing?: Promise<void>; nodeReads?: Set<Promise<void>>; nativeNodes?: Set<string>; opening?: boolean; startingNativeWork?: number }
+interface ActiveRun { readonly readOnly: boolean; userStop?: { requestedAt: number; turnId: string | null }; integration?: RunIntegration; registration?: Promise<void>; exitFinishing?: Promise<void>; nodeReads?: Set<Promise<void>>; nativeNodes?: Set<string>; opening?: boolean; startingNativeWork?: number }
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
   private readonly live = new Set<LiveListener>();
@@ -85,7 +85,7 @@ export class AgentRunService {
     const instance = driver.create();
     let markEnded!: () => void;
     const ended = new Promise<void>(r => { markEnded = r; });
-    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, appliedTier: tier.tier, sentModel: !!(resumeNativeId && input.model && input.driverId === 'codex-app-server'), resumed: !!resumeNativeId, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
+    const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, appliedTier: tier.tier, sentModel: !!(resumeNativeId && input.model && input.driverId === 'codex-app-server'), resumed: !!resumeNativeId, readOnly: input.readOnly === true, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     run.opening = true;
     run.assertCurrent = input.assertCurrent;
