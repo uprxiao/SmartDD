@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore, sha256 } from './agent-store';
 import { AgentRunService, type OpenRunInput } from './agent-run-service';
@@ -183,6 +183,39 @@ describe('运行服务', () => {
     instances[0].emit({ type: 'request.resolved', requestKey: '1' });
     instances[0].emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status: 'interrupted' });
     expect(db.prepare("SELECT json_extract(origin_json,'$.nativeRequest') AS k,status FROM agent_requests ORDER BY k").all()).toEqual([{ k: '1', status: 'retired' }, { k: '2', status: 'retired' }]);
+  });
+
+  it.each(['completed', 'forced'] as const)('父回合停止后，继续等待原生子收口或由用户强制停止（%s）', async childEnd => {
+    const { store, service, base, instances } = setup();
+    const h = await service.open(base);
+    const native = instances[0];
+    await service.submit(h.runId, { clientInputId: 'parent-input', text: '开始' });
+    native.emit({ type: 'node.state', nodeId: 'active-child', state: 'running' });
+    await service.interrupt(h.runId, true);
+    const stop = service.stopProgress(base.taskId)!;
+    native.emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status: 'interrupted' });
+    expect(service.stopProgress(base.taskId)).toEqual(stop);
+    expect(service.nativeBusy(h.runId)).toBe(true);
+    expect(native.closed).toBe(false);
+    if (childEnd === 'completed') {
+      native.emit({ type: 'node.state', nodeId: 'active-child', state: 'completed' });
+      expect(service.stopProgress(base.taskId)).toBeNull();
+      expect(native.closed).toBe(false);
+      return;
+    }
+    const clock = vi.spyOn(Date, 'now');
+    try {
+      clock.mockReturnValue(stop.forceAt - 1);
+      await expect(service.forceStop(base.taskId, h.runId, stop.requestedAt)).rejects.toThrow('仍在等待原生响应');
+      clock.mockReturnValue(stop.forceAt);
+      expect(native.closed).toBe(false);
+      await service.forceStop(base.taskId, h.runId, stop.requestedAt);
+      expect(native.closed).toBe(true);
+      expect(store.run(h.runId)?.state).toBe('stopped');
+      expect(service.stopProgress(base.taskId)).toBeNull();
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   it('正常关闭：运行记 stopped；打开失败记 failed 且不留在线运行', async () => {

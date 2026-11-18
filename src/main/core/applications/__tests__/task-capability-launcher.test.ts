@@ -139,6 +139,21 @@ describe('M11 S5 CLI delivery through the production task entry',()=>{
   await installCliFixturePackage(support.store,join(root,'cli-distribution'));
   await applications.selections.setAdded('mail',true,0);await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
  });
+ it('passes only the managed CLI permission profile to the M14 Codex driver', async () => {
+  const store = new AgentStore(sqlite);
+  const taskId = store.createTask({projectId,dirId:null,cwd,title:'Codex with application CLI',selection:{driverId:'codex-app-server',profileId:'fixture',tier:'ask'}});
+  const bindingId = store.createBinding({task_id:taskId,driver_id:'codex-app-server',profile_id:'fixture',continuation_hash:digest('cli-permissions'),cwd_identity:cwd,state_root:join(home,'.codex')});
+  const runId = randomUUID();
+  store.insertRun({runId,taskId,projectId,bindingId,generation:1,driverId:'codex-app-server',owner:{instanceId:randomUUID(),pid:process.pid,startedAt:reader.read(process.pid)?.startedAt??null},launchPlanHash:digest('m14-cli-permissions')});
+  const integration = await managed.prepareAgent({runId,bindingId,generation:1,version:'0.166.0',assertCurrent:()=>{},task:{projectId,taskId,profile:profiles.resolve(codexId),cwd,home,stateRoot:join(home,'.codex'),claudeConfigExplicit:false,mode:'new',sessionId:null,previous:null,newTask:true,signal:new AbortController().signal,environment:{HOME:home,PATH:'/usr/bin:/bin'}}});
+  try {
+   const name = 'wy_cli_' + digest(managed.cli!.endpoint).slice(0,12);
+   expect(integration.codexCliPermissions).toBe(name);
+   expect(integration.extraArgs).toContain(`permissions.${name}.network.unix_sockets={${JSON.stringify(managed.cli!.endpoint)}="allow"}`);
+  } finally {
+   await integration.cancelBeforeFork();
+  }
+ });
  const request=(token:string)=>new Promise<BridgeResponse>((ok,fail)=>{
   const socket=connect(managed.cli!.endpoint),timer=setTimeout(()=>{socket.destroy();fail(Error('Private S5 host deadline'));},5000);let text='';
   socket.on('error',error=>{clearTimeout(timer);fail(error);});socket.on('data',chunk=>{text+=String(chunk);if(text.includes('\n')){clearTimeout(timer);socket.end();ok(JSON.parse(text.slice(0,text.indexOf('\n'))));}});

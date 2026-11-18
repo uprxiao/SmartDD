@@ -2,6 +2,7 @@ import type { DriverOpenOptions } from './driver';
 /** Host-minted lifecycle closure. No process or scope receipt comes from RPC/MCP arguments. */
 export interface RunIntegration {
   hostBusinessCli?:DriverOpenOptions['hostBusinessCli'];
+  codexCliPermissions?:DriverOpenOptions['codexCliPermissions'];
   claudeSettings?:Record<string,unknown>;extraArgs?: string[]; env?: Record<string, string>; mcpServers?: DriverOpenOptions['mcpServers'];
   skillRoots?: DriverOpenOptions['skillRoots']; plugins?: DriverOpenOptions['plugins'];
   beforeFork(): Promise<void>;

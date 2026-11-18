@@ -50,6 +50,7 @@ import {codexClientArgs} from './codex-client-args';
 import type { AgentHostTools } from './agent-host-tools';
 import type { RunIntegration } from '../agent/run-integration';
 import type { DriverOpenOptions } from '../agent/driver';
+import { codexSupportsTurnPermissions } from '../agent/permissions';
 import { RuntimeRegistry } from './runtime-registry';
 import { verifyPackageTree } from './package-files';
 import type { BridgeResponse } from '@shared/application-bridge';
@@ -210,6 +211,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     if(!inspect)return;
     const policy=await inspect.call(delivery,input,native);
     this.planningCliPolicies.set(input.taskId,policy);
+    return policy;
   }
 
   private bindings(projectId:string,appIds:readonly string[]):RunBindingRevision[]{return this.authorization.bindings(projectId,appIds);}
@@ -365,10 +367,19 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     const selection=JSON.parse((store.sqlite.prepare('SELECT selection_json FROM agent_tasks WHERE task_id=?').get(task.taskId) as {selection_json:string}).selection_json),role=store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(task.taskId) as {access:string}|undefined;
     // The driver supplies the effective per-turn tier. Inspect the same host choice, retaining all other source flags.
     const args:string[]=[];for(let i=0;i<task.profile.args.length;i++){const a=task.profile.args[i];if(['--permission-mode','--sandbox','-s','--ask-for-approval','-a','--setting-sources'].includes(a)){i++;continue;}if(['--dangerously-bypass-approvals-and-sandbox','--yolo','--approve-for-me','--not-so-yolo','--full-auto'].includes(a))continue;args.push(a);}
-    if(task.profile.runner==='codex')args.push('--sandbox',selection.tier==='full'?'danger-full-access':'workspace-write');else args.push('--setting-sources','user','--permission-mode',selection.tier==='full'?'bypassPermissions':'default');
-    const cliTask={...task,profile:{...task.profile,args}};
-    if(role?.access!=='read')await this.configureCli(cliTask,native,snapshot);
-    const cliPolicy=this.planningCliPolicies.get(task.taskId);
+    const fullAccess = selection.tier === 'full';
+    const codex = task.profile.runner === 'codex';
+    // Preload the restricted profile on the verified protocol so a later downgrade keeps
+    // access to the one host socket, even when the first turn starts with full access.
+    const prepareRestrictedProfile = codex && codexSupportsTurnPermissions(input.version);
+    if (codex) args.push('--sandbox', fullAccess && !prepareRestrictedProfile ? 'danger-full-access' : 'workspace-write');
+    else args.push('--setting-sources', 'user', '--permission-mode', fullAccess ? 'bypassPermissions' : 'default');
+    const cliTask = { ...task, profile: { ...task.profile, args } };
+    let cliPolicy = role?.access === 'read' ? undefined : await this.configureCli(cliTask,native,snapshot);
+    if (cliPolicy && !cliPolicy.available && fullAccess && prepareRestrictedProfile) {
+      const fullArgs = [...args.slice(0, -1), 'danger-full-access'];
+      cliPolicy = await this.configureCli({ ...cliTask, profile: { ...cliTask.profile, args: fullArgs } }, native, snapshot);
+    }
     const available: RunPlanAvailability = { cli: !!this.cli&&this.cliReady&&cliPolicy?.available===true&&role?.access!=='read', mcp: true };
     const skills = this.pluginSkills?.describe(snapshot, input.runId, available);
     if (skills) { this.pluginSkills!.checkNative(skills, native); this.pluginSkills!.materialize(skills); }
@@ -400,11 +411,24 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if(projectMcp){if(native.inventory.some(x=>x.kind==='mcp'&&x.name===projectMcp.serverName))throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户 MCP 已使用项目上下文名称');runtime=this.capabilities.prepare({projectId:task.projectId,taskId:task.taskId,runner:task.profile.runner,cwd:task.cwd,home:task.home,profileArgs:task.profile.args,previous:task.previous,managed:{runId:run.runId,runtimeHash:projectMcp.runtimeHash,mcpName:projectMcp.serverName}});}
       const mcpServers: NonNullable<DriverOpenOptions['mcpServers']> = { [server.serverName]: { command: process.execPath, args: [join(store.root, 'runtime', server.runtimeHash, 'mcp-bridge.cjs'), '--bootstrap', bridge.bootstrapPath], env: { ELECTRON_RUN_AS_NODE: '1' } } };
       if(projectMcp&&runtime)mcpServers[projectMcp.serverName]={command:'python3',args:[join(store.root,'runtime',projectMcp.runtimeHash,'context_mcp.py'),join(store.root,'runs',task.projectId,task.taskId,run.runId,'context.json')],env:{}};
-      const extraArgs: string[] = [];let cliEnvironment:Record<string,string>={},claudeSettings:Record<string,unknown>|undefined;
+      const extraArgs: string[] = [];
+      let cliEnvironment: Record<string, string> = {};
+      let claudeSettings: Record<string, unknown> | undefined;
+      let codexCliPermissions: string | undefined;
       if(available.cli&&this.cli&&cliPolicy?.available){
         const cliSandbox='runner' in cliPolicy?{runner:'claude-code' as const,endpoint:this.cli.endpoint,kind:cliPolicy.kind,source:cliPolicy.source,digest:cliPolicy.digest}:{endpoint:this.cli.endpoint,kind:cliPolicy.kind,parent:cliPolicy.parent,networkProxy:cliPolicy.networkProxy,enableNetwork:cliPolicy.enableNetwork,existingNames:cliPolicy.existingNames,source:cliPolicy.source,digest:cliPolicy.digest};
         const overlay=this.support.adapters.planLibrary(adapter.hash,{snapshot,runId:run.runId,cliVersion:input.version,currentExecutable:process.execPath,native:{...snapshot.native,runner:snapshot.runner,home:task.home},inventory:native.inventory,planHash:plan.planHash,cliSandbox,mcp:[]});
-        if(task.profile.runner==='codex')extraArgs.push(...overlay.args);else{const at=overlay.args.indexOf('--settings');if(at>=0)claudeSettings=JSON.parse(overlay.args[at+1]);}
+        if (task.profile.runner === 'codex') {
+          extraArgs.push(...overlay.args);
+          if (cliSandbox.kind === 'inherit') {
+            const namedProfile = overlay.args.find((arg, index) => overlay.args[index - 1] === '-c' && arg.startsWith('default_permissions='));
+            codexCliPermissions = /^default_permissions="(wy_cli_[a-f0-9]{12})"$/.exec(namedProfile ?? '')?.[1];
+            if (!codexCliPermissions) throw new ApplicationError('INVALID_RESPONSE', 'Codex 业务 CLI 权限配置无法核对');
+          }
+        } else {
+          const at = overlay.args.indexOf('--settings');
+          if (at >= 0) claudeSettings = JSON.parse(overlay.args[at + 1]);
+        }
         cliEnvironment={...this.cli.issue(run).environment,PATH:dirname(this.options.cliPath!)+delimiter+(task.environment.PATH??'')};
       }
       const role = store.sqlite.prepare("SELECT access FROM agent_delegations WHERE child_task_id=?").get(task.taskId) as { access: string } | undefined;
@@ -412,7 +436,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       if (task.profile.runner === 'codex') for (const [name, m] of Object.entries(mcpServers)) extraArgs.push('-c', `mcp_servers.${name}={command=${JSON.stringify(m.command)},args=${JSON.stringify(m.args)},env={ELECTRON_RUN_AS_NODE="1"},default_tools_approval_mode="approve",startup_timeout_sec=30,tool_timeout_sec=120}`);
       this.active.set(run.runId, { run,...(runtime?{runtime}:{}) });
       return {
-        extraArgs, mcpServers,env:{...runtime?.env,...cliEnvironment},claudeSettings,...(available.cli&&this.options.cliPath?{hostBusinessCli:this.cliProof}:{}),
+        extraArgs, mcpServers,env:{...runtime?.env,...cliEnvironment},claudeSettings,codexCliPermissions,...(available.cli&&this.options.cliPath?{hostBusinessCli:this.cliProof}:{}),
         plugins: task.profile.runner === 'claude' ? skills?.claudeRoots.map(path => ({ type: 'local' as const, path })) : undefined,
         skillRoots: task.profile.runner === 'codex' ? skills?.codexRoots.map((path, i) => ({ path, name: skills.skills[i].nativeName })) : undefined,
         assertCurrent, beforeFork: async () => { assertCurrent(); await bridge!.bridge.arm(); await run.cli.arm(); },

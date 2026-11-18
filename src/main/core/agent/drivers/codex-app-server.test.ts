@@ -23,9 +23,53 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it.each(['thread/start', 'thread/resume'] as const)('保留宿主批准的 CLI 权限配置，同时保留原生审批档位（%s）', async method => {
+    const f = setup();
+    const permissions = 'wy_cli_abcdef012345';
+    await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', codexCliPermissions: permissions, ...(method === 'thread/resume' ? { resumeNativeId: 'resumed' } : {}) });
+    const params = f.server.calls(method)[0].params;
+    expect(params).toMatchObject({ permissions, approvalPolicy: 'on-request', approvalsReviewer: 'user' });
+    expect(params).not.toHaveProperty('sandbox');
+    for (const [i, tier] of (['ask', 'full', 'auto'] as const).entries()) {
+      await f.inst.startTurn({ clientInputId: tier, text: 'work', tier });
+      f.server.notify('turn/completed', { threadId: method === 'thread/resume' ? 'resumed' : 'thr-1', turn: { id: `turn-${i + 1}`, status: 'completed' } });
+      await until(() => f.events.filter(event => event.type === 'turn.completed').length === i + 1);
+    }
+    expect(f.server.calls('turn/start').map(call => call.params)).toMatchObject([
+      { approvalPolicy: 'on-request', approvalsReviewer: 'user', permissions },
+      { approvalPolicy: 'never', approvalsReviewer: 'user', sandboxPolicy: { type: 'dangerFullAccess' } },
+      { approvalPolicy: 'on-request', approvalsReviewer: 'auto_review', permissions },
+    ]);
+    expect(f.server.calls('turn/start')[0].params).not.toHaveProperty('sandboxPolicy');
+    expect(f.server.calls('turn/start')[1].params).not.toHaveProperty('permissions');
+    expect(f.server.calls('turn/start')[2].params).not.toHaveProperty('sandboxPolicy');
+  });
+
+  it('starts in full access and selects the preloaded restricted profile on downgrade', async () => {
+    const f = setup();
+    const permissions = 'wy_cli_abcdef012345';
+    await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'full', codexCliPermissions: permissions });
+    expect(f.server.calls('thread/start')[0].params).toMatchObject({ sandbox: 'danger-full-access', approvalPolicy: 'never' });
+    expect(f.server.calls('thread/start')[0].params).not.toHaveProperty('permissions');
+    await f.inst.startTurn({ clientInputId: 'ask', text: 'work', tier: 'ask' });
+    expect(f.server.calls('turn/start')[0].params).toMatchObject({ permissions, approvalPolicy: 'on-request', approvalsReviewer: 'user' });
+    expect(f.server.calls('turn/start')[0].params).not.toHaveProperty('sandboxPolicy');
+  });
+
+  it('sends an explicit legacy turn sandbox on earlier versions', async () => {
+    const f = setup();
+    const permissions = 'wy_cli_abcdef012345';
+    await f.inst.open({ executable: { ...exe, version: '0.167.1' }, cwd: '/w', env: {}, tier: 'ask', codexCliPermissions: permissions });
+    expect(f.server.calls('thread/start')[0].params).toMatchObject({ permissions });
+    await f.inst.startTurn({ clientInputId: 'ask', text: 'work', tier: 'ask' });
+    expect(f.server.calls('turn/start')[0].params).toMatchObject({ sandboxPolicy: { type: 'workspaceWrite' }, approvalPolicy: 'on-request' });
+    expect(f.server.calls('turn/start')[0].params).not.toHaveProperty('permissions');
+  });
+
   it('A33: host read role overrides even full access every turn and refuses write escalation without an approval option', async () => {
-    const f = setup(); await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'full', readOnly: true });
+    const f = setup(); await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'full', readOnly: true, codexCliPermissions: 'wy_cli_abcdef012345' });
     expect(f.server.calls('thread/start')[0].params).toMatchObject({ approvalPolicy: 'never', sandbox: 'read-only' });
+    expect(f.server.calls('thread/start')[0].params).not.toHaveProperty('permissions');
     expect(f.spawned().args).toContain('features.hooks=false');
     await f.inst.startTurn({ clientInputId: 'read', text: 'inspect', tier: 'full' });
     expect(f.server.calls('turn/start')[0].params).toMatchObject({ approvalPolicy: 'never', sandboxPolicy: { type: 'readOnly', networkAccess: false } });

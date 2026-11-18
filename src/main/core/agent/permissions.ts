@@ -31,6 +31,9 @@ export type TierResolution =
 
 export const isTier = (value: unknown): value is Tier => typeof value === 'string' && (TIERS as readonly string[]).includes(value);
 
+/** Verified native protocol for selecting the host CLI profile in turn/start. */
+export const codexSupportsTurnPermissions = (version: string): boolean => version === '0.169.0';
+
 /** 不在三档内的输入（含旧 edits）拒绝；执行器不支持的档位降为请求批准并给出原因。 */
 export function resolveTier(driverId: DriverId | string, permission: unknown): TierResolution {
   if (!isTier(permission)) return { ok: false, reason: 'unknown-tier' };

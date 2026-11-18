@@ -1,7 +1,7 @@
 // Codex 程序化驱动：本机 codex app-server（stdio JSON-RPC）。每轮在 turn/start 显式下发档位参数，
 // 恢复线程也重新下发，不依赖创建时默认值（技术方案 T1.5 §7.2，V08／V09）。
 import { spawn, type ChildProcess } from 'node:child_process';
-import { CODEX_TIERS, type CodexTierParams } from '../permissions';
+import { CODEX_TIERS, codexSupportsTurnPermissions, type CodexTierParams } from '../permissions';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import { JsonlRpcPeer } from '../jsonl-rpc';
 import { redact } from '../../connections/redact';
@@ -28,6 +28,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private threadId?: string;
   private cwd = '';
   private readOnly = false;
+  private turnCliPermissions?: string;
   private activeTurn: { nativeTurnId: string; clientInputId: string; interrupted: boolean } | null = null;
   private pendingInputId = '';
   private stopPending = false;
@@ -50,6 +51,7 @@ export class CodexAppServerInstance implements DriverInstance {
     if (this.child) throw new DriverError('STATE', '实例已打开');
     this.secrets = Object.entries(o.env).filter(([name]) => /KEY|TOKEN|PASSWORD|SECRET/.test(name)).map(([,value]) => value).filter(Boolean);
     this.cwd = o.cwd; this.readOnly = o.readOnly === true;
+    this.turnCliPermissions = !this.readOnly && codexSupportsTurnPermissions(o.executable.version) ? o.codexCliPermissions : undefined;
     const child = this.spawnFn(o.executable.path, ['app-server', ...(o.extraArgs ?? []), ...(this.readOnly ? ['-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'] : [])], { cwd: o.cwd, env: o.env });
     this.child = child;
     child.stderr?.on('data', (b: Buffer) => { const message = redact(b.toString('utf8'), this.secrets); this.stderrTail = (this.stderrTail + message).slice(-2000); this.emitter.emit({ type: 'diagnostic', message: message.slice(0, 4000) }); });
@@ -91,7 +93,10 @@ export class CodexAppServerInstance implements DriverInstance {
         for (const root of o.skillRoots) if (skills.filter(s => s.name === root.name && s.enabled).length !== 1 || !skills.some(s => s.name === root.name && s.path === root.path + '/SKILL.md' && s.enabled)) throw new DriverError('REJECTED', `Skill 未按冻结目录加载：${root.name}`);
       }
       // 新线程不带模型打开，响应里的 model 即执行器默认；所选模型随每轮显式发送（模型覆盖对后续轮次持续生效，复核 FR03）。
-      const common = { cwd: o.cwd, approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandbox: this.readOnly ? 'read-only' : SANDBOX_MODE[tier.sandboxPolicy.type] };
+      const sandbox = !this.readOnly && o.tier !== 'full' && o.codexCliPermissions
+        ? { permissions: o.codexCliPermissions }
+        : { sandbox: this.readOnly ? 'read-only' : SANDBOX_MODE[tier.sandboxPolicy.type] };
+      const common = { cwd: o.cwd, approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, ...sandbox };
       const r = o.resumeNativeId
         ? await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/resume', { threadId: o.resumeNativeId, excludeTurns: true, ...common, ...(o.model ? { model: o.model } : {}) })
         : await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/start', common);
@@ -146,13 +151,16 @@ export class CodexAppServerInstance implements DriverInstance {
     if (!this.rpc || !this.threadId) throw new DriverError('STATE', '会话尚未打开');
     if (this.activeTurn) throw new DriverError('STATE', '上一轮尚未结束');
     const tier = CODEX_TIERS[input.tier];
+    const sandbox = this.turnCliPermissions && input.tier !== 'full'
+      ? { permissions: this.turnCliPermissions }
+      : { sandboxPolicy: this.readOnly ? { type: 'readOnly', networkAccess: false } : tier.sandboxPolicy };
     this.stopPending = false;
     this.pendingInputId = input.clientInputId;
     const r = await this.rpc.call<{ turn: { id: string } }>('turn/start', {
       threadId: this.threadId, cwd: this.cwd,
       input: [{ type: 'text', text: input.text, text_elements: [] }, ...(input.images ?? []).map(i => ({ type: 'localImage', path: i.path }))],
       clientUserMessageId: input.clientInputId,
-      approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, sandboxPolicy: this.readOnly ? { type: 'readOnly', networkAccess: false } : tier.sandboxPolicy,
+      approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, ...sandbox,
       ...(input.model ? { model: input.model } : {}),
       ...(input.effort ? { effort: input.effort } : {}),
     });

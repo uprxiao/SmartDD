@@ -20,6 +20,8 @@ export interface DriverOpenOptions {
   resumeNativeId?: string;
   /** 宿主追加给原生进程的参数（如 Codex 隔离 -c 配置）。 */
   extraArgs?: readonly string[];
+  /** 已核验的宿主 CLI 命名权限，只允许访问本次运行的业务套接字。 */
+  codexCliPermissions?: string;
   /** Claude settingSources；关闭“沿用我的扩展”时去掉 user。 */
   hostBusinessCli?:import('./host-cli-command').HostBusinessCli;
   claudeSettings?:Record<string,unknown>;
