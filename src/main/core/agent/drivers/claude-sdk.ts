@@ -110,6 +110,7 @@ export class ClaudeSdkInstance implements DriverInstance {
       ...(o.mcpServers ? { allowedTools: Object.keys(o.mcpServers).map(name => `mcp__${name}__*`) } : {}),
       ...(o.plugins ? { plugins: o.plugins } : {}),
       ...(o.stopWhenWaiting ? { hooks: { Stop: [{ hooks: [async () => o.stopWhenWaiting?.() ? { continue: false } : {}] }] } } : {}),
+      includeHookEvents: true,
       includePartialMessages: true,
       ...(o.resumeNativeId ? { resume: o.resumeNativeId } : { sessionId: nativeId }),
       canUseTool: (tool: string, input: Record<string, unknown>, ctx: { signal: AbortSignal; title?: string; decisionReason?: string; blockedPath?: string; agentID?: string }) => this.onPermission(tool, input, ctx),

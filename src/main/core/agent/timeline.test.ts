@@ -35,6 +35,16 @@ describe('Claude 投影', () => {
     expect(p.project({ type: 'native', name: 'result', payload: { type: 'result', subtype: 'error_max_turns', is_error: true, uuid: 'r' } })).toEqual([{ key: 'error:r', type: 'error', payload: { code: 'error_max_turns', message: 'error_max_turns' }, terminal: 'failed' }]);
     expect(p.project({ type: 'native', name: 'result', payload: { type: 'result', subtype: 'error_during_execution', is_error: true } })).toEqual([]);
   });
+
+  it('A59: Claude 钩子结果更新同一条提示，不发布原始 stdout 或迟到的进度', () => {
+    const p = new TimelineProjector('claude-sdk');
+    const hook = { hook_id: 'fixture-hook', hook_name: '用户检查', hook_event: 'PreToolUse' };
+    const started = p.project({ type: 'native', name: 'system/hook_started', payload: hook })[0];
+    expect(started).toMatchObject({ type: 'system_notice', terminal: null });
+    const failed = p.project({ type: 'native', name: 'system/hook_response', payload: { ...hook, outcome: 'error', exit_code: 1, stdout: 'internal hook output' } })[0];
+    expect(failed).toMatchObject({ key: started.key, terminal: 'failed', payload: { severity: 'warning', detail: 'PreToolUse · error · 退出码 1' } });
+    expect(p.project({ type: 'native', name: 'system/hook_progress', payload: hook })).toEqual([]);
+  });
 });
 
 describe('Codex 投影', () => {
@@ -59,6 +69,25 @@ describe('Codex 投影', () => {
     const x = p();
     expect(x.project({ type: 'native', name: 'configWarning', payload: { summary: '忽略 2 项设置' } })[0]).toMatchObject({ type: 'system_notice', payload: { severity: 'warning', code: 'configWarning', detail: '忽略 2 项设置' } });
     expect(x.project({ type: 'native', name: 'error', payload: { turnId: 't', error: { message: 'usage limit' } } })[0]).toMatchObject({ type: 'error', payload: { message: 'usage limit' } });
+  });
+
+  it('A59: 钩子、MCP 启动和自动审批的终态修订原条目', () => {
+    const x = p();
+    const lifecycle = (name: string, payload: object) => x.project({ type: 'native', name, payload })[0];
+    const hook = lifecycle('hook/started', { run: { id: 'hook-1', eventName: 'sessionStart', status: 'running' } });
+    expect(hook).toMatchObject({ type: 'system_notice', terminal: null });
+    const failed = lifecycle('hook/completed', { run: { id: 'hook-1', eventName: 'sessionStart', status: 'failed', statusMessage: 'cannot start hook' } });
+    expect(failed).toMatchObject({ key: hook.key, terminal: 'failed', payload: { severity: 'warning', detail: expect.stringContaining('cannot start hook') } });
+    expect(lifecycle('hook/started', { run: { id: 'hook-1', eventName: 'sessionStart', status: 'running' } })).toBeUndefined();
+
+    const mcp = lifecycle('mcpServer/startupStatus/updated', { name: 'fixture-mcp', status: 'starting' });
+    expect(mcp).toMatchObject({ type: 'system_notice', terminal: null });
+    expect(lifecycle('mcpServer/startupStatus/updated', { name: 'fixture-mcp', status: 'failed', error: 'unavailable' })).toMatchObject({ key: mcp.key, terminal: 'failed', payload: { severity: 'warning', detail: expect.stringContaining('unavailable') } });
+    expect(lifecycle('mcpServer/startupStatus/updated', { name: 'fixture-mcp', status: 'starting' })).toMatchObject({ key: mcp.key, terminal: null });
+
+    const review = lifecycle('item/autoApprovalReview/started', { reviewId: 'review-1', review: { status: 'inProgress' } });
+    expect(review).toMatchObject({ type: 'system_notice', terminal: null });
+    expect(lifecycle('item/autoApprovalReview/completed', { reviewId: 'review-1', review: { status: 'denied', rationale: 'write denied' } })).toMatchObject({ key: review.key, terminal: 'completed', payload: { severity: 'warning', detail: expect.stringContaining('write denied') } });
   });
 });
 
