@@ -46,6 +46,34 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
 }
 const id = (n: number) => `client-input-${n}`;
 
+it('A44 bounds event catch-up to its captured watermark and only refreshes explicitly requested history in the same task', () => {
+  const { svc, store } = setup();
+  const create = (title: string) => svc.create({ projectId: null, dirId: null, cwd: '/w', title, profileId: 'cx', tier: 'ask' }).taskId;
+  const taskId = create('history'), other = create('different task');
+  const start = store.watermark(taskId);
+  const local = store.addHostItem(taskId, null, 'system_notice', { detail: 'in the requested task' });
+  const through = store.watermark(taskId);
+  const future = store.addHostItem(taskId, null, 'system_notice', { detail: 'after the captured watermark' });
+  const foreign = store.addHostItem(other, null, 'system_notice', { detail: 'different task' });
+  expect(svc.events(taskId, start, 128, through).map(event => [event.seq, event.itemId])).toEqual([[through, local]]);
+  expect(svc.events(taskId, through).map(event => event.itemId)).toEqual([future]);
+  expect(() => svc.events(taskId, through, 128, start)).toThrow('事件序号范围无效');
+  expect(svc.historyItems(taskId, [foreign, local]).map(item => item.itemId)).toEqual([local]);
+  expect(() => svc.historyItems(taskId, Array(9).fill(local))).toThrow('历史条目查询超出范围');
+  const oversized = Object.fromEntries(Array.from({ length: 50 }, (_, i) => ['key'.repeat(380) + i, 'test']));
+  const ids = Array.from({ length: 8 }, () => store.addHostItem(taskId, null, 'system_notice', oversized));
+  const previews = svc.historyItems(taskId, ids);
+  expect(previews).toHaveLength(ids.length);
+  expect(previews.every(item => item.payload.truncated)).toBe(true);
+  expect(Buffer.byteLength(JSON.stringify(previews))).toBeLessThan(256 * 1024);
+  for (let index = 0; index < 25; index++) store.addHostItem(taskId, null, 'system_notice', { detail: '页'.repeat(6000) });
+  const snapshot = svc.snapshot(taskId);
+  expect(snapshot.historyCursor).toEqual(expect.any(String));
+  const page = svc.history(taskId, snapshot.historyCursor!);
+  expect(page.items.at(-1)?.ordinal).toBe(snapshot.items[0].ordinal - 1);
+  expect(() => svc.history(other, snapshot.historyCursor!)).toThrow('历史游标无效');
+});
+
 describe('目标与插话', () => {
   it('Codex 目标：设定后原生自行开出的回合按系统来源记录并计轮；停止键暂停目标；清除', async () => {
     const { svc, insts, db } = setup();

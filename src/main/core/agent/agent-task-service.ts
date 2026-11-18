@@ -37,6 +37,21 @@ export type ProfileDriver = (profileId: string) => DriverId;
 export const RESPONSE_LIMIT = 256 * 1024, EVENT_LIMIT = 32 * 1024, RANGE_LIMIT = 128 * 1024;
 const ITEM_PREVIEW = 24 * 1024, REQUEST_PREVIEW = 96 * 1024, REQUESTS_BUDGET = 96 * 1024, DRAFT_INLINE = 48 * 1024;
 export const jsonBytes = (v: unknown) => Buffer.byteLength(JSON.stringify(v ?? null));
+function historyCursor(taskId: string, ordinal: number | undefined, hasOlder: boolean) {
+  return hasOlder && ordinal !== undefined ? Buffer.from(JSON.stringify([taskId, ordinal]), 'utf8').toString('base64url') : null;
+}
+
+function historyOrdinal(taskId: string, cursor: number | string) {
+  if (typeof cursor === 'number' && Number.isSafeInteger(cursor) && cursor > 0) return cursor;
+  if (typeof cursor === 'string' && cursor.length <= 256 && /^[A-Za-z0-9_-]+$/.test(cursor)) {
+    try {
+      const decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
+      if (Array.isArray(decoded) && decoded.length === 2 && decoded[0] === taskId &&
+          Number.isSafeInteger(decoded[1]) && decoded[1] > 0 && historyCursor(taskId, decoded[1], true) === cursor) return decoded[1] as number;
+    } catch { /* A malformed cursor must be fetched again from the current snapshot. */ }
+  }
+  throw new DriverError('REJECTED', '历史游标无效，请重新打开任务');
+}
 /** 过大的正文给预览：长字符串截短并标 truncated，完整内容经范围读取接口取得。 */
 function shorten(v: unknown, depth = 0): unknown {
   if (typeof v === 'string') return v.length > 2000 ? v.slice(0, 2000) : v;
@@ -52,9 +67,12 @@ function boundedPreview(payload: unknown, limit: number): Record<string, unknown
 }
 function previewItem<T extends { payload: any }>(it: T): T {
   const bytes = jsonBytes(it.payload);
+  if (bytes <= ITEM_PREVIEW && !it.payload?.artifact) return it;
   // 原文在 artifact 里的条目，库内只是预览：无论大小都标截断，界面经正文接口读全文（复核 U01）。
-  if (it.payload?.artifact) { const { artifact, ...rest } = it.payload; return { ...it, payload: { ...boundedPreview(rest, ITEM_PREVIEW), truncated: true, bytes: artifact.bytes } }; }
-  return bytes <= ITEM_PREVIEW ? it : { ...it, payload: { ...boundedPreview(it.payload, ITEM_PREVIEW), truncated: true, bytes } };
+  const { artifact, ...fields } = it.payload ?? {};
+  const marker = { truncated: true, bytes: artifact?.bytes ?? bytes };
+  const preview = { ...boundedPreview(fields, ITEM_PREVIEW), ...marker };
+  return { ...it, payload: jsonBytes(preview) <= ITEM_PREVIEW ? preview : marker };
 }
 function previewRequest<T extends { payload: any }>(r: T, limit = REQUEST_PREVIEW): T & { detailTruncated?: boolean; bytes?: number } {
   const bytes = jsonBytes(r.payload);
@@ -875,8 +893,13 @@ export class AgentTaskService {
       const budget = RESPONSE_LIMIT - 4 * 1024 - jsonBytes(base) - jsonBytes(recentTurns);
       if (budget < 0 && level < 3) continue;
       const out = { ...base, ...this.itemsPage(taskId, Math.max(0, budget), allTurns, recentTurns) };
-      while (jsonBytes(out) > RESPONSE_LIMIT && out.items.length) { out.items.shift(); out.hasOlder = true; }
-      if (jsonBytes(out) <= RESPONSE_LIMIT) return out;
+      for (;;) {
+        const projected = { ...out, historyCursor: historyCursor(taskId, out.items[0]?.ordinal ?? Number.MAX_SAFE_INTEGER, out.hasOlder) };
+        if (jsonBytes(projected) <= RESPONSE_LIMIT) return projected;
+        if (!out.items.length) break;
+        out.items.shift();
+        out.hasOlder = true;
+      }
     }
     throw new DriverError('PROTOCOL', '任务快照超过容量上限');
   }
@@ -912,11 +935,24 @@ export class AgentTaskService {
     if (revision !== undefined && revision !== r.revision) throw new DriverError('STATE', '请求已更新，请重新读取');
     return { ...rangeOf(r.payload_ref, offset), revision: r.revision };
   }
-  history(taskId: string, beforeOrdinal: number) {
+  history(taskId: string, cursor: number | string) {
     this.selection(taskId, true);
+    const beforeOrdinal = historyOrdinal(taskId, cursor);
     const page = this.itemsPage(taskId, RESPONSE_LIMIT - 8 * 1024, this.d.store.turns(taskId), [], beforeOrdinal);
-    while (jsonBytes(page) > RESPONSE_LIMIT && page.items.length > 1) page.items.shift();
-    return page;
+    for (;;) {
+      const projected = { ...page, historyCursor: historyCursor(taskId, page.items[0]?.ordinal, page.hasOlder) };
+      if (jsonBytes(projected) <= RESPONSE_LIMIT) return projected;
+      if (!page.items.length) throw new DriverError('PROTOCOL', '历史页超过容量上限');
+      page.items.shift();
+      page.hasOlder = true;
+    }
+  }
+  historyItems(taskId: string, itemIds: string[]) {
+    this.selection(taskId, true);
+    if (!Array.isArray(itemIds) || itemIds.length > 8 || itemIds.some(id => typeof id !== 'string' || !id.length || id.length > 128)) {
+      throw new DriverError('REJECTED', '历史条目查询超出范围');
+    }
+    return this.d.store.historyItems(taskId, itemIds).map(previewItem);
   }
   draftBody(taskId: string, offset: number, revision?: number) {
     this.selection(taskId, true);
@@ -927,9 +963,12 @@ export class AgentTaskService {
   }
 
   /** 事件页按字节守 256 KiB，单个事件超过 32 KiB 只给信封（复核 FR02）。 */
-  events(taskId: string, afterSeq: number, limit = 128): StoredEvent[] {
+  events(taskId: string, afterSeq: number, limit = 128, throughSeq = Number.MAX_SAFE_INTEGER): StoredEvent[] {
+    if (!Number.isSafeInteger(afterSeq) || afterSeq < 0 || !Number.isSafeInteger(throughSeq) || throughSeq < afterSeq) {
+      throw new DriverError('REJECTED', '事件序号范围无效');
+    }
     const out: StoredEvent[] = []; let bytes = 2;
-    for (const e of this.d.store.events(taskId, afterSeq, Math.min(limit, 128))) {
+    for (const e of this.d.store.events(taskId, afterSeq, Math.min(limit, 128), throughSeq)) {
       const b = boundedEvent(e), size = jsonBytes(b) + 1;
       if (bytes + size > RESPONSE_LIMIT && out.length) break;
       bytes += size; out.push(b);

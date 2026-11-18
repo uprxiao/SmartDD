@@ -41,6 +41,29 @@ const liveEncoder = new TextEncoder();
 const emptyLive = { items: {} as Record<string, string>, bytes: 0, incomplete: false };
 const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限', output: '输出长度到上限' };
 
+async function changedHistoryIds(taskId: string, from: number, through: number, cached: ReadonlySet<string>, active: () => boolean) {
+  const changed = new Set<string>();
+  let seq = from;
+  while (active() && seq < through) {
+    const page = await rpc.agentTasks.events(taskId, seq, through);
+    if (!page.length) return null;
+    for (const event of page) {
+      if (event.taskId !== taskId || event.seq !== seq + 1 || event.seq > through) return null;
+      seq = event.seq;
+      if (event.itemId && cached.has(event.itemId) && (event.type === 'item.updated' || event.type === 'item.deleted')) changed.add(event.itemId);
+    }
+  }
+  return seq === through ? [...changed] : null;
+}
+
+async function readHistoryItems(taskId: string, itemIds: string[], active: () => boolean) {
+  const result: TimelineItem[] = [];
+  for (let index = 0; active() && index < itemIds.length; index += 8) {
+    result.push(...await rpc.agentTasks.historyItems(taskId, itemIds.slice(index, index + 8)));
+  }
+  return result;
+}
+
 // 消息里的链接在阶段 5 按 T3 规则接入路由；此前只显示为文字，不打开任何地址。
 const md = new MarkdownIt({ html: false, linkify: true, breaks: false });
 const validateMarkdownLink = md.validateLink.bind(md);
@@ -695,9 +718,17 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const draftRev = useRef(0), draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null), reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const seqRef = useRef(0);
+  const snapshotAssigned = useRef(false);
+  const timelineScope = useRef(0);
+  const reloadWork = useRef<Promise<void> | null>(null);
+  const reloadAgain = useRef(false);
+  const recoveringTimeline = useRef(false);
   const [older, setOlder] = useState<TimelineItem[]>([]);
+  const olderItems = useRef(older);
+  olderItems.current = older;
   const [olderTurns, setOlderTurns] = useState<unknown[]>([]);
   const [olderMore, setOlderMore] = useState<boolean | null>(null);
+  const [olderCursor, setOlderCursor] = useState<string | null>(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const olderRequest = useRef<symbol | null>(null);
   useEffect(() => () => { olderRequest.current = null; }, [taskId]);
@@ -735,25 +766,92 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     } finally { setDraftReady(true); }
   }, [taskId]);
 
-  const reload = useCallback(async () => {
-    try {
-      const s = await rpc.agentTasks.snapshot(taskId);
-      // 旧请求晚到的快照不覆盖新水位。
-      if (s.seq < seqRef.current) return;
-      seqRef.current = s.seq;
-      setSnap(s);
-      setLive(emptyLive);
-      void adoptDraft(s); loadRelations();
-    } catch (e) { toast.error(rpcErrorMessage(e)); }
-  }, [taskId, adoptDraft, loadRelations]);
+  const applySnapshot = useCallback((s: Snapshot) => {
+    seqRef.current = s.seq;
+    snapshotAssigned.current = true;
+    setSnap(s);
+    void adoptDraft(s);
+    loadRelations();
+  }, [adoptDraft, loadRelations]);
+
+  const reload = useCallback(() => {
+    if (reloadWork.current) {
+      reloadAgain.current = true;
+      return reloadWork.current;
+    }
+    const scope = timelineScope.current;
+    const currentScope = () => scope === timelineScope.current;
+    const pull = async () => {
+      do {
+        reloadAgain.current = false;
+        const recovering = recoveringTimeline.current;
+        recoveringTimeline.current = false;
+        const before = seqRef.current;
+        try {
+          const snapshot = await rpc.agentTasks.snapshot(taskId);
+          if (!currentScope()) return;
+          const from = seqRef.current;
+          const reset = snapshot.seq < from && recovering && before === from;
+          if (snapshot.seq < from && !reset) continue;
+          let contiguous = !reset;
+          let updates: TimelineItem[] = [], requested: string[] = [];
+          if (snapshotAssigned.current && snapshot.seq > from) {
+            try {
+              const cached = new Set(olderItems.current.map(item => item.itemId));
+              const changes = await changedHistoryIds(taskId, from, snapshot.seq, cached, currentScope);
+              contiguous = changes !== null;
+              if (changes) {
+                requested = changes;
+                updates = await readHistoryItems(taskId, requested, currentScope);
+              }
+            } catch {
+              // The authoritative snapshot is still usable when the retained event range is unavailable.
+              contiguous = false;
+            }
+          }
+          if (!currentScope()) return;
+          if (seqRef.current !== from) {
+            if (snapshot.seq > seqRef.current) reloadAgain.current = true;
+            continue;
+          }
+          if (!contiguous) {
+            olderRequest.current = null;
+            setLoadingOlder(false);
+            setOlder([]);
+            setOlderTurns([]);
+            setOlderMore(null);
+            setOlderCursor(null);
+          } else if (requested.length) {
+            const ids = new Set(requested), byId = new Map(updates.map(item => [item.itemId, item]));
+            setOlder(items => items.flatMap(item => {
+              if (!ids.has(item.itemId)) return [item];
+              const latest = byId.get(item.itemId);
+              return latest ? [latest.revision >= item.revision ? latest : item] : [];
+            }));
+          }
+          applySnapshot(snapshot);
+          setLive(emptyLive);
+        } catch (e) {
+          if (currentScope()) toast.error(rpcErrorMessage(e));
+        }
+      } while (currentScope() && reloadAgain.current);
+    };
+    const work = pull().finally(() => { if (reloadWork.current === work) reloadWork.current = null; });
+    reloadWork.current = work;
+    return work;
+  }, [taskId, applySnapshot]);
 
   useEffect(() => {
     let alive = true;
     // 先订阅再读快照，避免读快照与事件之间漏掉更新（技术方案 §3.1）。
-    // 按序号合并：不比当前水位新的事件（重复或迟到）忽略；其余触发补拉一致快照（技术方案 §3.1）。
+    // Duplicates and late notices do not trigger another pull. Catch-up is bounded by the next snapshot watermark.
     const offEvent = events.on(agentTaskEvent, e => { if (e.taskId === taskId && e.seq > seqRef.current && !reloadTimer.current) reloadTimer.current = setTimeout(() => { reloadTimer.current = null; if (alive) void reload(); }, 80); });
     // 窗口恢复或页面重新可见时查询最新水位，弥补尾部通知丢失。
-    const onVisible = () => { if (document.visibilityState === 'visible' && alive) void reload(); };
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible' || !alive) return;
+      recoveringTimeline.current = true;
+      void reload();
+    };
     window.addEventListener('focus', onVisible); document.addEventListener('visibilitychange', onVisible);
     const offLive = events.on(agentTaskLiveEvent, e => {
       if (e.taskId !== taskId) return;
@@ -771,13 +869,25 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       if (!alive || !s) return;
       // 初始化同样做水位保护：已有更新的快照不覆盖；用户已开始编辑则不用服务端草稿覆盖本地内容（复核 NR07）。
       if (s.seq < seqRef.current) return;
-      seqRef.current = s.seq; setSnap(s);
-      void adoptDraft(s); loadRelations();
+      applySnapshot(s);
     })();
     void rpc.agentTasks.profiles().then(p => alive && setProfiles(p)).catch(() => {});
     const tick = setInterval(() => setNow(Date.now()), 1000);
-    return () => { alive = false; offEvent(); offLive(); clearInterval(tick); window.removeEventListener('focus', onVisible); document.removeEventListener('visibilitychange', onVisible); if (reloadTimer.current) clearTimeout(reloadTimer.current); };
-  }, [taskId, reload, adoptDraft, loadRelations]);
+    return () => {
+      alive = false;
+      timelineScope.current++;
+      reloadWork.current = null;
+      reloadAgain.current = false;
+      recoveringTimeline.current = false;
+      offEvent();
+      offLive();
+      clearInterval(tick);
+      window.removeEventListener('focus', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+      if (reloadTimer.current) clearTimeout(reloadTimer.current);
+      reloadTimer.current = null;
+    };
+  }, [taskId, reload, applySnapshot]);
 
   useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [snap?.seq, Object.keys(live.items).length, relations?.childrenTotal, childRequests.length]);
 
@@ -931,16 +1041,26 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const hasOlder = olderMore ?? snap.hasOlder;
   const loadOlder = async () => {
     const first = older[0] ?? currentItems[0];
-    if (!first || olderRequest.current) return;
+    const cursor = olderCursor ?? (older.length ? null : snap.historyCursor) ?? first?.ordinal;
+    if (cursor === undefined || olderRequest.current) return;
     const request = Symbol();
     olderRequest.current = request;
     setLoadingOlder(true);
     try {
-      const page = await rpc.agentTasks.history(taskId, first.ordinal);
+      let watermark = seqRef.current;
+      const page = await rpc.agentTasks.history(taskId, cursor);
       if (olderRequest.current !== request) return;
-      setOlder(items => [...(page.items as TimelineItem[]), ...items]);
+      let incoming = page.items as TimelineItem[];
+      const ids = incoming.map(item => item.itemId);
+      while (watermark !== seqRef.current) {
+        watermark = seqRef.current;
+        incoming = await readHistoryItems(taskId, ids, () => olderRequest.current === request);
+        if (olderRequest.current !== request) return;
+      }
+      setOlder(items => [...incoming, ...items]);
       setOlderTurns(turns => [...page.turns, ...turns]);
       setOlderMore(page.hasOlder);
+      setOlderCursor(page.historyCursor);
     } catch (e) {
       if (olderRequest.current === request) toast.error(rpcErrorMessage(e));
     } finally {

@@ -74,6 +74,13 @@ export interface TurnRow { turn_id: string; task_id: string; run_id: string | nu
 export interface RequestRow { request_id: string; task_id: string; class: 'native' | 'host_business'; origin_json: string; revision: number; kind: string; payload_ref: string; status: string }
 export interface StoredEvent { taskId: string; seq: number; type: string; itemId: string | null; payload: unknown }
 export type EventListener = (event: StoredEvent) => void;
+type TimelineRow = { item_id: string; turn_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string };
+function timelineItem(row: TimelineRow) {
+  return {
+    itemId: row.item_id, turnId: row.turn_id, type: row.type, ordinal: row.ordinal, revision: row.revision,
+    payload: JSON.parse(row.payload_ref), terminal: row.terminal_state, createdAt: row.created_at, updatedAt: row.updated_at,
+  };
+}
 
 export class AgentStore {
   private readonly transactionEvents: StoredEvent[][] = [];
@@ -478,8 +485,16 @@ export class AgentStore {
   /** 最近的条目（renderer 每任务上限 2000 条，技术方案 §3.1）；beforeOrdinal 分页读更早的。 */
   items(taskId: string, opts: { limit?: number; beforeOrdinal?: number } = {}) {
     const limit = Math.min(opts.limit ?? 2000, 2000);
-    return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as Record<string, any>[])
-      .map(r => ({ itemId: r.item_id, turnId: r.turn_id, type: r.type, ordinal: r.ordinal, revision: r.revision, payload: JSON.parse(r.payload_ref), terminal: r.terminal_state, createdAt: r.created_at, updatedAt: r.updated_at }));
+    return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as TimelineRow[])
+      .map(timelineItem);
+  }
+  historyItems(taskId: string, itemIds: string[]) {
+    if (!itemIds.length) return [];
+    const params = itemIds.map(() => '?').join(',');
+    const rows = this.sqlite.prepare(`SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at
+      FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND item_id IN (${params}) ORDER BY ordinal`)
+      .all(taskId, ...itemIds) as TimelineRow[];
+    return rows.map(timelineItem);
   }
   pendingRequests(taskId: string, present = false) {
     return (this.sqlite.prepare("SELECT request_id,class,kind,revision,payload_ref,origin_json,status,created_at FROM agent_requests WHERE task_id=? AND status IN ('pending','approved_pending_bind') ORDER BY created_at,rowid").all(taskId) as Record<string, any>[])
@@ -608,8 +623,8 @@ export class AgentStore {
     return id;
   }
 
-  events(taskId: string, afterSeq = 0, limit = 128): StoredEvent[] {
-    return (this.sqlite.prepare('SELECT task_id,seq,event_type,item_id,payload FROM agent_events WHERE task_id=? AND seq>? ORDER BY seq LIMIT ?').all(taskId, afterSeq, limit) as { task_id: string; seq: number; event_type: string; item_id: string | null; payload: string }[])
+  events(taskId: string, afterSeq = 0, limit = 128, throughSeq = Number.MAX_SAFE_INTEGER): StoredEvent[] {
+    return (this.sqlite.prepare('SELECT task_id,seq,event_type,item_id,payload FROM agent_events WHERE task_id=? AND seq>? AND seq<=? ORDER BY seq LIMIT ?').all(taskId, afterSeq, throughSeq, limit) as { task_id: string; seq: number; event_type: string; item_id: string | null; payload: string }[])
       .map(r => ({ taskId: r.task_id, seq: r.seq, type: r.event_type, itemId: r.item_id, payload: JSON.parse(r.payload) }));
   }
 }

@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -19,6 +19,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.profiles.mockResolvedValue([]);
   mocks.history.mockReset();
+  mocks.events.mockReset().mockResolvedValue([]);
+  mocks.historyItems.mockReset().mockResolvedValue([]);
   mocks.discardAttachment.mockResolvedValue(undefined);
   mocks.saveDraft.mockReset().mockResolvedValue({ ok: true, revision: 1 });
   mocks.on.mockImplementation(() => () => {});
@@ -157,6 +159,48 @@ it('A44 ignores an older revision from a pending history page when the snapshot 
   await act(async () => finish());
   expect(screen.queryByText('Old row revision')).toBeNull();
   expect(screen.getAllByText('New row revision')).toHaveLength(1);
+});
+
+it('A44 recovers missing notifications and refreshes changed history outside the latest snapshot', async () => {
+  const latest = { ...item('assistant_message', { text: 'Newest row' }), itemId: 'newest', ordinal: 10 };
+  const old = { ...item('assistant_message', { text: 'Cached row revision one' }), itemId: 'historical', ordinal: 9 };
+  const updated = { ...old, revision: 2, payload: { text: 'Cached row revision two' } };
+  let state = snapshot({ items: [latest], hasOlder: true });
+  let publish!: (event: { taskId: string; seq: number }) => void;
+  mocks.on.mockImplementation((event, cb) => { if (event.name === 'agentTasks:event') publish = cb; return () => {}; });
+  mocks.snapshot.mockImplementation(async () => state);
+  mocks.history.mockResolvedValue({ items: [old], turns: [], hasOlder: false });
+  mocks.events.mockResolvedValue([
+    { taskId: 'task', seq: 2, type: 'item.updated', itemId: old.itemId, payload: {} },
+    { taskId: 'task', seq: 3, type: 'selection.changed', itemId: null, payload: {} },
+  ]);
+  mocks.historyItems.mockResolvedValue([updated]);
+  render(<AgentTaskView taskId="task" />);
+  fireEvent.click(await screen.findByRole('button', { name: '加载更早的记录' }));
+  await screen.findByText('Cached row revision one');
+  state = snapshot({ seq: 3, items: [latest], hasOlder: true });
+  await act(async () => publish({ taskId: 'task', seq: 3 }));
+  await screen.findByText('Cached row revision two', {}, { timeout: 2000 });
+  expect(screen.queryByText('Cached row revision one')).toBeNull();
+  expect(mocks.events).toHaveBeenCalledWith('task', 1, 3);
+  expect(mocks.historyItems).toHaveBeenCalledWith('task', [old.itemId]);
+});
+
+it('A44 discards an unsafe page when the event sequence was cropped while the window was away', async () => {
+  const latest = { ...item('assistant_message', { text: 'Newest row' }), itemId: 'newest', ordinal: 10 };
+  const old = { ...item('assistant_message', { text: 'Old untrusted page' }), itemId: 'historical', ordinal: 9 };
+  let state = snapshot({ seq: 4, items: [latest], hasOlder: true });
+  mocks.snapshot.mockImplementation(async () => state);
+  mocks.history.mockResolvedValue({ items: [old], turns: [], hasOlder: false });
+  mocks.events.mockResolvedValue([{ taskId: 'task', seq: 9, type: 'selection.changed', itemId: null, payload: {} }]);
+  render(<AgentTaskView taskId="task" />);
+  fireEvent.click(await screen.findByRole('button', { name: '加载更早的记录' }));
+  await screen.findByText('Old untrusted page');
+  state = snapshot({ seq: 9, items: [latest], hasOlder: true });
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  await waitFor(() => expect(screen.queryByText('Old untrusted page')).toBeNull());
+  expect(screen.getByRole('button', { name: '加载更早的记录' })).toBeTruthy();
+  expect(mocks.events).toHaveBeenCalledWith('task', 4, 9);
 });
 
 it('FR05：更新的快照先到也加载已保存的草稿，晚到的旧初始化不影响', async () => {
