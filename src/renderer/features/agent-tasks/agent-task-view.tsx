@@ -698,6 +698,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const [older, setOlder] = useState<TimelineItem[]>([]);
   const [olderTurns, setOlderTurns] = useState<unknown[]>([]);
   const [olderMore, setOlderMore] = useState<boolean | null>(null);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const olderRequest = useRef<symbol | null>(null);
+  useEffect(() => () => { olderRequest.current = null; }, [taskId]);
   const [draftConflict, setDraftConflict] = useState<number | null>(null);
   const [confirmOtherDraft, setConfirmOtherDraft] = useState(false);
   const [resolvingDraft, setResolvingDraft] = useState(false);
@@ -912,7 +915,13 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const profile = profiles.find(p => p.profileId === snap.selection.profileId);
   const turns = [...olderTurns, ...snap.turns] as TurnInfo[];
   const turnById = new Map(turns.map(t => [t.turn_id, t]));
-  const items = [...older, ...(snap.items as TimelineItem[])];
+  const currentItems = snap.items as TimelineItem[];
+  const byItemId = new Map(older.map(item => [item.itemId, item]));
+  for (const item of currentItems) {
+    const cached = byItemId.get(item.itemId);
+    if (!cached || item.revision >= cached.revision) byItemId.set(item.itemId, item);
+  }
+  const items = [...byItemId.values()];
   const coveredChildren = new Set(relations?.children.map(child => child.childTaskId));
   const groups = buildTimeline(items.filter(it => {
     if (it.type === 'user_message' && it.turnId && turnById.get(it.turnId)?.status === 'accepted') return false;
@@ -921,8 +930,25 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const visiblePlans = new Map<string,string>(items.filter(it => it.type === 'proposed_plan' && !it.payload?.truncated && !isIncomplete(it.payload) && it.turnId).map(it => [it.turnId!, it.payload.plan]));
   const hasOlder = olderMore ?? snap.hasOlder;
   const loadOlder = async () => {
-    const first = older[0] ?? (snap.items as TimelineItem[])[0]; if (!first) return;
-    try { const page = await rpc.agentTasks.history(taskId, first.ordinal); setOlder(o => [...(page.items as TimelineItem[]), ...o]); setOlderTurns(t => [...page.turns, ...t]); setOlderMore(page.hasOlder); } catch (e) { toast.error(rpcErrorMessage(e)); }
+    const first = older[0] ?? currentItems[0];
+    if (!first || olderRequest.current) return;
+    const request = Symbol();
+    olderRequest.current = request;
+    setLoadingOlder(true);
+    try {
+      const page = await rpc.agentTasks.history(taskId, first.ordinal);
+      if (olderRequest.current !== request) return;
+      setOlder(items => [...(page.items as TimelineItem[]), ...items]);
+      setOlderTurns(turns => [...page.turns, ...turns]);
+      setOlderMore(page.hasOlder);
+    } catch (e) {
+      if (olderRequest.current === request) toast.error(rpcErrorMessage(e));
+    } finally {
+      if (olderRequest.current === request) {
+        olderRequest.current = null;
+        setLoadingOlder(false);
+      }
+    }
   };
   const working = snap.status === 'working' || snap.status === 'waiting';
   const stopping = snap.stopping;
@@ -1084,7 +1110,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     <header className="agent-task-head"><h1>{snap.title}</h1>{(stopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{stopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}<span className="push" />{lineageToggle}<button type="button" className="agent-head-btn agent-plugin-btn" title="项目插件" onClick={()=>setPluginsOpen(true)}><Plug size={15}/>插件 {plugins.length}</button><button type="button" className="agent-head-btn" title="更多" aria-expanded={moreMenu} onClick={()=>setMoreMenu(v=>!v)}><MoreHorizontal size={16}/></button><button type="button" className="agent-head-btn" title="打开右侧面板" onClick={()=>navigation.toggleFilePanel()}><PanelRight size={15}/></button>{moreMenu&&<div className="agent-head-menu"><button type="button" data-testid="agent-terminal-toggle" onClick={()=>{panels.terminalDrawer();setMoreMenu(false);}}>底部终端</button><button type="button" data-testid="agent-archive" onClick={()=>{setMoreMenu(false);void archive();}}>归档任务</button></div>}</header>}
     <AgentRelations taskId={taskId} value={relations} readOnly={archived} reload={() => { loadRelations(); void reload(); }} />
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline"><TimelineActionScope.Provider value={timelineActions}>
-      {hasOlder && <button type="button" className="agent-older" onClick={() => void loadOlder()}>加载更早的记录</button>}
+      {hasOlder && <button type="button" className="agent-older" disabled={loadingOlder} onClick={() => void loadOlder()}>加载更早的记录</button>}
       {groups.map(group => <TurnRows key={group.key} group={group} stopping={!!stopping && !!group.turnId && group.turnId === recentTurn?.turn_id}/>)}
       {!archived && waitingForWork && !liveText && <div className="agent-starting" role="status"><div className="agent-work-head shine"><Clock3 size={14}/>工作中 {formatDuration(turnSeconds(recentTurn, now))}</div><div><Brain size={14}/>思考中</div></div>}
       {working && (liveText || live.incomplete) && <div className="agent-assistant streaming">{liveText && <Markdown text={liveText} />}{live.incomplete && <p role="status">部分内容未在流式预览中显示，完成后可查看全文。</p>}</div>}

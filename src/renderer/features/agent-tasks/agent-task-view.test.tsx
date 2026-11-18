@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -18,6 +18,7 @@ afterEach(() => cleanup());
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.profiles.mockResolvedValue([]);
+  mocks.history.mockReset();
   mocks.discardAttachment.mockResolvedValue(undefined);
   mocks.saveDraft.mockReset().mockResolvedValue({ ok: true, revision: 1 });
   mocks.on.mockImplementation(() => () => {});
@@ -118,6 +119,45 @@ function holdInit() {
   mocks.on.mockImplementation((name: any, cb: any) => { if (String(name?.name ?? name).includes('event')) event = cb; return () => {}; });
   return { setInitial: (later: any) => mocks.snapshot.mockImplementationOnce(() => new Promise(r => { initial = r; })).mockResolvedValue(later), fire: (seq: number) => event({ taskId: 'task', seq, type: 'item.created' }), resolve: (s: any) => initial(s) };
 }
+
+it('A44 keeps one history request in flight when the same cursor is clicked twice', async () => {
+  const latest = { ...item('assistant_message', { text: 'Newest row' }), itemId: 'newest', ordinal: 10 };
+  const fromHistory = { ...item('assistant_message', { text: 'History row' }), itemId: 'historical', ordinal: 9 };
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [latest], hasOlder: true }));
+  let finish!: () => void;
+  mocks.history.mockImplementation(() => new Promise(resolve => {
+    finish = () => resolve({ items: [fromHistory], turns: [], hasOlder: false });
+  }));
+  render(<AgentTaskView taskId="task" />);
+  const more = await screen.findByRole('button', { name: '加载更早的记录' });
+  fireEvent.click(more);
+  fireEvent.click(more);
+  expect(mocks.history).toHaveBeenCalledTimes(1);
+  expect(mocks.history).toHaveBeenCalledWith('task', 10);
+  await act(async () => finish());
+  expect(screen.getAllByText('History row')).toHaveLength(1);
+});
+
+it('A44 ignores an older revision from a pending history page when the snapshot already has a new version', async () => {
+  const latest = { ...item('assistant_message', { text: 'Newest row' }), itemId: 'newest', ordinal: 10 };
+  const historical = { ...item('assistant_message', { text: 'Old row revision' }), itemId: 'historical', ordinal: 9 };
+  let state = snapshot({ items: [latest], hasOlder: true });
+  let publish!: (e: { taskId: string; seq: number }) => void;
+  mocks.on.mockImplementation((event, cb) => { if (event.name === 'agentTasks:event') publish = cb; return () => {}; });
+  mocks.snapshot.mockImplementation(async () => state);
+  let finish!: () => void;
+  mocks.history.mockImplementation(() => new Promise(resolve => {
+    finish = () => resolve({ items: [historical], turns: [], hasOlder: false });
+  }));
+  render(<AgentTaskView taskId="task" />);
+  fireEvent.click(await screen.findByRole('button', { name: '加载更早的记录' }));
+  state = snapshot({ seq: 2, items: [{ ...historical, revision: 2, payload: { text: 'New row revision' } }, latest] });
+  await act(async () => publish({ taskId: 'task', seq: 2 }));
+  await screen.findByText('New row revision');
+  await act(async () => finish());
+  expect(screen.queryByText('Old row revision')).toBeNull();
+  expect(screen.getAllByText('New row revision')).toHaveLength(1);
+});
 
 it('FR05：更新的快照先到也加载已保存的草稿，晚到的旧初始化不影响', async () => {
   const h = holdInit();
