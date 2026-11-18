@@ -210,6 +210,7 @@ function ItemRow({ item }: { item: TimelineItem }) {
   const relations=useContext(RelationsScope);
   const actions = useContext(TimelineActionScope);
   const [showMessage, setShowMessage] = useState(false);
+  const [savingPlan, setSavingPlan] = useState(false);
   const { payload: p, truncated, load } = useFullPayload(item);
   // 复制／下载计划先取得全文；读不到就提示失败，不输出残缺内容（复核 FR04）。
   // 正文不完整（超过保存上限）或读不到计划字段时提示失败，不复制／下载空的或残缺的内容（复核 T02）。
@@ -222,6 +223,14 @@ function ItemRow({ item }: { item: TimelineItem }) {
   };
   const copyPlan = async () => { const t = await planText(); if (t === null) return; try { await navigator.clipboard.writeText(t); toast.success('已复制计划'); } catch (e) { toast.error(`复制失败：${rpcErrorMessage(e)}`); } };
   const downloadPlan = async () => { const t = await planText(); if (t === null) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'text/markdown' })); a.download = 'plan.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+  const saveProjectPlan = async () => {
+    setSavingPlan(true);
+    try {
+      await rpc.agentTasks.saveProjectPlan(useTaskId, item.itemId, item.revision);
+      toast.success('计划已保存到任务目录的计划.md');
+    } catch (e) { toast.error(`保存计划失败：${rpcErrorMessage(e)}`); }
+    finally { setSavingPlan(false); }
+  };
   const more = <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />;
   switch (item.type) {
     case 'user_message': {
@@ -239,9 +248,10 @@ function ItemRow({ item }: { item: TimelineItem }) {
       </div></div>;
     }
     case 'assistant_message': return <div className="agent-assistant"><Markdown itemId={item.itemId} text={String(p.text ?? '')} />{more}</div>;
-    case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划</div><Markdown itemId={item.itemId} text={String(p.plan ?? '')} />{more}
+    case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划 · Claude Code 计划模式</div><Markdown itemId={item.itemId} text={String(p.plan ?? '')} />{more}
       <div className="agent-plan-actions"><button type="button" onClick={() => void copyPlan()}>复制</button>
-        <button type="button" onClick={() => void downloadPlan()}>下载</button></div></div>;
+        <button type="button" onClick={() => void downloadPlan()}>下载</button>
+        {!archived && <button type="button" disabled={savingPlan} onClick={() => void saveProjectPlan()}>保存到项目</button>}</div></div>;
     case 'todo_list': {
       const entries: {id:string;status:string;subject:string}[] = p.entries ?? [];
       return <div className="agent-todo"><header><b>待办清单</b><span>{entries.filter(e => e.status === 'completed').length}/{entries.length}{truncated ? '（预览）' : ''}</span></header>

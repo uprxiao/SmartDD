@@ -97,14 +97,25 @@ static NSDictionary *inspectCopyTarget(NSDictionary *request) {
 
 static NSDictionary *copyOperation(NSDictionary *request) {
   constexpr uint64_t limit = 256ull * 1024 * 1024;
+  bool generated = [request[@"operation"] isEqual:@"copy-generated"];
   Root source(request[@"root"]); std::string relative = str(request[@"relativePath"]);
-  checkProtected(source, relative, request[@"sourceProtected"] ?: request[@"protected"] ?: @[]); Opened input = openPath(source, relative);
-  checkProtected(source, input.relative, request[@"sourceProtected"] ?: request[@"protected"] ?: @[]);
-  NSDictionary *sourceRevision = revision(input.fd.value, limit);
-  require([sourceRevision isEqual:request[@"expectedRevision"]], "CHANGED", "The source changed while the save dialog was open");
-  NSData *bytes = request[@"draftBase64"] ? [[NSData alloc] initWithBase64EncodedString:request[@"draftBase64"] options:0] : readBytes(input.fd.value, 0, [sourceRevision[@"size"] unsignedLongLongValue], limit);
+  std::optional<Opened> input;
+  NSData *bytes;
+  if (generated) {
+    require(relative.empty() && [request[@"destination"] isKindOfClass:NSDictionary.class] && [request[@"root"] isEqual:request[@"destination"][@"root"]] && request[@"destination"][@"revision"] == NSNull.null, "UNTRUSTED", "Generated content can only create a new file in its authorized root");
+    require([request[@"draftBase64"] isKindOfClass:NSString.class], "INVALID_INPUT", "Missing generated copy bytes");
+    bytes = [[NSData alloc] initWithBase64EncodedString:request[@"draftBase64"] options:0];
+  } else {
+    checkProtected(source, relative, request[@"sourceProtected"] ?: request[@"protected"] ?: @[]);
+    input.emplace(openPath(source, relative));
+    checkProtected(source, input->relative, request[@"sourceProtected"] ?: request[@"protected"] ?: @[]);
+    NSDictionary *sourceRevision = revision(input->fd.value, limit);
+    require([sourceRevision isEqual:request[@"expectedRevision"]], "CHANGED", "The source changed while the save dialog was open");
+    bytes = request[@"draftBase64"] ? [[NSData alloc] initWithBase64EncodedString:request[@"draftBase64"] options:0] : readBytes(input->fd.value, 0, [sourceRevision[@"size"] unsignedLongLongValue], limit);
+    verifyPath(source, *input);
+    require([revision(input->fd.value, limit) isEqual:sourceRevision], "CHANGED", "The source changed during the copy");
+  }
   require(bytes != nil && bytes.length <= limit, "INVALID_INPUT", "Invalid copy bytes");
-  verifyPath(source, input); require([revision(input.fd.value, limit) isEqual:sourceRevision], "CHANGED", "The source changed during the copy");
   NSDictionary *destination = request[@"destination"]; Root targetRoot(destination[@"root"]);
   std::string leaf = str(destination[@"relativePath"]); require(parts(leaf).size() == 1, "INVALID_INPUT", "Copy target must be a filename");
   checkProtected(targetRoot, "", request[@"protected"] ?: @[]);
@@ -113,12 +124,12 @@ static NSDictionary *copyOperation(NSDictionary *request) {
   NSDictionary *expected = destination[@"revision"] == NSNull.null ? nil : destination[@"revision"];
   if (expected) {
     Opened target = openPath(targetRoot, leaf, false, false);
-    require(!sameIdentity(input.initial, target.initial), "CONFLICT", "Choose another filename; Save a Copy cannot overwrite its source");
+    require(input.has_value() && !sameIdentity(input->initial, target.initial), "CONFLICT", "Choose another filename; Save a Copy cannot overwrite its source");
     require([revision(target.fd.value, limit) isEqual:expected], "CONFLICT", "The destination changed after selection");
     NSMutableDictionary *save = [request mutableCopy];
     save[@"operation"] = @"save"; save[@"root"] = destination[@"root"]; save[@"relativePath"] = ns(leaf);
     save[@"baseHash"] = expected[@"hash"]; save[@"base64"] = [bytes base64EncodedStringWithOptions:0]; save[@"draftHash"] = hashBytes(bytes);
-    save[@"copySourceRoot"] = request[@"root"]; save[@"copySourcePath"] = ns(input.relative);
+    save[@"copySourceRoot"] = request[@"root"]; save[@"copySourcePath"] = ns(input->relative);
     save[@"expectedDestinationRevision"] = expected;
     return saveOperation(save);
   }
@@ -128,7 +139,8 @@ static NSDictionary *copyOperation(NSDictionary *request) {
   checkSpace(recovery.fd.value, bytes.length + 65536); checkSpace(targetRoot.fd.value, bytes.length + 65536);
   FD projectDir = privateDirectory(recovery.fd.value, project, false), recordDir = privateDirectory(projectDir.value, opId, true);
   NSString *draftHash = hashBytes(bytes);
-  NSMutableDictionary *record = [@{ @"schemaVersion": @1, @"kind": @"copy", @"opId": ns(opId), @"projectKey": ns(project), @"fingerprint": request[@"fingerprint"], @"root": destination[@"root"], @"relativePath": ns(leaf), @"source": request[@"source"], @"copySourceRoot": request[@"root"], @"copySourcePath": ns(input.relative), @"draftHash": draftHash, @"bufferVersion": @0, @"draftLeaf": @"draft", @"state": @"preparing", @"createdAt": @((long long)(NSDate.date.timeIntervalSince1970 * 1000)), @"targetParentIdentity": identity(targetRoot.initial), @"recordIdentity": identity(info(recordDir.value)), @"bytes": @(bytes.length * 2 + 65536) } mutableCopy];
+  NSMutableDictionary *record = [@{ @"schemaVersion": @1, @"kind": @"copy", @"opId": ns(opId), @"projectKey": ns(project), @"fingerprint": request[@"fingerprint"], @"root": destination[@"root"], @"relativePath": ns(leaf), @"source": request[@"source"], @"copySourceRoot": request[@"root"], @"draftHash": draftHash, @"bufferVersion": @0, @"draftLeaf": @"draft", @"state": @"preparing", @"createdAt": @((long long)(NSDate.date.timeIntervalSince1970 * 1000)), @"targetParentIdentity": identity(targetRoot.initial), @"recordIdentity": identity(info(recordDir.value)), @"bytes": @(bytes.length * 2 + 65536) } mutableCopy];
+  if (input) record[@"copySourcePath"] = ns(input->relative);
   bool installed = false;
   NSDictionary *receipt;
   try {
@@ -144,7 +156,7 @@ static NSDictionary *copyOperation(NSDictionary *request) {
     checked(linkat(transactionDir.value, "candidate", transactionDir.value, "materialized", 0), "retain copy inode");
     record[@"materializedLeaf"] = @"materialized"; record[@"candidateIdentity"] = identity(info(candidate.value)); record[@"state"] = @"prepared";
     checked(fsync(transactionDir.value), "sync copy candidate"); writeJournal(recordDir.value, record); testPoint(@"copy-prepared", request);
-    source.verify(); verifyPath(source, input); targetRoot.verify(); recovery.verify();
+    source.verify(); if (input) verifyPath(source, *input); targetRoot.verify(); recovery.verify();
     struct stat transactionNow; checked(fstatat(targetRoot.fd.value, transaction.c_str(), &transactionNow, AT_SYMLINK_NOFOLLOW), "verify copy transaction");
     require(matches(transactionNow, record[@"transactionIdentity"]), "CONFLICT", "Copy transaction moved");
     require([hashFile(candidate.value, limit) isEqual:draftHash], "CONFLICT", "Prepared copy changed");

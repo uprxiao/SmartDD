@@ -325,8 +325,8 @@ export class AgentStore {
     });
   }
   itemById(taskId: string, itemId: string) {
-    const r = this.sqlite.prepare('SELECT item_id,revision,payload_ref FROM agent_items WHERE task_id=? AND item_id=?').get(taskId, itemId) as { item_id: string; revision: number; payload_ref: string } | undefined;
-    return r ? { itemId: r.item_id, revision: r.revision, payloadJson: r.payload_ref } : undefined;
+    const r = this.sqlite.prepare('SELECT item_id,type,revision,payload_ref FROM agent_items WHERE task_id=? AND item_id=?').get(taskId, itemId) as { item_id: string; type: string; revision: number; payload_ref: string } | undefined;
+    return r ? { itemId: r.item_id, type: r.type, revision: r.revision, payloadJson: r.payload_ref } : undefined;
   }
   turnByClientInput(taskId: string, clientInputId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE task_id=? AND client_input_id=?').get(taskId, clientInputId) as TurnRow | undefined; }
   inputForTurn(turnId: string) {

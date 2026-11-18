@@ -15,8 +15,9 @@ function canonicalRoot(value:unknown):string{
 /** Arguments are passed directly to spawn, never a shell or interpolated
  * profile. A missing/failed system sandbox is an error, with no unsafe retry. */
 export function nativeFileCommand(executable:string,input:Record<string,unknown>,platform:NodeJS.Platform):NativeFileCommand{
- if(platform!=='darwin'||input.operation!=='save'&&input.operation!=='copy'&&input.operation!=='finish-copy')return{executable,args:[],writeConfined:false};
+ const copy=input.operation==='copy'||input.operation==='copy-generated';
+ if(platform!=='darwin'||input.operation!=='save'&&!copy&&input.operation!=='finish-copy')return{executable,args:[],writeConfined:false};
  const destination=input.destination&&typeof input.destination==='object'?(input.destination as {root?:unknown}).root:undefined;
- const root=canonicalRoot(input.operation==='copy'?destination:input.root),recovery=canonicalRoot(input.recoveryRoot);
+ const root=canonicalRoot(copy?destination:input.root),recovery=canonicalRoot(input.recoveryRoot);
  return{executable:'/usr/bin/sandbox-exec',args:['-D','PROJECT_ROOT='+root,'-D','RECOVERY_ROOT='+recovery,'-p',MAC_FILE_WRITE_PROFILE,executable],writeConfined:true};
 }

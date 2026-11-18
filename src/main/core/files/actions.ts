@@ -99,22 +99,41 @@ export class FileActions {
     const { context, revision } = selection; this.validate(owner, context);
     const destination = await this.broker.request<CopyDestination>({ operation: 'inspect-copy-target', path: destinationPath, protected: this.recovery.protectedIdentities() }, { signal: context.signal });
     this.validate(owner, context);
-    const path = join(destination.root.path, destination.relativePath);
     if (destination.revision && destination.revision.device === revision.device && destination.revision.inode === revision.inode) throw new FileError('CONFLICT', '请选择其它文件名；另存副本不能覆盖源文件');
+    return this.commitCopy(owner, context, destination, { operation: 'copy', expectedRevision: revision, draftBase64: selection.draftBase64 }, selection.draftBase64 === undefined ? revision.size : Buffer.byteLength(selection.draftBase64, 'base64'));
+  }
+
+  /** Internal, main-owned text. The renderer cannot nominate its filename, data or root. */
+  async saveGenerated(owner: string, lease: RootLease, name: string, text: string, verify: () => void): Promise<FileCopyReceipt> {
+    if (!name || name === '.' || name === '..' || name !== basename(name) || /[\\\0]/.test(name)) throw new FileError('INVALID_INPUT', '无效的文件名');
+    const context = { lease, relativePath: '', directory: true, signal: lease.abort.signal };
+    await this.recovery.ready();
+    this.validate(owner, context);
+    const existing = await this.broker.request<CopyDestination>({ operation: 'inspect-copy-target', path: join(lease.canonicalPath, name), protected: this.recovery.protectedIdentities() }, { signal: context.signal });
+    this.validate(owner, context);
+    if (existing.revision) throw new FileError('CONFLICT', `工作目录已存在 ${name}，请选择其他方式另存`);
+    verify();
+    const bytes = Buffer.from(text, 'utf8');
+    const destination = { root: lease.descriptor, relativePath: name, revision: null };
+    return this.commitCopy(owner, context, destination, { operation: 'copy-generated', draftBase64: bytes.toString('base64') }, bytes.length);
+  }
+
+  private async commitCopy(owner: string, context: FileActionContext, destination: CopyDestination, input: { operation: 'copy' | 'copy-generated'; expectedRevision?: FileRevision; draftBase64?: string }, bytes: number): Promise<FileCopyReceipt> {
+    const path = join(destination.root.path, destination.relativePath);
     if (this.pendingCopies.has(path) || this.blockedCopies.has(path) || this.recovery.blockingPath(destination.root.path, destination.relativePath)) throw new FileError('CONFLICT', '此目标有进行中或结果未确认的副本，请先核对目标和恢复记录');
     const lease = context.lease, opId = randomUUID(), projectKey = recoveryProjectKey(lease.projectId);
-    const fingerprint = hash(JSON.stringify({ source: lease.descriptor, path: context.relativePath, revision, destination, draft: selection.draftBase64 === undefined ? null : hash(selection.draftBase64) }));
-    this.recovery.reserve(projectKey, opId, destination.revision?.size ?? 0, selection.draftBase64 === undefined ? revision.size : Buffer.byteLength(selection.draftBase64, 'base64'));
+    const fingerprint = hash(JSON.stringify({ source: lease.descriptor, path: context.relativePath, revision: input.expectedRevision, destination, draft: input.draftBase64 === undefined ? null : hash(input.draftBase64) }));
+    this.recovery.reserve(projectKey, opId, destination.revision?.size ?? 0, bytes);
     this.pendingCopies.add(path);
     let receipt: FileSaveReceipt;
     try {
-      receipt = await this.broker.request<FileSaveReceipt>({ operation: 'copy', root: lease.descriptor, relativePath: context.relativePath, expectedRevision: revision, ...(selection.draftBase64 === undefined ? {} : { draftBase64: selection.draftBase64 }), destination, recoveryRoot: this.recovery.descriptor(), protected: this.recovery.protectedIdentities(), source: { kind: lease.source, id: lease.sourceId, scope: lease.scope }, installationId: this.installationId, projectKey, fingerprint, opId, bufferVersion: 0 }, { signal: context.signal, onTransaction: (identity) => this.recovery.protect(identity) });
+      receipt = await this.broker.request<FileSaveReceipt>({ ...input, root: lease.descriptor, relativePath: context.relativePath, destination, recoveryRoot: this.recovery.descriptor(), protected: this.recovery.protectedIdentities(), source: { kind: lease.source, id: lease.sourceId, scope: lease.scope }, installationId: this.installationId, projectKey, fingerprint, opId, bufferVersion: 0 }, { signal: context.signal, onTransaction: (identity) => this.recovery.protect(identity) });
     } catch (error) {
       const beforeWrite = error instanceof FileError && ['CHANGED', 'CONFLICT', 'UNTRUSTED', 'MISSING', 'STALE_ROOT', 'NOT_REGULAR', 'TOO_LARGE', 'INTERNAL_OBJECT', 'INVALID_INPUT'].includes(error.code);
       receipt = { opId, bufferVersion: 0, state: beforeWrite ? 'failed' : 'unknown', ...(beforeWrite ? {} : { recoveryId: opId }), message: error instanceof Error ? error.message : String(error) };
     }
     finally { this.pendingCopies.delete(path); }
-    this.recovery.remember(lease, opId, receipt);
+    this.recovery.remember(lease, opId, receipt, destination.relativePath);
     if (receipt.state !== 'saved' || !receipt.revision) {
       if (receipt.state === 'unknown' || receipt.state === 'conflict' && receipt.recoveryId) this.blockedCopies.set(path, opId);
       throw new FileError(receipt.state === 'conflict' ? 'CONFLICT' : 'IO', `副本未确认保存：${receipt.message ?? receipt.state}${receipt.recoveryId ? '；请核对恢复记录与目标文件' : ''}`);

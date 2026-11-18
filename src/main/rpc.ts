@@ -108,7 +108,7 @@ export function createRpcRouter(d: RpcDeps) {
     ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles,d.onTaskProfilesChanged),
     agentTransfer: createAgentTransferController(d.agentTransfer),
     providerSetup: createProviderSetupController(d.providers),
-    ...createAgentTaskController(d.agentWorkspace, (event) => d.ptyAccess.requireSender(event)),
+    ...createAgentTaskController(d.agentWorkspace, (event) => d.ptyAccess.requireSender(event), d.files),
     ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event),path=>shell.openPath(path)),
     ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv,d.capabilityRegistry,d.onCapabilityChanged),
     dialog: createRPCController({

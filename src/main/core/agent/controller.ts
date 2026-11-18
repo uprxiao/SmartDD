@@ -1,10 +1,12 @@
 // M14 任务命令 IPC（技术方案 T1.5 §3）。发送方由 Electron 提供并核对，渲染进程参数不能指定来源、PID 或运行身份。
 import type { IpcMainInvokeEvent, WebContents } from 'electron';
+import { randomUUID } from 'node:crypto';
 import { createScopedRPCController } from '@shared/ipc/rpc';
+import type { FileService } from '../files/file-service';
 import type { AgentWorkspace } from './wiring';
 import type { Tier } from './permissions';
 
-export function createAgentTaskController(w: AgentWorkspace | undefined, requireSender: (event: IpcMainInvokeEvent) => void) {
+export function createAgentTaskController(w: AgentWorkspace | undefined, requireSender: (event: IpcMainInvokeEvent) => void, files?: Pick<FileService, 'roots' | 'actions'>) {
   const watchedDraftSenders = new WeakSet<WebContents>();
   const run = <T>(event: IpcMainInvokeEvent, fn: (w: AgentWorkspace) => T): T => {
     requireSender(event);
@@ -40,6 +42,25 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       historyItems: (e, taskId: string, itemIds: string[]) => run(e, w => w.tasks.historyItems(taskId, itemIds)),
       nativeHistory: (e, taskId: string, itemId: string, beforeOrdinal?: number) => run(e, w => w.tasks.nativeHistory(taskId, itemId, beforeOrdinal)),
       itemBody: (e, taskId: string, itemId: string, offset: number, revision?: number) => run(e, w => w.tasks.itemBody(taskId, itemId, offset, revision)),
+      saveProjectPlan: (e, taskId: string, itemId: string, revision: number) => run(e, async w => {
+        if (!files) throw new Error('文件服务不可用');
+        const scope = { kind: 'task', taskId } as const;
+        const owner = `plan:${e.sender.id}:${randomUUID()}`;
+        const plan = w.tasks.planForSaving(taskId, itemId, revision);
+        w.projectResources.assertProjectWritable(plan.projectId);
+        try {
+          const { roots, unavailable } = await files.roots.retry(owner, { scope, source: 'task-cwd', sourceId: taskId });
+          const root = roots[0];
+          if (!root) throw new Error(unavailable[0]?.reason ?? '任务工作目录不可用');
+          const lease = files.roots.require(owner, root);
+          if (lease.projectId !== plan.projectId) throw new Error('计划的项目已改变，请刷新后重试');
+          return await files.actions.saveGenerated(owner, lease, '计划.md', plan.text, () => {
+            requireSender(e);
+            w.tasks.planForSaving(taskId, itemId, revision);
+            w.projectResources.assertProjectWritable(plan.projectId);
+          });
+        } finally { files.roots.closeScope(owner, scope); }
+      }),
       requestBody: (e, taskId: string, requestId: string, offset: number, revision?: number) => run(e, w => w.tasks.requestBody(taskId, requestId, offset, revision)),
       draftBody: (e, taskId: string, offset: number, revision?: number) => run(e, w => w.tasks.draftBody(taskId, offset, revision)),
       submit: (e, taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) => run(e, w => w.tasks.submit(taskId, input,e)),

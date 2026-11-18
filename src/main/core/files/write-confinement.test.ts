@@ -5,8 +5,8 @@ describe('native save/copy kernel write authority',()=>{
  it('protects a save with exact project and recovery paths, retaining the fixed native executable',()=>{
   expect(nativeFileCommand(executable,{operation:'save',root,recoveryRoot},'darwin')).toEqual({executable:'/usr/bin/sandbox-exec',args:['-D','PROJECT_ROOT='+root.path,'-D','RECOVERY_ROOT='+recoveryRoot.path,'-p',MAC_FILE_WRITE_PROFILE,executable],writeConfined:true});
  });
- it('protects only the selected copy destination and recovery; source read authority is not a write grant',()=>{
-  const command=nativeFileCommand(executable,{operation:'copy',root,destination:{root:{path:'/private/tmp/selected destination'}},recoveryRoot},'darwin');
+ it.each(['copy','copy-generated'])('confines %s to the selected destination and recovery',operation=>{
+  const command=nativeFileCommand(executable,{operation,root,destination:{root:{path:'/private/tmp/selected destination'}},recoveryRoot},'darwin');
   expect(command.args).toContain('PROJECT_ROOT=/private/tmp/selected destination');expect(command.args).not.toContain('PROJECT_ROOT='+root.path);expect(command.writeConfined).toBe(true);
  });
  it('passes quotes, shell-looking characters, spaces, Unicode and newlines only as opaque parameter arguments',()=>{

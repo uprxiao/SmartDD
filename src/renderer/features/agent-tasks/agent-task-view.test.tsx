@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), saveProjectPlan: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -105,6 +105,17 @@ it('FR04：截断的计划复制前先读取全文，复制内容完整', async 
   fireEvent.click(await screen.findByRole('button', { name: '复制' }));
   await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
   expect(writeText.mock.calls[0][0]).toBe(plan);
+});
+
+it('A71 labels the plan source and requests a project save without approving the plan', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ projectId: 'project', items: [item('proposed_plan', { plan: 'First read the files' })] }));
+  mocks.saveProjectPlan.mockResolvedValue({ state: 'saved' });
+  render(<AgentTaskView taskId="task" />);
+  expect(await screen.findByText('计划 · Claude Code 计划模式')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: '保存到项目' }));
+  await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('计划已保存到任务目录的计划.md'));
+  expect(mocks.saveProjectPlan).toHaveBeenCalledExactlyOnceWith('task', 'long', 1);
+  expect(mocks.respond).not.toHaveBeenCalled();
 });
 
 it('FR04：读取全文失败时不复制残缺内容并提示', async () => {

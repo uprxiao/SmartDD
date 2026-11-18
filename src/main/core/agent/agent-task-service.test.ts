@@ -7,7 +7,7 @@ import { AgentTaskService, type LaunchResolver } from './agent-task-service';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
 import { until } from './test-doubles';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -45,6 +45,37 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
   return { db, store, runs, svc, insts, launches };
 }
 const id = (n: number) => `client-input-${n}`;
+
+it('A71 saves the complete current plan of the selected project task only', async () => {
+  const artifactDir = mkdtempSync(join(tmpdir(), 'willyou-a71-plan-'));
+  try {
+    const { db, svc, store, insts } = setup({ artifactDir });
+    db.prepare('INSERT INTO projects(id,name,created_at,updated_at) VALUES(?,?,?,?)').run('project', 'Fixture project', 1, 1);
+    const create = () => svc.create({ projectId: 'project', dirId: null, cwd: '/w', title: 'plan task', profileId: 'cc', tier: 'ask' }).taskId;
+    const taskId = create(), other = create();
+    await svc.submit(taskId, { clientInputId: id(1), text: 'plan', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    const plan = '# 迁移计划\n\n' + '完整内容🙂\n'.repeat(40_000) + '尾行\n';
+    const addPlan = (nativeItemId: string, content: string) => insts[0].emit({ type: 'item.completed',
+      nativeItemId, itemType: 'assistant', payload: { content: [{ type: 'tool_use', id: nativeItemId, name: 'ExitPlanMode', input: { plan: content } }] } });
+    const plans = () => svc.snapshot(taskId).items.filter(entry => entry.type === 'proposed_plan');
+    addPlan('plan-one', plan);
+    await until(() => plans().length === 1);
+    const [item] = plans();
+    expect(item.payload.truncated).toBe(true);
+    expect(svc.planForSaving(taskId, item.itemId, item.revision)).toEqual({ projectId: 'project', text: plan });
+    expect(() => svc.planForSaving(other, item.itemId, item.revision)).toThrow('任务的计划不存在');
+    expect(() => svc.planForSaving(taskId, item.itemId, item.revision + 1)).toThrow('计划已更新');
+    const notice = store.addHostItem(taskId, null, 'system_notice', { plan: 'not a plan' });
+    expect(() => svc.planForSaving(taskId, notice, 1)).toThrow('任务的计划不存在');
+    addPlan('plan-two', 'X'.repeat(1200 * 1024));
+    await until(() => plans().length === 2);
+    const [, oversized] = plans();
+    expect(svc.planForSaving(taskId, oversized.itemId, oversized.revision).text).toBe('X'.repeat(1200 * 1024));
+    rmSync(join(artifactDir, taskId, `${oversized.itemId}.r${oversized.revision}.json`));
+    expect(() => svc.planForSaving(taskId, oversized.itemId, oversized.revision)).toThrow('原文文件丢失');
+  } finally { rmSync(artifactDir, { recursive: true, force: true }); }
+});
 
 it('A65: only a writable native run contributes a before and after snapshot', async () => {
   const { svc, runs, store, insts } = setup();

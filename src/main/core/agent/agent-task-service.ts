@@ -944,6 +944,21 @@ export class AgentTaskService {
     const turns = allTurns.filter(t => turnIds.has(t.turn_id));
     return { items: out, turns, hasOlder: out.length ? !!this.d.store.sqlite.prepare("SELECT 1 FROM agent_items WHERE task_id=? AND ordinal<? AND type NOT IN ('subagent_message','subagent_status') LIMIT 1").get(taskId,out[0].ordinal) : all.length > 0 };
   }
+  planForSaving(taskId: string, itemId: string, revision: number) {
+    const { task } = this.selection(taskId);
+    if (!task.project_id) throw new DriverError('REJECTED', '当前任务没有项目');
+    const item = this.d.store.itemById(taskId, itemId);
+    if (item?.type !== 'proposed_plan') throw new DriverError('REJECTED', '任务的计划不存在');
+    if (item.revision !== revision) throw new DriverError('STATE', '计划已更新，请重新保存');
+    const complete = this.d.store.readItemBody(taskId, itemId);
+    if (!complete || complete.revision !== revision) throw new DriverError('STATE', '计划已更新，请重新保存');
+    const payload = JSON.parse(complete.text) as { truncated?: boolean; storedTruncated?: boolean; plan?: unknown };
+    if (payload.truncated || payload.storedTruncated || typeof payload.plan !== 'string' || !payload.plan.trim()) {
+      throw new DriverError('REJECTED', '没有可保存的完整计划');
+    }
+    return { projectId: task.project_id, text: payload.plan };
+  }
+
   /** 正文范围读取（复核 NR06）：截断预览的条目与过大的请求按 128 KiB 分段读取完整内容。 */
   itemBody(taskId: string, itemId: string, offset: number, revision?: number) {
     this.selection(taskId, true);
