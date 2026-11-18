@@ -87,15 +87,17 @@ export async function runDiffJob(job:DiffJob,control:DiffControl={}):Promise<unk
  }
  if(job.action!=='capture'){
   if(!job.before||!job.after||job.before.cwd!==cwd||job.after.cwd!==cwd||job.before.gitDir!==job.after.gitDir)throw Error('差异快照不属于同一工作根');
+  const workTree=job.before.workTree;
+  if(job.after.workTree!==workTree||!inside(workTree,cwd))throw Error('差异快照不属于同一工作副本');
   const env=await validate(job.before,storage);await validate(job.after,storage);
-  const raw=await command(cwd,['diff','--no-ext-diff','--no-textconv','--no-renames','--numstat','-z',job.before.commit,job.after.commit,'--'],env);
+  const raw=await command(workTree,['diff','--no-ext-diff','--no-textconv','--no-renames','--numstat','-z',job.before.commit,job.after.commit,'--'],env);
   const files=raw.toString('utf8').split('\0').filter(Boolean).map(line=>{const [added,removed,...name]=line.split('\t');return{path:name.join('\t'),added:added==='-'?null:Number(added),removed:removed==='-'?null:Number(removed),binary:added==='-'};});
   if(job.action==='changes')return {files};
   if(!job.path||!files.some(f=>f.path===job.path))throw Error('文件不在本轮差异中');
   const info=files.find(f=>f.path===job.path)!;if(info.binary)return{...info,patch:null,reason:'二进制文件只显示改动元数据'};
-  const counts=await command(cwd,['diff','--no-ext-diff','--no-textconv','--no-renames','--numstat',job.before.commit,job.after.commit,'--',job.path],env);if(counts.length>8192||Number(info.added)+Number(info.removed)>10000)return{...info,patch:null,reason:'差异过大，不在面板预览'};
-  const patch=await command(cwd,['diff','--no-ext-diff','--no-textconv','--no-renames','--no-color',job.before.commit,job.after.commit,'--',job.path],env);if(patch.length>1024*1024)return {...info,patch:null,reason:'差异超过 1 MiB 预览上限'};
-  const body=async(ref:TreeRef)=>{const row=(await command(cwd,['ls-tree','-z',ref.commit,'--',job.path!],env)).toString().split('\0')[0];if(!row)return '';const oid=row.split(/\s+/)[2];const size=Number((await command(cwd,['cat-file','-s',oid],env)).toString());if(!Number.isSafeInteger(size)||size>1024*1024)throw Error('文件超过 1 MiB 差异正文预览上限');return new TextDecoder('utf-8',{fatal:true}).decode(await command(cwd,['cat-file','blob',oid],env));};
+  const counts=await command(workTree,['--literal-pathspecs','diff','--no-ext-diff','--no-textconv','--no-renames','--numstat',job.before.commit,job.after.commit,'--',job.path],env);if(counts.length>8192||Number(info.added)+Number(info.removed)>10000)return{...info,patch:null,reason:'差异过大，不在面板预览'};
+  const patch=await command(workTree,['--literal-pathspecs','diff','--no-ext-diff','--no-textconv','--no-renames','--no-color',job.before.commit,job.after.commit,'--',job.path],env);if(patch.length>1024*1024)return {...info,patch:null,reason:'差异超过 1 MiB 预览上限'};
+  const body=async(ref:TreeRef)=>{const row=(await command(workTree,['--literal-pathspecs','ls-tree','-z',ref.commit,'--',job.path!],env)).toString().split('\0')[0];if(!row)return '';const oid=row.split(/\s+/)[2];const size=Number((await command(workTree,['cat-file','-s',oid],env)).toString());if(!Number.isSafeInteger(size)||size>1024*1024)throw Error('文件超过 1 MiB 差异正文预览上限');return new TextDecoder('utf-8',{fatal:true}).decode(await command(workTree,['cat-file','blob',oid],env));};
   try{return{...info,patch:patch.toString('utf8'),beforeText:await body(job.before),afterText:await body(job.after)};}catch{return{...info,patch:null,reason:'文件过大或不是可解码的 UTF-8 文本，不提供正文预览'};}
  }
  const deadline=Date.now()+(job.timeoutMs??120000);

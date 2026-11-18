@@ -49,6 +49,18 @@ export class GitWorkspaces {
     return { baseCommit, uncommittedFiles: status.stdout.split('\0').filter(Boolean).length };
   }
   workspace(childTaskId: string) { return this.d.store.sqlite.prepare("SELECT * FROM agent_workspaces WHERE child_task_id=? AND kind='git_worktree' AND state<>'archived' ORDER BY rowid DESC LIMIT 1").get(childTaskId) as WorkspaceRow | undefined; }
+  snapshotExclusions(taskId: string, cwd: string, userData: string) {
+    const stateRoot = resolve(this.d.home, '.willyou');
+    const root = join(stateRoot, 'worktrees'), workspace = this.workspace(taskId);
+    if (workspace?.state !== 'ready' || workspace.path === root || !inside(root, workspace.path) || !inside(workspace.path, cwd)) {
+      return [userData, stateRoot];
+    }
+    if (realpathSync(workspace.path) !== workspace.path || realpathSync(cwd) !== cwd) {
+      throw new DriverError('STATE', '差异捕获时已登记工作副本的路径发生变化');
+    }
+    // This scope is already bounded to this child's real working directory.
+    return [userData];
+  }
   private intent(taskId: string, action: string, target: string, head: string | null, metadata: Record<string, unknown> = {}) {
     const id = randomUUID(); this.d.store.sqlite.prepare("INSERT INTO agent_intents(intent_id,task_id,action,target_ref,head_before,expected_parent,state,result_json,created_at,updated_at) VALUES(?,?,?,?,?,?,'intended',?,?,?)").run(id, taskId, action, target, head, head, JSON.stringify(metadata), at(), at()); return id;
   }

@@ -15,7 +15,7 @@ export class TurnDiffs {
  private readonly privateBytes=new Map<string,{identity:string;bytes:number}>();
  private readonly removing=new Set<string>();
  private readonly reclaiming=new Set<string>();private readonly jobs=new Map<string,Promise<unknown>>();private readonly readers=new Set<Promise<unknown>>();private readonly cancellations=new Map<string,()=>void>();private readonly progress=new Map<string,{files:number;bytes:number}>();private readonly warm=new Set<string>();private readonly leases=new Map<string,number>();private readonly preparing=new Map<string,Promise<unknown>>();private closed=false;private patchCache?:{key:string;value:DiffPatch;text:string;hash:string};
- constructor(private readonly d:{store:AgentStore;storage:string;workerPath?:string;execute?(job:DiffJob):Promise<unknown>;excluded?:string[];storageLimit?:number;stable?(taskId:string,turnId:string):boolean;changed(taskId:string):void}){
+ constructor(private readonly d:{store:AgentStore;storage:string;workerPath?:string;execute?(job:DiffJob):Promise<unknown>;excluded?(taskId:string,cwd:string):string[];storageLimit?:number;stable?(taskId:string,turnId:string):boolean;changed(taskId:string):void}){
   d.store.sqlite.prepare("UPDATE agent_turn_changes SET status='incomplete',incomplete_reason='宿主在快照期间退出，不能补造历史差异' WHERE status='capturing'").run();
  }
  private job(job:DiffJob):Promise<any>{
@@ -109,13 +109,13 @@ export class TurnDiffs {
   }
   return true;
  }
- private async capture(job:DiffJob):Promise<TreeRef>{
+ private async capture(taskId:string,job:DiffJob):Promise<TreeRef>{
   const cwd=realpathSync(job.cwd),stat=statSync(cwd),identity=stat.dev+':'+stat.ino;
   const limits=this.d.storageLimit===undefined?undefined:{storage:this.d.storageLimit};
   const attempt=(afterReclaim=false)=>this.locked(cwd,'capture',async()=>{
    const cached=this.privateBytes.get(cwd);
    try {
-    const {privateBytes,...ref}=await this.job({...job,cwd,limits,afterReclaim,
+    const {privateBytes,...ref}=await this.job({...job,cwd,excluded:this.d.excluded?.(taskId,job.cwd),limits,afterReclaim,
      knownPrivateBytes:cached?.identity===identity?cached.bytes:undefined}) as TreeRef;
     if(privateBytes!==undefined&&ref.dev+':'+ref.ino===identity)this.privateBytes.set(cwd,{identity,bytes:privateBytes});
     return ref;
@@ -165,7 +165,7 @@ export class TurnDiffs {
   const prior=this.d.store.sqlite.prepare(`SELECT 1 FROM agent_turn_changes
    WHERE task_id=? AND status='complete' AND json_extract(before_ref,'$.cwd')=? LIMIT 1`).get(taskId,realpathSync(task.cwd));
   if(prior)this.warm.add(task.cwd);
-  const work=this.capture({action:'capture',cwd:task.cwd,storage:this.d.storage,turnId,side:'before',excluded:this.d.excluded,timeoutMs:this.warm.has(task.cwd)?5000:120000} as DiffJob);
+  const work=this.capture(taskId,{action:'capture',cwd:task.cwd,storage:this.d.storage,turnId,side:'before',timeoutMs:this.warm.has(task.cwd)?5000:120000} as DiffJob);
   this.preparing.set(task.cwd,work);
   void work.finally(()=>{if(this.preparing.get(task.cwd)===work)this.preparing.delete(task.cwd);}).catch(()=>{});
   let adopted=true;const capture=work.then(async(ref:TreeRef)=>{this.warm.add(task.cwd);if(adopted&&this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET before_ref=? WHERE turn_id=? AND status='capturing'").run(JSON.stringify(ref),turnId).changes===1)return;await this.locked(realpathSync(task.cwd),'cleanup',()=>this.job({action:'release',cwd:task.cwd,storage:this.d.storage,turnId,before:ref}));}).catch(e=>{if(adopted)this.report(taskId,turnId,(e as Error).message);});
@@ -177,11 +177,11 @@ export class TurnDiffs {
  async after(taskId:string,turnId:string){
   if(this.closed||this.removing.has(taskId))return;
   const key='after:'+turnId;if(this.jobs.has(key))return this.jobs.get(key);let row:ChangeRow;try{row=this.row(taskId,turnId);}catch{const turn=this.d.store.turn(turnId);if(!turn||turn.task_id!==taskId)throw Error('回合不属于任务');this.d.store.sqlite.prepare("INSERT OR IGNORE INTO agent_turn_changes(turn_id,task_id,run_id,status) VALUES(?,?,?,'capturing')").run(turnId,taskId,turn.run_id);this.report(taskId,turnId,'原生自动回合开始前未取得可证明的快照边界，本轮差异不完整');return;}if(row.status!=='capturing'||!row.before_ref){if(row.status==='incomplete'&&!row.before_ref)this.prepareIdle(taskId,turnId);return;}
-  const work=(async()=>{try{const before=JSON.parse(row.before_ref!) as TreeRef;const after=await this.capture({action:'capture',cwd:before.cwd,storage:this.d.storage,turnId,side:'after',excluded:this.d.excluded,timeoutMs:5000} as DiffJob) as TreeRef;this.d.store.sqlite.prepare('UPDATE agent_turn_changes SET after_ref=? WHERE turn_id=?').run(JSON.stringify(after),turnId);const changes=await this.job({action:'changes',cwd:before.cwd,storage:this.d.storage,turnId,before,after}) as {files:ObservedFile[]};if(this.d.stable&&!this.d.stable(taskId,turnId))throw Error('快照期间原生执行器又开始写入，无法证明本轮差异边界');const published=this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET after_ref=?,changed_files_json=?,status='complete',incomplete_reason=NULL WHERE turn_id=? AND status='capturing'").run(JSON.stringify(after),JSON.stringify(changes.files),turnId);if(published.changes!==1)return;this.card(taskId,turnId,{turnId,fileCount:changes.files.length,status:'complete',observed:true,note:'记录这个区间观察到的工作区变化，可能包含用户或外部写入'});this.d.changed(taskId);}catch(e){this.report(taskId,turnId,(e as Error).message);}})();this.jobs.set(key,work);try{await work;}finally{this.jobs.delete(key);}
+  const work=(async()=>{try{const before=JSON.parse(row.before_ref!) as TreeRef;const after=await this.capture(taskId,{action:'capture',cwd:before.cwd,storage:this.d.storage,turnId,side:'after',timeoutMs:5000} as DiffJob) as TreeRef;this.d.store.sqlite.prepare('UPDATE agent_turn_changes SET after_ref=? WHERE turn_id=?').run(JSON.stringify(after),turnId);const changes=await this.job({action:'changes',cwd:before.cwd,storage:this.d.storage,turnId,before,after}) as {files:ObservedFile[]};if(this.d.stable&&!this.d.stable(taskId,turnId))throw Error('快照期间原生执行器又开始写入，无法证明本轮差异边界');const published=this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET after_ref=?,changed_files_json=?,status='complete',incomplete_reason=NULL WHERE turn_id=? AND status='capturing'").run(JSON.stringify(after),JSON.stringify(changes.files),turnId);if(published.changes!==1)return;this.card(taskId,turnId,{turnId,fileCount:changes.files.length,status:'complete',observed:true,note:'记录这个区间观察到的工作区变化，可能包含用户或外部写入'});this.d.changed(taskId);}catch(e){this.report(taskId,turnId,(e as Error).message);}})();this.jobs.set(key,work);try{await work;}finally{this.jobs.delete(key);}
  }
  private prepareIdle(taskId:string,turnId:string){
   const task=this.task(taskId);if(this.closed||this.warm.has(task.cwd)||this.preparing.has(task.cwd)||this.d.stable&&!this.d.stable(taskId,turnId))return;
-  const key='before:'+turnId,work=this.capture({action:'capture',cwd:task.cwd,storage:this.d.storage,turnId,side:'before',excluded:this.d.excluded,timeoutMs:120000}).then(async(ref:TreeRef)=>{this.warm.add(task.cwd);await this.locked(ref.cwd,'cleanup',()=>this.job({action:'release',cwd:ref.cwd,storage:this.d.storage,turnId,before:ref}));}).catch(()=>{/* Retain the explicit incomplete result. A future idle boundary may retry. */});
+  const key='before:'+turnId,work=this.capture(taskId,{action:'capture',cwd:task.cwd,storage:this.d.storage,turnId,side:'before',timeoutMs:120000}).then(async(ref:TreeRef)=>{this.warm.add(task.cwd);await this.locked(ref.cwd,'cleanup',()=>this.job({action:'release',cwd:ref.cwd,storage:this.d.storage,turnId,before:ref}));}).catch(()=>{/* Retain the explicit incomplete result. A future idle boundary may retry. */});
   this.preparing.set(task.cwd,work);this.jobs.set(key,work);void work.finally(()=>{if(this.preparing.get(task.cwd)===work)this.preparing.delete(task.cwd);this.jobs.delete(key);this.progress.delete(turnId);this.d.changed(taskId);});
  }
  async drained(taskId:string){const turns=this.d.store.sqlite.prepare("SELECT turn_id FROM agent_turn_changes WHERE task_id=? AND status='capturing'").all(taskId) as {turn_id:string}[];for(const t of turns)await this.after(taskId,t.turn_id);}

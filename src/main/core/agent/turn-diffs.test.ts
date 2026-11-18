@@ -1,8 +1,8 @@
 import {it,expect,afterEach} from 'vitest';
 import Database from 'better-sqlite3';
-import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,symlinkSync,statSync,utimesSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,symlinkSync,statSync,utimesSync,realpathSync} from 'node:fs';
 import {join} from 'node:path';import {tmpdir} from 'node:os';
-import {runWorkspaceCommand} from './git-workspaces';
+import {GitWorkspaces,runWorkspaceCommand} from './git-workspaces';
 import {runDiffJob,type TreeRef} from './turn-diff-worker';
 import {TurnDiffs} from './turn-diffs';import {AgentStore} from './agent-store';import {runBundledMigrations} from '../../db/migrations';
 const roots:string[]=[];afterEach(()=>{for(const r of roots.splice(0))rmSync(r,{recursive:true,force:true});});
@@ -16,6 +16,41 @@ it('A65/A73: real Git snapshots preserve HEAD and the user index, include unstag
  const after=await runDiffJob({...f,action:'capture',turnId:'turn1',side:'after'}) as TreeRef;const changes=await runDiffJob({...f,action:'changes',turnId:'turn1',before,after}) as any;
  expect(changes.files.map((x:any)=>x.path)).toEqual(['a.txt','binary','gone.txt']);expect(changes.files.find((x:any)=>x.path==='binary').binary).toBe(true);expect(await runDiffJob({...f,action:'patch',turnId:'turn1',before,after,path:'a.txt'})).toMatchObject({patch:expect.stringContaining('+after')});
  expect(await git(f.cwd,'rev-parse','HEAD')).toBe(head);expect(readFileSync(join(f.cwd,'.git/index'))).toEqual(index);expect((await git(f.cwd,'show',before.commit+':link'))).toBe(join(f.root,'secret'));
+},15000);
+
+it('A73 captures a registered linked worktree below the private home while preserving the application data exclusion',async()=>{
+ const f=fixture(),home=join(realpathSync(f.root),'home'),db=new Database(':memory:');
+ mkdirSync(home);
+ runBundledMigrations(db);
+ const store=new AgentStore(db),workspaces=new GitWorkspaces({store,home});
+ const cwd=join(realpathSync(f.cwd),'module');
+ mkdirSync(cwd);
+ writeFileSync(join(cwd,'a.txt'),'before\n');
+ await git(f.cwd,'init','-q','-b','main');
+ await git(f.cwd,'add','-A');
+ await git(f.cwd,'-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','base');
+ const task=(title:string)=>store.createTask({projectId:null,dirId:null,cwd,title,selection:{profileId:'p',driverId:'codex-app-server',tier:'ask'}});
+ const parentId=task('parent'),childId=task('child');
+ try {
+  const child=await workspaces.create({parentTaskId:parentId,childTaskId:childId,projectId:'fixture',projectName:'Fixture',title:'child',cwd});
+  expect(child).not.toBeNull();
+  const childCwd=child!.cwd,userData=join(childCwd,'host-data');
+  mkdirSync(userData);
+  writeFileSync(join(userData,'metadata.txt'),'never captured\n');
+  const capture=(taskId:string,turnId:string,side:'before'|'after')=>runDiffJob({
+   action:'capture',cwd:childCwd,storage:f.storage,turnId,side,excluded:workspaces.snapshotExclusions(taskId,childCwd,userData),
+  }) as Promise<TreeRef>;
+  const before=await capture(childId,'registered','before');
+  writeFileSync(join(childCwd,'a.txt'),'after\n');
+  writeFileSync(join(userData,'metadata.txt'),'still excluded\n');
+  const after=await capture(childId,'registered','after');
+  const changes=await runDiffJob({action:'changes',cwd:childCwd,storage:f.storage,turnId:'registered',before,after});
+  expect(changes).toEqual({files:[{path:'module/a.txt',binary:false,added:1,removed:1}]});
+  const patch=await runDiffJob({action:'patch',cwd:childCwd,storage:f.storage,turnId:'registered',before,after,path:'module/a.txt'});
+  expect(patch).toMatchObject({beforeText:'before\n',afterText:'after\n',patch:expect.stringContaining('+after')});
+  const unrelated=await capture(parentId,'unregistered','before');
+  expect(await git(childCwd,'ls-tree','-r','--name-only',unrelated.commit)).toBe('');
+ } finally { db.close(); }
 },15000);
 it('A73: ordinary/SVN roots use a private bare store, respect ignores, and fail without publishing a complete ref on budget exhaustion',async()=>{
  const f=fixture();mkdirSync(join(f.cwd,'.svn'));writeFileSync(join(f.cwd,'.svn','private'),'never');writeFileSync(join(f.cwd,'.gitignore'),'ignored\n');writeFileSync(join(f.cwd,'ignored'),'skip');writeFileSync(join(f.cwd,'a.txt'),'one');const before=await runDiffJob({...f,action:'capture',turnId:'plain',side:'before'}) as TreeRef;expect(before.private).toBe(true);expect(await git(f.cwd,'--git-dir='+before.gitDir,'ls-tree','-r','--name-only',before.commit)).toBe('.gitignore\na.txt');
