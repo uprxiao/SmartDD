@@ -95,6 +95,43 @@ it('P3: the request panel can revoke a queued approval while the original approv
   await waitFor(() => expect(screen.queryByRole('dialog', { name: '待处理请求' })).toBeNull());
 });
 
+it('A11/A32 keeps each approval usable while an unrelated business reply is pending', async () => {
+  const business = {
+    requestId: 'business', kind: 'host_business', origin: {}, revision: 1,
+    status: 'pending', payload: { title: '慢业务审批', phase: 'waiting_user' },
+  };
+  const command = {
+    requestId: 'command', kind: 'command_approval', origin: {}, revision: 1,
+    status: 'pending', payload: { params: { command: 'pwd' } },
+  };
+  mocks.snapshot.mockResolvedValue(snapshot({ requests: [business, command] }));
+  let finishBusiness!: () => void;
+  let finishCommand!: () => void;
+  mocks.respond.mockReset()
+    .mockImplementationOnce(() => new Promise<void>(resolve => { finishBusiness = resolve; }))
+    .mockImplementationOnce(() => new Promise<void>(resolve => { finishCommand = resolve; }));
+  render(<AgentTaskView taskId="task" />);
+  const panel = within(await screen.findByRole('dialog', { name: '待处理请求' }));
+  const approve = () => panel.getByRole('option', { name: /批准/ }) as HTMLButtonElement;
+  const confirm = () => panel.getByRole('button', { name: '确认' });
+  fireEvent.click(approve());
+  fireEvent.click(confirm());
+  expect(mocks.respond).toHaveBeenCalledExactlyOnceWith('task', 'business', 1, { choice: 'allow' });
+  expect(approve().disabled).toBe(true);
+  fireEvent.click(panel.getByRole('button', { name: '›' }));
+  expect(approve().disabled).toBe(false);
+  fireEvent.click(approve());
+  fireEvent.click(confirm());
+  expect(mocks.respond).toHaveBeenCalledTimes(2);
+  expect(mocks.respond).toHaveBeenLastCalledWith('task', 'command', 1, expect.anything());
+  expect(approve().disabled).toBe(true);
+  await act(async () => { finishBusiness(); });
+  expect(panel.getByText('pwd')).toBeTruthy();
+  expect(approve().getAttribute('aria-selected')).toBe('true');
+  expect(approve().disabled).toBe(true);
+  await act(async () => { finishCommand(); });
+});
+
 it('FR04：截断的计划复制前先读取全文，复制内容完整', async () => {
   const plan = 'PLAN_' + 'p'.repeat(30 * 1024) + '_TAIL';
   const writeText = vi.fn().mockResolvedValue(undefined);

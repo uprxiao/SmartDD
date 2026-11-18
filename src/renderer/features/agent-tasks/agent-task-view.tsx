@@ -531,8 +531,8 @@ function RequestFormView({ form, busy, onSubmit }: { form: RequestForm; busy: bo
 function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd, mailSlot, onRespond, onStop }: { requests: TimelineRequest[]; more?: number; driverId: string; visiblePlans: ReadonlyMap<string,string>; cwd:string; mailSlot:HTMLDivElement | null; onRespond: (r: TimelineRequest, result: unknown) => Promise<void>; onStop: (r: TimelineRequest) => void }) {
   const [index, setIndex] = useState(0);
   const [reason, setReason] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
-  const submitting = useRef(false);
+  const submitting = useRef(new Set<string>());
+  const [inFlight, setInFlight] = useState<ReadonlySet<string>>(() => new Set());
   const [selection, setSelection] = useState<{ request: string; option: string } | null>(null);
   const taskId = useContext(TaskScope);
   const panel = useRef<HTMLDivElement>(null);
@@ -540,7 +540,9 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
   const effectiveDriver = shown.driverId ?? driverId;
   // 过大的关键请求：先读完整内容再开放批准（复核 NR06）；读不全只能拒绝或停止。
   const [full, setFull] = useState<Record<string, TimelineRequest['payload'] | 'error'>>({});
-  const reqKey = `${shown.requestId}:${shown.revision}`;
+  const requestKey = `${shown.ownerTaskId ?? taskId}:${shown.requestId}`;
+  const reqKey = `${requestKey}:${shown.revision}`;
+  const busy = inFlight.has(requestKey);
   useEffect(() => {
     if (!(shown as any).detailTruncated || full[reqKey]) return;
     void (async () => {
@@ -595,17 +597,21 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
     (panel.current?.querySelector<HTMLElement>('[aria-label="回答 Agent 的问题"]') ?? panel.current)?.focus();
   }, [reqKey, incomplete]);
   const send = async (result: unknown) => {
-    if (submitting.current) return;
-    submitting.current = true;
-    setBusy(true);
+    if (submitting.current.has(requestKey)) return;
+    submitting.current.add(requestKey);
+    setInFlight(new Set(submitting.current));
     try {
       const response = typeof result === 'function' ? await result() : result;
       if (currentRequest.current !== reqKey) return;
       await onRespond(r, response);
+      if (currentRequest.current !== reqKey) return;
       if (!isMail || (response as {choice?: string} | null)?.choice !== 'edit') setIndex(0);
       setSelection(null);
     } catch (e) { toast.error(rpcErrorMessage(e)); }
-    finally { submitting.current = false; setBusy(false); }
+    finally {
+      submitting.current.delete(requestKey);
+      setInFlight(new Set(submitting.current));
+    }
   };
   const canReviewMail = !!review && !!mailSlot && mailState === 'ready';
   const disabled = (key: string) => (busy && key !== 'revoke')
