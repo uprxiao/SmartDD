@@ -80,6 +80,22 @@ describe('复核 1755：目标确认只认目标命令那一轮', () => {
 });
 
 describe('复核 2251：停止只作用于正在开始的这一轮', () => {
+  it.each([true,false])('A27 labels process exit after user interrupt=%s with the corresponding round status', async stopped => {
+    const {inst,sdk,events}=make([async ({emit})=>emit({type:'assistant',uuid:'start',message:{content:[]}})]);
+    await inst.open({executable:exe,cwd:'/w',env:{},tier:'ask'});
+    const child=sdk.state.options.spawnClaudeCodeProcess({command:'/bin/sh',args:['-c','read -r line'],env:{}});
+    try {
+      await inst.startTurn({clientInputId:'input',text:'start',tier:'ask'});
+      if(stopped)await inst.interrupt();
+      child.stdin.end('exit\n');
+      await until(()=>events.some(e=>e.type==='exit'));
+      expect(events.find(e=>e.type==='turn.completed')).toMatchObject({status:stopped?'interrupted':'failed'});
+    } finally {
+      child.stdin.end();
+      await inst.close();
+    }
+  });
+
   it('SR01：切换模型期间按停止，输入不写出、按未发出退回；空闲时的停止不中断下一轮', async () => {
     const { inst, sdk, events } = make([ok('一'), ok('二')]);
     let release!: () => void;

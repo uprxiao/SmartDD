@@ -156,6 +156,17 @@ describe('Codex app-server 驱动', () => {
     expect(events).toContainEqual({ type: 'exit', code: 1, signal: null });
   });
 
+  it.each([true,false])('A05 keeps the visible round status when exit precedes the interrupt reply (requested: %s)', async stopped => {
+    const {inst,child,server,events}=setup(msg=>msg.method==='turn/interrupt');
+    await inst.open({executable:exe,cwd:'/w',env:{},tier:'ask'});
+    await inst.startTurn({clientInputId:'a',text:'work',tier:'ask'});
+    const stopping=stopped ? inst.interrupt() : undefined;
+    if(stopping)await until(()=>server.calls('turn/interrupt').length===1);
+    child.exit(stopped?0:1);
+    await stopping;
+    expect(events.find(e=>e.type==='turn.completed')).toMatchObject({nativeTurnId:'turn-1',status:stopped?'interrupted':'failed'});
+  });
+
   it('插话带 expectedTurnId；目标设定／暂停／清除带用户来源并转发原生目标更新', async () => {
     const { inst, server, events } = setup((msg, s) => {
       if (msg.method === 'turn/steer' || msg.method === 'thread/goal/set' || msg.method === 'thread/goal/clear') { s.reply(msg.id, {}); return true; }

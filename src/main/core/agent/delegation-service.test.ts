@@ -18,6 +18,7 @@ let pid = 50000;
 const goals = new Map<string, { objective: string; status: string; createdAt: number; updatedAt: number }>();
 class Instance implements DriverInstance {
   events = new Emitter(); on = this.events.on.bind(this.events); turns: TurnInput[] = []; history: string[] = []; options!: DriverOpenOptions; nativeId = ''; delayedExit = false;
+  interrupts = 0;
   steers: TurnInput[] = [];
   constructor(readonly driverId: DriverId) {}
   async open(o: DriverOpenOptions) { this.options = o; this.nativeId = o.resumeNativeId ?? randomUUID(); this.events.emit({ type: 'process', pid: ++pid }); return { nativeId: this.nativeId, confirmed: true, defaultModel: 'test' }; }
@@ -25,7 +26,7 @@ class Instance implements DriverInstance {
   async startTurn(t: TurnInput) { this.turns.push(t); const id = `turn-${this.turns.length}`; this.events.emit({ type: 'turn.started', nativeTurnId: id, clientInputId: t.clientInputId }); return { nativeTurnId: id }; }
   async steer(t: TurnInput) { this.steers.push(t); }
   finish(text = 'done') { const id = `turn-${this.turns.length}`; this.events.emit({ type: 'item.completed', nativeItemId: id, itemType: 'agentMessage', payload: { id, type: 'agentMessage', text } }); this.events.emit({ type: 'turn.completed', nativeTurnId: id, status: 'completed' }); }
-  async respond() {} async interrupt() {} async close() { if (!this.delayedExit) this.exit(); }
+  async respond() {} async interrupt() { this.interrupts++; } async close() { if (!this.delayedExit) this.exit(); }
   exit() { this.events.emit({ type: 'exit', code: 0, signal: null }); }
   async goal(op: { kind: string; objective?: string }) {
     if (op.kind === 'clear') { goals.delete(this.nativeId); this.events.emit({ type: 'goal', objective: null, status: 'cleared' }); return; }
@@ -79,6 +80,22 @@ it('A25/A27/A28: stop cancels queued children, mode closes only after children d
   await f.co.cancel(f.taskId, c.childTaskId); expect(f.co.observe(f.taskId, c.childTaskId)[0].state).toBe('canceled');
   expect(() => f.co.observe('unrelated', c.childTaskId)).toThrow('本任务');
   await expect(f.delegate()).rejects.toThrow('未开启'); p.finish();
+});
+
+it('A27 stops the original parent round before its tree can drain the native run', async () => {
+  const f = fixture(), parent = await f.send('start a round');
+  const child = await f.delegate();
+  const run = f.runs.runForTask(f.taskId)!;
+  const turnId = run.turnId!;
+  await f.tasks.stop(f.taskId, true);
+  await tick(35);
+  expect(parent.interrupts).toBe(1);
+  expect(f.runs.runForTask(f.taskId)?.runId).toBe(run.runId);
+  expect(f.runs.stopProgress(f.taskId)).toMatchObject({runId:run.runId,closing:false});
+  expect(f.co.observe(f.taskId,child.childTaskId)[0].state).toBe('canceled');
+  parent.events.emit({type:'turn.completed',nativeTurnId:'turn-1',status:'interrupted'});
+  await until(() => !f.runs.runForTask(f.taskId) && !f.runs.closingForTask(f.taskId),4000);
+  expect(f.store.turn(turnId)?.status).toBe('interrupted');
 });
 it('A66/A68: Git child runs in the mapped host worktree; child result is committed by the host and only its attempt commits are advertised', async () => {
   const f = fixture(); const git = async (...args: string[]) => { const r = await runWorkspaceCommand(f.root, 'git', args); if (r.code) throw Error(r.stderr); return r.stdout.trim(); };

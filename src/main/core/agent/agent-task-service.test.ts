@@ -714,6 +714,22 @@ describe('复核 2354 回归', () => {
     const itemId = store.addHostItem(taskId, null, 'system_notice', { detail: 'D'.repeat(1100 * 1024) });
     expect(read(svc, taskId, itemId, 1)).toMatchObject({ storedTruncated: true });
   });
+  it('A45 保留超限条目的预览并说明正文不完整，即使私有正文目录无法创建', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'm14-art-unavailable-'));
+    const artifactDir = join(root, 'agent-artifacts');
+    const { rmSync, writeFileSync } = await import('node:fs');
+    writeFileSync(artifactDir, '阻止目录创建的隔离夹具');
+    const { svc, store } = setup({ artifactDir });
+    try {
+      const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+      const detail = '开头😀' + '中'.repeat(400_000) + '完整结尾';
+      const itemId = store.addHostItem(taskId, null, 'system_notice', { detail });
+      const fallback = read(svc, taskId, itemId, 1);
+      expect(fallback).toMatchObject({ storedTruncated: true, detail: expect.stringContaining('开头😀') });
+      expect(fallback.detail).not.toContain('完整结尾');
+      expect(fallback.artifact).toBeUndefined();
+    } finally { rmSync(root, { recursive:true, force:true }); }
+  });
 });
 
 describe('复核 0018 回归', () => {

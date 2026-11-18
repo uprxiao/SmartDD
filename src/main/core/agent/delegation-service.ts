@@ -446,10 +446,11 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if (this.finishing.has(taskId) || this.businessBusy(taskId)) return; this.finishing.add(taskId);
     try {
       const run = this.d.runs.active(runId);
-      if (run && this.d.runs.busy(runId) && !this.stopped(taskId)) return;
+      // A user stop still waits for the original run to acknowledge interruption or be force-stopped.
+      if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId)) return;
       if (run?.driverId === 'codex-app-server' && this.stopped(taskId) && this.d.store.goal(taskId)?.status === 'active') await this.d.runs.goal(runId, { kind: 'pause' });
       this.d.runs.hold(taskId, true); await this.pauseWaitingGoal(taskId, runId);
-      if (this.d.runs.nativeBusy(runId) && !this.stopped(taskId)) return;
+      if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId) || this.d.runs.closingForTask(taskId)) return;
       if (this.d.store.pendingRequests(taskId).some(r => r.class === 'native' && r.status === 'pending' && r.origin.runId === runId) && !this.stopped(taskId)) return;
       if (run) await this.d.runs.close(runId);
       if (this.d.runs.closingForTask(taskId)) return;

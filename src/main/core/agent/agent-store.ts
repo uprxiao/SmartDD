@@ -15,6 +15,14 @@ export const DRAFT_STORE_LIMIT = 2 * 1024 * 1024;
 const now = () => new Date().toISOString();
 export const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 
+function removeArtifactFile(path: string) {
+  try { rmSync(path, { force: true }); }
+  catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== 'ENOTDIR') console.warn('[agent/artifacts] independent body cleanup failed:', code ?? 'UNKNOWN');
+  }
+}
+
 /** 有界序列化：超过上限只保留前缀并标记截断（完整正文转产物属阶段 2 的容量合同）。 */
 export function boundedJson(value: unknown, limit = EVENT_PAYLOAD_LIMIT): string {
   const text = JSON.stringify(value ?? null);
@@ -101,8 +109,8 @@ export class AgentStore {
         written.push(file);
         return ref;
       } catch {
-        rmSync(tmp, { force: true });
-        if (renamed) rmSync(file, { force: true });
+        removeArtifactFile(tmp);
+        if (renamed) removeArtifactFile(file);
         /* 写入失败：降级为结构化截短，并如实标不完整 */
       }
     }
@@ -113,8 +121,8 @@ export class AgentStore {
     const written: string[] = [], replaced: string[] = [];
     let result: T;
     try { result = this.tx(emit => fn(written, replaced, emit)); }
-    catch (e) { for (const f of written) rmSync(f, { force: true }); throw e; }
-    for (const ref of replaced) { const f = this.artifactPath(ref); if (f) rmSync(f, { force: true }); }
+    catch (e) { for (const f of written) removeArtifactFile(f); throw e; }
+    for (const ref of replaced) { const f = this.artifactPath(ref); if (f) removeArtifactFile(f); }
     return result;
   }
   private artifactPath(rel: string) {

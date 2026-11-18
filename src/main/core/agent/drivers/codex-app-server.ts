@@ -28,7 +28,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private threadId?: string;
   private cwd = '';
   private readOnly = false;
-  private activeTurn: { nativeTurnId: string; clientInputId: string } | null = null;
+  private activeTurn: { nativeTurnId: string; clientInputId: string; interrupted: boolean } | null = null;
   private pendingInputId = '';
   private stopPending = false;
   private readonly startedTurns = new Set<string>();
@@ -58,7 +58,12 @@ export class CodexAppServerInstance implements DriverInstance {
     child.once('exit', (code, signal) => {
       this.exited = true;
       this.rpc?.close(new DriverError('EXITED', `Codex 已退出（${code ?? signal}）${this.stderrTail ? `：${this.stderrTail.trim()}` : ''}`));
-      if (this.activeTurn) { this.emitter.emit({ type: 'turn.completed', nativeTurnId: this.activeTurn.nativeTurnId, status: 'failed', error: 'app-server 退出' }); this.activeTurn = null; }
+      const turn = this.activeTurn;
+      if (turn) {
+        this.activeTurn = null;
+        this.emitter.emit({type:'turn.completed',nativeTurnId:turn.nativeTurnId,status:turn.interrupted?'interrupted':'failed',
+          ...(turn.interrupted?{}:{error:'app-server 退出'})});
+      }
       this.emitter.emit({ type: 'exit', code, signal });
     });
     if (child.pid) this.emitter.emit({ type: 'process', pid: child.pid });
@@ -161,7 +166,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private markStarted(nativeTurnId: string, clientInputId: string) {
     if (this.startedTurns.has(nativeTurnId)) return;
     this.startedTurns.add(nativeTurnId);
-    this.activeTurn = { nativeTurnId, clientInputId };
+    this.activeTurn = { nativeTurnId, clientInputId, interrupted:false };
     this.emitter.emit({ type: 'turn.started', nativeTurnId, clientInputId });
     // 发送即停止：原生开始信号到达后立即中断（技术方案 §3）。
     if (this.stopPending) void this.sendInterrupt(nativeTurnId);
@@ -278,6 +283,7 @@ export class CodexAppServerInstance implements DriverInstance {
   }
 
   private async sendInterrupt(nativeTurnId: string) {
+    if (this.activeTurn?.nativeTurnId === nativeTurnId) this.activeTurn.interrupted = true;
     try { await this.rpc?.call('turn/interrupt', { threadId: this.threadId, turnId: nativeTurnId }, 15_000); }
     catch (e) { this.emitter.emit({ type: 'diagnostic', message: `中断失败：${(e as Error).message}` }); }
   }

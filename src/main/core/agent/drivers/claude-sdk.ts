@@ -133,7 +133,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (this.exited) return;
     this.exited = true; this.historyPending?.reject(new DriverError('EXITED', '历史追加期间执行器退出'));
     for (const [key, p] of this.pending) { p.resolve({ behavior: 'deny', message: '执行器已退出' }); this.pending.delete(key); this.emitter.emit({ type: 'request.resolved', requestKey: key }); }
-    this.failTurn('执行器退出', 'failed');
+    this.failTurn('执行器退出', this.activeTurn?.interrupted ? 'interrupted' : 'failed');
     this.emitter.emit({ type: 'exit', code, signal });
   }
 
@@ -156,7 +156,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     const t = this.activeTurn; if (!t) return;
     this.activeTurn = null;
     if (!t.started) { t.rejectStart?.(new DriverError('EXITED', `回合开始前失败：${error}`)); return; }
-    this.emitter.emit({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status, error });
+    this.emitter.emit({ type: 'turn.completed', nativeTurnId: t.nativeTurnId, status, ...(status === 'failed' ? { error } : {}) });
   }
 
   private markStarted() {

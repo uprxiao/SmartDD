@@ -573,15 +573,18 @@ export class AgentTaskService {
     if (selected.selection.pendingSwitch) this.d.store.updateSelection(taskId, { pendingSwitch: undefined }, selected.revision);
     this.d.runs.hold(taskId, true);
     this.business?.stop(taskId);
-    await this.coordination?.userStopped(taskId, subtree);
     const run = this.d.runs.runForTask(taskId);
-    if (!run) return { stopped: this.dispatching.has(taskId) };
-    // Codex：停止键＝停止本轮并暂停目标（需求 R02）。
-    if (run.driverId === 'codex-app-server' && this.d.store.goal(taskId)?.status === 'active') { try { await this.d.runs.goal(run.runId, { kind: 'pause' }); } catch { /* 目标接口失败不阻止停止 */ } }
-    // 请求挂起时按停止：先退役本回合的原生请求，再中断（技术方案 §9）。
-    for (const r of this.d.store.pendingRequests(taskId)) if (r.class === 'native' && r.origin.runId === run.runId) this.d.store.retireRequest(r.requestId, 'user-stop');
-    await this.d.runs.interrupt(run.runId,true);
-    return { stopped: true };
+    const interrupt = async () => {
+      if (!run) return;
+      // Codex：停止键＝停止本轮并暂停目标（需求 R02）。
+      if (run.driverId === 'codex-app-server' && this.d.store.goal(taskId)?.status === 'active') { try { await this.d.runs.goal(run.runId, { kind: 'pause' }); } catch { /* 目标接口失败不阻止停止 */ } }
+      if (this.d.runs.runForTask(taskId)?.runId !== run.runId) return;
+      // 请求挂起时按停止：先退役本回合的原生请求，再中断（技术方案 §9）。
+      for (const r of this.d.store.pendingRequests(taskId)) if (r.class === 'native' && r.origin.runId === run.runId) this.d.store.retireRequest(r.requestId, 'user-stop');
+      await this.d.runs.interrupt(run.runId,true);
+    };
+    await Promise.all([interrupt(), this.coordination?.userStopped(taskId, subtree)]);
+    return { stopped: !!run || this.dispatching.has(taskId) };
   }
 
   forceStop(taskId: string, runId: string, requestedAt: number) {
