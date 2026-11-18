@@ -4,6 +4,7 @@ export interface RunIntegration {
   hostBusinessCli?:DriverOpenOptions['hostBusinessCli'];
   codexCliPermissions?:DriverOpenOptions['codexCliPermissions'];
   claudeSettings?:Record<string,unknown>;extraArgs?: string[]; env?: Record<string, string>; mcpServers?: DriverOpenOptions['mcpServers'];
+  claudeMcp?: DriverOpenOptions['claudeMcp'];
   skillRoots?: DriverOpenOptions['skillRoots']; plugins?: DriverOpenOptions['plugins'];
   beforeFork(): Promise<void>;
   attached(pid: number): Promise<void>;

@@ -16,6 +16,15 @@ export interface McpProjectionInput {
 export interface McpProjectionResult {
   args:string[];env:Record<string,string>;secretValues:string[];
   configured:string[];issues:{id:string;reason:string}[];
+  serverNames:string[];
+  claude?:ClaudeMcpProjection;
+}
+/** Process launch data only. Server credentials reside in the projection environment. */
+export interface ClaudeMcpProjection {
+  servers:Record<string,Record<string,unknown>>;
+  allowTools:string[];
+  denyTools:string[];
+  askTools:string[];
 }
 const inside=(base:string,path:string)=>{const rest=relative(base,resolve(path));return Boolean(rest)&&rest!=='..'&&!rest.startsWith('..'+sep);};
 const inline=(value:unknown):string=>{
@@ -55,8 +64,9 @@ export class McpProjectionService {
     profileEnvironment?:(id:string)=>Record<string,string>;
   }){}
   prepare(input:McpProjectionInput):McpProjectionResult {
-    const result:McpProjectionResult={args:[],env:Object.create(null),secretValues:[],configured:[],issues:[]};
-    const files:McpConversion['files']=[],claude:Record<string,unknown>=Object.create(null),ask:string[]=[];
+    const result:McpProjectionResult={args:[],env:Object.create(null),secretValues:[],configured:[],issues:[],serverNames:[]};
+    const files:McpConversion['files']=[];
+    const claude:ClaudeMcpProjection={servers:Object.create(null),allowTools:[],denyTools:[],askTools:[]};
     const runRoot=join(input.runRoot,'mcp');
     for(const item of this.registry.selected(input.cwd).filter(row=>row.kind==='mcp')){
       try{
@@ -77,7 +87,14 @@ export class McpProjectionService {
         // Codex splits override paths literally; quotes would become part of
         // the server name. parseMcpSource permits only safe bare-key characters.
         if(input.runner==='codex')result.args.push('-c',`mcp_servers.${conversion.serverName}=${inline(conversion.codexServer)}`);
-        else{claude[conversion.serverName]=conversion.claudeServer;result.args.push(...conversion.permissionArgs);ask.push(...conversion.claudeAskTools);}
+        else if(conversion.claudeServer){
+          claude.servers[conversion.serverName]=conversion.claudeServer;
+          claude.allowTools.push(...conversion.claudeAllowTools);
+          claude.denyTools.push(...conversion.claudeDenyTools);
+          claude.askTools.push(...conversion.claudeAskTools);
+          result.args.push(...conversion.permissionArgs);
+        }
+        result.serverNames.push(conversion.serverName);
         result.configured.push(item.id);
       }catch(error){
         // Raw parser/native errors may include configuration values. Only our
@@ -85,8 +102,13 @@ export class McpProjectionService {
         result.issues.push({id:item.id,reason:error instanceof McpSourceError?error.message:'来源配置读取失败，请在来源 CLI 检查后重新扫描'});
       }
     }
-    if(Object.keys(claude).length){const path=join(runRoot,'servers.json');files.push({path,content:JSON.stringify({mcpServers:claude},null,2)+'\n',mode:0o600});result.args.push('--mcp-config',path);}
-    if(ask.length){const path=join(runRoot,'permissions.json');files.push({path,content:JSON.stringify({permissions:{ask}},null,2)+'\n',mode:0o600});result.args.push('--settings',path);}
+    if(Object.keys(claude.servers).length){
+      result.claude=claude;
+      const path=join(runRoot,'servers.json');
+      files.push({path,content:JSON.stringify({mcpServers:claude.servers},null,2)+'\n',mode:0o600});
+      result.args.push('--mcp-config',path);
+    }
+    if(claude.askTools.length){const path=join(runRoot,'permissions.json');files.push({path,content:JSON.stringify({permissions:{ask:claude.askTools}},null,2)+'\n',mode:0o600});result.args.push('--settings',path);}
     if(files.length)writeControls(this.options.userData,runRoot,files);
     return result;
   }

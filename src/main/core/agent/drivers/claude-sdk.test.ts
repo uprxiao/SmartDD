@@ -144,6 +144,35 @@ describe('复核 2127：结构化目标事实优先', () => {
 });
 
 describe('Claude SDK 驱动', () => {
+  it('delivers managed MCP definitions without giving them the host bridge wildcard', async () => {
+    const { inst, sdk } = make([]);
+    const bridge = { command: '/willyou', args: ['owned-bridge'] };
+    const projected = { command: '/willyou', args: ['managed-launcher'], env: { ELECTRON_RUN_AS_NODE: '1' } };
+    const settings = { permissions: { deny: ['Bash'], ask: ['Write'] }, sandbox: { enabled: true } };
+    try {
+      await inst.open({
+        executable: exe, cwd: '/w', tier: 'ask', env: {},
+        mcpServers: { host: bridge }, claudeSettings: settings,
+        claudeMcp: {
+          servers: { third_party: projected },
+          allowTools: ['mcp__third_party__read'],
+          denyTools: ['mcp__third_party__write'],
+          askTools: ['mcp__third_party__send'],
+        },
+      });
+      expect(sdk.state.options.mcpServers).toEqual({ host: bridge, third_party: projected });
+      expect(sdk.state.options.allowedTools).toEqual(['mcp__third_party__read', 'mcp__host__*']);
+      expect(sdk.state.options.disallowedTools).toEqual(['mcp__third_party__write']);
+      expect(sdk.state.options.settings).toEqual({
+        permissions: { deny: ['Bash'], ask: ['Write', 'mcp__third_party__send'] },
+        sandbox: { enabled: true },
+      });
+      expect(settings.permissions.ask).toEqual(['Write']);
+    } finally {
+      await inst.close();
+    }
+  });
+
   it('使用本机 claude、预分配会话 ID，等 system/init 才确认原生身份', async () => {
     const { inst, sdk, events } = make([ok('好')]);
     const r = await inst.open({ executable: exe, cwd: '/w', env: { HOME: '/h' }, tier: 'ask', model: 'opus', settingSources: ['project', 'local'] });

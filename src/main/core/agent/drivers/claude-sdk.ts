@@ -99,17 +99,26 @@ export class ClaudeSdkInstance implements DriverInstance {
     this.input = new InputQueue();
     const nativeId = o.resumeNativeId ?? randomUUID();
     this.sessionId = nativeId;
+    const managed = o.claudeMcp;
+    const mcpServers = { ...managed?.servers, ...o.mcpServers };
+    const allowedTools = [...(managed?.allowTools ?? []), ...Object.keys(o.mcpServers ?? {}).map(name => `mcp__${name}__*`)];
+    const settings = { ...o.claudeSettings };
+    if (managed?.askTools.length) {
+      const permissions = (settings.permissions ?? {}) as { ask?: string[] };
+      settings.permissions = { ...permissions, ask: [...(permissions.ask ?? []), ...managed.askTools] };
+    }
     const options: Record<string, unknown> = {
       pathToClaudeCodeExecutable: o.executable.path,
       cwd: o.cwd,
       env: o.env,
       ...(o.model ? { model: o.model } : {}),
-      ...(o.claudeSettings?{settings:o.claudeSettings}:{}),
+      ...(Object.keys(settings).length ? { settings } : {}),
       permissionMode: params.permissionMode,
       ...(params.permissionMode === 'bypassPermissions' ? { allowDangerouslySkipPermissions: true } : {}),
       settingSources: [...(o.settingSources ?? ['user', 'project', 'local'])],
-      ...(o.mcpServers ? { mcpServers: o.mcpServers } : {}),
-      ...(o.mcpServers ? { allowedTools: Object.keys(o.mcpServers).map(name => `mcp__${name}__*`) } : {}),
+      ...(Object.keys(mcpServers).length ? { mcpServers } : {}),
+      ...(allowedTools.length ? { allowedTools } : {}),
+      ...(managed?.denyTools.length ? { disallowedTools: managed.denyTools } : {}),
       ...(o.plugins ? { plugins: o.plugins } : {}),
       ...(o.stopWhenWaiting ? { hooks: { Stop: [{ hooks: [async () => o.stopWhenWaiting?.() ? { continue: false } : {}] }] } } : {}),
       includeHookEvents: true,

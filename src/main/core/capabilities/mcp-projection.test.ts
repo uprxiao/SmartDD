@@ -43,6 +43,12 @@ it('retains literal Codex HTTP values in Claude helper slots and per-tool prompt
  items=[{...item('http'),autoApprove:true}];definitions.http=parseMcpSource('http','codex',{url:'https://public.example.test/mcp',http_headers:{Authorization:'Literal ${X}'},disabled_tools:['write'],tools:{inspect:{approval_mode:'prompt'}}});const request=input('claude'),result=service().prepare(request);
  expect(result.args).toContain('mcp__http__*');expect(result.args).toContain('mcp__http__write');expect(Object.values(result.env)).toContain('Literal ${X}');const servers=readFileSync(join(request.runRoot,'mcp/servers.json'),'utf8');expect(servers).not.toContain('Literal');expect(JSON.parse(servers).mcpServers.http.headersHelper).toMatch(/-headers.sh$/);
  expect(JSON.parse(readFileSync(join(request.runRoot,'mcp/permissions.json'),'utf8')).permissions.ask).toEqual(['mcp__http__inspect']);
+ expect(result.claude).toMatchObject({
+   servers:{http:{type:'http',headersHelper:expect.stringMatching(/-headers.sh$/)}},
+   allowTools:['mcp__http__*'],denyTools:['mcp__http__write'],askTools:['mcp__http__inspect'],
+ });
+ expect(result.serverNames).toEqual(['http']);
+ expect(JSON.stringify(result.claude)).not.toContain('Literal');
 });
 it('rejects a symlinked management directory and a reused run rather than overwriting controls',()=>{
  items=[item('echo')];definitions.echo=parseMcpSource('echo','claude',{command:'/usr/bin/true'});const request=input();service().prepare(request);const before=readFileSync(join(request.runRoot,'mcp/wy-mcp-launch.cjs'),'utf8');expect(()=>service().prepare(request)).toThrow();expect(readFileSync(join(request.runRoot,'mcp/wy-mcp-launch.cjs'),'utf8')).toBe(before);

@@ -10,6 +10,8 @@ export interface McpConversion {
   claudeServer?:Record<string,unknown>;
   codexServer?:Record<string,unknown>;
   permissionArgs:string[];
+  claudeAllowTools:string[];
+  claudeDenyTools:string[];
   claudeAskTools:string[];
   serverName:string;
 }
@@ -31,15 +33,17 @@ export function convertMcp(input:McpConversionInput):McpConversion {
   const env:Record<string,string>=Object.create(null),files:McpConversion['files']=[],permissionArgs:string[]=[];
   let counter=0;const slot=(value:string):Slot=>{const key=`WY_MCPV_${input.serverId}_${++counter}`;env[key]=value;return{slot:key};};
   const launcher=join(input.runRoot,'wy-mcp-launch.cjs'),planPath=join(input.runRoot,input.serverId+'.json');
-  const result:McpConversion={env,files,permissionArgs,serverName:source.name,claudeAskTools:[]};
+  const result:McpConversion={env,files,permissionArgs,serverName:source.name,claudeAllowTools:[],claudeDenyTools:[],claudeAskTools:[]};
   const tools:Record<string,{approval_mode:'approve'|'prompt'}>=Object.create(null);
   for(const tool of source.approvedTools)if(!source.disabledTools.includes(tool))tools[tool]={approval_mode:'approve'};
   for(const tool of source.promptTools)if(!source.disabledTools.includes(tool))tools[tool]={approval_mode:'prompt'};
   const defaultApproval=input.autoApprove?'approve':source.defaultApproval;
   if(input.target==='claude'){
-    for(const tool of source.disabledTools)permissionArgs.push('--disallowedTools',`mcp__${source.name}__${tool}`);
-    for(const tool of source.approvedTools)if(!source.disabledTools.includes(tool))permissionArgs.push('--allowedTools',`mcp__${source.name}__${tool}`);
-    if(defaultApproval==='approve')permissionArgs.push('--allowedTools',`mcp__${source.name}__*`);
+    result.claudeDenyTools=source.disabledTools.map(tool=>`mcp__${source.name}__${tool}`);
+    result.claudeAllowTools=source.approvedTools.filter(tool=>!source.disabledTools.includes(tool)).map(tool=>`mcp__${source.name}__${tool}`);
+    if(defaultApproval==='approve')result.claudeAllowTools.push(`mcp__${source.name}__*`);
+    for(const tool of result.claudeDenyTools)permissionArgs.push('--disallowedTools',tool);
+    for(const tool of result.claudeAllowTools)permissionArgs.push('--allowedTools',tool);
     result.claudeAskTools=source.promptTools.filter(tool=>!source.disabledTools.includes(tool)).map(tool=>`mcp__${source.name}__${tool}`);
   }
   if(source.transport==='stdio'){

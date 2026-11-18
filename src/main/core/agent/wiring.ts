@@ -13,6 +13,7 @@ import { codeAgentKindSchema } from '@shared/ai-agents';
 import type { AgentLiveFrame } from '@shared/events';
 import type { AgentService } from '../ai/agent-service';
 import type { ProviderService } from '../ai/provider-service';
+import type { McpProjectionService } from '../capabilities/mcp-projection';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { materializeAgentPlan } from '../ai/agent-launch-files';
 import { AgentStore, sha256, type StoredEvent } from './agent-store';
@@ -59,6 +60,7 @@ export interface AgentWorkspaceDeps {
   emitEvent(e: StoredEvent): void;
   emitLive(e: AgentLiveFrame): void;
   ptys?: import('./manual-terminal').TerminalPtys;
+  mcpProjection?: Pick<McpProjectionService, 'prepare'>;
 }
 
 export function driverForKind(kind: string): DriverId {
@@ -136,8 +138,24 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         const actual = resolveProfileLaunch({ ...input, runId: context.runId, carryExtensions: launch.compatibility.extensions !== false });
         materializeAgentPlan(actual.plan, d.userData, cwd);
         if(!business.supportsAgentDelivery(actual.plan.profile.runner,probe.version!)){store.addHostItem(taskId,null,'system_notice',{code:'businessCapabilitiesUnverified',detail:'当前执行器版本的业务 Skill／MCP／CLI 交付尚未验证；本轮保留对话与代码能力，不注入未经验证的业务通道。'});return undefined;}
+        const role = store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(taskId) as { access: string } | undefined;
+        const projected = role?.access === 'read' ? undefined : d.mcpProjection?.prepare({
+          runner: actual.plan.profile.runner, cwd, runRoot: join(d.userData, 'agents', 'runs', context.runId),
+          injectedNames: Object.keys(actual.plan.profile.env),
+        });
+        if (projected?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
+          code: 'managedMcpUnavailable', detail: projected.issues.map(issue => issue.reason).join('；'),
+        });
         const result = await business.prepareAgent({ ...context, version: probe.version!, assertCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home: base.HOME ?? homedir(), stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: context.nativeId ? 'resume' : 'new', sessionId: context.nativeId ?? null, previous: null, newTask: !context.nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
-        return { ...result, env: { ...actual.env, ...result.env }, extraArgs: [...actual.extraArgs, ...(result.extraArgs ?? [])] };
+        if (projected?.serverNames.some(name => Object.hasOwn(result.mcpServers ?? {}, name))) {
+          await result.cancelBeforeFork();
+          throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
+        }
+        return {
+          ...result, env: { ...actual.env, ...result.env, ...projected?.env },
+          extraArgs: [...actual.extraArgs, ...(result.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
+          claudeMcp: projected?.claude,
+        };
       },
     };
   };
