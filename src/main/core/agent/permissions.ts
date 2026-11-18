@@ -31,6 +31,14 @@ export type TierResolution =
 
 export const isTier = (value: unknown): value is Tier => typeof value === 'string' && (TIERS as readonly string[]).includes(value);
 
+/** Business calls use the current user choice; delegated tasks inherit it from the parent. */
+export const selectedTaskTier = (selectionJson: string, parentSelectionJson?: string | null): Tier => {
+  try {
+    const tier = JSON.parse(parentSelectionJson ?? selectionJson)?.tier;
+    return isTier(tier) ? tier : 'ask';
+  } catch { return 'ask'; }
+};
+
 /** Verified native protocol for selecting the host CLI profile in turn/start. */
 export const codexSupportsTurnPermissions = (version: string): boolean => version === '0.169.0';
 

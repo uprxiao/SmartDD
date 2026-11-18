@@ -218,9 +218,10 @@ export class AgentTaskService {
   /** 模型／档位在下一轮生效；扩展开关只影响此后新建绑定。 */
   setSelection(taskId: string, patch: { tier?: Tier; model?: string | null; effort?: string | null; carryExtensions?: boolean }, expectedRevision: number) {
     this.requireStableSelection(taskId);
-    const { selection } = this.selection(taskId);
+    const { task, selection } = this.selection(taskId);
     const next: Partial<AgentSelection> = {};
     if (patch.tier !== undefined) {
+      if (task.parent_task_id) throw new DriverError('REJECTED', '子任务的权限档位由主任务决定');
       if (!isTier(patch.tier)) throw new DriverError('REJECTED', '不支持的权限档位');
       const r = resolveTier(selection.driverId, patch.tier);
       if (!r.ok) throw new DriverError('REJECTED', '不支持的权限档位');
@@ -851,7 +852,7 @@ export class AgentTaskService {
     // 每档都保留全部待处理请求的可访问路径（预览或只含标识的摘要，全文经 requestBody 读取）；剩余预算装最近条目。
     for (let level = 0; level <= 3; level++) {
       const base = {
-        taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, archivedAt: task.archived_at, selection, selectionRevision: revision,
+        taskId, title: task.title, cwd: task.cwd, projectId: task.project_id, parentTaskId: task.parent_task_id, archivedAt: task.archived_at, selection, selectionRevision: revision,
         switching: this.switching.has(taskId),
         stopping: this.d.runs.stopProgress(taskId),
         draft: draftForSnapshot(draft, level),

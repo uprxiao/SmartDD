@@ -191,8 +191,8 @@ export class AgentStore {
   }
 
   task(taskId: string) {
-    return this.sqlite.prepare('SELECT t.id,t.project_id,t.cwd,t.title,a.selection_json,a.selection_revision,a.archived_at FROM tasks t JOIN agent_tasks a ON a.task_id=t.id WHERE t.id=?').get(taskId) as
-      { id: string; project_id: string | null; cwd: string; title: string; selection_json: string; selection_revision: number; archived_at: string | null } | undefined;
+    return this.sqlite.prepare('SELECT t.id,t.project_id,t.cwd,t.title,a.selection_json,a.selection_revision,a.archived_at,a.parent_task_id FROM tasks t JOIN agent_tasks a ON a.task_id=t.id WHERE t.id=?').get(taskId) as
+      { id: string; project_id: string | null; cwd: string; title: string; selection_json: string; selection_revision: number; archived_at: string | null; parent_task_id: string | null } | undefined;
   }
 
   /** 同一任务、执行器与兼容身份下最新的绑定；兼容身份变化（配置根、开关等）必须新建绑定。 */

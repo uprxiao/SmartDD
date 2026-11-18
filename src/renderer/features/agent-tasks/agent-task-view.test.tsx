@@ -30,6 +30,14 @@ const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, or
 /** 把完整正文按两段返回，模拟按字节分段读取。 */
 const serveInTwo = (payload: unknown) => { const t = JSON.stringify(payload), mid = Math.floor(t.length / 2); return (_: string, __: string, off: number) => Promise.resolve(off === 0 ? { chunk: t.slice(0, mid), next: 1, done: false } : { chunk: t.slice(mid), next: 2, done: true }); };
 
+it('A26 shows the delegated child’s inherited tier without opening another permission choice', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ parentTaskId: 'parent' }));
+  render(<AgentTaskView taskId="task" />);
+  const tier = await screen.findByLabelText('权限档位');
+  expect(tier).toHaveProperty('disabled', true);
+  expect(tier).toHaveProperty('title', '跟随主任务的权限档位');
+});
+
 it('P3: the request panel can revoke a queued approval while the original approve call is still pending', async () => {
   const request = { requestId: 'approval', kind: 'host_business', origin: {}, revision: 1, status: 'pending', payload: { title: '业务审批', phase: 'waiting_user' } };
   let state = snapshot({ requests: [request] });

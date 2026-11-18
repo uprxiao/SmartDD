@@ -82,6 +82,28 @@ it('A25/A27/A28: stop cancels queued children, mode closes only after children d
   await expect(f.delegate()).rejects.toThrow('未开启'); p.finish();
 });
 
+it.each([['ask', 'full'], ['full', 'ask']] as const)('A26 applies parent tier %s → %s on the delegated child’s next round', async (initial, next) => {
+  const f = fixture();
+  f.setRead(true);
+  f.tasks.setSelection(f.taskId, { tier: initial }, f.tasks.snapshot(f.taskId).selectionRevision);
+  await f.send('Start an isolated parent round');
+  const parentRun = f.runs.runForTask(f.taskId)!;
+  const { childTaskId } = await f.co.delegate(parentRun.runId, { requestKey: randomUUID(), profileId: 'child', title: 'Child', instructions: 'Inspect the fixture', access: 'read' });
+  await until(() => f.instances[1]?.turns.length === 1);
+  const child = f.instances[1];
+  expect(child.turns[0].tier).toBe(initial);
+  expect(() => f.tasks.setSelection(childTaskId, { tier: next }, f.tasks.snapshot(childTaskId).selectionRevision)).toThrow('主任务决定');
+  f.tasks.setSelection(f.taskId, { tier: next }, f.tasks.snapshot(f.taskId).selectionRevision);
+  expect(child.turns).toHaveLength(1);
+  expect(child.turns[0].tier).toBe(initial);
+  child.finish();
+  await until(() => f.co.observe(f.taskId, childTaskId)[0].resultRevision === 1);
+  await f.co.send(parentRun.runId, childTaskId, randomUUID(), 'Continue in the same child task');
+  const childTurns = () => f.instances.slice(1).flatMap(instance => instance.turns);
+  await until(() => childTurns().length === 2);
+  expect(childTurns()[1].tier).toBe(next);
+});
+
 it('A27 stops the original parent round before its tree can drain the native run', async () => {
   const f = fixture(), parent = await f.send('start a round');
   const child = await f.delegate();

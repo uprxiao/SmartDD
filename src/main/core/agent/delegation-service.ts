@@ -18,7 +18,7 @@ const key = z.string().regex(/^[A-Za-z0-9_-]{8,128}$/);
 const delegateSchema = z.object({ requestKey: key, profileId: z.string().min(1).max(128), title: z.string().trim().min(1).max(120), instructions: z.string().min(1).refine(s => Buffer.byteLength(s) <= 128 * 1024), model: z.string().min(1).max(256).optional(), access: z.enum(['read', 'write']).optional(), workspaceMode: z.enum(['shared', 'worktree']).optional() }).strict();
 type DelegateInput = z.infer<typeof delegateSchema>;
 export interface DelegationProfile { profileId: string; driverId: DriverId; name: string; revision: string; available: boolean; models: string[]; trustedRead?: boolean }
-interface Target { profile: DelegationProfile; model?: string; tier: Tier; requestedAccess: string; actualAccess: 'read' | 'write'; strategy: 'git' | 'serial'; baseCommit?: string; uncommittedFiles?: number; repoRoot?: string; parentBranch?: string; parentCwd: string; title: string; directoryIdentity: string; startHead?: string; resultItemId?: string; mergeFailures?: number }
+interface Target { profile: DelegationProfile; model?: string; tier: Tier; parentTier?: Tier; tierNotice?: string; requestedAccess: string; actualAccess: 'read' | 'write'; strategy: 'git' | 'serial'; baseCommit?: string; uncommittedFiles?: number; repoRoot?: string; parentBranch?: string; parentCwd: string; title: string; directoryIdentity: string; startHead?: string; resultItemId?: string; mergeFailures?: number }
 export interface DelegationRow { delegation_id: string; parent_task_id: string; child_task_id: string; parent_run_id: string; target_json: string; access: 'read' | 'write'; request_key: string; result_revision: number; delivery_state: 'queued' | 'running' | 'delivered' | 'queued_for_parent' | 'canceled' | 'failed' }
 interface Attempt { attempt_id: string; delegation_id: string; ordinal: number; kind: string; input_ref: string; child_turn_id: string | null; commit_range: string | null; notified_at: string | null; merge_check_json: string | null }
 /** Public delegation and UI use the same persistent command service. A caller's identity is always host-derived. */
@@ -211,7 +211,6 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if (known) return this.receipt(known);
     if (this.parentOf(run.taskId) || !this.enabled(run.taskId)) throw new DriverError('REJECTED', '当前任务未开启新委派，或已经是子任务');
     const profile = this.d.profile(value.profileId); if (!profile.available || value.model && !profile.models.includes(value.model)) throw new DriverError('REJECTED', '目标智能体或模型不可用');
-    const tier = resolveTier(profile.driverId, parent.selection.tier as Tier); if (!tier.ok) throw new DriverError('REJECTED', '目标没有可继承的档位');
     const root = directoryIdentity(parent.task.cwd, this.d.roots(run.taskId));
     const readOnly = value.access === 'read' && profile.trustedRead === true;
     const worktree = value.workspaceMode === 'worktree' && !readOnly;
@@ -220,7 +219,11 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const source = repo ? await this.d.git.sourceSnapshot(repo) : {};
     this.caller(runId);
     if (!this.enabled(run.taskId)) throw new DriverError('REJECTED', '当前任务未开启新委派');
-    const target: Target = { profile, model: value.model, tier: tier.tier, requestedAccess: value.access ?? 'write', actualAccess: readOnly ? 'read' : 'write', strategy: worktree ? 'git' : 'serial', parentBranch: repo?.branch, repoRoot: repo?.root, ...source, parentCwd: parent.task.cwd, title: value.title, directoryIdentity: root.identity };
+    const parentTier = this.selection(run.taskId).selection.tier as Tier;
+    const tier = resolveTier(profile.driverId, parentTier);
+    if (!tier.ok) throw new DriverError('REJECTED', '目标没有可继承的档位');
+    const tierNotice = tier.downgraded ? tier.reason : undefined;
+    const target: Target = { profile, model: value.model, tier: tier.tier, parentTier, tierNotice, requestedAccess: value.access ?? 'write', actualAccess: readOnly ? 'read' : 'write', strategy: worktree ? 'git' : 'serial', parentBranch: repo?.branch, repoRoot: repo?.root, ...source, parentCwd: parent.task.cwd, title: value.title, directoryIdentity: root.identity };
     const result = this.d.store.tx(emit => {
       const duplicate = this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE parent_task_id=? AND request_key=?').get(run.taskId, value.requestKey) as DelegationRow | undefined; if (duplicate) return duplicate;
       const childTaskId = this.d.store.createTask({ projectId: parent.task.project_id, dirId: null, cwd: parent.task.cwd, title: value.title, parentTaskId: run.taskId, selection: { driverId: profile.driverId, profileId: profile.profileId, model: value.model, tier: tier.tier, carryExtensions: parent.selection.extensionPreferences?.[profile.profileId] ?? true } });
@@ -229,6 +232,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       this.d.store.sqlite.prepare("INSERT INTO agent_delegation_attempts(attempt_id,delegation_id,ordinal,kind,input_ref,created_at) VALUES(?,?,1,'initial',?,?)").run(attempt, id, JSON.stringify({ text: value.instructions, sourceKind: 'delegation', parentRunId: runId }), at());
       const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${attempt}`, text: this.childInput(value.instructions, target), sourceKind: 'delegation' });
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt);
+      if (tierNotice) this.d.store.addHostItem(childTaskId, null, 'system_notice', { code: 'delegatedTierFallback', detail: tierNotice });
       if (target.strategy === 'serial' && target.actualAccess === 'write') this.queue.enter(childTaskId, root.identity);
       this.d.store.addHostItem(run.taskId, run.turnId ?? null, 'subtask', { delegationId: id, childTaskId, title: value.title, profileName: profile.name, status: 'queued', access: target.actualAccess, workspaceMode: target.strategy === 'git' ? 'worktree' : 'shared', ...(value.access === 'read' && !readOnly ? { notice: '当前扩展与业务入口未能证明全链路只读，按写入型管理' } : {}) });
       emit(run.taskId, 'delegation.changed', { delegationId: id, childTaskId, state: 'queued' });
@@ -242,7 +246,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const message = workspaceMode === 'worktree'
       ? `工作副本基于 ${target.baseCommit ?? '已登记提交'}；主目录有 ${target.uncommittedFiles ?? 0} 个未提交文件，没有带进子任务。要带改动请先提交再派出。`
       : target.actualAccess === 'read' ? '子任务在共用目录只读并行。' : '当前回合结束并交出写入资格后，子任务在共用目录运行；宿主不提交。';
-    return { delegationId: row.delegation_id, childTaskId: row.child_task_id, state: row.delivery_state, resultRevision: row.result_revision, asynchronous: true, workspaceMode, baseCommit: target.baseCommit, uncommittedFiles: target.uncommittedFiles, message: `已持久接受；不要在 shell 循环等待。 ${message}` };
+    return { delegationId: row.delegation_id, childTaskId: row.child_task_id, state: row.delivery_state, resultRevision: row.result_revision, asynchronous: true, workspaceMode, baseCommit: target.baseCommit, uncommittedFiles: target.uncommittedFiles, ...(target.tierNotice ? { tierNotice: target.tierNotice } : {}), message: `已持久接受；不要在 shell 循环等待。 ${message}` };
   }
   private owned(parentTaskId: string, childTaskId: string) { const r = this.parentOf(childTaskId); if (!r || r.parent_task_id !== parentTaskId) throw new DriverError('REJECTED', '只能操作本任务派出的子任务'); return r; }
   async send(runId: string, childTaskId: string, requestKey: string, text: string) {
@@ -255,9 +259,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
         if (!accepted.duplicate) this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET input_ref=? WHERE attempt_id=?').run(JSON.stringify({ ...input, followUps: [...(input.followUps ?? []), accepted.turn.turn_id] }), attempt.attempt_id); return accepted; });
       return { ...this.receipt(row), turnId: receipt.turn.turn_id, duplicate: receipt.duplicate, queued: true };
     }
-    const target = JSON.parse(row.target_json) as Target, parent = this.selection(run.taskId), child = this.selection(childTaskId);
-    const tier = resolveTier(child.selection.driverId, lowerTier(parent.selection.tier as Tier, child.selection.tier as Tier)); if (!tier.ok) throw new DriverError('REJECTED', '子任务档位不可用');
-    this.d.tasks.setSelection(childTaskId, { tier: tier.tier }, child.task.selection_revision);
+    const target = JSON.parse(row.target_json) as Target;
     const old = this.attempt(row), id = randomUUID();
     this.d.store.tx(() => { this.d.store.sqlite.prepare("INSERT INTO agent_delegation_attempts(attempt_id,delegation_id,ordinal,kind,input_ref,created_at) VALUES(?,?,?,'rework',?,?)").run(id, row.delegation_id, old.ordinal + 1, JSON.stringify({ text, requestKey, sourceKind: 'delegation' }), at()); this.update(row, 'queued', { ...target, startHead: old.commit_range && old.merge_check_json && JSON.parse(old.merge_check_json).pass ? JSON.parse(old.commit_range).head : target.startHead, resultItemId: undefined, mergeFailures: 0 });
       const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${id}`, text: this.childInput(text, target), sourceKind: 'delegation' });
@@ -334,9 +336,23 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       if (child.delivery_state !== 'running') return false;
       const target = JSON.parse(child.target_json) as Target;
       if (target.profile.revision !== this.d.profile(target.profile.profileId).revision) throw new DriverError('REJECTED', '委派目标配置已经变化，保留原收据，须重新委派');
-      const c = this.selection(taskId), p = this.selection(child.parent_task_id), tier = resolveTier(c.selection.driverId, lowerTier(c.selection.tier as Tier, p.selection.tier as Tier));
+      const current = this.selection(taskId);
+      const parentTier = this.selection(child.parent_task_id).selection.tier as Tier;
+      const tier = resolveTier(current.selection.driverId, parentTier);
       if (!tier.ok) throw new DriverError('REJECTED', '无法继承父任务档位');
-      if (tier.tier !== c.selection.tier) this.d.tasks.setSelection(taskId, { tier: tier.tier }, c.task.selection_revision);
+      const tierNotice = tier.downgraded ? tier.reason : undefined;
+      const selectionChanged = tier.tier !== current.selection.tier;
+      const targetChanged = target.parentTier !== parentTier || target.tier !== tier.tier || target.tierNotice !== tierNotice;
+      if (selectionChanged || targetChanged) this.d.store.tx(() => {
+        if (selectionChanged) {
+          const updated = this.d.store.updateSelection(taskId, { tier: tier.tier }, current.task.selection_revision);
+          if (!updated.ok) throw new DriverError('STATE', '子任务档位已变化，请重试');
+        }
+        if (targetChanged) {
+          this.update(child, child.delivery_state, { ...target, tier: tier.tier, parentTier, tierNotice });
+          if (tierNotice) this.d.store.addHostItem(taskId, null, 'system_notice', { code: 'delegatedTierFallback', detail: tierNotice });
+        }
+      });
     }
     if (!this.admitWrite(taskId)) return false;
     const q = this.queue.forTask(taskId);
@@ -628,4 +644,3 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     throw new DriverError('REJECTED', '未知宿主工具');
   }
 }
-export const lowerTier = (a: Tier, b: Tier): Tier => a === 'ask' || b === 'ask' ? 'ask' : a === 'auto' || b === 'auto' ? 'auto' : 'full';

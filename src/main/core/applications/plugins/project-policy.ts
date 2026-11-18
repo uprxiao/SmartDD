@@ -15,6 +15,7 @@ import {pluginUiField,type PluginUiConnectionSelection} from '@shared/plugin-ui'
 import type {PluginWriteScope} from './write-approvals';
 import type {ApplicationOperationContext} from '../tool-service';
 import {hostedIdentitySchema} from '../host-application-registry';
+import { selectedTaskTier } from '../../agent/permissions';
 
 interface ConnectionRow {
   id:string;name:string;app_id:string;provider_id:string;identity_revision:number;revision:number;config_revision:number;config_schema_version:number;
@@ -141,5 +142,14 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     // All bound connection revisions, not just this capability's slots, bind list/detail/resource reads to one page account.
     check();return work({connection,summary,connectionSelection,targets,scopeHash:digest(canonicalJson({projectId,appId:manifest.id,stamp,connections:originalRevisions})),check});
   }
-  approve:PluginToolPolicy['approve']=async(...args)=>{const[context,selection,capability,input,operation]=args;this.authorize(context,selection,capability);const task=this.store.sqlite.prepare('SELECT a.selection_json,p.selection_json AS parent_selection FROM agent_tasks a LEFT JOIN agent_tasks p ON p.task_id=a.parent_task_id WHERE a.task_id=?').get(context.run.taskId) as {selection_json:string;parent_selection:string|null}|undefined;if(task){const manifest=this.lifecycle.packages.get(operation.packageHash).plugin.manifest,cap=manifest.capabilities[capability.id],tiers=[JSON.parse(task.selection_json).tier,task.parent_selection?JSON.parse(task.parent_selection).tier:'full',cap?.maxTier??'full'];if(tiers.every(t=>t==='full')||context.taskBusiness?.operationId===operation.operationId)return ()=>this.authorize(this.options.assertRun(context.run.runId),selection,capability);throw new ApplicationError('AUTHORIZATION_REQUIRED','插件写操作需要持久请求批准');}return this.options.approve(...args);};
+  approve: PluginToolPolicy['approve'] = async (...args) => {
+    const [context, selection, capability, _input, operation] = args;
+    this.authorize(context, selection, capability);
+    const task = this.store.sqlite.prepare('SELECT a.selection_json,p.selection_json AS parent_selection FROM agent_tasks a LEFT JOIN agent_tasks p ON p.task_id=a.parent_task_id WHERE a.task_id=?').get(context.run.taskId) as {selection_json:string;parent_selection:string|null}|undefined;
+    if (!task) return this.options.approve(...args);
+    const manifest = this.lifecycle.packages.get(operation.packageHash).plugin.manifest;
+    const fullAccess = selectedTaskTier(task.selection_json, task.parent_selection) === 'full' && (manifest.capabilities[capability.id]?.maxTier ?? 'full') === 'full';
+    if (fullAccess || context.taskBusiness?.operationId === operation.operationId) return () => this.authorize(this.options.assertRun(context.run.runId), selection, capability);
+    throw new ApplicationError('AUTHORIZATION_REQUIRED', '插件写操作需要持久请求批准');
+  };
 }
