@@ -38,14 +38,17 @@ try{
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(3425,'127.0.0.1',resolve);});
   app=await openElectron({userData,env:{HOME:home,CODEX_HOME:join(home,'.codex'),CLAUDE_CONFIG_DIR:join(home,'.claude')},inspectMain:true});
   await app.cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});
-  await app.invoke('agents.refreshTools'); const tools=await app.invoke('agents.tools');
+  await app.invoke('agents.refreshTools');
+  if (process.env.M14_SMOKE_CLAUDE) await app.invoke('agents.customToolPath','claude',process.env.M14_SMOKE_CLAUDE);
+  const tools=await app.invoke('agents.tools');
+  result.nativeTools=tools.filter(t=>['codex','claude'].includes(t.kind)&&t.installed).map(t=>({kind:t.kind,version:t.version}));
   const provider=await app.invoke('agents.saveProvider',{name:'Loopback fixture',preset:'magpie',endpoints:{responses:'http://127.0.0.1:3425/v1',anthropic:'http://127.0.0.1:3425/'},models:[{id:'parent-fixture',name:'parent-fixture'},{id:'child-fixture',name:'child-fixture'}]});
   const profiles={};for(const kind of ['codex','claude']){const tool=tools.find(t=>t.kind===kind&&t.installed);assert(tool,kind+' installed');profiles[kind]=await app.invoke('agents.save',{name:'Fixture '+kind,toolId:tool.id,source:'provider',providerId:provider.id,models:['parent-fixture','child-fixture'],defaultModel:'parent-fixture',isDefault:kind==='codex'});}
   const project=await app.invoke('projects.create',{name:'Delegation fixture',aliases:[],description:'',rulesPath:null},[{label:'work',path:cwd}]);
   await app.evaluate(`localStorage.setItem('willyou-m14-agent-workspace','true');location.reload();true`);await app.waitFor(`!!document.querySelector('.agent-model-pill')`,20000);
   for(const kind of ['codex','claude']){
     parentKind=kind;targetProfile=profiles[kind==='codex'?'claude':'codex'].id;
-    const task=await app.invoke('agentTasks.create',{projectId:project.id,dirId:null,cwd,title:'Parent '+kind,profileId:profiles[kind].id,model:'parent-fixture',tier:'ask'});
+    const task=await app.invoke('agentTasks.create',{projectId:project.id,dirId:project.dirs[0].id,cwd,title:'Parent '+kind,profileId:profiles[kind].id,model:'parent-fixture',tier:'ask'});
     activeTaskId=task.taskId;await app.waitFor(`!!document.querySelector('[data-testid="sidebar-agent-task"][data-task-id="${task.taskId}"]')`,20000);
     await click(`[data-testid="sidebar-agent-task"][data-task-id="${task.taskId}"]`);
     await click('.agent-task-view textarea');await app.cdp('Input.insertText',{text:'Use the mail draft tool once to save the fixture draft, then return BUSINESS_WAIT. Do not poll.'});await click('.agent-task-view button[type="submit"]');
@@ -54,7 +57,7 @@ try{
     await until(async()=>{snapshot=await app.invoke('agentTasks.snapshot',task.taskId);return !snapshot.turns.some(t=>['dispatching','started'].includes(t.status));},kind+' tool returns before user decision');
     if(kind==='codex'){const opened=Date.now();await until(async()=>{const s=await app.invoke('agentTasks.snapshot',task.taskId);assert(s.requests.some(r=>r.requestId===request.requestId));return Date.now()-opened>=61000;},'request still waiting beyond 60 seconds',66000);result.waitedMs=Date.now()-opened;}
     const draftsBefore=await app.invoke('applications.drafts',project.id);assert.equal(draftsBefore.ok,true);assert.equal(draftsBefore.value.items.length,result.assertions.length);
-    await app.waitFor(`!!document.querySelector('.agent-request-options button')`,10000);assert.equal(await app.evaluate("document.querySelectorAll('.agent-request-options button').length"),2);await click('.agent-request-options button');
+    await app.waitFor(`!!document.querySelector('.agent-request-options button')`,10000);assert.equal(await app.evaluate("document.querySelectorAll('.agent-request-options button').length"),2);await click('.agent-request-options button');await click('.agent-confirm-choice');
     await until(async()=>{const d=await app.invoke('applications.drafts',project.id);return d.ok&&d.value.items.length===result.assertions.length+1;},kind+' approved real draft write');
     await until(async()=>{const s=await app.invoke('agentTasks.snapshot',task.taskId);return s.items.some(i=>i.type==='notification'&&i.payload.status==='finished');},kind+' canonical business result');
     await until(async()=>{const s=await app.invoke('agentTasks.snapshot',task.taskId);return s.items.some(i=>i.type==='assistant_message'&&i.payload.text?.includes('BUSINESS_RESULT_RECEIVED'))&&s.queued.length===0;},kind+' result wakes current binding');

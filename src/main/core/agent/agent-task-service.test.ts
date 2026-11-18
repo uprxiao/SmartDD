@@ -917,3 +917,70 @@ it('A29/A45: native child messages have independent scoped pagination and cannot
  const second=f.svc.nativeHistory(taskId,parent,first.nextOrdinal!);expect(second.items).toHaveLength(50);const third=f.svc.nativeHistory(taskId,parent,second.nextOrdinal!);expect(third.items).toHaveLength(20);expect(third.hasMore).toBe(false);
  await f.runs.closeAll();
 });
+
+describe('S1/S2 排队输入与确认未发送的重试', () => {
+  const sender = {} as import('../applications/execution-context').ApplicationUiSender;
+  it('edits the same input and preserves frozen attachment bytes into one verified steer', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-queue-edit-'))), cwd = join(root, 'w'), ud = join(root, 'ud');
+    mkdirSync(cwd); mkdirSync(ud);
+    const image = join(cwd, 'p.png');
+    writeFileSync(image, 'old image bytes');
+    const { svc, insts, store } = setup({ userData: ud });
+    const {taskId} = svc.create({ projectId:null, dirId:null, cwd, profileId:'cx', tier:'ask', title:'queue' });
+    await svc.submit(taskId,{clientInputId:id(8),text:'first',expectedSelectionRevision:1});
+    await until(() => insts[0]?.turns.length === 1);
+    const attachment = svc.prepareAttachment(taskId,null,{name:'p.png',sourcePath:image});
+    const receipt = await svc.submit(taskId,{clientInputId:id(9),text:'before edit',attachments:[attachment],expectedSelectionRevision:1});
+    const before = svc.snapshot(taskId).queued[0];
+    const item = store.items(taskId).find(i => i.turnId === receipt.turnId)!;
+    const frozen = JSON.parse(store.inputForTurn(receipt.turnId)!.input_ref).attachments[0].storedPath;
+    writeFileSync(image,'new image bytes');
+    svc.editQueued(taskId,receipt.turnId,before.version,'edited text');
+    const after = svc.snapshot(taskId).queued[0];
+    expect(after).toMatchObject({turnId:before.turnId,acceptedAt:before.acceptedAt,attachmentCount:1,text:'edited text'});
+    expect(after.version).not.toBe(before.version);
+    expect(store.itemById(taskId,item.itemId)?.revision).toBe(item.revision+1);
+    expect(store.turn(receipt.turnId)?.client_input_id).toBe(id(9));
+    expect(() => svc.editQueued(taskId,receipt.turnId,before.version,'stale')).toThrow(/已变化/);
+    await expect(svc.sendQueued(taskId,receipt.turnId,before.version,1,sender)).rejects.toThrow(/已变化/);
+    insts[0].steerFails = true;
+    await expect(svc.sendQueued(taskId,receipt.turnId,after.version,1,sender)).rejects.toThrow(/expectedTurnId/);
+    expect(svc.snapshot(taskId).queued[0]).toEqual(after);
+    insts[0].steerFails = false;
+    await expect(svc.sendQueued(taskId,receipt.turnId,after.version,1,sender)).resolves.toEqual({status:'steered'});
+    expect(insts[0].steers).toHaveLength(1);
+    expect(insts[0].steers[0]).toMatchObject({ clientInputId:id(9),text:expect.stringContaining('edited text'),images:[{path:frozen,mime:'image/png'}] });
+    expect(readFileSync(frozen,'utf8')).toBe('old image bytes');
+    await expect(svc.sendQueued(taskId,receipt.turnId,after.version,1,sender)).rejects.toThrow(/没有可操作/);
+  });
+
+  it('retains the paused FIFO, refuses jumping the queue, and allows manual send of its head', async () => {
+    const {svc,store,insts} = setup();
+    const {taskId} = svc.create({projectId:null,dirId:null,cwd:'/w',profileId:'cx',tier:'ask',title:'idle queue'});
+    await svc.stop(taskId);
+    const first = store.acceptTurn({taskId,clientInputId:id(2),text:'first',sourceKind:'user'}).turn.turn_id;
+    const second = store.acceptTurn({taskId,clientInputId:id(3),text:'second',sourceKind:'user'}).turn.turn_id;
+    const [a,b] = svc.snapshot(taskId).queued;
+    await expect(svc.sendQueued(taskId,second,b.version,1,sender)).rejects.toThrow(/队列顺序/);
+    expect(insts).toHaveLength(0);
+    svc.cancelQueued(taskId,second);
+    await svc.sendQueued(taskId,first,a.version,1,sender);
+    await until(() => insts[0]?.turns.length === 1);
+    expect(insts[0].turns[0].text).toBe('first');
+  });
+
+  it('retries a known unsent input once and rejects retry of unknown delivery', async () => {
+    const {svc,store,insts} = setup();
+    const {taskId} = svc.create({projectId:null,dirId:null,cwd:'/w',profileId:'cx',tier:'ask',title:'retry'});
+    const failed = store.acceptTurn({taskId,clientInputId:id(4),text:'original',sourceKind:'user'}).turn.turn_id;
+    store.endTurn(failed,'failed','OPEN_FAILED');
+    const unknown = store.acceptTurn({taskId,clientInputId:id(5),text:'unknown',sourceKind:'user'}).turn.turn_id;
+    store.endTurn(unknown,'unknown','TIMEOUT');
+    expect(() => svc.retryFailedInput(taskId,unknown,1,sender)).toThrow(/未发送/);
+    const retry = svc.retryFailedInput(taskId,failed,1,sender);
+    expect(svc.retryFailedInput(taskId,failed,1,sender)).toEqual(retry);
+    await until(() => insts[0]?.turns.length === 1);
+    expect(insts[0].turns[0].text).toBe('original');
+    expect(store.turn(retry.turnId)?.client_input_id).not.toBe(id(4));
+  });
+});

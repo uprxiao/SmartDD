@@ -350,7 +350,7 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
   }
   recordAgentHumanInput(runId:string,sender:import('./execution-context').ApplicationUiSender,text:string,sequence:number){const context=this.runs.assertActive(runId),row=this.support.store.sqlite.prepare('SELECT pty_id FROM capability_runs WHERE run_id=? AND binding_id IS NOT NULL').get(runId) as {pty_id:string}|undefined;if(row)this.applications.nativeInputs.observeAgent(sender,context,row.pty_id,text,sequence);}
   agentContext(runId:string){return this.runs.assertActive(runId);}
-  assertAgentApplication(taskId:string,appId:'browser'|'mail'|'zentao'|'sample-kv'){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string}|undefined;if(!task)throw new ApplicationError('SCOPE_DENIED','任务不存在');this.applications.selections.requireApplicationEnabled(task.project_id,appId);}
+  assertAgentApplication(taskId:string,appId:'browser'){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string}|undefined;if(!task)throw new ApplicationError('SCOPE_DENIED','任务不存在');this.applications.selections.requireApplicationEnabled(task.project_id,appId);}
   async prepareAgent(input: { runId: string; bindingId: string; generation: number; task: TaskLaunchInput; version: string; assertCurrent(): void }): Promise<RunIntegration> {
     if (this.closed) throw new ApplicationError('CANCELED', '应用服务已关闭');
     const store = this.support.store, task = input.task, runner = this.support.adapters.deliveryAdapters.forRunner(task.profile.runner).id;

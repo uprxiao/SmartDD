@@ -124,15 +124,36 @@ export const HomeView = observer(function HomeView() {
 
   // M14 首页附件：随新任务第一条消息发送；准备中或失败时“启动任务”与 ⌘Enter 都不创建任务、不清空（用例 A75）。
   const [chips, setChips] = useState<Chip[]>([]);
+  const preparing = useRef(new Set<string>());
+  const discardChip = (chip: Chip) => {
+    preparing.current.delete(chip.localId);
+    if (chip.preview) URL.revokeObjectURL(chip.preview);
+    if (chip.data?.storedPath) void rpc.agentTasks.discardAttachment(null,chip.data).catch(e=>setError(rpcErrorMessage(e)));
+  };
+  const removeChip = (id: string) => {
+    const chip = chips.find(item=>item.localId===id);
+    if (chip) discardChip(chip);
+    setChips(all=>all.filter(item=>item.localId!==id));
+  };
   // 首页附件绑定准备时的目录：切换项目或目录时清掉，避免按新目录重新解释同名文件（复核 NR12）。
-  useEffect(() => { setChips(cs => { if (cs.length) setError('切换了项目或目录，已移除之前添加的附件'); return []; }); }, [projectId, dir?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (chips.length) { setError('切换了项目或目录，已移除之前添加的附件'); chips.forEach(discardChip); setChips([]); }
+  }, [projectId, dir?.id]);
+  useEffect(()=>()=>preparing.current.clear(),[]); // eslint-disable-line react-hooks/exhaustive-deps
   const addFiles = (files: File[]) => {
     if (!agentTasksStore.enabled || !dir) return;
     for (const file of files) {
       const localId = crypto.randomUUID(), preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      preparing.current.add(localId);
       setChips(cs => [...cs, { localId, name: file.name || '粘贴的图片', status: 'preparing', preview, file }]);
       void prepareChip(file, f => rpc.agentTasks.prepareAttachment(null, dir.path, f))
-        .then(data => setChips(cs => cs.map(c => c.localId === localId ? { ...c, status: 'ready', data, name: data.name } : c)))
+        .then(data => {
+          if (!preparing.current.delete(localId)) {
+            if (data.storedPath) void rpc.agentTasks.discardAttachment(null,data).catch(()=>{});
+            return;
+          }
+          setChips(cs=>cs.map(c=>c.localId===localId?{...c,status:'ready',data,name:data.name}:c));
+        })
         .catch(e => setChips(cs => cs.map(c => c.localId === localId ? { ...c, status: 'failed', error: rpcErrorMessage(e) } : c)));
     }
   };
@@ -200,7 +221,7 @@ export const HomeView = observer(function HomeView() {
         <button data-testid="home-task-settings" className="composer-settings" title={t('m6.taskSettings')} aria-label={t('m6.taskSettings')} onClick={() => setLaunchSettings(true)}><Settings size={16} /></button>
       </div>
       <form className="reference-composer" onSubmit={(e) => { e.preventDefault(); void launch(); }}>
-        {agentTasksStore.enabled && <AttachmentChips chips={chips} onRemove={id => setChips(cs => cs.filter(c => c.localId !== id))} onRetry={id => { const c = chips.find(x => x.localId === id); setChips(cs => cs.filter(x => x.localId !== id)); if (c?.file) addFiles([c.file]); }} />}
+        {agentTasksStore.enabled && <AttachmentChips chips={chips} onRemove={removeChip} onRetry={id => { const c = chips.find(x => x.localId === id); removeChip(id); if (c?.file) addFiles([c.file]); }} />}
         <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length && agentTasksStore.enabled) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (agentTasksStore.enabled && e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length && agentTasksStore.enabled) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void launch(); } }} />
         <div className="reference-composer-toolbar">
           <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">

@@ -54,7 +54,7 @@ function ResourceEditor({ kind, resource, onClose, onSave }) {
   </form></Dialog>;
 }
 
-export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, onNewTask, onOpenTask, onExport, applications, bundledApplications, appsLabel, skillsTab = true }) {
+export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, onUpdate, onDelete, renderDelete, onNewTask, onOpenTask, onExport, applications, bundledApplications, appsLabel, skillsTab = true }) {
   const [modal, setModal] = useState(null);
   const collection = COLLECTIONS[tab];
   const update = next => onUpdate({ ...next, configVersion: Math.max(next.configVersion, project.configVersion + 1) });
@@ -81,6 +81,6 @@ export function ProjectWorkspace({ project, tab, profiles, tasks, onNavigate, on
     {modal?.type === 'edit' && <ProjectEditor project={project} onClose={() => setModal(null)} onSave={values => { update({ ...project, ...values }); setModal(null); }} />}
     {modal?.type === 'resource' && <ResourceEditor kind={modal.collection} resource={modal.resource} onClose={() => setModal(null)} onSave={value => { update(saveResource(project, modal.collection, value)); setModal(null); }} />}
     {modal?.type === 'delete-resource' && <ConfirmDialog title={'删除' + NAMES[modal.collection] + '？'} description="移除项目中的资源配置；不会删除实际文件、数据库或服务器。" secrets={modal.collection !== 'dirs'} onClose={() => setModal(null)} onConfirm={() => { update(removeResource(project, modal.collection, modal.resource.id)); setModal(null); }} />}
-    {modal?.type === 'delete-project' && <ConfirmDialog title={'删除项目 ' + project.name + '？'} description="移除项目配置；任务历史保留在未关联项目中。" secrets onClose={() => setModal(null)} onConfirm={() => { onDelete(project.id); setModal(null); }} />}
+    {modal?.type === 'delete-project' && (renderDelete?.(() => setModal(null)) ?? <ConfirmDialog title={'删除项目 ' + project.name + '？'} description="移除项目配置；任务历史保留在未关联项目中。" secrets onClose={() => setModal(null)} onConfirm={() => { onDelete(project.id); setModal(null); }} />)}
   </div></section>;
 }

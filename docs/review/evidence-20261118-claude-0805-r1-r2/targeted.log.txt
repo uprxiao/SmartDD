@@ -1,0 +1,57 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/delegation-service.test.ts src/main/core/agent/host-business-requests.test.ts --maxWorkers=1 --reporter=verbose
+
+[1118/121439.359133:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1118/121439.524299:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/agent/delegation-service.test.ts > A19/A24/A32: delegation is durable/idempotent and returns before the child starts; release requires actual exit plus independent drain 2055ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A24/A31/A32: two children and a new parent input share FIFO; the parent cannot reacquire ahead of either child 97ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A25/A27/A28: stop cancels queued children, mode closes only after children drain, and unrelated tasks cannot observe results 59ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A66/A68: Git child runs in the mapped host worktree; child result is committed by the host and only its attempt commits are advertised 1232ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A29/A32: native background work outlives the parent turn and retains the write slot until its own terminal event 1048ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A70: pause intent precedes release; a child result resumes the identical native goal only after its notification turn starts 1067ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A70: user stop while waiting preserves the result without waking or restoring the goal 1153ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A70: a different native revision declines automatic recovery and leaves a manual continuation 1062ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A33: only host-verified read roles run beside a writer; promotion closes read ownership before FIFO write admission 1051ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A28: terminal child rework is atomic, reuses its native binding, and explicitly clears an earlier stop 1070ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A67/A70: an active goal still reaches a stable merge check and resumes after a proven merge 1351ms
+ ✓ src/main/core/agent/delegation-service.test.ts > A67: exactly two failed merge rounds produce a persistent needs-attention state without another automatic retry 1462ms
+ ✓ src/main/core/agent/delegation-service.test.ts > E12/A05: a normal round end keeps the actual owner and binding alive when no directory handoff is needed 95ms
+ ✓ src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same Git directory overlap and retain their native sessions 78ms
+ ✓ src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same SVN directory overlap and retain their native sessions 62ms
+ ✓ src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same plain directory overlap and retain their native sessions 59ms
+ ✓ src/main/core/agent/delegation-service.test.ts > P1: another independent task can answer while a related parent and child hand off the same SVN directory 1060ms
+ ✓ src/main/core/agent/delegation-service.test.ts > P1: concurrent Git parents with identically named delegations get two distinct worktrees 504ms
+ ✓ src/main/core/agent/delegation-service.test.ts > R1: automatic commit waits for the other turn and its background node; new input resumes before dependencies finish 1055ms
+ ✓ src/main/core/agent/delegation-service.test.ts > R1: stop parent releases queued input without committing 284ms
+ ✓ src/main/core/agent/delegation-service.test.ts > R1: cancel child releases queued input without committing 268ms
+ ✓ src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports execute 706ms
+ ✓ src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports stop 690ms
+ ✓ src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports revoke 687ms
+ ✓ src/main/core/agent/delegation-service.test.ts > P3: stop releases the canceled business reservation from the real directory FIFO 1078ms
+ ✓ src/main/core/agent/delegation-service.test.ts > P3: revoke releases the canceled business reservation from the real directory FIFO 1078ms
+ ↓ src/main/core/agent/delegation-service.test.ts > P3: actual FIFO holds a business approval over 61 seconds and then starts a full execution budget
+ ✓ src/main/core/agent/delegation-service.test.ts > A28/A67: rework before the first result is merged includes the previous unmerged commits in its final range 1386ms
+[1118/121501.591350:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: waiting has no expiry, survives native exit/switch and restart, then executes once with current task authority 24ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: no owner approval is persistent pending-bind, never an early usable grant; a later registered run binds once 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: stopping/revoking before bind prevents the successor from receiving authority 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: changed account/content fails the late approval and cannot replace the stored original review 15ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: interrupted execution is recorded unknown after restart and never automatically replayed 15ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: a slot wait longer than 60 seconds does not consume the 60-second execution budget 17ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: stop during admission cancels the approval before any effect 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: revoke during admission cancels the approval before any effect 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: execution still times out after admission and retains its lease until the effect settles 37ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > R2: with no admission callback the budget begins as soon as execution can proceed 17ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: after a restart a queued approval returns to the original review and cannot run without a fresh decision 17ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: a run ending during the FIFO wait produces pending-bind rather than a grant on its stale identity 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: cancellation cannot release a business lease while its executor still has an external effect in flight 15ms
+
+ Test Files  2 passed (2)
+      Tests  40 passed | 1 skipped (41)
+   Start at  12:14:39
+   Duration  22.42s (transform 138ms, setup 0ms, import 230ms, tests 22.03s, environment 0ms)
+

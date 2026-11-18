@@ -35,7 +35,7 @@ try {
   await check('home selection changed without submitting form', `!document.querySelector('.agent-task-view')&&document.querySelector('.agent-model-pill').textContent.includes('UI claude')&&!document.querySelector('.agent-picker')`);
   await shot('01-home-picker');
   const dirs = await app.invoke('projects.get', project.id);
-  const task = await app.invoke('agentTasks.create', { projectId: project.id, dirId: dirs.dirs?.[0]?.id ?? null, cwd, title: 'Idle switching fixture', profileId: profiles[0].id, tier: 'ask' });
+  const task = await app.invoke('agentTasks.create', { projectId: project.id, dirId: dirs.dirs[0].id, cwd, title: 'Idle switching fixture', profileId: profiles[0].id, tier: 'ask' });
   await check('prepared task visible', `!!document.querySelector('[data-testid="sidebar-agent-task"]')`);
   await click('[data-testid="sidebar-agent-task"]');
   await check('task view opened', `!!document.querySelector('.agent-task-view .agent-model-pill')`);

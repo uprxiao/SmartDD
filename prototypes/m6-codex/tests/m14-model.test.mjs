@@ -62,15 +62,18 @@ test('实时标签只写程序名；思考取 **标题**', () => {
   assert.equal(thoughtHeading('**检查打包配置**\n正文'), '检查打包配置');
 });
 test('多 Agent 协作（Git）：只读并行、等待批准、写入在工作副本里同时运行，末尾为“等待 3 个子任务”', () => {
-  const t = SCENARIOS.find(s => s.id === 'team');
+  const t = SCENARIOS.find(s => s.id === 'team-worktree');
   const rows = deriveRows(t.turns[0]);
   assert.equal(rows.at(-1).label, '等待 3 个子任务');
   const sub = rows.find(r => r.kind === 'subagents').entry.rows;
-  assert.deepEqual(sub.map(r => [r.access, r.state]), [['只读', 'running'], ['只读', 'waiting'], ['写入', 'running']]);
+  assert.deepEqual(sub.map(r => [r.access, r.state]), [['只读', 'running'], ['只读', 'waiting'], ['写入', 'running'], ['写入', 'queued']]);
   assert.match(sub[2].branch, /^feature\/0\.1\.6_willyou_[a-z0-9-]+$/);
   assert.ok(!sub[0].branch && !sub[1].branch, '只读子任务不建工作副本');
   assert.equal(t.childApprovals.length, 1);
   assert.equal(t.vcs, 'git');
+  const shared = SCENARIOS.find(s => s.id === 'team');
+  assert.equal(shared.children[2].state, 'queued');
+  assert.ok(shared.children.every(child => !child.branch));
 });
 
 test('P0.7：业务审批在场时不显示“思考中”；计划与压缩在折叠后仍露出', () => {
@@ -133,11 +136,11 @@ test('P0.13：合并由主 Agent 完成，宿主核对结果在折叠后仍露�
   assert.equal(mc.turns.flatMap(t => deriveRows(t)).filter(r => r.kind === 'sysnote').length, 2);
   assert.ok(!JSON.stringify(mc).match(/reset --hard|checkout -- \.|clean -fd/) || JSON.stringify(mc).includes('不会执行 reset'));
 });
-test('P0.13：打回发回原子任务（原会话追加一轮），独立复核另派只读子任务', () => {
+test('P0.20：共用目录原子任务连续审查、修改、再审查', () => {
   const sc = SCENARIOS.find(s => s.id === 'team-rework');
-  const k3 = sc.children.find(c => c.id === 'k3'), k4 = sc.children.find(c => c.id === 'k4');
-  assert.equal(k3.turns.length, 2); assert.equal(k3.state, 'running'); assert.ok(k3.branch);
-  assert.equal(k4.access, '只读'); assert.ok(!k4.branch);
+  assert.equal(sc.children.length, 1);
+  assert.equal(sc.children[0].turns.length, 3);
+  assert.ok(!sc.children[0].branch);
   assert.ok(sc.turns[0].entries.some(e => e.kind === 'tool' && e.name.startsWith('wy_send')));
 });
 test('P0.13：目标条目独立成行、折叠后仍露出；Claude 目标只能清除', () => {

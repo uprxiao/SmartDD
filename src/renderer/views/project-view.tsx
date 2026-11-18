@@ -8,6 +8,7 @@ import { DB_VENDORS, isProdEnv, type DatabaseView, type ProjectDetail, type Proj
 import { navigation,type ProjectSectionId } from '@renderer/core/navigation';
 import { ProjectApplications } from '@renderer/features/applications/project-applications';
 import '@renderer/features/applications/style.css';
+import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { tasksStore } from '@renderer/core/tasks-store';
 import { useProject, useRefreshProjects } from '@renderer/lib/hooks/useProjects';
 import { rpc } from '@renderer/lib/ipc';
@@ -178,7 +179,8 @@ function Card({ prod, children, testId }: { prod?: boolean; children: ReactNode;
 
 const Tasks = observer(function Tasks({ project }: { project: ProjectDetail }) {
   const { t } = useTranslation();
-  const tasks = tasksStore.tasks.filter((x) => x.projectId === project.id);
+  const tasks = agentTasksStore.enabled ? [] : tasksStore.tasks.filter((x) => x.projectId === project.id);
+  const agentTasks = agentTasksStore.enabled ? agentTasksStore.of(project.id) : [];
   return (
     <div className="flex flex-col gap-3">
       {project.archivedAt === null && (
@@ -189,7 +191,12 @@ const Tasks = observer(function Tasks({ project }: { project: ProjectDetail }) {
           </Button>
         </div>
       )}
-      {tasks.length === 0 && <p className="text-sm text-foreground-passive">{t('tasks.noneInProject')}</p>}
+      {tasks.length + agentTasks.length === 0 && <p className="text-sm text-foreground-passive">{t('tasks.noneInProject')}</p>}
+      {agentTasks.map(task=><button key={task.taskId} type="button" data-testid="project-agent-task"
+        className="flex items-center rounded-lg border border-border px-4 py-2.5 text-left hover:bg-background-1"
+        onClick={()=>navigation.openAgentTask(task.taskId)}>
+        <span className="truncate text-sm">{task.title}</span>
+      </button>)}
       {tasks.map((task) => (
         <button
           key={task.id}

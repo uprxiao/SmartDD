@@ -10,7 +10,7 @@ import { CapabilityService } from '../../capabilities/capability-service';
 import { ProjectService } from '../../projects/project-service';
 import { AgentSupportService } from '../agent-support-service';
 import { CapabilityBundleSource } from '../bundle-source';
-import { bundledAgentAdapters,bundledLegacyAgentAdapters } from '../agent-assets';
+import { bundledDistributionAgentAdapters } from '../agent-assets';
 import {activateBuiltinDistribution,builtinActivationReport,builtinActivationRequired,recoverBuiltinActivation} from '../activation-startup';
 import {acquireDatabaseAccess} from '../../../db/database-access-gate';
 import {ResourceStore} from '../resource-store';
@@ -46,13 +46,19 @@ describe('indexed production resource bootstrap and nonfatal readiness',()=>{
     expect(f.adapters.effective(old.hash,'0.167.1').verified).toBe(false);
   });
   it('builds an index whose complete adapter/runtime hashes match the runtime registries',async()=>{
-    const source=new CapabilityBundleSource(output);expect(source.index.build.appVersion).toMatch(/^\d+\.\d+\.\d+$/);expect(source.index.adapters).toHaveLength(10);expect(source.index.runtimes).toHaveLength(1);
+    const source=new CapabilityBundleSource(output);expect(source.index.build.appVersion).toMatch(/^\d+\.\d+\.\d+$/);expect(source.index.adapters).toHaveLength(12);expect(source.index.runtimes).toHaveLength(1);
     const installed=await new RuntimeRegistry(f.store).install(source.runtime());expect(installed.contentHash).toBe(source.index.runtimes[0].hash);
-    for(const bundle of source.adapters()){const record=await f.adapters.install(bundle.metadata,bundle.files);expect(record.hash).toBe(bundle.hash);expect([...bundledAgentAdapters(),...bundledLegacyAgentAdapters()].find(a=>a.metadata.agentId===bundle.metadata.agentId&&a.metadata.version===bundle.metadata.version)!.files).toEqual(bundle.files);}
+    const expected = new Map(bundledDistributionAgentAdapters().map(a => [`${a.metadata.agentId}@${a.metadata.version}`, a.files]));
+    expect(expected.size).toBe(12);
+    for (const bundle of source.adapters()) {
+      const record = await f.adapters.install(bundle.metadata, bundle.files);
+      expect(record.hash).toBe(bundle.hash);
+      expect(bundle.files).toEqual(expected.get(`${bundle.metadata.agentId}@${bundle.metadata.version}`));
+    }
   });
   it('initializes once from actual indexed files and exposes only prepared resources, with native discovery still unverified',async()=>{
     const service=new AgentSupportService(f.store,capabilities,output),first=service.initialize();expect(service.initialize()).toBe(first);await first;const status=service.status();expect(status.state).toBe('ready');expect(status.adapters.map(a=>a.agentId+'@'+a.version).sort()).toEqual(['claude-code@1.0.0','claude-code@1.1.0','claude-code@1.2.0','claude-code@1.3.0','claude-code@1.4.0','codex@1.0.0','codex@1.1.0','codex@1.2.0','codex@1.3.0','codex@1.4.0','codex@1.5.0','codex@1.6.0']);expect(status.adapters.every(a=>a.filesReady&&a.nativeDiscovery==='unverified'&&a.bridgeRecovery==='unverified'&&a.configReload==='unverified'&&a.recoveryRequiresAgentRestart===null&&a.recoveryEvidence?.length===0)).toBe(true);expect(status.legacyResourceCount).toBe(3);expect(existsSync(join(f.home,'.agents'))).toBe(false);
-    status.adapters.length=0;expect(service.status().adapters).toHaveLength(10);expect(f.packages.active('zentao')?.packageHash).toBe(f.application.packageHash);
+    status.adapters.length=0;expect(service.status().adapters).toHaveLength(12);expect(f.packages.active('zentao')?.packageHash).toBe(f.application.packageHash);
   });
   it('does not throw when the distribution index is missing, leaving existing installed versions usable',async()=>{
     const service=new AgentSupportService(f.store,capabilities,join(f.root,'missing-index'));await expect(service.initialize()).resolves.toBeUndefined();expect(service.status()).toMatchObject({state:'unavailable',errorCode:'INVALID_PACKAGE'});expect(f.adapters.verify(f.installedAdapters[0].hash).resource.state).toBe('ready');

@@ -10,7 +10,7 @@ export type ViewId = (typeof VIEW_IDS)[number];
 export type ApplicationPage = 'catalog' | 'skills' | 'projects' | 'activity' | ApplicationId | `plugin:${string}`;
 export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | 'capabilities' | 'applications' | 'tasks';
 
-export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications';
+export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications' | 'archivedAgentTasks';
 
 class NavigationStore {
   currentViewId: ViewId = 'home';
@@ -23,6 +23,7 @@ class NavigationStore {
   currentTaskId: string | null = null;
   /** M14 新任务区显示的任务。 */
   currentAgentTaskId: string | null = null;
+  agentTaskReadOnly = false;
   applicationAgentTaskId:string|null=null;
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
@@ -64,9 +65,14 @@ class NavigationStore {
   homeInput(projectId:string|null):string{return this.homeInputDrafts.get(projectId)??'';}
   setHomeInput(projectId:string|null,value:string):void{if(value)this.homeInputDrafts.set(projectId,value);else this.homeInputDrafts.delete(projectId);}
 
-  openAgentTask(id: string): void {
+  openAgentTask(id: string, readOnly = false): void {
+    this.agentTaskReadOnly = readOnly;
     this.currentAgentTaskId = id;
     this.currentViewId = 'agentTask';
+  }
+
+  setAgentTaskReadOnly(id: string, readOnly:boolean): void {
+    if (this.currentAgentTaskId===id) this.agentTaskReadOnly=readOnly;
   }
 
   openTask(id: string): void {

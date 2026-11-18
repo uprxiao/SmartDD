@@ -1,6 +1,6 @@
 import type { ApplicationUiSender } from '../applications/execution-context';
 // T1.5 §8.1: task-owned business intent. Waiting is durable and has no deadline;
-// execution gets a new deadline only after a current, trusted UI decision.
+// Execution gets a new deadline only after admission, including any host preparation wait.
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { AgentStore, sha256, type RequestRow } from './agent-store';
@@ -10,7 +10,7 @@ const now = () => new Date().toISOString();
 export interface BusinessOrigin { taskId: string; bindingId: string; runId: string; generation: number }
 export interface BusinessPayload {
   businessKind: string; title: string; review: unknown; data: unknown;
-  phase: 'waiting_user' | 'approved_pending_bind' | 'executing' | 'finished' | 'failed' | 'unknown';
+  phase: 'waiting_user' | 'queued_for_slot' | 'approved_pending_bind' | 'executing' | 'finished' | 'failed' | 'unknown';
   options?: { label: string; value: string }[];
   decision?: unknown; executionStartedAt?: string; resultItemId?: string;
 }
@@ -43,6 +43,11 @@ export class HostBusinessRequests {
     // No automatic replay of an external effect whose host died mid-execution.
     for (const row of d.store.sqlite.prepare("SELECT * FROM agent_requests WHERE class='host_business' AND status='pending'").all() as RequestRow[]) {
       const p = JSON.parse(row.payload_ref) as BusinessPayload;
+      // Admission and the current UI decision are host-local. After restart the unchanged review can be approved again.
+      if (p.phase === 'queued_for_slot') d.store.tx(emit => {
+        this.d.store.sqlite.prepare('UPDATE agent_requests SET payload_ref=?,revision=revision+1,updated_at=? WHERE request_id=?').run(JSON.stringify({ ...p, phase: 'waiting_user' }), now(), row.request_id);
+        emit(row.task_id, 'request.changed', { requestId: row.request_id, status: 'pending' });
+      });
       if (p.phase === 'executing') this.d.store.tx(emit => {
         this.d.store.sqlite.prepare("UPDATE agent_requests SET payload_ref=?,status='resolved',revision=revision+1,updated_at=? WHERE request_id=? AND status='pending'").run(JSON.stringify({ ...p, phase: 'unknown' }), now(), row.request_id);
         this.d.store.addHostItem(row.task_id, null, 'notification', { sourceKind: 'system', title: p.title, status: 'unknown', summary: '宿主在业务执行期间退出，结果未知；请核对已有执行记录，不会自动重放。', requestId: row.request_id });
@@ -91,12 +96,15 @@ export class HostBusinessRequests {
   }
   async respond(taskId: string, requestId: string, revision: number, decision: unknown,sender?:ApplicationUiSender) {
     const record = this.record(requestId);
-    if (record.row.task_id !== taskId || record.row.revision !== revision || !['pending','approved_pending_bind'].includes(record.row.status) || !['waiting_user','approved_pending_bind'].includes(record.payload.phase) || this.deciding.has(requestId)) throw new DriverError('REJECTED', '请求已更新、已处理或正在处理');
+    if (record.row.task_id !== taskId || record.row.revision !== revision || !['pending','approved_pending_bind'].includes(record.row.status) || !['waiting_user','approved_pending_bind','queued_for_slot'].includes(record.payload.phase)) throw new DriverError('REJECTED', '请求已更新、已处理或正在处理');
+    const choice = z.object({ choice: z.string().max(128),displayReceiptId:z.uuid().optional(),reviewedUnknownExecutionIds:z.array(z.uuid()).max(100).optional(),instructions:z.string().max(16000).optional(),edits:z.object({to:z.string().max(8000),cc:z.string().max(8000),bcc:z.string().max(8000),subject:z.string().max(2000),text:z.string().max(512*1024)}).strict().optional() }).strict().parse(decision);
+    if (choice.choice === 'deny' || choice.choice === 'cancel') {
+      this.retire(requestId, record.payload.phase === 'waiting_user' ? '用户拒绝' : '用户撤销批准');
+      return { state: 'retired' };
+    }
+    if (this.deciding.has(requestId) || record.payload.phase !== 'waiting_user') throw new DriverError('REJECTED', '该请求正在处理或已批准，只能撤销');
     this.deciding.add(requestId);
     try {
-      const choice = z.object({ choice: z.string().max(128),displayReceiptId:z.uuid().optional(),reviewedUnknownExecutionIds:z.array(z.uuid()).max(100).optional(),instructions:z.string().max(16000).optional(),edits:z.object({to:z.string().max(8000),cc:z.string().max(8000),bcc:z.string().max(8000),subject:z.string().max(2000),text:z.string().max(512*1024)}).strict().optional() }).strict().parse(decision);
-      if (choice.choice === 'deny' || choice.choice === 'cancel') { this.retire(requestId, '用户拒绝'); return { state: 'retired' }; }
-      if(record.payload.phase!=='waiting_user')throw new DriverError('REJECTED','此授权已批准待绑定，只能撤销');
       const allowed = record.payload.options?.map(o => o.value) ?? ['allow'];
       if (!allowed.includes(choice.choice)) throw new DriverError('REJECTED', '不是此请求公布的批准选项');
       this.current(record); const handler = this.handlers.get(record.payload.businessKind); if (!handler) throw new DriverError('UNSUPPORTED', '此业务尚不能执行');
@@ -140,9 +148,19 @@ export class HostBusinessRequests {
   private execute(record:BusinessRecord,handler:BusinessHandler,decision:unknown,run?:RunHandle,sender?:ApplicationUiSender){const work=this.executeOwned(record,handler,decision,run,sender);this.inflight.add(work);void work.finally(()=>this.inflight.delete(work)).catch(()=>{});return work;}
   private async executeOwned(record: BusinessRecord, handler: BusinessHandler, decision: unknown, run?: RunHandle,sender?:ApplicationUiSender) {
     const id = record.row.request_id, taskId = record.row.task_id, controller = new AbortController(); this.executing.set(id, controller);
-    let release: (() => void) | undefined;const budget=this.d.executionMs??60000,deadline=Date.now()+budget,timeout=AbortSignal.timeout(budget),signal=AbortSignal.any([controller.signal,timeout]);
+    let release: (() => void) | undefined;
     try {
-      release = await this.d.acquire?.(taskId, record.row.operation_id, signal);
+      const budget = this.d.executionMs ?? 60_000;
+      if (this.d.acquire) {
+        if (record.payload.phase === 'waiting_user') {
+          this.update(record, 'pending', { ...record.payload, phase: 'queued_for_slot' });
+          record = this.record(id);
+        }
+        release = await this.d.acquire(taskId, record.row.operation_id, controller.signal);
+      }
+      controller.signal.throwIfAborted();
+      const deadline = Date.now() + budget;
+      const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(budget)]);
       this.current(record);
       // Approval may wait in the directory FIFO. Never attach it to the owner captured before that wait.
       if (handler.needsRun) {
@@ -170,6 +188,7 @@ export class HostBusinessRequests {
       });
       return { state: terminal, requestId: id };
     } catch (e) {
+      if (controller.signal.aborted && this.d.store.request(id)?.status === 'retired') return { state: 'retired', requestId: id };
       // No effect was launched. Retire this approval, rather than leaving an invisible FIFO retry behind.
       if (!this.closed) this.retire(id, '本次业务未执行：' + (e as Error).message);
       throw e;

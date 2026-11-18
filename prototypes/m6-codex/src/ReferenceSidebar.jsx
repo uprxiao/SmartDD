@@ -23,7 +23,7 @@ function Popup({ position, children, onClose, className = '' }) {
     }}>{children}</div></>, document.body);
 }
 
-export function ReferenceSidebar({ taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onSettings, onInfo }) {
+export function ReferenceSidebar({ agentMode = false, taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onSettings, onInfo }) {
   const [menu, setMenu] = useState(null);
   const [showArchived, setShowArchived] = useState(false), [showArchivedProjects, setShowArchivedProjects] = useState(false);
   const close = () => setMenu(null);
@@ -52,10 +52,10 @@ export function ReferenceSidebar({ taskStatus = null, projects, tasks, activePro
         <button className="reference-project-toggle" aria-label={(closedProjects.includes(p.id) ? '展开' : '折叠') + p.name} onClick={() => onToggleProject(p.id)}>{closedProjects.includes(p.id) ? <Folder size={16} /> : <FolderOpen size={16} />}</button>
         <button className="reference-project-name" title={p.name} onClick={() => onSelectProject(p.id)}>{p.name}</button>
         <div className="row-actions"><button className="row-action" aria-label={'项目菜单：' + p.name} title="项目详情" aria-haspopup="menu" aria-expanded={menu?.type === 'project' && menu.item.id === p.id} onClick={e => open(e, 'project', p)}><Ellipsis size={16} /></button><button className="row-action" aria-label={'在 ' + p.name + ' 新建任务'} title="新建任务" onClick={() => onHome(p.id)}><SquarePen size={15} /></button></div>
-      </div>{!closedProjects.includes(p.id) && <div className="reference-project-tasks">{tasks.filter(t => t.project === p.id && !t.archived).map(taskRow)}{!tasks.some(t => t.project === p.id && !t.archived) && <p className="sidebar-empty">还没有任务</p>}</div>}</div>)}
+      </div>{!closedProjects.includes(p.id) && <div className="reference-project-tasks">{tasks.filter(t => t.project === p.id && !t.archived && (!agentMode || !t.parentId)).map(taskRow)}{!tasks.some(t => t.project === p.id && !t.archived) && <p className="sidebar-empty">还没有任务</p>}</div>}</div>)}
       {projects.some(p => p.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchivedProjects(!showArchivedProjects)}><Archive size={16} />已归档项目<ChevronDown size={13} /></button>{showArchivedProjects && projects.filter(p => p.archived).map(p => <button key={p.id} className="nav-row" onClick={() => onEditProject(p)}><Folder size={16} />{p.name}</button>)}</div>}
-      {tasks.some(t => !projects.some(p => p.id === t.project) && !t.archived) && <div className="archived-tasks"><p className="sidebar-empty">未关联项目</p>{tasks.filter(t => !projects.some(p => p.id === t.project) && !t.archived).map(taskRow)}</div>}
-      {tasks.some(t => t.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchived(!showArchived)}><Archive size={16} />已归档<ChevronDown size={13} /></button>{showArchived && tasks.filter(t => t.archived).map(taskRow)}</div>}
+      {!agentMode && tasks.some(t => !projects.some(p => p.id === t.project) && !t.archived) && <div className="archived-tasks"><p className="sidebar-empty">未关联项目</p>{tasks.filter(t => !projects.some(p => p.id === t.project) && !t.archived).map(taskRow)}</div>}
+      {!agentMode && tasks.some(t => t.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchived(!showArchived)}><Archive size={16} />已归档<ChevronDown size={13} /></button>{showArchived && tasks.filter(t => t.archived).map(taskRow)}</div>}
     </div>
     <button className="reference-sidebar-settings" onClick={onSettings}><Settings size={16} />设置</button>
     {menu?.type === 'project' && <Popup className="project-detail-popup" position={menu} onClose={close}>

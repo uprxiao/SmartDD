@@ -1,4 +1,4 @@
-// Host-owned Git effects (T1.5 §6.1); every effect has a durable intent before Git runs.
+// Host-owned Git effects (T1.8 §6.1); every effect has a durable intent before Git runs.
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, realpathSync } from 'node:fs';
@@ -6,9 +6,21 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { AgentStore } from './agent-store';
 import { DriverError } from './driver';
 import type { WorkspaceCommandOptions } from './owned-command';
-export interface WorkspaceRow { workspace_id: string; task_id: string; child_task_id: string | null; kind: 'main' | 'git_worktree'; repo_root: string; path: string; branch: string | null; base_commit: string | null; auto_commit: string | null; state: 'preparing' | 'ready' | 'failed' | 'archived'; deps_result: string | null }
+export interface WorkspaceRow { workspace_id: string; task_id: string; child_task_id: string | null; kind: 'main' | 'git_worktree'; repo_root: string; path: string; branch: string | null; base_commit: string | null; state: 'preparing' | 'ready' | 'failed' | 'archived'; deps_result: string | null }
 export interface GitResult { stdout: string; stderr: string; code: number }
 type Command = (cwd: string, command: string, args: readonly string[], timeoutMs?: number, options?: WorkspaceCommandOptions) => Promise<GitResult>;
+interface WorktreePreparation {
+  parentTaskId: string;
+  childTaskId: string;
+  projectId: string;
+  projectName: string;
+  title: string;
+  cwd: string;
+  signal?: AbortSignal;
+  expectedBranch?: string;
+  baseCommit?: string;
+  expectedRoot?: string;
+}
 export const runWorkspaceCommand: Command = (cwd, command, args, timeoutMs = 120_000, options = {}) => new Promise(resolveCommand => {
   execFile(command, [...args], { cwd, signal: options.signal, timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024, encoding: 'utf8', env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } }, (e, stdout, stderr) => resolveCommand({ stdout, stderr, code: e ? typeof e.code === 'number' ? e.code : -1 : 0 }));
 });
@@ -17,6 +29,7 @@ const inside = (root: string, path: string) => { const r = relative(root, path);
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'task';
 export interface MergeCheck { pass: boolean; missingCommits: string[]; inProgress: string[]; conflictMarkers: string; branchOk: boolean; error?: string }
 export class GitWorkspaces {
+  private readonly preparingByRoot = new Map<string, Promise<void>>();
   constructor(private readonly d: { store: AgentStore; home: string; command?: Command; dependencyTimeoutMs?: number; recoverySafe?(taskId: string): Promise<boolean> }) {}
   private call(cwd: string, args: readonly string[]) { return (this.d.command ?? runWorkspaceCommand)(cwd, 'git', args); }
   private async effect(taskId: string, cwd: string, args: string[], signal?: AbortSignal) { const r = await (this.d.command ?? runWorkspaceCommand)(cwd, 'git', args, 120_000, {taskId, signal}); if(r.code !== 0) throw new DriverError('STATE', `Git ${args[0]} 失败：${r.stderr.slice(-1800)}`); return r.stdout.trim(); }
@@ -28,6 +41,12 @@ export class GitWorkspaces {
     const r = await this.call(actual, ['rev-parse', '--show-toplevel']); if (r.code !== 0 || !r.stdout.trim()) return null;
     const root = realpathSync(r.stdout.trim()); if (!inside(root, actual)) return null;
     return { root, cwd: actual, branch: await this.git(root, 'rev-parse', '--abbrev-ref', 'HEAD') };
+  }
+  async sourceSnapshot(repo: NonNullable<Awaited<ReturnType<GitWorkspaces['detect']>>>) {
+    const baseCommit = await this.git(repo.root, 'rev-parse', 'HEAD');
+    const status = await this.call(repo.root, ['--no-optional-locks', 'status', '--porcelain=v1', '-z', '-uall', '--no-renames']);
+    if (status.code !== 0) throw new DriverError('STATE', '无法核对主目录尚未提交的文件');
+    return { baseCommit, uncommittedFiles: status.stdout.split('\0').filter(Boolean).length };
   }
   workspace(childTaskId: string) { return this.d.store.sqlite.prepare("SELECT * FROM agent_workspaces WHERE child_task_id=? AND kind='git_worktree' AND state<>'archived' ORDER BY rowid DESC LIMIT 1").get(childTaskId) as WorkspaceRow | undefined; }
   private intent(taskId: string, action: string, target: string, head: string | null, metadata: Record<string, unknown> = {}) {
@@ -41,16 +60,12 @@ export class GitWorkspaces {
     }
     if ((await this.git(cwd, 'ls-files', '-u')).length) throw new DriverError('STATE', '仓库仍有未解决冲突');
   }
-  private mainWorkspace(taskId: string, root: string, branch: string): WorkspaceRow {
-    const known = this.d.store.sqlite.prepare('SELECT * FROM agent_workspaces WHERE path=?').get(root) as WorkspaceRow | undefined; if (known) return known;
-    const id = randomUUID(); this.d.store.sqlite.prepare("INSERT INTO agent_workspaces(workspace_id,task_id,kind,repo_root,path,branch,state,created_at,updated_at) VALUES(?,?,'main',?,?,?,'ready',?,?)").run(id, taskId, root, root, branch, at(), at());
-    return this.d.store.sqlite.prepare('SELECT * FROM agent_workspaces WHERE workspace_id=?').get(id) as WorkspaceRow;
-  }
-  private async commit(taskId: string, workspace: WorkspaceRow, attemptId: string | null, message: string, kind: 'auto_before_delegate' | 'child_result') {
+  private async commit(taskId: string, workspace: WorkspaceRow, attemptId: string, message: string) {
     await this.cleanBoundary(workspace.path);
     const before = await this.git(workspace.path, 'rev-parse', 'HEAD');
     if (!(await this.git(workspace.path, 'status', '--porcelain=v1', '-uall'))) return before;
-    const id = this.intent(taskId, kind === 'child_result' ? 'child_result_commit' : 'auto_commit', workspace.path, before, { attemptId, workspaceId: workspace.workspace_id, message, kind });
+    const kind = 'child_result';
+    const id = this.intent(taskId, 'child_result_commit', workspace.path, before, { attemptId, workspaceId: workspace.workspace_id, message, kind });
     try {
       await this.effect(taskId, workspace.path, ['add', '-A']);
       await this.effect(taskId, workspace.path, ['commit', '-m', message, '-m', `WillYou-Intent: ${id}`]);
@@ -62,13 +77,37 @@ export class GitWorkspaces {
       }); return head;
     } catch (e) { this.finish(id, 'needs_review', { error: (e as Error).message }); throw e; }
   }
-  async create(input: { parentTaskId: string; childTaskId: string; projectId: string; projectName: string; title: string; cwd: string; signal?: AbortSignal; assertBoundary(): void }) {
-    const existing = this.workspace(input.childTaskId); if (existing) { if (existing.state !== 'ready') throw new DriverError('STATE', '工作副本准备待核实，未重复执行'); return { workspace: existing, cwd: join(existing.path, relative(existing.repo_root, realpathSync(input.cwd))) }; }
-    const repo = await this.detect(input.cwd); if (!repo) return null;
-    input.assertBoundary(); if(input.signal?.aborted) throw new DriverError('REJECTED','子任务准备已取消'); await this.cleanBoundary(repo.root);
-    const main = this.mainWorkspace(input.parentTaskId, repo.root, repo.branch);
-    const base = await this.commit(input.parentTaskId, main, null, 'willyou: 自动提交（派出子任务前）', 'auto_before_delegate');
-    input.assertBoundary(); if (await this.git(repo.root, 'rev-parse', '--abbrev-ref', 'HEAD') !== repo.branch) throw new DriverError('STATE', '准备期间主分支已变化');
+  async create(input: WorktreePreparation) {
+    const repo = await this.detect(input.cwd);
+    if (!repo) return null;
+    if (input.expectedBranch !== undefined && repo.branch !== input.expectedBranch) throw new DriverError('STATE', '接受委派后主分支已经变化，未创建工作副本');
+    if (input.expectedRoot && repo.root !== input.expectedRoot) throw new DriverError('STATE', '接受委派后仓库身份已变化');
+    // Coordinate host branch allocation only. Native turns in the source remain independent.
+    const previous = this.preparingByRoot.get(repo.root);
+    let unlock!: () => void;
+    const slot = new Promise<void>(resolve => { unlock = resolve; });
+    this.preparingByRoot.set(repo.root, slot);
+    const release = () => {
+      if (this.preparingByRoot.get(repo.root) === slot) this.preparingByRoot.delete(repo.root);
+      unlock();
+    };
+    await previous;
+    try {
+      const existing = this.workspace(input.childTaskId);
+      if (existing) {
+        if (existing.state !== 'ready') throw new DriverError('STATE', '工作副本准备待核实，未重复执行');
+        return { workspace: existing, cwd: this.worktreeCwd(existing, input.cwd) };
+      }
+      input.signal?.throwIfAborted();
+      return await this.prepareWorktree(input, repo, release);
+    }
+    finally { release(); }
+  }
+  private async prepareWorktree(input: WorktreePreparation, repo: NonNullable<Awaited<ReturnType<GitWorkspaces['detect']>>>, release: () => void) {
+    const { signal } = input;
+    signal?.throwIfAborted();
+    const base = input.baseCommit ?? await this.git(repo.root, 'rev-parse', 'HEAD');
+    if (!/^[a-f0-9]{40,64}$/.test(base)) throw new DriverError('STATE', '工作副本基准提交无效');
     const branchBase = `${repo.branch === 'HEAD' ? base.slice(0, 8) : repo.branch.toLowerCase()}_willyou_${slug(input.title)}`;
     let branch = branchBase, n = 1;
     while ((await this.call(repo.root, ['show-ref', '--verify', '--quiet', 'refs/heads/' + branch])).code === 0) branch = `${branchBase}-${++n}`;
@@ -81,14 +120,29 @@ export class GitWorkspaces {
     mkdirSync(dirname(path), { recursive: true });
     if (!inside(realpathSync(ownedRoot), realpathSync(dirname(path)))) throw new DriverError('REJECTED', '工作副本父目录已被链接到登记根以外');
     const id = randomUUID(), intent = this.intent(input.parentTaskId, 'worktree_add', path, base, { childTaskId: input.childTaskId, branch });
-    this.d.store.sqlite.prepare("INSERT INTO agent_workspaces(workspace_id,task_id,child_task_id,kind,repo_root,path,branch,base_commit,auto_commit,state,created_at,updated_at) VALUES(?,?,?,'git_worktree',?,?,?,?,?,'preparing',?,?)").run(id, input.parentTaskId, input.childTaskId, repo.root, path, branch, base, base, at(), at());
+    this.d.store.sqlite.prepare("INSERT INTO agent_workspaces(workspace_id,task_id,child_task_id,kind,repo_root,path,branch,base_commit,state,created_at,updated_at) VALUES(?,?,?,'git_worktree',?,?,?,?,'preparing',?,?)").run(id, input.parentTaskId, input.childTaskId, repo.root, path, branch, base, at(), at());
     try {
-      input.assertBoundary(); if(input.signal?.aborted) throw new DriverError('REJECTED','子任务准备已取消'); await this.effect(input.childTaskId, repo.root, ['worktree', 'add', '-b', branch, path, base]);
-      const childCwd = join(path, relative(repo.root, repo.cwd));
+      signal?.throwIfAborted();
+      await this.effect(input.childTaskId, repo.root, ['worktree', 'add', '-b', branch, path, base], signal);
+      release(); // Dependency installation writes only to the new worktree.
+      const childCwd = this.worktreeCwd({ path, repo_root: repo.root }, repo.cwd, true);
       const dependencies = await this.installDependencies(childCwd, path, {signal: input.signal, taskId: input.childTaskId});
       this.d.store.tx(emit => { this.d.store.sqlite.prepare("UPDATE agent_workspaces SET state='ready',deps_result=?,updated_at=? WHERE workspace_id=?").run(JSON.stringify(dependencies), at(), id); this.finish(intent, 'done', { path, branch, base }); emit(input.childTaskId, 'workspace.ready', { path, branch }); });
       return { workspace: this.workspace(input.childTaskId)!, cwd: childCwd };
     } catch (e) { this.d.store.sqlite.prepare("UPDATE agent_workspaces SET state='failed',updated_at=? WHERE workspace_id=?").run(at(), id); this.finish(intent, 'needs_review', { error: (e as Error).message }); throw e; }
+  }
+  worktreeCwd(workspace: Pick<WorkspaceRow,'path'|'repo_root'>, sourceCwd: string, create = false) {
+    const root = realpathSync(workspace.path);
+    if (root !== workspace.path) throw new DriverError('STATE','已登记工作副本路径已变化');
+    const source = realpathSync(sourceCwd);
+    if (!inside(workspace.repo_root,source)) throw new DriverError('STATE','原工作目录已越出仓库');
+    let cwd = root;
+    for (const part of relative(workspace.repo_root,source).split('/').filter(Boolean)) {
+      cwd = join(cwd,part);
+      if (create && !existsSync(cwd)) mkdirSync(cwd);
+      if (realpathSync(cwd)!==cwd) throw new DriverError('STATE','工作副本的映射目录包含符号链接');
+    }
+    return cwd;
   }
   async installDependencies(cwd: string, root: string, options: WorkspaceCommandOptions = {}) {
     if(options.signal?.aborted) return {state: 'canceled', reason: '子任务准备已取消'};
@@ -101,7 +155,7 @@ export class GitWorkspaces {
   }
   async finalize(childTaskId: string, attemptId: string, title: string, startHead?: string) {
     const w = this.workspace(childTaskId); if (!w || w.state !== 'ready') return null;
-    const head = await this.commit(childTaskId, w, attemptId, `willyou: ${title.slice(0, 120)}（子任务提交）`, 'child_result');
+    const head = await this.commit(childTaskId, w, attemptId, `willyou: ${title.slice(0, 120)}（子任务提交）`);
     const base = startHead ?? w.base_commit!;
     const commits = (await this.git(w.path, 'rev-list', '--reverse', `${base}..${head}`)).split('\n').filter(Boolean);
     const range = { branch: w.branch!, base, head, commits, files: (await this.git(w.path, 'diff', '--name-only', base, head)).split('\n').filter(Boolean), summary: await this.git(w.path, 'diff', '--stat', base, head) };
@@ -124,7 +178,8 @@ export class GitWorkspaces {
   }
   /** No guessed replay: recognize an exact unique commit trailer or a registered worktree; ambiguous windows stay needs_review. */
   async recoverIntents() {
-    const rows = this.d.store.sqlite.prepare("SELECT * FROM agent_intents WHERE state='intended' AND action IN ('auto_commit','child_result_commit','worktree_add')").all() as { intent_id: string; action: string; target_ref: string; head_before: string; task_id: string; expected_parent: string | null; result_json: string | null }[];
+    this.d.store.sqlite.prepare("UPDATE agent_intents SET state='needs_review',updated_at=? WHERE state='intended' AND action='auto_commit'").run(at());
+    const rows = this.d.store.sqlite.prepare("SELECT * FROM agent_intents WHERE state='intended' AND action IN ('child_result_commit','worktree_add')").all() as { intent_id: string; action: string; target_ref: string; head_before: string; task_id: string; expected_parent: string | null; result_json: string | null }[];
     for (const r of rows) {
       try {
         const meta = JSON.parse(r.result_json ?? '{}') as { attemptId?: string | null; workspaceId?: string; message?: string; kind?: string; childTaskId?: string };
@@ -142,7 +197,7 @@ export class GitWorkspaces {
           const lines = await this.git(r.target_ref, 'log', '--format=%H%x00%B%x00', '--fixed-strings', '--grep', `WillYou-Intent: ${r.intent_id}`, `${r.expected_parent}..HEAD`);
           let matches = lines.split('\0').reduce<string[]>((out, _x, i, a) => { if (i % 2 === 0 && a[i + 1]?.split('\n').includes(`WillYou-Intent: ${r.intent_id}`) && /^[a-f0-9]{40,64}$/.test(a[i].trim())) out.push(a[i].trim()); return out; }, []);
           const w = this.d.store.sqlite.prepare('SELECT * FROM agent_workspaces WHERE workspace_id=? AND path=?').get(meta.workspaceId ?? '', r.target_ref) as WorkspaceRow | undefined;
-          if (!w || !meta.message || !['auto_before_delegate','child_result'].includes(meta.kind ?? '')) throw new Error('提交的固定工作副本或来源信息缺失');
+          if (!w || !meta.message || w.kind !== 'git_worktree' || meta.kind !== 'child_result') throw new Error('提交的固定工作副本或来源信息缺失');
           if (!matches.length && head === r.expected_parent && await this.git(w.path, 'status', '--porcelain=v1', '-uall') && await this.d.recoverySafe?.(r.task_id)) {
             await this.cleanBoundary(w.path); await this.effect(r.task_id,w.path,['add','-A']);
             await this.effect(r.task_id,w.path,['commit','-m',meta.message,'-m',`WillYou-Intent: ${r.intent_id}`]);

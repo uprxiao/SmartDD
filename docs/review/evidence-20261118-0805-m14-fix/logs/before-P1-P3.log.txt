@@ -1,0 +1,88 @@
+[1118/075259.502312:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1118/075259.831800:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1118/075259.831839:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/switching.test.ts (12 tests | 1 failed | 11 skipped) 256ms
+   × P2: a 30-round switch favors the newest history and preserves chronological order within the input budget 255ms
+[1118/075300.298074:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/host-business-requests.test.ts (11 tests | 2 failed | 7 skipped) 92ms
+   × P3: a slot wait longer than 60 seconds does not consume the 60-second execution budget 24ms
+   × P3: revoke during admission cancels the approval before any effect 16ms
+ ❯ src/main/core/agent/delegation-service.test.ts (17 tests | 3 failed | 14 skipped) 3802ms
+   × P1: independent tasks in the same Git directory overlap and retain their native sessions 1281ms
+   × P1: independent tasks in the same SVN directory overlap and retain their native sessions 1261ms
+   × P1: independent tasks in the same plain directory overlap and retain their native sessions 1259ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same Git directory overlap and retain their native sessions
+ FAIL  src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same SVN directory overlap and retain their native sessions
+ FAIL  src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same plain directory overlap and retain their native sessions
+Error: until: 超时
+ ❯ until src/main/core/agent/test-doubles.ts:36:49
+     34| export async function until(cond: () => boolean, ms = 2000) {
+     35|   const end = Date.now() + ms;
+     36|   while (!cond()) { if (Date.now() > end) throw new Error('until: 超时')…
+       |                                                 ^
+     37| }
+     38|
+ ❯ src/main/core/agent/delegation-service.test.ts:172:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/core/agent/host-business-requests.test.ts > P3: a slot wait longer than 60 seconds does not consume the 60-second execution budget
+AssertionError: expected [ -1000 ] to deeply equal [ 60000 ]
+
+- Expected
++ Received
+
+  [
+-   60000,
++   -1000,
+  ]
+
+ ❯ src/main/core/agent/host-business-requests.test.ts:66:22
+     64|   try {
+     65|     expect(await f.service.respond(f.taskId, request.requestId, 1, { c…
+     66|     expect(observed).toEqual([60_000]);
+       |                      ^
+     67|     expect(f.executions()).toBe(1);
+     68|     expect(released).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/core/agent/host-business-requests.test.ts > P3: revoke during admission cancels the approval before any effect
+Error: 请求已更新、已处理或正在处理
+ ❯ HostBusinessRequests.respond src/main/core/agent/host-business-requests.ts:94:258
+
+ ❯ src/main/core/agent/host-business-requests.test.ts:91:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/main/core/agent/switching.test.ts > P2: a 30-round switch favors the newest history and preserves chronological order within the input budget
+AssertionError: expected 14 to be 29 // Object.is equality
+
+- Expected
++ Received
+
+- 29
++ 14
+
+ ❯ src/main/core/agent/switching.test.ts:130:27
+    128|   const history = b.turns[0].context ?? b.history[0] ?? '';
+    129|   const included = Array.from(history.matchAll(/handoff-answer-(\d+):/…
+    130|   expect(included.at(-1)).toBe(29);
+       |                           ^
+    131|   expect(included[0]).toBeGreaterThan(0);
+    132|   expect(included).toEqual(Array.from({ length: 30 - included[0] }, (_…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  6 failed | 2 passed | 32 skipped (40)
+   Start at  07:52:59
+   Duration  4.08s (transform 240ms, setup 0ms, import 364ms, tests 4.15s, environment 0ms)
+

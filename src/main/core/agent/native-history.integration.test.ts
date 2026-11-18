@@ -16,6 +16,11 @@ const enabled = process.env.M14_NATIVE_CONTEXT === '1';
 const out = process.env.M14_CONTEXT_OUT;
 const save = (name: string, value: unknown) => { if (out) { mkdirSync(out, { recursive: true }); writeFileSync(join(out, name + '.json'), JSON.stringify(value, null, 2) + '\n'); } };
 const files = (root: string): string[] => readdirSync(root, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(root, e.name)) : e.isFile() && e.name.endsWith('.jsonl') ? [join(root, e.name)] : []);
+function historyAtLimit() {
+  const start = `HISTORY_ONLY_${randomUUID()}`;
+  const end = `_HISTORY_END_${randomUUID()}`;
+  return start + 'x'.repeat(256 * 1024 - start.length - end.length) + end;
+}
 function fixture(command: string) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-context-'))), home = join(root, 'home'), cwd = join(root, 'work');
   mkdirSync(home); mkdirSync(cwd);
@@ -27,7 +32,7 @@ function fixture(command: string) {
 
 it.skipIf(!enabled)('Codex native thread/inject_items appends a history item without creating a turn', async () => {
   const f = fixture('codex'), state = join(f.home, '.codex'); mkdirSync(state);
-  const instance = new CodexAppServerInstance(), events: DriverEvent[] = [], note = `HISTORY_ONLY_${randomUUID()}`;
+  const instance = new CodexAppServerInstance(), events: DriverEvent[] = [], note = historyAtLimit();
   instance.on(e => events.push(e));
   let error: string | undefined;
   try {
@@ -50,7 +55,7 @@ it.skipIf(!enabled)('Claude native shouldQuery=false records synthetic history w
   const server = createServer((req, res) => { let bytes = 0; req.on('data', b => { bytes += b.length; }); req.on('end', () => { requests.push({ path: req.url ?? '', bytes }); res.writeHead(400, { 'content-type': 'application/json' }); res.end(JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message: 'Native history probe must not invoke a model' } })); }); });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const port = (server.address() as { port: number }).port;
-  const instance = new ClaudeSdkInstance(), events: DriverEvent[] = [], note = `HISTORY_ONLY_${randomUUID()}`;
+  const instance = new ClaudeSdkInstance(), events: DriverEvent[] = [], note = historyAtLimit();
   instance.on(e => events.push(e)); let error: string | undefined;
   try {
     await instance.open({ executable: { path: f.executable, version: f.version }, cwd: f.cwd, env: { ...f.env, CLAUDE_CONFIG_DIR: state, ANTHROPIC_API_KEY: 'public-probe-placeholder', ANTHROPIC_AUTH_TOKEN: '', ANTHROPIC_BASE_URL: `http://127.0.0.1:${port}` }, tier: 'ask', settingSources: [] });

@@ -1,0 +1,427 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>M14 三张差异表预览</title><base href="../evidence-20261118-claude-phase1-5-s1-s2/"><style>body{font:14px/1.5 system-ui,sans-serif;max-width:1320px;margin:30px auto;padding:0 16px;color:#192330} table{width:100%;table-layout:fixed;border-collapse:collapse} th,td{border:1px solid #ccd3db;text-align:left;vertical-align:top;padding:8px;overflow-wrap:anywhere} th{background:#eaf1f7} td:first-child,th:first-child{width:12%} h2{margin-top:28px} a{color:#225dab}</style><body><h1>M14 原型状态差异清单</h1>
+<p>2026-11-18 · P0.20 原型与隔离开发 App。逐一复看上一轮 35 个状态的 105 张并排图（原型在左，App 在右）。浅色、深色为 1440 × 900，窄窗为 950 × 780。恢复一个交互或状态，只说明该项能用，视觉差异仍在下表逐项登记。</p>
+<p>2026-11-18 用户对复核第 4 节答复“按建议”。下表保留初次 App 对照，末列记录决定、修复结果及本轮截图。用户随后确认 V23、V24 都按原型。末列链接到修后的对照。见 <a href="../review-20261118-claude-%E9%98%B6%E6%AE%B51-5%E6%95%B4%E4%BD%93%E5%A4%8D%E6%A0%B8-S1S2%E5%A4%8D%E6%A0%B8.md#4-%E5%B7%AE%E5%BC%82%E6%B8%85%E5%8D%95%E7%9A%84%E5%88%86%E7%B1%BB%E5%BB%BA%E8%AE%AE">S1/S2 复核 §4</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/README.md">本轮取证说明</a>。</p>
+<h2>共用视觉差异</h2>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>原型</th>
+<th>App</th>
+<th>并排截图</th>
+<th>决定与本轮证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V01 · 页面框架与侧栏</td>
+<td>任务名在上方栏，任务状态标签多带颜色、图标或时间；项目按原型的少量演示数据分组。</td>
+<td>标题、状态、插件、更多独占任务区顶部一行，部分状态移到灰色标签。侧栏维持现有 App 框架，同项目夹具任务较多；窄窗时长标题更早截断。任务数量及标题不同属于夹具。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-starting.png">浅色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-running.png">深色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-team.png">窄窗</a></td>
+<td>保留</td>
+</tr>
+<tr>
+<td>V02 · 输入框</td>
+<td>提示中直接列 <code>@</code>、<code>$</code>，运行时提示排队及立即发送，显示附件加号及带图标的档位、委派和模型。停止是实心红按钮，深色输入框与页面背景层次明显。</td>
+<td>空闲提示“随心输入”，运行时提示“继续输入，本轮结束后发送”。档位下拉和模型靠左，委派入口在任务区顶部，停止为小型圆形线框按钮；深色输入框接近页面底色。模型名属于夹具。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-running.png">浅色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-done.png">深色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-starting.png">窄窗</a></td>
+<td>保留；停止按钮已改实心红色。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-running.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-running.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-running.png">窄</a></td>
+</tr>
+<tr>
+<td>V03 · 工作过程共用样式</td>
+<td>思考行保留标题，工具带图标且同类汇总，例如“读取了 3 个文件，运行了 1 条命令”；过程消息与工具条目有层次。</td>
+<td>有回合折叠层，但展开后显示较密的逐行灰色文本，例如“查看了 package.json”和“修改了”，没有对应工具图标及同类汇总。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-running.png">浅色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-approval.png">深色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-stopping.png">窄窗</a></td>
+<td>已修。连续完成的读取、命令等混合工具合成一行概要，展开列出各项。过程消息以正文夹在工具组之间。running <a href="../evidence-20261118-m14-d1-d4/side-by-side/light-running.png">浅</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/dark-running.png">深</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/narrow-running.png">窄</a>；approval <a href="../evidence-20261118-m14-d1-d4/side-by-side/light-approval.png">浅</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/dark-approval.png">深</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/narrow-approval.png">窄</a>；stopping <a href="../evidence-20261118-m14-d1-d4/side-by-side/light-stopping.png">浅</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/dark-stopping.png">深</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/narrow-stopping.png">窄</a>；done <a href="../evidence-20261118-m14-d1-d4/side-by-side/light-done.png">浅</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/dark-done.png">深</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/narrow-done.png">窄</a></td>
+</tr>
+<tr>
+<td>V04 · 多 Agent 共用样式</td>
+<td>时间线有合并的子任务汇总、头像／类型／颜色／秒数及运行、待批、排队数量；等待时另有“等待 N 个子任务 · 停止”。胶囊展开悬浮卡，按场景列目录队列或工作副本区块。</td>
+<td>时间线是逐张“宿主子任务”卡，顶部有委派和停止任务树。点胶囊后右侧并排固定区域逐条列出父子任务；缺汇总和等待行，也缺目录写入队列分区及占用者说明。窄窗原型卡打开时中部出现逐字换行，App 并排后正文空间稍宽，但标题和请求仍显拥挤。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team.png">浅色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-team-worktree.png">深色</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-team-done.png">窄窗</a></td>
+<td>修 · 已加汇总、等待行和任务关系分区。关系卡仍为非模态并排，给时间线保留操作空间。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-team.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-team.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-team.png">窄</a></td>
+</tr>
+</tbody>
+</table>
+<h2>35 个状态逐项视觉对照</h2>
+<p>相同问题沿用 V01–V04 的决定。此表记录状态特有的差异。三视口的原对照仍保留，末列的链接是本轮复验。</p>
+<table>
+<thead>
+<tr>
+<th>编号与状态</th>
+<th>原型</th>
+<th>App</th>
+<th>浅／深／窄并排图</th>
+<th>决定与本轮证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V05 · <code>done</code> 一轮完成</td>
+<td>已工作单行后接最终答复；改动卡列文件、增删数、二进制和查看差异图标。</td>
+<td>折叠行样式偏淡；改动卡只列文件总数和来源说明。Markdown 样式已直接修，见新图。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-done.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-done.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-done.png">窄</a>；新 <a href="side-by-side/light-done.png">浅</a> · <a href="side-by-side/dark-done.png">深</a></td>
+<td>修 · 已列文件和增删行数、二进制标识；其余文件从差异面板查看。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-done.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-done.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-done.png">窄</a></td>
+</tr>
+<tr>
+<td>V06 · <code>starting</code> 刚开始</td>
+<td>时间线左对齐“工作中 2 秒”横线，下方灰色思考行带图标。</td>
+<td>在用户气泡下一行居中的浅黄“思考中 · N 秒”标签，无单独工作计时栏。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-starting.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-starting.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-starting.png">窄</a></td>
+<td>修 · 计时行与思考行分别显示。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-starting.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-starting.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-starting.png">窄</a></td>
+</tr>
+<tr>
+<td>V07 · <code>running</code> 工作中与排队</td>
+<td>工作过程用 V03 的图标分组；排队是紧贴输入框上方的右侧气泡，带时间戳和编辑、立即发送、删除图标。</td>
+<td>工作过程逐行；排队消息留在时间线中、紧接工作条目，是一条占宽横条，只有取消图标。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-running.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-running.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-running.png">窄</a></td>
+<td>修 · 已移到输入框上方，带时间，提供编辑、立即发送、删除。忙时立即发送受插话能力限制。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-running.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-running.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-running.png">窄</a></td>
+</tr>
+<tr>
+<td>V08 · <code>streaming</code> 输出最终回答</td>
+<td>工作过程有摘要与实时条目，回答末尾有闪烁光标。</td>
+<td>正文即时出现，无光标，工作过程见 V03。旧图多出的改动卡由流式夹具复用完成态数据造成。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-streaming.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-streaming.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-streaming.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V09 · <code>approval</code> 命令审批</td>
+<td>时间线有带图标的审批小卡；底部琥珀色描边卡显示命令、目录、原因、选项说明、数字键提示及确认按钮。</td>
+<td>时间线没有审批小卡；底部白色／深底边框卡显示命令、原因与选项名，未显示目录、说明、初始键盘提示或独立确认按钮。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-approval.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-approval.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-approval.png">窄</a></td>
+<td>修 · 显示目录和说明，先选后确认。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-approval.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-approval.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-approval.png">窄</a></td>
+</tr>
+<tr>
+<td>V10 · <code>question</code> Agent 提问</td>
+<td>问题在强调色面板中，选项带编号和说明，底部有发送与跳过。</td>
+<td>使用圆形单选框和表单标签，“不回答／提交回答／停止”分布在两行。没有数字标签。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-question.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-question.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-question.png">窄</a></td>
+<td>修 · 面板强调边框，选项带编号与说明，支持键盘确认。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-question.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-question.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-question.png">窄</a></td>
+</tr>
+<tr>
+<td>V11 · <code>switch</code> 切换 Provider</td>
+<td>横线和图标分隔，回答上方有执行器、供应商、模型标签，交接提示附范围。</td>
+<td>细灰“此处切换到”分隔，范围放进单独折叠提示，回答没有来源标牌。窄窗下更易看到前轮的卡片段落。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-switch.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-switch.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-switch.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V12 · <code>team-worktree</code> Git 独立工作副本</td>
+<td>头像汇总和等待行；悬浮卡分别列共用目录写入队列、Git 工作副本，并列分支和进度。</td>
+<td>使用 V04 的独立卡片与固定侧栏，只在每个相关子任务下标分支；无两个单独区块。“查看”是子任务来源处的链接。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-worktree.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-team-worktree.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-team-worktree.png">窄</a></td>
+<td>修 · 共用目录队列和 Git 工作副本分别展示。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-team-worktree.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-team-worktree.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-team-worktree.png">窄</a></td>
+</tr>
+<tr>
+<td>V13 · <code>team-done</code> 协作完成与合并</td>
+<td>汇总已完成的数目、各子任务结果与耗时；合并结果以独立通知和带分支标识的区块展示。</td>
+<td>三个独立子任务卡加顶部“任务关系”，通知显示为通用“提示”。侧栏没有合入分支标记。窄窗原型已出现明显逐字折行。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-done.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-team-done.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-team-done.png">窄</a></td>
+<td>修 · 已显示完成汇总和工作副本合入核对状态。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-team-done.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-team-done.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-team-done.png">窄</a></td>
+</tr>
+<tr>
+<td>V14 · <code>team-svn</code> SVN 串行</td>
+<td>同时列运行、等待批准和排队；悬浮卡另列 SVN 目录队列与正在写入者。</td>
+<td>仅列任务状态和共用目录方式；无 SVN 队列区块。旧 App 图将排队子任务种为运行中，排队标签不可直接判定为产品缺失。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-svn.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-team-svn.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-team-svn.png">窄</a></td>
+<td>修 · 已用活跃和排队的合成槽记录核对当前写入者与候补顺序。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-team-svn.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-team-svn.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-team-svn.png">窄</a></td>
+</tr>
+<tr>
+<td>V15 · <code>team</code> Git 共用目录</td>
+<td>有汇总、待子任务结果与目录写入队列；子任务审批中“打开子任务查看”独立列项。</td>
+<td>逐条子任务卡、停止任务树、右侧关系栏；审批中的打开子任务挪到来源行“查看”。无等待汇总行、队列区块。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-team.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-team.png">窄</a></td>
+<td>修 · 共用目录的等待数和当前写入者可见。子任务请求将查看作为编号选项。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-team.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-team.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-team.png">窄</a></td>
+</tr>
+<tr>
+<td>V16 · <code>team-rework</code> 共用目录多轮复核</td>
+<td>显示第几轮复核、处理结果和“当前无人持有写入权”。</td>
+<td>终答后只剩一张结果子任务卡，右侧无目录队列与空闲写入标识。夹具仅播种一次完成记录。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-rework.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-team-rework.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-team-rework.png">窄</a></td>
+<td>修 · 显示第三次复核与当前无人持有写入权。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-team-rework.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-team-rework.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-team-rework.png">窄</a></td>
+</tr>
+<tr>
+<td>V17 · <code>merge-check</code> 合并核对未通过</td>
+<td>时间线用黄色提示区分两次核对和原因；底部有冲突文件、让 Agent 再试和打开终端。</td>
+<td>顶部红色“需要你处理”横幅、折叠的通用提示与子任务状态；底部无具体冲突摘要或快捷操作。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-merge-check.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-merge-check.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-merge-check.png">窄</a></td>
+<td>修 · 合并未核实横幅可让 Agent 再试或打开终端；真实合入核对由集成测试覆盖。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-merge-check.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-merge-check.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-merge-check.png">窄</a></td>
+</tr>
+<tr>
+<td>V18 · <code>stopped</code> 已停止</td>
+<td>轮首是“你在 N 秒后停止了”，展开的工具仍带图标，末尾给停止尾注。</td>
+<td>轮首保留“已工作 N 秒”折叠标题，靠页眉状态和尾注区分停止；展开条目见 V03。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-stopped.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-stopped.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-stopped.png">窄</a></td>
+<td>修 · 轮首显示你在 N 秒后停止了，仍可展开本轮工作过程。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-stopped.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-stopped.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-stopped.png">窄</a></td>
+</tr>
+<tr>
+<td>V19 · <code>failed</code> 失败和接收未知</td>
+<td>有失败轮首、错误图标和详情入口；接收未知用框提示重新核对，输入框上方有连接重试横幅。</td>
+<td>红底错误正文和红字尾注；接收未知也仅用尾注，截图无重新核对按钮或连接横幅。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-failed.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-failed.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-failed.png">窄</a></td>
+<td>已修。失败轮首带错误图标，详情可展开；接收未知有独立提示，不提供 F08 暂缓的操作。<a href="../evidence-20261118-m14-d1-d4/side-by-side/light-failed.png">浅</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/dark-failed.png">深</a> · <a href="../evidence-20261118-m14-d1-d4/side-by-side/narrow-failed.png">窄</a></td>
+</tr>
+<tr>
+<td>V20 · <code>limited</code> 额度用完</td>
+<td>暂停显示在工作区首行，有图标，输入框上方提示执行器、重置时间与手动继续。</td>
+<td>轮首仍是已工作时长，过程末尾有红色额度错误加已暂停尾注；底部另有黄底重置提示，侧栏仅标“受限”。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-limited.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-limited.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-limited.png">窄</a></td>
+<td>修 · 额度暂停显示内联提示和手动继续。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-limited.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-limited.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-limited.png">窄</a></td>
+</tr>
+<tr>
+<td>V21 · <code>length</code> 输出长度上限</td>
+<td>部分回答后紧接琥珀色图标和小“继续”按钮。</td>
+<td>回答后是红色错误条，提醒移到输入框上方的黄色条；无内联“继续”按钮。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-length.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-length.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-length.png">窄</a></td>
+<td>修 · 继续入口紧随部分回答。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-length.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-length.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-length.png">窄</a></td>
+</tr>
+<tr>
+<td>V22 · <code>links</code> 消息链接</td>
+<td>加粗小标题、项目符号、蓝色文件及网页链接；普通文件名显示为纯文本。</td>
+<td>旧图标记与内容粘连均已处理，见新图。裸路径、禁用协议和文件名的呈现仍不同；App 用本机隔离目录展示绝对路径，且旧样例写明“不是链接”的 <code>CHANGELOG.md</code> 在 App 中显示为链接。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-links.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-links.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-links.png">窄</a>；新 <a href="side-by-side/light-links.png">浅</a> · <a href="side-by-side/dark-links.png">深</a></td>
+<td>修 · 中文标点后可识别绝对路径，裸文件名、相对目录和 file:// 显示为文字。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-links.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-links.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-links.png">窄</a></td>
+</tr>
+<tr>
+<td>V23 · <code>business</code> 业务审批</td>
+<td>展示时间线邮件预览及底部邮件四选项，带字段标签、选项说明与确认。</td>
+<td>本组 App 图是通用插件写审批，详情为预格式化字段，只有批准与拒绝。先校准请求种类再比较邮件专属外观。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-business.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-business.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-business.png">窄</a></td>
+<td>修 · 2026-11-18 用户确认按原型。邮件正文和手动修改移到时间线，底部集中四项审批操作。 <a href="../evidence-20261118-m14-v23-v24/side-by-side/light-business.png">浅</a> · <a href="../evidence-20261118-m14-v23-v24/side-by-side/dark-business.png">深</a> · <a href="../evidence-20261118-m14-v23-v24/side-by-side/narrow-business.png">窄</a></td>
+</tr>
+<tr>
+<td>V24 · <code>access</code> 跨任务网页授权</td>
+<td>有目标任务／页面来源、有效期与“允许观察／允许控制”说明，按审批卡选项确认。</td>
+<td>本组 App 图为缩减的合成授权请求，仅见 URL 字段、批准和拒绝。缺少同数据对照，不能用图判真实权限档位。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-access.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-access.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-access.png">窄</a></td>
+<td>修 · 2026-11-18 用户确认按原型。展示任务名称、页面地址、范围说明和有效期。 <a href="../evidence-20261118-m14-v23-v24/side-by-side/light-access.png">浅</a> · <a href="../evidence-20261118-m14-v23-v24/side-by-side/dark-access.png">深</a> · <a href="../evidence-20261118-m14-v23-v24/side-by-side/narrow-access.png">窄</a></td>
+</tr>
+<tr>
+<td>V25 · <code>extensions</code> 系统提示与扩展</td>
+<td>hook、MCP 状态、配置警告分图标与颜色，一眼看出摘要及影响。</td>
+<td>多个相同的灰色“提示”折叠入口，没显示严重程度或外露摘要。插件数量属于夹具。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-extensions.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-extensions.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-extensions.png">窄</a></td>
+<td>修 · 信息、警告、错误各用图标与颜色。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-extensions.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-extensions.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-extensions.png">窄</a></td>
+</tr>
+<tr>
+<td>V26 · <code>stopping</code> 正在停止／强制停止</td>
+<td>轮首“正在停止…”，底部横幅带图标、等待秒数、风险、红按钮；输入区的停止键进等待态。</td>
+<td>新横幅已补等待秒数、风险和红按钮，见新图。轮首仍显示“工作中 N 秒”条目，页眉显示正在停止，工作过程见 V03。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-stopping.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-stopping.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-stopping.png">窄</a>；新 <a href="side-by-side/light-stopping.png">浅</a> · <a href="side-by-side/dark-stopping.png">深</a></td>
+<td>修 · 轮首增加正在停止，保留等待时钟和危险按钮。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-stopping.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-stopping.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-stopping.png">窄</a></td>
+</tr>
+<tr>
+<td>V27 · <code>plan</code> Claude 计划</td>
+<td>计划有标题、来源、灰底、折叠和图标按钮；底部审批主要显示决策选项、不重复整份正文。</td>
+<td>时间线只标“计划”，复制／下载为底部文字按钮，无标题来源；审批面板又显示一份计划正文，并以窄而高的预格式化区显示。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-plan.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-plan.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-plan.png">窄</a></td>
+<td>修 · 时间线已呈现相同完整计划时，审批区只显示选项。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-plan.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-plan.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-plan.png">窄</a></td>
+</tr>
+<tr>
+<td>V28 · <code>todo</code> 待办清单</td>
+<td>带“待办 1／4”、待办圆点、进行中强调与完成删除线，夹在同一工作过程中。</td>
+<td>复选形状和删除线有状态差异，但没有待办标题和计数；显示为一组独立列表，工作计时行在下方。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-todo.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-todo.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-todo.png">窄</a></td>
+<td>修 · 已加清单标题、已完成数和总数。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-todo.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-todo.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-todo.png">窄</a></td>
+</tr>
+<tr>
+<td>V29 · <code>goal</code> Codex 目标</td>
+<td>同一横向胶囊列目标、彩色状态、用时和轮次，尾部是展开箭头；自动续跑有单独提示。</td>
+<td>目标是双行描边卡，状态与用时在第二行，右侧直接展示暂停／清除；时间线未见同款续跑提示行。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-goal.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-goal.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-goal.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V30 · <code>goal-wait</code> 目标等待子任务</td>
+<td>目标胶囊以黄色显示“等子任务，已自动暂停”，下方有等待汇总，右边有工作副本区块。</td>
+<td>使用双行目标卡加 V04 的侧栏；旧图审批卡占空间，父任务目标卡可能在当前视窗外。暂停事实以 App 的结构化状态为依据。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-goal-wait.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-goal-wait.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-goal-wait.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V31 · <code>goal-claude</code> Claude 目标</td>
+<td>灰色目标胶囊、蓝色状态与时间，工作区下方继续展示思考。</td>
+<td>双行卡直接露出清除按钮。合成模型标牌是 Fixture Codex，不用它判断 Claude 的模型选择。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-goal-claude.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-goal-claude.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-goal-claude.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V32 · <code>compaction</code> 上下文压缩</td>
+<td>分隔线有小工具图标和两侧横线，前轮改动仍有文件表。</td>
+<td>分隔只见居中灰字；前轮为本轮改动概要卡，未列文件行。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-compaction.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-compaction.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-compaction.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V33 · <code>native</code> 原生子 Agent</td>
+<td>时间线是带头像、执行器、耗时及查看过程的卡；右缘全高抽屉有说明、步骤状态图标、底部停止，输入框上方还有“后台工作 2”。</td>
+<td>入口在展开的工作条目内；右侧为按内容高度的描边卡，步骤以文本顺序显示，停止入口紧接内容，输入框上无后台工作列表。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-native.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-native.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-native.png">窄</a></td>
+<td>修 · 原生子 Agent 抽屉为全高独立滚动区，有步骤图标和底部停止入口；后台工作另见 F12。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-native.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-native.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-native.png">窄</a></td>
+</tr>
+<tr>
+<td>V34 · <code>diff-states</code> 改动记录其它状态</td>
+<td>准备中区分百分比和取消，部分或不可用用图标提示，不完整还保留文件列表及外部来源标签。</td>
+<td>统一为“本轮改动”概要按钮，说明准备／不完整／超限的文案，没有原型同款彩色卡、文件表或“外部修改”标签。旧图未打开准备中的详情。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-diff-states.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-diff-states.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-diff-states.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V35 · <code>message-ui</code> 代码、附件与失败</td>
+<td>长用户消息折叠和渐隐；附件是独立标签；代码有语言与工具栏；失败消息带重试和放回输入，草稿冲突为可选择横幅。</td>
+<td>长消息据取证长度整段显示；附件名称在气泡内；代码区为灰底；发送错误一条红底文本。未在当时截图注入真实草稿冲突。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-message-ui.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-message-ui.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-message-ui.png">窄</a></td>
+<td>修 · 长用户消息可展开和收起，确认未发送的消息可重试或放回空白输入框。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-message-ui.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-message-ui.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-message-ui.png">窄</a></td>
+</tr>
+<tr>
+<td>V36 · <code>diff-history</code> 历史差异与回收</td>
+<td>时间线有文件表及独立回收／超限提示，右侧表头列轮次、文件总数与增删，详情边有“在文件中打开”。</td>
+<td>时间线用统一概要卡，右侧“改动记录 N”及独立分页、底部来源说明，未见同位置的文件打开链接。窄窗中央被侧栏和差异区压窄，按钮与文字紧挨。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-diff-history.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-diff-history.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-diff-history.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V37 · <code>g1-delete</code> 删除项目</td>
+<td>居中确认框、模糊遮罩，保留路径各有文件／分支图标。示例有工作副本和删除密码选项。</td>
+<td>确认框宽度相近；遮罩只压暗背景，保留清单为边框内纯文本。配对夹具没有工作副本或密码，另有已关闭的 R6 专项图覆盖实际工作副本。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-g1-delete.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-g1-delete.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-g1-delete.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V38 · <code>g5-settings</code> 已归档任务列表</td>
+<td>导航“已归档任务”靠前；展示普通与已归档项目两组、分组和带图标恢复按钮。</td>
+<td>沿用 App 设置菜单顺序，页面标题更大，分组显示为细分割线；配对图只播种一组，恢复仍有入口。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-g5-settings.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-g5-settings.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-g5-settings.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>V39 · <code>g5-readonly</code> 已归档任务只读</td>
+<td>只读状态和恢复分居任务内容栏内两端，底部浅灰禁用输入区，正文仍按普通会话排版。</td>
+<td>标题栏集中显示归档状态和恢复按钮，禁用输入仍占完整输入框，右侧保留差异空态；窄窗标题和恢复按钮被挤窄。不同正文及差异条目来自两个夹具。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-g5-readonly.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/dark-g5-readonly.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/narrow-g5-readonly.png">窄</a></td>
+<td>本期不改</td>
+</tr>
+</tbody>
+</table>
+<h2>功能与交互差异</h2>
+<p>截图用于定位入口与呈现。下表区分可核对的行为差异、仅缺同数据证据，以及按现行合同保留的边界。</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>原型行为</th>
+<th>App 行为与核对边界</th>
+<th>证据</th>
+<th>决定与本轮证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01 · 本轮改动总览</td>
+<td>在时间线直接看到本轮文件与逐文件增删，不用先进右侧面板。</td>
+<td>要打开差异区后才能查看文件列表及单文件增删；时间线只给文件总数。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-done.png">done</a></td>
+<td>修 · 直接在时间线读逐文件增删，继续可打开对应轮次。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-done.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-done.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-done.png">窄</a></td>
+</tr>
+<tr>
+<td>F02 · 已排队消息</td>
+<td>单条可立即发送、编辑或删，附时间。</td>
+<td>已接受的一条排队输入只有取消入口；Composer 在已验证执行器可发送新的插话。A75 对已排队附件要求编辑与立即发送，这两个入口仍缺。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-running.png">running</a></td>
+<td>修 · 沿用同一排队收据、版本校验和冻结附件；不具备已验证插话能力时保持排队。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-running.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-running.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-running.png">窄</a></td>
+</tr>
+<tr>
+<td>F03 · 审批确认</td>
+<td>点击或按数字先选，再点独立“确认”或按 Enter；子任务跳转也是编号选项。</td>
+<td>点击选项直接提交，按数字后仍需 Enter；跳转子任务为来源链接，能打开子任务且不提交批准。目录与选项解释的可见性另见 V09。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-approval.png">approval</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team.png">team</a> · <a href="../../../src/renderer/features/agent-tasks/agent-task-view.tsx">请求面板实现</a></td>
+<td>修 · 点击或数字键只选择，确认按钮或 Enter 才提交；打开子任务不提交审批。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-approval.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-approval.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-approval.png">窄</a></td>
+</tr>
+<tr>
+<td>F04 · 提问键盘选择</td>
+<td>问题选项可按数字选择，支持直接跳过或输入自己的答案。</td>
+<td>原生表单保留单选／多选、自填及提交；审批数字键逻辑在遇到表单时不处理，问题选项未接同款数字键。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-question.png">question</a></td>
+<td>修 · 支持数字选择、Enter 提交；组合输入和自填输入框不拦截。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-question.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-question.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-question.png">窄</a></td>
+</tr>
+<tr>
+<td>F05 · 切换后回答来源</td>
+<td>回答行直接可查该条的执行器、供应商、模型。</td>
+<td>有切换分隔和交接明细，阅读单条回答时没有相同的行内来源标识。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-switch.png">switch</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>F06 · 多 Agent 队列可见性</td>
+<td>直接查同目录写入资格当前持有人、候补顺序、等待多少子任务；分区区分 Git 工作副本。</td>
+<td>任务关系卡可点进父子任务，仍缺聚合的等待与队列占用视图。队列服务本身是否正确属于既有 I 层和后续 A 层验证。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team.png">team</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-svn.png">team-svn</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-worktree.png">team-worktree</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-rework.png">team-rework</a></td>
+<td>修 · 汇总运行、待处理、排队和完成；详情展示写入队列及工作副本。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-team-svn.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-team-svn.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-team-svn.png">窄</a></td>
+</tr>
+<tr>
+<td>F07 · 合并核对提示的后续操作</td>
+<td>需要处理时可从横幅让 Agent 再试，或打开终端。</td>
+<td>能看到“需要你处理”，该横幅缺两个快捷按钮。手动终端仍在“更多”里。截图不能判断真实 Git 合入验证。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-merge-check.png">merge-check</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-team-done.png">team-done</a></td>
+<td>修 · 重新发消息让 Agent 核对，普通权限规则继续生效；可手动打开终端。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-merge-check.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-merge-check.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-merge-check.png">窄</a></td>
+</tr>
+<tr>
+<td>F08 · 接收未知及重连</td>
+<td>显示“重新核对”和“立即重试”等显式入口。</td>
+<td>本场景只显示接收未知尾注与失败原文，无同款入口；能否在原生连接重启后核实接收应另用真实运行验证。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-failed.png">failed</a></td>
+<td>推迟。宿主需先支持向原生会话重新核对接收情况，并经真实模型验证。接收未知时不自动重发。</td>
+</tr>
+<tr>
+<td>F09 · 输出上限续写</td>
+<td>可点部分回答旁“继续”。</td>
+<td>用户自行从输入框手动继续，底部文案有说明。额度到点自动继续已明确排除，这轮无需再决定。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-length.png">length</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-limited.png">limited</a></td>
+<td>修 · 显式点击继续，保留原草稿。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-length.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-length.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-length.png">窄</a></td>
+</tr>
+<tr>
+<td>F10 · 裸路径、文件名与禁用协议</td>
+<td>裸 <code>docs/</code> 和全角冒号后的绝对路径可点；示例中的危险协议可点后看到拦截提示；单独的 <code>CHANGELOG.md</code> 是纯文本。</td>
+<td>明确的 Markdown 链接和行内代码路径通过已有路由；裸相对目录、紧随全角冒号且没有分隔空格的绝对路径，以及被解析器挡住的危险协议显示为纯文本。MarkdownIt 把裸 <code>CHANGELOG.md</code> 当作域名生成了链接。本轮只改变链接显示样式，识别规则沿用现状。</td>
+<td><a href="side-by-side/light-links.png">修后 links 浅</a> · <a href="side-by-side/dark-links.png">修后 links 深</a></td>
+<td>修 · 按中文分隔符例外识别裸绝对路径；HTTPS、www 与已有显式链接继续可用。 <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-links.png">浅</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/dark-links.png">深</a> · <a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/narrow-links.png">窄</a></td>
+</tr>
+<tr>
+<td>F11 · 邮件与网页授权的例子不同</td>
+<td>邮件样例展示审阅与四个操作；网页样例展示允许观察和允许控制。</td>
+<td>对照图用普通插件和简化授权夹具。不能用它断定邮件选项或真实授权绑定缺失。进行同数据对照后再决定视觉与交互是否调整。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-business.png">business</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-access.png">access</a></td>
+<td>修 · 邮件和网页授权均按原型。V23、V24 各有三种视口的同数据复验。 <a href="../evidence-20261118-m14-v23-v24/side-by-side/light-business.png">浅</a> · <a href="../evidence-20261118-m14-v23-v24/side-by-side/dark-business.png">深</a> · <a href="../evidence-20261118-m14-v23-v24/side-by-side/narrow-business.png">窄</a></td>
+</tr>
+<tr>
+<td>F12 · 原生后台活动</td>
+<td>有独立的“后台工作 2”入口，并报出后台命令和监视状态。</td>
+<td>能展开原生子 Agent 过程，未见通用后台工作清单；需要执行器确实提供后台活动的结构化证据才能对齐。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-native.png">native</a></td>
+<td>推迟 · 等执行器提供结构化后台活动事件。</td>
+</tr>
+<tr>
+<td>F13 · 准备中的差异与文件跳转</td>
+<td>准备横幅可直接取消；差异详情有“在文件中打开”。</td>
+<td>针对使用中的真正捕获，App 的取消入口在详情状态层，时间线概要卡本身没有；配对图无原型同款文件打开入口。历史分页和精确定位已在原 R3 验过。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-diff-states.png">diff-states</a> · <a href="../evidence-20261118-claude-phase1-5-recheck-fix/side-by-side/light-diff-history.png">diff-history</a></td>
+<td>本期不改</td>
+</tr>
+<tr>
+<td>F14a · 确认未发送的消息</td>
+<td>可重试或放回输入框。</td>
+<td>确认未发送时提供两项操作，放回时保留已有草稿。</td>
+<td><a href="../evidence-20261118-claude-phase1-5-s1-s2-followup/side-by-side/light-message-ui.png">V35 并排图</a></td>
+<td>已修 · 见 V35。</td>
+</tr>
+<tr>
+<td>F14b · 草稿冲突</td>
+<td>可选另一份或保留当前。</td>
+<td>保留文字和附件，暂停自动保存；采用另一份前需再次确认。</td>
+<td><a href="../evidence-20261118-m14-d1-d4/app/light-draft-conflict.png">开发版草稿冲突</a> · <a href="../evidence-20261118-m14-d1-d4/README.md">复验</a></td>
+<td>已修 · 用户于 2026-11-18 确认。</td>
+</tr>
+</tbody>
+</table>
+<p>目标暂停与恢复、压缩、计划和归档均以合成状态比对画面；真实原生会话、依赖准备、模型动作及系统操作采用各自的验收证据。原型的演示选择器、固定时间、测试项目名、模型名、数据条数属于取证条件。Markdown 回复空行拼接已修正；旧图中标题进入上一条列表的现象来自夹具。清单与截图用于开发对照，不计阶段 6 的 A 层验收。</p>
+</body></html>

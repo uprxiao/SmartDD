@@ -40,18 +40,32 @@ export function WebTabs({ tabs, activeId, onSelect, onClose, onNew }) {
 }
 
 // 差异面板（T3 DiffPanel 的位置；内容复用 M9 差异展示能力，此处为示意）
-export function DiffSurface({ diff, onOpenFile }) {
-  const [sel, setSel] = useState(diff?.path);
-  useEffect(() => { setSel(diff?.path); }, [diff?.path, diff?.files]);
+export function DiffSurface({ diff, onOpenFile, readOnly = false }) {
   if (!diff) return <div className="m14-diff-empty-state"><FileDiff size={22} /><p>还没有选择要查看的改动</p><small>在任务里点改动卡片的“查看差异”或某个文件，会在这里打开。只读查看，回退请用 git／svn 命令。</small></div>;
+  return <RoundDiff key={diff.key ?? diff.turnId} initial={diff} onOpenFile={readOnly ? undefined : onOpenFile} />;
+}
+
+function RoundDiff({ initial, onOpenFile }) {
+  const [turnId, setTurn] = useState(initial.turnId);
+  const [sel, setSel] = useState(initial.path);
+  const revision = initial.revisions?.find(turn => turn.id === turnId);
+  const diff = revision ?? initial;
+  const rounds = initial.revisions?.length > 0 && <label className="m14-round-selector">轮次
+    <select aria-label="差异轮次" value={turnId || ''} onChange={event => { setTurn(event.target.value); setSel(null); }}>
+      {initial.revisions.map(round => <option key={round.id} value={round.id}>{round.title}</option>)}
+    </select>
+  </label>;
+  if (!diff.files.length) return <div className="m14-diffsurf"><div className="m14-diffsurf-head">{rounds}</div>
+    <div className="m14-diff-empty-state"><FileDiff size={22} /><p>{diff.status === 'reclaimed' ? '快照已清理（空间回收）' : diff.status === 'storage-full' ? '影子库空间已满' : '本轮没有可显示的差异'}</p></div>
+  </div>;
   const f = diff.files.find(x => x.path === sel) || diff.files[0];
   const add = diff.files.reduce((n, x) => n + x.add, 0), del = diff.files.reduce((n, x) => n + x.del, 0);
   return <div className="m14-diffsurf">
-    <div className="m14-diffsurf-head"><b>本轮改动</b><span>{diff.files.length} 个文件 <i className="add">+{add}</i> <i className="del">−{del}</i></span><small>只读 · 回退请用 git／svn 命令</small></div>
+    <div className="m14-diffsurf-head">{rounds || <b>本轮改动</b>}<span>{diff.files.length} 个文件 <i className="add">+{add}</i> <i className="del">−{del}</i></span><small>只读 · 回退请用 git／svn 命令</small></div>
     <div className="m14-diffsurf-main">
       <ul className="m14-diffsurf-files">{diff.files.map(x => <li key={x.path}><button className={x.path === f.path ? 'on' : ''} onClick={() => setSel(x.path)}><span className={'m14-fstatus s-' + x.status}>{x.status}</span><span className="m14-fpath">{x.path}</span>{x.external && <span className="m14-ext-tag">外部修改</span>}<span className="m14-fmeta">{x.binary ? '二进制' : <><i className="add">+{x.add}</i> <i className="del">−{x.del}</i></>}</span></button></li>)}</ul>
       <div className="m14-diffsurf-view">
-        <div className="m14-diffsurf-file"><span>{f.path}</span>{!f.binary && <button onClick={() => onOpenFile(f.path)}>在文件中打开</button>}</div>
+        <div className="m14-diffsurf-file"><span>{f.path}</span>{onOpenFile && !f.binary && <button onClick={() => onOpenFile(f.path)}>在文件中打开</button>}</div>
         {f.binary ? <div className="m14-diff-empty">二进制文件：182 KB → 186 KB，不提供内容预览。</div>
           : <div className="m14-diff">{f.diff.map(([k, t], i) => <div key={i} className={'m14-dl ' + (k === '+' ? 'add' : k === '-' ? 'del' : '')}><span>{k}</span><code>{t}</code></div>)}</div>}
         <p className="m14-diffsurf-note">差异展示复用 M9 差异组件（示意）。</p>

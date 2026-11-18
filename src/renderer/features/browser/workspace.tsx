@@ -39,6 +39,7 @@ export function useBrowserShortcuts(){
       if(event.action!=='show')return;
       const generation=++showGeneration;
       const agent=agentTasksStore.tasks.find(t=>t.taskId===event.taskId);if(agent?.projectId){navigation.openAgentTask(agent.taskId);panelsFor({kind:'task',taskId:agent.taskId}).open('browser');return;}
+      if(agentTasksStore.enabled)return;
       const reveal=()=>{
         const task=tasksStore.byId.get(event.taskId);
         if(generation!==showGeneration||!task?.projectId||tasksStore.closing.has(event.taskId))return;

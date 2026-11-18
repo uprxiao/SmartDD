@@ -38,14 +38,17 @@ try{
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(3425,'127.0.0.1',resolve);});
   app=await openElectron({userData,env:{HOME:home,CODEX_HOME:join(home,'.codex'),CLAUDE_CONFIG_DIR:join(home,'.claude')},inspectMain:true});
   await app.cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});
-  await app.invoke('agents.refreshTools'); const tools=await app.invoke('agents.tools');
+  await app.invoke('agents.refreshTools');
+  if (process.env.M14_SMOKE_CLAUDE) await app.invoke('agents.customToolPath','claude',process.env.M14_SMOKE_CLAUDE);
+  const tools=await app.invoke('agents.tools');
+  result.nativeTools=tools.filter(t=>['codex','claude'].includes(t.kind)&&t.installed).map(t=>({kind:t.kind,version:t.version}));
   const provider=await app.invoke('agents.saveProvider',{name:'Loopback fixture',preset:'magpie',endpoints:{responses:'http://127.0.0.1:3425/v1',anthropic:'http://127.0.0.1:3425/'},models:[{id:'parent-fixture',name:'parent-fixture'},{id:'child-fixture',name:'child-fixture'}]});
   const profiles={};for(const kind of ['codex','claude']){const tool=tools.find(t=>t.kind===kind&&t.installed);assert(tool,kind+' installed');profiles[kind]=await app.invoke('agents.save',{name:'Fixture '+kind,toolId:tool.id,source:'provider',providerId:provider.id,models:['parent-fixture','child-fixture'],defaultModel:'parent-fixture',isDefault:kind==='codex'});}
   const project=await app.invoke('projects.create',{name:'Delegation fixture',aliases:[],description:'',rulesPath:null},[{label:'work',path:cwd}]);
   await app.evaluate(`localStorage.setItem('willyou-m14-agent-workspace','true');location.reload();true`);await app.waitFor(`!!document.querySelector('.agent-model-pill')`,20000);
   for(const kind of ['codex','claude']){
     parentKind=kind;targetProfile=profiles[kind==='codex'?'claude':'codex'].id;
-    const task=await app.invoke('agentTasks.create',{projectId:project.id,dirId:null,cwd,title:'Parent '+kind,profileId:profiles[kind].id,model:'parent-fixture',tier:'ask'});
+    const task=await app.invoke('agentTasks.create',{projectId:project.id,dirId:project.dirs[0].id,cwd,title:'Parent '+kind,profileId:profiles[kind].id,model:'parent-fixture',tier:'ask'});
     await app.waitFor(`!!document.querySelector('[data-testid="sidebar-agent-task"][data-task-id="${task.taskId}"]')`,20000);
     await click(`[data-testid="sidebar-agent-task"][data-task-id="${task.taskId}"]`);
     await app.waitFor(`!!document.querySelector('[data-testid="agent-delegation-toggle"]')`,20000);
@@ -56,7 +59,8 @@ try{
     await until(async()=>{const snap=await app.invoke('agentTasks.snapshot',task.taskId);return snap.items.some(i=>i.type==='assistant_message'&&i.payload.text?.includes('PARENT_DONE'));},kind+' parent wake',90000);
     await until(async()=>{const r=await app.invoke('agentTasks.relations',task.taskId);const s=await app.invoke('agentTasks.snapshot',task.taskId);return r.children[0].state==='delivered'&&s.status==='completed'&&s.queued.length===0;},kind+' delivery');
     const child=await app.invoke('agentTasks.snapshot',childId);assert(child.items.some(i=>i.type==='assistant_message'&&i.payload.text?.includes('CHILD_DONE')));
-    result.assertions.push(kind+' -> '+(kind==='codex'?'claude':'codex')+' authentic delegation, child completion, FIFO drain and parent wake');
+    assert(child.items.some(i=>i.type==='system_notice'&&i.payload.code==='directoryHandoff'&&i.payload.detail.includes('修改前重新读取')));
+    result.assertions.push(kind+' -> '+(kind==='codex'?'claude':'codex')+' authentic delegation, directory handoff notice, child completion, FIFO drain and parent wake');
     await click(`[data-child-id="${childId}"] .agent-child-open`);await app.waitFor(`document.body.textContent.includes('返回主任务')&&document.body.textContent.includes('CHILD_DONE')`,20000);
     writeFileSync(join(out,kind+'-child.png'),Buffer.from((await app.cdp('Page.captureScreenshot',{format:'png'})).data,'base64'));
     await app.invoke('agentTasks.stop',task.taskId,true);

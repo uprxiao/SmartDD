@@ -22,13 +22,13 @@ export const PERMISSIONS = [
 
 // ---------- 链接识别与路由（D2：按 T3 规则；只有文件名不做链接） ----------
 // 识别：Markdown 链接、http(s)、file://、绝对路径、含“/”的相对路径（可带 :行:列）、以“/”结尾的目录。
-const URL_RE = /^https?:\/\/[^\s)]+$/;
+const URL_RE = /^(?:https?:\/\/|www\.)[^\s)]+$/;
 const PATH_RE = /^(?:file:\/\/)?(\/|\.{1,2}\/)?[\w.\-一-龥]+(?:\/[\w.\-一-龥]*)*(?::\d+(?::\d+)?)?$/;
 export function classifyToken(raw) {
   const text = raw.trim();
   if (!text) return null;
   if (/^(javascript|mailto|data|vbscript):/i.test(text)) return { kind: 'protocol', href: text };
-  if (URL_RE.test(text)) return { kind: 'url', href: text };
+  if (URL_RE.test(text)) return { kind: 'url', href: text.startsWith('www.') ? 'http://' + text : text };
   if (!PATH_RE.test(text)) return null;
   const body = text.replace(/^file:\/\//, '');
   const isFileUrl = text.startsWith('file://');
@@ -70,14 +70,14 @@ export function routeLink(href, { projectRoot = PROJECT_ROOT, hasProject = true 
 // 把一行文本切成片段：**粗体**、`代码`、[文字](链接)、自动识别的路径／URL。
 export function inlineSegments(text) {
   const segs = [];
-  const re = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|(https?:\/\/[^\s)，。]+|(?:file:\/\/)?\/[^\s，。、)]+|(?:\.{1,2}\/)?[\w\-一-龥.]+\/[^\s，。、)]*)/g;
+  const re = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|(file:\/\/[^\s)，。、]*|https?:\/\/[^\s)，。、]+|www\.[^\s)，。、]+|(?<![^\s(["'：，、；。！？（）【】《》“”‘’])\/[^\s，。、)）]+)/g;
   let last = 0, m;
   while ((m = re.exec(text))) {
     if (m.index > last) segs.push({ t: 'text', v: text.slice(last, m.index) });
     if (m[1]) segs.push({ t: 'bold', v: m[1] });
     else if (m[2]) { const c = classifyToken(m[2]); segs.push(c ? { t: 'link', v: m[2], href: m[2], code: true } : { t: 'code', v: m[2] }); }
     else if (m[3]) segs.push({ t: 'link', v: m[3], href: m[4] });
-    else if (m[5]) { const c = classifyToken(m[5]); segs.push(c ? { t: 'link', v: m[5], href: m[5] } : { t: 'text', v: m[5] }); }
+    else if (m[5]) { const c = m[5].startsWith('file://') ? null : classifyToken(m[5]); segs.push(c ? { t: 'link', v: m[5], href: m[5] } : { t: 'text', v: m[5] }); }
     last = re.lastIndex;
   }
   if (last < text.length) segs.push({ t: 'text', v: text.slice(last) });
@@ -191,7 +191,7 @@ export function deriveRows(turn, ui = {}) {
   if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent });
   if (turn.length) rows.push({ kind: 'length', id: turn.id + ':len' });
   if (footer) rows.push(footer);
-  if (turn.changes && !live) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes, diffState: turn.diffState });
+  if (turn.changes && !live) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes, turnId: turn.id, diffState: turn.diffState });
   return rows;
 }
 
@@ -247,9 +247,9 @@ export const SCENARIOS = [
   { id: 'limited', group: '终态', name: 'S11 额度用完（照 T3）', desc: '这一轮按“暂停”显示、工作过程保留；输入框上方黄色提示＋到点自动继续', status: 'limited', turns: [{ id: 't1', user: USER1, state: 'limited', elapsed: 52, entries: [T.think1, T.msg1, T.read1, T.read2, T.read3, T.grep] }], limit: { agent: 'Claude Code 订阅', resetAt: '15:30' } },
   { id: 'length', group: '终态', name: 'S11 输出长度上限', desc: '回答达到输出长度上限：保留部分回答，可手动继续', status: 'done', turns: [{ id: 't1', user: USER1, state: 'done', entries: [T.think1, T.read1, T.read2], final: ['已确认需要改动的三处位置：构建目标、解包检查和发布测试。下面逐项说明第一处……'], partial: true, length: true }] },
   { id: 'links', group: '联动', name: 'S10 消息链接', desc: '点击路径／URL：文件、行列、目录、网页；不可打开的显示原因', status: 'done', turns: [{ id: 't1', user: { id: 'u1', text: '列一下这次涉及的文件和地址。', time: '14:20' }, state: 'done', entries: [], final: [
-    '**可以打开**', '- 绝对路径带行号：/workspace/SmartDD/src/main.ts:12', '- 相对路径带行列：`src/renderer/App.tsx:40:5`', '- Markdown 链接：[验收 PDF](docs/验收.pdf)', '- file 协议：file:///workspace/SmartDD/package.json', '- 目录：docs/', '- 网页：https://qa.example.test/',
+    '**可以打开**', '- 绝对路径带行号：/workspace/SmartDD/src/main.ts:12', '- 相对路径带行列：`src/renderer/App.tsx:40:5`', '- Markdown 链接：[验收 PDF](docs/验收.pdf)', '- 显式 file 链接：[package.json](file:///workspace/SmartDD/package.json)', '- 显式目录链接：[docs](docs/)', '- 网页：https://qa.example.test/ 或 www.example.com',
     '**不会打开（点击后提示原因）**', '- 项目外：/etc/hosts', '- 已删除：fixtures/已删除.md', '- 越界：../../secret/key.txt', '- 协议：[执行脚本](javascript:run)',
-    '**不是链接**：`notes.txt`、CHANGELOG.md 只有文件名，按纯文本显示。'] }] },
+    '**不是链接**：裸写的 docs/、file:///workspace/SmartDD/package.json、CHANGELOG.md、main.py、deploy.sh 保持纯文本。'] }] },
 ];
 
 // 多 Agent 协作（S06/S12）：主任务 Claude Code·订阅；三个子任务分别在 Codex·DeepSeek（只读审查）、OpenCode（只读查文档）、Claude Code·DeepSeek（写测试，排队）。
@@ -281,10 +281,10 @@ const TEAM_PARENT = { id: 't1', user: { id: 'u1', text: '把 arch 检查补完�
   { id: 'c1', kind: 'created', title: '审查构建脚本改动', target: 'Codex · DeepSeek', access: '只读' },
   { id: 'c2', kind: 'created', title: '核对打包文档', target: 'OpenCode（ACP）', access: '只读' },
   { id: 'c3', kind: 'created', title: '补 node-pty 架构测试', target: 'Claude Code · DeepSeek', access: '写入', branch: 'feature/0.1.6_willyou_node-pty-arch-test' },
-  { id: 'wt', kind: 'sysnote', level: 'info', text: '已为「补 node-pty 架构测试」建工作副本 · feature/0.1.6_willyou_node-pty-arch-test', detail: '派出前先自动提交了 2 个未提交改动（willyou: 自动提交（派出子任务前））；从该提交建出分支和工作副本；依赖已安装（pnpm install）。只在本机，不推送；合并后分支保留。' },
+  { id: 'wt', kind: 'sysnote', level: 'info', text: '已为「补 node-pty 架构测试」建工作副本 · feature/0.1.6_willyou_node-pty-arch-test', detail: '基于 HEAD 7cb4e21。主目录有 2 个未提交文件，没有带进子任务。' },
   { id: 'sa', kind: 'subagents', team: true, rows: TEAM_CHILDREN },
 ] };
-SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, { id: 'team', group: '协作', name: 'S06/S12 多 Agent 协作（Git 项目，运行中）', desc: '写入子任务在单独工作副本里与主任务同时进行；子任务审批浮到主任务、点进子任务', status: 'running', teamPanel: true, vcs: 'git', children: TEAM_CHILDREN, turns: [TEAM_PARENT], waiting: TEAM_CHILDREN.map(c => c.title), childApprovals: TEAM_CHILDREN.filter(c => c.approval) });
+SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, { id: 'team-worktree', group: '协作', name: 'S06/S12 独立工作副本（Git 并行）', desc: '写入子任务在单独工作副本里与主任务同时进行；子任务审批浮到主任务、点进子任务', status: 'running', teamPanel: true, vcs: 'git', children: TEAM_CHILDREN, turns: [TEAM_PARENT], waiting: TEAM_CHILDREN.map(c => c.title), childApprovals: TEAM_CHILDREN.filter(c => c.approval) });
 
 // 同一次协作的完成阶段：子任务全部完成，结果以通知回到主任务，主任务重新取得写入权后自动继续
 export const TEAM_CHILDREN_DONE = TEAM_CHILDREN.map(c => ({ ...c, state: 'done', live: null, approval: null,
@@ -306,21 +306,35 @@ const TEAM_PARENT_SVN = { ...TEAM_PARENT, entries: [
   { id: 'sa', kind: 'subagents', team: true, rows: TEAM_CHILDREN_SVN }] };
 SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, { id: 'team-svn', group: '协作', name: 'S06 多 Agent 协作（SVN 项目：写入串行）', desc: 'SVN／普通目录不建工作副本，写入子任务排在主任务之后', status: 'running', teamPanel: true, vcs: 'svn', children: TEAM_CHILDREN_SVN, turns: [TEAM_PARENT_SVN], waiting: TEAM_CHILDREN_SVN.map(c => c.title), childApprovals: TEAM_CHILDREN_SVN.filter(c => c.approval) });
 
-// 打回重做（照 T3 t3_thread_send）＋独立复核另派
-const K4_REVIEW = { id: 'k4', title: '独立复核 node-pty 测试', tool: 'codex', agent: 'cx-ds', target: 'Codex · DeepSeek', model: 'deepseek-flash 中', access: '只读', state: 'running', secs: 9, live: '正在读测试', note: '独立复核，不沿用原执行者的上下文',
-  turns: [{ id: 'kt4', user: { id: 'ku4', text: '【主任务委派】独立复核 feature/0.1.6_willyou_node-pty-arch-test 上的 node-pty 架构测试，只读，列出问题。', time: '14:18' }, state: 'live', elapsed: 9, entries: [{ id: 'k4a', kind: 'read', path: 'tests/release/arch.test.mjs', at: [0, 3], live: true }] }] };
-const TEAM_CHILDREN_REWORK = [...TEAM_CHILDREN_DONE.map(c => c.id !== 'k3' ? c : { ...c, state: 'running', live: '按主任务意见修改', secs: 14,
-  turns: [...c.turns, { id: 'kt3b', user: { id: 'ku3b', text: '【主任务意见】还缺 win32 的断言，另外 arm64 的期望值写反了，请在原分支上改。', time: '14:17' }, state: 'live', elapsed: 14, entries: [{ id: 'k3r', kind: 'edit', path: 'tests/release/arch.test.mjs', add: 6, del: 2, at: [6, 14], live: true }] }] }), K4_REVIEW];
-SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, { id: 'team-rework', group: '协作', name: 'S06 打回重做与独立复核', desc: '检查不合格：意见发回原子任务，在原会话和工作副本里改；独立复核另派新子任务', status: 'running', teamPanel: true, children: TEAM_CHILDREN_REWORK, waiting: ['补 node-pty 架构测试', '独立复核 node-pty 测试'], turns: [
-  { id: 't2', auto: true, state: 'live', elapsed: 21, waitingOn: 2, entries: [
-    { id: 'n3', kind: 'notice', text: '子任务「补 node-pty 架构测试」已完成', sub: '分支 feature/0.1.6_willyou_node-pty-arch-test，2 个提交，等待合并' },
-    { id: 'r1', kind: 'command', cmd: 'git diff HEAD...feature/0.1.6_willyou_node-pty-arch-test -- tests/release/arch.test.mjs', exit: 0, at: [0, 2] },
-    { id: 'r2', kind: 'message', lines: ['检查发现两处问题：缺 win32 的断言，arm64 的期望值写反了。先不合并，发回去改；同时另派一个子任务独立复核。'] },
-    { id: 'r3', kind: 'tool', name: 'wy_send（把修改意见发回「补 node-pty 架构测试」）', at: [3, 4] },
-    { id: 'r4', kind: 'notice', text: '修改意见已发给「补 node-pty 架构测试」', sub: '在原会话、原工作副本里继续改' },
-    { id: 'r5', kind: 'created', title: '独立复核 node-pty 测试', target: 'Codex · DeepSeek', access: '只读' },
-    { id: 'sa', kind: 'subagents', team: true, rows: TEAM_CHILDREN_REWORK }] },
-] });
+const sharedTeam = SCENARIOS.find(s => s.id === 'team-svn');
+SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, {
+  ...sharedTeam, id: 'team', vcs: 'git', name: 'S06 多 Agent 协作（Git 共用目录）',
+  desc: '子任务能读取本轮未提交改动，等父任务交出写入资格后继续。',
+  children: sharedTeam.children.map(c => ({ ...c, note: c.note?.replace('SVN 目录', '共用目录') })),
+  turns: sharedTeam.turns.map(t => ({ ...t, entries: t.entries.map(e => e.kind === 'thought' ? { ...e, text: '**拆分任务**\n先在当前目录安排只读核对。补测试的子任务等本轮结束再拿写入资格。' } : e) })),
+});
+
+const worktreeTeam = SCENARIOS.find(s => s.id === 'team-worktree');
+const sharedWriter = { ...K3_SVN, id: 'shared-writer', title: '核对当前未提交的修改', note: '共用目录；取得写入资格后开始' };
+worktreeTeam.children = [...worktreeTeam.children, sharedWriter];
+worktreeTeam.turns = worktreeTeam.turns.map(t => ({ ...t, entries: t.entries.map(e => e.kind === 'subagents' ? { ...e, rows: [...e.rows, sharedWriter] } : e) }));
+const U = (id, text, time = '14:30', extra = {}) => ({ id, text, time, ...extra });
+const sharedReview = { ...K3_SVN, title: '审查构建脚本改动', state: 'done', live: null, note: '第 3 轮复核完成，改动保留在共用目录', turns: [
+  { id: 'review-1', user: U('review-u1', '审查未提交的设计。', '14:20'), state: 'done', entries: [], final: ['第一轮发现缺少 arm64 的构建断言。'] },
+  { id: 'review-2', user: U('review-u2', '在原目录补断言后再核对。', '14:25'), state: 'done', entries: [], final: ['第二轮已经补上断言。'] },
+  { id: 'review-3', user: U('review-u3', '针对前两轮意见做最后一次复核。', '14:32'), state: 'done', entries: [], final: ['第三轮复核完成，前两轮问题已解决。'] },
+] };
+SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, {
+  id: 'team-rework', vcs: 'git', group: '协作', name: 'S06 共用目录多轮复核', desc: '原会话承接审查、修改与再审查。',
+  status: 'done', teamPanel: true, children: [sharedReview], turns: [
+    { id: 'parent-review', user: U('review-parent', '审查、修正并复核当前改动。', '14:20'), state: 'done', entries: [
+      { id: 'r1', kind: 'tool', name: 'wy_delegate（共用目录审查）', at: [0, 4] },
+      { id: 'r2', kind: 'tool', name: 'wy_send（原子任务修正）', at: [5, 8] },
+      { id: 'r3', kind: 'tool', name: 'wy_send（原会话再审查）', at: [9, 12] },
+      { id: 'sa', kind: 'subagents', team: true, rows: [sharedReview] },
+    ], final: ['复核完成，改动保留在当前目录。'] },
+  ],
+});
 
 // 合并后宿主核对没通过 → 提醒主 Agent，连续处理不了标“需要你处理”
 SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, { id: 'merge-check', group: '协作', name: 'S06 合并核对未通过', desc: '主 Agent 合并时冲突没解决完，宿主核对发现并提醒；连续两次未处理好，标“需要你处理”', status: 'waiting', teamPanel: true, children: TEAM_CHILDREN_DONE, mergeIssue: true, turns: [
@@ -335,16 +349,16 @@ SCENARIOS.splice(SCENARIOS.findIndex(s => s.id === 'stopped'), 0, { id: 'merge-c
 ] });
 
 // ---------- P0.7 补充状态（对照 T3 遗漏清单） ----------
-const U = (id, text, time = '14:30', extra = {}) => ({ id, text, time, ...extra });
+
 SCENARIOS.push(
-  { id: 'business', group: '请求', name: 'S03 业务审批（插件／邮件）', desc: 'M13 插件写操作审批挪进任务区：时间线卡片＋输入框批准／拒绝', status: 'waiting', pending: 'business', turns: [{ id: 't1', user: U('u1', '把这次修复的结果发邮件给测试组。'), state: 'live', elapsed: 9, entries: [
+  { id: 'business', group: '请求', name: 'S03 业务审批（插件／邮件）', desc: '用合成的邮件内容展示审阅和批准选项', status: 'waiting', pending: 'business', turns: [{ id: 't1', user: U('u1', '把这次修复的结果发邮件给测试组。'), state: 'live', elapsed: 9, entries: [
     { id: 'b0', kind: 'thought', at: [0, 3], text: '**准备邮件**\n用 WillYou 邮件插件起草，收件人取项目配置里的测试组。' },
     { id: 'b1', kind: 'tool', name: 'willyou-mail.draft_create', at: [3, 5] },
     { id: 'b2', kind: 'business', plugin: '内置邮件', pluginIcon: 'mail', action: '发送邮件', fields: [['发件账号', 'dev@example.com（项目 SMTP）'], ['收件人', 'qa-team@example.com'], ['主题', '【WillYou 0.1.6】mac 多架构安装包修复'], ['正文', '已补上 mac x64 目标并在打包后核对原生模块架构，发布测试 15 项通过……']], note: '由 WillYou 邮件插件审阅并执行；Agent 无法代为批准，也不能改用其他账号' }] }] },
-  { id: 'access', group: '请求', name: 'S03 跨任务网页授权（M12）', desc: 'Agent 申请操作另一个任务的网页：允许观察／允许控制／拒绝，60 秒无人处理按拒绝', status: 'waiting', pending: 'access', turns: [{ id: 't1', user: U('u1', '参考「梳理项目结构」任务里打开的接口文档页，补全这里的调用。'), state: 'live', elapsed: 6, entries: [
-    { id: 'w0', kind: 'thought', at: [0, 3], text: '**需要读取另一个任务的网页**\n接口文档页开在任务「梳理项目结构和关键模块」里，先申请只读访问。' },
-    { id: 'w1', kind: 'tool', name: 'willyou-browser access request --task structure --mode observe', at: [3, 4] }] }],
-    access: { target: '梳理项目结构和关键模块', mode: '观察', seconds: 57 } },
+  { id: 'access', group: '请求', name: 'S03 跨任务网页授权（M12）', desc: 'Agent 申请控制另一个任务的网页，可按原申请批准控制，或降级为观察', status: 'waiting', pending: 'access', turns: [{ id: 't1', user: U('u1', '参考「梳理项目结构」任务里打开的接口文档页，补全这里的调用。'), state: 'live', elapsed: 6, entries: [
+    { id: 'w0', kind: 'thought', at: [0, 3], text: '**需要读取另一个任务的网页**\n接口文档页开在任务「梳理项目结构和关键模块」里，先申请控制权限。' },
+    { id: 'w1', kind: 'tool', name: 'willyou-browser access request --task structure --mode control', at: [3, 4] }] }],
+    access: { target: '梳理项目结构和关键模块', mode: '控制', pageUrl: 'https://qa.example.test/api/' } },
   { id: 'extensions', group: '基础', name: 'S15 系统提示与用户扩展', desc: '沿用你的 MCP／hooks 后出现的系统提示行（低打扰，可展开）', status: 'done', turns: [{ id: 't1', user: USER1, state: 'done', openFold: true, entries: [
     { id: 'n1', kind: 'sysnote', level: 'info', text: 'hooks · PreToolUse 已执行 2 个', detail: '~/.claude/settings.json：lint-check（0.3 秒）、secret-scan（0.1 秒）' },
     { id: 'n2', kind: 'sysnote', level: 'warn', text: 'MCP 服务器 zentao-personal 启动失败', detail: '来自你的 ~/.codex/config.toml；连接 127.0.0.1:7788 超时。本任务其他能力不受影响。可在选择器里关闭“沿用我的扩展”。' },
@@ -404,3 +418,17 @@ export function goalLock(taskId, scenario) {
   for (const t of scenario?.turns || []) for (const e of t.entries || []) if (e.kind === 'goal') { const st = goalStatus(taskId, e); if (st !== 'cleared' && st !== 'complete') return { status: st, agent: e.agent, goalId: e.id }; }
   return null;
 }
+
+const diffHistory = Array.from({ length: 54 }, (_, index) => {
+  const number = index + 1;
+  const path = 'notes/round-' + number + '.md';
+  const unavailable = number === 2 || number === 3;
+  return {
+    id: 'history-' + number, diffLabel: '第 ' + number + ' 轮', state: 'done', entries: [],
+    user: U('history-input-' + number, '更新第 ' + number + ' 轮的检查记录。', '10:24'),
+    final: ['已更新检查记录。'],
+    diffState: number === 2 ? { kind: 'reclaimed' } : number === 3 ? { kind: 'storage-full' } : null,
+    changes: unavailable ? [] : [{ path, status: 'M', add: 1, del: 0, diff: [['+', '检查记录 ' + number]] }],
+  };
+});
+SCENARIOS.push({ id: 'diff-history', group: '联动', name: 'S13 历史差异与空间回收', desc: '从指定轮次进入差异，选择全部 54 条记录。', status: 'done', turns: diffHistory });

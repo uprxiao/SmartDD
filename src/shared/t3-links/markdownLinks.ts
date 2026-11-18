@@ -493,7 +493,8 @@ export function isWindowsDrivePathHref(href: string): boolean {
 // and a file-shaped last segment.
 export function absoluteFilePathMatches(text: string): Array<{ index: number; path: string }> {
   const paths: Array<{ index: number; path: string }> = [];
-  for (const match of text.matchAll(/(^|[\s(["'])(\/[^\s<>"'`]+)/g)) {
+  // WillYou R13: Chinese prose commonly places a path immediately after punctuation.
+  for (const match of text.matchAll(/(^|[\s(["'：，、；。！？（）【】《》“”‘’])(\/[^\s<>"'`：，、；。！？（）【】《》“”‘’]+)/g)) {
     const source = match[2]!;
     let parentheses = 0;
     let brackets = 0;

@@ -61,5 +61,7 @@ const AgentReferenceButton=observer(function AgentReferenceButton({taskId,...pro
 });
 export const ApplicationTerminalButton=observer(function ApplicationTerminalButton(props:ComponentProps<typeof LegacyApplicationTerminalButton>&{agentTaskId?:string}){
  const [agentTaskId]=useState(()=>props.agentTaskId??(!props.target&&agentTasksStore.enabled?agentTasksStore.tasks.find(t=>t.taskId===(navigation.currentViewId==='agentTask'?navigation.currentAgentTaskId:navigation.applicationAgentTaskId)&&t.projectId===props.projectId)?.taskId:null));
- return agentTaskId?<AgentReferenceButton {...props} taskId={agentTaskId}/>:<LegacyApplicationTerminalButton {...props}/>;
+ if(agentTaskId)return <AgentReferenceButton {...props} taskId={agentTaskId}/>;
+ if(agentTasksStore.enabled&&props.target)return null;
+ return <LegacyApplicationTerminalButton {...props} disabled={props.disabled||agentTasksStore.enabled}/>;
 });

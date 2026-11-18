@@ -2,8 +2,8 @@
 // 用户消息、最终回答、待处理请求、错误与计划保持可见（技术方案 T1.5 §4、需求 R01）。
 
 export interface TimelineItem { itemId: string; turnId: string | null; type: string; ordinal: number; revision: number; payload: any; terminal: string | null; createdAt: string; updatedAt: string }
-export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null }
-export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string }
+export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null; source_kind?: string; run_id?: string | null; native_turn_id?: string | null }
+export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string; targetTaskTitle?: string }
 
 const VISIBLE = new Set(['user_message', 'assistant_message', 'proposed_plan', 'error', 'todo_list', 'compaction', 'system_notice', 'files_changed']);
 const WORK = new Set(['reasoning', 'command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'subagent']);
@@ -13,7 +13,7 @@ export type Row =
   | { kind: 'work'; id: string; items: TimelineItem[]; running: boolean; seconds: number }
   | { kind: 'footer'; id: string; label: string; failed: boolean };
 
-export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[] }
+export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[]; seconds: number; failed: boolean; failureCode: string | null }
 
 /** 回合耗时：宿主观测的开始到结束（未结束按 now）；重叠工具不重复累计。 */
 export function turnSeconds(t: TurnInfo | undefined, now = Date.now()) {
@@ -47,20 +47,60 @@ export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Da
     };
     list.forEach((it, idx) => {
       if (WORK.has(it.type)) { work.push(it); return; }
-      // 中间过程说明（Codex commentary）归入工作折叠，最终回答保持可见
+      // 过程正文随回合展开，但会隔开工具分组；最终回答独立显示。
       if (it.type === 'assistant_message' && it.payload?.phase === 'commentary') { work.push(it); return; }
       flush(false);
       if (VISIBLE.has(it.type) || !WORK.has(it.type)) rows.push({ kind: 'item', item: it });
       if (idx === list.length - 1) flush(true);
     });
     flush(true);
-    if (turn && (turn.status === 'interrupted' || turn.status === 'failed' || turn.status === 'unknown')) {
-      const label = turn.status === 'interrupted' ? '已停止' : turn.status === 'unknown' ? '结果未知 · 正在核对' : '已失败';
-      rows.push({ kind: 'footer', id: `footer:${key}`, label: `${label} · 共工作 ${formatDuration(turnSeconds(turn, now))}`, failed: turn.status !== 'interrupted' });
+    const limited = list.find(it => it.type === 'error' && it.payload?.limited)?.payload.limited.kind;
+    if (turn && (turn.status === 'interrupted' || turn.status === 'failed' || turn.status === 'unknown' || turn.status === 'completed' && limited && limited !== 'output')) {
+      // An output limit leaves a partial answer. An exhausted quota pauses work.
+      const label = turn.status === 'interrupted' ? '已停止'
+        : turn.status === 'unknown' ? '接收结果未知'
+          : limited === 'output' ? '已达到输出长度上限' : limited ? '已暂停' : '已失败';
+      rows.push({ kind: 'footer', id: `footer:${key}`, label: `${label} · 共工作 ${formatDuration(turnSeconds(turn, now))}`, failed: !limited && turn.status !== 'interrupted' });
     }
-    groups.push({ key, turnId, status: turn?.status ?? null, rows });
+    groups.push({ key, turnId, status: turn?.status ?? null, rows, seconds: turnSeconds(turn, now), failed: turn?.status === 'failed' && !limited, failureCode: turn?.error_code ?? null });
   }
   return groups;
+}
+
+const toolSummaryLabels: Record<string, (n: number) => string> = {
+  read: n => `读取了 ${n} 个文件`,
+  file_search: n => `搜索了 ${n} 次文件`,
+  command_execution: n => `运行了 ${n} 条命令`,
+  file_change: n => `修改了 ${n} 次文件`,
+  web_search: n => `搜索了 ${n} 次网页`,
+  tool_call: n => `调用了 ${n} 次工具`,
+};
+
+/** Consecutive successful tools form one expandable row. Prose, live and failed work are boundaries. */
+export function workSegments(items: readonly TimelineItem[]) {
+  const segments: Array<{ kind:'tools'; items:TimelineItem[] } | { kind:'single'; item:TimelineItem }> = [];
+  for (const item of items) {
+    const p = item.payload;
+    const successfulTool = Object.hasOwn(toolSummaryLabels, item.type) && item.terminal === 'completed'
+      && (!p?.status || p.status === 'completed') && (p?.exitCode == null || p.exitCode === 0);
+    if (!successfulTool) {
+      segments.push({ kind:'single', item });
+      continue;
+    }
+    const previous = segments.at(-1);
+    if (previous?.kind === 'tools') previous.items.push(item);
+    else segments.push({ kind:'tools', items:[item] });
+  }
+  return segments;
+}
+
+export function summarizeTools(items: readonly TimelineItem[]) {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const action = item.type === 'file_search' && (item.payload?.input?.file_path || item.payload?.name === 'Read') ? 'read' : item.type;
+    counts.set(action, (counts.get(action) ?? 0) + 1);
+  }
+  return [...counts].map(([action, count]) => toolSummaryLabels[action](count)).join('，');
 }
 
 /** 工作条目的单行摘要。 */
@@ -85,7 +125,13 @@ export function workLabel(it: TimelineItem): string {
 export interface RequestOption { key: string; label: string; result: (reason: string) => unknown; deny?: boolean }
 export function requestOptions(r: TimelineRequest, driverId: string): RequestOption[] {
   // 提问与 MCP 表单由 requestForm 处理，不套用批准选项（复核 CR09）。
-  if (r.kind==='host_business') {if(r.payload.phase==='executing')return [];const deny={key:'deny',label:r.status==='approved_pending_bind'?'撤销授权':'拒绝',result:()=>({choice:'deny'}),deny:true};if(r.status==='approved_pending_bind')return [deny];return [...(r.payload.options??[{label:'批准',value:'allow'}]).map((o:{label:string;value:string})=>({key:o.value,label:o.label,result:()=>({choice:o.value})})),deny];}
+  if (r.kind === 'host_business') {
+    if (r.payload.phase === 'executing') return [];
+    if (r.payload.phase === 'queued_for_slot') return [{ key: 'revoke', label: '撤销批准', result: () => ({ choice: 'cancel' }), deny: true }];
+    const deny = { key: 'deny', label: r.status === 'approved_pending_bind' ? '撤销授权' : '拒绝', result: () => ({ choice: 'deny' }), deny: true };
+    if (r.status === 'approved_pending_bind') return [{ ...deny, key: 'revoke' }];
+    return [...(r.payload.options ?? [{ label: '批准', value: 'allow' }]).map((o: { label: string; value: string }) => ({ key: o.value, label: o.label, result: () => ({ choice: o.value }) })), deny];
+  }
   if (requestForm(r, driverId)) return [];
   // 未知种类的请求不给通用批准，只能拒绝（复核 NR09）。
   if (r.kind === 'other') return [{ key: 'deny', label: '拒绝（WillYou 不支持该请求）', result: () => (driverId === 'claude-sdk' ? { behavior: 'deny', message: 'WillYou 不支持该请求' } : { decision: 'decline' }), deny: true }];

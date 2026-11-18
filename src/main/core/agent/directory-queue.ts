@@ -15,7 +15,7 @@ export function directoryIdentity(cwd: string, registered: readonly string[]) {
   if (!stat.isDirectory()) throw new DriverError('REJECTED', '登记工作根不是目录');
   return { root, identity: `${root}:${stat.dev}:${stat.ino}` };
 }
-function overlappingIdentity(a: string, b: string) {
+export function overlappingIdentity(a: string, b: string) {
   if (a===b) return true;
   const x=/^(.*):(\d+):(\d+)$/.exec(a),y=/^(.*):(\d+):(\d+)$/.exec(b);
   return !!x&&!!y&&(x[2]===y[2]&&x[3]===y[3]||within(x[1],y[1])||within(y[1],x[1]));
@@ -33,6 +33,11 @@ export class DirectoryQueue {
   }
   get(id: string) { return this.store.sqlite.prepare('SELECT * FROM agent_directory_queue WHERE queue_id=?').get(id) as QueueRow | undefined; }
   forTask(taskId: string) { return this.store.sqlite.prepare("SELECT * FROM agent_directory_queue WHERE task_id=? AND state IN ('queued','active') ORDER BY accepted_order LIMIT 1").get(taskId) as QueueRow | undefined; }
+  writeView(identities: ReadonlySet<string>) {
+    if (!identities.size) return [];
+    return (this.store.sqlite.prepare("SELECT * FROM agent_directory_queue WHERE kind='write' AND state IN ('queued','active') ORDER BY rowid").all() as QueueRow[])
+      .filter(row => [...identities].some(identity => overlappingIdentity(identity, row.directory_identity)));
+  }
   acquire(id: string): boolean {
     return this.store.tx(emit => {
       const row = this.get(id); if (!row || !['queued', 'active'].includes(row.state)) return false; if (row.state === 'active') return true;

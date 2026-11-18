@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { randomUUID } from 'node:crypto';
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore } from './agent-store';
 import { HostBusinessRequests, type BusinessHandler } from './host-business-requests';
@@ -45,10 +45,100 @@ it('E12: interrupted execution is recorded unknown after restart and never autom
  const restarted=new HostBusinessRequests(f.deps);restarted.register('test',f.handler);clean.unshift(()=>restarted.close());expect(f.store.request(r.requestId)?.status).toBe('resolved');expect(f.executions()).toBe(0);expect(f.store.items(f.taskId).find(i=>i.type==='notification')?.payload.status).toBe('unknown');
 });
 
-it('E12: execution budget starts on approval, an expired FIFO wait never executes or retains its reservation',async()=>{
- const f=fixture(false,30),r=f.create();let released=0;
- (f.deps as any).acquire=async(_task:string,_id:string,signal:AbortSignal)=>{await new Promise(resolve=>setTimeout(resolve,60));expect(signal.aborted).toBe(true);return()=>{released++;};};
- await expect(f.service.respond(f.taskId,r.requestId,1,{choice:'allow'})).rejects.toThrow('执行时限');expect(f.executions()).toBe(0);expect(released).toBe(1);expect(f.store.request(r.requestId)?.status).toBe('retired');
+it('P3: a slot wait longer than 60 seconds does not consume the 60-second execution budget', async () => {
+  const f = fixture(), request = f.create();
+  const approvedAt = Date.now();
+  const clock = vi.spyOn(Date, 'now').mockReturnValue(approvedAt);
+  let released = false;
+  (f.deps as any).acquire = async (_task: string, _id: string, signal: AbortSignal) => {
+    clock.mockReturnValue(approvedAt + 61_000);
+    expect(signal.aborted).toBe(false);
+    return () => { released = true; };
+  };
+  const execute = f.handler.execute;
+  const observed: number[] = [];
+  f.handler.execute = async (record, decision, context) => {
+    observed.push(context.deadline - Date.now());
+    return execute(record, decision, context);
+  };
+  try {
+    expect(await f.service.respond(f.taskId, request.requestId, 1, { choice: 'allow' })).toMatchObject({ state: 'finished' });
+    expect(observed).toEqual([60_000]);
+    expect(f.executions()).toBe(1);
+    expect(released).toBe(true);
+  } finally { clock.mockRestore(); }
+});
+
+it.each(['stop', 'revoke'])('P3: %s during admission cancels the approval before any effect', async action => {
+  const f = fixture(), request = f.create();
+  let signal!: AbortSignal;
+  let waiting!: () => void;
+  const entered = new Promise<void>(resolve => { waiting = resolve; });
+  let admit!: () => void;
+  let released = false;
+  (f.deps as any).acquire = async (_task: string, _id: string, candidate: AbortSignal) => {
+    signal = candidate;
+    await new Promise<void>(resolve => { admit = resolve; waiting(); });
+    return () => { released = true; };
+  };
+  const originalApproval = f.service.respond(f.taskId, request.requestId, 1, { choice: 'allow' });
+  const settled = originalApproval.catch(error => error);
+  await entered;
+  try {
+    if (action === 'stop') f.service.stop(f.taskId);
+    else {
+      const current = f.store.request(request.requestId)!;
+      expect(await f.service.respond(f.taskId, request.requestId, current.revision, { choice: 'cancel' })).toMatchObject({ state: 'retired' });
+    }
+    expect(signal.aborted).toBe(true);
+  } finally { admit(); await settled; }
+  expect(f.executions()).toBe(0);
+  expect(f.store.request(request.requestId)?.status).toBe('retired');
+  expect(released).toBe(true);
+});
+
+it('P3: execution still times out after admission and retains its lease until the effect settles', async () => {
+  const f = fixture(false, 20), request = f.create();
+  let acquired = false, released = false;
+  (f.deps as any).acquire = async () => { acquired = true; return () => { released = true; }; };
+  f.handler.execute = async (_record, _decision, { signal }) => {
+    expect(acquired).toBe(true);
+    if (!signal.aborted) await new Promise<void>(resolve => signal.addEventListener('abort', () => resolve(), { once: true }));
+    expect(released).toBe(false);
+    return { ok: true };
+  };
+  expect(await f.service.respond(f.taskId, request.requestId, 1, { choice: 'allow' })).toMatchObject({ state: 'unknown' });
+  expect(released).toBe(true);
+});
+
+it('R2: with no admission callback the budget begins as soon as execution can proceed', async () => {
+  const f = fixture(false, 250), request = f.create();
+  const execute = f.handler.execute;
+  f.handler.execute = async (record, decision, context) => {
+    expect(context.signal.aborted).toBe(false);
+    expect(context.deadline - Date.now()).toBeGreaterThan(225);
+    return execute(record, decision, context);
+  };
+  expect(await f.service.respond(f.taskId, request.requestId, 1, { choice: 'allow' })).toMatchObject({ state: 'finished' });
+  expect(f.executions()).toBe(1);
+});
+
+it('P3: after a restart a queued approval returns to the original review and cannot run without a fresh decision', async () => {
+  const f = fixture(), request = f.create();
+  const old = f.store.request(request.requestId)!;
+  const payload = { ...JSON.parse(old.payload_ref), phase: 'queued_for_slot' };
+  f.db.prepare('UPDATE agent_requests SET payload_ref=?,revision=2 WHERE request_id=?').run(JSON.stringify(payload), request.requestId);
+  const restarted = new HostBusinessRequests(f.deps);
+  restarted.register('test', f.handler);
+  clean.unshift(() => restarted.close());
+  const reopened = f.store.request(request.requestId)!;
+  expect(reopened.status).toBe('pending');
+  expect(reopened.revision).toBe(3);
+  expect(JSON.parse(reopened.payload_ref)).toMatchObject({ phase: 'waiting_user', review: { to: 'fixed' } });
+  expect(f.executions()).toBe(0);
+  await expect(restarted.respond(f.taskId, request.requestId, 2, { choice: 'allow' })).rejects.toThrow('已更新');
+  expect(await restarted.respond(f.taskId, request.requestId, 3, { choice: 'allow' })).toMatchObject({ state: 'finished' });
+  expect(f.executions()).toBe(1);
 });
 it('E12: a run ending during the FIFO wait produces pending-bind rather than a grant on its stale identity',async()=>{
  const f=fixture(true),r=f.create();(f.deps as any).acquire=async()=>{f.end();return()=>{};};

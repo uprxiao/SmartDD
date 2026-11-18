@@ -43,6 +43,16 @@ describe('时间线分组', () => {
     expect(buildTimeline([item({ type: 'user_message', ordinal: 1 })], [turn('unknown')])[0].rows.at(-1)).toMatchObject({ label: expect.stringContaining('结果未知') });
     expect(buildTimeline([item({ type: 'user_message', ordinal: 1 })], [turn('completed')])[0].rows.some(r => r.kind === 'footer')).toBe(false);
   });
+  it('额度或限流暂停与输出上限分别呈现，保留部分回答', () => {
+    for (const kind of ['usage','rate','output']) {
+      const rows = buildTimeline([
+        item({type:'assistant_message',ordinal:1,payload:{text:'部分回答'}}),
+        item({type:'error',ordinal:2,payload:{limited:{kind}}}),
+      ],[turn('failed')])[0].rows;
+      expect(rows[0]).toMatchObject({kind:'item',item:{payload:{text:'部分回答'}}});
+      expect(rows.at(-1)).toMatchObject({label:expect.stringContaining(kind === 'output' ? '已达到输出长度上限' : '已暂停'),failed:false});
+    }
+  });
   it('工作行摘要', () => {
     expect(workLabel(item({ type: 'command_execution', ordinal: 1, payload: { command: 'ls', status: 'running' } }))).toBe('正在运行 ls');
     expect(workLabel(item({ type: 'file_change', ordinal: 1, payload: { input: { file_path: 'a.ts' }, status: 'failed' } }))).toBe('未能修改 a.ts');

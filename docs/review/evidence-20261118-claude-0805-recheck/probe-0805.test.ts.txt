@@ -1,0 +1,99 @@
+import Database from 'better-sqlite3';
+import { afterEach, expect, it } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { runBundledMigrations } from '../../db/migrations';
+import { AgentStore } from './agent-store';
+import { AgentRunService } from './agent-run-service';
+import { AgentTaskService } from './agent-task-service';
+import { DelegationService } from './delegation-service';
+import { GitWorkspaces, runWorkspaceCommand } from './git-workspaces';
+import { HostBusinessRequests } from './host-business-requests';
+import { Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
+import type { DriverId } from './capabilities';
+import { until, tick } from './test-doubles';
+let pid = 50000;
+const goals = new Map<string, { objective: string; status: string; createdAt: number; updatedAt: number }>();
+class Instance implements DriverInstance {
+  events = new Emitter(); on = this.events.on.bind(this.events); turns: TurnInput[] = []; history: string[] = []; options!: DriverOpenOptions; nativeId = ''; delayedExit = false;
+  constructor(readonly driverId: DriverId) {}
+  async open(o: DriverOpenOptions) { this.options = o; this.nativeId = o.resumeNativeId ?? randomUUID(); this.events.emit({ type: 'process', pid: ++pid }); return { nativeId: this.nativeId, confirmed: true, defaultModel: 'test' }; }
+  async injectHistory(t: string) { this.history.push(t); }
+  async startTurn(t: TurnInput) { this.turns.push(t); const id = `turn-${this.turns.length}`; this.events.emit({ type: 'turn.started', nativeTurnId: id, clientInputId: t.clientInputId }); return { nativeTurnId: id }; }
+  finish(text = 'done') { const id = `turn-${this.turns.length}`; this.events.emit({ type: 'item.completed', nativeItemId: id, itemType: 'agentMessage', payload: { id, type: 'agentMessage', text } }); this.events.emit({ type: 'turn.completed', nativeTurnId: id, status: 'completed' }); }
+  async respond() {} async interrupt() {} async close() { if (!this.delayedExit) this.exit(); }
+  exit() { this.events.emit({ type: 'exit', code: 0, signal: null }); }
+  async goal(op: { kind: string; objective?: string }) {
+    if (op.kind === 'clear') { goals.delete(this.nativeId); this.events.emit({ type: 'goal', objective: null, status: 'cleared' }); return; }
+    const old = goals.get(this.nativeId), g = { objective: op.objective ?? old?.objective ?? 'goal', status: op.kind === 'pause' ? 'paused' : 'active', createdAt: old?.createdAt ?? Date.now(), updatedAt: (old?.updatedAt ?? 0) + 1 };
+    goals.set(this.nativeId, g); this.events.emit({ type: 'goal', objective: g.objective, status: g.status as 'active' | 'paused', nativeCreatedAt: g.createdAt, nativeUpdatedAt: g.updatedAt });
+  }
+  async goalState() { return goals.get(this.nativeId) ?? null; }
+}
+const cleanups: (() => Promise<void>)[] = []; afterEach(async () => { for (const f of cleanups.splice(0)) await f(); });
+let cmdOverride: any = undefined;
+function fixture() {
+  const base = realpathSync(mkdtempSync(join(tmpdir(), 'm14-delegation-'))), root = join(base, 'work'), home = join(base, 'home'), db = new Database(':memory:'); mkdirSync(root); mkdirSync(home); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
+  const store = new AgentStore(db), instances: Instance[] = [];
+  const driver: AgentDriver = { id: 'codex-app-server', command: 'fixture', create: () => { const i = new Instance('codex-app-server'); instances.push(i); return i; } };
+  const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', driver]]), processes: { read: p => ({ pid: p, startedAt: 'fixture-process-birth' }), state: () => 'unknown' }, host: { instanceId: 'fixture', pid: process.pid, startedAt: null } });
+  let revision = 'r1', drained = true, trustedRead = false;
+  const profile = (id: string) => { if (!['main', 'child'].includes(id)) throw Error('unknown profile'); return { profileId: id, driverId: 'codex-app-server' as const, name: id, revision, available: true, trustedRead, models: ['test'] }; };
+  const tasks = new AgentTaskService({ store, runs, profileDriver: () => 'codex-app-server', resolveLaunch: async () => ({ driverId: 'codex-app-server', executable: { path: '/fixture', version: '0.169.0' }, env: {}, stateRoot: join(root, 'state'), compatibility: {}, extraArgs: [] }) });
+  const git = new GitWorkspaces({ store, home, command: cmdOverride });
+  const co = new DelegationService({ store, runs, tasks, git, profile, profiles: () => [profile('main'), profile('child')], roots: id => [git.workspace(id)?.path ?? root], project: () => ({ id: 'fixture-project', name: 'Fixture' }), drained: async () => drained });
+  const taskId = tasks.create({ projectId: null, dirId: null, cwd: root, title: 'parent', profileId: 'main', tier: 'ask' }).taskId; co.setMode(taskId, true);
+  cleanups.push(async () => { await co.close(); for (const t of store.tasksWithQueue()) for (const q of store.queuedTurns(t)) tasks.cancelQueued(t, q.turn_id); instances.forEach(i => { i.delayedExit = false; }); await runs.closeAll(); await tick(20); db.close(); rmSync(base, { recursive: true, force: true }); });
+  const send = async (text: string, id = taskId) => { const r = await tasks.submit(id, { text, clientInputId: randomUUID(), expectedSelectionRevision: tasks.snapshot(id).selectionRevision }); await until(() => instances.some(i => i.turns.some(t => t.clientInputId === store.turn(r.turnId)?.client_input_id)), 5000); return instances.find(i => i.turns.some(t => t.clientInputId === store.turn(r.turnId)?.client_input_id))!; };
+  const delegate = (requestKey: string = randomUUID(), id = taskId) => co.delegate(runs.runForTask(id)!.runId, { requestKey, profileId: 'child', title: 'child', instructions: 'child work' });
+  return { root, db, store, runs, tasks, git, co, taskId, instances, send, delegate, setRead: (value: boolean) => { trustedRead = value; }, setRevision: (s: string) => { revision = s; }, setDrained: (b: boolean) => { drained = b; } };
+}
+const OUT = process.env.REVIEW_PROBE_OUT!;
+const record = (name: string, value: unknown) => { const { readFileSync, existsSync } = require('node:fs'); const all = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {}; all[name] = value; writeFileSync(OUT, JSON.stringify(all, null, 2)); };
+const gitIn = async (cwd: string, ...args: string[]) => { const r = await runWorkspaceCommand(cwd, 'git', args); if (r.code) throw Error(r.stderr); return r.stdout.trim(); };
+
+it('PROBE-A auto commit before delegation while an independent task in the same Git repo is mid-turn', async () => {
+  const f = fixture();
+  await gitIn(f.root, 'init', '-q', '-b', 'main'); await gitIn(f.root, 'config', 'user.name', 'F'); await gitIn(f.root, 'config', 'user.email', 'f@example.invalid');
+  writeFileSync(join(f.root, 'a.txt'), 'base\n'); await gitIn(f.root, 'add', '-A'); await gitIn(f.root, 'commit', '-qm', 'base');
+  const otherId = f.tasks.create({ projectId: null, dirId: null, cwd: f.root, title: 'independent', profileId: 'main', tier: 'ask' }).taskId;
+  const other = await f.send('independent writer', otherId);
+  const parent = await f.send('parent');
+  // independent task is still in its turn and has half-written a file
+  writeFileSync(join(f.root, 'other-half-written.txt'), 'independent task, not finished\n');
+  const c = await f.delegate(); parent.finish();
+  await until(() => !!f.git.workspace(c.childTaskId)?.base_commit && f.git.workspace(c.childTaskId)?.state === 'ready', 8000);
+  const base = f.git.workspace(c.childTaskId)!.base_commit!;
+  const files = (await gitIn(f.root, 'show', '--name-only', '--format=', base)).split('\n').filter(Boolean);
+  const msg = await gitIn(f.root, 'log', '-1', '--format=%s', base);
+  const otherStillRunning = f.runs.busy(f.runs.runForTask(otherId)!.runId);
+  record('A_autocommit_sweep', { autoCommitMessage: msg, autoCommitFiles: files, independentTaskStillMidTurn: otherStillRunning, childWorktreeHasOtherFile: require('node:fs').existsSync(join(f.git.workspace(c.childTaskId)!.path, 'other-half-written.txt')) });
+  other.finish();
+}, 20_000);
+
+it('PROBE-B Git parent business approval waits while parent drains for dependency install; clock starts at approval', async () => {
+  cmdOverride = async (cwd: string, command: string, args: readonly string[], t?: number, o?: any) => {
+    if (command === 'pnpm') { await new Promise(r => setTimeout(r, 1500)); return { stdout: '', stderr: '', code: 0 }; }
+    return runWorkspaceCommand(cwd, command, args, t, o);
+  };
+  try {
+    const f = fixture();
+    await gitIn(f.root, 'init', '-q', '-b', 'main'); await gitIn(f.root, 'config', 'user.name', 'F'); await gitIn(f.root, 'config', 'user.email', 'f@example.invalid');
+    writeFileSync(join(f.root, 'pnpm-lock.yaml'), 'lockfileVersion: 9\n'); await gitIn(f.root, 'add', '-A'); await gitIn(f.root, 'commit', '-qm', 'base');
+    const parent = await f.send('parent'); const origin = f.runs.runForTask(f.taskId)!;
+    const requests = new HostBusinessRequests({ store: f.store, run: id => f.runs.runForTask(id), hasOwner: id => !!f.runs.runForTask(id) || !!f.runs.closingForTask(id), notify: () => {}, acquire: (id, _o, signal) => f.co.acquireBusiness(id, signal), needsWriteSlot: id => f.co.businessNeedsWriteSlot(id), executionMs: 500 });
+    f.tasks.attachBusiness(requests); cleanups.unshift(() => requests.close());
+    let effects = 0;
+    requests.register('fixture', { validate: async () => {}, execute: async () => { effects++; return { ok: true }; } });
+    const req = requests.create({ ...origin, taskId: f.taskId }, { operationId: randomUUID(), kind: 'fixture', title: 'send mail', review: { frozen: true }, data: {} });
+    const c = await f.delegate(); parent.finish();
+    await until(() => f.git.workspace(c.childTaskId)?.state === 'preparing', 5000);
+    const needsSlot = f.co.businessNeedsWriteSlot(f.taskId);
+    const t0 = Date.now();
+    const result = await requests.respond(f.taskId, req.requestId, 1, { choice: 'allow' }).then(v => v, e => ({ error: (e as Error).message }));
+    record('B_business_during_git_drain', { needsWriteSlot: needsSlot, executionMs: 500, dependencyInstallMs: 1500, elapsedMs: Date.now() - t0, result, effects, finalStatus: f.store.request(req.requestId)?.status });
+    await until(() => !!f.runs.runForTask(c.childTaskId)?.turnId, 8000); f.instances[1].finish();
+  } finally { cmdOverride = undefined; }
+}, 20_000);

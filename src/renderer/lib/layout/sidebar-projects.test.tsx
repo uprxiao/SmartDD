@@ -6,6 +6,7 @@ import { SidebarProjects } from './sidebar-projects';
 const m = vi.hoisted(() => ({
   setArchived: vi.fn(),
   remove: vi.fn(),
+  preview: vi.fn(),
   refresh: vi.fn(),
   project: { id: 'p1', name: 'AIS', archivedAt: null as string | null },
   detail: { id: 'p1', name: 'AIS', archivedAt: null, dirs: [{ id: 'd1', path: '/private/ais', isDefault: true }], databases: [], servers: [] },
@@ -16,11 +17,11 @@ vi.mock('@renderer/lib/hooks/useProjects', () => ({
   useProject: (id: string | null) => ({ data: id ? m.detail : undefined }),
   useRefreshProjects: () => m.refresh,
 }));
-vi.mock('@renderer/lib/ipc', () => ({ rpc: { projects: { setArchived: m.setArchived, delete: m.remove } }, events: { on: () => () => undefined } }));
+vi.mock('@renderer/lib/ipc', () => ({ rpc: { projects: { setArchived: m.setArchived, delete: m.remove, deletePreview:m.preview } }, events: { on: () => () => undefined } }));
 vi.mock('@renderer/lib/layout/sidebar-tasks', () => ({ TaskRow: () => null }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-beforeEach(() => { vi.clearAllMocks(); m.setArchived.mockResolvedValue(undefined); m.remove.mockResolvedValue(undefined); m.refresh.mockResolvedValue(undefined); });
+beforeEach(() => { vi.clearAllMocks(); m.setArchived.mockResolvedValue(undefined); m.remove.mockResolvedValue(undefined); m.preview.mockResolvedValue({taskCount:0,archivedCount:0,paths:[],worktrees:[],blockers:[],confirmation:null,legacyRunning:0}); m.refresh.mockResolvedValue(undefined); });
 afterEach(() => cleanup());
 
 const openMenu = async () => { fireEvent.click(screen.getByTestId('sidebar-project-more')); return screen.findByTestId('sidebar-project-delete'); };
@@ -43,8 +44,29 @@ describe('sidebar project menu', () => {
     fireEvent.click(await openMenu());
     const title = await screen.findByText('projects.confirm.projectTitle');
     expect(m.remove).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByText('projects.confirm.projectBody')).toBeTruthy());
     const confirm = screen.getAllByRole('button', { name: 'projects.actions.delete' }).find((b) => title.closest('[role="dialog"]')?.contains(b));
     fireEvent.click(confirm!);
     await waitFor(() => expect(m.remove).toHaveBeenCalledWith('p1', { deleteSecrets: true }));
   });
+});
+
+it('G1 shows the precise delete inventory and sends the checked confirmation', async () => {
+  m.preview.mockResolvedValueOnce({taskCount:3,archivedCount:1,paths:['/private/ais'],worktrees:['/private/fixture/worktree'],blockers:[],confirmation:'listed-records',legacyRunning:0});
+  render(<SidebarProjects />);
+  fireEvent.click(await openMenu());
+  expect(await screen.findByText(/将删除 3 个 Agent 任务/)).toBeTruthy();
+  expect(screen.getByText('/private/fixture/worktree')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button',{name:'删除项目'}));
+  await waitFor(()=>expect(m.remove).toHaveBeenCalledWith('p1',{deleteSecrets:true,agentTaskDeletionConfirmation:'listed-records'}));
+});
+
+it('G1 names the blocker without offering destructive confirmation', async () => {
+  m.preview.mockResolvedValueOnce({taskCount:1,archivedCount:0,paths:[],worktrees:[],blockers:[{taskId:'busy',title:'写入任务',reasons:['有待处理请求']}],confirmation:'busy',legacyRunning:0});
+  render(<SidebarProjects />);
+  fireEvent.click(await openMenu());
+  expect(await screen.findByText('项目暂时无法删除')).toBeTruthy();
+  expect(screen.getByText('写入任务')).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'删除项目'})).toBeNull();
+  expect(m.remove).not.toHaveBeenCalled();
 });

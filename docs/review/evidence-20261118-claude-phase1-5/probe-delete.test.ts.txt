@@ -1,0 +1,61 @@
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { DatabaseInput, ServerInput } from '@shared/projects';
+import { runBundledMigrations } from '../../db/migrations';
+import * as schema from '../../db/schema';
+import { SecretsStore, type SecretCipher } from '../../secrets';
+import { ProjectService } from './project-service';
+
+/** Reversible stand-in for safeStorage; `available` toggles like a locked Keychain. */
+function fakeCipher() {
+  const state = { available: true };
+  const cipher: SecretCipher = {
+    isAvailable: () => state.available,
+    encrypt: (plain) => Buffer.from(`enc:${[...plain].reverse().join('')}`),
+    decrypt: (buf) => [...buf.toString().slice(4)].reverse().join(''),
+  };
+  return { cipher, state };
+}
+
+let sqlite: Database.Database;
+let svc: ProjectService;
+let cipherState: { available: boolean };
+let tmp: string;
+let clock = 1000;
+
+beforeEach(() => {
+  sqlite = new Database(':memory:');
+  sqlite.pragma('foreign_keys = ON');
+  runBundledMigrations(sqlite);
+  const db = drizzle(sqlite, { schema });
+  const { cipher, state } = fakeCipher();
+  cipherState = state;
+  svc = new ProjectService(db, new SecretsStore(db, cipher), () => ++clock);
+  tmp = mkdtempSync(join(tmpdir(), 'smartdd-proj-'));
+});
+afterEach(() => {
+  sqlite.close();
+  rmSync(tmp, { recursive: true, force: true });
+});
+
+const dir = (name: string) => {
+  const p = join(tmp, name);
+  mkdirSync(p, { recursive: true });
+  return p;
+  return p;
+};
+import { AgentStore } from '../agent/agent-store';
+it('PROBE project deletion with an M14 agent task', () => {
+  const project = svc.createProject({ name: 'P', aliases: [], description: '', rulesPath: null }, [{ label: 'main', path: dir('w') } as any]);
+  const detail = svc.getProject(project.id) as any;
+  const store = new AgentStore(sqlite);
+  const taskId = store.createTask({ projectId: project.id, dirId: detail.dirs[0].id, cwd: detail.dirs[0].path, title: 't', selection: { driverId: 'codex-app-server', profileId: 'x', tier: 'ask' } as any });
+  let error: string | null = null;
+  try { svc.deleteProject(project.id, { deleteSecrets: false }); } catch (e) { error = (e as Error).message; }
+  const left = sqlite.prepare('SELECT COUNT(*) AS n FROM projects WHERE id=?').get(project.id) as { n: number };
+  require('node:fs').writeFileSync(process.env.REVIEW_PROBE_OUT!, JSON.stringify({ taskId: !!taskId, deleteError: error, projectStillExists: left.n === 1 }, null, 2));
+});

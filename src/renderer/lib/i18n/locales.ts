@@ -228,7 +228,7 @@ export const zhCN = {
   },
   settings: {
     title: '设置',
-    sections: { applications: '插件', voice: '语音输入', general: '常规', aiProfiles: '智能体', capabilities: 'Skill 与 MCP', appearance: '外观', terminal: '终端' },
+    sections: { archivedAgentTasks: '已归档任务', applications: '插件', voice: '语音输入', general: '常规', aiProfiles: '智能体', capabilities: 'Skill 与 MCP', appearance: '外观', terminal: '终端' },
     descriptions: {
       general: '语言、数据存放位置与环境自检。',
       aiProfiles: '运行器与账号：每个配置是一个程序加一组环境变量和启动参数。令牌加密保存，不出现在界面和日志中。',
@@ -624,7 +624,7 @@ export const en: Widen<typeof zhCN> = {
   },
   settings: {
     title: 'Settings',
-    sections: { applications: 'Plugins', voice: 'Voice input', general: 'General', aiProfiles: 'Agents', capabilities: 'Skills & MCP', appearance: 'Appearance', terminal: 'Terminal' },
+    sections: { archivedAgentTasks: 'Archived tasks', applications: 'Plugins', voice: 'Voice input', general: 'General', aiProfiles: 'Agents', capabilities: 'Skills & MCP', appearance: 'Appearance', terminal: 'Terminal' },
     descriptions: {
       general: 'Language, data location and environment self-check.',
       aiProfiles: 'Runners and accounts: each profile is a program plus environment variables and arguments. Tokens are stored encrypted and never shown in the UI or logs.',

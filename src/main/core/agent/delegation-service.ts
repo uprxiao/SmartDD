@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout as wait } from 'node:timers/promises';
 import { z } from 'zod';
 import type { BridgeTool } from '@shared/application-bridge';
 import type { AgentHostTools } from '../applications/agent-host-tools';
@@ -8,16 +9,16 @@ import { AgentRunService, type RunHandle } from './agent-run-service';
 import { AgentTaskService, rangeOf } from './agent-task-service';
 import { DriverError } from './driver';
 import type { DriverId } from './capabilities';
-import { DirectoryQueue, directoryIdentity } from './directory-queue';
+import { DirectoryQueue, directoryIdentity, overlappingIdentity } from './directory-queue';
 import { GitWorkspaces } from './git-workspaces';
 import { resolveTier, type Tier } from './permissions';
 import type { TaskCoordination } from './task-coordination';
 const at = () => new Date().toISOString();
 const key = z.string().regex(/^[A-Za-z0-9_-]{8,128}$/);
-const delegateSchema = z.object({ requestKey: key, profileId: z.string().min(1).max(128), title: z.string().trim().min(1).max(120), instructions: z.string().min(1).refine(s => Buffer.byteLength(s) <= 128 * 1024), model: z.string().min(1).max(256).optional(), access: z.enum(['read', 'write']).optional() }).strict();
+const delegateSchema = z.object({ requestKey: key, profileId: z.string().min(1).max(128), title: z.string().trim().min(1).max(120), instructions: z.string().min(1).refine(s => Buffer.byteLength(s) <= 128 * 1024), model: z.string().min(1).max(256).optional(), access: z.enum(['read', 'write']).optional(), workspaceMode: z.enum(['shared', 'worktree']).optional() }).strict();
 type DelegateInput = z.infer<typeof delegateSchema>;
 export interface DelegationProfile { profileId: string; driverId: DriverId; name: string; revision: string; available: boolean; models: string[]; trustedRead?: boolean }
-interface Target { profile: DelegationProfile; model?: string; tier: Tier; requestedAccess: string; actualAccess: 'read' | 'write'; strategy: 'git' | 'serial'; parentBranch?: string; parentCwd: string; title: string; directoryIdentity: string; startHead?: string; resultItemId?: string; mergeFailures?: number }
+interface Target { profile: DelegationProfile; model?: string; tier: Tier; requestedAccess: string; actualAccess: 'read' | 'write'; strategy: 'git' | 'serial'; baseCommit?: string; uncommittedFiles?: number; repoRoot?: string; parentBranch?: string; parentCwd: string; title: string; directoryIdentity: string; startHead?: string; resultItemId?: string; mergeFailures?: number }
 export interface DelegationRow { delegation_id: string; parent_task_id: string; child_task_id: string; parent_run_id: string; target_json: string; access: 'read' | 'write'; request_key: string; result_revision: number; delivery_state: 'queued' | 'running' | 'delivered' | 'queued_for_parent' | 'canceled' | 'failed' }
 interface Attempt { attempt_id: string; delegation_id: string; ordinal: number; kind: string; input_ref: string; child_turn_id: string | null; commit_range: string | null; notified_at: string | null; merge_check_json: string | null }
 /** Public delegation and UI use the same persistent command service. A caller's identity is always host-derived. */
@@ -26,10 +27,45 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
   private readonly businessWaiters=new Map<string,number>();
   private readonly businessLeases = new Map<string,number>();
   businessBusy(taskId:string){return (this.businessLeases.get(taskId)??0)>0;}
-  async acquireBusiness(taskId:string,signal:AbortSignal){
-    const task=this.selection(taskId).task,root=directoryIdentity(task.cwd,this.d.roots(taskId));
-    this.businessWaiters.set(taskId,(this.businessWaiters.get(taskId)??0)+1);let admitted=false;try{while(true){if(signal.aborted||this.closed||this.stopped(taskId))throw new DriverError('REJECTED','业务操作已取消');const q=this.queue.enter(taskId,root.identity);if(!this.draining.has(taskId)&&!this.d.runs.closingForTask(taskId)&&this.queue.acquire(q.queue_id)){admitted=true;break;}this.schedule();await new Promise(r=>setTimeout(r,50));}}finally{const n=(this.businessWaiters.get(taskId)??1)-1;if(n)this.businessWaiters.set(taskId,n);else{this.businessWaiters.delete(taskId);if(!admitted&&!this.d.store.queuedTurns(taskId).length)this.queue.cancel(taskId);}this.schedule();}
-    this.businessLeases.set(taskId,(this.businessLeases.get(taskId)??0)+1);let released=false;return()=>{if(released)return;released=true;const n=(this.businessLeases.get(taskId)??1)-1;if(n)this.businessLeases.set(taskId,n);else{this.businessLeases.delete(taskId);const q=this.queue.forTask(taskId);if(q?.state==='active'&&!this.d.runs.runForTask(taskId)&&!this.d.runs.closingForTask(taskId)&&!this.draining.has(taskId))this.queue.release(q.queue_id,{nativeExited:true,descendantsDrained:true,businessDrained:true,admissionFrozen:true});}this.schedule();};
+  async acquireBusiness(taskId: string, signal: AbortSignal) {
+    this.businessWaiters.set(taskId, (this.businessWaiters.get(taskId) ?? 0) + 1);
+    let admitted = false;
+    try {
+      while (true) {
+        if (signal.aborted || this.closed || this.stopped(taskId)) throw new DriverError('REJECTED', '业务操作已取消');
+        this.selection(taskId);
+        if (!this.blocked(taskId) && !this.d.runs.closingForTask(taskId) && this.admitWrite(taskId)) {
+          admitted = true;
+          break;
+        }
+        this.schedule();
+        await wait(50, undefined, { signal });
+      }
+    } finally {
+      const left = (this.businessWaiters.get(taskId) ?? 1) - 1;
+      if (left) this.businessWaiters.set(taskId, left);
+      else {
+        this.businessWaiters.delete(taskId);
+        if (!admitted && !this.d.store.queuedTurns(taskId).length) this.queue.cancel(taskId);
+      }
+      this.schedule();
+    }
+    this.businessLeases.set(taskId, (this.businessLeases.get(taskId) ?? 0) + 1);
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      const left = (this.businessLeases.get(taskId) ?? 1) - 1;
+      if (left) this.businessLeases.set(taskId, left);
+      else {
+        this.businessLeases.delete(taskId);
+        const q = this.queue.forTask(taskId);
+        if (q?.state === 'active' && !this.d.runs.runForTask(taskId) && !this.d.runs.closingForTask(taskId) && !this.draining.has(taskId)) {
+          this.queue.release(q.queue_id, { nativeExited: true, descendantsDrained: true, businessDrained: true, admissionFrozen: true });
+        }
+      }
+      this.schedule();
+    };
   }
   private readonly draining = new Map<string, string>();
   private readonly preparing = new Set<string>();
@@ -56,8 +92,19 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     }));
     this.disposeListeners.push(d.store.subscribe(e => {
       if (e.type.startsWith('request.')) { const parent = this.parentOf(e.taskId); if (parent) d.store.tx(emit => emit(parent.parent_task_id, 'delegation.requestChanged', { childTaskId: e.taskId })); }
-      if (e.type === 'run.ended') { const q = this.queue.forTask(e.taskId), runId = (e.payload as { runId: string }).runId; if (q?.state === 'active' && q.run_id === runId) { this.draining.set(e.taskId, runId); d.runs.hold(e.taskId, true); } }
+      if (e.type === 'run.ended') {
+        const q = this.queue.forTask(e.taskId), runId = (e.payload as { runId: string }).runId;
+        if (q?.state === 'active' && q.run_id === runId || this.waitingChildren(e.taskId) || this.parentOf(e.taskId)?.delivery_state === 'running') {
+          this.draining.set(e.taskId, runId);
+          d.runs.hold(e.taskId, true);
+        }
+      }
       if (e.type === 'turn.ended' || e.type === 'run.ended' || e.type.startsWith('directory.') || e.type === 'delegation.changed') this.schedule();
+      if (e.type === 'turn.ended' && this.needsAttention(e.taskId)) {
+        const turn = d.store.turn((e.payload as {turnId: string}).turnId);
+        if (turn?.status === 'completed' && turn.source_kind === 'user' && turn.native_turn_id)
+          queueMicrotask(() => { if (!this.closed) void this.track(this.verifyMerges(e.taskId, true)).catch(error => this.warnOnce(e.taskId, 'merge-recheck', String(error))); });
+      }
       if (e.type === 'turn.started') {
         const t = d.store.turn((e.payload as { turnId: string }).turnId);
         if (t?.source_kind === 'notification') {
@@ -68,13 +115,49 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       if (e.type === 'run.preparing') { const q = this.queue.forTask(e.taskId), id = (e.payload as { runId: string }).runId; if (q?.state === 'active') this.queue.bind(q.queue_id, id); }
     }));
     // Unknown active rows after a crash remain occupied until their exact process/business proof is available.
-    for (const q of d.store.sqlite.prepare("SELECT * FROM agent_directory_queue WHERE state='active'").all() as { task_id: string; run_id: string | null }[]) if (q.run_id) this.draining.set(q.task_id, q.run_id);
+    for (const q of d.store.sqlite.prepare("SELECT * FROM agent_directory_queue WHERE state='active'").all() as { task_id: string; run_id: string | null }[]) if (q.run_id) {
+      this.draining.set(q.task_id, q.run_id);
+      d.runs.hold(q.task_id, true);
+    }
+    // Builds before this correction could leave independent tasks parked in the directory FIFO.
+    for (const q of d.store.sqlite.prepare("SELECT task_id FROM agent_directory_queue WHERE state='queued'").all() as { task_id: string }[]) {
+      if (!this.usesWriteQueue(q.task_id)) this.queue.cancel(q.task_id);
+    }
     this.timer = setInterval(() => this.schedule(), 1000); this.timer.unref();
   }
   async close() { this.closed = true; this.prepareAbort.forEach(a=>a.abort()); clearInterval(this.timer); this.disposeListeners.forEach(f => f()); await Promise.allSettled([...this.pendingWork]); }
   private track(work:Promise<void>) {this.pendingWork.add(work);void work.finally(()=>this.pendingWork.delete(work)).catch(()=>{});return work;}
   private rows(parentTaskId?: string) { return this.d.store.sqlite.prepare(`SELECT * FROM agent_delegations${parentTaskId ? ' WHERE parent_task_id=?' : ''} ORDER BY rowid`).all(...(parentTaskId ? [parentTaskId] : [])) as DelegationRow[]; }
   private parentOf(childTaskId: string) { return this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE child_task_id=?').get(childTaskId) as DelegationRow | undefined; }
+  private serialWriter(row: Pick<DelegationRow, 'access' | 'target_json'>) {
+    return row.access === 'write' && (JSON.parse(row.target_json) as Target).strategy === 'serial';
+  }
+  private usesWriteQueue(taskId: string) {
+    const child = this.parentOf(taskId);
+    if (child) return this.serialWriter(child);
+    return this.rows(taskId).some(row => this.serialWriter(row) && ['queued', 'running', 'queued_for_parent'].includes(row.delivery_state));
+  }
+  /** A parent can first delegate mid-turn, before it holds any slot. Respect its live boundary as well as FIFO rows. */
+  private parentStillWriting(taskId: string, identity: string) {
+    return this.rows().some(row => {
+      if (row.parent_task_id === taskId || row.delivery_state !== 'queued' || !this.serialWriter(row)) return false;
+      const target = JSON.parse(row.target_json) as Target;
+      return overlappingIdentity(target.directoryIdentity, identity) && this.queue.forTask(row.parent_task_id)?.state !== 'active'
+        && (this.draining.has(row.parent_task_id) || !!this.d.runs.runForTask(row.parent_task_id) || !!this.d.runs.closingForTask(row.parent_task_id));
+    });
+  }
+  private admitWrite(taskId: string) {
+    const task = this.selection(taskId).task;
+    const root = directoryIdentity(task.cwd, this.d.roots(taskId));
+    const existing = this.queue.forTask(taskId);
+    if (!this.usesWriteQueue(taskId) && existing?.state !== 'active') {
+      if (existing) this.queue.cancel(taskId);
+      return true;
+    }
+    const q = this.queue.enter(taskId, root.identity);
+    if (q.state === 'active') return true;
+    return !this.parentStillWriting(taskId, q.directory_identity) && this.queue.acquire(q.queue_id);
+  }
   private attempt(d: DelegationRow) { return this.d.store.sqlite.prepare('SELECT * FROM agent_delegation_attempts WHERE delegation_id=? ORDER BY ordinal DESC LIMIT 1').get(d.delegation_id) as Attempt; }
   private selection(taskId: string) { const t = this.d.store.task(taskId); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return { task: t, selection: JSON.parse(t.selection_json) as AgentSelection }; }
   private stopped(taskId: string) { const e = this.d.store.sqlite.prepare("SELECT event_type FROM agent_events WHERE task_id=? AND event_type IN ('task.user_stopped','task.user_continued') ORDER BY seq DESC LIMIT 1").get(taskId) as { event_type: string } | undefined; return e?.event_type === 'task.user_stopped'; }
@@ -129,26 +212,38 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if (this.parentOf(run.taskId) || !this.enabled(run.taskId)) throw new DriverError('REJECTED', '当前任务未开启新委派，或已经是子任务');
     const profile = this.d.profile(value.profileId); if (!profile.available || value.model && !profile.models.includes(value.model)) throw new DriverError('REJECTED', '目标智能体或模型不可用');
     const tier = resolveTier(profile.driverId, parent.selection.tier as Tier); if (!tier.ok) throw new DriverError('REJECTED', '目标没有可继承的档位');
-    const root = directoryIdentity(parent.task.cwd, this.d.roots(run.taskId)), repo = await this.d.git.detect(parent.task.cwd);
-    this.caller(runId); // Recheck after asynchronous Git discovery; no stale caller can create children.
+    const root = directoryIdentity(parent.task.cwd, this.d.roots(run.taskId));
     const readOnly = value.access === 'read' && profile.trustedRead === true;
-    const target: Target = { profile, model: value.model, tier: tier.tier, requestedAccess: value.access ?? 'write', actualAccess: readOnly ? 'read' : 'write', strategy: repo && !readOnly ? 'git' : 'serial', parentBranch: repo?.branch, parentCwd: parent.task.cwd, title: value.title, directoryIdentity: root.identity };
+    const worktree = value.workspaceMode === 'worktree' && !readOnly;
+    const repo = worktree ? await this.d.git.detect(parent.task.cwd) : null;
+    if (worktree && !repo) throw new DriverError('REJECTED', '独立工作副本只适用于有 HEAD 的 Git 项目；请改用共用目录');
+    const source = repo ? await this.d.git.sourceSnapshot(repo) : {};
+    this.caller(runId);
+    if (!this.enabled(run.taskId)) throw new DriverError('REJECTED', '当前任务未开启新委派');
+    const target: Target = { profile, model: value.model, tier: tier.tier, requestedAccess: value.access ?? 'write', actualAccess: readOnly ? 'read' : 'write', strategy: worktree ? 'git' : 'serial', parentBranch: repo?.branch, repoRoot: repo?.root, ...source, parentCwd: parent.task.cwd, title: value.title, directoryIdentity: root.identity };
     const result = this.d.store.tx(emit => {
       const duplicate = this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE parent_task_id=? AND request_key=?').get(run.taskId, value.requestKey) as DelegationRow | undefined; if (duplicate) return duplicate;
       const childTaskId = this.d.store.createTask({ projectId: parent.task.project_id, dirId: null, cwd: parent.task.cwd, title: value.title, parentTaskId: run.taskId, selection: { driverId: profile.driverId, profileId: profile.profileId, model: value.model, tier: tier.tier, carryExtensions: parent.selection.extensionPreferences?.[profile.profileId] ?? true } });
       const id = randomUUID(), attempt = randomUUID();
       this.d.store.sqlite.prepare("INSERT INTO agent_delegations(delegation_id,parent_task_id,child_task_id,parent_run_id,target_json,access,request_key,delivery_state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'queued',?,?)").run(id, run.taskId, childTaskId, runId, JSON.stringify(target), target.actualAccess, value.requestKey, at(), at());
       this.d.store.sqlite.prepare("INSERT INTO agent_delegation_attempts(attempt_id,delegation_id,ordinal,kind,input_ref,created_at) VALUES(?,?,1,'initial',?,?)").run(attempt, id, JSON.stringify({ text: value.instructions, sourceKind: 'delegation', parentRunId: runId }), at());
-      const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${attempt}`, text: this.childInput(value.instructions), sourceKind: 'delegation' });
+      const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${attempt}`, text: this.childInput(value.instructions, target), sourceKind: 'delegation' });
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt);
-      this.queue.enter(childTaskId, root.identity, readOnly);
-      this.d.store.addHostItem(run.taskId, run.turnId ?? null, 'subtask', { delegationId: id, childTaskId, title: value.title, profileName: profile.name, status: 'queued', access: target.actualAccess, ...(value.access === 'read' && !readOnly ? { notice: '当前扩展与业务入口未能证明全链路只读，按写入型管理' } : {}) });
+      if (target.strategy === 'serial' && target.actualAccess === 'write') this.queue.enter(childTaskId, root.identity);
+      this.d.store.addHostItem(run.taskId, run.turnId ?? null, 'subtask', { delegationId: id, childTaskId, title: value.title, profileName: profile.name, status: 'queued', access: target.actualAccess, workspaceMode: target.strategy === 'git' ? 'worktree' : 'shared', ...(value.access === 'read' && !readOnly ? { notice: '当前扩展与业务入口未能证明全链路只读，按写入型管理' } : {}) });
       emit(run.taskId, 'delegation.changed', { delegationId: id, childTaskId, state: 'queued' });
       return this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE delegation_id=?').get(id) as DelegationRow;
     });
     this.schedule(); return this.receipt(result);
   }
-  private receipt(r: DelegationRow) { return { delegationId: r.delegation_id, childTaskId: r.child_task_id, state: r.delivery_state, resultRevision: r.result_revision, asynchronous: true, message: '已持久接受；不要在 shell 循环等待，当前回合结束且排空后宿主会启动子任务并通知结果。' }; }
+  private receipt(row: DelegationRow) {
+    const target = JSON.parse(row.target_json) as Target;
+    const workspaceMode = target.strategy === 'git' ? 'worktree' : 'shared';
+    const message = workspaceMode === 'worktree'
+      ? `工作副本基于 ${target.baseCommit ?? '已登记提交'}；主目录有 ${target.uncommittedFiles ?? 0} 个未提交文件，没有带进子任务。要带改动请先提交再派出。`
+      : target.actualAccess === 'read' ? '子任务在共用目录只读并行。' : '当前回合结束并交出写入资格后，子任务在共用目录运行；宿主不提交。';
+    return { delegationId: row.delegation_id, childTaskId: row.child_task_id, state: row.delivery_state, resultRevision: row.result_revision, asynchronous: true, workspaceMode, baseCommit: target.baseCommit, uncommittedFiles: target.uncommittedFiles, message: `已持久接受；不要在 shell 循环等待。 ${message}` };
+  }
   private owned(parentTaskId: string, childTaskId: string) { const r = this.parentOf(childTaskId); if (!r || r.parent_task_id !== parentTaskId) throw new DriverError('REJECTED', '只能操作本任务派出的子任务'); return r; }
   async send(runId: string, childTaskId: string, requestKey: string, text: string) {
     const run = this.caller(runId), row = this.owned(run.taskId, childTaskId); key.parse(requestKey);
@@ -165,7 +260,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     this.d.tasks.setSelection(childTaskId, { tier: tier.tier }, child.task.selection_revision);
     const old = this.attempt(row), id = randomUUID();
     this.d.store.tx(() => { this.d.store.sqlite.prepare("INSERT INTO agent_delegation_attempts(attempt_id,delegation_id,ordinal,kind,input_ref,created_at) VALUES(?,?,?,'rework',?,?)").run(id, row.delegation_id, old.ordinal + 1, JSON.stringify({ text, requestKey, sourceKind: 'delegation' }), at()); this.update(row, 'queued', { ...target, startHead: old.commit_range && old.merge_check_json && JSON.parse(old.merge_check_json).pass ? JSON.parse(old.commit_range).head : target.startHead, resultItemId: undefined, mergeFailures: 0 });
-      const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${id}`, text: this.childInput(text), sourceKind: 'delegation' });
+      const accepted = this.d.store.acceptTurn({ taskId: childTaskId, clientInputId: `delegate-${id}`, text: this.childInput(text, target), sourceKind: 'delegation' });
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, id);
       this.userContinued(childTaskId);
     });
@@ -177,23 +272,53 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     this.update(row, row.delivery_state, { ...target, requestedAccess: 'write' });
     return { state: 'queued_for_write', message: '本轮仍是只读。结束本轮并排空后才能进入写入队列，禁止继续尝试写入。' };
   }
-  async cancel(parentTaskId: string, childTaskId: string) { const row = this.owned(parentTaskId, childTaskId); this.update(row, 'canceled'); await this.d.tasks.stop(childTaskId, true); this.schedule(); return this.receipt({ ...row, delivery_state: 'canceled' }); }
+  async cancel(parentTaskId: string, childTaskId: string) { this.selection(parentTaskId); this.selection(childTaskId); const row = this.owned(parentTaskId, childTaskId); this.update(row, 'canceled'); await this.d.tasks.stop(childTaskId, true); this.schedule(); return this.receipt({ ...row, delivery_state: 'canceled' }); }
   view(taskId: string) {
-    this.selection(taskId); const parent = this.parentOf(taskId), rows = this.rows(taskId);
+    const task = this.d.store.task(taskId);
+    if (!task) throw new DriverError('REJECTED', '任务不存在');
+    const parent = this.parentOf(taskId), rows = this.rows(taskId);
     const workspace = (id: string) => { const w = this.d.git.workspace(id); return w ? { path: w.path, branch: w.branch, baseCommit: w.base_commit, state: w.state } : null; };
-    const children: { delegationId: string; childTaskId: string; state: DelegationRow['delivery_state']; resultRevision: number; title: string; profileName: string; attempts: number; needsHandling: boolean; workspace: ReturnType<typeof workspace> }[] = [];
+    const identities = new Set<string>();
+    const queue = this.queue.forTask(taskId);
+    if (queue?.kind === 'write') identities.add(queue.directory_identity);
+    const counts = { running:0, waiting:0, queued:0, completed:0, pending:0 };
+    const children: { delegationId: string; childTaskId: string; state: DelegationRow['delivery_state']; resultRevision: number; title: string; profileName: string; attempts: number; needsHandling: boolean; workspace: ReturnType<typeof workspace>; workspaceMode: 'worktree' | 'shared'; access: 'read' | 'write'; archived: boolean; waitingUser:boolean; elapsedSeconds:number|null; merged:boolean }[] = [];
     for (const r of rows) {
-      const t = JSON.parse(r.target_json) as Target, c = { delegationId: r.delegation_id, childTaskId: r.child_task_id, state: r.delivery_state, resultRevision: r.result_revision, title: t.title, profileName: t.profile.name, attempts: this.attempt(r).ordinal, needsHandling: (t.mergeFailures ?? 0) >= 2 && !!this.attempt(r).merge_check_json && !JSON.parse(this.attempt(r).merge_check_json!).pass, workspace: workspace(r.child_task_id) };
-      if (children.length >= 100 || Buffer.byteLength(JSON.stringify(children)) + Buffer.byteLength(JSON.stringify(c)) > 64 * 1024) break;
+      const t = JSON.parse(r.target_json) as Target, a = this.attempt(r);
+      if (t.strategy === 'serial' && r.access === 'write') identities.add(t.directoryIdentity);
+      const waitingUser = r.delivery_state === 'running' && this.d.store.pendingRequests(r.child_task_id).length > 0;
+      if (waitingUser) counts.waiting++;
+      else if (r.delivery_state === 'running') counts.running++;
+      else if (r.delivery_state === 'queued') counts.queued++;
+      else if (['delivered','queued_for_parent'].includes(r.delivery_state)) counts.completed++;
+      if (['queued','running','queued_for_parent'].includes(r.delivery_state) || this.pendingMerge(r)) counts.pending++;
+      if (children.length >= 100) continue;
+      const turn = a.child_turn_id ? this.d.store.inputForTurn(a.child_turn_id) : undefined;
+      const start = turn?.started_at ? Date.parse(turn.started_at) : NaN;
+      const elapsedSeconds = Number.isFinite(start) ? Math.max(0, Math.round(((turn?.ended_at ? Date.parse(turn.ended_at) : Date.now()) - start) / 1000)) : null;
+      const merge = a.merge_check_json ? JSON.parse(a.merge_check_json) : null;
+      const c = { delegationId: r.delegation_id, childTaskId: r.child_task_id, state: r.delivery_state, resultRevision: r.result_revision, title: t.title, profileName: t.profile.name, attempts: a.ordinal, needsHandling: (t.mergeFailures ?? 0) >= 2 && !!merge && !merge.pass, workspace: workspace(r.child_task_id), workspaceMode: t.strategy === 'git' ? 'worktree' as const : 'shared' as const, access: r.access, archived: !!this.d.store.task(r.child_task_id)?.archived_at, waitingUser, elapsedSeconds, merged:!!merge?.pass };
+      if (Buffer.byteLength(JSON.stringify(children)) + Buffer.byteLength(JSON.stringify(c)) > 64 * 1024) continue;
       children.push(c);
     }
-    return { enabled: this.enabled(taskId), mode: (this.d.store.sqlite.prepare('SELECT mode FROM agent_tasks WHERE task_id=?').get(taskId) as { mode: string } | undefined)?.mode ?? 'single', parentTaskId: parent?.parent_task_id ?? null, queue: this.queue.forTask(taskId), workspace: workspace(taskId), children, childrenTotal: rows.length, needsHandling: this.needsAttention(taskId) };
+    const target = parent ? JSON.parse(parent.target_json) as Target : undefined;
+    const writing = this.queue.writeView(identities);
+    const writeQueue = identities.size ? {
+      total: writing.length,
+      activeCount: writing.filter(r => r.state === 'active').length,
+      entries: [...writing.filter(r => r.state === 'active'), ...writing.filter(r => r.state === 'queued')].slice(0, 20)
+        .map(r => ({ taskId: r.task_id, state: r.state, title: (this.d.store.task(r.task_id)?.title ?? '任务').slice(0, 120) })),
+    } : null;
+    return { taskTitle:task.title, workspaceMode: target ? target.strategy==='git'?'worktree' as const:'shared' as const : null, access: parent?.access, parentArchived: !!(parent && this.d.store.task(parent.parent_task_id)?.archived_at), enabled: this.enabled(taskId), mode: (this.d.store.sqlite.prepare('SELECT mode FROM agent_tasks WHERE task_id=?').get(taskId) as { mode: string } | undefined)?.mode ?? 'single', parentTaskId: parent?.parent_task_id ?? null, queue, writeQueue, counts, workspace: workspace(taskId), children, childrenTotal: rows.length, needsHandling: this.needsAttention(taskId) };
   }
   treeRequests(taskId: string) {
-    this.selection(taskId); const out: { ownerTaskId: string; ownerName: string; driverId: DriverId; requestId: string; kind: string; revision: number; origin: unknown; status: string; payload: Record<string, unknown>; detailTruncated: true; bytes: number }[] = [];
+    const task = this.d.store.task(taskId);
+    if (!task) throw new DriverError('REJECTED', '任务不存在');
+    if (task.archived_at) return { requests: [], more: 0 };
+    const out: { ownerTaskId: string; ownerName: string; driverId: DriverId; requestId: string; kind: string; revision: number; origin: unknown; status: string; payload: Record<string, unknown>; detailTruncated: true; bytes: number; targetTaskTitle?: string }[] = [];
     let more = 0;
-    for (const child of this.rows(taskId)) for (const r of this.d.store.pendingRequests(child.child_task_id).filter(r => r.status === 'pending')) {
-      const x = { ...r, ownerTaskId: child.child_task_id, ownerName: (JSON.parse(child.target_json) as Target).title, driverId: this.selection(child.child_task_id).selection.driverId, payload: {}, detailTruncated: true as const, bytes: Buffer.byteLength(JSON.stringify(r.payload)) };
+    for (const child of this.rows(taskId)) for (const r of this.d.store.pendingRequests(child.child_task_id, true)) {
+      const x = { ...r, ownerTaskId: child.child_task_id, ownerName: (JSON.parse(child.target_json) as Target).title, driverId: (JSON.parse(this.d.store.task(child.child_task_id)!.selection_json) as AgentSelection).driverId, payload: {}, detailTruncated: true as const, bytes: Buffer.byteLength(JSON.stringify(r.payload)) };
       if (out.length >= 200 || Buffer.byteLength(JSON.stringify(out)) + Buffer.byteLength(JSON.stringify(x)) > 96 * 1024) more++; else out.push(x);
     }
     return { requests: out, more };
@@ -213,10 +338,27 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       if (!tier.ok) throw new DriverError('REJECTED', '无法继承父任务档位');
       if (tier.tier !== c.selection.tier) this.d.tasks.setSelection(taskId, { tier: tier.tier }, c.task.selection_revision);
     }
-    const task = this.selection(taskId).task, root = directoryIdentity(task.cwd, this.d.roots(taskId));
-    const q = this.queue.enter(taskId, root.identity, this.readOnly(taskId)); if (!this.queue.acquire(q.queue_id)) return false;
-    const previous = this.d.store.sqlite.prepare("SELECT task_id FROM agent_directory_queue WHERE directory_identity=? AND state='released' AND queue_id<>? ORDER BY accepted_order DESC LIMIT 1").get(root.identity, q.queue_id) as { task_id: string } | undefined;
-    if (previous && !this.notices.has(q.queue_id)) { this.notices.add(q.queue_id); const text = '宿主目录交接：上一位写入者的改动清单请查看每轮差异记录；如记录不可用则为未知。修改前重新读取工作区与涉及文件，不沿用旧内容。这是来源提示，不是新的真人授权。'; this.contexts.set(taskId, text); this.d.store.addHostItem(taskId, null, 'system_notice', { sourceKind: 'system', code: 'directoryHandoff', detail: text }); }
+    if (!this.admitWrite(taskId)) return false;
+    const q = this.queue.forTask(taskId);
+    if (!q) return true;
+    const previous = this.d.store.sqlite.prepare(
+      "SELECT task_id,run_id FROM agent_directory_queue WHERE kind='write' AND directory_identity=? AND state='released' AND queue_id<>? ORDER BY accepted_order DESC LIMIT 1"
+    ).get(q.directory_identity, q.queue_id) as { task_id: string; run_id: string | null } | undefined;
+    // The parent may have entered this coordination cycle mid-turn without a previous queue row.
+    if ((previous || child && this.serialWriter(child)) && !this.notices.has(q.queue_id)) {
+      this.notices.add(q.queue_id);
+      const fallback = child && this.serialWriter(child) ? { task_id: child.parent_task_id, run_id: child.parent_run_id } : undefined;
+      const writer = previous ?? fallback;
+      const files = writer ? this.d.store.sqlite.prepare(`SELECT changed_files_json FROM agent_turn_changes
+        WHERE task_id=? AND run_id=? AND status='complete' ORDER BY rowid`).pluck().all(writer.task_id, writer.run_id) as string[] : [];
+      const paths = [...new Set(files.flatMap(json => (JSON.parse(json) as { path: string }[]).map(file => file.path)))];
+      const encoded = JSON.stringify(paths.slice(0, 50));
+      const details = !files.length ? '未知，请重新核对工作区' : !paths.length ? '本轮记录无文件改动' :
+        `${encoded.slice(0, 8 * 1024)}${paths.length > 50 || encoded.length > 8 * 1024 ? '（仅列部分，见对应轮次差异）' : ''}`;
+      const text = `宿主目录交接：上一位写入者改动的文件：${details}。修改前重新读取工作区与涉及文件，不沿用旧内容。此提示不构成真人授权。`;
+      this.contexts.set(taskId, text);
+      this.d.store.addHostItem(taskId, null, 'system_notice', { sourceKind: 'system', code: 'directoryHandoff', detail: text });
+    }
     return true;
   }
   opened(taskId: string, run: RunHandle) { const q = this.queue.forTask(taskId); if (q?.state === 'active') this.queue.bind(q.queue_id, run.runId); }
@@ -234,11 +376,20 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       for (const row of this.rows()) {
         if (row.delivery_state === 'queued') {
           const target = JSON.parse(row.target_json) as Target;
-          if (target.strategy === 'git' && !this.d.git.workspace(row.child_task_id) && !this.d.runs.runForTask(row.parent_task_id) && !this.d.runs.closingForTask(row.parent_task_id) && !this.draining.has(row.parent_task_id)) {
+          const needsBoundary = this.serialWriter(row);
+          if (target.strategy === 'git' && this.d.git.workspace(row.child_task_id)?.state !== 'ready' && !this.preparing.has(row.child_task_id)) {
+            void this.track(this.prepareChild(row)).catch(error => this.warnOnce(row.child_task_id, `prepare:${row.delegation_id}`, String(error)));
+          }
+          const parentRun = this.d.runs.runForTask(row.parent_task_id);
+          if (needsBoundary && parentRun && !this.d.runs.busy(parentRun.runId)) {
+            this.draining.set(row.parent_task_id, parentRun.runId);
+            this.d.runs.hold(row.parent_task_id, true);
+          }
+          if (needsBoundary && !parentRun && !this.d.runs.closingForTask(row.parent_task_id) && !this.draining.has(row.parent_task_id)) {
             const last = this.d.store.sqlite.prepare('SELECT run_id,state FROM capability_runs WHERE task_id=? ORDER BY started_at DESC LIMIT 1').get(row.parent_task_id) as { run_id: string; state: string } | undefined;
-            if (last && ['stopped', 'failed'].includes(last.state)) {
-              const root=directoryIdentity(target.parentCwd,this.d.roots(row.parent_task_id)),reservation=this.queue.enter(row.parent_task_id,root.identity);
-              if(this.queue.acquire(reservation.queue_id)){this.draining.set(row.parent_task_id,last.run_id);this.d.runs.hold(row.parent_task_id,true);}
+            if (last?.state === 'orphaned') {
+              this.draining.set(row.parent_task_id, last.run_id);
+              this.d.runs.hold(row.parent_task_id, true);
             }
           }
           await this.startChild(row);
@@ -305,16 +456,14 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       const record = this.d.store.run(runId); if (!record || !['stopped', 'failed', 'orphaned'].includes(record.state)) return;
       const drained = await (this.d.drained?.(runId) ?? this.d.runs.drainNativeGroup(runId)); if (!drained) { this.warnOnce(taskId, `drain:${runId}`, '原生进程组或业务退出未能核实，保留写入资格；不会按超时交给下一个任务。'); return; }
       if (this.d.store.run(runId)?.state === 'orphaned') this.d.store.sqlite.prepare("UPDATE capability_runs SET state='failed',error_code='ORPHAN_OWNER_DRAINED' WHERE run_id=? AND state='orphaned'").run(runId);
-      // Workspace creation happens only inside the frozen parent boundary, before releasing its write slot.
-      for (const child of this.rows(taskId).filter(r => r.delivery_state === 'queued')) await this.prepareChild(child);
       const child = this.parentOf(taskId);
       const upgrade = child && child.access === 'read' && (JSON.parse(child.target_json) as Target).requestedAccess === 'write' && !this.stopped(taskId);
       if (child && !upgrade) await this.finishChild(child);
       else await this.verifyMerges(taskId);
       const q = this.queue.forTask(taskId); if (q?.state === 'active') this.queue.release(q.queue_id, { nativeExited: true, descendantsDrained: true, businessDrained: true, admissionFrozen: true });
       if (child && upgrade) {
-        const target = JSON.parse(child.target_json) as Target, repo = await this.d.git.detect(target.parentCwd);
-        this.d.store.tx(() => { this.d.store.sqlite.prepare("UPDATE agent_delegations SET access='write' WHERE delegation_id=?").run(child.delegation_id); this.update(child, 'queued', { ...target, actualAccess: 'write', strategy: repo ? 'git' : 'serial', parentBranch: repo?.branch });
+        const target = JSON.parse(child.target_json) as Target;
+        this.d.store.tx(() => { this.d.store.sqlite.prepare("UPDATE agent_delegations SET access='write' WHERE delegation_id=?").run(child.delegation_id); this.update(child, 'queued', { ...target, actualAccess: 'write', strategy: 'serial' });
           const a = this.attempt(child), accepted = this.d.tasks.enqueueHost(taskId, `write-${a.attempt_id}`, '宿主：只读轮已结束。取得写入资格后请重新读取文件，再继续原委派。', 'delegation', true);
           const input = JSON.parse(a.input_ref); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET input_ref=? WHERE attempt_id=?').run(JSON.stringify({ ...input, followUps: [...(input.followUps ?? []), accepted.turn.turn_id] }), a.attempt_id);
         });
@@ -330,33 +479,57 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       const target = JSON.parse(row.target_json) as Target;
       if (target.profile.revision !== this.d.profile(target.profile.profileId).revision) throw new Error('委派目标配置已变化，未启动');
       if (target.strategy === 'git') {
-        if ((await this.d.git.detect(target.parentCwd))?.branch !== target.parentBranch) throw new Error('接受委派后主分支已经变化，未创建工作副本');
         const project = this.d.project(this.selection(row.parent_task_id).task.project_id);
-        const created = await this.d.git.create({ parentTaskId: row.parent_task_id, childTaskId: row.child_task_id, cwd: target.parentCwd, title: target.title, projectId: project.id, projectName: project.name, signal: abort.signal, assertBoundary: () => { if (this.queue.forTask(row.parent_task_id)?.state !== 'active' || !this.draining.has(row.parent_task_id) || this.d.runs.runForTask(row.parent_task_id) || this.d.runs.closingForTask(row.parent_task_id)) throw new Error('父任务尚未完成排空'); } });
+        const created = await this.d.git.create({
+          parentTaskId: row.parent_task_id, childTaskId: row.child_task_id, cwd: target.parentCwd,
+          title: target.title, projectId: project.id, projectName: project.name, expectedBranch: target.parentBranch,
+          signal: abort.signal, baseCommit: target.baseCommit, expectedRoot: target.repoRoot,
+        });
         if (!created) throw new Error('接受时的 Git 仓库已变化，不能静默换成共用目录');
         this.queue.cancel(row.child_task_id);
         this.d.store.sqlite.prepare('UPDATE tasks SET cwd=? WHERE id=?').run(created.cwd, row.child_task_id);
         target.startHead = target.startHead ?? created.workspace.base_commit!;
         const current=this.parentOf(row.child_task_id)!;this.update(current, current.delivery_state, target);
       }
-    } catch (e) { this.update(row, this.stopped(row.child_task_id)?'canceled':'failed'); this.warnOnce(row.child_task_id, `prepare:${row.delegation_id}`, `子任务准备失败：${(e as Error).message}`); this.queue.cancel(row.child_task_id); for (const t of this.d.store.queuedTurns(row.child_task_id)) this.d.tasks.cancelQueued(row.child_task_id, t.turn_id); await this.finishChild({ ...row, delivery_state: 'failed' }); }
-    finally { this.preparing.delete(row.child_task_id); this.prepareAbort.delete(row.child_task_id); const current=this.parentOf(row.child_task_id); if(current?.delivery_state==='canceled') await this.finishChild(current); }
+    } catch (e) {
+      const state = abort.signal.aborted || this.stopped(row.child_task_id) ? 'canceled' : 'failed';
+      this.update(row, state);
+      if (state === 'failed') this.warnOnce(row.child_task_id, `prepare:${row.delegation_id}`, `子任务准备失败：${(e as Error).message}`);
+      this.queue.cancel(row.child_task_id);
+      for (const t of this.d.store.queuedTurns(row.child_task_id)) this.d.tasks.cancelQueued(row.child_task_id, t.turn_id);
+      await this.finishChild({ ...row, delivery_state: state });
+    } finally {
+      this.preparing.delete(row.child_task_id); this.prepareAbort.delete(row.child_task_id);
+      const current=this.parentOf(row.child_task_id); if(current?.delivery_state==='canceled') await this.finishChild(current);
+      this.schedule();
+    }
   }
   private async startChild(row: DelegationRow) {
-    if (this.preparing.has(row.child_task_id) || this.blocked(row.parent_task_id) || this.stopped(row.child_task_id)) return;
+    if (this.preparing.has(row.child_task_id) || this.stopped(row.child_task_id)) return;
     const target = JSON.parse(row.target_json) as Target;
     const parentRun = this.d.runs.runForTask(row.parent_task_id);
-    if (target.strategy === 'git' && this.d.git.workspace(row.child_task_id)?.state !== 'ready') { if (!parentRun && !this.d.runs.closingForTask(row.parent_task_id)) this.warnOnce(row.parent_task_id, `prepare-boundary:${row.delegation_id}`, '工作副本仍在等待父任务已核实的回合边界'); return; }
-    if (target.strategy === 'serial' && target.actualAccess !== 'read' && parentRun) return;
+    const workspace = target.strategy === 'git' ? this.d.git.workspace(row.child_task_id) : undefined;
+    if (target.strategy === 'git' && workspace?.state !== 'ready') return;
+    if (this.serialWriter(row) && (parentRun || this.d.runs.closingForTask(row.parent_task_id) || this.blocked(row.parent_task_id))) return;
     const running = this.rows().filter(r => r.delivery_state === 'running').length; if (running >= (this.d.maxChildren ?? 4)) return;
     const current = this.parentOf(row.child_task_id)!; if (current.delivery_state !== 'queued') return;
     const attempt = this.attempt(current), childRun = this.d.runs.runForTask(row.child_task_id);
     // Rework during a child turn queues to the same native binding/worktree; no nested delegation.
     const text = (JSON.parse(attempt.input_ref) as { text: string }).text;
-    this.d.store.tx(() => { this.update(row, 'running'); const accepted = this.d.tasks.enqueueHost(row.child_task_id, `delegate-${attempt.attempt_id}`, this.childInput(text), 'delegation', true); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt.attempt_id); });
+    this.d.store.tx(() => {
+      if (workspace) {
+        const cwd = this.d.git.worktreeCwd(workspace,target.parentCwd);
+        this.d.store.sqlite.prepare('UPDATE tasks SET cwd=? WHERE id=?').run(cwd,row.child_task_id);
+      }
+      this.update(row, 'running'); const accepted = this.d.tasks.enqueueHost(row.child_task_id, `delegate-${attempt.attempt_id}`, this.childInput(text, target), 'delegation', true); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt.attempt_id); });
     if (!childRun) this.d.tasks.kick(row.child_task_id);
   }
-  private childInput(text: string) { return '只读角色若需要写入，先调用 wy_request_write 并结束本轮；不能提权或绕过。宿主委派（来源 delegation，不是新的真人授权）。你是子任务，不能再派子任务。只修改当前授权工作目录；不要修改 .git，完成后由宿主提交。\n\n' + text; }
+  private childInput(text: string, target: Target) {
+    const workspace = target.strategy === 'git'
+      ? `工作副本基于 ${target.baseCommit ?? '已登记提交'}；主目录有 ${target.uncommittedFiles ?? 0} 个未提交文件，没有带进子任务。完成后由宿主提交到子分支。`
+      : target.actualAccess === 'read' ? '在共用目录只读检查。' : '改动留在共用目录，宿主不提交。';
+    return `宿主委派（来源 delegation，不是新的真人授权）。只读角色需要写入时先调用 wy_request_write 并结束本轮。你是子任务，不能再派子任务。仅使用当前授权目录，不修改 .git。 ${workspace}\n\n${text}`;
+  }
   private async finishChild(row: DelegationRow) {
     const id=this.attempt(row).attempt_id;if(this.resultFinishing.has(id))return;this.resultFinishing.add(id);
     try { await this.finishChildOwned(row); } finally { this.resultFinishing.delete(id); }
@@ -368,7 +541,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const followUps = (input.followUps ?? []).map(id => this.d.store.turn(id)).filter(t => !!t);
     if (this.d.store.queuedTurns(row.child_task_id).length || followUps.some(t => ['accepted', 'dispatching', 'started'].includes(t.status))) return;
     const target = JSON.parse(row.target_json) as Target;
-    const commits = target.actualAccess === 'write' ? await this.d.git.finalize(row.child_task_id, a.attempt_id, target.title, target.startHead) : null;
+    const commits = target.strategy === 'git' && target.actualAccess === 'write' ? await this.d.git.finalize(row.child_task_id, a.attempt_id, target.title, target.startHead) : null;
     const latest=this.attempt(row),currentInput=JSON.parse(latest.input_ref) as {followUps?:string[]};
     if(latest.attempt_id!==a.attempt_id||latest.notified_at||this.d.store.queuedTurns(row.child_task_id).length||(currentInput.followUps??[]).some(id=>['accepted','dispatching','started'].includes(this.d.store.turn(id)?.status??'unknown')))return;
     const turnIds = new Set([turn.turn_id, ...followUps.map(t => t.turn_id)]);
@@ -404,11 +577,18 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       const current = this.d.store.goal(taskId)!; this.d.store.tx(() => { this.d.store.upsertGoal({ taskId, bindingId: current.bindingId, objective: current.objective, status: 'active' }); this.d.store.sqlite.prepare("UPDATE agent_intents SET state='done',updated_at=? WHERE intent_id=?").run(at(), id); });
     } catch (e) { this.d.store.sqlite.prepare("UPDATE agent_intents SET state='needs_review',updated_at=? WHERE intent_id=?").run(at(), id); decline(); this.warnOnce(taskId, `goal-resume:${run.runId}`, `子任务结果已送达，但目标未恢复：${(e as Error).message}`); }
   }
-  private async verifyMerges(taskId: string) {
+  private readonly verifying = new Set<string>();
+  private async verifyMerges(taskId: string, attentionOnly = false) {
+    if (this.verifying.has(taskId)) return;
+    this.verifying.add(taskId);
+    try {
     for (const row of this.rows(taskId).filter(r => r.delivery_state === 'delivered')) {
       const a = this.attempt(row), target = JSON.parse(row.target_json) as Target;
+      if (attentionOnly && (target.mergeFailures ?? 0) < 2) continue;
       if (!a.commit_range || !target.parentBranch || a.merge_check_json && JSON.parse(a.merge_check_json).pass) continue;
       const check = await this.d.git.checkMerge(target.parentCwd, JSON.parse(a.commit_range), target.parentBranch);
+      const current = this.rows(taskId).find(r => r.delegation_id === row.delegation_id);
+      if (!current || current.delivery_state !== 'delivered' || current.target_json !== row.target_json || this.attempt(current).attempt_id !== a.attempt_id) continue;
       const count = (target.mergeFailures ?? 0) + (check.pass ? 0 : 1);
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET merge_check_json=? WHERE attempt_id=?').run(JSON.stringify(check), a.attempt_id);
       this.update(row, row.delivery_state, { ...target, mergeFailures: count });
@@ -418,6 +598,9 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       if (!check.pass && count < 2) this.d.tasks.enqueueHost(taskId, `merge-check-${a.attempt_id}-${count}`, `宿主合并核对失败：${JSON.stringify(check)}。请重新核对并合并子任务提交；这是状态通知，不是新的真人授权。`, 'notification', !this.stopped(taskId));
       if (!check.pass) this.warnOnce(taskId, `merge:${a.attempt_id}:${count}`, count >= 2 ? '子任务提交连续两轮未能核实合入，需要你处理。' : '子任务提交尚未核实合入，请检查原分支、未结束的 cherry-pick／冲突及提交来源。');
     }
+    } finally {
+      this.verifying.delete(taskId);
+    }
   }
   private warnOnce(taskId: string, key: string, detail: string) { if (this.notices.has(key)) return; this.notices.add(key); this.d.store.addHostItem(taskId, null, 'system_notice', { code: key, detail }); }
   list(context: RunContext): BridgeTool[] {
@@ -426,10 +609,10 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       ['wy_targets', '查询当前宿主接入的智能体目标。身份由宿主决定。', {}],
       ['wy_observe', '观察本任务派出的子任务，按结果修订和分段领取结果；不要轮询或 shell 等待。', { childTaskId: { type: 'string' }, offset: { type: 'integer', minimum: 0 } }],
       ['wy_cancel', '取消自己派出的子任务并等待排空。', { childTaskId: { type: 'string' } }],
-      ['wy_send', '给自己派出的子任务再次发消息，沿用原会话和工作副本。', { childTaskId: { type: 'string' }, requestKey: { type: 'string' }, text: { type: 'string' } }],
+      ['wy_send', '给自己派出的子任务再次发消息，沿用原会话和工作目录。', { childTaskId: { type: 'string' }, requestKey: { type: 'string' }, text: { type: 'string' } }],
     ];
     if (this.readOnly(context.run.taskId)) definitions.push(['wy_request_write', '只读任务申请进入写入队列，必须结束本轮；不会在本轮放宽权限。', {}]);
-    if (!this.parentOf(context.run.taskId)) definitions.push(['wy_delegate', '异步委派：持久返回 queued 收据，结束当前回合后宿主自动启动和回送结果。不要用循环等子任务。', { requestKey: { type: 'string' }, profileId: { type: 'string' }, title: { type: 'string' }, instructions: { type: 'string' }, model: { type: 'string' }, access: { type: 'string', enum: ['read', 'write'] } }]);
+    if (!this.parentOf(context.run.taskId)) definitions.push(['wy_delegate', '异步委派。缺省 shared：共用目录、写入串行、保留未提交改动且宿主不提交；只有明确要求独立工作副本时选 worktree，从 HEAD 建立并行副本，未提交改动不会带入，要带改动请先提交。可信只读在共用目录并行。不要用循环等子任务。', { requestKey: { type: 'string' }, profileId: { type: 'string' }, title: { type: 'string' }, instructions: { type: 'string' }, model: { type: 'string' }, access: { type: 'string', enum: ['read', 'write'] }, workspaceMode: { type: 'string', enum: ['shared', 'worktree'] } }]);
     return definitions.map(([name, description, properties]) => ({ name, description, contractMajor: 1, inputSchema: { type: 'object', properties, additionalProperties: false }, outputSchema: { type: 'object' }, annotations: { readOnlyHint: name === 'wy_targets' || name === 'wy_observe', destructiveHint: false, idempotentHint: true, openWorldHint: false } }));
   }
   async call(context: RunContext, name: string, args: Record<string, unknown>, signal: AbortSignal) {

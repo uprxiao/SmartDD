@@ -1,0 +1,38 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/delegation-service.test.ts -t 'another independent task can answer' --maxWorkers=1 --reporter=dot
+
+[1118/083820.025497:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1118/083820.184977:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+----------------x-----
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > P1: another independent task can answer while a related parent and child hand off the same SVN directory
+AssertionError: expected '' to contain '修改前重新读取工作区与涉及文件'
+
+- Expected
++ Received
+
+- 修改前重新读取工作区与涉及文件
+
+ ❯ src/main/core/agent/delegation-service.test.ts:195:36
+    193|   expect(f.runs.busy(otherRunId)).toBe(true);
+    194|   expect(f.co.queue.forTask(childReceipt.childTaskId)?.state).toBe('ac…
+    195|   expect(child.history.join('\n')).toContain('修改前重新读取工作区与涉及文件');
+       |                                    ^
+    196|   expect(other.history.join('\n')).not.toContain('宿主目录交接');
+    197|   child.finish('child complete');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  08:38:20
+   Duration  1.49s (transform 243ms, setup 0ms, import 302ms, tests 1.11s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

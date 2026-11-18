@@ -103,7 +103,7 @@ export function createRpcRouter(d: RpcDeps) {
     voice: createVoiceController(d.voice),
     projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
-    ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id),deleted:()=>d.onProjectDeleted?.() }),
+    ...createProjectControllers(d.projects, { runningTasks: (id) => d.tasks.runningInProject(id),agentTasks:d.agentWorkspace?.projectResources,deleted:()=>d.onProjectDeleted?.() }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
     ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles,d.onTaskProfilesChanged),
     agentTransfer: createAgentTransferController(d.agentTransfer),

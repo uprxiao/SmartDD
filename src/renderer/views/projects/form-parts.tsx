@@ -205,7 +205,11 @@ export function ConfirmDeleteDialog({
   title,
   body,
   secrets,
+  details,
+  ready = true,
+  blocked = false,
   confirmLabel,
+  contentClassName,
   onConfirm,
 }: {
   open: boolean;
@@ -213,7 +217,11 @@ export function ConfirmDeleteDialog({
   title: string;
   body: string;
   secrets?: boolean;
+  details?: React.ReactNode;
+  ready?: boolean;
+  blocked?: boolean;
   confirmLabel?: string;
+  contentClassName?: string;
   onConfirm: (deleteSecrets: boolean) => Promise<void>;
 }) {
   const { t } = useTranslation();
@@ -234,13 +242,14 @@ export function ConfirmDeleteDialog({
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className={contentClassName}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogContentArea className="gap-4">
           <DialogDescription>{body}</DialogDescription>
-          {secrets && (
+          {details}
+          {secrets && ready && !blocked && (
             <label className="flex items-center gap-2 text-sm">
               <Checkbox checked={deleteSecrets} onCheckedChange={(v) => setDeleteSecrets(Boolean(v))} />
               {t('projects.confirm.deleteSecrets')}
@@ -252,9 +261,9 @@ export function ConfirmDeleteDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('projects.actions.cancel')}
           </Button>
-          <Button variant="destructive" disabled={busy} onClick={() => void confirm()}>
+          {!blocked && <Button variant="destructive" disabled={busy || !ready} onClick={() => void confirm()}>
             {confirmLabel ?? t('projects.actions.delete')}
-          </Button>
+          </Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

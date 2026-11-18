@@ -35,7 +35,7 @@ const ProjectNode = observer(function ProjectNode({ project, tasks }: { project:
       <button className="reference-project-name" title={project.name} onClick={() => archived ? edit() : navigation.newTask(project.id)}>{project.name}</button>
       <div className="row-actions"><Popover open={menu} onOpenChange={setMenu}><PopoverTrigger ref={menuTrigger} className="row-action" data-testid="sidebar-project-more" aria-label={`${t('m6.projectMenu')}: ${project.name}`}><Ellipsis size={16} /></PopoverTrigger><PopoverContent side="right" align="start" sideOffset={8} className="m6-project-popup project-detail-popup" data-testid="project-detail-popup">
         <button className="popup-project-title" onClick={edit}><Folder size={16} /><span>{project.name}</span></button>
-        <div className="popup-meta"><MessageCircle size={15} /><span>{t('m6.taskCount', { count: tasks.length })}</span></div>
+        <div className="popup-meta"><MessageCircle size={15} /><span>{t('m6.taskCount', { count: agentTasksStore.enabled ? agentTasksStore.of(project.id).length : tasks.length })}</span></div>
         <div className="popup-divider" /><div className="popup-meta popup-project-path" title={dir?.path}><Folder size={15} /><span>{dir?.path ?? t('home.noDir')}</span></div><div className="popup-divider" />
         <button data-testid="sidebar-project-edit" onClick={edit}><Settings size={16} />{t('m6.projectResources')}</button>
         <button data-testid="sidebar-project-export" onClick={() => { setMenu(false); projectTransferNavigation.openExport(project.id, menuTrigger.current); }}><Download size={16} />导出项目</button>
@@ -68,7 +68,7 @@ const AGENT_STATUS: Record<string, string> = { working: '工作中', waiting: '�
 const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskSummary }) {
   const active = navigation.currentViewId === 'agentTask' && navigation.currentAgentTaskId === task.taskId;
   return <button type="button" data-testid="sidebar-agent-task" data-task-id={task.taskId} aria-current={active ? 'page' : undefined} className="reference-task-row" style={task.parentTaskId ? { paddingLeft: 28 } : undefined} onClick={() => navigation.openAgentTask(task.taskId)}>
-    <span className="truncate flex-1 text-left">{task.title}</span>{AGENT_STATUS[task.status] && <span className={`task-state-tail agent-tail ${task.status}`}>{AGENT_STATUS[task.status]}</span>}
+    <span className="truncate flex-1 text-left">{task.title}</span>{(task.stopping || AGENT_STATUS[task.status]) && <span className={`task-state-tail agent-tail ${task.status}`}>{task.stopping ? '正在停止…' : AGENT_STATUS[task.status]}</span>}
   </button>;
 });
 
@@ -112,7 +112,7 @@ export const SidebarProjects = observer(function SidebarProjects() {
             {showArchivedProjects && archivedProjects.map((p) => <ProjectNode key={p.id} project={p} tasks={tasksOf(p.id)} />)}
           </>
         )}
-        {orphans.length > 0 && (
+        {!agentTasksStore.enabled && orphans.length > 0 && (
           <>
             <div className="mt-3 px-2 pb-1 text-xs text-foreground-passive">{t('tasks.noProjectGroup')}</div>
             {orphans.map((task) => (
@@ -120,7 +120,7 @@ export const SidebarProjects = observer(function SidebarProjects() {
             ))}
           </>
         )}
-        {archivedTasks.length > 0 && (
+        {!agentTasksStore.enabled && archivedTasks.length > 0 && (
           <div className="mt-3">
             <Toggle
               testId="sidebar-archived-tasks-toggle"

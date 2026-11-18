@@ -39,3 +39,15 @@ it('A65: long Unicode diff bodies use bounded, hash-bound chunks and preserve bo
  db.prepare("INSERT INTO agent_turn_changes(turn_id,task_id,before_ref,after_ref,changed_files_json,status) VALUES(?,?,?,?,?,'complete')").run(turn.turn_id,taskId,JSON.stringify(ref),JSON.stringify(ref),'[]');const service=new TurnDiffs({store,storage:f.storage,changed:()=>{},execute:async job=>job.action==='patch'?body:runDiffJob(job)});
  try{const preview=await service.patch(taskId,turn.turn_id,'a.txt');expect(Buffer.byteLength(JSON.stringify(preview))).toBeLessThan(256*1024);expect(preview.bodyHash).toBeTruthy();let offset=0,text='';for(let i=0;i<100;i++){const chunk=await service.patchBody(taskId,turn.turn_id,'a.txt',preview.bodyHash!,offset);expect(Buffer.byteLength(JSON.stringify(chunk))).toBeLessThan(256*1024);text+=chunk.chunk;if(chunk.done)break;expect(chunk.next).toBeGreaterThan(offset);offset=chunk.next;}expect(JSON.parse(text)).toEqual(body);await expect(service.patchBody(taskId,turn.turn_id,'a.txt','0'.repeat(64),0)).rejects.toThrow('版本已变化');}finally{await service.close();db.close();}
 });
+
+it('R4 creates and uses one private Git store for two simultaneous cold captures',async()=>{
+ const f=fixture();
+ writeFileSync(join(f.cwd,'a.txt'),'same bytes');
+ const capture=(turnId:string)=>runDiffJob({...f,action:'capture',turnId,side:'before'}) as Promise<TreeRef>;
+ const [first,second]=await Promise.all([capture('first'),capture('second')]);
+ expect(first.gitDir).toBe(second.gitDir);
+ expect(first.tree).toBe(second.tree);
+ expect(first.privateBytes).toBeGreaterThan(0);
+ expect(await git(f.cwd,'--git-dir='+first.gitDir,'rev-parse',first.ref)).toBe(first.commit);
+ expect(await git(f.cwd,'--git-dir='+second.gitDir,'rev-parse',second.ref)).toBe(second.commit);
+});

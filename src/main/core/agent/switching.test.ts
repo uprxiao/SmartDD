@@ -114,6 +114,27 @@ it('A18: omissions are explicit and original content survives; unsent/unknown tr
   expect(s.store.items(s.taskId).some(i => i.type === 'assistant_message' && i.payload.text === 'x'.repeat(10000))).toBe(true);
 });
 
+it('P2: a 30-round switch favors the newest history and preserves chronological order within the input budget', async () => {
+  const s = setup();
+  const answer = (round: number) => `handoff-answer-${round}: ` + 'x'.repeat(8 * 1024);
+  for (let round = 0; round < 30; round++) {
+    const a = await s.send(`question-${round}`);
+    a.finish(answer(round));
+    await until(() => s.service.status(s.taskId) === 'completed');
+  }
+  await s.change('b');
+  const prompt = '新'.repeat(4096);
+  const b = await s.send(prompt);
+  const history = b.history[0] ?? '';
+  const included = Array.from(history.matchAll(/handoff-answer-(\d+):/g), match => Number(match[1]));
+  expect(included.at(-1)).toBe(29);
+  expect(included[0]).toBeGreaterThan(0);
+  expect(included).toEqual(Array.from({ length: 30 - included[0] }, (_, i) => included[0] + i));
+  expect(Buffer.byteLength(history)).toBeGreaterThan(128 * 1024);
+  expect(Buffer.byteLength(history) + Buffer.byteLength(prompt)).toBeLessThanOrEqual(256 * 1024);
+  expect(history).toContain('较早');
+});
+
 it('A14: stop cancels an unapplied switch', async () => {
   const s = setup(), a = await s.send('work'); await s.change('b');
   await s.service.stop(s.taskId);

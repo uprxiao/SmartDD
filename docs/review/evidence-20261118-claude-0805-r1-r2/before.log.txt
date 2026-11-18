@@ -1,0 +1,110 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/delegation-service.test.ts -t 'R[12]:' --maxWorkers=1 --reporter=verbose
+
+[1118/121153.825096:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1118/121153.971946:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ↓ src/main/core/agent/delegation-service.test.ts > A19/A24/A32: delegation is durable/idempotent and returns before the child starts; release requires actual exit plus independent drain
+ ↓ src/main/core/agent/delegation-service.test.ts > A24/A31/A32: two children and a new parent input share FIFO; the parent cannot reacquire ahead of either child
+ ↓ src/main/core/agent/delegation-service.test.ts > A25/A27/A28: stop cancels queued children, mode closes only after children drain, and unrelated tasks cannot observe results
+ ↓ src/main/core/agent/delegation-service.test.ts > A66/A68: Git child runs in the mapped host worktree; child result is committed by the host and only its attempt commits are advertised
+ ↓ src/main/core/agent/delegation-service.test.ts > A29/A32: native background work outlives the parent turn and retains the write slot until its own terminal event
+ ↓ src/main/core/agent/delegation-service.test.ts > A70: pause intent precedes release; a child result resumes the identical native goal only after its notification turn starts
+ ↓ src/main/core/agent/delegation-service.test.ts > A70: user stop while waiting preserves the result without waking or restoring the goal
+ ↓ src/main/core/agent/delegation-service.test.ts > A70: a different native revision declines automatic recovery and leaves a manual continuation
+ ↓ src/main/core/agent/delegation-service.test.ts > A33: only host-verified read roles run beside a writer; promotion closes read ownership before FIFO write admission
+ ↓ src/main/core/agent/delegation-service.test.ts > A28: terminal child rework is atomic, reuses its native binding, and explicitly clears an earlier stop
+ ↓ src/main/core/agent/delegation-service.test.ts > A67/A70: an active goal still reaches a stable merge check and resumes after a proven merge
+ ↓ src/main/core/agent/delegation-service.test.ts > A67: exactly two failed merge rounds produce a persistent needs-attention state without another automatic retry
+ ↓ src/main/core/agent/delegation-service.test.ts > E12/A05: a normal round end keeps the actual owner and binding alive when no directory handoff is needed
+ ↓ src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same Git directory overlap and retain their native sessions
+ ↓ src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same SVN directory overlap and retain their native sessions
+ ↓ src/main/core/agent/delegation-service.test.ts > P1: independent tasks in the same plain directory overlap and retain their native sessions
+ ↓ src/main/core/agent/delegation-service.test.ts > P1: another independent task can answer while a related parent and child hand off the same SVN directory
+ ↓ src/main/core/agent/delegation-service.test.ts > P1: concurrent Git parents with identically named delegations get two distinct worktrees
+ × src/main/core/agent/delegation-service.test.ts > R1: automatic commit waits for the other turn and its background node; new input resumes before dependencies finish 2167ms
+   → expected true to be false // Object.is equality
+ × src/main/core/agent/delegation-service.test.ts > R1: stop parent releases queued input without committing 2153ms
+   → expected true to be false // Object.is equality
+ × src/main/core/agent/delegation-service.test.ts > R1: cancel child releases queued input without committing 2158ms
+   → expected true to be false // Object.is equality
+ × src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports execute 693ms
+   → expected 'retired' to be 'pending' // Object.is equality
+ × src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports stop 715ms
+   → expected 'retired' to be 'pending' // Object.is equality
+ × src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports revoke 710ms
+   → expected 'retired' to be 'pending' // Object.is equality
+ ↓ src/main/core/agent/delegation-service.test.ts > P3: stop releases the canceled business reservation from the real directory FIFO
+ ↓ src/main/core/agent/delegation-service.test.ts > P3: revoke releases the canceled business reservation from the real directory FIFO
+ ↓ src/main/core/agent/delegation-service.test.ts > P3: actual FIFO holds a business approval over 61 seconds and then starts a full execution budget
+ ↓ src/main/core/agent/delegation-service.test.ts > A28/A67: rework before the first result is merged includes the previous unmerged commits in its final range
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > R1: automatic commit waits for the other turn and its background node; new input resumes before dependencies finish
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ vi.waitFor.timeout src/main/core/agent/delegation-service.test.ts:269:77
+    267| it('R1: automatic commit waits for the other turn and its background n…
+    268|   const f = await preparingBesideIndependentTurn();
+    269|   await vi.waitFor(async () => expect(await f.co.beforeDispatch(f.othe…
+       |                                                                             ^
+    270|   const next = await f.tasks.submit(f.otherId, { clientInputId: random…
+    271|   expect(next.status).toBe('queued');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > R1: stop parent releases queued input without committing
+ FAIL  src/main/core/agent/delegation-service.test.ts > R1: cancel child releases queued input without committing
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ vi.waitFor.timeout src/main/core/agent/delegation-service.test.ts:296:77
+    294| it.each(['stop parent', 'cancel child'])('R1: %s releases queued input…
+    295|   const f = await preparingBesideIndependentTurn();
+    296|   await vi.waitFor(async () => expect(await f.co.beforeDispatch(f.othe…
+       |                                                                             ^
+    297|   const next = await f.tasks.submit(f.otherId, { clientInputId: random…
+    298|   if (action === 'stop parent') await f.tasks.stop(f.taskId);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports execute
+ FAIL  src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports stop
+ FAIL  src/main/core/agent/delegation-service.test.ts > R2: Git preparation waits outside the budget and supports revoke
+AssertionError: expected 'retired' to be 'pending' // Object.is equality
+
+Expected: "pending"
+Received: "retired"
+
+ ❯ src/main/core/agent/delegation-service.test.ts:325:26
+    323|   await tick(325);
+    324|   const waiting = f.store.request(request.requestId)!;
+    325|   expect(waiting.status).toBe('pending');
+       |                          ^
+    326|   expect(JSON.parse(waiting.payload_ref).phase).toBe('queued_for_slot'…
+    327|   expect(budgets).toHaveLength(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 22 skipped (28)
+   Start at  12:11:53
+   Duration  8.84s (transform 132ms, setup 0ms, import 177ms, tests 8.60s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

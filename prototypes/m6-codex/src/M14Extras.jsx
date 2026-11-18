@@ -105,7 +105,7 @@ export function DiffStateNote({ st, onToast }) {
   if (!st) return null;
   if (st.kind === 'preparing') return <div className="m14-diffstate"><LoaderCircle size={13} className="spin" /><span><b>正在准备改动记录 {st.pct}%</b><small>{st.note}</small></span><button onClick={() => onToast('已取消本次准备，本轮差异标为不可用（合成）')}>取消</button></div>;
   if (st.kind === 'incomplete') return <div className="m14-diffstate warn"><AlertTriangle size={13} /><span><b>改动记录不完整</b><small>{st.note}</small></span></div>;
-  return <div className="m14-diffstate warn"><AlertTriangle size={13} /><span><b>本轮改动记录不可用</b><small>{st.note}</small></span></div>;
+  return <div className="m14-diffstate warn"><AlertTriangle size={13} /><span><b>{st.kind === 'reclaimed' ? '快照已清理（空间回收）' : st.kind === 'storage-full' ? '影子库空间已满' : '本轮改动记录不可用'}</b><small>{st.note}</small></span></div>;
 }
 
 // ---------- 消息细节 ----------

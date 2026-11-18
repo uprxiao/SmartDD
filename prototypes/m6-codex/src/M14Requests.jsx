@@ -23,7 +23,7 @@ export function buildRequests(scenario, { resolved, childResolved = {}, mailEdit
   }
   if (!resolved && scenario.pending === 'access') {
     const a = scenario.access;
-    list.push({ id: 'own-access', kind: 'access', icon: 'globe', title: `需要授权：访问任务「${a.target}」的网页`, detail: { lines: ['授权只对本次运行有效，运行结束或撤销后立即失效', '只能访问同一项目里的任务', '这个请求不会超时，一直等你处理；Agent 在等待期间可以先做别的事'] },
+    list.push({ id: 'own-access', kind: 'access', icon: 'globe', title: `需要授权：访问任务「${a.target}」的网页`, detail: { lines: [a.pageUrl, '授权只对本次运行有效，运行结束或撤销后立即失效', '只能访问同一项目里的任务', '这个请求不会超时，一直等你处理；Agent 在等待期间可以先做别的事'] },
       options: [{ key: 'observe', label: '允许观察', desc: '只读：查看页面、截图、读取内容' }, { key: 'control', label: '允许控制', desc: '可点击、输入、执行页面脚本' }, { key: 'deny', label: '拒绝' }] });
   }
   if (!resolved && scenario.pending === 'plan') {

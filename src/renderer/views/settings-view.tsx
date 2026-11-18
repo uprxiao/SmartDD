@@ -1,7 +1,7 @@
 import { agentTasksStore, requestNotifyEnabled, setRequestNotify } from '@renderer/core/agent-tasks-store';
 import { VoiceSettingsSection, readableVoiceKey } from './settings/voice';
 import { voiceStore } from '@renderer/core/voice-store';
-import { ChevronDown, Info, Keyboard, Mic, Search, Settings, Bot, SquareTerminal, Sun, Zap, Puzzle } from 'lucide-react';
+import { Archive, ChevronDown, Info, Keyboard, Mic, Search, Settings, Bot, SquareTerminal, Sun, Zap, Puzzle } from 'lucide-react';
 import { toast } from 'sonner';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { useQuery } from '@tanstack/react-query';
@@ -18,12 +18,14 @@ import { Button } from '@renderer/lib/ui/button';
 import { Input } from '@renderer/lib/ui/input';
 import { SettingRow } from '@renderer/lib/ui/section-page';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
+import { ArchivedAgentTasks } from './settings/archived-agent-tasks';
 import { AgentsSection } from '@renderer/features/agents';
 
 const SECTIONS = [
   { id: 'general', Icon: Settings, group: 'personal' },
   { id: 'appearance', Icon: Sun, group: 'personal' },
   { id: 'aiProfiles', Icon: Bot, group: 'personal' },
+  { id: 'archivedAgentTasks', Icon: Archive, group: 'personal' },
   { id: 'terminal', Icon: SquareTerminal, group: 'personal' },
   { id: 'voice', Icon: Mic, group: 'personal' },
   { id: 'shortcuts', Icon: Keyboard, group: 'personal' },
@@ -35,18 +37,20 @@ export const SettingsView = observer(function SettingsView() {
   const section = navigation.settingsSection;
   useEffect(()=>{if(section==='applications')navigation.openApplications();else if(section==='capabilities')navigation.openApplications('skills');},[section]);
   const [search, setSearch] = useState('');
+  const sections = SECTIONS.filter(item=>item.id!=='archivedAgentTasks'||agentTasksStore.enabled);
   const label = (id: SettingsSectionId) => t(id === 'about' || id === 'shortcuts' ? `m6.${id}` : `settings.sections.${id}`);
   return <div className="settings-shell">
     <nav className="settings-nav" aria-label={t('nav.settings')}>
       <h2>{t('nav.settings')}</h2>
       <label className="settings-search"><Search size={15} /><input aria-label={t('m6.searchSettings')} placeholder={t('m6.search')} value={search} onChange={(e) => setSearch(e.target.value)} /></label>
       {(['personal', 'integrations', 'application'] as const).map((group) => {
-        const items = SECTIONS.filter((item) => item.group === group && label(item.id).toLowerCase().includes(search.toLowerCase()));
+        const items = sections.filter((item) => item.group === group && label(item.id).toLowerCase().includes(search.toLowerCase()));
         return items.length > 0 && <div className="settings-nav-group" key={group}><h3>{t(`m6.${group}`)}</h3>{items.map(({ id, Icon }) => <button key={id} className={`nav-row ${section === id ? 'selected' : ''}`} aria-current={section === id ? 'page' : undefined} onClick={() => navigation.openSettings(id)}><Icon size={16} /><span>{label(id)}</span></button>)}</div>;
       })}
-      {!SECTIONS.some((item) => label(item.id).toLowerCase().includes(search.toLowerCase())) && <p className="settings-search-empty">{t('m6.noSettings')}</p>}
+      {!sections.some((item) => label(item.id).toLowerCase().includes(search.toLowerCase())) && <p className="settings-search-empty">{t('m6.noSettings')}</p>}
     </nav>
     <div className="settings-content" key={section}><div className={`settings-inner ${section==='aiProfiles'?'m13-settings-inner':''}`}>{section !== 'aiProfiles' && <div className="page-heading"><h1>{label(section)}</h1></div>}
+      {section === 'archivedAgentTasks' && agentTasksStore.enabled && <ArchivedAgentTasks />}
       {section === 'voice' && <VoiceSettingsSection />}
       {section === 'general' && <GeneralSection />}
       {section === 'aiProfiles' && <AgentsSection />}

@@ -1,8 +1,9 @@
-import { realpathSync } from 'node:fs';
+import { realpathSync, statSync } from 'node:fs';
 import { attachAgentBrowserRequests } from './business-browser';
 import { HostBusinessRequests } from './host-business-requests';
 import { MessageLinks } from './message-links';
 import type { SourceResolver } from '../files/roots';
+import { AgentProjectResources } from './project-resources';
 import { TurnDiffs } from './turn-diffs';
 // M14 统一 Agent 工作区的主进程装配：配置档案解析、本机程序发现、托管文件落盘与事件推送。
 import { randomUUID } from 'node:crypto';
@@ -30,6 +31,20 @@ import { DelegationService } from './delegation-service';
 import { runWorkspaceCommand, GitWorkspaces } from './git-workspaces';
 import { ownedWorkspaceCommand } from './owned-command';
 
+
+export function registeredProjectCwd(sqlite: BetterSqlite3.Database, projectId: string, dirId: string) {
+  if (typeof projectId !== 'string' || !projectId || typeof dirId !== 'string' || !dirId) {
+    throw new DriverError('REJECTED', '必须选择当前项目已登记的目录');
+  }
+  const row = sqlite.prepare(`SELECT d.path FROM project_dirs d JOIN projects p ON p.id=d.project_id
+    WHERE d.id=? AND p.id=? AND p.archived_at IS NULL`).get(dirId, projectId) as { path: string } | undefined;
+  if (!row) throw new DriverError('REJECTED', '目录没有登记在当前活动项目');
+  try {
+    const cwd = realpathSync(row.path);
+    if (statSync(cwd).isDirectory()) return cwd;
+  } catch { /* The registered path may have been removed. */ }
+  throw new DriverError('REJECTED', '登记的工作目录已不可用');
+}
 
 export interface AgentWorkspaceDeps {
   sqlite: BetterSqlite3.Database;
@@ -135,7 +150,9 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const driverId = driverForKind(c.kind);
     return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const };
   });
-  const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskCwd: id => { const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
-  return { store, runs, tasks, profiles, terminals, git, delegations, requests, diffs,applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const dir=store.sqlite.prepare('SELECT d.path FROM project_dirs d JOIN projects p ON p.id=d.project_id WHERE d.id=? AND p.id=? AND p.archived_at IS NULL').get(dirId,projectId) as {path:string}|undefined;if(!dir)throw new Error('首页目录没有登记在当前项目');const cwd=realpathSync(dir.path),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await diffs.close(); } };
+  const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskCwd: id => { tasks.assertWritable(id); const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
+  const projectResources = new AgentProjectResources({ store, tasks, diffs, terminals, userData: d.userData });
+  tasks.attachAttachmentCleanup((taskId,data)=>projectResources.discardAttachments(taskId,data));
+  return { store, runs, tasks, profiles, terminals, git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

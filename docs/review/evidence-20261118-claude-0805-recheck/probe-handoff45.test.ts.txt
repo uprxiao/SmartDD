@@ -1,0 +1,55 @@
+import Database from 'better-sqlite3';
+import { afterEach, expect, it } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { runBundledMigrations } from '../../db/migrations';
+import { AgentStore } from './agent-store';
+import { AgentRunService } from './agent-run-service';
+import { AgentTaskService, type LaunchResolver } from './agent-task-service';
+import { Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
+import type { DriverId } from './capabilities';
+import { HandoffService } from './handoff';
+import { until } from './test-doubles';
+
+class Instance implements DriverInstance {
+  readonly events = new Emitter(); on = this.events.on.bind(this.events);
+  readonly turns: TurnInput[] = []; readonly history: string[] = []; opened!: DriverOpenOptions; nativeId = ''; delayedExit = false;
+  constructor(readonly driverId: DriverId) {}
+  async open(o: DriverOpenOptions) { this.opened = o; this.nativeId = o.resumeNativeId ?? randomUUID(); return { nativeId: this.nativeId, confirmed: true, defaultModel: 'native-default' }; }
+  async modelCatalog() { return [{ id: 'native-default', name: 'Native model', efforts: ['low', 'high'], defaultEffort: 'low' }]; }
+  async injectHistory(text: string) { this.history.push(text); }
+  async startTurn(t: TurnInput) { this.turns.push(t); const nativeTurnId = `t${this.turns.length}`; this.events.emit({ type: 'turn.started', nativeTurnId, clientInputId: t.clientInputId }); return { nativeTurnId }; }
+  finish(text: string) {
+    const nativeTurnId = `t${this.turns.length}`;
+    this.events.emit({ type: 'item.completed', nativeItemId: nativeTurnId, itemType: this.driverId === 'codex-app-server' ? 'agentMessage' : 'assistant', payload: this.driverId === 'codex-app-server' ? { id: nativeTurnId, type: 'agentMessage', text } : { content: [{ type: 'text', text }] } });
+    this.events.emit({ type: 'turn.completed', nativeTurnId, status: 'completed' });
+  }
+  async respond() {} async interrupt() {}
+  async close() { if (!this.delayedExit) this.events.emit({ type: 'exit', code: 0, signal: null }); }
+}
+const fixtures: { db: Database.Database; runs: AgentRunService }[] = [];
+afterEach(async () => { for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } });
+function setup(resolve?: LaunchResolver) {
+  const db = new Database(':memory:'); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
+  const store = new AgentStore(db), instances: Instance[] = [];
+  const make = (id: DriverId): AgentDriver => ({ id, command: 'fake', create: () => { const i = new Instance(id); instances.push(i); return i; } });
+  const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', make('codex-app-server')], ['claude-sdk', make('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'test', pid: process.pid, startedAt: null } });
+  const driver = (id: string) => id === 'a' ? 'codex-app-server' as const : 'claude-sdk' as const;
+  const service = new AgentTaskService({ store, runs, profileDriver: driver, resolveLaunch: resolve ?? (async i => ({ driverId: driver(i.profileId), executable: { path: '/synthetic', version: i.profileId === 'a' ? '0.169.0' : '2.1.326' }, env: {}, stateRoot: `/state/${i.profileId}`, compatibility: { account: i.profileId }, settingSources: ['project'], extraArgs: [] })) });
+  const { taskId } = service.create({ projectId: null, dirId: null, cwd: '/work', title: 'switch test', profileId: 'a', tier: 'ask' });
+  fixtures.push({ db, runs });
+  const send = async (text: string) => { const r = await service.submit(taskId, { clientInputId: randomUUID(), text, expectedSelectionRevision: service.snapshot(taskId).selectionRevision }); await until(() => instances.at(-1)?.turns.at(-1)?.clientInputId === store.turn(r.turnId)?.client_input_id); return instances.at(-1)!; };
+  const change = (profile: string) => service.switchProfile(taskId, profile, service.snapshot(taskId).selectionRevision);
+  return { db, store, runs, service, instances, taskId, send, change };
+}
+
+
+// 复现：A 上 30 轮、每轮回答约 8 KiB，切到 B 后看交接包含哪些轮次
+it('REVIEW-PROBE handoff over budget keeps which end?', async () => {
+  const s = setup();
+  for (let k = 0; k < 45; k++) { const a = await s.send(`question-${k}`); a.finish(`answer-${k} ` + 'x'.repeat(8 * 1024)); await until(() => s.service.status(s.taskId) === 'completed'); }
+  await s.change('b');
+  const b = await s.send('latest-question');
+  const h = b.history[0] ?? b.turns[0]?.context ?? '';
+  const included = Array.from({ length: 45 }, (_, k) => h.includes(`answer-${k} `));
+  require("node:fs").writeFileSync(process.env.REVIEW_PROBE_HANDOFF!, JSON.stringify({ bytes: Buffer.byteLength(h), includedTurns: included.flatMap((v, k) => v ? [k] : []), newestIncluded: included[44], ordered: [...h.matchAll(/answer-(\d+) /g)].map(m => +m[1]), tail: h.slice(-200) }, null, 2));
+}, 60000);

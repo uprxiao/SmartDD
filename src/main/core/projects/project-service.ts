@@ -35,6 +35,8 @@ type ServerRow = typeof projectServers.$inferSelect;
 export interface DeleteOptions {
   /** PRD F09: the user decides whether the encrypted secrets go too. */
   deleteSecrets: boolean;
+  /** The M14 inventory shown in the deletion dialog. */
+  agentTaskDeletionConfirmation?: string;
 }
 
 /** zod issues → one readable line; the renderer shows it as is. */
@@ -164,7 +166,7 @@ export class ProjectService {
   }
 
   /** Removes SmartDD's records only; code directories and remote resources are never touched. */
-  deleteProject(id: string, opts: DeleteOptions): void {
+  deleteProject(id: string, opts: DeleteOptions, purgeAgentTasks?: () => void): void {
     this.db.transaction(() => {
       this.requireProject(id);
       if (opts.deleteSecrets) {
@@ -175,6 +177,7 @@ export class ProjectService {
           ...srvIds.flatMap((r) => secretKeys.server(r.id)),
         ]);
       }
+      purgeAgentTasks?.();
       // Child rows go with it (ON DELETE CASCADE).
       this.db.delete(projects).where(eq(projects.id, id)).run();
     });
