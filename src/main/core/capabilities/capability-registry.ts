@@ -8,7 +8,7 @@ import { capabilityRegistry, capabilityRegistryPreferences } from '../../db/sche
 import type { CapabilityRegistryView, ManagedCapabilityView } from '@shared/managed-capabilities';
 import { discoverCapabilities, type DiscoveryContext } from './discovery';
 import type { DiscoveredCapability } from '@shared/capabilities';
-import { applyMcpNativePolicy, mcpReferenceNames, McpSourceError, parseMcpSource, resolveMcpSource, type McpSource, type McpNativePolicy } from './mcp-source';
+import { applyMcpNativePolicy, mcpReferenceNames, McpSourceError, parseMcpSource, resolveMcpSource, validateManagedMcpDefinition, type McpSource, type McpNativePolicy } from './mcp-source';
 
 type Row = typeof capabilityRegistry.$inferSelect;
 export interface CapabilityScanContext extends DiscoveryContext { projectRoot?: string; configurationId?:string; sourceEnvironment?:Record<string,string>;secretEnvNames?:string[] }
@@ -162,13 +162,14 @@ export class CapabilityRegistryService {
   }
   /** Fresh main-process resolution only. Raw MCP values are neither persisted
    * nor included in any renderer-safe registry view or task snapshot. */
-  resolveMcpSource(id:string):{source:McpSource;environment:Record<string,string>;configurationId?:string;secretEnvNames?:string[]}|null {
+  resolveMcpSource(id:string,requireKnownFields=false):{source:McpSource;environment:Record<string,string>;configurationId?:string;secretEnvNames?:string[]}|null {
     const row=this.db.select().from(capabilityRegistry).where(eq(capabilityRegistry.id,id)).get();
     if(!row||row.kind!=='mcp'||!row.managed||!row.enabled||!row.present)return null;
     for(const context of this.contexts()){
       let match:{source:McpSource;environment:Record<string,string>;configurationId?:string;secretEnvNames?:string[]}|null=null;
       discoverCapabilities({...context,onMcpDefinition:(item,definition,policy)=>{
         if(sourceIdentity(item,context,definition,policy).id!==id)return;
+        if(requireKnownFields)validateManagedMcpDefinition(item.runner,definition);
         const source=applyMcpNativePolicy(parseMcpSource(item.name,item.runner,definition),policy);
         if(item.enabled===false)source.enabled=false;
         match={source,environment:{...context.sourceEnvironment},secretEnvNames:context.secretEnvNames??[],...(context.configurationId?{configurationId:context.configurationId}:{})};

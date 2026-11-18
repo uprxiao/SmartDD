@@ -141,7 +141,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         const role = store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(taskId) as { access: string } | undefined;
         const projected = role?.access === 'read' ? undefined : d.mcpProjection?.prepare({
           runner: actual.plan.profile.runner, cwd, runRoot: join(d.userData, 'agents', 'runs', context.runId),
-          injectedNames: Object.keys(actual.plan.profile.env),
+          injectedNames: Object.keys(actual.plan.profile.env), requireKnownFields: true,
         });
         if (projected?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
           code: 'managedMcpUnavailable', detail: projected.issues.map(issue => issue.reason).join('；'),

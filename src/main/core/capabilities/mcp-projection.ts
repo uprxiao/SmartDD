@@ -12,6 +12,7 @@ export interface McpProjectionInput {
   runner:Runner;cwd:string;runRoot:string;
   /** Only names are used. Values belong to the model runtime, never source expansion. */
   injectedNames:string[];
+  requireKnownFields?:boolean;
 }
 export interface McpProjectionResult {
   args:string[];env:Record<string,string>;secretValues:string[];
@@ -70,7 +71,7 @@ export class McpProjectionService {
     const runRoot=join(input.runRoot,'mcp');
     for(const item of this.registry.selected(input.cwd).filter(row=>row.kind==='mcp')){
       try{
-        const resolved=this.registry.resolveMcpSource(item.id);if(!resolved)throw new McpSourceError('来源已删除，请重新扫描');
+        const resolved=this.registry.resolveMcpSource(item.id,input.requireKnownFields);if(!resolved)throw new McpSourceError('来源已删除，请重新扫描');
         const references=mcpReferenceNames(resolved.source,resolved.environment);
         const needsSecret=references.some(name=>resolved.secretEnvNames?.includes(name));
         const environment={...resolved.environment,...(resolved.configurationId&&needsSecret?this.options.profileEnvironment?.(resolved.configurationId):{})};
@@ -99,7 +100,8 @@ export class McpProjectionService {
       }catch(error){
         // Raw parser/native errors may include configuration values. Only our
         // controlled, value-free diagnostics are safe for snapshots and RPC.
-        result.issues.push({id:item.id,reason:error instanceof McpSourceError?error.message:'来源配置读取失败，请在来源 CLI 检查后重新扫描'});
+        const reason=error instanceof McpSourceError?error.message:'来源配置读取失败，请在来源 CLI 检查后重新扫描';
+        result.issues.push({id:item.id,reason:input.requireKnownFields?`${item.name} · ${reason}`:reason});
       }
     }
     if(Object.keys(claude.servers).length){

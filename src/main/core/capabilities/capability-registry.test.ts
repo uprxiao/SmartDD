@@ -9,12 +9,38 @@ import * as schema from '../../db/schema';
 import { CapabilityRegistryService, type CapabilityScanContext } from './capability-registry';
 import { ManagedSkillLinks } from './managed-skill-links';
 import { capabilityScanContexts } from './scan-contexts';
+import { McpProjectionService } from './mcp-projection';
+import { randomUUID } from 'node:crypto';
 
 let sqlite:Database.Database,db:ReturnType<typeof drizzle<typeof schema>>,root:string,contexts:CapabilityScanContext[],svc:CapabilityRegistryService;
 const file=(path:string,text:string)=>{mkdirSync(dirname(path),{recursive:true});writeFileSync(path,text);return path;};
 const skill=(runner:'claude'|'codex',name:string,scope='user')=>file(join(root,scope==='user'?'home':'project',runner==='claude'?'.claude':'.agents','skills',name,'SKILL.md'),`---\nname: ${name}\ndescription: public test\n---\nPUBLIC_SOURCE`);
 beforeEach(()=>{root=realpathSync(mkdtempSync(join(tmpdir(),'m13-registry-')));sqlite=new Database(':memory:');runBundledMigrations(sqlite);db=drizzle(sqlite,{schema});mkdirSync(join(root,'project','.git'),{recursive:true});contexts=[{runner:'claude',home:join(root,'home'),stateRoot:join(root,'home/.claude'),cwd:join(root,'project'),projectRoot:join(root,'project'),path:''},{runner:'codex',home:join(root,'home'),stateRoot:join(root,'home/.codex'),cwd:join(root,'project'),projectRoot:join(root,'project'),path:''}];svc=new CapabilityRegistryService(db,()=>contexts);});
 afterEach(()=>{sqlite.close();rmSync(root,{recursive:true,force:true});});
+
+it('admits known M14 fields from the raw declaration before the parser drops unknown semantics',()=>{
+  file(join(root,'home/.claude.json'),JSON.stringify({mcpServers:{
+    healthy:{command:'/usr/bin/true'},
+    timeout:{command:'/usr/bin/true',startup_timeout_sec:8},
+    policy:{command:'/usr/bin/true',tools:{read:{enabled:true,custom_scope:'PUBLIC_VALUE_DO_NOT_REPORT'}}},
+  }}));
+  svc.scan();
+  const adopted=svc.adoptAll().items;
+  const timeout=adopted.find(row=>row.name==='timeout')!;
+  expect(svc.resolveMcpSource(timeout.id)).toBeTruthy();
+  expect(()=>svc.resolveMcpSource(timeout.id,true)).toThrow('startup_timeout_sec');
+  const projection=new McpProjectionService(svc,{userData:root,executable:'/public/WillYou',launcherSource:'// fixture'});
+  const result=projection.prepare({
+    runner:'codex',cwd:join(root,'project'),runRoot:join(root,'agents','runs',randomUUID()),
+    injectedNames:[],requireKnownFields:true,
+  });
+  expect(result.serverNames).toEqual(['healthy']);
+  expect(result.issues.map(issue=>issue.reason)).toEqual(expect.arrayContaining([
+    expect.stringContaining('timeout · 字段 startup_timeout_sec'),
+    expect.stringContaining('policy · 字段 tools.custom_scope'),
+  ]));
+  expect(JSON.stringify(result.issues)).not.toContain('PUBLIC_VALUE_DO_NOT_REPORT');
+});
 
 it('discovers without executing, persists consent and approval, and rescans idempotently without raw MCP data',()=>{
   skill('claude','public-skill');file(join(root,'home/.claude.json'),JSON.stringify({mcpServers:{echo:{command:'/does-not-exist',args:['PUBLIC_SECRET_SENTINEL'],env:{OWN_KEY:'PUBLIC_VALUE_SENTINEL'}}}}));

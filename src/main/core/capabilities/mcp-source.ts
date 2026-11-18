@@ -74,6 +74,41 @@ export function mcpUrlIssue(value:string):string|null {
   if(url.username||url.password||[...url.searchParams.keys()].some(sensitive)||/[?&#=]/.test(url.hash))return '不支持转换：URL 含凭据；改用请求头或环境变量鉴权';
   return null;
 }
+
+const PROJECTED_MCP_FIELDS = new Set([
+  'type','enabled','disabled','oauth','auth','default_tools_approval_mode',
+  'disabled_tools','enabled_tools','tools','headersHelper','http_headers_helper',
+]);
+const STDIO_FIELDS = ['command','args','env','cwd'];
+const HTTP_FIELDS = ['url'];
+const CODEX_HTTP_FIELDS = ['http_headers','env_http_headers','bearer_token_env_var'];
+
+/** M14 projects only known semantics. Native settings and the legacy launch
+ * path retain their original behavior. Inspect before the parser can drop a field. */
+export function validateManagedMcpDefinition(runner:Runner,raw:Record<string,unknown>):void {
+  const http=raw.url!==undefined;
+  const available=new Set([...PROJECTED_MCP_FIELDS,...(http?HTTP_FIELDS:STDIO_FIELDS),
+    ...(http?(runner==='codex'?CODEX_HTTP_FIELDS:['headers']):(runner==='codex'?['env_vars']:[]))]);
+  const unsupported=(name:string):never=>{
+    const field=/^[\w.-]{1,128}$/.test(name)?name:'无法显示字段名';
+    throw new McpSourceError(`字段 ${field} 无法等价投影，请在来源 CLI 使用或调整后重新扫描`);
+  };
+  for(const key of Object.keys(raw))if(!available.has(key))unsupported(key);
+  if(raw.type!==undefined && (typeof raw.type!=='string'||!(http?['http','sse']:['stdio']).includes(raw.type)))unsupported('type');
+  for(const key of ['enabled','disabled','oauth'])if(raw[key]!==undefined&&typeof raw[key]!=='boolean')unsupported(key);
+  const auth=raw.auth;
+  if(auth!==undefined){
+    if(!object(auth) || auth.type!=='oauth')return unsupported('auth');
+    for(const key of Object.keys(auth))if(key!=='type')unsupported('auth.'+key);
+  }
+  if(raw.tools!==undefined && object(raw.tools))for(const policy of Object.values(raw.tools)){
+    if(!object(policy))continue; // The underlying parser reports malformed declarations.
+    for(const key of Object.keys(policy))if(key!=='enabled'&&key!=='approval_mode')unsupported('tools.'+key);
+    if(policy.enabled!==undefined && typeof policy.enabled!=='boolean')unsupported('tools.enabled');
+    if(policy.approval_mode!==undefined && (typeof policy.approval_mode!=='string'||!['approve','prompt','deny'].includes(policy.approval_mode)))unsupported('tools.approval_mode');
+  }
+}
+
 export function parseMcpSource(name:string,runner:Runner,raw:unknown):McpSource {
   if(!/^[A-Za-z0-9_-]{1,128}$/.test(name)||!object(raw))return invalid();
   if(runner!=='claude'&&runner!=='codex')throw new McpSourceError('来源工具尚不支持 MCP 转换');
