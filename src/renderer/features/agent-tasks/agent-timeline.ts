@@ -219,9 +219,11 @@ export function requestTitle(r: TimelineRequest): { title: string; detail: strin
   const p = r.payload ?? {}, params = p.params ?? {};
   if (r.kind === 'plan_approval') return { title: 'Claude 交出了计划，是否开始执行？', detail: String(p.input?.plan ?? '') };
   if (r.kind === 'command_approval') return { title: '是否允许运行命令？', detail: String(params.command ?? p.input?.command ?? '') + (params.reason ? `\n原因：${params.reason}` : '') };
-  if (r.kind === 'file_approval') return { title: '是否允许修改文件？', detail: String(p.input?.file_path ?? params.reason ?? '') };
-  if (r.kind === 'user_input') return { title: 'Agent 有问题要问你', detail: JSON.stringify(params.questions ?? p.input?.questions ?? params, null, 1).slice(0, 2000) };
-  return { title: p.title ?? '是否允许这项操作？', detail: JSON.stringify(params ?? p.input ?? {}, null, 1).slice(0, 2000) };
+  const input = p.params ?? p.input;
+  const detail = input === undefined ? '' : JSON.stringify(input, null, 1);
+  if (r.kind === 'file_approval') return { title: '是否允许修改文件？', detail };
+  if (r.kind === 'user_input') return { title: 'Agent 有问题要问你', detail };
+  return { title: p.title ?? '是否允许这项操作？', detail };
 }
 
 /** 需要用户填写的请求（复核 CR09）：Agent 提问、MCP 表单。不套用“批准／拒绝”。 */

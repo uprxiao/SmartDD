@@ -106,6 +106,17 @@ describe('请求面板选项', () => {
     const r = { requestId: 'x', kind: 'permission_approval', revision: 1, payload: { method: 'item/permissions/requestApproval', params: { permissions: { network: true } } }, origin: {}, status: 'pending' };
     expect(requestOptions(r, 'codex-app-server').map(x => x.result(''))).toEqual([{ permissions: { network: true }, scope: 'turn' }, { permissions: {}, scope: 'turn' }]);
   });
+  it('A45: 权限审批完整显示原文，Claude 工具和文件审批显示实际全量入参', () => {
+    const scope = { fileSystem: { read: ['目录😀'.repeat(40_000), '最后一项审阅目标'] } };
+    const base = { requestId: 'long-request', revision: 1, origin: {}, status: 'pending' };
+    const native = { ...base, kind: 'permission_approval', payload: { params: { permissions: scope } } };
+    expect(JSON.parse(requestTitle(native).detail)).toEqual(native.payload.params);
+    const input = { file_path: './受控测试.txt', content: '正文😀'.repeat(40_000) + '正文末尾' };
+    for (const kind of ['tool_approval', 'file_approval']) {
+      const claude = { ...base, kind, payload: { input } };
+      expect(JSON.parse(requestTitle(claude).detail)).toEqual(input);
+    }
+  });
 });
 
 describe('复核 1620：请求表单与原生决定', () => {
