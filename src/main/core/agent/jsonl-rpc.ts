@@ -32,8 +32,10 @@ export class JsonlRpcPeer {
       const p = this.pending.get(msg.id);
       if (!p) return;
       this.pending.delete(msg.id); clearTimeout(p.timer);
-      if (msg.error !== undefined) p.reject(new DriverError('REJECTED', `${p.method}: ${JSON.stringify(msg.error).slice(0, 2000)}`));
-      else p.resolve(msg.result);
+      if (msg.error !== undefined) {
+        const code = (msg.error as { code?: unknown } | null)?.code;
+        p.reject(new DriverError('REJECTED', `${p.method}: ${JSON.stringify(msg.error).slice(0, 2000)}`, typeof code === 'number' ? code : undefined));
+      } else p.resolve(msg.result);
       return;
     }
     if (typeof msg.method !== 'string') { this.handlers.invalid?.(line.slice(0, 2000)); return; }

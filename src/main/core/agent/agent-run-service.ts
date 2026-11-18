@@ -72,9 +72,11 @@ export class AgentRunService {
     const cwdIdentity = canonicalPath(input.cwd), stateIdentity = canonicalPath(input.stateRoot);
     const continuationHash = sha256(JSON.stringify({ driver: input.driverId, profile: input.profileId, stateRoot: stateIdentity, cwd: cwdIdentity, compatibility: input.compatibility, ...(input.readOnly ? { readOnly: true } : {}) }));
     const existing = store.findBinding(input.taskId, input.driverId, continuationHash);
+    const capabilities = input.capabilities ?? evaluateCapabilities(input.driverId, input.executable.version).capabilities;
+    const resumeNativeId = existing?.native_confirmed_at ? existing.native_id ?? undefined : undefined;
+    if (resumeNativeId && capabilities.resume.state !== 'enabled') throw new DriverError('UNSUPPORTED', '当前执行器不支持恢复原生会话');
     const bindingId = existing?.binding_id ?? store.createBinding({ task_id: input.taskId, driver_id: input.driverId, profile_id: input.profileId, continuation_hash: continuationHash, state_root: stateIdentity, cwd_identity: cwdIdentity });
     store.freezeBinding(bindingId, { compatibility: input.compatibility, stateRoot: stateIdentity, cwd: cwdIdentity });
-    const resumeNativeId = existing?.native_confirmed_at ? existing.native_id ?? undefined : undefined;
     const generation = store.nextGeneration(bindingId);
     const runId = randomUUID();
     const launchPlanHash = sha256(JSON.stringify({ driver: input.driverId, executable: input.executable, cwd: input.cwd, tier: tier.tier, model: input.model ?? null, extraArgs: input.extraArgs ?? [], settingSources: input.settingSources ?? null, readOnly: input.readOnly === true, envNames: Object.keys(input.env).sort() }));
@@ -83,7 +85,6 @@ export class AgentRunService {
     const instance = driver.create();
     let markEnded!: () => void;
     const ended = new Promise<void>(r => { markEnded = r; });
-    const capabilities = input.capabilities ?? evaluateCapabilities(input.driverId, input.executable.version).capabilities;
     const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, appliedTier: tier.tier, sentModel: !!(resumeNativeId && input.model && input.driverId === 'codex-app-server'), resumed: !!resumeNativeId, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     run.opening = true;
@@ -101,6 +102,9 @@ export class AgentRunService {
       await run.registration;
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
       run.opening = false;
+      const optional = [['mcp', 'MCP 业务通道'], ['resume', '原生会话恢复']] as const;
+      const unavailable = optional.filter(([name]) => capabilities[name].reason === 'probe-unavailable').map(([, label]) => label);
+      if (unavailable.length) store.addHostItem(input.taskId, null, 'system_notice', { severity: 'warning', code: 'optionalProtocolUnavailable', title: `当前执行器不支持${unavailable.join('、')}`, detail: '基本对话仍可使用。' });
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
       if (!run.defaultModel && opened.defaultModel) run.defaultModel = opened.defaultModel;
       if (instance.modelCatalog) void instance.modelCatalog().then(models => {

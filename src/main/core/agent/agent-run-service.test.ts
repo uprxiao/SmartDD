@@ -4,7 +4,7 @@ import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore, sha256 } from './agent-store';
 import { AgentRunService, type OpenRunInput } from './agent-run-service';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
-import type { DriverId } from './capabilities';
+import { evaluateCapabilities, type DriverId } from './capabilities';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 
 // M14-A04 启动门闩与实际 owner、A13 新绑定、A16 发送前失败与接收未知、A64 运行身份接口（阶段 1：U／I 层）。
@@ -81,6 +81,21 @@ describe('运行服务', () => {
     expect(c.bindingId).not.toBe(a.bindingId);
     expect(c.generation).toBe(1);
     expect(instances[2].opened?.resumeNativeId).toBeUndefined();
+  });
+
+  it('A62: 缺少可选协议方法时可以聊天，恢复旧绑定时保留原生会话身份', async () => {
+    const { db, store, service, base, instances } = setup();
+    const { capabilities } = evaluateCapabilities(base.driverId, base.executable.version, name => name !== 'resume' && name !== 'mcp');
+    const input = { ...base, capabilities };
+    const run = await service.open(input);
+    await service.submit(run.runId, { clientInputId: 'basic-input', text: '基本对话' });
+    expect(instances[0].turns).toEqual([expect.objectContaining({ text: '基本对话' })]);
+    await service.close(run.runId);
+
+    await expect(service.open(input)).rejects.toThrow('当前执行器不支持恢复原生会话');
+    expect(instances).toHaveLength(1);
+    expect(store.binding(run.bindingId)).toMatchObject({ native_id: 'native-1' });
+    expect(db.prepare('SELECT run_id FROM capability_runs').all()).toEqual([{ run_id: run.runId }]);
   });
 
   it('预分配身份未确认前不恢复：只确认后才写入原生身份', async () => {

@@ -49,4 +49,26 @@ describe('本机程序发现', () => {
     ]);
     db.close();
   });
+
+  it.each([true, false])('A62 distinguishes an absent method from a normal resume rejection (%s)', async absentResume => {
+    const { link, real } = fakeBin('codex');
+    writeFileSync(real, String.raw`#!/bin/sh
+[ "$1" = 'app-server' ] && [ "$HOME" = "$CODEX_HOME" ] && [ "$HOME" = "$PWD" ] && [ -z "$OPENAI_API_KEY" ] || exit 41
+while IFS= read -r line; do
+  id=$(printf '%s' "$line" | sed -n 's/.*"id":\([0-9][0-9]*\).*/\1/p')
+  case "$line" in
+    *'"method":"initialize"'*) printf '{"id":%s,"result":{"userAgent":"fixture"}}\n' "$id" ;;
+    *'"method":"mcpServerStatus/list"'*) printf '{"id":%s,"error":{"code":-32601,"message":"missing"}}\n' "$id" ;;
+    *'"method":"thread/resume"'*) printf '{"id":%s,"error":{"code":${absentResume ? -32601 : -32600},"message":"no session"}}\n' "$id" ;;
+  esac
+done
+`);
+    const r = await probeDriver('codex-app-server', {
+      env: { OPENAI_API_KEY: 'synthetic-not-inherited' }, detect: detect(link, '0.169.0') as never, inspectCodexProtocol: true,
+    });
+    expect(r.state).toBe('limited');
+    expect(r.capabilities.basic.state).toBe('enabled');
+    expect(r.capabilities.mcp).toMatchObject({ state: 'disabled', reason: 'probe-unavailable' });
+    expect(r.capabilities.resume.state).toBe(absentResume ? 'disabled' : 'enabled');
+  });
 });

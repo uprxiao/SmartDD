@@ -97,7 +97,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (old && old.frozen.cwd === canonicalPath(cwd) && old.frozen.stateRoot === canonicalPath(launch.stateRoot) && JSON.stringify(withoutExtensions(old.frozen.compatibility)) === JSON.stringify(withoutExtensions(launch.compatibility))) {
       launch = resolveProfileLaunch({ ...input, carryExtensions: old.frozen.compatibility.extensions !== false });
     }
-    const probe = await probeAndRecord(store, launch.driverId, { env: base, executable: launch.command });
+    const probe = await probeAndRecord(store, launch.driverId, { env: base, executable: launch.command, inspectCodexProtocol: launch.driverId === 'codex-app-server' });
     if (probe.state === 'unsupported' || !probe.realpath || !probe.version) throw new DriverError('UNSUPPORTED', probe.missing ? `${probe.reason}。${probe.missing.hint}` : probe.reason ?? '执行器不可用');
     connection?.assertCurrent();
     const expectedConfig = JSON.stringify({ kind: c.kind, source: c.source, providerId: c.providerId, toolId: c.toolId, models: c.models, defaultModel: c.defaultModel });

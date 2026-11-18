@@ -116,7 +116,7 @@ export interface AgentDriver {
 }
 
 export class DriverError extends Error {
-  constructor(readonly code: 'PROTOCOL' | 'TIMEOUT' | 'EXITED' | 'REJECTED' | 'UNSUPPORTED' | 'STATE', message: string) { super(message); }
+  constructor(readonly code: 'PROTOCOL' | 'TIMEOUT' | 'EXITED' | 'REJECTED' | 'UNSUPPORTED' | 'STATE', message: string, readonly nativeCode?: number) { super(message); }
 }
 
 /** 简单的同步事件分发，单个监听器出错不影响其他监听器。 */
