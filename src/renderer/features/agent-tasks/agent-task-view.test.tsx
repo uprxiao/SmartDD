@@ -186,6 +186,26 @@ it('A44 recovers missing notifications and refreshes changed history outside the
   expect(mocks.historyItems).toHaveBeenCalledWith('task', [old.itemId]);
 });
 
+it('A44 recovers a missing tail after the native window is shown without a DOM visibility change', async () => {
+  const old = item('assistant_message', { text: 'Before hiding' });
+  const updated = { ...old, revision: 2, payload: { text: 'Recovered after showing' } };
+  let state = snapshot({ items: [old] });
+  const listeners = new Map<string, () => void>();
+  mocks.on.mockImplementation((event, cb) => { listeners.set(event.name, cb); return () => listeners.delete(event.name); });
+  mocks.snapshot.mockImplementation(async () => state);
+  mocks.events.mockResolvedValue([{ taskId: 'task', seq: 2, type: 'item.updated', itemId: old.itemId, payload: {} }]);
+  const { unmount } = render(<AgentTaskView taskId="task" />);
+  await screen.findByText('Before hiding');
+  state = snapshot({ seq: 2, items: [updated] });
+  const onShow = listeners.get('window:shown');
+  expect(onShow).toBeTypeOf('function');
+  await act(async () => onShow?.());
+  await screen.findByText('Recovered after showing');
+  expect(screen.queryByText('Before hiding')).toBeNull();
+  unmount();
+  expect(listeners.has('window:shown')).toBe(false);
+});
+
 it('A44 discards an unsafe page when the event sequence was cropped while the window was away', async () => {
   const latest = { ...item('assistant_message', { text: 'Newest row' }), itemId: 'newest', ordinal: 10 };
   const old = { ...item('assistant_message', { text: 'Old untrusted page' }), itemId: 'historical', ordinal: 9 };

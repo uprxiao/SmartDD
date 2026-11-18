@@ -5,7 +5,7 @@ vi.mock('./icon', () => ({ appIcon: '' }));
 vi.mock('electron', () => ({
   nativeTheme: { shouldUseDarkColors: false },
   BrowserWindow: class extends EventEmitter {
-    webContents = { mainFrame: { url: '' }, isDestroyed: () => false };
+    webContents = { mainFrame: { url: '' }, isDestroyed: () => false, send: vi.fn() };
     constructor() { super(); native.windows.push(this); }
     isDestroyed() { return false; }
     async loadURL(url: string) { this.webContents.mainFrame.url = url; }
@@ -37,4 +37,17 @@ describe('trusted terminal renderer document', () => {
     expect(isMainRenderer(e)).toBe(false);
     expect(isMainRenderer({ sender: second.webContents, senderFrame: second.webContents.mainFrame })).toBe(true);
   });
+});
+
+it('notifies only the current renderer when the native window is shown or restored', async () => {
+  const first = await createMainWindow();
+  const current = await createMainWindow();
+  first.emit('show');
+  current.emit('hide');
+  current.emit('show');
+  current.emit('restore');
+  current.emit('closed');
+  current.emit('show');
+  expect(first.webContents.send).not.toHaveBeenCalled();
+  expect(vi.mocked(current.webContents.send).mock.calls).toEqual([['window:shown'], ['window:shown']]);
 });

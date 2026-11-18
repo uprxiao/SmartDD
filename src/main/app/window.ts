@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { app, BrowserWindow, nativeTheme, type IpcMainEvent } from 'electron';
 import type { Theme } from '@shared/app-settings';
+import { windowShownEvent } from '@shared/events';
 import { appIcon } from './icon';
 
 let mainWindow: BrowserWindow | null = null;
@@ -84,6 +85,12 @@ export async function createMainWindow(): Promise<BrowserWindow> {
   win.on('closed', () => {
     if (mainWindow === win) { mainWindow = null; mainDocumentURL = null; }
   });
+  // With background throttling disabled, the DOM can stay visible while the native window is hidden.
+  const notifyShown = () => {
+    if (getMainWindow() === win && !win.webContents.isDestroyed()) win.webContents.send(windowShownEvent.name);
+  };
+  win.on('show', notifyShown);
+  win.on('restore', notifyShown);
   win.once('ready-to-show', () => win.show());
 
   if (process.env.ELECTRON_RENDERER_URL) await win.loadURL(process.env.ELECTRON_RENDERER_URL);

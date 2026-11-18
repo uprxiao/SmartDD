@@ -39,6 +39,7 @@ export interface AiProfilesChange {
 export const aiProfilesChangedEvent = defineEvent<AiProfilesChange>('aiProfiles:changed');
 export const menuOpenSettingsEvent = defineEvent<void>('menu:openSettings');
 export const menuToggleLeftSidebarEvent = defineEvent<void>('menu:toggleLeftSidebar');
+export const windowShownEvent = defineEvent<void>('window:shown');
 
 // renderer → main (fire-and-forget; keystrokes should not wait for an invoke round-trip)
 export const ptyInputEvent = defineEvent<{ taskId: string; ptyId: string; data: string }>('pty:input');

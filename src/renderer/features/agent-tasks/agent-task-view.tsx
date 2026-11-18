@@ -24,7 +24,7 @@ import { createPortal } from 'react-dom';
 import type { MailSendReview } from '@shared/mail-execution';
 import { BrowserAccessReview, MailReviewCard, mailEdits, type MailEdits } from './agent-business-review';
 import { toast } from 'sonner';
-import { agentTaskEvent, agentTaskLiveEvent,applicationsChangedEvent } from '@shared/events';
+import { agentTaskEvent, agentTaskLiveEvent, applicationsChangedEvent, windowShownEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { events, rpc } from '@renderer/lib/ipc';
 import { buildTimeline, turnSeconds, formatDuration, requestForm, requestOptions, requestTitle, workLabel, workSegments, summarizeTools, type RequestForm, type TurnGroup, type TurnInfo, type TimelineItem, type TimelineRequest } from './agent-timeline';
@@ -847,11 +847,13 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     // Duplicates and late notices do not trigger another pull. Catch-up is bounded by the next snapshot watermark.
     const offEvent = events.on(agentTaskEvent, e => { if (e.taskId === taskId && e.seq > seqRef.current && !reloadTimer.current) reloadTimer.current = setTimeout(() => { reloadTimer.current = null; if (alive) void reload(); }, 80); });
     // 窗口恢复或页面重新可见时查询最新水位，弥补尾部通知丢失。
-    const onVisible = () => {
-      if (document.visibilityState !== 'visible' || !alive) return;
+    const recoverTimeline = () => {
+      if (!alive) return;
       recoveringTimeline.current = true;
       void reload();
     };
+    const onVisible = () => { if (document.visibilityState === 'visible') recoverTimeline(); };
+    const offWindowShown = events.on(windowShownEvent, recoverTimeline);
     window.addEventListener('focus', onVisible); document.addEventListener('visibilitychange', onVisible);
     const offLive = events.on(agentTaskLiveEvent, e => {
       if (e.taskId !== taskId) return;
@@ -881,6 +883,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       recoveringTimeline.current = false;
       offEvent();
       offLive();
+      offWindowShown();
       clearInterval(tick);
       window.removeEventListener('focus', onVisible);
       document.removeEventListener('visibilitychange', onVisible);
