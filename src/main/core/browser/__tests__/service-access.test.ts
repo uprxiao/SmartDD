@@ -8,6 +8,7 @@ import {BrowserService,type BrowserScope} from '../service';
 import {BrowserPageQueue} from '../queue';
 import {BrowserDeferredReferenceGuards,type BrowserReferenceDeferral} from '../deferred-reference';
 import type {BrowserPage} from '../page-registry';
+import {browserProjectProfile} from '../profiles';
 import type {BrowserProfileClones} from '../profile-clones';
 import {isApplicationPreflightFailure} from '../../applications/capability-preflight';
 vi.mock('electron',()=>({app:{userAgentFallback:'WillYou/0.1 Electron/42 Chrome/148'},session:{},nativeImage:{},shell:{}}));
@@ -29,6 +30,31 @@ function fixture(){
   return{service,sqlite,scope,grant,page,runs,root,projects};
 }
 describe('actual caller and target authority in the browser service',()=>{
+  it('revalidates previously reviewed saved tabs after startup without opening them or adding other dormant tabs',async()=>{
+    const f=fixture(),id=randomUUID(),other=randomUUID(),url='https://fixture.example.test/cold';
+    const savedTab=(pageId:string,address:string)=>({id:pageId,url:address,title:'Previously open tab',favicon:null,profileId:browserProjectProfile('P1')});
+    f.sqlite.prepare('INSERT INTO app_settings VALUES(?,?,1)').run('browserWorkspace.v1:T2',JSON.stringify({
+      version:1,tabs:[savedTab(id,url),savedTab(other,'https://fixture.example.test/other')],activeId:id,closed:[],
+    }));
+    const create=vi.spyOn(f.service.pages,'create');
+    expect(f.service.workspace.snapshot('T2').tabs).toHaveLength(2);
+    expect(f.service.accessTarget('T2')).toEqual({projectId:'P1',pages:[]});
+    expect(f.service.accessTarget('T2',[id])).toEqual({projectId:'P1',pages:[{id,url}]});
+    expect(f.service.accessTarget('T3',[id])).toEqual({projectId:'P2',pages:[]});
+    await f.service.workspace.close('T2',id);
+    expect(f.service.accessTarget('T2',[id])).toEqual({projectId:'P1',pages:[]});
+    expect(create).not.toHaveBeenCalled();
+  });
+  it('prefers the live browser address when the reviewed tab also has a saved address',()=>{
+    const f=fixture(),page=f.page();
+    f.sqlite.prepare('INSERT INTO app_settings VALUES(?,?,1)').run('browserWorkspace.v1:T2',JSON.stringify({
+      version:1,tabs:[{id:page.id,url:'https://fixture.example.test/previous',title:'Fixture',favicon:null,profileId:page.profileId}],
+      activeId:page.id,closed:[],
+    }));
+    expect(f.service.accessTarget('T2',[page.id])).toEqual({
+      projectId:'P1',pages:[{id:page.id,url:page.contents.getURL()}],
+    });
+  });
   it.each(['click','exec'] as const)('keeps a %s reference armed through the dialog and finishes it under the original page queue',async command=>{
     const f=fixture(),page=f.page('T1'),guards=new BrowserDeferredReferenceGuards(),nativeFinish=vi.fn(async()=>({connected:true,blocked:[],accepted:['mousedown','mouseup','click']})),inspect=vi.fn(async()=>({connected:true,blocked:[],accepted:['mousedown','mouseup','click']}));
     const armed={selector:'[held-node]',hostClick:false,finish:vi.fn(async(_preserve:boolean,deferred:BrowserReferenceDeferral|undefined)=>{

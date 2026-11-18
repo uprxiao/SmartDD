@@ -14,7 +14,7 @@ import { browserExecArguments } from './exec-policy';
 import type { BrowserProgress } from './input-progress';
 import {BrowserWorkspace} from './workspace';
 import type {BrowserShortcut} from '@shared/browser-workspace';
-import {normalizeBrowserNavigationUrl} from '@shared/browser-navigation';
+import {BROWSER_BLANK_URL,normalizeBrowserNavigationUrl} from '@shared/browser-navigation';
 import browserCommands from '@shared/browser-commands.generated.json';
 import {executeBrowserPageCommand} from './page-commands';
 import {BrowserConditionWait} from './wait';
@@ -61,7 +61,20 @@ const text=(value:unknown):string=>{
 export class BrowserService {
   private taskAccess?:{accept(scope:BrowserScope,targetTaskId:string,mode:BrowserAccessMode):unknown|undefined;revoke(id:string):boolean};
   attachTaskAccess(value:NonNullable<BrowserService['taskAccess']>){this.taskAccess=value;}
-  accessTarget(taskId:string){return {projectId:this.options.taskProject(taskId),pages:this.pages.all().filter(p=>p.taskId===taskId).map(p=>({id:p.id,url:p.contents.getURL()})).sort((a,b)=>a.id.localeCompare(b.id))};}
+  accessTarget(taskId:string,reviewedPageIds:readonly string[]=[]){
+    const projectId=this.options.taskProject(taskId);
+    if(!projectId)return {projectId,pages:[]};
+    const pages=new Map(this.pages.list(taskId).map(page=>[page.id,page.contents.getURL()]));
+    if(reviewedPageIds.length){
+      const reviewed=new Set(reviewedPageIds);
+      // A saved tab may not have a native view yet after a restart. Only
+      // previously reviewed tabs can participate in the later revalidation.
+      for(const page of this.workspace.list(taskId)){
+        if(page.kind==='tab'&&reviewed.has(page.pageId)&&!pages.has(page.pageId)&&page.url&&page.url!==BROWSER_BLANK_URL)pages.set(page.pageId,page.url);
+      }
+    }
+    return {projectId,pages:[...pages].map(([id,url])=>({id,url})).sort((a,b)=>a.id.localeCompare(b.id))};
+  }
   bindTaskAccess(binding:import('./access').BrowserAccessRun,targetTaskId:string,mode:BrowserAccessMode,id:string){const grant=this.access.bindApproved(binding,targetTaskId,mode,id);this.automation.track(binding);this.automation.target(binding.runId,targetTaskId);return grant;}
 
   readonly pages:BrowserPageRegistry;

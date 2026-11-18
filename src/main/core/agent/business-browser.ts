@@ -3,7 +3,16 @@ import type {RunContext} from '../applications/run-registry';
 import type {AgentStore} from './agent-store';import type {HostBusinessRequests} from './host-business-requests';
 export function attachAgentBrowserRequests(d:{store:AgentStore;requests:HostBusinessRequests;browser:Pick<BrowserService,'accessTarget'|'attachTaskAccess'|'bindTaskAccess'|'access'>;context(runId:string):RunContext;enabled(taskId:string):void}){
  d.requests.register('browser_access',{needsRun:true,stop:taskId=>d.browser.access.revokeTaskGrants(taskId),
-  validate:async(record,decision)=>{const data=record.payload.data as {targetTaskId:string;target:unknown;mode:string};d.enabled(record.row.task_id);if(JSON.stringify(d.browser.accessTarget(data.targetTaskId))!==JSON.stringify(data.target))throw Error('目标页面、地址或项目已变化，请重新申请授权');const target=d.browser.accessTarget(data.targetTaskId),task=d.store.task(record.row.task_id);if(!task?.project_id||target.projectId!==task.project_id||!target.pages.length)throw Error('授权页面已关闭或不属于本项目');const mode=(decision as {choice:string}).choice;if(!['observe','control'].includes(mode)||data.mode==='observe'&&mode==='control')throw Error('授权不能超过原申请范围');},
+  validate:async(record,decision)=>{
+    const data=record.payload.data as {targetTaskId:string;target:ReturnType<BrowserService['accessTarget']>;mode:string};
+    d.enabled(record.row.task_id);
+    const target=d.browser.accessTarget(data.targetTaskId,data.target.pages.map(page=>page.id));
+    if(JSON.stringify(target)!==JSON.stringify(data.target))throw Error('目标页面、地址或项目已变化，请重新申请授权');
+    const task=d.store.task(record.row.task_id);
+    if(!task?.project_id||target.projectId!==task.project_id||!target.pages.length)throw Error('授权页面已关闭或不属于本项目');
+    const mode=(decision as {choice:string}).choice;
+    if(!['observe','control'].includes(mode)||data.mode==='observe'&&mode==='control')throw Error('授权不能超过原申请范围');
+  },
   execute:async(record,decision,{run})=>{if(!run)throw Error('尚无已登记运行，授权不可用');const context=d.context(run.runId);if(context.run.taskId!==record.row.task_id||context.signal.aborted)throw Error('新运行身份已经失效');const data=record.payload.data as {targetTaskId:string};const grant=d.browser.bindTaskAccess({runId:context.run.runId,taskId:context.run.taskId,projectId:context.run.projectId,signal:context.signal},data.targetTaskId,(decision as {choice:'observe'|'control'}).choice,record.row.request_id);return{status:'authorized',message:'浏览器授权已绑定当前运行并可用',boundRunId:run.runId,grantId:grant.id};},
   retire:record=>{try{d.browser.access.revoke(record.row.request_id);}catch{/* Unbound or already ended grants grant nothing. */}},
  });
