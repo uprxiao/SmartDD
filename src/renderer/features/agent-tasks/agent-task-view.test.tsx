@@ -138,6 +138,27 @@ it('FR04：截断的用户消息可展开全文', async () => {
   expect(await screen.findByText(/_USER_TAIL/)).toBeTruthy();
 });
 
+it('A18 stops requesting pieces of a history item after leaving its task', async () => {
+  let finishSecond!: (chunk: { chunk: string; next: number; done: boolean }) => void;
+  mocks.itemBody.mockReset().mockImplementation((_task, _item, offset) => {
+    if (offset === 0) return Promise.resolve({ chunk: '{"text":', next: 1, done: false });
+    if (offset === 1) return new Promise(resolve => { finishSecond = resolve; });
+    return Promise.resolve({ chunk: '}', next: 3, done: true });
+  });
+  mocks.snapshot.mockImplementation(async taskId => taskId === 'task'
+    ? snapshot({ items: [item('user_message', { text: 'Waiting on history', truncated: true })] })
+    : snapshot({ taskId, title: 'Other task', items: [] }));
+  const view = render(<AgentTaskView key="task" taskId="task" />);
+  fireEvent.click(await screen.findByRole('button', { name: /展开全文/ }));
+  await waitFor(() => expect(mocks.itemBody).toHaveBeenCalledTimes(2));
+  view.rerender(<AgentTaskView key="other" taskId="other" />);
+  await screen.findByRole('heading', { name: 'Other task' });
+  await act(async () => finishSecond({ chunk: '"Old private history"', next: 2, done: false }));
+  expect(mocks.itemBody).toHaveBeenCalledTimes(2);
+  expect(screen.queryByText('Old private history')).toBeNull();
+  expect(mocks.toast).not.toHaveBeenCalled();
+});
+
 function holdInit() {
   let initial!: (s: any) => void, event!: (e: any) => void;
   mocks.on.mockImplementation((name: any, cb: any) => { if (String(name?.name ?? name).includes('event')) event = cb; return () => {}; });

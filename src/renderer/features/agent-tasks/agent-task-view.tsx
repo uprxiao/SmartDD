@@ -140,12 +140,14 @@ type RangeChunk = { chunk: string; next: number; done: boolean; revision?: numbe
  * 按字节偏移分段读取完整正文并解析（复核 NR06、FR02）。首段带回修订号，后续段按该修订读取；
  * 读取中途内容被更新时服务端拒绝，从头按新修订重读，不拼接不同修订的片段（复核 SR05）。
  */
-async function readRange(read: (offset: number, revision?: number) => Promise<RangeChunk>): Promise<{ value: any; revision?: number }> {
+async function readRange(read: (offset: number, revision?: number) => Promise<RangeChunk>, signal?: AbortSignal): Promise<{ value: any; revision?: number }> {
   for (let attempt = 0; attempt < 3; attempt++) {
     let off = 0, text = '', revision: number | undefined;
     try {
       for (let i = 0; i < 1000; i++) {
+        signal?.throwIfAborted();
         const r = await read(off, revision);
+        signal?.throwIfAborted();
         if (i === 0) revision = r.revision;
         text += r.chunk;
         if (r.done) return { value: JSON.parse(text), revision };
@@ -160,7 +162,6 @@ async function readRange(read: (offset: number, revision?: number) => Promise<Ra
 const TaskScope = createContext('');
 type TimelineActions = { unsent(turnId: string | null): boolean; retry(turnId: string): void; restore(turnId: string): void; continuation(itemId:string): (() => void) | undefined; busy: boolean };
 const TimelineActionScope = createContext<TimelineActions | null>(null);
-const fetchItemPayload = (taskId: string, itemId: string, revision: number) => readRange((off) => rpc.agentTasks.itemBody(taskId, itemId, off, revision));
 
 /**
  * 截断条目的全文（复核 FR04）。缓存按条目＋修订有效（复核 SR05）：修订推进后旧全文作废，已展开的自动按新修订重取；
@@ -172,18 +173,30 @@ function useFullPayload(item: TimelineItem) {
   const [full, setFull] = useState<{ key: string; payload: any } | null>(null);
   const [expanded, setExpanded] = useState(false);
   const current = useRef(key); current.current = key;
+  const reading = useRef<AbortController | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    reading.current = controller;
+    return () => controller.abort();
+  }, [taskId, item.itemId]);
   const valid = full && full.key === key ? full.payload : null;
   const truncated = !!item.payload?.truncated && !valid;
   const load = async (): Promise<any> => {
     const want = key;
+    const signal = reading.current?.signal;
+    if (!signal || signal.aborted) return null;
     try {
-      const { value } = await fetchItemPayload(taskId, item.itemId, item.revision);
+      const { value } = await readRange(off => rpc.agentTasks.itemBody(taskId, item.itemId, off, item.revision), signal);
+      if (signal.aborted) return null;
       // 读取期间条目已更新：旧结果不写回，也不交给复制／下载。
       if (current.current !== want) { toast.message('内容已更新，请重试'); return null; }
       // 旧版本只剩前缀与摘要的截断记录不是全文：不缓存，明确失败（复核 T02）。
       if (isLegacyTruncated(value)) { toast.error('历史只保留了开头部分，无法读取全文'); return null; }
       setFull({ key: want, payload: value }); setExpanded(true); return value;
-    } catch (e) { toast.error(`读取完整内容失败：${rpcErrorMessage(e)}`); return null; }
+    } catch (e) {
+      if (!signal.aborted) toast.error(`读取完整内容失败：${rpcErrorMessage(e)}`);
+      return null;
+    }
   };
   useEffect(() => { if (expanded && item.payload?.truncated && !valid) void load(); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   return { payload: valid ?? item.payload ?? {}, truncated, load };
