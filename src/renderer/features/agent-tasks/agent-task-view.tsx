@@ -226,8 +226,9 @@ function ItemRow({ item }: { item: TimelineItem }) {
   const saveProjectPlan = async () => {
     setSavingPlan(true);
     try {
-      await rpc.agentTasks.saveProjectPlan(useTaskId, item.itemId, item.revision);
-      toast.success('计划已保存到任务目录的计划.md');
+      const receipt = await rpc.agentTasks.saveProjectPlan(useTaskId, item.itemId, item.revision);
+      if (receipt.cleanupPending) toast.warning('计划已保存到任务目录的计划.md，临时材料待核对清理');
+      else toast.success('计划已保存到任务目录的计划.md');
     } catch (e) { toast.error(`保存计划失败：${rpcErrorMessage(e)}`); }
     finally { setSavingPlan(false); }
   };

@@ -160,6 +160,26 @@ export class FileRecoveryStore {
     const projectKey = recoveryProjectKey(lease.projectId);
     this.issues.set(`${projectKey}/${id}`, { id, projectKey, state: receipt.state === 'saved' ? 'saved-history' : receipt.state, relativePath, source: { kind: lease.source, id: lease.sourceId, scope: lease.scope }, message: receipt.message, createdAt: Date.now() });
   }
+  async releaseGeneratedCopy(input: { projectKey: string; opId: string; installationId: string; fingerprint: string; root: RootDescriptor; relativePath: string; hash: string }): Promise<void> {
+    const { projectKey, opId, installationId, fingerprint, root, relativePath, hash } = input;
+    const key = `${projectKey}/${opId}`;
+    const raw = await this.broker.request<NativeFileResult>({ operation: 'read', root: this.root, relativePath: `${key}/journal.json`, byteLimit: 64 * 1024 });
+    const savedRecord = journalSchema.parse(JSON.parse(Buffer.from(raw.base64!, 'base64').toString('utf8')));
+    if (savedRecord.kind !== 'copy' || savedRecord.state !== 'saved' || savedRecord.receipt?.state !== 'saved' ||
+        savedRecord.receipt.opId !== opId || savedRecord.opId !== opId || savedRecord.projectKey !== projectKey ||
+        savedRecord.fingerprint !== fingerprint || savedRecord.relativePath !== relativePath || savedRecord.draftHash !== hash ||
+        savedRecord.receipt.revision?.hash !== hash || savedRecord.root.path !== root.path ||
+        identityKey(savedRecord.root.identity) !== identityKey(root.identity)) {
+      throw new FileError('CHANGED', '已保存文件的恢复材料与本次回执不一致，已保留材料');
+    }
+    this.records.set(key, savedRecord);
+    await this.broker.request({ operation: 'finish-copy', root, recoveryRoot: this.root, projectKey, opId,
+      fingerprint, installationId, savedRecord, protected: this.protectedIdentities() });
+    if (savedRecord.transactionIdentity) this.internal.delete(identityKey(savedRecord.transactionIdentity));
+    this.records.delete(key);
+    this.issues.delete(key);
+    this.reservations.delete(key);
+  }
   existing(projectKey: string, opId: string): { fingerprint: string; receipt?: FileSaveReceipt; filePath: string } | undefined {
     const record = this.records.get(`${projectKey}/${opId}`);
     return record && { fingerprint: record.fingerprint, receipt: record.receipt, filePath: posix.join(record.root.path, record.relativePath) };

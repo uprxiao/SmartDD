@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -120,7 +120,10 @@ it.skipIf(process.platform !== 'darwin' || !process.env.SMARTDD_M9_FILE_BROKER)(
     const actions = new FileActions(() => { throw new Error('No source document'); }, roots, broker, new FileRecoveryStore(broker, userData, resolver));
     const text = '# 计划🙂\n\n' + '第二行\n'.repeat(10_000);
     const fullPath = join(project, '计划.md');
-    await expect(actions.saveGenerated(owner, lease, '计划.md', text, () => {})).resolves.toMatchObject({ state: 'saved', path: fullPath });
+    const saved = await actions.saveGenerated(owner, lease, '计划.md', text, () => {});
+    expect(saved).toMatchObject({ state: 'saved', path: fullPath });
+    expect(saved.cleanupPending).toBeUndefined();
+    expect(readdirSync(project)).toEqual(['计划.md']);
     expect(readFileSync(fullPath)).toEqual(Buffer.from(text));
     await expect(actions.saveGenerated(owner, lease, '计划.md', 'replacement', () => {})).rejects.toMatchObject({ code: 'CONFLICT' });
     expect(readFileSync(fullPath)).toEqual(Buffer.from(text));

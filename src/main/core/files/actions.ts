@@ -13,6 +13,7 @@ export interface OpenerPreferences { get(): { path: string | null; bundleId: str
 interface NativeApplication { path: string; identity: FileIdentity; name: string; bundleId: string; icon?: string; systemDefault: boolean }
 interface ApplicationGrant { owner: string; context: FileActionContext; expires: number; applications: Map<string, NativeApplication> }
 interface CopyDestination { root: RootDescriptor; relativePath: string; revision: FileRevision | null }
+type GeneratedCopyReceipt = FileCopyReceipt & { cleanupPending?: true };
 export interface CopySelection { owner: string; context: FileActionContext; name: string; revision: FileRevision; draftBase64?: string; used: boolean }
 const hash = (data: string) => createHash('sha256').update(data).digest('hex');
 
@@ -104,7 +105,7 @@ export class FileActions {
   }
 
   /** Internal, main-owned text. The renderer cannot nominate its filename, data or root. */
-  async saveGenerated(owner: string, lease: RootLease, name: string, text: string, verify: () => void): Promise<FileCopyReceipt> {
+  async saveGenerated(owner: string, lease: RootLease, name: string, text: string, verify: () => void): Promise<GeneratedCopyReceipt> {
     if (!name || name === '.' || name === '..' || name !== basename(name) || /[\\\0]/.test(name)) throw new FileError('INVALID_INPUT', '无效的文件名');
     const context = { lease, relativePath: '', directory: true, signal: lease.abort.signal };
     await this.recovery.ready();
@@ -118,7 +119,7 @@ export class FileActions {
     return this.commitCopy(owner, context, destination, { operation: 'copy-generated', draftBase64: bytes.toString('base64') }, bytes.length);
   }
 
-  private async commitCopy(owner: string, context: FileActionContext, destination: CopyDestination, input: { operation: 'copy' | 'copy-generated'; expectedRevision?: FileRevision; draftBase64?: string }, bytes: number): Promise<FileCopyReceipt> {
+  private async commitCopy(owner: string, context: FileActionContext, destination: CopyDestination, input: { operation: 'copy' | 'copy-generated'; expectedRevision?: FileRevision; draftBase64?: string }, bytes: number): Promise<GeneratedCopyReceipt> {
     const path = join(destination.root.path, destination.relativePath);
     if (this.pendingCopies.has(path) || this.blockedCopies.has(path) || this.recovery.blockingPath(destination.root.path, destination.relativePath)) throw new FileError('CONFLICT', '此目标有进行中或结果未确认的副本，请先核对目标和恢复记录');
     const lease = context.lease, opId = randomUUID(), projectKey = recoveryProjectKey(lease.projectId);
@@ -138,8 +139,15 @@ export class FileActions {
       if (receipt.state === 'unknown' || receipt.state === 'conflict' && receipt.recoveryId) this.blockedCopies.set(path, opId);
       throw new FileError(receipt.state === 'conflict' ? 'CONFLICT' : 'IO', `副本未确认保存：${receipt.message ?? receipt.state}${receipt.recoveryId ? '；请核对恢复记录与目标文件' : ''}`);
     }
+    const saved = { state: 'saved' as const, path, hash: receipt.revision.hash };
+    if (input.operation === 'copy-generated') {
+      try {
+        await this.recovery.releaseGeneratedCopy({ projectKey, opId, installationId: this.installationId, fingerprint,
+          root: destination.root, relativePath: destination.relativePath, hash: saved.hash });
+      } catch { return { ...saved, cleanupPending: true }; }
+    }
     this.validate(owner, context);
-    return { state: 'saved', path, hash: receipt.revision.hash };
+    return saved;
   }
   closeOwner(owner: string): void { for (const [id, grant] of this.grants) if (grant.owner === owner) this.grants.delete(id); }
 }
