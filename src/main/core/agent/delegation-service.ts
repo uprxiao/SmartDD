@@ -15,7 +15,7 @@ import { resolveTier, type Tier } from './permissions';
 import type { TaskCoordination } from './task-coordination';
 const at = () => new Date().toISOString();
 const key = z.string().regex(/^[A-Za-z0-9_-]{8,128}$/);
-const delegateSchema = z.object({ requestKey: key, profileId: z.string().min(1).max(128), title: z.string().trim().min(1).max(120), instructions: z.string().min(1).refine(s => Buffer.byteLength(s) <= 128 * 1024), model: z.string().min(1).max(256).optional(), access: z.enum(['read', 'write']).optional(), workspaceMode: z.enum(['shared', 'worktree']).optional() }).strict();
+const delegateSchema = z.object({ requestKey: key, profileId: z.string().min(1).max(128), profileRevision: z.string().min(1).max(128).optional(), title: z.string().trim().min(1).max(120), instructions: z.string().min(1).refine(s => Buffer.byteLength(s) <= 128 * 1024), model: z.string().min(1).max(256).optional(), access: z.enum(['read', 'write']).optional(), workspaceMode: z.enum(['shared', 'worktree']).optional() }).strict();
 type DelegateInput = z.infer<typeof delegateSchema>;
 export interface DelegationProfile { profileId: string; driverId: DriverId; name: string; revision: string; available: boolean; models: string[]; trustedRead?: boolean }
 interface Target { profile: DelegationProfile; model?: string; tier: Tier; parentTier?: Tier; tierNotice?: string; requestedAccess: string; actualAccess: 'read' | 'write'; strategy: 'git' | 'serial'; baseCommit?: string; uncommittedFiles?: number; repoRoot?: string; parentBranch?: string; parentCwd: string; title: string; directoryIdentity: string; startHead?: string; resultItemId?: string; mergeFailures?: number }
@@ -205,12 +205,23 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if (this.blocked(run.taskId) || this.stopped(run.taskId)) throw new DriverError('STATE', '调用来源已停止或正在交出写入资格');
     return run;
   }
+  private requireCurrentProfile(profileId: string, revision: string | undefined, model?: string) {
+    if (!revision) throw new DriverError('REJECTED', '请先调用 wy_targets 查询目标，并在委派时提供对应的 profileRevision');
+    let profile: DelegationProfile | undefined;
+    try { profile = this.d.profile(profileId); } catch { /* A removed configuration is also stale. */ }
+    if (!profile?.available || profile.revision !== revision || model && !profile.models.includes(model)) {
+      throw new DriverError('REJECTED', '委派目标配置或模型已经变化，请重新查询和委派；已接受的收据仍保留');
+    }
+    return profile;
+  }
+
   async delegate(runId: string, raw: DelegateInput) {
     const run = this.caller(runId), parent = this.selection(run.taskId), value = delegateSchema.parse(raw);
-    const known = this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE parent_task_id=? AND request_key=?').get(run.taskId, value.requestKey) as DelegationRow | undefined;
+    const findReceipt = () => this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE parent_task_id=? AND request_key=?').get(run.taskId, value.requestKey) as DelegationRow | undefined;
+    const known = findReceipt();
     if (known) return this.receipt(known);
     if (this.parentOf(run.taskId) || !this.enabled(run.taskId)) throw new DriverError('REJECTED', '当前任务未开启新委派，或已经是子任务');
-    const profile = this.d.profile(value.profileId); if (!profile.available || value.model && !profile.models.includes(value.model)) throw new DriverError('REJECTED', '目标智能体或模型不可用');
+    const profile = this.requireCurrentProfile(value.profileId, value.profileRevision, value.model);
     const root = directoryIdentity(parent.task.cwd, this.d.roots(run.taskId));
     const readOnly = value.access === 'read' && profile.trustedRead === true;
     const worktree = value.workspaceMode === 'worktree' && !readOnly;
@@ -218,6 +229,9 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if (worktree && !repo) throw new DriverError('REJECTED', '独立工作副本只适用于有 HEAD 的 Git 项目；请改用共用目录');
     const source = repo ? await this.d.git.sourceSnapshot(repo) : {};
     this.caller(runId);
+    const accepted = findReceipt();
+    if (accepted) return this.receipt(accepted);
+    this.requireCurrentProfile(profile.profileId, profile.revision, value.model);
     if (!this.enabled(run.taskId)) throw new DriverError('REJECTED', '当前任务未开启新委派');
     const parentTier = this.selection(run.taskId).selection.tier as Tier;
     const tier = resolveTier(profile.driverId, parentTier);
@@ -225,7 +239,8 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const tierNotice = tier.downgraded ? tier.reason : undefined;
     const target: Target = { profile, model: value.model, tier: tier.tier, parentTier, tierNotice, requestedAccess: value.access ?? 'write', actualAccess: readOnly ? 'read' : 'write', strategy: worktree ? 'git' : 'serial', parentBranch: repo?.branch, repoRoot: repo?.root, ...source, parentCwd: parent.task.cwd, title: value.title, directoryIdentity: root.identity };
     const result = this.d.store.tx(emit => {
-      const duplicate = this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE parent_task_id=? AND request_key=?').get(run.taskId, value.requestKey) as DelegationRow | undefined; if (duplicate) return duplicate;
+      const duplicate = findReceipt();
+      if (duplicate) return duplicate;
       const childTaskId = this.d.store.createTask({ projectId: parent.task.project_id, dirId: null, cwd: parent.task.cwd, title: value.title, parentTaskId: run.taskId, selection: { driverId: profile.driverId, profileId: profile.profileId, model: value.model, tier: tier.tier, carryExtensions: parent.selection.extensionPreferences?.[profile.profileId] ?? true } });
       const id = randomUUID(), attempt = randomUUID();
       this.d.store.sqlite.prepare("INSERT INTO agent_delegations(delegation_id,parent_task_id,child_task_id,parent_run_id,target_json,access,request_key,delivery_state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'queued',?,?)").run(id, run.taskId, childTaskId, runId, JSON.stringify(target), target.actualAccess, value.requestKey, at(), at());
@@ -329,13 +344,20 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const rows = childTaskId ? [this.owned(parentTaskId, childTaskId)] : this.rows(parentTaskId);
     return rows.map(r => { const target = JSON.parse(r.target_json) as Target, a = this.attempt(r); const item = target.resultItemId ? this.d.store.readItemBody(parentTaskId, target.resultItemId) : null; return { ...this.receipt(r), title: target.title, attemptId: a.attempt_id, ...(item ? { body: rangeOf(item.text, offset) } : {}), commitRange: a.commit_range ? JSON.parse(a.commit_range) : null, mergeCheck: a.merge_check_json ? JSON.parse(a.merge_check_json) : null }; });
   }
+  assertTargetCurrent(taskId: string) {
+    const child = this.parentOf(taskId);
+    if (!child) return;
+    const target = JSON.parse(child.target_json) as Target;
+    this.requireCurrentProfile(target.profile.profileId, target.profile.revision, target.model);
+  }
+
   async beforeDispatch(taskId: string) {
     if (this.blocked(taskId) || this.closed || this.stopped(taskId)) return false;
     const child = this.parentOf(taskId);
     if (child) {
       if (child.delivery_state !== 'running') return false;
       const target = JSON.parse(child.target_json) as Target;
-      if (target.profile.revision !== this.d.profile(target.profile.profileId).revision) throw new DriverError('REJECTED', '委派目标配置已经变化，保留原收据，须重新委派');
+      this.requireCurrentProfile(target.profile.profileId, target.profile.revision, target.model);
       const current = this.selection(taskId);
       const parentTier = this.selection(child.parent_task_id).selection.tier as Tier;
       const tier = resolveTier(current.selection.driverId, parentTier);
@@ -505,7 +527,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if (this.preparing.has(row.child_task_id)) return; this.preparing.add(row.child_task_id); const abort = new AbortController(); this.prepareAbort.set(row.child_task_id, abort);
     try {
       const target = JSON.parse(row.target_json) as Target;
-      if (target.profile.revision !== this.d.profile(target.profile.profileId).revision) throw new Error('委派目标配置已变化，未启动');
+      this.requireCurrentProfile(target.profile.profileId, target.profile.revision, target.model);
       if (target.strategy === 'git') {
         const project = this.d.project(this.selection(row.parent_task_id).task.project_id);
         const created = await this.d.git.create({
@@ -514,6 +536,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
           signal: abort.signal, baseCommit: target.baseCommit, expectedRoot: target.repoRoot,
         });
         if (!created) throw new Error('接受时的 Git 仓库已变化，不能静默换成共用目录');
+        this.requireCurrentProfile(target.profile.profileId, target.profile.revision, target.model);
         this.queue.cancel(row.child_task_id);
         this.d.store.sqlite.prepare('UPDATE tasks SET cwd=? WHERE id=?').run(created.cwd, row.child_task_id);
         target.startHead = target.startHead ?? created.workspace.base_commit!;
@@ -640,7 +663,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       ['wy_send', '给自己派出的子任务再次发消息，沿用原会话和工作目录。', { childTaskId: { type: 'string' }, requestKey: { type: 'string' }, text: { type: 'string' } }],
     ];
     if (this.readOnly(context.run.taskId)) definitions.push(['wy_request_write', '只读任务申请进入写入队列，必须结束本轮；不会在本轮放宽权限。', {}]);
-    if (!this.parentOf(context.run.taskId)) definitions.push(['wy_delegate', '异步委派。缺省 shared：共用目录、写入串行、保留未提交改动且宿主不提交；只有明确要求独立工作副本时选 worktree，从 HEAD 建立并行副本，未提交改动不会带入，要带改动请先提交。可信只读在共用目录并行。不要用循环等子任务。', { requestKey: { type: 'string' }, profileId: { type: 'string' }, title: { type: 'string' }, instructions: { type: 'string' }, model: { type: 'string' }, access: { type: 'string', enum: ['read', 'write'] }, workspaceMode: { type: 'string', enum: ['shared', 'worktree'] } }]);
+    if (!this.parentOf(context.run.taskId)) definitions.push(['wy_delegate', '异步委派。新委派先用 wy_targets，将所选目标的 profileId 与 revision 分别填入 profileId 和 profileRevision；重试已接受的委派沿用 requestKey。缺省 shared：共用目录、写入串行、保留未提交改动且宿主不提交；只有明确要求独立工作副本时选 worktree，从 HEAD 建立并行副本，未提交改动不会带入，要带改动请先提交。可信只读在共用目录并行。不要用循环等子任务。', { requestKey: { type: 'string' }, profileId: { type: 'string' }, profileRevision: { type: 'string', description: 'wy_targets 返回的目标 revision，新委派必填。' }, title: { type: 'string' }, instructions: { type: 'string' }, model: { type: 'string' }, access: { type: 'string', enum: ['read', 'write'] }, workspaceMode: { type: 'string', enum: ['shared', 'worktree'] } }]);
     return definitions.map(([name, description, properties]) => ({ name, description, contractMajor: 1, inputSchema: { type: 'object', properties, additionalProperties: false }, outputSchema: { type: 'object' }, annotations: { readOnlyHint: name === 'wy_targets' || name === 'wy_observe', destructiveHint: false, idempotentHint: true, openWorldHint: false } }));
   }
   async call(context: RunContext, name: string, args: Record<string, unknown>, signal: AbortSignal) {

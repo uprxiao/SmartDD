@@ -335,7 +335,7 @@ it('R2 refuses deletion while a delegated child is unfinished',async()=>{
   const {co}=f.coordination();
   co.setMode(task,true);
   await f.runs.submit(run.runId,{clientInputId:'parent-live',text:'parent work'});
-  const child=await co.delegate(run.runId,{requestKey:'unfinished-child',profileId:'test',title:'child',instructions:'work'});
+  const child=await co.delegate(run.runId,{requestKey:'unfinished-child',profileId:'test',profileRevision:'fixture',title:'child',instructions:'work'});
   const childBefore=f.store.task(child.childTaskId);
   expect(co.hasUnfinishedChildren(task)).toBe(true);
   await expectRemovalRefused(f,p.project.id,task,'委派或工作副本尚未收口');
@@ -358,7 +358,7 @@ it('R2 refuses deletion while Git worktree dependency preparation is pending',as
     return {code:0,stdout:'',stderr:''};
   });
   co.setMode(task,true);
-  const child=await co.delegate(run.runId,{requestKey:'prepare-child',profileId:'test',title:'child',instructions:'work',workspaceMode:'worktree'});
+  const child=await co.delegate(run.runId,{requestKey:'prepare-child',profileId:'test',profileRevision:'fixture',title:'child',instructions:'work',workspaceMode:'worktree'});
   try {
     await vi.waitFor(()=>expect(git.workspace(child.childTaskId)?.state).toBe('preparing'));
     expect(co.blocked(child.childTaskId)).toBe(true);

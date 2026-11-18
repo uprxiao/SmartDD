@@ -238,9 +238,10 @@ export class AgentRunService {
     if (!run || run.closing) throw new DriverError('STATE', '运行不存在或正在关闭');
     if (run.turnId) throw new DriverError('STATE', '上一轮尚未结束');
     const { store } = this.deps;
-    run.assertCurrent?.();
+    this.assertIdleRunCurrent(run);
     if (input.context) await this.injectHistory(runId, input.context);
     if (this.runs.get(runId) !== run || run.closing || this.held.has(run.taskId)) throw new DriverError('STATE', '已停止或会话已退出，输入保留在排队');
+    if (input.context) this.assertIdleRunCurrent(run);
     const tier = input.tier ? resolveTier(run.driverId, input.tier) : { ok: true as const, tier: run.tier };
     if (!tier.ok) { store.endTurn(turnId, 'canceled', 'TIER'); throw new DriverError('REJECTED', '不支持的权限档位'); }
     store.dispatchTurn(turnId, runId);
@@ -256,6 +257,14 @@ export class AgentRunService {
       if (e instanceof DriverError && e.code === 'STATE') store.requeueTurn(turnId);
       else store.endTurn(turnId, e instanceof DriverError && e.code === 'REJECTED' ? 'failed' : 'unknown', e instanceof DriverError ? e.code : 'START_FAILED');
       throw e;
+    }
+  }
+
+  private assertIdleRunCurrent(run: ActiveRun) {
+    try { run.assertCurrent?.(); }
+    catch (error) {
+      if (!this.busy(run.runId)) void this.close(run.runId).catch(() => {});
+      throw error;
     }
   }
 
@@ -285,7 +294,7 @@ export class AgentRunService {
     const run = this.runs.get(runId);
     if (!run || run.closing || run.turnId) throw new DriverError('STATE', '历史交接需要空闲会话');
     if (!run.instance.injectHistory) throw new DriverError('UNSUPPORTED', '该执行器未公布历史追加接口，无法安全交接');
-    run.assertCurrent?.();
+    this.assertIdleRunCurrent(run);
     await run.instance.injectHistory(text);
   }
   async goal(runId: string, op: Parameters<NonNullable<DriverInstance['goal']>>[0]) {

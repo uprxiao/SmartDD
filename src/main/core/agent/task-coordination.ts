@@ -3,6 +3,7 @@ export interface TaskCoordination {
   beforeDispatch(taskId: string): Promise<boolean>;
   opened(taskId: string, run: RunHandle): void;
   settleClosedRun(taskId: string, runId: string): Promise<void>;
+  assertTargetCurrent(taskId: string): void;
   blocked(taskId: string): boolean;
   waitingChildren(taskId: string): boolean;
   userContinued(taskId: string): void;

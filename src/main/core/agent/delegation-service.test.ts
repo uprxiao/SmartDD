@@ -5,6 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { runBundledMigrations } from '../../db/migrations';
+import type { RunContext } from '../applications/run-registry';
 import { AgentStore } from './agent-store';
 import { AgentRunService } from './agent-run-service';
 import { AgentTaskService } from './agent-task-service';
@@ -49,9 +50,66 @@ function fixture(command?: typeof runWorkspaceCommand) {
   const taskId = tasks.create({ projectId: null, dirId: null, cwd: root, title: 'parent', profileId: 'main', tier: 'ask' }).taskId; co.setMode(taskId, true);
   cleanups.push(async () => { await co.close(); for (const t of store.tasksWithQueue()) for (const q of store.queuedTurns(t)) tasks.cancelQueued(t, q.turn_id); instances.forEach(i => { i.delayedExit = false; }); await runs.closeAll(); await tick(20); db.close(); rmSync(base, { recursive: true, force: true }); });
   const send = async (text: string, id = taskId) => { const r = await tasks.submit(id, { text, clientInputId: randomUUID(), expectedSelectionRevision: tasks.snapshot(id).selectionRevision }); await until(() => instances.some(i => i.turns.some(t => t.clientInputId === store.turn(r.turnId)?.client_input_id)), 5000); return instances.find(i => i.turns.some(t => t.clientInputId === store.turn(r.turnId)?.client_input_id))!; };
-  const delegate = (requestKey: string = randomUUID(), id = taskId, workspaceMode?: 'worktree') => co.delegate(runs.runForTask(id)!.runId, { requestKey, profileId: 'child', title: 'child', instructions: 'child work', workspaceMode });
+  const delegate = (requestKey: string = randomUUID(), id = taskId, workspaceMode?: 'worktree') => co.delegate(runs.runForTask(id)!.runId, { requestKey, profileId: 'child', profileRevision: revision, title: 'child', instructions: 'child work', workspaceMode });
   return { root, db, store, runs, tasks, git, co, taskId, instances, send, delegate, setRead: (value: boolean) => { trustedRead = value; }, setRevision: (s: string) => { revision = s; }, setDrained: (b: boolean) => { drained = b; } };
 }
+it('A20 refuses a stale listed target but keeps a prior request receipt across configuration changes', async () => {
+  const f = fixture();
+  await f.send('start');
+  const run = f.runs.runForTask(f.taskId)!;
+  const controller = new AbortController();
+  const context = { run: { runId: run.runId, taskId: f.taskId }, signal: controller.signal } as RunContext;
+  const call = (name: string, args: Record<string, unknown>) => f.co.call(context, name, args, controller.signal);
+  const first = await call('wy_targets', {}) as { targets: { profileId: string; revision: string }[] };
+  const revision = first.targets.find(target => target.profileId === 'child')!.revision;
+  const request = { requestKey: 'a20-config-target', profileId: 'child', title: 'child', instructions: 'review fixture' };
+  f.setRevision('r2');
+  await expect(call('wy_delegate', request)).rejects.toThrow('profileRevision');
+  await expect(call('wy_delegate', { ...request, profileRevision: revision })).rejects.toThrow('已经变化');
+  expect(f.co.view(f.taskId).childrenTotal).toBe(0);
+  const next = await call('wy_targets', {}) as typeof first;
+  const freshRevision = next.targets.find(target => target.profileId === 'child')!.revision;
+  const accepted = await call('wy_delegate', { ...request, profileRevision: freshRevision });
+  f.setRevision('r3');
+  await expect(call('wy_delegate', request)).resolves.toEqual(accepted);
+  expect(f.co.view(f.taskId).childrenTotal).toBe(1);
+});
+
+it('A20 revalidates a listed target after the asynchronous Git preflight before accepting', async () => {
+  const f = fixture();
+  await f.send('start');
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const detect = vi.spyOn(f.git, 'detect').mockImplementation(async () => {
+    await gate;
+    return { root: f.root, cwd: f.root, branch: 'main' };
+  });
+  vi.spyOn(f.git, 'sourceSnapshot').mockResolvedValue({ baseCommit: 'a'.repeat(40), uncommittedFiles: 0 });
+  const result = f.delegate(undefined, undefined, 'worktree');
+  expect(detect).toHaveBeenCalled();
+  f.setRevision('r2');
+  release();
+  await expect(result).rejects.toThrow('已经变化');
+  expect(f.co.view(f.taskId).childrenTotal).toBe(0);
+});
+
+it('A20 rejects a delegated input when the target changes while the native owner is being opened', async () => {
+  const f = fixture();
+  const parent = await f.send('start');
+  const accepted = await f.delegate('a20-native-open');
+  const open = f.runs.open.bind(f.runs);
+  vi.spyOn(f.runs, 'open').mockImplementation(async options => {
+    const handle = await open(options);
+    if (options.taskId === accepted.childTaskId) f.setRevision('r2');
+    return handle;
+  });
+  parent.finish();
+  await until(() => f.store.turns(accepted.childTaskId).some(turn => turn.status === 'failed'), 5000);
+  expect(f.instances[1].turns).toEqual([]);
+  expect((await f.co.observe(f.taskId, accepted.childTaskId))[0]?.delegationId).toBe(accepted.delegationId);
+  await until(() => !f.runs.runForTask(accepted.childTaskId) && !f.runs.closingForTask(accepted.childTaskId), 5000);
+});
+
 it('A19/A24/A32: delegation is durable/idempotent and returns before the child starts; release requires actual exit plus independent drain', async () => {
   const f = fixture(), parent = await f.send('start'); parent.delayedExit = true; f.setDrained(false);
   const receipt = await f.delegate('same-request-123'); expect(receipt.state).toBe('queued');
@@ -88,7 +146,7 @@ it.each([['ask', 'full'], ['full', 'ask']] as const)('A26 applies parent tier %s
   f.tasks.setSelection(f.taskId, { tier: initial }, f.tasks.snapshot(f.taskId).selectionRevision);
   await f.send('Start an isolated parent round');
   const parentRun = f.runs.runForTask(f.taskId)!;
-  const { childTaskId } = await f.co.delegate(parentRun.runId, { requestKey: randomUUID(), profileId: 'child', title: 'Child', instructions: 'Inspect the fixture', access: 'read' });
+  const { childTaskId } = await f.co.delegate(parentRun.runId, { requestKey: randomUUID(), profileId: 'child', profileRevision: 'r1', title: 'Child', instructions: 'Inspect the fixture', access: 'read' });
   await until(() => f.instances[1]?.turns.length === 1);
   const child = f.instances[1];
   expect(child.turns[0].tier).toBe(initial);
@@ -165,7 +223,7 @@ it('A70: a different native revision declines automatic recovery and leaves a ma
 
 it('A33: only host-verified read roles run beside a writer; promotion closes read ownership before FIFO write admission', async () => {
   const f = fixture(); f.setRead(true); const p = await f.send('parent writer');
-  const c = await f.co.delegate(f.runs.runForTask(f.taskId)!.runId, { requestKey: 'read-verified-123', profileId: 'child', title: 'reader', instructions: 'inspect', access: 'read' });
+  const c = await f.co.delegate(f.runs.runForTask(f.taskId)!.runId, { requestKey: 'read-verified-123', profileId: 'child', profileRevision: 'r1', title: 'reader', instructions: 'inspect', access: 'read' });
   await until(() => f.instances.length === 2, 4000);
   const child = f.instances[1]; expect(child.options.readOnly).toBe(true); expect(f.co.queue.forTask(c.childTaskId)).toBeUndefined();
   f.co.requestWrite(c.childTaskId); child.finish(); await tick(40);

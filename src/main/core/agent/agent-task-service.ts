@@ -423,8 +423,12 @@ export class AgentTaskService {
     const launch = await this.d.resolveLaunch({ taskId, profileId: selection.profileId, cwd: task.cwd, runId: randomUUID(), carryExtensions: selection.carryExtensions });
     if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
     if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一运行仍在退出，请稍后');
-    launch.assertCurrent?.();
-    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, assertCurrent: launch.assertCurrent, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
+    const assertCurrent = () => {
+      this.coordination?.assertTargetCurrent(taskId);
+      launch.assertCurrent?.();
+    };
+    assertCurrent();
+    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, assertCurrent, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
     this.coordination?.opened(taskId, this.d.runs.runForTask(taskId)!);
     return this.d.runs.runForTask(taskId)!;
   }
