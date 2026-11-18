@@ -46,7 +46,7 @@ class RemovalDriver implements DriverInstance {
     this.events.emit({type:'exit',code:0,signal:null});
   }
 }
-function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob) {
+function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob, runningTasks?: (projectId: string, matches?: (taskId: string) => boolean) => number) {
   const root = realpathSync(mkdtempSync(join(tmpdir(),'m14-project-cleanup-')));
   const db = new Database(':memory:');
   db.pragma('foreign_keys=ON');
@@ -66,7 +66,7 @@ function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob) {
   });
   const resources = new AgentProjectResources({store,tasks,diffs,terminals,userData:root});
   tasks.attachAttachmentCleanup((id,value)=>resources.discardAttachments(id,value));
-  const projects = createProjectControllers(service,{agentTasks:resources}).projects;
+  const projects = createProjectControllers(service,{agentTasks:resources,runningTasks}).projects;
   const makeProject = (name:string) => {
     const cwd = join(root,name);
     mkdirSync(cwd);
@@ -321,7 +321,17 @@ it('R2 refuses deletion while a manual terminal is running',async()=>{
 });
 
 it('R1/R2 closes an idle native session before deleting an unarchived task with an open diff',async()=>{
-  const f=fixture(), p=f.makeProject('idle'), task=f.create(p,'task'), run=await f.open(task);
+  const activeIds = new Set<string>();
+  const f=fixture(runDiffJob, (_projectId, matches) => [...activeIds].filter(id => matches?.(id) ?? true).length);
+  const p=f.makeProject('idle'), task=f.create(p,'task'), run=await f.open(task);
+  activeIds.add(task);
+  const legacyTask = 'running-old-terminal';
+  f.db.prepare('INSERT INTO tasks(id,project_id,cwd,title,runner,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(legacyTask,p.project.id,p.cwd,'Old terminal','codex',1,1);
+  activeIds.add(legacyTask);
+  const blocked = f.projects.deletePreview(p.project.id);
+  expect(blocked.legacyRunning).toBe(1);
+  expect(() => f.projects.delete(p.project.id,{deleteSecrets:false,agentTaskDeletionConfirmation:blocked.confirmation!})).toThrow('有 1 个任务正在运行');
+  activeIds.delete(legacyTask);
   const turnId=f.store.acceptTurn({taskId:task,clientInputId:'finished',text:'work',sourceKind:'user'}).turn.turn_id;
   f.store.endTurn(turnId,'completed');
   f.tasks.attachDiffs(f.diffs);
@@ -332,6 +342,7 @@ it('R1/R2 closes an idle native session before deleting an unarchived task with 
   expect(f.runs.busy(run.runId)).toBe(false);
   const preview=f.projects.deletePreview(p.project.id);
   expect(preview.blockers).toEqual([]);
+  expect(preview.legacyRunning).toBe(0);
   let entered!:()=>void, allowExit!:()=>void;
   const closing=new Promise<void>(resolve=>{entered=resolve;});
   const allow=new Promise<void>(resolve=>{allowExit=resolve;});

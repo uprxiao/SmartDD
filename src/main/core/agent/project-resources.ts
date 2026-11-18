@@ -52,6 +52,8 @@ export class AgentProjectResources {
       JOIN agent_tasks a ON a.task_id=t.id WHERE t.project_id=? ORDER BY a.created_at,t.id`).all(projectId) as { id: string; title: string; archived_at: string | null }[];
   }
 
+  managesTask(taskId: string) { return Boolean(this.d.store.task(taskId)); }
+
   inspect(projectId: string, ownsRemoval = false) {
     const db = this.d.store.sqlite;
     const tasks = this.projectTasks(projectId);
