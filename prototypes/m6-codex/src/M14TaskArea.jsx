@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { GitBranch, GitMerge } from 'lucide-react';
 import { AlertCircle, AlertTriangle, ArrowRightLeft, ArrowUp, Bell, Brain, Check, CheckCircle2, ChevronDown, ChevronRight, CircleDashed, Copy, FileDiff, FilePlus2, FileText, Globe, Hourglass, ListChecks, LoaderCircle, Pencil, Plus, Search, Settings, ShieldAlert, Square, SquareTerminal, Star, Wrench, X, Zap, Layers, ArrowUpLeft, Network, Lock, PlugZap, RefreshCw, WifiOff, Minimize2, Image as ImageIcon, Link2, Gauge } from 'lucide-react';
-import { AgentIcon, PermIcon } from './m13-icons.jsx';
+import { AgentIcon, PermIcon, ProviderIcon } from './m13-icons.jsx';
 import { VoiceButton } from './VoicePreview';
 import { FILE_DRAG_TYPE, resolveFileDrag } from './file-drag-model.mjs';
 import { RequestPanel, buildRequests } from './M14Requests.jsx';
@@ -229,10 +229,19 @@ export function ModelPicker({ agent, model, effort, onPick, onClose, onToast, ru
     <div className="m14-picker-main">
       <div className="m14-picker-rail" aria-label="智能体">
         <button type="button" title="收藏" className={rail === 'fav' ? 'on' : ''} onClick={() => onToast('收藏的模型（合成）')}><Star size={16} /></button>
-        {AGENTS.map(x => { const locked = goal && x.id !== agent; return <button type="button" key={x.id} title={locked ? x.name + '：当前任务有目标，清除目标后才能切换执行器' : x.name} aria-pressed={rail === x.id} disabled={locked} className={(rail === x.id ? 'on' : '') + (locked ? ' locked' : '')} onClick={() => { setRail(x.id); setQ(''); setMore(false); }}>
-          {x.tool ? <AgentIcon tool={x.tool} provider={x.provider ? { catalog: 'deepseek', name: 'DeepSeek' } : null} size={20} /> : <span className="m14-glyph">{x.glyph || <SquareTerminal size={14} />}</span>}
-          {x.status && <i className={'m14-rail-badge k-' + x.status.kind} title={x.status.label} />}
-        </button>; })}
+        {AGENTS.map(x => {
+          if (x.placeholder) {
+            const label = x.name + ' · ' + x.placeholder;
+            return <button type="button" key={x.id} disabled className="m14-picker-placeholder" title={label} aria-label={label}>
+              <ProviderIcon catalog="agent-opencode" size={20} /><small>{x.placeholder}</small>
+            </button>;
+          }
+          const locked = goal && x.id !== agent;
+          return <button type="button" key={x.id} title={locked ? x.name + '：当前任务有目标，清除目标后才能切换执行器' : x.name} aria-pressed={rail === x.id} disabled={locked} className={(rail === x.id ? 'on' : '') + (locked ? ' locked' : '')} onClick={() => { setRail(x.id); setQ(''); setMore(false); }}>
+            {x.tool ? <AgentIcon tool={x.tool} provider={x.provider ? { catalog: 'deepseek', name: 'DeepSeek' } : null} size={20} /> : <span className="m14-glyph">{x.glyph || <SquareTerminal size={14} />}</span>}
+            {x.status && <i className={'m14-rail-badge k-' + x.status.kind} title={x.status.label} />}
+          </button>;
+        })}
       </div>
       <div className="m14-picker-list">
         <div className="m14-picker-head"><b>{a.name}</b><small>{a.source}</small></div>

@@ -12,7 +12,7 @@ export const AGENTS = [
   { id: 'cc-ds', tool: 'claude', caps: { goal: true, compact: true, init: true }, provider: true, name: 'Claude Code · DeepSeek', short: 'DeepSeek', source: 'WillYou 托管 · 隔离配置', models: [{ id: 'deepseek-flash', name: 'deepseek-flash' }, { id: 'deepseek-pro', name: 'deepseek-pro' }], efforts: [], steer: true },
   { id: 'cx-ds', tool: 'codex', caps: { goal: true, compact: true, review: true }, provider: true, name: 'Codex · DeepSeek', short: 'Codex', source: 'WillYou 托管 · 隔离配置', models: [{ id: 'deepseek-flash', name: 'deepseek-flash' }], efforts: ['低', '中', '高'], defaultEffort: '中', steer: true },
   { id: 'cc-rj', tool: null, name: 'CC-rj', short: 'CC-rj', source: '本机程序 · 旧版配置', status: { kind: 'unavailable', label: '不可用', reason: '本机 claude 2.0.1 低于已验证的最低版本 2.1.321，请升级后重新检测' }, models: [{ id: 'default', name: '默认模型', note: '执行器当前默认' }], efforts: [], steer: false, steerReason: '未验证运行中插话，只能排队' },
-  { id: 'oc', tool: null, glyph: 'OC', name: 'OpenCode（ACP）', short: 'OpenCode', source: '本机程序 · ACP', status: { kind: 'notready', label: '未就绪', reason: 'opencode acp 启动探测超时（10 秒），可重新检测' }, models: [{ id: 'default', name: '默认模型', note: '执行器当前默认' }, { id: 'deepseek-v4-flash', name: 'deepseek-v4-flash' }], efforts: [], steer: false, steerReason: '未验证运行中插话，只能排队' },
+  { id: 'oc', name: 'OpenCode', placeholder: '后续接入', models: [] },
 ];
 export const PERMISSIONS = [
   { id: 'ask', name: '请求批准', icon: 'hand', desc: '编辑外部文件和使用互联网时始终询问' },
@@ -252,7 +252,7 @@ export const SCENARIOS = [
     '**不是链接**：裸写的 docs/、file:///workspace/SmartDD/package.json、CHANGELOG.md、main.py、deploy.sh 保持纯文本。'] }] },
 ];
 
-// 多 Agent 协作（S06/S12）：主任务 Claude Code·订阅；三个子任务分别在 Codex·DeepSeek（只读审查）、OpenCode（只读查文档）、Claude Code·DeepSeek（写测试，排队）。
+// 多 Agent 协作（S06/S12）：主任务 Claude Code·订阅；三个子任务分别在 Codex·DeepSeek（只读审查）、Codex·订阅（只读查文档）、Claude Code·DeepSeek（写测试，排队）。
 // 对照 T3：时间线子任务卡、末尾“等待 N 个子任务”、任务关系面板（Lineage）、子任务审批浮到主任务输入框上方、点进子任务看它自己的时间线。
 export const TEAM_CHILDREN = [
   { id: 'k1', title: '审查构建脚本改动', tool: 'codex', agent: 'cx-ds', target: 'Codex · DeepSeek', model: 'deepseek-flash 中', access: '只读', state: 'running', secs: 48, live: '正在运行 rg', note: '只读，与主任务并行',
@@ -261,7 +261,7 @@ export const TEAM_CHILDREN = [
       { id: 'k1b', kind: 'read', path: 'scripts/build.mjs', at: [4, 6] }, { id: 'k1c', kind: 'read', path: 'tests/release/arch.test.mjs', at: [5, 7] },
       { id: 'k1m', kind: 'message', lines: ['assertArch 只检查了 better-sqlite3，还要确认 node-pty。'] },
       { id: 'k1d', kind: 'command', cmd: 'rg -n "node-pty" scripts/ src/', at: [40, 48], live: true }] }] },
-  { id: 'k2', title: '核对打包文档', tool: null, glyph: 'OC', agent: 'oc', target: 'OpenCode（ACP）', model: '默认模型', access: '只读', state: 'waiting', secs: 31, live: '等待你批准', note: '需要批准：访问网页',
+  { id: 'k2', title: '核对打包文档', tool: 'codex', target: 'Codex · 订阅', model: '默认模型', access: '只读', state: 'waiting', secs: 31, live: '等待你批准', note: '需要批准：访问网页',
     approval: { title: '访问网页', command: 'GET https://www.electron.build/configuration/mac', reason: '查阅 electron-builder 的 mac 多架构配置说明' },
     turns: [{ id: 'kt2', user: { id: 'ku2', text: '【主任务委派】核对 docs/多平台构建与发版方案.md 是否需要同步 x64 说明，只读。', time: '14:11' }, state: 'live', elapsed: 31, entries: [
       { id: 'k2a', kind: 'read', path: 'docs/多平台构建与发版方案.md', at: [0, 3] },
@@ -275,11 +275,11 @@ export const TEAM_CHILDREN = [
 ];
 const K3_SVN = { id: 'k3', title: '补 node-pty 架构测试', tool: 'claude', provider: true, agent: 'cc-ds', target: 'Claude Code · DeepSeek', model: 'deepseek-flash', access: '写入', state: 'queued', secs: 0, live: '排队第 1 位', note: '排队中：SVN 目录同一时间只有一个 Agent 写，等主任务这一轮结束后启动',
   turns: [{ id: 'kt3', user: { id: 'ku3', text: '【主任务委派】在 tests/release/arch.test.mjs 补 node-pty 的架构断言。', time: '14:12' }, state: 'queued', entries: [] }] };
-const TEAM_PARENT = { id: 't1', user: { id: 'u1', text: '把 arch 检查补完整：让 Codex 审一下改动、OpenCode 核对文档，再派一个 Agent 补 node-pty 的测试。', time: '14:10' }, state: 'live', elapsed: 52, waitingOn: 3, entries: [
+const TEAM_PARENT = { id: 't1', user: { id: 'u1', text: '把 arch 检查补完整：让 Codex·DeepSeek 审一下改动、Codex·订阅核对文档，再派一个 Agent 补 node-pty 的测试。', time: '14:10' }, state: 'live', elapsed: 52, waitingOn: 3, entries: [
   { id: 'p1', kind: 'thought', at: [0, 5], text: '**拆分任务**\n审查和查文档是只读，在当前目录并行；补测试要写文件，这是 Git 项目，WillYou 会给它建单独的工作副本，三份同时开始。' },
   { id: 'p2', kind: 'message', lines: ['我把工作拆成三份，同时开始：两份只读的在当前目录，写测试的在单独工作副本里做，做完我来合并。'] },
   { id: 'c1', kind: 'created', title: '审查构建脚本改动', target: 'Codex · DeepSeek', access: '只读' },
-  { id: 'c2', kind: 'created', title: '核对打包文档', target: 'OpenCode（ACP）', access: '只读' },
+  { id: 'c2', kind: 'created', title: '核对打包文档', target: 'Codex · 订阅', access: '只读' },
   { id: 'c3', kind: 'created', title: '补 node-pty 架构测试', target: 'Claude Code · DeepSeek', access: '写入', branch: 'feature/0.1.6_willyou_node-pty-arch-test' },
   { id: 'wt', kind: 'sysnote', level: 'info', text: '已为「补 node-pty 架构测试」建工作副本 · feature/0.1.6_willyou_node-pty-arch-test', detail: '基于 HEAD 7cb4e21。主目录有 2 个未提交文件，没有带进子任务。' },
   { id: 'sa', kind: 'subagents', team: true, rows: TEAM_CHILDREN },
@@ -381,7 +381,7 @@ SCENARIOS.push(
     { id: 't2', auto: true, state: 'live', elapsed: 26, entries: [T.read2, live({ id: 'g2e', kind: 'edit', path: 'tests/release/arch.test.mjs', add: 7, del: 1, at: [20, 26] }), { id: 'goal-cx', kind: 'goal', rev: 1, agent: 'codex', status: 'active', objective: '让 pnpm test:release 全部通过，并补齐 mac x64 的打包检查', secs: 734, turns: 7 }] },
   ] },
   { id: 'goal-wait', agent: 'cx-ds', group: '目标', name: 'S16 目标＋子任务（自动暂停）', desc: '主任务等子任务结果时宿主自动暂停目标，结果回来自动继续，不需要你操作', status: 'running', teamPanel: true, vcs: 'git', children: TEAM_CHILDREN, waiting: TEAM_CHILDREN.map(c => c.title), childApprovals: TEAM_CHILDREN.filter(c => c.approval), turns: [
-    { ...TEAM_PARENT, user: U('u1', '/goal 把 arch 检查补完整：Codex 审改动、OpenCode 核对文档、再派一个 Agent 补 node-pty 测试，全部通过为止', '14:10'), entries: [...TEAM_PARENT.entries, { id: 'goal-wait', kind: 'goal', rev: 1, agent: 'codex', status: 'waiting-children', objective: '把 arch 检查补完整，全部通过为止', secs: 312, turns: 3 }] },
+    { ...TEAM_PARENT, user: U('u1', '/goal 把 arch 检查补完整：Codex·DeepSeek 审改动、Codex·订阅核对文档、再派一个 Agent 补 node-pty 测试，全部通过为止', '14:10'), entries: [...TEAM_PARENT.entries, { id: 'goal-wait', kind: 'goal', rev: 1, agent: 'codex', status: 'waiting-children', objective: '把 arch 检查补完整，全部通过为止', secs: 312, turns: 3 }] },
   ] },
   { id: 'goal-claude', agent: 'cc-sub', group: '目标', name: 'S16 目标（Claude：只能清除）', desc: 'Claude 的目标不能暂停或继续，只提供清除；状态从它的回复识别', status: 'running', turns: [
     { id: 't1', user: U('u1', '/goal 修完 arch.test.mjs 里所有失败的断言', '15:30'), state: 'live', elapsed: 40, entries: [T.read1, live({ id: 'gce', kind: 'edit', path: 'tests/release/arch.test.mjs', add: 3, del: 3, at: [34, 40] }), { id: 'goal-cc', kind: 'goal', rev: 1, agent: 'claude', status: 'active', objective: '修完 arch.test.mjs 里所有失败的断言', secs: 205, turns: 3 }] },
