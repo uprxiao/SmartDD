@@ -184,18 +184,58 @@
 .agent-diff-surface header select { max-width: min(100%, 260px); min-width: 0; }
 .agent-diff-surface header button { white-space: nowrap; }
 
-.agent-task-layout { flex-direction: row; min-width: 0; }
-.agent-task-main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+.agent-task-layout { flex-direction: row; min-width: 0; container: agent-task-layout / inline-size; }
+.agent-task-main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; container: agent-task-main / inline-size; }
 .agent-task-aux { width: min(298px, 46%); flex: none; overflow: auto; padding: 10px; border-left: 1px solid var(--border); }
 .agent-lineage, .agent-native-process { border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 12px; }
 .agent-lineage + .agent-native-process { margin-top: 8px; }
 .agent-lineage header, .agent-native-process header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; }
 .agent-lineage-toggle, .agent-child-request-link { white-space: nowrap; }
+.agent-head-btn.agent-lineage-toggle { width: auto; flex: none; gap: 5px; padding-inline: 8px; }
 .agent-child-request-link { color: var(--foreground-passive); text-align: left; white-space: normal; }
 .agent-lineage .agent-child-list { flex-direction: column; padding: 0; }
-.agent-lineage .agent-child-card { min-width: 0; }
-.agent-lineage .agent-child-open { min-width: 0; overflow-wrap: anywhere; }
+.agent-lineage .agent-child-card { min-width: 0; flex-wrap: nowrap; }
+.agent-lineage .agent-child-open { min-width: 0; gap: 6px; }
+.agent-lineage :is(header, .agent-child-card) > button:last-child:not(.agent-child-open) { flex: none; }
+.agent-lineage-title { flex: 1; }
+.agent-lineage-title :is(b, small), .agent-lineage-state em { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agent-lineage-title b { font-weight: 500; }
+.agent-lineage .agent-lineage-state { flex: none; max-width: 45%; text-align: right; }
+.agent-lineage-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .agent-lineage .agent-child-open[aria-current=page] { background: var(--selected, rgba(127,127,127,.14)); }
+.agent-relation-bar > button { flex-shrink: 0; white-space: nowrap; }
+.agent-relation-bar > .agent-workspace-mode { min-width: 0; }
+.agent-relation-bar > .agent-workspace-mode svg { flex: none; }
+.agent-relation-bar > .agent-workspace-mode span { overflow: hidden; text-overflow: ellipsis; }
+@container agent-task-layout (max-width: 440px) {
+  .agent-task-aux { padding: 4px; }
+  .agent-lineage { padding: 5px; }
+  .agent-lineage header { gap: 4px; }
+  .agent-lineage .agent-child-card { gap: 2px; padding: 3px; }
+  .agent-lineage .agent-child-open { gap: 3px; }
+  .agent-lineage .agent-child-card > .agent-head-btn { width: 22px; }
+}
+@container agent-task-main (max-width: 400px) {
+  .agent-task-head { height: auto; min-height: 44px; padding: 4px 8px; gap: 4px; flex-wrap: wrap; }
+  .agent-task-head h1 { flex: 1 1 56px; min-width: 0; }
+  .agent-task-head .agent-status { white-space: nowrap; }
+  .agent-task-head > .agent-head-btn, .agent-task-head > .agent-head-btn:is(.agent-plugin-btn, .agent-lineage-toggle) { width: 26px; height: 26px; flex: none; padding: 0; }
+  .agent-task-head .agent-head-label { display: none; }
+  .agent-relations { padding-inline: 8px; }
+  .agent-relation-bar { flex-wrap: wrap; gap: 4px; }
+  .agent-relation-bar > .agent-workspace-mode { flex: 1; }
+  .agent-bottom { padding-inline: 4px; }
+  .agent-composer-bar { flex-wrap: wrap; gap: 3px; padding-inline: 4px; }
+  .agent-composer-bar .push { flex: 0 0 100%; height: 0; }
+  .agent-composer-bar select { max-width: 52%; min-width: 0; }
+  .agent-composer-bar .agent-model-picker { flex: 1; }
+  .agent-composer-bar .agent-model-pill { gap: 3px; padding-inline: 4px; }
+  .agent-composer-bar .agent-model-pill svg:last-child { display: none; }
+  .agent-composer-bar .voice-button { margin-inline-start: auto; }
+  .agent-composer-bar > :is(.voice-button, .agent-stop, .agent-send) { width: 26px; min-width: 26px; height: 26px; flex: none; padding: 0; }
+  .agent-composer-bar .agent-steer span { display: none; }
+  .agent-composer-agent { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+}
 .agent-native-process { animation: agent-process-enter 150ms ease-out; }
 .agent-native-process pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 @keyframes agent-process-enter { from { opacity: 0; transform: translateX(8px); } }

@@ -46,7 +46,7 @@ export function AgentModelPicker(p: Props) {
   }, [open, models, target]); // a current model list is required for the keyboard shortcuts
   return <div className="agent-model-picker" ref={root}>
     <button type="button" disabled={p.disabled} ref={p.triggerRef} className="agent-model-pill" aria-label="选择智能体与模型" aria-haspopup="dialog" aria-expanded={open} onClick={() => { setRail(p.profileId); setQuery(''); setOpen(v => !v); }}>
-      <AgentIcon tool={selected?.kind ?? 'codex'} size={16} /><span>{selected?.name ?? p.profileId}</span><small>{p.model ?? '默认'}</small><ChevronDown size={12} />
+      <AgentIcon tool={selected?.kind ?? 'codex'} size={16} /><span className="agent-model-profile" title={selected?.name ?? p.profileId}>{selected?.name ?? p.profileId}</span><small title={p.model ?? '默认'}>{p.model ?? '默认'}</small><ChevronDown size={12} />
     </button>
     {open && target && createPortal(<div ref={popup} style={position} className="agent-picker" role="dialog" aria-label="选择智能体与模型">
       <div className="agent-picker-main">

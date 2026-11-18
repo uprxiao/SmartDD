@@ -147,6 +147,7 @@ export class AgentTaskService {
 
   private coordination?: TaskCoordination;
   attachCoordination(value: TaskCoordination) { this.coordination = value; }
+  isDispatching(taskId: string) { return this.dispatching.has(taskId); }
   kick(taskId: string) {
     queueMicrotask(() => {
       if (this.dispatching.has(taskId)) this.missedPump.add(taskId);

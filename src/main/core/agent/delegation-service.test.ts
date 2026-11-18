@@ -11,6 +11,7 @@ import { AgentRunService } from './agent-run-service';
 import { AgentTaskService } from './agent-task-service';
 import { DelegationService } from './delegation-service';
 import { GitWorkspaces, runWorkspaceCommand } from './git-workspaces';
+import { directoryIdentity } from './directory-queue';
 import { HostBusinessRequests } from './host-business-requests';
 import { Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
@@ -139,6 +140,60 @@ it('A20 rejects a delegated input when the target changes while the native owner
   expect(f.instances[1].turns).toEqual([]);
   expect((await f.co.observe(f.taskId, accepted.childTaskId))[0]?.delegationId).toBe(accepted.delegationId);
   await until(() => !f.runs.runForTask(accepted.childTaskId) && !f.runs.closingForTask(accepted.childTaskId), 5000);
+});
+
+it.each(['preparing', 'registered'] as const)('A74 does not drain a directory writer while its first turn is %s', async phase => {
+  const f = fixture();
+  const parent = await f.send('start');
+  const child = await f.delegate('a74-first-turn');
+  let arrived!: () => void, release!: () => void;
+  const entered = new Promise<void>(resolve => { arrived = resolve; });
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const open = f.runs.open.bind(f.runs);
+  vi.spyOn(f.runs, 'open').mockImplementation(async options => {
+    if (options.taskId !== child.childTaskId) return open(options);
+    if (phase === 'preparing') return open({ ...options, integrate: async input => {
+      arrived();
+      await gate;
+      return options.integrate?.(input);
+    } });
+    const handle = await open(options);
+    arrived();
+    await gate;
+    return handle;
+  });
+  parent.finish();
+  try {
+    await entered;
+    const owner = f.co.queue.forTask(child.childTaskId)!;
+    expect(owner.state).toBe('active');
+    expect(owner.run_id).toBeTruthy();
+    // The parent has a different result to consume and queues while the writer has the slot.
+    f.co.queue.enter(f.taskId, owner.directory_identity);
+    await tick(80);
+    expect(f.co.queue.forTask(child.childTaskId)?.state).toBe('active');
+    expect(f.runs.runForTask(child.childTaskId)?.runId).toBe(owner.run_id);
+    expect(f.runs.closingForTask(child.childTaskId)).toBeUndefined();
+  } finally {
+    release();
+  }
+  await until(() => f.instances.some(instance => instance !== parent && instance.turns.length === 1), 5000);
+});
+
+it('A74 an idle directory owner still hands off to a queued competitor', async () => {
+  const f = fixture();
+  const parent = await f.send('start');
+  const run = f.runs.runForTask(f.taskId)!;
+  const identity = directoryIdentity(f.root, [f.root]).identity;
+  const owner = f.co.queue.enter(f.taskId, identity);
+  expect(f.co.queue.acquire(owner.queue_id)).toBe(true);
+  f.co.opened(f.taskId, run);
+  parent.finish();
+  await until(() => !f.runs.busy(run.runId), 2000);
+  const other = f.tasks.create({ projectId: null, dirId: null, cwd: f.root, title: 'next writer', profileId: 'main', tier: 'ask' }).taskId;
+  f.co.queue.enter(other, identity);
+  await until(() => f.co.queue.get(owner.queue_id)?.state === 'released', 5000);
+  expect(f.runs.runForTask(f.taskId)).toBeUndefined();
 });
 
 it('A19/A24/A32: delegation is durable/idempotent and returns before the child starts; release requires actual exit plus independent drain', async () => {

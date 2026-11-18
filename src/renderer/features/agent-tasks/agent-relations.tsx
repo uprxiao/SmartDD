@@ -26,7 +26,7 @@ export function AgentRelations({ taskId, value, reload, readOnly = false }: { ta
     <div className="agent-relation-bar">
       {value.parentTaskId ? <button type="button" onClick={() => navigation.openAgentTask(value.parentTaskId!,value.parentArchived)}>← 返回主任务</button> :
         !readOnly && <button type="button" aria-pressed={value.enabled} data-testid="agent-delegation-toggle" onClick={() => call(rpc.agentTasks.setMode(taskId, !value.enabled))}><Users size={13} />{value.enabled ? '允许新委派' : value.mode === 'multi' ? '新委派已关闭 · 子任务收口中' : '单 Agent · 开启委派'}</button>}
-      {ownMode && <span className="agent-workspace-mode" title={value.workspace?.path}>{value.workspaceMode==='worktree' && <GitBranch size={12}/>} {ownMode}</span>}
+      {ownMode && <span className="agent-workspace-mode" title={value.workspace?.path ?? ownMode}>{value.workspaceMode==='worktree' && <GitBranch size={12}/>} <span>{ownMode}</span></span>}
       {value.queue?.state === 'queued' && <span role="status">等待工作目录 · 排队中</span>}
       {!readOnly && !!value.children.length && <button type="button" onClick={() => call(rpc.agentTasks.stop(taskId, true))}><CircleStop size={13} />停止任务树</button>}
     </div>
@@ -35,6 +35,13 @@ export function AgentRelations({ taskId, value, reload, readOnly = false }: { ta
 
 function childState(child: Relations['children'][number]) {
   return child.archived ? '已归档' : child.needsHandling ? '需要你处理' : child.waitingUser ? '待你批准' : state[child.state] ?? child.state;
+}
+
+function mergeState(child: Relations['children'][number]) {
+  if (child.workspaceMode !== 'worktree') return null;
+  if (child.merged) return '已核实合入';
+  if (child.pendingMerge) return '待合并';
+  return null;
 }
 
 export function AgentChildSummary({taskId, value, readOnly, reload}: {taskId:string; value:Relations; readOnly:boolean; reload():void}) {
@@ -51,7 +58,7 @@ export function AgentChildSummary({taskId, value, readOnly, reload}: {taskId:str
         {value.children.map(child => <button type="button" key={child.childTaskId} className="agent-child-open" onClick={() => openRelatedTask(taskId, child.childTaskId, child.archived)}>
           <span className="agent-child-avatar" aria-hidden>{child.profileName.slice(0, 1)}</span>
           <span className="agent-child-title">{child.title}<small>{child.profileName} · {workspaceModeLabel(child.workspaceMode, child.access, child.workspace?.branch)}{child.attempts > 1 ? ` · 第 ${child.attempts} 次` : ''}</small></span>
-          <span className={`agent-child-state ${child.waitingUser ? 'waiting' : child.state}`}>{childState(child)}{child.elapsedSeconds !== null && <small>{formatDuration(child.elapsedSeconds)}</small>}</span>
+          <span className={`agent-child-state ${child.waitingUser ? 'waiting' : child.state}`}>{mergeState(child) ?? childState(child)}{child.elapsedSeconds !== null && <small>{formatDuration(child.elapsedSeconds)}</small>}</span>
         </button>)}
         {value.childrenTotal > value.children.length && <small>另有 {value.childrenTotal - value.children.length} 个子任务</small>}
       </div>
@@ -68,12 +75,17 @@ export function AgentLineage({ parentId, title, parentArchived, currentId, value
     <header><b>任务关系 · {value.childrenTotal}</b><button type="button" aria-label="收起任务关系" onClick={close}><X size={14}/></button></header>
     <div className="agent-child-list">
       <button type="button" className="agent-child-open" aria-current={parentId===currentId?'page':undefined}
-        onClick={() => navigation.openAgentTask(parentId,parentArchived)}><span>主任务 · {title}</span></button>
+        onClick={() => navigation.openAgentTask(parentId,parentArchived)}>
+        <span className="agent-lineage-title" title={title}><b>主任务 · {title}</b></span>
+        {value.taskElapsedSeconds != null && <small className="agent-lineage-time">{formatDuration(value.taskElapsedSeconds)}</small>}
+      </button>
       {value.children.map(c => <div className="agent-child-card" key={c.childTaskId} data-child-id={c.childTaskId}>
         <button type="button" className="agent-child-open" aria-current={c.childTaskId===currentId?'page':undefined} onClick={() => navigation.openAgentTask(c.childTaskId,c.archived)}>
-          <span>{c.title}<small>{c.profileName}{c.attempts > 1 ? ` · 第 ${c.attempts} 次` : ''}</small>
+          <span className="agent-lineage-title" title={c.title}><b>{c.title}</b><small>{c.profileName}{c.attempts > 1 ? ` · 第 ${c.attempts} 次` : ''}</small>
             <small className="agent-workspace-mode" title={c.workspace?.path}>{workspaceModeLabel(c.workspaceMode,c.access,c.workspace?.branch)}</small>
-          </span><em>{childState(c)}</em>
+          </span><span className="agent-lineage-state"><em title={childState(c)}>{childState(c)}</em>
+            {c.elapsedSeconds != null && <small className="agent-lineage-time">{formatDuration(c.elapsedSeconds)}</small>}
+          </span>
         </button>
         {!readOnly && ['queued','running'].includes(c.state) && <button type="button" className="agent-head-btn" aria-label={`停止子任务 ${c.title}`}
           onClick={() => void rpc.agentTasks.cancelChild(parentId,c.childTaskId).then(reload).catch(e=>toast.error(rpcErrorMessage(e)))}><CircleStop size={14} /></button>}
@@ -86,7 +98,7 @@ export function AgentLineage({ parentId, title, parentArchived, currentId, value
       {value.writeQueue.total > value.writeQueue.entries.length && <small>另有 {value.writeQueue.total - value.writeQueue.entries.length} 个任务</small>}
     </div>}
     {value.children.some(c => c.workspaceMode === 'worktree') && <div className="agent-lineage-section"><b><GitBranch size={14}/>Git 工作副本</b>
-      {value.children.filter(c => c.workspaceMode === 'worktree').map(c => <div key={c.childTaskId}><span title={c.workspace?.path}>{c.workspace?.branch ?? c.title}</span><small>{c.merged ? '已核实合入' : c.workspace ? childState(c) : '准备中'}</small></div>)}
+      {value.children.filter(c => c.workspaceMode === 'worktree').map(c => <div key={c.childTaskId}><span title={c.workspace?.path}>{c.workspace?.branch ?? c.title}</span><small>{mergeState(c) ?? (c.workspace ? childState(c) : '准备中')}</small></div>)}
     </div>}
   </section>;
 }

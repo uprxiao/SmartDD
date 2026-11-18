@@ -14,6 +14,12 @@ import { GitWorkspaces } from './git-workspaces';
 import { resolveTier, type Tier } from './permissions';
 import type { TaskCoordination } from './task-coordination';
 const at = () => new Date().toISOString();
+function elapsedSeconds(turn: { started_at: string | null; ended_at: string | null } | undefined) {
+  if (!turn?.started_at) return null;
+  const start = Date.parse(turn.started_at);
+  const end = turn.ended_at ? Date.parse(turn.ended_at) : Date.now();
+  return Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, Math.round((end - start) / 1000)) : null;
+}
 const key = z.string().regex(/^[A-Za-z0-9_-]{8,128}$/);
 const delegateSchema = z.object({ requestKey: key, profileId: z.string().min(1).max(128), profileRevision: z.string().min(1).max(128).optional(), title: z.string().trim().min(1).max(120), instructions: z.string().min(1).refine(s => Buffer.byteLength(s) <= 128 * 1024), model: z.string().min(1).max(256).optional(), access: z.enum(['read', 'write']).optional(), workspaceMode: z.enum(['shared', 'worktree']).optional() }).strict();
 type DelegateInput = z.infer<typeof delegateSchema>;
@@ -299,7 +305,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const queue = this.queue.forTask(taskId);
     if (queue?.kind === 'write') identities.add(queue.directory_identity);
     const counts = { running:0, waiting:0, queued:0, completed:0, pending:0 };
-    const children: { delegationId: string; childTaskId: string; state: DelegationRow['delivery_state']; resultRevision: number; title: string; profileName: string; attempts: number; needsHandling: boolean; workspace: ReturnType<typeof workspace>; workspaceMode: 'worktree' | 'shared'; access: 'read' | 'write'; archived: boolean; waitingUser:boolean; elapsedSeconds:number|null; merged:boolean }[] = [];
+    const children: { delegationId: string; childTaskId: string; state: DelegationRow['delivery_state']; resultRevision: number; title: string; profileName: string; attempts: number; needsHandling: boolean; workspace: ReturnType<typeof workspace>; workspaceMode: 'worktree' | 'shared'; access: 'read' | 'write'; archived: boolean; waitingUser:boolean; elapsedSeconds:number|null; merged:boolean; pendingMerge:boolean }[] = [];
     for (const r of rows) {
       const t = JSON.parse(r.target_json) as Target, a = this.attempt(r);
       if (t.strategy === 'serial' && r.access === 'write') identities.add(t.directoryIdentity);
@@ -308,13 +314,12 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       else if (r.delivery_state === 'running') counts.running++;
       else if (r.delivery_state === 'queued') counts.queued++;
       else if (['delivered','queued_for_parent'].includes(r.delivery_state)) counts.completed++;
-      if (['queued','running','queued_for_parent'].includes(r.delivery_state) || this.pendingMerge(r)) counts.pending++;
+      const pendingMerge = this.pendingMerge(r);
+      if (['queued','running','queued_for_parent'].includes(r.delivery_state) || pendingMerge) counts.pending++;
       if (children.length >= 100) continue;
       const turn = a.child_turn_id ? this.d.store.inputForTurn(a.child_turn_id) : undefined;
-      const start = turn?.started_at ? Date.parse(turn.started_at) : NaN;
-      const elapsedSeconds = Number.isFinite(start) ? Math.max(0, Math.round(((turn?.ended_at ? Date.parse(turn.ended_at) : Date.now()) - start) / 1000)) : null;
       const merge = a.merge_check_json ? JSON.parse(a.merge_check_json) : null;
-      const c = { delegationId: r.delegation_id, childTaskId: r.child_task_id, state: r.delivery_state, resultRevision: r.result_revision, title: t.title, profileName: t.profile.name, attempts: a.ordinal, needsHandling: (t.mergeFailures ?? 0) >= 2 && !!merge && !merge.pass, workspace: workspace(r.child_task_id), workspaceMode: t.strategy === 'git' ? 'worktree' as const : 'shared' as const, access: r.access, archived: !!this.d.store.task(r.child_task_id)?.archived_at, waitingUser, elapsedSeconds, merged:!!merge?.pass };
+      const c = { delegationId: r.delegation_id, childTaskId: r.child_task_id, state: r.delivery_state, resultRevision: r.result_revision, title: t.title, profileName: t.profile.name, attempts: a.ordinal, needsHandling: (t.mergeFailures ?? 0) >= 2 && !!merge && !merge.pass, workspace: workspace(r.child_task_id), workspaceMode: t.strategy === 'git' ? 'worktree' as const : 'shared' as const, access: r.access, archived: !!this.d.store.task(r.child_task_id)?.archived_at, waitingUser, elapsedSeconds: elapsedSeconds(turn), merged:!!merge?.pass, pendingMerge };
       if (Buffer.byteLength(JSON.stringify(children)) + Buffer.byteLength(JSON.stringify(c)) > 64 * 1024) continue;
       children.push(c);
     }
@@ -326,7 +331,10 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       entries: [...writing.filter(r => r.state === 'active'), ...writing.filter(r => r.state === 'queued')].slice(0, 20)
         .map(r => ({ taskId: r.task_id, state: r.state, title: (this.d.store.task(r.task_id)?.title ?? '任务').slice(0, 120) })),
     } : null;
-    return { taskTitle:task.title, workspaceMode: target ? target.strategy==='git'?'worktree' as const:'shared' as const : null, access: parent?.access, parentArchived: !!(parent && this.d.store.task(parent.parent_task_id)?.archived_at), enabled: this.enabled(taskId), mode: (this.d.store.sqlite.prepare('SELECT mode FROM agent_tasks WHERE task_id=?').get(taskId) as { mode: string } | undefined)?.mode ?? 'single', parentTaskId: parent?.parent_task_id ?? null, queue, writeQueue, counts, workspace: workspace(taskId), children, childrenTotal: rows.length, needsHandling: this.needsAttention(taskId) };
+    const currentTurn = rows.length ? this.d.store.sqlite.prepare(
+      'SELECT started_at, ended_at FROM agent_turns WHERE task_id=? AND started_at IS NOT NULL ORDER BY rowid DESC LIMIT 1'
+    ).get(taskId) as { started_at: string; ended_at: string | null } | undefined : undefined;
+    return { taskTitle:task.title, taskElapsedSeconds: elapsedSeconds(currentTurn), workspaceMode: target ? target.strategy==='git'?'worktree' as const:'shared' as const : null, access: parent?.access, parentArchived: !!(parent && this.d.store.task(parent.parent_task_id)?.archived_at), enabled: this.enabled(taskId), mode: (this.d.store.sqlite.prepare('SELECT mode FROM agent_tasks WHERE task_id=?').get(taskId) as { mode: string } | undefined)?.mode ?? 'single', parentTaskId: parent?.parent_task_id ?? null, queue, writeQueue, counts, workspace: workspace(taskId), children, childrenTotal: rows.length, needsHandling: this.needsAttention(taskId) };
   }
   treeRequests(taskId: string) {
     const task = this.d.store.task(taskId);
@@ -408,7 +416,10 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       // An ordinary idle owner stays alive (turn-end is not run-end). It yields when another writer actually queues.
       for (const q of this.d.store.sqlite.prepare("SELECT task_id,run_id FROM agent_directory_queue WHERE state='active' AND kind='write'").all() as {task_id:string;run_id:string|null}[]) {
         const run=q.run_id?this.d.runs.active(q.run_id):undefined;
-        if(run&&!this.d.runs.busy(run.runId)&&this.competitor(q.task_id)&&this.d.store.goal(q.task_id)?.status!=='active') {this.draining.set(q.task_id,run.runId);this.d.runs.hold(q.task_id,true);}
+        if (run && !this.d.tasks.isDispatching(q.task_id) && !this.d.runs.busy(run.runId) && this.competitor(q.task_id) && this.d.store.goal(q.task_id)?.status !== 'active') {
+          this.draining.set(q.task_id, run.runId);
+          this.d.runs.hold(q.task_id, true);
+        }
       }
       for (const [taskId, runId] of this.draining) void this.drain(taskId, runId).catch(e=>this.warnOnce(taskId, `drain-error:${runId}`, `收口尚未完成，保留目录占用：${(e as Error).message}`));
       for (const row of this.rows()) {
@@ -419,7 +430,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
             void this.track(this.prepareChild(row)).catch(error => this.warnOnce(row.child_task_id, `prepare:${row.delegation_id}`, String(error)));
           }
           const parentRun = this.d.runs.runForTask(row.parent_task_id);
-          if (needsBoundary && parentRun && !this.d.runs.busy(parentRun.runId)) {
+          if (needsBoundary && parentRun && !this.d.tasks.isDispatching(row.parent_task_id) && !this.d.runs.busy(parentRun.runId)) {
             this.draining.set(row.parent_task_id, parentRun.runId);
             this.d.runs.hold(row.parent_task_id, true);
           }
@@ -496,11 +507,13 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
 
   private async finishDrainingRun(taskId: string, runId: string) {
     const run = this.d.runs.active(runId);
+    // A slot is already bound during native setup, before the driver has a turn ID.
+    if (this.d.tasks.isDispatching(taskId)) return;
     // A user stop still waits for the original run to acknowledge interruption or be force-stopped.
     if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId)) return;
     if (run?.driverId === 'codex-app-server' && this.stopped(taskId) && this.d.store.goal(taskId)?.status === 'active') await this.d.runs.goal(runId, { kind: 'pause' });
     this.d.runs.hold(taskId, true); await this.pauseWaitingGoal(taskId, runId);
-    if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId) || this.d.runs.closingForTask(taskId)) return;
+    if (this.d.tasks.isDispatching(taskId) || this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId) || this.d.runs.closingForTask(taskId)) return;
     if (this.d.store.pendingRequests(taskId).some(r => r.class === 'native' && r.status === 'pending' && r.origin.runId === runId) && !this.stopped(taskId)) return;
     if (run) await this.d.runs.close(runId);
     if (this.d.runs.closingForTask(taskId)) return;
