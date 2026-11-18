@@ -76,6 +76,24 @@ it('A20 refuses a stale listed target but keeps a prior request receipt across c
   expect(f.co.view(f.taskId).childrenTotal).toBe(1);
 });
 
+it('A59 persists one delegated creation record with the selected target and later native binding', async () => {
+  const f = fixture(), parent = await f.send('start');
+  const request = { requestKey: 'a59-thread-created', profileId: 'child', profileRevision: 'r1', model: 'test', title: 'child', instructions: 'review fixture' };
+  const parentRunId = f.runs.runForTask(f.taskId)!.runId;
+  const accepted = await f.co.delegate(parentRunId, request);
+  expect(await f.co.delegate(parentRunId, request)).toEqual(accepted);
+  const creations = () => f.store.items(f.taskId).filter(item => item.type === 'thread_created');
+  const [initial] = creations();
+  expect(creations()).toHaveLength(1);
+  expect(initial.payload).toMatchObject({ delegationId: accepted.delegationId, childTaskId: accepted.childTaskId,
+    bindingId: null, target: { profileId: 'child', driverId: 'codex-app-server', name: 'child' }, model: 'test' });
+  parent.finish();
+  await until(() => f.instances.length === 2 && !!f.instances[1].turns.length, 5000);
+  const bindingId = f.runs.runForTask(accepted.childTaskId)!.bindingId;
+  expect(creations()).toHaveLength(1);
+  expect(creations()[0]).toMatchObject({ itemId: initial.itemId, revision: initial.revision + 1, payload: { bindingId } });
+});
+
 it('A20 revalidates a listed target after the asynchronous Git preflight before accepting', async () => {
   const f = fixture();
   await f.send('start');

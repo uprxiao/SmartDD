@@ -255,7 +255,12 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET child_turn_id=? WHERE attempt_id=?').run(accepted.turn.turn_id, attempt);
       if (tierNotice) this.d.store.addHostItem(childTaskId, null, 'system_notice', { code: 'delegatedTierFallback', detail: tierNotice });
       if (target.strategy === 'serial' && target.actualAccess === 'write') this.queue.enter(childTaskId, root.identity);
-      this.d.store.addHostItem(run.taskId, run.turnId ?? null, 'subtask', { delegationId: id, childTaskId, title: value.title, profileName: profile.name, status: 'queued', access: target.actualAccess, workspaceMode: target.strategy === 'git' ? 'worktree' : 'shared', ...(value.access === 'read' && !readOnly ? { notice: '当前扩展与业务入口未能证明全链路只读，按写入型管理' } : {}) });
+      this.d.store.addHostItem(run.taskId, run.turnId ?? null, 'thread_created', {
+        delegationId: id, childTaskId, bindingId: null, title: value.title,
+        target: { profileId: profile.profileId, driverId: profile.driverId, name: profile.name }, model: value.model ?? null,
+        status: 'queued', access: target.actualAccess, workspaceMode: target.strategy === 'git' ? 'worktree' : 'shared',
+        ...(value.access === 'read' && !readOnly ? { notice: '当前扩展与业务入口未能证明全链路只读，按写入型管理' } : {}),
+      });
       emit(run.taskId, 'delegation.changed', { delegationId: id, childTaskId, state: 'queued' });
       return this.d.store.sqlite.prepare('SELECT * FROM agent_delegations WHERE delegation_id=?').get(id) as DelegationRow;
     });

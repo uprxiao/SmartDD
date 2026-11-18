@@ -246,6 +246,14 @@ export class AgentStore {
       if (row.native_confirmed_at) return;
       this.sqlite.prepare('UPDATE agent_bindings SET native_id=?,native_confirmed_at=? WHERE binding_id=?').run(nativeId, now(), bindingId);
       emit(row.task_id, 'binding.confirmed', { bindingId, nativeId });
+      const creation = this.sqlite.prepare(`UPDATE agent_items
+        SET payload_ref=json_set(payload_ref,'$.bindingId',?),revision=revision+1,updated_at=?
+        WHERE task_id=(SELECT parent_task_id FROM agent_delegations WHERE child_task_id=?)
+          AND type='thread_created' AND json_extract(payload_ref,'$.childTaskId')=?
+          AND json_type(payload_ref,'$.bindingId')='null'
+        RETURNING task_id,item_id,revision`).get(bindingId, now(), row.task_id, row.task_id) as
+        { task_id: string; item_id: string; revision: number } | undefined;
+      if (creation) emit(creation.task_id, 'item.updated', { type: 'thread_created', bindingId }, creation.item_id, creation.revision);
     });
   }
 
@@ -601,7 +609,7 @@ export class AgentStore {
   }
 
   /** 宿主条目（启动失败等用户可见原因，复核 CR17）：不属于任何原生运行。 */
-  addHostItem(taskId: string, turnId: string | null, type: 'error' | 'system_notice' | 'provider_switch' | 'handoff' | 'omission_notice' | 'subtask' | 'notification' | 'files_changed', payload: Record<string, unknown>) {
+  addHostItem(taskId: string, turnId: string | null, type: 'error' | 'system_notice' | 'provider_switch' | 'handoff' | 'omission_notice' | 'thread_created' | 'notification' | 'files_changed', payload: Record<string, unknown>) {
     return this.itemTx((written, _replaced, emit) => {
       const itemId = randomUUID();
       const { ordinal } = this.sqlite.prepare('SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM agent_items WHERE task_id=?').get(taskId) as { ordinal: number };

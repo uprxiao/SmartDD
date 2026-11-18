@@ -42,6 +42,16 @@ it('A26 shows the delegated child’s inherited tier without opening another per
   expect(tier).toHaveProperty('title', '跟随主任务的权限档位');
 });
 
+it('A59 shows the recorded target and model in one creation card and keeps old delegation rows readable', async () => {
+  const created = { ...item('thread_created', { childTaskId: 'child', title: 'New child', target: { name: 'Codex review' }, model: 'review-model', workspaceMode: 'shared', access: 'write' }), itemId: 'creation' };
+  const historical = { ...item('subtask', { childTaskId: 'old-child', title: 'Old child', workspaceMode: 'shared', access: 'write' }), itemId: 'old' };
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [created, historical] }));
+  render(<AgentTaskView taskId="task" />);
+  expect(await screen.findByText('Codex review · review-model · 共用目录 · 写入队列')).toBeTruthy();
+  expect(screen.getAllByRole('button', { name: '宿主子任务 · New child' })).toHaveLength(1);
+  expect(screen.getByRole('button', { name: '宿主子任务 · Old child' })).toBeTruthy();
+});
+
 it('A45 retains the available streaming prefix and marks a preview that exceeds its buffer', async () => {
   let publish!: (value: { taskId: string; itemKey: string; text: string }) => void;
   mocks.on.mockImplementation((event, callback) => { if (event.name === 'agentTasks:live') publish = callback; return () => {}; });

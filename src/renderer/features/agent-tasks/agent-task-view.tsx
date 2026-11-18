@@ -247,12 +247,14 @@ function ItemRow({ item }: { item: TimelineItem }) {
       return <div className="agent-todo"><header><b>待办清单</b><span>{entries.filter(e => e.status === 'completed').length}/{entries.length}{truncated ? '（预览）' : ''}</span></header>
         {entries.map(e => <div key={e.id} className={`agent-todo-row ${e.status}`}><span className="agent-todo-box" aria-hidden>{e.status === 'completed' ? '✓' : ''}</span>{e.subject}</div>)}{more}</div>;
     }
-    case 'subtask': {
+    case 'subtask':
+    case 'thread_created': {
       const child = relations?.children.find(value=>value.childTaskId===p.childTaskId);
       const mode = workspaceModeLabel(child?.workspaceMode??p.workspaceMode,child?.access??p.access,child?.workspace?.branch);
+      const detail = [p.target?.name, item.type === 'thread_created' ? p.model ?? '默认模型' : null, mode ?? '已接受委派', p.notice].filter(Boolean).join(' · ');
       return <div className="agent-child-result">
         <button type="button" onClick={()=>openRelatedTask(useTaskId,p.childTaskId,child?.archived??archived)}>宿主子任务 · {p.title}</button>
-        <small>{mode??'已接受委派'}{p.notice ? ` · ${p.notice}` : ''}</small>{more}
+        <small>{detail}</small>{more}
       </div>;
     }
     case 'files_changed': return <ChangeCard payload={p} />;
