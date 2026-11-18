@@ -213,7 +213,8 @@ describe('Codex app-server 驱动', () => {
 
   it('插话带 expectedTurnId；目标设定／暂停／清除带用户来源并转发原生目标更新', async () => {
     const { inst, server, events } = setup((msg, s) => {
-      if (msg.method === 'turn/steer' || msg.method === 'thread/goal/set' || msg.method === 'thread/goal/clear') { s.reply(msg.id, {}); return true; }
+      if (msg.method === 'turn/steer') { s.reply(msg.id, { turnId: 'turn-1' }); return true; }
+      if (msg.method === 'thread/goal/set' || msg.method === 'thread/goal/clear') { s.reply(msg.id, {}); return true; }
       return false;
     });
     await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
@@ -231,6 +232,19 @@ describe('Codex app-server 驱动', () => {
     server.notify('thread/goal/cleared', { threadId: 'thr-1' });
     await until(() => events.filter(e => e.type === 'goal').length === 2);
     expect(events.filter(e => e.type === 'goal')).toEqual([{ type: 'goal', objective: '全部通过', status: 'limited', timeUsedSeconds: 30 }, { type: 'goal', objective: null, status: 'cleared' }]);
+  });
+
+  it.each([null, {}, { turnId: 'different-turn' }])('A55 does not acknowledge a steer without the original turn receipt: %j', async receipt => {
+    const { inst, events } = setup((msg, server) => {
+      if (msg.method !== 'turn/steer') return false;
+      server.reply(msg.id, receipt);
+      return true;
+    });
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: 'first', text: 'Initial input', tier: 'ask' });
+    await expect(inst.steer({ clientInputId: 'side-input', text: 'Additional input', tier: 'ask' })).rejects.toMatchObject({ code: 'PROTOCOL' });
+    expect(events.some(event => event.type === 'steer.accepted')).toBe(false);
+    await inst.close();
   });
 
   it('打开后公布命令与 Skill 目录；compact／review 走协议', async () => {

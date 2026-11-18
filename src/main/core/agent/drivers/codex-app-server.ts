@@ -263,7 +263,8 @@ export class CodexAppServerInstance implements DriverInstance {
     const t = this.activeTurn;
     if (!t) throw new DriverError('STATE', '当前没有进行中的回合');
     // expectedTurnId 不匹配当前回合时原生拒绝：不自动改成新回合发送（技术方案 §5）。
-    await this.rpc.call('turn/steer', { threadId: this.threadId, expectedTurnId: t.nativeTurnId, clientUserMessageId: input.clientInputId, input: [{ type: 'text', text: input.text, text_elements: [] }, ...(input.images ?? []).map(i => ({ type: 'localImage', path: i.path }))] });
+    const receipt = await this.rpc.call<{ turnId?: unknown } | null>('turn/steer', { threadId: this.threadId, expectedTurnId: t.nativeTurnId, clientUserMessageId: input.clientInputId, input: [{ type: 'text', text: input.text, text_elements: [] }, ...(input.images ?? []).map(i => ({ type: 'localImage', path: i.path }))] });
+    if (receipt?.turnId !== t.nativeTurnId) throw new DriverError('PROTOCOL', '原生插话回执无法关联到当前回合');
     this.emitter.emit({ type: 'steer.accepted', clientInputId: input.clientInputId, nativeTurnId: t.nativeTurnId });
   }
 
