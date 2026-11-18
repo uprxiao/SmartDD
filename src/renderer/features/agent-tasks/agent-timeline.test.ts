@@ -1,9 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, requestForm, requestOptions, requestTitle, workLabel, type TimelineItem } from './agent-timeline';
+import { buildTimeline, retainOlderTimeline, requestForm, requestOptions, requestTitle, workLabel, type TimelineItem } from './agent-timeline';
 
 // M14-A52 统一时间线与工作折叠、A60 终态尾注、A11 请求选项（界面逻辑层）。
 const item = (o: Partial<TimelineItem> & { type: string; ordinal: number }): TimelineItem => ({ itemId: `i${o.ordinal}`, turnId: 't1', revision: 1, payload: {}, terminal: 'completed', createdAt: '', updatedAt: '', ...o });
 const turn = (status: string, s = '2026-11-17T00:00:00Z', e: string | null = '2026-11-17T00:00:12Z') => ({ turn_id: 't1', status, accepted_at: s, started_at: s, ended_at: e, error_code: null });
+
+describe('A45 历史显示预算', () => {
+  it('保留当前快照和刚请求的较早记录，不重复计入快照条目', () => {
+    const items = Array.from({ length: 2110 }, (_, i) => item({ type: 'assistant_message', ordinal: i + 1 }));
+    const current = { items: items.slice(-110), turns: [turn('completed')] };
+    const result = retainOlderTimeline({ items, turns: [turn('started')] }, current);
+    expect(result.clipped).toBe(true);
+    expect(result.items.map(row => row.ordinal)).toEqual(items.slice(0, 1890).map(row => row.ordinal));
+    expect(result.turns).toEqual([]);
+  });
+
+  it('按 UTF-8 序列化字节累计条目和回合信息，达到大小上限时继续保持最早载入的页', () => {
+    const payload = { text: '甲😀'.repeat(1600) };
+    const items = Array.from({ length: 1000 }, (_, i) => item({ type: 'assistant_message', ordinal: i + 1, payload, turnId: `t${i}` }));
+    const turns = items.map(row => ({ ...turn('completed'), turn_id: row.turnId! }));
+    const current = { items: items.slice(-10), turns: turns.slice(-10) };
+    const result = retainOlderTimeline({ items, turns }, current);
+    expect(result.clipped).toBe(true);
+    expect(result.items[0]?.ordinal).toBe(1);
+    expect(result.turns).toHaveLength(result.items.length);
+    const size = (extraItems: TimelineItem[] = [], extraTurns: typeof turns = []) => new TextEncoder().encode(JSON.stringify({ items: [...result.items, ...extraItems, ...current.items], turns: [...result.turns, ...extraTurns, ...current.turns] })).byteLength;
+    expect(size()).toBeLessThanOrEqual(8 * 1024 * 1024);
+    const next = result.items.length;
+    expect(size([items[next]], [turns[next]])).toBeGreaterThan(8 * 1024 * 1024);
+  });
+});
 
 describe('时间线分组', () => {
   it('任务级切换条目保持各自的时间顺序，不把后一次切换提前到第一次', () => {

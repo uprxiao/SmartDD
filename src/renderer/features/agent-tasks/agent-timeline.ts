@@ -5,6 +5,45 @@ export interface TimelineItem { itemId: string; turnId: string | null; type: str
 export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null; source_kind?: string; run_id?: string | null; native_turn_id?: string | null }
 export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string; targetTaskTitle?: string }
 
+interface TimelineSlice { items: TimelineItem[]; turns: TurnInfo[] }
+const TIMELINE_ITEMS = 2000;
+const TIMELINE_BYTES = 8 * 1024 * 1024;
+const utf8 = new TextEncoder();
+const rowSizes = new WeakMap<object, number>();
+
+function rowBytes(row: object) {
+  const cached = rowSizes.get(row);
+  if (cached !== undefined) return cached;
+  const bytes = utf8.encode(JSON.stringify(row)).byteLength + 1;
+  rowSizes.set(row, bytes);
+  return bytes;
+}
+
+/** Keep the most recently requested older page and the live snapshot within a joint budget. */
+export function retainOlderTimeline(older: TimelineSlice, current: TimelineSlice) {
+  if (!older.items.length) return { items: [], turns: [], clipped: false };
+  const items: TimelineItem[] = [];
+  const turns: TurnInfo[] = [];
+  const itemIds = new Set(current.items.map(item => item.itemId));
+  const turnIds = new Set(current.turns.map(turn => turn.turn_id));
+  const olderTurns = new Map(older.turns.map(turn => [turn.turn_id, turn]));
+  let bytes = '{"items":[],"turns":[]}'.length;
+  for (const row of [...current.items, ...current.turns]) bytes += rowBytes(row);
+  for (const item of older.items) {
+    if (itemIds.has(item.itemId)) continue;
+    const turn = item.turnId && !turnIds.has(item.turnId) ? olderTurns.get(item.turnId) : undefined;
+    bytes += rowBytes(item);
+    if (turn) bytes += rowBytes(turn);
+    if (items.length + current.items.length >= TIMELINE_ITEMS || bytes > TIMELINE_BYTES) {
+      return { items, turns, clipped: true };
+    }
+    itemIds.add(item.itemId);
+    items.push(item);
+    if (turn) { turnIds.add(turn.turn_id); turns.push(turn); }
+  }
+  return { items, turns, clipped: false };
+}
+
 const VISIBLE = new Set(['user_message', 'assistant_message', 'proposed_plan', 'error', 'todo_list', 'compaction', 'system_notice', 'files_changed']);
 const WORK = new Set(['reasoning', 'command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'subagent']);
 

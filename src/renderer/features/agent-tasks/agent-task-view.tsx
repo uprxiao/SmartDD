@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import { agentTaskEvent, agentTaskLiveEvent, applicationsChangedEvent, windowShownEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { events, rpc } from '@renderer/lib/ipc';
-import { buildTimeline, turnSeconds, formatDuration, requestForm, requestOptions, requestTitle, workLabel, workSegments, summarizeTools, type RequestForm, type TurnGroup, type TurnInfo, type TimelineItem, type TimelineRequest } from './agent-timeline';
+import { buildTimeline, retainOlderTimeline, turnSeconds, formatDuration, requestForm, requestOptions, requestTitle, workLabel, workSegments, summarizeTools, type RequestForm, type TurnGroup, type TurnInfo, type TimelineItem, type TimelineRequest } from './agent-timeline';
 import './agent-tasks.css';
 
 type Snapshot = Awaited<ReturnType<typeof rpc.agentTasks.snapshot>>;
@@ -749,14 +749,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const reloadWork = useRef<Promise<void> | null>(null);
   const reloadAgain = useRef(false);
   const recoveringTimeline = useRef(false);
-  const [older, setOlder] = useState<TimelineItem[]>([]);
+  const [history, setHistory] = useState({ items: [] as TimelineItem[], turns: [] as TurnInfo[], hasOlder: null as boolean | null, cursor: null as string | null, clipped: false });
+  const { items: older, turns: olderTurns } = history;
   const olderItems = useRef(older);
   olderItems.current = older;
-  const [olderTurns, setOlderTurns] = useState<unknown[]>([]);
-  const [olderMore, setOlderMore] = useState<boolean | null>(null);
-  const [olderCursor, setOlderCursor] = useState<string | null>(null);
+  const snapshotRef = useRef<Snapshot | null>(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const olderRequest = useRef<symbol | null>(null);
+  const resetHistory = useCallback(() => {
+    olderRequest.current = null;
+    setLoadingOlder(false);
+    setHistory({ items: [], turns: [], hasOlder: null, cursor: null, clipped: false });
+  }, []);
   useEffect(() => () => { olderRequest.current = null; }, [taskId]);
   const [draftConflict, setDraftConflict] = useState<number | null>(null);
   const [confirmOtherDraft, setConfirmOtherDraft] = useState(false);
@@ -801,6 +805,12 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const applySnapshot = useCallback((s: Snapshot) => {
     seqRef.current = s.seq;
     snapshotAssigned.current = true;
+    snapshotRef.current = s;
+    setHistory(prev => {
+      if (!prev.items.length) return prev;
+      const kept = retainOlderTimeline(prev, { items: s.items as TimelineItem[], turns: s.turns as TurnInfo[] });
+      return { ...prev, ...kept, clipped: prev.clipped || kept.clipped };
+    });
     setSnap(s);
     void adoptDraft(s);
     loadRelations();
@@ -847,19 +857,14 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
             continue;
           }
           if (!contiguous) {
-            olderRequest.current = null;
-            setLoadingOlder(false);
-            setOlder([]);
-            setOlderTurns([]);
-            setOlderMore(null);
-            setOlderCursor(null);
+            resetHistory();
           } else if (requested.length) {
             const ids = new Set(requested), byId = new Map(updates.map(item => [item.itemId, item]));
-            setOlder(items => items.flatMap(item => {
+            setHistory(prev => ({ ...prev, items: prev.items.flatMap(item => {
               if (!ids.has(item.itemId)) return [item];
               const latest = byId.get(item.itemId);
               return latest ? [latest.revision >= item.revision ? latest : item] : [];
-            }));
+            }) }));
           }
           applySnapshot(snapshot);
           setLive(emptyLive);
@@ -871,7 +876,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     const work = pull().finally(() => { if (reloadWork.current === work) reloadWork.current = null; });
     reloadWork.current = work;
     return work;
-  }, [taskId, applySnapshot]);
+  }, [taskId, applySnapshot, resetHistory]);
 
   useEffect(() => {
     let alive = true;
@@ -1083,10 +1088,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     return it.type !== 'subtask' || !coveredChildren.has(it.payload?.childTaskId);
   }), turns, now);
   const visiblePlans = new Map<string,string>(items.filter(it => it.type === 'proposed_plan' && !it.payload?.truncated && !isIncomplete(it.payload) && it.turnId).map(it => [it.turnId!, it.payload.plan]));
-  const hasOlder = olderMore ?? snap.hasOlder;
+  const hasOlder = history.hasOlder ?? snap.hasOlder;
   const loadOlder = async () => {
     const first = older[0] ?? currentItems[0];
-    const cursor = olderCursor ?? (older.length ? null : snap.historyCursor) ?? first?.ordinal;
+    const cursor = history.cursor ?? (older.length ? null : snap.historyCursor) ?? first?.ordinal;
     if (cursor === undefined || olderRequest.current) return;
     const request = Symbol();
     olderRequest.current = request;
@@ -1102,10 +1107,12 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
         incoming = await readHistoryItems(taskId, ids, () => olderRequest.current === request);
         if (olderRequest.current !== request) return;
       }
-      setOlder(items => [...incoming, ...items]);
-      setOlderTurns(turns => [...page.turns, ...turns]);
-      setOlderMore(page.hasOlder);
-      setOlderCursor(page.historyCursor);
+      const latest = snapshotRef.current ?? snap;
+      setHistory(prev => {
+        const olderPage = { items: [...incoming, ...prev.items], turns: [...page.turns as TurnInfo[], ...prev.turns] };
+        const kept = retainOlderTimeline(olderPage, { items: latest.items as TimelineItem[], turns: latest.turns as TurnInfo[] });
+        return { ...kept, hasOlder: page.hasOlder, cursor: page.historyCursor, clipped: prev.clipped || kept.clipped };
+      });
     } catch (e) {
       if (olderRequest.current === request) toast.error(rpcErrorMessage(e));
     } finally {
@@ -1277,6 +1284,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     <AgentRelations taskId={taskId} value={relations} readOnly={archived} reload={() => { loadRelations(); void reload(); }} />
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline"><TimelineActionScope.Provider value={timelineActions}>
       {hasOlder && <button type="button" className="agent-older" disabled={loadingOlder} onClick={() => void loadOlder()}>加载更早的记录</button>}
+      {history.clipped && <div className="agent-divider" role="status">部分历史记录已收起<button type="button" className="agent-older" onClick={() => {
+        resetHistory();
+        requestAnimationFrame(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; });
+      }}>回到最新记录</button></div>}
       {groups.map(group => <TurnRows key={group.key} group={group} stopping={!!stopping && !!group.turnId && group.turnId === recentTurn?.turn_id}/>)}
       {!archived && waitingForWork && !liveText && <div className="agent-starting" role="status"><div className="agent-work-head shine"><Clock3 size={14}/>工作中 {formatDuration(turnSeconds(recentTurn, now))}</div><div><Brain size={14}/>思考中</div></div>}
       {working && (liveText || live.incomplete) && <div className="agent-assistant streaming">{liveText && <Markdown text={liveText} />}{live.incomplete && <p role="status">部分内容未在流式预览中显示，完成后可查看全文。</p>}</div>}
