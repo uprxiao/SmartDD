@@ -114,6 +114,23 @@ it('A18: omissions are explicit and original content survives; unsent/unknown tr
   expect(s.store.items(s.taskId).some(i => i.type === 'assistant_message' && i.payload.text === 'x'.repeat(10000))).toBe(true);
 });
 
+it('A18 describes the first handoff as full even when a fresh target has native startup notices', async () => {
+  const s = setup();
+  const a = await s.send('first source input');
+  a.finish('first source response');
+  const target = s.store.createBinding({ task_id: s.taskId, driver_id: 'codex-app-server', profile_id: 'new-target',
+    continuation_hash: 'd'.repeat(64), state_root: '/fixture/target', cwd_identity: '/work' });
+  const runId = 'new-target-run';
+  s.store.insertRun({ runId, taskId: s.taskId, bindingId: target, generation: 1, projectId: null, driverId: 'codex-app-server',
+    owner: { instanceId: 'test', pid: process.pid, startedAt: null }, launchPlanHash: 'c'.repeat(64) });
+  s.store.upsertItem({ taskId: s.taskId, runId, turnId: null, nativeKey: 'startup-notice', type: 'system_notice',
+    payload: { detail: 'Target process started' }, terminalState: 'completed' });
+  const first = new HandoffService(s.store).prepare(s.taskId, target, null, 256 * 1024)!;
+  expect(first.text).toContain('first source response');
+  expect(first.text).not.toContain('Target process started');
+  expect(s.db.prepare('SELECT kind FROM agent_transfers WHERE transfer_id=?').get(first.id)).toEqual({ kind: 'full' });
+});
+
 it('P2: a 30-round switch favors the newest history and preserves chronological order within the input budget', async () => {
   const s = setup();
   const answer = (round: number) => `handoff-answer-${round}: ` + 'x'.repeat(8 * 1024);

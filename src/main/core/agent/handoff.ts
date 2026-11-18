@@ -25,7 +25,8 @@ export class HandoffService {
       this.delivered(previous.transfer_id, 'unsent');
     }
     const covered = new Set<string>();
-    for (const row of db.prepare("SELECT covered_ids_json FROM agent_transfers WHERE target_binding_id=? AND delivery_state='accepted'").all(bindingId) as { covered_ids_json: string }[]) for (const entry of JSON.parse(row.covered_ids_json)) covered.add(typeof entry === 'string' ? `${entry}@1` : `${entry.itemId}@${entry.revision}`);
+    const acceptedTransfers = db.prepare("SELECT covered_ids_json FROM agent_transfers WHERE target_binding_id=? AND delivery_state='accepted'").all(bindingId) as { covered_ids_json: string }[];
+    for (const row of acceptedTransfers) for (const entry of JSON.parse(row.covered_ids_json)) covered.add(typeof entry === 'string' ? `${entry}@1` : `${entry.itemId}@${entry.revision}`);
     // 该原生绑定已实际看过的输入／输出，不再作为交接灌回去。
     const own = db.prepare(`SELECT DISTINCT i.item_id,i.revision FROM agent_items i LEFT JOIN agent_turns t ON t.turn_id=i.turn_id
       WHERE i.task_id=? AND (i.run_id IN (SELECT run_id FROM capability_runs WHERE binding_id=?)
@@ -67,7 +68,10 @@ export class HandoffService {
     const text = Buffer.byteLength(head + tail(omissions.length)) <= limit
       ? head + entries.reverse().join('') + tail(omissions.length) : '';
     ids.reverse();
-    const kind = own.length || db.prepare("SELECT 1 FROM agent_transfers WHERE target_binding_id=? AND delivery_state='accepted' LIMIT 1").get(bindingId) ? 'incremental' as const : 'full' as const;
+    // Startup diagnostics can belong to a new binding before it has seen any conversation.
+    const hasNativeHistory = db.prepare(`SELECT 1 FROM agent_turns t JOIN capability_runs r ON r.run_id=t.run_id
+      WHERE t.task_id=? AND r.binding_id=? AND t.native_turn_id IS NOT NULL LIMIT 1`).get(taskId, bindingId);
+    const kind = hasNativeHistory || acceptedTransfers.length ? 'incremental' : 'full';
     // 全量／增量的 exact payload 同历史条目保存；表中存 hash、来源与覆盖，不覆盖任何原消息。
     this.store.recordTransfer({ id, taskId, bindingId, turnId, kind, text, covered: ids, omissions });
     return { id, text, covered: ids, omissions };
