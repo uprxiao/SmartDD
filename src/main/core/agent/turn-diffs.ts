@@ -46,7 +46,16 @@ export class TurnDiffs {
  private task(taskId:string,write=false){const task=this.d.store.task(taskId);if(!task||write&&task.archived_at)throw Error('任务不存在或已归档');return task;}
  private row(taskId:string,turnId:string){this.task(taskId);const r=this.d.store.sqlite.prepare('SELECT rowid AS ordinal,* FROM agent_turn_changes WHERE task_id=? AND turn_id=?').get(taskId,turnId) as ChangeRow|undefined;if(!r)throw Error('本轮尚无差异记录');return r;}
  private card(taskId:string,turnId:string,payload:Record<string,unknown>){return this.d.store.upsertItem({taskId,turnId,runId:null,nativeKey:'host:turn-diff:'+turnId,type:'files_changed',payload,terminalState:'completed'});}
- private report(taskId:string,turnId:string,reason:string){this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET status='incomplete',incomplete_reason=? WHERE task_id=? AND turn_id=?").run(reason.slice(0,2000),taskId,turnId);this.card(taskId,turnId,{turnId,fileCount:0,status:'incomplete',reason:reason.slice(0,2000),observed:true});this.d.changed(taskId);}
+ private report(taskId:string,turnId:string,reason:string,userCanceled=false){
+  const detail=reason.slice(0,2000);
+  const changed=this.d.store.sqlite.prepare(`UPDATE agent_turn_changes SET status='incomplete',incomplete_reason=?
+   WHERE task_id=? AND turn_id=? AND (status='capturing' OR (? AND status='incomplete' AND incomplete_reason IS NOT ?))`)
+   .run(detail,taskId,turnId,Number(userCanceled),detail);
+  if(!changed.changes)return false;
+  this.card(taskId,turnId,{turnId,fileCount:0,status:'incomplete',reason:detail,observed:true});
+  this.d.changed(taskId);
+  return true;
+ }
  private async locked<T>(root:string,mode:'capture'|'cleanup',perform:()=>Promise<T>):Promise<T>{
   const gate=this.locks.get(root)??{readers:new Set<Promise<void>>()};
   this.locks.set(root,gate);
@@ -177,7 +186,26 @@ export class TurnDiffs {
  async after(taskId:string,turnId:string){
   if(this.closed||this.removing.has(taskId))return;
   const key='after:'+turnId;if(this.jobs.has(key))return this.jobs.get(key);let row:ChangeRow;try{row=this.row(taskId,turnId);}catch{const turn=this.d.store.turn(turnId);if(!turn||turn.task_id!==taskId)throw Error('回合不属于任务');this.d.store.sqlite.prepare("INSERT OR IGNORE INTO agent_turn_changes(turn_id,task_id,run_id,status) VALUES(?,?,?,'capturing')").run(turnId,taskId,turn.run_id);this.report(taskId,turnId,'原生自动回合开始前未取得可证明的快照边界，本轮差异不完整');return;}if(row.status!=='capturing'||!row.before_ref){if(row.status==='incomplete'&&!row.before_ref)this.prepareIdle(taskId,turnId);return;}
-  const work=(async()=>{try{const before=JSON.parse(row.before_ref!) as TreeRef;const after=await this.capture(taskId,{action:'capture',cwd:before.cwd,storage:this.d.storage,turnId,side:'after',timeoutMs:5000} as DiffJob) as TreeRef;this.d.store.sqlite.prepare('UPDATE agent_turn_changes SET after_ref=? WHERE turn_id=?').run(JSON.stringify(after),turnId);const changes=await this.job({action:'changes',cwd:before.cwd,storage:this.d.storage,turnId,before,after}) as {files:ObservedFile[]};if(this.d.stable&&!this.d.stable(taskId,turnId))throw Error('快照期间原生执行器又开始写入，无法证明本轮差异边界');const published=this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET after_ref=?,changed_files_json=?,status='complete',incomplete_reason=NULL WHERE turn_id=? AND status='capturing'").run(JSON.stringify(after),JSON.stringify(changes.files),turnId);if(published.changes!==1)return;this.card(taskId,turnId,{turnId,fileCount:changes.files.length,status:'complete',observed:true,note:'记录这个区间观察到的工作区变化，可能包含用户或外部写入'});this.d.changed(taskId);}catch(e){this.report(taskId,turnId,(e as Error).message);}})();this.jobs.set(key,work);try{await work;}finally{this.jobs.delete(key);}
+  const work=(async()=>{
+   try {
+    const before=JSON.parse(row.before_ref!) as TreeRef;
+    const after=await this.capture(taskId,{action:'capture',cwd:before.cwd,storage:this.d.storage,turnId,side:'after',timeoutMs:5000});
+    const ref=JSON.stringify(after);
+    const retained=this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET after_ref=? WHERE turn_id=? AND status='capturing'").run(ref,turnId);
+    if(!retained.changes){
+     await this.locked(before.cwd,'cleanup',()=>this.job({action:'release',cwd:before.cwd,storage:this.d.storage,turnId,after}));
+     return;
+    }
+    const changes=await this.job({action:'changes',cwd:before.cwd,storage:this.d.storage,turnId,before,after}) as {files:ObservedFile[]};
+    if(this.d.stable&&!this.d.stable(taskId,turnId))throw Error('快照期间原生执行器又开始写入，无法证明本轮差异边界');
+    const published=this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET changed_files_json=?,status='complete',incomplete_reason=NULL WHERE turn_id=? AND status='capturing'").run(JSON.stringify(changes.files),turnId);
+    if(!published.changes)return;
+    this.card(taskId,turnId,{turnId,fileCount:changes.files.length,status:'complete',observed:true,note:'记录这个区间观察到的工作区变化，可能包含用户或外部写入'});
+    this.d.changed(taskId);
+   } catch(e) {this.report(taskId,turnId,(e as Error).message);}
+  })();
+  this.jobs.set(key,work);
+  try{await work;}finally{this.jobs.delete(key);}
  }
  private prepareIdle(taskId:string,turnId:string){
   const task=this.task(taskId);if(this.closed||this.warm.has(task.cwd)||this.preparing.has(task.cwd)||this.d.stable&&!this.d.stable(taskId,turnId))return;
@@ -220,7 +248,15 @@ export class TurnDiffs {
  }
  async patch(taskId:string,turnId:string,path:string):Promise<DiffPatch>{const data=await this.patchData(taskId,turnId,path);return Buffer.byteLength(data.text)<=240*1024?data.value:{path:data.value.path,binary:data.value.binary,patch:null,bodyHash:data.hash};}
  async patchBody(taskId:string,turnId:string,path:string,hash:string,offset:number){if(!Number.isSafeInteger(offset)||offset<0||!/^([a-f0-9]{64})$/.test(hash))throw Error('差异分段读取参数无效');const data=await this.patchData(taskId,turnId,path);if(data.hash!==hash)throw Error('差异版本已变化，请重新打开');return rangeOf(data.text,offset);}
- cancel(taskId:string,turnId:string){this.task(taskId,true);this.row(taskId,turnId);for(const side of ['before','after'])this.cancellations.get(side+':'+turnId)?.();this.report(taskId,turnId,'用户取消差异捕获；本轮不可补造');return{canceled:true};}
+ cancel(taskId:string,turnId:string){
+  this.task(taskId,true);
+  this.row(taskId,turnId);
+  const keys=['before:'+turnId,'after:'+turnId];
+  if(!keys.some(key=>this.jobs.has(key)))return{canceled:false};
+  const canceled=this.report(taskId,turnId,'用户取消差异捕获；本轮不可补造',true);
+  if(canceled)for(const key of keys)this.cancellations.get(key)?.();
+  return{canceled};
+ }
  async close(){
   this.closed=true;
   for(const cancel of this.cancellations.values())cancel();

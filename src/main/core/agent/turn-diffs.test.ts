@@ -68,6 +68,31 @@ it('A73: incremental stat reuse still detects same-size edits with restored mtim
 it('A73: cancellation leaves neither a complete ref nor temporary snapshot files and never changes source bytes',async()=>{
  const f=fixture();writeFileSync(join(f.cwd,'a'),'source');const controller=new AbortController();await expect(runDiffJob({...f,action:'capture',turnId:'cancelled',side:'before'},{signal:controller.signal,progress:()=>controller.abort(Error('cancelled by user'))})).rejects.toThrow('cancelled');expect(readFileSync(join(f.cwd,'a'),'utf8')).toBe('source');expect((await import('node:fs')).readdirSync(f.storage).some(n=>n.startsWith('index-'))).toBe(false);
 });
+
+it('A65 keeps explicit snapshot cancellation after the worker reports a later failure', async () => {
+ const f = fixture(), db = new Database(':memory:');
+ runBundledMigrations(db);
+ const store = new AgentStore(db);
+ const taskId = store.createTask({ projectId: null, dirId: null, cwd: f.cwd, title: 'diff', selection: { profileId: 'p', driverId: 'codex-app-server', tier: 'ask' } });
+ const bindingId = store.createBinding({ task_id: taskId, driver_id: 'codex-app-server', profile_id: 'p', continuation_hash: 'a'.repeat(64), state_root: f.root, cwd_identity: f.cwd });
+ store.insertRun({ runId: 'test-run', taskId, bindingId, generation: 1, projectId: null, driverId: 'codex-app-server', owner: { instanceId: 'fixture', pid: process.pid, startedAt: null }, launchPlanHash: 'b'.repeat(64) });
+ const turnId = store.acceptTurn({ taskId, clientInputId: 'cancel-diff', text: 'work', sourceKind: 'user' }).turn.turn_id;
+ let started!: () => void, fail!: (error: Error) => void;
+ const entered = new Promise<void>(resolve => { started = resolve; });
+ const diffs = new TurnDiffs({ store, storage: f.storage, changed: () => {}, execute: () => new Promise((_, reject) => { fail = reject; started(); }) });
+ try {
+  const capture = diffs.before(taskId, turnId, 'test-run');
+  await entered;
+  expect(diffs.cancel(taskId, turnId)).toEqual({ canceled: true });
+  fail(Error('Git 快照命令超时或超限'));
+  await capture;
+  const reason = '用户取消差异捕获；本轮不可补造';
+  expect(diffs.turn(taskId, turnId)).toMatchObject({ status: 'incomplete', reason, preparing: false });
+  expect(store.items(taskId).filter(item => item.type === 'files_changed')).toEqual([expect.objectContaining({ revision: 1, payload: expect.objectContaining({ reason }) })]);
+  expect(diffs.cancel(taskId, turnId)).toEqual({ canceled: false });
+ } finally { await diffs.close(); db.close(); }
+});
+
 it('A65: long Unicode diff bodies use bounded, hash-bound chunks and preserve both original documents exactly',async()=>{
  const f=fixture(),db=new Database(':memory:');runBundledMigrations(db);const store=new AgentStore(db),taskId=store.createTask({projectId:null,dirId:null,cwd:f.cwd,title:'large diff',selection:{driverId:'codex-app-server',profileId:'p',tier:'ask'}}),turn=store.acceptTurn({taskId,clientInputId:'large-diff-input',text:'change',sourceKind:'user'}).turn,body={path:'a.txt',binary:false,patch:'omitted test patch',beforeText:'中🙂\\'.repeat(80000),afterText:'后🙂\\'.repeat(80000)};
  const ref=await runDiffJob({...f,action:'capture',turnId:turn.turn_id,side:'before'}) as TreeRef;
