@@ -93,6 +93,37 @@ it('A20 revalidates a listed target after the asynchronous Git preflight before 
   expect(f.co.view(f.taskId).childrenTotal).toBe(0);
 });
 
+it('A20 keeps the accepted receipt but never starts a child whose target changed during worktree preparation', async () => {
+  const f = fixture();
+  await f.send('start');
+  vi.spyOn(f.git, 'detect').mockResolvedValue({ root: f.root, cwd: f.root, branch: 'main' });
+  const baseCommit = 'a'.repeat(40);
+  vi.spyOn(f.git, 'sourceSnapshot').mockResolvedValue({ baseCommit, uncommittedFiles: 0 });
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const prepare = vi.spyOn(f.git, 'create').mockImplementation(async ({ parentTaskId, childTaskId }) => {
+    await gate;
+    return { cwd: f.root, workspace: {
+      workspace_id: 'worktree', task_id: parentTaskId, child_task_id: childTaskId, kind: 'git_worktree',
+      repo_root: f.root, path: f.root, branch: 'fixture-worktree', base_commit: baseCommit,
+      state: 'ready', deps_result: null,
+    } };
+  });
+  const accepted = await f.delegate('a20-worktree-prepare', undefined, 'worktree');
+  try {
+    await until(() => prepare.mock.calls.length === 1, 5000);
+    f.setRevision('r2');
+  } finally {
+    release();
+  }
+  await until(() => f.co.view(f.taskId).children[0]?.state === 'failed', 5000);
+  const repeated = await f.delegate('a20-worktree-prepare', undefined, 'worktree');
+  expect(repeated.childTaskId).toBe(accepted.childTaskId);
+  expect(repeated.delegationId).toBe(accepted.delegationId);
+  expect(f.instances).toHaveLength(1);
+  expect(f.co.view(f.taskId).childrenTotal).toBe(1);
+});
+
 it('A20 rejects a delegated input when the target changes while the native owner is being opened', async () => {
   const f = fixture();
   const parent = await f.send('start');
