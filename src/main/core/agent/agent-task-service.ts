@@ -26,6 +26,7 @@ export interface ResolvedLaunch {
   extraArgs: string[];
   settingSources?: ('user' | 'project' | 'local')[];
   capabilities?: Record<CapabilityName, CapabilityResult>;
+  modelsWithoutImageInput?: ReadonlySet<string>;
   assertCurrent?(): void;
   integrate?(context: { runId: string; bindingId: string; generation: number; nativeId?: string }): Promise<RunIntegration | undefined>;
 }
@@ -407,7 +408,14 @@ export class AgentTaskService {
       if (!this.steerable(run)) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: '该执行器版本没有插话的验证证据，已排队' };
       this.dispatching.add(taskId);
       this.queuedSteers.add(accepted.turn.turn_id);
-      try { await this.d.runs.steer(run.runId, accepted.turn.turn_id, { clientInputId: input.clientInputId, ...this.agentInput(input.text, attachments) });this.humanSent(accepted.turn.turn_id,run,input.text); return { turnId: accepted.turn.turn_id, duplicate: false, status: 'steered' }; }
+      try {
+        const turnId = accepted.turn.turn_id;
+        const { omittedImages, ...body } = this.agentInput(input.text, attachments, run, run.appliedModel ?? run.defaultModel);
+        await this.d.runs.steer(run.runId, turnId, { clientInputId: input.clientInputId, ...body });
+        this.reportOmittedImages(taskId, turnId, omittedImages);
+        this.humanSent(turnId, run, input.text);
+        return { turnId, duplicate: false, status: 'steered' };
+      }
       catch (e) {
         // 只有能证明未发出（协议明确拒绝、状态不符、不支持）才转排队；超时或断线可能已被接受，记未知、不自动重发（复核 CR02）。
         if (e instanceof DriverError && (e.code === 'REJECTED' || e.code === 'STATE' || e.code === 'UNSUPPORTED')) return { turnId: accepted.turn.turn_id, duplicate: false, status: 'queued', steerRefused: `插话未被接受（${e.message.slice(0, 120)}），已排队` };
@@ -425,9 +433,19 @@ export class AgentTaskService {
   }
 
   /** 发给执行器的文字（附件注明）与图片路径。 */
-  private agentInput(text: string, attachments: Attachment[]) {
+  private agentInput(text: string, attachments: Attachment[], run: RunHandle, model?: string) {
     // 图片一律读冻结副本（storedPath，在 WillYou 私有目录内）。
-    return { text: text + attachmentNote(attachments), images: attachments.filter(a => a.image && a.storedPath).map(a => ({ path: a.storedPath!, mime: a.mime })) };
+    const attachImages = !model || !run.modelsWithoutImageInput?.has(model);
+    const images = attachments.filter(a => a.image && a.storedPath).map(a => ({ path: a.storedPath!, mime: a.mime }));
+    return { text: text + attachmentNote(attachments, attachImages), images: attachImages ? images : [], omittedImages: attachImages ? 0 : images.length };
+  }
+
+  private reportOmittedImages(taskId: string, turnId: string, count: number) {
+    if (!count) return;
+    try {
+      this.d.store.addHostItem(taskId, turnId, 'system_notice', { severity: 'warning', code: 'modelDoesNotAcceptImages',
+        title: '当前模型不支持图片', detail: `未发送 ${count} 张图片的图像内容，原附件已保留。` });
+    } catch { /* A display failure cannot change the native input receipt. */ }
   }
 
   /** 输入框附件准备：taskId 为空时（首页）用所选目录。 */
@@ -475,7 +493,7 @@ export class AgentTaskService {
       launch.assertCurrent?.();
     };
     assertCurrent();
-    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, assertCurrent, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
+    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
     this.coordination?.opened(taskId, this.d.runs.runForTask(taskId)!);
     return this.d.runs.runForTask(taskId)!;
   }
@@ -573,7 +591,7 @@ export class AgentTaskService {
       if (!model && run.driverId === 'codex-app-server' && (run.sentModel || run.resumed)) throw new DriverError('UNSUPPORTED', '无法确定执行器默认模型，请在模型菜单里明确选择一个模型');
       // 派发前最后核对停止：上面每个异步前置（打开、默认模型查询）期间都可能按了停止（复核 SR01）。
       if (stoppedSince()) return;
-      const input = this.agentInput(frozen.text, frozen.attachments ?? []);
+      const { omittedImages, ...input } = this.agentInput(frozen.text, frozen.attachments ?? [], run, model);
       const modelInfo = run.models?.find(m => m.id === model);
       let effort = modelInfo?.defaultEffort;
       if (selection.effort) {
@@ -587,6 +605,7 @@ export class AgentTaskService {
       if (!run.readOnly) await this.diffs?.before(taskId, next.turn_id, run.runId, this.d.runs.nativeBusy(run.runId));
       if(stoppedSince())return;
       await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort });
+      this.reportOmittedImages(taskId, next.turn_id, omittedImages);
       if(this.d.store.turn(next.turn_id)?.source_kind==='user')this.humanSent(next.turn_id,run,frozen.text);
       if (transfer) this.handoffs.delivered(transfer.id, 'accepted');
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
@@ -707,7 +726,9 @@ export class AgentTaskService {
     this.dispatching.add(taskId);
     this.queuedSteers.add(turnId);
     try {
-      await this.d.runs.steer(run.runId, turnId, { clientInputId: row.client_input_id, ...this.agentInput(input.text, input.attachments ?? []) });
+      const { omittedImages, ...body } = this.agentInput(input.text, input.attachments ?? [], run, run.appliedModel ?? run.defaultModel);
+      await this.d.runs.steer(run.runId, turnId, { clientInputId: row.client_input_id, ...body });
+      this.reportOmittedImages(taskId, turnId, omittedImages);
       this.trustedInputs.set(turnId, sender);
       this.humanSent(turnId, run, input.text);
       return { status: 'steered' as const };

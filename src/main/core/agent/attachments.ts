@@ -99,9 +99,14 @@ export function freezeImages(list: Attachment[], cwd: string, userData: string):
 }
 
 /** 发给 Agent 的文字中注明附件：项目内文件给相对路径，项目外附件说明是副本。 */
-export function attachmentNote(list: Attachment[]): string {
+export function attachmentNote(list: Attachment[], attachImages = true): string {
   if (!list.length) return '';
-  const lines = list.map(a => a.kind === 'path' ? `- 项目文件：${a.relativePath}` : a.image ? `- 图片：${a.name}（已附上）` : `- 附件：${a.name}（项目外文件的副本：${a.storedPath}）`);
+  const lines = list.map(a => {
+    if (a.image && !attachImages) return `- 图片：${a.relativePath ?? a.name}（目标模型不接收图片，未发送图像内容）`;
+    if (a.kind === 'path') return `- 项目文件：${a.relativePath}`;
+    if (a.image) return `- 图片：${a.name}（已附上）`;
+    return `- 附件：${a.name}（项目外文件的副本：${a.storedPath}）`;
+  });
   return `\n\n附件：\n${lines.join('\n')}`;
 }
 

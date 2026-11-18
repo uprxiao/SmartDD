@@ -125,7 +125,10 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     assertCurrent();
     materializeAgentPlan(launch.plan, d.userData, cwd);
     const env = probe.shellPath ? { ...launch.env, PATH: probe.shellPath } : launch.env;
-    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities, assertCurrent,
+    const modelsWithoutImageInput = kind === 'codex' && provider
+      ? new Set(provider.models.filter(model => model.codex && !model.codex.inputModalities.includes('image')).map(model => model.id))
+      : undefined;
+    return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities, modelsWithoutImageInput, assertCurrent,
       integrate: async context => {
         if (!business || !taskId || probe.capabilities.mcp.state !== 'enabled') return undefined;
         const task = store.task(taskId); if (!task?.project_id) return undefined;

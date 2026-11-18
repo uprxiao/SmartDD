@@ -33,14 +33,14 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string } = {}) {
+function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string> } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db, { artifactDir: opts.artifactDir });
   const insts: Inst[] = [];
   const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.nativeDefault = opts.nativeDefault; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
-  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
+  const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], modelsWithoutImageInput: opts.modelsWithoutImageInput, ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
   const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData });
   return { db, store, runs, svc, insts, launches };
 }
@@ -239,6 +239,32 @@ describe('目标与插话', () => {
 });
 
 describe('附件随输入冻结', () => {
+  it('A18 reports an image not sent to the frozen text-only model and preserves its original bytes', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'willyou-a18-input-')));
+    try {
+      const cwd = join(root, 'work'), userData = join(root, 'user-data'), path = join(root, 'synth.png');
+      mkdirSync(cwd); mkdirSync(userData); writeFileSync(path, 'fixture bytes');
+      const { svc, store, insts } = setup({ userData, launchModel: 'text-only', modelsWithoutImageInput: new Set(['text-only']) });
+      const { taskId } = svc.create({ projectId: null, dirId: null, cwd, title: 'modalities', profileId: 'cx', tier: 'ask' });
+      const picture = svc.prepareAttachment(taskId, null, { sourcePath: path, name: 'synth.png' });
+      const first = await svc.submit(taskId, { clientInputId: id(11), text: 'Use this if you can', attachments: [picture], expectedSelectionRevision: 1 });
+      await until(() => store.items(taskId).some(item => item.payload.code === 'modelDoesNotAcceptImages'));
+      expect(insts[0].turns[0]).toMatchObject({ model: 'text-only', images: [], text: expect.stringContaining('未发送图像内容') });
+      expect(insts[0].turns[0].text).not.toContain('已附上');
+      expect(store.items(taskId).filter(item => item.payload.code === 'modelDoesNotAcceptImages')).toEqual([expect.objectContaining({ turnId: first.turnId })]);
+      expect(readFileSync(picture.storedPath!, 'utf8')).toBe('fixture bytes');
+      insts[0].finish();
+
+      const updated = svc.setSelection(taskId, { model: 'with-images' }, 1);
+      expect(updated.ok).toBe(true);
+      await svc.submit(taskId, { clientInputId: id(12), text: 'Look again', attachments: [picture], expectedSelectionRevision: updated.revision });
+      await until(() => insts[0].turns.length === 2);
+      expect(insts[0].turns[1]).toMatchObject({ model: 'with-images', images: [{ path: picture.storedPath, mime: 'image/png' }], text: expect.stringContaining('已附上') });
+      expect(store.items(taskId).filter(item => item.payload.code === 'modelDoesNotAcceptImages')).toHaveLength(1);
+      insts[0].finish();
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
   it('排队的输入保留自己的附件；执行器收到注明附件的文字与图片路径', async () => {
     const root = realpathSync(mkdtempSync(join(tmpdir(), 'm14-tsa-'))), cwd = join(root, 'w'), ud = join(root, 'ud');
     mkdirSync(cwd); mkdirSync(ud); writeFileSync(join(cwd, 'a.ts'), 'x'); writeFileSync(join(root, 'pic.png'), 'png');
