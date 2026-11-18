@@ -1,6 +1,7 @@
 // M14 运行服务（技术方案 T1.5 §3）：打开／恢复绑定、登记真实运行身份、提交输入、转发原生请求与回应。
 // 统一接口验证 task、binding、run、generation；客户端不得自报 PID、nativeId 或真人来源。
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import { evaluateCapabilities, type CapabilityName, type CapabilityResult, type DriverId } from './capabilities';
 import type { AgentDriver, DriverEvent, DriverExecutable, DriverInstance, DriverModel } from './driver';
 import { DriverError } from './driver';
@@ -194,9 +195,8 @@ export class AgentRunService {
           if (run.turnId && turns.some(t => t.turn_id === run.turnId)) {
             run.turnId = null;
             if (run.userStop?.turnId) {
-              // The parent interruption may be acknowledged while a native child is
-              // still active. Keep the original deadline until those children drain.
-              if (run.nativeNodes?.size) run.userStop.turnId = null;
+              // Claude's foreground interrupt and SDK stopTask are separate operations.
+              if (run.nativeNodes?.size && run.driverId !== 'claude-sdk') run.userStop.turnId = null;
               else run.userStop = undefined;
             }
           }
@@ -392,6 +392,27 @@ export class AgentRunService {
   }
 
   async closeAll() { await Promise.all([...this.runs.keys()].map(id => this.close(id))); }
+
+  async recoverPreviousNativeNodes(signal: AbortSignal) {
+    const { store, processes, host } = this.deps;
+    const inspectGroup = processes.ownedGroup?.bind(processes);
+    if (!inspectGroup) return;
+    let pending = store.runsWithUnsettledNativeNodes(host.instanceId);
+    const deadline = Date.now() + 10_000;
+    // The application run ledger may already have marked the old owner interrupted.
+    // Its state alone cannot prove that the native launch group is no longer active.
+    for (let wait = 0; pending.length && !signal.aborted && Date.now() < deadline; wait = 250) {
+      await delay(wait, undefined, { signal }).catch(error => { if (!signal.aborted) throw error; });
+      if (signal.aborted) return;
+      pending = pending.filter(({ runId, pid, startedAt }) => {
+        const proof = inspectGroup({ pid, startedAt });
+        if (proof?.state !== 'stopped') return proof?.state === 'running';
+        store.interruptRecoveredNativeNodes(runId);
+        return false;
+      });
+    }
+  }
+
   private captureNode(run: ActiveRun, nodeId: string) {
     const read = run.instance.nativeChildHistory!(nodeId).then(items => { for (const i of items) this.deps.store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node:${nodeId}:history:${i.key}`, nodeId, type: 'subagent_message', payload: i.payload, terminalState: 'completed' }); }).catch(() => { /* missing native messages remain explicit; never invent content */ });
     (run.nodeReads ??= new Set()).add(read); void read.finally(() => run.nodeReads?.delete(read));

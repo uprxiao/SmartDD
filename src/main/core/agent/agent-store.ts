@@ -545,6 +545,25 @@ export class AgentStore {
       return rows.map(r => ({ runId: r.run_id, taskId: r.task_id, pid: r.pid, processStartedAt: r.process_started_at }));
     });
   }
+  runsWithUnsettledNativeNodes(currentInstanceId: string) {
+    return this.sqlite.prepare(`SELECT r.run_id AS runId,r.pid,r.process_started_at AS startedAt
+      FROM capability_runs r WHERE r.binding_id IS NOT NULL AND r.owner_instance_id<>?
+      AND (r.state='orphaned' OR (r.state='stopped' AND r.error_code='HOST_INTERRUPTED'))
+      AND r.pid IS NOT NULL AND r.process_started_at IS NOT NULL
+      AND EXISTS(SELECT 1 FROM agent_items i WHERE i.run_id=r.run_id AND i.type='subagent_status' AND i.terminal_state IS NULL)`)
+      .all(currentInstanceId) as { runId: string; pid: number; startedAt: string }[];
+  }
+
+  interruptRecoveredNativeNodes(runId: string) {
+    this.tx(emit => {
+      const rows = this.sqlite.prepare(`UPDATE agent_items
+        SET payload_ref=json_set(payload_ref,'$.state','interrupted','$.reason','owner-restarted'),
+          terminal_state='failed',revision=revision+1,updated_at=?
+        WHERE run_id=? AND type='subagent_status' AND terminal_state IS NULL
+        RETURNING item_id,task_id,revision,payload_ref`).all(now(), runId) as { item_id: string; task_id: string; revision: number; payload_ref: string }[];
+      for (const row of rows) emit(row.task_id, 'item.updated', { type: 'subagent_status', payload: JSON.parse(row.payload_ref) }, row.item_id, row.revision);
+    });
+  }
   tasksWithQueue() { return (this.sqlite.prepare("SELECT DISTINCT task_id FROM agent_turns WHERE status='accepted'").all() as { task_id: string }[]).map(r => r.task_id); }
 
   /** 原生自行开始的回合（目标自动续跑等）：宿主记录为系统来源的回合，不生成用户消息。 */

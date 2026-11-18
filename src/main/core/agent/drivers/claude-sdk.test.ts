@@ -8,7 +8,7 @@ type Turn = (ctx: { options: any; emit: (m: any) => void; ask: (tool: string, in
 
 /** SDK 替身：读取流式输入，每条用户消息按脚本产生消息；记录 options 与权限模式切换。 */
 function fakeSdk(turns: Turn[]) {
-  const state = { options: undefined as any, modes: [] as string[], interrupts: 0, closed: false, prompts: [] as any[] };
+  const state = { options: undefined as any, modes: [] as string[], interrupts: 0, closed: false, prompts: [] as any[], stoppedTasks: [] as string[] };
   const fn: SdkQueryFn = ({ prompt, options }) => {
     state.options = options;
     const out: any[] = []; const waiters: ((v: IteratorResult<any>) => void)[] = []; let done = false; let interrupted = false;
@@ -27,6 +27,10 @@ function fakeSdk(turns: Turn[]) {
     const q: SdkQuery = {
       [Symbol.asyncIterator]: () => ({ next: () => out.length ? Promise.resolve({ value: out.shift(), done: false }) : done ? Promise.resolve({ value: undefined, done: true }) : new Promise(r => waiters.push(r)) }),
       interrupt: async () => { state.interrupts++; interrupted = true; },
+      stopTask: async taskId => {
+        state.stoppedTasks.push(taskId);
+        emit({ type: 'system', subtype: 'task_notification', task_id: taskId, tool_use_id: 'background-tool', status: 'stopped' });
+      },
       setPermissionMode: async m => { state.modes.push(m); },
       setModel: async (m?: string) => { await (wrapper as any).setModelHook?.(m); },
       close: () => { state.closed = true; },
@@ -254,6 +258,31 @@ describe('Claude SDK 驱动', () => {
     await until(() => events.some(e => e.type === 'turn.completed'));
     expect(sdk.state.interrupts).toBe(1);
     expect(events.find(e => e.type === 'turn.completed')).toMatchObject({ status: 'interrupted' });
+  });
+
+  it('A05 stops a reported native background task independently after stopping the foreground', async () => {
+    const { inst, sdk, events } = make([async ({ emit, interrupted }) => {
+      emit({ type: 'system', subtype: 'task_started', task_id: 'native-background-id', tool_use_id: 'background-tool' });
+      emit({ type: 'assistant', uuid: 'foreground', message: {} });
+      await until(interrupted);
+      emit({ type: 'result', subtype: 'error_during_execution', is_error: true });
+    }, ok('continued')]);
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: 'first', text: 'run', tier: 'ask' });
+    await inst.interrupt();
+    await until(() => events.some(event => event.type === 'turn.completed'));
+    expect(sdk.state.stoppedTasks).toEqual([]);
+    expect(events.filter(event => event.type === 'node.state')).toEqual([
+      expect.objectContaining({ nodeId: 'background-tool', state: 'running' }),
+    ]);
+    await inst.interrupt();
+    await until(() => events.some(event => event.type === 'node.state' && event.state === 'interrupted'));
+    expect(sdk.state.stoppedTasks).toEqual(['native-background-id']);
+    expect(sdk.state.interrupts).toBe(1);
+    await inst.startTurn({ clientInputId: 'next', text: 'continue', tier: 'ask' });
+    await until(() => events.some(event => event.type === 'turn.completed' && event.status === 'completed'));
+    expect(sdk.state.interrupts).toBe(1);
+    await inst.close();
   });
 
   it('失败结果映射为失败；上一轮未结束时拒绝新输入', async () => {

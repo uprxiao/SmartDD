@@ -168,9 +168,13 @@ export class TurnDiffs {
   for(const [token,held] of this.viewerLeases)if(ids.has(held.taskId))this.releaseView(held.taskId,token);
   return ()=>{for(const id of ids)this.removing.delete(id);};
  }
- async before(taskId:string,turnId:string,runId:string){
+ async before(taskId:string,turnId:string,runId:string,backgroundActive=false){
   if(this.closed||this.removing.has(taskId))return;const task=this.task(taskId,true);const known=this.d.store.sqlite.prepare('SELECT * FROM agent_turn_changes WHERE turn_id=?').get(turnId) as ChangeRow|undefined;if(known)return;
   this.d.store.sqlite.prepare("INSERT INTO agent_turn_changes(turn_id,task_id,run_id,status) VALUES(?,?,?,'capturing')").run(turnId,taskId,runId);
+  if (backgroundActive) {
+    this.report(taskId, turnId, '回合开始时仍有原生后台工作，无法确认本轮改动的起点');
+    return;
+  }
   const prior=this.d.store.sqlite.prepare(`SELECT 1 FROM agent_turn_changes
    WHERE task_id=? AND status='complete' AND json_extract(before_ref,'$.cwd')=? LIMIT 1`).get(taskId,realpathSync(task.cwd));
   if(prior)this.warm.add(task.cwd);
@@ -183,8 +187,15 @@ export class TurnDiffs {
   if(!ready){adopted=false;this.report(taskId,turnId,'首次快照仍在后台准备，本轮前态缺失；任务可以继续，不能以较晚状态补造');}
 
  }
- async after(taskId:string,turnId:string){
+ async after(taskId:string,turnId:string,backgroundActive=false){
   if(this.closed||this.removing.has(taskId))return;
+  if (backgroundActive) {
+    const turn = this.d.store.turn(turnId);
+    if (!turn || turn.task_id !== taskId) throw Error('回合不属于任务');
+    this.d.store.sqlite.prepare("INSERT OR IGNORE INTO agent_turn_changes(turn_id,task_id,run_id,status) VALUES(?,?,?,'capturing')").run(turnId, taskId, turn.run_id);
+    this.report(taskId, turnId, '回合结束时仍有原生后台工作，无法确认本轮改动的终点');
+    return;
+  }
   const key='after:'+turnId;if(this.jobs.has(key))return this.jobs.get(key);let row:ChangeRow;try{row=this.row(taskId,turnId);}catch{const turn=this.d.store.turn(turnId);if(!turn||turn.task_id!==taskId)throw Error('回合不属于任务');this.d.store.sqlite.prepare("INSERT OR IGNORE INTO agent_turn_changes(turn_id,task_id,run_id,status) VALUES(?,?,?,'capturing')").run(turnId,taskId,turn.run_id);this.report(taskId,turnId,'原生自动回合开始前未取得可证明的快照边界，本轮差异不完整');return;}if(row.status!=='capturing'||!row.before_ref){if(row.status==='incomplete'&&!row.before_ref)this.prepareIdle(taskId,turnId);return;}
   const work=(async()=>{
    try {

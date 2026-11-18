@@ -11,6 +11,7 @@ import type { Tier } from '../permissions';
 // 只依赖 SDK 的最小形状，便于测试注入替身；生产由 loadSdk 动态加载锁定版本。
 export interface SdkQuery extends AsyncIterable<any> {
   interrupt(): Promise<unknown>;
+  stopTask?(taskId: string): Promise<void>;
   setPermissionMode(mode: string): Promise<void>;
   setModel?(model?: string): Promise<void>;
   supportedModels?(): Promise<{ value: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
@@ -45,7 +46,7 @@ const requestKind = (tool: string): DriverRequestKind =>
 
 export class ClaudeSdkInstance implements DriverInstance {
   private openOptions?:DriverOpenOptions;
-  private readonly nodeStates = new Map<string, { runId?: string; terminal: boolean }>();
+  private readonly nodeStates = new Map<string, { taskId: string; runId?: string; terminal: boolean }>();
   readonly driverId = 'claude-sdk' as const;
   private readonly emitter = new Emitter();
   private query?: SdkQuery;
@@ -59,6 +60,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   private model: string | undefined;
   private effort: string | undefined;
   private goalCommandTurn: string | null = null;
+  private configuringTurn = false;
   private stopPending = false;
   private readonly pending = new Map<string, PendingRequest>();
   private pump?: Promise<void>;
@@ -174,7 +176,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (m?.type === 'system' && ['task_started', 'task_notification'].includes(m.subtype) && typeof m.task_id === 'string') {
       const id = String(m.tool_use_id ?? m.task_id), runId = typeof m.run_id === 'string' ? m.run_id : undefined, old = this.nodeStates.get(id), running = m.subtype === 'task_started';
       const late = old && (old.runId && runId && runId < old.runId || old.terminal && running && (!runId || runId === old.runId));
-      if (!late) { this.nodeStates.set(id, { runId, terminal: !running }); this.emitter.emit({ type: 'node.state', nodeId: id, nativeRunId: runId, state: running ? 'running' : m.status === 'failed' ? 'failed' : m.status === 'stopped' ? 'interrupted' : 'completed' }); }
+      if (!late) { this.nodeStates.set(id, { taskId: m.task_id, runId, terminal: !running }); this.emitter.emit({ type: 'node.state', nodeId: id, nativeRunId: runId, state: running ? 'running' : m.status === 'failed' ? 'failed' : m.status === 'stopped' ? 'interrupted' : 'completed' }); }
       this.emitter.emit({ type: 'node.message', nodeId: id, key: String(m.uuid ?? `${m.subtype}:${runId ?? m.task_id}`), payload: m });
     }
     if (typeof m?.parent_tool_use_id === 'string' && m.parent_tool_use_id) {
@@ -244,24 +246,27 @@ export class ClaudeSdkInstance implements DriverInstance {
     // 已结束的会话不能再派发；输入尚未写出，按未发出处理（复核 NR04）。
     if (this.historyPending || this.historyBroken) throw new DriverError('STATE', '历史追加尚未确认，不能发送新输入');
     if (this.exited || this.ended) throw new DriverError('STATE', '会话已结束，将恢复后发送');
-    if (this.activeTurn) throw new DriverError('STATE', '上一轮尚未结束');
+    if (this.activeTurn || this.configuringTurn) throw new DriverError('STATE', '上一轮尚未结束');
     const params = CLAUDE_TIERS[input.tier];
     if (!params) throw new DriverError('REJECTED', 'Claude 不支持该档位');
     // 跨越完全访问须在启动时声明；同一会话不切换，由调用方重开并恢复（复核 CR12，CLI 实测拒绝）。
     if (input.tier !== this.tier) throw new DriverError('UNSUPPORTED', '权限档位变化需要重开会话');
-    // 停止只作用于之后开始的这一轮：空闲时按停止留下的标记不能中断下一轮（复核 SR01）。
     this.stopPending = false;
-    // 同任务换模型：下一轮前显式应用（复核 CR11）；undefined 恢复执行器默认。
-    if (input.model !== this.model) {
-      if (!this.query.setModel) throw new DriverError('UNSUPPORTED', '该 SDK 不支持切换模型');
-      await this.query.setModel(input.model); this.model = input.model;
-      // 切换模型期间按了停止：输入尚未写出，按未发出退回排队（复核 SR01）。
-      if (this.stopPending) { this.stopPending = false; throw new DriverError('STATE', '已停止，输入保留在排队'); }
-    }
-    if (input.effort !== this.effort) {
-      if (!this.query.applyFlagSettings) throw new DriverError('UNSUPPORTED', '该 SDK 未公布会话推理强度设置');
-      await this.query.applyFlagSettings({ effortLevel: input.effort ?? null }); this.effort = input.effort;
-      if (this.stopPending) { this.stopPending = false; throw new DriverError('STATE', '已停止，输入保留在排队'); }
+    this.configuringTurn = true;
+    try {
+      // 下一轮显式应用选择，undefined 恢复执行器默认。
+      if (input.model !== this.model) {
+        if (!this.query.setModel) throw new DriverError('UNSUPPORTED', '该 SDK 不支持切换模型');
+        await this.query.setModel(input.model); this.model = input.model;
+        if (this.stopPending) throw new DriverError('STATE', '已停止，输入保留在排队');
+      }
+      if (input.effort !== this.effort) {
+        if (!this.query.applyFlagSettings) throw new DriverError('UNSUPPORTED', '该 SDK 未公布会话推理强度设置');
+        await this.query.applyFlagSettings({ effortLevel: input.effort ?? null }); this.effort = input.effort;
+        if (this.stopPending) throw new DriverError('STATE', '已停止，输入保留在排队');
+      }
+    } finally {
+      this.configuringTurn = false;
     }
     if (this.historyPending || this.historyBroken) throw new DriverError('STATE', '历史追加尚未确认，不能发送新输入');
     if (this.exited || this.ended) throw new DriverError('STATE', '会话已结束，将恢复后发送');
@@ -292,7 +297,18 @@ export class ClaudeSdkInstance implements DriverInstance {
 
   async interrupt() {
     const t = this.activeTurn;
-    if (!t || !t.started) { this.stopPending = true; return; }
+    if (this.configuringTurn) { this.stopPending = true; return; }
+    if (!t) {
+      const stopTask = this.query?.stopTask?.bind(this.query);
+      if (!stopTask) return;
+      const background = new Set([...this.nodeStates.values()].filter(node => !node.terminal).map(node => node.taskId));
+      const outcomes = await Promise.allSettled([...background].map(taskId => stopTask(taskId)));
+      for (const outcome of outcomes) {
+        if (outcome.status === 'rejected') this.emitter.emit({ type: 'diagnostic', message: `后台工作中断失败：${(outcome.reason as Error).message}` });
+      }
+      return;
+    }
+    if (!t.started) { this.stopPending = true; return; }
     t.interrupted = true;
     try { await this.query?.interrupt(); } catch (e) { this.emitter.emit({ type: 'diagnostic', message: `中断失败：${(e as Error).message}` }); }
   }

@@ -154,7 +154,11 @@ export class AgentTaskService {
   private business?: HostBusinessRequests; private diffs?: Pick<TurnDiffs, 'before' | 'after' | 'capturing' | 'beginTaskRemoval'>;private diffBusy?:(taskId:string)=>boolean; private readonly finishingTurns=new Set<string>();
   attachBusiness(value:HostBusinessRequests){this.business=value;}
   attachDiffs(value:NonNullable<AgentTaskService['diffs']>,busy?:(taskId:string)=>boolean){this.diffs=value;this.diffBusy=busy;}
-  private async finishDiff(taskId:string,turnId:string){while(this.diffBusy?.(taskId))await new Promise(r=>setTimeout(r,50));await this.diffs?.after(taskId,turnId);}
+  private async finishDiff(taskId: string, turnId: string, runId: string | null | undefined) {
+    const overlappingBackground = () => !!runId && this.d.runs.nativeBusy(runId);
+    while (!overlappingBackground() && this.diffBusy?.(taskId)) await new Promise(resolve => setTimeout(resolve, 50));
+    await this.diffs?.after(taskId, turnId, overlappingBackground());
+  }
   private discardAttachments?: (taskId: string | null, data: unknown) => void;
   attachAttachmentCleanup(discard: (taskId: string | null, data: unknown) => void) { this.discardAttachments = discard; }
   discardPreparedAttachment(taskId: string | null, attachment: unknown) {
@@ -210,7 +214,7 @@ export class AgentTaskService {
         const run = runId ? this.d.runs.active(runId) : undefined;
         if (!(run?.readOnly ?? this.coordination?.readOnly?.(e.taskId))) {
           this.finishingTurns.add(e.taskId);
-          void this.finishDiff(e.taskId, turnId).catch(() => {}).finally(() => {
+          void this.finishDiff(e.taskId, turnId, runId).catch(() => {}).finally(() => {
             this.finishingTurns.delete(e.taskId);
             void this.advance(e.taskId);
           });
@@ -580,7 +584,7 @@ export class AgentTaskService {
       const remaining = INPUT_TEXT_LIMIT - Buffer.byteLength(input.text) - (hostContext ? Buffer.byteLength(hostContext) + 2 : 0);
       transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, remaining);
       const context = [transfer?.text, hostContext].filter(Boolean).join('\n\n');
-      if (!run.readOnly) await this.diffs?.before(taskId,next.turn_id,run.runId);
+      if (!run.readOnly) await this.diffs?.before(taskId, next.turn_id, run.runId, this.d.runs.nativeBusy(run.runId));
       if(stoppedSince())return;
       await this.d.runs.dispatch(run.runId, next.turn_id, { clientInputId: next.client_input_id, ...input, context: context || undefined, tier: selection.tier as Tier, model, effort });
       if(this.d.store.turn(next.turn_id)?.source_kind==='user')this.humanSent(next.turn_id,run,frozen.text);

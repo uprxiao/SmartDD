@@ -38,6 +38,31 @@ function setup() {
 }
 
 describe('运行服务', () => {
+  it('A05 closes only old native nodes confirmed gone by their precise launch-group identity', async () => {
+    const f = setup();
+    const run = await f.service.open(f.base);
+    const put = (nodeId: string, state: 'running' | 'completed') => f.instances[0].emit({ type: 'node.state', nodeId, nativeRunId: 'original', state });
+    put('left-open', 'running');
+    put('completed-earlier', 'completed');
+    f.db.prepare("UPDATE capability_runs SET state='orphaned',error_code='HOST_INTERRUPTED' WHERE run_id=?").run(run.runId);
+    const ownedGroup = vi.fn<NonNullable<ProcessIdentityReader['ownedGroup']>>().mockReturnValue(null);
+    const restarted = new AgentRunService({ store: f.store, drivers: new Map(), processes: { read: () => null, state: () => 'unknown', ownedGroup },
+      host: { instanceId: 'new-host', pid: process.pid, startedAt: null } });
+    const signal = new AbortController().signal;
+    const row = (nodeId: string) => f.db.prepare('SELECT revision,terminal_state,payload_ref FROM agent_items WHERE node_id=?').get(nodeId);
+    await restarted.recoverPreviousNativeNodes(signal);
+    expect(row('left-open')).toMatchObject({ revision: 1, terminal_state: null });
+    ownedGroup.mockReturnValueOnce({ state: 'running', processes: [{ pid: 800, startedAt: 'different-child-birth' }] })
+      .mockReturnValue({ state: 'stopped', processes: [] });
+    await restarted.recoverPreviousNativeNodes(signal);
+    expect(ownedGroup).toHaveBeenLastCalledWith({ pid: 777, startedAt: 'darwin-proc-v1:777:1' });
+    expect(row('left-open')).toEqual({ revision: 2, terminal_state: 'failed',
+      payload_ref: JSON.stringify({ state: 'interrupted', nativeRunId: 'original', reason: 'owner-restarted' }) });
+    expect(row('completed-earlier')).toMatchObject({ revision: 1, terminal_state: 'completed' });
+    await restarted.recoverPreviousNativeNodes(signal);
+    expect(row('left-open')).toMatchObject({ revision: 2, terminal_state: 'failed' });
+  });
+
   it('A15/A33: ordinary bindings keep the phase-3 identity, while a read role cannot resume a writable native binding', async () => {
     const f=setup(), hash=sha256(JSON.stringify({driver:f.base.driverId,profile:f.base.profileId,stateRoot:f.base.stateRoot,cwd:f.base.cwd,compatibility:f.base.compatibility}));
     const binding=f.store.createBinding({task_id:f.taskId,driver_id:f.base.driverId,profile_id:f.base.profileId,continuation_hash:hash,state_root:f.base.stateRoot,cwd_identity:f.base.cwd});

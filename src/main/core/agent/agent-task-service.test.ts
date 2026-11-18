@@ -99,8 +99,8 @@ it('A65: only a writable native run contributes a before and after snapshot', as
   insts[0].finish();
   insts[1].finish();
   await until(() => store.turn(read.turnId)?.status === 'completed' && after.mock.calls.length > 0);
-  expect(before.mock.calls).toEqual([[writer, write.turnId, runs.runForTask(writer)?.runId]]);
-  expect(after.mock.calls).toEqual([[writer, write.turnId]]);
+  expect(before.mock.calls).toEqual([[writer, write.turnId, runs.runForTask(writer)?.runId, false]]);
+  expect(after.mock.calls).toEqual([[writer, write.turnId, false]]);
 
   await runs.close(runs.runForTask(reader)!.runId);
   vi.spyOn(runs, 'injectHistory').mockResolvedValue(undefined);
@@ -109,8 +109,30 @@ it('A65: only a writable native run contributes a before and after snapshot', as
   expect(svc.snapshot(reader).items.filter(item => item.type === 'error').map(item => item.payload)).toEqual([]);
   expect(insts[2]?.turns).toHaveLength(1);
   insts[2].finish();
-  expect(before).toHaveBeenLastCalledWith(reader, promoted.turnId, runs.runForTask(reader)?.runId);
-  expect(after).toHaveBeenLastCalledWith(reader, promoted.turnId);
+  expect(before).toHaveBeenLastCalledWith(reader, promoted.turnId, runs.runForTask(reader)?.runId, false);
+  expect(after).toHaveBeenLastCalledWith(reader, promoted.turnId, false);
+});
+
+it('A05 dispatches another foreground turn while an earlier native background node is running', async () => {
+  const { svc, store, insts, runs } = setup();
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'background', profileId: 'cc', tier: 'ask' });
+  const before = vi.fn(async () => {});
+  const after = vi.fn(async () => {});
+  svc.attachDiffs({ before, after, capturing: () => false, beginTaskRemoval: () => () => {} });
+  const first = await svc.submit(taskId, { clientInputId: id(51), text: 'Start background work', expectedSelectionRevision: 1 });
+  await until(() => insts[0]?.turns.length === 1);
+  const runId = runs.runForTask(taskId)!.runId;
+  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'running' });
+  insts[0].finish();
+  const second = await svc.submit(taskId, { clientInputId: id(52), text: 'Follow up in the foreground', expectedSelectionRevision: 1 });
+  await until(() => insts[0]?.turns.length === 2);
+  expect(after).toHaveBeenCalledWith(taskId, first.turnId, true);
+  expect(before).toHaveBeenLastCalledWith(taskId, second.turnId, runId, true);
+  expect(runs.runForTask(taskId)?.runId).toBe(runId);
+  expect(runs.nativeBusy(runId)).toBe(true);
+  expect(store.turn(second.turnId)?.status).toBe('started');
+  insts[0].emit({ type: 'node.state', nodeId: 'background-job', state: 'completed' });
+  insts[0].finish();
 });
 
 it('A44 bounds event catch-up to its captured watermark and only refreshes explicitly requested history in the same task', () => {
