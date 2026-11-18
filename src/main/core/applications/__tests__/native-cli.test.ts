@@ -1,4 +1,5 @@
 import {execFileSync,spawn,type ChildProcess} from 'node:child_process';
+import {randomUUID} from 'node:crypto';
 import {cpSync,mkdtempSync,readFileSync,realpathSync,rmSync,writeFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {createServer} from 'node:net';
@@ -25,6 +26,26 @@ describe('M11 native standalone CLI with real kernel peer identification (contro
  it('discovers only active CLI commands and invokes the common executor with parseable JSON stdout',async()=>{
   const list=await launch(['--list']).done;expect(list).toMatchObject({code:0,stderr:'',timedOut:false});const catalog=JSON.parse(list.stdout);expect(catalog.capabilities.map((c:{id:string;command:string[]})=>({id:c.id,command:c.command}))).toEqual([{id:'mail.draft.list',command:['mail','draft','list']}]);
   const result=await launch(['mail','draft','list','--limit','1']).done;expect(result).toMatchObject({code:0,stderr:'',timedOut:false});expect(JSON.parse(result.stdout)).toMatchObject({schema:'willyou-app-result-v2',capabilityId:'mail.draft.list',data:{items:[],nextCursor:null},operation:{origin:'cli'}});expect(result.stdout).not.toContain(environment.WILLYOU_RUN_TOKEN);
+ });
+ it('prints a typed host request receipt separately from a business execution result', async () => {
+  const value = {
+    schema: 'willyou-task-request-v1', capabilityId: 'mail.draft.list', status: 'awaiting_user', requestId: randomUUID(),
+    operationId: randomUUID(), next: '批准后会通知任务结果。',
+  };
+  const reply = { schema: 1 as const, status: 'ok' as const, value };
+  const pending = { ...reply, taskRequest: true as const };
+  vi.spyOn(f.cli, 'call')
+    .mockImplementationOnce(async (_run, id) => ({ ...pending, id }))
+    .mockImplementationOnce(async (_run, id) => ({ ...reply, id }));
+
+  const submitted = await launch(['mail','draft','list']).done;
+  expect(submitted).toMatchObject({ code: 0, stderr: '', signal: null, timedOut: false });
+  expect(JSON.parse(submitted.stdout)).toEqual(value);
+  expect(f.sqlite.prepare('SELECT count(*) n FROM application_invocations').get()).toEqual({ n: 0 });
+
+  const unmarked = await launch(['mail','draft','list']).done;
+  expect(unmarked.code).toBe(4);
+  expect(JSON.parse(unmarked.stdout)).toMatchObject({ error: { code: 'INVALID_RESPONSE' } });
  });
  it('has local JSON help, explicit context exit status and rejects token arguments without echoing them',async()=>{
   const canary='CLI_CANARY_NOT_A_CREDENTIAL',help=await launch(['--help'],{env:{WILLYOU_RUN_TOKEN:canary}}).done;expect(help.code).toBe(0);expect(JSON.parse(help.stdout).usage).toBeInstanceOf(Array);expect(help.stdout+help.stderr).not.toContain(canary);

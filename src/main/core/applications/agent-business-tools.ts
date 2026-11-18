@@ -50,11 +50,17 @@ export class AgentBusinessTools {
   const description=this.service(entry).inspectCall(runId,call);if(description.semantics!=='write')return;
   const canonical=context.plan?.allowed.find(c=>(entry==='cli'?c.capabilityId:c.mcpTool)===call.operation&&c.contractMajor===call.contractMajor)?.capabilityId??call.operation;if(['mail.send.prepare','mail.send.cancel','browser.access.request'].includes(canonical))return;const browser=description.selected.application.appId==='browser';const mail=description.selected.application.appId==='mail'&&(canonical==='mail.send.execute'||/mail_send_execute/.test(call.operation));const policy=mail?null:this.policy(context,call,entry);if(!mail&&(!policy?.plugin||policy.full))return;
   const operationId=uuidFor(runId+':'+id),known=this.d.store.sqlite.prepare("SELECT * FROM agent_requests WHERE operation_id=? AND class='host_business'").get(operationId) as any;
-  if(known){const data=JSON.parse(known.payload_ref).data as Data;if(data.originCallHash!==hash||known.task_id!==run.task_id)throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已用于其他业务');return Promise.resolve({schema:1,id,status:'ok',value:{status:known.status,requestId:known.request_id,next:'这是既有业务请求，请等待通知，不要重复提交'}});}
+  const reply = (value: {status:string;requestId:string;next:string}): Promise<BridgeResponse> => Promise.resolve({
+   schema:1,id,status:'ok',
+   ...(entry==='cli'
+    ? {taskRequest:true,value:{schema:'willyou-task-request-v1',capabilityId:call.operation,operationId,...value}}
+    : {value}),
+  });
+  if(known){const data=JSON.parse(known.payload_ref).data as Data;if(data.originCallHash!==hash||known.task_id!==run.task_id)throw new ApplicationError('REQUEST_CONFLICT','同一调用编号已用于其他业务');return reply({status:known.status,requestId:known.request_id,next:'这是既有业务请求，请等待通知，不要重复提交'});}
   const m=mail?this.mail(String(call.arguments.intentId)):null;if(m&&(m.source_task_id!==run.task_id||m.source_run_id!==runId||call.arguments.expectedReviewHash!==m.review_hash))throw new ApplicationError('SCOPE_DENIED','发送意图不是本次任务原发起内容');
   const stamp=m?this.mailPolicy(m):policy!.stamp,review=m?{reviewHash:m.review_hash,...JSON.parse(m.review_json)}:policy!.review,data:Data={entry,call:structuredClone(call),requestId:id,originCallHash:hash,policyStamp:stamp,...(m?{mailIntentId:m.id}:{})};
   const receipt=this.d.requests.create({taskId:run.task_id,bindingId:run.binding_id,runId,generation:run.generation},{operationId,kind:mail?'mail_send':browser?'browser_write':'application_write',title:mail?'需要批准：发送邮件':'需要批准：'+(policy!.review?.operation??call.operation),review,data,accountIdentity:stamp,options:mail?[{label:'批准发送',value:'allow'},{label:'手动修改',value:'edit'},{label:'让 Agent 按我的说明修改',value:'agentedit'}]:undefined});
-  return Promise.resolve({schema:1,id,status:'ok',value:{status:'awaiting_user',...receipt,next:'批准后会通知任务结果，先做别的。不要轮询或重复写调用。'}});
+  return reply({status:'awaiting_user',...receipt,next:'批准后会通知任务结果，先做别的。不要轮询或重复写调用。'});
  }
  private async cancelMail(sender:ApplicationUiSender|undefined,m:any){if(sender){await this.d.applications.cancelTaskMail(sender,m.project_id,m.id);return;}/* A retired task request cannot authorize the old intent; later expiry/invalidation remains conservative. */}
  private async reviseMail(r:BusinessRecord,decision:{edits?:{to:string;cc:string;bcc:string;subject:string;text:string}},sender:ApplicationUiSender){if(!decision.edits)throw Error('请先保存修改内容');const data=r.payload.data as Data,m=this.mail(data.mailIntentId!),draft=await this.d.applications.viewDraft(sender,m.project_id,m.draft_id,m.draft_revision),edits=decision.edits;

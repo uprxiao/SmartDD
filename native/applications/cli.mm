@@ -21,6 +21,15 @@ static int failure(NSString *code,NSString *message,int exitCode,NSString *layer
   fprintf(stderr,"willyou-app: %s\n",code.UTF8String);return exitCode;
 }
 static bool matches(NSString *value,NSString *pattern){return value&&[value rangeOfString:pattern options:NSRegularExpressionSearch].location!=NSNotFound;}
+static bool hostRequestReceipt(id value,NSString *capabilityId){
+  if(![value isKindOfClass:NSDictionary.class]||![value[@"schema"] isEqual:@"willyou-task-request-v1"]||
+     ![value[@"capabilityId"] isEqual:capabilityId])return false;
+  NSArray *statuses=@[@"awaiting_user",@"pending",@"approved_pending_bind",@"resolved",@"retired"];
+  id status=value[@"status"],requestId=value[@"requestId"],operationId=value[@"operationId"];
+  return status&&[statuses containsObject:status]&&[requestId isKindOfClass:NSString.class]&&
+    [[NSUUID alloc] initWithUUIDString:requestId]!=nil&&[operationId isKindOfClass:NSString.class]&&
+    [[NSUUID alloc] initWithUUIDString:operationId]!=nil&&[value[@"next"] isKindOfClass:NSString.class];
+}
 static int refused(NSDictionary *response){
   NSDictionary *error=[response[@"error"] isKindOfClass:NSDictionary.class]?response[@"error"]:nil;if(!error)return failure(@"INVALID_RESPONSE",@"宿主错误结果无效",4,@"bridge");
   NSString *code=[error[@"code"] isKindOfClass:NSString.class]?error[@"code"]:@"CAPABILITY_UNAVAILABLE";if(!matches(code,@"^[A-Z][A-Z0-9_]{0,63}$"))return failure(@"INVALID_RESPONSE",@"宿主错误标识无效",4,@"bridge");
@@ -73,6 +82,10 @@ int main(int argc,const char *argv[]){@autoreleasepool{
   NSDictionary *call=@{@"schema":@"willyou-cli-v1",@"id":NSUUID.UUID.UUIDString.lowercaseString,@"token":token,@"method":@"capabilities/call",@"call":@{@"operation":selected[@"id"],@"contractMajor":selected[@"contractMajor"],@"connectionId":NSNull.null,@"arguments":arguments}};NSData *input=[NSJSONSerialization dataWithJSONObject:call options:0 error:nil];if(!input||input.length>requestLimit){close(fd);return failure(@"TOO_LARGE",@"应用参数超过预算",2);}
   bool readOnly=[selected[@"annotations"] isKindOfClass:NSDictionary.class]&&[selected[@"annotations"][@"readOnlyHint"] isEqual:@YES];sent=false;NSDictionary *response=exchange(fd,call,125000,sent);close(fd);
   if(!response)return failure(@"CONNECTION_UNAVAILABLE",@"应用调用结果未返回",sent&&!readOnly?5:4,@"bridge",sent?(readOnly?@"read-only":@"unknown"):@"not-started",sent?call[@"id"]:nil);if(![response[@"status"] isEqual:@"ok"])return refused(response);id value=response[@"value"];
+  if([response[@"taskRequest"] isEqual:@YES]){
+    if(!hostRequestReceipt(value,selected[@"id"]))return failure(@"INVALID_RESPONSE",@"宿主审批回执无效",readOnly?4:5,@"bridge",readOnly?@"read-only":@"unknown",call[@"id"]);
+    output(value);return 0;
+  }
   bool plugin=[selected[@"resultContract"] isEqual:@"willyou-plugin-result-v1"];
   bool valid=[value isKindOfClass:NSDictionary.class]&&[value[@"schema"] isEqual:plugin?@"willyou-plugin-result-v1":@"willyou-app-result-v2"]&&[value[@"capabilityId"] isEqual:selected[@"id"]]&&[value[@"contractMajor"] isEqual:plugin?@1:@2];
   if(plugin&&valid){id operation=value[@"operation"];valid=[operation isKindOfClass:NSDictionary.class]&&[operation[@"requestId"] isEqual:call[@"id"]]&&[operation[@"id"] isKindOfClass:NSString.class]&&([operation[@"effectState"] isEqual:@"read-only"]||[operation[@"effectState"] isEqual:@"completed"]||[operation[@"effectState"] isEqual:@"unknown"]);}

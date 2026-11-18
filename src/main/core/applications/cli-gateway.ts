@@ -116,7 +116,7 @@ export class ApplicationCliGateway {
       const abort=new AbortController();peer.controllers.set(id,{runId:context.run.runId,abort});
       try{
         const response=await this.tools.call(context.run.runId,id,request.call,abort.signal);
-        if(response.status==='ok'&&external(request.call.operation))return{...response,value:{schema:'willyou-plugin-result-v1',capabilityId:request.call.operation,contractMajor:1,data:response.value,operation:{id:response.operationId,requestId:id,effectState:response.effectState}}};
+        if(response.status==='ok'&&!response.taskRequest&&external(request.call.operation))return{...response,value:{schema:'willyou-plugin-result-v1',capabilityId:request.call.operation,contractMajor:1,data:response.value,operation:{id:response.operationId,requestId:id,effectState:response.effectState}}};
         return response;
       }finally{peer.controllers.delete(id);}
     }catch(error){return this.denial(peer,id,method,error instanceof SyntaxError?new ApplicationError('INVALID_INPUT','CLI请求JSON无效'):error);}
