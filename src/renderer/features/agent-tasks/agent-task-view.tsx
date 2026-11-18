@@ -696,25 +696,28 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
 
   // 首份被采纳的快照完成一次草稿初始化（不论它来自初始化还是事件补拉）；本地已编辑则保留本地内容（复核 FR05）。
   const draftInit = useRef(false);
+  const [draftReady, setDraftReady] = useState(false);
   const adoptDraft = useCallback(async (s: Snapshot) => {
     if (draftInit.current || s.archivedAt) return;
     draftInit.current = true;
     draftRev.current = s.draft?.revision ?? 0;
-    if (editedRef.current || !s.draft) return;
-    // 旧版本截断写入的草稿已无法还原：明确提示，不当作空草稿静默加载（复核 SR02）。
-    if ('damaged' in s.draft && s.draft.damaged) { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
-    let draft = s.draft.draft as any;
-    let bodyRevision: number | undefined;
-    if ((s.draft as any).truncated) { try { const r = await readRange((off, rev) => rpc.agentTasks.draftBody(taskId, off, rev)); draft = r.value; bodyRevision = r.revision; } catch (e) { toast.error(`草稿读取失败：${rpcErrorMessage(e)}`); return; } }
-    // 兜底：读到的仍是旧版本的截断记录（只剩前缀与摘要），同样提示无法恢复，不当作空草稿。
-    if (draft && draft.truncated === true && typeof draft.sha256 === 'string') { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
-    // 读取期间已开始编辑：保留本地内容，修订仍按快照比较，真实冲突交给 CAS（复核 T01）。
-    if (editedRef.current) return;
-    // 采纳正文的同时采纳它实际所属的修订，首次保存才不会带着旧修订被拒（复核 T01）。
-    if (bodyRevision !== undefined) draftRev.current = bodyRevision;
-    setText(String(draft?.text ?? ''));
-    const saved = (draft?.attachments ?? []) as PreparedAttachment[];
-    setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
+    try {
+      if (editedRef.current || !s.draft) return;
+      // 旧版本截断写入的草稿已无法还原：明确提示，不当作空草稿静默加载（复核 SR02）。
+      if ('damaged' in s.draft && s.draft.damaged) { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
+      let draft = s.draft.draft as any;
+      let bodyRevision: number | undefined;
+      if ((s.draft as any).truncated) { try { const r = await readRange((off, rev) => rpc.agentTasks.draftBody(taskId, off, rev)); draft = r.value; bodyRevision = r.revision; } catch (e) { toast.error(`草稿读取失败：${rpcErrorMessage(e)}`); return; } }
+      // 兜底：读到的仍是旧版本的截断记录（只剩前缀与摘要），同样提示无法恢复，不当作空草稿。
+      if (draft && draft.truncated === true && typeof draft.sha256 === 'string') { toast.warning('上次保存的草稿不完整（旧版本超长截断），已无法恢复'); return; }
+      // 读取期间已开始编辑：保留本地内容，修订仍按快照比较，真实冲突交给 CAS（复核 T01）。
+      if (editedRef.current) return;
+      // 采纳正文的同时采纳它实际所属的修订，首次保存才不会带着旧修订被拒（复核 T01）。
+      if (bodyRevision !== undefined) draftRev.current = bodyRevision;
+      setText(String(draft?.text ?? ''));
+      const saved = (draft?.attachments ?? []) as PreparedAttachment[];
+      setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
+    } finally { setDraftReady(true); }
   }, [taskId]);
 
   const reload = useCallback(async () => {
@@ -858,13 +861,16 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   useEffect(() => {
     if (snap) navigation.setAgentTaskReadOnly(taskId,!!snap.archivedAt);
   }, [taskId,snap?.archivedAt]);
+  const requests = [...(snap?.requests ?? []) as TimelineRequest[], ...childRequests].filter(r => r.status === 'pending' || r.status === 'approved_pending_bind');
+  const composerReady = draftReady && snap?.taskId === taskId && !snap.archivedAt && !navigation.agentTaskReadOnly && !requests.length;
+  const composerProject = snap?.projectId ?? null;
   useEffect(()=>{
-    if (snap?.archivedAt || navigation.agentTaskReadOnly) return;
-    const target={taskId,projectId:snap?.projectId??null,insert:(value:string)=>insertDraftRef.current(value),focus:()=>textarea.current?.focus(),attachFile:async(file:import('@shared/files').FileDocument,baseHash:string,signal:AbortSignal)=>{
+    if (!composerReady) return;
+    const target={taskId,projectId:composerProject,insert:(value:string)=>insertDraftRef.current(value),focus:()=>textarea.current?.focus(),attachFile:async(file:import('@shared/files').FileDocument,baseHash:string,signal:AbortSignal)=>{
       const original=await rpc.files.read(file.ref);signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');if(original.document.revision.hash!==baseHash)throw Error('图片内容已变化，请重新打开后附加');
       const data=await rpc.agentTasks.prepareAttachment(taskId,null,{name:file.name,mime:file.content?.kind==='image'?file.content.mime:undefined,dataBase64:original.base64});signal.throwIfAborted();if(agentComposerTargets.current!==target)throw Error('目标任务已经切换');editedRef.current=true;setChips(value=>[...value,{localId:data.id,name:data.name,status:'ready',data}]);saveDraft(textRef.current);
     }};return agentComposerTargets.register(target);
-  },[taskId,snap?.projectId,snap?.archivedAt,navigation.agentTaskReadOnly]);
+  },[taskId,composerProject,composerReady]);
 
   if (!snap) return <div className="agent-task-view loading"><Loader2 className="spin" size={18} /></div>;
   const rawCatalog: Catalog = snap.run?.catalog ?? { commands: DEFAULT_COMMANDS[snap.selection.driverId] ?? ['goal'], skills: [] };
@@ -896,7 +902,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     const first = older[0] ?? (snap.items as TimelineItem[])[0]; if (!first) return;
     try { const page = await rpc.agentTasks.history(taskId, first.ordinal); setOlder(o => [...(page.items as TimelineItem[]), ...o]); setOlderTurns(t => [...page.turns, ...t]); setOlderMore(page.hasOlder); } catch (e) { toast.error(rpcErrorMessage(e)); }
   };
-  const requests = [...snap.requests as TimelineRequest[], ...childRequests].filter(r => r.status === 'pending' || r.status === 'approved_pending_bind');
   const working = snap.status === 'working' || snap.status === 'waiting';
   const stopping = snap.stopping;
   const stopElapsed = stopping ? Math.max(0, Math.floor((now - stopping.requestedAt) / 1000)) : 0;
@@ -1044,11 +1049,15 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const family=relations?.parentTaskId ? parentRelations : relations;
   const lineage=panelsFor({kind:'task',taskId:parentId});
   const showLineage=!!family?.childrenTotal && lineage.lineage;
+  const openNativeProcess = (item: TimelineItem) => {
+    lineage.setLineage(false);
+    setNativeProcess(item);
+  };
   const lineageToggle=family?.childrenTotal ? <button type="button" className="agent-head-btn agent-lineage-toggle" aria-expanded={lineage.lineage}
-    onClick={()=>{lineage.setLineage(!lineage.lineage);}}><Network size={14}/>任务关系 · {family.childrenTotal}</button> : null;
+    onClick={()=>{if(!lineage.lineage)setNativeProcess(null);lineage.setLineage(!lineage.lineage);}}><Network size={14}/>任务关系 · {family.childrenTotal}</button> : null;
   const activeProcess=nativeProcess && (snap.items.find(item=>item.itemId===nativeProcess.itemId) ?? nativeProcess);
 
-  return <RelationsScope.Provider value={relations}><ArchivedScope.Provider value={archived}><RunInTerminal.Provider value={archived ? null : code=>{setTerminalOpen(true);void rpc.agentTasks.pasteToTerminal(taskId,code).then(()=>toast.message('已送入终端输入行，按回车执行')).catch(e=>toast.error(rpcErrorMessage(e)));}}><TaskScope.Provider value={taskId}><section className="agent-task-view agent-task-layout" aria-label="统一任务区"><NativeProcessScope.Provider value={setNativeProcess}><div className="agent-task-main">
+  return <RelationsScope.Provider value={relations}><ArchivedScope.Provider value={archived}><RunInTerminal.Provider value={archived ? null : code=>{setTerminalOpen(true);void rpc.agentTasks.pasteToTerminal(taskId,code).then(()=>toast.message('已送入终端输入行，按回车执行')).catch(e=>toast.error(rpcErrorMessage(e)));}}><TaskScope.Provider value={taskId}><section className="agent-task-view agent-task-layout" aria-label="统一任务区"><NativeProcessScope.Provider value={openNativeProcess}><div className="agent-task-main">
     {archived ? <header className="agent-task-head"><h1>{snap.title}</h1><span className="agent-status">已归档 · 只读</span><span className="push"/>{lineageToggle}<button type="button" className="agent-head-btn" onClick={()=>void restore()}>恢复</button><button type="button" className="agent-head-btn" title="打开差异面板" onClick={()=>panels.open('diff')}><PanelRight size={15}/></button></header> :
     <header className="agent-task-head"><h1>{snap.title}</h1>{(stopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{stopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}<span className="push" />{lineageToggle}<button type="button" className="agent-head-btn agent-plugin-btn" title="项目插件" onClick={()=>setPluginsOpen(true)}><Plug size={15}/>插件 {plugins.length}</button><button type="button" className="agent-head-btn" title="更多" aria-expanded={moreMenu} onClick={()=>setMoreMenu(v=>!v)}><MoreHorizontal size={16}/></button><button type="button" className="agent-head-btn" title="打开右侧面板" onClick={()=>navigation.toggleFilePanel()}><PanelRight size={15}/></button>{moreMenu&&<div className="agent-head-menu"><button type="button" data-testid="agent-terminal-toggle" onClick={()=>{panels.terminalDrawer();setMoreMenu(false);}}>底部终端</button><button type="button" data-testid="agent-archive" onClick={()=>{setMoreMenu(false);void archive();}}>归档任务</button></div>}</header>}
     <AgentRelations taskId={taskId} value={relations} readOnly={archived} reload={() => { loadRelations(); void reload(); }} />

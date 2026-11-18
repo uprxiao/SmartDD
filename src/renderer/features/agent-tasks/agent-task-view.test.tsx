@@ -280,6 +280,52 @@ it('M14 A38/A42: a host reference appends at the current draft selection, preser
  mocks.snapshot.mockResolvedValue(snapshot({projectId:'p'}));render(<AgentTaskView taskId="task"/>);const input=await screen.findByPlaceholderText('随心输入') as HTMLTextAreaElement;fireEvent.change(input,{target:{value:'prefix tail'}});input.setSelectionRange(7,7);await act(async()=>agentComposerTargets.current!.insert('[原邮件引用]'));expect(input.value).toBe('prefix [原邮件引用]tail');await waitFor(()=>expect(mocks.saveDraft).toHaveBeenCalledWith('task',expect.objectContaining({text:input.value}),expect.any(Number)));expect(mocks.submit).not.toHaveBeenCalled();
 });
 
+it('M14 A38: publishes an editable reference destination only after reading the saved draft', async () => {
+  let ready!: (value:unknown) => void;
+  mocks.draftBody.mockImplementationOnce(() => new Promise(resolve => { ready = resolve; }));
+  mocks.snapshot.mockResolvedValue(snapshot({projectId:'p',draft:{revision:2,truncated:true}}));
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('随心输入') as HTMLTextAreaElement;
+  expect(agentComposerTargets.current).toBeNull();
+  await act(async () => ready({chunk:JSON.stringify({text:'本地草稿',attachments:[]}),done:true,next:1,revision:2}));
+  expect(agentComposerTargets.current).toMatchObject({taskId:'task',projectId:'p'});
+  input.setSelectionRange(input.value.length,input.value.length);
+  await act(async () => agentComposerTargets.current!.insert('[邮件引用]'));
+  expect(input.value).toBe('本地草稿[邮件引用]');
+  await waitFor(() => expect(mocks.saveDraft).toHaveBeenCalledWith('task',{text:input.value,attachments:[]},2));
+  expect(mocks.submit).not.toHaveBeenCalled();
+});
+
+it('M14 A74: opening a native child process closes the family card until explicitly reopened', async () => {
+  const turnId = 'native-turn';
+  const subagent = {...item('subagent',{name:'spawnAgent',status:'completed'}),turnId};
+  mocks.snapshot.mockResolvedValue(snapshot({
+    items:[subagent],
+    turns:[{turn_id:turnId,status:'completed',accepted_at:'2026-11-18T00:00:00Z',started_at:'2026-11-18T00:00:00Z',ended_at:'2026-11-18T00:00:05Z'}],
+  }));
+  const api = mocks as typeof mocks & {relations?: ReturnType<typeof vi.fn>; nativeHistory?: ReturnType<typeof vi.fn>};
+  api.relations = vi.fn().mockResolvedValue({taskTitle:'t',children:[],childrenTotal:1,counts:{running:0,waiting:0,queued:0,completed:1,pending:0}});
+  api.nativeHistory = vi.fn().mockResolvedValue({items:[],states:[],total:0});
+  try {
+    render(<AgentTaskView taskId="task" />);
+    const family = await screen.findByRole('button',{name:'任务关系 · 1'});
+    fireEvent.click(family);
+    expect(screen.getByRole('region',{name:'任务关系'})).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:/已工作/}));
+    fireEvent.click(screen.getByText(/子 Agent/));
+    fireEvent.click(screen.getByRole('button',{name:'查看过程'}));
+    expect(screen.getByRole('region',{name:'执行器原生子 Agent'})).toBeTruthy();
+    expect(screen.queryByRole('region',{name:'任务关系'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'关闭过程'}));
+    expect(family.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(family);
+    expect(screen.getByRole('region',{name:'任务关系'})).toBeTruthy();
+  } finally {
+    delete api.relations;
+    delete api.nativeHistory;
+  }
+});
+
 it('G5 uses a read-only composer until the same archived task is restored',async()=>{
   const active = snapshot({items:[item('assistant_message',{text:'retained archived history'})]});
   mocks.snapshot.mockResolvedValue({...active,archivedAt:'2026-11-18T11:00:00Z'});
