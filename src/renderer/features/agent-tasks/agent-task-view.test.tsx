@@ -38,6 +38,19 @@ it('A26 shows the delegated child’s inherited tier without opening another per
   expect(tier).toHaveProperty('title', '跟随主任务的权限档位');
 });
 
+it('A45 retains the available streaming prefix and marks a preview that exceeds its buffer', async () => {
+  let publish!: (value: { taskId: string; itemKey: string; text: string }) => void;
+  mocks.on.mockImplementation((event, callback) => { if (event.name === 'agentTasks:live') publish = callback; return () => {}; });
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'working' }));
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByRole('heading', { name: 't' });
+  await act(async () => publish({ taskId: 'task', itemKey: 'answer', text: 'Visible live prefix' }));
+  expect(screen.getByText('Visible live prefix')).toBeTruthy();
+  await act(async () => publish({ taskId: 'task', itemKey: 'answer', text: '😀'.repeat(2 * 1024 * 1024) }));
+  expect(screen.getByText('Visible live prefix')).toBeTruthy();
+  expect(screen.getByText('部分内容未在流式预览中显示，完成后可查看全文。')).toBeTruthy();
+});
+
 it('P3: the request panel can revoke a queued approval while the original approve call is still pending', async () => {
   const request = { requestId: 'approval', kind: 'host_business', origin: {}, revision: 1, status: 'pending', payload: { title: '业务审批', phase: 'waiting_user' } };
   let state = snapshot({ requests: [request] });

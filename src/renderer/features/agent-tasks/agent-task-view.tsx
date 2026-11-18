@@ -35,6 +35,10 @@ type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
 const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
 const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示' };
 const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', needs_attention: '需要你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
+const LIVE_PREVIEW_BYTES = 8 * 1024 * 1024;
+const LIVE_PREVIEW_ITEMS = 2_000;
+const liveEncoder = new TextEncoder();
+const emptyLive = { items: {} as Record<string, string>, bytes: 0, incomplete: false };
 const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '请求过于频繁，已被限流', context: '上下文已达上限', output: '输出长度到上限' };
 
 // 消息里的链接在阶段 5 按 T3 规则接入路由；此前只显示为文字，不打开任何地址。
@@ -673,7 +677,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const actionInputs = useRef(new Map<string, string>());
   const sendingRef = useRef(false);
   const pendingInput = useRef<{ text: string; chips: string; clientInputId: string } | null>(null);
-  const [live, setLive] = useState<Record<string, string>>({});
+  const [live, setLive] = useState(emptyLive);
   const [now, setNow] = useState(Date.now());
   const permissionPref = useAppSettingsKey('agentPermissions');
   const [confirmFull, setConfirmFull] = useState(false);
@@ -735,7 +739,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       if (s.seq < seqRef.current) return;
       seqRef.current = s.seq;
       setSnap(s);
-      setLive({});
+      setLive(emptyLive);
       void adoptDraft(s); loadRelations();
     } catch (e) { toast.error(rpcErrorMessage(e)); }
   }, [taskId, adoptDraft, loadRelations]);
@@ -748,7 +752,17 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     // 窗口恢复或页面重新可见时查询最新水位，弥补尾部通知丢失。
     const onVisible = () => { if (document.visibilityState === 'visible' && alive) void reload(); };
     window.addEventListener('focus', onVisible); document.addEventListener('visibilitychange', onVisible);
-    const offLive = events.on(agentTaskLiveEvent, e => { if (e.taskId === taskId) setLive(m => ({ ...m, [e.itemKey]: (m[e.itemKey] ?? '') + e.text })); });
+    const offLive = events.on(agentTaskLiveEvent, e => {
+      if (e.taskId !== taskId) return;
+      setLive(current => {
+        if (current.incomplete) return current;
+        const existing = Object.hasOwn(current.items, e.itemKey);
+        const bytes = current.bytes + liveEncoder.encode(e.text).length;
+        if (bytes > LIVE_PREVIEW_BYTES || (!existing && Object.keys(current.items).length >= LIVE_PREVIEW_ITEMS)) return { ...current, incomplete: true };
+        const previous = existing ? current.items[e.itemKey] : '';
+        return { items: { ...current.items, [e.itemKey]: previous + e.text }, bytes, incomplete: e.previewIncomplete === true };
+      });
+    });
     void (async () => {
       const s = await rpc.agentTasks.snapshot(taskId).catch(e => { toast.error(rpcErrorMessage(e)); return null; });
       if (!alive || !s) return;
@@ -762,7 +776,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     return () => { alive = false; offEvent(); offLive(); clearInterval(tick); window.removeEventListener('focus', onVisible); document.removeEventListener('visibilitychange', onVisible); if (reloadTimer.current) clearTimeout(reloadTimer.current); };
   }, [taskId, reload, adoptDraft, loadRelations]);
 
-  useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [snap?.seq, Object.keys(live).length, relations?.childrenTotal, childRequests.length]);
+  useEffect(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; }, [snap?.seq, Object.keys(live.items).length, relations?.childrenTotal, childRequests.length]);
 
   const chipsRef = useRef<Chip[]>([]); chipsRef.current = chips;
   const textRef = useRef(''); textRef.current = text;
@@ -918,7 +932,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const waitingForWork = working && snap.status === 'working' && !stopping &&
     recentTurn && ['dispatching','started'].includes(recentTurn.status) &&
     !snap.items.some(item => item.turnId === recentTurn.turn_id && item.type !== 'user_message');
-  const liveText = Object.values(live).join('');
+  const liveText = Object.values(live.items).join('');
 
   const addFiles = (files: File[]) => {
     for (const file of files) {
@@ -1073,7 +1087,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       {hasOlder && <button type="button" className="agent-older" onClick={() => void loadOlder()}>加载更早的记录</button>}
       {groups.map(group => <TurnRows key={group.key} group={group} stopping={!!stopping && !!group.turnId && group.turnId === recentTurn?.turn_id}/>)}
       {!archived && waitingForWork && !liveText && <div className="agent-starting" role="status"><div className="agent-work-head shine"><Clock3 size={14}/>工作中 {formatDuration(turnSeconds(recentTurn, now))}</div><div><Brain size={14}/>思考中</div></div>}
-      {working && liveText && <div className="agent-assistant streaming"><Markdown text={liveText} /></div>}
+      {working && (liveText || live.incomplete) && <div className="agent-assistant streaming">{liveText && <Markdown text={liveText} />}{live.incomplete && <p role="status">部分内容未在流式预览中显示，完成后可查看全文。</p>}</div>}
       {!!relations?.childrenTotal && <AgentChildSummary taskId={taskId} value={relations} readOnly={archived} reload={() => void reload()} />}
       {!archived && snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
       {!archived && snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}

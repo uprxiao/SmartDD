@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import type BetterSqlite3 from 'better-sqlite3';
 import { codeAgentKindSchema } from '@shared/ai-agents';
+import type { AgentLiveFrame } from '@shared/events';
 import type { AgentService } from '../ai/agent-service';
 import type { ProviderService } from '../ai/provider-service';
 import type { ProcessIdentityReader } from '../applications/process-identity';
@@ -30,6 +31,7 @@ import type { ManagedTaskCapabilities } from '../applications/task-capability-la
 import { DelegationService } from './delegation-service';
 import { runWorkspaceCommand, GitWorkspaces } from './git-workspaces';
 import { ownedWorkspaceCommand } from './owned-command';
+import { AgentLiveOutput } from './live-output';
 
 
 export function registeredProjectCwd(sqlite: BetterSqlite3.Database, projectId: string, dirId: string) {
@@ -55,7 +57,7 @@ export interface AgentWorkspaceDeps {
   processes: ProcessIdentityReader;
   host: { instanceId: string; pid: number; startedAt: string | null };
   emitEvent(e: StoredEvent): void;
-  emitLive(e: { taskId: string; runId: string; itemKey: string; text: string }): void;
+  emitLive(e: AgentLiveFrame): void;
   ptys?: import('./manual-terminal').TerminalPtys;
 }
 
@@ -143,8 +145,12 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   let links:MessageLinks|undefined;
   void git.recoverIntents().catch(() => { /* explicit needs_review records retain ownership */ });
   store.subscribe((e: StoredEvent) => d.emitEvent(boundedEvent(e)));
-  const live: LiveListener = ({ taskId, runId, event }) => { if (event.type === 'message.delta') d.emitLive({ taskId, runId, itemKey: event.nativeItemId, text: event.text }); };
-  runs.onLive(live);
+  const liveOutput = new AgentLiveOutput(d.emitLive);
+  const live: LiveListener = ({ taskId, runId, event }) => {
+    if (event.type === 'message.delta') liveOutput.append({ taskId, runId, itemKey: event.nativeItemId, text: event.text });
+    if (event.type === 'turn.completed' || event.type === 'exit') liveOutput.end(runId);
+  };
+  const unsubscribeLive = runs.onLive(live);
   /** 首页与任务页的智能体列表：只列可用于新任务的配置，带执行器与可选档位。 */
   const profiles = () => d.agents.configs().filter(c => c.source !== 'legacy' && codeAgentKindSchema.safeParse(c.kind).success).map(c => {
     const driverId = driverForKind(c.kind);
@@ -153,6 +159,6 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskCwd: id => { tasks.assertWritable(id); const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
   const projectResources = new AgentProjectResources({ store, tasks, diffs, terminals, userData: d.userData });
   tasks.attachAttachmentCleanup((taskId,data)=>projectResources.discardAttachments(taskId,data));
-  return { store, runs, tasks, profiles, terminals, git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
+  return { store, runs, tasks, profiles, terminals, git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;
