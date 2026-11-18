@@ -737,6 +737,13 @@ export class AgentTaskService {
     return reasons;
   }
 
+  private async closeIdleRunForRemoval(taskId: string) {
+    const run = this.d.runs.runForTask(taskId);
+    if (!run) return;
+    await this.d.runs.close(run.runId);
+    if (!this.d.runs.closingForTask(taskId)) await this.coordination?.settleClosedRun(taskId, run.runId);
+  }
+
   async withTaskRemoval(ids: string[], remove: () => void) {
     if (ids.some(id => this.archiving.has(id))) throw new DriverError('STATE','任务正在归档或删除');
     for (const id of ids) this.archiving.add(id);
@@ -745,8 +752,7 @@ export class AgentTaskService {
       for (const id of ids) {
         const reasons = this.taskBlockers(id, true, true);
         if (reasons.length) throw new DriverError('STATE', `${this.d.store.task(id)?.title ?? id}：${reasons.join('、')}`);
-        const run = this.d.runs.runForTask(id);
-        if (run) await this.d.runs.close(run.runId);
+        await this.closeIdleRunForRemoval(id);
         if (this.d.runs.runForTask(id) || this.d.runs.closingForTask(id)) throw new DriverError('STATE','任务运行尚未收口');
       }
       remove();
@@ -770,10 +776,7 @@ export class AgentTaskService {
     assertReady();
     for (const id of ids) this.archiving.add(id);
     try {
-      for (const id of ids) {
-        const run = this.d.runs.runForTask(id);
-        if (run) await this.d.runs.close(run.runId);
-      }
+      for (const id of ids) await this.closeIdleRunForRemoval(id);
       assertReady();
       this.d.store.setTasksArchived(ids, true);
     } finally {

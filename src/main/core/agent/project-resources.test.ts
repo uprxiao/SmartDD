@@ -17,6 +17,7 @@ import { AgentProjectResources } from './project-resources';
 import { GitWorkspaces, runWorkspaceCommand } from './git-workspaces';
 import { DelegationService } from './delegation-service';
 import { AgentManualTerminals } from './manual-terminal';
+import { directoryIdentity } from './directory-queue';
 import { Emitter, type DriverInstance, type TurnInput } from './driver';
 import { TurnDiffs } from './turn-diffs';
 import { runDiffJob, type DiffJob, type TreeRef } from './turn-diff-worker';
@@ -76,15 +77,70 @@ function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob, runni
     store.createTask({projectId:p.project.id,dirId:p.project.dirs[0].id,cwd:p.cwd,title,parentTaskId,selection:{driverId:'codex-app-server',profileId:'test',tier:'ask'}});
   close.push(async()=>{await resources.close();await diffs.close();await runs.closeAll();db.close();rmSync(root,{recursive:true,force:true});});
   const open = (taskId:string) => runs.open({taskId,driverId:'codex-app-server',profileId:'test',tier:'ask',executable:{path:'/fixture',version:'0.169.0'},stateRoot:root,cwd:store.task(taskId)!.cwd,env:{},compatibility:{}});
-  const coordination = (command?: typeof runWorkspaceCommand) => {
+  const coordination = (command?: typeof runWorkspaceCommand, drained: (runId: string) => Promise<boolean> = async () => true) => {
     const git = new GitWorkspaces({store,home:root,command});
     const profile = (id:string) => ({profileId:id,driverId:'codex-app-server' as const,name:id,revision:'fixture',available:true,trustedRead:false,models:['fixture-model']});
-    const co = new DelegationService({store,runs,tasks,git,profile,profiles:()=>[profile('test')],roots:id=>[store.task(id)!.cwd],project:id=>({id:id!,name:'fixture'}),drained:async()=>true});
+    const co = new DelegationService({store,runs,tasks,git,profile,profiles:()=>[profile('test')],roots:id=>[store.task(id)!.cwd],project:id=>({id:id!,name:'fixture'}),drained});
     close.unshift(()=>co.close());
     return {co,git};
   };
   return {root,db,store,tasks,runs,instances,terminals,open,coordination,diffs,resources,storage,service,projects,create,makeProject};
 }
+
+it.each([
+  { action: 'archive', proven: true },
+  { action: 'delete', proven: true },
+  { action: 'archive', proven: false },
+  { action: 'delete', proven: false },
+])('waits for directory release to $action the task family (exit verified: $proven)', async ({ action, proven }) => {
+  const f = fixture(), p = f.makeProject('idle-owner');
+  const parent = f.create(p, 'parent'), child = f.create(p, 'child', parent);
+  let startDrain!: (runId: string) => void;
+  let finishDrain!: (proven: boolean) => void;
+  const drainStarted = new Promise<string>(resolve => { startDrain = resolve; });
+  const proof = new Promise<boolean>(resolve => { finishDrain = resolve; });
+  const { co } = f.coordination(undefined, runId => {
+    startDrain(runId);
+    return proof;
+  });
+  const q = co.queue.enter(parent, directoryIdentity(p.cwd, [p.cwd]).identity);
+  expect(co.queue.acquire(q.queue_id)).toBe(true);
+  const run = await f.open(parent);
+  co.opened(parent, run);
+  expect(f.tasks.taskBlockers(parent, action === 'delete')).toEqual([]);
+  const result = Promise.resolve(action === 'archive'
+    ? f.tasks.archive(parent)
+    : f.projects.delete(p.project.id, { deleteSecrets: false, agentTaskDeletionConfirmation: f.resources.inspect(p.project.id).confirmation }));
+  const early = vi.fn();
+  void result.then(early, early);
+  try {
+    const owner = await Promise.race([drainStarted, result.then(() => 'completed before drain')]);
+    expect(owner).toBe(run.runId);
+    await new Promise<void>(resolve => setImmediate(resolve));
+    expect(early).not.toHaveBeenCalled();
+    expect(f.store.task(parent)?.archived_at).toBeNull();
+    expect(f.store.task(child)?.archived_at).toBeNull();
+    expect(co.queue.get(q.queue_id)?.state).toBe('active');
+  } finally {
+    finishDrain(proven);
+  }
+  if (!proven) {
+    await expect(result).rejects.toThrow('委派或工作副本尚未收口');
+    expect(f.store.task(parent)?.archived_at).toBeNull();
+    expect(f.store.task(child)?.archived_at).toBeNull();
+    expect(co.queue.get(q.queue_id)?.state).toBe('active');
+    return;
+  }
+  await result;
+  if (action === 'archive') {
+    expect(f.store.task(parent)?.archived_at).toBeTruthy();
+    expect(f.store.task(child)?.archived_at).toBeTruthy();
+    expect(co.queue.get(q.queue_id)?.state).toBe('released');
+  } else {
+    expect(f.store.task(parent)).toBeUndefined();
+    expect(f.store.task(child)).toBeUndefined();
+  }
+});
 
 it('G4 resolves registered cwd and rejects foreign, archived and missing directories',()=>{
   const f=fixture(), a=f.makeProject('registered'), b=f.makeProject('other');

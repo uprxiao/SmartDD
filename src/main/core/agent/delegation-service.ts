@@ -70,7 +70,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
   private readonly draining = new Map<string, string>();
   private readonly preparing = new Set<string>();
   private readonly prepareAbort = new Map<string, AbortController>();
-  private readonly finishing = new Set<string>();
+  private readonly finishing = new Map<string, Promise<void>>();
   private readonly resultFinishing = new Set<string>();
   private readonly notices = new Set<string>();
   private readonly contexts = new Map<string, string>();
@@ -388,7 +388,7 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
         const run=q.run_id?this.d.runs.active(q.run_id):undefined;
         if(run&&!this.d.runs.busy(run.runId)&&this.competitor(q.task_id)&&this.d.store.goal(q.task_id)?.status!=='active') {this.draining.set(q.task_id,run.runId);this.d.runs.hold(q.task_id,true);}
       }
-      for (const [taskId, runId] of this.draining) void this.track(this.drain(taskId, runId)).catch(e=>this.warnOnce(taskId, `drain-error:${runId}`, `收口尚未完成，保留目录占用：${(e as Error).message}`));
+      for (const [taskId, runId] of this.draining) void this.drain(taskId, runId).catch(e=>this.warnOnce(taskId, `drain-error:${runId}`, `收口尚未完成，保留目录占用：${(e as Error).message}`));
       for (const row of this.rows()) {
         if (row.delivery_state === 'queued') {
           const target = JSON.parse(row.target_json) as Target;
@@ -458,37 +458,48 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
       this.d.store.tx(() => { this.d.store.upsertGoal({ taskId, bindingId: goal.bindingId, objective: goal.objective, status: 'paused', pausedReason: 'waiting_children' }); this.d.store.sqlite.prepare("UPDATE agent_intents SET state='done',result_json=?,updated_at=? WHERE intent_id=?").run(JSON.stringify({ ...evidence, native }), at(), id); });
     } catch (e) { this.d.store.sqlite.prepare("UPDATE agent_intents SET state='needs_review',result_json=?,updated_at=? WHERE intent_id=?").run(JSON.stringify({ ...evidence, error: (e as Error).message }), at(), id); const g = this.d.store.goal(taskId); if (g && g.revision === goal.revision) this.d.store.upsertGoal({ taskId, bindingId: g.bindingId, objective: g.objective, status: 'paused', pausedReason: 'user' }); this.warnOnce(taskId, `goal-pause:${id}`, '目标暂停状态未能核实，不会自动恢复；原写入资格仍按退出与排空处理。'); }
   }
-  private async drain(taskId: string, runId: string) {
-    if (this.finishing.has(taskId) || this.businessBusy(taskId)) return; this.finishing.add(taskId);
-    try {
-      const run = this.d.runs.active(runId);
-      // A user stop still waits for the original run to acknowledge interruption or be force-stopped.
-      if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId)) return;
-      if (run?.driverId === 'codex-app-server' && this.stopped(taskId) && this.d.store.goal(taskId)?.status === 'active') await this.d.runs.goal(runId, { kind: 'pause' });
-      this.d.runs.hold(taskId, true); await this.pauseWaitingGoal(taskId, runId);
-      if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId) || this.d.runs.closingForTask(taskId)) return;
-      if (this.d.store.pendingRequests(taskId).some(r => r.class === 'native' && r.status === 'pending' && r.origin.runId === runId) && !this.stopped(taskId)) return;
-      if (run) await this.d.runs.close(runId);
-      if (this.d.runs.closingForTask(taskId)) return;
-      const record = this.d.store.run(runId); if (!record || !['stopped', 'failed', 'orphaned'].includes(record.state)) return;
-      const drained = await (this.d.drained?.(runId) ?? this.d.runs.drainNativeGroup(runId)); if (!drained) { this.warnOnce(taskId, `drain:${runId}`, '原生进程组或业务退出未能核实，保留写入资格；不会按超时交给下一个任务。'); return; }
-      if (this.d.store.run(runId)?.state === 'orphaned') this.d.store.sqlite.prepare("UPDATE capability_runs SET state='failed',error_code='ORPHAN_OWNER_DRAINED' WHERE run_id=? AND state='orphaned'").run(runId);
-      const child = this.parentOf(taskId);
-      const upgrade = child && child.access === 'read' && (JSON.parse(child.target_json) as Target).requestedAccess === 'write' && !this.stopped(taskId);
-      if (child && !upgrade) await this.finishChild(child);
-      else await this.verifyMerges(taskId);
-      const q = this.queue.forTask(taskId); if (q?.state === 'active') this.queue.release(q.queue_id, { nativeExited: true, descendantsDrained: true, businessDrained: true, admissionFrozen: true });
-      if (child && upgrade) {
-        const target = JSON.parse(child.target_json) as Target;
-        this.d.store.tx(() => { this.d.store.sqlite.prepare("UPDATE agent_delegations SET access='write' WHERE delegation_id=?").run(child.delegation_id); this.update(child, 'queued', { ...target, actualAccess: 'write', strategy: 'serial' });
-          const a = this.attempt(child), accepted = this.d.tasks.enqueueHost(taskId, `write-${a.attempt_id}`, '宿主：只读轮已结束。取得写入资格后请重新读取文件，再继续原委派。', 'delegation', true);
-          const input = JSON.parse(a.input_ref); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET input_ref=? WHERE attempt_id=?').run(JSON.stringify({ ...input, followUps: [...(input.followUps ?? []), accepted.turn.turn_id] }), a.attempt_id);
-        });
-      }
-      this.draining.delete(taskId);
-      this.contexts.delete(taskId);
-      if (!this.stopped(taskId)) { this.d.runs.hold(taskId, false); this.d.tasks.kick(taskId); }
-    } finally { this.finishing.delete(taskId); }
+  async settleClosedRun(taskId: string, runId: string) {
+    if (this.draining.get(taskId) !== runId) return;
+    await this.drain(taskId, runId);
+  }
+
+  private drain(taskId: string, runId: string): Promise<void> {
+    const pending = this.finishing.get(taskId);
+    if (pending) return pending;
+    if (this.draining.get(taskId) !== runId || this.businessBusy(taskId)) return Promise.resolve();
+    const work = this.finishDrainingRun(taskId, runId).finally(() => this.finishing.delete(taskId));
+    this.finishing.set(taskId, work);
+    return this.track(work);
+  }
+
+  private async finishDrainingRun(taskId: string, runId: string) {
+    const run = this.d.runs.active(runId);
+    // A user stop still waits for the original run to acknowledge interruption or be force-stopped.
+    if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId)) return;
+    if (run?.driverId === 'codex-app-server' && this.stopped(taskId) && this.d.store.goal(taskId)?.status === 'active') await this.d.runs.goal(runId, { kind: 'pause' });
+    this.d.runs.hold(taskId, true); await this.pauseWaitingGoal(taskId, runId);
+    if (this.d.runs.busy(runId) || this.d.runs.nativeBusy(runId) || this.d.runs.closingForTask(taskId)) return;
+    if (this.d.store.pendingRequests(taskId).some(r => r.class === 'native' && r.status === 'pending' && r.origin.runId === runId) && !this.stopped(taskId)) return;
+    if (run) await this.d.runs.close(runId);
+    if (this.d.runs.closingForTask(taskId)) return;
+    const record = this.d.store.run(runId); if (!record || !['stopped', 'failed', 'orphaned'].includes(record.state)) return;
+    const drained = await (this.d.drained?.(runId) ?? this.d.runs.drainNativeGroup(runId)); if (!drained) { this.warnOnce(taskId, `drain:${runId}`, '原生进程组或业务退出未能核实，保留写入资格；不会按超时交给下一个任务。'); return; }
+    if (this.d.store.run(runId)?.state === 'orphaned') this.d.store.sqlite.prepare("UPDATE capability_runs SET state='failed',error_code='ORPHAN_OWNER_DRAINED' WHERE run_id=? AND state='orphaned'").run(runId);
+    const child = this.parentOf(taskId);
+    const upgrade = child && child.access === 'read' && (JSON.parse(child.target_json) as Target).requestedAccess === 'write' && !this.stopped(taskId);
+    if (child && !upgrade) await this.finishChild(child);
+    else await this.verifyMerges(taskId);
+    const q = this.queue.forTask(taskId); if (q?.state === 'active') this.queue.release(q.queue_id, { nativeExited: true, descendantsDrained: true, businessDrained: true, admissionFrozen: true });
+    if (child && upgrade) {
+      const target = JSON.parse(child.target_json) as Target;
+      this.d.store.tx(() => { this.d.store.sqlite.prepare("UPDATE agent_delegations SET access='write' WHERE delegation_id=?").run(child.delegation_id); this.update(child, 'queued', { ...target, actualAccess: 'write', strategy: 'serial' });
+        const a = this.attempt(child), accepted = this.d.tasks.enqueueHost(taskId, `write-${a.attempt_id}`, '宿主：只读轮已结束。取得写入资格后请重新读取文件，再继续原委派。', 'delegation', true);
+        const input = JSON.parse(a.input_ref); this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET input_ref=? WHERE attempt_id=?').run(JSON.stringify({ ...input, followUps: [...(input.followUps ?? []), accepted.turn.turn_id] }), a.attempt_id);
+      });
+    }
+    this.draining.delete(taskId);
+    this.contexts.delete(taskId);
+    if (!this.stopped(taskId)) { this.d.runs.hold(taskId, false); this.d.tasks.kick(taskId); }
   }
   private async prepareChild(row: DelegationRow) {
     if (this.preparing.has(row.child_task_id)) return; this.preparing.add(row.child_task_id); const abort = new AbortController(); this.prepareAbort.set(row.child_task_id, abort);
