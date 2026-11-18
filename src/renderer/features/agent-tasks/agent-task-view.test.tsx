@@ -332,6 +332,31 @@ it('M14 A29/A74: the native child process drawer and family card open independen
   }
 });
 
+it('M14 A29: the native lifecycle keeps the owning-run stop action after the launch tool returns', async () => {
+  const turnId = 'native-turn';
+  mocks.snapshot.mockResolvedValue(snapshot({
+    items:[{...item('subagent',{name:'Agent',status:'completed',output:'Async agent launched'}),turnId}],
+    turns:[{turn_id:turnId,status:'started',started_at:'2026-11-18T00:00:00Z'}],
+  }));
+  const api = mocks as typeof mocks & {nativeHistory?: ReturnType<typeof vi.fn>; stop?: ReturnType<typeof vi.fn>};
+  api.nativeHistory = vi.fn().mockResolvedValue({items:[],states:['running'],total:0,stopRunId:'original-run'});
+  api.stop = vi.fn().mockResolvedValue({stopped:true});
+  try {
+    render(<AgentTaskView taskId="task" />);
+    fireEvent.click(await screen.findByText(/子 Agent/));
+    fireEvent.click(screen.getByRole('button',{name:'查看过程'}));
+    const drawer=screen.getByRole('region',{name:'执行器原生子 Agent'});
+    const stop=await within(drawer).findByRole('button',{name:'停止所属运行'});
+    expect(drawer.textContent).toContain('工作中');
+    expect(drawer.textContent).not.toContain('completed');
+    fireEvent.click(stop);
+    expect(api.stop).toHaveBeenCalledWith('task',false,'original-run');
+  } finally {
+    delete api.nativeHistory;
+    delete api.stop;
+  }
+});
+
 it('G5 uses a read-only composer until the same archived task is restored',async()=>{
   const active = snapshot({items:[item('assistant_message',{text:'retained archived history'})]});
   mocks.snapshot.mockResolvedValue({...active,archivedAt:'2026-11-18T11:00:00Z'});

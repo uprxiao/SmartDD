@@ -288,15 +288,16 @@ function NativeMessage({ item }: { item: TimelineItem }) {
   const text = p.text ?? p.summary ?? (Array.isArray(content) ? content.map((b: any) => b.text ?? (b.type === 'tool_use' ? `调用 ${b.name}\n${JSON.stringify(b.input)}` : b.content ?? '')).join('\n') : typeof content === 'string' ? content : JSON.stringify(p));
   return <div className="agent-native-message"><pre>{String(text)}</pre><Completeness truncated={truncated} payload={p} onExpand={() => void load()} /></div>;
 }
-function NativeMessages({ parent }: { parent: TimelineItem }) {
+function NativeProcess({ item, onClose }: { item: TimelineItem; onClose(): void }) {
+  const {payload:p,truncated,load}=useFullPayload(item);
+  const taskId=useContext(TaskScope), archived=useContext(ArchivedScope);
   const [value, setValue] = useState<Awaited<ReturnType<typeof rpc.agentTasks.nativeHistory>> | null>(null);
   const [error, setError] = useState('');
-  const taskId = useContext(TaskScope);
   const epoch = useRef(0), reading = useRef(false), pendingRefresh = useRef(false);
   const read = async (before?: number) => {
     const mine = ++epoch.current; reading.current = true;
     try {
-      const r = await rpc.agentTasks.nativeHistory(taskId, parent.itemId, before);
+      const r = await rpc.agentTasks.nativeHistory(taskId, item.itemId, before);
       if (mine !== epoch.current) return;
       setValue(v => {
         const map = new Map((v?.items ?? []).map(i => [i.itemId, i]));
@@ -310,19 +311,7 @@ function NativeMessages({ parent }: { parent: TimelineItem }) {
     setValue(null); void read();
     const off = events.on(agentTaskEvent, e => { if (e.taskId === taskId) { if (reading.current) pendingRefresh.current = true; else void read(); } });
     return () => { ++epoch.current; pendingRefresh.current = false; off(); };
-  }, [taskId, parent.itemId]);
-  return <div className="agent-native-messages">
-    {error && <p role="alert">子消息读取失败：{error}<button type="button" onClick={() => void read()}>重试</button></p>}
-    {value?.states.length ? <small>原生节点：{value.states.map(s => ({ running: '工作中', needs_attention: '需要你处理', completed: '已完成', interrupted: '已停止', failed: '失败' }[s] ?? s)).join('、')}</small> : null}
-    {value?.hasMore && <button type="button" className="agent-older" onClick={() => void read(value.nextOrdinal ?? undefined)}>加载更早的子消息</button>}
-    {value?.items.map(item => <NativeMessage item={item} key={item.itemId} />)}
-    {value && !value.items.length && <p>{value.partial ? '这份旧记录仅保留了子消息预览，没有可恢复的完整记录。' : '执行器尚未返回子消息。'}</p>}
-  </div>;
-}
-
-function NativeProcess({ item, onClose }: { item: TimelineItem; onClose(): void }) {
-  const {payload:p,truncated,load}=useFullPayload(item);
-  const taskId=useContext(TaskScope), archived=useContext(ArchivedScope);
+  }, [taskId, item.itemId]);
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
@@ -333,18 +322,27 @@ function NativeProcess({ item, onClose }: { item: TimelineItem; onClose(): void 
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [onClose]);
+  const stateLabels: Record<string,string> = {running:'工作中',needs_attention:'需要你处理',completed:'已完成',interrupted:'已停止',failed:'失败'};
+  const states = value?.states.length ? value.states : typeof p.status === 'string' ? [p.status] : [];
+  const state = states.length ? states.map(status => stateLabels[status] ?? status).join('、') : '状态未知';
+  const stopRunId = value?.stopRunId;
   return <section className="agent-native-process" aria-label="执行器原生子 Agent">
     <header><b><Network size={15}/> 执行器原生子 Agent</b><button type="button" aria-label="关闭过程" onClick={onClose}><X size={14}/></button></header>
     <div className="agent-native-process-body">
-    <p>{p.input?.description ?? p.tool ?? p.name} · {p.status ?? '状态未知'}</p>
+    <p>{p.input?.description ?? p.tool ?? p.name} · {state}</p>
     {p.prompt && <pre>{p.prompt}</pre>}
     {p.childLog?.length > 0 && <ol className="agent-native-steps">{p.childLog.map((line: string, i: number) => <li key={i}><Info size={13}/><pre>{line}</pre></li>)}</ol>}
     {p.childLogPreviewOnly && <small>以上为最近消息预览；完整记录如下。</small>}
-    <NativeMessages parent={item} />
+    <div className="agent-native-messages">
+      {error && <p role="alert">子消息读取失败：{error}<button type="button" onClick={() => void read()}>重试</button></p>}
+      {value?.hasMore && <button type="button" className="agent-older" onClick={() => void read(value.nextOrdinal ?? undefined)}>加载更早的子消息</button>}
+      {value?.items.map(item => <NativeMessage item={item} key={item.itemId} />)}
+      {value && !value.items.length && <p>{value.partial ? '这份旧记录仅保留了子消息预览，没有可恢复的完整记录。' : '执行器尚未返回子消息。'}</p>}
+    </div>
     {p.output && <pre>{String(p.output)}</pre>}
     <Completeness truncated={truncated} payload={p} onExpand={() => void load()} />
     </div>
-    {!archived && !item.terminal && <footer><button type="button" className="agent-stop agent-stop-run" onClick={() => void rpc.agentTasks.stop(taskId).then(onClose).catch(e=>toast.error(rpcErrorMessage(e)))}><CircleStop size={14}/>停止所属运行</button></footer>}
+    {!archived && stopRunId && <footer><button type="button" className="agent-stop agent-stop-run" onClick={() => void rpc.agentTasks.stop(taskId,false,stopRunId).then(onClose).catch(e=>toast.error(rpcErrorMessage(e)))}><CircleStop size={14}/>停止所属运行</button></footer>}
   </section>;
 }
 
@@ -1179,7 +1177,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     {(showLineage || activeProcess) && <aside className="agent-task-aux">
       {showLineage && family && <AgentLineage parentId={parentId} title={family.taskTitle} parentArchived={relations?.parentTaskId ? relations.parentArchived : archived}
         currentId={taskId} value={family} close={()=>{lineage.setLineage(false);}} reload={loadRelations} readOnly={archived} />}
-      {activeProcess && <NativeProcess item={activeProcess} onClose={()=>setNativeProcess(null)} />}
+      {activeProcess && <NativeProcess key={activeProcess.itemId} item={activeProcess} onClose={()=>setNativeProcess(current=>current?.itemId===activeProcess.itemId?null:current)} />}
     </aside>}
   </NativeProcessScope.Provider></section></TaskScope.Provider></RunInTerminal.Provider></ArchivedScope.Provider></RelationsScope.Provider>;
 });

@@ -565,15 +565,18 @@ export class AgentTaskService {
     }
   }
 
-  async stop(taskId: string, subtree = false) {
+  async stop(taskId: string, subtree = false, expectedRunId?: string) {
     const selected = this.selection(taskId);
+    const run = this.d.runs.runForTask(taskId);
+    if (expectedRunId !== undefined && run?.runId !== expectedRunId) {
+      throw new DriverError('STATE', '所属运行已结束或变化，请重新打开原生子 Agent');
+    }
     this.paused.add(taskId);
     this.stoppedByUser.add(taskId);
     this.stopSeq.set(taskId, (this.stopSeq.get(taskId) ?? 0) + 1);
     if (selected.selection.pendingSwitch) this.d.store.updateSelection(taskId, { pendingSwitch: undefined }, selected.revision);
     this.d.runs.hold(taskId, true);
     this.business?.stop(taskId);
-    const run = this.d.runs.runForTask(taskId);
     const interrupt = async () => {
       if (!run) return;
       // Codex：停止键＝停止本轮并暂停目标（需求 R02）。
@@ -819,17 +822,19 @@ export class AgentTaskService {
   nativeHistory(taskId: string, itemId: string, beforeOrdinal = Number.MAX_SAFE_INTEGER) {
     this.selection(taskId, true);
     if (!Number.isSafeInteger(beforeOrdinal) || beforeOrdinal < 1) throw new DriverError('REJECTED', '消息分页游标无效');
-    const parent = this.d.store.sqlite.prepare("SELECT run_id FROM agent_items WHERE task_id=? AND item_id=? AND type='subagent'").get(taskId, itemId) as { run_id: string } | undefined;
+    const parent = this.d.store.sqlite.prepare("SELECT run_id,terminal_state FROM agent_items WHERE task_id=? AND item_id=? AND type='subagent'").get(taskId, itemId) as { run_id: string | null; terminal_state: string | null } | undefined;
     if (!parent) throw new DriverError('REJECTED', '原生子节点不属于本任务');
+    const ownerRunId = this.d.runs.runForTask(taskId)?.runId === parent.run_id ? parent.run_id : null;
     const body = this.d.store.readItemBody(taskId, itemId); const payload = body ? JSON.parse(body.text) : {};
     const ids = Array.isArray(payload.nativeNodeIds) ? payload.nativeNodeIds.filter((x: unknown) => typeof x === 'string' && x.length <= 256).slice(0, 128) : [];
-    if (!ids.length) return { items: [], hasMore: false, total: 0, nextOrdinal: null as number | null, states: [] as string[], partial: true };
+    if (!ids.length) return { items: [], hasMore: false, total: 0, nextOrdinal: null as number | null, states: [] as string[], partial: true, stopRunId: parent.terminal_state ? null : ownerRunId };
     const params = ids.map(() => '?').join(',');
     const rows = this.d.store.sqlite.prepare(`SELECT * FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_message' AND ordinal<? ORDER BY ordinal DESC LIMIT 51`).all(taskId, parent.run_id, ...ids, beforeOrdinal) as { item_id: string; turn_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string }[];
     const total = (this.d.store.sqlite.prepare(`SELECT COUNT(*) AS n FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_message'`).get(taskId, parent.run_id, ...ids) as { n: number }).n;
     const states = (this.d.store.sqlite.prepare(`SELECT payload_ref FROM agent_items WHERE task_id=? AND run_id=? AND node_id IN (${params}) AND type='subagent_status'`).all(taskId, parent.run_id, ...ids) as { payload_ref: string }[]).map(r => String(JSON.parse(r.payload_ref).state));
     const items = rows.slice(0, 50).reverse().map(r => { const p = JSON.parse(r.payload_ref); return { itemId: r.item_id, turnId: r.turn_id, type: r.type, ordinal: r.ordinal, revision: r.revision, terminal: r.terminal_state, createdAt: r.created_at, updatedAt: r.updated_at, payload: Buffer.byteLength(r.payload_ref) <= 4096 && !p.artifact ? p : { truncated: true, bytes: p.artifact?.bytes ?? Buffer.byteLength(r.payload_ref) } }; });
-    return { items, hasMore: rows.length > 50, total, nextOrdinal: (items[0]?.ordinal ?? null) as number | null, states, partial: !items.length && !!payload.childLog?.length };
+    const stoppable = states.some(state => state === 'running' || state === 'needs_attention') || (!states.length && !parent.terminal_state);
+    return { items, hasMore: rows.length > 50, total, nextOrdinal: (items[0]?.ordinal ?? null) as number | null, states, partial: !items.length && !!payload.childLog?.length, stopRunId: stoppable ? ownerRunId : null };
   }
 
   /** 一致快照与已提交水位；订阅方先订阅再读快照，随后补拉 (seq, …]（技术方案 §3.1）。 */

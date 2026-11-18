@@ -48,7 +48,7 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       switchProfile: (e, taskId: string, profileId: string, expectedRevision: number, model?: string | null) => run(e, w => w.tasks.switchProfile(taskId, profileId, expectedRevision, model)),
       setExtensions: (e, taskId: string, profileId: string, enabled: boolean, expectedRevision: number) => run(e, w => w.tasks.setExtensions(taskId, profileId, enabled, expectedRevision)),
       saveDraft: (e, taskId: string, draft: unknown, expectedRevision: number) => run(e, w => w.tasks.saveDraft(taskId, draft, expectedRevision)),
-      stop: (e, taskId: string, subtree?: boolean) => run(e, w => w.tasks.stop(taskId, subtree)),
+      stop: (e, taskId: string, subtree?: boolean, expectedRunId?: string) => run(e, w => w.tasks.stop(taskId, subtree, expectedRunId)),
       forceStop: (e, taskId: string, runId: string, requestedAt: number) => run(e, w => w.tasks.forceStop(taskId,runId,requestedAt)),
       readUserInput: (e, taskId: string, turnId: string, offset: number, version: string | null) => run(e, w => w.tasks.readUserInput(taskId,turnId,offset,version)),
       editQueued: (e, taskId: string, turnId: string, version: string, text: string) => run(e, w => w.tasks.editQueued(taskId,turnId,version,text)),

@@ -925,11 +925,17 @@ describe('任务服务', () => {
 it('A29/A45: native child messages have independent scoped pagination and cannot crowd the main timeline out of its snapshot',async()=>{
  const f=setup(),{taskId}=f.svc.create({projectId:null,dirId:null,cwd:'/w',title:'native logs',profileId:'cx',tier:'ask'});
  await f.svc.submit(taskId,{clientInputId:id(999),text:'start',expectedSelectionRevision:1});await until(()=>f.insts[0]?.turns.length===1);
- const runId=f.runs.runForTask(taskId)!.runId,parent=f.store.upsertItem({taskId,turnId:null,runId,nativeKey:'native-parent',type:'subagent',payload:{nativeNodeIds:['child'],status:'running'}});
+ const runId=f.runs.runForTask(taskId)!.runId,parent=f.store.upsertItem({taskId,turnId:null,runId,nativeKey:'native-parent',type:'subagent',payload:{nativeNodeIds:['child'],status:'completed'},terminalState:'completed'});
+ f.insts[0].emit({type:'node.state',nodeId:'child',state:'running'});
  for(let n=0;n<120;n++)f.store.upsertItem({taskId,turnId:null,runId,nativeKey:'child-'+n,nodeId:'child',type:'subagent_message',payload:{text:'child '+n}});
  f.store.upsertItem({taskId,turnId:null,runId,nativeKey:'foreign',nodeId:'another-child',type:'subagent_message',payload:{text:'foreign'}});
  expect(f.svc.snapshot(taskId).items.map(i=>i.type)).toEqual(['user_message','subagent']);expect(f.svc.snapshot(taskId).hasOlder).toBe(false);
  const first=f.svc.nativeHistory(taskId,parent);expect(first.items).toHaveLength(50);expect(first.total).toBe(120);expect(first.items.some(i=>i.payload.text==='foreign')).toBe(false);
+ expect(first).toMatchObject({states:['running'],stopRunId:runId});
+ await expect(f.svc.stop(taskId,false,'different-run')).rejects.toThrow('所属运行已结束或变化');
+ expect(f.insts[0].interrupts).toBe(0);
+ f.insts[0].emit({type:'node.state',nodeId:'child',state:'completed'});
+ expect(f.svc.nativeHistory(taskId,parent)).toMatchObject({states:['completed'],stopRunId:null});
  const second=f.svc.nativeHistory(taskId,parent,first.nextOrdinal!);expect(second.items).toHaveLength(50);const third=f.svc.nativeHistory(taskId,parent,second.nextOrdinal!);expect(third.items).toHaveLength(20);expect(third.hasMore).toBe(false);
  await f.runs.closeAll();
 });
