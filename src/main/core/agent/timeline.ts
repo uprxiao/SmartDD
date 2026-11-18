@@ -215,14 +215,23 @@ export class TimelineProjector {
         return { key, type: 'file_change', payload: { changes: (item.changes ?? []).map((c: any) => ({ path: c.path, kind: c.kind?.type ?? c.kind })), status }, terminal };
       case 'mcpToolCall': case 'dynamicToolCall':
         return { key, type: 'tool_call', payload: { name: `${item.server ? item.server + '/' : ''}${item.tool ?? item.name ?? ''}`, input: item.arguments ?? null, output: item.result ?? item.error ?? null, status }, terminal };
+      case 'fileSearch':
+        return { key, type: 'file_search', payload: { input: { pattern: text(item.query), path: item.scope ?? null }, output: text(item.results).slice(0, 16_000), status }, terminal };
       case 'webSearch':
         return { key, type: 'web_search', payload: { query: text(item.query), status }, terminal };
       case 'collabAgentToolCall':
         return { key, type: 'subagent', payload: { kind: 'provider_native', tool: item.tool ?? null, status, prompt: item.prompt ?? null, nativeNodeIds: item.receiverThreadIds ?? [], agentsStates: item.agentsStates ?? {} }, terminal };
       case 'contextCompaction':
         return done ? { key, type: 'compaction', payload: {}, terminal } : null;
-      default:
-        return null; // userMessage 由宿主在本地接受时记录；其他类型留在原生诊断
+      case 'userMessage':
+        return null; // 用户消息由宿主接受输入时记录。
+      default: {
+        const nativeType = typeof item.type === 'string' ? item.type.slice(0, 100) : '缺少类型';
+        const noticeKey = `unknown-item:${nativeType}`;
+        if (this.closedNotices.has(noticeKey)) return null;
+        this.closedNotices.add(noticeKey);
+        return { key: noticeKey, type: 'system_notice', payload: { severity: 'warning', code: 'unknownNativeItem', title: '收到未识别的 Codex 时间线条目', detail: nativeType }, terminal: 'completed' };
+      }
     }
   }
 }

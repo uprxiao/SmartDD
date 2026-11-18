@@ -89,6 +89,17 @@ describe('Codex 投影', () => {
     expect(review).toMatchObject({ type: 'system_notice', terminal: null });
     expect(lifecycle('item/autoApprovalReview/completed', { reviewId: 'review-1', review: { status: 'denied', rationale: 'write denied' } })).toMatchObject({ key: review.key, terminal: 'completed', payload: { severity: 'warning', detail: expect.stringContaining('write denied') } });
   });
+
+  it('A59: 原生文件搜索保留工作条目，未知条目类型报警一次', () => {
+    const x = p();
+    const completed = (id: string, type: string, fields: object = {}) => x.project({ type: 'item.completed', nativeItemId: id, itemType: type, payload: { id, type, ...fields } });
+    expect(completed('files', 'fileSearch', { query: '*.ts', results: ['src/file.ts'] })).toEqual([
+      expect.objectContaining({ key: 'files', type: 'file_search', terminal: 'completed', payload: expect.objectContaining({ input: expect.objectContaining({ pattern: '*.ts' }), output: expect.stringContaining('src/file.ts') }) }),
+    ]);
+    expect(completed('unexpected-1', 'newNativeType')).toEqual([expect.objectContaining({ type: 'system_notice', payload: expect.objectContaining({ severity: 'warning', code: 'unknownNativeItem', detail: expect.stringContaining('newNativeType') }) })]);
+    expect(completed('unexpected-2', 'newNativeType')).toEqual([]);
+    expect(x.project({ type: 'native', name: 'account/updated', payload: {} })).toEqual([]);
+  });
 });
 
 describe('复核 1755 投影回归', () => {
