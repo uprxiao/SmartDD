@@ -7,5 +7,6 @@ declare module 'markdown-it' {
     use(plugin: (...args: any[]) => unknown, ...options: unknown[]): this;
     parse(source: string, env?: Record<string, unknown>): Token[];
     render(source: string, env?: Record<string, unknown>): string;
+    validateLink(url: string): boolean;
   }
 }

@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { inlineCodeFilePathCandidate,absoluteFilePathMatches } from '@shared/t3-links/markdownLinks';
+import { inlineCodeFilePathCandidate,absoluteFilePathMatches,markdownDestinationHostPath } from '@shared/t3-links/markdownLinks';
 import { openMessageLink,resolveMessageLink } from './message-links';
 import {VoiceButton} from '@renderer/views/voice-controls';
 import {voiceStore,textareaVoiceTarget} from '@renderer/core/voice-store';
@@ -39,6 +39,9 @@ const LIMIT_LABEL: Record<string, string> = { usage: '额度已用完', rate: '�
 
 // 消息里的链接在阶段 5 按 T3 规则接入路由；此前只显示为文字，不打开任何地址。
 const md = new MarkdownIt({ html: false, linkify: true, breaks: false });
+const validateMarkdownLink = md.validateLink.bind(md);
+// File links are routed through the host's task-root checks; the link never navigates the renderer.
+md.validateLink = url => validateMarkdownLink(url) || (/^file:\/\/(?:localhost)?\/(?![/\\])/i.test(url) && markdownDestinationHostPath(url) !== null);
 // GFM-style automatic web links: explicit HTTP(S) and www., never fuzzy domains or emails.
 type LinkMatch = { raw: string; url: string };
 type Linkifier = {

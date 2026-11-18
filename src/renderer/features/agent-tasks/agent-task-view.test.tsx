@@ -358,6 +358,22 @@ it('T1/V22 renders only supported web links and the Chinese absolute path except
   ]);
 });
 
+it('A57 renders explicit local file URLs without linking bare or remote file URLs', async () => {
+  const text = [
+    '[文件协议](file:///tmp/source.ts:3:2)',
+    '[本机地址](file://localhost/tmp/notes.txt#L4)',
+    '裸地址 file:///tmp/plain.txt',
+    '[远程文件](file://remote.invalid/share/private.txt)',
+    '[危险地址](javascript:alert%281%29)',
+  ].join('\n\n');
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [item('assistant_message', { text })] }));
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByText(/裸地址/);
+  expect(screen.getAllByRole('link').map(link => decodeURIComponent(link.dataset.agentLink!))).toEqual([
+    'file:///tmp/source.ts:3:2', 'file://localhost/tmp/notes.txt#L4',
+  ]);
+});
+
 it('F04 chooses numbered answers then confirms with Enter and leaves composing digits alone', async () => {
   const req = { requestId:'question', revision:1, status:'pending', origin:{}, kind:'user_input', payload:{ params:{ questions:[
     {id:'q', question:'选择运行方式', options:[{label:'快速'},{label:'完整', description:'完整校验'}]},
