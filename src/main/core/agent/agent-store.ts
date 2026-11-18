@@ -545,13 +545,15 @@ export class AgentStore {
       return rows.map(r => ({ runId: r.run_id, taskId: r.task_id, pid: r.pid, processStartedAt: r.process_started_at }));
     });
   }
-  runsWithUnsettledNativeNodes(currentInstanceId: string) {
-    return this.sqlite.prepare(`SELECT r.run_id AS runId,r.pid,r.process_started_at AS startedAt
+  runsAwaitingRestartRecovery(currentInstanceId: string, taskId?: string) {
+    return this.sqlite.prepare(`SELECT r.run_id AS runId,r.task_id AS taskId,r.pid,r.process_started_at AS startedAt
       FROM capability_runs r WHERE r.binding_id IS NOT NULL AND r.owner_instance_id<>?
-      AND (r.state='orphaned' OR (r.state='stopped' AND r.error_code='HOST_INTERRUPTED'))
       AND r.pid IS NOT NULL AND r.process_started_at IS NOT NULL
-      AND EXISTS(SELECT 1 FROM agent_items i WHERE i.run_id=r.run_id AND i.type='subagent_status' AND i.terminal_state IS NULL)`)
-      .all(currentInstanceId) as { runId: string; pid: number; startedAt: string }[];
+      AND (r.state='orphaned' AND EXISTS(SELECT 1 FROM capability_run_processes p WHERE p.run_id=r.run_id AND p.kind='cli')
+        OR (r.state='orphaned' OR (r.state='stopped' AND r.error_code='HOST_INTERRUPTED'))
+          AND EXISTS(SELECT 1 FROM agent_items i WHERE i.run_id=r.run_id AND i.type='subagent_status' AND i.terminal_state IS NULL))
+      ${taskId === undefined ? '' : 'AND r.task_id=?'}`)
+      .all(...(taskId === undefined ? [currentInstanceId] : [currentInstanceId, taskId])) as { runId: string; taskId: string; pid: number; startedAt: string }[];
   }
 
   interruptRecoveredNativeNodes(runId: string) {

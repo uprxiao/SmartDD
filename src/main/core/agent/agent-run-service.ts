@@ -45,6 +45,7 @@ const FORCE_STOP_DELAY_MS = 10_000;
 interface ActiveRun { readonly readOnly: boolean; userStop?: { requestedAt: number; turnId: string | null }; integration?: RunIntegration; registration?: Promise<void>; exitFinishing?: Promise<void>; nodeReads?: Set<Promise<void>>; nativeNodes?: Set<string>; opening?: boolean; startingNativeWork?: number }
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
+  private readonly previousRecovery = new Map<string, Promise<void>>();
   private readonly live = new Set<LiveListener>();
   /** 正在由宿主回应的请求：期间原生侧的结束通知不当作“原生自行结束”。 */
   private readonly responding = new Set<string>();
@@ -393,24 +394,47 @@ export class AgentRunService {
 
   async closeAll() { await Promise.all([...this.runs.keys()].map(id => this.close(id))); }
 
-  async recoverPreviousNativeNodes(signal: AbortSignal) {
+  async waitForPreviousRecoveries() { await Promise.allSettled(this.previousRecovery.values()); }
+
+  async recoverPreviousNativeNodes(signal: AbortSignal, reconcileRun: (runId: string) => Promise<boolean> = async () => true, taskId?: string) {
     const { store, processes, host } = this.deps;
     const inspectGroup = processes.ownedGroup?.bind(processes);
-    if (!inspectGroup) return;
-    let pending = store.runsWithUnsettledNativeNodes(host.instanceId);
-    const deadline = Date.now() + 10_000;
-    // The application run ledger may already have marked the old owner interrupted.
-    // Its state alone cannot prove that the native launch group is no longer active.
-    for (let wait = 0; pending.length && !signal.aborted && Date.now() < deadline; wait = 250) {
-      await delay(wait, undefined, { signal }).catch(error => { if (!signal.aborted) throw error; });
-      if (signal.aborted) return;
-      pending = pending.filter(({ runId, pid, startedAt }) => {
-        const proof = inspectGroup({ pid, startedAt });
-        if (proof?.state !== 'stopped') return proof?.state === 'running';
-        store.interruptRecoveredNativeNodes(runId);
-        return false;
-      });
+    if (!inspectGroup || signal.aborted) return;
+    const alreadyRecovering = taskId === undefined ? undefined : this.previousRecovery.get(taskId);
+    if (alreadyRecovering) return alreadyRecovering;
+    const candidates = store.runsAwaitingRestartRecovery(host.instanceId, taskId);
+    const groups = new Map<string, typeof candidates>();
+    for (const run of candidates) {
+      const group = groups.get(run.taskId);
+      if (group) group.push(run);
+      else groups.set(run.taskId, [run]);
     }
+    const work: Promise<void>[] = [];
+    for (const [taskId, candidates] of groups) {
+      const existing = this.previousRecovery.get(taskId);
+      if (existing) { work.push(existing); continue; }
+      const recovering = (async () => {
+        const deadline = Date.now() + 10_000;
+        let pending = candidates;
+        for (let wait = 0; pending.length && !signal.aborted && Date.now() < deadline; wait = 250) {
+          await delay(wait, undefined, { signal }).catch(error => { if (!signal.aborted) throw error; });
+          const unfinished = [];
+          for (const run of pending) {
+            if (signal.aborted) return;
+            if (inspectGroup({ pid: run.pid, startedAt: run.startedAt })?.state !== 'stopped') {
+              unfinished.push(run);
+              continue;
+            }
+            store.interruptRecoveredNativeNodes(run.runId);
+            if (!await reconcileRun(run.runId).catch(() => false)) unfinished.push(run);
+          }
+          pending = unfinished;
+        }
+      })().finally(() => this.previousRecovery.delete(taskId));
+      this.previousRecovery.set(taskId, recovering);
+      work.push(recovering);
+    }
+    await Promise.all(work);
   }
 
   private captureNode(run: ActiveRun, nodeId: string) {

@@ -45,16 +45,25 @@ describe('运行服务', () => {
     put('left-open', 'running');
     put('completed-earlier', 'completed');
     f.db.prepare("UPDATE capability_runs SET state='orphaned',error_code='HOST_INTERRUPTED' WHERE run_id=?").run(run.runId);
-    const ownedGroup = vi.fn<NonNullable<ProcessIdentityReader['ownedGroup']>>().mockReturnValue(null);
+    const ownedGroup = vi.fn<NonNullable<ProcessIdentityReader['ownedGroup']>>();
     const restarted = new AgentRunService({ store: f.store, drivers: new Map(), processes: { read: () => null, state: () => 'unknown', ownedGroup },
       host: { instanceId: 'new-host', pid: process.pid, startedAt: null } });
-    const signal = new AbortController().signal;
+    const incomplete = new AbortController();
     const row = (nodeId: string) => f.db.prepare('SELECT revision,terminal_state,payload_ref FROM agent_items WHERE node_id=?').get(nodeId);
-    await restarted.recoverPreviousNativeNodes(signal);
+    ownedGroup.mockImplementationOnce(() => { incomplete.abort(); return null; });
+    await restarted.recoverPreviousNativeNodes(incomplete.signal);
     expect(row('left-open')).toMatchObject({ revision: 1, terminal_state: null });
-    ownedGroup.mockReturnValueOnce({ state: 'running', processes: [{ pid: 800, startedAt: 'different-child-birth' }] })
+    const signal = new AbortController().signal;
+    ownedGroup.mockReturnValueOnce(null)
+      .mockReturnValueOnce({ state: 'running', processes: [{ pid: 800, startedAt: 'different-child-birth' }] })
       .mockReturnValue({ state: 'stopped', processes: [] });
-    await restarted.recoverPreviousNativeNodes(signal);
+    const reconcile = vi.fn(async () => true).mockResolvedValueOnce(false);
+    const recovered = restarted.recoverPreviousNativeNodes(signal, reconcile);
+    const sameTaskRecovery = restarted.recoverPreviousNativeNodes(signal, reconcile, f.taskId);
+    await restarted.recoverPreviousNativeNodes(signal, reconcile, 'other-task');
+    expect(reconcile).not.toHaveBeenCalled();
+    await Promise.all([recovered, sameTaskRecovery]);
+    expect(reconcile.mock.calls).toEqual([[run.runId], [run.runId]]);
     expect(ownedGroup).toHaveBeenLastCalledWith({ pid: 777, startedAt: 'darwin-proc-v1:777:1' });
     expect(row('left-open')).toEqual({ revision: 2, terminal_state: 'failed',
       payload_ref: JSON.stringify({ state: 'interrupted', nativeRunId: 'original', reason: 'owner-restarted' }) });
