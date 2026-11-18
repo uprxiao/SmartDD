@@ -120,6 +120,40 @@ describe('capability run resource registration, revocation and conservative reco
     const run = await active(); hostStopped(run.runId); const next = f.registry(); expect(await next.recover()).toEqual([{ runId: run.runId,state: 'orphaned' }]); expect(leases(run.runId)).toEqual([{ state: 'recovery-required' }]);
     reader.unknown.add(200001); expect(await next.recover()).toEqual([{ runId: run.runId,state: 'orphaned' }]); reader.unknown.clear(); reader.identities.delete(200001); expect(await next.recover()).toEqual([{ runId: run.runId,state: 'stopped' }]); expect(leases(run.runId)).toEqual([{ state: 'released' }]);
   });
+  it('A27 terminalizes only unresolved writes of a proven interrupted host without releasing its live child', async () => {
+    const run = await active();
+    const next = f.registry();
+    const insert = f.sqlite.prepare(`INSERT INTO application_invocations
+      (operation_id,run_id,request_id,request_hash,project_id,task_id,app_id,package_hash,tool_name,contract_major,semantics,state,effect_state,attempt_count,started_at)
+      VALUES(?,?,?,'fixed','p1',?,'fixture','package','fixture.write',1,'write',?,?,1,'2026-11-18T00:00:00Z')`);
+    const record = (effect: string, state = 'running') => {
+      const id = randomUUID();
+      insert.run(id, run.runId, randomUUID(), f.snapshot.taskId, state, effect);
+      return id;
+    };
+    const read = (id: string) => f.sqlite.prepare('SELECT state,effect_state,attempt_count,error_code,ended_at FROM application_invocations WHERE operation_id=?').get(id);
+    const unreturned = record('unknown');
+    const unsent = record('not-started');
+    const finished = record('completed', 'succeeded');
+    const unsentBefore = read(unsent), finishedBefore = read(finished);
+
+    expect(await next.recover()).toEqual([{ runId: run.runId, state: 'running' }]);
+    expect(read(unreturned)).toMatchObject({ state: 'running', effect_state: 'unknown', ended_at: null });
+    hostStopped(run.runId);
+    expect(await next.recover()).toEqual([{ runId: run.runId, state: 'orphaned' }]);
+    expect(leases(run.runId)).toEqual([{ state: 'recovery-required' }]);
+    expect(read(unreturned)).toMatchObject({ state: 'unknown', effect_state: 'unknown', error_code: 'HOST_INTERRUPTED', attempt_count: 1, ended_at: expect.any(String) });
+    expect(read(unsent)).toEqual(unsentBefore);
+    expect(read(finished)).toEqual(finishedBefore);
+
+    reader.identities.delete(200001);
+    expect(await next.recover()).toEqual([{ runId: run.runId, state: 'stopped' }]);
+    const priorVersionRecord = record('unknown');
+    const firstRecovery = read(unreturned);
+    expect(await next.recover(run.runId)).toEqual([]);
+    expect(read(priorVersionRecord)).toMatchObject({ state: 'unknown', effect_state: 'unknown', error_code: 'HOST_INTERRUPTED', attempt_count: 1, ended_at: expect.any(String) });
+    expect(read(unreturned)).toEqual(firstRecovery);
+  });
   it('treats a reused PID as proof the old child stopped without signalling its new occupant', async () => {
     const run = await active(); hostStopped(run.runId); reader.identities.set(200001,'darwin-proc-v1:201:1'); expect(await f.registry().recover()).toEqual([{ runId: run.runId,state: 'stopped' }]); expect(reader.read(200001)).toEqual({ pid: 200001,startedAt: 'darwin-proc-v1:201:1' }); expect(f.revocations()).toBe(0);
   });

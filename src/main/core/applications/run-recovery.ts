@@ -36,5 +36,17 @@ export async function recoverCapabilityRuns(store:ResourceStore,identities:Proce
         store.sqlite.prepare("UPDATE capability_resource_leases SET state='recovery-required' WHERE owner_kind='run' AND owner_id=? AND state<>'released'").run(row.run_id); return 'orphaned' as const;
       }).immediate()); result.push({ runId: row.run_id,state });
     }
+    // HOST_INTERRUPTED is set only after proving the original owner stopped.
+    // Also reconcile records left running by older recoveries. Process leases
+    // are independent and still use the original stopped/unknown checks above.
+    const staleWrites = `WHERE state='running' AND semantics='write' AND effect_state='unknown'
+      AND run_id IN (SELECT run_id FROM capability_runs
+        WHERE error_code='HOST_INTERRUPTED' AND revocation_state='revoked' AND state IN ('orphaned','stopped')
+        ${onlyRunId ? 'AND run_id=?' : ''})`;
+    const scope = onlyRunId ? [onlyRunId] : [];
+    if (store.sqlite.prepare(`SELECT 1 FROM application_invocations ${staleWrites} LIMIT 1`).get(...scope)) {
+      await withResourceLock(store.root, () => store.sqlite.prepare(`UPDATE application_invocations
+        SET state='unknown',error_code='HOST_INTERRUPTED',ended_at=? ${staleWrites}`).run(now(), ...scope));
+    }
     return result;
 }
