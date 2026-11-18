@@ -36,15 +36,16 @@ export interface ProbeOptions extends DetectOptions {
 
 const protocolProbes = new Map<string, Promise<ReadonlySet<CapabilityName>>>();
 
-/** Probes only the protocol in an empty home. Never opens a chat or prepares a host business scope. */
+/** Probes the protocol in an empty home. No model input or host business scope is prepared. */
 async function inspectCodex(executable: string, shellPath: string | undefined, version: string, base: Record<string, string>) {
   const stat = statSync(executable);
   const key = JSON.stringify([executable, stat.dev, stat.ino, stat.mtimeMs, stat.size, version, shellPath]);
   let probing = protocolProbes.get(key);
   if (!probing) {
     if (protocolProbes.size >= 32) protocolProbes.clear();
-    probing = probeCodex(executable, shellPath, base).catch(() => new Set<CapabilityName>());
+    probing = probeCodex(executable, shellPath, base).catch(() => new Set<CapabilityName>(['basic']));
     protocolProbes.set(key, probing);
+    void probing.then(missing => { if (missing.has('basic') && protocolProbes.get(key) === probing) protocolProbes.delete(key); });
   }
   return probing;
 }
@@ -64,12 +65,19 @@ async function probeCodex(executable: string, shellPath: string | undefined, bas
   const missingMethod = (error: unknown) => error instanceof DriverError && error.nativeCode === -32601;
   try {
     try { await peer.call('initialize', { clientInfo: { name: 'willyou-probe', version: '1' }, capabilities: { experimentalApi: true } }); }
-    catch (error) { if (missingMethod(error)) missing.add('basic'); return missing; }
+    catch { missing.add('basic'); return missing; }
     peer.notify('initialized');
     await Promise.all([
       peer.call('mcpServerStatus/list', {}).catch(error => { if (missingMethod(error)) missing.add('mcp'); }),
       // The probe home has no saved sessions. A recognized method rejects the absent UUID without changing user state.
       peer.call('thread/resume', { threadId: randomUUID(), excludeTurns: true }).catch(error => { if (missingMethod(error)) missing.add('resume'); }),
+      peer.call('turn/steer', { threadId: randomUUID(), expectedTurnId: randomUUID(), input: [] })
+        .then(() => missing.add('steer'), error => { if (!(error instanceof DriverError) || error.nativeCode !== -32600) missing.add('steer'); }),
+      peer.call<{ data?: unknown }>('skills/list', { cwds: [home] })
+        .then(result => { if (!Array.isArray(result?.data)) missing.add('skills'); }, () => missing.add('skills')),
+      // Test the nondefault reviewer on a disposable read-only thread without issuing a turn.
+      peer.call<{ approvalsReviewer?: unknown }>('thread/start', { cwd: home, sandbox: 'read-only', approvalPolicy: 'on-request', approvalsReviewer: 'auto_review' })
+        .then(result => { if (result?.approvalsReviewer !== 'auto_review') missing.add('approvalsReviewer'); }, () => missing.add('approvalsReviewer')),
     ]);
     return missing;
   } finally {

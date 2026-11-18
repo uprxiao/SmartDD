@@ -50,7 +50,7 @@ describe('本机程序发现', () => {
     db.close();
   });
 
-  it.each([true, false])('A62 distinguishes an absent method from a normal resume rejection (%s)', async absentResume => {
+  it.each([true, false])('A55 negotiates each optional Codex protocol capability in an empty home (%s)', async missingOptional => {
     const { link, real } = fakeBin('codex');
     writeFileSync(real, String.raw`#!/bin/sh
 [ "$1" = 'app-server' ] && [ "$HOME" = "$CODEX_HOME" ] && [ "$HOME" = "$PWD" ] && [ -z "$OPENAI_API_KEY" ] || exit 41
@@ -59,7 +59,10 @@ while IFS= read -r line; do
   case "$line" in
     *'"method":"initialize"'*) printf '{"id":%s,"result":{"userAgent":"fixture"}}\n' "$id" ;;
     *'"method":"mcpServerStatus/list"'*) printf '{"id":%s,"error":{"code":-32601,"message":"missing"}}\n' "$id" ;;
-    *'"method":"thread/resume"'*) printf '{"id":%s,"error":{"code":${absentResume ? -32601 : -32600},"message":"no session"}}\n' "$id" ;;
+    *'"method":"thread/resume"'*) printf '{"id":%s,"error":{"code":${missingOptional ? -32601 : -32600},"message":"no session"}}\n' "$id" ;;
+    *'"method":"turn/steer"'*) printf '{"id":%s,"error":{"code":${missingOptional ? -32601 : -32600},"message":"no session"}}\n' "$id" ;;
+    *'"method":"skills/list"'*) ${missingOptional ? String.raw`printf '{"id":%s,"error":{"code":-32601,"message":"missing"}}\n' "$id"` : String.raw`printf '{"id":%s,"result":{"data":[]}}\n' "$id"`} ;;
+    *'"method":"thread/start"'*) printf '{"id":%s,"result":{"thread":{"id":"probe-thread"}${missingOptional ? '' : ',"approvalsReviewer":"auto_review"'}}}\n' "$id" ;;
   esac
 done
 `);
@@ -69,6 +72,8 @@ done
     expect(r.state).toBe('limited');
     expect(r.capabilities.basic.state).toBe('enabled');
     expect(r.capabilities.mcp).toMatchObject({ state: 'disabled', reason: 'probe-unavailable' });
-    expect(r.capabilities.resume.state).toBe(absentResume ? 'disabled' : 'enabled');
+    for (const key of ['resume', 'steer', 'skills', 'approvalsReviewer'] as const) {
+      expect(r.capabilities[key].state).toBe(missingOptional ? 'disabled' : 'enabled');
+    }
   });
 });

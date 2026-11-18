@@ -101,11 +101,11 @@ export class AgentRunService {
       if (!run.integration) store.freezeNativeRun(runId, { version: input.executable.version, capabilities, launchPlanHash: finalLaunchHash });
       await run.integration?.beforeFork();
       forkAttempted = true;
-      const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, skillRoots: run.integration?.skillRoots, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), beforeInitialize: async () => { await run.registration; } });
+      const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), beforeInitialize: async () => { await run.registration; } });
       await run.registration;
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
       run.opening = false;
-      const optional = [['mcp', 'MCP 业务通道'], ['resume', '原生会话恢复']] as const;
+      const optional = [['mcp', 'MCP 业务通道'], ['resume', '原生会话恢复'], ['steer', '插话'], ['skills', 'Skill 目录'], ['approvalsReviewer', '审批审阅档位']] as const;
       const unavailable = optional.filter(([name]) => capabilities[name].reason === 'probe-unavailable').map(([, label]) => label);
       if (unavailable.length) store.addHostItem(input.taskId, null, 'system_notice', { severity: 'warning', code: 'optionalProtocolUnavailable', title: `当前执行器不支持${unavailable.join('、')}`, detail: '基本对话仍可使用。' });
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
