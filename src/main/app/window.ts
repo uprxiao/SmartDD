@@ -20,6 +20,19 @@ export function getMainWindow(): BrowserWindow | null {
   return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
 }
 
+function notifyWindowShown(win: BrowserWindow): void {
+  if (getMainWindow() === win && !win.webContents.isDestroyed()) win.webContents.send(windowShownEvent.name);
+}
+
+export async function showMainWindow(): Promise<BrowserWindow> {
+  const win = getMainWindow() ?? (await createMainWindow());
+  const wasHidden = !win.isVisible();
+  win.show();
+  // Cocoa may omit the visibility event on an occluded window.
+  if (wasHidden) notifyWindowShown(win);
+  return win;
+}
+
 /** A renderer navigation must not carry terminal authority to another page. */
 export function isMainRenderer(event: Pick<IpcMainEvent, 'sender' | 'senderFrame'>): boolean {
   const win = getMainWindow();
@@ -86,11 +99,7 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     if (mainWindow === win) { mainWindow = null; mainDocumentURL = null; }
   });
   // With background throttling disabled, the DOM can stay visible while the native window is hidden.
-  const notifyShown = () => {
-    if (getMainWindow() === win && !win.webContents.isDestroyed()) win.webContents.send(windowShownEvent.name);
-  };
-  win.on('show', notifyShown);
-  win.on('restore', notifyShown);
+  win.on('restore', () => notifyWindowShown(win));
   win.once('ready-to-show', () => win.show());
 
   if (process.env.ELECTRON_RENDERER_URL) await win.loadURL(process.env.ELECTRON_RENDERER_URL);

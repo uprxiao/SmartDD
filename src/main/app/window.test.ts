@@ -6,13 +6,16 @@ vi.mock('electron', () => ({
   nativeTheme: { shouldUseDarkColors: false },
   BrowserWindow: class extends EventEmitter {
     webContents = { mainFrame: { url: '' }, isDestroyed: () => false, send: vi.fn() };
+    visible = false;
     constructor() { super(); native.windows.push(this); }
     isDestroyed() { return false; }
+    isVisible() { return this.visible; }
+    show() { this.visible = true; }
     async loadURL(url: string) { this.webContents.mainFrame.url = url; }
     async loadFile(path: string) { this.webContents.mainFrame.url = `file://${path}`; }
   },
 }));
-import { createMainWindow, isMainRenderer } from './window';
+import { createMainWindow, isMainRenderer, showMainWindow } from './window';
 afterEach(() => { for (const win of native.windows.splice(0)) win.emit('closed'); vi.unstubAllEnvs(); });
 describe('trusted terminal renderer document', () => {
   it('accepts the exact loaded main document and hash navigation, rejects foreign pages/queries/frames/windows', async () => {
@@ -39,15 +42,15 @@ describe('trusted terminal renderer document', () => {
   });
 });
 
-it('notifies only the current renderer when the native window is shown or restored', async () => {
+it('notifies the current renderer when a hidden window opens and when the native window restores', async () => {
   const first = await createMainWindow();
   const current = await createMainWindow();
-  first.emit('show');
-  current.emit('hide');
-  current.emit('show');
+  first.emit('restore');
+  expect(await showMainWindow()).toBe(current);
+  expect(await showMainWindow()).toBe(current);
   current.emit('restore');
   current.emit('closed');
-  current.emit('show');
+  current.emit('restore');
   expect(first.webContents.send).not.toHaveBeenCalled();
   expect(vi.mocked(current.webContents.send).mock.calls).toEqual([['window:shown'], ['window:shown']]);
 });

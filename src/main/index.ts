@@ -26,7 +26,7 @@ import { createEventEmitter } from '@shared/ipc/events';
 import { registerRPCRouter, rpcErrorMessage } from '@shared/ipc/rpc';
 import { buildAppMenu } from './app/menu';
 import { appIcon } from './app/icon';
-import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, markAppQuitting } from './app/window';
+import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, markAppQuitting, showMainWindow } from './app/window';
 import { AiProfileService } from './core/ai/ai-profile-service';
 import { AgentService } from './core/ai/agent-service';
 import { ProviderService } from './core/ai/provider-service';
@@ -268,14 +268,9 @@ async function main(): Promise<void> {
   });
   await voice.start();
 
-  const showWindow = async () => {
-    const win = getMainWindow() ?? (await createMainWindow());
-    win.show();
-    return win;
-  };
   const rebuildMenu = () =>
     buildAppMenu(settings.get('general').language, {
-      openSettings: () => void showWindow().then(() => events.emit(menuOpenSettingsEvent, undefined)),
+      openSettings: () => void showMainWindow().then(() => events.emit(menuOpenSettingsEvent, undefined)),
       toggleLeftSidebar: () => events.emit(menuToggleLeftSidebarEvent, undefined),
     });
 
@@ -320,7 +315,7 @@ async function main(): Promise<void> {
   rebuildMenu();
   await createMainWindow();
 
-  app.on('activate', () => void showWindow());
+  app.on('activate', () => void showMainWindow());
 
   let quitConfirmed = false, quitPending = false;
   app.on('before-quit', (event) => {
