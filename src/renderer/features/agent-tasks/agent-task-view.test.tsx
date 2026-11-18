@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -23,6 +23,7 @@ beforeEach(() => {
   mocks.historyItems.mockReset().mockResolvedValue([]);
   mocks.discardAttachment.mockResolvedValue(undefined);
   mocks.saveDraft.mockReset().mockResolvedValue({ ok: true, revision: 1 });
+  mocks.holdDraftAttachments.mockReset().mockResolvedValue(undefined);
   mocks.on.mockImplementation(() => () => {});
   mocks.prepareAttachment.mockResolvedValue({ id: 'prepared', kind: 'path', name: 'note.txt', mime: 'text/plain', size: 1, image: false, relativePath: 'note.txt' });
   (window as any).electronAPI = { pathForFile: () => '/w/note.txt' };
@@ -244,6 +245,23 @@ it('FR05：初始化前粘贴的附件，在同水位初始化快照到达后保
   await screen.findByText('note.txt');
   await act(async () => h.resolve(snapshot({ seq: 20, draft: { draft: { text: '', attachments: [] }, revision: 2 } })));
   expect(screen.queryByText('note.txt')).not.toBeNull();
+});
+
+it('A43 retains draft attachment references until the last attempted write settles on navigation', async () => {
+  const attachment = { id: 'attachment', kind: 'file', name: 'kept.txt', mime: 'text/plain', size: 12, image: false, storedPath: '/fixture/kept.txt' };
+  mocks.snapshot.mockResolvedValue(snapshot({ draft: { draft: { text: 'old draft', attachments: [attachment] }, revision: 1 } }));
+  let acknowledge!: () => void;
+  mocks.saveDraft.mockImplementation(() => new Promise(resolve => { acknowledge = () => resolve({ ok: true, revision: 2 }); }));
+  const { unmount } = render(<AgentTaskView taskId="task" />);
+  await screen.findByText('kept.txt · 副本');
+  const editorId = mocks.holdDraftAttachments.mock.calls[0][1];
+  expect(mocks.holdDraftAttachments).toHaveBeenCalledWith('task', editorId, [attachment.storedPath]);
+  fireEvent.change(screen.getByPlaceholderText('随心输入'), { target: { value: 'new draft' } });
+  unmount();
+  expect(mocks.saveDraft).toHaveBeenCalledWith('task', { text: 'new draft', attachments: [attachment] }, 1);
+  expect(mocks.holdDraftAttachments).not.toHaveBeenCalledWith('task', editorId, []);
+  await act(async () => acknowledge());
+  expect(mocks.holdDraftAttachments).toHaveBeenLastCalledWith('task', editorId, []);
 });
 
 it('FR05：过大的草稿分段读回', async () => {

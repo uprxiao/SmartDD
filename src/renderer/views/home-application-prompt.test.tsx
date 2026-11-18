@@ -4,17 +4,20 @@ import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {HomeView} from './home-view';
 import {navigation} from '@renderer/core/navigation';
 const m=vi.hoisted(()=>({create:vi.fn(),cancelCreate:vi.fn(),update:vi.fn(),projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
+const agent=vi.hoisted(()=>({store:{enabled:false,refresh:vi.fn()},create:vi.fn(),submit:vi.fn()}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string)=>key})}));
 vi.mock('@renderer/lib/hooks/useProjects',()=>({useProjectList:()=>({data:m.projects}),useProject:()=>({data:m.project})}));
 vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'legacy',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:[]}})}));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey',()=>({useAppSettingsKey:(key:string)=>({value:key==='agentPermissions'?{selected:'ask',fullConfirmed:false}:m.draft,update:m.update})}));
 vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{create:m.create,cancelCreate:m.cancelCreate}}));
+vi.mock('@renderer/core/agent-tasks-store',()=>({agentTasksStore:agent.store}));
+vi.mock('@renderer/lib/ipc',()=>({rpc:{agentTasks:agent}}));
 vi.mock('./voice-controls',()=>({VoiceButton:()=>null}));
 vi.mock('./capabilities',()=>({CapabilityLaunchPreview:()=>null}));
 vi.mock('./projects/project-dialogs',()=>({ProjectDialog:()=>null}));
 vi.mock('@renderer/lib/profile-health',()=>({ProfileHealthMark:()=>null}));
 beforeEach(()=>{vi.clearAllMocks();navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.pluginPromptRequest=null;navigation.currentProjectId=null;navigation.currentTaskId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
-afterEach(()=>cleanup());
+afterEach(()=>{cleanup();agent.store.enabled=false;agent.create.mockReset();agent.submit.mockReset();});
 describe('application example handoff to the real home composer',()=>{
  it.each([false,true])('M13 appends one exact plugin example without submitting, Home already mounted=%s',async alreadyMounted=>{
   navigation.setHomeInput('p1','unsent prefix');let view:ReturnType<typeof render>;
@@ -79,5 +82,48 @@ describe('home composer Enter key',()=>{
   expect(fireEvent.keyDown(input,{key:'Enter',keyCode:229})).toBe(true);
   await new Promise(r=>setTimeout(r,50));expect(m.create).not.toHaveBeenCalled();
  });
+});
+
+describe('M14-A43 home first send',()=>{
+  async function prepareHome() {
+    agent.store.enabled=true;
+    render(<HomeView/>);
+    const input=await screen.findByTestId('home-input');
+    fireEvent.change(input,{target:{value:'first outgoing message'}});
+    const launch=screen.getByTestId('home-launch');
+    await waitFor(()=>expect(launch).toHaveProperty('disabled',false));
+    return {input,launch};
+  }
+
+  it.each(['create','submit'] as const)('reuses the intent when the %s acknowledgement was lost', async phase=>{
+    const {launch}=await prepareHome();
+    agent.create.mockImplementation(async req=>({taskId:req.clientTaskId??'created-'+agent.create.mock.calls.length}));
+    agent.submit.mockResolvedValue({turnId:'accepted'});
+    agent[phase].mockRejectedValueOnce(new Error('acknowledgement lost'));
+    fireEvent.click(launch);
+    await waitFor(()=>expect(screen.getByTestId('home-error').textContent).toContain('acknowledgement lost'));
+    fireEvent.click(launch);
+    await waitFor(()=>expect(navigation.currentViewId).toBe('agentTask'));
+    const [original,retry]=agent.create.mock.calls.map(([input])=>input.clientTaskId);
+    expect(original).toMatch(/^[a-f0-9-]{36}$/);
+    expect(retry).toBe(original);
+    expect(agent.submit.mock.calls.every(([taskId])=>taskId===original)).toBe(true);
+    if(phase==='submit') expect(agent.submit.mock.calls[1][1].clientInputId).toBe(agent.submit.mock.calls[0][1].clientInputId);
+  });
+
+  it.each([false,true])('keeps newer input when the first turn acknowledgement arrives, after navigation=%s',async switchTask=>{
+    const {input,launch}=await prepareHome();
+    agent.create.mockResolvedValue({taskId:'first-task'});
+    let acknowledge!:()=>void;
+    agent.submit.mockImplementation(()=>new Promise<void>(resolve=>{acknowledge=resolve;}));
+    fireEvent.click(launch);
+    await waitFor(()=>expect(agent.submit).toHaveBeenCalledTimes(1));
+    fireEvent.change(input,{target:{value:'new unsent edit'}});
+    if(switchTask)act(()=>navigation.openAgentTask('another-task'));
+    await act(async()=>acknowledge());
+    expect(navigation.homeInput('p1')).toBe('new unsent edit');
+    expect(navigation.currentViewId).toBe(switchTask?'agentTask':'home');
+    if(switchTask)expect(navigation.currentAgentTaskId).toBe('another-task');
+  });
 });
 

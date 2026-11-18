@@ -12,6 +12,8 @@ export type ProjectSectionId = 'overview' | 'dirs' | 'databases' | 'servers' | '
 
 export type SettingsSectionId = 'general' | 'appearance' | 'terminal' | 'aiProfiles' | 'capabilities' | 'shortcuts' | 'voice' | 'about' | 'applications' | 'archivedAgentTasks';
 
+interface HomeLaunchAttempt { key: string; taskId: string; inputId: string }
+
 class NavigationStore {
   currentViewId: ViewId = 'home';
   applicationPage: ApplicationPage = 'catalog';
@@ -28,7 +30,9 @@ class NavigationStore {
   /** "New task" under a project preselects it on the home page; bumped so the same project re-applies. */
   homePreset: { projectId: string; seq: number; applicationPrompt?:string } | null = null;
   /** Unsubmitted composer text, kept in memory across views and scoped to its project. */
-  homeInputDrafts = new Map<string | null, string>();
+  homeInputDrafts = new Map<string | null, { text: string; revision: number }>();
+  private homeInputSequence = 0;
+  homeLaunchAttempts = new Map<string, HomeLaunchAttempt>();
   pluginPromptRequest:{seq:number;prompt:string}|null=null;
   private pluginPromptSequence=0;
   settingsSection: SettingsSectionId = 'general';
@@ -62,8 +66,11 @@ class NavigationStore {
   preparePluginTask(prompt:string):void{this.pluginPromptRequest={seq:++this.pluginPromptSequence,prompt};this.currentViewId='home';}
   consumePluginPrompt(seq:number):string|undefined{if(this.pluginPromptRequest?.seq!==seq)return;const prompt=this.pluginPromptRequest.prompt;this.pluginPromptRequest=null;return prompt;}
   consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
-  homeInput(projectId:string|null):string{return this.homeInputDrafts.get(projectId)??'';}
-  setHomeInput(projectId:string|null,value:string):void{if(value)this.homeInputDrafts.set(projectId,value);else this.homeInputDrafts.delete(projectId);}
+  homeInput(projectId: string | null): string { return this.homeInputDrafts.get(projectId)?.text ?? ''; }
+  homeInputRevision(projectId: string | null): number { return this.homeInputDrafts.get(projectId)?.revision ?? 0; }
+  setHomeInput(projectId: string | null, text: string): void {
+    if (this.homeInput(projectId) !== text) this.homeInputDrafts.set(projectId, { text, revision: ++this.homeInputSequence });
+  }
 
   openAgentTask(id: string, readOnly = false): void {
     this.agentTaskReadOnly = readOnly;
@@ -129,6 +136,7 @@ class NavigationStore {
   /** After a delete: leave the view instead of showing a project that no longer exists. */
   closeProject(id: string): void {
     this.homeInputDrafts.delete(id);
+    this.homeLaunchAttempts.delete(id);
     if (this.homePreset?.projectId === id) this.homePreset = null;
     if (this.currentProjectId !== id) return;
     this.currentProjectId = null;

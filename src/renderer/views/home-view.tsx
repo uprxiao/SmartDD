@@ -124,6 +124,10 @@ export const HomeView = observer(function HomeView() {
 
   // M14 首页附件：随新任务第一条消息发送；准备中或失败时“启动任务”与 ⌘Enter 都不创建任务、不清空（用例 A75）。
   const [chips, setChips] = useState<Chip[]>([]);
+  const activeComposer = useRef({ projectId, dirId: dir?.id, chips });
+  activeComposer.current = { projectId, dirId: dir?.id, chips };
+  const mounted = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const preparing = useRef(new Set<string>());
   const discardChip = (chip: Chip) => {
     preparing.current.delete(chip.localId);
@@ -158,7 +162,7 @@ export const HomeView = observer(function HomeView() {
     }
   };
   const launch = async () => {
-    if (!ready || !projectId || !profile || !dir) return;
+    if (!ready || launchToken.current || !projectId || !profile || !dir) return;
     if (agentTasksStore.enabled && chips.some(c => c.status === 'preparing')) { setError('附件还在准备中，准备好后再开始任务'); return; }
     if (agentTasksStore.enabled && chips.some(c => c.status === 'failed')) { setError('有附件准备失败，请重试或移除后再开始任务'); return; }
     setError('');
@@ -167,16 +171,40 @@ export const HomeView = observer(function HomeView() {
     try {
       const permission=agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id;
       if(agentTasksStore.enabled){
-        // M14 新任务区：创建任务后提交第一条消息，由主进程打开程序化运行。
-        const created=await rpc.agentTasks.create({projectId,dirId:dir.id,cwd:dir.path,title:message.split('\n')[0].slice(0,60),profileId:profile.id,tier:permission,model:homeSelection.models[profile.id]||undefined,carryExtensions:homeSelection.extensions[profile.id]!==false,extensionPreferences:homeSelection.extensions});
-        if(created.tierNotice)toast.message(created.tierNotice);
-        const attachments=chips.map(c=>c.data!).filter(Boolean);
-        if(message.trim()||attachments.length)await rpc.agentTasks.submit(created.taskId,{clientInputId:newClientInputId(),text:message,expectedSelectionRevision:1,attachments});
-        setChips([]);
-        void agentTasksStore.refresh();navigation.openAgentTask(created.taskId);
-      } else await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token, permission });
-      draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
-      setMessage('');
+        const revision = navigation.homeInputRevision(projectId);
+        const presetAtLaunch = navigation.homePreset;
+        const model = homeSelection.models[profile.id] || undefined;
+        const carryExtensions = homeSelection.extensions[profile.id] !== false;
+        const chipIds = new Set(chips.map(chip => chip.localId));
+        const key = JSON.stringify([revision, dir.id, dir.path, profile.id, permission, model, Object.entries(homeSelection.extensions).sort(), [...chipIds]]);
+        const previous = navigation.homeLaunchAttempts.get(projectId);
+        const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
+        navigation.homeLaunchAttempts.set(projectId, attempt);
+        const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, carryExtensions, extensionPreferences: homeSelection.extensions });
+        if (created.tierNotice) toast.message(created.tierNotice);
+        const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
+        if (message.trim() || attachments.length) await rpc.agentTasks.submit(created.taskId, { clientInputId: attempt.inputId, text: message, expectedSelectionRevision: 1, attachments });
+        if (navigation.homeLaunchAttempts.get(projectId)?.taskId === attempt.taskId) navigation.homeLaunchAttempts.delete(projectId);
+        void agentTasksStore.refresh();
+
+        const current = activeComposer.current;
+        const sameScope = mounted.current && current.projectId === projectId && current.dirId === dir.id;
+        const sameAttachments = current.chips.length === chipIds.size && current.chips.every(chip => chipIds.has(chip.localId));
+        const sameDraft = navigation.homeInputRevision(projectId) === revision && sameAttachments;
+        if (sameScope) {
+          for (const chip of chips) if (chip.preview) URL.revokeObjectURL(chip.preview);
+          setChips(currentChips => currentChips.filter(chip => !chipIds.has(chip.localId)));
+        }
+        if (sameDraft) navigation.setHomeInput(projectId, '');
+        if (sameScope && sameDraft && navigation.currentViewId === 'home' && navigation.homePreset === presetAtLaunch) {
+          draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
+          navigation.openAgentTask(created.taskId);
+        }
+      } else {
+        await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token, permission });
+        draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
+        setMessage('');
+      }
     } catch (e) {
       setError(rpcErrorMessage(e));
     } finally {

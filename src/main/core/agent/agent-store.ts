@@ -68,7 +68,7 @@ export function itemJson(value: unknown): string {
 }
 
 export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; effort?: string; tier: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean>; pendingSwitch?: { profileId: string; model?: string } }
-export interface CreateTaskInput { projectId: string | null; dirId: string | null; cwd: string; title: string; selection: AgentSelection; parentTaskId?: string }
+export interface CreateTaskInput { taskId?: string; projectId: string | null; dirId: string | null; cwd: string; title: string; selection: AgentSelection; parentTaskId?: string }
 export interface BindingRow { binding_id: string; task_id: string; driver_id: string; profile_id: string; continuation_hash: string; state_root: string; cwd_identity: string; native_id: string | null; native_confirmed_at: string | null }
 export interface TurnRow { turn_id: string; task_id: string; run_id: string | null; client_input_id: string; status: string; native_turn_id: string | null; source_kind: 'user' | 'delegation' | 'notification' | 'system' }
 export interface RequestRow { request_id: string; task_id: string; class: 'native' | 'host_business'; origin_json: string; revision: number; kind: string; payload_ref: string; status: string }
@@ -186,7 +186,7 @@ export class AgentStore {
   }
 
   createTask(input: CreateTaskInput): string {
-    const taskId = randomUUID(), at = now(), ms = Date.now();
+    const taskId = input.taskId ?? randomUUID(), at = now(), ms = Date.now();
     this.tx(emit => {
       this.sqlite.prepare('INSERT INTO tasks(id,project_id,dir_id,cwd,runner,title,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)')
         .run(taskId, input.projectId, input.dirId, input.cwd, input.selection.driverId === 'codex-app-server' ? 'codex' : 'claude', input.title, ms, ms);
@@ -198,8 +198,8 @@ export class AgentStore {
   }
 
   task(taskId: string) {
-    return this.sqlite.prepare('SELECT t.id,t.project_id,t.cwd,t.title,a.selection_json,a.selection_revision,a.archived_at,a.parent_task_id FROM tasks t JOIN agent_tasks a ON a.task_id=t.id WHERE t.id=?').get(taskId) as
-      { id: string; project_id: string | null; cwd: string; title: string; selection_json: string; selection_revision: number; archived_at: string | null; parent_task_id: string | null } | undefined;
+    return this.sqlite.prepare('SELECT t.id,t.project_id,t.dir_id,t.cwd,t.title,a.selection_json,a.selection_revision,a.archived_at,a.parent_task_id FROM tasks t JOIN agent_tasks a ON a.task_id=t.id WHERE t.id=?').get(taskId) as
+      { id: string; project_id: string | null; dir_id: string | null; cwd: string; title: string; selection_json: string; selection_revision: number; archived_at: string | null; parent_task_id: string | null } | undefined;
   }
 
   /** 同一任务、执行器与兼容身份下最新的绑定；兼容身份变化（配置根、开关等）必须新建绑定。 */

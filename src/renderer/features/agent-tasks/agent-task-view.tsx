@@ -692,6 +692,30 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [text, setText] = useState('');
   const [chips, setChips] = useState<Chip[]>([]);
+  const [draftEditorId] = useState(() => crypto.randomUUID());
+  const draftLeaseActive = useRef(false);
+  const heldDraftPaths = useRef<string[]>([]);
+  const holdDraftAttachments = useCallback(async (paths: string[], preserveCurrent = false) => {
+    if (!draftLeaseActive.current) return;
+    const previous = heldDraftPaths.current;
+    const next = [...new Set(preserveCurrent ? [...previous, ...paths] : paths)].sort();
+    if (next.length === previous.length && next.every((path, i) => path === previous[i])) return;
+    heldDraftPaths.current = next;
+    try { await rpc.agentTasks.holdDraftAttachments(taskId, draftEditorId, next); }
+    catch (error) {
+      if (heldDraftPaths.current === next) heldDraftPaths.current = previous;
+      throw error;
+    }
+  }, [taskId, draftEditorId]);
+  useEffect(() => {
+    draftLeaseActive.current = true;
+    return () => { draftLeaseActive.current = false; };
+  }, [taskId]);
+  const isArchived = Boolean(snap?.archivedAt);
+  useEffect(() => {
+    const paths = isArchived ? [] : chips.flatMap(chip => chip.data?.storedPath ? [chip.data.storedPath] : []);
+    void holdDraftAttachments(paths).catch(error => toast.error(rpcErrorMessage(error)));
+  }, [chips, isArchived, holdDraftAttachments]);
   const removedWhilePreparing = useRef(new Set<string>());
   const [sending, setSending] = useState(false);
   const [queueEdit, setQueueEdit] = useState<{taskId:string; turnId:string; version:string; text:string}>();
@@ -759,12 +783,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       // 读取期间已开始编辑：保留本地内容，修订仍按快照比较，真实冲突交给 CAS（复核 T01）。
       if (editedRef.current) return;
       // 采纳正文的同时采纳它实际所属的修订，首次保存才不会带着旧修订被拒（复核 T01）。
+      const saved = (draft?.attachments ?? []) as PreparedAttachment[];
+      const paths = saved.flatMap(a => a.storedPath ? [a.storedPath] : []);
+      if (paths.length) {
+        try { await holdDraftAttachments(paths, true); }
+        catch (error) { toast.error(rpcErrorMessage(error)); }
+      }
+      if (editedRef.current || !draftLeaseActive.current) return;
       if (bodyRevision !== undefined) draftRev.current = bodyRevision;
       setText(String(draft?.text ?? ''));
-      const saved = (draft?.attachments ?? []) as PreparedAttachment[];
       setChips(saved.map(a => ({ localId: a.id, name: a.name, status: 'ready', data: a })));
     } finally { setDraftReady(true); }
-  }, [taskId]);
+  }, [taskId, holdDraftAttachments]);
 
   const applySnapshot = useCallback((s: Snapshot) => {
     seqRef.current = s.seq;
@@ -946,11 +976,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     scheduleDraftSave();
   };
   useEffect(() => () => {
-    if (!draftTimer.current) return;
-    clearTimeout(draftTimer.current);
-    draftTimer.current = null;
-    void persistDraft();
-  }, [taskId]);
+    let saving = draftWrite.current;
+    if (draftTimer.current) {
+      clearTimeout(draftTimer.current);
+      draftTimer.current = null;
+      saving = persistDraft();
+    }
+    void Promise.resolve(saving).finally(() => {
+      if (draftLeaseActive.current || !heldDraftPaths.current.length) return;
+      heldDraftPaths.current = [];
+      void rpc.agentTasks.holdDraftAttachments(taskId, draftEditorId, []).catch(() => {});
+    });
+  }, [taskId, draftEditorId]);
   const resolveDraft = async (useOther: boolean) => {
     const revision = conflictRevision.current;
     if (revision === null || resolvingDraft || sendingRef.current) return;
@@ -963,13 +1000,16 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       const version = localDraftVersion.current, currentChips = chipsRef.current;
       const draft = await readRange(offset => rpc.agentTasks.draftBody(taskId, offset, revision));
       if (draft.revision !== revision) throw new Error('草稿已更新，请重新读取');
+      if (draft.value?.truncated) throw new Error('另一份草稿不完整');
+      const attachments: PreparedAttachment[] = draft.value?.attachments ?? [];
+      const paths = attachments.flatMap(a => a.storedPath ? [a.storedPath] : []);
+      if (paths.length) await holdDraftAttachments(paths, true);
       if (version !== localDraftVersion.current || currentChips !== chipsRef.current || conflictRevision.current !== revision || sendingRef.current) {
+        void holdDraftAttachments(chipsRef.current.flatMap(chip => chip.data?.storedPath ? [chip.data.storedPath] : [])).catch(() => {});
         toast.warning('本地草稿在读取期间有修改，请重新确认');
         return;
       }
-      if (draft.value?.truncated) throw new Error('另一份草稿不完整');
       const nextText = String(draft.value?.text ?? '');
-      const attachments: PreparedAttachment[] = draft.value?.attachments ?? [];
       const nextChips: Chip[] = attachments.map(a => ({ localId:a.id, name:a.name, status:'ready', data:a }));
       for (const chip of currentChips) {
         if (chip.status === 'preparing') removedWhilePreparing.current.add(chip.localId);

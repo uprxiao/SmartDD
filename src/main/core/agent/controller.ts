@@ -1,10 +1,11 @@
 // M14 任务命令 IPC（技术方案 T1.5 §3）。发送方由 Electron 提供并核对，渲染进程参数不能指定来源、PID 或运行身份。
-import type { IpcMainInvokeEvent } from 'electron';
+import type { IpcMainInvokeEvent, WebContents } from 'electron';
 import { createScopedRPCController } from '@shared/ipc/rpc';
 import type { AgentWorkspace } from './wiring';
 import type { Tier } from './permissions';
 
 export function createAgentTaskController(w: AgentWorkspace | undefined, requireSender: (event: IpcMainInvokeEvent) => void) {
+  const watchedDraftSenders = new WeakSet<WebContents>();
   const run = <T>(event: IpcMainInvokeEvent, fn: (w: AgentWorkspace) => T): T => {
     requireSender(event);
     if (!w) throw new Error('统一 Agent 工作区不可用');
@@ -32,7 +33,7 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       setMode: (e, taskId: string, enabled: boolean) => run(e, w => w.delegations.setMode(taskId, enabled)),
       cancelChild: (e, taskId: string, childTaskId: string) => run(e, w => w.delegations.cancel(taskId, childTaskId)),
       list: e => run(e, w => w.tasks.list()),
-      create: (e, req: { projectId: string; dirId: string; cwd?: string; title: string; profileId: string; tier: Tier; model?: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean> }) => run(e, w => w.tasks.create({ ...req, cwd: w.projectCwd(req.projectId, req.dirId) })),
+      create: (e, req: { clientTaskId?: string; projectId: string; dirId: string; cwd?: string; title: string; profileId: string; tier: Tier; model?: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean> }) => run(e, w => w.tasks.create({ ...req, cwd: w.projectCwd(req.projectId, req.dirId) })),
       snapshot: (e, taskId: string) => run(e, w => w.tasks.snapshot(taskId)),
       events: (e, taskId: string, afterSeq: number, throughSeq?: number) => run(e, w => w.tasks.events(taskId, afterSeq, 128, throughSeq)),
       history: (e, taskId: string, cursor: number | string) => run(e, w => w.tasks.history(taskId, cursor)),
@@ -44,6 +45,17 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       submit: (e, taskId: string, input: { clientInputId: string; text: string; expectedSelectionRevision: number; mode?: 'queue' | 'steer'; attachments?: unknown[] }) => run(e, w => w.tasks.submit(taskId, input,e)),
       prepareAttachment: (e, taskId: string | null, cwd: string | null, file: { name: string; mime?: string; sourcePath?: string; dataBase64?: string }) => run(e, w => w.tasks.prepareAttachment(taskId, cwd, file)),
       discardAttachment: (e, taskId: string | null, attachment: unknown) => run(e, w => w.tasks.discardPreparedAttachment(taskId, attachment)),
+      holdDraftAttachments: (e, taskId: string, editorId: string, paths: string[]) => run(e, w => {
+        const sender = e.sender, ownerId = sender.id;
+        w.projectResources.holdDraftAttachments(taskId, editorId, paths, ownerId);
+        if (paths.length && !watchedDraftSenders.has(sender)) {
+          watchedDraftSenders.add(sender);
+          const release = () => w.projectResources.releaseDraftAttachmentOwner(ownerId);
+          sender.on('did-start-navigation', (_event, _url, inPlace, mainFrame) => { if (mainFrame && !inPlace) release(); });
+          sender.on('render-process-gone', release);
+          sender.once('destroyed', release);
+        }
+      }),
       goal: (e, taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) => run(e, w => w.tasks.goal(taskId, op)),
       setSelection: (e, taskId: string, patch: { tier?: Tier; model?: string | null; effort?: string | null; carryExtensions?: boolean }, expectedRevision: number) => run(e, w => w.tasks.setSelection(taskId, patch, expectedRevision)),
       switchProfile: (e, taskId: string, profileId: string, expectedRevision: number, model?: string | null) => run(e, w => w.tasks.switchProfile(taskId, profileId, expectedRevision, model)),

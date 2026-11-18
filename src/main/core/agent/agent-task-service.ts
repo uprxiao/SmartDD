@@ -213,7 +213,20 @@ export class AgentTaskService {
     });
   }
 
-  create(input: { projectId: string | null; dirId: string | null; cwd: string; title: string; profileId: string; tier: Tier; model?: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean> }) {
+  create(input: { clientTaskId?: string; projectId: string | null; dirId: string | null; cwd: string; title: string; profileId: string; tier: Tier; model?: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean> }) {
+    const taskId = input.clientTaskId;
+    if (taskId !== undefined) {
+      if (typeof taskId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(taskId)) {
+        throw new DriverError('REJECTED', '任务创建标识无效');
+      }
+      const existing = this.d.store.task(taskId);
+      if (existing) {
+        if (existing.archived_at || existing.parent_task_id || existing.project_id !== input.projectId || existing.dir_id !== input.dirId || existing.cwd !== input.cwd) {
+          throw new DriverError('REJECTED', '任务创建标识已用于其他任务或目录');
+        }
+        return { taskId, selection: JSON.parse(existing.selection_json) as AgentSelection };
+      }
+    }
     const driverId = this.d.profileDriver(input.profileId);
     const tier = resolveTier(driverId, input.tier);
     if (!tier.ok) throw new DriverError('REJECTED', '不支持的权限档位');
@@ -222,7 +235,7 @@ export class AgentTaskService {
     for (const [id, enabled] of Object.entries(input.extensionPreferences ?? {}).slice(0, 200)) { if (typeof enabled === 'boolean') { try { this.d.profileDriver(id); preferences[id] = enabled; } catch { /* 已删除的首页配置不带入任务 */ } } }
     const selection: AgentSelection = { driverId, profileId: input.profileId, tier: tier.tier, carryExtensions: input.carryExtensions !== false, extensionPreferences: { ...preferences, [input.profileId]: input.carryExtensions !== false }, ...(input.model ? { model: input.model } : {}) };
     const title = input.title.trim().slice(0, 120) || '新任务';
-    return { taskId: this.d.store.createTask({ projectId: input.projectId, dirId: input.dirId, cwd: input.cwd, title, selection }), selection, ...(tier.downgraded ? { tierNotice: tier.reason } : {}) };
+    return { taskId: this.d.store.createTask({ taskId, projectId: input.projectId, dirId: input.dirId, cwd: input.cwd, title, selection }), selection, ...(tier.downgraded ? { tierNotice: tier.reason } : {}) };
   }
 
   private selection(taskId: string, readOnly = false) {

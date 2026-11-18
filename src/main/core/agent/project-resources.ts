@@ -23,6 +23,7 @@ function attachmentPaths(value: unknown) {
 
 export class AgentProjectResources {
   private readonly deleting = new Set<string>();
+  private readonly draftAttachmentLeases = new Map<string, { taskId: string; paths: Set<string>; ownerId?: number }>();
   private running?: Promise<void>;
   private again = false;
   private closed = false;
@@ -83,9 +84,13 @@ export class AgentProjectResources {
     assertReady();
     this.deleting.add(projectId);
     try {
-      await this.d.tasks.withTaskRemoval(this.projectTasks(projectId).map(t => t.id), () => {
+      const taskIds = new Set(this.projectTasks(projectId).map(t => t.id));
+      await this.d.tasks.withTaskRemoval([...taskIds], () => {
         assertReady(true);
         remove(() => this.purgeProjectTasks(projectId));
+        for (const [editorId, lease] of this.draftAttachmentLeases) {
+          if (taskIds.has(lease.taskId)) this.draftAttachmentLeases.delete(editorId);
+        }
       });
     } finally { this.deleting.delete(projectId); }
     this.kick();
@@ -142,6 +147,33 @@ export class AgentProjectResources {
     db.prepare(`DELETE FROM agent_tasks WHERE task_id IN (${doomed})`).run(projectId);
   }
 
+  holdDraftAttachments(taskId: string, editorId: string, paths: string[], ownerId?: number) {
+    if (typeof editorId !== 'string' || !/^[a-f0-9-]{36}$/.test(editorId) || !Array.isArray(paths) || paths.length > 40) {
+      throw Error('草稿附件引用无效');
+    }
+    const before = this.draftAttachmentLeases.get(editorId);
+    if (before && (before.taskId !== taskId || before.ownerId !== ownerId)) throw Error('草稿附件引用属于另一任务界面');
+    const next = new Set(paths);
+    if (next.size) {
+      this.d.tasks.assertWritable(taskId);
+      if (!before && this.draftAttachmentLeases.size >= 64) throw Error('草稿附件引用过多');
+      for (const file of next) {
+        if (typeof file !== 'string' || !this.attachmentLocation(file) || !this.existingAttachment(file)) {
+          throw Error('草稿附件副本已丢失');
+        }
+        if (!before?.paths.has(file) && !this.taskOwnsAttachment(taskId, file)) throw Error('草稿附件不属于当前任务');
+      }
+      this.draftAttachmentLeases.set(editorId, { taskId, paths: next, ownerId });
+    } else this.draftAttachmentLeases.delete(editorId);
+    if (before) this.discardAttachments(taskId, { attachments: [...before.paths].filter(file => !next.has(file)).map(storedPath => ({ storedPath })) });
+  }
+
+  releaseDraftAttachmentOwner(ownerId: number) {
+    for (const [editorId, lease] of this.draftAttachmentLeases) {
+      if (lease.ownerId === ownerId) this.holdDraftAttachments(lease.taskId, editorId, [], ownerId);
+    }
+  }
+
   discardAttachments(taskId: string | null, value: unknown) {
     for (const file of attachmentPaths(value)) {
       if (this.attachmentLocation(file) && !this.referenced(file)) this.discardUnreferenced(taskId,file);
@@ -164,7 +196,23 @@ export class AgentProjectResources {
     return parts.length === 2 && /^(?:frozen-)?[a-f0-9-]{36}$/.test(parts[0]) && !!parts[1];
   }
 
+  private existingAttachment(file: string) {
+    try { return realpathSync(file) === file && lstatSync(file).isFile(); }
+    catch { return false; }
+  }
+
+  private taskOwnsAttachment(taskId: string, file: string) {
+    return Boolean(this.d.store.sqlite.prepare(`SELECT 1 FROM agent_resource_refs
+      WHERE owner_kind='task' AND owner_id=? AND resource_kind='attachment' AND resource_id=?
+      UNION ALL SELECT 1 FROM agent_tasks a, json_each(a.draft_json,'$.attachments') e
+      WHERE a.task_id=? AND e.type='object' AND json_extract(e.value,'$.storedPath')=?
+      UNION ALL SELECT 1 FROM agent_turns t, json_each(t.input_ref,'$.attachments') e
+      WHERE t.task_id=? AND t.status<>'canceled' AND e.type='object' AND json_extract(e.value,'$.storedPath')=? LIMIT 1`)
+      .get(taskId, file, taskId, file, taskId, file));
+  }
+
   private referenced(file: string) {
+    for (const lease of this.draftAttachmentLeases.values()) if (lease.paths.has(file)) return true;
     const db = this.d.store.sqlite;
     const inDraft = db.prepare(`SELECT 1 FROM agent_tasks a, json_each(a.draft_json,'$.attachments') e
       WHERE e.type='object' AND json_extract(e.value,'$.storedPath')=? LIMIT 1`).get(file);
@@ -178,6 +226,7 @@ export class AgentProjectResources {
       UNION ALL SELECT e.value
       FROM agent_turns t, json_each(t.input_ref,'$.attachments') e WHERE t.status<>'canceled' AND e.type='object'`).pluck().all() as string[];
     const paths=new Set<string>();
+    for (const lease of this.draftAttachmentLeases.values()) for (const file of lease.paths) paths.add(file);
     for(const row of rows) {
       const {storedPath}=JSON.parse(row);
       if(typeof storedPath==='string')paths.add(storedPath);
@@ -254,5 +303,5 @@ export class AgentProjectResources {
     if (due.length===100) this.again = true;
   }
 
-  async close() { this.closed = true; clearInterval(this.retryTimer); clearInterval(this.sweepTimer); await this.running; }
+  async close() { this.closed = true; clearInterval(this.retryTimer); clearInterval(this.sweepTimer); await this.running; this.draftAttachmentLeases.clear(); }
 }

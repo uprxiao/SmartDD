@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -163,6 +163,19 @@ it('G4 resolves registered cwd and rejects foreign, archived and missing directo
   expect(()=>registeredProjectCwd(f.db,a.project.id,dir.id)).toThrow('已不可用');
 });
 
+it('A43 returns the durable task for a repeated creation intent only in the original directory', () => {
+  const f = fixture(), original = f.makeProject('launch-original'), other = f.makeProject('launch-other');
+  const request = { clientTaskId: randomUUID(), projectId: original.project.id, dirId: original.project.dirs[0].id,
+    cwd: original.cwd, title: 'First title', profileId: 'test', tier: 'ask' as const };
+  const created = f.tasks.create(request);
+  expect(created.taskId).toBe(request.clientTaskId);
+  expect(f.tasks.create(request)).toEqual(created);
+  expect(() => f.tasks.create({ ...request, projectId: other.project.id, dirId: other.project.dirs[0].id, cwd: other.cwd })).toThrow('其他任务或目录');
+  expect(() => f.tasks.create({ ...request, clientTaskId: 'bad-id' })).toThrow('任务创建标识无效');
+  expect(f.tasks.list()).toHaveLength(1);
+  expect(f.store.events(created.taskId, 0, 100).filter(event => event.type === 'task.created')).toHaveLength(1);
+});
+
 it('G5 archives a family atomically, leaves history and bindings readable and restores the same identities',async()=>{
   const f=fixture(), p=f.makeProject('archive-project'), parent=f.create(p,'parent'), child=f.create(p,'child',parent);
   const binding=f.store.createBinding({task_id:child,driver_id:'codex-app-server',profile_id:'test',continuation_hash:'a'.repeat(64),state_root:f.root,cwd_identity:p.cwd});
@@ -260,6 +273,26 @@ it('G2 removes unreferenced draft and canceled queue copies, and sweeps expired 
   const prior=new Date(Date.now()-25*3600_000);
   utimesSync(old.storedPath!,prior,prior);utimesSync(join(old.storedPath!,'..'),prior,prior);
   return vi.waitFor(()=>expect(existsSync(old.storedPath!)).toBe(false));
+});
+
+it('A43 keeps draft bytes through a conflicting save and until the last draft reference is released', () => {
+  const f = fixture(), p = f.makeProject('draft-attachment-conflict'), task = f.create(p, 'draft');
+  const otherTask = f.create(p, 'other draft');
+  const a = f.tasks.prepareAttachment(task, null, { name: 'draft.png', dataBase64: 'Ynl0ZXM=' });
+  const file = a.storedPath!, editor = randomUUID(), secondEditor = randomUUID();
+  f.tasks.saveDraft(task, { text: 'local original', attachments: [a] }, 0);
+  expect(() => f.resources.holdDraftAttachments(otherTask, randomUUID(), [file])).toThrow('不属于当前任务');
+  f.resources.holdDraftAttachments(task, editor, [file]);
+  f.resources.holdDraftAttachments(task, secondEditor, [file]);
+  f.tasks.saveDraft(task, { text: 'competing edit', attachments: [] }, 1);
+  expect(existsSync(file)).toBe(true);
+  expect(f.tasks.saveDraft(task, { text: 'local changed', attachments: [a] }, 1)).toMatchObject({ ok: false, revision: 2 });
+  expect(f.tasks.saveDraft(task, { text: 'local changed', attachments: [a] }, 2)).toMatchObject({ ok: true, revision: 3 });
+  f.resources.holdDraftAttachments(task, editor, []);
+  f.tasks.saveDraft(task, { text: 'latest without attachment', attachments: [] }, 3);
+  expect(existsSync(file)).toBe(true);
+  f.resources.holdDraftAttachments(task, secondEditor, []);
+  expect(existsSync(file)).toBe(false);
 });
 
 it('G2 reclaims the oldest eligible archived shadow snapshot before active history and retains a read lease',async()=>{
