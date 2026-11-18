@@ -323,6 +323,16 @@ function NativeMessages({ parent }: { parent: TimelineItem }) {
 function NativeProcess({ item, onClose }: { item: TimelineItem; onClose(): void }) {
   const {payload:p,truncated,load}=useFullPayload(item);
   const taskId=useContext(TaskScope), archived=useContext(ArchivedScope);
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
+      if (event.target instanceof Element && event.target.closest('dialog, [role="dialog"], [role="menu"]')) return;
+      event.preventDefault();
+      onClose();
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
   return <section className="agent-native-process" aria-label="执行器原生子 Agent">
     <header><b><Network size={15}/> 执行器原生子 Agent</b><button type="button" aria-label="关闭过程" onClick={onClose}><X size={14}/></button></header>
     <div className="agent-native-process-body">

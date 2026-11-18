@@ -296,7 +296,7 @@ it('M14 A38: publishes an editable reference destination only after reading the 
   expect(mocks.submit).not.toHaveBeenCalled();
 });
 
-it('M14 A74: opening a native child process closes the family card until explicitly reopened', async () => {
+it('M14 A29/A74: the native child process drawer and family card open independently and Escape closes the drawer', async () => {
   const turnId = 'native-turn';
   const subagent = {...item('subagent',{name:'spawnAgent',status:'completed'}),turnId};
   mocks.snapshot.mockResolvedValue(snapshot({
@@ -320,6 +320,12 @@ it('M14 A74: opening a native child process closes the family card until explici
     expect(family.getAttribute('aria-expanded')).toBe('false');
     fireEvent.click(family);
     expect(screen.getByRole('region',{name:'任务关系'})).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'查看过程'}));
+    fireEvent.keyDown(document,{key:'Escape',isComposing:true});
+    expect(screen.getByRole('region',{name:'执行器原生子 Agent'})).toBeTruthy();
+    fireEvent.keyDown(document,{key:'Escape'});
+    expect(screen.queryByRole('region',{name:'执行器原生子 Agent'})).toBeNull();
+    expect(family.getAttribute('aria-expanded')).toBe('false');
   } finally {
     delete api.relations;
     delete api.nativeHistory;
