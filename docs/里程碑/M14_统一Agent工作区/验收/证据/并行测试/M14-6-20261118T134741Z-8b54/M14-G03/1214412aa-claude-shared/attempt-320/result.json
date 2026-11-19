@@ -1,0 +1,258 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/home",
+    "at": "2026-11-19T04:56:28.501Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "6160db370a6f37b5ce180cdb9a4494fd5ed4424d",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a84",
+  "parentKind": "claude",
+  "childKind": "codex",
+  "plain": false,
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic model responses; fixture pre-writes the parent's uncommitted files. No R-layer or X1 claims.",
+  "observations": [
+    {
+      "label": "A/I passed",
+      "at": "2026-11-19T04:56:39.994Z",
+      "scenarioId": "a84"
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795064194355,
+      "parentBusyAtRequest": false
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795064195355,
+      "parentBusyAtRequest": false,
+      "queriedTargets": true
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795064195457,
+      "parentBusyAtRequest": false,
+      "scheduledChild": "review-fix"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795064195539,
+      "parentBusyAtRequest": false
+    },
+    {
+      "model": "fixture-child-review-fix",
+      "kind": "codex",
+      "child": "review-fix",
+      "wake": false,
+      "at": 1795064198385,
+      "parentBusyAtRequest": false,
+      "handoffNotice": true,
+      "nativeCommand": "cat design.md"
+    },
+    {
+      "model": "fixture-child-review-fix",
+      "kind": "codex",
+      "child": "review-fix",
+      "wake": false,
+      "at": 1795064198545,
+      "parentBusyAtRequest": false,
+      "handoffNotice": true,
+      "nativeCommand": "sed -i.bak 's/TYPO_FIELD_NAME/FIXED_FIELD_NAME/' design.md && rm -f design.md.bak"
+    },
+    {
+      "model": "fixture-child-review-fix",
+      "kind": "codex",
+      "child": "review-fix",
+      "wake": false,
+      "at": 1795064198848,
+      "parentBusyAtRequest": false,
+      "handoffNotice": true,
+      "citesMarker": true
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": true,
+      "at": 1795064199656,
+      "parentBusyAtRequest": false,
+      "rereadNotice": true,
+      "noticeFiles": [
+        "design.md"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"48a88ffb-4719-43d1-a308-d9e5ae06dc46\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"85b85b0f-c111-43ca-a702-a3cbabaec487\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1199.38671875,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-request [role=\"option\"][aria-label=\"批准一次\"]",
+      "text": null,
+      "x": 715,
+      "y": 604.5
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "x": 1056,
+      "y": 851
+    }
+  ],
+  "approvals": [
+    {
+      "option": "批准一次",
+      "panel": "是否允许运行命令？\n来自子任务 · Acceptance review-fix - shared directory review\n/bin/zsh -lc \"sed -i.bak 's/TYPO_FIELD_NAME/FIXED_FIELD_NAME/' design.md && rm -f design.md.bak\"\n工作目录 · /private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/work\n1\n批准一次\n仅批准这次请求\n2\n批准并记住这条命令规则\n3\n拒绝\n拒绝当前请求\n4\n打开子任务查看\n查看子任",
+      "at": "2026-11-19T04:56:38.694Z"
+    }
+  ],
+  "status": "passed",
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/work",
+    "head": "33b55f14ef3e6804e67a9d20dee6e868b74787d5",
+    "plain": false,
+    "uncommitted": "M design.md"
+  },
+  "pid": 68658,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    68658
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "85b85b0f-c111-43ca-a702-a3cbabaec487",
+  "childTaskIds": {
+    "review-fix": "30c91700-c4e8-40e2-b536-6d71b7139c4e"
+  },
+  "routing": {
+    "queued": [
+      "review-fix"
+    ],
+    "trusted": [],
+    "lineage": "任务关系 · 1\n主任务 · Acceptance parent a84\n0 秒\nAcceptance review-fix - shared directory review\nFixture codex\n共用目录 · 写入队列\n排队中\n目录写入队列\nAcceptance parent a84\n正在写入\nAcceptance review-fix - shared directory review\n排队中"
+  },
+  "diffAttribution": {
+    "childTurns": [
+      {
+        "status": "complete",
+        "files": [
+          "design.md"
+        ]
+      }
+    ]
+  },
+  "children": {
+    "review-fix": {
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/work",
+      "answer": "M14_CHILD_DONE_REVIEW_FIX CITES_M14_DESIGN_MARKER_Q7ZK",
+      "commands": [
+        "{\"command\":\"/bin/zsh -lc 'cat design.md'\",\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/work\",\"output\":\"# Uncommitted design\\nMarker: M14_DESIGN_MARKER_Q7ZK\\nField: TYPO_FIELD_NAME\\n\",\"exitCode\":0,\"status\":\"completed\"}",
+        "{\"command\":\"/bin/zsh -lc \\\"sed -i.bak 's/TYPO_FIELD_NAME/FIXED_FIELD_NAME/' design.md && rm -f design.md.bak\\\"\",\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-320/runtime-zG0oBt/work\",\"output\":\"\",\"exitCode\":0,\"status\":\"completed\"}"
+      ]
+    }
+  },
+  "wakes": [
+    {
+      "rereadNotice": true,
+      "noticeFiles": [
+        "design.md"
+      ]
+    }
+  ],
+  "beforeQuit": [
+    {
+      "taskId": "30c91700-c4e8-40e2-b536-6d71b7139c4e",
+      "title": "Acceptance review-fix - shared directory review",
+      "status": "completed",
+      "parentTaskId": "85b85b0f-c111-43ca-a702-a3cbabaec487"
+    },
+    {
+      "taskId": "48a88ffb-4719-43d1-a308-d9e5ae06dc46",
+      "title": "M14 isolated independent task",
+      "status": "completed",
+      "parentTaskId": null
+    },
+    {
+      "taskId": "85b85b0f-c111-43ca-a702-a3cbabaec487",
+      "title": "Acceptance parent a84",
+      "status": "completed",
+      "parentTaskId": null
+    }
+  ],
+  "exit": {
+    "pid": 68658,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

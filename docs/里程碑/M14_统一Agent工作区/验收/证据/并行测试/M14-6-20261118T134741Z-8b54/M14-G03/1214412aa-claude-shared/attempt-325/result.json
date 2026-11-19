@@ -1,0 +1,253 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-325/runtime-9fseBF/home",
+    "at": "2026-11-19T05:02:28.233Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "8f11304d9b7ce696c260f8f4ac867189732e8b16",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a82:rev",
+  "parentKind": "codex",
+  "childKind": "claude",
+  "plain": false,
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic model responses; fixture pre-writes the parent's uncommitted files. No R-layer or X1 claims.",
+  "observations": [
+    {
+      "label": "A/I passed",
+      "at": "2026-11-19T05:02:39.871Z",
+      "scenarioId": "a82:rev"
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795064554162,
+      "parentBusyAtRequest": false
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795064555246,
+      "parentBusyAtRequest": false,
+      "queriedTargets": true
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795064555343,
+      "parentBusyAtRequest": false,
+      "scheduledChild": "implement"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795064555434,
+      "parentBusyAtRequest": false
+    },
+    {
+      "model": "fixture-child-implement",
+      "kind": "claude",
+      "child": "implement",
+      "wake": false,
+      "at": 1795064558094,
+      "parentBusyAtRequest": false,
+      "handoffNotice": true,
+      "nativeCommand": "cat gadget-contract.cjs"
+    },
+    {
+      "model": "fixture-child-implement",
+      "kind": "claude",
+      "child": "implement",
+      "wake": false,
+      "at": 1795064558141,
+      "parentBusyAtRequest": false,
+      "handoffNotice": true,
+      "nativeCommand": "printf '%s\\n' 'const contract = require(\"./gadget-contract.cjs\");' 'module.exports = { [contract.M14UniqueGadgetContract]: () => \"IMPLEMENTED\" };' > gadget-impl.cjs"
+    },
+    {
+      "model": "fixture-child-implement",
+      "kind": "claude",
+      "child": "implement",
+      "wake": false,
+      "at": 1795064558381,
+      "parentBusyAtRequest": false,
+      "handoffNotice": true,
+      "citesMarker": true
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": true,
+      "at": 1795064559602,
+      "parentBusyAtRequest": false,
+      "rereadNotice": true,
+      "noticeFiles": [
+        "gadget-impl.cjs"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"deeb380e-7b34-42f1-8cc4-abcbf02b7636\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"27e526ee-0604-4b6f-89fa-829ccf53e4ad\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1199.38671875,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-request [role=\"option\"][aria-label=\"批准\"]",
+      "text": null,
+      "x": 715,
+      "y": 640
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "x": 1056,
+      "y": 851
+    }
+  ],
+  "approvals": [
+    {
+      "option": "批准",
+      "panel": "是否允许运行命令？\n来自子任务 · Acceptance implement - shared directory review\nprintf '%s\\n' 'const contract = require(\"./gadget-contract.cjs\");' 'module.exports = { [contract.M14UniqueGadgetContract]: () => \"IMPLEMENTED\" };' > gadget-impl.cjs\n1\n批准\n仅批准这次请求\n2\n拒绝\n拒绝当前请求\n3\n打开子任务查看\n查看子任务的上下文，当前请求继续等待\n数字键选择 · Enter 确认",
+      "at": "2026-11-19T05:02:38.362Z"
+    }
+  ],
+  "status": "passed",
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-325/runtime-9fseBF/work",
+    "head": "17f4a02405d9cf9bc25faeafadcc7ec4edb593c4",
+    "plain": false,
+    "uncommitted": "M design.md\n?? gadget-contract.cjs"
+  },
+  "pid": 10234,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-325/runtime-9fseBF/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-325/runtime-9fseBF/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-325/runtime-9fseBF/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    10234
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "27e526ee-0604-4b6f-89fa-829ccf53e4ad",
+  "childTaskIds": {
+    "implement": "7a05bc2c-a17b-46d6-9e87-1bb5ded9bd59"
+  },
+  "routing": {
+    "queued": [
+      "implement"
+    ],
+    "trusted": [],
+    "lineage": "任务关系 · 1\n主任务 · Acceptance parent a82:rev\n0 秒\nAcceptance implement - shared directory review\nFixture claude\n共用目录 · 写入队列\n排队中\n目录写入队列\nAcceptance parent a82:rev\n正在写入\nAcceptance implement - shared directory review\n排队中"
+  },
+  "buildCheck": {
+    "status": 0,
+    "stdout": "IMPL_OK"
+  },
+  "children": {
+    "implement": {
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-325/runtime-9fseBF/work",
+      "answer": "M14_CHILD_DONE_IMPLEMENT CITES_M14UniqueGadgetContract",
+      "commands": [
+        "{\"name\":\"Bash\",\"output\":\"module.exports = { M14UniqueGadgetContract: \\\"M14UniqueGadgetContract\\\" };\",\"status\":\"completed\",\"input\":{\"command\":\"cat gadget-contract.cjs\"}}",
+        "{\"name\":\"Bash\",\"output\":\"(Bash completed with no output)\",\"status\":\"completed\",\"input\":{\"command\":\"printf '%s\\\\n' 'const contract = require(\\\"./gadget-contract.cjs\\\");' 'module.exports = { [contract.M14UniqueGadgetContract]: () => \\\"IMPLEMENTED\\\" };' > gadget-impl.cjs\"}}"
+      ]
+    }
+  },
+  "wakes": [
+    {
+      "rereadNotice": true,
+      "noticeFiles": [
+        "gadget-impl.cjs"
+      ]
+    }
+  ],
+  "resultCards": "宿主子任务 · Acceptance implement - shared directory review\nFixture claude · fixture-child-implement · 共用目录 · 写入队列\nAcceptance implement - shared directory review · 已完成查看子任务\n来源：子任务结果\nM14_CHILD_DONE_IMPLEMENT CITES_M14UniqueGadgetContract",
+  "beforeQuit": [
+    {
+      "taskId": "7a05bc2c-a17b-46d6-9e87-1bb5ded9bd59",
+      "title": "Acceptance implement - shared directory review",
+      "status": "completed",
+      "parentTaskId": "27e526ee-0604-4b6f-89fa-829ccf53e4ad"
+    },
+    {
+      "taskId": "deeb380e-7b34-42f1-8cc4-abcbf02b7636",
+      "title": "M14 isolated independent task",
+      "status": "completed",
+      "parentTaskId": null
+    },
+    {
+      "taskId": "27e526ee-0604-4b6f-89fa-829ccf53e4ad",
+      "title": "Acceptance parent a82:rev",
+      "status": "completed",
+      "parentTaskId": null
+    }
+  ],
+  "exit": {
+    "pid": 10234,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}
