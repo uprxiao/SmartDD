@@ -1,0 +1,8 @@
+// Back up and restore every item/type on the general pasteboard, in memory only.
+import { execFileSync } from 'node:child_process';
+const run = (src, input) => execFileSync('/usr/bin/osascript', ['-l', 'JavaScript', '-e', src], { input, encoding: 'utf8', maxBuffer: 512 * 1024 * 1024 });
+const READ = `ObjC.import('AppKit');function run(){const pb=$.NSPasteboard.generalPasteboard;const items=pb.pasteboardItems;const out=[];for(let i=0;i<items.count;i++){const it=items.objectAtIndex(i);const types=it.types;const t=[];for(let j=0;j<types.count;j++){const ty=types.objectAtIndex(j);const d=it.dataForType(ty);t.push([ObjC.unwrap(ty),d.isNil()?null:ObjC.unwrap(d.base64EncodedStringWithOptions(0))]);}out.push(t);}return JSON.stringify({changeCount:Number(pb.changeCount),items:out});}`;
+const WRITE = `ObjC.import('AppKit');ObjC.import('Foundation');function run(argv){const fm=$.NSFileHandle.fileHandleWithStandardInput;const raw=$.NSString.alloc.initWithDataEncoding(fm.readDataToEndOfFile,4).js;const items=JSON.parse(raw);const pb=$.NSPasteboard.generalPasteboard;pb.clearContents;const objs=$.NSMutableArray.array;for(const t of items){const it=$.NSPasteboardItem.alloc.init;for(const [ty,b64] of t){if(b64===null)continue;it.setDataForType($.NSData.alloc.initWithBase64EncodedStringOptions(b64,0),ty);}objs.addObject(it);}pb.writeObjects(objs);return String(Number(pb.changeCount));}`;
+export const readPasteboard = () => JSON.parse(run(READ));
+export const restorePasteboard = items => Number(run(WRITE, JSON.stringify(items)));
+export const samePasteboard = (a, b) => JSON.stringify(a) === JSON.stringify(b);
