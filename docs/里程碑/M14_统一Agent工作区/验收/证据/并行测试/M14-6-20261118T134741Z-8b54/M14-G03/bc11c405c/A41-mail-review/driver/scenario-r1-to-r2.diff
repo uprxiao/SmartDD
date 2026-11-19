@@ -1,0 +1,88 @@
+26a27,39
+> // r2 (452): the redirected HOME had no keychain, so macOS showed "找不到钥匙串". Give this isolated HOME its own
+> // default test keychain. Keychain preferences follow $HOME (verified read-only), so the user's login keychain is untouched.
+> const testKeychain=join(home,'Library','Keychains','login.keychain-db');
+> mkdirSync(join(home,'Library','Keychains'),{recursive:true,mode:0o700});
+> const sec=(...args)=>execFileSync('/usr/bin/security',args,{env:{PATH:'/usr/bin:/bin',HOME:home},encoding:'utf8',timeout:10000}).trim();
+> sec('create-keychain','-p','m14-isolated-test-only',testKeychain);
+> sec('set-keychain-settings',testKeychain);
+> sec('list-keychains','-d','user','-s',testKeychain);
+> sec('default-keychain','-d','user','-s',testKeychain);
+> const keychainDefault=sec('default-keychain');
+> assert(keychainDefault.includes(testKeychain),'isolated HOME must default to its own test keychain');
+> const userKeychain=execFileSync('/usr/bin/security',['default-keychain'],{encoding:'utf8',timeout:10000}).trim();
+> assert(!userKeychain.includes(home),'the user default keychain must stay unchanged');
+39c52
+< const result={bootstrap:hookResult,sourceCommit,asar,executable,scope:'A41: isolated real packaged App and Claude; local synthetic model and non-relaying SMTP',
+---
+> const result={isolatedKeychain:{path:testKeychain,default:keychainDefault,userDefaultUnchanged:userKeychain},bootstrap:hookResult,sourceCommit,asar,executable,scope:'A41: isolated real packaged App and Claude; local synthetic model and non-relaying SMTP',
+134c147,148
+<     const native=name=>{const tool=body.tools?.find(t=>t.name.endsWith(name+'_v1')||t.name.endsWith(name));assert(tool,name);return tool;};
+---
+>     // r2 (453): the current mail package publishes the same tools with a _v2 suffix and an unchanged input schema.
+>     const native=name=>{const tool=body.tools?.find(t=>t.name.endsWith(name+'_v2')||t.name.endsWith(name+'_v1')||t.name.endsWith(name));assert(tool,name);return tool;};
+148a163,164
+>       // r2 (464): until the approved draft update lands, do not fall through to sending the old intent.
+>       return writeEvents(res,body.model,'A41_WAIT_DRAFT_UPDATE_'+state.marker);
+188c204,208
+<   const tested=value(await app.invoke('applications.testConnection',{name:'A41 non-relaying test sender',expectedRevision:0,config:smtp.config,secret:smtp.secret}));
+---
+>   // r2: saving the SMTP secret waits on the macOS keychain authorization dialog (424); give the user up to 4 minutes per step.
+>   const longInvoke=(channel,...args)=>app.evaluate(`window.electronAPI.invoke(${JSON.stringify(channel)}, ...${JSON.stringify(args)})`,240000);
+>   result.keychainWindow={startedAt:new Date().toISOString()};
+>   const tested=value(await longInvoke('applications.testConnection',{name:'A41 non-relaying test sender',expectedRevision:0,config:smtp.config,secret:smtp.secret}));
+>   result.keychainWindow.testedAt=new Date().toISOString();
+190c210,211
+<   connectionId=value(await app.invoke('applications.saveConnection','mail',tested.operationId,tested.candidateHash,tested.compatibility?.planHash)).id;
+---
+>   connectionId=value(await longInvoke('applications.saveConnection','mail',tested.operationId,tested.candidateHash,tested.compatibility?.planHash)).id;
+>   result.keychainWindow.savedAt=new Date().toISOString();
+207c228,229
+<   for(const model of models.slice(0,4)) {
+---
+>   // r2: also run the fifth model, the agent-edit flow that r1 left out.
+>   for(const model of models.slice(0,5)) {
+239a262,289
+>     if (scope==='agentedit') {
+>       let previous=before;
+>       for(const round of [1,2]){
+>         const marker='A41_REWRITE_'+round;
+>         state.rewrite={marker,prepareAfterUpdate:true};state.requested=false;
+>         const oldReview=await app.invoke('agentTasks.businessReview',current.taskId,previous.requestId,previous.revision);
+>         await click(request+' .agent-request-reason');
+>         await app.cdp('Input.insertText',{text:marker+' 请按这条说明重写主题和正文。'});
+>         await decision('让 Agent 按我的说明修改');
+>         // In the ask tier the agent's draft update is itself a plugin write and waits for approval (464).
+>         await until(async()=>(await snapshot(current.taskId)).requests.some(r=>r.class==='host_business'&&r.payload?.businessKind==='application_write'),'agent rewrite '+round+' asks to update the draft',60000);
+>         await decision('批准');
+>         const next=await until(async()=>{const rows=(await snapshot(current.taskId)).requests.filter(r=>r.class==='host_business'&&r.payload?.businessKind==='mail_send'&&r.requestId!==previous.requestId);return rows.at(-1);},'agent rewrite '+round+' requests a new send review',60000);
+>         await app.waitFor(selectorExpr('.agent-mail-review')+'?.innerText.includes('+JSON.stringify(marker)+')',15000);
+>         const label=await app.evaluate(selectorExpr('.agent-mail-review')+'?.innerText');
+>         expectCheck('agent rewrite '+round+' is a new revision marked as modified',label.includes('已修改')&&next.requestId!==previous.requestId,{label:label.slice(0,200)});
+>         await assert.rejects(()=>app.invoke('agentTasks.respond',current.taskId,previous.requestId,previous.revision,{choice:'allow',displayReceiptId:oldReview.displayReceiptId}),/已更新|已处理|已结束|不存在/);
+>         expectCheck('agent rewrite '+round+': approval of the previous revision is refused',true);
+>         previous=next;
+>         await app.screenshot(join(out,'agentedit-round-'+round+'.png'));
+>       }
+>       content.subject='A41_REWRITE_2';content.text='A41_REWRITE_2';
+>       smtp.arm({to:content.to[0],subject:content.subject,text:content.text});
+>       await decision('批准发送');
+>       await until(()=>smtp.results.length===expectedCount+1,'one fixed local DATA after two rewrites');
+>       expectCheck('agentedit actual receipt carries the second rewrite',smtp.results.at(-1).text===content.text);
+>       continue;
+>     }
+253,254c303,304
+<         await app.cdp('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'a',code:'KeyA',modifiers:4,windowsVirtualKeyCode:65});
+<         await app.cdp('Input.dispatchKeyEvent',{type:'keyUp',key:'a',code:'KeyA',modifiers:4,windowsVirtualKeyCode:65});
+---
+>         // r2 (454): Cmd+A does not select through background CDP; select the clicked field's text, then type over it.
+>         assert(await app.evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(document.activeElement!==e)return false;e.select();return e.selectionStart===0&&e.selectionEnd===e.value.length;})()`),'field focused and selected');
+267c317,318
+<       expectCheck('manual edit uses newly rendered content',await app.evaluate(selectorExpr('.agent-mail-body')+'?.textContent==='+JSON.stringify(content.text)));
+---
+>       // r2 (459): the card re-renders shortly after the request revision changes; wait for it instead of sampling at once.
+>       expectCheck('manual edit uses newly rendered content',await app.waitFor(selectorExpr('.agent-mail-review')+'?.innerText.includes('+JSON.stringify(content.text)+')&&'+selectorExpr('.agent-mail-review')+'?.innerText.includes('+JSON.stringify(content.subject)+')',8000).then(()=>true,()=>false));
+279c330
+<   expectCheck('no extra attempts to the private receiver',smtp.observe().unexpected===0&&smtp.results.length===3);
+---
+>   expectCheck('no extra attempts to the private receiver',smtp.observe().unexpected===0&&smtp.results.length===4);
