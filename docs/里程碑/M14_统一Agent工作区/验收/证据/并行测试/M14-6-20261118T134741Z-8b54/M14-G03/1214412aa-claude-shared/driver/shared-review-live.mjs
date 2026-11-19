@@ -40,6 +40,7 @@ const prompts = {
   a81: `design.md 是我刚写好、还没有提交的设计文档。请先开启委派，然后派两个只读审查子任务，都只读审查 design.md、不要修改任何文件：一个用「${x1 ? name.x1 : name.claude}」，一个用「${name.codex}」。审查意见里要原样引用文档中 Marker 那一行的标记。派出后结束本轮，等子任务结果回来后再简要汇总。`,
   a82: `gadget-contract.cjs 是我刚写的接口，还没有提交。请委派一个子任务，用「${name[childKind]}」，基于这个接口在当前目录实现 gadget-impl.cjs：用 require("./gadget-contract.cjs") 读入接口，导出一个对象，键名取接口里 ${SYMBOL} 字段的值，值是一个返回字符串 "IMPLEMENTED" 的函数。派出后结束本轮，等结果回来再说明。`,
   a84: `design.md 是我刚写的设计，还没有提交。请委派一个子任务，用「${name[childKind]}」，审查 design.md 并直接修正问题：把 TYPO_FIELD_NAME 改成 FIXED_FIELD_NAME，其余内容保持不变。派出后结束本轮，等结果回来再说明。`,
+  a83: `我刚改了 subject.cjs 但还没提交。请委派一个子任务，用「${name[childKind]}」，在当前目录运行 node --test check.test.cjs，原样报告测试结果（pass 和 fail 的数量），不要修改任何文件。派出后结束本轮，等结果回来再说明。`,
   a80: `请开两个独立工作副本，并行开发两个互不相关的小功能，都用「${name[childKind]}」：子任务一新建 feature-x.txt，内容为 FEATURE_X；子任务二新建 feature-y.txt，内容为 FEATURE_Y。派出后结束本轮，等结果回来再说明。`,
 };
 assert(Object.hasOwn(prompts, base), 'Unknown scenario ' + scenarioId);
@@ -103,6 +104,10 @@ async function approvePending() {
 let phase = 'fixture setup';
 try {
   writeFileSync(join(cwd, 'design.md'), '# Committed design\nField: TYPO_FIELD_NAME baseline\n');
+  if (base === 'a83') {
+    writeFileSync(join(cwd, 'subject.cjs'), 'module.exports = "BAD_HEAD";\n');
+    writeFileSync(join(cwd, 'check.test.cjs'), 'const {test}=require("node:test");const assert=require("node:assert/strict");test("DIRTY_TEST_PASSES",()=>assert.equal(require("./subject.cjs"),"DIRTY_FIXTURE"));\n');
+  }
   git('init', '-qb', 'main'); git('add', '-A');
   git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'frozen baseline');
   git('config', 'user.name', 'Fixture'); git('config', 'user.email', 'fixture@example.invalid'); git('config', 'commit.gpgsign', 'false');
@@ -110,6 +115,13 @@ try {
   writeFileSync(join(cwd, 'design.md'), `# Uncommitted design\nMarker: ${DESIGN_MARKER}\nField: TYPO_FIELD_NAME\n`);
   if (base === 'a82') writeFileSync(join(cwd, 'gadget-contract.cjs'), `module.exports = { ${SYMBOL}: "${SYMBOL}" };\n`);
   if (base === 'a80') writeFileSync(join(cwd, 'unrelated-dirty.txt'), 'M14_UNCOMMITTED_NOT_FOR_CHILDREN\n');
+  if (base === 'a83') {
+    writeFileSync(join(cwd, 'subject.cjs'), 'module.exports = "DIRTY_FIXTURE";\n');
+    const run = dir => spawnSync(process.execPath, ['--test', 'check.test.cjs'], { cwd: dir, encoding: 'utf8', timeout: 10000 }).status;
+    const headClone = join(root, 'head-clone'); git('clone', '-q', '--no-hardlinks', cwd, headClone);
+    result.fixtureTests = { head: run(headClone), dirty: run(cwd) };
+    assert.deepEqual(Object.values(result.fixtureTests), [1, 0], 'fixture: HEAD fails, dirty passes');
+  }
   if (x1) {
     mkdirSync(join(home, '.codex'), { recursive: true });
     writeFileSync(join(home, '.codex', 'auth.json'), readFileSync(x1Auth), { mode: 0o600 });
@@ -192,6 +204,13 @@ try {
     const text = readFileSync(join(cwd, 'design.md'), 'utf8');
     check('default shared directory', children[0].workspaceMode === 'shared' && children[0].cwd === cwd, children[0].workspaceMode);
     check('fix applied in the main directory on top of the uncommitted design', text.includes('FIXED_FIELD_NAME') && text.includes(DESIGN_MARKER) && !text.includes('TYPO_FIELD_NAME'), text);
+  }
+  if (base === 'a83') {
+    check('default shared directory in the current tree', children[0].workspaceMode === 'shared' && children[0].cwd === cwd, children[0].workspaceMode);
+    const items = (await snapshot(family.children[0].childTaskId)).items.filter(i => i.type === 'command_execution' && JSON.stringify(i.payload).includes('check.test.cjs'));
+    result.testCommands = items.map(i => ({ exitCode: i.payload.exitCode, output: String(i.payload.output ?? '').slice(-300) }));
+    check('child ran the test against the uncommitted code and it passed (HEAD fails)', items.some(i => i.payload.exitCode === 0 && String(i.payload.output ?? '').includes('pass 1')), result.testCommands);
+    check('child reported the passing result', /pass\s*[:：]?\s*1|1\s*(个)?\s*(通过|pass)|全部通过|通过/.test(children[0].answer), children[0].answer.slice(0, 300));
   }
   if (base === 'a80') {
     check('two children', children.length === 2, children.length);
