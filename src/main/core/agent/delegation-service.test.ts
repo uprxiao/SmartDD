@@ -502,6 +502,8 @@ it('G3: Git defaults to serial shared writing, with visible uncommitted input an
   expect(first.options.cwd).toBe(f.root);
   expect(readFileSync(join(first.options.cwd,'design.txt'),'utf8')).toBe('UNCOMMITTED_DESIGN');
   expect(first.turns[0].text).toContain('宿主不提交');
+  expect(first.turns[0].text).toContain('你是写入子任务');
+  expect(first.turns[0].text).not.toContain('wy_request_write');
   const handoff=f.store.items(receipt.childTaskId).find(item=>item.payload?.code==='directoryHandoff');
   expect(handoff?.payload.detail).toContain('design.txt');
   first.finish('M14_REVIEW_TEXT');

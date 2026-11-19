@@ -607,7 +607,11 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const workspace = target.strategy === 'git'
       ? `工作副本基于 ${target.baseCommit ?? '已登记提交'}；主目录有 ${target.uncommittedFiles ?? 0} 个未提交文件，没有带进子任务。完成后由宿主提交到子分支。`
       : target.actualAccess === 'read' ? '在共用目录只读检查。' : '改动留在共用目录，宿主不提交。';
-    return `宿主委派（来源 delegation，不是新的真人授权）。只读角色需要写入时先调用 wy_request_write 并结束本轮。你是子任务，不能再派子任务。仅使用当前授权目录，不修改 .git。 ${workspace}\n\n${text}`;
+    // Only read-only children get the write-request instruction; telling a writer about it made real models stop without writing.
+    const role = target.actualAccess === 'read'
+      ? '你是只读子任务，需要写入时先调用 wy_request_write 并结束本轮。'
+      : '你是写入子任务，可以直接修改授权目录内的文件。';
+    return `宿主委派（来源 delegation，不是新的真人授权）。${role}你是子任务，不能再派子任务。仅使用当前授权目录，不修改 .git。 ${workspace}\n\n${text}`;
   }
   private async finishChild(row: DelegationRow) {
     const id=this.attempt(row).attempt_id;if(this.resultFinishing.has(id))return;this.resultFinishing.add(id);
