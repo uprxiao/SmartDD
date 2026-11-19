@@ -13,6 +13,7 @@ vi.mock('./agent-terminal', () => ({ AgentTerminalDrawer: () => null }));
 vi.mock('sonner', () => ({ toast: { warning: mocks.toast, error: mocks.toast, message: mocks.toast, success: mocks.toast } }));
 import {agentComposerTargets} from './composer-target';
 import { AgentTaskView } from './agent-task-view';
+import { AgentChildSummary, type Relations } from './agent-relations';
 
 afterEach(() => cleanup());
 beforeEach(() => {
@@ -556,6 +557,23 @@ it('M14 A38: publishes an editable reference destination only after reading the 
   expect(input.value).toBe('本地草稿[邮件引用]');
   await waitFor(() => expect(mocks.saveDraft).toHaveBeenCalledWith('task',{text:input.value,attachments:[]},2));
   expect(mocks.submit).not.toHaveBeenCalled();
+});
+
+it('A67 keeps successful merge verification visible when the child list is collapsed', () => {
+  const value = {
+    childrenTotal: 2, counts: { running: 0, waiting: 0, queued: 0, completed: 2, pending: 1 },
+    children: [
+      { childTaskId: 'merged', title: '已合并子任务', profileName: 'Codex', workspaceMode: 'worktree', access: 'write', state: 'delivered', merged: true, pendingMerge: false, elapsedSeconds: null, attempts: 1 },
+      { childTaskId: 'pending', title: '待合并子任务', profileName: 'Claude', workspaceMode: 'worktree', access: 'write', state: 'delivered', merged: false, pendingMerge: true, elapsedSeconds: null, attempts: 1 },
+    ],
+  } as Relations;
+  const { container } = render(<AgentChildSummary taskId="task" value={value} readOnly={false} reload={vi.fn()} />);
+  const details = container.querySelector('details')!;
+  const summary = details.querySelector('summary')!;
+  expect(within(summary).getByText('合并核对通过 · 1 项')).toBeTruthy();
+  fireEvent.click(summary);
+  expect(details.open).toBe(false);
+  expect(within(summary).getByText('合并核对通过 · 1 项')).toBeTruthy();
 });
 
 it('M14 A29/A74: the native child process drawer and family card open independently and Escape closes the drawer', async () => {

@@ -39,13 +39,14 @@ function childState(child: Relations['children'][number]) {
 
 function mergeState(child: Relations['children'][number]) {
   if (child.workspaceMode !== 'worktree') return null;
-  if (child.merged) return '已核实合入';
+  if (child.merged) return '合并核对通过';
   if (child.pendingMerge) return '待合并';
   return null;
 }
 
 export function AgentChildSummary({taskId, value, readOnly, reload}: {taskId:string; value:Relations; readOnly:boolean; reload():void}) {
   const {running, waiting, queued, completed, pending} = value.counts;
+  const merged = value.children.filter(child => child.workspaceMode === 'worktree' && child.merged).length;
   return <div className="agent-child-summary">
     <details open>
       <summary><Users size={15}/><b>{value.childrenTotal} 个子任务</b>
@@ -53,6 +54,7 @@ export function AgentChildSummary({taskId, value, readOnly, reload}: {taskId:str
         {waiting > 0 && <span className="waiting">{waiting} 待你处理</span>}
         {queued > 0 && <span>{queued} 排队</span>}
         {completed > 0 && <span className="delivered">{completed} 完成</span>}
+        {merged > 0 && <span className="delivered">合并核对通过 · {merged} 项</span>}
       </summary>
       <div className="agent-summary-children">
         {value.children.map(child => <button type="button" key={child.childTaskId} className="agent-child-open" onClick={() => openRelatedTask(taskId, child.childTaskId, child.archived)}>
