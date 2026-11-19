@@ -30,14 +30,17 @@ const DESIGN_MARKER = 'M14_DESIGN_MARKER_Q7ZK';
 const SYMBOL = 'M14UniqueGadgetContract';
 const [base, variant] = scenarioId.split(':');
 const reverse = (variant ?? '').includes('rev');
-const parentKind = reverse ? 'codex' : 'claude';
-const childKind = reverse ? 'claude' : 'codex';
-const name = { claude: 'M14 Claude DeepSeek', codex: 'M14 Codex DeepSeek' };
+const x1 = (variant ?? '').includes('x1');
+const x1Auth = process.env.M14_X1_AUTH;
+if (x1) assert(x1Auth && existsSync(x1Auth), 'X1 auth source required');
+const parentKind = reverse ? (x1 ? 'x1' : 'codex') : 'claude';
+const childKind = reverse ? 'claude' : (x1 ? 'x1' : 'codex');
+const name = { claude: 'M14 Claude DeepSeek', codex: 'M14 Codex DeepSeek', x1: 'M14 Codex 订阅' };
 const prompts = {
-  a81: `design.md 是我刚写好、还没有提交的设计文档。请先开启委派，然后派两个只读审查子任务，都只读审查 design.md、不要修改任何文件：一个用「${name.claude}」，一个用「${name.codex}」。审查意见里要原样引用文档中 Marker 那一行的标记。派出后结束本轮，等子任务结果回来后再简要汇总。`,
+  a81: `design.md 是我刚写好、还没有提交的设计文档。请先开启委派，然后派两个只读审查子任务，都只读审查 design.md、不要修改任何文件：一个用「${x1 ? name.x1 : name.claude}」，一个用「${name.codex}」。审查意见里要原样引用文档中 Marker 那一行的标记。派出后结束本轮，等子任务结果回来后再简要汇总。`,
   a82: `gadget-contract.cjs 是我刚写的接口，还没有提交。请委派一个子任务，用「${name[childKind]}」，基于这个接口在当前目录实现 gadget-impl.cjs：用 require("./gadget-contract.cjs") 读入接口，导出一个对象，键名取接口里 ${SYMBOL} 字段的值，值是一个返回字符串 "IMPLEMENTED" 的函数。派出后结束本轮，等结果回来再说明。`,
   a84: `design.md 是我刚写的设计，还没有提交。请委派一个子任务，用「${name[childKind]}」，审查 design.md 并直接修正问题：把 TYPO_FIELD_NAME 改成 FIXED_FIELD_NAME，其余内容保持不变。派出后结束本轮，等结果回来再说明。`,
-  a80: `请开两个独立工作副本，并行开发两个互不相关的小功能，都用「${name.codex}」：子任务一新建 feature-x.txt，内容为 FEATURE_X；子任务二新建 feature-y.txt，内容为 FEATURE_Y。派出后结束本轮，等结果回来再说明。`,
+  a80: `请开两个独立工作副本，并行开发两个互不相关的小功能，都用「${name[childKind]}」：子任务一新建 feature-x.txt，内容为 FEATURE_X；子任务二新建 feature-y.txt，内容为 FEATURE_Y。派出后结束本轮，等结果回来再说明。`,
 };
 assert(Object.hasOwn(prompts, base), 'Unknown scenario ' + scenarioId);
 const result = { sourceCommit, executable, scenarioId, parentKind, childKind, model: MODEL,
@@ -107,6 +110,11 @@ try {
   writeFileSync(join(cwd, 'design.md'), `# Uncommitted design\nMarker: ${DESIGN_MARKER}\nField: TYPO_FIELD_NAME\n`);
   if (base === 'a82') writeFileSync(join(cwd, 'gadget-contract.cjs'), `module.exports = { ${SYMBOL}: "${SYMBOL}" };\n`);
   if (base === 'a80') writeFileSync(join(cwd, 'unrelated-dirty.txt'), 'M14_UNCOMMITTED_NOT_FOR_CHILDREN\n');
+  if (x1) {
+    mkdirSync(join(home, '.codex'), { recursive: true });
+    writeFileSync(join(home, '.codex', 'auth.json'), readFileSync(x1Auth), { mode: 0o600 });
+    result.x1 = 'Codex subscription login copied into the isolated CODEX_HOME for this run only (user authorised 2026-11-19); removed after the run.';
+  }
   phase = 'packaged startup';
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(3425, '127.0.0.1', resolve); });
   app = await openElectron({ executable, userData, env, inspectMain: true, startupMainHook: async info => { result.redirect = await redirectHome({ ...info, home }); } });
@@ -126,10 +134,15 @@ try {
     profiles[kind] = await app.invoke('agents.save', { name: name[kind], toolId: tool.id, source: 'provider', providerId: provider.id,
       models: [MODEL], defaultModel: MODEL, isDefault: kind === parentKind });
   }
+  if (x1) {
+    const codexTool = tools.find(t => t.kind === 'codex' && t.installed);
+    result.x1Login = codexTool.login;
+    profiles.x1 = await app.invoke('agents.save', { name: name.x1, toolId: codexTool.id, source: 'login', models: [], defaultModel: null, isDefault: parentKind === 'x1' });
+  }
   result.nativeTools = tools.filter(t => t.installed && ['claude', 'codex'].includes(t.kind)).map(t => ({ kind: t.kind, version: t.version }));
   const project = await app.invoke('projects.create', { name: 'M14 live ' + scenarioId, aliases: [], description: '', rulesPath: null }, [{ label: 'work', path: cwd }]);
   const title = 'Live parent ' + scenarioId;
-  const task = await app.invoke('agentTasks.create', { projectId: project.id, dirId: project.dirs[0].id, cwd, title, profileId: profiles[parentKind].id, model: MODEL, tier: 'ask' });
+  const task = await app.invoke('agentTasks.create', { projectId: project.id, dirId: project.dirs[0].id, cwd, title, profileId: profiles[parentKind].id, ...(parentKind === 'x1' ? {} : { model: MODEL }), tier: 'ask' });
   await app.evaluate("localStorage.setItem('willyou-m14-agent-workspace','true');location.reload();true");
   const row = '[data-testid="sidebar-agent-task"][data-task-id="' + task.taskId + '"]';
   await app.waitFor(`Boolean(document.querySelector(${JSON.stringify(row)}))`, 20000, { navigation: true });
@@ -158,13 +171,13 @@ try {
     const text = snap.items.filter(i => i.type === 'assistant_message').map(i => i.payload.text).join('\n');
     const profile = (await app.invoke('agentTasks.list')).find(t => t.taskId === k.childTaskId)?.selection?.profileId;
     children.push({ title: k.title, access: k.access, workspaceMode: k.workspaceMode, state: k.state, cwd: snap.cwd,
-      profile: profile === profiles.claude.id ? 'claude' : profile === profiles.codex.id ? 'codex' : profile, branch: k.workspace?.branch ?? null, answer: text.slice(0, 1500) });
+      profile: profile === profiles.claude.id ? 'claude' : profile === profiles.codex.id ? 'codex' : profile === profiles.x1?.id ? 'x1' : profile, branch: k.workspace?.branch ?? null, answer: text.slice(0, 1500) });
   }
   result.children = children;
   phase = 'scenario checks';
   if (base === 'a81') {
     check('two review children', children.length === 2, children.length);
-    const cl = children.find(c => c.profile === 'claude'), cx = children.find(c => c.profile === 'codex');
+    const cl = children.find(c => c.profile === (x1 ? 'x1' : 'claude')), cx = children.find(c => c.profile === 'codex');
     check('Claude reviewer used and managed as write in the shared directory', cl && cl.access === 'write' && cl.workspaceMode === 'shared', cl && { access: cl.access, mode: cl.workspaceMode });
     check('Codex third-party reviewer stays trusted read in the shared directory', cx && cx.access === 'read' && cx.workspaceMode === 'shared', cx && { access: cx.access, mode: cx.workspaceMode });
     check('both reviews quote the uncommitted marker', children.every(c => c.answer.includes(DESIGN_MARKER)));
@@ -193,6 +206,7 @@ try {
   check('no host commit on the user branch', git('rev-parse', 'HEAD') === head);
   if (base !== 'a80') check('no worktree created', git('worktree', 'list').split('\n').length === 1);
   check('all upstream requests succeeded', result.requests.every(r => r.upstreamStatus === 200), result.requests.map(r => r.upstreamStatus));
+  if (x1) check('the X1 subscription profile took part', children.some(c => c.profile === 'x1') || parentKind === 'x1', children.map(c => c.profile));
   await app.screenshot(join(out, '20-live-result.png'));
   check('no renderer errors', app.rendererErrors.length === 0, app.rendererErrors);
   result.status = 'passed';
@@ -212,6 +226,7 @@ try {
     result.rendererErrors = app.rendererErrors;
     writeFileSync(join(out, 'app.log'), app.logs(), { mode: 0o600 });
   }
+  try { if (x1) { const { rmSync } = await import('node:fs'); rmSync(join(home, '.codex', 'auth.json'), { force: true }); result.x1Removed = !existsSync(join(home, '.codex', 'auth.json')); } } catch (error) { result.x1RemoveError = String(error); }
   server.closeAllConnections();
   await new Promise(resolve => server.close(resolve));
   writeFileSync(join(out, 'result.json'), JSON.stringify(result, null, 2));

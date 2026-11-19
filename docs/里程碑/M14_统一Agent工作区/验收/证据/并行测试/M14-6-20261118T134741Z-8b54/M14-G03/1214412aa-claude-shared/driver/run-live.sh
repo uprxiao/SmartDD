@@ -13,7 +13,7 @@ if lsof -nP "$bin" >/dev/null 2>&1; then echo "package running"; exit 125; fi
 set +e
 M14_LIVE_DEEPSEEK_KEY="$DEEPSEEK_API_KEY" env -u DEEPSEEK_API_KEY -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN \
   -u OPENAI_BASE_URL -u ANTHROPIC_BASE_URL -u CLAUDE_CODE_OAUTH_TOKEN -u CODEX_API_KEY \
-  M14_ACCEPTANCE_APP="$bin" M14_SMOKE_CLAUDE='/Users/liubu/.local/share/claude/versions/2.1.326' \
+  M14_X1_AUTH="${M14_X1_AUTH:-}" M14_ACCEPTANCE_APP="$bin" M14_SMOKE_CLAUDE='/Users/liubu/.local/share/claude/versions/2.1.326' \
   node "$here/shared-review-live.mjs" "$out" "$2" "$commit" >"$out.console.log" 2>&1
 code=$?
 set -e

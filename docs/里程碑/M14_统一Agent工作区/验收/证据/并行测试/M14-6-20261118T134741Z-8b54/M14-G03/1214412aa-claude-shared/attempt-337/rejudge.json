@@ -1,0 +1,41 @@
+{
+  "source": "re-judgement of attempt-337 raw data; the App was not rerun",
+  "originalFailure": "\"no host commit on the user branch\" compared HEAD after the parent Agent merged",
+  "baselineCommit": "020c4a5851fd5df7f84e81b16d442ccad3cae91b",
+  "mainCommitsAfterBaseline": [
+    "willyou: 子任务二：新建 feature-y.txt（子任务提交）",
+    "willyou: 子任务一：新建 feature-x.txt（子任务提交）",
+    "chore: 保留主分支未提交改动（合并子任务前）"
+  ],
+  "firstMainCommitParentIsBaseline": true,
+  "hostAutoCommitIntents": 0,
+  "mergeChecks": [
+    {
+      "pass": true,
+      "missingCommits": [],
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true
+    },
+    {
+      "pass": true,
+      "missingCommits": [],
+      "inProgress": [],
+      "conflictMarkers": "",
+      "branchOk": true
+    }
+  ],
+  "parentAgentApprovedCommands": [
+    "git add -A && git commit -m \"$(cat <<'EOF'",
+    "git cherry-pick -x d52983dbb2d17091eda4f1bbd9146cc1c0a30610 && echo '--- log ---' && git log --oneline -4 && echo '--- f",
+    "git status --short --branch && git cherry-pick -x c25eef57b5261f914ef909096855aa652b911ffc && echo '--- log ---' && git "
+  ],
+  "unrelatedDirtyStillUncommitted": false,
+  "reflog": [
+    "1e96d9b main@{0}: cherry-pick: willyou: 子任务二：新建 feature-y.txt（子任务提交）",
+    "425e950 main@{1}: cherry-pick: willyou: 子任务一：新建 feature-x.txt（子任务提交）",
+    "84a5054 main@{2}: commit: chore: 保留主分支未提交改动（合并子任务前）",
+    "020c4a5 main@{3}: commit (initial): frozen baseline"
+  ],
+  "passed": false
+}
