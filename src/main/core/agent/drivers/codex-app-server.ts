@@ -2,7 +2,7 @@
 // 恢复线程也重新下发，不依赖创建时默认值（技术方案 T1.5 §7.2，V08／V09）。
 import { spawn, type ChildProcess } from 'node:child_process';
 import { CODEX_TIERS, codexSupportsTurnPermissions, type CodexTierParams } from '../permissions';
-import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
+import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import { JsonlRpcPeer } from '../jsonl-rpc';
 import { redact } from '../../connections/redact';
 
@@ -33,7 +33,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private pendingInputId = '';
   private stopPending = false;
   private readonly startedTurns = new Set<string>();
-  private readonly openRequests = new Set<string>();
+  private readonly openRequests = new Map<string, DriverRequestKind>();
   private readonly childThreads = new Set<string>();
   private readonly childTurns = new Map<string, string>();
   private readonly completedChildTurns = new Set<string>();
@@ -240,20 +240,23 @@ export class CodexAppServerInstance implements DriverInstance {
     const source = params as { threadId?: string } | null;
     if (source?.threadId && this.threadId && source.threadId !== this.threadId && !this.childThreads.has(source.threadId)) { this.rpc?.replyError(id, -32602, '请求不属于当前任务或已登记原生子线程'); return; }
     this.emitter.emit({ type: 'native', name: method, payload: { id, params } });
-    if (this.readOnly && ['command_approval', 'file_approval', 'permission_approval'].includes(REQUEST_KIND[method])) { this.rpc?.replyError(id, -32001, 'Read-only role: write/escalation denied; request wy_request_write and end this turn to enter the write queue.'); return; }
+    const kind = Object.hasOwn(REQUEST_KIND, method) ? REQUEST_KIND[method] : undefined;
+    if (this.readOnly && kind && ['command_approval', 'file_approval', 'permission_approval'].includes(kind)) { this.rpc?.replyError(id, -32001, 'Read-only role: write/escalation denied; request wy_request_write and end this turn to enter the write queue.'); return; }
     if (REFUSED.has(method)) { this.rpc?.replyError(id, -32601, 'WillYou 不处理该请求'); return; }
     // 未知的必需请求：明确拒绝并标协议不兼容，不套通用批准（复核 NR09，技术方案 §4）。
-    if (!REQUEST_KIND[method]) { this.rpc?.replyError(id, -32601, 'WillYou 不支持该请求'); this.emitter.emit({ type: 'native', name: 'request/unsupported', payload: { method } }); return; }
+    if (!kind) { this.rpc?.replyError(id, -32601, 'WillYou 不支持该请求'); this.emitter.emit({ type: 'native', name: 'request/unsupported', payload: { method } }); return; }
     const key = String(id);
-    this.openRequests.add(key);
-    this.emitter.emit({ type: 'request', requestKey: key, kind: REQUEST_KIND[method] ?? 'other', payload: { method, params }, nodeId: source?.threadId !== this.threadId ? source?.threadId : undefined });
+    this.openRequests.set(key, kind);
+    this.emitter.emit({ type: 'request', requestKey: key, kind, payload: { method, params }, nodeId: source?.threadId !== this.threadId ? source?.threadId : undefined });
   }
 
   async respond(requestKey: string, result: unknown) {
     if (!this.rpc) throw new DriverError('STATE', '会话尚未打开');
-    if (!this.openRequests.has(requestKey)) throw new DriverError('STATE', '请求已结束或不存在');
+    const kind = this.openRequests.get(requestKey);
+    if (!kind) throw new DriverError('STATE', '请求已结束或不存在');
+    if (kind === 'elicitation') requireElicitationCancellation(result);
     const id = /^\d+$/.test(requestKey) ? Number(requestKey) : requestKey;
-    this.rpc.reply(id, result);
+    this.rpc.reply(id, kind === 'elicitation' ? { action: 'cancel', content: null, _meta: null } : result);
     // 宿主自己的回应不再发 request.resolved：该事件只表示原生侧自行结束（超时、回合结束等）。
     this.openRequests.delete(requestKey);
   }

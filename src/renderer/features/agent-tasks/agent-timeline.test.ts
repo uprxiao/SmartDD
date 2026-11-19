@@ -121,18 +121,27 @@ describe('请求面板选项', () => {
 
 describe('复核 1620：请求表单与原生决定', () => {
   const base = { requestId: 'r', revision: 1, origin: {}, status: 'pending' };
-  it('CR09：Codex 提问按 questions→answers 回传，Claude AskUserQuestion 带 answers 交回原入参，elicitation 按 action/content', () => {
+  it('CR09：Codex 提问按 questions→answers 回传，Claude AskUserQuestion 带 answers 交回原入参', () => {
     const cx = requestForm({ ...base, kind: 'user_input', payload: { method: 'item/tool/requestUserInput', params: { questions: [{ id: 'q1', header: 'Pick', question: 'Which?', options: [{ label: 'A', description: 'a' }] }] } } }, 'codex-app-server')!;
     expect(cx.kind).toBe('questions');
     expect(cx.kind === 'questions' && cx.toResult({ q1: ['A'] })).toEqual({ answers: { q1: { answers: ['A'] } } });
     const input = { questions: [{ header: 'Pick', question: 'Which?', options: [{ label: 'A' }, { label: 'B' }], multiSelect: true }] };
     const cc = requestForm({ ...base, kind: 'user_input', payload: { tool: 'AskUserQuestion', input } }, 'claude-sdk')!;
     expect(cc.kind === 'questions' && cc.toResult({ 'Which?': ['A', 'B'] })).toEqual({ behavior: 'allow', updatedInput: { ...input, answers: { 'Which?': 'A, B' } } });
-    const el = requestForm({ ...base, kind: 'elicitation', payload: { method: 'mcpServer/elicitation/request', params: { message: 'name?', requestedSchema: { type: 'object', required: ['name'], properties: { name: { type: 'string', title: '名字' }, n: { type: 'integer' } } } } } }, 'codex-app-server')!;
-    expect(el.kind === 'elicitation' && el.fields).toEqual([{ name: 'name', title: '名字', required: true, type: 'string', options: undefined }, { name: 'n', title: 'n', required: false, type: 'number', options: undefined }]);
-    expect(el.kind === 'elicitation' && el.toResult('accept', { name: 'x' })).toEqual({ action: 'accept', content: { name: 'x' }, _meta: null });
-    expect(el.kind === 'elicitation' && el.toResult('decline', { name: 'x' })).toEqual({ action: 'decline', content: null, _meta: null });
     expect(requestOptions({ ...base, kind: 'user_input', payload: { tool: 'AskUserQuestion', input } }, 'claude-sdk')).toEqual([]);
+  });
+  it.each(['claude-sdk', 'codex-app-server'])('A09 %s 原生表单和 URL 请求只提供取消', driverId => {
+    const url = 'http://127.0.0.1/private-form';
+    const request = { ...base, kind: 'elicitation', payload: { params: { serverName: 'MCP fixture', mode: 'url', message: 'External input', url } } };
+    const form = { ...request, payload: { params: { serverName: 'MCP fixture', mode: 'form', message: 'Provide name', requestedSchema: { type: 'object' } } } };
+    for (const item of [request, form]) {
+      expect(requestForm(item, driverId)).toBeNull();
+      const options = requestOptions(item, driverId);
+      expect(options.map(option => option.label)).toEqual(['取消 MCP 请求']);
+      expect(options[0]?.result('')).toEqual({ action: 'cancel' });
+      expect(requestTitle(item).detail).toContain('只能取消');
+    }
+    expect(requestTitle(request)).toEqual({ title: 'MCP 服务请求打开网页', detail: `MCP fixture\nExternal input\n${url}\n此版本无法完成 MCP 网页请求，只能取消。` });
   });
   it('CR16：只列原生给出的决定（不含“拒绝并中断”），修订型决定原样回传', () => {
     const amend = { acceptWithExecpolicyAmendment: { execpolicy_amendment: ['git', 'status'] } };

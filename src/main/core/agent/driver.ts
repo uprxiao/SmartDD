@@ -53,6 +53,14 @@ export interface TurnInput {
 export type TurnStatus = 'completed' | 'failed' | 'interrupted';
 export type DriverRequestKind = 'command_approval' | 'file_approval' | 'permission_approval' | 'tool_approval' | 'user_input' | 'plan_approval' | 'elicitation' | 'other';
 
+/** Native callbacks may omit schema constraints. Until we can verify the original request, only cancellation is supported. */
+export function requireElicitationCancellation(result: unknown): void {
+  if (!result || typeof result !== 'object' || !('action' in result) || result.action !== 'cancel' ||
+      Object.keys(result).some(key => key !== 'action')) {
+    throw new DriverError('REJECTED', '无法核验原始 MCP 请求，只能取消');
+  }
+}
+
 export type DriverEvent =
   | { type: 'process'; pid: number }
   | { type: 'session'; nativeId: string }

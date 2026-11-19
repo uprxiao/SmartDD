@@ -3,9 +3,10 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import type { OnElicitation } from '@anthropic-ai/claude-agent-sdk';
 import {isHostBusinessCli} from '../host-cli-command';
 import { CLAUDE_TIERS } from '../permissions';
-import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
+import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import type { Tier } from '../permissions';
 
 // 只依赖 SDK 的最小形状，便于测试注入替身；生产由 loadSdk 动态加载锁定版本。
@@ -63,6 +64,7 @@ export class ClaudeSdkInstance implements DriverInstance {
   private configuringTurn = false;
   private stopPending = false;
   private readonly pending = new Map<string, PendingRequest>();
+  private readonly pendingElicitations = new Map<string, (native: boolean) => void>();
   private pump?: Promise<void>;
   private exited = false;
   private historyPending?: { id: string; resolve(): void; reject(error: Error): void };
@@ -125,6 +127,7 @@ export class ClaudeSdkInstance implements DriverInstance {
       includePartialMessages: true,
       ...(o.resumeNativeId ? { resume: o.resumeNativeId } : { sessionId: nativeId }),
       canUseTool: (tool: string, input: Record<string, unknown>, ctx: { signal: AbortSignal; title?: string; decisionReason?: string; blockedPath?: string; agentID?: string }) => this.onPermission(tool, input, ctx),
+      onElicitation: this.onElicitation,
       stderr: (data: string) => this.emitter.emit({ type: 'diagnostic', message: data.slice(0, 4000) }),
       spawnClaudeCodeProcess: (s: { command: string; args: string[]; cwd?: string; env: Record<string, string | undefined>; signal?: AbortSignal }) => {
         const child = spawn(s.command, s.args, { cwd: s.cwd, env: s.env as NodeJS.ProcessEnv, signal: s.signal, detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] });
@@ -145,6 +148,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     if (this.exited) return;
     this.exited = true; this.historyPending?.reject(new DriverError('EXITED', '历史追加期间执行器退出'));
     for (const [key, p] of this.pending) { p.resolve({ behavior: 'deny', message: '执行器已退出' }); this.pending.delete(key); this.emitter.emit({ type: 'request.resolved', requestKey: key }); }
+    for (const finish of this.pendingElicitations.values()) finish(true);
     this.failTurn('执行器退出', this.activeTurn?.interrupted ? 'interrupted' : 'failed');
     this.emitter.emit({ type: 'exit', code, signal });
   }
@@ -250,6 +254,23 @@ export class ClaudeSdkInstance implements DriverInstance {
     });
   }
 
+  private readonly onElicitation: OnElicitation = async (request, { signal, requestId }) => {
+    const key = `elicitation:${requestId}`;
+    if (signal.aborted || this.exited || this.ended || this.pendingElicitations.has(key)) return { action: 'cancel' };
+    return new Promise(resolve => {
+      const finish = (native: boolean) => {
+        if (!this.pendingElicitations.delete(key)) return;
+        signal.removeEventListener('abort', abort);
+        resolve({ action: 'cancel' });
+        if (native) this.emitter.emit({ type: 'request.resolved', requestKey: key });
+      };
+      const abort = () => finish(true);
+      this.pendingElicitations.set(key, finish);
+      signal.addEventListener('abort', abort, { once: true });
+      this.emitter.emit({ type: 'request', requestKey: key, kind: 'elicitation', payload: { params: request } });
+    });
+  };
+
   async startTurn(input: TurnInput) {
     if (!this.query || !this.input) throw new DriverError('STATE', '会话尚未打开');
     // 已结束的会话不能再派发；输入尚未写出，按未发出处理（复核 NR04）。
@@ -294,6 +315,12 @@ export class ClaudeSdkInstance implements DriverInstance {
   }
 
   async respond(requestKey: string, result: unknown) {
+    const finishElicitation = this.pendingElicitations.get(requestKey);
+    if (finishElicitation) {
+      requireElicitationCancellation(result);
+      finishElicitation(false);
+      return;
+    }
     const p = this.pending.get(requestKey);
     if (!p) throw new DriverError('STATE', '请求已结束或不存在');
     const r = result as PermissionResult;
@@ -324,6 +351,7 @@ export class ClaudeSdkInstance implements DriverInstance {
 
   async close() {
     if (!this.query) return;
+    for (const finish of this.pendingElicitations.values()) finish(true);
     this.input?.end();
     try { this.query.close?.(); } catch { /* 已关闭 */ }
     const child = this.child;

@@ -23,6 +23,20 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it.each(['form', 'url'])('A09 accepts only cancel for a native MCP %s request', async mode => {
+    const { inst, server, events } = setup();
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    server.request(901, 'mcpServer/elicitation/request', { threadId: 'thr-1', mode });
+    await until(() => events.some(e => e.type === 'request' && e.requestKey === '901' && e.kind === 'elicitation'));
+    await expect(inst.respond('901', { action: 'accept', content: {} })).rejects.toThrow('只能取消');
+    await expect(inst.respond('901', { action: 'cancel', content: {} })).rejects.toThrow('只能取消');
+    expect(server.received.some(m => m.id === 901)).toBe(false);
+    await inst.respond('901', { action: 'cancel' });
+    await until(() => server.received.some(m => m.id === 901));
+    expect(server.received.find(m => m.id === 901)?.result).toEqual({ action: 'cancel', content: null, _meta: null });
+    await expect(inst.respond('901', { action: 'cancel' })).rejects.toThrow('已结束');
+  });
+
   it.each(['thread/start', 'thread/resume'] as const)('保留宿主批准的 CLI 权限配置，同时保留原生审批档位（%s）', async method => {
     const f = setup();
     const permissions = 'wy_cli_abcdef012345';

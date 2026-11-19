@@ -65,6 +65,26 @@ it('A45 retains the available streaming prefix and marks a preview that exceeds 
   expect(screen.getByText('部分内容未在流式预览中显示，完成后可查看全文。')).toBeTruthy();
 });
 
+it('A09 shows the MCP URL as text and confirms only cancellation', async () => {
+  const url = 'http://127.0.0.1/local-mcp-test';
+  const request = {
+    requestId: 'mcp-url', kind: 'elicitation', origin: {}, revision: 1, status: 'pending',
+    payload: { params: { serverName: 'Local MCP fixture', mode: 'url', message: 'Open the synthetic test page', url } },
+  };
+  mocks.snapshot.mockResolvedValue(snapshot({ requests: [request] }));
+  mocks.respond.mockResolvedValue(undefined);
+  render(<AgentTaskView taskId="task" />);
+  const panel = within(await screen.findByRole('dialog', { name: '待处理请求' }));
+  expect(panel.getByText(new RegExp(url))).toBeTruthy();
+  expect(panel.queryByRole('link')).toBeNull();
+  expect(panel.queryByRole('textbox')).toBeNull();
+  expect(panel.queryByRole('option', { name: /批准/ })).toBeNull();
+  fireEvent.click(panel.getByRole('option', { name: '取消 MCP 请求' }));
+  expect(mocks.respond).not.toHaveBeenCalled();
+  fireEvent.click(panel.getByRole('button', { name: '确认' }));
+  await waitFor(() => expect(mocks.respond).toHaveBeenCalledExactlyOnceWith('task', 'mcp-url', 1, { action: 'cancel' }));
+});
+
 it('P3: the request panel can revoke a queued approval while the original approve call is still pending', async () => {
   const request = { requestId: 'approval', kind: 'host_business', origin: {}, revision: 1, status: 'pending', payload: { title: '业务审批', phase: 'waiting_user' } };
   let state = snapshot({ requests: [request] });

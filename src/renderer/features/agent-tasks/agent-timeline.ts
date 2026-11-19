@@ -163,7 +163,8 @@ export function workLabel(it: TimelineItem): string {
 /** 请求面板的选项：原生选项原样回传，不压成布尔值（技术方案 §3 respond）。 */
 export interface RequestOption { key: string; label: string; result: (reason: string) => unknown; deny?: boolean }
 export function requestOptions(r: TimelineRequest, driverId: string): RequestOption[] {
-  // 提问与 MCP 表单由 requestForm 处理，不套用批准选项（复核 CR09）。
+  // Agent 提问由 requestForm 处理，外部 MCP 请求没有可信的原始约束。
+  if (r.kind === 'elicitation') return [{ key: 'cancel', label: '取消 MCP 请求', result: () => ({ action: 'cancel' }), deny: true }];
   if (r.kind === 'host_business') {
     if (r.payload.phase === 'executing') return [];
     if (r.payload.phase === 'queued_for_slot') return [{ key: 'revoke', label: '撤销批准', result: () => ({ choice: 'cancel' }), deny: true }];
@@ -217,6 +218,18 @@ export function requestOptions(r: TimelineRequest, driverId: string): RequestOpt
 }
 export function requestTitle(r: TimelineRequest): { title: string; detail: string } {
   const p = r.payload ?? {}, params = p.params ?? {};
+  if (r.kind === 'elicitation') {
+    const request = params.request ?? params;
+    const mode = request.mode ?? params.mode;
+    const title = mode === 'url' ? 'MCP 服务请求打开网页' : 'MCP 服务请求填写表单';
+    const detail = [
+      params.serverName ?? request.serverName,
+      request.message ?? params.message,
+      mode === 'url' ? request.url ?? params.url : undefined,
+      mode === 'url' ? '此版本无法完成 MCP 网页请求，只能取消。' : '无法核验原始表单约束，只能取消。',
+    ].filter(value => typeof value === 'string' && value).join('\n');
+    return { title, detail };
+  }
   if (r.kind === 'plan_approval') return { title: 'Claude 交出了计划，是否开始执行？', detail: String(p.input?.plan ?? '') };
   if (r.kind === 'command_approval') return { title: '是否允许运行命令？', detail: String(params.command ?? p.input?.command ?? '') + (params.reason ? `\n原因：${params.reason}` : '') };
   const input = p.params ?? p.input;
@@ -226,12 +239,9 @@ export function requestTitle(r: TimelineRequest): { title: string; detail: strin
   return { title: p.title ?? '是否允许这项操作？', detail };
 }
 
-/** 需要用户填写的请求（复核 CR09）：Agent 提问、MCP 表单。不套用“批准／拒绝”。 */
+/** 两个执行器的原生提问按各自协议回答。 */
 export interface FormQuestion { id: string; header: string; question: string; options: { label: string; description?: string }[]; multi: boolean; allowOther: boolean; secret?: boolean }
-export interface FormField { name: string; title: string; type: 'string' | 'number' | 'boolean' | 'enum'; options?: string[]; required: boolean }
-export type RequestForm =
-  | { kind: 'questions'; questions: FormQuestion[]; toResult: (answers: Record<string, string[]>) => unknown; decline: () => unknown }
-  | { kind: 'elicitation'; message: string; url?: string; fields: FormField[]; toResult: (action: 'accept' | 'decline' | 'cancel', content: Record<string, unknown> | null) => unknown };
+export type RequestForm = { kind: 'questions'; questions: FormQuestion[]; toResult: (answers: Record<string, string[]>) => unknown; decline: () => unknown };
 
 export function requestForm(r: TimelineRequest, driverId: string): RequestForm | null {
   const p = r.payload ?? {};
@@ -244,15 +254,6 @@ export function requestForm(r: TimelineRequest, driverId: string): RequestForm |
   if (driverId === 'codex-app-server' && r.kind === 'user_input' && Array.isArray(p.params?.questions)) {
     const questions: FormQuestion[] = p.params.questions.map((q: any) => ({ id: String(q.id), header: String(q.header ?? ''), question: String(q.question ?? ''), options: (q.options ?? []).map((o: any) => ({ label: String(o.label), description: o.description })), multi: false, allowOther: !!q.isOther || !(q.options ?? []).length, secret: !!q.isSecret }));
     return { kind: 'questions', questions, toResult: answers => ({ answers: Object.fromEntries(questions.map(q => [q.id, { answers: answers[q.id] ?? [] }])) }), decline: () => ({ answers: {} }) };
-  }
-  if (driverId === 'codex-app-server' && r.kind === 'elicitation') {
-    const params = p.params ?? {}, schema = params.requestedSchema ?? params.request?.requestedSchema ?? {};
-    const required = new Set<string>(Array.isArray(schema.required) ? schema.required : []);
-    const fields: FormField[] = Object.entries(schema.properties ?? {}).map(([name, s]: [string, any]) => ({
-      name, title: String(s?.title ?? s?.description ?? name), required: required.has(name),
-      type: Array.isArray(s?.enum) ? 'enum' : s?.type === 'boolean' ? 'boolean' : s?.type === 'number' || s?.type === 'integer' ? 'number' : 'string', options: Array.isArray(s?.enum) ? s.enum.map(String) : undefined,
-    }));
-    return { kind: 'elicitation', message: String(params.message ?? params.request?.message ?? `${params.serverName ?? 'MCP 服务'} 需要你提供信息`), url: typeof params.url === 'string' ? params.url : undefined, fields, toResult: (action, content) => ({ action, content: action === 'accept' ? content : null, _meta: null }) };
   }
   return null;
 }

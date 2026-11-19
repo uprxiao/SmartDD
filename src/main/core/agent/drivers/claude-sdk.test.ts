@@ -53,6 +53,30 @@ function make(turns: Turn[]) {
   return { inst, sdk, events };
 }
 
+it('A09 routes Claude MCP elicitation to its own request and only sends cancellation', async () => {
+  const { inst, sdk, events } = make([]);
+  await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+  try {
+    const signal = new AbortController();
+    const form = { serverName: 'mcp-fixture', message: 'Form', mode: 'form', requestedSchema: { type: 'object' } };
+    const pending = sdk.state.options.onElicitation(form, { requestId: 'form-id', signal: signal.signal });
+    const url = { serverName: 'mcp-fixture', message: 'URL', mode: 'url', elicitationId: 'url-id', url: 'http://127.0.0.1/' };
+    const pendingUrl = sdk.state.options.onElicitation(url, { requestId: 'url-id', signal: signal.signal });
+    expect(events).toContainEqual({ type: 'request', kind: 'elicitation', requestKey: 'elicitation:form-id', payload: { params: form } });
+    expect(events).toContainEqual({ type: 'request', kind: 'elicitation', requestKey: 'elicitation:url-id', payload: { params: url } });
+    await expect(inst.respond('elicitation:form-id', { action: 'accept' })).rejects.toThrow('只能取消');
+    await inst.respond('elicitation:form-id', { action: 'cancel' });
+    await expect(pending).resolves.toEqual({ action: 'cancel' });
+    expect(events).not.toContainEqual({ type: 'request.resolved', requestKey: 'elicitation:form-id' });
+    signal.abort();
+    await expect(pendingUrl).resolves.toEqual({ action: 'cancel' });
+    expect(events).toContainEqual({ type: 'request.resolved', requestKey: 'elicitation:url-id' });
+    await expect(inst.respond('elicitation:url-id', { action: 'cancel' })).rejects.toThrow('已结束');
+  } finally {
+    await inst.close();
+  }
+});
+
 describe('复核 1755：目标确认只认目标命令那一轮', () => {
   it('历史交接用 synthetic/shouldQuery=false 追加，不触发回合，也不改写随后 /goal 命令', async () => {
     const { inst, sdk, events } = make([ok('Goal set: exact goal')]);

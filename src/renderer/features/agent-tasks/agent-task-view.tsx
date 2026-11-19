@@ -482,49 +482,35 @@ function TurnRows({ group, stopping }: { group: TurnGroup; stopping: boolean }) 
   </div>;
 }
 
-/** Agent 提问与 MCP 表单（复核 CR09）：按请求种类填写，答案按各自协议回传。 */
+/** Agent 提问按各自原生协议回传答案。 */
 function RequestFormView({ form, busy, onSubmit }: { form: RequestForm; busy: boolean; onSubmit: (result: unknown) => void }) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [other, setOther] = useState<Record<string, string>>({});
-  const [values, setValues] = useState<Record<string, unknown>>({});
-  if (form.kind === 'questions') {
-    const final = () => Object.fromEntries(form.questions.map(q => [q.id, [...(answers[q.id] ?? []), ...(other[q.id]?.trim() ? [other[q.id].trim()] : [])]]));
-    const missing = form.questions.some(q => !(final()[q.id]?.length));
-    const select = (q: typeof form.questions[number], label: string) => setAnswers(a => {
-      const current = a[q.id] ?? [];
-      return { ...a, [q.id]: !q.multi ? [label] : current.includes(label) ? current.filter(x => x !== label) : [...current, label] };
-    });
-    const confirm = () => { if (!missing && !busy) onSubmit(form.toResult(final())); };
-    return <div className="agent-form" tabIndex={0} aria-label="回答 Agent 的问题" onKeyDown={e => {
-      if (busy || e.nativeEvent.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
-      const target = e.target as HTMLElement;
-      if (target.matches('button, textarea, input:not([type=radio]):not([type=checkbox])')) return;
-      if (e.key === 'Enter' && !missing) { e.preventDefault(); confirm(); return; }
-      if (!/^[1-9]$/.test(e.key)) return;
-      const index = target.closest<HTMLElement>('[data-question]')?.dataset.question;
-      const question = index !== undefined ? form.questions[Number(index)] : form.questions.find(q => !final()[q.id]?.length) ?? form.questions.at(-1);
-      const option = question?.options[Number(e.key) - 1];
-      if (question && option) { e.preventDefault(); select(question, option.label); }
-    }}>
-      {form.questions.map((q, i) => <fieldset key={q.id} data-question={i} className="agent-form-q"><legend>{q.header ? `${q.header} · ` : ''}{q.question}</legend>
-        {q.options.map((o, j) => { const on = (answers[q.id] ?? []).includes(o.label); return <label key={o.label} className={on ? 'on' : ''}>
-          <input type={q.multi ? 'checkbox' : 'radio'} name={q.id} checked={on} disabled={busy} onChange={() => select(q, o.label)} />
-          {j < 9 && <kbd aria-hidden>{j + 1}</kbd>}<span>{o.label}{o.description && <small>{o.description}</small>}</span></label>; })}
-        {q.allowOther && <input className="agent-form-other" type={q.secret ? 'password' : 'text'} placeholder={q.options.length ? '其他（自己填写）' : '你的回答'} value={other[q.id] ?? ''} onChange={e => setOther(o => ({ ...o, [q.id]: e.target.value }))} />}
-      </fieldset>)}
-      <div className="agent-form-actions"><span className="agent-request-hint">数字键选择 · Enter 确认</span><button type="button" disabled={busy} onClick={() => onSubmit(form.decline())}>不回答</button><button type="button" className="primary" disabled={busy || missing} onClick={confirm}>提交回答</button></div>
-    </div>;
-  }
-  const missing = form.fields.some(f => f.required && (values[f.name] === undefined || values[f.name] === ''));
-  return <div className="agent-form">
-    <p className="agent-form-message">{form.message}</p>
-    {form.url && <p className="agent-form-message">需要打开：<span className="agent-link-text">{form.url}</span></p>}
-    {form.fields.map(f => <label key={f.name} className="agent-form-field"><span>{f.title}{f.required ? ' *' : ''}</span>
-      {f.type === 'boolean' ? <input type="checkbox" checked={!!values[f.name]} onChange={e => setValues(v => ({ ...v, [f.name]: e.target.checked }))} />
-        : f.type === 'enum' ? <select value={String(values[f.name] ?? '')} onChange={e => setValues(v => ({ ...v, [f.name]: e.target.value }))}><option value="">请选择</option>{f.options!.map(o => <option key={o} value={o}>{o}</option>)}</select>
-          : <input type={f.type === 'number' ? 'number' : 'text'} value={String(values[f.name] ?? '')} onChange={e => setValues(v => ({ ...v, [f.name]: f.type === 'number' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value }))} />}
-    </label>)}
-    <div className="agent-form-actions"><button type="button" disabled={busy} onClick={() => onSubmit(form.toResult('decline', null))}>拒绝</button><button type="button" className="primary" disabled={busy || missing} onClick={() => onSubmit(form.toResult('accept', values))}>提交</button></div>
+  const final = () => Object.fromEntries(form.questions.map(q => [q.id, [...(answers[q.id] ?? []), ...(other[q.id]?.trim() ? [other[q.id].trim()] : [])]]));
+  const missing = form.questions.some(q => !(final()[q.id]?.length));
+  const select = (q: typeof form.questions[number], label: string) => setAnswers(a => {
+    const current = a[q.id] ?? [];
+    return { ...a, [q.id]: !q.multi ? [label] : current.includes(label) ? current.filter(x => x !== label) : [...current, label] };
+  });
+  const confirm = () => { if (!missing && !busy) onSubmit(form.toResult(final())); };
+  return <div className="agent-form" tabIndex={0} aria-label="回答 Agent 的问题" onKeyDown={e => {
+    if (busy || e.nativeEvent.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
+    const target = e.target as HTMLElement;
+    if (target.matches('button, textarea, input:not([type=radio]):not([type=checkbox])')) return;
+    if (e.key === 'Enter' && !missing) { e.preventDefault(); confirm(); return; }
+    if (!/^[1-9]$/.test(e.key)) return;
+    const index = target.closest<HTMLElement>('[data-question]')?.dataset.question;
+    const question = index !== undefined ? form.questions[Number(index)] : form.questions.find(q => !final()[q.id]?.length) ?? form.questions.at(-1);
+    const option = question?.options[Number(e.key) - 1];
+    if (question && option) { e.preventDefault(); select(question, option.label); }
+  }}>
+    {form.questions.map((q, i) => <fieldset key={q.id} data-question={i} className="agent-form-q"><legend>{q.header ? `${q.header} · ` : ''}{q.question}</legend>
+      {q.options.map((o, j) => { const on = (answers[q.id] ?? []).includes(o.label); return <label key={o.label} className={on ? 'on' : ''}>
+        <input type={q.multi ? 'checkbox' : 'radio'} name={q.id} checked={on} disabled={busy} onChange={() => select(q, o.label)} />
+        {j < 9 && <kbd aria-hidden>{j + 1}</kbd>}<span>{o.label}{o.description && <small>{o.description}</small>}</span></label>; })}
+      {q.allowOther && <input className="agent-form-other" type={q.secret ? 'password' : 'text'} placeholder={q.options.length ? '其他（自己填写）' : '你的回答'} value={other[q.id] ?? ''} onChange={e => setOther(o => ({ ...o, [q.id]: e.target.value }))} />}
+    </fieldset>)}
+    <div className="agent-form-actions"><span className="agent-request-hint">数字键选择 · Enter 确认</span><button type="button" disabled={busy} onClick={() => onSubmit(form.decline())}>不回答</button><button type="button" className="primary" disabled={busy || missing} onClick={confirm}>提交回答</button></div>
   </div>;
 }
 
@@ -667,7 +653,7 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
   };
   return <div className="agent-request" role="dialog" aria-label="待处理请求" tabIndex={-1} ref={panel} onKeyDown={onKey}>
     <div className="agent-request-head"><b>{head.title}</b>{r.ownerTaskId && <small>来自子任务 · {r.ownerName}</small>}{r.origin.nodeId && <small>来自执行器原生子 Agent</small>}{requests.length > 1 && <span className="agent-request-nav"><button type="button" onClick={() => setIndex(i => (i - 1 + requests.length) % requests.length)}>‹</button>{Math.min(index + 1, requests.length)}/{requests.length}<button type="button" onClick={() => setIndex(i => (i + 1) % requests.length)}>›</button></span>}{more > 0 && <small className="agent-request-more">另有 {more} 个请求，处理完前面的会继续显示</small>}</div>
-    {incomplete && <div className="agent-limited">{loaded === 'error' ? '请求内容过大或读取失败，只能拒绝或停止' : '正在读取完整内容，读完后才能批准…'}</div>}
+    {incomplete && <div className="agent-limited">{r.kind === 'elicitation' ? '完整请求详情暂不可用，可取消请求。' : loaded === 'error' ? '请求内容过大或读取失败，只能拒绝或停止' : '正在读取完整内容，读完后才能批准…'}</div>}
     {!form && head.detail && (r.kind !== 'plan_approval' || r.ownerTaskId || !r.origin.turnId || visiblePlans.get(r.origin.turnId) !== head.detail) && <pre className="agent-request-detail">{head.detail}</pre>}
     {(isMail || isBrowser) && hostStatus && <p className="agent-business-status" role="status">{hostStatus}</p>}
     {isBrowser && !incomplete && <BrowserAccessReview pages={r.payload.review?.pages} waitingForUser={phase === 'waiting_user'} />}
@@ -680,7 +666,7 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
     {typeof cwd === 'string' && cwd && <small className="agent-request-cwd">工作目录 · <code>{cwd}</code></small>}
     {form ? <RequestFormView key={reqKey} form={form} busy={busy} onSubmit={result => void send(result)} /> : <>
       <div className="agent-request-options" role="listbox">{options.map((o, i) => <button key={o.key} type="button" role="option" aria-label={o.label} aria-selected={selected?.key === o.key} disabled={disabled(o.key)} className={`${o.deny ? 'deny' : ''}${selected?.key === o.key ? ' on' : ''}${o.key === 'open-child' ? ' agent-child-request-link' : ''}`} onClick={() => setSelection({ request: reqKey, option: o.key })}><kbd>{i + 1}</kbd><span>{o.label}{optionNote(o.key, o.deny) && <small>{optionNote(o.key, o.deny)}</small>}</span></button>)}</div>
-      <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />
+      {r.kind !== 'elicitation' && <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />}
     </>}
     <div className="agent-request-foot">
       {!form && options.length > 0 && <span className="agent-request-hint">数字键选择 · Enter 确认</span>}
