@@ -1,0 +1,541 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App, actual Claude/Codex, loopback provider responses only, no protocol substitution",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-411/runtime-CKuUGy/home",
+    "at": "2026-11-19T10:19:03.481Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "codex-usage",
+  "sourceCommit": "3b769ef96372f0e36f1621ad34c3ebd113fd1b91",
+  "asar": "e60e2232b3267530f813e5ec8b58e718b47840c16aaccfeb61bf0c0862509c83",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-codex-absolute-usage-packaged.mjs": "0ae3b5565e8326eb9828b4f42504beae15525294acca6f0c4f80da5cd2dd0bbd",
+    "a60-prep/provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "a60-prep/pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665",
+    "a60-prep/codex-absolute-reset.mjs": "ad70f8cc3e3ec5142180292cfa4b27ea043ceb5c702433e4b3f7d685d12fd7d5"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"bcf4944f-3ecd-477a-b28d-03a4756ff785\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795083548110
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795083548245
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795083548251
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795083549434
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795083549439
+    },
+    {
+      "selector": ".agent-limit-card button.agent-inline-action",
+      "text": "继续",
+      "button": "left",
+      "x": 1193,
+      "y": 447.578125,
+      "at": 1795083574090
+    }
+  ],
+  "requests": [
+    {
+      "kind": "codex",
+      "model": "a60-codex-usage",
+      "lane": "warm",
+      "arrivedAt": 1795083549411,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only"
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-usage",
+      "lane": "exercise",
+      "arrivedAt": 1795083549738,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "1",
+          "x-codex-primary-used-percent": "100",
+          "x-codex-primary-window-minutes": "300",
+          "x-codex-primary-reset-at": "1795083572"
+        },
+        "body": {
+          "error": {
+            "type": "usage_limit_reached",
+            "code": "usage_limit_reached",
+            "message": "A60 local usage limit reached",
+            "plan_type": "plus",
+            "resets_at": 1795083572,
+            "resets_in_seconds": 23
+          }
+        }
+      }
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-usage",
+      "lane": "continue",
+      "arrivedAt": 1795083574259,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "source": "manual-continue"
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "passed",
+  "port": 3425,
+  "nativeAccountEvents": [
+    {
+      "at": 1795083549758,
+      "method": "account/rateLimits/updated",
+      "hasRpcId": false,
+      "rateLimits": {
+        "limitId": "codex",
+        "primary": {
+          "usedPercent": 100,
+          "windowDurationMins": 300,
+          "resetsAt": 1795083572
+        },
+        "secondary": null
+      }
+    },
+    {
+      "at": 1795083549758,
+      "method": "error",
+      "threadId": "01a1f351-38ce-7963-9803-21d2659d4f5c",
+      "turnId": "01a1f351-3c14-79c2-b0df-4ac37ee65453",
+      "code": "usageLimitExceeded",
+      "willRetry": false
+    },
+    {
+      "at": 1795083549758,
+      "method": "turn/completed",
+      "threadId": "01a1f351-38ce-7963-9803-21d2659d4f5c",
+      "turnId": "01a1f351-3c14-79c2-b0df-4ac37ee65453",
+      "code": "usageLimitExceeded",
+      "state": "failed"
+    },
+    {
+      "at": 1795083574277,
+      "method": "account/rateLimits/updated",
+      "hasRpcId": false,
+      "rateLimits": {
+        "limitId": "codex",
+        "primary": null,
+        "secondary": null
+      }
+    },
+    {
+      "at": 1795083574277,
+      "method": "turn/completed",
+      "threadId": "01a1f351-38ce-7963-9803-21d2659d4f5c",
+      "turnId": "01a1f351-9bd9-7a91-b7b3-bfa5ecf80cf1",
+      "code": null,
+      "state": "completed"
+    }
+  ],
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-411/runtime-CKuUGy/project",
+    "model": "a60-codex-usage",
+    "engine": "codex",
+    "expected": "usage"
+  },
+  "pid": 27340,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-411/runtime-CKuUGy/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-411/runtime-CKuUGy/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-411/runtime-CKuUGy/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    27340
+  ],
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.328"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "run": {
+      "runId": "af2f1dc7-e06e-4e0d-9d06-c70465c9373f",
+      "generation": 1,
+      "driverId": "codex-app-server",
+      "tier": "ask",
+      "defaultModel": "a60-codex-usage",
+      "models": [
+        {
+          "id": "a60-codex-usage",
+          "name": "a60-codex-usage",
+          "efforts": [],
+          "defaultEffort": "none"
+        }
+      ],
+      "busy": false,
+      "steer": true,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "goal",
+          "compact",
+          "review"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser",
+            "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug",
+            "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-mail-work-assistant",
+            "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-project-db-diagnostics",
+            "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-remote-password-ssh",
+            "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "imagegen",
+            "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+          },
+          {
+            "name": "openai-docs",
+            "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+          },
+          {
+            "name": "review-agent",
+            "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+          },
+          {
+            "name": "skill-creator",
+            "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+          },
+          {
+            "name": "skill-installer",
+            "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+          }
+        ]
+      }
+    },
+    "turnId": "e76d8249-8e72-476b-b3b8-216451dcc13e"
+  },
+  "nativeRateObserver": {
+    "armed": true,
+    "pid": 27482,
+    "stdoutDataListeners": 2
+  },
+  "terminal": {
+    "at": 1795083549761,
+    "turn": {
+      "turn_id": "a1ff7ee5-b97b-45b2-94a0-719c5ad59175",
+      "client_input_id": "in-c0714a35cb32491799d912b070882fe6",
+      "status": "failed",
+      "native_turn_id": "01a1f351-3c14-79c2-b0df-4ac37ee65453",
+      "accepted_at": "2026-11-19T10:19:09.441Z",
+      "started_at": "2026-11-19T10:19:09.718Z",
+      "ended_at": "2026-11-19T10:19:09.757Z",
+      "error_code": "{\"message\":\"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 6:19 PM.\",\"codexErrorInfo\":",
+      "run_id": "af2f1dc7-e06e-4e0d-9d06-c70465c9373f",
+      "source_kind": "user"
+    },
+    "status": "limited",
+    "run": {
+      "runId": "af2f1dc7-e06e-4e0d-9d06-c70465c9373f",
+      "generation": 1,
+      "driverId": "codex-app-server",
+      "tier": "ask",
+      "defaultModel": "a60-codex-usage",
+      "models": [
+        {
+          "id": "a60-codex-usage",
+          "name": "a60-codex-usage",
+          "efforts": [],
+          "defaultEffort": "none"
+        }
+      ],
+      "busy": false,
+      "steer": true,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "goal",
+          "compact",
+          "review"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser",
+            "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug",
+            "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-mail-work-assistant",
+            "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-project-db-diagnostics",
+            "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-remote-password-ssh",
+            "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "imagegen",
+            "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+          },
+          {
+            "name": "openai-docs",
+            "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+          },
+          {
+            "name": "review-agent",
+            "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+          },
+          {
+            "name": "skill-creator",
+            "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+          },
+          {
+            "name": "skill-installer",
+            "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+          }
+        ]
+      }
+    },
+    "turns": [
+      {
+        "id": "e76d8249-8e72-476b-b3b8-216451dcc13e",
+        "status": "completed",
+        "source": "user"
+      },
+      {
+        "id": "a1ff7ee5-b97b-45b2-94a0-719c5ad59175",
+        "status": "failed",
+        "source": "user"
+      }
+    ],
+    "pending": 0,
+    "items": [
+      {
+        "itemId": "59d126da-3f9d-4ad3-a8f4-116185c5479a",
+        "type": "user_message",
+        "payload": {
+          "text": "A60_PACKAGE_LIMIT",
+          "sourceKind": "user"
+        }
+      },
+      {
+        "itemId": "e3a7bd3e-a361-4c39-926b-60f473c2b6e5",
+        "type": "error",
+        "payload": {
+          "code": "usageLimitExceeded",
+          "message": "You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 6:19 PM.",
+          "limited": {
+            "kind": "usage",
+            "resetAt": "2026-11-19T10:19:32.000Z"
+          }
+        }
+      }
+    ],
+    "originalRequests": 1,
+    "nativeInTurnOutputResumes": 0
+  },
+  "terminalUi": {
+    "cards": [
+      {
+        "text": "额度已用完\n本轮已暂停，部分结果已保留。可在 2026-11-19T10:19:32.000Z 后手动继续（不会自动换账号或到点重跑）。\n继续",
+        "buttons": [
+          "继续"
+        ]
+      }
+    ],
+    "taskText": "A60 isolated codex-usage\n受限\n插件 2\n单 Agent · 开启委派\nA60_PACKAGE_WARM\n\nA60_PACKAGE_WARM_DONE\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nMCP 启动 · wy_9c002254ded13a9c16ba679b\nMCP 启动 · smartdd_project_9c002254ded1\nA60_PACKAGE_LIMIT\n额度已用完\n本轮已暂停，部分结果已保留。可在 2026-11-19T10:19:32.000Z 后手动继续（不会自动换账号或到点重跑）。\n继续\n已暂停 · 共工作 0 秒\n请求批准\n帮我批准\n完全访问\nFixture codex\na60-codex-usage"
+  },
+  "nativeProjection": [
+    {
+      "kind": "usage",
+      "resetAt": "2026-11-19T10:19:32.000Z",
+      "code": "usageLimitExceeded",
+      "itemId": "e3a7bd3e-a361-4c39-926b-60f473c2b6e5"
+    }
+  ],
+  "card": {
+    "text": "额度已用完\n本轮已暂停，部分结果已保留。可在 2026-11-19T10:19:32.000Z 后手动继续（不会自动换账号或到点重跑）。\n继续",
+    "buttons": [
+      "继续"
+    ]
+  },
+  "resumeWatch": {
+    "requestedProviderReset": 1795083572,
+    "displayed": "2026-11-19T10:19:32.000Z",
+    "crossedActualDisplayedReset": true,
+    "crossedFixtureAbsoluteReset": true,
+    "startedAt": 1795083549820,
+    "finishedAt": 1795083574086
+  },
+  "nativeStructuredReset": {
+    "at": 1795083549758,
+    "method": "account/rateLimits/updated",
+    "hasRpcId": false,
+    "rateLimits": {
+      "limitId": "codex",
+      "primary": {
+        "usedPercent": 100,
+        "windowDurationMins": 300,
+        "resetsAt": 1795083572
+      },
+      "secondary": null
+    }
+  },
+  "handRecovery": {
+    "clickedAt": 1795083574090,
+    "resumed": {
+      "newTurn": {
+        "turn_id": "123667a2-8456-4eb4-bb50-b9ed6727a95a",
+        "client_input_id": "in-b048c853327b482d8a3d1a4b60436214",
+        "status": "completed",
+        "native_turn_id": "01a1f351-9bd9-7a91-b7b3-bfa5ecf80cf1",
+        "accepted_at": "2026-11-19T10:19:34.092Z",
+        "started_at": "2026-11-19T10:19:34.235Z",
+        "ended_at": "2026-11-19T10:19:34.277Z",
+        "error_code": null,
+        "run_id": "af2f1dc7-e06e-4e0d-9d06-c70465c9373f",
+        "source_kind": "user"
+      },
+      "status": "completed",
+      "run": {
+        "runId": "af2f1dc7-e06e-4e0d-9d06-c70465c9373f",
+        "generation": 1,
+        "driverId": "codex-app-server",
+        "tier": "ask",
+        "defaultModel": "a60-codex-usage",
+        "models": [
+          {
+            "id": "a60-codex-usage",
+            "name": "a60-codex-usage",
+            "efforts": [],
+            "defaultEffort": "none"
+          }
+        ],
+        "busy": false,
+        "steer": true,
+        "goal": true,
+        "catalog": {
+          "commands": [
+            "goal",
+            "compact",
+            "review"
+          ],
+          "skills": [
+            {
+              "name": "willyou-browser-browser",
+              "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+            },
+            {
+              "name": "willyou-browser-reproduce-bug",
+              "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+            },
+            {
+              "name": "willyou-mail-work-assistant",
+              "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+            },
+            {
+              "name": "willyou-project-db-diagnostics",
+              "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+            },
+            {
+              "name": "willyou-remote-password-ssh",
+              "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+            },
+            {
+              "name": "imagegen",
+              "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+            },
+            {
+              "name": "openai-docs",
+              "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+            },
+            {
+              "name": "review-agent",
+              "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+            },
+            {
+              "name": "skill-creator",
+              "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+            },
+            {
+              "name": "skill-installer",
+              "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+            }
+          ]
+        }
+      },
+      "pending": 0
+    }
+  },
+  "boundary": {
+    "noOutsideCalls": true,
+    "onlySyntheticProviderResponse": true,
+    "noInjectedNativeEvent": true,
+    "nativeRetriesBeforeTerminal": 0
+  },
+  "preQuit": {
+    "at": "2026-11-19T10:19:34.345Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-411/quit-phase.jsonl",
+  "exit": {
+    "pid": 27340,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}
