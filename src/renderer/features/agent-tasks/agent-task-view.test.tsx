@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), saveProjectPlan: vi.fn(), toast: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
 vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh: vi.fn() } }));
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
@@ -1030,4 +1030,27 @@ describe.each([
       expect(within(turn).queryByRole('button',{name:title})).toBeNull();
     }
   });
+});
+
+it('A69 blocks a known executor command the current executor has not published instead of sending it as text (D06-65)', async () => {
+  const run = { runId:'r', generation:1, driverId:'codex-app-server', tier:'ask', busy:false, steer:false, goal:true, catalog:{ commands:['goal','compact','review'], skills:[] } };
+  mocks.snapshot.mockResolvedValue(snapshot({ run }));
+  mocks.command.mockResolvedValue({ ok:true });
+  const { container } = render(<AgentTaskView taskId="task" />);
+  const composer = await screen.findByPlaceholderText('随心输入') as HTMLTextAreaElement;
+  const submit = () => fireEvent.click(container.querySelector('.agent-composer button[type="submit"]')!);
+  fireEvent.change(composer, { target:{ value:'/init' } });
+  submit();
+  await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('/init')));
+  expect(mocks.submit).not.toHaveBeenCalled();
+  expect(mocks.command).not.toHaveBeenCalled();
+  expect(composer.value).toBe('/init');
+  // A published command still goes through the native command path, and ordinary text starting with a slash is not blocked.
+  fireEvent.change(composer, { target:{ value:'/review' } });
+  submit();
+  await waitFor(() => expect(mocks.command).toHaveBeenCalledWith('task','review',undefined));
+  mocks.submit.mockResolvedValue({ status:'accepted', turnId:'t' });
+  fireEvent.change(composer, { target:{ value:'/tmp 满了' } });
+  submit();
+  await waitFor(() => expect(mocks.submit).toHaveBeenCalledWith('task', expect.objectContaining({ text:'/tmp 满了' })));
 });

@@ -1209,6 +1209,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       const nativeCmd = !goalCmd && /^\/([A-Za-z0-9_:.-]+)(?:\s+([\s\S]*))?$/.exec(value);
       // 命令不支持附件：提示并完整保留，不能成功后把附件丢掉（复核 NR10）。
       if ((goalCmd || (nativeCmd && catalog.commands.map(c => c.replace(/^\//, '')).includes(nativeCmd[1]))) && attachments.length) { toast.warning('命令不能带附件，附件已保留；请去掉命令或附件后再发送'); return; }
+      // Known executor commands the current executor has not published must not reach the model as text (A69, D06-65).
+      if (nativeCmd && ['compact', 'review', 'init'].includes(nativeCmd[1]) && !catalog.commands.map(c => c.replace(/^\//, '')).includes(nativeCmd[1])) { toast.warning(`当前执行器没有公布 /${nativeCmd[1]} 命令，未发送`); return; }
       if (nativeCmd && catalog.commands.map(c => c.replace(/^\//, '')).includes(nativeCmd[1])) {
         await rpc.agentTasks.command(taskId, nativeCmd[1], (nativeCmd[2] ?? '').trim() || undefined);
       } else if (goalCmd) {
