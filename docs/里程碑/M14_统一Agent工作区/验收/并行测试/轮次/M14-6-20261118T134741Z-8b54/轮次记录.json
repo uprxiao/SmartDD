@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T18:42:00+08:00",
+  "updatedAt": "2026-11-19T19:00:15+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -739,6 +739,60 @@
       ],
       "result": "424 将超时定位到测试 SMTP 连接时的 macOS 钥匙串授权等待，主线程采样进入 SecItemAdd／makeLoginAuthUI。未发送邮件，待用户参与系统授权后继续。",
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/e66f5a85b/A41-mail-keychain/README.md"
+    },
+    {
+      "case": "M14-A66",
+      "package": "3b769ef96",
+      "asar": "e60e2232b3267530f813e5ec8b58e718b47840c16aaccfeb61bf0c0862509c83",
+      "attempts": [
+        "g03/attempt-510..518"
+      ],
+      "result": "515／516／518 的三处真实重启已独立核对，自动恢复后各一次提交、结果与原生通知，原分支保持；恢复后的侧栏界面未通过，仍待补验。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/3b769ef96/A66-restart-checkpoints/README.md"
+    },
+    {
+      "case": "M14-A66",
+      "package": "3b769ef96",
+      "asar": "e60e2232b3267530f813e5ec8b58e718b47840c16aaccfeb61bf0c0862509c83",
+      "attempts": [
+        "g03/attempt-519..521"
+      ],
+      "result": "all three automatic recovery checkpoints and actual restored timeline passed; formal A66 still partial",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/3b769ef96/A66-restart-checkpoints/README.md"
+    },
+    {
+      "case": "M14-A08",
+      "package": "e66f5a85b",
+      "asar": "7d6df6efc403b7e455789c492bbcc37eae74e13d7729812a75def4e3bdfd6e40",
+      "attempts": [
+        "g03/attempt-425",
+        "local-model/probe-01"
+      ],
+      "result": "本机真实模型预检同时通过 Messages／Responses 工具调用。425 真实 Claude 选择 Skill 后模型误尝试委派，被宿主拒绝，未执行相对脚本。继续迭代本机测试，不计整条通过。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/e66f5a85b/A08-local-model-probe/README.md"
+    },
+    {
+      "case": "M14-A70",
+      "package": "e66f5a85b",
+      "asar": "7d6df6efc403b7e455789c492bbcc37eae74e13d7729812a75def4e3bdfd6e40",
+      "attempts": [
+        "g04/attempt-540",
+        "g04/attempt-544",
+        "g04/attempt-548"
+      ],
+      "result": "548 发现 D06-71：同一 Codex 原生目标重开时的暂停消息把等待子任务误记成用户暂停，导致漏恢复。544 的即时暂停及孤立回合排空证据保留。旧包反例和红测已归档。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/e66f5a85b/A70-codex-paused-goal-red/README.md"
+    },
+    {
+      "case": "M14-A70",
+      "defect": "M14-D06-71",
+      "package": "fc61d9dcd",
+      "asar": "3fe7e5cb995ffed2de34ec9fc393b6450e2feb414fee0e5c2ff44a85ba7a1427",
+      "attempts": [
+        "g04/attempt-552"
+      ],
+      "result": "fc61d9dcd 新包 552 实际同目标恢复，两条原生结果通知正常结束，同仓独立目标保持。D06-71 已关闭；正式 A70 的其他组合待验。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/fc61d9dcd/A70-codex-paused-goal/README.md"
     }
   ]
 }
