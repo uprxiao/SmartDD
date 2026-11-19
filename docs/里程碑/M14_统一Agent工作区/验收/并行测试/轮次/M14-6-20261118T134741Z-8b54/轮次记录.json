@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T19:00:15+08:00",
+  "updatedAt": "2026-11-19T19:22:07+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -793,6 +793,66 @@
       ],
       "result": "fc61d9dcd 新包 552 实际同目标恢复，两条原生结果通知正常结束，同仓独立目标保持。D06-71 已关闭；正式 A70 的其他组合待验。",
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/fc61d9dcd/A70-codex-paused-goal/README.md"
+    },
+    {
+      "case": "M14-A70",
+      "package": "fc61d9dcd",
+      "asar": "3fe7e5cb995ffed2de34ec9fc393b6450e2feb414fee0e5c2ff44a85ba7a1427",
+      "attempts": [
+        "g04/attempt-553",
+        "g04/attempt-554",
+        "g04/attempt-556",
+        "g04/attempt-557",
+        "g04/attempt-558",
+        "g04/attempt-559"
+      ],
+      "result": "554 Codex SVN 恢复、556 等待中用户停止均完整通过。557 的原生取消结果实际送达，后续夹具误拒自动回合。558、559 分别保留失败唤醒／Claude 辅助流缺项。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/fc61d9dcd/A70-svn-and-stop/README.md"
+    },
+    {
+      "case": "M14-A34",
+      "source": "fc61d9dcd",
+      "attempts": [
+        "g04/prep-next/a34/integration-verdict.json"
+      ],
+      "result": "补跑真实 Worker／SQLite／Git 的小预算 I：全读租约时明确提示空间满，释放后真实捕获，归档优先且按最旧回收。实包多租约、代表性样本及其他预算边界仍待验。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/fc61d9dcd/A34-shadow-lease-integration/README.md"
+    },
+    {
+      "case": "M14-A70",
+      "source": "fc61d9dcd",
+      "attempts": [
+        "g04/attempt-562..566"
+      ],
+      "result": "562–564 的旧 argv 探针误判。真实原生会话证明 Claude Git／SVN 正常恢复，564 实际请求等待 61,070 毫秒后获批。565／566 的实际取消、失败结果唤醒均通过。冷启动和 R 层仍待。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/fc61d9dcd/A70-stop-hook-and-terminal-children/README.md"
+    },
+    {
+      "case": "M14-A72",
+      "source": "fc61d9dcd",
+      "attempts": [],
+      "result": "只读对照发现 A72 的独立 Git 安装期间固定等待与 G3/R06 现行互不阻塞规则不一致，登记为用例口径待核对。方案 B 真实等待的执行预算规则保留。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/fc61d9dcd/A72-budget-contract/README.md"
+    },
+    {
+      "case": "M14-A66",
+      "package": "fc61d9dcd",
+      "asar": "3fe7e5cb995ffed2de34ec9fc393b6450e2feb414fee0e5c2ff44a85ba7a1427",
+      "attempts": [
+        "g03/attempt-523..527"
+      ],
+      "result": "526 真实安装超时达 119,732 毫秒才退出，子任务启动、单次提交和父通知均通过，App 退出 0。显式路径已单独拒绝且正常参数可委派，同名第二副本仍待界面补验。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/fc61d9dcd/A66-install-timeout-and-path/README.md"
+    },
+    {
+      "case": "M14-A08",
+      "package": "fc61d9dcd",
+      "asar": "3fe7e5cb995ffed2de34ec9fc393b6450e2feb414fee0e5c2ff44a85ba7a1427",
+      "attempts": [
+        "g03/attempt-426..428"
+      ],
+      "result": "428 Claude 本机真实模型从 `$` 菜单使用纳管 Skill，实际运行相对程序并回报一致结果。Codex 在该本机供应商的工具声明兼容处失败，更新／删除继续待验。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/fc61d9dcd/A08-real-local-claude/README.md"
     }
   ]
 }
