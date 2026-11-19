@@ -34,6 +34,7 @@ export interface OpenRunInput {
   defaultModel?: string;
   modelsWithoutImageInput?: ReadonlySet<string>;
   assertCurrent?(): void;
+  startCancelled?(): boolean;
   stopWhenWaiting?(): boolean;
   readOnly?: boolean;
   integrate?(context: { runId: string; bindingId: string; generation: number; nativeId?: string }): Promise<RunIntegration | undefined>;
@@ -93,16 +94,22 @@ export class AgentRunService {
     run.opening = true;
     run.assertCurrent = input.assertCurrent;
     instance.on(e => this.onDriverEvent(run, e));
+    const assertStarting = () => {
+      if (run.closing || input.startCancelled?.()) throw new DriverError('STATE', '启动已停止');
+    };
     let forkAttempted = false;
     try {
       run.integration = await input.integrate?.({ runId, bindingId, generation, nativeId: resumeNativeId });
+      assertStarting();
       const finalLaunchHash = sha256(JSON.stringify({ initial: launchPlanHash, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], envNames: Object.keys({ ...input.env, ...run.integration?.env }).sort(), mcp: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skills: run.integration?.skillRoots, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions }));
       if (store.sqlite.prepare("UPDATE capability_runs SET launch_plan_hash=? WHERE run_id=? AND launch_plan_hash=? AND state IN ('preparing','prepared') AND pid IS NULL").run(finalLaunchHash, runId, launchPlanHash).changes !== 1) throw new DriverError('REJECTED', '启动计划已变化或已经启动');
       if (!run.integration) store.freezeNativeRun(runId, { version: input.executable.version, capabilities, launchPlanHash: finalLaunchHash });
       await run.integration?.beforeFork();
+      assertStarting();
       forkAttempted = true;
-      const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), beforeInitialize: async () => { await run.registration; } });
+      const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, beforeInitialize: async () => { await run.registration; assertStarting(); } });
       await run.registration;
+      assertStarting();
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
       run.opening = false;
       const optional = [['mcp', 'MCP 业务通道'], ['resume', '原生会话恢复'], ['steer', '插话'], ['skills', 'Skill 目录'], ['approvalsReviewer', '审批审阅档位']] as const;
@@ -116,13 +123,14 @@ export class AgentRunService {
         store.tx(emit => emit(run.taskId, 'run.models', {}));
       }).catch(() => { /* 未公布的可选设置不应用，界面明确说明 */ });
     } catch (e) {
-      // 打开失败也按真实退出收口（复核 NR02）：先关闭；观察到退出才记失败并释放，否则保留 stopping 占用。
+      // 已启动原生进程时，取消和打开失败都按真实退出收口（复核 NR02）。
       run.closing = true;
-      run.openError = !forkAttempted ? 'OPEN_FAILED_UNFORKED' : e instanceof DriverError ? e.code : 'OPEN_FAILED';
+      const cancelled = input.startCancelled?.() === true;
+      run.openError = cancelled ? undefined : !forkAttempted ? 'OPEN_FAILED_UNFORKED' : e instanceof DriverError ? e.code : 'OPEN_FAILED';
       await instance.close().catch(() => {});
       if (!store.run(runId)?.pid) await run.integration?.cancelBeforeFork().catch(() => {});
       if (this.runs.has(runId)) {
-        if (!store.run(runId)?.pid) { store.finishRun(runId, input.taskId, 'failed', !forkAttempted ? 'OPEN_FAILED_UNFORKED' : e instanceof DriverError ? e.code : 'OPEN_FAILED'); this.runs.delete(runId); run.markEnded(); }
+        if (!store.run(runId)?.pid) { store.finishRun(runId, input.taskId, cancelled ? 'stopped' : 'failed', run.openError ?? null); this.runs.delete(runId); run.markEnded(); }
         else store.markRunStopping(runId, input.taskId);
       }
       throw e;

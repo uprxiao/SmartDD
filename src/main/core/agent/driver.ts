@@ -36,6 +36,7 @@ export interface DriverOpenOptions {
   /** Host-enforced role, independent of permission tier. */
   readOnly?: boolean;
   requiredMcpServers?: readonly string[];
+  assertStarting?(): void;
   beforeInitialize?(): Promise<void>;
   signal?: AbortSignal;
 }

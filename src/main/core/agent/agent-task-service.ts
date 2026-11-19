@@ -477,7 +477,10 @@ export class AgentTaskService {
 
   /** 打开或恢复本任务的运行（不派发输入）。 */
   private async ensureRun(taskId: string) {
+    const seq = this.stopSeq.get(taskId) ?? 0;
+    const startCancelled = () => (this.stopSeq.get(taskId) ?? 0) !== seq;
     if (this.coordination && !await this.coordination.beforeDispatch(taskId)) throw new DriverError('STATE', '正在等待工作目录写入资格，请稍后再执行命令');
+    if (startCancelled()) throw new DriverError('STATE', '启动已停止');
     const existing = this.d.runs.runForTask(taskId);
     if (existing) {
       try { existing.assertCurrent?.(); return existing; }
@@ -486,6 +489,7 @@ export class AgentTaskService {
     const { task, selection } = this.selection(taskId);
     // 不带当前选择解析启动参数，得到档案自己的默认模型；“恢复默认”用它（复核 NR05）。
     const launch = await this.d.resolveLaunch({ taskId, profileId: selection.profileId, cwd: task.cwd, runId: randomUUID(), carryExtensions: selection.carryExtensions });
+    if (startCancelled()) throw new DriverError('STATE', '启动已停止');
     if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
     if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一运行仍在退出，请稍后');
     const assertCurrent = () => {
@@ -493,7 +497,7 @@ export class AgentTaskService {
       launch.assertCurrent?.();
     };
     assertCurrent();
-    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
+    await this.d.runs.open({ taskId, driverId: launch.driverId, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, startCancelled, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
     this.coordination?.opened(taskId, this.d.runs.runForTask(taskId)!);
     return this.d.runs.runForTask(taskId)!;
   }
@@ -578,6 +582,7 @@ export class AgentTaskService {
       selection = this.selection(taskId).selection;
       // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
       if (run && run.driverId === 'claude-sdk' && run.tier !== selection.tier) { await this.d.runs.close(run.runId); run = undefined; }
+      if (stoppedSince()) return;
       run = await this.ensureRun(taskId);
       await this.business?.bindPending(taskId,run);
       this.gateTier(run, selection.tier as Tier);
@@ -611,13 +616,12 @@ export class AgentTaskService {
       if (stoppedSince()) await this.d.runs.interrupt(run.runId).catch(() => {});
     } catch (e) {
       if (transfer) this.handoffs.delivered(transfer.id, e instanceof DriverError && ['REJECTED', 'STATE', 'UNSUPPORTED'].includes(e.code) ? 'unsent' : 'unknown');
+      if (stoppedSince()) return;
       const t = this.d.store.turn(next.turn_id);
       // 驱动在发送前拒绝且已放回排队（原生仍在跑）：等该回合结束后由 turn.ended 再派发，不算失败。
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.runForTask(taskId)) return;
       // 上一运行已不可用、仍在等真实退出：输入保留但暂停，明确告知原因；退出后自动恢复派发（复核 NR04）。
       if (e instanceof DriverError && e.code === 'STATE' && t?.status === 'accepted' && this.d.runs.closingForTask(taskId)) {
-        // 本次尝试开始后已按停止：保持暂停，不取得退出后自动恢复的资格（复核 SR01）。
-        if (stoppedSince()) return;
         // 恢复资格绑定本次尝试开始时的停止序号；之后任何停止都会使它失效。
         if (!this.blockedByClosing.has(taskId)) { this.blockedByClosing.set(taskId, seq); this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { severity: 'warning', code: 'waitingPreviousRun', detail: '上一会话已不可用、正在等待它退出；输入已保留，退出后会自动发送。也可以取消这条输入。' }); }
         this.paused.add(taskId);

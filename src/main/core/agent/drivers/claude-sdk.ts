@@ -98,6 +98,7 @@ export class ClaudeSdkInstance implements DriverInstance {
     this.tier = o.tier;
     this.model = o.model;
     const queryFn = await this.sdk();
+    o.assertStarting?.();
     this.input = new InputQueue();
     const nativeId = o.resumeNativeId ?? randomUUID();
     this.sessionId = nativeId;
@@ -130,6 +131,7 @@ export class ClaudeSdkInstance implements DriverInstance {
       onElicitation: this.onElicitation,
       stderr: (data: string) => this.emitter.emit({ type: 'diagnostic', message: data.slice(0, 4000) }),
       spawnClaudeCodeProcess: (s: { command: string; args: string[]; cwd?: string; env: Record<string, string | undefined>; signal?: AbortSignal }) => {
+        o.assertStarting?.();
         const child = spawn(s.command, s.args, { cwd: s.cwd, env: s.env as NodeJS.ProcessEnv, signal: s.signal, detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] });
         this.child = child;
         child.stderr?.on('data', (b: Buffer) => this.emitter.emit({ type: 'diagnostic', message: b.toString('utf8').slice(0, 4000) }));

@@ -46,6 +46,43 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
 }
 const id = (n: number) => `client-input-${n}`;
 
+it.each(['integrate', 'beforeFork'] as const)('A04 cancels a stopped run without forking during %s', async phase => {
+  const { svc, store, runs, insts } = setup();
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'prepare and stop', profileId: 'cc', tier: 'ask' });
+  let entered!: () => void;
+  let release!: () => void;
+  const reached = new Promise<void>(resolve => { entered = resolve; });
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const waitAtGate = () => { entered(); return gate; };
+  const cancelBeforeFork = vi.fn(async () => {});
+  const beforeFork = vi.fn(async () => { if (phase === 'beforeFork') await waitAtGate(); });
+  const resolveLaunch = (svc as unknown as { d: { resolveLaunch: LaunchResolver } }).d;
+  const original = resolveLaunch.resolveLaunch;
+  vi.spyOn(resolveLaunch, 'resolveLaunch').mockImplementationOnce(async params => ({
+    ...await original(params),
+    integrate: async () => {
+      if (phase === 'integrate') await waitAtGate();
+      return { beforeFork, cancelBeforeFork, attached: async () => {}, exited: async () => {} };
+    },
+  }));
+  const receipt = await svc.submit(taskId, { clientInputId: id(49), text: 'still in the queue', expectedSelectionRevision: 1 });
+  await reached;
+  const run = runs.runForTask(taskId)!;
+  const open = vi.spyOn(insts[0], 'open');
+  vi.spyOn(insts[0], 'close').mockResolvedValueOnce();
+  expect(store.run(run.runId)?.pid).toBeNull();
+  await expect(svc.stop(taskId)).resolves.toEqual({ stopped: true });
+  release();
+  await until(() => open.mock.calls.length > 0 || store.run(run.runId)?.state === 'stopped');
+
+  expect(open).not.toHaveBeenCalled();
+  expect(beforeFork).toHaveBeenCalledTimes(phase === 'beforeFork' ? 1 : 0);
+  expect(cancelBeforeFork).toHaveBeenCalledOnce();
+  expect(store.run(run.runId)).toMatchObject({ state: 'stopped', pid: null, error_code: null });
+  expect(store.turn(receipt.turnId)?.status).toBe('accepted');
+  expect(svc.snapshot(taskId).items.filter(item => item.type === 'error')).toEqual([]);
+});
+
 it('A71 saves the complete current plan of the selected project task only', async () => {
   const artifactDir = mkdtempSync(join(tmpdir(), 'willyou-a71-plan-'));
   try {
@@ -331,7 +368,7 @@ describe('复核 1620 回归', () => {
     expect(insts[0].turns.map(t => t.text)).toEqual(['a']);
     expect(db.prepare('SELECT status FROM agent_turns WHERE client_input_id=?').get(id(2))).toEqual({ status: 'unknown' });
   });
-  it('CR03：启动运行期间按停止，返回后不派发；停止后的目标自行回合立即中断', async () => {
+  it('CR03：档案解析期间按停止，解析完成后不创建运行或派发输入', async () => {
     let release!: () => void;
     const gate = new Promise<void>(r => { release = r; });
     const { svc, insts } = setup({ openGate: gate });
@@ -339,13 +376,21 @@ describe('复核 1620 回归', () => {
     await svc.submit(taskId, { clientInputId: id(1), text: 'do work', expectedSelectionRevision: 1 });
     expect(await svc.stop(taskId)).toEqual({ stopped: true });
     release();
-    await until(() => insts.length === 1);
-    await new Promise(res => setTimeout(res, 30));
-    expect(insts[0].turns).toEqual([]);
+    await until(() => !svc.isDispatching(taskId));
+    expect(insts).toHaveLength(0);
     expect(svc.snapshot(taskId).queued.map(q => q.text)).toEqual(['do work']);
-    // 目标被用户停止后，迟到的自行回合到达立即中断
+  });
+  it('CR03：已经打开的运行按停止后，迟到的目标自行回合立即中断', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
+    await svc.submit(taskId, { clientInputId: id(1), text: 'do work', expectedSelectionRevision: 1 });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].finish();
+    await until(() => svc.status(taskId) === 'completed');
+    expect(await svc.stop(taskId)).toEqual({ stopped: true });
+    const interrupts = insts[0].interrupts;
     insts[0].emit({ type: 'turn.started', nativeTurnId: 'late-auto', clientInputId: '' });
-    await until(() => insts[0].interrupts === 1);
+    await until(() => insts[0].interrupts === interrupts + 1);
   });
   it('CR04：关闭后进程未退出则保留占用（stopping），同任务不能开新运行', async () => {
     const { svc, insts, db, runs } = setup();

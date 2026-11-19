@@ -103,6 +103,19 @@ describe('Codex 投影', () => {
 });
 
 describe('复核 1755 投影回归', () => {
+  it('A60 maps the Codex terminal output limit without relabeling other or context errors', () => {
+    const p = new TimelineProjector('codex-app-server');
+    const error = (message: string, codexErrorInfo: string) => p.project({
+      type: 'native', name: 'error',
+      payload: { turnId: 'turn', error: { message, codexErrorInfo, additionalDetails: null }, willRetry: false },
+    })[0];
+    expect(error('Incomplete response returned, reason: max_output_tokens', 'other')).toMatchObject({
+      type: 'error', payload: { code: 'other', limited: { kind: 'output' } },
+    });
+    expect(error('Incomplete response returned, reason: content_filter', 'other')?.payload).not.toHaveProperty('limited');
+    expect(error('max_output_tokens mentioned in an ordinary error', 'other')?.payload).not.toHaveProperty('limited');
+    expect(error('Context window too large', 'contextWindowExceeded')?.payload).toMatchObject({ limited: { kind: 'context' } });
+  });
   it('NR08：Claude 额度拒绝与输出上限标为受限并保留重置时间', () => {
     const p = new TimelineProjector('claude-sdk');
     const a = p.project({ type: 'native', name: 'rate_limit_event', payload: { type: 'rate_limit_event', uuid: 'r', rate_limit_info: { status: 'rejected', resetsAt: 1800000000, rateLimitType: 'five_hour' } } });

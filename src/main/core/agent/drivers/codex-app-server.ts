@@ -52,6 +52,7 @@ export class CodexAppServerInstance implements DriverInstance {
     this.secrets = Object.entries(o.env).filter(([name]) => /KEY|TOKEN|PASSWORD|SECRET/.test(name)).map(([,value]) => value).filter(Boolean);
     this.cwd = o.cwd; this.readOnly = o.readOnly === true;
     this.turnCliPermissions = !this.readOnly && codexSupportsTurnPermissions(o.executable.version) ? o.codexCliPermissions : undefined;
+    o.assertStarting?.();
     const child = this.spawnFn(o.executable.path, ['app-server', ...(o.extraArgs ?? []), ...(this.readOnly ? ['-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'] : [])], { cwd: o.cwd, env: o.env });
     this.child = child;
     child.stderr?.on('data', (b: Buffer) => { const message = redact(b.toString('utf8'), this.secrets); this.stderrTail = (this.stderrTail + message).slice(-2000); this.emitter.emit({ type: 'diagnostic', message: message.slice(0, 4000) }); });
@@ -78,6 +79,7 @@ export class CodexAppServerInstance implements DriverInstance {
     const work = (async () => {
       await o.beforeInitialize?.();
       await this.rpc!.call('initialize', { clientInfo: { name: 'willyou', version: '1' }, capabilities: { experimentalApi: true } });
+      o.assertStarting?.();
       this.rpc!.notify('initialized');
       if (o.resumeNativeId && o.recoverGoals) {
         const state = await this.rpc!.call<{ goal?: { objective: string; status: string; createdAt: number; updatedAt: number } | null }>('thread/goal/get', { threadId: o.resumeNativeId });
@@ -97,14 +99,17 @@ export class CodexAppServerInstance implements DriverInstance {
         ? { permissions: o.codexCliPermissions }
         : { sandbox: this.readOnly ? 'read-only' : SANDBOX_MODE[tier.sandboxPolicy.type] };
       const common = { cwd: o.cwd, approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, ...sandbox };
+      o.assertStarting?.();
       const r = o.resumeNativeId
         ? await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/resume', { threadId: o.resumeNativeId, excludeTurns: true, ...common, ...(o.model ? { model: o.model } : {}) })
         : await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/start', common);
+      o.assertStarting?.();
       if (!r?.thread?.id) throw new DriverError('PROTOCOL', 'thread 响应缺少 id');
       this.threadId = r.thread.id;
       for (const name of o.requiredMcpServers ?? []) {
         const deadline = Date.now() + 35_000;
         while (true) {
+          o.assertStarting?.();
           const status = await this.rpc!.call<{ data?: { name: string; runtimeStatus?: string; toolsError?: string; tools?: Record<string, unknown> }[] }>('mcpServerStatus/list', { threadId: r.thread.id, serverName: name, detail: 'full' }, 30_000);
           const server = status.data?.find(s => s.name === name);
           if (!server) throw new DriverError('REJECTED', `宿主 MCP 未进入原生配置：${name}`);
