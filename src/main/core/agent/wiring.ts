@@ -62,6 +62,7 @@ export interface AgentWorkspaceDeps {
   emitLive(e: AgentLiveFrame): void;
   ptys?: import('./manual-terminal').TerminalPtys;
   mcpProjection?: Pick<McpProjectionService, 'prepare'>;
+  skillProjection?: Pick<import('../capabilities/skill-projection').SkillProjectionService, 'prepare'>;
 }
 
 export function driverForKind(kind: string): DriverId {
@@ -140,8 +141,17 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         materializeAgentPlan(actual.plan, d.userData, cwd);
         if(!business.supportsAgentDelivery(actual.plan.profile.runner,probe.version!)){store.addHostItem(taskId,null,'system_notice',{code:'businessCapabilitiesUnverified',detail:'当前执行器版本的业务 Skill／MCP／CLI 交付尚未验证；本轮保留对话与代码能力，不注入未经验证的业务通道。'});return undefined;}
         const role = store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(taskId) as { access: string } | undefined;
+        const home = base.HOME ?? homedir();
+        const runRoot = join(d.userData, 'agents', 'runs', context.runId);
+        const skills = role?.access === 'read' ? undefined : d.skillProjection?.prepare({
+          runner: kind, home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
+        });
+        const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
+        if (skills?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
+          code: 'managedSkillUnavailable', detail: skills.issues.map(issue => issue.reason).join('；'),
+        });
         const projected = role?.access === 'read' ? undefined : d.mcpProjection?.prepare({
-          runner: actual.plan.profile.runner, cwd, runRoot: join(d.userData, 'agents', 'runs', context.runId),
+          runner: actual.plan.profile.runner, cwd, runRoot,
           injectedNames: Object.keys(actual.plan.profile.env), requireKnownFields: true,
         });
         if (projected?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
@@ -152,7 +162,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
           assertCurrent();
         };
         const { runId, bindingId, generation, nativeId } = context;
-        const result = await business.prepareAgent({ runId, bindingId, generation, version: probe.version!, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home: base.HOME ?? homedir(), stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
+        const result = await business.prepareAgent({ runId, bindingId, generation, version: probe.version!, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
         if (projected?.serverNames.some(name => Object.hasOwn(result.mcpServers ?? {}, name))) {
           await result.cancelBeforeFork();
           throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
@@ -161,6 +171,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
           ...result, env: { ...actual.env, ...result.env, ...projected?.env },
           extraArgs: [...actual.extraArgs, ...(result.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
           claudeMcp: projected?.claude,
+          plugins: skillPlugin ? [...(result.plugins ?? []), { type: 'local' as const, path: skillPlugin }] : result.plugins,
         };
       },
     };
