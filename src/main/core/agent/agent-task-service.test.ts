@@ -46,6 +46,45 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
 }
 const id = (n: number) => `client-input-${n}`;
 
+it.each(['resolveLaunch', 'integrate'] as const)('A14 waits for the in-progress run before clearing a goal during %s', async phase => {
+  const { svc, store, runs, insts } = setup();
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'resume and clear', profileId: 'cx', tier: 'ask' });
+  let entered!: () => void;
+  let release!: () => void;
+  const reached = new Promise<void>(resolve => { entered = resolve; });
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const waitAtGate = () => { entered(); return gate; };
+  const deps = (svc as unknown as { d: { resolveLaunch: LaunchResolver } }).d;
+  const original = deps.resolveLaunch;
+  const launch = vi.spyOn(deps, 'resolveLaunch').mockImplementation(async params => {
+    if (phase === 'resolveLaunch') await waitAtGate();
+    const plan = await original(params);
+    return { ...plan, integrate: async () => { if (phase === 'integrate') await waitAtGate(); return undefined; } };
+  });
+  const receipt = await svc.submit(taskId, { clientInputId: id(52), text: 'child result', expectedSelectionRevision: 1 });
+  await reached;
+  const instance = insts[0];
+  const goal = instance && vi.spyOn(instance, 'goal').mockImplementation(async () => {
+    if (!instance.opened) throw new DriverError('STATE', '会话尚未打开');
+  });
+  const cleared = svc.goal(taskId, { kind: 'clear' }).then(value => ({ value }), error => ({ error }));
+  await new Promise<void>(resolve => setImmediate(resolve));
+  try {
+    expect(launch).toHaveBeenCalledOnce();
+    expect(goal?.mock.calls ?? []).toHaveLength(0);
+  } finally {
+    release();
+    await cleared;
+    await until(() => !svc.isDispatching(taskId));
+  }
+  await expect(cleared).resolves.toEqual({ value: { ok: true } });
+  expect(insts).toHaveLength(1);
+  expect(insts[0].turns).toHaveLength(1);
+  expect(store.turn(receipt.turnId)?.run_id).toBe(runs.runForTask(taskId)?.runId);
+  if (goal) expect(goal).toHaveBeenCalledExactlyOnceWith({ kind: 'clear' });
+  else expect(insts[0].goals).toEqual([{ kind: 'clear' }]);
+});
+
 it.each(['integrate', 'beforeFork'] as const)('A04 cancels a stopped run without forking during %s', async phase => {
   const { svc, store, runs, insts } = setup();
   const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'prepare and stop', profileId: 'cc', tier: 'ask' });

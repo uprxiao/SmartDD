@@ -192,6 +192,7 @@ export class AgentTaskService {
   private readonly paused = new Set<string>();
   private readonly stoppedByUser = new Set<string>();
   private readonly dispatching = new Set<string>();
+  private readonly openingRuns = new Map<string, ReturnType<AgentTaskService['openOrReuseRun']>>();
   private readonly queuedSteers = new Set<string>();
   private readonly missedPump = new Set<string>();
   private readonly blockedByClosing = new Map<string, number>();
@@ -476,7 +477,16 @@ export class AgentTaskService {
   }
 
   /** 打开或恢复本任务的运行（不派发输入）。 */
-  private async ensureRun(taskId: string) {
+  private ensureRun(taskId: string) {
+    const pending = this.openingRuns.get(taskId);
+    if (pending) return pending;
+    // 恢复中的运行可用于停止和登记，目标与输入要等原生会话打开后才能用。
+    const opening = this.openOrReuseRun(taskId).finally(() => this.openingRuns.delete(taskId));
+    this.openingRuns.set(taskId, opening);
+    return opening;
+  }
+
+  private async openOrReuseRun(taskId: string) {
     const seq = this.stopSeq.get(taskId) ?? 0;
     const startCancelled = () => (this.stopSeq.get(taskId) ?? 0) !== seq;
     if (this.coordination && !await this.coordination.beforeDispatch(taskId)) throw new DriverError('STATE', '正在等待工作目录写入资格，请稍后再执行命令');
@@ -569,8 +579,8 @@ export class AgentTaskService {
     if (this.paused.has(taskId) || this.finishingTurns.has(taskId) || this.dispatching.has(taskId) || this.switching.has(taskId)) return;
     const next = this.d.store.queuedTurns(taskId)[0];
     if (!next) return;
-    let run = this.d.runs.runForTask(taskId);
-    if (run && this.d.runs.busy(run.runId)) return;
+    const existing = this.d.runs.runForTask(taskId);
+    if (existing && this.d.runs.busy(existing.runId)) return;
     this.dispatching.add(taskId);
     const seq = this.stopSeq.get(taskId) ?? 0;
     const stoppedSince = () => (this.stopSeq.get(taskId) ?? 0) !== seq || this.paused.has(taskId);
@@ -581,9 +591,9 @@ export class AgentTaskService {
       if (stoppedSince()) return;
       selection = this.selection(taskId).selection;
       // Claude 跨越完全访问须重开会话并恢复（CLI 不允许同一会话切到绕过权限，复核 CR12）。
-      if (run && run.driverId === 'claude-sdk' && run.tier !== selection.tier) { await this.d.runs.close(run.runId); run = undefined; }
+      if (existing && existing.driverId === 'claude-sdk' && existing.tier !== selection.tier) await this.d.runs.close(existing.runId);
       if (stoppedSince()) return;
-      run = await this.ensureRun(taskId);
+      const run = await this.ensureRun(taskId);
       await this.business?.bindPending(taskId,run);
       this.gateTier(run, selection.tier as Tier);
       // 异步打开期间用户按了停止：输入保留在排队，不派发（复核 CR03）。
