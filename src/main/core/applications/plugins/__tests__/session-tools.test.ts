@@ -6,7 +6,7 @@ import {SecretsStore} from '../../../../secrets';
 import * as dbSchema from '../../../../db/schema';
 import {randomUUID} from 'node:crypto';
 import {spawn} from 'node:child_process';
-import {existsSync,mkdirSync,readFileSync} from 'node:fs';
+import {existsSync,mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {afterEach,beforeEach,describe,expect,it,vi,type Mock} from 'vitest';
 import {AjvJsonSchemaValidator} from '@modelcontextprotocol/server/validators/ajv';
@@ -39,15 +39,20 @@ function candidate(version='0.1.0',options:{rename?:boolean;extra?:boolean;seman
   if(options.extra)caps['demo-tracker.items.extra']={...cap};
   if(options.semantics)caps[read]={...cap,semantics:'write',retry:'never'};
   Object.assign(f.manifest,{capabilities:caps,legacyToolNames:{smartdd_demo_list_v1:options.rename?'demo-tracker.items.scan':read,...(options.rename?{[read]:'demo-tracker.items.scan'}:{})}});
-  f.files.set('schemas/input.json',Buffer.from(JSON.stringify({type:'object',additionalProperties:false,properties:{value:{type:'string'},delay:{type:'integer'}}})));
+  f.files.set('schemas/input.json',Buffer.from(JSON.stringify({type:'object',additionalProperties:false,properties:{value:{type:'string'},delay:{type:'integer'},hold:{type:'boolean'}}})));
   f.files.set('schemas/output.json',Buffer.from('{"type":"object","required":["version","capability"],"properties":{"version":{"type":"string"},"capability":{"type":"string"}}}'));
   f.files.set('runtime/main.mjs',Buffer.from(`const VERSION=${JSON.stringify(version)},CRASH=${!!options.crashWrite};\n`+String.raw`
-import readline from 'node:readline';import {appendFileSync} from 'node:fs';import {join} from 'node:path';
+import readline from 'node:readline';import {appendFileSync,existsSync} from 'node:fs';import {join} from 'node:path';
 readline.createInterface({input:process.stdin}).on('line',async line=>{
  const m=JSON.parse(line);let result;
  if(m.method==='initialize')result={protocol:'jsonrpc-stdio/1',plugin:'demo-tracker',version:VERSION};
  else {appendFileSync(join(process.env.WILLYOU_PLUGIN_DATA,'calls.log'),JSON.stringify(m.params)+'\n');
  if(CRASH&&m.params.capability.endsWith('.put'))process.exit(3);
+ if(m.params.input.hold){
+   const release=join(process.env.WILLYOU_PLUGIN_DATA,'release-result'),deadline=Date.now()+3000;
+   while(!existsSync(release)&&Date.now()<deadline)await new Promise(ok=>setTimeout(ok,10));
+   if(!existsSync(release))process.exit(4);
+ }
  if(m.params.input.delay)await new Promise(ok=>setTimeout(ok,m.params.input.delay));
  result={version:VERSION,capability:m.params.capability};}
  process.stdout.write(JSON.stringify({jsonrpc:'2.0',id:m.id,result})+'\n');
@@ -262,6 +267,29 @@ describe('production default write confirmation with real run ledger and sandbox
     const decide=(review:Awaited<ReturnType<typeof displayed>>,allow:boolean,owner='renderer-1')=>host.approvals.decide(owner,{...target,id:review.id,displayReceiptId:review.displayReceiptId,reviewHash:review.reviewHash,allow});
     return{host,get,ids,target,displayed,decide,processes};
   }
+  it.each(['global','project'] as const)('preserves only the dispatched receipt when the %s scope is disabled mid-call',async scope=>{
+    const {host}=await setup(),requestId=randomUUID(),input={hold:true},pending=call(read,input,requestId);
+    const release=join(host.lifecycle.dataDirectory('demo-tracker'),'release-result');
+    let disabled:Promise<unknown>|undefined;
+    try{
+      await vi.waitFor(()=>expect(calls()).toHaveLength(1));
+      if(scope==='global')disabled=host.setEnabled('demo-tracker',false,host.lifecycle.state('demo-tracker').revision);
+      else f.sqlite.prepare("UPDATE application_project_settings SET enabled=0 WHERE project_id='p1' AND app_id='demo-tracker'").run();
+      expect(await call()).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});
+    }finally{
+      writeFileSync(release,'release');
+      await pending;
+      await disabled;
+    }
+    expect(await pending).toMatchObject(scope==='global'
+      ?{status:'ok',value:{version:'0.2.0',capability:read}}
+      :{status:'error',error:{code:'APP_NOT_ENABLED'}});
+    expect(f.sqlite.prepare('SELECT state,error_code FROM application_invocations').all()).toEqual([
+      scope==='global'?{state:'succeeded',error_code:null}:{state:'failed',error_code:'APP_NOT_ENABLED'},
+    ]);
+    expect(await call(read,input,requestId)).toMatchObject({status:'error',error:{code:'APP_NOT_ENABLED'}});
+    expect(calls()).toHaveLength(1);
+  });
   it('requires exact current-window review, denies without decrypting or dispatching, and records only hashed input',async()=>{
     const s=await setup(),pending=call(write,{value:'original'}),review=await s.displayed();
     expect(review).toMatchObject({input:{value:'original'},version:'0.2.0',targets:[{name:'Synthetic 0',connectionId:s.ids[0]}]});expect(s.get).not.toHaveBeenCalled();expect(calls()).toHaveLength(0);

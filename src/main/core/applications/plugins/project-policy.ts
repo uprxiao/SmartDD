@@ -7,7 +7,7 @@ import type {ResourceStore} from '../resource-store';
 import type {RunContext} from '../run-registry';
 import {canonicalJson,digest} from '../manifest';
 import {boundedJson} from '@shared/application-bridge';
-import type {PluginLifecycle} from './lifecycle';
+import type {PluginLifecycle,PluginInvocationPhase} from './lifecycle';
 import {capturePluginSession,type PluginToolPolicy} from './session-tools';
 import {pluginMcpToolName} from './session-tools';
 import type {StoredPlugin} from './package-store';
@@ -25,10 +25,10 @@ interface ConnectionRow {
 export class PluginProjectPolicy implements PluginToolPolicy {
   constructor(private readonly store:ResourceStore,private readonly lifecycle:PluginLifecycle,private readonly secrets:Pick<SecretsStore,'get'>,
     private readonly options:{assertRun(runId:string):RunContext;approve:PluginToolPolicy['approve']}){}
-  private project(projectId:string,appId:string):string {
+  private project(projectId:string,appId:string,phase:PluginInvocationPhase='dispatch'):string {
     const row=this.store.sqlite.prepare('SELECT p.archived_at,s.enabled,s.binding_revision,s.policy_revision,c.added,c.enabled AS global_enabled,c.revision AS global_revision FROM projects p JOIN application_project_settings s ON s.project_id=p.id JOIN application_catalog_state c ON c.app_id=s.app_id WHERE p.id=? AND s.app_id=?').get(projectId,appId) as {archived_at:number|null;enabled:number;added:number;global_enabled:number;binding_revision:number;policy_revision:number;global_revision:number}|undefined;
     if(!row||row.archived_at!==null)throw new ApplicationError('APP_NOT_ENABLED','此项目未启用插件');
-    if(row.added!==1||row.global_enabled!==1)throw new ApplicationError('APP_NOT_ENABLED','插件已停用');
+    if(row.added!==1||(phase==='dispatch'&&row.global_enabled!==1))throw new ApplicationError('APP_NOT_ENABLED','插件已停用');
     if(row.enabled!==1)throw new ApplicationError('APP_NOT_ENABLED','本项目已关闭该插件');
     return canonicalJson(row);
   }
@@ -43,13 +43,14 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     }
     return selections;
   }
-  authorize(context:RunContext,selection:PluginSessionSelection,capability:PluginSessionSelection['capabilities'][number]):void {
+  authorize(context:RunContext,selection:PluginSessionSelection,capability:PluginSessionSelection['capabilities'][number],phase:PluginInvocationPhase='dispatch'):void {
     const known=this.options.assertRun(context.run.runId),snapshot=known.snapshot;
     if(known.run.taskId!==context.run.taskId||known.run.projectId!==context.run.projectId||snapshot.schema!==3)throw new ApplicationError('SCOPE_DENIED','插件调用不属于当前真实运行');
     const original=snapshot.externalPlugins?.find(p=>p.appId===selection.appId);
     if(!original||canonicalJson(original)!==canonicalJson(selection)||!original.capabilities.some(c=>canonicalJson(c)===canonicalJson(capability)))throw new ApplicationError('SCOPE_DENIED','插件或连接范围不是本次启动快照');
-    this.project(known.run.projectId,selection.appId);
-    const state=this.lifecycle.state(selection.appId);if(!state.installed||!state.hash)throw new ApplicationError('NOT_FOUND','插件已卸载');if(!state.enabled)throw new ApplicationError('APP_NOT_ENABLED','插件已停用');
+    this.project(known.run.projectId,selection.appId,phase);
+    const state=this.lifecycle.state(selection.appId);if(!state.installed||!state.hash)throw new ApplicationError('NOT_FOUND','插件已卸载');
+    if(phase==='dispatch'&&!state.enabled)throw new ApplicationError('APP_NOT_ENABLED','插件已停用');
     for(const slot of capability.slots)this.connectionRow(selection,slot);
   }
   writeScope(context:RunContext,selection:PluginSessionSelection,capability:PluginSessionSelection['capabilities'][number],_input:Record<string,unknown>,operation:ApplicationOperationContext):PluginWriteScope {
@@ -78,7 +79,7 @@ export class PluginProjectPolicy implements PluginToolPolicy {
     return this.resolveConnections(selection,capability,signal,()=>this.authorize(context,selection,capability));
   }
   sourceRevisions(context:RunContext,selection:PluginSessionSelection,capability:PluginSessionSelection['capabilities'][number],connection:unknown):ApplicationResultV2['source']['connections']{
-    this.authorize(context,selection,capability);
+    this.authorize(context,selection,capability,'result');
     if(capability.slots.length&&selection.bindingRevision===undefined)throw new ApplicationError('CONFIG_INCOMPATIBLE','历史插件快照缺少连接选用修订，请恢复会话以刷新契约');
     const resolved=connection as Record<string,{id:string;identityRevision:number;configRevision:number;policyRevision:number}>;
     return capability.slots.map(slot=>{

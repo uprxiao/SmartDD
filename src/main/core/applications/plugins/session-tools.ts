@@ -10,14 +10,14 @@ import type {ApplicationResultV2} from '@shared/application-result';
 import {applicationPreflightFailure} from '../capability-preflight';
 import {digest} from '../manifest';
 import {requirePlanEntry} from '../run-plan';
-import type {PluginLifecycle,PluginInvocation} from './lifecycle';
+import type {PluginLifecycle,PluginInvocation,PluginInvocationPhase} from './lifecycle';
 import type {StoredPlugin} from './package-store';
 import type {ValidatedPlugin,JsonSchema} from './package';
 
 type SelectedCapability=PluginSessionSelection['capabilities'][number];
 /** These are trusted host functions, never plugin callbacks or model arguments. */
 export interface PluginToolPolicy {
-  authorize(context:RunContext,selection:PluginSessionSelection,capability:SelectedCapability):void;
+  authorize(context:RunContext,selection:PluginSessionSelection,capability:SelectedCapability,phase?:PluginInvocationPhase):void;
   connection(context:RunContext,selection:PluginSessionSelection,capability:SelectedCapability,signal:AbortSignal):Promise<unknown>;
   sourceRevisions?(context:RunContext,selection:PluginSessionSelection,capability:SelectedCapability,connection:unknown):ApplicationResultV2['source']['connections'];
   approve(context:RunContext,selection:PluginSessionSelection,capability:SelectedCapability,input:Record<string,unknown>,operation:ApplicationOperationContext):Promise<void|(()=>void)>;
@@ -89,10 +89,10 @@ export class PluginSessionTools implements AdditionalApplicationTools {
     const cap:PluginCapability|undefined=id?manifest.capabilities[id]:undefined;
     if(!id||!cap||cap.agentVisible===false)throw new ApplicationError('CAPABILITY_UNAVAILABLE','插件已删除此能力，需更新任务使用方式');
     if(cap.permission!==launch.permission||cap.semantics!==launch.semantics||cap.slots.some(slot=>!launch.slots.includes(slot)))throw new ApplicationError('CONFIG_INCOMPATIBLE','插件能力授权范围已变化，请重启会话');
-    const authorize=(fresh:RunContext,connectionId:string|null)=>{
+    const authorize=(fresh:RunContext,connectionId:string|null,phase:PluginInvocationPhase='dispatch')=>{
       if(connectionId!==null||fresh.run.runId!==context.run.runId||fresh.run.projectId!==context.run.projectId||fresh.run.taskId!==context.run.taskId)throw new ApplicationError('SCOPE_DENIED','插件调用不能替换任务、项目或连接');
-      if(this.current(selection).plugin.hash!==stored.plugin.hash)throw new ApplicationError('RESOURCE_STATE_CHANGED','插件版本已变化，请重新发起调用');
-      invocation?.assertActive();this.policy.authorize(fresh,selection,launch);
+      if(phase==='dispatch'&&this.current(selection).plugin.hash!==stored.plugin.hash)throw new ApplicationError('RESOURCE_STATE_CHANGED','插件版本已变化，请重新发起调用');
+      invocation?.assertActive(phase);this.policy.authorize(fresh,selection,launch,phase);
     };
     const legacy=Object.hasOwn(manifest.legacyToolContracts??{},call.operation)?manifest.legacyToolContracts![call.operation]:undefined;
     if(legacy&&manifest.legacyToolNames[call.operation]!==id)throw new ApplicationError('CONFIG_INCOMPATIBLE','旧工具契约与当前能力不符');
@@ -101,6 +101,8 @@ export class PluginSessionTools implements AdditionalApplicationTools {
     const tool:BridgeTool={name:call.operation,description:cap.title,inputSchema:pluginToolSchema(stored.plugin,legacy?.input??cap.input),outputSchema:pluginToolSchema(stored.plugin,legacy?.output??cap.output),annotations,contractMajor:call.contractMajor};
     return{application:{appId:selection.appId,packageHash:stored.plugin.hash,manifest:{schema:manifest.schema}},declaration:{name:call.operation,contractMajor:call.contractMajor,permission:cap.permission,annotations},tool,validators:legacy?stored.plugin.legacyContracts.get(call.operation)!:stored.plugin.contracts.get(id)!,
       handler:{semantics:cap.semantics==='read'?'read':'write',retry:'never',authorize,
+        // Only this live reservation can deliver a result after a global disable.
+        ...(invocation?{authorizeResult:(fresh,id)=>authorize(fresh,id,'result')}:{}),
         execute:async(fresh,input,operation)=>{
           if(!invocation)throw new ApplicationError('SCOPE_DENIED','插件调用尚未取得执行预留');
           const acceptedInput=structuredClone(input);

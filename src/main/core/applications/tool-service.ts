@@ -27,6 +27,7 @@ export interface HostToolOperation {
   /** Only a trusted read executor may request transient transport/source retries; annotations alone never authorize them. */
   retry: 'safe-read' | 'never';timeoutMs?: number;
   authorize(context: RunContext,connectionId: string | null): void;
+  authorizeResult?(context: RunContext,connectionId: string | null): void;
   /** Revalidate the original operation target before returning a cached receipt. */
   authorizeReceipt?(context: RunContext,operationId: string,connectionId: string | null,signal?:AbortSignal): void|Promise<void>;
   execute(context: RunContext,args: Record<string,unknown>,operation: ApplicationOperationContext): Promise<unknown>;
@@ -210,7 +211,9 @@ export class ApplicationToolService {
             const value = await handler.execute(fresh,call.arguments,{ operationId: operationId!,requestId,attempt: attempts,deadline,signal,packageHash: selected.application.packageHash,appId: selected.application.appId,toolName: call.operation,contractMajor: call.contractMajor,connectionId: call.connectionId,...(this.entry==='cli'?{entry:this.entry}:{}) });
             if (!boundedJson(value) || Buffer.byteLength(JSON.stringify(value)) > BRIDGE_LIMITS.responseBytes - 4096) throw new ApplicationError('TOO_LARGE','响应超过本次预算，请使用分页或有界资源');
             if (!outputValidator(value).valid) throw new ApplicationError('INVALID_RESPONSE','结果不符合固定工具输出契约');
-            this.runs.assertActive(runId); handler.authorize(this.runs.assertActive(runId),call.connectionId);
+            const current = this.runs.assertActive(runId);
+            if (handler.authorizeResult) handler.authorizeResult(current,call.connectionId);
+            else handler.authorize(current,call.connectionId);
             if (signal.aborted) throw new ApplicationError(interruptionCode(signal,timeout),'本次等待已结束，请查看已有业务执行记录');
             const unified=write&&selected.application.manifest.schema==='smartdd-app-package-v2'&&call.contractMajor===2?applicationResultV2Schema.safeParse(value):null;
             effect = handler.semantics === 'read' ? 'read-only' : unified?.success&&unified.data.operation.effectState==='unknown'?'unknown':'completed'; await this.end(operationId!,'succeeded',attempts,effect,null);

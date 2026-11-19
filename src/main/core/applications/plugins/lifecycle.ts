@@ -21,8 +21,9 @@ export interface PluginInstallPlan {
   appId:string;hash:string;kind:'install'|'update';expectedRevision:number;previousVersion:string|null;nextVersion:string;enabled:boolean;
   addedCapabilities:string[];removedCapabilities:string[];breakingCapabilities:string[];addedSkills:string[];removedSkills:string[];addedPermissions:string[];removedPermissions:string[];planHash:string;
 }
+export type PluginInvocationPhase = 'dispatch' | 'result';
 export interface PluginInvocation {
-  assertActive():void;
+  assertActive(phase?:PluginInvocationPhase):void;
   execute(capability:string,input:unknown,connection:unknown,signal?:AbortSignal,onSubmit?:()=>void,scope?:PluginExecutionScope):Promise<unknown>;
   verify(provider:string,config:unknown,secret?:string,signal?:AbortSignal,authMode?:string):Promise<unknown>;
 }
@@ -254,11 +255,13 @@ export class PluginLifecycle {
       const stored=await this.current(appId),latest=this.row(appId);if(this.changes.has(appId)||latest?.package_hash!==stored.plugin.hash||latest.installed!==1||latest.enabled!==1)continue;
       return this.runtimes.run(stored,this.dataDirectory(appId),child=>{
         let dispatched=false,active=true;
-        const assertActive=()=>{
+        const assertActive=(phase:PluginInvocationPhase='dispatch')=>{
           if(!active)throw new ApplicationError('SCOPE_DENIED','本次插件调用预留已结束');
+          if(phase==='result'&&!dispatched)throw new ApplicationError('SCOPE_DENIED','插件调用尚未执行');
           const row=this.row(appId);if(this.closed)throw new ApplicationError('CANCELED','插件服务已停止');
           if(!dispatched&&this.pending(appId)?.kind==='uninstall')throw new ApplicationError('NOT_FOUND','插件正在卸载，未开始的调用已停止');
-          if(row?.installed!==1)throw new ApplicationError('NOT_FOUND','插件已卸载');if(row.enabled!==1)throw new ApplicationError('APP_NOT_ENABLED','插件已停用');
+          if(row?.installed!==1)throw new ApplicationError('NOT_FOUND','插件已卸载');
+          if(phase==='dispatch'&&row.enabled!==1)throw new ApplicationError('APP_NOT_ENABLED','插件已停用');
           if(row.package_hash!==stored.plugin.hash)throw new ApplicationError('RESOURCE_STATE_CHANGED','本次调用预留的插件版本已变化');
         };
         const claim=()=>{assertActive();if(dispatched)throw new ApplicationError('EXECUTION_ALREADY_ATTEMPTED','同一插件调用不能再次提交');dispatched=true;};
