@@ -473,6 +473,7 @@ function TurnRows({ group, stopping }: { group: TurnGroup; stopping: boolean }) 
   }
   return <div className="agent-turn" data-turn-id={group.turnId ?? undefined} data-status={group.status ?? undefined}>
     {rows}
+    {group.waitingSeconds > 0 && <div className="agent-turn-footer">等待用户处理 {formatDuration(group.waitingSeconds)}</div>}
     {group.failed && !group.rows.some(row => row.kind === 'item' && row.item.type === 'error') && <div className="agent-error agent-error-details"><details>
       <summary><CircleAlert size={15} aria-hidden/>查看错误详情</summary><pre>{group.failureCode ?? '未提供错误详情'}</pre>
     </details></div>}

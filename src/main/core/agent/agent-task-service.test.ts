@@ -46,6 +46,37 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
 }
 const id = (n: number) => `client-input-${n}`;
 
+it('A59 keeps overlapping foreground request waits separate from work in live and historical turns', async () => {
+  const { db, svc, store, runs, insts } = setup();
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'approval timing', profileId: 'cx', tier: 'ask' });
+  const { turnId } = await svc.submit(taskId, { clientInputId: id(59), text: 'check timing', expectedSelectionRevision: 1 });
+  await until(() => store.turn(turnId)?.status === 'started' && !svc.isDispatching(taskId));
+  const { bindingId, runId, generation } = runs.runForTask(taskId)!;
+  const origin = { taskId, bindingId, runId, generation, turnId };
+  const epoch = Date.parse('2026-11-19T00:00:00Z');
+  const at = (seconds: number) => new Date(epoch + seconds * 1000).toISOString();
+  db.prepare('UPDATE agent_turns SET started_at=? WHERE turn_id=?').run(at(0), turnId);
+  const request = (nativeRequest: string, opened: number, end?: number, nodeId?: string) => {
+    const requestId = store.insertNativeRequest({ taskId, origin: { ...origin, nativeRequest, nodeId }, kind: 'command_approval', payload: {} });
+    if (end !== undefined) store.resolveRequest(requestId, { decision: 'decline' });
+    db.prepare('UPDATE agent_requests SET created_at=?,updated_at=? WHERE request_id=?').run(at(opened), at(end ?? opened), requestId);
+    return requestId;
+  };
+  request('starts-before-foreground', -1, 5);
+  request('overlapping-foreground', 3, 7);
+  request('child-does-not-pause-parent', 7, 9, 'native-child');
+  db.prepare("UPDATE agent_requests SET class='host_business' WHERE request_id=?")
+    .run(request('asynchronous-business', 7, 9));
+  request('second-foreground', 9);
+  expect(svc.snapshot(taskId).turns[0]).toMatchObject({ native_wait_ms: 7000, native_wait_since: epoch + 9000 });
+
+  insts[0].finish();
+  db.prepare('UPDATE agent_turns SET ended_at=? WHERE turn_id=?').run(at(12), turnId);
+  const page = svc.history(taskId, Number.MAX_SAFE_INTEGER);
+  expect(page.turns[0]).toMatchObject({ native_wait_ms: 10000 });
+  expect(page.turns[0]).not.toHaveProperty('native_wait_since');
+});
+
 it.each(['resolveLaunch', 'integrate'] as const)('A14 waits for the in-progress run before clearing a goal during %s', async phase => {
   const { svc, store, runs, insts } = setup();
   const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'resume and clear', profileId: 'cx', tier: 'ask' });

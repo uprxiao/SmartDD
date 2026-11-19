@@ -490,6 +490,49 @@ export class AgentStore {
   turns(taskId: string) {
     return this.sqlite.prepare('SELECT turn_id,client_input_id,status,native_turn_id,accepted_at,started_at,ended_at,error_code,run_id,source_kind FROM agent_turns WHERE task_id=? ORDER BY accepted_at,rowid').all(taskId) as Record<string, any>[];
   }
+  /** Foreground time excludes the union of blocking waits on the same run and turn. */
+  turnsWithNativeWait(taskId: string) {
+    const turns = this.turns(taskId);
+    if (!turns.length) return turns;
+    const byTurn = new Map(turns.map(turn => [turn.turn_id, turn]));
+    const intervals = new Map<string, Array<[number, number]>>();
+    const requests = this.sqlite.prepare(`SELECT json_extract(origin_json,'$.turnId') AS turn_id,
+      json_extract(origin_json,'$.runId') AS run_id, created_at, updated_at, status
+      FROM agent_requests WHERE task_id=? AND class='native' AND json_valid(origin_json)
+        AND json_extract(origin_json,'$.nodeId') IS NULL`).all(taskId) as
+      { turn_id: string | null; run_id: string | null; created_at: string; updated_at: string; status: string }[];
+    for (const request of requests) {
+      if (!request.turn_id) continue;
+      const turn = byTurn.get(request.turn_id);
+      if (!turn?.started_at || turn.run_id !== request.run_id) continue;
+      const start = Math.max(Date.parse(turn.started_at), Date.parse(request.created_at));
+      const end = Math.min(turn.ended_at ? Date.parse(turn.ended_at) : Infinity,
+        request.status === 'pending' ? Infinity : Date.parse(request.updated_at));
+      if (!(end > start)) continue;
+      const windows = intervals.get(request.turn_id) ?? [];
+      windows.push([start, end]);
+      intervals.set(request.turn_id, windows);
+    }
+    return turns.map(turn => {
+      const windows = intervals.get(turn.turn_id);
+      if (!windows?.length) return turn;
+      windows.sort((a, b) => a[0] - b[0]);
+      let [start, end] = windows[0];
+      let waited = 0;
+      for (const [nextStart, nextEnd] of windows.slice(1)) {
+        if (nextStart > end) {
+          waited += end - start;
+          start = nextStart;
+          end = nextEnd;
+        } else {
+          end = Math.max(end, nextEnd);
+        }
+      }
+      return end === Infinity
+        ? { ...turn, native_wait_ms: waited, native_wait_since: start }
+        : { ...turn, native_wait_ms: waited + end - start };
+    });
+  }
   /** 最近的条目（renderer 每任务上限 2000 条，技术方案 §3.1）；beforeOrdinal 分页读更早的。 */
   items(taskId: string, opts: { limit?: number; beforeOrdinal?: number } = {}) {
     const limit = Math.min(opts.limit ?? 2000, 2000);

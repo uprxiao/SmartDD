@@ -934,7 +934,7 @@ export class AgentTaskService {
     const draft = this.d.store.draft(taskId);
     const pending = this.d.store.pendingRequests(taskId, true);
     const queuedAll = this.d.store.queuedTurns(taskId);
-    const allTurns = this.d.store.turns(taskId);
+    const allTurns = this.d.store.turnsWithNativeWait(taskId);
     const goal = this.d.store.goal(taskId);
     const catalog = run ? this.d.runs.active(run.runId)?.catalog ?? null : null;
     // 整份响应按最终 UTF-8 字节守 256 KiB（技术方案 §3.1，复核 FR02／SR04）。基础字段按档逐级收紧，
@@ -1016,7 +1016,7 @@ export class AgentTaskService {
   history(taskId: string, cursor: number | string) {
     this.selection(taskId, true);
     const beforeOrdinal = historyOrdinal(taskId, cursor);
-    const page = this.itemsPage(taskId, RESPONSE_LIMIT - 8 * 1024, this.d.store.turns(taskId), [], beforeOrdinal);
+    const page = this.itemsPage(taskId, RESPONSE_LIMIT - 8 * 1024, this.d.store.turnsWithNativeWait(taskId), [], beforeOrdinal);
     for (;;) {
       const projected = { ...page, historyCursor: historyCursor(taskId, page.items[0]?.ordinal, page.hasOlder) };
       if (jsonBytes(projected) <= RESPONSE_LIMIT) return projected;

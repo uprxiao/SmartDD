@@ -2,7 +2,7 @@
 // 用户消息、最终回答、待处理请求、错误与计划保持可见（技术方案 T1.5 §4、需求 R01）。
 
 export interface TimelineItem { itemId: string; turnId: string | null; type: string; ordinal: number; revision: number; payload: any; terminal: string | null; createdAt: string; updatedAt: string }
-export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null; source_kind?: string; run_id?: string | null; native_turn_id?: string | null }
+export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null; source_kind?: string; run_id?: string | null; native_turn_id?: string | null; native_wait_ms?: number; native_wait_since?: number }
 export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string; targetTaskTitle?: string }
 
 interface TimelineSlice { items: TimelineItem[]; turns: TurnInfo[] }
@@ -52,14 +52,18 @@ export type Row =
   | { kind: 'work'; id: string; items: TimelineItem[]; running: boolean; seconds: number }
   | { kind: 'footer'; id: string; label: string; failed: boolean };
 
-export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[]; seconds: number; failed: boolean; failureCode: string | null }
+export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[]; seconds: number; waitingSeconds: number; failed: boolean; failureCode: string | null }
 
-/** 回合耗时：宿主观测的开始到结束（未结束按 now）；重叠工具不重复累计。 */
-export function turnSeconds(t: TurnInfo | undefined, now = Date.now()) {
-  if (!t?.started_at) return 0;
+/** The foreground clock counts observed work once, with blocking waits reported separately. */
+function turnTiming(t: TurnInfo | undefined, now: number) {
+  if (!t?.started_at) return { seconds: 0, waitingSeconds: 0 };
   const end = t.ended_at ? Date.parse(t.ended_at) : now;
-  return Math.max(0, Math.round((end - Date.parse(t.started_at)) / 1000));
+  const elapsed = Math.max(0, end - Date.parse(t.started_at));
+  const ongoingWait = t.native_wait_since === undefined ? 0 : Math.max(0, end - t.native_wait_since);
+  const wait = Math.min(elapsed, (t.native_wait_ms ?? 0) + ongoingWait);
+  return { seconds: Math.round((elapsed - wait) / 1000), waitingSeconds: Math.round(wait / 1000) };
 }
+export const turnSeconds = (turn: TurnInfo | undefined, now = Date.now()) => turnTiming(turn, now).seconds;
 export function formatDuration(s: number) { return s < 60 ? `${s} 秒` : `${Math.floor(s / 60)} 分 ${s % 60} 秒`; }
 
 export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Date.now()): TurnGroup[] {
@@ -76,12 +80,13 @@ export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Da
     const { items: list, turnId } = byTurn.get(key)!;
     const turn = turnId ? turnMap.get(turnId) : undefined;
     const live = !!turn && ['dispatching', 'started'].includes(turn.status);
+    const timing = turnTiming(turn, now);
     const rows: Row[] = [];
     let work: TimelineItem[] = [];
     const flush = (last: boolean) => {
       if (!work.length) return;
-      const running = work.some(w => !w.terminal) || (last && live);
-      rows.push({ kind: 'work', id: `work:${work[0].itemId}`, items: work, running, seconds: turnSeconds(turn, now) });
+      const running = turn?.native_wait_since === undefined && (work.some(w => !w.terminal) || (last && live));
+      rows.push({ kind: 'work', id: `work:${work[0].itemId}`, items: work, running, seconds: timing.seconds });
       work = [];
     };
     list.forEach((it, idx) => {
@@ -99,9 +104,9 @@ export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Da
       const label = turn.status === 'interrupted' ? '已停止'
         : turn.status === 'unknown' ? '接收结果未知'
           : limited === 'output' ? '已达到输出长度上限' : limited ? '已暂停' : '已失败';
-      rows.push({ kind: 'footer', id: `footer:${key}`, label: `${label} · 共工作 ${formatDuration(turnSeconds(turn, now))}`, failed: !limited && turn.status !== 'interrupted' });
+      rows.push({ kind: 'footer', id: `footer:${key}`, label: `${label} · 共工作 ${formatDuration(timing.seconds)}`, failed: !limited && turn.status !== 'interrupted' });
     }
-    groups.push({ key, turnId, status: turn?.status ?? null, rows, seconds: turnSeconds(turn, now), failed: turn?.status === 'failed' && !limited, failureCode: turn?.error_code ?? null });
+    groups.push({ key, turnId, status: turn?.status ?? null, rows, ...timing, failed: turn?.status === 'failed' && !limited, failureCode: turn?.error_code ?? null });
   }
   return groups;
 }

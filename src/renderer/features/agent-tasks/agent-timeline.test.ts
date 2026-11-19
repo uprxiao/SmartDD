@@ -63,6 +63,20 @@ describe('时间线分组', () => {
     const g = buildTimeline([item({ type: 'user_message', ordinal: 1 }), item({ type: 'command_execution', ordinal: 2, terminal: null, payload: { status: 'running', command: 'ls' } })], [turn('started', '2026-11-17T00:00:00Z', null)], Date.parse('2026-11-17T00:00:05Z'));
     expect(g[0].rows[1]).toMatchObject({ kind: 'work', running: true, seconds: 5 });
   });
+  it('A59 keeps work time still during a native wait and preserves separate totals after the round', () => {
+    const tool = item({ type: 'command_execution', ordinal: 1, terminal: null });
+    const started = '2026-11-17T00:00:00Z';
+    const clock = Date.parse(started);
+    const waiting = { ...turn('started', started, null), native_wait_ms: 2000, native_wait_since: clock + 5000 };
+    const live = buildTimeline([tool], [waiting], clock + 12000)[0];
+    expect(live).toMatchObject({ seconds: 3, waitingSeconds: 9, rows: [{ kind: 'work', running: false, seconds: 3 }] });
+    const further = buildTimeline([tool], [waiting], clock + 14000)[0];
+    expect(further).toMatchObject({ seconds: 3, waitingSeconds: 11 });
+    const finished = { ...turn('interrupted'), native_wait_ms: 9000 };
+    const stopped = buildTimeline([{ ...tool, terminal: 'interrupted' }], [finished], clock + 15000)[0];
+    expect(stopped).toMatchObject({ seconds: 3, waitingSeconds: 9 });
+    expect(stopped.rows.at(-1)).toMatchObject({ label: '已停止 · 共工作 3 秒' });
+  });
   it('停止、失败与结果未知的回合写尾注，正常完成不写', () => {
     expect(buildTimeline([item({ type: 'user_message', ordinal: 1 })], [turn('interrupted')])[0].rows.at(-1)).toEqual({ kind: 'footer', id: 'footer:t1', label: '已停止 · 共工作 12 秒', failed: false });
     expect(buildTimeline([item({ type: 'user_message', ordinal: 1 })], [turn('failed')])[0].rows.at(-1)).toMatchObject({ label: '已失败 · 共工作 12 秒', failed: true });
