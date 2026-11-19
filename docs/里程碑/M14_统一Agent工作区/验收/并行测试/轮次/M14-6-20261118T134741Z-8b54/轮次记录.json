@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T18:20:27+08:00",
+  "updatedAt": "2026-11-19T18:42:00+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -667,6 +667,78 @@
       "result": "personal MCP and hooks did not run; shared personal Skill advertised only by Codex, subscription path pending",
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/7a038ebad/A07-managed-isolation/README.md",
       "releasedAt": "2026-11-19T18:20:27+08:00"
+    },
+    {
+      "case": "M14-A66",
+      "package": "3b769ef96",
+      "attempts": [
+        "g03/attempt-413..421"
+      ],
+      "result": "417–421 新包实测 npm、pnpm、Yarn、npm 安装失败后继续、detached HEAD，所有包正常退出。各组只在私有工作副本安装，恢复与剩余档位继续待验。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/3b769ef96/A66-worktree-package-managers/README.md"
+    },
+    {
+      "case": "M14-A67",
+      "package": "3b769ef96",
+      "attempts": [
+        "g03/attempt-440..463 (12 matrix starts)",
+        "g03/attempt-470..475",
+        "g03/attempt-489..491",
+        "g03/attempt-504..506"
+      ],
+      "result": "两端请求批准在普通仓库、linked worktree 的干净、冲突、重叠改动共 12 组通过，474／475 各拒绝一条且未再改写。489–491、504–506 的 Codex 原生自动审核由夹具误接，需用能完成审核的环境复验。完全访问保留用例授权前置。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/3b769ef96/A67-approval-matrix/README.md"
+    },
+    {
+      "case": "M14-A41",
+      "package": "3b769ef96",
+      "attempts": [
+        "g03/attempt-406"
+      ],
+      "result": "406 连接准备阶段求值超时，实际模型和请求面板未启动，本机 SMTP 无 DATA；只清理本轮 App。独立同地址合成 SMTP 测通，尚无证据定位超时原因。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/3b769ef96/A41-mail-setup/README.md"
+    },
+    {
+      "case": "M14-A08",
+      "package": "3b769ef96",
+      "attempts": [
+        "g03/attempt-408",
+        "g03/attempt-412",
+        "g03/attempt-416"
+      ],
+      "result": "416 在实际打包 UI 采纳合成 Skill、两端完成原生暖机，但两端选择器均未公布该 Skill。定位到新任务启动遗漏既有 Skill 投影服务。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/3b769ef96/A08-managed-skill-catalog/README.md"
+    },
+    {
+      "case": "M14-A07",
+      "package": "7a038ebad",
+      "attempts": [
+        "g04/a07-a08-review/skill-probe-TPaCNh",
+        "g04/a07-a08-review/skill-probe-c7ESo5"
+      ],
+      "result": "补核真实 Codex 0.169.0：按准确路径关闭能屏蔽已知来源、保留纳管和项目项，启动后出现的新来源经强制刷新仍有效。未把名单试验当托管会话隔离通过。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/7a038ebad/A07-native-skill-discovery/README.md"
+    },
+    {
+      "case": "M14-A08",
+      "defect": "M14-D06-70",
+      "package": "e66f5a85b",
+      "asar": "7d6df6efc403b7e455789c492bbcc37eae74e13d7729812a75def4e3bdfd6e40",
+      "attempts": [
+        "g03/attempt-422"
+      ],
+      "result": "catalog and real picker now pass for both native executors; R and source-change matrix pending",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/e66f5a85b/A08-managed-skill-catalog/README.md"
+    },
+    {
+      "case": "M14-A41",
+      "package": "e66f5a85b",
+      "asar": "7d6df6efc403b7e455789c492bbcc37eae74e13d7729812a75def4e3bdfd6e40",
+      "attempts": [
+        "g03/attempt-424"
+      ],
+      "result": "424 将超时定位到测试 SMTP 连接时的 macOS 钥匙串授权等待，主线程采样进入 SecItemAdd／makeLoginAuthUI。未发送邮件，待用户参与系统授权后继续。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/e66f5a85b/A41-mail-keychain/README.md"
     }
   ]
 }
