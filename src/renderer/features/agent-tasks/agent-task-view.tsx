@@ -12,6 +12,7 @@ import MarkdownIt from 'markdown-it';
 import { Archive, MoreHorizontal, Plug, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, FilePenLine, FileSearch, Globe, Info, Loader2, Network, Pencil, Send, SquareTerminal, Target, Trash2, TriangleAlert, Wrench, X, Zap } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
+import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
 import { AgentChildSummary, AgentLineage, AgentRelations, openRelatedTask, workspaceModeLabel, type Relations } from './agent-relations';
 import { AttachmentChips, prepareChip, type Chip, type PreparedAttachment } from './attachment-chips';
 import { applyItem, commandItems, fileItems, findTrigger, skillItems, type Catalog, type MenuItem, type MenuTrigger } from './composer-menu';
@@ -1416,8 +1417,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     </AgentDialog>}
     {!archived&&pluginsOpen&&<AgentDialog title='项目插件' sub='业务操作仍按当前档位和插件最高档位裁定；等待中的请求会重新核对版本与账号。' onClose={()=>setPluginsOpen(false)} footer={<button type='button' className='m10-button' onClick={()=>{setPluginsOpen(false);if(snap.projectId)navigation.openProject(snap.projectId,'applications');else toast.message('先关联项目以配置插件');}}>管理项目插件</button>}>{plugins.length?<ul>{plugins.map(p=><li key={p.id}>{p.name}</li>)}</ul>:<p>当前任务没有可用的项目插件</p>}</AgentDialog>}
     {!archived && confirmFull && <AgentDialog title="使用完全访问权限？" onClose={() => setConfirmFull(false)} footer={<><button className="m10-button" onClick={() => setConfirmFull(false)}>取消</button><button className="m10-button primary" data-testid="agent-confirm-full" onClick={() => { void permissionPref.update({ fullConfirmed: true }); setConfirmFull(false); void setSelection({ tier: 'full' }); }}>继续使用完全访问</button></>}>
-      <p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。</p>
-      <div className="m13-note">插件的写操作也不再询问，发送邮件仍会每次询问。插件声明了更低权限上限时仍按该上限处理；Claude 交出的计划仍需批准。</div>
+      <p className="m13-perm-warn">{FULL_ACCESS_WARNING}</p>
+      <div className="m13-note">{FULL_ACCESS_NOTE}</div>
     </AgentDialog>}
     </div>
     {(showLineage || activeProcess) && <aside className="agent-task-aux">

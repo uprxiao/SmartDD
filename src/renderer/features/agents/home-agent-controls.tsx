@@ -1,4 +1,5 @@
 import { Menu } from '@base-ui/react/menu';
+import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from './full-access-confirm';
 import { Check, ChevronDown, Settings } from 'lucide-react';
 import { useState } from 'react';
 import type { ProviderView, RunConfigView } from '@shared/ai-agents';
@@ -44,7 +45,7 @@ export function HomePermissionPicker({kind,disabled=false}:{kind:string;disabled
       <div className="m13-perm-head"><span>应如何批准 {kind==='codex'?'Codex':'Claude Code'} 操作?</span><button type="button" onClick={()=>setHelp(true)}>了解更多</button></div>
       {options.map(id=><Menu.Item render={<button type="button"/>} key={id} role="menuitemradio" aria-checked={effective===id} className={id==='full'?'danger':undefined} onClick={()=>select(id)}><PermIcon icon={permissionLabels[id].icon}/><span className="m13-perm-text"><b>{permissionLabels[id].name}</b><small>{permissionLabels[id].desc}</small></span>{id===effective&&<Check size={16} strokeWidth={1.8} className="m13-perm-check"/>}</Menu.Item>)}
     </Menu.Popup></Menu.Positioner></div></Menu.Portal></Menu.Root>
-    {confirm&&<AgentDialog title="使用完全访问权限？" onClose={()=>setConfirm(false)} footer={<><button className="m10-button" onClick={()=>setConfirm(false)}>取消</button><button className="m10-button primary" onClick={()=>{pref.update({selected:'full',fullConfirmed:true});setConfirm(false);}}>继续使用完全访问</button></>}><p className="m13-perm-warn">智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。</p><div className="m13-note">这个选择只影响新建任务；插件写操作仍会单独询问。Claude Code 首次运行的原生风险提示仍由你在终端确认。</div></AgentDialog>}
+    {confirm&&<AgentDialog title="使用完全访问权限？" onClose={()=>setConfirm(false)} footer={<><button className="m10-button" onClick={()=>setConfirm(false)}>取消</button><button className="m10-button primary" onClick={()=>{pref.update({selected:'full',fullConfirmed:true});setConfirm(false);}}>继续使用完全访问</button></>}><p className="m13-perm-warn">{FULL_ACCESS_WARNING}</p><div className="m13-note">{FULL_ACCESS_NOTE}</div></AgentDialog>}
     {help&&<AgentDialog title="智能体权限" onClose={()=>setHelp(false)} footer={<button className="m10-button primary" onClick={()=>setHelp(false)}>知道了</button>}><p className="m13-perm-warn">权限档位决定 CLI 内置工具的批准方式。恢复任务沿用创建时的档位；在终端里切换权限不会同步回首页。插件写操作仍由 WillYou 单独审批。</p></AgentDialog>}
   </>;
 }

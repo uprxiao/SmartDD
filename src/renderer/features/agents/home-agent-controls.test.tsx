@@ -71,3 +71,9 @@ it('explicit file-build BASE_URL context produces relative icon hrefs beside fil
   for(const href of hrefs){expect(href.startsWith('./assets/')).toBe(true);const resolved=new URL(href,base);expect(resolved.href).toContain('/out/renderer/assets/');expect(resolved.pathname.startsWith('/assets/')).toBe(false);expect(existsSync(resolve('src/renderer/public',href.replace(/^\.\//,'')))).toBe(true);}
  }finally{vi.unstubAllEnvs();}
 });
+it('A12 home full-access confirmation states plugin writes no longer ask and mail still asks, the same as the task page (D06-67)',async()=>{
+ permission();await openPermission();fireEvent.click(fullItem());
+ const dialog=await screen.findByRole('dialog',{name:'使用完全访问权限？'});
+ expect(dialog.textContent).toContain('插件的写操作也不再询问，发送邮件仍会每次询问');
+ expect(dialog.textContent).not.toContain('插件写操作仍会单独询问');
+});
