@@ -1,0 +1,43 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/timeline.test.ts --maxWorkers=1
+
+[1119/031639.952886:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/031640.370401:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/timeline.test.ts (11 tests | 1 failed) 6ms
+     × A59: 钩子、MCP 启动和自动审批的终态修订原条目 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/timeline.test.ts > Codex 投影 > A59: 钩子、MCP 启动和自动审批的终态修订原条目
+AssertionError: expected undefined to match object { type: 'system_notice', …(1) }
+
+- Expected:
+{
+  "terminal": null,
+  "type": "system_notice",
+}
+
++ Received:
+undefined
+
+ ❯ src/main/core/agent/timeline.test.ts:68:18
+     66|     const lifecycle = (name: string, payload: object) => x.project({ t…
+     67|     const hook = lifecycle('hook/started', { run: { id: 'hook-1', even…
+     68|     expect(hook).toMatchObject({ type: 'system_notice', terminal: null…
+       |                  ^
+     69|     const failed = lifecycle('hook/completed', { run: { id: 'hook-1', …
+     70|     expect(failed).toMatchObject({ key: hook.key, terminal: 'failed', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  03:16:40
+   Duration  123ms (transform 25ms, setup 0ms, import 31ms, tests 6ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

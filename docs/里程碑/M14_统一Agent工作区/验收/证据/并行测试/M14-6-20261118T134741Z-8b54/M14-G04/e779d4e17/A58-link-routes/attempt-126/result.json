@@ -1,0 +1,448 @@
+{
+  "sourceCommit": "e779d4e1703b2de07789175422ddb3b3ceafe189",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "fixtures/archived-links.json": "f74296c9c404e9a0f6286bff9e41d890ab12155d8b6afade2cfc5a9666ea97c3",
+    "fixtures/normal.pdf": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "7ea76c07ef24e3baa9339e0436d564ca8b7230b8a7ec61357792fbcff55bf988"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T00:07:18.857Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.12",
+  "scope": "A58-no-project on two serial isolated App instances, ordinary loopback URL clicks only",
+  "cases": {
+    "A58-no-project": {
+      "status": "partial",
+      "passed": [
+        "valid project URL loaded local page in built-in browser",
+        "historical unlinked task loaded via actual task search; original stored URL click rejected before browser/HTTP creation"
+      ],
+      "missing": [
+        "external-editor and system modifier behaviors are outside this isolated no-project replay"
+      ],
+      "seedView": {
+        "taskId": "4ab9f7b6-f0eb-435b-97fc-b65c933c1650",
+        "itemId": "44e023e4-68cf-403e-a470-938240269e12",
+        "href": "http://127.0.0.1:3425/page?A58-no-project=7b607127-f0ab-4b4a-a725-c3b39d35b840",
+        "originalProjectId": "a2b9acf3-24e5-4f69-8761-4ae2ec614724"
+      },
+      "linkedPositive": {
+        "taskId": "80b5005b-6942-4aad-8b63-496b0ae1e655",
+        "tab": {
+          "id": "d4a0d1d3-3678-401b-a122-ab225c127870",
+          "url": "http://127.0.0.1:3425/page?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840",
+          "title": "M14 fixture sign-in seed",
+          "favicon": null,
+          "profileId": "project-a10660a2caa560e923465210",
+          "loading": false,
+          "canGoBack": true,
+          "canGoForward": false,
+          "failure": null,
+          "agentActive": false,
+          "agentRunning": false,
+          "agentHoldUntil": null,
+          "importState": "ready",
+          "certificate": null
+        },
+        "requests": [
+          {
+            "query": "?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840",
+            "hasSyntheticLogin": false
+          }
+        ]
+      },
+      "firstAppExit": {
+        "pid": 30216,
+        "code": 0,
+        "signal": null
+      },
+      "seededHistory": {
+        "before": {
+          "id": "4ab9f7b6-f0eb-435b-97fc-b65c933c1650",
+          "project_id": "a2b9acf3-24e5-4f69-8761-4ae2ec614724",
+          "dir_id": "5e71fad9-7b0e-44c7-8a1b-dcf3e95cadfc",
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/A58-history-seed 7b607127-f0ab-4b4a-a725-c3b39d35b840",
+          "title": "A58-history-seed 7b607127-f0ab-4b4a-a725-c3b39d35b840 stage 6",
+          "parent_task_id": null,
+          "archived_at": null
+        },
+        "after": {
+          "id": "4ab9f7b6-f0eb-435b-97fc-b65c933c1650",
+          "project_id": null,
+          "dir_id": null,
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/A58-history-seed 7b607127-f0ab-4b4a-a725-c3b39d35b840",
+          "title": "A58-history-seed 7b607127-f0ab-4b4a-a725-c3b39d35b840 stage 6",
+          "parent_task_id": null,
+          "archived_at": null
+        },
+        "itemId": "44e023e4-68cf-403e-a470-938240269e12",
+        "messageHash": "a337bd983127e36abec81e540314b9fb6e05501d1c474ae629a741bd733f5b0f"
+      },
+      "noProject": {
+        "taskId": "4ab9f7b6-f0eb-435b-97fc-b65c933c1650",
+        "expectedHref": "http://127.0.0.1:3425/page?A58-no-project=7b607127-f0ab-4b4a-a725-c3b39d35b840",
+        "warning": "请先关联项目，再在内置浏览器中打开网页",
+        "denied": [
+          {
+            "at": "2026-11-19T00:07:39.023Z",
+            "channel": "agentTasks.resolveLink",
+            "sender": 1,
+            "args": [
+              {
+                "taskId": "4ab9f7b6-f0eb-435b-97fc-b65c933c1650",
+                "itemId": "44e023e4-68cf-403e-a470-938240269e12",
+                "href": "http://127.0.0.1:3425/page?A58-no-project=7b607127-f0ab-4b4a-a725-c3b39d35b840"
+              }
+            ],
+            "error": "Error: 请先关联项目，再在内置浏览器中打开网页"
+          }
+        ],
+        "noTab": true,
+        "noHttp": true,
+        "source": "legacy-compatible synthetic task loaded from the database after a normal isolated App exit"
+      }
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T00:07:27.578Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T00:07:27.620Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T00:07:27.645Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T00:07:28.354Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"4ab9f7b6-f0eb-435b-97fc-b65c933c1650\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T00:07:28.366Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T00:07:28.416Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T00:07:31.836Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"80b5005b-6942-4aad-8b63-496b0ae1e655\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "at": "2026-11-19T00:07:31.866Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T00:07:31.898Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T00:07:33.296Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "有项目网页",
+      "x": 539,
+      "y": 261.734375
+    },
+    {
+      "at": "2026-11-19T00:07:38.749Z",
+      "selector": "[data-testid=\"nav-search\"]",
+      "x": 264.5,
+      "y": 68
+    },
+    {
+      "at": "2026-11-19T00:07:38.804Z",
+      "selector": "[data-testid=\"task-search-input\"]",
+      "x": 715.4545135498047,
+      "y": 418.5409851074219
+    },
+    {
+      "at": "2026-11-19T00:07:38.880Z",
+      "selector": "[data-testid=\"task-search-result\"][data-task-id=\"4ab9f7b6-f0eb-435b-97fc-b65c933c1650\"]",
+      "x": 719.9999694824219,
+      "y": 542.7784118652344
+    },
+    {
+      "at": "2026-11-19T00:07:39.025Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "无项目网页",
+      "x": 347,
+      "y": 305.125
+    }
+  ],
+  "model": [
+    {
+      "caseId": "A58-history-seed 7b607127-f0ab-4b4a-a725-c3b39d35b840",
+      "model": "m14-workspace-fixture",
+      "toolPresent": true,
+      "invoke": false
+    },
+    {
+      "caseId": "A58-linked-control 7b607127-f0ab-4b4a-a725-c3b39d35b840",
+      "model": "m14-workspace-fixture",
+      "toolPresent": true,
+      "invoke": false
+    }
+  ],
+  "page": [
+    {
+      "query": "?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840",
+      "hasSyntheticLogin": false
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/home",
+    "at": "2026-11-19T00:07:36.226Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 30904,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/home",
+    "packaged": true
+  },
+  "appRuns": [
+    {
+      "pid": 30216,
+      "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/data",
+      "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/home",
+      "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/home",
+      "packaged": true
+    },
+    {
+      "pid": 30904,
+      "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/data",
+      "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/home",
+      "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-126/home",
+      "packaged": true
+    }
+  ],
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "routeDiagnostics": {
+    "linked-controls": {
+      "rows": [
+        {
+          "at": "2026-11-19T00:07:33.295Z",
+          "channel": "agentTasks.resolveLink",
+          "sender": 1,
+          "args": [
+            {
+              "taskId": "80b5005b-6942-4aad-8b63-496b0ae1e655",
+              "itemId": "3f70d451-6e84-4990-ad19-3eb27815d72d",
+              "href": "http://127.0.0.1:3425/page?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840"
+            }
+          ],
+          "value": {
+            "kind": "web",
+            "taskId": "80b5005b-6942-4aad-8b63-496b0ae1e655",
+            "url": "http://127.0.0.1:3425/page?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840"
+          },
+          "delivered": true
+        },
+        {
+          "at": "2026-11-19T00:07:33.296Z",
+          "channel": "browser.create",
+          "sender": 1,
+          "args": [
+            {
+              "taskId": "80b5005b-6942-4aad-8b63-496b0ae1e655"
+            }
+          ],
+          "value": {
+            "taskId": "80b5005b-6942-4aad-8b63-496b0ae1e655",
+            "projectId": "ee099f78-88fd-47fb-8770-86d741467199",
+            "tabs": [
+              {
+                "id": "d4a0d1d3-3678-401b-a122-ab225c127870",
+                "url": "about:blank",
+                "title": "新标签页",
+                "favicon": null,
+                "profileId": "project-a10660a2caa560e923465210",
+                "loading": false,
+                "canGoBack": false,
+                "canGoForward": false,
+                "failure": null,
+                "agentActive": false,
+                "agentRunning": false,
+                "agentHoldUntil": null,
+                "importState": "ready",
+                "certificate": null
+              }
+            ],
+            "activeId": "d4a0d1d3-3678-401b-a122-ab225c127870",
+            "recent": [],
+            "notice": null,
+            "external": null,
+            "find": {
+              "active": 0,
+              "total": 0
+            },
+            "paused": false,
+            "permission": null,
+            "downloads": [],
+            "auth": null,
+            "authCancelled": null,
+            "javascriptDialog": null
+          },
+          "delivered": true
+        },
+        {
+          "at": "2026-11-19T00:07:33.298Z",
+          "channel": "browser.navigate",
+          "sender": 1,
+          "args": [
+            {
+              "taskId": "80b5005b-6942-4aad-8b63-496b0ae1e655",
+              "tabId": "d4a0d1d3-3678-401b-a122-ab225c127870",
+              "address": "http://127.0.0.1:3425/page?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840"
+            }
+          ],
+          "value": {
+            "taskId": "80b5005b-6942-4aad-8b63-496b0ae1e655",
+            "projectId": "ee099f78-88fd-47fb-8770-86d741467199",
+            "tabs": [
+              {
+                "id": "d4a0d1d3-3678-401b-a122-ab225c127870",
+                "url": "http://127.0.0.1:3425/page?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840",
+                "title": "M14 fixture sign-in seed",
+                "favicon": null,
+                "profileId": "project-a10660a2caa560e923465210",
+                "loading": true,
+                "canGoBack": true,
+                "canGoForward": false,
+                "failure": null,
+                "agentActive": false,
+                "agentRunning": false,
+                "agentHoldUntil": null,
+                "importState": "ready",
+                "certificate": null
+              }
+            ],
+            "activeId": "d4a0d1d3-3678-401b-a122-ab225c127870",
+            "recent": [
+              {
+                "url": "http://127.0.0.1:3425/page?A58-linked=7b607127-f0ab-4b4a-a725-c3b39d35b840",
+                "title": "M14 fixture sign-in seed",
+                "host": "127.0.0.1:3425",
+                "visitedAt": 1795046853477
+              }
+            ],
+            "notice": null,
+            "external": null,
+            "find": {
+              "active": 0,
+              "total": 0
+            },
+            "paused": false,
+            "permission": null,
+            "downloads": [],
+            "auth": null,
+            "authCancelled": null,
+            "javascriptDialog": null
+          },
+          "delivered": true
+        }
+      ],
+      "restored": [
+        [
+          "agentTasks.resolveLink",
+          true
+        ],
+        [
+          "browser.create",
+          true
+        ],
+        [
+          "browser.navigate",
+          true
+        ],
+        [
+          "files.applications",
+          true
+        ],
+        [
+          "files.openExternal",
+          true
+        ]
+      ]
+    },
+    "historical-link": {
+      "rows": [
+        {
+          "at": "2026-11-19T00:07:39.023Z",
+          "channel": "agentTasks.resolveLink",
+          "sender": 1,
+          "args": [
+            {
+              "taskId": "4ab9f7b6-f0eb-435b-97fc-b65c933c1650",
+              "itemId": "44e023e4-68cf-403e-a470-938240269e12",
+              "href": "http://127.0.0.1:3425/page?A58-no-project=7b607127-f0ab-4b4a-a725-c3b39d35b840"
+            }
+          ],
+          "error": "Error: 请先关联项目，再在内置浏览器中打开网页"
+        }
+      ],
+      "restored": [
+        [
+          "agentTasks.resolveLink",
+          true
+        ],
+        [
+          "browser.create",
+          true
+        ],
+        [
+          "browser.navigate",
+          true
+        ],
+        [
+          "files.applications",
+          true
+        ],
+        [
+          "files.openExternal",
+          true
+        ]
+      ]
+    }
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:61064/d47825c3-3894-440d-89db-997ee33a644e\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:61064/d47825c3-3894-440d-89db-997ee33a644e\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:61023/devtools/browser/96a2d66c-aa36-4963-92e6-2b89f37fd510\n(node:30904) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65524:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65524:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'agentTasks.resolveLink': DriverError: 请先关联项目，再在内置浏览器中打开网页\n    at MessageLinks.resolve (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:53911:35)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52609:25\n    at run (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52589:12)\n    at resolveLink (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52607:34)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at observed (eval at <anonymous> (:1:131), <anonymous>:12:31)\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677)\n    at Session.emit (node:events:509:28) {\n  code: 'REJECTED',\n  nativeCode: undefined\n}\n",
+  "rendererErrors": [],
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T00:07:39.842Z"
+}

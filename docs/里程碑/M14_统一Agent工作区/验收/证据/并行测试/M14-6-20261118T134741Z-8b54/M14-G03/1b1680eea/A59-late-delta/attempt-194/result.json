@@ -1,0 +1,219 @@
+{
+  "caseId": "M14-A59",
+  "scope": "Exact packaged App. Two same-turn real native Codex local read commands and an actual work fold; no permission change",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-194/runtime-zmJYZ8/home",
+    "at": "2026-11-19T02:51:30.870Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "native-tool-fold",
+  "expectedOracle": "overlap",
+  "sourceCommit": "1b1680eeab910d29a5e86dbe73698f27c93b4bdf",
+  "asar": "46ec40fcc1743fc83ee689c608ab4ea1e100cfd24bf2bfce483065f27a22e025",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a59-fold-native-packaged.mjs": "25d70e1c65f38a4b13265ce44f3e30033cdfc78859547d48e3fabe44b68aae5f",
+    "pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665",
+    "provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "native-fold-provider.mjs": "688966072876ec0530295b07a8a9ee5d1047e780a13730aba95013d7b66511e8"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"b24dd80e-dc00-4d36-ae1a-83b69f86f0c0\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795056695469
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795056695583
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795056695588
+    }
+  ],
+  "requests": [
+    {
+      "kind": "two advertised native calls",
+      "parallelToolCalls": true,
+      "callIds": [
+        "callf0e8fcba-2840-43c9-a86f-b93ecd6a7e8a",
+        "call5b60f673-d373-4a41-aea3-8a2a73a8f1b7"
+      ]
+    },
+    {
+      "kind": "exact two native read results",
+      "callIds": [
+        "callf0e8fcba-2840-43c9-a86f-b93ecd6a7e8a",
+        "call5b60f673-d373-4a41-aea3-8a2a73a8f1b7"
+      ]
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "failed",
+  "port": 3425,
+  "commands": [],
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-194/runtime-zmJYZ8/project",
+    "model": "a59-native-two-tools",
+    "engine": "codex"
+  },
+  "pid": 13065,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-194/runtime-zmJYZ8/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-194/runtime-zmJYZ8/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-194/runtime-zmJYZ8/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    13065
+  ],
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.328"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "completed": {
+    "turn": {
+      "turn_id": "fb918d71-69bf-42e2-b282-dc42965ad2ae",
+      "client_input_id": "in-dc203050a2b34638b97f42cebc9adf4f",
+      "status": "completed",
+      "native_turn_id": "01a1f1b7-7d55-72c3-a09e-1562c9bb0dda",
+      "accepted_at": "2026-11-19T02:51:35.589Z",
+      "started_at": "2026-11-19T02:51:36.663Z",
+      "ended_at": "2026-11-19T02:51:38.873Z",
+      "error_code": null,
+      "run_id": "c01ab885-3dab-495c-bb33-2bd61133bc31",
+      "source_kind": "user"
+    },
+    "actions": [
+      {
+        "itemId": "50164c19-9bc2-4811-bf64-3f8eb0094726",
+        "turnId": "fb918d71-69bf-42e2-b282-dc42965ad2ae",
+        "type": "command_execution",
+        "ordinal": 4,
+        "revision": 2,
+        "payload": {
+          "command": "/bin/zsh -lc '/bin/sleep 2; /bin/cat ./a59-read-one.txt'",
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-194/runtime-zmJYZ8/project",
+          "output": "A59ACTUALFIRSTREAD\\n",
+          "exitCode": 0,
+          "status": "completed"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-19T02:51:36.849Z",
+        "updatedAt": "2026-11-19T02:51:38.847Z"
+      },
+      {
+        "itemId": "c300fae6-4c10-43af-bab8-027bc154218f",
+        "turnId": "fb918d71-69bf-42e2-b282-dc42965ad2ae",
+        "type": "command_execution",
+        "ordinal": 5,
+        "revision": 2,
+        "payload": {
+          "command": "/bin/zsh -lc '/bin/sleep 2; /bin/cat ./a59-read-two.txt'",
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-194/runtime-zmJYZ8/project",
+          "output": "A59ACTUALSECONDREAD\\n",
+          "exitCode": 0,
+          "status": "completed"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-19T02:51:36.849Z",
+        "updatedAt": "2026-11-19T02:51:38.857Z"
+      }
+    ],
+    "run": {
+      "runId": "c01ab885-3dab-495c-bb33-2bd61133bc31",
+      "generation": 1,
+      "driverId": "codex-app-server",
+      "tier": "ask",
+      "defaultModel": "a59-native-two-tools",
+      "models": [
+        {
+          "id": "a59-native-two-tools",
+          "name": "a59-native-two-tools",
+          "efforts": [],
+          "defaultEffort": "none"
+        }
+      ],
+      "busy": false,
+      "steer": true,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "goal",
+          "compact",
+          "review"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser",
+            "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug",
+            "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-mail-work-assistant",
+            "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-project-db-diagnostics",
+            "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-remote-password-ssh",
+            "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "imagegen",
+            "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+          },
+          {
+            "name": "openai-docs",
+            "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+          },
+          {
+            "name": "review-agent",
+            "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+          },
+          {
+            "name": "skill-creator",
+            "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+          },
+          {
+            "name": "skill-installer",
+            "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+          }
+        ]
+      }
+    }
+  },
+  "phase": "actual native commands execute in one real task turn",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'A59ACTUALFIRSTREAD\\\\n'\n- 'A59ACTUALFIRSTREAD\\n'\n                      ^\n\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a59-native-late/a59-fold-native-packaged.mjs:181:12",
+  "exit": {
+    "pid": 13065,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "finalError": "AssertionError [ERR_ASSERTION]: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'A59ACTUALFIRSTREAD\\\\n'\n- 'A59ACTUALFIRSTREAD\\n'\n                      ^\n\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a59-native-late/a59-fold-native-packaged.mjs:181:12\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a59-native-late/a59-fold-native-packaged.mjs:235:3\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)"
+}

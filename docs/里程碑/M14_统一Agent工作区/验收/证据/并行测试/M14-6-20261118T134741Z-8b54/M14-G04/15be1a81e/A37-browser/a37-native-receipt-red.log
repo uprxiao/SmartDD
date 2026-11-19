@@ -1,0 +1,46 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs --maxWorkers=1 src/main/core/applications/__tests__/native-cli.test.ts -t 'prints a typed host request'
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/applications/__tests__/native-cli.test.ts (11 tests | 1 failed | 10 skipped) 2494ms
+     × prints a typed host request receipt separately from a business execution result 1556ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/native-cli.test.ts > M11 native standalone CLI with real kernel peer identification (controlled Agent root) > prints a typed host request receipt separately from a business execution result
+AssertionError: expected { code: 4, signal: null, …(3) } to match object { code: +0, stderr: '', …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "code": 0,
++   "code": 4,
+    "signal": null,
+-   "stderr": "",
++   "stderr": "willyou-app: INVALID_RESPONSE
++ ",
+    "timedOut": false,
+  }
+
+ ❯ src/main/core/applications/__tests__/native-cli.test.ts:42:21
+     40|
+     41|   const submitted = await launch(['mail','draft','list']).done;
+     42|   expect(submitted).toMatchObject({ code: 0, stderr: '', signal: null,…
+       |                     ^
+     43|   expect(JSON.parse(submitted.stdout)).toEqual(value);
+     44|   expect(f.sqlite.prepare('SELECT count(*) n FROM application_invocati…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 skipped (11)
+   Start at  05:08:05
+   Duration  3.59s (transform 706ms, setup 0ms, import 1.03s, tests 2.49s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

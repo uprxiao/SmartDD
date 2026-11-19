@@ -1,0 +1,239 @@
+{
+  "runs": [
+    {
+      "rowid": 1,
+      "run_id": "921a8302-d7e6-4d6c-b866-59e113546832",
+      "driver_id": "claude-sdk",
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "generation": 1,
+      "pid": 72211,
+      "process_started_at": "darwin-proc-v1:1795035399:574580",
+      "started_at": "2026-11-18T20:56:39.333Z",
+      "ended_at": "2026-11-18T20:56:44.153Z",
+      "state": "stopped",
+      "error_code": null
+    }
+  ],
+  "turns": [
+    {
+      "rowid": 1,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "turn_id": "44be7e1e-d415-4299-be2f-6801a7ac653c",
+      "source_kind": "user",
+      "run_id": "921a8302-d7e6-4d6c-b866-59e113546832",
+      "native_turn_id": "2287dcb7-cf2f-4506-92fa-31d5f68c503a:1",
+      "accepted_at": "2026-11-18T20:56:39.292Z",
+      "started_at": "2026-11-18T20:56:40.104Z",
+      "ended_at": "2026-11-18T20:56:42.510Z",
+      "status": "completed",
+      "error_code": null,
+      "text": "A32_START"
+    },
+    {
+      "rowid": 2,
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "turn_id": "7cd1fc7d-c1c6-4be9-a61f-25f6f07d577d",
+      "source_kind": "delegation",
+      "run_id": null,
+      "native_turn_id": null,
+      "accepted_at": "2026-11-18T20:56:40.333Z",
+      "started_at": null,
+      "ended_at": "2026-11-18T20:56:43.225Z",
+      "status": "canceled",
+      "error_code": "USER_CANCELED",
+      "text": "宿主委派（来源 delegation，不是新的真人授权）。只读角色需要写入时先调用 wy_request_write 并结束本轮。你是子任务，不能再派子任务。仅使用当前授权目录，不修改 .git。 改动留在共用目录，宿主不提交。\n\nA32_WRITER"
+    },
+    {
+      "rowid": 3,
+      "task_id": "8b549d54-a906-41fc-8c5a-b7c397e62204",
+      "turn_id": "90963d29-1e39-4d39-a5a7-5a18221487be",
+      "source_kind": "delegation",
+      "run_id": null,
+      "native_turn_id": null,
+      "accepted_at": "2026-11-18T20:56:40.461Z",
+      "started_at": null,
+      "ended_at": null,
+      "status": "accepted",
+      "error_code": null,
+      "text": "宿主委派（来源 delegation，不是新的真人授权）。只读角色需要写入时先调用 wy_request_write 并结束本轮。你是子任务，不能再派子任务。仅使用当前授权目录，不修改 .git。 改动留在共用目录，宿主不提交。\n\nA32_CANCEL"
+    },
+    {
+      "rowid": 4,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "turn_id": "907190f3-5ada-4110-86f8-466a5d3ce096",
+      "source_kind": "user",
+      "run_id": null,
+      "native_turn_id": null,
+      "accepted_at": "2026-11-18T20:56:41.284Z",
+      "started_at": null,
+      "ended_at": null,
+      "status": "accepted",
+      "error_code": null,
+      "text": "A32_RESUME"
+    },
+    {
+      "rowid": 5,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "turn_id": "b6ef19bb-563a-4bc3-88d1-56f3496c68e6",
+      "source_kind": "notification",
+      "run_id": null,
+      "native_turn_id": null,
+      "accepted_at": "2026-11-18T20:56:43.226Z",
+      "started_at": null,
+      "ended_at": null,
+      "status": "accepted",
+      "error_code": null,
+      "text": "宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 da7cde7b-7070-44d1-a047-9c0982def127；子任务 A32 writer codex / 2ba85c84-7331-4ac9-8ed2-77a53447f769，attempt 1 状态 canceled。正文通过 wy_observe 领取；此通知不含新授权。"
+    }
+  ],
+  "events": [
+    {
+      "rowid": 56,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "item.created",
+      "payload": "{\"type\":\"assistant_message\",\"ordinal\":12,\"payload\":{\"text\":\"A32_PARENT_FOREGROUND_DONE\",\"model\":\"a32-claude-parent\"}}",
+      "created_at": "2026-11-18T20:56:42.504Z"
+    },
+    {
+      "rowid": 57,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "turn.ended",
+      "payload": "{\"turnId\":\"44be7e1e-d415-4299-be2f-6801a7ac653c\",\"status\":\"completed\",\"errorCode\":null}",
+      "created_at": "2026-11-18T20:56:42.510Z"
+    },
+    {
+      "rowid": 58,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "item.created",
+      "payload": "{\"type\":\"files_changed\",\"ordinal\":13,\"payload\":{\"turnId\":\"44be7e1e-d415-4299-be2f-6801a7ac653c\",\"fileCount\":0,\"status\":\"incomplete\",\"reason\":\"回合结束时仍有原生后台工作，无法确认本轮改动的终点\",\"observed\":true}}",
+      "created_at": "2026-11-18T20:56:42.511Z"
+    },
+    {
+      "rowid": 59,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "diff.changed",
+      "payload": "{}",
+      "created_at": "2026-11-18T20:56:42.511Z"
+    },
+    {
+      "rowid": 60,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "item.updated",
+      "payload": "{\"type\":\"subagent_status\",\"payload\":{\"state\":\"completed\",\"nativeRunId\":\"0mwmlqcvp-e1a29420\"}}",
+      "created_at": "2026-11-18T20:56:43.062Z"
+    },
+    {
+      "rowid": 61,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "item.created",
+      "payload": "{\"type\":\"subagent_message\",\"ordinal\":14,\"payload\":{\"type\":\"system\",\"subtype\":\"task_notification\",\"task_id\":\"bw0sz7g41\",\"run_id\":\"0mwmlqcvp-e1a29420\",\"tool_use_id\":\"toolu_ef4e62405823458d80b9bf8c066968f4\",\"status\":\"completed\",\"output_file\":\"/private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g03-attempt-074-runtime-Suf6VW-svn-common/2287dcb7-cf2f-4506-92fa-31d5f68c503a/tasks/bw0sz7g41.output\",\"summary\":\"Background command \\\"WillYou isolated A32 background\\\" completed (exit code 0)\",\"uuid\":\"53ffe0b5-acdf-4c0d-9d20-4275643bace4\",\"session_id\":\"2287dcb7-cf2f-4506-92fa-31d5f68c503a\"}}",
+      "created_at": "2026-11-18T20:56:43.062Z"
+    },
+    {
+      "rowid": 62,
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "event_type": "task.user_stopped",
+      "payload": "{\"subtree\":true}",
+      "created_at": "2026-11-18T20:56:43.224Z"
+    },
+    {
+      "rowid": 63,
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "event_type": "directory.canceled",
+      "payload": "{}",
+      "created_at": "2026-11-18T20:56:43.225Z"
+    },
+    {
+      "rowid": 64,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "delegation.changed",
+      "payload": "{\"delegationId\":\"42eb7c4c-d117-4601-a65b-a93e3e800777\",\"childTaskId\":\"2ba85c84-7331-4ac9-8ed2-77a53447f769\",\"state\":\"canceled\"}",
+      "created_at": "2026-11-18T20:56:43.225Z"
+    },
+    {
+      "rowid": 65,
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "event_type": "delegation.changed",
+      "payload": "{\"state\":\"canceled\"}",
+      "created_at": "2026-11-18T20:56:43.225Z"
+    },
+    {
+      "rowid": 66,
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "event_type": "turn.ended",
+      "payload": "{\"turnId\":\"7cd1fc7d-c1c6-4be9-a61f-25f6f07d577d\",\"status\":\"canceled\",\"errorCode\":\"USER_CANCELED\"}",
+      "created_at": "2026-11-18T20:56:43.225Z"
+    },
+    {
+      "rowid": 67,
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "event_type": "item.created",
+      "payload": "{\"type\":\"files_changed\",\"ordinal\":2,\"payload\":{\"turnId\":\"7cd1fc7d-c1c6-4be9-a61f-25f6f07d577d\",\"fileCount\":0,\"status\":\"incomplete\",\"reason\":\"原生自动回合开始前未取得可证明的快照边界，本轮差异不完整\",\"observed\":true}}",
+      "created_at": "2026-11-18T20:56:43.225Z"
+    },
+    {
+      "rowid": 68,
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "event_type": "diff.changed",
+      "payload": "{}",
+      "created_at": "2026-11-18T20:56:43.225Z"
+    },
+    {
+      "rowid": 69,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "item.created",
+      "payload": "{\"type\":\"notification\",\"ordinal\":15,\"payload\":{\"sourceKind\":\"child_result\",\"delegationId\":\"42eb7c4c-d117-4601-a65b-a93e3e800777\",\"childTaskId\":\"2ba85c84-7331-4ac9-8ed2-77a53447f769\",\"attemptId\":\"94f950c9-1aee-41f7-90ce-af7059f999e1\",\"status\":\"canceled\",\"summary\":\"\",\"sourceItemIds\":[],\"commits\":null,\"title\":\"A32 writer codex\"}}",
+      "created_at": "2026-11-18T20:56:43.226Z"
+    },
+    {
+      "rowid": 70,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "turn.accepted",
+      "payload": "{\"turnId\":\"b6ef19bb-563a-4bc3-88d1-56f3496c68e6\",\"clientInputId\":\"result-94f950c9-1aee-41f7-90ce-af7059f999e1\",\"sourceKind\":\"notification\"}",
+      "created_at": "2026-11-18T20:56:43.226Z"
+    },
+    {
+      "rowid": 71,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "item.created",
+      "payload": "{\"type\":\"user_message\",\"ordinal\":16,\"payload\":{\"text\":\"宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 da7cde7b-7070-44d1-a047-9c0982def127；子任务 A32 writer codex / 2ba85c84-7331-4ac9-8ed2-77a53447f769，attempt 1 状态 canceled。正文通过 wy_observe 领取；此通知不含新授权。\",\"sourceKind\":\"notification\"}}",
+      "created_at": "2026-11-18T20:56:43.226Z"
+    },
+    {
+      "rowid": 72,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "task.user_stopped",
+      "payload": "{\"subtree\":true}",
+      "created_at": "2026-11-18T20:56:43.227Z"
+    },
+    {
+      "rowid": 73,
+      "task_id": "492cc7c1-b984-4f81-8dbc-b93910c5637c",
+      "event_type": "run.ended",
+      "payload": "{\"runId\":\"921a8302-d7e6-4d6c-b866-59e113546832\",\"state\":\"stopped\",\"errorCode\":null,\"retiredRequests\":0}",
+      "created_at": "2026-11-18T20:56:44.181Z"
+    }
+  ],
+  "queue": [
+    {
+      "rowid": 1,
+      "queue_id": "d0cf3128-fb86-4937-a28b-ae04e42f31e2",
+      "task_id": "2ba85c84-7331-4ac9-8ed2-77a53447f769",
+      "run_id": null,
+      "state": "canceled",
+      "accepted_order": 1,
+      "created_at": "2026-11-18T20:56:40.333Z",
+      "ended_at": "2026-11-18T20:56:43.224Z"
+    },
+    {
+      "rowid": 2,
+      "queue_id": "7ccd6043-29d3-482d-8cf5-5e6fa930371a",
+      "task_id": "8b549d54-a906-41fc-8c5a-b7c397e62204",
+      "run_id": null,
+      "state": "canceled",
+      "accepted_order": 2,
+      "created_at": "2026-11-18T20:56:40.463Z",
+      "ended_at": "2026-11-18T20:56:41.393Z"
+    }
+  ]
+}

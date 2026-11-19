@@ -1,0 +1,33 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import Database from 'better-sqlite3';
+import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {randomUUID} from 'node:crypto';
+import {BrowserService} from '../service';
+import {browserProjectProfile} from '../profiles';
+vi.mock('electron',()=>({app:{userAgentFallback:'WillYou/0.1 Electron/42 Chrome/148'},session:{},nativeImage:{},shell:{}}));
+const fixtures:{service:BrowserService;sqlite:Database.Database;root:string;runs:Map<string,AbortController>}[]=[];
+afterEach(async()=>{for(const f of fixtures.splice(0)){for(const run of f.runs.values())run.abort();await f.service.dispose();f.sqlite.close();rmSync(f.root,{recursive:true,force:true});}vi.restoreAllMocks();});
+function fixture(){
+  const sqlite=new Database(':memory:');sqlite.exec('CREATE TABLE app_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at INTEGER NOT NULL);CREATE TABLE tasks(id TEXT PRIMARY KEY,project_id TEXT,title TEXT,cwd TEXT);CREATE TABLE projects(id TEXT PRIMARY KEY,name TEXT);');sqlite.exec(readFileSync('drizzle/0030_browser_operations.sql','utf8'));
+  const root=mkdtempSync(join(tmpdir(),'willyou-access-service-')),projects=new Map([['T1','P1'],['T2','P1'],['T3','P2']]);for(const[id,project]of projects)sqlite.prepare('INSERT INTO tasks VALUES(?,?,?,?)').run(id,project,id+' title',root);sqlite.prepare('INSERT INTO projects VALUES(?,?)').run('P1','Project One');
+  const runs=new Map<string,AbortController>(),service=new BrowserService({sqlite,userData:root,helper:{executable:'/must-not-run',sha256:'0'.repeat(64)},taskProject:id=>projects.get(id)??null,taskDirectory:()=>root});fixtures.push({service,sqlite,root,runs});
+  return {service,sqlite};
+}
+
+it('keeps the same persistent browser access target on cold startup without opening the native page',async()=>{
+  const f=fixture(),id=randomUUID(),url='https://fixture.example.test/cold';
+  f.sqlite.prepare('INSERT INTO app_settings VALUES(?,?,1)').run('browserWorkspace.v1:T2',JSON.stringify({
+    version:1,tabs:[{id,url,title:'Previously open tab',favicon:null,profileId:browserProjectProfile('P1')}],
+    activeId:id,closed:[],
+  }));
+  const create=vi.spyOn(f.service.pages,'create');
+  expect(f.service.workspace.snapshot('T2').tabs).toMatchObject([{id,url}]);
+  expect(f.service.pages.all()).toHaveLength(0);
+  expect(f.service.accessTarget('T2')).toEqual({projectId:'P1',pages:[{id,url}]});
+  expect(create).not.toHaveBeenCalled();
+  await f.service.workspace.close('T2',id);
+  expect(f.service.accessTarget('T2')).toEqual({projectId:'P1',pages:[]});
+  expect(create).not.toHaveBeenCalled();
+});

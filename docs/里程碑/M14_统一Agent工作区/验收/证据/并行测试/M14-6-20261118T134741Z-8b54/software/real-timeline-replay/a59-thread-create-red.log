@@ -1,0 +1,40 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/delegation-service.test.ts --maxWorkers=1 -t 'persists one delegated creation record'
+
+[1119/023345.757570:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/023345.947940:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/delegation-service.test.ts (36 tests | 1 failed | 35 skipped) 60ms
+   × A59 persists one delegated creation record with the selected target and later native binding 60ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > A59 persists one delegated creation record with the selected target and later native binding
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/main/core/agent/delegation-service.test.ts:87:23
+     85|   const creations = () => f.store.items(f.taskId).filter(item => item.…
+     86|   const [initial] = creations();
+     87|   expect(creations()).toHaveLength(1);
+       |                       ^
+     88|   expect(initial.payload).toMatchObject({ delegationId: accepted.deleg…
+     89|     bindingId: null, target: { profileId: 'child', driverId: 'codex-ap…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 35 skipped (36)
+   Start at  02:33:45
+   Duration  481ms (transform 293ms, setup 0ms, import 346ms, tests 60ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

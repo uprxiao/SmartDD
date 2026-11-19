@@ -1,0 +1,81 @@
+{
+  "scope": "Usage classification and manual recovery passed; declared reset was not exposed by native as a typed timestamp",
+  "sourceCommit": "703ec066f36e10ffb490b19f818b385641de19ad",
+  "asar": "cb65cbeb53d8145a8dd80972ecb76ec3a09425ad0926808bdb61cdaa7c2b078b",
+  "nativeTool": {
+    "kind": "codex",
+    "version": "0.169.0"
+  },
+  "providerFixture": {
+    "status": 429,
+    "headers": {
+      "content-type": "application/json",
+      "retry-after": "1",
+      "x-codex-primary-used-percent": "100",
+      "x-codex-primary-window-minutes": "300",
+      "x-codex-primary-reset-after-seconds": "23"
+    },
+    "body": {
+      "error": {
+        "type": "usage_limit_reached",
+        "code": "usage_limit_reached",
+        "message": "A60 local usage limit reached",
+        "plan_type": "plus",
+        "resets_at": 1795051546,
+        "resets_in_seconds": 23
+      }
+    }
+  },
+  "nativeRateLimits": {
+    "rollout": "runtime-tvdB5O/data/agents/codex/911abf685e90f6341f05017f7d83f3a0/sessions/2026/11/19/rollout-2026-11-19T09-25-22-01a1f168-8944-7af1-8ee2-0fc9594d1721.jsonl",
+    "line": 24,
+    "value": {
+      "used_percent": 100.0,
+      "window_minutes": 300,
+      "resets_at": null
+    }
+  },
+  "nativeTerminal": {
+    "line": 25,
+    "error": {
+      "message": "You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 9:25 AM.",
+      "codex_error_info": "usage_limit_exceeded"
+    }
+  },
+  "hostProjection": {
+    "code": "usageLimitExceeded",
+    "message": "You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 9:25 AM.",
+    "limited": {
+      "kind": "usage"
+    }
+  },
+  "card": {
+    "text": "额度已用完\n本轮已暂停，部分结果已保留。稍后手动继续（不会自动换账号或到点重跑）。\n继续",
+    "buttons": [
+      "继续"
+    ]
+  },
+  "quietBeforeManualMs": 3603,
+  "crossedNativeStructuredReset": false,
+  "explicitRecovery": {
+    "fromTurn": "01a1f168-8cb9-7581-9d71-72f43f04be88",
+    "toTurn": "01a1f168-9bc8-79c2-ae87-2e04e730f3fc",
+    "line": 36,
+    "count": 1,
+    "providerRequestAt": 1795051527131,
+    "clickAt": 1795051526963,
+    "sameRun": true
+  },
+  "normalExit": {
+    "pid": 8623,
+    "code": 0,
+    "signal": null
+  },
+  "sha256": {
+    "result.json": "ecadf500c30719b9e9c08774d3999d001a4556892956a6cbc7fa287c5a92d945",
+    "01-actual-native-terminal.png": "2c02dd4765bc39532af7054fda9b573b827552ff649e0f44d4ab491380d9fd9c",
+    "02-explicit-new-turn-recovered.png": "6bfee438d6f6404d386a47f7d20777906c4dd04c36a7edcb34bfb1f3d3885c10",
+    "quit-phase.jsonl": "9738a6a5c3b8b60df12ab68d25202849e5bc34d1fbeec65b6c6672047b8b6a66",
+    "runtime-tvdB5O/data/agents/codex/911abf685e90f6341f05017f7d83f3a0/sessions/2026/11/19/rollout-2026-11-19T09-25-22-01a1f168-8944-7af1-8ee2-0fc9594d1721.jsonl": "b8d2d7d231349a2072d42587729e04bfe1db9a9694c5ca31e447551ae2aa870c"
+  }
+}

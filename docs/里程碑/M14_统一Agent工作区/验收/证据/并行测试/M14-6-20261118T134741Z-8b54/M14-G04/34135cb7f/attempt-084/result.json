@@ -1,0 +1,832 @@
+{
+  "caseId": "M14-A65",
+  "scope": "Real packaged App via bound background CDP, real native Claude parent and provider Codex writer/trusted reader, loopback synthetic inference only.",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/home",
+    "at": "2026-11-18T19:24:52.372Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "git",
+  "sourceCommit": "34135cb7f7684b6d5407204405ee29c7c46739c7",
+  "asar": "193d1833a1ad2bb7b6ac13eb574ae791e85dd53ffcf7708baf0ab3534762df83",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a65-mixed-observation.mjs": "13d55ac43edff3b60b05d2575388ae486686558bf5a30f9909dddb190d2db212",
+    "a65-mixed-receipts.mjs": "7def1f09f4034c3061f2893f1522d5b967efe633f6e8055ab51305e2761c776b",
+    "a74-native-target-receipts.mjs": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+  },
+  "observations": [
+    {
+      "label": "reader runs while writer remains queued behind parent",
+      "at": "2026-11-18T19:25:00.392Z",
+      "queued": [
+        {
+          "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+          "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+          "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "run_id": null,
+          "kind": "write",
+          "state": "queued"
+        }
+      ],
+      "childInfo": [
+        {
+          "id": "writer",
+          "profile": "codex",
+          "access": "write",
+          "model": "fixture-a65-writer",
+          "title": "A65 native writer",
+          "input": "A65_X2_CHILD_writer",
+          "answer": "A65_NATIVE_DONE_writer",
+          "delegationId": "a381be81-b00f-452f-a048-030dc7b178b6",
+          "childTaskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "state": "queued",
+          "resultRevision": 0,
+          "profileName": "Fixture codex",
+          "attempts": 1,
+          "needsHandling": false,
+          "workspace": null,
+          "workspaceMode": "shared",
+          "archived": false,
+          "waitingUser": false,
+          "elapsedSeconds": null,
+          "merged": false,
+          "pendingMerge": false,
+          "parentTaskId": "024bfa60-ecd8-4cf3-91c2-49f6699709ff"
+        },
+        {
+          "id": "reader",
+          "profile": "codex",
+          "access": "read",
+          "model": "fixture-a65-reader",
+          "title": "A65 native reader",
+          "input": "A65_X2_CHILD_reader",
+          "answer": "A65_NATIVE_DONE_reader",
+          "delegationId": "05f9f1f3-29ea-4bce-aded-bbd026d48c12",
+          "childTaskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "state": "running",
+          "resultRevision": 0,
+          "profileName": "Fixture codex",
+          "attempts": 1,
+          "needsHandling": false,
+          "workspace": null,
+          "workspaceMode": "shared",
+          "archived": false,
+          "waitingUser": false,
+          "elapsedSeconds": null,
+          "merged": false,
+          "pendingMerge": false,
+          "parentTaskId": "024bfa60-ecd8-4cf3-91c2-49f6699709ff"
+        }
+      ],
+      "roleText": "F\nA65 native reader\nFixture codex · 共用目录 · 只读并行\n工作中",
+      "readerPolicy": {
+        "source": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/data/agents/codex/7f494be12d320afde7c3cce6caf90ba4/sessions/2026/11/19/rollout-2026-11-19T03-24-59-01a1f01e-9a1e-78c0-97d0-19ce7d1d4446.jsonl",
+        "turnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+        "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+        "sandbox": {
+          "type": "read-only"
+        }
+      },
+      "readerWhileQueued": {
+        "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+        "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+        "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+        "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+        "status": "started"
+      }
+    },
+    {
+      "label": "exact writer before-ref precedes any source changes",
+      "at": "2026-11-18T19:25:01.928Z",
+      "beforeRow": {
+        "turn_id": "0ea6a94d-1227-4a48-957a-d397884301f5",
+        "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+        "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+        "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project\",\"dev\":\"16777231\",\"ino\":\"362631345\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project\",\"ref\":\"refs/willyou/turns/0ea6a94d-1227-4a48-957a-d397884301f5/before\",\"commit\":\"aff94017919172d98a7680c908c4d85a9f281356\",\"tree\":\"2d6d7831009e81abefd275902ad3ed6fdc68922b\",\"private\":false}",
+        "after_ref": null,
+        "changed_files_json": "[]",
+        "status": "capturing",
+        "incomplete_reason": null,
+        "retained_until": null
+      },
+      "writerBegan": {
+        "active": {
+          "writer": {
+            "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+            "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+            "kind": "write",
+            "state": "active"
+          },
+          "reader": {
+            "task_id": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+            "kind": "read",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "nativePolicy": "read-only"
+          },
+          "scope": [
+            {
+              "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+              "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+              "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+              "kind": "write",
+              "state": "active"
+            }
+          ]
+        },
+        "writerTurn": {
+          "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+          "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+          "status": "started"
+        },
+        "readerTurn": {
+          "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+          "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+          "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "status": "started"
+        }
+      }
+    },
+    {
+      "label": "live native shell call was offered",
+      "at": "2026-11-18T19:25:01.928Z",
+      "child": "writer",
+      "id": "callfcd57e75-e9fb-4bcd-8ce0-de5ced02386e",
+      "args": {
+        "cmd": "printf '%s\\n' 'A65_NATIVE_WRITER_INTERVAL' > writer.txt && cat writer.txt"
+      }
+    },
+    {
+      "label": "recorded exact original native command output",
+      "at": "2026-11-18T19:25:02.081Z",
+      "child": "writer",
+      "callId": "callfcd57e75-e9fb-4bcd-8ce0-de5ced02386e",
+      "text": "Chunk ID: bc835e\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 7\nOutput:\nA65_NATIVE_WRITER_INTERVAL\n",
+      "expected": [
+        "A65_NATIVE_WRITER_INTERVAL"
+      ]
+    },
+    {
+      "label": "native writer file and separate process mutation coexist in the same interval",
+      "at": "2026-11-18T19:25:02.433Z",
+      "writerDidWrite": {
+        "active": {
+          "writer": {
+            "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+            "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+            "kind": "write",
+            "state": "active"
+          },
+          "reader": {
+            "task_id": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+            "kind": "read",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "nativePolicy": "read-only"
+          },
+          "scope": [
+            {
+              "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+              "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+              "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+              "kind": "write",
+              "state": "active"
+            }
+          ]
+        },
+        "writerTurn": {
+          "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+          "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+          "status": "started"
+        },
+        "readerTurn": {
+          "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+          "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+          "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "status": "started"
+        }
+      },
+      "externalObserved": {
+        "active": {
+          "writer": {
+            "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+            "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+            "kind": "write",
+            "state": "active"
+          },
+          "reader": {
+            "task_id": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+            "kind": "read",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "nativePolicy": "read-only"
+          },
+          "scope": [
+            {
+              "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+              "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+              "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+              "kind": "write",
+              "state": "active"
+            }
+          ]
+        },
+        "writerTurn": {
+          "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+          "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+          "status": "started"
+        },
+        "readerTurn": {
+          "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+          "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+          "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "status": "started"
+        }
+      },
+      "externalAt": "2026-11-18T19:25:02.259Z",
+      "externalPid": 33859,
+      "writerOutput": {
+        "callId": "callfcd57e75-e9fb-4bcd-8ce0-de5ced02386e",
+        "text": "Chunk ID: bc835e\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 7\nOutput:\nA65_NATIVE_WRITER_INTERVAL\n",
+        "expected": [
+          "A65_NATIVE_WRITER_INTERVAL"
+        ]
+      },
+      "source": {
+        "external.txt": "A65_EXTERNAL_PROCESS_INTERVAL",
+        "reader.txt": "A65_BEFORE_reader.txt",
+        "writer.txt": "A65_NATIVE_WRITER_INTERVAL"
+      },
+      "sourceHashes": {
+        "external.txt": "859c5f9f84381ddb618ba4f7f11059e07b29821d39164dda898e4bae57672d8c",
+        "reader.txt": "aba5ca891a0c3c875e0d4fe09e0a41b64454de4a5797a26f10278f0548485b77",
+        "writer.txt": "2ed925ac6f1725851475b72c68b4d5f35931136b66fd605933a191397dbab017"
+      }
+    },
+    {
+      "label": "live native shell call was offered",
+      "at": "2026-11-18T19:25:02.558Z",
+      "child": "reader",
+      "id": "callf98a5043-5c3d-4bf8-850f-360ed3c69b50",
+      "args": {
+        "cmd": "cat writer.txt external.txt"
+      }
+    },
+    {
+      "label": "recorded exact original native command output",
+      "at": "2026-11-18T19:25:02.610Z",
+      "child": "reader",
+      "callId": "callf98a5043-5c3d-4bf8-850f-360ed3c69b50",
+      "text": "Chunk ID: bab7c6\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nA65_NATIVE_WRITER_INTERVAL\nA65_EXTERNAL_PROCESS_INTERVAL\n",
+      "expected": [
+        "A65_NATIVE_WRITER_INTERVAL",
+        "A65_EXTERNAL_PROCESS_INTERVAL"
+      ]
+    },
+    {
+      "label": "trusted reader cat returns writer and external file during the same writable turn",
+      "at": "2026-11-18T19:25:02.779Z",
+      "readerDidRead": {
+        "active": {
+          "writer": {
+            "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+            "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+            "kind": "write",
+            "state": "active"
+          },
+          "reader": {
+            "task_id": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+            "kind": "read",
+            "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+            "nativePolicy": "read-only"
+          },
+          "scope": [
+            {
+              "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+              "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+              "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+              "kind": "write",
+              "state": "active"
+            }
+          ]
+        },
+        "writerTurn": {
+          "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+          "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+          "status": "started"
+        },
+        "readerTurn": {
+          "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+          "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+          "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "status": "started"
+        }
+      },
+      "readerOutput": {
+        "callId": "callf98a5043-5c3d-4bf8-850f-360ed3c69b50",
+        "text": "Chunk ID: bab7c6\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nA65_NATIVE_WRITER_INTERVAL\nA65_EXTERNAL_PROCESS_INTERVAL\n",
+        "expected": [
+          "A65_NATIVE_WRITER_INTERVAL",
+          "A65_EXTERNAL_PROCESS_INTERVAL"
+        ]
+      },
+      "mode": "read"
+    },
+    {
+      "label": "native Git snapshot object bytes preserve source provenance within writer interval",
+      "at": "2026-11-18T19:25:03.253Z",
+      "afterRow": {
+        "turn_id": "0ea6a94d-1227-4a48-957a-d397884301f5",
+        "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+        "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+        "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project\",\"dev\":\"16777231\",\"ino\":\"362631345\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project\",\"ref\":\"refs/willyou/turns/0ea6a94d-1227-4a48-957a-d397884301f5/before\",\"commit\":\"aff94017919172d98a7680c908c4d85a9f281356\",\"tree\":\"2d6d7831009e81abefd275902ad3ed6fdc68922b\",\"private\":false}",
+        "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project\",\"dev\":\"16777231\",\"ino\":\"362631345\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project\",\"ref\":\"refs/willyou/turns/0ea6a94d-1227-4a48-957a-d397884301f5/after\",\"commit\":\"9fa5bd49d6bbf72895f182560528eec5286c0dd5\",\"tree\":\"1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c\",\"private\":false}",
+        "changed_files_json": "[{\"path\":\"external.txt\",\"added\":1,\"removed\":1,\"binary\":false},{\"path\":\"writer.txt\",\"added\":1,\"removed\":1,\"binary\":false}]",
+        "status": "complete",
+        "incomplete_reason": null,
+        "retained_until": null
+      },
+      "diff": {
+        "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+        "recordNumber": 1,
+        "status": "complete",
+        "reason": null,
+        "files": [
+          {
+            "path": "external.txt",
+            "added": 1,
+            "removed": 1,
+            "binary": false
+          },
+          {
+            "path": "writer.txt",
+            "added": 1,
+            "removed": 1,
+            "binary": false
+          }
+        ],
+        "filesTotal": 2,
+        "observed": true,
+        "preparing": false,
+        "progress": {
+          "files": 3,
+          "bytes": 79
+        }
+      },
+      "writerTurn": {
+        "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+        "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+        "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+        "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+        "status": "started"
+      },
+      "readerTurn": {
+        "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+        "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+        "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+        "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+        "status": "started"
+      },
+      "diskBetween": {
+        "before": {
+          "external.txt": "A65_BEFORE_external.txt",
+          "reader.txt": "A65_BEFORE_reader.txt",
+          "writer.txt": "A65_BEFORE_writer.txt"
+        },
+        "after": {
+          "external.txt": "A65_EXTERNAL_PROCESS_INTERVAL",
+          "reader.txt": "A65_BEFORE_reader.txt",
+          "writer.txt": "A65_NATIVE_WRITER_INTERVAL"
+        }
+      },
+      "metadata": {
+        "head": "8ca59b195ca120138f068aed503e5ac89f1b00ca",
+        "index": "4995333f6b96e91dc9b60dc13bc64529642cf981474f91e2f01ddf2c79ee09b5"
+      }
+    },
+    {
+      "label": "precise trusted card click shows the writer interval and risk note",
+      "at": "2026-11-18T19:25:03.578Z",
+      "cardText": "本轮改动 · 2 个文件\n查看差异\nexternal.txt\n+1\n−1\nwriter.txt\n+1\n−1\n观察到的变化可能包含用户或外部写入",
+      "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5"
+    },
+    {
+      "label": "real turn card and both read-only source bodies show interval caveat",
+      "at": "2026-11-18T19:25:04.043Z",
+      "cardText": "本轮改动 · 2 个文件\n查看差异\nexternal.txt\n+1\n−1\nwriter.txt\n+1\n−1\n观察到的变化可能包含用户或外部写入",
+      "panes": [
+        {
+          "rendered": {
+            "file": "external.txt",
+            "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+            "buttons": [
+              "external.txt\n+1 −1",
+              "writer.txt\n+1 −1"
+            ],
+            "model": "A65_EXTERNAL_PROCESS_INTERVAL\n",
+            "readOnly": true,
+            "editable": "false"
+          },
+          "patch": {
+            "path": "external.txt",
+            "added": 1,
+            "removed": 1,
+            "binary": false,
+            "patch": "diff --git a/external.txt b/external.txt\nindex 616c8c7..f89b2c1 100644\n--- a/external.txt\n+++ b/external.txt\n@@ -1 +1 @@\n-A65_BEFORE_external.txt\n+A65_EXTERNAL_PROCESS_INTERVAL\n",
+            "beforeText": "A65_BEFORE_external.txt\n",
+            "afterText": "A65_EXTERNAL_PROCESS_INTERVAL\n"
+          }
+        },
+        {
+          "rendered": {
+            "file": "writer.txt",
+            "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+            "buttons": [
+              "external.txt\n+1 −1",
+              "writer.txt\n+1 −1"
+            ],
+            "model": "A65_NATIVE_WRITER_INTERVAL\n",
+            "readOnly": true,
+            "editable": "false"
+          },
+          "patch": {
+            "path": "writer.txt",
+            "added": 1,
+            "removed": 1,
+            "binary": false,
+            "patch": "diff --git a/writer.txt b/writer.txt\nindex 9414130..77e3dc8 100644\n--- a/writer.txt\n+++ b/writer.txt\n@@ -1 +1 @@\n-A65_BEFORE_writer.txt\n+A65_NATIVE_WRITER_INTERVAL\n",
+            "beforeText": "A65_BEFORE_writer.txt\n",
+            "afterText": "A65_NATIVE_WRITER_INTERVAL\n"
+          }
+        }
+      ],
+      "unexpectedDiffMutators": []
+    },
+    {
+      "label": "family settled and source VCS metadata remained byte-identical",
+      "at": "2026-11-18T19:25:05.211Z",
+      "metadata": {
+        "head": "8ca59b195ca120138f068aed503e5ac89f1b00ca",
+        "index": "4995333f6b96e91dc9b60dc13bc64529642cf981474f91e2f01ddf2c79ee09b5"
+      },
+      "sourceHashes": {
+        "external.txt": "859c5f9f84381ddb618ba4f7f11059e07b29821d39164dda898e4bae57672d8c",
+        "reader.txt": "aba5ca891a0c3c875e0d4fe09e0a41b64454de4a5797a26f10278f0548485b77",
+        "writer.txt": "2ed925ac6f1725851475b72c68b4d5f35931136b66fd605933a191397dbab017"
+      },
+      "childTurns": [
+        {
+          "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+          "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+          "status": "completed"
+        },
+        {
+          "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+          "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+          "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"024bfa60-ecd8-4cf3-91c2-49f6699709ff\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "button": "left",
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "button": "left",
+      "x": 1198.4140625,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-lineage [data-child-id=\"44600393-303b-4ecb-a3f2-31ebb8db4bef\"] .agent-child-open",
+      "text": null,
+      "button": "left",
+      "x": 1269.5,
+      "y": 154.5
+    },
+    {
+      "selector": ".agent-relation-bar > button",
+      "text": null,
+      "button": "left",
+      "x": 353.1328125,
+      "y": 105
+    },
+    {
+      "selector": ".agent-lineage [data-child-id=\"cbbdf1b9-ac3e-4341-b0a6-c913ff45b699\"] .agent-child-open",
+      "text": null,
+      "button": "left",
+      "x": 1269.5,
+      "y": 229.5
+    },
+    {
+      "selector": ".agent-relation-bar > button",
+      "text": null,
+      "button": "left",
+      "x": 353.1328125,
+      "y": 105
+    },
+    {
+      "selector": ".agent-lineage [data-child-id=\"44600393-303b-4ecb-a3f2-31ebb8db4bef\"] .agent-child-open",
+      "text": null,
+      "button": "left",
+      "x": 1269.5,
+      "y": 154.5
+    },
+    {
+      "selector": "[data-turn-id=\"0ea6a94d-1227-4a48-957a-d397884301f5\"] .agent-change-card .agent-change-head span",
+      "text": "查看差异",
+      "button": "left",
+      "x": 1027.5,
+      "y": 375.0703125
+    },
+    {
+      "selector": ".agent-diff-main button[title=\"external.txt\"]",
+      "text": null,
+      "button": "left",
+      "x": 898.359375,
+      "y": 150.19921875
+    },
+    {
+      "selector": ".agent-diff-main button[title=\"writer.txt\"]",
+      "text": null,
+      "button": "left",
+      "x": 898.359375,
+      "y": 196.59765625
+    }
+  ],
+  "requests": [
+    {
+      "at": "2026-11-18T19:24:58.541Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T19:24:59.134Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T19:24:59.229Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false,
+      "pending": "wy_targets"
+    },
+    {
+      "at": "2026-11-18T19:24:59.322Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false,
+      "pending": "writer"
+    },
+    {
+      "at": "2026-11-18T19:24:59.405Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false,
+      "pending": "reader"
+    },
+    {
+      "at": "2026-11-18T19:25:00.270Z",
+      "kind": "codex",
+      "model": "fixture-a65-reader",
+      "child": "reader",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T19:25:01.602Z",
+      "kind": "codex",
+      "model": "fixture-a65-writer",
+      "child": "writer",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T19:25:02.080Z",
+      "kind": "codex",
+      "model": "fixture-a65-writer",
+      "child": "writer",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T19:25:02.610Z",
+      "kind": "codex",
+      "model": "fixture-a65-reader",
+      "child": "reader",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T19:25:04.042Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": true
+    },
+    {
+      "at": "2026-11-18T19:25:05.043Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": true
+    }
+  ],
+  "revision": [
+    {
+      "tool": "wy_targets",
+      "receipt": "toolu_5dd56156-bc5d-471e-9488-54c66688a8b5",
+      "targets": [
+        {
+          "profileId": "f3541606-0cb7-4ce7-b1c7-b4c4d53f18f0",
+          "driverId": "claude-sdk",
+          "revision": "fdc788b5426e7ca044c59420b851cd21fddf1c9180d451ffac4d28d4d4f80d7b",
+          "available": true,
+          "models": [
+            "fixture-parent",
+            "fixture-a65-writer",
+            "fixture-a65-reader"
+          ]
+        },
+        {
+          "profileId": "f3483eb2-e25b-490e-b4c2-ac28c64460be",
+          "driverId": "codex-app-server",
+          "revision": "9148f84394c4eb897be95dbd6e014f863307aced0202b92eef2aaa1de5087e49",
+          "available": true,
+          "models": [
+            "fixture-parent",
+            "fixture-a65-writer",
+            "fixture-a65-reader"
+          ]
+        }
+      ]
+    },
+    {
+      "tool": "wy_delegate invocation",
+      "child": "writer",
+      "args": {
+        "requestKey": "a65-git-writer",
+        "profileId": "f3483eb2-e25b-490e-b4c2-ac28c64460be",
+        "profileRevision": "9148f84394c4eb897be95dbd6e014f863307aced0202b92eef2aaa1de5087e49",
+        "title": "A65 native writer",
+        "instructions": "Answer the isolated acceptance prompt A65_X2_CHILD_writer",
+        "model": "fixture-a65-writer",
+        "access": "write"
+      }
+    },
+    {
+      "tool": "wy_delegate",
+      "receipt": "toolu_8af52f22-2c1b-4793-8e68-a9473dfaaf69",
+      "child": "writer",
+      "value": {
+        "delegationId": "a381be81-b00f-452f-a048-030dc7b178b6",
+        "childTaskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+        "state": "queued",
+        "resultRevision": 0,
+        "asynchronous": true,
+        "workspaceMode": "shared",
+        "message": "已持久接受；不要在 shell 循环等待。 当前回合结束并交出写入资格后，子任务在共用目录运行；宿主不提交。"
+      }
+    },
+    {
+      "tool": "wy_delegate invocation",
+      "child": "reader",
+      "args": {
+        "requestKey": "a65-git-reader",
+        "profileId": "f3483eb2-e25b-490e-b4c2-ac28c64460be",
+        "profileRevision": "9148f84394c4eb897be95dbd6e014f863307aced0202b92eef2aaa1de5087e49",
+        "title": "A65 native reader",
+        "instructions": "Answer the isolated acceptance prompt A65_X2_CHILD_reader",
+        "model": "fixture-a65-reader",
+        "access": "read"
+      }
+    },
+    {
+      "tool": "wy_delegate",
+      "receipt": "toolu_63660c63-c74d-4c41-9d1a-e7f9479e4445",
+      "child": "reader",
+      "value": {
+        "delegationId": "05f9f1f3-29ea-4bce-aded-bbd026d48c12",
+        "childTaskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+        "state": "queued",
+        "resultRevision": 0,
+        "asynchronous": true,
+        "workspaceMode": "shared",
+        "message": "已持久接受；不要在 shell 循环等待。 子任务在共用目录只读并行。"
+      }
+    }
+  ],
+  "status": "passed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+    "repository": "git",
+    "metadataBefore": {
+      "head": "8ca59b195ca120138f068aed503e5ac89f1b00ca",
+      "index": "4995333f6b96e91dc9b60dc13bc64529642cf981474f91e2f01ddf2c79ee09b5"
+    },
+    "originalSource": {
+      "external.txt": "A65_BEFORE_external.txt",
+      "reader.txt": "A65_BEFORE_reader.txt",
+      "writer.txt": "A65_BEFORE_writer.txt"
+    },
+    "hashes": {
+      "external.txt": "5f2aef5b688f9bf16e0b427f55d697bec583be821e3062d866782af7e8e42bc5",
+      "reader.txt": "aba5ca891a0c3c875e0d4fe09e0a41b64454de4a5797a26f10278f0548485b77",
+      "writer.txt": "0b2edc6ab90f2f33c15a32bdb5c1cdd90580d2dbd1c68c7f1d301755435b646b"
+    }
+  },
+  "pid": 32093,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    32093
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "exit": {
+    "pid": 32093,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

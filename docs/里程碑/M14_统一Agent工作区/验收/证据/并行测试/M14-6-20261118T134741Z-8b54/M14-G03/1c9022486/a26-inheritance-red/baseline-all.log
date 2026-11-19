@@ -1,0 +1,133 @@
+[1119/002720.577079:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/willyou-m14-stage6.WRvdST/source
+
+[1119/002720.753712:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+stdout | ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 applies parent ask → full to the next Codex child round
+{"firstTier":"ask","parentTier":"full","nextTier":"ask"}
+
+stdout | ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 records why Codex automatic approval falls back for a Claude child
+{"parentTier":"auto","childDriver":"claude-sdk","childTier":"ask","downgradeRecorded":false}
+
+stdout | ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 uses live parent authority immediately in built-in plugin interception
+{"kind":"built-in","witnessed":["approval","approval","approval"],"nativeRoundTier":"ask","approvalCount":3}
+
+stdout | ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 uses live parent authority immediately in external plugin interception
+{"kind":"external","witnessed":["approval","approval","approval","approval"],"nativeRoundTier":"ask","approvalCount":4}
+
+stdout | ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 does not establish a separate child authorization through setSelection
+{"selectionRejected":false,"childStored":"full","parentStored":"ask"}
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts (6 tests | 5 failed) 2360ms
+   × A26 applies parent ask → full to the next Codex child round 79ms
+   × A26 records why Codex automatic approval falls back for a Claude child 55ms
+   × A26 uses live parent authority immediately in built-in plugin interception 1049ms
+   × A26 uses live parent authority immediately in external plugin interception 1054ms
+   × A26 does not establish a separate child authorization through setSelection 54ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 applies parent ask → full to the next Codex child round
+AssertionError: expected 'ask' to be 'full' // Object.is equality
+
+Expected: "full"
+Received: "ask"
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts:81:22
+     79|   expect(later.text).toContain('isolated next child round');
+     80|   console.log(JSON.stringify({firstTier:first.turns[0].tier,parentTier…
+     81|   expect(later.tier).toBe(changed);
+       |                      ^
+     82| });
+     83|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 records why Codex automatic approval falls back for a Claude child
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts:98:29
+     96|   const downgradeRecorded = /帮我批准不适用于该执行器|降.*请求批准/.test(JSON.stringify…
+     97|   console.log(JSON.stringify({parentTier:JSON.parse(f.store.task(f.tas…
+     98|   expect(downgradeRecorded).toBe(true);
+       |                             ^
+     99| });
+    100|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 uses live parent authority immediately in built-in plugin interception
+AssertionError: expected [ 'approval', 'approval', 'approval' ] to deeply equal [ 'approval', 'direct', 'approval' ]
+
+- Expected
++ Received
+
+  [
+    "approval",
+-   "direct",
++   "approval",
+    "approval",
+  ]
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts:151:21
+    149|   expect(child.turns[0].tier).toBe('ask');
+    150|   console.log(JSON.stringify({kind,witnessed,nativeRoundTier:child.tur…
+    151|   expect(witnessed).toEqual(kind === 'external' ? ['approval', 'direct…
+       |                     ^
+    152| });
+    153|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 uses live parent authority immediately in external plugin interception
+AssertionError: expected [ 'approval', 'approval', …(2) ] to deeply equal [ 'approval', 'direct', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "approval",
+-   "direct",
++   "approval",
+    "approval",
+    "approval",
+  ]
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts:151:21
+    149|   expect(child.turns[0].tier).toBe('ask');
+    150|   console.log(JSON.stringify({kind,witnessed,nativeRoundTier:child.tur…
+    151|   expect(witnessed).toEqual(kind === 'external' ? ['approval', 'direct…
+       |                     ^
+    152| });
+    153|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 does not establish a separate child authorization through setSelection
+AssertionError: expected 'full' to be 'ask' // Object.is equality
+
+Expected: "ask"
+Received: "full"
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts:164:23
+    162|   const childStored = JSON.parse(f.store.task(receipt.childTaskId)!.se…
+    163|   console.log(JSON.stringify({selectionRejected, childStored, parentSt…
+    164|   expect(childStored).toBe('ask');
+       |                       ^
+    165| });
+    166|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 1 passed (6)
+   Start at  00:27:20
+   Duration  2.81s (transform 314ms, setup 0ms, import 378ms, tests 2.36s, environment 0ms)
+

@@ -1,0 +1,617 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App, real Claude MCP pending request, local non-transient HTTP 400, actual manual approval",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-176/runtime-PVM6VN/home",
+    "at": "2026-11-19T02:02:55.003Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "host-400",
+  "sourceCommit": "463155a0f4c2cc0fbd85ae65116f882ddb2a0a36",
+  "asar": "52c1841ced1aa0e340f660ba56e671aae08f354917b3fb25439708de8396f5ac",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-host-400-packaged.mjs": "389f6df5d58e669f9fb7eabfec262898e69a0184d02a186b49f662519b8409cd",
+    "a60-prep/provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "a60-prep/pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665",
+    "a60-prep/host-invalid-request-provider.mjs": "fe707cfb229a2868d9ad926237d5a4a4b3e6387f8f3fc5cb13e1313c77fefb42"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"bfe6039e-6bd9-419c-9e11-82b921a0341a\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795053779994
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795053780016
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795053780022
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795053781089
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795053781094
+    },
+    {
+      "selector": ".agent-request-options button[aria-label=\"批准\"]",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 700.25,
+      "at": 1795053781915
+    },
+    {
+      "selector": ".agent-confirm-choice",
+      "text": null,
+      "button": "left",
+      "x": 1205,
+      "y": 851,
+      "at": 1795053781920
+    }
+  ],
+  "requests": [
+    {
+      "lane": "warm",
+      "status": 200,
+      "at": 1795053780985
+    },
+    {
+      "lane": "native-mail-tool",
+      "tool": "mcp__wy_b9105934e3ffe609a06f7e5d__smartdd_mail_draft_create_v2",
+      "callId": "toolu_9b69657699ba48f3b5ac700230dfbc96",
+      "status": 200,
+      "at": 1795053781348
+    },
+    {
+      "lane": "original-native-mcp-receipt",
+      "status": 400,
+      "receipt": {
+        "requestId": "82cbb654-97fc-4190-9778-c40149e1ce0c",
+        "operationId": "fd29c2c6-9d89-4d27-a8fc-47f9d793ae38",
+        "observedAt": 1795053781493
+      },
+      "retry": false,
+      "at": 1795053781493,
+      "errorType": "invalid_request_error",
+      "shouldRetry": false
+    },
+    {
+      "lane": "original-native-mcp-receipt",
+      "status": 400,
+      "receipt": {
+        "requestId": "82cbb654-97fc-4190-9778-c40149e1ce0c",
+        "operationId": "fd29c2c6-9d89-4d27-a8fc-47f9d793ae38",
+        "observedAt": 1795053781493
+      },
+      "retry": true,
+      "at": 1795053781715,
+      "errorType": "invalid_request_error",
+      "shouldRetry": false
+    },
+    {
+      "lane": "original-native-mcp-receipt",
+      "status": 400,
+      "receipt": {
+        "requestId": "82cbb654-97fc-4190-9778-c40149e1ce0c",
+        "operationId": "fd29c2c6-9d89-4d27-a8fc-47f9d793ae38",
+        "observedAt": 1795053781493
+      },
+      "retry": true,
+      "at": 1795053781718,
+      "errorType": "invalid_request_error",
+      "shouldRetry": false
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "failed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-176/runtime-PVM6VN/project",
+    "model": "a60-host-business-invalid-request",
+    "engine": "claude",
+    "expected": "ordinary provider failure, durable host request"
+  },
+  "pid": 7738,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-176/runtime-PVM6VN/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-176/runtime-PVM6VN/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-176/runtime-PVM6VN/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    7738
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "run": {
+      "runId": "17e8f9ef-4e6d-4c1f-bfb8-ef38154588dd",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-host-business-invalid-request",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-host-business-invalid-request",
+          "name": "a60-host-business-invalid-request",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    },
+    "turnId": "80092e31-1c57-414a-90d7-cdb9da70f921"
+  },
+  "preFailure": {
+    "item": {
+      "requestId": "82cbb654-97fc-4190-9778-c40149e1ce0c",
+      "class": "host_business",
+      "kind": "host_business",
+      "revision": 1,
+      "payload": {
+        "businessKind": "application_write",
+        "title": "需要批准：smartdd_mail_draft_create_v2",
+        "review": {
+          "application": "邮件",
+          "version": "1.1.0",
+          "operation": "smartdd_mail_draft_create_v2",
+          "targets": [],
+          "input": {
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": null,
+              "to": [],
+              "cc": [],
+              "bcc": [],
+              "subject": "A60 local no-send draft",
+              "text": "A60 frozen local draft should remain pending across the original native failure",
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            }
+          }
+        },
+        "data": {
+          "entry": "mcp",
+          "call": {
+            "operation": "smartdd_mail_draft_create_v2",
+            "contractMajor": 2,
+            "connectionId": null,
+            "arguments": {
+              "content": {
+                "mode": "new",
+                "sourceMessageRef": null,
+                "senderConnectionId": null,
+                "to": [],
+                "cc": [],
+                "bcc": [],
+                "subject": "A60 local no-send draft",
+                "text": "A60 frozen local draft should remain pending across the original native failure",
+                "html": null,
+                "inReplyTo": null,
+                "references": [],
+                "attachmentIds": []
+              }
+            }
+          },
+          "requestId": "e46b4586-f60d-4632-b67a-1aa58b771ae7",
+          "originCallHash": "ee9db8675309cfad79e942f460f4d68cf0b115baa8bc63c44b33e380fed6848b",
+          "policyStamp": "e062dcc6405431bdbfbcb46b2ed16f3aa1f5fb44947ec707779dd31b0f9b7ea8"
+        },
+        "phase": "waiting_user"
+      },
+      "origin": {
+        "taskId": "bfe6039e-6bd9-419c-9e11-82b921a0341a",
+        "bindingId": "50d88b60-220c-4638-af1d-1dc88774ab36",
+        "runId": "17e8f9ef-4e6d-4c1f-bfb8-ef38154588dd",
+        "generation": 1
+      },
+      "status": "pending",
+      "createdAt": "2026-11-19T02:03:01.466Z"
+    },
+    "turn": {
+      "turn_id": "ec0a4cf5-40bd-44c7-871a-ac6573738add",
+      "client_input_id": "in-2b8e0bfe25ab4198a982efdbf7ecb36f",
+      "status": "started",
+      "native_turn_id": "e4c1dbad-14a3-4fa9-b14c-7a21956a8c3d:2",
+      "accepted_at": "2026-11-19T02:03:01.095Z",
+      "started_at": "2026-11-19T02:03:01.336Z",
+      "ended_at": null,
+      "error_code": null,
+      "run_id": "17e8f9ef-4e6d-4c1f-bfb8-ef38154588dd",
+      "source_kind": "user"
+    },
+    "run": {
+      "runId": "17e8f9ef-4e6d-4c1f-bfb8-ef38154588dd",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-host-business-invalid-request",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-host-business-invalid-request",
+          "name": "a60-host-business-invalid-request",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": true,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    }
+  },
+  "faultSentAt": 1795053781710,
+  "afterFailure": {
+    "turn": {
+      "turn_id": "ec0a4cf5-40bd-44c7-871a-ac6573738add",
+      "client_input_id": "in-2b8e0bfe25ab4198a982efdbf7ecb36f",
+      "status": "failed",
+      "native_turn_id": "e4c1dbad-14a3-4fa9-b14c-7a21956a8c3d:2",
+      "accepted_at": "2026-11-19T02:03:01.095Z",
+      "started_at": "2026-11-19T02:03:01.336Z",
+      "ended_at": "2026-11-19T02:03:01.723Z",
+      "error_code": "API Error: 400 A60 deliberately invalid request after real awaiting_user",
+      "run_id": "17e8f9ef-4e6d-4c1f-bfb8-ef38154588dd",
+      "source_kind": "user"
+    },
+    "status": "waiting",
+    "item": {
+      "requestId": "82cbb654-97fc-4190-9778-c40149e1ce0c",
+      "class": "host_business",
+      "kind": "host_business",
+      "revision": 1,
+      "payload": {
+        "businessKind": "application_write",
+        "title": "需要批准：smartdd_mail_draft_create_v2",
+        "review": {
+          "application": "邮件",
+          "version": "1.1.0",
+          "operation": "smartdd_mail_draft_create_v2",
+          "targets": [],
+          "input": {
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": null,
+              "to": [],
+              "cc": [],
+              "bcc": [],
+              "subject": "A60 local no-send draft",
+              "text": "A60 frozen local draft should remain pending across the original native failure",
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            }
+          }
+        },
+        "data": {
+          "entry": "mcp",
+          "call": {
+            "operation": "smartdd_mail_draft_create_v2",
+            "contractMajor": 2,
+            "connectionId": null,
+            "arguments": {
+              "content": {
+                "mode": "new",
+                "sourceMessageRef": null,
+                "senderConnectionId": null,
+                "to": [],
+                "cc": [],
+                "bcc": [],
+                "subject": "A60 local no-send draft",
+                "text": "A60 frozen local draft should remain pending across the original native failure",
+                "html": null,
+                "inReplyTo": null,
+                "references": [],
+                "attachmentIds": []
+              }
+            }
+          },
+          "requestId": "e46b4586-f60d-4632-b67a-1aa58b771ae7",
+          "originCallHash": "ee9db8675309cfad79e942f460f4d68cf0b115baa8bc63c44b33e380fed6848b",
+          "policyStamp": "e062dcc6405431bdbfbcb46b2ed16f3aa1f5fb44947ec707779dd31b0f9b7ea8"
+        },
+        "phase": "waiting_user"
+      },
+      "origin": {
+        "taskId": "bfe6039e-6bd9-419c-9e11-82b921a0341a",
+        "bindingId": "50d88b60-220c-4638-af1d-1dc88774ab36",
+        "runId": "17e8f9ef-4e6d-4c1f-bfb8-ef38154588dd",
+        "generation": 1
+      },
+      "status": "pending",
+      "createdAt": "2026-11-19T02:03:01.466Z"
+    },
+    "codes": [
+      {
+        "code": "unknown",
+        "message": "API Error: 400 A60 deliberately invalid request after real awaiting_user"
+      },
+      {
+        "code": "success",
+        "message": "API Error: 400 A60 deliberately invalid request after real awaiting_user"
+      }
+    ]
+  },
+  "serverError": "AssertionError [ERR_ASSERTION]: Original native tool result unexpectedly replayed after approval\n    at Server.handle (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-prep/host-invalid-request-provider.mjs:60:9)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)",
+  "phase": "real approval resolves the original request exactly once",
+  "error": "Error: AssertionError [ERR_ASSERTION]: Original native tool result unexpectedly replayed after approval\n    at Server.handle (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-prep/host-invalid-request-provider.mjs:60:9)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-host-400-packaged.mjs:59:35)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-host-400-packaged.mjs:222:19",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nM14 A60 limit isolated\nA60 business request survives failure\n工作中\n设置\nA60 business request survives failure\n工作中\n插件 2\n单 Agent · 开启委派\nA60_HOST_REQUEST_WARM\n\nA60_HOST_REQUEST_WARM_DONE\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nA60_CREATE_MAIL_DRAFT_THEN_INVALID_REQUEST\n工作 0 秒后失败\n调用了 mcp__wy_b9105934e3ffe609a06f7e5d__smartdd_mail_draft_create_v2\n查看错误详情\n\nAPI Error: 400 A60 deliberately invalid request after real awaiting_user\n\n查看错误详情\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n已失败 · 共工作 0 秒\n需要批准：smartdd_mail_draft_create_v2 · finished\n来源：宿主业务通知\n{\n  \"schema\": 1,\n  \"id\": \"e46b4586-f60d-4632-b67a-1aa58b771ae7\",\n  \"status\": \"ok\",\n  \"value\": {\n    \"schema\": \"willyou-app-result-v2\",\n    \"contractMajor\": 2,\n    \"status\": \"ok\",\n    \"capabilityId\": \"mail.draft.create\",\n    \"data\": {\n      \"draft\": {\n        \"id\": \"c786a224-570a-4ac7-adaa-097c4c75f5f1\",\n        \"revision\": 1,\n        \"state\": \"draft\",\n        \"contentHash\": \"80980caab9e0f4320d3888b2de8db766b4596efd3fa15de49a266184150cf0ac\",\n        \"content\": {\n          \"mode\": \"new\",\n          \"sourceMessageRef\": null,\n          \"senderConnectionId\": null,\n          \"to\": [],\n          \"cc\": [],\n          \"bcc\": [],\n          \"subject\": \"A60 local no-send draft\",\n          \"text\": {\n            \"id\": \"d5a12e75-a617-4a24-ad15-c48bf08efe3a\",\n            \"revision\": \"3f8fbd9c9735f0bdd6cf3fcd3a2d20e9e64bc11ac180aa9c259998af62934cc2\",\n            \"mediaType\": \"text/plain;charset=utf-8\",\n            \"size\": 79\n          },\n          \"html\": null,\n          \"inReplyTo\": null,\n          \"references\": [],\n          \"attachmentIds\": []\n        },\n        \"attachments\": [],\n        \"activeIntentId\": null,\n        \"lastExecutionId\": null,\n        \"sourceTaskId\": \"bfe6039e-6bd9-419c-9e11-82b921a0341a\",\n        \"copiedFromDraftId\": null,\n        \"createdAt\": \"2026-11-19T02:03:02.623Z\",\n        \"updatedAt\": \"2026-11-19T02:03:02.623Z\"\n      }\n    },\n    \"source\": {\n      \"appId\": \"mail\",\n      \"packageHash\": \"7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504\",\n      \"revision\": \"1\",\n      \"connections\": []\n    },\n    \"completeness\": {\n      \"complete\": true,\n      \"missing\": []\n    },\n    \"pagination\": null,\n    \"resources\": [\n      {\n        \"id\": \"d5a12e75-a617-4a24-ad15-c48bf08efe3a\",\n        \"revision\": \"3f8fbd9c9735f0bdd6cf3fcd3a2d20e9e64bc11ac180aa9c259998af62934cc2\",\n        \"mediaType\": \"text/plain;charset=utf-8\",\n        \"size\": 79\n      }\n    ],\n    \"operation\": {\n      \"id\": \"fd29c2c6-9d89-4d27-a8fc-47f9d793ae38\",\n      \"requestId\": \"e46b4586-f60d-4632-b67a-1aa58b771ae7\",\n      \"origin\": \"mcp\",\n      \"effectState\": \"completed\"\n    }\n  },\n  \"operationId\": \"fd29c2c6-9d89-4d27-a8fc-47f9d793ae38\",\n  \"effectState\": \"completed\"\n}\n宿主业务结果通知：需要批准：smartdd_mail_draft_create_v2，finished。详情引用 4de1a5c9-36b2-4654-a900-684fbba29027；这不是新的真人授权。\n10:03 AM\n请求批准\n完全访问\nFixture claude\na60-host-business-invalid-request\n运行中发送会排队",
+  "stoppedBeforeQuit": [
+    "bfe6039e-6bd9-419c-9e11-82b921a0341a"
+  ],
+  "preQuit": {
+    "at": "2026-11-19T02:03:03.233Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-176/quit-phase.jsonl",
+  "exit": {
+    "pid": 7738,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

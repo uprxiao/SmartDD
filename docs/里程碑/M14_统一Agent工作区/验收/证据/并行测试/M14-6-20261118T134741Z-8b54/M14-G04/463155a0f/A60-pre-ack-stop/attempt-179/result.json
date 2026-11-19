@@ -1,0 +1,120 @@
+{
+  "caseId": "M14-A60",
+  "sourceCommit": "463155a0f4c2cc0fbd85ae65116f882ddb2a0a36",
+  "scope": "M14-A60-stop-before-ack",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "52c1841ced1aa0e340f660ba56e671aae08f354917b3fb25439708de8396f5ac"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T02:15:45.139Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A60-stop-before-ack": {
+      "status": "failed-or-blocked",
+      "passed": [],
+      "missing": [],
+      "restored": true,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n2 !== 1\n\n    at caseImmediateStop (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-ack/a60-stop-before-ack.mjs:262:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-ack/a60-stop-before-ack.mjs:135:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-ack/a60-stop-before-ack.mjs:308:3",
+      "dom": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nM14-A60-ack stage 6\nM14-A60-ack stage 6\n正在停止…\n设置\nM14-A60-ack stage 6\n工作中\n插件 2\n单 Agent · 开启委派\nA60-USER-ACK-WARM\n\nREPLY-A60-USER-ACK-WARM\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nMCP 启动 · wy_9cb169e691cfe5439dd04b51\nMCP 启动 · smartdd_project_9cb169e691cf\nA60-USER-STOP-BEFORE-ACK\n工作中 0 秒\n思考中\n请求批准\n帮我批准\n完全访问\nA60 isolated Codex\nm14-switch-model-one\n插话"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T02:15:51.104Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T02:15:51.121Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T02:15:51.135Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T02:15:51.680Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"56e2d3a5-5eeb-4a01-8f17-03ef52e7b267\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T02:15:51.696Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:15:51.719Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:15:52.967Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:15:52.977Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:15:53.299Z",
+      "selector": ".agent-stop-run[title=\"停止本轮\"]",
+      "x": 1181.5,
+      "y": 853
+    }
+  ],
+  "model": [
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-ACK-WARM"
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-STOP-BEFORE-ACK"
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-179/home",
+    "at": "2026-11-19T02:15:46.579Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 15378,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-179/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-179/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-179/home",
+    "packaged": true
+  },
+  "engine": "0.169.0",
+  "appLogs": "Debugger listening on ws://127.0.0.1:57203/176b9d8c-8062-4bc7-9929-a2c2b8d15760\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:57203/176b9d8c-8062-4bc7-9929-a2c2b8d15760\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:57202/devtools/browser/16687da0-e968-4245-8f80-38f8dc9c1efb\n(node:15378) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 15378,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T02:15:53.959Z"
+}

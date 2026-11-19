@@ -1,0 +1,560 @@
+{
+  "caseId": "M14-A43",
+  "commit": "031a216d06ffe9c142accb213f2371f562cca483",
+  "asar": "0892e45b9feea1b36fe4c37cf4ba75139404e2db294231da54ac95a59840dbd9",
+  "status": "passed-subset",
+  "fixture": "前 3 例跑真实打包 App 与原生 Codex app-server，本机合成推理。输入由 CDP 发给真实控件。首发丢回执或延迟仅在原处理器持久化并返回成功回执之后生效。073 为 1 个授权窗口，CAS 竞争写仍通过原处理器。",
+  "comparedRed": "A43-333b163e5-g04-evidence-index.json",
+  "remaining": [
+    "正式两原生窗口分别真实输入的 CAS 尚缺；单窗口 IPC 复验边界单列。",
+    "晚回执留住首页新稿已真测；晚回执到达时正在另一任务中编辑的独立场景本批未执行。"
+  ],
+  "release": "4 个 App 子进程正常退出 0，独占 3425 槽已归还。经核 3425 无监听，四 App 与私有子进程无残留。",
+  "attempts": [
+    {
+      "scenario": "retry",
+      "status": "passed-subset",
+      "name": "attempt-070",
+      "exit": {
+        "pid": 65173,
+        "code": 0,
+        "signal": null
+      },
+      "identity": [
+        true,
+        65173,
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-070/runtime-8VTQm4/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-070/runtime-8VTQm4/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-070/runtime-8VTQm4/data"
+      ],
+      "durable": {
+        "title": "A43_FIRST_REQUEST_retry",
+        "taskId": "51e2696a-a3a1-4541-b7ba-0927a0131eb9",
+        "turnId": "458a09fc-a413-4cb0-90dd-864766b282fc",
+        "clientInputId": "in-bcb79d33bd6f479c9baf1bf2a15cfc51",
+        "nativeTurnId": "01a1f00d-442b-7523-ac09-40d4af25f762",
+        "status": "completed"
+      },
+      "nativeResponseCount": 1,
+      "nativeResponses": [
+        {
+          "at": "2026-11-18T19:06:03.702Z",
+          "id": "r35bee88e-436f-4317-9709-2f1d41d458ea",
+          "model": "m14-fixture-a43-home",
+          "marker": "A43_FIRST_REQUEST_retry"
+        }
+      ],
+      "createReceipts": [
+        {
+          "requestedTaskId": "51e2696a-a3a1-4541-b7ba-0927a0131eb9",
+          "startedAt": 1795028762612,
+          "receipt": {
+            "taskId": "51e2696a-a3a1-4541-b7ba-0927a0131eb9",
+            "selection": {
+              "driverId": "codex-app-server",
+              "profileId": "080c73f3-d3f6-4d4f-a1f1-39227304d455",
+              "tier": "ask",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "080c73f3-d3f6-4d4f-a1f1-39227304d455": true
+              }
+            }
+          },
+          "committedAt": 1795028762613,
+          "deliveredAt": 1795028762613
+        },
+        {
+          "requestedTaskId": "51e2696a-a3a1-4541-b7ba-0927a0131eb9",
+          "startedAt": 1795028762713,
+          "receipt": {
+            "taskId": "51e2696a-a3a1-4541-b7ba-0927a0131eb9",
+            "selection": {
+              "driverId": "codex-app-server",
+              "profileId": "080c73f3-d3f6-4d4f-a1f1-39227304d455",
+              "tier": "ask",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "080c73f3-d3f6-4d4f-a1f1-39227304d455": true
+              }
+            }
+          },
+          "committedAt": 1795028762713,
+          "deliveredAt": 1795028762713
+        }
+      ],
+      "submitReceipts": [
+        {
+          "taskId": "51e2696a-a3a1-4541-b7ba-0927a0131eb9",
+          "clientInputId": "in-bcb79d33bd6f479c9baf1bf2a15cfc51",
+          "startedAt": 1795028762614,
+          "receipt": {
+            "turnId": "458a09fc-a413-4cb0-90dd-864766b282fc",
+            "duplicate": false,
+            "status": "accepted"
+          },
+          "acceptedAt": 1795028762615,
+          "transportError": true
+        },
+        {
+          "taskId": "51e2696a-a3a1-4541-b7ba-0927a0131eb9",
+          "clientInputId": "in-bcb79d33bd6f479c9baf1bf2a15cfc51",
+          "startedAt": 1795028762714,
+          "receipt": {
+            "turnId": "458a09fc-a413-4cb0-90dd-864766b282fc",
+            "duplicate": true,
+            "status": "accepted"
+          },
+          "acceptedAt": 1795028762714,
+          "deliveredAt": 1795028762714,
+          "releaseCount": 0
+        }
+      ],
+      "files": [
+        {
+          "path": "attempt-070/a43-home-after-retry.png",
+          "sha256": "02f8206c0590a6953ab084e748e6c96783a98fd38eada6f2ddaa75c41c1dec0d"
+        },
+        {
+          "path": "attempt-070/app.log",
+          "sha256": "13ef78af0141436ed1af1d43ef066349f45e688e59e606229077eb4a6b86b1f4"
+        },
+        {
+          "path": "attempt-070/result.json",
+          "sha256": "f7fe1cae96e87ba55c21bbd16b839db4b0a18e9039a2582cf7b378fbe4c4b3fc"
+        },
+        {
+          "path": "attempt-070/source-a43-home-first-send.mjs",
+          "sha256": "4f12f690d9c7b47f3cb121775f4c2b17b562383b3722f5ff260b1a6611639656"
+        }
+      ]
+    },
+    {
+      "scenario": "create-retry",
+      "status": "passed-subset",
+      "name": "attempt-071",
+      "exit": {
+        "pid": 65519,
+        "code": 0,
+        "signal": null
+      },
+      "identity": [
+        true,
+        65519,
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-071/runtime-H3KEc5/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-071/runtime-H3KEc5/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-071/runtime-H3KEc5/data"
+      ],
+      "durable": {
+        "title": "A43_FIRST_REQUEST_create-retry",
+        "taskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+        "turnId": "8a2d7b8e-46fe-4f94-b322-7f55bbe21af2",
+        "clientInputId": "in-cddec22e4986402baaf21e5c32c67d0e",
+        "nativeTurnId": "01a1f00d-6517-75a3-b072-0a8e6e5d6efc",
+        "status": "completed"
+      },
+      "nativeResponseCount": 1,
+      "nativeResponses": [
+        {
+          "at": "2026-11-18T19:06:12.131Z",
+          "id": "r8f4a04b1-a366-45d0-939c-f6a5cd42edc7",
+          "model": "m14-fixture-a43-home",
+          "marker": "A43_FIRST_REQUEST_create-retry"
+        }
+      ],
+      "createReceipts": [
+        {
+          "requestedTaskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+          "startedAt": 1795028770950,
+          "receipt": {
+            "taskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+            "selection": {
+              "driverId": "codex-app-server",
+              "profileId": "ffa975d5-1130-4603-9112-fd08ded5e882",
+              "tier": "ask",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "ffa975d5-1130-4603-9112-fd08ded5e882": true
+              }
+            }
+          },
+          "committedAt": 1795028770951,
+          "transportError": true
+        },
+        {
+          "requestedTaskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+          "startedAt": 1795028771060,
+          "receipt": {
+            "taskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+            "selection": {
+              "driverId": "codex-app-server",
+              "profileId": "ffa975d5-1130-4603-9112-fd08ded5e882",
+              "tier": "ask",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "ffa975d5-1130-4603-9112-fd08ded5e882": true
+              }
+            }
+          },
+          "committedAt": 1795028771060,
+          "deliveredAt": 1795028771060
+        }
+      ],
+      "submitReceipts": [
+        {
+          "taskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+          "clientInputId": "in-cddec22e4986402baaf21e5c32c67d0e",
+          "startedAt": 1795028771061,
+          "receipt": {
+            "turnId": "8a2d7b8e-46fe-4f94-b322-7f55bbe21af2",
+            "duplicate": false,
+            "status": "accepted"
+          },
+          "acceptedAt": 1795028771063,
+          "deliveredAt": 1795028771063,
+          "releaseCount": 0
+        }
+      ],
+      "preRetry": {
+        "firstTaskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+        "firstCreate": {
+          "requestedTaskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+          "startedAt": 1795028770950,
+          "receipt": {
+            "taskId": "e5d73c31-33de-4676-ba69-405edc11f491",
+            "selection": {
+              "driverId": "codex-app-server",
+              "profileId": "ffa975d5-1130-4603-9112-fd08ded5e882",
+              "tier": "ask",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "ffa975d5-1130-4603-9112-fd08ded5e882": true
+              }
+            }
+          },
+          "committedAt": 1795028770951,
+          "transportError": true
+        },
+        "taskIds": [
+          "e5d73c31-33de-4676-ba69-405edc11f491"
+        ],
+        "submitCalls": 0,
+        "nativeRequests": 0
+      },
+      "files": [
+        {
+          "path": "attempt-071/a43-home-after-create-retry.png",
+          "sha256": "2d9477e2c401c9f25e9fcd4e318c013f9693629945ef4ffd4e8971abeeeb09ba"
+        },
+        {
+          "path": "attempt-071/app.log",
+          "sha256": "2f1780c5f11940324466580956cacf1d92e68e3b856bacc9a181dbcadad14aaa"
+        },
+        {
+          "path": "attempt-071/result.json",
+          "sha256": "c25203376a18b1f6ce93597938afb9b7faebc2ade65128378301198cc5ab4d62"
+        },
+        {
+          "path": "attempt-071/source-a43-home-first-send.mjs",
+          "sha256": "4f12f690d9c7b47f3cb121775f4c2b17b562383b3722f5ff260b1a6611639656"
+        }
+      ]
+    },
+    {
+      "scenario": "late-edit",
+      "status": "passed-subset",
+      "name": "attempt-072",
+      "exit": {
+        "pid": 66018,
+        "code": 0,
+        "signal": null
+      },
+      "identity": [
+        true,
+        66018,
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-072/runtime-jplihC/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-072/runtime-jplihC/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-072/runtime-jplihC/data"
+      ],
+      "durable": {
+        "title": "A43_FIRST_REQUEST_late-edit",
+        "taskId": "baf4ed74-eaf5-4b25-9657-9570c351f0c1",
+        "turnId": "49c0deab-2d61-4541-a0e0-4796522323da",
+        "clientInputId": "in-f7c9f80f32944d3b86d97b3c6c9b1492",
+        "nativeTurnId": "01a1f00d-8574-7910-ba4c-d09788609bd1",
+        "status": "completed"
+      },
+      "nativeResponseCount": 1,
+      "nativeResponses": [
+        {
+          "at": "2026-11-18T19:06:20.416Z",
+          "id": "rc197f2ef-d0ae-4e3c-8e5c-62310d1fcb9a",
+          "model": "m14-fixture-a43-home",
+          "marker": "A43_FIRST_REQUEST_late-edit"
+        }
+      ],
+      "createReceipts": [
+        {
+          "requestedTaskId": "baf4ed74-eaf5-4b25-9657-9570c351f0c1",
+          "startedAt": 1795028779413,
+          "receipt": {
+            "taskId": "baf4ed74-eaf5-4b25-9657-9570c351f0c1",
+            "selection": {
+              "driverId": "codex-app-server",
+              "profileId": "7392cd55-451f-4a91-afdc-da225b8b4a41",
+              "tier": "ask",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "7392cd55-451f-4a91-afdc-da225b8b4a41": true
+              }
+            }
+          },
+          "committedAt": 1795028779414,
+          "deliveredAt": 1795028779414
+        }
+      ],
+      "submitReceipts": [
+        {
+          "taskId": "baf4ed74-eaf5-4b25-9657-9570c351f0c1",
+          "clientInputId": "in-f7c9f80f32944d3b86d97b3c6c9b1492",
+          "startedAt": 1795028779415,
+          "receipt": {
+            "turnId": "49c0deab-2d61-4541-a0e0-4796522323da",
+            "duplicate": false,
+            "status": "accepted"
+          },
+          "acceptedAt": 1795028779417,
+          "deliveredAt": 1795028779549,
+          "releaseCount": 1
+        }
+      ],
+      "editorBeforeAck": "A43_FIRST_REQUEST_late-edit\nA43_LATE_EDIT_SHOULD_REMAIN",
+      "editorAfterAckVisual": "回原项目首页后输入框显示 A43_FIRST_REQUEST_late-edit 和 A43_LATE_EDIT_SHOULD_REMAIN。",
+      "editorAfterAckScreenshot": "attempt-072/a43-home-new-text-after-ack.png",
+      "files": [
+        {
+          "path": "attempt-072/a43-home-new-text-after-ack.png",
+          "sha256": "212b1949ea1ffa6d57aceb02cc88695eab99689d39a6801ad8ac8a1b3b0a3593"
+        },
+        {
+          "path": "attempt-072/a43-home-new-text-before-ack.png",
+          "sha256": "f5f99656decbdfed63404bae46296bcee02f40bc9f7dcece8c9fe32d18baa554"
+        },
+        {
+          "path": "attempt-072/app.log",
+          "sha256": "5e6108fb117643387a18bd338fa926fa3676f31520687b3ef0dacd417f27b199"
+        },
+        {
+          "path": "attempt-072/result.json",
+          "sha256": "d4b0e25c409acdae153f584c637fc836a5f43b1ec37fe7e3232f9f568f050f08"
+        },
+        {
+          "path": "attempt-072/source-a43-home-first-send.mjs",
+          "sha256": "4f12f690d9c7b47f3cb121775f4c2b17b562383b3722f5ff260b1a6611639656"
+        }
+      ]
+    },
+    {
+      "scenario": "single-window CAS",
+      "status": "passed-subset",
+      "name": "attempt-073",
+      "exit": {
+        "pid": 67050,
+        "code": 0,
+        "signal": null
+      },
+      "identity": [
+        true,
+        67050,
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data"
+      ],
+      "acceptedEditorLeases": [
+        {
+          "channel": "agentTasks.holdDraftAttachments",
+          "taskId": "20548f5f-749d-42f3-8d04-e913aada6378",
+          "source": "read",
+          "startedAt": 1795028865004,
+          "sender": 1,
+          "editorId": "91fb72f5-41f0-4c07-84a8-f93b72d9e34e",
+          "paths": [
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/f7bec634-fa6a-4ce6-be8a-03ecb06d7711/a43-local-keep.png"
+          ],
+          "ok": true,
+          "endedAt": 1795028865004
+        },
+        {
+          "channel": "agentTasks.holdDraftAttachments",
+          "taskId": "637c05d7-e2b9-4358-aeeb-9611848dfc6b",
+          "source": "read",
+          "startedAt": 1795028866267,
+          "sender": 1,
+          "editorId": "2e36f455-92c8-4083-ab85-c24426305633",
+          "paths": [
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/c19198a0-6d5f-4645-a9f7-a00305d5a7d2/a43-local-adopt.png"
+          ],
+          "ok": true,
+          "endedAt": 1795028866267
+        }
+      ],
+      "attachments": {
+        "keepAfterConflict": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/f7bec634-fa6a-4ce6-be8a-03ecb06d7711/a43-local-keep.png",
+          "exists": true,
+          "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+        },
+        "keepAfterStaleClick": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/f7bec634-fa6a-4ce6-be8a-03ecb06d7711/a43-local-keep.png",
+          "exists": true,
+          "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+        },
+        "keepAfterSave": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/f7bec634-fa6a-4ce6-be8a-03ecb06d7711/a43-local-keep.png",
+          "exists": true,
+          "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+        },
+        "adoptAfterConflict": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/c19198a0-6d5f-4645-a9f7-a00305d5a7d2/a43-local-adopt.png",
+          "exists": true,
+          "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+        },
+        "adoptAfterCancel": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/c19198a0-6d5f-4645-a9f7-a00305d5a7d2/a43-local-adopt.png",
+          "exists": true,
+          "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+        },
+        "adoptAfterStaleConfirm": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/c19198a0-6d5f-4645-a9f7-a00305d5a7d2/a43-local-adopt.png",
+          "exists": true,
+          "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+        },
+        "adoptAcceptedRemote": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-073/runtime-y5uKm9/data/agent-attachments/3196aac3-8832-4daf-8888-2740b11ed723/a43-remote-adopt.png",
+          "exists": true,
+          "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+        }
+      },
+      "hostReceipts": [
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "20548f5f-749d-42f3-8d04-e913aada6378",
+          "source": "A43_另一份旧 keep",
+          "expectedRevision": 1,
+          "startedAt": 1795028865113,
+          "sender": 1,
+          "ok": true,
+          "revision": 2,
+          "endedAt": 1795028865113
+        },
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "20548f5f-749d-42f3-8d04-e913aada6378",
+          "source": "A43_现在输入的草稿 keep",
+          "expectedRevision": 1,
+          "startedAt": 1795028865521,
+          "sender": 1,
+          "ok": false,
+          "revision": 2,
+          "endedAt": 1795028865522
+        },
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "20548f5f-749d-42f3-8d04-e913aada6378",
+          "source": "A43_另一份再次修改 keep",
+          "expectedRevision": 2,
+          "startedAt": 1795028866102,
+          "sender": 1,
+          "ok": true,
+          "revision": 3,
+          "endedAt": 1795028866102
+        },
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "20548f5f-749d-42f3-8d04-e913aada6378",
+          "source": "A43_冲突以后继续编辑",
+          "expectedRevision": 2,
+          "startedAt": 1795028866105,
+          "sender": 1,
+          "ok": false,
+          "revision": 3,
+          "endedAt": 1795028866105
+        },
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "20548f5f-749d-42f3-8d04-e913aada6378",
+          "source": "A43_冲突以后继续编辑",
+          "expectedRevision": 3,
+          "startedAt": 1795028866115,
+          "sender": 1,
+          "ok": true,
+          "revision": 4,
+          "endedAt": 1795028866115
+        },
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "637c05d7-e2b9-4358-aeeb-9611848dfc6b",
+          "source": "A43_另一份旧 adopt",
+          "expectedRevision": 1,
+          "startedAt": 1795028866380,
+          "sender": 1,
+          "ok": true,
+          "revision": 2,
+          "endedAt": 1795028866380
+        },
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "637c05d7-e2b9-4358-aeeb-9611848dfc6b",
+          "source": "A43_现在输入的草稿 adopt",
+          "expectedRevision": 1,
+          "startedAt": 1795028866787,
+          "sender": 1,
+          "ok": false,
+          "revision": 2,
+          "endedAt": 1795028866788
+        },
+        {
+          "channel": "agentTasks.saveDraft",
+          "taskId": "637c05d7-e2b9-4358-aeeb-9611848dfc6b",
+          "source": "A43_确认窗口期间另一份已修改",
+          "expectedRevision": 2,
+          "startedAt": 1795028866883,
+          "sender": 1,
+          "ok": true,
+          "revision": 3,
+          "endedAt": 1795028866883
+        }
+      ],
+      "scope": "CDP 编辑、保留、取消及两次确认。第二写入使用同一授权窗口发出的原 saveDraft。全部 IPC 来自同一 sender 1。",
+      "files": [
+        {
+          "path": "attempt-073/01-keep.png",
+          "sha256": "404129d2823919d2274e5701b3da830e0cd5c89fba5e8ce88364bb877a990a00"
+        },
+        {
+          "path": "attempt-073/02-adopt-stale.png",
+          "sha256": "af76cf69b277bde0040d3f2456868f53ed5df627a5f015e96ab534158792b218"
+        },
+        {
+          "path": "attempt-073/03-adopt-confirmed.png",
+          "sha256": "208ed97b7e516ed6bfb10e44574753a3f71b0ba76b9f4cbe76c5e0141940c27e"
+        },
+        {
+          "path": "attempt-073/app.log",
+          "sha256": "c0fb3bd3a22e25d5851c624dbcb7d7951a3e8a2329d3581451df1e2be6cc7dda"
+        },
+        {
+          "path": "attempt-073/result.json",
+          "sha256": "8bcd2ae9190eff4755d107f71d9c131008ad82f618dc0906033443383ebb7b7c"
+        },
+        {
+          "path": "attempt-073/source-a43-draft-cas-packaged.mjs",
+          "sha256": "e696ba5ad74ff876a2427025ba5ef48173e1dc07e8aa2c6c956b05f358cfde73"
+        }
+      ]
+    }
+  ]
+}

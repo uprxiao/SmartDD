@@ -1,0 +1,143 @@
+{
+  "caseId": "M14-A14",
+  "sourceCommit": "4f1d4c0a215820ce9256fce8bdd529986dc0d17b",
+  "scope": "M14-A14-waiting-goal",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "0116ddf8720e421e00f6e3d8d48dbede8a493400eda18ccda34faf45f29fe6f0"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T01:42:53.077Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A14-waiting-goal": {
+      "status": "failed-or-blocked",
+      "passed": [],
+      "missing": [],
+      "error": "Error: Timed out: actual waiting_children goal plus one real Claude child request\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a14-prep/a14-waiting-goal-packaged.mjs:112:9)\n    at async caseWaitingGoal (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a14-prep/a14-waiting-goal-packaged.mjs:307:19)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a14-prep/a14-waiting-goal-packaged.mjs:127:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a14-prep/a14-waiting-goal-packaged.mjs:379:3",
+      "dom": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nM14-A14-waiting-parent stage 6\nM14-A14-waiting-parent stage 6\n失败\n设置\nM14-A14-waiting-parent stage 6\n失败\n插件 2\n单 Agent · 开启委派\nA14-USER-WAIT-WARM\n\nREPLY-A14-USER-WAIT-WARM\n\n本轮改动 · 快照期间原生执行器又开始写入，无法证明本轮差异边界\n查看差异\n观察到的变化可能包含用户或外部写入\nMCP 启动 · smartdd_project_f461e9980de2\nMCP 启动 · wy_f461e9980de2ccea56d7c569\n工作 25 秒后失败\n调用了 wy_f461e9980de2ccea56d7c569/wy_targets\n调用了 wy_f461e9980de2ccea56d7c569/wy_delegate\n查看错误详情\n查看错误详情\n查看错误详情\n查看错误详情\n查看错误详情\n查看错误详情\n本轮改动 · 原生自动回合开始前未取得可证明的快照边界，本轮差异不完整\n查看差异\n观察到的变化可能包含用户或外部写入\n已失败 · 共工作 25 秒\nA14-WAIT-DELEGATION-ACTUAL\n额度受限，已暂停 · 25 秒 · 1 轮\n继续\n清除\n请求批准\n帮我批准\n完全访问\nA14 Codex A\nm14-switch-model-one"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T01:42:59.975Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T01:43:00.000Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T01:43:00.017Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T01:43:00.579Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"a98762c8-30fe-49cb-ac55-66d201e2dbf4\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T01:43:00.688Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:43:00.722Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:43:02.111Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:43:02.137Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "model": [
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A14-USER-WAIT-WARM",
+      "goalCommand": false
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-169/home",
+    "at": "2026-11-19T01:42:54.696Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 51771,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-169/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-169/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-169/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:62126/d1aa7f82-514f-41c2-91de-13fd9b895e0e\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:62126/d1aa7f82-514f-41c2-91de-13fd9b895e0e\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:62092/devtools/browser/db52bfa4-36cb-4711-865b-ff36cb8102e5\n(node:51771) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 51771,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON",
+    "Unexpected token 'W', \"Wall time:\"... is not valid JSON"
+  ],
+  "finishedAt": "2026-11-19T01:43:37.612Z"
+}

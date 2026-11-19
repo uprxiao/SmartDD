@@ -1,0 +1,2831 @@
+{
+  "caseId": "M14-A05",
+  "commit": "37c6540bdb4ad2c35e6dfebfcb71ebe50a5c6dee",
+  "asar": "37ee4d182188c3b3df482b4c1e0bc473d3883482559b1037bee0155fb13110d6",
+  "status": "D06-33 复验通过，D06-34 仍有真实故障",
+  "scope": "真实隔离打包 App 与 Claude CLI、真实后台 Bash、本机合成推理。后台 CDP 操作，不计 R。",
+  "cleanup": "独立核对全批次已知宿主、Claude、Bash PID 均不存在，3425 无监听。",
+  "previousBaseline": "A05-68fbd2c79-g04-background-index.json",
+  "attempts": [
+    {
+      "attempt": "attempt-096",
+      "outcome": "第四条原前台确实开始，普通停止保留旧 Bash。第二次普通 UI 停止拿到同 node 的原生 stopped 通知，退出、无强停。驱动额外要求旧 owner 在前台和后台都收口后仍保持活跃，导致测试停在这步。按正式合同修正后由 098 复验。",
+      "status": "failed",
+      "processExit": [
+        {
+          "identity": [
+            true,
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-096/runtime-F3wbwC/home",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-096/runtime-F3wbwC/data",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-096/runtime-F3wbwC/home",
+            37630,
+            "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+          ],
+          "hook": {
+            "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-096/runtime-F3wbwC/home",
+            "at": "2026-11-18T20:13:15.197Z",
+            "workerInspectorFlagRemoved": true
+          },
+          "rendererErrors": [],
+          "exit": {
+            "pid": 37630,
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "observations": [
+        {
+          "name": "test instance work area turned on by real settings control",
+          "at": "2026-11-18T20:13:20.089Z",
+          "pid": 37630
+        },
+        {
+          "name": "two explicitly sent complete native turns share one binding",
+          "at": "2026-11-18T20:13:22.206Z",
+          "first": {
+            "turn_id": "4b39510e-3032-4186-ab40-ae2146f9c8e6",
+            "task_id": "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "client_input_id": "in-77df6e05532048098cf9b30b29a5e16d",
+            "input_ref": "{\"text\":\"A05_FIRST_PERSISTED_ROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:1",
+            "accepted_at": "2026-11-18T20:13:20.400Z",
+            "started_at": "2026-11-18T20:13:21.294Z",
+            "ended_at": "2026-11-18T20:13:21.414Z",
+            "error_code": null
+          },
+          "second": {
+            "turn_id": "2ff377b6-8fdd-4a36-87e3-612082e46819",
+            "task_id": "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "client_input_id": "in-4882f5f6053d43078ae6b0d67f3f1dc3",
+            "input_ref": "{\"text\":\"A05_SECOND_PERSISTED_ROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:2",
+            "accepted_at": "2026-11-18T20:13:21.859Z",
+            "started_at": "2026-11-18T20:13:21.986Z",
+            "ended_at": "2026-11-18T20:13:22.018Z",
+            "error_code": null
+          },
+          "originalBinding": {
+            "binding_id": "c3b25da3-7220-4a0a-bdfc-a4f53cb39b4d",
+            "native_id": "3296a532-59af-488c-91d1-cd59f39bd70a",
+            "created_at": "2026-11-18T20:13:20.447Z"
+          },
+          "originalRun": {
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "task_id": "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96",
+            "binding_id": "c3b25da3-7220-4a0a-bdfc-a4f53cb39b4d",
+            "generation": 1,
+            "pid": 37752,
+            "process_started_at": "darwin-proc-v1:1795032800:721316",
+            "state": "active",
+            "error_code": null,
+            "ended_at": null
+          }
+        },
+        {
+          "name": "native Bash stays alive after actual foreground ends",
+          "at": "2026-11-18T20:13:22.749Z",
+          "foreground": {
+            "turn_id": "6048f105-dbe6-4ff2-8199-47f0d7b1b930",
+            "task_id": "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "client_input_id": "in-08be93df5a3c4994a89de5dab78fe2e1",
+            "input_ref": "{\"text\":\"A05_BEGIN_NATIVE_BACKGROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:3",
+            "accepted_at": "2026-11-18T20:13:22.213Z",
+            "started_at": "2026-11-18T20:13:22.339Z",
+            "ended_at": "2026-11-18T20:13:22.609Z",
+            "error_code": null
+          },
+          "taskStatus": "working",
+          "rootNative": {
+            "schema": 1,
+            "state": "running",
+            "pid": 37752,
+            "startedAt": "darwin-proc-v1:1795032800:721316"
+          },
+          "background": {
+            "schema": 1,
+            "state": "running",
+            "pid": 38475,
+            "startedAt": "darwin-proc-v1:1795032802:558138"
+          },
+          "node": {
+            "id": "toolu_513612eac43446768547e2dc9cfebf83",
+            "nativeTaskId": "bi93qasy3",
+            "nativeRunId": "0mwmk6mt6-9c9d38c9",
+            "state": {
+              "item_id": "653cd3f3-5a2a-4c5e-81d5-2b9ba30fcb56",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk6mt6-9c9d38c9"
+              }
+            },
+            "started": {
+              "item_id": "eec33c7c-b3e0-4808-afab-89ce744aa921",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bi93qasy3",
+                "run_id": "0mwmk6mt6-9c9d38c9",
+                "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "76c856d8-f5c1-471e-9a36-4a9a8c3b87d9",
+                "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "eec33c7c-b3e0-4808-afab-89ce744aa921",
+                "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+                "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bi93qasy3",
+                  "run_id": "0mwmk6mt6-9c9d38c9",
+                  "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "76c856d8-f5c1-471e-9a36-4a9a8c3b87d9",
+                  "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "new foreground reached native provider while original Bash remained live",
+          "at": "2026-11-18T20:13:23.205Z",
+          "before": {
+            "turn": {
+              "turn_id": "33681cde-1a3e-4832-9559-bcfd2cdcf594",
+              "task_id": "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "client_input_id": "in-784492e5697044468da1c90d95ec5be9",
+              "input_ref": "{\"text\":\"A05_STOP_ONLY_FOREGROUND_ROUND\"}",
+              "source_kind": "user",
+              "status": "started",
+              "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:4",
+              "accepted_at": "2026-11-18T20:13:22.879Z",
+              "started_at": "2026-11-18T20:13:22.915Z",
+              "ended_at": null,
+              "error_code": null
+            },
+            "run": {
+              "runId": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "generation": 1,
+              "driverId": "claude-sdk",
+              "tier": "ask",
+              "defaultModel": "fixture-a05-claude",
+              "models": [
+                {
+                  "id": "default",
+                  "name": "Default (recommended)",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                },
+                {
+                  "id": "fixture-a05-claude",
+                  "name": "fixture-a05-claude",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                }
+              ],
+              "busy": true,
+              "steer": false,
+              "goal": true,
+              "catalog": {
+                "commands": [
+                  "agents",
+                  "auto-mode-setup",
+                  "autocompact",
+                  "clear",
+                  "compact",
+                  "config",
+                  "output-style",
+                  "context",
+                  "effort",
+                  "fast",
+                  "heapdump",
+                  "init",
+                  "mcp",
+                  "model",
+                  "__remote-workflow",
+                  "workflow-launch-exec",
+                  "reload-skills",
+                  "rename",
+                  "security-review",
+                  "usage",
+                  "insights",
+                  "recap",
+                  "goal",
+                  "list-agents",
+                  "team-onboarding"
+                ],
+                "skills": [
+                  {
+                    "name": "willyou-browser-browser"
+                  },
+                  {
+                    "name": "willyou-browser-reproduce-bug"
+                  },
+                  {
+                    "name": "willyou-mail-work-assistant"
+                  },
+                  {
+                    "name": "willyou-project-db-diagnostics"
+                  },
+                  {
+                    "name": "willyou-remote-password-ssh"
+                  },
+                  {
+                    "name": "deep-research"
+                  },
+                  {
+                    "name": "dataviz"
+                  },
+                  {
+                    "name": "update-config"
+                  },
+                  {
+                    "name": "verify"
+                  },
+                  {
+                    "name": "debug"
+                  },
+                  {
+                    "name": "code-review"
+                  },
+                  {
+                    "name": "simplify"
+                  },
+                  {
+                    "name": "batch"
+                  },
+                  {
+                    "name": "fewer-permission-prompts"
+                  },
+                  {
+                    "name": "doctor"
+                  },
+                  {
+                    "name": "loop"
+                  },
+                  {
+                    "name": "claude-api"
+                  },
+                  {
+                    "name": "workflow-authoring"
+                  },
+                  {
+                    "name": "run"
+                  },
+                  {
+                    "name": "run-skill-generator"
+                  },
+                  {
+                    "name": "plugin-authoring"
+                  }
+                ]
+              }
+            },
+            "backgroundTurnCapture": {
+              "status": "incomplete",
+              "after_ref": null
+            }
+          },
+          "nativeWhileForeground": {
+            "id": "toolu_513612eac43446768547e2dc9cfebf83",
+            "nativeTaskId": "bi93qasy3",
+            "nativeRunId": "0mwmk6mt6-9c9d38c9",
+            "state": {
+              "item_id": "653cd3f3-5a2a-4c5e-81d5-2b9ba30fcb56",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk6mt6-9c9d38c9"
+              }
+            },
+            "started": {
+              "item_id": "eec33c7c-b3e0-4808-afab-89ce744aa921",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bi93qasy3",
+                "run_id": "0mwmk6mt6-9c9d38c9",
+                "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "76c856d8-f5c1-471e-9a36-4a9a8c3b87d9",
+                "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "eec33c7c-b3e0-4808-afab-89ce744aa921",
+                "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+                "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bi93qasy3",
+                  "run_id": "0mwmk6mt6-9c9d38c9",
+                  "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "76c856d8-f5c1-471e-9a36-4a9a8c3b87d9",
+                  "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+                }
+              }
+            ]
+          },
+          "owner": {
+            "schema": 1,
+            "state": "running",
+            "pid": 37752,
+            "startedAt": "darwin-proc-v1:1795032800:721316"
+          },
+          "background": {
+            "schema": 1,
+            "state": "running",
+            "pid": 38475,
+            "startedAt": "darwin-proc-v1:1795032802:558138"
+          }
+        },
+        {
+          "name": "exact ordinary foreground stop receipt and original background after stop",
+          "at": "2026-11-18T20:13:23.271Z",
+          "before": {
+            "turn": {
+              "turn_id": "33681cde-1a3e-4832-9559-bcfd2cdcf594",
+              "task_id": "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "client_input_id": "in-784492e5697044468da1c90d95ec5be9",
+              "input_ref": "{\"text\":\"A05_STOP_ONLY_FOREGROUND_ROUND\"}",
+              "source_kind": "user",
+              "status": "started",
+              "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:4",
+              "accepted_at": "2026-11-18T20:13:22.879Z",
+              "started_at": "2026-11-18T20:13:22.915Z",
+              "ended_at": null,
+              "error_code": null
+            },
+            "run": {
+              "runId": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "generation": 1,
+              "driverId": "claude-sdk",
+              "tier": "ask",
+              "defaultModel": "fixture-a05-claude",
+              "models": [
+                {
+                  "id": "default",
+                  "name": "Default (recommended)",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                },
+                {
+                  "id": "fixture-a05-claude",
+                  "name": "fixture-a05-claude",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                }
+              ],
+              "busy": true,
+              "steer": false,
+              "goal": true,
+              "catalog": {
+                "commands": [
+                  "agents",
+                  "auto-mode-setup",
+                  "autocompact",
+                  "clear",
+                  "compact",
+                  "config",
+                  "output-style",
+                  "context",
+                  "effort",
+                  "fast",
+                  "heapdump",
+                  "init",
+                  "mcp",
+                  "model",
+                  "__remote-workflow",
+                  "workflow-launch-exec",
+                  "reload-skills",
+                  "rename",
+                  "security-review",
+                  "usage",
+                  "insights",
+                  "recap",
+                  "goal",
+                  "list-agents",
+                  "team-onboarding"
+                ],
+                "skills": [
+                  {
+                    "name": "willyou-browser-browser"
+                  },
+                  {
+                    "name": "willyou-browser-reproduce-bug"
+                  },
+                  {
+                    "name": "willyou-mail-work-assistant"
+                  },
+                  {
+                    "name": "willyou-project-db-diagnostics"
+                  },
+                  {
+                    "name": "willyou-remote-password-ssh"
+                  },
+                  {
+                    "name": "deep-research"
+                  },
+                  {
+                    "name": "dataviz"
+                  },
+                  {
+                    "name": "update-config"
+                  },
+                  {
+                    "name": "verify"
+                  },
+                  {
+                    "name": "debug"
+                  },
+                  {
+                    "name": "code-review"
+                  },
+                  {
+                    "name": "simplify"
+                  },
+                  {
+                    "name": "batch"
+                  },
+                  {
+                    "name": "fewer-permission-prompts"
+                  },
+                  {
+                    "name": "doctor"
+                  },
+                  {
+                    "name": "loop"
+                  },
+                  {
+                    "name": "claude-api"
+                  },
+                  {
+                    "name": "workflow-authoring"
+                  },
+                  {
+                    "name": "run"
+                  },
+                  {
+                    "name": "run-skill-generator"
+                  },
+                  {
+                    "name": "plugin-authoring"
+                  }
+                ]
+              }
+            },
+            "backgroundTurnCapture": {
+              "status": "incomplete",
+              "after_ref": null
+            }
+          },
+          "stopped": {
+            "turn": {
+              "turn_id": "33681cde-1a3e-4832-9559-bcfd2cdcf594",
+              "task_id": "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "client_input_id": "in-784492e5697044468da1c90d95ec5be9",
+              "input_ref": "{\"text\":\"A05_STOP_ONLY_FOREGROUND_ROUND\"}",
+              "source_kind": "user",
+              "status": "interrupted",
+              "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:4",
+              "accepted_at": "2026-11-18T20:13:22.879Z",
+              "started_at": "2026-11-18T20:13:22.915Z",
+              "ended_at": "2026-11-18T20:13:23.210Z",
+              "error_code": null
+            },
+            "status": "working",
+            "run": {
+              "runId": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "generation": 1,
+              "driverId": "claude-sdk",
+              "tier": "ask",
+              "defaultModel": "fixture-a05-claude",
+              "models": [
+                {
+                  "id": "default",
+                  "name": "Default (recommended)",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                },
+                {
+                  "id": "fixture-a05-claude",
+                  "name": "fixture-a05-claude",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                }
+              ],
+              "busy": false,
+              "steer": false,
+              "goal": true,
+              "catalog": {
+                "commands": [
+                  "agents",
+                  "auto-mode-setup",
+                  "autocompact",
+                  "clear",
+                  "compact",
+                  "config",
+                  "output-style",
+                  "context",
+                  "effort",
+                  "fast",
+                  "heapdump",
+                  "init",
+                  "mcp",
+                  "model",
+                  "__remote-workflow",
+                  "workflow-launch-exec",
+                  "reload-skills",
+                  "rename",
+                  "security-review",
+                  "usage",
+                  "insights",
+                  "recap",
+                  "goal",
+                  "list-agents",
+                  "team-onboarding"
+                ],
+                "skills": [
+                  {
+                    "name": "willyou-browser-browser"
+                  },
+                  {
+                    "name": "willyou-browser-reproduce-bug"
+                  },
+                  {
+                    "name": "willyou-mail-work-assistant"
+                  },
+                  {
+                    "name": "willyou-project-db-diagnostics"
+                  },
+                  {
+                    "name": "willyou-remote-password-ssh"
+                  },
+                  {
+                    "name": "deep-research"
+                  },
+                  {
+                    "name": "dataviz"
+                  },
+                  {
+                    "name": "update-config"
+                  },
+                  {
+                    "name": "verify"
+                  },
+                  {
+                    "name": "debug"
+                  },
+                  {
+                    "name": "code-review"
+                  },
+                  {
+                    "name": "simplify"
+                  },
+                  {
+                    "name": "batch"
+                  },
+                  {
+                    "name": "fewer-permission-prompts"
+                  },
+                  {
+                    "name": "doctor"
+                  },
+                  {
+                    "name": "loop"
+                  },
+                  {
+                    "name": "claude-api"
+                  },
+                  {
+                    "name": "workflow-authoring"
+                  },
+                  {
+                    "name": "run"
+                  },
+                  {
+                    "name": "run-skill-generator"
+                  },
+                  {
+                    "name": "plugin-authoring"
+                  }
+                ]
+              }
+            },
+            "stopping": null
+          },
+          "background": {
+            "schema": 1,
+            "state": "running",
+            "pid": 38475,
+            "startedAt": "darwin-proc-v1:1795032802:558138"
+          },
+          "node": {
+            "id": "toolu_513612eac43446768547e2dc9cfebf83",
+            "nativeTaskId": "bi93qasy3",
+            "nativeRunId": "0mwmk6mt6-9c9d38c9",
+            "state": {
+              "item_id": "653cd3f3-5a2a-4c5e-81d5-2b9ba30fcb56",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk6mt6-9c9d38c9"
+              }
+            },
+            "started": {
+              "item_id": "eec33c7c-b3e0-4808-afab-89ce744aa921",
+              "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+              "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bi93qasy3",
+                "run_id": "0mwmk6mt6-9c9d38c9",
+                "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "76c856d8-f5c1-471e-9a36-4a9a8c3b87d9",
+                "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "eec33c7c-b3e0-4808-afab-89ce744aa921",
+                "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+                "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bi93qasy3",
+                  "run_id": "0mwmk6mt6-9c9d38c9",
+                  "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "76c856d8-f5c1-471e-9a36-4a9a8c3b87d9",
+                  "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+                }
+              }
+            ]
+          },
+          "trace": [
+            {
+              "channel": "agentTasks.stop",
+              "args": [
+                "4ce74bdc-ae3d-4f9f-b4a4-f227a7b21e96"
+              ],
+              "sender": 1,
+              "enteredAt": 1795032803207,
+              "receipt": {
+                "stopped": true
+              },
+              "returnedAt": 1795032803209
+            }
+          ]
+        }
+      ],
+      "durableReadback": {
+        "runs": [
+          {
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "binding_id": "c3b25da3-7220-4a0a-bdfc-a4f53cb39b4d",
+            "generation": 1,
+            "owner_pid": 37630,
+            "pid": 37752,
+            "process_started_at": "darwin-proc-v1:1795032800:721316",
+            "state": "stopped",
+            "error_code": null,
+            "ended_at": "2026-11-18T20:13:23.816Z"
+          }
+        ],
+        "bindings": [
+          {
+            "binding_id": "c3b25da3-7220-4a0a-bdfc-a4f53cb39b4d",
+            "native_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+          }
+        ],
+        "turns": [
+          {
+            "turn_id": "4b39510e-3032-4186-ab40-ae2146f9c8e6",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "status": "completed",
+            "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:1",
+            "error_code": null,
+            "marker": "A05_FIRST_PERSISTED_ROUND"
+          },
+          {
+            "turn_id": "2ff377b6-8fdd-4a36-87e3-612082e46819",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "status": "completed",
+            "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:2",
+            "error_code": null,
+            "marker": "A05_SECOND_PERSISTED_ROUND"
+          },
+          {
+            "turn_id": "6048f105-dbe6-4ff2-8199-47f0d7b1b930",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "status": "completed",
+            "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:3",
+            "error_code": null,
+            "marker": "A05_BEGIN_NATIVE_BACKGROUND"
+          },
+          {
+            "turn_id": "33681cde-1a3e-4832-9559-bcfd2cdcf594",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "status": "interrupted",
+            "native_turn_id": "3296a532-59af-488c-91d1-cd59f39bd70a:4",
+            "error_code": null,
+            "marker": "A05_STOP_ONLY_FOREGROUND_ROUND"
+          }
+        ],
+        "nodes": [
+          {
+            "item_id": "653cd3f3-5a2a-4c5e-81d5-2b9ba30fcb56",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+            "type": "subagent_status",
+            "terminal_state": "failed",
+            "revision": 2,
+            "payload": {
+              "state": "interrupted",
+              "nativeRunId": "0mwmk6mt6-9c9d38c9"
+            }
+          },
+          {
+            "item_id": "eec33c7c-b3e0-4808-afab-89ce744aa921",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+            "type": "subagent_message",
+            "terminal_state": "completed",
+            "revision": 1,
+            "payload": {
+              "type": "system",
+              "subtype": "task_started",
+              "task_id": "bi93qasy3",
+              "run_id": "0mwmk6mt6-9c9d38c9",
+              "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "description": "Run only this isolated A05 Bash process",
+              "is_backgrounded": true,
+              "task_type": "local_bash",
+              "uuid": "76c856d8-f5c1-471e-9a36-4a9a8c3b87d9",
+              "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+            }
+          },
+          {
+            "item_id": "2a664e4a-bf93-4b8f-b100-0b15f9350d19",
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "node_id": "toolu_513612eac43446768547e2dc9cfebf83",
+            "type": "subagent_message",
+            "terminal_state": "completed",
+            "revision": 1,
+            "payload": {
+              "type": "system",
+              "subtype": "task_notification",
+              "task_id": "bi93qasy3",
+              "run_id": "0mwmk6mt6-9c9d38c9",
+              "tool_use_id": "toolu_513612eac43446768547e2dc9cfebf83",
+              "status": "stopped",
+              "output_file": "/private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-096-runtime-F3wbwC-project/3296a532-59af-488c-91d1-cd59f39bd70a/tasks/bi93qasy3.output",
+              "summary": "Run only this isolated A05 Bash process",
+              "uuid": "9eb802fa-4eba-47b3-ae9d-ca7af1ba21ae",
+              "session_id": "3296a532-59af-488c-91d1-cd59f39bd70a"
+            }
+          }
+        ],
+        "errors": [],
+        "processes": [
+          {
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "kind": "bridge",
+            "pid": 37861,
+            "process_started_at": "darwin-proc-v1:1795032800:960680",
+            "state": "exited",
+            "ended_at": "2026-11-18T20:13:23.816Z"
+          },
+          {
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "kind": "cli",
+            "pid": 37752,
+            "process_started_at": "darwin-proc-v1:1795032800:721316",
+            "state": "exited",
+            "ended_at": "2026-11-18T20:13:23.394Z"
+          }
+        ],
+        "activities": [
+          {
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:13:21.213Z"
+          },
+          {
+            "run_id": "2a65aeae-24a5-4945-862d-52caac0d23d6",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:13:21.255Z"
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "path": "attempt-096/01-native-background-after-foreground.png",
+          "sha256": "8954e64b97ae87b76c3b6d11b43aad8c340e2c963b2659f6eaa324c3a164060c"
+        },
+        {
+          "path": "attempt-096/02-foreground-stopped-background-still-running.png",
+          "sha256": "dde501830c4cf65233976a194ac8270f0027f1e2d827d5cc435bcfb9ef6fc88f"
+        },
+        {
+          "path": "attempt-096/99-failure.png",
+          "sha256": "1ed0795afa19b83ed1d7750df8fe65167ceae42075e08ae9fbc98d6a5b67ef86"
+        },
+        {
+          "path": "attempt-096/app-37630.log",
+          "sha256": "db209d7e06022581392598aeefe8ba7981038074c2d18f8f3908811f04848a79"
+        },
+        {
+          "path": "attempt-096/result.json",
+          "sha256": "a908bdd4c3a2664b6b0f5347f29065ba453ebedc5265b6f0c86acf9ec3901e7e"
+        },
+        {
+          "path": "attempt-096/source-a05-background-packaged.mjs",
+          "sha256": "b74769ceb47a85e2e7fb7e6fa4cea0e28b196316f6f6a9f58c8c6976817add50"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-097",
+      "outcome": "有意仅终止第一只隔离宿主，再启动同数据。原 detached group 和原 Bash 均已被证明退出；原 node 仍 running，旧 run 仍 orphaned 且原 CLI 登记仍 active。继续真点击失败，未派发到原生；守卫明确提示原任务仍有未排空运行。",
+      "status": "failed",
+      "processExit": [
+        {
+          "identity": [
+            true,
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/home",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/data",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/home",
+            38963,
+            "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+          ],
+          "hook": {
+            "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/home",
+            "at": "2026-11-18T20:14:28.807Z",
+            "workerInspectorFlagRemoved": true
+          },
+          "rendererErrors": [],
+          "intentionalCrash": {
+            "pid": 38963,
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        },
+        {
+          "identity": [
+            true,
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/home",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/data",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/home",
+            39814,
+            "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+          ],
+          "hook": {
+            "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-097/runtime-fp90rz/home",
+            "at": "2026-11-18T20:14:37.400Z",
+            "workerInspectorFlagRemoved": true
+          },
+          "rendererErrors": [],
+          "exit": {
+            "pid": 39814,
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "observations": [
+        {
+          "name": "test instance work area turned on by real settings control",
+          "at": "2026-11-18T20:14:34.030Z",
+          "pid": 38963
+        },
+        {
+          "name": "two explicitly sent complete native turns share one binding",
+          "at": "2026-11-18T20:14:35.635Z",
+          "first": {
+            "turn_id": "b9c2f8ee-bcc0-4a12-b850-52d99ec4a33a",
+            "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "client_input_id": "in-69c41c1b660e493caa8b9922ce2296e0",
+            "input_ref": "{\"text\":\"A05_FIRST_PERSISTED_ROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:1",
+            "accepted_at": "2026-11-18T20:14:34.332Z",
+            "started_at": "2026-11-18T20:14:35.159Z",
+            "ended_at": "2026-11-18T20:14:35.203Z",
+            "error_code": null
+          },
+          "second": {
+            "turn_id": "7a2ce195-a64d-4536-a2e0-c3201df8387e",
+            "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "client_input_id": "in-bf0eaecabf244fb9ba1e30f92a5e00dc",
+            "input_ref": "{\"text\":\"A05_SECOND_PERSISTED_ROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:2",
+            "accepted_at": "2026-11-18T20:14:35.300Z",
+            "started_at": "2026-11-18T20:14:35.410Z",
+            "ended_at": "2026-11-18T20:14:35.438Z",
+            "error_code": null
+          },
+          "originalBinding": {
+            "binding_id": "3a887d92-2e05-4e5f-a43a-b1942877c30a",
+            "native_id": "bf60f358-162c-40ed-a7a5-7899b08a855d",
+            "created_at": "2026-11-18T20:14:34.366Z"
+          },
+          "originalRun": {
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+            "binding_id": "3a887d92-2e05-4e5f-a43a-b1942877c30a",
+            "generation": 1,
+            "pid": 39088,
+            "process_started_at": "darwin-proc-v1:1795032874:627588",
+            "state": "active",
+            "error_code": null,
+            "ended_at": null
+          }
+        },
+        {
+          "name": "native Bash stays alive after actual foreground ends",
+          "at": "2026-11-18T20:14:36.016Z",
+          "foreground": {
+            "turn_id": "7a14b8c3-44a2-423d-be76-57ea6f02eff5",
+            "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "client_input_id": "in-9037a156db0b445fbae62bf0603db3ba",
+            "input_ref": "{\"text\":\"A05_BEGIN_NATIVE_BACKGROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:3",
+            "accepted_at": "2026-11-18T20:14:35.639Z",
+            "started_at": "2026-11-18T20:14:35.749Z",
+            "ended_at": "2026-11-18T20:14:35.871Z",
+            "error_code": null
+          },
+          "taskStatus": "working",
+          "rootNative": {
+            "schema": 1,
+            "state": "running",
+            "pid": 39088,
+            "startedAt": "darwin-proc-v1:1795032874:627588"
+          },
+          "background": {
+            "schema": 1,
+            "state": "running",
+            "pid": 39796,
+            "startedAt": "darwin-proc-v1:1795032875:820603"
+          },
+          "node": {
+            "id": "toolu_862eae9bdc284322b87f908294fa3a78",
+            "nativeTaskId": "bji33iyfh",
+            "nativeRunId": "0mwmk87c9-f59744a7",
+            "state": {
+              "item_id": "a20c0a46-bc44-4c3f-8e2b-923bbbd00fc1",
+              "run_id": "125be695-3568-45a1-a012-10460680360d",
+              "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk87c9-f59744a7"
+              }
+            },
+            "started": {
+              "item_id": "60efa2ff-8bb4-4b5d-acc8-1bcc2c6c0094",
+              "run_id": "125be695-3568-45a1-a012-10460680360d",
+              "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bji33iyfh",
+                "run_id": "0mwmk87c9-f59744a7",
+                "tool_use_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "cf48c93d-f86e-45b5-a00f-2be8ac514f55",
+                "session_id": "bf60f358-162c-40ed-a7a5-7899b08a855d"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "60efa2ff-8bb4-4b5d-acc8-1bcc2c6c0094",
+                "run_id": "125be695-3568-45a1-a012-10460680360d",
+                "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bji33iyfh",
+                  "run_id": "0mwmk87c9-f59744a7",
+                  "tool_use_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "cf48c93d-f86e-45b5-a00f-2be8ac514f55",
+                  "session_id": "bf60f358-162c-40ed-a7a5-7899b08a855d"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "only first isolated host deliberately killed",
+          "at": "2026-11-18T20:14:36.106Z",
+          "exit": {
+            "pid": 38963,
+            "code": null,
+            "signal": "SIGKILL"
+          },
+          "originalOwnerImmediatelyAfter": {
+            "schema": 1,
+            "state": "running",
+            "pid": 39088,
+            "startedAt": "darwin-proc-v1:1795032874:627588"
+          },
+          "originalBackgroundImmediatelyAfter": {
+            "schema": 1,
+            "state": "running",
+            "pid": 39796,
+            "startedAt": "darwin-proc-v1:1795032875:820603"
+          },
+          "originalGroupImmediatelyAfter": {
+            "schema": 5,
+            "state": "running",
+            "rootPid": 39088,
+            "rootStartedAt": "darwin-proc-v1:1795032874:627588",
+            "processes": [
+              {
+                "pid": 39198,
+                "startedAt": "darwin-proc-v1:1795032874:845071"
+              },
+              {
+                "pid": 39197,
+                "startedAt": "darwin-proc-v1:1795032874:844543"
+              },
+              {
+                "pid": 39088,
+                "startedAt": "darwin-proc-v1:1795032874:627588"
+              }
+            ]
+          }
+        },
+        {
+          "name": "test instance work area turned on by real settings control",
+          "at": "2026-11-18T20:14:39.199Z",
+          "pid": 39814
+        },
+        {
+          "name": "same private App data: old run fact, stable node, retained history, no replay before user input",
+          "at": "2026-11-18T20:14:46.188Z",
+          "orphan": {
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+            "binding_id": "3a887d92-2e05-4e5f-a43a-b1942877c30a",
+            "generation": 1,
+            "pid": 39088,
+            "process_started_at": "darwin-proc-v1:1795032874:627588",
+            "state": "orphaned",
+            "error_code": "HOST_INTERRUPTED",
+            "ended_at": "2026-11-18T20:14:38.438Z"
+          },
+          "drained": {
+            "schema": 5,
+            "state": "stopped",
+            "rootPid": 39088,
+            "rootStartedAt": "darwin-proc-v1:1795032874:627588",
+            "processes": []
+          },
+          "nodeBeforeInput": {
+            "id": "toolu_862eae9bdc284322b87f908294fa3a78",
+            "nativeTaskId": "bji33iyfh",
+            "nativeRunId": "0mwmk87c9-f59744a7",
+            "state": {
+              "item_id": "a20c0a46-bc44-4c3f-8e2b-923bbbd00fc1",
+              "run_id": "125be695-3568-45a1-a012-10460680360d",
+              "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk87c9-f59744a7"
+              }
+            },
+            "started": {
+              "item_id": "60efa2ff-8bb4-4b5d-acc8-1bcc2c6c0094",
+              "run_id": "125be695-3568-45a1-a012-10460680360d",
+              "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bji33iyfh",
+                "run_id": "0mwmk87c9-f59744a7",
+                "tool_use_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "cf48c93d-f86e-45b5-a00f-2be8ac514f55",
+                "session_id": "bf60f358-162c-40ed-a7a5-7899b08a855d"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "60efa2ff-8bb4-4b5d-acc8-1bcc2c6c0094",
+                "run_id": "125be695-3568-45a1-a012-10460680360d",
+                "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bji33iyfh",
+                  "run_id": "0mwmk87c9-f59744a7",
+                  "tool_use_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "cf48c93d-f86e-45b5-a00f-2be8ac514f55",
+                  "session_id": "bf60f358-162c-40ed-a7a5-7899b08a855d"
+                }
+              }
+            ]
+          },
+          "beforeRestartRequests": 4,
+          "status": "completed",
+          "originalTurns": [
+            {
+              "turn_id": "b9c2f8ee-bcc0-4a12-b850-52d99ec4a33a",
+              "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+              "run_id": "125be695-3568-45a1-a012-10460680360d",
+              "client_input_id": "in-69c41c1b660e493caa8b9922ce2296e0",
+              "input_ref": "{\"text\":\"A05_FIRST_PERSISTED_ROUND\"}",
+              "source_kind": "user",
+              "status": "completed",
+              "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:1",
+              "accepted_at": "2026-11-18T20:14:34.332Z",
+              "started_at": "2026-11-18T20:14:35.159Z",
+              "ended_at": "2026-11-18T20:14:35.203Z",
+              "error_code": null
+            },
+            {
+              "turn_id": "7a2ce195-a64d-4536-a2e0-c3201df8387e",
+              "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+              "run_id": "125be695-3568-45a1-a012-10460680360d",
+              "client_input_id": "in-bf0eaecabf244fb9ba1e30f92a5e00dc",
+              "input_ref": "{\"text\":\"A05_SECOND_PERSISTED_ROUND\"}",
+              "source_kind": "user",
+              "status": "completed",
+              "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:2",
+              "accepted_at": "2026-11-18T20:14:35.300Z",
+              "started_at": "2026-11-18T20:14:35.410Z",
+              "ended_at": "2026-11-18T20:14:35.438Z",
+              "error_code": null
+            },
+            {
+              "turn_id": "7a14b8c3-44a2-423d-be76-57ea6f02eff5",
+              "task_id": "2d671f6b-4ac2-4be4-aae6-c0b8f35068b4",
+              "run_id": "125be695-3568-45a1-a012-10460680360d",
+              "client_input_id": "in-9037a156db0b445fbae62bf0603db3ba",
+              "input_ref": "{\"text\":\"A05_BEGIN_NATIVE_BACKGROUND\"}",
+              "source_kind": "user",
+              "status": "completed",
+              "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:3",
+              "accepted_at": "2026-11-18T20:14:35.639Z",
+              "started_at": "2026-11-18T20:14:35.749Z",
+              "ended_at": "2026-11-18T20:14:35.871Z",
+              "error_code": null
+            }
+          ],
+          "pid": 39814,
+          "oldOwner": {
+            "schema": 1,
+            "state": "stopped"
+          },
+          "oldBackground": {
+            "schema": 1,
+            "state": "stopped"
+          }
+        }
+      ],
+      "durableReadback": {
+        "runs": [
+          {
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "binding_id": "3a887d92-2e05-4e5f-a43a-b1942877c30a",
+            "generation": 1,
+            "owner_pid": 38963,
+            "pid": 39088,
+            "process_started_at": "darwin-proc-v1:1795032874:627588",
+            "state": "orphaned",
+            "error_code": "HOST_INTERRUPTED",
+            "ended_at": "2026-11-18T20:14:38.438Z"
+          },
+          {
+            "run_id": "34794ccc-ae98-4015-b79f-5775f4f5e983",
+            "binding_id": "3a887d92-2e05-4e5f-a43a-b1942877c30a",
+            "generation": 2,
+            "owner_pid": 39814,
+            "pid": null,
+            "process_started_at": null,
+            "state": "failed",
+            "error_code": "OPEN_FAILED_UNFORKED",
+            "ended_at": "2026-11-18T20:14:46.398Z"
+          }
+        ],
+        "bindings": [
+          {
+            "binding_id": "3a887d92-2e05-4e5f-a43a-b1942877c30a",
+            "native_id": "bf60f358-162c-40ed-a7a5-7899b08a855d"
+          }
+        ],
+        "turns": [
+          {
+            "turn_id": "b9c2f8ee-bcc0-4a12-b850-52d99ec4a33a",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "status": "completed",
+            "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:1",
+            "error_code": null,
+            "marker": "A05_FIRST_PERSISTED_ROUND"
+          },
+          {
+            "turn_id": "7a2ce195-a64d-4536-a2e0-c3201df8387e",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "status": "completed",
+            "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:2",
+            "error_code": null,
+            "marker": "A05_SECOND_PERSISTED_ROUND"
+          },
+          {
+            "turn_id": "7a14b8c3-44a2-423d-be76-57ea6f02eff5",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "status": "completed",
+            "native_turn_id": "bf60f358-162c-40ed-a7a5-7899b08a855d:3",
+            "error_code": null,
+            "marker": "A05_BEGIN_NATIVE_BACKGROUND"
+          },
+          {
+            "turn_id": "8436f4b0-c19b-4d66-bdc9-e467d2aff3c8",
+            "run_id": null,
+            "status": "failed",
+            "native_turn_id": null,
+            "error_code": "OPEN_FAILED",
+            "marker": "A05_RESUME_EXACT_BINDING"
+          }
+        ],
+        "nodes": [
+          {
+            "item_id": "a20c0a46-bc44-4c3f-8e2b-923bbbd00fc1",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+            "type": "subagent_status",
+            "terminal_state": null,
+            "revision": 1,
+            "payload": {
+              "state": "running",
+              "nativeRunId": "0mwmk87c9-f59744a7"
+            }
+          },
+          {
+            "item_id": "60efa2ff-8bb4-4b5d-acc8-1bcc2c6c0094",
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "node_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+            "type": "subagent_message",
+            "terminal_state": "completed",
+            "revision": 1,
+            "payload": {
+              "type": "system",
+              "subtype": "task_started",
+              "task_id": "bji33iyfh",
+              "run_id": "0mwmk87c9-f59744a7",
+              "tool_use_id": "toolu_862eae9bdc284322b87f908294fa3a78",
+              "description": "Run only this isolated A05 Bash process",
+              "is_backgrounded": true,
+              "task_type": "local_bash",
+              "uuid": "cf48c93d-f86e-45b5-a00f-2be8ac514f55",
+              "session_id": "bf60f358-162c-40ed-a7a5-7899b08a855d"
+            }
+          }
+        ],
+        "errors": [
+          {
+            "turn_id": "8436f4b0-c19b-4d66-bdc9-e467d2aff3c8",
+            "payload": {
+              "code": "OPEN_FAILED",
+              "message": "原任务仍有未排空运行"
+            }
+          }
+        ],
+        "processes": [
+          {
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "kind": "bridge",
+            "pid": 39197,
+            "process_started_at": "darwin-proc-v1:1795032874:844543",
+            "state": "exited",
+            "ended_at": "2026-11-18T20:14:38.597Z"
+          },
+          {
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "kind": "cli",
+            "pid": 39088,
+            "process_started_at": "darwin-proc-v1:1795032874:627588",
+            "state": "active",
+            "ended_at": null
+          }
+        ],
+        "activities": [
+          {
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:14:35.094Z"
+          },
+          {
+            "run_id": "125be695-3568-45a1-a012-10460680360d",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:14:35.126Z"
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "path": "attempt-097/01-native-background-after-foreground.png",
+          "sha256": "51bef59a4baa16b23b3e4fa5647b7569623cc295a8e5c68a02dc9f6b751bdcf9"
+        },
+        {
+          "path": "attempt-097/02-cold-reopened-task.png",
+          "sha256": "786fdfea0e9f2e12e5114511fc654630d0c249c4aa95e44e47652c4b647bae13"
+        },
+        {
+          "path": "attempt-097/99-failure.png",
+          "sha256": "7c9267a5fe97cbb54b18548d1a0460ab84c06b35fea76b69fad004fb1e032441"
+        },
+        {
+          "path": "attempt-097/app-38963.log",
+          "sha256": "4a4e413e41ec94d662a3009ad2f967ec5355d73b51f47b0eed4f93fd29c32bc3"
+        },
+        {
+          "path": "attempt-097/app-39814.log",
+          "sha256": "1cc1d737d2a498705deaa8f69542241ee63914edb8d25d8ae31559a21840aaf1"
+        },
+        {
+          "path": "attempt-097/before-intentional-crash.json",
+          "sha256": "9614002a29d316151766dac29790df4802e01147e9f8dbc88a72f4966b367071"
+        },
+        {
+          "path": "attempt-097/result.json",
+          "sha256": "31365937e5f875e3fd3df88945273109ef224c701159797da7d55c55d3d6f9ba"
+        },
+        {
+          "path": "attempt-097/source-a05-background-packaged.mjs",
+          "sha256": "b74769ceb47a85e2e7fb7e6fa4cea0e28b196316f6f6a9f58c8c6976817add50"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-098",
+      "outcome": "第四条前台实际开始，真点击单停保留原后台；第二次点击触发同 node 的真实 stopped，实际 Bash 退出且未强停。协作排空旧 owner，真发下一轮复用原 native binding／session，在新代次回复。",
+      "status": "pass",
+      "processExit": [
+        {
+          "identity": [
+            true,
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-098/runtime-ot1hcK/home",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-098/runtime-ot1hcK/data",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-098/runtime-ot1hcK/home",
+            40722,
+            "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+          ],
+          "hook": {
+            "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-098/runtime-ot1hcK/home",
+            "at": "2026-11-18T20:15:50.206Z",
+            "workerInspectorFlagRemoved": true
+          },
+          "rendererErrors": [],
+          "exit": {
+            "pid": 40722,
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "observations": [
+        {
+          "name": "test instance work area turned on by real settings control",
+          "at": "2026-11-18T20:15:55.115Z",
+          "pid": 40722
+        },
+        {
+          "name": "two explicitly sent complete native turns share one binding",
+          "at": "2026-11-18T20:15:56.758Z",
+          "first": {
+            "turn_id": "8daab82d-d56e-4df2-b6f8-7cfedd49748c",
+            "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "client_input_id": "in-4b134d63b1184b91be14d2812f894325",
+            "input_ref": "{\"text\":\"A05_FIRST_PERSISTED_ROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:1",
+            "accepted_at": "2026-11-18T20:15:55.412Z",
+            "started_at": "2026-11-18T20:15:56.294Z",
+            "ended_at": "2026-11-18T20:15:56.337Z",
+            "error_code": null
+          },
+          "second": {
+            "turn_id": "b4cd540b-b5e6-4985-b70d-61b5b1e09d2d",
+            "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "client_input_id": "in-dec1fb6215a644269dbabe47d4e038c8",
+            "input_ref": "{\"text\":\"A05_SECOND_PERSISTED_ROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:2",
+            "accepted_at": "2026-11-18T20:15:56.435Z",
+            "started_at": "2026-11-18T20:15:56.631Z",
+            "ended_at": "2026-11-18T20:15:56.661Z",
+            "error_code": null
+          },
+          "originalBinding": {
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "native_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd",
+            "created_at": "2026-11-18T20:15:55.462Z"
+          },
+          "originalRun": {
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "generation": 1,
+            "pid": 40845,
+            "process_started_at": "darwin-proc-v1:1795032955:747924",
+            "state": "active",
+            "error_code": null,
+            "ended_at": null
+          }
+        },
+        {
+          "name": "native Bash stays alive after actual foreground ends",
+          "at": "2026-11-18T20:15:57.278Z",
+          "foreground": {
+            "turn_id": "3760c6a5-0a4c-493c-b13b-c37de18cfb93",
+            "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "client_input_id": "in-2314288d413948a897fe1ca488091247",
+            "input_ref": "{\"text\":\"A05_BEGIN_NATIVE_BACKGROUND\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:3",
+            "accepted_at": "2026-11-18T20:15:56.763Z",
+            "started_at": "2026-11-18T20:15:56.939Z",
+            "ended_at": "2026-11-18T20:15:57.129Z",
+            "error_code": null
+          },
+          "taskStatus": "working",
+          "rootNative": {
+            "schema": 1,
+            "state": "running",
+            "pid": 40845,
+            "startedAt": "darwin-proc-v1:1795032955:747924"
+          },
+          "background": {
+            "schema": 1,
+            "state": "running",
+            "pid": 41720,
+            "startedAt": "darwin-proc-v1:1795032957:86127"
+          },
+          "node": {
+            "id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "nativeTaskId": "bp6m4fa4i",
+            "nativeRunId": "0mwmk9y1m-f7a68ab7",
+            "state": {
+              "item_id": "44fd5506-2993-489a-8d8d-ab983a272d65",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "created_at": "2026-11-18T20:15:57.083Z",
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk9y1m-f7a68ab7"
+              }
+            },
+            "started": {
+              "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "created_at": "2026-11-18T20:15:57.083Z",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bp6m4fa4i",
+                "run_id": "0mwmk9y1m-f7a68ab7",
+                "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+                "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+                "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "created_at": "2026-11-18T20:15:57.083Z",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bp6m4fa4i",
+                  "run_id": "0mwmk9y1m-f7a68ab7",
+                  "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                  "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "new foreground reached native provider while original Bash remained live",
+          "at": "2026-11-18T20:15:57.891Z",
+          "before": {
+            "turn": {
+              "turn_id": "9d4478b1-ac87-436e-b641-28777c86379d",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "client_input_id": "in-cb40bb226d584be8a6d0bafef58554ef",
+              "input_ref": "{\"text\":\"A05_STOP_ONLY_FOREGROUND_ROUND\"}",
+              "source_kind": "user",
+              "status": "started",
+              "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:4",
+              "accepted_at": "2026-11-18T20:15:57.431Z",
+              "started_at": "2026-11-18T20:15:57.535Z",
+              "ended_at": null,
+              "error_code": null
+            },
+            "run": {
+              "runId": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "generation": 1,
+              "driverId": "claude-sdk",
+              "tier": "ask",
+              "defaultModel": "fixture-a05-claude",
+              "models": [
+                {
+                  "id": "default",
+                  "name": "Default (recommended)",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                },
+                {
+                  "id": "fixture-a05-claude",
+                  "name": "fixture-a05-claude",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                }
+              ],
+              "busy": true,
+              "steer": false,
+              "goal": true,
+              "catalog": {
+                "commands": [
+                  "agents",
+                  "auto-mode-setup",
+                  "autocompact",
+                  "clear",
+                  "compact",
+                  "config",
+                  "output-style",
+                  "context",
+                  "effort",
+                  "fast",
+                  "heapdump",
+                  "init",
+                  "mcp",
+                  "model",
+                  "__remote-workflow",
+                  "workflow-launch-exec",
+                  "reload-skills",
+                  "rename",
+                  "security-review",
+                  "usage",
+                  "insights",
+                  "recap",
+                  "goal",
+                  "list-agents",
+                  "team-onboarding"
+                ],
+                "skills": [
+                  {
+                    "name": "willyou-browser-browser"
+                  },
+                  {
+                    "name": "willyou-browser-reproduce-bug"
+                  },
+                  {
+                    "name": "willyou-mail-work-assistant"
+                  },
+                  {
+                    "name": "willyou-project-db-diagnostics"
+                  },
+                  {
+                    "name": "willyou-remote-password-ssh"
+                  },
+                  {
+                    "name": "deep-research"
+                  },
+                  {
+                    "name": "dataviz"
+                  },
+                  {
+                    "name": "update-config"
+                  },
+                  {
+                    "name": "verify"
+                  },
+                  {
+                    "name": "debug"
+                  },
+                  {
+                    "name": "code-review"
+                  },
+                  {
+                    "name": "simplify"
+                  },
+                  {
+                    "name": "batch"
+                  },
+                  {
+                    "name": "fewer-permission-prompts"
+                  },
+                  {
+                    "name": "doctor"
+                  },
+                  {
+                    "name": "loop"
+                  },
+                  {
+                    "name": "claude-api"
+                  },
+                  {
+                    "name": "workflow-authoring"
+                  },
+                  {
+                    "name": "run"
+                  },
+                  {
+                    "name": "run-skill-generator"
+                  },
+                  {
+                    "name": "plugin-authoring"
+                  }
+                ]
+              }
+            },
+            "backgroundTurnCapture": {
+              "status": "incomplete",
+              "after_ref": null
+            }
+          },
+          "nativeWhileForeground": {
+            "id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "nativeTaskId": "bp6m4fa4i",
+            "nativeRunId": "0mwmk9y1m-f7a68ab7",
+            "state": {
+              "item_id": "44fd5506-2993-489a-8d8d-ab983a272d65",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "created_at": "2026-11-18T20:15:57.083Z",
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk9y1m-f7a68ab7"
+              }
+            },
+            "started": {
+              "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "created_at": "2026-11-18T20:15:57.083Z",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bp6m4fa4i",
+                "run_id": "0mwmk9y1m-f7a68ab7",
+                "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+                "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+                "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "created_at": "2026-11-18T20:15:57.083Z",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bp6m4fa4i",
+                  "run_id": "0mwmk9y1m-f7a68ab7",
+                  "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                  "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+                }
+              }
+            ]
+          },
+          "owner": {
+            "schema": 1,
+            "state": "running",
+            "pid": 40845,
+            "startedAt": "darwin-proc-v1:1795032955:747924"
+          },
+          "background": {
+            "schema": 1,
+            "state": "running",
+            "pid": 41720,
+            "startedAt": "darwin-proc-v1:1795032957:86127"
+          }
+        },
+        {
+          "name": "exact ordinary foreground stop receipt and original background after stop",
+          "at": "2026-11-18T20:15:57.954Z",
+          "before": {
+            "turn": {
+              "turn_id": "9d4478b1-ac87-436e-b641-28777c86379d",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "client_input_id": "in-cb40bb226d584be8a6d0bafef58554ef",
+              "input_ref": "{\"text\":\"A05_STOP_ONLY_FOREGROUND_ROUND\"}",
+              "source_kind": "user",
+              "status": "started",
+              "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:4",
+              "accepted_at": "2026-11-18T20:15:57.431Z",
+              "started_at": "2026-11-18T20:15:57.535Z",
+              "ended_at": null,
+              "error_code": null
+            },
+            "run": {
+              "runId": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "generation": 1,
+              "driverId": "claude-sdk",
+              "tier": "ask",
+              "defaultModel": "fixture-a05-claude",
+              "models": [
+                {
+                  "id": "default",
+                  "name": "Default (recommended)",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                },
+                {
+                  "id": "fixture-a05-claude",
+                  "name": "fixture-a05-claude",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                }
+              ],
+              "busy": true,
+              "steer": false,
+              "goal": true,
+              "catalog": {
+                "commands": [
+                  "agents",
+                  "auto-mode-setup",
+                  "autocompact",
+                  "clear",
+                  "compact",
+                  "config",
+                  "output-style",
+                  "context",
+                  "effort",
+                  "fast",
+                  "heapdump",
+                  "init",
+                  "mcp",
+                  "model",
+                  "__remote-workflow",
+                  "workflow-launch-exec",
+                  "reload-skills",
+                  "rename",
+                  "security-review",
+                  "usage",
+                  "insights",
+                  "recap",
+                  "goal",
+                  "list-agents",
+                  "team-onboarding"
+                ],
+                "skills": [
+                  {
+                    "name": "willyou-browser-browser"
+                  },
+                  {
+                    "name": "willyou-browser-reproduce-bug"
+                  },
+                  {
+                    "name": "willyou-mail-work-assistant"
+                  },
+                  {
+                    "name": "willyou-project-db-diagnostics"
+                  },
+                  {
+                    "name": "willyou-remote-password-ssh"
+                  },
+                  {
+                    "name": "deep-research"
+                  },
+                  {
+                    "name": "dataviz"
+                  },
+                  {
+                    "name": "update-config"
+                  },
+                  {
+                    "name": "verify"
+                  },
+                  {
+                    "name": "debug"
+                  },
+                  {
+                    "name": "code-review"
+                  },
+                  {
+                    "name": "simplify"
+                  },
+                  {
+                    "name": "batch"
+                  },
+                  {
+                    "name": "fewer-permission-prompts"
+                  },
+                  {
+                    "name": "doctor"
+                  },
+                  {
+                    "name": "loop"
+                  },
+                  {
+                    "name": "claude-api"
+                  },
+                  {
+                    "name": "workflow-authoring"
+                  },
+                  {
+                    "name": "run"
+                  },
+                  {
+                    "name": "run-skill-generator"
+                  },
+                  {
+                    "name": "plugin-authoring"
+                  }
+                ]
+              }
+            },
+            "backgroundTurnCapture": {
+              "status": "incomplete",
+              "after_ref": null
+            }
+          },
+          "stopped": {
+            "turn": {
+              "turn_id": "9d4478b1-ac87-436e-b641-28777c86379d",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "client_input_id": "in-cb40bb226d584be8a6d0bafef58554ef",
+              "input_ref": "{\"text\":\"A05_STOP_ONLY_FOREGROUND_ROUND\"}",
+              "source_kind": "user",
+              "status": "interrupted",
+              "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:4",
+              "accepted_at": "2026-11-18T20:15:57.431Z",
+              "started_at": "2026-11-18T20:15:57.535Z",
+              "ended_at": "2026-11-18T20:15:57.897Z",
+              "error_code": null
+            },
+            "status": "working",
+            "run": {
+              "runId": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "generation": 1,
+              "driverId": "claude-sdk",
+              "tier": "ask",
+              "defaultModel": "fixture-a05-claude",
+              "models": [
+                {
+                  "id": "default",
+                  "name": "Default (recommended)",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                },
+                {
+                  "id": "fixture-a05-claude",
+                  "name": "fixture-a05-claude",
+                  "efforts": [
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max"
+                  ]
+                }
+              ],
+              "busy": false,
+              "steer": false,
+              "goal": true,
+              "catalog": {
+                "commands": [
+                  "agents",
+                  "auto-mode-setup",
+                  "autocompact",
+                  "clear",
+                  "compact",
+                  "config",
+                  "output-style",
+                  "context",
+                  "effort",
+                  "fast",
+                  "heapdump",
+                  "init",
+                  "mcp",
+                  "model",
+                  "__remote-workflow",
+                  "workflow-launch-exec",
+                  "reload-skills",
+                  "rename",
+                  "security-review",
+                  "usage",
+                  "insights",
+                  "recap",
+                  "goal",
+                  "list-agents",
+                  "team-onboarding"
+                ],
+                "skills": [
+                  {
+                    "name": "willyou-browser-browser"
+                  },
+                  {
+                    "name": "willyou-browser-reproduce-bug"
+                  },
+                  {
+                    "name": "willyou-mail-work-assistant"
+                  },
+                  {
+                    "name": "willyou-project-db-diagnostics"
+                  },
+                  {
+                    "name": "willyou-remote-password-ssh"
+                  },
+                  {
+                    "name": "deep-research"
+                  },
+                  {
+                    "name": "dataviz"
+                  },
+                  {
+                    "name": "update-config"
+                  },
+                  {
+                    "name": "verify"
+                  },
+                  {
+                    "name": "debug"
+                  },
+                  {
+                    "name": "code-review"
+                  },
+                  {
+                    "name": "simplify"
+                  },
+                  {
+                    "name": "batch"
+                  },
+                  {
+                    "name": "fewer-permission-prompts"
+                  },
+                  {
+                    "name": "doctor"
+                  },
+                  {
+                    "name": "loop"
+                  },
+                  {
+                    "name": "claude-api"
+                  },
+                  {
+                    "name": "workflow-authoring"
+                  },
+                  {
+                    "name": "run"
+                  },
+                  {
+                    "name": "run-skill-generator"
+                  },
+                  {
+                    "name": "plugin-authoring"
+                  }
+                ]
+              }
+            },
+            "stopping": null
+          },
+          "background": {
+            "schema": 1,
+            "state": "running",
+            "pid": 41720,
+            "startedAt": "darwin-proc-v1:1795032957:86127"
+          },
+          "node": {
+            "id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "nativeTaskId": "bp6m4fa4i",
+            "nativeRunId": "0mwmk9y1m-f7a68ab7",
+            "state": {
+              "item_id": "44fd5506-2993-489a-8d8d-ab983a272d65",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "type": "subagent_status",
+              "revision": 1,
+              "terminal_state": null,
+              "created_at": "2026-11-18T20:15:57.083Z",
+              "payload": {
+                "state": "running",
+                "nativeRunId": "0mwmk9y1m-f7a68ab7"
+              }
+            },
+            "started": {
+              "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "created_at": "2026-11-18T20:15:57.083Z",
+              "payload": {
+                "type": "system",
+                "subtype": "task_started",
+                "task_id": "bp6m4fa4i",
+                "run_id": "0mwmk9y1m-f7a68ab7",
+                "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "description": "Run only this isolated A05 Bash process",
+                "is_backgrounded": true,
+                "task_type": "local_bash",
+                "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+              }
+            },
+            "messages": [
+              {
+                "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+                "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+                "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "created_at": "2026-11-18T20:15:57.083Z",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bp6m4fa4i",
+                  "run_id": "0mwmk9y1m-f7a68ab7",
+                  "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                  "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+                }
+              }
+            ]
+          },
+          "trace": [
+            {
+              "channel": "agentTasks.stop",
+              "args": [
+                "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b"
+              ],
+              "sender": 1,
+              "enteredAt": 1795032957893,
+              "receipt": {
+                "stopped": true
+              },
+              "returnedAt": 1795032957895
+            }
+          ]
+        },
+        {
+          "name": "background stops only after second explicit UI action with original node and PID",
+          "at": "2026-11-18T20:15:58.147Z",
+          "secondAction": "explicit native background stop, no force stop",
+          "control": ".agent-composer button.agent-stop-run[title=\"停止本轮\"]",
+          "end": {
+            "node": {
+              "id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "nativeTaskId": "bp6m4fa4i",
+              "nativeRunId": "0mwmk9y1m-f7a68ab7",
+              "state": {
+                "item_id": "44fd5506-2993-489a-8d8d-ab983a272d65",
+                "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+                "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "type": "subagent_status",
+                "revision": 2,
+                "terminal_state": "failed",
+                "created_at": "2026-11-18T20:15:57.083Z",
+                "payload": {
+                  "state": "interrupted",
+                  "nativeRunId": "0mwmk9y1m-f7a68ab7"
+                }
+              },
+              "started": {
+                "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+                "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+                "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "type": "subagent_message",
+                "revision": 1,
+                "terminal_state": "completed",
+                "created_at": "2026-11-18T20:15:57.083Z",
+                "payload": {
+                  "type": "system",
+                  "subtype": "task_started",
+                  "task_id": "bp6m4fa4i",
+                  "run_id": "0mwmk9y1m-f7a68ab7",
+                  "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                  "description": "Run only this isolated A05 Bash process",
+                  "is_backgrounded": true,
+                  "task_type": "local_bash",
+                  "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                  "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+                }
+              },
+              "messages": [
+                {
+                  "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+                  "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+                  "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                  "type": "subagent_message",
+                  "revision": 1,
+                  "terminal_state": "completed",
+                  "created_at": "2026-11-18T20:15:57.083Z",
+                  "payload": {
+                    "type": "system",
+                    "subtype": "task_started",
+                    "task_id": "bp6m4fa4i",
+                    "run_id": "0mwmk9y1m-f7a68ab7",
+                    "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                    "description": "Run only this isolated A05 Bash process",
+                    "is_backgrounded": true,
+                    "task_type": "local_bash",
+                    "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+                    "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+                  }
+                },
+                {
+                  "item_id": "9e1d452c-d9f7-4f95-8787-6288ce50ea33",
+                  "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+                  "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                  "type": "subagent_message",
+                  "revision": 1,
+                  "terminal_state": "completed",
+                  "created_at": "2026-11-18T20:15:58.013Z",
+                  "payload": {
+                    "type": "system",
+                    "subtype": "task_notification",
+                    "task_id": "bp6m4fa4i",
+                    "run_id": "0mwmk9y1m-f7a68ab7",
+                    "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                    "status": "stopped",
+                    "output_file": "/private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-098-runtime-ot1hcK-project/5a24b3fa-a072-4298-9af8-99df2f5043fd/tasks/bp6m4fa4i.output",
+                    "summary": "Run only this isolated A05 Bash process",
+                    "uuid": "f09152e3-f3df-4be3-aadd-225fc69f6cef",
+                    "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+                  }
+                }
+              ]
+            },
+            "stoppedEvent": {
+              "item_id": "9e1d452c-d9f7-4f95-8787-6288ce50ea33",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "type": "subagent_message",
+              "revision": 1,
+              "terminal_state": "completed",
+              "created_at": "2026-11-18T20:15:58.013Z",
+              "payload": {
+                "type": "system",
+                "subtype": "task_notification",
+                "task_id": "bp6m4fa4i",
+                "run_id": "0mwmk9y1m-f7a68ab7",
+                "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+                "status": "stopped",
+                "output_file": "/private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-098-runtime-ot1hcK-project/5a24b3fa-a072-4298-9af8-99df2f5043fd/tasks/bp6m4fa4i.output",
+                "summary": "Run only this isolated A05 Bash process",
+                "uuid": "f09152e3-f3df-4be3-aadd-225fc69f6cef",
+                "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+              }
+            },
+            "run": {
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+              "generation": 1,
+              "pid": 40845,
+              "process_started_at": "darwin-proc-v1:1795032955:747924",
+              "state": "active",
+              "error_code": null,
+              "ended_at": null
+            },
+            "taskStatus": "stopped",
+            "retainedRun": null,
+            "foreground": {
+              "turn_id": "9d4478b1-ac87-436e-b641-28777c86379d",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "client_input_id": "in-cb40bb226d584be8a6d0bafef58554ef",
+              "input_ref": "{\"text\":\"A05_STOP_ONLY_FOREGROUND_ROUND\"}",
+              "source_kind": "user",
+              "status": "interrupted",
+              "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:4",
+              "accepted_at": "2026-11-18T20:15:57.431Z",
+              "started_at": "2026-11-18T20:15:57.535Z",
+              "ended_at": "2026-11-18T20:15:57.897Z",
+              "error_code": null
+            },
+            "backgroundTurn": {
+              "turn_id": "3760c6a5-0a4c-493c-b13b-c37de18cfb93",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "client_input_id": "in-2314288d413948a897fe1ca488091247",
+              "input_ref": "{\"text\":\"A05_BEGIN_NATIVE_BACKGROUND\"}",
+              "source_kind": "user",
+              "status": "completed",
+              "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:3",
+              "accepted_at": "2026-11-18T20:15:56.763Z",
+              "started_at": "2026-11-18T20:15:56.939Z",
+              "ended_at": "2026-11-18T20:15:57.129Z",
+              "error_code": null
+            }
+          },
+          "nativeOwner": {
+            "schema": 1,
+            "state": "stopped"
+          },
+          "background": {
+            "schema": 1,
+            "state": "stopped"
+          },
+          "trace": [
+            {
+              "channel": "agentTasks.stop",
+              "args": [
+                "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b"
+              ],
+              "sender": 1,
+              "enteredAt": 1795032957893,
+              "receipt": {
+                "stopped": true
+              },
+              "returnedAt": 1795032957895
+            },
+            {
+              "channel": "agentTasks.stop",
+              "args": [
+                "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b"
+              ],
+              "sender": 1,
+              "enteredAt": 1795032958010,
+              "receipt": {
+                "stopped": true
+              },
+              "returnedAt": 1795032958013
+            }
+          ]
+        },
+        {
+          "name": "original owner drains only after native foreground and background stop",
+          "at": "2026-11-18T20:15:58.386Z",
+          "backgroundStoppedEvent": {
+            "item_id": "9e1d452c-d9f7-4f95-8787-6288ce50ea33",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "type": "subagent_message",
+            "revision": 1,
+            "terminal_state": "completed",
+            "created_at": "2026-11-18T20:15:58.013Z",
+            "payload": {
+              "type": "system",
+              "subtype": "task_notification",
+              "task_id": "bp6m4fa4i",
+              "run_id": "0mwmk9y1m-f7a68ab7",
+              "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "status": "stopped",
+              "output_file": "/private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-098-runtime-ot1hcK-project/5a24b3fa-a072-4298-9af8-99df2f5043fd/tasks/bp6m4fa4i.output",
+              "summary": "Run only this isolated A05 Bash process",
+              "uuid": "f09152e3-f3df-4be3-aadd-225fc69f6cef",
+              "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+            }
+          },
+          "originalDrain": {
+            "run": {
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+              "generation": 1,
+              "pid": 40845,
+              "process_started_at": "darwin-proc-v1:1795032955:747924",
+              "state": "stopped",
+              "error_code": null,
+              "ended_at": "2026-11-18T20:15:58.302Z"
+            },
+            "group": {
+              "schema": 5,
+              "state": "stopped",
+              "rootPid": 40845,
+              "rootStartedAt": "darwin-proc-v1:1795032955:747924",
+              "processes": []
+            },
+            "owner": {
+              "schema": 1,
+              "state": "stopped"
+            }
+          },
+          "binding": {
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "native_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd",
+            "created_at": "2026-11-18T20:15:55.462Z"
+          }
+        },
+        {
+          "name": "ordinary next input after separate stops recovers the same native binding with a new owner",
+          "at": "2026-11-18T20:15:59.293Z",
+          "resumed": {
+            "turn_id": "303edb23-0634-4d9f-be42-2fb6b22406ad",
+            "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "client_input_id": "in-473017af877647ac802539163919e43a",
+            "input_ref": "{\"text\":\"A05_RESUME_EXACT_BINDING\"}",
+            "source_kind": "user",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:1",
+            "accepted_at": "2026-11-18T20:15:58.392Z",
+            "started_at": "2026-11-18T20:15:59.098Z",
+            "ended_at": "2026-11-18T20:15:59.136Z",
+            "error_code": null
+          },
+          "newRun": {
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "generation": 2,
+            "pid": 41802,
+            "process_started_at": "darwin-proc-v1:1795032958:660374",
+            "state": "active",
+            "error_code": null,
+            "ended_at": null
+          },
+          "newOwner": {
+            "schema": 1,
+            "state": "running",
+            "pid": 41802,
+            "startedAt": "darwin-proc-v1:1795032958:660374"
+          },
+          "binding": {
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "native_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd",
+            "created_at": "2026-11-18T20:15:55.462Z"
+          },
+          "originalDrain": {
+            "run": {
+              "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+              "task_id": "6e47dc34-66b6-4b6c-a62f-7b3fa52b7d3b",
+              "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+              "generation": 1,
+              "pid": 40845,
+              "process_started_at": "darwin-proc-v1:1795032955:747924",
+              "state": "stopped",
+              "error_code": null,
+              "ended_at": "2026-11-18T20:15:58.302Z"
+            },
+            "group": {
+              "schema": 5,
+              "state": "stopped",
+              "rootPid": 40845,
+              "rootStartedAt": "darwin-proc-v1:1795032955:747924",
+              "processes": []
+            },
+            "owner": {
+              "schema": 1,
+              "state": "stopped"
+            }
+          }
+        }
+      ],
+      "durableReadback": {
+        "runs": [
+          {
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "generation": 1,
+            "owner_pid": 40722,
+            "pid": 40845,
+            "process_started_at": "darwin-proc-v1:1795032955:747924",
+            "state": "stopped",
+            "error_code": null,
+            "ended_at": "2026-11-18T20:15:58.302Z"
+          },
+          {
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "generation": 2,
+            "owner_pid": 40722,
+            "pid": 41802,
+            "process_started_at": "darwin-proc-v1:1795032958:660374",
+            "state": "stopped",
+            "error_code": null,
+            "ended_at": "2026-11-18T20:15:59.803Z"
+          }
+        ],
+        "bindings": [
+          {
+            "binding_id": "e4838606-2810-49e4-b2ad-5ce1e35232e4",
+            "native_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+          }
+        ],
+        "turns": [
+          {
+            "turn_id": "8daab82d-d56e-4df2-b6f8-7cfedd49748c",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:1",
+            "error_code": null,
+            "marker": "A05_FIRST_PERSISTED_ROUND"
+          },
+          {
+            "turn_id": "b4cd540b-b5e6-4985-b70d-61b5b1e09d2d",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:2",
+            "error_code": null,
+            "marker": "A05_SECOND_PERSISTED_ROUND"
+          },
+          {
+            "turn_id": "3760c6a5-0a4c-493c-b13b-c37de18cfb93",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:3",
+            "error_code": null,
+            "marker": "A05_BEGIN_NATIVE_BACKGROUND"
+          },
+          {
+            "turn_id": "9d4478b1-ac87-436e-b641-28777c86379d",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "status": "interrupted",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:4",
+            "error_code": null,
+            "marker": "A05_STOP_ONLY_FOREGROUND_ROUND"
+          },
+          {
+            "turn_id": "303edb23-0634-4d9f-be42-2fb6b22406ad",
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "status": "completed",
+            "native_turn_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd:1",
+            "error_code": null,
+            "marker": "A05_RESUME_EXACT_BINDING"
+          }
+        ],
+        "nodes": [
+          {
+            "item_id": "44fd5506-2993-489a-8d8d-ab983a272d65",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "type": "subagent_status",
+            "terminal_state": "failed",
+            "revision": 2,
+            "payload": {
+              "state": "interrupted",
+              "nativeRunId": "0mwmk9y1m-f7a68ab7"
+            }
+          },
+          {
+            "item_id": "a15d96f5-e793-480f-90e4-dfb1a02dac05",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "type": "subagent_message",
+            "terminal_state": "completed",
+            "revision": 1,
+            "payload": {
+              "type": "system",
+              "subtype": "task_started",
+              "task_id": "bp6m4fa4i",
+              "run_id": "0mwmk9y1m-f7a68ab7",
+              "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "description": "Run only this isolated A05 Bash process",
+              "is_backgrounded": true,
+              "task_type": "local_bash",
+              "uuid": "8d372bd9-a917-4883-a518-10162ee64446",
+              "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+            }
+          },
+          {
+            "item_id": "9e1d452c-d9f7-4f95-8787-6288ce50ea33",
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "type": "subagent_message",
+            "terminal_state": "completed",
+            "revision": 1,
+            "payload": {
+              "type": "system",
+              "subtype": "task_notification",
+              "task_id": "bp6m4fa4i",
+              "run_id": "0mwmk9y1m-f7a68ab7",
+              "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "status": "stopped",
+              "output_file": "/private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-098-runtime-ot1hcK-project/5a24b3fa-a072-4298-9af8-99df2f5043fd/tasks/bp6m4fa4i.output",
+              "summary": "Run only this isolated A05 Bash process",
+              "uuid": "f09152e3-f3df-4be3-aadd-225fc69f6cef",
+              "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+            }
+          },
+          {
+            "item_id": "769e783d-51fb-4b58-bd49-5d94baaefde1",
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "type": "subagent_status",
+            "terminal_state": "failed",
+            "revision": 1,
+            "payload": {
+              "state": "interrupted"
+            }
+          },
+          {
+            "item_id": "d6d25283-8df2-46fe-b29e-72fc3c0a1cd0",
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "node_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+            "type": "subagent_message",
+            "terminal_state": "completed",
+            "revision": 1,
+            "payload": {
+              "type": "system",
+              "subtype": "task_notification",
+              "task_id": "bp6m4fa4i",
+              "tool_use_id": "toolu_87d9ba5ca50b45ec9afbdcab870549c0",
+              "status": "stopped",
+              "output_file": "",
+              "summary": "Background shell command didn't finish before the previous session ended",
+              "uuid": "6ae0c42f-7cf8-4f3f-95e9-393aa5a1ae0f",
+              "session_id": "5a24b3fa-a072-4298-9af8-99df2f5043fd"
+            }
+          }
+        ],
+        "errors": [],
+        "processes": [
+          {
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "kind": "bridge",
+            "pid": 40984,
+            "process_started_at": "darwin-proc-v1:1795032955:938500",
+            "state": "exited",
+            "ended_at": "2026-11-18T20:15:58.302Z"
+          },
+          {
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "kind": "cli",
+            "pid": 40845,
+            "process_started_at": "darwin-proc-v1:1795032955:747924",
+            "state": "exited",
+            "ended_at": "2026-11-18T20:15:58.089Z"
+          },
+          {
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "kind": "bridge",
+            "pid": 41938,
+            "process_started_at": "darwin-proc-v1:1795032958:789692",
+            "state": "exited",
+            "ended_at": "2026-11-18T20:15:59.803Z"
+          },
+          {
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "kind": "cli",
+            "pid": 41802,
+            "process_started_at": "darwin-proc-v1:1795032958:660374",
+            "state": "exited",
+            "ended_at": "2026-11-18T20:15:59.454Z"
+          }
+        ],
+        "activities": [
+          {
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:15:56.205Z"
+          },
+          {
+            "run_id": "4065ad53-0921-4790-ad13-9c7d8e9f4d2d",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:15:56.258Z"
+          },
+          {
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:15:59.028Z"
+          },
+          {
+            "run_id": "ebf21c62-97a0-42a2-bbcf-f347cba6a5a4",
+            "state": "finished",
+            "ended_at": "2026-11-18T20:15:59.061Z"
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "path": "attempt-098/01-native-background-after-foreground.png",
+          "sha256": "215b7f05706fad4727ddc0ba99a375ba97d7cd83eff2bfc202cb8b231990b90c"
+        },
+        {
+          "path": "attempt-098/02-foreground-stopped-background-still-running.png",
+          "sha256": "3203be2bc07dd6cde5d05463d67de36acefbe61c23794359d75d3b594c252802"
+        },
+        {
+          "path": "attempt-098/04-native-background-stopped.png",
+          "sha256": "50aab0d0463f3cb4ca43571171dd1d3c7dcad4af9ec8e7c44f7af3d55c5e21ca"
+        },
+        {
+          "path": "attempt-098/05-continued-existing-native-binding-after-stop.png",
+          "sha256": "40f46b5a8547929eb0466f07ebc75d3def1b391d8bce0a181585fc01e5167a7c"
+        },
+        {
+          "path": "attempt-098/app-40722.log",
+          "sha256": "e326595a29c1544a4685593a69b859b5958ec8f4f3119a518497c93a41581111"
+        },
+        {
+          "path": "attempt-098/result.json",
+          "sha256": "b20b68d6ab3b24f46d63d6d36c83b454ccc0d2b691518c9a768b81e240e0cd33"
+        },
+        {
+          "path": "attempt-098/source-a05-background-packaged.mjs",
+          "sha256": "f5eb90282d0df363a727094e58606345695b6d760df6b061ac833da94f30d659"
+        }
+      ]
+    }
+  ]
+}

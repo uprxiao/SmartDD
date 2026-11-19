@@ -1,0 +1,46 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/drivers/codex-app-server.test.ts --maxWorkers=1 -t A55
+
+[1119/041513.322440:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/041513.704582:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/drivers/codex-app-server.test.ts (27 tests | 3 failed | 24 skipped) 12ms
+     × A55 does not acknowledge a steer without the original turn receipt: null 7ms
+     × A55 does not acknowledge a steer without the original turn receipt: {} 3ms
+     × A55 does not acknowledge a steer without the original turn receipt: {"turnId":"different-turn"} 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/drivers/codex-app-server.test.ts > Codex app-server 驱动 > A55 does not acknowledge a steer without the original turn receipt: null
+ FAIL  src/main/core/agent/drivers/codex-app-server.test.ts > Codex app-server 驱动 > A55 does not acknowledge a steer without the original turn receipt: {}
+ FAIL  src/main/core/agent/drivers/codex-app-server.test.ts > Codex app-server 驱动 > A55 does not acknowledge a steer without the original turn receipt: {"turnId":"different-turn"}
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+undefined
+
+ ❯ src/main/core/agent/drivers/codex-app-server.test.ts:245:100
+    243|     await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask'…
+    244|     await inst.startTurn({ clientInputId: 'first', text: 'Initial inpu…
+    245|     await expect(inst.steer({ clientInputId: 'side-input', text: 'Addi…
+       |                                                                                                    ^
+    246|     expect(events.some(event => event.type === 'steer.accepted')).toBe…
+    247|     await inst.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 24 skipped (27)
+   Start at  04:15:13
+   Duration  187ms (transform 58ms, setup 0ms, import 73ms, tests 12ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

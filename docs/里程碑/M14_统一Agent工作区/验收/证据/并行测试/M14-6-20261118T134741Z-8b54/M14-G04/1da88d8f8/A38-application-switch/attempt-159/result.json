@@ -1,0 +1,217 @@
+{
+  "caseId": "M14-A38",
+  "sourceCommit": "1da88d8f85325d76474f1125427646aa56776848",
+  "scope": "M14-A38-application-switch",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "f06168649ff9a1eec9fb5cdbbb2238bcf9778e2613cd486a427c8bdb8df584bd"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T01:17:23.717Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A38-application-switch": {
+      "status": "failed-or-blocked",
+      "passed": [],
+      "missing": [],
+      "application": {
+        "id": "56c9d129-1c17-42d0-ad39-a289c69f76ce",
+        "revision": 1,
+        "projectId": "abab67d5-3ba4-46a7-9f6a-fc61eb7082fb",
+        "source": "local builtin draft, no mail account or send"
+      },
+      "originalBuffer": {
+        "stage": "before switching to mail",
+        "editor": "A38 未保存编辑缓冲🙂\n",
+        "dirty": true,
+        "diskSha256": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+        "heldOpId": "30cd60e7-d467-4017-a8aa-07556b77d12e"
+      },
+      "afterApplication": {
+        "draft": {
+          "revision": 3,
+          "value": {
+            "text": "[邮件草稿 mail-draft://56c9d129-1c17-42d0-ad39-a289c69f76ce?revision=1&contentHash=c32bd734f6821863fd5e49c5b802e4493659959df3777cb32d1abd14deb39963] 请读取此草稿并继续处理。A38_KEEP_USER_DRAFT",
+            "attachments": []
+          }
+        },
+        "buffer": {
+          "stage": "after actual mail handoff",
+          "editor": "A38 未保存编辑缓冲🙂\n",
+          "dirty": true,
+          "diskSha256": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+          "heldOpId": "30cd60e7-d467-4017-a8aa-07556b77d12e"
+        }
+      },
+      "actualSaveTrace": [
+        {
+          "request": {
+            "ref": {
+              "id": "c7675507-b1b4-4245-b63a-93d9a1a88f15",
+              "lease": "4004cccb-4b87-4302-8d95-3a019e825675",
+              "generation": 1
+            },
+            "opId": "30cd60e7-d467-4017-a8aa-07556b77d12e",
+            "bufferVersion": 1,
+            "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+            "base64": "QTM4IOacquS/neWtmOe8lui+kee8k+WGsvCfmYIK"
+          },
+          "sender": 1,
+          "enteredAt": 1795051056570,
+          "beforeNativeAt": 1795051058762
+        }
+      ],
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nundefined !== ''\n\n    at caseApplicationSwitch (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a38-prep/a38-application-switch-packaged.mjs:346:12)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a38-prep/a38-application-switch-packaged.mjs:130:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a38-prep/a38-application-switch-packaged.mjs:420:3",
+      "dom": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nM14-A38-application-switch stage 6\nM14-A38-application-switch stage 6\nM14-A38-other-task stage 6\nM14-A38-other-task stage 6\n设置\nM14-A38-other-task stage 6\n插件 2\n单 Agent · 开启委派\n请求批准\n帮我批准\n完全访问\nA38 application provider A\nm14-workspace-fixture\n文件\n本机文件\n\n正在读取项目目录…\n\n本机文件"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T01:17:30.805Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T01:17:30.847Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T01:17:30.857Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T01:17:31.997Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"9c4b3e7d-00e7-4c8e-95e3-689e9b2070e4\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T01:17:32.108Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:17:32.129Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:17:33.435Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "隔离校验文件",
+      "x": 546,
+      "y": 261.734375
+    },
+    {
+      "at": "2026-11-19T01:17:33.555Z",
+      "selector": ".fw-editor-host .cm-content",
+      "x": 997.4609375,
+      "y": 530.5
+    },
+    {
+      "at": "2026-11-19T01:17:36.711Z",
+      "selector": ".agent-task-view textarea",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:17:37.151Z",
+      "selector": ".agent-task-head button[title=\"项目插件\"]",
+      "x": 652.62890625,
+      "y": 65.5
+    },
+    {
+      "at": "2026-11-19T01:17:37.185Z",
+      "selector": "[role=dialog] button",
+      "label": "管理项目插件",
+      "x": 884,
+      "y": 521
+    },
+    {
+      "at": "2026-11-19T01:17:37.535Z",
+      "selector": "[data-testid=\"nav-apps\"]",
+      "x": 171.5,
+      "y": 173.5
+    },
+    {
+      "at": "2026-11-19T01:17:37.604Z",
+      "selector": ".m10-sidebar button.m10-nav.installed",
+      "label": "邮件",
+      "x": 187.5,
+      "y": 224
+    },
+    {
+      "at": "2026-11-19T01:17:37.809Z",
+      "selector": ".m10-sidebar .m13-nav-child",
+      "label": "草稿",
+      "x": 187.5,
+      "y": 255
+    },
+    {
+      "at": "2026-11-19T01:17:37.954Z",
+      "selector": "button.m10-draft-row",
+      "x": 874,
+      "y": 386.75
+    },
+    {
+      "at": "2026-11-19T01:17:38.152Z",
+      "selector": "dialog[open] .m10-terminal-insertion button:not(:disabled)",
+      "label": "交给 Agent 继续处理",
+      "x": 554.890625,
+      "y": 659.5
+    },
+    {
+      "at": "2026-11-19T01:17:38.753Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"cbd3c68d-a28a-415e-9234-bfe9df5b9af9\"]",
+      "x": 171.5,
+      "y": 379
+    }
+  ],
+  "model": [
+    {
+      "caseId": "M14-A38-application-switch",
+      "model": "m14-workspace-fixture",
+      "role": "assistant-only"
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-159/home",
+    "at": "2026-11-19T01:17:25.171Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 74727,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-159/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-159/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-159/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:62054/1b29491c-d9d8-4843-973b-8db2718e0946\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:62054/1b29491c-d9d8-4843-973b-8db2718e0946\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:62027/devtools/browser/1d88ba22-58c2-4f43-a15c-4bd0c6fee254\n(node:74727) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65579:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65579:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65579:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65579:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.gitStatus': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileGitMetadata.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:63751:29)\n    at cancelGit (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52108:44)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34183:19)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65579:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65579:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65579:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 74727,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T01:17:39.356Z"
+}

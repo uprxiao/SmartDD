@@ -1,0 +1,85 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/agent-task-service.test.ts src/renderer/features/agent-tasks/agent-timeline.test.ts --testNamePattern 'A59 keeps'
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/renderer/features/agent-tasks/agent-timeline.test.ts (17 tests | 1 failed | 16 skipped) 6ms
+     × A59 keeps work time still during a native wait and preserves separate totals after the round 5ms
+ ❯ src/main/core/agent/agent-task-service.test.ts (69 tests | 1 failed | 68 skipped) 39ms
+   × A59 keeps overlapping foreground request waits separate from work in live and historical turns 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > A59 keeps overlapping foreground request waits separate from work in live and historical turns
+AssertionError: expected { …(10) } to match object { native_wait_ms: 7000, …(1) }
+(10 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "native_wait_ms": 7000,
+-   "native_wait_since": 1795046409000,
++   "accepted_at": "2026-11-19T02:34:17.356Z",
++   "client_input_id": "client-input-59",
++   "ended_at": null,
++   "error_code": null,
++   "native_turn_id": "nt-1",
++   "run_id": "19fed2e0-0f6c-406e-a627-3284d7bf4a23",
++   "source_kind": "user",
++   "started_at": "2026-11-19T00:00:00.000Z",
++   "status": "started",
++   "turn_id": "5a3441eb-cc16-49c9-bdcd-864142f28653",
+  }
+
+ ❯ src/main/core/agent/agent-task-service.test.ts:71:41
+     69|     .run(request('asynchronous-business', 7, 9));
+     70|   request('second-foreground', 9);
+     71|   expect(svc.snapshot(taskId).turns[0]).toMatchObject({ native_wait_ms…
+       |                                         ^
+     72|
+     73|   insts[0].finish();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/agent-tasks/agent-timeline.test.ts > 时间线分组 > A59 keeps work time still during a native wait and preserves separate totals after the round
+AssertionError: expected { key: 't1', turnId: 't1', …(5) } to match object { seconds: 3, waitingSeconds: 9, …(1) }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "rows": [
+      {
+        "kind": "work",
+-       "running": false,
+-       "seconds": 3,
++       "running": true,
++       "seconds": 12,
+      },
+    ],
+-   "seconds": 3,
+-   "waitingSeconds": 9,
++   "seconds": 12,
+  }
+
+ ❯ src/renderer/features/agent-tasks/agent-timeline.test.ts:72:18
+     70|     const waiting = { ...turn('started', started, null), native_wait_m…
+     71|     const live = buildTimeline([tool], [waiting], clock + 12000)[0];
+     72|     expect(live).toMatchObject({ seconds: 3, waitingSeconds: 9, rows: …
+       |                  ^
+     73|     const further = buildTimeline([tool], [waiting], clock + 14000)[0];
+     74|     expect(further).toMatchObject({ seconds: 3, waitingSeconds: 11 });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 84 skipped (86)
+   Start at  10:34:17
+   Duration  320ms (transform 192ms, setup 0ms, import 257ms, tests 45ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

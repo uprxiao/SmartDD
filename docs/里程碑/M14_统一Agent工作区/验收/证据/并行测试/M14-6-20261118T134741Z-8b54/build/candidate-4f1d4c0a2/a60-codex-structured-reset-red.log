@@ -1,0 +1,45 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/timeline.test.ts -t 'exhausted Codex quota window'
+
+[1119/093422.622309:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/093422.953563:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/timeline.test.ts (15 tests | 1 failed | 14 skipped) 4ms
+     × A60 projects an exhausted Codex quota window from the current turn without exposing quota meters 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/timeline.test.ts > 复核 1755 投影回归 > A60 projects an exhausted Codex quota window from the current turn without exposing quota meters
+AssertionError: expected { code: 'usageLimitExceeded', …(2) } to match object { limited: { kind: 'usage', …(1) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "limited": {
+      "kind": "usage",
+-     "resetAt": "2026-11-19T01:36:23.000Z",
+    },
+  }
+
+ ❯ src/main/core/agent/timeline.test.ts:120:41
+    118|     expect(report(null, window(100, later))).toEqual([]);
+    119|     expect(report(window(100, later + 100), null, 'another-limit')).to…
+    120|     expect(error('usageLimitExceeded')).toMatchObject({ limited: {
+       |                                         ^
+    121|       kind: 'usage', resetAt: new Date(later * 1000).toISOString(),
+    122|     } });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 skipped (15)
+   Start at  09:34:22
+   Duration  126ms (transform 27ms, setup 0ms, import 33ms, tests 4ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

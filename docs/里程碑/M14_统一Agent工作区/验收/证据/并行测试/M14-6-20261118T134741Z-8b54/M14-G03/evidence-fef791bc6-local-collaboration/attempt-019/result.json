@@ -1,0 +1,333 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/home",
+    "at": "2026-11-18T15:12:46.647Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "fef791bc65cc7e82d1b83606a26b67714e99328d",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a80",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A80 local packaged A/I: two isolated branches created and independently committed while native parent and unrelated task were active",
+      "at": "2026-11-18T15:12:57.004Z",
+      "pendingParent": true,
+      "unrelatedBusy": true,
+      "baseline": "4e443bc2276c0c59d377b47a784a0775343d6a1c",
+      "userHead": "4e443bc2276c0c59d377b47a784a0775343d6a1c",
+      "commits": [
+        {
+          "branch": "main_willyou_acceptance-feature-x---isolated-delegation-works",
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/home/.willyou/worktrees/m14-g03-a80-e2143f/main_willyou_acceptance-feature-x---isolated-delegation-works",
+          "commit": "90e5d723367f870dcc7310ad2a15208638c909a5",
+          "file": "feature-x.txt"
+        },
+        {
+          "branch": "main_willyou_acceptance-feature-y---isolated-delegation-works",
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/home/.willyou/worktrees/m14-g03-a80-e2143f/main_willyou_acceptance-feature-y---isolated-delegation-works",
+          "commit": "1b2908419c83a1e199892b7456e0d939fe499196",
+          "file": "feature-y.txt"
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795014772658
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014773754,
+      "scheduledChild": "feature-x"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014773907,
+      "scheduledChild": "feature-y"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014774043,
+      "nativeCommand": "write parent file",
+      "bothChildrenStarted": true
+    },
+    {
+      "model": "fixture-child-feature-x",
+      "kind": "codex",
+      "child": "feature-x",
+      "wake": false,
+      "at": 1795014775484,
+      "reReadPrompt": false,
+      "nativeCommand": "printf '%s\\n' 'FEATURE_X' > feature-x.txt"
+    },
+    {
+      "model": "fixture-child-feature-y",
+      "kind": "codex",
+      "child": "feature-y",
+      "wake": false,
+      "at": 1795014775639,
+      "reReadPrompt": false,
+      "nativeCommand": "printf '%s\\n' 'FEATURE_Y' > feature-y.txt"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014775814
+    },
+    {
+      "model": "fixture-child-feature-y",
+      "kind": "codex",
+      "child": "feature-y",
+      "wake": false,
+      "at": 1795014776032,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-child-feature-x",
+      "kind": "codex",
+      "child": "feature-x",
+      "wake": false,
+      "at": 1795014776032,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795014777355
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": true,
+      "at": 1795014778260
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": true,
+      "at": 1795014779395
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"9015c976-98ab-440c-88ae-63cebdce3c30\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"3fb6973c-b8c8-476b-a604-ad86705f23ea\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-request [role=\"option\"][aria-label=\"批准\"],.agent-request [role=\"option\"][aria-label=\"批准一次\"]",
+      "text": null,
+      "x": 864,
+      "y": 692
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "x": 1205,
+      "y": 851
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"9015c976-98ab-440c-88ae-63cebdce3c30\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "status": "partial",
+  "pid": 62121,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    62121
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "3fb6973c-b8c8-476b-a604-ad86705f23ea",
+  "childTaskIds": {
+    "feature-x": "df13dc12-5b98-4736-be12-32d1ed4ef42e",
+    "feature-y": "c795cc75-b3d8-4fbe-8244-2a77fe5bd1d2"
+  },
+  "a80": {
+    "pendingParent": true,
+    "unrelatedBusy": true,
+    "baseline": "4e443bc2276c0c59d377b47a784a0775343d6a1c",
+    "userHead": "4e443bc2276c0c59d377b47a784a0775343d6a1c",
+    "commits": [
+      {
+        "branch": "main_willyou_acceptance-feature-x---isolated-delegation-works",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/home/.willyou/worktrees/m14-g03-a80-e2143f/main_willyou_acceptance-feature-x---isolated-delegation-works",
+        "commit": "90e5d723367f870dcc7310ad2a15208638c909a5",
+        "file": "feature-x.txt"
+      },
+      {
+        "branch": "main_willyou_acceptance-feature-y---isolated-delegation-works",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-019/runtime-6IyNcl/home/.willyou/worktrees/m14-g03-a80-e2143f/main_willyou_acceptance-feature-y---isolated-delegation-works",
+        "commit": "1b2908419c83a1e199892b7456e0d939fe499196",
+        "file": "feature-y.txt"
+      }
+    ],
+    "unrelatedSameRun": true
+  },
+  "beforeQuit": [
+    {
+      "taskId": "c795cc75-b3d8-4fbe-8244-2a77fe5bd1d2",
+      "title": "Acceptance feature-y - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "3fb6973c-b8c8-476b-a604-ad86705f23ea"
+    },
+    {
+      "taskId": "df13dc12-5b98-4736-be12-32d1ed4ef42e",
+      "title": "Acceptance feature-x - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "3fb6973c-b8c8-476b-a604-ad86705f23ea"
+    },
+    {
+      "taskId": "9015c976-98ab-440c-88ae-63cebdce3c30",
+      "title": "M14 isolated independent task",
+      "status": "completed",
+      "parentTaskId": null
+    },
+    {
+      "taskId": "3fb6973c-b8c8-476b-a604-ad86705f23ea",
+      "title": "Acceptance parent a80",
+      "status": "working",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance feature-y - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance feature-x - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "M14 isolated independent task",
+      "e6434698-773c-453f-b619-eaaaa863b3ee",
+      false
+    ],
+    [
+      "Acceptance parent a80",
+      null,
+      false
+    ]
+  ],
+  "cleanupMadeIdle": [
+    "Acceptance parent a80"
+  ],
+  "tasksAfterCleanup": [
+    {
+      "title": "Acceptance feature-y - isolated delegation workspace",
+      "status": "completed"
+    },
+    {
+      "title": "Acceptance feature-x - isolated delegation workspace",
+      "status": "completed"
+    },
+    {
+      "title": "M14 isolated independent task",
+      "status": "completed"
+    },
+    {
+      "title": "Acceptance parent a80",
+      "status": "stopped"
+    }
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 62121,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "cleanupRequired": true
+}

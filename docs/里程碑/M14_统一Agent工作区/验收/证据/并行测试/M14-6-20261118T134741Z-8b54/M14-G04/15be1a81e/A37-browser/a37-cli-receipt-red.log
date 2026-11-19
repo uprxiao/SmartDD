@@ -1,0 +1,49 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs --maxWorkers=1 src/main/core/applications/__tests__/agent-business-tools.test.ts
+
+[1119/050736.892741:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/050737.207375:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/agent-business-tools.test.ts (4 tests | 1 failed) 107ms
+   × A37: CLI returns a host request receipt before an approved write can execute 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/agent-business-tools.test.ts > A37: CLI returns a host request receipt before an approved write can execute
+AssertionError: expected { schema: 1, …(3) } to match object { status: 'ok', …(2) }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "status": "ok",
+-   "taskRequest": true,
+    "value": {
+      "operationId": "7d1a2020-2c62-4e4a-a9ad-9caeaa73afdb",
+      "requestId": "375d86cb-1b01-457d-86fa-76d26ccb6558",
+-     "schema": "willyou-task-request-v1",
+      "status": "awaiting_user",
+    },
+  }
+
+ ❯ src/main/core/applications/__tests__/agent-business-tools.test.ts:24:18
+     22|   const f = fixture('ask', 'full', undefined, 'cli');
+     23|   const opened = await f.invoke();
+     24|   expect(opened).toMatchObject({ status: 'ok', taskRequest: true, valu…
+       |                  ^
+     25|     schema: 'willyou-task-request-v1', status: 'awaiting_user', reques…
+     26|   } });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  05:07:37
+   Duration  341ms (transform 96ms, setup 0ms, import 153ms, tests 107ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

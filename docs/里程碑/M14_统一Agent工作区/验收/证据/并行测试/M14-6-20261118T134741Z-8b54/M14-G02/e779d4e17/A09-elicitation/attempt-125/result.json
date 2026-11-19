@@ -1,0 +1,609 @@
+{
+  "mode": "form",
+  "requestsFromMcp": [
+    {
+      "sourceKind": "claude",
+      "params": {
+        "mode": "form",
+        "message": "A09_SAFE_ELICITATION_FORM",
+        "requestedSchema": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "title": "A09 Code",
+              "pattern": "^WY-[0-9]{3}$",
+              "default": "WY-101"
+            }
+          },
+          "required": [
+            "label"
+          ]
+        }
+      },
+      "clientCapabilities": {
+        "elicitation": {
+          "form": {},
+          "url": {}
+        },
+        "roots": {
+          "listChanged": true
+        }
+      }
+    },
+    {
+      "sourceKind": "claude",
+      "params": {
+        "mode": "form",
+        "message": "A09_SAFE_ELICITATION_FORM",
+        "requestedSchema": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "title": "A09 Code",
+              "pattern": "^WY-[0-9]{3}$",
+              "default": "WY-101"
+            }
+          },
+          "required": [
+            "label"
+          ]
+        }
+      },
+      "clientCapabilities": {
+        "elicitation": {
+          "form": {},
+          "url": {}
+        }
+      }
+    }
+  ],
+  "responsesToMcp": [
+    {
+      "sourceKind": "claude",
+      "answer": {
+        "action": "decline"
+      }
+    },
+    {
+      "sourceKind": "claude",
+      "answer": {
+        "action": "decline"
+      }
+    }
+  ],
+  "mcpErrors": [],
+  "sourceCommit": "e779d4e1703b2de07789175422ddb3b3ceafe189",
+  "asar": "7ea76c07ef24e3baa9339e0436d564ca8b7230b8a7ec61357792fbcff55bf988",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "sourceHashes": {
+    "claude": "74a544e138dfad10b3cc5d9c660c5ae3b0d5af3d2a743b8207b2a0b643f3ff1a",
+    "codex": "bfd6fccac079870ba4a52a245a6fb2d003ed979e49bcbc832db2a7c297076e54"
+  },
+  "fixtures": {
+    "root": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/home",
+    "data": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/data",
+    "project": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/project"
+  },
+  "modelRequests": [
+    {
+      "kind": "claude",
+      "model": "a09-private-claude",
+      "marker": "A09_PRIVATE_CLAUDE",
+      "tool": "mcp__a09_claude_http__a09_http_probe",
+      "toolResultPresent": false
+    },
+    {
+      "kind": "codex",
+      "model": "a09-private-codex",
+      "marker": "A09_PRIVATE_CODEX",
+      "tool": "a09_http_probe",
+      "namespace": "mcp__a09_claude_http",
+      "toolResultPresent": false
+    },
+    {
+      "kind": "codex",
+      "model": "a09-private-codex",
+      "marker": "A09_PRIVATE_CODEX",
+      "tool": "a09_http_probe",
+      "namespace": "mcp__a09_claude_http",
+      "toolResultPresent": true
+    }
+  ],
+  "mcpRequests": [
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "server/discover",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "POST",
+      "method": "server/discover",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "initialize",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "POST",
+      "method": "initialize",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "POST",
+      "method": "notifications/initialized",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "notifications/initialized",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "GET",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "GET",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "POST",
+      "method": "tools/list",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "tools/list",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "tools/call",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "POST",
+      "method": "initialize",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "initialize",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "notifications/initialized",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "POST",
+      "method": "notifications/initialized",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "tools/list",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "GET",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "GET",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "codex",
+      "transport": "POST",
+      "method": "tools/list",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "method": "tools/call",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    },
+    {
+      "sourceKind": "claude",
+      "transport": "POST",
+      "authenticationMatched": true,
+      "literalHeaderMatched": true
+    }
+  ],
+  "flows": {
+    "claude": {
+      "profileId": "e8ff3890-18f1-4d2a-bf6a-db985cf3d3c9",
+      "taskId": "590ee3a2-e5a8-4579-899a-2ff4bb59488c",
+      "error": "Error: Timed out: actual claude native request or terminal\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g02/a09-elicitation/scenario.mjs:79:9)\n    at async send (file:///private/tmp/willyou-m14-stage6.WRvdST/g02/a09-elicitation/scenario.mjs:171:15)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g02/a09-elicitation/scenario.mjs:236:28",
+      "httpRequests": [
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "server/discover",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "POST",
+          "method": "server/discover",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "initialize",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "POST",
+          "method": "initialize",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "POST",
+          "method": "notifications/initialized",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "notifications/initialized",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "GET",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "GET",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "POST",
+          "method": "tools/list",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "tools/list",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "tools/call",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        }
+      ]
+    },
+    "codex": {
+      "profileId": "41c76c85-208b-44a9-86fa-5590825977a4",
+      "taskId": "aedf0758-d2f1-421b-b992-7812a2a5e3aa",
+      "request": {
+        "requestId": "99d0e7c9-ec2a-4eb1-94b0-3f3960b5ea71",
+        "class": "native",
+        "kind": "elicitation",
+        "revision": 1,
+        "payload": {
+          "method": "mcpServer/elicitation/request",
+          "params": {
+            "threadId": "01a1f0fa-8749-7b20-b25c-d9aed661d13b",
+            "turnId": "01a1f0fa-89e4-7cb0-95e9-765e82f4867f",
+            "serverName": "a09_claude_http",
+            "mode": "form",
+            "_meta": null,
+            "message": "A09_SAFE_ELICITATION_FORM",
+            "requestedSchema": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "title": "A09 Code",
+                  "default": "WY-101"
+                }
+              },
+              "required": [
+                "label"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "taskId": "aedf0758-d2f1-421b-b992-7812a2a5e3aa",
+          "bindingId": "97c18dae-df50-4595-8c0e-bc8a4e37c8ef",
+          "runId": "d401cd95-bfb7-476e-b8f5-546bc447043c",
+          "generation": 1,
+          "turnId": "84e4ecd0-a466-4394-bc0d-18b2d2157341",
+          "nativeRequest": "0"
+        },
+        "status": "pending",
+        "createdAt": "2026-11-18T23:25:13.896Z"
+      },
+      "ui": [
+        {
+          "text": "A09_SAFE_ELICITATION_FORM\n\nA09 Code *\n拒绝\n提交",
+          "fields": [
+            {
+              "type": "text",
+              "pattern": null
+            }
+          ],
+          "buttons": [
+            {
+              "text": "拒绝",
+              "enabled": true
+            },
+            {
+              "text": "提交",
+              "enabled": false
+            }
+          ]
+        }
+      ],
+      "terminal": "completed",
+      "httpRequests": [
+        {
+          "sourceKind": "codex",
+          "transport": "POST",
+          "method": "initialize",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "initialize",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "notifications/initialized",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "POST",
+          "method": "notifications/initialized",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "tools/list",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "GET",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "GET",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "codex",
+          "transport": "POST",
+          "method": "tools/list",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "method": "tools/call",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        },
+        {
+          "sourceKind": "claude",
+          "transport": "POST",
+          "authenticationMatched": true,
+          "literalHeaderMatched": true
+        }
+      ]
+    }
+  },
+  "clicks": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"590ee3a2-e5a8-4579-899a-2ff4bb59488c\"]",
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"aedf0758-d2f1-421b-b992-7812a2a5e3aa\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-form .agent-form-actions button:first-child",
+      "x": 1145,
+      "y": 814.25
+    }
+  ],
+  "passed": false,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    18928
+  ],
+  "tools": {
+    "claude": "2.1.326",
+    "codex": "0.169.0"
+  },
+  "selected": [
+    {
+      "id": "1f71cbcd1cc8a90f3485ac769e10393ccdbaae8ab9b47a071eaa664c36f0bb27",
+      "kind": "mcp",
+      "name": "a09_codex_http",
+      "runner": "codex",
+      "sourcePath": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/home/.codex/config.toml",
+      "sourceScope": "user",
+      "projectRoot": null,
+      "sourceLabel": "user",
+      "version": null,
+      "managed": true,
+      "enabled": true,
+      "autoApprove": true,
+      "present": true,
+      "status": "managed",
+      "issues": [
+        "network_auth_unverified"
+      ],
+      "loaded": "unverified",
+      "targetIssues": {}
+    },
+    {
+      "id": "7e8483e03b353a2248ccae0413074ebb2996ed3ede81815d624149c40811d015",
+      "kind": "mcp",
+      "name": "a09_claude_http",
+      "runner": "claude",
+      "sourcePath": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/project/.mcp.json",
+      "sourceScope": "project",
+      "projectRoot": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-125/runtime-cZMeOU/project",
+      "sourceLabel": "project",
+      "version": null,
+      "managed": true,
+      "enabled": true,
+      "autoApprove": true,
+      "present": true,
+      "status": "managed",
+      "issues": [
+        "network_auth_unverified",
+        "project_trust_unverified"
+      ],
+      "loaded": "unverified",
+      "targetIssues": {}
+    }
+  ],
+  "fixtureError": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(latestUserText(kind,body).includes(marker))\n",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(!result.fixtureError)\n\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g02/a09-elicitation/scenario.mjs:240:3",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nA09 isolated project\nA09 codex\n等待批准\nA09 claude\n工作中\n设置\nA09 codex\n已完成\n插件 2\n单 Agent · 开启委派\nA09_PRIVATE_CODEX\n已工作 1 秒\n\nA09 observed actual codex elicitation terminal\n\nMCP 启动 · smartdd_project_acea1397ecb8\nMCP 启动 · a09_codex_http\nMCP 启动 · a09_claude_http\nMCP 启动 · wy_acea1397ecb890435270fdcd\n请求批准\n帮我批准\n完全访问\nA09 managed codex\na09-private-codex",
+  "quitError": "Error: Isolated App did not finish its normal exit",
+  "forced": {
+    "pid": 18928,
+    "code": null,
+    "signal": "SIGKILL"
+  },
+  "rendererErrors": []
+}

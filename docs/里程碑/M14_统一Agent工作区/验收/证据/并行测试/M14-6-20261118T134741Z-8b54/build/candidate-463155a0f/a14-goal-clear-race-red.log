@@ -1,0 +1,53 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/agent-task-service.test.ts -t 'in-progress run before clearing'
+
+[1119/095320.880823:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/095321.285711:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/agent-task-service.test.ts (68 tests | 2 failed | 66 skipped) 66ms
+   × A14 waits for the in-progress run before clearing a goal during resolveLaunch 37ms
+   × A14 waits for the in-progress run before clearing a goal during integrate 29ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > A14 waits for the in-progress run before clearing a goal during resolveLaunch
+AssertionError: expected "resolveLaunch" to be called once, but got 2 times
+ ❯ src/main/core/agent/agent-task-service.test.ts:73:20
+     71|   await new Promise<void>(resolve => setImmediate(resolve));
+     72|   try {
+     73|     expect(launch).toHaveBeenCalledOnce();
+       |                    ^
+     74|     expect(goal?.mock.calls ?? []).toHaveLength(0);
+     75|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > A14 waits for the in-progress run before clearing a goal during integrate
+AssertionError: expected [ [ { kind: 'clear' } ] ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/main/core/agent/agent-task-service.test.ts:74:36
+     72|   try {
+     73|     expect(launch).toHaveBeenCalledOnce();
+     74|     expect(goal?.mock.calls ?? []).toHaveLength(0);
+       |                                    ^
+     75|   } finally {
+     76|     release();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 66 skipped (68)
+   Start at  09:53:21
+   Duration  477ms (transform 269ms, setup 0ms, import 313ms, tests 66ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

@@ -1,0 +1,311 @@
+{
+  "sourceCommit": "4d14684804f5d43f71514ab6b03140489a38a01d",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "fixtures/archived-links.json": "f74296c9c404e9a0f6286bff9e41d890ab12155d8b6afade2cfc5a9666ea97c3",
+    "fixtures/normal.pdf": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "a8e7993cb3b46de594cd58d762881165c709db6a18583cb3ac8548ff9c79eb58"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-18T14:44:41.840Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.12",
+  "cases": {
+    "A57": {
+      "status": "failed-or-blocked",
+      "passed": [
+        "包内实际回答解析中文标点后路径、显式目录/文件/file URL、HTTP/www；裸文件名/目录/file 及危险协议不生成可点链接",
+        "原红测显式 file URL 经可信鼠标点击，可打开文件到第 3 行并保持 App 页面地址",
+        "实际点击显式目录与文件链接，文件标签显示正确盘面"
+      ],
+      "missing": [],
+      "links": [
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt:2:3",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt:2:3"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/docs/guide.txt",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/docs/guide.txt"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt:3",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt:3"
+        },
+        {
+          "text": "文件",
+          "href": "./a.txt:2:3"
+        },
+        {
+          "text": "目录",
+          "href": "./docs/"
+        },
+        {
+          "text": "文件协议",
+          "href": "file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt:3"
+        },
+        {
+          "text": "http://127.0.0.1:3425/page",
+          "href": "http://127.0.0.1:3425/page"
+        },
+        {
+          "text": "www.example.com/path",
+          "href": "http://www.example.com/path"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/notes.txt",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/notes.txt"
+        },
+        {
+          "text": "SmartDD",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57"
+        },
+        {
+          "text": "index.ts",
+          "href": "src/main/index.ts:42"
+        },
+        {
+          "text": "src/main/index.ts:42:7",
+          "href": "src/main/index.ts:42:7"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/src/main/index.ts",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/src/main/index.ts"
+        },
+        {
+          "text": "打开",
+          "href": "file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/notes.txt"
+        },
+        {
+          "text": "本机地址",
+          "href": "file://localhost/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt#L3"
+        },
+        {
+          "text": "根外文件协议",
+          "href": "file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57-OUTSIDE.txt"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57-OUTSIDE.txt",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57-OUTSIDE.txt"
+        },
+        {
+          "text": "src/main/missing.ts:3",
+          "href": "src/main/missing.ts:3"
+        },
+        {
+          "text": "T3",
+          "href": "https://t3.codes/docs"
+        },
+        {
+          "text": "https://example.com/a?b=1",
+          "href": "https://example.com/a?b=1"
+        },
+        {
+          "text": "y",
+          "href": "mailto:a@b.c"
+        },
+        {
+          "text": "/api/users.json",
+          "href": "/api/users.json"
+        }
+      ],
+      "observedClicks": [
+        {
+          "label": "文件协议",
+          "trusted": true,
+          "alt": false,
+          "ctrl": false,
+          "meta": false,
+          "shift": false,
+          "streaming": false,
+          "prevented": false
+        },
+        {
+          "label": "目录",
+          "trusted": true,
+          "alt": false,
+          "ctrl": false,
+          "meta": false,
+          "shift": false,
+          "streaming": false,
+          "prevented": false
+        },
+        {
+          "label": "文件",
+          "trusted": true,
+          "alt": false,
+          "ctrl": false,
+          "meta": false,
+          "shift": false,
+          "streaming": false,
+          "prevented": false
+        },
+        {
+          "label": "打开",
+          "trusted": true,
+          "alt": false,
+          "ctrl": false,
+          "meta": false,
+          "shift": false,
+          "streaming": false,
+          "prevented": false
+        },
+        {
+          "label": "本机地址",
+          "trusted": true,
+          "alt": false,
+          "ctrl": false,
+          "meta": false,
+          "shift": false,
+          "streaming": false,
+          "prevented": false
+        },
+        {
+          "label": "src/main/index.ts:42:7",
+          "trusted": true,
+          "alt": false,
+          "ctrl": false,
+          "meta": false,
+          "shift": false,
+          "streaming": false,
+          "prevented": false
+        },
+        {
+          "label": "根外文件协议",
+          "trusted": true,
+          "alt": false,
+          "ctrl": false,
+          "meta": false,
+          "shift": false,
+          "streaming": false,
+          "prevented": false
+        }
+      ],
+      "error": "Error: Error: Not clickable .agent-assistant:not(.streaming) .agent-md a[data-agent-link]; observed <p>参考 <code><a href=\"#\" data-agent-link=\"%2Fprivate%2Ftmp%2Fwillyou-m14-stage6.WRvdST%2Fg04%2Fattempt-004%2FA57%2FA57-OUTSIDE.txt\">/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57-OUTSIDE.txt</a></code> 文件</p>\n    at <anonymous>:8:13\n    at <anonymous>:10:5\n    at Object.evaluate (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/helpers/scripts/lib/electron-harness.mjs:196:15)\n    at async click (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:109:15)\n    at async openLink (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:231:34)\n    at async testedLink (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:393:5)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:486:7\n    at async checkedStep (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:155:3)\n    at async case57 (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:461:3)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:143:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/workspace-acceptance.mjs:846:5",
+      "dom": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nA57 stage 6\nA57 stage 6\n设置\nA57 stage 6\n已完成\n插件 2\n单 Agent · 开启委派\nM14_A57_9d362148-cead-4f6a-9879-4371f2c006aa Reply exactly once according to the local fixture.\n\nWORKSPACE_LINKS_A57\n\n路径：/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt:2:3，另见（/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/docs/guide.txt）、【/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/a.txt:3】。\n\n文件 目录 文件协议 [危险协议](javascript:alert(1))\n\nCHANGELOG.md、main.py、deploy.sh、docs/、file:///tmp/hidden.txt\n\nhttp://127.0.0.1:3425/page 以及 www.example.com/path\n\nnotes.txt 和 /Library/Application Support/no-link.txt\n\n历史 Codex 原文：1. Create notes.txt with the requested single line. 2. Run ls -la and wc -l notes.txt. 3. Summarize the result and file path.\n\nCreated notes.txt containing the single line hello m14, ran ls -la, and confirmed with wc -l notes.txt that it has one line.\n\n历史 Claude 原文（工作根重定位）：I created /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/notes.txt containing the single line hello m14, then ran ls -la and wc -l notes.txt, confirming the file exists and has one line.\n\n当前目录是：SmartDD\n\n修改见 index.ts\n\n错误在 src/main/index.ts:42:7\n\n日志写在 /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57/src/main/index.ts 里\n\n打开\n\n本机地址\n\n[远程文件](file://remote.invalid/share/private.txt)\n\n根外文件协议\n\n参考 /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/A57-OUTSIDE.txt 文件\n\n见 src/main/missing.ts:3\n\n文档：T3 以及 https://example.com/a?b=1\n\n[x](javascript:alert(1)) y\n\n接口 /api/users.json 返回 404\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n请求批准\n帮我批准\n完全访问\nWorkspace provider A\nm14-workspace-fixture\n文件\na.txt\nnotes.txt\nindex.ts\n任务启动目录\n›\nsrc\n›\nmain\n›\nindex.ts\n打开\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n36\n37\n38\n39\n40\n41\n42\n43\n44\n45\n46\n47\n48\n49\n50\n// synthetic line 1\n// synthetic line 2\n// synthetic line 3\n// synthetic line 4\n// synthetic line 5\n// synthetic line 6\n// synthetic line 7\n// synthetic line 8\n// synthetic line 9\n// synthetic line 10\n// synthetic line 11\n// synthetic line 12\n// synthetic line 13\n// synthetic line 14\n// synthetic line 15\n// synthetic line 16\n// synthetic line 17\n// synthetic line 18\n// synthetic line 19\n// synthetic line 20\n// synthetic line 21\n// synthetic line 22\n// synthetic line 23\n// synthetic line 24\n// synthetic line 25\n// synthetic line 26\n// synthetic line 27\n// synthetic line 28\n// synthetic line 29\n// synthetic line 30\n// synthetic line 31\n// synthetic line 32\n// synthetic line 33\n// synthetic line 34\n// synthetic line 35\n// synthetic line 36\n// synthetic line 37\n// synthetic line 38\n// synthetic line 39\n// synthetic line 40\n// synthetic line 41\n// synthetic line 42\n// synthetic line 43\n// synthetic line 44\n// synthetic line 45\n// synthetic line 46\n// synthetic line 47\n// synthetic line 48\n// synthetic line 49\n// synthetic line 50\nA57 · 任务启动目录\nA57\n.git\ndocs\nguide.txt\nvery-long-synthetic-filename-very-long-synthetic-filename-very-long-synthetic-filename-very-long-synthetic-filename-very-long-synthetic-filename-guide.txt\nsrc\nmain\nindex.ts\na.txt\ndeleted.txt\nescape.txt\nfixture.pdf\nnotes.txt\n1.0 KiB\nUTF-8\n链接越出了本任务已授权的文件根（包括符号链接越界）"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-18T14:44:48.039Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-18T14:44:48.052Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-18T14:44:48.065Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-18T14:44:48.622Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"4fafc00f-e9ba-46f0-9d81-7f09e9c70e1b\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-18T14:44:48.733Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T14:44:48.767Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T14:44:49.768Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "文件协议",
+      "x": 595.515625,
+      "y": 339.015625
+    },
+    {
+      "at": "2026-11-18T14:44:51.191Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "目录",
+      "x": 357.7578125,
+      "y": 406.8984375
+    },
+    {
+      "at": "2026-11-18T14:44:51.233Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "文件",
+      "x": 326,
+      "y": 406.8984375
+    },
+    {
+      "at": "2026-11-18T14:44:52.541Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "打开",
+      "x": 326,
+      "y": 433.5859375
+    },
+    {
+      "at": "2026-11-18T14:44:52.674Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "本机地址",
+      "x": 340,
+      "y": 433.6796875
+    },
+    {
+      "at": "2026-11-18T14:44:52.726Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "src/main/index.ts:42:7",
+      "x": 440.54296875,
+      "y": 433.8046875
+    },
+    {
+      "at": "2026-11-18T14:44:52.866Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "根外文件协议",
+      "x": 354,
+      "y": 444.8671875
+    }
+  ],
+  "model": [
+    {
+      "caseId": "A57",
+      "model": "m14-workspace-fixture",
+      "toolPresent": true,
+      "invoke": false
+    }
+  ],
+  "page": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/home",
+    "at": "2026-11-18T14:44:43.235Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 74743,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-004/A57/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:53507/c2113cc5-e57d-47eb-a7cd-764268caa1e2\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:53507/c2113cc5-e57d-47eb-a7cd-764268caa1e2\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:53502/devtools/browser/9e9d700d-f949-4377-b2df-c8f2e614b918\n(node:74743) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64624:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52044:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64624:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52044:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64624:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52044:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.gitStatus': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileGitMetadata.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:62796:29)\n    at cancelGit (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:51971:44)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64624:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52044:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'agentTasks.resolveLink': DriverError: 链接越出了本任务已授权的文件根（包括符号链接越界）\n    at MessageLinks.resolve (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:53716:23)\n    at async Session.<anonymous> (node:electron/js2c/browser_init:2:118661) {\n  code: 'REJECTED'\n}\n",
+  "rendererErrors": [],
+  "modelFailures": [],
+  "finishedAt": "2026-11-18T14:44:54.481Z"
+}

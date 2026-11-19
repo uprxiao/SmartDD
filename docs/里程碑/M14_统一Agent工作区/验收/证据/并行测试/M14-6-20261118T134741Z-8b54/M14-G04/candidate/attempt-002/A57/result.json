@@ -1,0 +1,201 @@
+{
+  "sourceCommit": "4d14684804f5d43f71514ab6b03140489a38a01d",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "fixtures/archived-links.json": "f74296c9c404e9a0f6286bff9e41d890ab12155d8b6afade2cfc5a9666ea97c3",
+    "fixtures/normal.pdf": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "a8e7993cb3b46de594cd58d762881165c709db6a18583cb3ac8548ff9c79eb58"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-18T14:36:51.217Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.12",
+  "cases": {
+    "A57": {
+      "status": "failed-or-blocked",
+      "passed": [
+        "包内实际回答解析中文标点后路径、显式目录/文件/file URL、HTTP/www；裸文件名/目录/file 及危险协议不生成可点链接"
+      ],
+      "missing": [],
+      "links": [
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt:2:3",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt:2:3"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/docs/guide.txt",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/docs/guide.txt"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt:3",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt:3"
+        },
+        {
+          "text": "文件",
+          "href": "./a.txt:2:3"
+        },
+        {
+          "text": "目录",
+          "href": "./docs/"
+        },
+        {
+          "text": "文件协议",
+          "href": "file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt:3"
+        },
+        {
+          "text": "http://127.0.0.1:3425/page",
+          "href": "http://127.0.0.1:3425/page"
+        },
+        {
+          "text": "www.example.com/path",
+          "href": "http://www.example.com/path"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/notes.txt",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/notes.txt"
+        },
+        {
+          "text": "SmartDD",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57"
+        },
+        {
+          "text": "index.ts",
+          "href": "src/main/index.ts:42"
+        },
+        {
+          "text": "src/main/index.ts:42:7",
+          "href": "src/main/index.ts:42:7"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/src/main/index.ts",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/src/main/index.ts"
+        },
+        {
+          "text": "打开",
+          "href": "file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/notes.txt"
+        },
+        {
+          "text": "本机地址",
+          "href": "file://localhost/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt#L3"
+        },
+        {
+          "text": "根外文件协议",
+          "href": "file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57-OUTSIDE.txt"
+        },
+        {
+          "text": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57-OUTSIDE.txt",
+          "href": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57-OUTSIDE.txt"
+        },
+        {
+          "text": "src/main/missing.ts:3",
+          "href": "src/main/missing.ts:3"
+        },
+        {
+          "text": "T3",
+          "href": "https://t3.codes/docs"
+        },
+        {
+          "text": "https://example.com/a?b=1",
+          "href": "https://example.com/a?b=1"
+        },
+        {
+          "text": "y",
+          "href": "mailto:a@b.c"
+        },
+        {
+          "text": "/api/users.json",
+          "href": "/api/users.json"
+        }
+      ],
+      "observedClicks": [
+        {
+          "label": "文件协议",
+          "trusted": true
+        }
+      ],
+      "error": "Error: Electron test condition timed out\n    at Object.waitFor (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/helpers/scripts/lib/electron-harness.mjs:271:13)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/workspace-acceptance.mjs:414:5\n    at async checkedStep (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/workspace-acceptance.mjs:155:3)\n    at async case57 (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/workspace-acceptance.mjs:411:3)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/workspace-acceptance.mjs:143:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/workspace-acceptance.mjs:808:5",
+      "dom": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nA57 stage 6\nA57 stage 6\n设置\nA57 stage 6\n已完成\n插件 2\n单 Agent · 开启委派\nM14_A57_ea9dc7ee-8558-48ca-8765-84513194260b Reply exactly once according to the local fixture.\n\nWORKSPACE_LINKS_A57\n\n路径：/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt:2:3，另见（/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/docs/guide.txt）、【/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/a.txt:3】。\n\n文件 目录 文件协议 [危险协议](javascript:alert(1))\n\nCHANGELOG.md、main.py、deploy.sh、docs/、file:///tmp/hidden.txt\n\nhttp://127.0.0.1:3425/page 以及 www.example.com/path\n\nnotes.txt 和 /Library/Application Support/no-link.txt\n\n历史 Codex 原文：1. Create notes.txt with the requested single line. 2. Run ls -la and wc -l notes.txt. 3. Summarize the result and file path.\n\nCreated notes.txt containing the single line hello m14, ran ls -la, and confirmed with wc -l notes.txt that it has one line.\n\n历史 Claude 原文（工作根重定位）：I created /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/notes.txt containing the single line hello m14, then ran ls -la and wc -l notes.txt, confirming the file exists and has one line.\n\n当前目录是：SmartDD\n\n修改见 index.ts\n\n错误在 src/main/index.ts:42:7\n\n日志写在 /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57/src/main/index.ts 里\n\n打开\n\n本机地址\n\n[远程文件](file://remote.invalid/share/private.txt)\n\n根外文件协议\n\n参考 /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/A57-OUTSIDE.txt 文件\n\n见 src/main/missing.ts:3\n\n文档：T3 以及 https://example.com/a?b=1\n\n[x](javascript:alert(1)) y\n\n接口 /api/users.json 返回 404\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n请求批准\n帮我批准\n完全访问\nWorkspace provider A\nm14-workspace-fixture"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-18T14:36:58.520Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-18T14:36:58.536Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-18T14:36:58.563Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-18T14:36:59.280Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"b0428094-607a-4dc6-9c83-b959e4287bfa\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-18T14:36:59.292Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T14:36:59.348Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T14:37:00.476Z",
+      "selector": ".agent-md a[data-agent-link]",
+      "label": "文件协议",
+      "x": 595.515625,
+      "y": 265.625
+    }
+  ],
+  "model": [
+    {
+      "caseId": "A57",
+      "model": "m14-workspace-fixture",
+      "toolPresent": true,
+      "invoke": false
+    }
+  ],
+  "page": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/home",
+    "at": "2026-11-18T14:36:52.696Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 63836,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-002/A57/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:63190/b4a027f3-acf0-4a2e-bfe9-13f2e2d9ba84\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:63190/b4a027f3-acf0-4a2e-bfe9-13f2e2d9ba84\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:63086/devtools/browser/4a21a195-c39c-43ff-b738-5d170c18ba55\n(node:63836) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "modelFailures": [],
+  "finishedAt": "2026-11-18T14:37:21.048Z"
+}

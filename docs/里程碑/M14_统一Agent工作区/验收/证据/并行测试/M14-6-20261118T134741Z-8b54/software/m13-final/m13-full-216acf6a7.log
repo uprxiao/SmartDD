@@ -1,0 +1,32 @@
+
+> smartdd@0.1.5 test /private/tmp/willyou-m14-stage6.WRvdST/source
+> node scripts/run-tests.mjs src/main/core/applications --maxWorkers=1
+
+
+ RUN  v4.1.11 /private/tmp/willyou-m14-stage6.WRvdST/source
+
+ ❯ src/main/core/applications/plugins/__tests__/package.test.ts (22 tests | 1 failed) 68ms
+     × compiles shared refs and checks all declared ZenTao UI field paths 1ms
+diagnostic_source_resolution_calls=200
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/plugins/__tests__/package.test.ts > external plugin install validation > compiles shared refs and checks all declared ZenTao UI field paths
+Error: ENOENT: no such file or directory, open 'docs/里程碑/M13_应用Skill与MCP插件化重构/技研/实验/A5_插件声明_20261110/zentao-plugin/.willyou-plugin/plugin.json'
+ ❯ src/main/core/applications/plugins/__tests__/package.test.ts:95:33
+     93|     // The research fixture intentionally has no runtime; supply a syn…
+     94|     const files = new Map<string, Buffer>();
+     95|     const manifest = JSON.parse(readFileSync(join(root, '.willyou-plug…
+       |                                 ^
+     96|     files.set('.willyou-plugin/plugin.json', Buffer.from(JSON.stringif…
+     97|     for (const path of [...manifest.schemas, ...Object.values(manifest…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 147 passed | 5 skipped (153)
+      Tests  1 failed | 2377 passed | 9 skipped (2387)
+   Start at  02:24:03
+   Duration  2300.72s (transform 2.85s, setup 0ms, import 20.75s, tests 2268.56s, environment 5ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

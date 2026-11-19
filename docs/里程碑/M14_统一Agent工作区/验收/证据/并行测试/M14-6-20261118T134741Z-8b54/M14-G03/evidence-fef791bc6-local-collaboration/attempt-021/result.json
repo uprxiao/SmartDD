@@ -1,0 +1,289 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-021/runtime-5OtGdY/home",
+    "at": "2026-11-18T15:13:15.805Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "fef791bc65cc7e82d1b83606a26b67714e99328d",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a27",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A27 local packaged A/I: cancel queued writer, stop one child round, then stop a tree without affecting the independent task",
+      "at": "2026-11-18T15:13:24.234Z",
+      "writerNeverStarted": true,
+      "finalChildStates": {
+        "queued-writer": "canceled",
+        "reader-x": "canceled",
+        "reader-y": "canceled"
+      },
+      "independentRun": "077df39f-1cd6-4239-a1bd-ce1caacde9ef"
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795014801681
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014802635,
+      "scheduledChild": "queued-writer"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014802721,
+      "scheduledChild": "reader-x"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014802802,
+      "scheduledChild": "reader-y"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014802888
+    },
+    {
+      "model": "fixture-child-reader-y",
+      "kind": "codex",
+      "child": "reader-y",
+      "wake": false,
+      "at": 1795014803965,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-child-reader-x",
+      "kind": "codex",
+      "child": "reader-x",
+      "wake": false,
+      "at": 1795014803968,
+      "reReadPrompt": false
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0b9f8dfe-5c29-407f-a103-220915f9c8d4\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"d975d0b6-a970-420e-81cb-c4197475c290\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-card[data-child-id=\"8f0c800f-c6c2-4616-bebc-74bd3d71a02f\"] button[aria-label^=\"停止子任务\"]",
+      "text": null,
+      "x": 1392,
+      "y": 172.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-open",
+      "text": "Acceptance reader-x - isolated delegation workspace",
+      "x": 1269.5,
+      "y": 265.5
+    },
+    {
+      "selector": "button[title=\"停止本轮\"]",
+      "text": null,
+      "x": 1032.5,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"d975d0b6-a970-420e-81cb-c4197475c290\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": ".agent-waiting-children button",
+      "text": "停止任务树",
+      "x": 505.328125,
+      "y": 466.1953125
+    }
+  ],
+  "status": "partial",
+  "pid": 65541,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-021/runtime-5OtGdY/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-021/runtime-5OtGdY/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-021/runtime-5OtGdY/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    65541
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "d975d0b6-a970-420e-81cb-c4197475c290",
+  "childTaskIds": {
+    "queued-writer": "8f0c800f-c6c2-4616-bebc-74bd3d71a02f",
+    "reader-x": "e1d4fa88-32ba-4f61-bdc8-c9c982104fae",
+    "reader-y": "ee0a82f0-7bbd-43a3-a8bf-c046175465b2"
+  },
+  "a27": {
+    "writerNeverStarted": true,
+    "finalChildStates": {
+      "queued-writer": "canceled",
+      "reader-x": "canceled",
+      "reader-y": "canceled"
+    },
+    "independentRun": "077df39f-1cd6-4239-a1bd-ce1caacde9ef"
+  },
+  "beforeQuit": [
+    {
+      "taskId": "ee0a82f0-7bbd-43a3-a8bf-c046175465b2",
+      "title": "Acceptance reader-y - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "d975d0b6-a970-420e-81cb-c4197475c290"
+    },
+    {
+      "taskId": "e1d4fa88-32ba-4f61-bdc8-c9c982104fae",
+      "title": "Acceptance reader-x - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "d975d0b6-a970-420e-81cb-c4197475c290"
+    },
+    {
+      "taskId": "8f0c800f-c6c2-4616-bebc-74bd3d71a02f",
+      "title": "Acceptance queued-writer - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "d975d0b6-a970-420e-81cb-c4197475c290"
+    },
+    {
+      "taskId": "0b9f8dfe-5c29-407f-a103-220915f9c8d4",
+      "title": "M14 isolated independent task",
+      "status": "completed",
+      "parentTaskId": null
+    },
+    {
+      "taskId": "d975d0b6-a970-420e-81cb-c4197475c290",
+      "title": "Acceptance parent a27",
+      "status": "working",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance reader-y - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance reader-x - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance queued-writer - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "M14 isolated independent task",
+      "077df39f-1cd6-4239-a1bd-ce1caacde9ef",
+      false
+    ],
+    [
+      "Acceptance parent a27",
+      null,
+      false
+    ]
+  ],
+  "cleanupMadeIdle": [
+    "Acceptance parent a27"
+  ],
+  "tasksAfterCleanup": [
+    {
+      "title": "Acceptance reader-y - isolated delegation workspace",
+      "status": "stopped"
+    },
+    {
+      "title": "Acceptance reader-x - isolated delegation workspace",
+      "status": "stopped"
+    },
+    {
+      "title": "Acceptance queued-writer - isolated delegation workspace",
+      "status": "stopped"
+    },
+    {
+      "title": "M14 isolated independent task",
+      "status": "completed"
+    },
+    {
+      "title": "Acceptance parent a27",
+      "status": "stopped"
+    }
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 65541,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "cleanupRequired": true
+}

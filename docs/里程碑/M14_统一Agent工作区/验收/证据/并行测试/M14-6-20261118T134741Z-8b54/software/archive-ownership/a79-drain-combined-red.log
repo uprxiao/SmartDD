@@ -1,0 +1,69 @@
+[1119/011843.285893:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/011843.446590:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/project-resources.test.ts (21 tests | 4 failed | 17 skipped) 110ms
+   × waits for directory release to 'archive' the task family (exit verified: true) 43ms
+   × waits for directory release to 'delete' the task family (exit verified: true) 26ms
+   × waits for directory release to 'archive' the task family (exit verified: false) 21ms
+   × waits for directory release to 'delete' the task family (exit verified: false) 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/project-resources.test.ts > waits for directory release to 'archive' the task family (exit verified: true)
+ FAIL  src/main/core/agent/project-resources.test.ts > waits for directory release to 'archive' the task family (exit verified: false)
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      [Error: parent：委派或工作副本尚未收口],
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/main/core/agent/project-resources.test.ts:118:23
+    116|     expect(owner).toBe(run.runId);
+    117|     await new Promise<void>(resolve => setImmediate(resolve));
+    118|     expect(early).not.toHaveBeenCalled();
+       |                       ^
+    119|     expect(f.store.task(parent)?.archived_at).toBeNull();
+    120|     expect(f.store.task(child)?.archived_at).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/main/core/agent/project-resources.test.ts > waits for directory release to 'delete' the task family (exit verified: true)
+ FAIL  src/main/core/agent/project-resources.test.ts > waits for directory release to 'delete' the task family (exit verified: false)
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      [Error: 请先处理以下任务的请求、排队输入或运行，再删除项目：parent（委派或工作副本尚未收口）],
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/main/core/agent/project-resources.test.ts:118:23
+    116|     expect(owner).toBe(run.runId);
+    117|     await new Promise<void>(resolve => setImmediate(resolve));
+    118|     expect(early).not.toHaveBeenCalled();
+       |                       ^
+    119|     expect(f.store.task(parent)?.archived_at).toBeNull();
+    120|     expect(f.store.task(child)?.archived_at).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 17 skipped (21)
+   Start at  01:18:43
+   Duration  778ms (transform 406ms, setup 0ms, import 592ms, tests 110ms, environment 0ms)
+

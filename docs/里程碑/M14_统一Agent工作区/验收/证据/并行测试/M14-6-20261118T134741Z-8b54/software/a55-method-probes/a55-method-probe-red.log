@@ -1,0 +1,37 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/discovery.test.ts --maxWorkers=1 -t A55
+
+[1119/043806.586381:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/043806.747281:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/discovery.test.ts (6 tests | 1 failed | 4 skipped) 34ms
+     × A55 negotiates each optional Codex protocol capability in an empty home (true) 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/discovery.test.ts > 本机程序发现 > A55 negotiates each optional Codex protocol capability in an empty home (true)
+AssertionError: expected 'enabled' to be 'disabled' // Object.is equality
+
+Expected: "disabled"
+Received: "enabled"
+
+ ❯ src/main/core/agent/discovery.test.ts:76:41
+     74|     expect(r.capabilities.mcp).toMatchObject({ state: 'disabled', reas…
+     75|     for (const key of ['resume', 'steer', 'skills', 'approvalsReviewer…
+     76|       expect(r.capabilities[key].state).toBe(missingOptional ? 'disabl…
+       |                                         ^
+     77|     }
+     78|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 4 skipped (6)
+   Start at  04:38:06
+   Duration  273ms (transform 96ms, setup 0ms, import 166ms, tests 34ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

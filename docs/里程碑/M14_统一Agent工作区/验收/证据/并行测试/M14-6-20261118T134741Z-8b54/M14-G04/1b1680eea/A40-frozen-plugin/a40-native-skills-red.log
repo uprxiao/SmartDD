@@ -1,0 +1,48 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/applications/__tests__/task-capability-launcher.test.ts --testNamePattern 'M14 A40 prepares'
+
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts (85 tests | 2 failed | 83 skipped) 2632ms
+     × M14 A40 prepares the codex plugin Skill and releases it when canceled before fork 1363ms
+     × M14 A40 prepares the claude plugin Skill and releases it when canceled before fork 1269ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > M14 A40 prepares the codex plugin Skill and releases it when canceled before fork
+ApplicationError: Skill 冻结目录必须属于本次已准备运行
+ ❯ FrozenPluginSkills.materialize src/main/core/applications/plugins/frozen-skills.ts:63:119
+     61|   materialize(set:FrozenPluginSkillSet):void {
+     62|     const row=this.store.sqlite.prepare('SELECT task_id,project_id,sta…
+     63|     if(!row||row.task_id!==set.metadata.taskId||row.project_id!==set.m…
+       |                                                                                                                       ^
+     64|     if(set.root!==join(this.root,set.metadata.runId))throw new Applica…
+     65|     if(existsSync(set.root)){this.verify(set);return;}
+ ❯ ManagedTaskCapabilities.prepareAgent src/main/core/applications/task-capability-launcher.ts:385:86
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:783:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/applications/__tests__/task-capability-launcher.test.ts > M13 P1 plugins through production task startup > M14 A40 prepares the claude plugin Skill and releases it when canceled before fork
+ApplicationError: Skill 冻结目录必须属于本次已准备运行
+ ❯ FrozenPluginSkills.materialize src/main/core/applications/plugins/frozen-skills.ts:63:119
+     61|   materialize(set:FrozenPluginSkillSet):void {
+     62|     const row=this.store.sqlite.prepare('SELECT task_id,project_id,sta…
+     63|     if(!row||row.task_id!==set.metadata.taskId||row.project_id!==set.m…
+       |                                                                                                                       ^
+     64|     if(set.root!==join(this.root,set.metadata.runId))throw new Applica…
+     65|     if(existsSync(set.root)){this.verify(set);return;}
+ ❯ ManagedTaskCapabilities.prepareAgent src/main/core/applications/task-capability-launcher.ts:385:86
+ ❯ src/main/core/applications/__tests__/task-capability-launcher.test.ts:783:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 83 skipped (85)
+   Start at  10:53:07
+   Duration  4.16s (transform 1.07s, setup 0ms, import 1.45s, tests 2.63s, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

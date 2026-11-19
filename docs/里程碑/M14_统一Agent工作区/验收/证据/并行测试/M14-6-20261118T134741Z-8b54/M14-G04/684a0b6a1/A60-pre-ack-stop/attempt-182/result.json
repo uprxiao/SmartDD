@@ -1,0 +1,215 @@
+{
+  "caseId": "M14-A60",
+  "sourceCommit": "684a0b6a1e1ba01c12f405b89087aebf9e357a5d",
+  "scope": "M14-A60-stop-before-ack",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "237e4b90eb22fbae9329bb475094ba99a397433fd9d0f30d52ec1c34e53379fc"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T02:24:52.972Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A60-stop-before-ack": {
+      "status": "failed-or-blocked",
+      "passed": [],
+      "missing": [],
+      "native": {
+        "pid": 53379,
+        "events": [
+          {
+            "stage": "forward-start",
+            "at": 1795055101814,
+            "id": 10,
+            "threadId": "01a1f19f-2410-7651-80cb-b4d78f5306ab"
+          },
+          {
+            "stage": "start-reply",
+            "at": 1795055101817,
+            "turnId": "01a1f19f-2777-79d3-acc8-d0f4b01ac029",
+            "held": true
+          },
+          {
+            "stage": "turn-started",
+            "at": 1795055101819,
+            "turnId": "01a1f19f-2777-79d3-acc8-d0f4b01ac029",
+            "held": true
+          },
+          {
+            "stage": "release",
+            "at": 1795055101930,
+            "reason": "fixture-release-after-real-stop",
+            "withheld": 2
+          },
+          {
+            "stage": "forward-interrupt",
+            "at": 1795055101930,
+            "turnId": "01a1f19f-2777-79d3-acc8-d0f4b01ac029",
+            "threadId": "01a1f19f-2410-7651-80cb-b4d78f5306ab"
+          },
+          {
+            "stage": "turn-completed",
+            "at": 1795055101958,
+            "turnId": "01a1f19f-2777-79d3-acc8-d0f4b01ac029",
+            "status": "interrupted"
+          }
+        ],
+        "providerClosedAt": 1795055101931
+      },
+      "host": {
+        "stopped": {
+          "taskId": "56c26d54-1b79-47b4-834c-e52587f6001d",
+          "seq": 35,
+          "type": "task.user_stopped",
+          "itemId": null,
+          "payload": {
+            "subtree": false
+          }
+        },
+        "stopObservedAt": 1795055101928,
+        "preAck": {
+          "turn_id": "98a8e01d-5b18-46ce-91e8-813b0c66165a",
+          "client_input_id": "in-e1d480ad8aaf44d682194e80e63c5f71",
+          "status": "dispatching",
+          "native_turn_id": null,
+          "accepted_at": "2026-11-19T02:25:01.609Z",
+          "started_at": null,
+          "ended_at": null,
+          "error_code": null,
+          "run_id": "7b1c59ca-aaaf-4eca-9a62-037ad12635c2",
+          "source_kind": "user"
+        },
+        "terminal": {
+          "turn_id": "98a8e01d-5b18-46ce-91e8-813b0c66165a",
+          "client_input_id": "in-e1d480ad8aaf44d682194e80e63c5f71",
+          "status": "interrupted",
+          "native_turn_id": "01a1f19f-2777-79d3-acc8-d0f4b01ac029",
+          "accepted_at": "2026-11-19T02:25:01.609Z",
+          "started_at": "2026-11-19T02:25:01.930Z",
+          "ended_at": "2026-11-19T02:25:01.958Z",
+          "error_code": null,
+          "run_id": "7b1c59ca-aaaf-4eca-9a62-037ad12635c2",
+          "source_kind": "user"
+        }
+      },
+      "restored": true,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '81eeba45-886d-4352-9ecc-dd3a4438169c'\n- '7b1c59ca-aaaf-4eca-9a62-037ad12635c2'\n\n    at caseImmediateStop (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-ack/a60-stop-before-ack.mjs:291:10)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-ack/a60-stop-before-ack.mjs:135:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-ack/a60-stop-before-ack.mjs:329:3",
+      "dom": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nM14-A60-ack stage 6\nM14-A60-ack stage 6\n设置\nM14-A60-ack stage 6\n已完成\n插件 2\n单 Agent · 开启委派\nA60-USER-ACK-WARM\n\nREPLY-A60-USER-ACK-WARM\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nMCP 启动 · wy_38aedb4b7aef75f88dae1f14\nMCP 启动 · smartdd_project_38aedb4b7aef\nA60-USER-STOP-BEFORE-ACK\n你在 0 秒后停止了\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n已停止 · 共工作 0 秒\nA60-USER-ACK-RECOVER\n\nREPLY-A60-USER-ACK-RECOVER\n\nMCP 启动 · smartdd_project_38aedb4b7aef\nMCP 启动 · wy_38aedb4b7aef75f88dae1f14\n请求批准\n帮我批准\n完全访问\nA60 isolated Codex\nm14-switch-model-one"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T02:24:59.574Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T02:24:59.586Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T02:24:59.600Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T02:25:00.274Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"56c26d54-1b79-47b4-834c-e52587f6001d\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T02:25:00.284Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:25:00.307Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:25:01.600Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:25:01.610Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:25:01.927Z",
+      "selector": ".agent-stop-run[title=\"停止本轮\"]",
+      "x": 1181.5,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:25:02.117Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:25:02.134Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "model": [
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-ACK-WARM"
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-STOP-BEFORE-ACK"
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-ACK-RECOVER"
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-182/home",
+    "at": "2026-11-19T02:24:54.625Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 53168,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-182/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-182/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-182/home",
+    "packaged": true
+  },
+  "engine": "0.169.0",
+  "appLogs": "Debugger listening on ws://127.0.0.1:61023/b64b8c7c-7386-4024-8cea-5d688b5a98a7\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:61023/b64b8c7c-7386-4024-8cea-5d688b5a98a7\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:61016/devtools/browser/809fa32a-9afa-42fa-96d7-a1a30fd0ae86\n(node:53168) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 53168,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T02:25:04.289Z"
+}

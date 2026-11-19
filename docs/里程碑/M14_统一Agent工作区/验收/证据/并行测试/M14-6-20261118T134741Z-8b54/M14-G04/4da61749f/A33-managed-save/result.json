@@ -1,0 +1,294 @@
+{
+  "caseId": "M14-A33",
+  "sourceCommit": "4da61749fc24f8d05481b6139e276cf6c4afd5b0",
+  "scope": "M14-A33-managed-file",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "39351e634975433afb8034cda4e3a387fbd534b3f982ad56b3f88e062864dbc4"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T00:58:47.294Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A33-managed-file": {
+      "status": "pass",
+      "passed": [
+        "隔离实包用真实 Cmd+S 保存；外部写者在实际调用入口处理前修改文件，原保存处理器拒绝旧修订；真实“保留我的修改”使用磁盘现行哈希保存本地版，期间没有 Agent 自动发送"
+      ],
+      "missing": [],
+      "opened": {
+        "taskId": "0ebf098b-3af3-42ee-b6c8-adba2b82380f",
+        "projectId": "d007bc51-254d-4f68-ac28-71ee7808df7d",
+        "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-151/M14-A33-managed-file",
+        "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-151/M14-A33-managed-file/a.txt",
+        "turns": 1,
+        "editor": "initial\nsecond line\n第三行\n",
+        "diskSha256": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf"
+      },
+      "explicitSaveKey": {
+        "trusted": true,
+        "key": "s",
+        "meta": true,
+        "at": 1795049936684
+      },
+      "staleSave": {
+        "observedSaveKey": {
+          "trusted": true,
+          "key": "s",
+          "meta": true,
+          "at": 1795049936684
+        },
+        "inbound": {
+          "request": {
+            "ref": {
+              "id": "2b9ebcca-9cf7-4b34-a5f0-4794dd503592",
+              "lease": "1c200df7-0bc9-4c97-ae8a-764f1bd49999",
+              "generation": 1
+            },
+            "opId": "f91ad556-5fa1-4a2e-a419-6388e2f1e462",
+            "bufferVersion": 1,
+            "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+            "base64": "QTMzIOacrOWcsOacquS/neWtmPCfmYIK"
+          },
+          "sender": 1,
+          "enteredAt": 1795049936736
+        },
+        "externalPid": 23416,
+        "externalStartedAt": 1795049936794,
+        "externalCompletedAt": 1795049936871,
+        "released": {
+          "request": {
+            "ref": {
+              "id": "2b9ebcca-9cf7-4b34-a5f0-4794dd503592",
+              "lease": "1c200df7-0bc9-4c97-ae8a-764f1bd49999",
+              "generation": 1
+            },
+            "opId": "f91ad556-5fa1-4a2e-a419-6388e2f1e462",
+            "bufferVersion": 1,
+            "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+            "base64": "QTMzIOacrOWcsOacquS/neWtmPCfmYIK"
+          },
+          "enteredAt": 1795049936736,
+          "releasedAt": 1795049936877
+        },
+        "conflict": {
+          "request": {
+            "ref": {
+              "id": "2b9ebcca-9cf7-4b34-a5f0-4794dd503592",
+              "lease": "1c200df7-0bc9-4c97-ae8a-764f1bd49999",
+              "generation": 1
+            },
+            "opId": "f91ad556-5fa1-4a2e-a419-6388e2f1e462",
+            "bufferVersion": 1,
+            "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+            "base64": "QTMzIOacrOWcsOacquS/neWtmPCfmYIK"
+          },
+          "sender": 1,
+          "enteredAt": 1795049936736,
+          "releasedAt": 1795049936877,
+          "beforeNativeAt": 1795049936877,
+          "receipt": {
+            "opId": "f91ad556-5fa1-4a2e-a419-6388e2f1e462",
+            "bufferVersion": 1,
+            "state": "conflict",
+            "message": "磁盘文件已改变；本地修改仍保留"
+          },
+          "returnedAt": 1795049936885
+        },
+        "localBuffer": "A33 本地未保存🙂\n",
+        "externalDisk": "A33 independent disk version\n"
+      },
+      "saved": {
+        "selected": {
+          "request": {
+            "ref": {
+              "id": "2b9ebcca-9cf7-4b34-a5f0-4794dd503592",
+              "lease": "1c200df7-0bc9-4c97-ae8a-764f1bd49999",
+              "generation": 1
+            },
+            "opId": "8ed01fd1-b747-45ce-8ebc-6078419ac68b",
+            "bufferVersion": 2,
+            "baseHash": "af345b1849bed20ac285b14edfe7de829222c583b8c1cb36b19e6b7c43fb4a75",
+            "base64": "QTMzIOacrOWcsOacquS/neWtmPCfmYIK"
+          },
+          "sender": 1,
+          "enteredAt": 1795049937112,
+          "beforeNativeAt": 1795049937112,
+          "receipt": {
+            "revision": {
+              "size": 24,
+              "inode": "363815529",
+              "device": "16777231",
+              "changedNs": "1795049937164696141",
+              "modifiedNs": "1795049937154691000",
+              "hash": "d6d6db07c4c0e99b3241d969c6d598b16899e5e8946856ac1a5495f075304d71"
+            },
+            "bufferVersion": 2,
+            "opId": "8ed01fd1-b747-45ce-8ebc-6078419ac68b",
+            "state": "saved",
+            "recoveryId": "8ed01fd1-b747-45ce-8ebc-6078419ac68b"
+          },
+          "returnedAt": 1795049937170
+        },
+        "disk": "A33 本地未保存🙂\n",
+        "diskSha256": "d6d6db07c4c0e99b3241d969c6d598b16899e5e8946856ac1a5495f075304d71",
+        "turns": 1
+      },
+      "actualSaveTrace": [
+        {
+          "request": {
+            "ref": {
+              "id": "2b9ebcca-9cf7-4b34-a5f0-4794dd503592",
+              "lease": "1c200df7-0bc9-4c97-ae8a-764f1bd49999",
+              "generation": 1
+            },
+            "opId": "f91ad556-5fa1-4a2e-a419-6388e2f1e462",
+            "bufferVersion": 1,
+            "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+            "base64": "QTMzIOacrOWcsOacquS/neWtmPCfmYIK"
+          },
+          "sender": 1,
+          "enteredAt": 1795049936736,
+          "releasedAt": 1795049936877,
+          "beforeNativeAt": 1795049936877,
+          "receipt": {
+            "opId": "f91ad556-5fa1-4a2e-a419-6388e2f1e462",
+            "bufferVersion": 1,
+            "state": "conflict",
+            "message": "磁盘文件已改变；本地修改仍保留"
+          },
+          "returnedAt": 1795049936885
+        },
+        {
+          "request": {
+            "ref": {
+              "id": "2b9ebcca-9cf7-4b34-a5f0-4794dd503592",
+              "lease": "1c200df7-0bc9-4c97-ae8a-764f1bd49999",
+              "generation": 1
+            },
+            "opId": "8ed01fd1-b747-45ce-8ebc-6078419ac68b",
+            "bufferVersion": 2,
+            "baseHash": "af345b1849bed20ac285b14edfe7de829222c583b8c1cb36b19e6b7c43fb4a75",
+            "base64": "QTMzIOacrOWcsOacquS/neWtmPCfmYIK"
+          },
+          "sender": 1,
+          "enteredAt": 1795049937112,
+          "beforeNativeAt": 1795049937112,
+          "receipt": {
+            "revision": {
+              "size": 24,
+              "inode": "363815529",
+              "device": "16777231",
+              "changedNs": "1795049937164696141",
+              "modifiedNs": "1795049937154691000",
+              "hash": "d6d6db07c4c0e99b3241d969c6d598b16899e5e8946856ac1a5495f075304d71"
+            },
+            "bufferVersion": 2,
+            "opId": "8ed01fd1-b747-45ce-8ebc-6078419ac68b",
+            "state": "saved",
+            "recoveryId": "8ed01fd1-b747-45ce-8ebc-6078419ac68b"
+          },
+          "returnedAt": 1795049937170
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T00:58:54.155Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T00:58:54.208Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T00:58:54.232Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T00:58:54.946Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0ebf098b-3af3-42ee-b6c8-adba2b82380f\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T00:58:54.959Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T00:58:54.974Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T00:58:56.482Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "隔离校验文件",
+      "x": 546,
+      "y": 261.734375
+    },
+    {
+      "at": "2026-11-19T00:58:56.663Z",
+      "selector": ".fw-editor-host .cm-content",
+      "x": 997.4609375,
+      "y": 530.5
+    },
+    {
+      "at": "2026-11-19T00:58:57.062Z",
+      "selector": ".fw-conflict-strip button",
+      "label": "保留我的修改",
+      "x": 833.921875,
+      "y": 244
+    }
+  ],
+  "model": [
+    {
+      "caseId": "M14-A33-managed-file",
+      "model": "m14-workspace-fixture",
+      "role": "assistant-only"
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-151/home",
+    "at": "2026-11-19T00:58:48.913Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 22940,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-151/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-151/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-151/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:50761/aa70bfb4-0cf2-4ae6-80de-dc4c59dbb5c3\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:50761/aa70bfb4-0cf2-4ae6-80de-dc4c59dbb5c3\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:50755/devtools/browser/d754402f-98cc-46a4-940f-f6145eb8f888\n(node:22940) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65558:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34212:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:65558:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52181:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 22940,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T00:58:58.479Z"
+}

@@ -1,0 +1,107 @@
+{
+  "commit": "fef791bc65cc7e82d1b83606a26b67714e99328d",
+  "asar": "0bea10f0c2b22d38b6b777d22f82e0872ff05712f37f2db0a3ed18d56e166c62",
+  "fixtureManifestSha256": "848a50f5bd06021a8b546bb5836d88abddb7368d5164e7a96ea33d07ecd67b9f",
+  "scope": "Packaged startup including managed migrations; fault startup uses only a scoped native error-display observer. No mail, plugin or browser scope claim.",
+  "cases": [
+    {
+      "name": "upgrade",
+      "startAt": "2026-11-18T15:09:12.802Z",
+      "isolation": {
+        "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-upgrade/home",
+        "at": "2026-11-18T15:09:14.222Z",
+        "workerInspectorFlagRemoved": true
+      },
+      "identity": [
+        true,
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-upgrade/data",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-upgrade/home",
+        27821
+      ],
+      "navRendered": true,
+      "exit": {
+        "pid": 27821,
+        "code": 0,
+        "signal": null
+      },
+      "db": {
+        "migrationsBefore": 37,
+        "migrationsAfter": 39,
+        "preservedTask": "a64-legacy-task",
+        "preservedRun": "a64-old-run",
+        "preservedLegacyPty": "a64-old-pty",
+        "integrity": "ok",
+        "foreignKeyViolations": [],
+        "allPreExistingSchemaUnchanged": false
+      },
+      "status": "pass",
+      "finishedAt": "2026-11-18T15:09:19.066Z",
+      "databaseSha256After": "e801260d1560d167b90d514362dbe59ff0b95d68b630c119a65d838c1c7e112a",
+      "evidenceFile": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-upgrade/app.log"
+    },
+    {
+      "name": "rollback",
+      "startAt": "2026-11-18T15:09:19.067Z",
+      "pid": 27927,
+      "isolation": {
+        "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-rollback/home",
+        "at": "2026-11-18T15:09:20.449Z",
+        "workerInspectorFlagRemoved": true
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "errorBox": {
+        "title": "WillYou 无法启动",
+        "message": "no such column: parent_task_id"
+      },
+      "db": {
+        "migrationsBefore": 37,
+        "migrationsAfter": 37,
+        "preservedTask": "a64-legacy-task",
+        "preservedRun": "a64-old-run",
+        "preservedLegacyPty": "a64-old-pty",
+        "integrity": "ok",
+        "foreignKeyViolations": [],
+        "allPreExistingSchemaUnchanged": true
+      },
+      "status": "pass",
+      "finishedAt": "2026-11-18T15:09:21.657Z",
+      "databaseSha256After": "ac59e308ce5495983d9bd08fa67c4992fed34de74e912018a2ead0794facd126",
+      "evidenceFile": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-rollback/app.log"
+    },
+    {
+      "name": "future",
+      "startAt": "2026-11-18T15:09:21.658Z",
+      "pid": 27977,
+      "isolation": {
+        "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-future/home",
+        "at": "2026-11-18T15:09:23.040Z",
+        "workerInspectorFlagRemoved": true
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "errorBox": {
+        "title": "WillYou 无法启动",
+        "message": "数据库已执行 40 个迁移，当前版本只包含 39 个，请使用更新版本的 WillYou"
+      },
+      "db": {
+        "migrationsBefore": 40,
+        "migrationsAfter": 40,
+        "preservedTask": "a64-legacy-task",
+        "preservedRun": "a64-old-run",
+        "preservedLegacyPty": "a64-old-pty",
+        "integrity": "ok",
+        "foreignKeyViolations": [],
+        "allPreExistingSchemaUnchanged": true
+      },
+      "status": "pass",
+      "finishedAt": "2026-11-18T15:09:23.317Z",
+      "databaseSha256After": "ca0ee6b1516bc5433429dd4405839080d6200bed9c1169fde8f38d61a8e6c2da",
+      "evidenceFile": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-007/A64-future/app.log"
+    }
+  ]
+}

@@ -1,0 +1,590 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App and actual Claude Read; native scoped maxTurns fault, synthetic loopback only",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/home",
+    "at": "2026-11-19T02:30:15.904Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "max-turns",
+  "sourceCommit": "684a0b6a1e1ba01c12f405b89087aebf9e357a5d",
+  "asar": "237e4b90eb22fbae9329bb475094ba99a397433fd9d0f30d52ec1c34e53379fc",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-claude-max-turns-packaged.mjs": "8197a76785bdd1cc0101e61fd1a8874a1e3860b2bf37bb7d5ac319ad05ba2bfc",
+    "a60-prep/provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "a60-prep/pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665",
+    "a60-prep/native-max-turns-provider.mjs": "35286a1070b28b8216419558bb72650310db32c7b283ce548ff01f82d85ea575",
+    "a60-prep/isolated-claude-max-turns-env.mjs": "5f3b456c498b6f8874c28d790979edc2286f340480ab391b2762d531a604592d"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"833d6924-e3b6-4b05-86cd-cd4472c740a3\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795055420984
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795055421131
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795055421148
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795055421953
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795055421956
+    }
+  ],
+  "requests": [
+    {
+      "lane": "warm",
+      "at": 1795055421903
+    },
+    {
+      "lane": "native-read",
+      "index": 0,
+      "next": {
+        "id": "toolu_4e94ccac57cd4b398756737f5215eab4",
+        "canary": "A60_READ_CANARY_ONE",
+        "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-1.txt"
+      },
+      "at": 1795055422234
+    },
+    {
+      "lane": "native-read",
+      "index": 1,
+      "receipt": {
+        "toolUseId": "toolu_4e94ccac57cd4b398756737f5215eab4",
+        "canary": "A60_READ_CANARY_ONE"
+      },
+      "next": {
+        "id": "toolu_cfdc0a6d6fff471a9f8c56fd422b2478",
+        "canary": "A60_READ_CANARY_TWO",
+        "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-2.txt"
+      },
+      "at": 1795055422261
+    },
+    {
+      "lane": "native-read",
+      "index": 2,
+      "receipt": {
+        "toolUseId": "toolu_cfdc0a6d6fff471a9f8c56fd422b2478",
+        "canary": "A60_READ_CANARY_TWO"
+      },
+      "next": {
+        "id": "toolu_72a5aba28fc14ca09585fb6389192809",
+        "canary": "A60_READ_CANARY_THREE",
+        "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-3.txt"
+      },
+      "at": 1795055422274
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "failed",
+  "port": 3425,
+  "nativeResults": [
+    {
+      "at": 1795055422223,
+      "subtype": "success",
+      "sessionId": "a12a46cd-1a56-478e-b03e-5616f77b37ba",
+      "numTurns": 0,
+      "isError": false,
+      "errors": []
+    },
+    {
+      "at": 1795055422285,
+      "subtype": "error_max_turns",
+      "sessionId": "a12a46cd-1a56-478e-b03e-5616f77b37ba",
+      "numTurns": 4,
+      "isError": true,
+      "errors": [
+        "Reached maximum number of turns (3)"
+      ]
+    }
+  ],
+  "nativeLimit": 3,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project",
+    "model": "a60-claude-max-turns",
+    "engine": "claude",
+    "files": [
+      "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-1.txt",
+      "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-2.txt",
+      "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-3.txt"
+    ]
+  },
+  "pid": 58289,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    58289,
+    null
+  ],
+  "nativeCapInjection": {
+    "pid": 58289,
+    "key": "CLAUDE_CODE_MAX_TURNS",
+    "initial": null,
+    "effective": "3",
+    "injected": true
+  },
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "turn": {
+      "turn_id": "2d23f158-84e7-40bb-bb62-c96067f65f17",
+      "client_input_id": "in-50cf46f3759b414c99f1235c7857dc71",
+      "status": "completed",
+      "native_turn_id": "a12a46cd-1a56-478e-b03e-5616f77b37ba:1",
+      "accepted_at": "2026-11-19T02:30:21.150Z",
+      "started_at": "2026-11-19T02:30:21.863Z",
+      "ended_at": "2026-11-19T02:30:21.922Z",
+      "error_code": null,
+      "run_id": "fd416819-9c73-4879-9f1d-f86f2614d7da",
+      "source_kind": "user"
+    },
+    "run": {
+      "runId": "fd416819-9c73-4879-9f1d-f86f2614d7da",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-claude-max-turns",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-claude-max-turns",
+          "name": "a60-claude-max-turns",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    }
+  },
+  "nativeObserver": {
+    "pid": 58422,
+    "stdoutDataListeners": 2,
+    "exe": "/Users/liubu/.local/share/claude/versions/2.1.326",
+    "argvHasPrint": false,
+    "argvHasExplicitMaxTurns": false
+  },
+  "terminal": {
+    "turn": {
+      "turn_id": "a494f226-1f0c-429d-8150-ee4b226d036c",
+      "client_input_id": "in-7f22bd32c0d147d6a152e64edda44cde",
+      "status": "failed",
+      "native_turn_id": "a12a46cd-1a56-478e-b03e-5616f77b37ba:2",
+      "accepted_at": "2026-11-19T02:30:21.956Z",
+      "started_at": "2026-11-19T02:30:22.223Z",
+      "ended_at": "2026-11-19T02:30:22.286Z",
+      "error_code": "error_max_turns",
+      "run_id": "fd416819-9c73-4879-9f1d-f86f2614d7da",
+      "source_kind": "user"
+    },
+    "rows": [
+      {
+        "at": 1795055422223,
+        "subtype": "success",
+        "sessionId": "a12a46cd-1a56-478e-b03e-5616f77b37ba",
+        "numTurns": 0,
+        "isError": false,
+        "errors": []
+      },
+      {
+        "at": 1795055422285,
+        "subtype": "error_max_turns",
+        "sessionId": "a12a46cd-1a56-478e-b03e-5616f77b37ba",
+        "numTurns": 4,
+        "isError": true,
+        "errors": [
+          "Reached maximum number of turns (3)"
+        ]
+      }
+    ],
+    "run": {
+      "runId": "fd416819-9c73-4879-9f1d-f86f2614d7da",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-claude-max-turns",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-claude-max-turns",
+          "name": "a60-claude-max-turns",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    },
+    "status": "failed",
+    "turnIds": [
+      "2d23f158-84e7-40bb-bb62-c96067f65f17",
+      "a494f226-1f0c-429d-8150-ee4b226d036c"
+    ],
+    "pending": [],
+    "queued": [],
+    "items": [
+      {
+        "itemId": "6289a7f0-4ebd-4fab-96f2-01ddb45476ec",
+        "turnId": "a494f226-1f0c-429d-8150-ee4b226d036c",
+        "type": "user_message",
+        "ordinal": 3,
+        "revision": 1,
+        "payload": {
+          "text": "A60_MAX_TURNS_ACTUAL_READ_CHAIN",
+          "sourceKind": "user"
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-19T02:30:21.957Z",
+        "updatedAt": "2026-11-19T02:30:21.957Z"
+      },
+      {
+        "itemId": "9fc3efc9-5cdf-43e3-ad75-8a88d2054971",
+        "turnId": "a494f226-1f0c-429d-8150-ee4b226d036c",
+        "type": "file_search",
+        "ordinal": 5,
+        "revision": 2,
+        "payload": {
+          "name": "Read",
+          "output": "1\tA60_READ_CANARY_ONE\n2\t",
+          "status": "completed",
+          "input": {
+            "file_path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-1.txt"
+          }
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-19T02:30:22.250Z",
+        "updatedAt": "2026-11-19T02:30:22.254Z"
+      },
+      {
+        "itemId": "636feb68-e615-4c49-9c4b-a511ad7b6235",
+        "turnId": "a494f226-1f0c-429d-8150-ee4b226d036c",
+        "type": "file_search",
+        "ordinal": 6,
+        "revision": 2,
+        "payload": {
+          "name": "Read",
+          "output": "1\tA60_READ_CANARY_TWO\n2\t",
+          "status": "completed",
+          "input": {
+            "file_path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-2.txt"
+          }
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-19T02:30:22.262Z",
+        "updatedAt": "2026-11-19T02:30:22.268Z"
+      },
+      {
+        "itemId": "c3091c01-b08c-428e-98a6-4b036e5e7343",
+        "turnId": "a494f226-1f0c-429d-8150-ee4b226d036c",
+        "type": "file_search",
+        "ordinal": 7,
+        "revision": 2,
+        "payload": {
+          "name": "Read",
+          "output": "1\tA60_READ_CANARY_THREE\n2\t",
+          "status": "completed",
+          "input": {
+            "file_path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/runtime-djAXFB/project/read-only-canary-3.txt"
+          }
+        },
+        "terminal": "completed",
+        "createdAt": "2026-11-19T02:30:22.276Z",
+        "updatedAt": "2026-11-19T02:30:22.282Z"
+      },
+      {
+        "itemId": "820e5932-158e-4ea0-a5e1-880b142b0425",
+        "turnId": "a494f226-1f0c-429d-8150-ee4b226d036c",
+        "type": "error",
+        "ordinal": 8,
+        "revision": 1,
+        "payload": {
+          "code": "error_max_turns",
+          "message": "[\"Reached maximum number of turns (3)\"]"
+        },
+        "terminal": "failed",
+        "createdAt": "2026-11-19T02:30:22.285Z",
+        "updatedAt": "2026-11-19T02:30:22.285Z"
+      }
+    ]
+  },
+  "phase": "send one real user turn and let native finish, without Stop or fake frames",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n2 !== 1\n\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-claude-max-turns-packaged.mjs:223:10\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nM14 A60 limit isolated\nA60 isolated native max-turns\n失败\n设置\nA60 isolated native max-turns\n失败\n插件 2\n单 Agent · 开启委派\nA60_MAX_TURNS_WARM\n\nA60_MAX_TURNS_WARM_DONE\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nA60_MAX_TURNS_ACTUAL_READ_CHAIN\n工作 0 秒后失败\n读取了 3 个文件\n查看错误详情\n已失败 · 共工作 0 秒\n请求批准\n完全访问\nFixture claude\na60-claude-max-turns",
+  "stoppedBeforeQuit": [],
+  "preQuit": {
+    "at": "2026-11-19T02:30:22.416Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-185/quit-phase.jsonl",
+  "exit": {
+    "pid": 58289,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

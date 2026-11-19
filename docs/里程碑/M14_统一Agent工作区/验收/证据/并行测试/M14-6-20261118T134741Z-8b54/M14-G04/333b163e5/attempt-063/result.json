@@ -1,0 +1,549 @@
+{
+  "caseId": "M14-A43",
+  "commit": "333b163e5a16c8d082cca245ea0a6bc9f4a7fc36",
+  "asar": "a0bc26dce5dd81cda963f0b32791efb60d287e62141c3bf6e2e2639bc99b083a",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scope": "Real packaged app. One authorized editor via CDP; competing writer via its unchanged production IPC and CAS. Two authorized production windows and first-send cases not covered.",
+  "actions": [
+    {
+      "type": "click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"2ad426ea-ae10-47c3-b2ff-a87e61c9ea96\"]",
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "type": "click",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "type": "insertText",
+      "text": "A43_现在输入的草稿 keep"
+    },
+    {
+      "type": "click",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "type": "insertText",
+      "text": "A43_冲突以后继续编辑"
+    },
+    {
+      "type": "click",
+      "selector": ".agent-draft-conflict button",
+      "label": "保留当前",
+      "x": 1201,
+      "y": 666.796875
+    },
+    {
+      "type": "click",
+      "selector": ".agent-draft-conflict button",
+      "label": "保留当前",
+      "x": 1201,
+      "y": 666.796875
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "type": "click",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "type": "insertText",
+      "text": "A43_现在输入的草稿 adopt"
+    },
+    {
+      "type": "click",
+      "selector": ".agent-draft-conflict button",
+      "label": "用另一份",
+      "x": 1131,
+      "y": 666.796875
+    },
+    {
+      "type": "click",
+      "selector": ".m13-dialog button",
+      "label": "取消",
+      "x": 822,
+      "y": 494.25
+    },
+    {
+      "type": "click",
+      "selector": ".agent-draft-conflict button",
+      "label": "用另一份",
+      "x": 1131,
+      "y": 666.796875
+    },
+    {
+      "type": "click",
+      "selector": ".m13-dialog button",
+      "label": "确认替换",
+      "x": 897,
+      "y": 494.25
+    },
+    {
+      "type": "click",
+      "selector": ".agent-draft-conflict button",
+      "label": "用另一份",
+      "x": 1131,
+      "y": 666.796875
+    },
+    {
+      "type": "click",
+      "selector": ".m13-dialog button",
+      "label": "确认替换",
+      "x": 897,
+      "y": 494.25
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "keep",
+      "kept": {
+        "revision": 2,
+        "localVersion": "A43_现在输入的草稿 keep",
+        "attachment": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/92f8c611-3236-40a5-9ccf-94692fae1628/a43-local-keep.png",
+          "exists": false,
+          "hash": null
+        },
+        "denied": {
+          "text": "A43_现在输入的草稿 keep",
+          "chips": [
+            "a43-local-keep.png"
+          ],
+          "conflict": true,
+          "confirm": false
+        },
+        "frozen": {
+          "revision": 2,
+          "draft": {
+            "text": "A43_另一份旧 keep",
+            "attachments": [
+              {
+                "id": "614614b0-3fb4-4cc8-b00d-7b8f39cd1f38",
+                "kind": "file",
+                "name": "a43-remote-keep.png",
+                "mime": "image/png",
+                "size": 68,
+                "image": true,
+                "storedPath": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/614614b0-3fb4-4cc8-b00d-7b8f39cd1f38/a43-remote-keep.png"
+              }
+            ]
+          }
+        }
+      },
+      "staleKeep": {
+        "channel": "agentTasks.saveDraft",
+        "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+        "source": "A43_冲突以后继续编辑",
+        "expectedRevision": 2,
+        "startedAt": 1795025998363,
+        "sender": 1,
+        "ok": false,
+        "revision": 3,
+        "endedAt": 1795025998363
+      },
+      "serverAfterKeep": {
+        "revision": 4,
+        "draft": {
+          "text": "A43_冲突以后继续编辑",
+          "attachments": [
+            {
+              "id": "92f8c611-3236-40a5-9ccf-94692fae1628",
+              "kind": "file",
+              "name": "a43-local-keep.png",
+              "mime": "image/png",
+              "size": 68,
+              "image": true,
+              "storedPath": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/92f8c611-3236-40a5-9ccf-94692fae1628/a43-local-keep.png"
+            }
+          ]
+        }
+      },
+      "localBytes": {
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/92f8c611-3236-40a5-9ccf-94692fae1628/a43-local-keep.png",
+        "exists": false,
+        "hash": null
+      }
+    },
+    {
+      "name": "adopt-stale",
+      "pending": {
+        "revision": 2,
+        "localVersion": "A43_现在输入的草稿 adopt",
+        "attachment": {
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/853a47c9-4b01-4be7-9473-95d58829a9ac/a43-local-adopt.png",
+          "exists": false,
+          "hash": null
+        },
+        "denied": {
+          "text": "A43_现在输入的草稿 adopt",
+          "chips": [
+            "a43-local-adopt.png"
+          ],
+          "conflict": true,
+          "confirm": false
+        },
+        "frozen": {
+          "revision": 2,
+          "draft": {
+            "text": "A43_另一份旧 adopt",
+            "attachments": [
+              {
+                "id": "90afd7d0-90ae-4023-98fc-1c56f51f2473",
+                "kind": "file",
+                "name": "a43-remote-adopt.png",
+                "mime": "image/png",
+                "size": 68,
+                "image": true,
+                "storedPath": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/90afd7d0-90ae-4023-98fc-1c56f51f2473/a43-remote-adopt.png"
+              }
+            ]
+          }
+        }
+      },
+      "afterCancel": {
+        "text": "A43_现在输入的草稿 adopt",
+        "chips": [
+          "a43-local-adopt.png"
+        ],
+        "conflict": true,
+        "confirm": false
+      },
+      "afterStale": {
+        "text": "A43_现在输入的草稿 adopt",
+        "chips": [
+          "a43-local-adopt.png"
+        ],
+        "conflict": true,
+        "confirm": false
+      },
+      "refreshed": 3,
+      "localBytes": {
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/853a47c9-4b01-4be7-9473-95d58829a9ac/a43-local-adopt.png",
+        "exists": false,
+        "hash": null
+      }
+    },
+    {
+      "name": "adopt-confirm",
+      "accepted": {
+        "text": "A43_确认窗口期间另一份已修改",
+        "chips": [
+          "a43-remote-adopt.png"
+        ],
+        "conflict": false,
+        "confirm": false
+      },
+      "remoteBytes": {
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/90afd7d0-90ae-4023-98fc-1c56f51f2473/a43-remote-adopt.png",
+        "exists": true,
+        "hash": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+      }
+    }
+  ],
+  "failures": [
+    {
+      "case": "attachment-on-conflict",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "details": "Competing CAS removed the bytes of an attachment still in the local editor",
+      "attachment": {
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/92f8c611-3236-40a5-9ccf-94692fae1628/a43-local-keep.png",
+        "exists": false,
+        "hash": null
+      },
+      "editor": {
+        "text": "A43_现在输入的草稿 keep",
+        "chips": [
+          "a43-local-keep.png"
+        ],
+        "conflict": true,
+        "confirm": false
+      }
+    },
+    {
+      "case": "attachment-on-conflict",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "details": "Competing CAS removed the bytes of an attachment still in the local editor",
+      "attachment": {
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data/agent-attachments/853a47c9-4b01-4be7-9473-95d58829a9ac/a43-local-adopt.png",
+        "exists": false,
+        "hash": null
+      },
+      "editor": {
+        "text": "A43_现在输入的草稿 adopt",
+        "chips": [
+          "a43-local-adopt.png"
+        ],
+        "conflict": true,
+        "confirm": false
+      }
+    }
+  ],
+  "driver": "10f6876644c44cb3bf17ed76864c9ff7884322ebfd6d6ae2a4bd8e1ce1acdf95",
+  "status": "failed-assertions",
+  "identity": [
+    true,
+    55660,
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-063/runtime-44tGik/data"
+  ],
+  "ipc": [
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "A43_另一份旧 keep",
+      "expectedRevision": 1,
+      "startedAt": 1795025997344,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025997345
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "read",
+      "startedAt": 1795025997346,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025997346
+    },
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "A43_现在输入的草稿 keep",
+      "expectedRevision": 1,
+      "startedAt": 1795025997754,
+      "sender": 1,
+      "ok": false,
+      "revision": 2,
+      "endedAt": 1795025997754
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "read",
+      "startedAt": 1795025997784,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025997785
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "read",
+      "startedAt": 1795025998356,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025998356
+    },
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "A43_另一份再次修改 keep",
+      "expectedRevision": 2,
+      "startedAt": 1795025998357,
+      "sender": 1,
+      "ok": true,
+      "revision": 3,
+      "endedAt": 1795025998358
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "read",
+      "startedAt": 1795025998359,
+      "sender": 1,
+      "ok": true,
+      "revision": 3,
+      "endedAt": 1795025998359
+    },
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "A43_冲突以后继续编辑",
+      "expectedRevision": 2,
+      "startedAt": 1795025998363,
+      "sender": 1,
+      "ok": false,
+      "revision": 3,
+      "endedAt": 1795025998363
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "read",
+      "startedAt": 1795025998367,
+      "sender": 1,
+      "ok": true,
+      "revision": 3,
+      "endedAt": 1795025998368
+    },
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "A43_冲突以后继续编辑",
+      "expectedRevision": 3,
+      "startedAt": 1795025998370,
+      "sender": 1,
+      "ok": true,
+      "revision": 4,
+      "endedAt": 1795025998371
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "2ad426ea-ae10-47c3-b2ff-a87e61c9ea96",
+      "source": "read",
+      "startedAt": 1795025998480,
+      "sender": 1,
+      "ok": true,
+      "revision": 4,
+      "endedAt": 1795025998480
+    },
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "A43_另一份旧 adopt",
+      "expectedRevision": 1,
+      "startedAt": 1795025998556,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025998556
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "startedAt": 1795025998559,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025998560
+    },
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "A43_现在输入的草稿 adopt",
+      "expectedRevision": 1,
+      "startedAt": 1795025999003,
+      "sender": 1,
+      "ok": false,
+      "revision": 2,
+      "endedAt": 1795025999003
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "startedAt": 1795025999067,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025999067
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "startedAt": 1795025999149,
+      "sender": 1,
+      "ok": true,
+      "revision": 2,
+      "endedAt": 1795025999149
+    },
+    {
+      "channel": "agentTasks.saveDraft",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "A43_确认窗口期间另一份已修改",
+      "expectedRevision": 2,
+      "startedAt": 1795025999157,
+      "sender": 1,
+      "ok": true,
+      "revision": 3,
+      "endedAt": 1795025999157
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "startedAt": 1795025999158,
+      "sender": 1,
+      "ok": true,
+      "revision": 3,
+      "endedAt": 1795025999158
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "expectedRevision": 2,
+      "startedAt": 1795025999160,
+      "sender": 1,
+      "error": "草稿已更新，请重新读取",
+      "endedAt": 1795025999160
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "expectedRevision": 2,
+      "startedAt": 1795025999161,
+      "sender": 1,
+      "error": "草稿已更新，请重新读取",
+      "endedAt": 1795025999161
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "expectedRevision": 2,
+      "startedAt": 1795025999162,
+      "sender": 1,
+      "error": "草稿已更新，请重新读取",
+      "endedAt": 1795025999162
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "expectedRevision": 3,
+      "startedAt": 1795025999318,
+      "sender": 1,
+      "ok": true,
+      "revision": 3,
+      "endedAt": 1795025999318
+    },
+    {
+      "channel": "agentTasks.draftBody",
+      "taskId": "1e2a4d76-7f7e-46e7-93b4-8fdf46a220b5",
+      "source": "read",
+      "startedAt": 1795025999444,
+      "sender": 1,
+      "ok": true,
+      "revision": 3,
+      "endedAt": 1795025999444
+    }
+  ],
+  "exit": {
+    "pid": 55660,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

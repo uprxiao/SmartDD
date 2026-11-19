@@ -1,0 +1,56 @@
+[1119/013605.405575:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/013605.557092:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+stderr | src/renderer/features/agent-tasks/agent-task-view.test.tsx > A44 keeps one history request in flight when the same cursor is clicked twice
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next or by passing it via props or context. In monorepo setups, make sure there is only one instance of react-i18next. { code: 'NO_I18NEXT_INSTANCE' }
+
+stderr | src/renderer/features/agent-tasks/agent-task-view.test.tsx > A44 ignores an older revision from a pending history page when the snapshot already has a new version
+Encountered two children with the same key, `historical`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+ ❯ src/renderer/features/agent-tasks/agent-task-view.test.tsx (51 tests | 2 failed | 49 skipped) 163ms
+   × A44 keeps one history request in flight when the same cursor is clicked twice 61ms
+   × A44 ignores an older revision from a pending history page when the snapshot already has a new version 101ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/agent-tasks/agent-task-view.test.tsx > A44 keeps one history request in flight when the same cursor is clicked twice
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+ ❯ src/renderer/features/agent-tasks/agent-task-view.test.tsx:135:25
+    133|   fireEvent.click(more);
+    134|   fireEvent.click(more);
+    135|   expect(mocks.history).toHaveBeenCalledTimes(1);
+       |                         ^
+    136|   expect(mocks.history).toHaveBeenCalledWith('task', 10);
+    137|   await act(async () => finish());
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/features/agent-tasks/agent-task-view.test.tsx > A44 ignores an older revision from a pending history page when the snapshot already has a new version
+AssertionError: expected <p></p> to be null
+
+- Expected:
+null
+
++ Received:
+<p>
+  Old row revision
+</p>
+
+ ❯ src/renderer/features/agent-tasks/agent-task-view.test.tsx:158:50
+    156|   await screen.findByText('New row revision');
+    157|   await act(async () => finish());
+    158|   expect(screen.queryByText('Old row revision')).toBeNull();
+       |                                                  ^
+    159|   expect(screen.getAllByText('New row revision')).toHaveLength(1);
+    160| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 49 skipped (51)
+   Start at  01:36:05
+   Duration  876ms (transform 262ms, setup 0ms, import 453ms, tests 163ms, environment 188ms)
+

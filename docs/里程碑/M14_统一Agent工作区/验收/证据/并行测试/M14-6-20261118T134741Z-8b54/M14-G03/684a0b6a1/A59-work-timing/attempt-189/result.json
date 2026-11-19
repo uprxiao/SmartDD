@@ -1,0 +1,441 @@
+{
+  "caseId": "M14-A59",
+  "scope": "Exact packaged App, actual Codex command approval, real UI denial after an intentionally held real native approval; no write",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-189/runtime-EBhLAn/home",
+    "at": "2026-11-19T02:38:59.065Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "native-wait-timing",
+  "expectedOracle": "red",
+  "sourceCommit": "684a0b6a1e1ba01c12f405b89087aebf9e357a5d",
+  "asar": "237e4b90eb22fbae9329bb475094ba99a397433fd9d0f30d52ec1c34e53379fc",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a59-native-wait-packaged.mjs": "396bcc612996372dddd903c080465837de8961e93d6205a3a7af6c4330684195",
+    "provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665",
+    "native-request-provider.mjs": "70eba1d007709234e0b3058a405975c493a496e4b966aea78291fdf31cfbce93",
+    "timing-oracle.mjs": "fae0c5c2cf5b803aa1d105a3055025842e3c51306736736d9cecc1c65b466b37"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"a3eb24cb-52cb-4ac8-8b9d-24346619803e\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795055943658
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795055943793
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795055943798
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795055945038
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795055945040
+    },
+    {
+      "selector": ".agent-request-options button[aria-label=\"拒绝\"]",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 744,
+      "at": 1795055949875
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "button": "left",
+      "x": 1205,
+      "y": 851,
+      "at": 1795055949880
+    }
+  ],
+  "requests": [
+    {
+      "lane": "warm",
+      "at": 1795055944934
+    },
+    {
+      "lane": "original-native-command",
+      "at": 1795055945270,
+      "callId": "call6ea10eaf-3aab-4aeb-8394-0fb17c2b7962",
+      "arguments": {
+        "cmd": "printf '%s\\n' 'A59_NATIVE_UNAPPROVED_WRITE' > a59-native-command-must-not-write.txt",
+        "workdir": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-189/runtime-EBhLAn/project",
+        "max_output_tokens": 500,
+        "sandbox_permissions": "require_escalated",
+        "justification": "Only the isolated acceptance canary, waiting for explicit native approval"
+      }
+    },
+    {
+      "lane": "original-exercise-tool-result",
+      "at": 1795055949900,
+      "result": "exec_command failed: CreateProcess { message: \"Rejected(\\\"rejected by user\\\")\" }"
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "reproduced-old-timing",
+  "port": 3425,
+  "nativeApprovalFrames": [
+    {
+      "at": 1795055945286,
+      "method": "turn/started",
+      "threadId": "01a1f1ac-02da-7c81-971a-30155a3c9203",
+      "turnId": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "status": "inProgress"
+    },
+    {
+      "at": 1795055945286,
+      "method": "item/commandExecution/requestApproval",
+      "id": "0",
+      "threadId": "01a1f1ac-02da-7c81-971a-30155a3c9203",
+      "turnId": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "itemId": "call6ea10eaf-3aab-4aeb-8394-0fb17c2b7962",
+      "availableDecisions": [
+        "accept",
+        {
+          "acceptWithExecpolicyAmendment": {
+            "execpolicy_amendment": [
+              "/bin/zsh",
+              "-lc",
+              "printf '%s\\n' 'A59_NATIVE_UNAPPROVED_WRITE' > a59-native-command-must-not-write.txt"
+            ]
+          }
+        },
+        "cancel"
+      ]
+    },
+    {
+      "at": 1795055949882,
+      "method": "serverRequest/resolved",
+      "id": "0",
+      "threadId": "01a1f1ac-02da-7c81-971a-30155a3c9203"
+    },
+    {
+      "at": 1795055949882,
+      "method": "item/completed",
+      "threadId": "01a1f1ac-02da-7c81-971a-30155a3c9203",
+      "turnId": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "itemId": "call6ea10eaf-3aab-4aeb-8394-0fb17c2b7962",
+      "state": "declined",
+      "exitCode": null
+    },
+    {
+      "at": 1795055949908,
+      "method": "turn/completed",
+      "threadId": "01a1f1ac-02da-7c81-971a-30155a3c9203",
+      "turnId": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "status": "completed"
+    }
+  ],
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-189/runtime-EBhLAn/project",
+    "model": "a59-native-wait-timing",
+    "engine": "codex",
+    "canary": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-189/runtime-EBhLAn/project/a59-native-command-must-not-write.txt"
+  },
+  "pid": 76108,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-189/runtime-EBhLAn/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-189/runtime-EBhLAn/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-189/runtime-EBhLAn/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    76108
+  ],
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.328"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "turn": {
+      "turn_id": "68b0c274-9707-450a-b173-67143a59a3df",
+      "client_input_id": "in-56f18fe3475648c39f670e2eb7e3d0e8",
+      "status": "completed",
+      "native_turn_id": "01a1f1ac-04b0-7283-ac41-c9e0ac3e0d7e",
+      "accepted_at": "2026-11-19T02:39:03.800Z",
+      "started_at": "2026-11-19T02:39:04.883Z",
+      "ended_at": "2026-11-19T02:39:04.957Z",
+      "error_code": null,
+      "run_id": "c1aa7abe-2851-47cf-9fad-cc947ab0154c",
+      "source_kind": "user"
+    },
+    "run": {
+      "runId": "c1aa7abe-2851-47cf-9fad-cc947ab0154c",
+      "generation": 1,
+      "driverId": "codex-app-server",
+      "tier": "ask",
+      "defaultModel": "a59-native-wait-timing",
+      "models": [
+        {
+          "id": "a59-native-wait-timing",
+          "name": "a59-native-wait-timing",
+          "efforts": [],
+          "defaultEffort": "none"
+        }
+      ],
+      "busy": false,
+      "steer": true,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "goal",
+          "compact",
+          "review"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser",
+            "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug",
+            "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-mail-work-assistant",
+            "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-project-db-diagnostics",
+            "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-remote-password-ssh",
+            "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "imagegen",
+            "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+          },
+          {
+            "name": "openai-docs",
+            "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+          },
+          {
+            "name": "review-agent",
+            "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+          },
+          {
+            "name": "skill-creator",
+            "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+          },
+          {
+            "name": "skill-installer",
+            "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+          }
+        ]
+      }
+    }
+  },
+  "nativeObserver": {
+    "pid": 76259,
+    "stdoutDataListeners": 2
+  },
+  "originalProcessIdentities": [
+    {
+      "pid": 76108,
+      "schema": 1,
+      "state": "running",
+      "startedAt": "darwin-proc-v1:1795055937:704521"
+    },
+    {
+      "pid": 76259,
+      "schema": 1,
+      "state": "running",
+      "startedAt": "darwin-proc-v1:1795055944:320648"
+    }
+  ],
+  "original": {
+    "turn": {
+      "turn_id": "0306e4e0-94d3-4f59-b0b4-798917107104",
+      "client_input_id": "in-2b1eed9f282c4e07b9ac61eb4e1014b1",
+      "status": "started",
+      "native_turn_id": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "accepted_at": "2026-11-19T02:39:05.041Z",
+      "started_at": "2026-11-19T02:39:05.257Z",
+      "ended_at": null,
+      "error_code": null,
+      "run_id": "c1aa7abe-2851-47cf-9fad-cc947ab0154c",
+      "source_kind": "user"
+    },
+    "runId": "c1aa7abe-2851-47cf-9fad-cc947ab0154c",
+    "requestId": "932dfad9-2abf-47fc-a33e-b08bbea05a1b",
+    "native": {
+      "at": 1795055945286,
+      "method": "item/commandExecution/requestApproval",
+      "id": "0",
+      "threadId": "01a1f1ac-02da-7c81-971a-30155a3c9203",
+      "turnId": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "itemId": "call6ea10eaf-3aab-4aeb-8394-0fb17c2b7962",
+      "availableDecisions": [
+        "accept",
+        {
+          "acceptWithExecpolicyAmendment": {
+            "execpolicy_amendment": [
+              "/bin/zsh",
+              "-lc",
+              "printf '%s\\n' 'A59_NATIVE_UNAPPROVED_WRITE' > a59-native-command-must-not-write.txt"
+            ]
+          }
+        },
+        "cancel"
+      ]
+    }
+  },
+  "waitStart": {
+    "status": "started",
+    "heading": [
+      "工作中 0 秒"
+    ],
+    "footer": [],
+    "waitText": []
+  },
+  "waitHeld": {
+    "status": "started",
+    "heading": [
+      "工作中 4 秒"
+    ],
+    "footer": [],
+    "waitText": []
+  },
+  "completed": {
+    "turn": {
+      "turn_id": "0306e4e0-94d3-4f59-b0b4-798917107104",
+      "client_input_id": "in-2b1eed9f282c4e07b9ac61eb4e1014b1",
+      "status": "completed",
+      "native_turn_id": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "accepted_at": "2026-11-19T02:39:05.041Z",
+      "started_at": "2026-11-19T02:39:05.257Z",
+      "ended_at": "2026-11-19T02:39:09.908Z",
+      "error_code": null,
+      "run_id": "c1aa7abe-2851-47cf-9fad-cc947ab0154c",
+      "source_kind": "user"
+    },
+    "native": {
+      "at": 1795055949908,
+      "method": "turn/completed",
+      "threadId": "01a1f1ac-02da-7c81-971a-30155a3c9203",
+      "turnId": "01a1f1ac-0627-7a13-86ce-4bfe7297bfa9",
+      "status": "completed"
+    },
+    "seq": 38,
+    "runId": "c1aa7abe-2851-47cf-9fad-cc947ab0154c"
+  },
+  "resolution": {
+    "taskId": "a3eb24cb-52cb-4ac8-8b9d-24346619803e",
+    "seq": 34,
+    "type": "request.resolved",
+    "itemId": null,
+    "payload": {
+      "requestId": "932dfad9-2abf-47fc-a33e-b08bbea05a1b"
+    }
+  },
+  "finalUI": {
+    "status": "completed",
+    "heading": [
+      "已工作 5 秒"
+    ],
+    "footer": [],
+    "waitText": []
+  },
+  "exit": {
+    "pid": 76108,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "processesAfterQuit": [
+    {
+      "original": {
+        "pid": 76108,
+        "schema": 1,
+        "state": "running",
+        "startedAt": "darwin-proc-v1:1795055937:704521"
+      },
+      "observed": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    },
+    {
+      "original": {
+        "pid": 76259,
+        "schema": 1,
+        "state": "running",
+        "startedAt": "darwin-proc-v1:1795055944:320648"
+      },
+      "observed": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    }
+  ],
+  "persisted": {
+    "started_at": "2026-11-19T02:39:05.257Z",
+    "ended_at": "2026-11-19T02:39:09.908Z",
+    "status": "completed",
+    "request_id": "932dfad9-2abf-47fc-a33e-b08bbea05a1b",
+    "kind": "command_approval",
+    "class": "native",
+    "request_status": "resolved",
+    "created_at": "2026-11-19T02:39:05.285Z",
+    "updated_at": "2026-11-19T02:39:09.881Z",
+    "decision_ref": "{\"decision\":\"decline\"}",
+    "events": [
+      {
+        "event_type": "request.opened",
+        "created_at": "2026-11-19T02:39:05.285Z"
+      },
+      {
+        "event_type": "request.resolved",
+        "created_at": "2026-11-19T02:39:09.881Z"
+      }
+    ],
+    "controlNativeRequestCount": 0
+  },
+  "oracle": {
+    "wallMs": 4651,
+    "waitingMs": 4596,
+    "workingMs": 55,
+    "oldSeconds": 5,
+    "newSeconds": 0,
+    "displayedSeconds": 5,
+    "kind": "red"
+  },
+  "canaryWritten": false
+}

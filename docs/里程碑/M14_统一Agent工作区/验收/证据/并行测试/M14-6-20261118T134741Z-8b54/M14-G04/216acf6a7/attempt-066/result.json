@@ -1,0 +1,352 @@
+{
+  "sourceCommit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "5f088304047e4db029346b69b594d226a98082a690916de7d6bd1c26733d3821"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-18T18:44:06.999Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.12",
+  "cases": {
+    "A48-active-and-queue": {
+      "status": "pass",
+      "passed": [
+        "Original running native turn refused archive",
+        "Only remaining queued user input refused archive and preserved the turn identity"
+      ],
+      "missing": [],
+      "active": {
+        "name": "active",
+        "requestedTaskId": "9f9ce5fc-352e-4311-9752-dbc683d2f468",
+        "visibleToast": "A48-active-and-queue stage 6：运行尚未收口，请先停止任务或等待完成",
+        "archiveState": null,
+        "queued": [],
+        "requests": [],
+        "run": {
+          "runId": "fe44d7af-30a6-44f6-91d0-ce4f6d8c60a8",
+          "busy": true
+        }
+      },
+      "queued": {
+        "name": "queued-only",
+        "requestedTaskId": "9f9ce5fc-352e-4311-9752-dbc683d2f468",
+        "visibleToast": "A48-active-and-queue stage 6：仍有排队输入或结果通知",
+        "archiveState": null,
+        "queued": [
+          "4b42b167-140d-4f26-a464-69888ece2118"
+        ],
+        "requests": [],
+        "run": null,
+        "expectedOnlyReason": [
+          "仍有排队输入或结果通知"
+        ]
+      }
+    },
+    "A48-native-request": {
+      "status": "pass",
+      "passed": [
+        "Original live native request refuses actual archive and retains request id and revision"
+      ],
+      "missing": [],
+      "native": {
+        "name": "native-request",
+        "requestedTaskId": "1891e21d-1c86-405a-b95b-5813e20bd13e",
+        "visibleToast": "A48-native-request stage 6：有待处理请求、运行尚未收口，请先停止任务或等待完成",
+        "archiveState": null,
+        "queued": [],
+        "requests": [
+          {
+            "requestId": "e13f5e5d-2d07-405e-b154-c57505048f20",
+            "revision": 1,
+            "requestClass": "native"
+          }
+        ],
+        "run": {
+          "runId": "8066bbcb-0f73-48e3-945a-54618159f613",
+          "busy": true
+        }
+      }
+    },
+    "A48-business-request": {
+      "status": "pass",
+      "passed": [
+        "A durable host business request remains pending while native run is idle, and real archive refuses"
+      ],
+      "missing": [],
+      "business": {
+        "name": "business-request",
+        "requestedTaskId": "9cce04ab-9f3e-4be9-94d1-c3f1a556076b",
+        "visibleToast": "A48-business-request stage 6：业务请求尚未收口、有待处理请求、运行尚未收口，请先停止任务或等待完成",
+        "archiveState": null,
+        "queued": [],
+        "requests": [
+          {
+            "requestId": "6fe2a6fb-fa34-4844-8c43-df1d48b1790c",
+            "revision": 1,
+            "requestClass": "host_business"
+          }
+        ],
+        "run": {
+          "runId": "d9e2ac34-b31d-42bb-96d5-ef4b1e029830",
+          "busy": false
+        }
+      }
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-18T18:44:14.963Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-18T18:44:14.976Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-18T18:44:14.995Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-18T18:44:15.664Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"9f9ce5fc-352e-4311-9752-dbc683d2f468\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-18T18:44:15.696Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T18:44:15.729Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T18:44:17.163Z",
+      "selector": ".agent-task-head button[title=\"更多\"]",
+      "x": 1364,
+      "y": 65.5
+    },
+    {
+      "at": "2026-11-18T18:44:17.179Z",
+      "selector": "[data-testid=\"agent-archive\"]",
+      "x": 1353,
+      "y": 146.5
+    },
+    {
+      "at": "2026-11-18T18:44:17.762Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T18:44:21.532Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T18:44:21.560Z",
+      "selector": ".agent-stop-run",
+      "x": 1181.5,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T18:44:22.013Z",
+      "selector": ".agent-task-head button[title=\"更多\"]",
+      "x": 1364,
+      "y": 65.5
+    },
+    {
+      "at": "2026-11-18T18:44:22.022Z",
+      "selector": "[data-testid=\"agent-archive\"]",
+      "x": 1353,
+      "y": 146.5
+    },
+    {
+      "at": "2026-11-18T18:44:22.510Z",
+      "selector": ".agent-queue-actions [title=\"删除排队消息\"]",
+      "x": 1220.5,
+      "y": 718
+    },
+    {
+      "at": "2026-11-18T18:44:22.924Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"1891e21d-1c86-405a-b95b-5813e20bd13e\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "at": "2026-11-18T18:44:22.938Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T18:44:22.969Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T18:44:24.188Z",
+      "selector": ".agent-task-head button[title=\"更多\"]",
+      "x": 1364,
+      "y": 65.5
+    },
+    {
+      "at": "2026-11-18T18:44:24.204Z",
+      "selector": "[data-testid=\"agent-archive\"]",
+      "x": 1353,
+      "y": 146.5
+    },
+    {
+      "at": "2026-11-18T18:44:24.679Z",
+      "selector": ".agent-request-options button[aria-label*=\"拒绝\"]",
+      "x": 864,
+      "y": 744
+    },
+    {
+      "at": "2026-11-18T18:44:28.419Z",
+      "selector": ".agent-confirm-choice",
+      "x": 1205,
+      "y": 851
+    },
+    {
+      "at": "2026-11-18T18:44:28.938Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"9cce04ab-9f3e-4be9-94d1-c3f1a556076b\"]",
+      "x": 171.5,
+      "y": 455
+    },
+    {
+      "at": "2026-11-18T18:44:29.013Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T18:44:29.064Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T18:44:30.380Z",
+      "selector": ".agent-task-head button[title=\"更多\"]",
+      "x": 1364,
+      "y": 65.5
+    },
+    {
+      "at": "2026-11-18T18:44:30.399Z",
+      "selector": "[data-testid=\"agent-archive\"]",
+      "x": 1353,
+      "y": 146.5
+    },
+    {
+      "at": "2026-11-18T18:44:30.986Z",
+      "selector": ".agent-request-options button[aria-label*=\"拒绝\"]",
+      "x": 864,
+      "y": 744
+    },
+    {
+      "at": "2026-11-18T18:44:34.680Z",
+      "selector": ".agent-confirm-choice",
+      "x": 1205,
+      "y": 851
+    }
+  ],
+  "model": [
+    {
+      "caseId": "A48-active-and-queue",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A48-native-request",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": true,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A48-native-request",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A48-mail-blocked",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_mail_draft_create_v2",
+      "invoke": true,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A48-mail-blocked",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_mail_draft_create_v2",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A48-mail-blocked",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_mail_draft_create_v2",
+      "invoke": false,
+      "receiptObserved": false
+    }
+  ],
+  "page": [],
+  "seed": {
+    "source": "fresh A48 DB, unrelated fixture roots, no other case persisted state"
+  },
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-066/home",
+    "at": "2026-11-18T18:44:08.330Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 22675,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-066/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-066/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-066/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "rendererErrors": [],
+  "modelFailures": [],
+  "cleanup": {
+    "isolationAttempt": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-066",
+    "loopbackPort": 3425,
+    "pid": 22675,
+    "exitError": "Error: Isolated App did not finish its normal exit\n    at Timeout._onTimeout (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/helpers/scripts/lib/electron-harness.mjs:538:20)\n    at listOnTimeout (node:internal/timers:585:17)\n    at process.processTimers (node:internal/timers:521:7)",
+    "forcedExit": {
+      "pid": 22675,
+      "code": null,
+      "signal": "SIGKILL"
+    }
+  },
+  "finishedAt": "2026-11-18T18:44:59.815Z"
+}

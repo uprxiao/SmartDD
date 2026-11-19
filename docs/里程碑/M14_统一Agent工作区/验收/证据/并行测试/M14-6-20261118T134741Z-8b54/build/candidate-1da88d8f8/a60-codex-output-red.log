@@ -1,0 +1,48 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/timeline.test.ts --maxWorkers=1
+
+[1119/085214.432272:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/085214.763345:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/timeline.test.ts (14 tests | 1 failed) 7ms
+     × A60 maps the Codex terminal output limit without relabeling other or context errors 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/timeline.test.ts > 复核 1755 投影回归 > A60 maps the Codex terminal output limit without relabeling other or context errors
+AssertionError: expected { …(4) } to match object { type: 'error', payload: { …(2) } }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "payload": {
+      "code": "other",
+-     "limited": {
+-       "kind": "output",
+-     },
+    },
+    "type": "error",
+  }
+
+ ❯ src/main/core/agent/timeline.test.ts:112:87
+    110|       payload: { turnId: 'turn', error: { message, codexErrorInfo, add…
+    111|     })[0];
+    112|     expect(error('Incomplete response returned, reason: max_output_tok…
+       |                                                                                       ^
+    113|       type: 'error', payload: { code: 'other', limited: { kind: 'outpu…
+    114|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  08:52:14
+   Duration  128ms (transform 28ms, setup 0ms, import 34ms, tests 7ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

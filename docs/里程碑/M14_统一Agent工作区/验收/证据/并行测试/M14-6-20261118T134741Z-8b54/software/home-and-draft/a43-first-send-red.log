@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/renderer/views/home-application-prompt.test.tsx (16 tests | 4 failed | 12 skipped) 321ms
+     × reuses the intent when the create acknowledgement was lost 94ms
+     × reuses the intent when the submit acknowledgement was lost 40ms
+     × keeps newer input when the first turn acknowledgement arrives, after navigation=false 95ms
+     × keeps newer input when the first turn acknowledgement arrives, after navigation=true 93ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/views/home-application-prompt.test.tsx > M14-A43 home first send > reuses the intent when the create acknowledgement was lost
+ FAIL  src/renderer/views/home-application-prompt.test.tsx > M14-A43 home first send > reuses the intent when the submit acknowledgement was lost
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ src/renderer/views/home-application-prompt.test.tsx:108:22
+    106|     await waitFor(()=>expect(navigation.currentViewId).toBe('agentTask…
+    107|     const [original,retry]=agent.create.mock.calls.map(([input])=>inpu…
+    108|     expect(original).toMatch(/^[a-f0-9-]{36}$/);
+       |                      ^
+    109|     expect(retry).toBe(original);
+    110|     expect(agent.submit.mock.calls.every(([taskId])=>taskId===original…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/views/home-application-prompt.test.tsx > M14-A43 home first send > keeps newer input when the first turn acknowledgement arrives, after navigation=false
+ FAIL  src/renderer/views/home-application-prompt.test.tsx > M14-A43 home first send > keeps newer input when the first turn acknowledgement arrives, after navigation=true
+AssertionError: expected '' to be 'new unsent edit' // Object.is equality
+
+- Expected
++ Received
+
+- new unsent edit
+
+ ❯ src/renderer/views/home-application-prompt.test.tsx:124:40
+    122|     if(switchTask)act(()=>navigation.openAgentTask('another-task'));
+    123|     await act(async()=>acknowledge());
+    124|     expect(navigation.homeInput('p1')).toBe('new unsent edit');
+       |                                        ^
+    125|     expect(navigation.currentViewId).toBe(switchTask?'agentTask':'home…
+    126|     if(switchTask)expect(navigation.currentAgentTaskId).toBe('another-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 12 skipped (16)
+   Start at  02:21:54
+   Duration  1.29s (transform 185ms, setup 0ms, import 567ms, tests 321ms, environment 323ms)
+

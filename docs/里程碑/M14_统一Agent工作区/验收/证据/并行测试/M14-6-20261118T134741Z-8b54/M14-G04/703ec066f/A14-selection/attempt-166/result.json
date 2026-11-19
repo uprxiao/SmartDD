@@ -1,0 +1,881 @@
+{
+  "caseId": "M14-A14",
+  "sourceCommit": "703ec066f36e10ffb490b19f818b385641de19ad",
+  "scope": "M14-A14-selection-scope",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "cb65cbeb53d8145a8dd80972ecb76ec3a09425ad0926808bdb61cdaa7c2b078b"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T01:33:37.929Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A14-selection-scope": {
+      "status": "partial",
+      "passed": [
+        "实际换模型、同引擎换 Provider 和跨引擎切换；草稿及历史保留。真实 Claude/Codex 目标锁定、同执行器模型选择、暂停/清除及两个任务的同文目标隔离通过"
+      ],
+      "missing": [
+        "本次尚未触发等子任务导致的自动暂停、过期预检与已有队列切换。这些判据需要独立已有证据，未从本段推定。"
+      ],
+      "goalIsolation": {
+        "goalA": {
+          "nativeCreatedAt": 1795052029,
+          "nativeUpdatedAt": 1795052029,
+          "bindingId": "ca579967-956b-4ff1-899d-6ad3ff966d49",
+          "objective": "M14-A14-SAME-GOAL-ACROSS-TASKS",
+          "revision": 2,
+          "status": "active",
+          "pausedReason": null,
+          "turns": 1,
+          "timeUsedSeconds": 0,
+          "updatedAt": "2026-11-19T01:33:49.815Z"
+        },
+        "goalB": {
+          "nativeCreatedAt": 1795052031,
+          "nativeUpdatedAt": 1795052031,
+          "bindingId": "726eedcb-e1f2-4810-bc12-36c62f9e9cdd",
+          "objective": "M14-A14-SAME-GOAL-ACROSS-TASKS",
+          "revision": 1,
+          "status": "active",
+          "pausedReason": null,
+          "turns": 2,
+          "timeUsedSeconds": 0,
+          "updatedAt": "2026-11-19T01:33:51.249Z"
+        },
+        "resetA": {
+          "nativeCreatedAt": 1795052031,
+          "nativeUpdatedAt": 1795052031,
+          "bindingId": "ca579967-956b-4ff1-899d-6ad3ff966d49",
+          "objective": "M14-A14-SAME-GOAL-ACROSS-TASKS",
+          "revision": 3,
+          "status": "active",
+          "pausedReason": null,
+          "turns": 6,
+          "timeUsedSeconds": 1,
+          "updatedAt": "2026-11-19T01:33:51.898Z"
+        },
+        "afterLockA": [
+          {
+            "name": "A14 Codex A",
+            "disabled": false,
+            "selected": "true"
+          },
+          {
+            "name": "A14 Codex B",
+            "disabled": true,
+            "selected": "false"
+          },
+          {
+            "name": "A14 Claude C",
+            "disabled": true,
+            "selected": "false"
+          }
+        ]
+      },
+      "route": {
+        "firstNativeRun": "e466ac56-8155-4fc0-a6fc-965aa2e47f94",
+        "actualModel": "m14-switch-model-two",
+        "activeEngine": "claude-sdk"
+      }
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T01:33:44.490Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T01:33:44.562Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T01:33:44.577Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T01:33:45.419Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"6a3679b3-c2ef-4ac2-960c-6c175e69303f\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T01:33:45.434Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:33:45.467Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:46.655Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:46.661Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A14 Codex A\"]",
+      "x": 598,
+      "y": 472
+    },
+    {
+      "at": "2026-11-19T01:33:46.671Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-two\"]",
+      "x": 786.5,
+      "y": 659.0859375
+    },
+    {
+      "at": "2026-11-19T01:33:46.780Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:33:46.812Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:47.190Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:33:47.202Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.171875,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:47.210Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A14 Codex B\"]",
+      "x": 598,
+      "y": 512
+    },
+    {
+      "at": "2026-11-19T01:33:47.219Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 786.5,
+      "y": 627.0859375
+    },
+    {
+      "at": "2026-11-19T01:33:47.694Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.3125,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:47.702Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A14 Claude C\"]",
+      "x": 598,
+      "y": 552
+    },
+    {
+      "at": "2026-11-19T01:33:47.709Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 786.5,
+      "y": 627.0859375
+    },
+    {
+      "at": "2026-11-19T01:33:47.871Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:48.202Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:33:48.211Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:48.555Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 705.58203125,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:48.577Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 676.9921875
+    },
+    {
+      "at": "2026-11-19T01:33:48.909Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 705.58203125,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:48.924Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A14 Codex A\"]",
+      "x": 598,
+      "y": 472
+    },
+    {
+      "at": "2026-11-19T01:33:48.934Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 786.5,
+      "y": 627.0859375
+    },
+    {
+      "at": "2026-11-19T01:33:49.041Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:33:49.053Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:50.004Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:50.042Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A14 Codex A\"]",
+      "x": 598,
+      "y": 472
+    },
+    {
+      "at": "2026-11-19T01:33:50.059Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-two\"]",
+      "x": 786.5,
+      "y": 693.0859375
+    },
+    {
+      "at": "2026-11-19T01:33:50.192Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"11d0ebb7-fe17-421a-b4de-630fceb7dc37\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "at": "2026-11-19T01:33:50.212Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:33:50.231Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:51.262Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:51.285Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"6a3679b3-c2ef-4ac2-960c-6c175e69303f\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T01:33:51.307Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "暂停",
+      "x": 1130.5,
+      "y": 676.7421875
+    },
+    {
+      "at": "2026-11-19T01:33:51.339Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.171875,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:51.425Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 676.7265625
+    },
+    {
+      "at": "2026-11-19T01:33:51.555Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"11d0ebb7-fe17-421a-b4de-630fceb7dc37\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "at": "2026-11-19T01:33:51.573Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:51.596Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 677.015625
+    },
+    {
+      "at": "2026-11-19T01:33:51.738Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"6a3679b3-c2ef-4ac2-960c-6c175e69303f\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T01:33:51.785Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:33:51.802Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:51.928Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.171875,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:33:51.993Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 677.1640625
+    }
+  ],
+  "model": [
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A14-USER-INITIAL",
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-two",
+      "marker": "A14-USER-MODEL",
+      "goalCommand": false
+    },
+    {
+      "kind": "claude",
+      "model": "m14-switch-model-one",
+      "marker": "A14-USER-CROSS",
+      "goalCommand": false
+    },
+    {
+      "kind": "claude",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "claude",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": null,
+      "goalCommand": false
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-166/home",
+    "at": "2026-11-19T01:33:39.356Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 14114,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-166/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-166/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-166/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.327"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:53132/e5e0ff91-1ccd-4e3c-aff6-8a969f1c860f\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:53132/e5e0ff91-1ccd-4e3c-aff6-8a969f1c860f\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:53102/devtools/browser/a763d2bb-c29f-4b0c-a543-11e4f1b8b66a\n(node:14114) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 14114,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T01:33:52.829Z"
+}

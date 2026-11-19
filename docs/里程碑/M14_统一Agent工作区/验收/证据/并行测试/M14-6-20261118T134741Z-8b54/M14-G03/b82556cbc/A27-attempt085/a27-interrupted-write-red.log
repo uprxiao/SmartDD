@@ -1,0 +1,48 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs --maxWorkers=1 src/main/core/applications/__tests__/run-registry.test.ts -t 'terminalizes only unresolved writes'
+
+[1119/053801.730173:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/053801.854491:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/applications/__tests__/run-registry.test.ts (41 tests | 1 failed | 40 skipped) 448ms
+     × A27 terminalizes only unresolved writes of a proven interrupted host without releasing its live child 447ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/applications/__tests__/run-registry.test.ts > capability run resource registration, revocation and conservative recovery > A27 terminalizes only unresolved writes of a proven interrupted host without releasing its live child
+AssertionError: expected { state: 'running', …(4) } to match object { state: 'unknown', …(4) }
+
+- Expected
++ Received
+
+  {
+    "attempt_count": 1,
+    "effect_state": "unknown",
+-   "ended_at": Any<String>,
+-   "error_code": "HOST_INTERRUPTED",
+-   "state": "unknown",
++   "ended_at": null,
++   "error_code": null,
++   "state": "running",
+  }
+
+ ❯ src/main/core/applications/__tests__/run-registry.test.ts:145:30
+    143|     expect(await next.recover()).toEqual([{ runId: run.runId, state: '…
+    144|     expect(leases(run.runId)).toEqual([{ state: 'recovery-required' }]…
+    145|     expect(read(unreturned)).toMatchObject({ state: 'unknown', effect_…
+       |                              ^
+    146|     expect(read(unsent)).toEqual(unsentBefore);
+    147|     expect(read(finished)).toEqual(finishedBefore);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 40 skipped (41)
+   Start at  05:38:01
+   Duration  936ms (transform 275ms, setup 0ms, import 415ms, tests 448ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

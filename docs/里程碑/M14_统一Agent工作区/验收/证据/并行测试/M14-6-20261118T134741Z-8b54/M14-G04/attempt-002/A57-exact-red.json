@@ -1,0 +1,93 @@
+{
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.P7fUS3/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "4cd637931935380ab103bb25cf87dd7fdeac7d4f4323bae744a03ca3c09c95f5"
+  },
+  "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
+  "rendererLinks": [
+    {
+      "text": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/a.txt:2:3",
+      "href": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/a.txt:2:3"
+    },
+    {
+      "text": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/docs/guide.txt",
+      "href": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/docs/guide.txt"
+    },
+    {
+      "text": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/a.txt:3",
+      "href": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/a.txt:3"
+    },
+    {
+      "text": "文件",
+      "href": "./a.txt:2:3"
+    },
+    {
+      "text": "目录",
+      "href": "./docs/"
+    },
+    {
+      "text": "http://127.0.0.1:3425/page",
+      "href": "http://127.0.0.1:3425/page"
+    },
+    {
+      "text": "www.example.com/path",
+      "href": "http://www.example.com/path"
+    },
+    {
+      "text": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/notes.txt",
+      "href": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/notes.txt"
+    },
+    {
+      "text": "SmartDD",
+      "href": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57"
+    },
+    {
+      "text": "index.ts",
+      "href": "src/main/index.ts:42"
+    },
+    {
+      "text": "src/main/index.ts:42:7",
+      "href": "src/main/index.ts:42:7"
+    },
+    {
+      "text": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/src/main/index.ts",
+      "href": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/src/main/index.ts"
+    },
+    {
+      "text": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57-OUTSIDE.txt",
+      "href": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57-OUTSIDE.txt"
+    },
+    {
+      "text": "src/main/missing.ts:3",
+      "href": "src/main/missing.ts:3"
+    },
+    {
+      "text": "T3",
+      "href": "https://t3.codes/docs"
+    },
+    {
+      "text": "https://example.com/a?b=1",
+      "href": "https://example.com/a?b=1"
+    },
+    {
+      "text": "y",
+      "href": "mailto:a@b.c"
+    },
+    {
+      "text": "/api/users.json",
+      "href": "/api/users.json"
+    }
+  ],
+  "expected": "显式 file URL 经 data-agent-link 路由并由宿主校验；裸 file 和 javascript 保持纯文本",
+  "actual": "打包 App 将显式 file URL 的整个 Markdown 语法当成文字",
+  "reproduction": "[文件协议](file:///private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/a.txt:3)",
+  "nonlinks": [
+    "[打开](file:///private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57/notes.txt)",
+    "[x](javascript:alert(1))",
+    "file:///tmp/hidden.txt"
+  ],
+  "proof": {
+    "raw": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/result.json",
+    "screenshot": "/private/tmp/willyou-m14-stage6.P7fUS3/g04/attempt-002/A57-failed.png"
+  }
+}

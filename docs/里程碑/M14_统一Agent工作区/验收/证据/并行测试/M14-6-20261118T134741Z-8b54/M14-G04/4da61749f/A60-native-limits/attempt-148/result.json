@@ -1,0 +1,710 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App, actual Claude/Codex, loopback provider responses only, no protocol substitution",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-148/runtime-9QB6HB/home",
+    "at": "2026-11-19T00:48:28.233Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "claude-output",
+  "sourceCommit": "4da61749fc24f8d05481b6139e276cf6c4afd5b0",
+  "asar": "39351e634975433afb8034cda4e3a387fbd534b3f982ad56b3f88e062864dbc4",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-native-limits-packaged.mjs": "651e594a51006db4b7d85c0893859ce681212db6799173a2eeccf4fe63c57c24",
+    "a60-prep/provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"82873f20-21eb-4a57-a7d2-27aa1f11dd68\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-limit-card button.agent-inline-action",
+      "text": "继续",
+      "button": "left",
+      "x": 1187.5,
+      "y": 472.953125
+    }
+  ],
+  "requests": [
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "warm",
+      "arrivedAt": 1795049314118,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only"
+    },
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "exercise",
+      "arrivedAt": 1795049314476,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "kind": "assistant-output-limit",
+        "wire": "max_tokens"
+      }
+    },
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "native-output-resume",
+      "arrivedAt": 1795049314483,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "kind": "assistant-output-limit",
+        "wire": "max_tokens"
+      }
+    },
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "native-output-resume",
+      "arrivedAt": 1795049314490,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "kind": "assistant-output-limit",
+        "wire": "max_tokens"
+      }
+    },
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "native-output-resume",
+      "arrivedAt": 1795049314497,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "kind": "assistant-output-limit",
+        "wire": "max_tokens"
+      }
+    },
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "continue",
+      "arrivedAt": 1795049318399,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only",
+      "source": "manual-continue"
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "passed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-148/runtime-9QB6HB/project",
+    "model": "a60-claude-output",
+    "engine": "claude",
+    "expected": "output"
+  },
+  "pid": 16728,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-148/runtime-9QB6HB/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-148/runtime-9QB6HB/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-148/runtime-9QB6HB/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    16728
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "run": {
+      "runId": "d7a63c83-18ac-495a-956c-d51a3547abde",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-claude-output",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-claude-output",
+          "name": "a60-claude-output",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    },
+    "turnId": "a20bda48-b26b-48c4-a390-24403060e543"
+  },
+  "terminal": {
+    "at": 1795049314516,
+    "turn": {
+      "turn_id": "387a2717-2cd1-43d2-88a1-4f5515a5e8a1",
+      "client_input_id": "in-2faa162f6fd94a9ba9f37683a431db72",
+      "status": "failed",
+      "native_turn_id": "251e17cf-352b-4f05-833f-68e97404747e:2",
+      "accepted_at": "2026-11-19T00:48:34.182Z",
+      "started_at": "2026-11-19T00:48:34.463Z",
+      "ended_at": "2026-11-19T00:48:34.500Z",
+      "error_code": "API Error: Claude's response exceeded the 32000 output token maximum. To configure this behavior, set the CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable.",
+      "run_id": "d7a63c83-18ac-495a-956c-d51a3547abde",
+      "source_kind": "user"
+    },
+    "status": "limited",
+    "run": {
+      "runId": "d7a63c83-18ac-495a-956c-d51a3547abde",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-claude-output",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-claude-output",
+          "name": "a60-claude-output",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    },
+    "turns": [
+      {
+        "id": "a20bda48-b26b-48c4-a390-24403060e543",
+        "status": "completed",
+        "source": "user"
+      },
+      {
+        "id": "387a2717-2cd1-43d2-88a1-4f5515a5e8a1",
+        "status": "failed",
+        "source": "user"
+      }
+    ],
+    "pending": 0,
+    "items": [
+      {
+        "itemId": "40176be2-e605-4486-bf1f-0371d1154e5a",
+        "type": "user_message",
+        "payload": {
+          "text": "A60_PACKAGE_LIMIT",
+          "sourceKind": "user"
+        }
+      },
+      {
+        "itemId": "536545ac-f4b1-4e9b-b3ef-b42d49c65299",
+        "type": "assistant_message",
+        "payload": {
+          "text": "A60_NATIVE_PARTIAL_LIMIT_TEXT",
+          "model": "a60-claude-output"
+        }
+      },
+      {
+        "itemId": "1d710516-3bbe-4f3f-83a1-dcbccd948ed1",
+        "type": "assistant_message",
+        "payload": {
+          "text": "A60_NATIVE_PARTIAL_LIMIT_TEXT",
+          "model": "a60-claude-output"
+        }
+      },
+      {
+        "itemId": "3098e9e9-483e-40ba-9dd6-f39a9d317301",
+        "type": "assistant_message",
+        "payload": {
+          "text": "A60_NATIVE_PARTIAL_LIMIT_TEXT",
+          "model": "a60-claude-output"
+        }
+      },
+      {
+        "itemId": "ac4b6a32-56fe-4e36-9653-4637d84e3f63",
+        "type": "assistant_message",
+        "payload": {
+          "text": "A60_NATIVE_PARTIAL_LIMIT_TEXT",
+          "model": "a60-claude-output"
+        }
+      },
+      {
+        "itemId": "2187d79d-e5c4-4916-b791-ce658d45f33a",
+        "type": "error",
+        "payload": {
+          "code": "max_output_tokens",
+          "message": "API Error: Claude's response exceeded the 32000 output token maximum. To configure this behavior, set the CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable.",
+          "limited": {
+            "kind": "output"
+          }
+        }
+      },
+      {
+        "itemId": "df1a66f4-78ce-4191-a022-0a87707d9799",
+        "type": "assistant_message",
+        "payload": {
+          "text": "API Error: Claude's response exceeded the 32000 output token maximum. To configure this behavior, set the CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable.",
+          "model": "<synthetic>"
+        }
+      },
+      {
+        "itemId": "33df0efe-ed69-41c2-812d-ce97a2b82b08",
+        "type": "error",
+        "payload": {
+          "code": "success",
+          "message": "API Error: Claude's response exceeded the 32000 output token maximum. To configure this behavior, set the CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable."
+        }
+      }
+    ],
+    "originalRequests": 1,
+    "nativeInTurnOutputResumes": 3
+  },
+  "terminalUi": {
+    "cards": [],
+    "taskText": "A60 isolated claude-output\n工作中\n插件 2\n单 Agent · 开启委派\nA60_PACKAGE_WARM\n\nA60_PACKAGE_WARM_DONE\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nA60_PACKAGE_LIMIT\n\nA60_NATIVE_PARTIAL_LIMIT_TEXT\n\nA60_NATIVE_PARTIAL_LIMIT_TEXT\n\nA60_NATIVE_PARTIAL_LIMIT_TEXT\n\n请求批准\n完全访问\nFixture claude\na60-claude-output\n运行中发送会排队"
+  },
+  "nativeProjection": [
+    {
+      "kind": "output",
+      "resetAt": null,
+      "code": "max_output_tokens",
+      "itemId": "2187d79d-e5c4-4916-b791-ce658d45f33a"
+    }
+  ],
+  "card": {
+    "text": "输出长度到上限\n部分回答已保留，可手动继续。\n继续",
+    "buttons": [
+      "继续"
+    ]
+  },
+  "resumeWatch": {
+    "requestedProviderReset": null,
+    "displayed": null,
+    "crossedActualDisplayedReset": false,
+    "startedAt": 1795049314685,
+    "finishedAt": 1795049318262
+  },
+  "handRecovery": {
+    "clickedAt": 1795049318263,
+    "resumed": {
+      "newTurn": {
+        "turn_id": "bc249bf7-56f0-4739-a59c-1cdc1bb50278",
+        "client_input_id": "in-70ac02f1aa9a4144acf537613edf5227",
+        "status": "completed",
+        "native_turn_id": "251e17cf-352b-4f05-833f-68e97404747e:3",
+        "accepted_at": "2026-11-19T00:48:38.265Z",
+        "started_at": "2026-11-19T00:48:38.389Z",
+        "ended_at": "2026-11-19T00:48:38.422Z",
+        "error_code": null,
+        "run_id": "d7a63c83-18ac-495a-956c-d51a3547abde",
+        "source_kind": "user"
+      },
+      "status": "completed",
+      "run": {
+        "runId": "d7a63c83-18ac-495a-956c-d51a3547abde",
+        "generation": 1,
+        "driverId": "claude-sdk",
+        "tier": "ask",
+        "defaultModel": "a60-claude-output",
+        "models": [
+          {
+            "id": "default",
+            "name": "Default (recommended)",
+            "efforts": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ]
+          },
+          {
+            "id": "a60-claude-output",
+            "name": "a60-claude-output",
+            "efforts": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ]
+          }
+        ],
+        "busy": false,
+        "steer": false,
+        "goal": true,
+        "catalog": {
+          "commands": [
+            "agents",
+            "auto-mode-setup",
+            "autocompact",
+            "clear",
+            "compact",
+            "config",
+            "output-style",
+            "context",
+            "effort",
+            "fast",
+            "heapdump",
+            "init",
+            "mcp",
+            "model",
+            "__remote-workflow",
+            "workflow-launch-exec",
+            "reload-skills",
+            "rename",
+            "security-review",
+            "usage",
+            "insights",
+            "recap",
+            "goal",
+            "list-agents",
+            "team-onboarding"
+          ],
+          "skills": [
+            {
+              "name": "willyou-browser-browser"
+            },
+            {
+              "name": "willyou-browser-reproduce-bug"
+            },
+            {
+              "name": "willyou-mail-work-assistant"
+            },
+            {
+              "name": "willyou-project-db-diagnostics"
+            },
+            {
+              "name": "willyou-remote-password-ssh"
+            },
+            {
+              "name": "deep-research"
+            },
+            {
+              "name": "dataviz"
+            },
+            {
+              "name": "update-config"
+            },
+            {
+              "name": "verify"
+            },
+            {
+              "name": "debug"
+            },
+            {
+              "name": "code-review"
+            },
+            {
+              "name": "simplify"
+            },
+            {
+              "name": "batch"
+            },
+            {
+              "name": "fewer-permission-prompts"
+            },
+            {
+              "name": "doctor"
+            },
+            {
+              "name": "loop"
+            },
+            {
+              "name": "claude-api"
+            },
+            {
+              "name": "workflow-authoring"
+            },
+            {
+              "name": "run"
+            },
+            {
+              "name": "run-skill-generator"
+            },
+            {
+              "name": "plugin-authoring"
+            }
+          ]
+        }
+      },
+      "pending": 0
+    }
+  },
+  "boundary": {
+    "noOutsideCalls": true,
+    "onlySyntheticProviderResponse": true,
+    "noInjectedNativeEvent": true,
+    "nativeRetriesBeforeTerminal": 0
+  },
+  "preQuit": {
+    "at": "2026-11-19T00:48:38.520Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-148/quit-phase.jsonl",
+  "exit": {
+    "pid": 16728,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

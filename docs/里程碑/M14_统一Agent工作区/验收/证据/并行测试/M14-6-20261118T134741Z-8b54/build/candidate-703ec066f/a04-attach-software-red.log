@@ -1,0 +1,42 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/agent-run-service.test.ts -t 'exposes startup cancellation'
+
+[1119/091734.055789:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/091734.395557:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/agent-run-service.test.ts (21 tests | 2 failed | 19 skipped) 48ms
+     × A04 exposes startup cancellation to business admission only while opening (stop while opening=true) 29ms
+     × A04 exposes startup cancellation to business admission only while opening (stop while opening=false) 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-run-service.test.ts > 运行服务 > A04 exposes startup cancellation to business admission only while opening (stop while opening=true)
+ FAIL  src/main/core/agent/agent-run-service.test.ts > 运行服务 > A04 exposes startup cancellation to business admission only while opening (stop while opening=false)
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/main/core/agent/agent-run-service.test.ts:64:34
+     62|     const outcome = opened.catch(error => error);
+     63|     await reached;
+     64|     expect(startupCancelled?.()).toBe(false);
+       |                                  ^
+     65|     if (stopWhileOpening) stopped = true;
+     66|     expect(startupCancelled?.()).toBe(stopWhileOpening);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 skipped (21)
+   Start at  09:17:34
+   Duration  253ms (transform 96ms, setup 0ms, import 121ms, tests 48ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

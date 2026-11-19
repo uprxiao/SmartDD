@@ -1,0 +1,71 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/agent-task-service.test.ts -t 'A04 cancels'
+
+[1119/085855.175195:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/085855.546319:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/agent-task-service.test.ts (65 tests | 2 failed | 63 skipped) 66ms
+   × A04 cancels a stopped run without forking during integrate 39ms
+   × A04 cancels a stopped run without forking during beforeFork 27ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > A04 cancels a stopped run without forking during integrate
+ FAIL  src/main/core/agent/agent-task-service.test.ts > A04 cancels a stopped run without forking during beforeFork
+AssertionError: expected "open" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st open call:
+
+    Array [
+      Object {
+        "beforeInitialize": [Function beforeInitialize],
+        "claudeMcp": undefined,
+        "claudeSettings": undefined,
+        "codexCliPermissions": undefined,
+        "cwd": "/w",
+        "env": Object {},
+        "executable": Object {
+          "path": "/x",
+          "version": "2.1.326",
+        },
+        "extraArgs": Array [],
+        "hostBusinessCli": undefined,
+        "mcpServers": undefined,
+        "model": undefined,
+        "plugins": undefined,
+        "readOnly": undefined,
+        "recoverGoals": true,
+        "requiredMcpServers": Array [],
+        "resumeNativeId": undefined,
+        "settingSources": undefined,
+        "skillRoots": undefined,
+        "stopWhenWaiting": [Function stopWhenWaiting],
+        "tier": "ask",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/main/core/agent/agent-task-service.test.ts:78:20
+     76|   await until(() => open.mock.calls.length > 0 || store.run(run.runId)…
+     77|
+     78|   expect(open).not.toHaveBeenCalled();
+       |                    ^
+     79|   expect(beforeFork).toHaveBeenCalledTimes(phase === 'beforeFork' ? 1 …
+     80|   expect(cancelBeforeFork).toHaveBeenCalledOnce();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 63 skipped (65)
+   Start at  08:58:55
+   Duration  392ms (transform 186ms, setup 0ms, import 221ms, tests 66ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

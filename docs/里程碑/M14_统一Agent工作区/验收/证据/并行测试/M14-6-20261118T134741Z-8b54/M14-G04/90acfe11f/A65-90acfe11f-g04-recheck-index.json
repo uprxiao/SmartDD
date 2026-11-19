@@ -1,0 +1,666 @@
+{
+  "caseId": "M14-A65",
+  "commit": "90acfe11ff68585894fdb74dca38806574447406",
+  "asar": "6821446e0658eacdc1cd98bb8b43fe275a1c2058800c6f0dd7618e033b675c73",
+  "oldRed": "A65-34135cb7f-g04-mixed-index.json",
+  "status": "D06-28 and native write then stop candidate checks passed",
+  "isolated": "打包 App 和真实 Claude／Codex，本机合成推理；真实 CDP 控件。仅停止样本在实际命令已完成后挂起合成模型的末帧。",
+  "cleanup": "三个 App 正常退出 0，独立核对测试端口和私有进程后归还槽。",
+  "attempts": [
+    {
+      "attempt": "attempt-091",
+      "scope": "git",
+      "exit": {
+        "pid": 76892,
+        "code": 0,
+        "signal": null
+      },
+      "evidence": {
+        "readerPolicy": {
+          "source": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/data/agents/codex/95a68009b96ded85f856c59de50328a1/sessions/2026/11/19/rollout-2026-11-19T03-32-33-01a1f025-872e-72f1-b556-87bb2e2482f2.jsonl",
+          "turnId": "01a1f025-8879-7fd1-9d31-92ceec813f72",
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project",
+          "sandbox": {
+            "type": "read-only"
+          }
+        },
+        "nativeOverlap": {
+          "label": "trusted reader cat returns writer and external file during the same writable turn",
+          "at": "2026-11-18T19:32:37.066Z",
+          "readerDidRead": {
+            "active": {
+              "writer": {
+                "queue_id": "d68f9f79-ce41-4478-a530-cbaae44b1dd2",
+                "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project:16777231:362663699",
+                "task_id": "76f66ad0-46ed-4780-a7ec-23f9248b87b2",
+                "run_id": "12ca1767-4aa8-4f50-813b-b62706c1229b",
+                "kind": "write",
+                "state": "active"
+              },
+              "reader": {
+                "task_id": "538fd81a-aa61-4a94-9c20-80806ee8950b",
+                "kind": "read",
+                "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project:16777231:362663699",
+                "nativePolicy": "read-only"
+              },
+              "scope": [
+                {
+                  "queue_id": "d68f9f79-ce41-4478-a530-cbaae44b1dd2",
+                  "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project:16777231:362663699",
+                  "task_id": "76f66ad0-46ed-4780-a7ec-23f9248b87b2",
+                  "run_id": "12ca1767-4aa8-4f50-813b-b62706c1229b",
+                  "kind": "write",
+                  "state": "active"
+                }
+              ]
+            },
+            "writerTurn": {
+              "taskId": "76f66ad0-46ed-4780-a7ec-23f9248b87b2",
+              "turnId": "253fa2e1-7b75-4ec5-b02d-c3bd8033692d",
+              "runId": "12ca1767-4aa8-4f50-813b-b62706c1229b",
+              "nativeTurnId": "01a1f025-9011-7142-8fe1-7049b62ce3be",
+              "status": "started"
+            },
+            "readerTurn": {
+              "taskId": "538fd81a-aa61-4a94-9c20-80806ee8950b",
+              "turnId": "df339b24-1819-431a-8f9f-f06c92095b51",
+              "runId": "fb424c53-d2c3-4937-ab2f-e6aa1ae3cf6a",
+              "nativeTurnId": "01a1f025-8879-7fd1-9d31-92ceec813f72",
+              "status": "started"
+            }
+          },
+          "readerOutput": {
+            "callId": "call42c89550-6782-4c9c-a7e4-0216e3bfcde2",
+            "text": "Chunk ID: fc0356\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nA65_NATIVE_WRITER_INTERVAL\nA65_EXTERNAL_PROCESS_INTERVAL\n",
+            "expected": [
+              "A65_NATIVE_WRITER_INTERVAL",
+              "A65_EXTERNAL_PROCESS_INTERVAL"
+            ]
+          },
+          "mode": "read"
+        },
+        "writerProvenance": {
+          "label": "native Git snapshot object bytes preserve source provenance within writer interval",
+          "at": "2026-11-18T19:32:37.540Z",
+          "afterRow": {
+            "turn_id": "253fa2e1-7b75-4ec5-b02d-c3bd8033692d",
+            "task_id": "76f66ad0-46ed-4780-a7ec-23f9248b87b2",
+            "run_id": "12ca1767-4aa8-4f50-813b-b62706c1229b",
+            "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"dev\":\"16777231\",\"ino\":\"362663699\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"ref\":\"refs/willyou/turns/253fa2e1-7b75-4ec5-b02d-c3bd8033692d/before\",\"commit\":\"2f0bb83e6bc6d578c29b205674b04d30eb0a9e50\",\"tree\":\"2d6d7831009e81abefd275902ad3ed6fdc68922b\",\"private\":false}",
+            "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"dev\":\"16777231\",\"ino\":\"362663699\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"ref\":\"refs/willyou/turns/253fa2e1-7b75-4ec5-b02d-c3bd8033692d/after\",\"commit\":\"7db6d2215971852425ea6ecdb35d797de81bbf39\",\"tree\":\"1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c\",\"private\":false}",
+            "changed_files_json": "[{\"path\":\"external.txt\",\"added\":1,\"removed\":1,\"binary\":false},{\"path\":\"writer.txt\",\"added\":1,\"removed\":1,\"binary\":false}]",
+            "status": "complete",
+            "incomplete_reason": null,
+            "retained_until": null
+          },
+          "diff": {
+            "turnId": "253fa2e1-7b75-4ec5-b02d-c3bd8033692d",
+            "recordNumber": 1,
+            "status": "complete",
+            "reason": null,
+            "files": [
+              {
+                "path": "external.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false
+              },
+              {
+                "path": "writer.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false
+              }
+            ],
+            "filesTotal": 2,
+            "observed": true,
+            "preparing": false,
+            "progress": {
+              "files": 3,
+              "bytes": 79
+            }
+          },
+          "writerTurn": {
+            "taskId": "76f66ad0-46ed-4780-a7ec-23f9248b87b2",
+            "turnId": "253fa2e1-7b75-4ec5-b02d-c3bd8033692d",
+            "runId": "12ca1767-4aa8-4f50-813b-b62706c1229b",
+            "nativeTurnId": "01a1f025-9011-7142-8fe1-7049b62ce3be",
+            "status": "started"
+          },
+          "readerTurn": {
+            "taskId": "538fd81a-aa61-4a94-9c20-80806ee8950b",
+            "turnId": "df339b24-1819-431a-8f9f-f06c92095b51",
+            "runId": "fb424c53-d2c3-4937-ab2f-e6aa1ae3cf6a",
+            "nativeTurnId": "01a1f025-8879-7fd1-9d31-92ceec813f72",
+            "status": "started"
+          },
+          "diskBetween": {
+            "before": {
+              "external.txt": "A65_BEFORE_external.txt",
+              "reader.txt": "A65_BEFORE_reader.txt",
+              "writer.txt": "A65_BEFORE_writer.txt"
+            },
+            "after": {
+              "external.txt": "A65_EXTERNAL_PROCESS_INTERVAL",
+              "reader.txt": "A65_BEFORE_reader.txt",
+              "writer.txt": "A65_NATIVE_WRITER_INTERVAL"
+            }
+          },
+          "metadata": {
+            "head": "377e9fb75e3920ad74455025e372ebdb43ba16cc",
+            "index": "0f0d3920a4892ac7bc9518c2e7ced259bafb357953db5cbfcc222c6f86e62a2d"
+          }
+        },
+        "readerAfterComplete": {
+          "label": "exact observed capture state for completed native read-only turn",
+          "at": "2026-11-18T19:32:39.564Z",
+          "readerTurn": {
+            "taskId": "538fd81a-aa61-4a94-9c20-80806ee8950b",
+            "turnId": "df339b24-1819-431a-8f9f-f06c92095b51",
+            "runId": "fb424c53-d2c3-4937-ab2f-e6aa1ae3cf6a",
+            "nativeTurnId": "01a1f025-8879-7fd1-9d31-92ceec813f72",
+            "status": "completed"
+          },
+          "readerChangeRows": [],
+          "registeredReadRefs": "",
+          "readerCards": [],
+          "readerCard": null
+        },
+        "renderedReadOnly": {
+          "label": "real turn card and both read-only source bodies show interval caveat",
+          "at": "2026-11-18T19:32:38.409Z",
+          "cardText": "本轮改动 · 2 个文件\n查看差异\nexternal.txt\n+1\n−1\nwriter.txt\n+1\n−1\n观察到的变化可能包含用户或外部写入",
+          "panes": [
+            {
+              "rendered": {
+                "file": "external.txt",
+                "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+                "buttons": [
+                  "external.txt\n+1 −1",
+                  "writer.txt\n+1 −1"
+                ],
+                "model": "A65_EXTERNAL_PROCESS_INTERVAL\n",
+                "readOnly": true,
+                "editable": "false"
+              },
+              "patch": {
+                "path": "external.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false,
+                "patch": "diff --git a/external.txt b/external.txt\nindex 616c8c7..f89b2c1 100644\n--- a/external.txt\n+++ b/external.txt\n@@ -1 +1 @@\n-A65_BEFORE_external.txt\n+A65_EXTERNAL_PROCESS_INTERVAL\n",
+                "beforeText": "A65_BEFORE_external.txt\n",
+                "afterText": "A65_EXTERNAL_PROCESS_INTERVAL\n"
+              }
+            },
+            {
+              "rendered": {
+                "file": "writer.txt",
+                "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+                "buttons": [
+                  "external.txt\n+1 −1",
+                  "writer.txt\n+1 −1"
+                ],
+                "model": "A65_NATIVE_WRITER_INTERVAL\n",
+                "readOnly": true,
+                "editable": "false"
+              },
+              "patch": {
+                "path": "writer.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false,
+                "patch": "diff --git a/writer.txt b/writer.txt\nindex 9414130..77e3dc8 100644\n--- a/writer.txt\n+++ b/writer.txt\n@@ -1 +1 @@\n-A65_BEFORE_writer.txt\n+A65_NATIVE_WRITER_INTERVAL\n",
+                "beforeText": "A65_BEFORE_writer.txt\n",
+                "afterText": "A65_NATIVE_WRITER_INTERVAL\n"
+              }
+            }
+          ],
+          "unexpectedDiffMutators": []
+        },
+        "finishedSQLiteReadback": {
+          "253fa2e1-7b75-4ec5-b02d-c3bd8033692d": {
+            "turn_id": "253fa2e1-7b75-4ec5-b02d-c3bd8033692d",
+            "native_turn_id": "01a1f025-9011-7142-8fe1-7049b62ce3be",
+            "status": "completed",
+            "snapshot_status": "complete",
+            "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"dev\":\"16777231\",\"ino\":\"362663699\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"ref\":\"refs/willyou/turns/253fa2e1-7b75-4ec5-b02d-c3bd8033692d/before\",\"commit\":\"2f0bb83e6bc6d578c29b205674b04d30eb0a9e50\",\"tree\":\"2d6d7831009e81abefd275902ad3ed6fdc68922b\",\"private\":false}",
+            "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"dev\":\"16777231\",\"ino\":\"362663699\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-091/runtime-vMRfhf/project\",\"ref\":\"refs/willyou/turns/253fa2e1-7b75-4ec5-b02d-c3bd8033692d/after\",\"commit\":\"7db6d2215971852425ea6ecdb35d797de81bbf39\",\"tree\":\"1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c\",\"private\":false}",
+            "changed_files_json": "[{\"path\":\"external.txt\",\"added\":1,\"removed\":1,\"binary\":false},{\"path\":\"writer.txt\",\"added\":1,\"removed\":1,\"binary\":false}]",
+            "cards": 1
+          },
+          "df339b24-1819-431a-8f9f-f06c92095b51": {
+            "turn_id": "df339b24-1819-431a-8f9f-f06c92095b51",
+            "native_turn_id": "01a1f025-8879-7fd1-9d31-92ceec813f72",
+            "status": "completed",
+            "snapshot_status": null,
+            "before_ref": null,
+            "after_ref": null,
+            "changed_files_json": null,
+            "cards": 0
+          }
+        }
+      },
+      "files": [
+        {
+          "path": "attempt-091/A65-completed-reader-capture-scope.png",
+          "sha256": "5eb88122d0b3966b211939b7c1ee5156983d6013a08296010c3f9ad910163549"
+        },
+        {
+          "path": "attempt-091/A65-observed-external.txt.png",
+          "sha256": "2de3fdcb798ef3594ff7d5a467e81832d2ee6583e38e83595b29ee56b1e62c79"
+        },
+        {
+          "path": "attempt-091/A65-observed-writer.txt.png",
+          "sha256": "29510b1c8c774b06aec495ae4e4e661f9dd56031ca0b80c5e6e6a244b80773ac"
+        },
+        {
+          "path": "attempt-091/app.log",
+          "sha256": "c4580eb86451c24cfb1dacaae30cc3da3940f76e6cc907906ddaf803aba4be8f"
+        },
+        {
+          "path": "attempt-091/result.json",
+          "sha256": "af0f32d6c6d3d509ce97f97e748342efa0ad27c0cf90595fb489f422b3b6047b"
+        },
+        {
+          "path": "attempt-091/source-a65-mixed-observation.mjs",
+          "sha256": "e9c9918f336b6b47629b7620869e9c81c4a122eea74287f961d2c62a2e6b56eb"
+        },
+        {
+          "path": "attempt-091/source-a65-mixed-receipts.mjs",
+          "sha256": "7def1f09f4034c3061f2893f1522d5b967efe633f6e8055ab51305e2761c776b"
+        },
+        {
+          "path": "attempt-091/source-a74-native-target-receipts.mjs",
+          "sha256": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-092",
+      "scope": "stop-after-write",
+      "exit": {
+        "pid": 80946,
+        "code": 0,
+        "signal": null
+      },
+      "evidence": {
+        "status": "pass",
+        "passed": [
+          "Visible Stop triggered the original native interruption; the same turn kept its pre-write and post-stop Git refs, real written file and exact read-only view without changing the staged index"
+        ],
+        "missing": [],
+        "beforeStop": {
+          "turnId": "14f877f8-05b9-4b1a-8ccd-46f3ae7242e7",
+          "live": {
+            "turn_id": "14f877f8-05b9-4b1a-8ccd-46f3ae7242e7",
+            "client_input_id": "in-e8bb0e56ef264e8a95134d87a4d30856",
+            "status": "started",
+            "native_turn_id": "01a1f025-f869-7961-8fe9-c55ef8e6f4d0",
+            "accepted_at": "2026-11-18T19:33:02.561Z",
+            "started_at": "2026-11-18T19:33:02.699Z",
+            "ended_at": null,
+            "error_code": null,
+            "run_id": "4a4cf091-c635-4b59-a20d-acd82a26f0b0",
+            "source_kind": "user"
+          },
+          "writing": {
+            "turn_id": "14f877f8-05b9-4b1a-8ccd-46f3ae7242e7",
+            "task_id": "dd525711-9acb-4e88-b0a5-ffa04a245741",
+            "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write\",\"dev\":\"16777231\",\"ino\":\"362666545\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write\",\"ref\":\"refs/willyou/turns/14f877f8-05b9-4b1a-8ccd-46f3ae7242e7/before\",\"commit\":\"f6a076a8256c6472142ccb5e092fbdc53cb3b5f9\",\"tree\":\"d6737cd9e3314a5e61206f31804e3daa6329f36a\",\"private\":false}",
+            "after_ref": null,
+            "incomplete_reason": null,
+            "status": "capturing"
+          },
+          "sourceBefore": "Private worktree text not yet staged\n",
+          "sourceHashBefore": "a09085c67a5ae5a33599c493f37fc8a2c0b2cde9c8f2cc85d29650a442358ef3",
+          "sourceAfterNative": "Private worktree text not yet staged\nA65_COMPLETED_NATIVE_WRITE_BEFORE_STOP\n",
+          "sourceHashAfterNative": "377d8367d4b4fdb3129ec2a20b07acf327d6fb6c27a5547a4185d0c52ae963a3",
+          "nativeOutput": "Chunk ID: 6a98e7\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 10\nOutput:\nA65_COMPLETED_NATIVE_WRITE_BEFORE_STOP\n"
+        },
+        "stopped": {
+          "gitBefore": {
+            "head": "ab9037891c26ff2ba2c5248c6d574318aac1de35",
+            "indexSha": "dbeff755786c219f7d133e303b75092f29473fa097b4d6f408857b2f361deeb3"
+          },
+          "gitAfter": {
+            "head": "ab9037891c26ff2ba2c5248c6d574318aac1de35",
+            "indexSha": "dbeff755786c219f7d133e303b75092f29473fa097b4d6f408857b2f361deeb3"
+          },
+          "settled": {
+            "seen": {
+              "turn_id": "14f877f8-05b9-4b1a-8ccd-46f3ae7242e7",
+              "client_input_id": "in-e8bb0e56ef264e8a95134d87a4d30856",
+              "status": "interrupted",
+              "native_turn_id": "01a1f025-f869-7961-8fe9-c55ef8e6f4d0",
+              "accepted_at": "2026-11-18T19:33:02.561Z",
+              "started_at": "2026-11-18T19:33:02.699Z",
+              "ended_at": "2026-11-18T19:33:02.954Z",
+              "error_code": null,
+              "run_id": "4a4cf091-c635-4b59-a20d-acd82a26f0b0",
+              "source_kind": "user"
+            },
+            "exact": {
+              "turnId": "14f877f8-05b9-4b1a-8ccd-46f3ae7242e7",
+              "recordNumber": 2,
+              "status": "complete",
+              "reason": null,
+              "files": [
+                {
+                  "path": "a.txt",
+                  "added": 1,
+                  "removed": 0,
+                  "binary": false
+                }
+              ],
+              "filesTotal": 1,
+              "observed": true,
+              "preparing": false,
+              "progress": {
+                "files": 1,
+                "bytes": 76
+              }
+            }
+          },
+          "stopped": {
+            "turn_id": "14f877f8-05b9-4b1a-8ccd-46f3ae7242e7",
+            "task_id": "dd525711-9acb-4e88-b0a5-ffa04a245741",
+            "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write\",\"dev\":\"16777231\",\"ino\":\"362666545\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write\",\"ref\":\"refs/willyou/turns/14f877f8-05b9-4b1a-8ccd-46f3ae7242e7/before\",\"commit\":\"f6a076a8256c6472142ccb5e092fbdc53cb3b5f9\",\"tree\":\"d6737cd9e3314a5e61206f31804e3daa6329f36a\",\"private\":false}",
+            "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write\",\"dev\":\"16777231\",\"ino\":\"362666545\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write/.git\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-092/A65-stop-after-write\",\"ref\":\"refs/willyou/turns/14f877f8-05b9-4b1a-8ccd-46f3ae7242e7/after\",\"commit\":\"4df566c244943673cd63265ac327018b2a5f7182\",\"tree\":\"ad9d33fe6916157ac0a20522b847c29cb32d94af\",\"private\":false}",
+            "incomplete_reason": null,
+            "status": "complete"
+          },
+          "sourceHash": "377d8367d4b4fdb3129ec2a20b07acf327d6fb6c27a5547a4185d0c52ae963a3",
+          "rendererModel": "Private worktree text not yet staged\nA65_COMPLETED_NATIVE_WRITE_BEFORE_STOP\n"
+        }
+      },
+      "files": [
+        {
+          "path": "attempt-092/A65-stopped-native-snapshot.png",
+          "sha256": "fed77c4e32d8726f0bf78b176da5c265d56591971d5df5bdd4b0a711524558e0"
+        },
+        {
+          "path": "attempt-092/app.log",
+          "sha256": "321eb9c362ba7e5ef8bd4d7f1d464efd5bf7df98839a8b64b77441daeb27e446"
+        },
+        {
+          "path": "attempt-092/result.json",
+          "sha256": "54e200d56f0924419e9fb26dfd2a3143619d4087a861582c465316b99939bd5f"
+        },
+        {
+          "path": "attempt-092/source-a65-stop-after-native.mjs",
+          "sha256": "8c5c20fe7475a2971b976e7e7683f8a8b95009f003a542d1c733799d3a67e28f"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-093",
+      "scope": "svn",
+      "exit": {
+        "pid": 82994,
+        "code": 0,
+        "signal": null
+      },
+      "evidence": {
+        "readerPolicy": {
+          "source": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/data/agents/codex/235066aaadd04f9f4ac8873d65a6dfe5/sessions/2026/11/19/rollout-2026-11-19T03-33-31-01a1f026-6ace-7883-8aa2-d8d44e044390.jsonl",
+          "turnId": "01a1f026-6be9-7c42-aa7c-c82abe7535fd",
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project",
+          "sandbox": {
+            "type": "read-only"
+          }
+        },
+        "nativeOverlap": {
+          "label": "trusted reader cat returns writer and external file during the same writable turn",
+          "at": "2026-11-18T19:33:35.170Z",
+          "readerDidRead": {
+            "active": {
+              "writer": {
+                "queue_id": "c1b32e36-aaef-4171-ae4f-4626260d85fc",
+                "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project:16777231:362667097",
+                "task_id": "f08bc1e9-bd95-490d-b02e-061896910cb2",
+                "run_id": "64330b8d-2f44-4120-b279-ae66c4ee830c",
+                "kind": "write",
+                "state": "active"
+              },
+              "reader": {
+                "task_id": "e24fc04b-4aba-420a-83ef-58ad9a001eee",
+                "kind": "read",
+                "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project:16777231:362667097",
+                "nativePolicy": "read-only"
+              },
+              "scope": [
+                {
+                  "queue_id": "c1b32e36-aaef-4171-ae4f-4626260d85fc",
+                  "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project:16777231:362667097",
+                  "task_id": "f08bc1e9-bd95-490d-b02e-061896910cb2",
+                  "run_id": "64330b8d-2f44-4120-b279-ae66c4ee830c",
+                  "kind": "write",
+                  "state": "active"
+                }
+              ]
+            },
+            "writerTurn": {
+              "taskId": "f08bc1e9-bd95-490d-b02e-061896910cb2",
+              "turnId": "919cc751-2271-4bec-bae0-2c786e108876",
+              "runId": "64330b8d-2f44-4120-b279-ae66c4ee830c",
+              "nativeTurnId": "01a1f026-7335-7d32-af17-cc70efacbe42",
+              "status": "started"
+            },
+            "readerTurn": {
+              "taskId": "e24fc04b-4aba-420a-83ef-58ad9a001eee",
+              "turnId": "71a722cc-5ac0-4d27-8aa1-63b2c79ed343",
+              "runId": "485e303b-1230-4e5e-9a73-4299328a062a",
+              "nativeTurnId": "01a1f026-6be9-7c42-aa7c-c82abe7535fd",
+              "status": "started"
+            }
+          },
+          "readerOutput": {
+            "callId": "call912c4c0c-8f48-4469-9d21-a0f2a4739917",
+            "text": "Chunk ID: 318e75\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nA65_NATIVE_WRITER_INTERVAL\nA65_EXTERNAL_PROCESS_INTERVAL\n",
+            "expected": [
+              "A65_NATIVE_WRITER_INTERVAL",
+              "A65_EXTERNAL_PROCESS_INTERVAL"
+            ]
+          },
+          "mode": "read"
+        },
+        "writerProvenance": {
+          "label": "native Git snapshot object bytes preserve source provenance within writer interval",
+          "at": "2026-11-18T19:33:35.658Z",
+          "afterRow": {
+            "turn_id": "919cc751-2271-4bec-bae0-2c786e108876",
+            "task_id": "f08bc1e9-bd95-490d-b02e-061896910cb2",
+            "run_id": "64330b8d-2f44-4120-b279-ae66c4ee830c",
+            "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"dev\":\"16777231\",\"ino\":\"362667097\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/data/agent-diffs/b55c00eac2f16ebd928565aaf13afe21c0e09e923e70946fe4de984e92dcf553\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"ref\":\"refs/willyou/turns/919cc751-2271-4bec-bae0-2c786e108876/before\",\"commit\":\"5a980655ac37fb1d1c106f899e9f7fba83fb6a33\",\"tree\":\"2d6d7831009e81abefd275902ad3ed6fdc68922b\",\"private\":true}",
+            "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"dev\":\"16777231\",\"ino\":\"362667097\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/data/agent-diffs/b55c00eac2f16ebd928565aaf13afe21c0e09e923e70946fe4de984e92dcf553\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"ref\":\"refs/willyou/turns/919cc751-2271-4bec-bae0-2c786e108876/after\",\"commit\":\"5c2feb0f50d27898410fcd2733de1d5c6ffcad90\",\"tree\":\"1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c\",\"private\":true}",
+            "changed_files_json": "[{\"path\":\"external.txt\",\"added\":1,\"removed\":1,\"binary\":false},{\"path\":\"writer.txt\",\"added\":1,\"removed\":1,\"binary\":false}]",
+            "status": "complete",
+            "incomplete_reason": null,
+            "retained_until": null
+          },
+          "diff": {
+            "turnId": "919cc751-2271-4bec-bae0-2c786e108876",
+            "recordNumber": 1,
+            "status": "complete",
+            "reason": null,
+            "files": [
+              {
+                "path": "external.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false
+              },
+              {
+                "path": "writer.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false
+              }
+            ],
+            "filesTotal": 2,
+            "observed": true,
+            "preparing": false,
+            "progress": {
+              "files": 3,
+              "bytes": 79
+            }
+          },
+          "writerTurn": {
+            "taskId": "f08bc1e9-bd95-490d-b02e-061896910cb2",
+            "turnId": "919cc751-2271-4bec-bae0-2c786e108876",
+            "runId": "64330b8d-2f44-4120-b279-ae66c4ee830c",
+            "nativeTurnId": "01a1f026-7335-7d32-af17-cc70efacbe42",
+            "status": "started"
+          },
+          "readerTurn": {
+            "taskId": "e24fc04b-4aba-420a-83ef-58ad9a001eee",
+            "turnId": "71a722cc-5ac0-4d27-8aa1-63b2c79ed343",
+            "runId": "485e303b-1230-4e5e-9a73-4299328a062a",
+            "nativeTurnId": "01a1f026-6be9-7c42-aa7c-c82abe7535fd",
+            "status": "started"
+          },
+          "diskBetween": {
+            "before": {
+              "external.txt": "A65_BEFORE_external.txt",
+              "reader.txt": "A65_BEFORE_reader.txt",
+              "writer.txt": "A65_BEFORE_writer.txt"
+            },
+            "after": {
+              "external.txt": "A65_EXTERNAL_PROCESS_INTERVAL",
+              "reader.txt": "A65_BEFORE_reader.txt",
+              "writer.txt": "A65_NATIVE_WRITER_INTERVAL"
+            }
+          },
+          "metadata": {
+            "revision": "0",
+            "wcDb": "f053cb472ab6c26b39a2baf1cbed1717a90fc5b1fa8237c7ba27dba9ca9f1685"
+          }
+        },
+        "readerAfterComplete": {
+          "label": "exact observed capture state for completed native read-only turn",
+          "at": "2026-11-18T19:33:37.453Z",
+          "readerTurn": {
+            "taskId": "e24fc04b-4aba-420a-83ef-58ad9a001eee",
+            "turnId": "71a722cc-5ac0-4d27-8aa1-63b2c79ed343",
+            "runId": "485e303b-1230-4e5e-9a73-4299328a062a",
+            "nativeTurnId": "01a1f026-6be9-7c42-aa7c-c82abe7535fd",
+            "status": "completed"
+          },
+          "readerChangeRows": [],
+          "registeredReadRefs": "",
+          "readerCards": [],
+          "readerCard": null
+        },
+        "renderedReadOnly": {
+          "label": "real turn card and both read-only source bodies show interval caveat",
+          "at": "2026-11-18T19:33:36.313Z",
+          "cardText": "本轮改动 · 2 个文件\n查看差异\nexternal.txt\n+1\n−1\nwriter.txt\n+1\n−1\n观察到的变化可能包含用户或外部写入",
+          "panes": [
+            {
+              "rendered": {
+                "file": "external.txt",
+                "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+                "buttons": [
+                  "external.txt\n+1 −1",
+                  "writer.txt\n+1 −1"
+                ],
+                "model": "A65_EXTERNAL_PROCESS_INTERVAL\n",
+                "readOnly": true,
+                "editable": "false"
+              },
+              "patch": {
+                "path": "external.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false,
+                "patch": "diff --git a/external.txt b/external.txt\nindex 616c8c7..f89b2c1 100644\n--- a/external.txt\n+++ b/external.txt\n@@ -1 +1 @@\n-A65_BEFORE_external.txt\n+A65_EXTERNAL_PROCESS_INTERVAL\n",
+                "beforeText": "A65_BEFORE_external.txt\n",
+                "afterText": "A65_EXTERNAL_PROCESS_INTERVAL\n"
+              }
+            },
+            {
+              "rendered": {
+                "file": "writer.txt",
+                "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+                "buttons": [
+                  "external.txt\n+1 −1",
+                  "writer.txt\n+1 −1"
+                ],
+                "model": "A65_NATIVE_WRITER_INTERVAL\n",
+                "readOnly": true,
+                "editable": "false"
+              },
+              "patch": {
+                "path": "writer.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false,
+                "patch": "diff --git a/writer.txt b/writer.txt\nindex 9414130..77e3dc8 100644\n--- a/writer.txt\n+++ b/writer.txt\n@@ -1 +1 @@\n-A65_BEFORE_writer.txt\n+A65_NATIVE_WRITER_INTERVAL\n",
+                "beforeText": "A65_BEFORE_writer.txt\n",
+                "afterText": "A65_NATIVE_WRITER_INTERVAL\n"
+              }
+            }
+          ],
+          "unexpectedDiffMutators": []
+        },
+        "finishedSQLiteReadback": {
+          "919cc751-2271-4bec-bae0-2c786e108876": {
+            "turn_id": "919cc751-2271-4bec-bae0-2c786e108876",
+            "native_turn_id": "01a1f026-7335-7d32-af17-cc70efacbe42",
+            "status": "completed",
+            "snapshot_status": "complete",
+            "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"dev\":\"16777231\",\"ino\":\"362667097\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/data/agent-diffs/b55c00eac2f16ebd928565aaf13afe21c0e09e923e70946fe4de984e92dcf553\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"ref\":\"refs/willyou/turns/919cc751-2271-4bec-bae0-2c786e108876/before\",\"commit\":\"5a980655ac37fb1d1c106f899e9f7fba83fb6a33\",\"tree\":\"2d6d7831009e81abefd275902ad3ed6fdc68922b\",\"private\":true}",
+            "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"dev\":\"16777231\",\"ino\":\"362667097\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/data/agent-diffs/b55c00eac2f16ebd928565aaf13afe21c0e09e923e70946fe4de984e92dcf553\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-093/runtime-vM2EJf/project\",\"ref\":\"refs/willyou/turns/919cc751-2271-4bec-bae0-2c786e108876/after\",\"commit\":\"5c2feb0f50d27898410fcd2733de1d5c6ffcad90\",\"tree\":\"1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c\",\"private\":true}",
+            "changed_files_json": "[{\"path\":\"external.txt\",\"added\":1,\"removed\":1,\"binary\":false},{\"path\":\"writer.txt\",\"added\":1,\"removed\":1,\"binary\":false}]",
+            "cards": 1
+          },
+          "71a722cc-5ac0-4d27-8aa1-63b2c79ed343": {
+            "turn_id": "71a722cc-5ac0-4d27-8aa1-63b2c79ed343",
+            "native_turn_id": "01a1f026-6be9-7c42-aa7c-c82abe7535fd",
+            "status": "completed",
+            "snapshot_status": null,
+            "before_ref": null,
+            "after_ref": null,
+            "changed_files_json": null,
+            "cards": 0
+          }
+        }
+      },
+      "files": [
+        {
+          "path": "attempt-093/A65-completed-reader-capture-scope.png",
+          "sha256": "c539d273b8c892eac99f0676807bb4e5eb7e68097007e0be902da78def4e074f"
+        },
+        {
+          "path": "attempt-093/A65-observed-external.txt.png",
+          "sha256": "66bd5d5b28c3198168c35b416d10f1ecfbfb44bec18b12216889eeb8f6e2cb0f"
+        },
+        {
+          "path": "attempt-093/A65-observed-writer.txt.png",
+          "sha256": "886a288085f320646578dce911803407e92741d01b272daf234b74d7ae833f8d"
+        },
+        {
+          "path": "attempt-093/app.log",
+          "sha256": "742afb1f8321439ce6e60e36cd794d44f22520f1c4f86852050adf73f4804ffc"
+        },
+        {
+          "path": "attempt-093/result.json",
+          "sha256": "d5c3e02744ffa5249c32fd1fb4d798b248b6f6d33320c8a49a6cb088430f53cc"
+        },
+        {
+          "path": "attempt-093/source-a65-mixed-observation.mjs",
+          "sha256": "e9c9918f336b6b47629b7620869e9c81c4a122eea74287f961d2c62a2e6b56eb"
+        },
+        {
+          "path": "attempt-093/source-a65-mixed-receipts.mjs",
+          "sha256": "7def1f09f4034c3061f2893f1522d5b967efe633f6e8055ab51305e2761c776b"
+        },
+        {
+          "path": "attempt-093/source-a74-native-target-receipts.mjs",
+          "sha256": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+        }
+      ]
+    }
+  ]
+}

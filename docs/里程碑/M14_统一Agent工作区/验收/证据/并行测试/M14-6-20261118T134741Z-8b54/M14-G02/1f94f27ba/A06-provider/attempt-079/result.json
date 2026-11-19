@@ -1,0 +1,669 @@
+{
+  "sourceCommit": "1f94f27ba5b14d79af9887b96be8f0dd5c9d2171",
+  "asar": "f87aae8b6964a0a342f4f42c564751860657631c597714d4b1f539f79f1ea918",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scratch": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-079/runtime-Ow7InZ",
+  "retryFixture": {
+    "claudeMaxRetries": 1,
+    "applied": "1"
+  },
+  "checks": {
+    "bWarmup": {
+      "turn": {
+        "turn_id": "61da8820-d34e-48db-a875-97f2b0cda72a",
+        "client_input_id": "in-c4d3f27890614aedb8f512a3006fc961",
+        "status": "completed",
+        "native_turn_id": "01a1f0db-f1a3-7261-93ce-47580fb10ab0",
+        "accepted_at": "2026-11-18T22:51:47.268Z",
+        "started_at": "2026-11-18T22:51:48.517Z",
+        "ended_at": "2026-11-18T22:51:48.549Z",
+        "error_code": null,
+        "run_id": "b5f99790-de77-416c-b85a-3163d9bd325e",
+        "source_kind": "user"
+      },
+      "runId": "b5f99790-de77-416c-b85a-3163d9bd325e"
+    },
+    "aAuth": {
+      "turn": {
+        "turn_id": "f89adeee-18a8-47d2-b0d3-c82b23bf1985",
+        "client_input_id": "in-69888718b1604dc8abb90e608008a054",
+        "status": "failed",
+        "native_turn_id": "f1d2ed7d-06f9-414a-aeef-e7b35b89e5cc:1",
+        "accepted_at": "2026-11-18T22:51:48.788Z",
+        "started_at": "2026-11-18T22:51:49.481Z",
+        "ended_at": "2026-11-18T22:51:50.379Z",
+        "error_code": "Failed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)",
+        "run_id": "a0fee641-e3eb-465b-886b-7758a7b243e9",
+        "source_kind": "user"
+      },
+      "notice": [
+        {
+          "code": "authentication_failed",
+          "message": "Failed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)"
+        },
+        {
+          "text": "Failed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)",
+          "model": "<synthetic>"
+        },
+        {
+          "code": "success",
+          "message": "Failed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)"
+        }
+      ],
+      "runId": "a0fee641-e3eb-465b-886b-7758a7b243e9"
+    },
+    "bParallel": {
+      "turn": {
+        "turn_id": "04f8463f-6b80-416f-8748-4598ce0dc433",
+        "client_input_id": "in-12e1eceae65147519256c2dff8911374",
+        "status": "completed",
+        "native_turn_id": "01a1f0db-f679-7c53-af26-0910f24f7e0e",
+        "accepted_at": "2026-11-18T22:51:49.631Z",
+        "started_at": "2026-11-18T22:51:49.754Z",
+        "ended_at": "2026-11-18T22:51:49.898Z",
+        "error_code": null,
+        "run_id": "b5f99790-de77-416c-b85a-3163d9bd325e",
+        "source_kind": "user"
+      },
+      "runId": "b5f99790-de77-416c-b85a-3163d9bd325e"
+    },
+    "bDuringProxy": {
+      "turn": {
+        "turn_id": "5aa72f71-3e1e-4793-be49-0c2b12907c98",
+        "client_input_id": "in-44e53b1c51e347cca71c9ba08abd664d",
+        "status": "completed",
+        "native_turn_id": "01a1f0db-fea0-79e2-8e33-5f8d4dfdbd8b",
+        "accepted_at": "2026-11-18T22:51:51.714Z",
+        "started_at": "2026-11-18T22:51:51.844Z",
+        "ended_at": "2026-11-18T22:51:51.875Z",
+        "error_code": null,
+        "run_id": "b5f99790-de77-416c-b85a-3163d9bd325e",
+        "source_kind": "user"
+      },
+      "runId": "b5f99790-de77-416c-b85a-3163d9bd325e"
+    }
+  },
+  "phases": [
+    {
+      "label": "Warmup the independent healthy Codex provider",
+      "at": "2026-11-18T22:51:47.234Z"
+    },
+    {
+      "label": "An actual Anthropic 401 while the independent Responses lane is live",
+      "at": "2026-11-18T22:51:48.637Z"
+    },
+    {
+      "label": "A distinct local proxy fault and agent recovery using the selected provider",
+      "at": "2026-11-18T22:51:50.498Z"
+    }
+  ],
+  "events": [
+    {
+      "marker": "A06_B_WARMUP",
+      "lane": "B",
+      "model": "a06-codex-account-b",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042308539,
+      "result": 200
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795042309513,
+      "result": 401
+    },
+    {
+      "marker": "A06_B_PARALLEL",
+      "lane": "B",
+      "model": "a06-codex-account-b",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042309767,
+      "result": 200
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795042310375,
+      "result": 401
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311564,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311578,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311583,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311589,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311594,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311602,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311607,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311632,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311647,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311653,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311697,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311712,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311718,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311724,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311733,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311740,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311746,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311751,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311757,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311779,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311790,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311798,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311804,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311809,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311815,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311822,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311830,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311843,
+      "result": 502
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311849,
+      "result": 502
+    },
+    {
+      "marker": "A06_B_DURING_PROXY",
+      "lane": "B",
+      "model": "a06-codex-account-b",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311856,
+      "result": 200
+    },
+    {
+      "marker": "A06_C_PROXY_UNAVAILABLE",
+      "lane": "C",
+      "model": "a06-codex-proxy-c",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795042311858,
+      "result": 502
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795042312194,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795042312708,
+      "result": 401
+    }
+  ],
+  "clicks": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"c47ff45d-c849-4d26-a7ea-a51b86f0f5ad\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"58567cf4-a867-4c02-a17c-e513b0fb9cf5\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"c47ff45d-c849-4d26-a7ea-a51b86f0f5ad\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"58567cf4-a867-4c02-a17c-e513b0fb9cf5\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"88cbf8d7-6509-4936-9d76-aa1c82f5c4d7\"]",
+      "x": 171.5,
+      "y": 455
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"c47ff45d-c849-4d26-a7ea-a51b86f0f5ad\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"58567cf4-a867-4c02-a17c-e513b0fb9cf5\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "passed": false,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-079/runtime-Ow7InZ/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-079/runtime-Ow7InZ/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    39910
+  ],
+  "tools": {
+    "claude": "2.1.326",
+    "codex": "0.169.0"
+  },
+  "fixtures": {
+    "A": {
+      "kind": "claude",
+      "model": "a06-claude-account-a",
+      "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-079/runtime-Ow7InZ/work-a",
+      "task": {
+        "taskId": "58567cf4-a867-4c02-a17c-e513b0fb9cf5",
+        "selection": {
+          "driverId": "claude-sdk",
+          "profileId": "7c2656b6-f508-470f-a247-efb0a25b46c1",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "7c2656b6-f508-470f-a247-efb0a25b46c1": true
+          },
+          "model": "a06-claude-account-a"
+        }
+      },
+      "providerId": "a5f90c1f-305a-4017-b738-2e4b847f1d62",
+      "profileId": "7c2656b6-f508-470f-a247-efb0a25b46c1",
+      "projectId": "2a8db0cb-9d45-4fff-9b9a-d1c09c8612f5"
+    },
+    "B": {
+      "kind": "codex",
+      "model": "a06-codex-account-b",
+      "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-079/runtime-Ow7InZ/work-b",
+      "task": {
+        "taskId": "c47ff45d-c849-4d26-a7ea-a51b86f0f5ad",
+        "selection": {
+          "driverId": "codex-app-server",
+          "profileId": "a8a361df-3856-4513-99bd-597cd26dee52",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "a8a361df-3856-4513-99bd-597cd26dee52": true
+          },
+          "model": "a06-codex-account-b"
+        }
+      },
+      "providerId": "9f91df3d-2af5-456b-9498-0a009d9059c6",
+      "profileId": "a8a361df-3856-4513-99bd-597cd26dee52",
+      "projectId": "3071312c-485f-432d-a68f-8bc6ab824e07"
+    },
+    "C": {
+      "kind": "codex",
+      "model": "a06-codex-proxy-c",
+      "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-079/runtime-Ow7InZ/work-c",
+      "task": {
+        "taskId": "88cbf8d7-6509-4936-9d76-aa1c82f5c4d7",
+        "selection": {
+          "driverId": "codex-app-server",
+          "profileId": "8d470e8d-821c-4282-bd32-a7664479ab1f",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "8d470e8d-821c-4282-bd32-a7664479ab1f": true
+          },
+          "model": "a06-codex-proxy-c"
+        }
+      },
+      "providerId": "2d974d23-2f60-4f99-bbb0-4bbf8b4984f3",
+      "profileId": "8d470e8d-821c-4282-bd32-a7664479ab1f",
+      "projectId": "2f70e34b-65d4-44fb-bef0-60a6aa241436"
+    }
+  },
+  "error": "Error: Timed out: A response: A06_A_RESTORED\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g02/provider-faults-a06.mjs:108:9)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g02/provider-faults-a06.mjs:219:27",
+  "screen": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nA06 Project A\nA06 task A\n失败\nA06 Project B\nA06 task B\nA06 Project C\nA06 task C\n失败\n设置\nA06 task A\n失败\n插件 2\n单 Agent · 开启委派\nA06_A_UNAUTHORIZED\n工作 1 秒后失败\n查看错误详情\n\nFailed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)\n\n查看错误详情\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n已失败 · 共工作 1 秒\nA06_A_RESTORED\n工作 1 秒后失败\n查看错误详情\n\nFailed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)\n\n查看错误详情\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n已失败 · 共工作 1 秒\n请求批准\n完全访问\nA06 Native A\na06-claude-account-a",
+  "exit": {
+    "pid": 39910,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

@@ -1,0 +1,587 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+    "at": "2026-11-18T22:59:50.335Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "1f94f27ba5b14d79af9887b96be8f0dd5c9d2171",
+  "asarSha": "f87aae8b6964a0a342f4f42c564751860657631c597714d4b1f539f79f1ea918",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "unknown-write-auth-recovery",
+  "scope": "M14-A06 same packaged native task: durable unknown plugin effect, synthetic 401, healthy recovery. One-time UI approval and exact isolated App crash.",
+  "observations": [
+    {
+      "label": "install the credential-free fixture through the real private plugin host",
+      "at": "2026-11-18T22:59:47.886Z"
+    },
+    {
+      "label": "validated isolated App main process",
+      "at": "2026-11-18T22:59:55.144Z",
+      "pid": 62520
+    },
+    {
+      "label": "pending approval has no plugin effect",
+      "at": "2026-11-18T22:59:57.119Z"
+    },
+    {
+      "label": "two ledgers confirm an original executing write and one durable private side effect",
+      "at": "2026-11-18T23:00:02.385Z"
+    },
+    {
+      "label": "one private effect persists after provider fault and a fresh real native recovery turn",
+      "at": "2026-11-18T23:00:13.791Z"
+    }
+  ],
+  "requests": [
+    {
+      "at": 1795042796472,
+      "phase": "original",
+      "path": "/v1/messages?beta=true",
+      "model": "a06-isolated-claude-unknown-write",
+      "route": "write",
+      "selectedTestAccount": true,
+      "tool": "mcp__wy_477b28265f62bc949e779d89__smartdd_p9458bfc39c950f06_v1"
+    },
+    {
+      "at": 1795042796880,
+      "phase": "original",
+      "path": "/v1/messages?beta=true",
+      "model": "a06-isolated-claude-unknown-write",
+      "route": "original-continuation",
+      "selectedTestAccount": true,
+      "heldOriginal": true
+    },
+    {
+      "at": 1795042811540,
+      "phase": "fault",
+      "path": "/v1/messages?beta=true",
+      "model": "a06-isolated-claude-unknown-write",
+      "route": "auth-fault",
+      "selectedTestAccount": true,
+      "status": 401
+    },
+    {
+      "at": 1795042812110,
+      "phase": "fault",
+      "path": "/v1/messages?beta=true",
+      "model": "a06-isolated-claude-unknown-write",
+      "route": "auth-fault",
+      "selectedTestAccount": true,
+      "status": 401
+    },
+    {
+      "at": 1795042813061,
+      "phase": "recovery",
+      "path": "/v1/messages?beta=true",
+      "model": "a06-isolated-claude-unknown-write",
+      "route": "healthy",
+      "selectedTestAccount": true,
+      "status": 200
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "text": null,
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"dcc39138-d6d0-43e7-bca6-534d4d227842\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-request [role=\"option\"][aria-label=\"批准\"]",
+      "text": null,
+      "x": 864,
+      "y": 700.25
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "x": 1205,
+      "y": 851
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"dcc39138-d6d0-43e7-bca6-534d4d227842\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-queue-entry button[title=\"立即发送\"]",
+      "text": null,
+      "x": 1192.5,
+      "y": 718
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "status": "passed",
+  "seed": {
+    "schema": 1,
+    "commit": "1f94f27ba5b14d79af9887b96be8f0dd5c9d2171",
+    "asarSha": "f87aae8b6964a0a342f4f42c564751860657631c597714d4b1f539f79f1ea918",
+    "installed": {
+      "appId": "a27-local-effect",
+      "hash": "09b96f3a7d5f3cd2f28aef3e655279a79897d85107c40ebd2acf33a34e851b06",
+      "installed": true,
+      "enabled": true,
+      "revision": 1,
+      "version": "0.1.0",
+      "paused": false
+    },
+    "capability": "a27-local-effect.record.write",
+    "seedHasNoSecrets": true,
+    "seedHasNoConnections": true,
+    "seedHasNoEffects": true
+  },
+  "pid": 62520,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    62520
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "taskId": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+  "configuration": {
+    "profileId": "bf9de11f-50a9-4164-a2fe-af8ea1db90bc",
+    "providerId": "b24cfe4a-622d-4990-a2aa-366e6001c67a",
+    "model": "a06-isolated-claude-unknown-write",
+    "projectId": "221fc9bc-9017-4d53-bac7-06b4b1efbd43"
+  },
+  "queuedBeforeCrash": {
+    "turn_id": "bd59c2ee-077c-46dc-b09f-87dfa69936c5",
+    "run_id": null,
+    "native_turn_id": null,
+    "status": "accepted",
+    "started_at": null,
+    "error_code": null
+  },
+  "beforeCrash": {
+    "before": {
+      "requests": [
+        {
+          "request_id": "2273d8d5-4783-4005-a26d-cbd9a3523367",
+          "operation_id": "435d5c19-aa6d-4c44-a988-aff80dc2ae43",
+          "task_id": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+          "status": "pending",
+          "revision": 3,
+          "phase": "executing",
+          "origin_json": "{\"taskId\":\"dcc39138-d6d0-43e7-bca6-534d4d227842\",\"bindingId\":\"46fbf360-372e-46fb-bbcd-27f87370a6d4\",\"runId\":\"24f6a631-425e-4e34-8503-8bddedb208a9\",\"generation\":1}"
+        }
+      ],
+      "invocations": [
+        {
+          "operation_id": "435d5c19-aa6d-4c44-a988-aff80dc2ae43",
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "task_id": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+          "project_id": "221fc9bc-9017-4d53-bac7-06b4b1efbd43",
+          "app_id": "a27-local-effect",
+          "package_hash": "09b96f3a7d5f3cd2f28aef3e655279a79897d85107c40ebd2acf33a34e851b06",
+          "state": "running",
+          "effect_state": "unknown",
+          "attempt_count": 1,
+          "ended_at": null,
+          "error_code": null
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "owner_pid": 62520,
+          "owner_started_at": "darwin-proc-v1:1795042789:51740",
+          "pid": 62684,
+          "process_started_at": "darwin-proc-v1:1795042795:843663",
+          "state": "active",
+          "revocation_state": "open"
+        }
+      ],
+      "processes": [
+        {
+          "process_id": "ae253d78-61ab-45d7-9083-53a628de88e0",
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "kind": "cli",
+          "pid": 62684,
+          "process_started_at": "darwin-proc-v1:1795042795:843663",
+          "state": "active",
+          "attached_at": "2026-11-18T22:59:55.870Z",
+          "ended_at": null
+        },
+        {
+          "process_id": "39052e2e-558e-422c-aea3-150488090d13",
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "kind": "bridge",
+          "pid": 62795,
+          "process_started_at": "darwin-proc-v1:1795042796:62434",
+          "state": "active",
+          "attached_at": "2026-11-18T22:59:56.147Z",
+          "ended_at": null
+        }
+      ],
+      "bridgeObservations": [
+        {
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "bridge_id": "39052e2e-558e-422c-aea3-150488090d13",
+          "evidence_json": "{\"bridgeId\":\"39052e2e-558e-422c-aea3-150488090d13\",\"observedAt\":\"2026-11-18T22:59:56.220Z\",\"pid\":62795,\"runId\":\"24f6a631-425e-4e34-8503-8bddedb208a9\",\"schema\":1,\"source\":\"kernel-peer\",\"startedAt\":\"darwin-proc-v1:1795042796:62434\"}",
+          "evidence_hash": "071fa134a194b82963a6a2a6afb8b33b717212e6e975dac8948f850e42faa974",
+          "observed_at": "2026-11-18T22:59:56.220Z"
+        }
+      ],
+      "pluginLeases": [
+        {
+          "lease_id": "1765951a-6be1-4817-9474-fe41b6d7e98e",
+          "pid": 62518,
+          "host_pid": 62514,
+          "kind": "activation",
+          "process_started_at": "darwin-proc-v1:1795042788:951152",
+          "state": "closed"
+        },
+        {
+          "lease_id": "79678b02-33c3-4467-bae0-a32e8ac3d7d8",
+          "pid": 62914,
+          "host_pid": 62520,
+          "kind": "invocation",
+          "process_started_at": "darwin-proc-v1:1795042801:744871",
+          "state": "running"
+        }
+      ]
+    },
+    "business": {
+      "marker": "A27_LOCAL_DURABLE_NO_REPLY",
+      "operationId": "435d5c19-aa6d-4c44-a988-aff80dc2ae43",
+      "runId": "24f6a631-425e-4e34-8503-8bddedb208a9",
+      "projectId": "221fc9bc-9017-4d53-bac7-06b4b1efbd43",
+      "pid": 62914
+    },
+    "effectHash": "20b175daebbe865a7e0ea8fb621366c7c175becac6aa9849d20bc6ebabac9072",
+    "attemptHash": "20b175daebbe865a7e0ea8fb621366c7c175becac6aa9849d20bc6ebabac9072",
+    "parentTurn": {
+      "turn_id": "1ada55d2-e9c2-4ae9-9b11-88b42430123a",
+      "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+      "native_turn_id": "8e98c3f9-e339-4ae5-9909-b0feb37f5064:1",
+      "status": "started",
+      "error_code": null
+    },
+    "verifiedBridgeIds": [
+      "39052e2e-558e-422c-aea3-150488090d13"
+    ]
+  },
+  "faultIdentity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    62520
+  ],
+  "preCrashRendererErrors": [],
+  "crashed": {
+    "pid": 62520,
+    "code": null,
+    "signal": "SIGKILL"
+  },
+  "restart": {
+    "bootstrap": {
+      "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+      "at": "2026-11-18T23:00:03.728Z",
+      "workerInspectorFlagRemoved": true
+    },
+    "identity": [
+      true,
+      "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/data",
+      "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+      "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-093/runtime-orvtoO/home",
+      "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+      62933
+    ],
+    "confirmedStopped": [
+      {
+        "role": "host",
+        "pid": 62520,
+        "startedAt": "darwin-proc-v1:1795042789:51740"
+      },
+      {
+        "role": "native",
+        "pid": 62684,
+        "startedAt": "darwin-proc-v1:1795042795:843663"
+      },
+      {
+        "role": "worker",
+        "pid": 62914,
+        "startedAt": "darwin-proc-v1:1795042801:744871"
+      },
+      {
+        "role": "bridge",
+        "pid": 62795,
+        "startedAt": "darwin-proc-v1:1795042796:62434"
+      }
+    ],
+    "after": {
+      "requests": [
+        {
+          "request_id": "2273d8d5-4783-4005-a26d-cbd9a3523367",
+          "operation_id": "435d5c19-aa6d-4c44-a988-aff80dc2ae43",
+          "task_id": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+          "status": "resolved",
+          "revision": 4,
+          "phase": "unknown",
+          "origin_json": "{\"taskId\":\"dcc39138-d6d0-43e7-bca6-534d4d227842\",\"bindingId\":\"46fbf360-372e-46fb-bbcd-27f87370a6d4\",\"runId\":\"24f6a631-425e-4e34-8503-8bddedb208a9\",\"generation\":1}"
+        }
+      ],
+      "invocations": [
+        {
+          "operation_id": "435d5c19-aa6d-4c44-a988-aff80dc2ae43",
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "task_id": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+          "project_id": "221fc9bc-9017-4d53-bac7-06b4b1efbd43",
+          "app_id": "a27-local-effect",
+          "package_hash": "09b96f3a7d5f3cd2f28aef3e655279a79897d85107c40ebd2acf33a34e851b06",
+          "state": "unknown",
+          "effect_state": "unknown",
+          "attempt_count": 1,
+          "ended_at": "2026-11-18T23:00:05.131Z",
+          "error_code": "HOST_INTERRUPTED"
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "owner_pid": 62520,
+          "owner_started_at": "darwin-proc-v1:1795042789:51740",
+          "pid": 62684,
+          "process_started_at": "darwin-proc-v1:1795042795:843663",
+          "state": "stopped",
+          "revocation_state": "revoked"
+        }
+      ],
+      "processes": [
+        {
+          "process_id": "ae253d78-61ab-45d7-9083-53a628de88e0",
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "kind": "cli",
+          "pid": 62684,
+          "process_started_at": "darwin-proc-v1:1795042795:843663",
+          "state": "exited",
+          "attached_at": "2026-11-18T22:59:55.870Z",
+          "ended_at": "2026-11-18T23:00:05.121Z"
+        },
+        {
+          "process_id": "39052e2e-558e-422c-aea3-150488090d13",
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "kind": "bridge",
+          "pid": 62795,
+          "process_started_at": "darwin-proc-v1:1795042796:62434",
+          "state": "exited",
+          "attached_at": "2026-11-18T22:59:56.147Z",
+          "ended_at": "2026-11-18T23:00:05.121Z"
+        }
+      ],
+      "bridgeObservations": [
+        {
+          "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+          "bridge_id": "39052e2e-558e-422c-aea3-150488090d13",
+          "evidence_json": "{\"bridgeId\":\"39052e2e-558e-422c-aea3-150488090d13\",\"observedAt\":\"2026-11-18T22:59:56.220Z\",\"pid\":62795,\"runId\":\"24f6a631-425e-4e34-8503-8bddedb208a9\",\"schema\":1,\"source\":\"kernel-peer\",\"startedAt\":\"darwin-proc-v1:1795042796:62434\"}",
+          "evidence_hash": "071fa134a194b82963a6a2a6afb8b33b717212e6e975dac8948f850e42faa974",
+          "observed_at": "2026-11-18T22:59:56.220Z"
+        }
+      ],
+      "pluginLeases": [
+        {
+          "lease_id": "1765951a-6be1-4817-9474-fe41b6d7e98e",
+          "pid": 62518,
+          "host_pid": 62514,
+          "kind": "activation",
+          "process_started_at": "darwin-proc-v1:1795042788:951152",
+          "state": "closed"
+        },
+        {
+          "lease_id": "79678b02-33c3-4467-bae0-a32e8ac3d7d8",
+          "pid": 62914,
+          "host_pid": 62520,
+          "kind": "invocation",
+          "process_started_at": "darwin-proc-v1:1795042801:744871",
+          "state": "closed"
+        }
+      ]
+    },
+    "originalTurn": {
+      "turn_id": "1ada55d2-e9c2-4ae9-9b11-88b42430123a",
+      "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+      "native_turn_id": "8e98c3f9-e339-4ae5-9909-b0feb37f5064:1",
+      "status": "unknown",
+      "error_code": "HOST_RESTARTED"
+    },
+    "activity": {
+      "id": "435d5c19-aa6d-4c44-a988-aff80dc2ae43",
+      "runId": "24f6a631-425e-4e34-8503-8bddedb208a9",
+      "state": "unknown",
+      "effectState": "unknown",
+      "attemptCount": 1,
+      "errorCode": "HOST_INTERRUPTED",
+      "endedAt": "2026-11-18T23:00:05.131Z"
+    },
+    "noAutomaticDispatchObservedMs": 3578,
+    "final": {
+      "effectHash": "20b175daebbe865a7e0ea8fb621366c7c175becac6aa9849d20bc6ebabac9072",
+      "attemptHash": "20b175daebbe865a7e0ea8fb621366c7c175becac6aa9849d20bc6ebabac9072",
+      "writeRequests": 1,
+      "attempted": 1
+    }
+  },
+  "retryFixture": {
+    "pid": 62933,
+    "maxRetries": "1"
+  },
+  "authenticationFailure": {
+    "taskId": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+    "turn": {
+      "turn_id": "bd59c2ee-077c-46dc-b09f-87dfa69936c5",
+      "run_id": "ecb7206d-f681-4074-919f-363af7b04404",
+      "native_turn_id": "8e98c3f9-e339-4ae5-9909-b0feb37f5064:1",
+      "status": "failed",
+      "started_at": "2026-11-18T23:00:11.510Z",
+      "error_code": "Failed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)"
+    },
+    "notice": {
+      "code": "authentication_failed",
+      "message": "Failed to authenticate. API Error: 401 Invalid API key (A06 synthetic credential)"
+    },
+    "requests": [
+      {
+        "at": 1795042811540,
+        "phase": "fault",
+        "path": "/v1/messages?beta=true",
+        "model": "a06-isolated-claude-unknown-write",
+        "route": "auth-fault",
+        "selectedTestAccount": true,
+        "status": 401
+      },
+      {
+        "at": 1795042812110,
+        "phase": "fault",
+        "path": "/v1/messages?beta=true",
+        "model": "a06-isolated-claude-unknown-write",
+        "route": "auth-fault",
+        "selectedTestAccount": true,
+        "status": 401
+      }
+    ]
+  },
+  "recovered": {
+    "taskId": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+    "turn": {
+      "turn_id": "b66c1888-61d1-493f-8ee6-da45c9e8aaa1",
+      "run_id": "ecb7206d-f681-4074-919f-363af7b04404",
+      "native_turn_id": "8e98c3f9-e339-4ae5-9909-b0feb37f5064:2",
+      "status": "completed",
+      "started_at": "2026-11-18T23:00:13.037Z",
+      "error_code": null
+    },
+    "requests": [
+      {
+        "at": 1795042813061,
+        "phase": "recovery",
+        "path": "/v1/messages?beta=true",
+        "model": "a06-isolated-claude-unknown-write",
+        "route": "healthy",
+        "selectedTestAccount": true,
+        "status": 200
+      }
+    ]
+  },
+  "beforeQuit": [
+    {
+      "taskId": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+      "title": "A06 exact unknown effect and provider recovery",
+      "status": "completed",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "A06 exact unknown effect and provider recovery",
+      "ecb7206d-f681-4074-919f-363af7b04404",
+      false
+    ]
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 62933,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "checkpointedInvocations": [
+    {
+      "operation_id": "435d5c19-aa6d-4c44-a988-aff80dc2ae43",
+      "run_id": "24f6a631-425e-4e34-8503-8bddedb208a9",
+      "task_id": "dcc39138-d6d0-43e7-bca6-534d4d227842",
+      "project_id": "221fc9bc-9017-4d53-bac7-06b4b1efbd43",
+      "app_id": "a27-local-effect",
+      "package_hash": "09b96f3a7d5f3cd2f28aef3e655279a79897d85107c40ebd2acf33a34e851b06",
+      "state": "unknown",
+      "effect_state": "unknown",
+      "attempt_count": 1,
+      "ended_at": "2026-11-18T23:00:05.131Z",
+      "error_code": "HOST_INTERRUPTED"
+    }
+  ]
+}

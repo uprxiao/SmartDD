@@ -1,0 +1,73 @@
+{
+  "sourceCommit": "4da61749fc24f8d05481b6139e276cf6c4afd5b0",
+  "asar": "39351e634975433afb8034cda4e3a387fbd534b3f982ad56b3f88e062864dbc4",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "sourceHashes": {
+    "claude": "2a5dfb13aae047309f15b90c245098510dcf23fd7115d3fdf821c9603d4445f8",
+    "codex": "fba619ac9c8517c1acc4559d7e288e5c61678b0e4038dc31725c7dbfe3e418b3"
+  },
+  "fixtures": {
+    "root": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/home",
+    "data": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/data",
+    "project": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/project",
+    "sourcePaths": {
+      "claude": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/project/.mcp.json",
+      "codex": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/home/.codex/config.toml"
+    },
+    "expected": {
+      "a09_claude_stdio": {
+        "argv": [
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+          "a09_claude_stdio",
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/witness-a09_claude_stdio.json",
+          "--label",
+          "Claude 含空格 中文",
+          "one \"double\" and 'single'",
+          "lower\\path\\text",
+          "",
+          "Claude 已展开 值 suffix",
+          "$A09_LITERAL",
+          "无值 默认"
+        ],
+        "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/project/fixtures/Claude 中文 工作区",
+        "publicEnv": {
+          "A09_CLAUDE_MCP": "own Claude 已展开 值",
+          "A09_FIXED": "C own fixed literal"
+        }
+      },
+      "a09_codex_stdio": {
+        "argv": [
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+          "a09_codex_stdio",
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/witness-a09_codex_stdio.json",
+          "--label",
+          "Codex 中文 两段",
+          "one 'single' and \"double\"",
+          "upper\\path\\text",
+          "",
+          "${A09_CLAUDE_PUBLIC} remains literal",
+          "$A09_LITERAL",
+          "@WYARG:public literal"
+        ],
+        "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-138/runtime-UfNXjR/project/fixtures/Codex 合成 work area",
+        "publicEnv": {
+          "A09_CODEX_MCP": "own ${A09_CLAUDE_PUBLIC}",
+          "A09_FIXED": "X own fixed literal",
+          "A09_CODEX_PUBLIC": "Codex 原生导出 值"
+        }
+      }
+    }
+  },
+  "layer": "A packaged App with actual native MCP and synthetic loopback model",
+  "modelRequests": [],
+  "flows": {},
+  "clicks": [],
+  "passed": false,
+  "error": "AssertionError [ERR_ASSERTION]: Pre-entry hook requires this explicit private inspected App\n    at openElectron (file:///private/tmp/willyou-m14-stage6.WRvdST/source/scripts/lib/electron-harness.mjs:57:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/scenario.mjs:139:7",
+  "sourceHashesAfterExit": {
+    "claude": "2a5dfb13aae047309f15b90c245098510dcf23fd7115d3fdf821c9603d4445f8",
+    "codex": "fba619ac9c8517c1acc4559d7e288e5c61678b0e4038dc31725c7dbfe3e418b3"
+  },
+  "allProcessRecordsAfterExit": []
+}

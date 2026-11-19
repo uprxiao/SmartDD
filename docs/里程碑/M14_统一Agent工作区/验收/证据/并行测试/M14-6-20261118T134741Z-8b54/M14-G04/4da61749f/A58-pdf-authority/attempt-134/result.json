@@ -1,0 +1,3686 @@
+{
+  "caseId": "M14-A58",
+  "scope": "Actual PDF click and same active restricted Claude run authority before/after; loopback only",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-134/runtime-a0ReqP/home",
+    "at": "2026-11-19T00:22:08.594Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "pdf",
+  "sourceCommit": "4da61749fc24f8d05481b6139e276cf6c4afd5b0",
+  "asar": "39351e634975433afb8034cda4e3a387fbd534b3f982ad56b3f88e062864dbc4",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a58-pdf-authority-packaged.mjs": "567f4c76621305e9fa6b52254af96437f0b2154057a49678cd425bea271f6dc0",
+    "a58-prep/pdf-authority-readback.py": "c3f2d60b3b4e1721284b89c1c30647df721df372861bd775fa5b6ec1d360ef81"
+  },
+  "observations": [
+    {
+      "kind": "before-preview-native-read-only-receipt",
+      "receipt": {
+        "id": "toolu_32f15ca5-fd12-44a4-bf81-873fc95dda91",
+        "result": {
+          "targets": [
+            {
+              "profileId": "52dbe51f-613c-4f55-9bff-1b67c06d869a",
+              "driverId": "claude-sdk",
+              "name": "Fixture claude",
+              "models": [
+                "fixture-parent"
+              ],
+              "available": true,
+              "trustedRead": false,
+              "revision": "6e51158d8cf35ca7cb48b2f997ae79c52d37ff553b6bbe51e12f817e4f19126b"
+            }
+          ]
+        },
+        "toolCatalog": [
+          {
+            "name": "Agent",
+            "schemaDigest": "cbad9ee49d0c48747135c83d01154439d0fcac4c06816c1a2b8318a2310e8aa1"
+          },
+          {
+            "name": "AskUserQuestion",
+            "schemaDigest": "88c3daf70e465d9d0aa661d4c477cf74df4e5a66bde465cd260781008fb8b7bb"
+          },
+          {
+            "name": "Bash",
+            "schemaDigest": "26151960d0552f0eca1ec949939a629555ad2ecf3732e1cbe30273e019fde5bf"
+          },
+          {
+            "name": "CronCreate",
+            "schemaDigest": "eec04c70179b33c97871741bf94d3207cb003ded25c2a5cea91f36319b723b39"
+          },
+          {
+            "name": "CronDelete",
+            "schemaDigest": "865230a52e30149c5ebe16edda290f13f0ce72842bd49a8bef5afafd0e1199e3"
+          },
+          {
+            "name": "CronList",
+            "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+          },
+          {
+            "name": "Edit",
+            "schemaDigest": "73c20da9a0cd63a1eb6f21ac29e3c9124ecd39c8a10076d94b4eb29c3a5018f0"
+          },
+          {
+            "name": "EnterPlanMode",
+            "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+          },
+          {
+            "name": "EnterWorktree",
+            "schemaDigest": "a63d41e78ace78eb4ef61668d62738f29915825f322fbac68b5ebc1bed140247"
+          },
+          {
+            "name": "ExitPlanMode",
+            "schemaDigest": "d81b8e4a4e6bc2b2a9b05c9e768d51cc891e4a87aecb602732ecf1a9978198ed"
+          },
+          {
+            "name": "ExitWorktree",
+            "schemaDigest": "1e14cea36779910a1f0e521ac455ceba30c04595722408a1ff2ce924bfffba6d"
+          },
+          {
+            "name": "ListAgents",
+            "schemaDigest": "cc9b04911ffad78c6fc0aa7aa4d674d1e6c797bc8f492ead1129f6c2cf0d7e9f"
+          },
+          {
+            "name": "mcp__smartdd_project_fcf27bb7318d__project_context",
+            "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_attach_import_v2",
+            "schemaDigest": "c9442afc67fd13ba1bfe1ff0dd6a5e277ffd941704744a43ddec05562849d6d4"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_copy_v2",
+            "schemaDigest": "0228adec97ff7e0e86ed1af4e2c6e6652d438ef6ba6f76fe55f807d591cbb09c"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_create_v2",
+            "schemaDigest": "5e2801913554fbc025fd441cff39a34c76151dfb24abf27d736846417b5555ee"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_get_v2",
+            "schemaDigest": "0a6afcb43c3217dfdcfc4254382be410418f471d0cf4fbbe5f7d0761daf2bf3e"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_list_v2",
+            "schemaDigest": "327016564ed826fb02cc00ff1305a190c5ffc8454a9a5598a148a7449e3ede4c"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_update_v2",
+            "schemaDigest": "ef6e31f1d9fcdf8d4a22476f9e7b993cf949dfd89dec660c1e9c8f13c2301cb3"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_query_v2",
+            "schemaDigest": "66d5ab0df24ffb488568d954c0616866595c83ae3505466808fb39adb8a1ec2e"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_read_v2",
+            "schemaDigest": "9574db28ab5a12e9de4345c14be9949d593eb18be84f230740bb76b6940a43b9"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_reply_create_v2",
+            "schemaDigest": "fcc7139649286d0e0a7042ae8f47040d16c4abde52ce5aabaf127b53c562bede"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_resource_read_v2",
+            "schemaDigest": "10ad3fe43685266c7983782283da9de5f22b06d7f18614a6a8d2ff1b6f0bda36"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_cancel_v2",
+            "schemaDigest": "3759f4b5687ffe9a055b8e911cf24ec9f8bc1ee980760d9d1259ce9a4b1b682a"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_execute_v2",
+            "schemaDigest": "3ca7d363e03d62f27b4ef7ef8ec809c736280ade18fc526b93299e7cc28e0ad9"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_get_v2",
+            "schemaDigest": "0c477681329e15475509fd0fbec4fe3fa2ad8d51323355310cee6d26a8f38e67"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_prepare_v2",
+            "schemaDigest": "7784aaaeb2cc7707d6f544d03baa9d485dea23b3f99485d5d170462f3f7c3185"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_cancel",
+            "schemaDigest": "33be99a68b1b671c6b276d67528da8d6dae1ee806b0f70ab5c0902c69bc57c14"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_delegate",
+            "schemaDigest": "4976ffd512f4f17480a4989a221141bc796b46d152f93998078d79b39d6af32d"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_observe",
+            "schemaDigest": "52934374ed5230dbf7caabfe52870fd3243ecc61a867de6804ec957b93a1b317"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_send",
+            "schemaDigest": "599c191ce19df391342e4e22882da17d0acf40103fb6a3bcd6130b3b9e9eeceb"
+          },
+          {
+            "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_targets",
+            "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+          },
+          {
+            "name": "Monitor",
+            "schemaDigest": "daf5134dfe1d8ff513d98d5a0ccf9e3ae403c37e2fc2f3b6d925655016ae0ecc"
+          },
+          {
+            "name": "NotebookEdit",
+            "schemaDigest": "353e011f2b233942c1e4f959ad0dea06510198acfbdcb7d15a6b6067ad4b8094"
+          },
+          {
+            "name": "Read",
+            "schemaDigest": "1348bedf9eb7005361bfec3643dac845d3fb8e865fbac220b31c28bb4aa1675b"
+          },
+          {
+            "name": "ReportFindings",
+            "schemaDigest": "e697ebc8acde980766f1655f3f5de098ca0b2b6da81a100cc0f49c4e5dc0e2db"
+          },
+          {
+            "name": "ScheduleWakeup",
+            "schemaDigest": "e0c4bb29b7c4250993298cb52cebef8f824d4b68e944993fb96cca95f5e83134"
+          },
+          {
+            "name": "SendMessage",
+            "schemaDigest": "0b7fa79f16527d2c62777be1403a0b505493fcde1a28faf30203d77ccfc5d905"
+          },
+          {
+            "name": "Skill",
+            "schemaDigest": "3f335f6d6bd8375071f441aaf822bf292a87b30ab7e1fb265eaefb24ec1bdb0f"
+          },
+          {
+            "name": "TaskStop",
+            "schemaDigest": "f482f227347b31054629609e6d668e1d660495823b3a9cac5130581f28bab8a8"
+          },
+          {
+            "name": "WebFetch",
+            "schemaDigest": "ec841b02dcd7f8297ffdbaa56039da03b8feb00a67094729d7a6bb2fffda004e"
+          },
+          {
+            "name": "WebSearch",
+            "schemaDigest": "ce035ada7312377e4219f1f4d74d325e1db5b9e3b9c4bf9b8e46e7e119b7cbbb"
+          },
+          {
+            "name": "Workflow",
+            "schemaDigest": "08828d2fe0b29f4f3269ff7dbc6cca61393d92642975d9c56e133249286770fb"
+          },
+          {
+            "name": "Write",
+            "schemaDigest": "32dd0537e15f621781fa35bd4db0fce13449e8171eb17b97246a7ed13e6e5038"
+          }
+        ],
+        "receivedAt": "2026-11-19T00:22:15.125Z"
+      }
+    },
+    {
+      "kind": "application-session-reply",
+      "ok": true,
+      "code": null,
+      "diagnosticRunIds": [
+        "59da01fe-4ffa-4b9b-b179-f7559f2e0740"
+      ]
+    },
+    {
+      "kind": "application-session-reply",
+      "ok": true,
+      "code": null,
+      "diagnosticRunIds": [
+        "59da01fe-4ffa-4b9b-b179-f7559f2e0740"
+      ]
+    },
+    {
+      "kind": "application-session-reply",
+      "ok": true,
+      "code": null,
+      "diagnosticRunIds": [
+        "59da01fe-4ffa-4b9b-b179-f7559f2e0740"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"682308c1-adbc-4b1c-9424-8300d0851f93\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "text": "打开 PDF",
+      "button": "left",
+      "x": 533.25,
+      "y": 240.0390625
+    }
+  ],
+  "requests": [
+    {
+      "at": "2026-11-19T00:22:14.686Z",
+      "marker": "M14_A58_PDF_WARM",
+      "toolCatalog": [
+        {
+          "name": "Agent",
+          "schemaDigest": "cbad9ee49d0c48747135c83d01154439d0fcac4c06816c1a2b8318a2310e8aa1"
+        },
+        {
+          "name": "AskUserQuestion",
+          "schemaDigest": "88c3daf70e465d9d0aa661d4c477cf74df4e5a66bde465cd260781008fb8b7bb"
+        },
+        {
+          "name": "Bash",
+          "schemaDigest": "26151960d0552f0eca1ec949939a629555ad2ecf3732e1cbe30273e019fde5bf"
+        },
+        {
+          "name": "CronCreate",
+          "schemaDigest": "eec04c70179b33c97871741bf94d3207cb003ded25c2a5cea91f36319b723b39"
+        },
+        {
+          "name": "CronDelete",
+          "schemaDigest": "865230a52e30149c5ebe16edda290f13f0ce72842bd49a8bef5afafd0e1199e3"
+        },
+        {
+          "name": "CronList",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "Edit",
+          "schemaDigest": "73c20da9a0cd63a1eb6f21ac29e3c9124ecd39c8a10076d94b4eb29c3a5018f0"
+        },
+        {
+          "name": "EnterPlanMode",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "EnterWorktree",
+          "schemaDigest": "a63d41e78ace78eb4ef61668d62738f29915825f322fbac68b5ebc1bed140247"
+        },
+        {
+          "name": "ExitPlanMode",
+          "schemaDigest": "d81b8e4a4e6bc2b2a9b05c9e768d51cc891e4a87aecb602732ecf1a9978198ed"
+        },
+        {
+          "name": "ExitWorktree",
+          "schemaDigest": "1e14cea36779910a1f0e521ac455ceba30c04595722408a1ff2ce924bfffba6d"
+        },
+        {
+          "name": "ListAgents",
+          "schemaDigest": "cc9b04911ffad78c6fc0aa7aa4d674d1e6c797bc8f492ead1129f6c2cf0d7e9f"
+        },
+        {
+          "name": "mcp__smartdd_project_fcf27bb7318d__project_context",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_attach_import_v2",
+          "schemaDigest": "c9442afc67fd13ba1bfe1ff0dd6a5e277ffd941704744a43ddec05562849d6d4"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_copy_v2",
+          "schemaDigest": "0228adec97ff7e0e86ed1af4e2c6e6652d438ef6ba6f76fe55f807d591cbb09c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_create_v2",
+          "schemaDigest": "5e2801913554fbc025fd441cff39a34c76151dfb24abf27d736846417b5555ee"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_get_v2",
+          "schemaDigest": "0a6afcb43c3217dfdcfc4254382be410418f471d0cf4fbbe5f7d0761daf2bf3e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_list_v2",
+          "schemaDigest": "327016564ed826fb02cc00ff1305a190c5ffc8454a9a5598a148a7449e3ede4c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_update_v2",
+          "schemaDigest": "ef6e31f1d9fcdf8d4a22476f9e7b993cf949dfd89dec660c1e9c8f13c2301cb3"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_query_v2",
+          "schemaDigest": "66d5ab0df24ffb488568d954c0616866595c83ae3505466808fb39adb8a1ec2e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_read_v2",
+          "schemaDigest": "9574db28ab5a12e9de4345c14be9949d593eb18be84f230740bb76b6940a43b9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_reply_create_v2",
+          "schemaDigest": "fcc7139649286d0e0a7042ae8f47040d16c4abde52ce5aabaf127b53c562bede"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_resource_read_v2",
+          "schemaDigest": "10ad3fe43685266c7983782283da9de5f22b06d7f18614a6a8d2ff1b6f0bda36"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_cancel_v2",
+          "schemaDigest": "3759f4b5687ffe9a055b8e911cf24ec9f8bc1ee980760d9d1259ce9a4b1b682a"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_execute_v2",
+          "schemaDigest": "3ca7d363e03d62f27b4ef7ef8ec809c736280ade18fc526b93299e7cc28e0ad9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_get_v2",
+          "schemaDigest": "0c477681329e15475509fd0fbec4fe3fa2ad8d51323355310cee6d26a8f38e67"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_prepare_v2",
+          "schemaDigest": "7784aaaeb2cc7707d6f544d03baa9d485dea23b3f99485d5d170462f3f7c3185"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_cancel",
+          "schemaDigest": "33be99a68b1b671c6b276d67528da8d6dae1ee806b0f70ab5c0902c69bc57c14"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_delegate",
+          "schemaDigest": "4976ffd512f4f17480a4989a221141bc796b46d152f93998078d79b39d6af32d"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_observe",
+          "schemaDigest": "52934374ed5230dbf7caabfe52870fd3243ecc61a867de6804ec957b93a1b317"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_send",
+          "schemaDigest": "599c191ce19df391342e4e22882da17d0acf40103fb6a3bcd6130b3b9e9eeceb"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_targets",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "Monitor",
+          "schemaDigest": "daf5134dfe1d8ff513d98d5a0ccf9e3ae403c37e2fc2f3b6d925655016ae0ecc"
+        },
+        {
+          "name": "NotebookEdit",
+          "schemaDigest": "353e011f2b233942c1e4f959ad0dea06510198acfbdcb7d15a6b6067ad4b8094"
+        },
+        {
+          "name": "Read",
+          "schemaDigest": "1348bedf9eb7005361bfec3643dac845d3fb8e865fbac220b31c28bb4aa1675b"
+        },
+        {
+          "name": "ReportFindings",
+          "schemaDigest": "e697ebc8acde980766f1655f3f5de098ca0b2b6da81a100cc0f49c4e5dc0e2db"
+        },
+        {
+          "name": "ScheduleWakeup",
+          "schemaDigest": "e0c4bb29b7c4250993298cb52cebef8f824d4b68e944993fb96cca95f5e83134"
+        },
+        {
+          "name": "SendMessage",
+          "schemaDigest": "0b7fa79f16527d2c62777be1403a0b505493fcde1a28faf30203d77ccfc5d905"
+        },
+        {
+          "name": "Skill",
+          "schemaDigest": "3f335f6d6bd8375071f441aaf822bf292a87b30ab7e1fb265eaefb24ec1bdb0f"
+        },
+        {
+          "name": "TaskStop",
+          "schemaDigest": "f482f227347b31054629609e6d668e1d660495823b3a9cac5130581f28bab8a8"
+        },
+        {
+          "name": "WebFetch",
+          "schemaDigest": "ec841b02dcd7f8297ffdbaa56039da03b8feb00a67094729d7a6bb2fffda004e"
+        },
+        {
+          "name": "WebSearch",
+          "schemaDigest": "ce035ada7312377e4219f1f4d74d325e1db5b9e3b9c4bf9b8e46e7e119b7cbbb"
+        },
+        {
+          "name": "Workflow",
+          "schemaDigest": "08828d2fe0b29f4f3269ff7dbc6cca61393d92642975d9c56e133249286770fb"
+        },
+        {
+          "name": "Write",
+          "schemaDigest": "32dd0537e15f621781fa35bd4db0fce13449e8171eb17b97246a7ed13e6e5038"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-19T00:22:15.010Z",
+      "marker": "M14_A58_PDF_ACTIVE",
+      "toolCatalog": [
+        {
+          "name": "Agent",
+          "schemaDigest": "cbad9ee49d0c48747135c83d01154439d0fcac4c06816c1a2b8318a2310e8aa1"
+        },
+        {
+          "name": "AskUserQuestion",
+          "schemaDigest": "88c3daf70e465d9d0aa661d4c477cf74df4e5a66bde465cd260781008fb8b7bb"
+        },
+        {
+          "name": "Bash",
+          "schemaDigest": "26151960d0552f0eca1ec949939a629555ad2ecf3732e1cbe30273e019fde5bf"
+        },
+        {
+          "name": "CronCreate",
+          "schemaDigest": "eec04c70179b33c97871741bf94d3207cb003ded25c2a5cea91f36319b723b39"
+        },
+        {
+          "name": "CronDelete",
+          "schemaDigest": "865230a52e30149c5ebe16edda290f13f0ce72842bd49a8bef5afafd0e1199e3"
+        },
+        {
+          "name": "CronList",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "Edit",
+          "schemaDigest": "73c20da9a0cd63a1eb6f21ac29e3c9124ecd39c8a10076d94b4eb29c3a5018f0"
+        },
+        {
+          "name": "EnterPlanMode",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "EnterWorktree",
+          "schemaDigest": "a63d41e78ace78eb4ef61668d62738f29915825f322fbac68b5ebc1bed140247"
+        },
+        {
+          "name": "ExitPlanMode",
+          "schemaDigest": "d81b8e4a4e6bc2b2a9b05c9e768d51cc891e4a87aecb602732ecf1a9978198ed"
+        },
+        {
+          "name": "ExitWorktree",
+          "schemaDigest": "1e14cea36779910a1f0e521ac455ceba30c04595722408a1ff2ce924bfffba6d"
+        },
+        {
+          "name": "ListAgents",
+          "schemaDigest": "cc9b04911ffad78c6fc0aa7aa4d674d1e6c797bc8f492ead1129f6c2cf0d7e9f"
+        },
+        {
+          "name": "mcp__smartdd_project_fcf27bb7318d__project_context",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_attach_import_v2",
+          "schemaDigest": "c9442afc67fd13ba1bfe1ff0dd6a5e277ffd941704744a43ddec05562849d6d4"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_copy_v2",
+          "schemaDigest": "0228adec97ff7e0e86ed1af4e2c6e6652d438ef6ba6f76fe55f807d591cbb09c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_create_v2",
+          "schemaDigest": "5e2801913554fbc025fd441cff39a34c76151dfb24abf27d736846417b5555ee"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_get_v2",
+          "schemaDigest": "0a6afcb43c3217dfdcfc4254382be410418f471d0cf4fbbe5f7d0761daf2bf3e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_list_v2",
+          "schemaDigest": "327016564ed826fb02cc00ff1305a190c5ffc8454a9a5598a148a7449e3ede4c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_update_v2",
+          "schemaDigest": "ef6e31f1d9fcdf8d4a22476f9e7b993cf949dfd89dec660c1e9c8f13c2301cb3"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_query_v2",
+          "schemaDigest": "66d5ab0df24ffb488568d954c0616866595c83ae3505466808fb39adb8a1ec2e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_read_v2",
+          "schemaDigest": "9574db28ab5a12e9de4345c14be9949d593eb18be84f230740bb76b6940a43b9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_reply_create_v2",
+          "schemaDigest": "fcc7139649286d0e0a7042ae8f47040d16c4abde52ce5aabaf127b53c562bede"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_resource_read_v2",
+          "schemaDigest": "10ad3fe43685266c7983782283da9de5f22b06d7f18614a6a8d2ff1b6f0bda36"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_cancel_v2",
+          "schemaDigest": "3759f4b5687ffe9a055b8e911cf24ec9f8bc1ee980760d9d1259ce9a4b1b682a"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_execute_v2",
+          "schemaDigest": "3ca7d363e03d62f27b4ef7ef8ec809c736280ade18fc526b93299e7cc28e0ad9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_get_v2",
+          "schemaDigest": "0c477681329e15475509fd0fbec4fe3fa2ad8d51323355310cee6d26a8f38e67"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_prepare_v2",
+          "schemaDigest": "7784aaaeb2cc7707d6f544d03baa9d485dea23b3f99485d5d170462f3f7c3185"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_cancel",
+          "schemaDigest": "33be99a68b1b671c6b276d67528da8d6dae1ee806b0f70ab5c0902c69bc57c14"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_delegate",
+          "schemaDigest": "4976ffd512f4f17480a4989a221141bc796b46d152f93998078d79b39d6af32d"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_observe",
+          "schemaDigest": "52934374ed5230dbf7caabfe52870fd3243ecc61a867de6804ec957b93a1b317"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_send",
+          "schemaDigest": "599c191ce19df391342e4e22882da17d0acf40103fb6a3bcd6130b3b9e9eeceb"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_targets",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "Monitor",
+          "schemaDigest": "daf5134dfe1d8ff513d98d5a0ccf9e3ae403c37e2fc2f3b6d925655016ae0ecc"
+        },
+        {
+          "name": "NotebookEdit",
+          "schemaDigest": "353e011f2b233942c1e4f959ad0dea06510198acfbdcb7d15a6b6067ad4b8094"
+        },
+        {
+          "name": "Read",
+          "schemaDigest": "1348bedf9eb7005361bfec3643dac845d3fb8e865fbac220b31c28bb4aa1675b"
+        },
+        {
+          "name": "ReportFindings",
+          "schemaDigest": "e697ebc8acde980766f1655f3f5de098ca0b2b6da81a100cc0f49c4e5dc0e2db"
+        },
+        {
+          "name": "ScheduleWakeup",
+          "schemaDigest": "e0c4bb29b7c4250993298cb52cebef8f824d4b68e944993fb96cca95f5e83134"
+        },
+        {
+          "name": "SendMessage",
+          "schemaDigest": "0b7fa79f16527d2c62777be1403a0b505493fcde1a28faf30203d77ccfc5d905"
+        },
+        {
+          "name": "Skill",
+          "schemaDigest": "3f335f6d6bd8375071f441aaf822bf292a87b30ab7e1fb265eaefb24ec1bdb0f"
+        },
+        {
+          "name": "TaskStop",
+          "schemaDigest": "f482f227347b31054629609e6d668e1d660495823b3a9cac5130581f28bab8a8"
+        },
+        {
+          "name": "WebFetch",
+          "schemaDigest": "ec841b02dcd7f8297ffdbaa56039da03b8feb00a67094729d7a6bb2fffda004e"
+        },
+        {
+          "name": "WebSearch",
+          "schemaDigest": "ce035ada7312377e4219f1f4d74d325e1db5b9e3b9c4bf9b8e46e7e119b7cbbb"
+        },
+        {
+          "name": "Workflow",
+          "schemaDigest": "08828d2fe0b29f4f3269ff7dbc6cca61393d92642975d9c56e133249286770fb"
+        },
+        {
+          "name": "Write",
+          "schemaDigest": "32dd0537e15f621781fa35bd4db0fce13449e8171eb17b97246a7ed13e6e5038"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-19T00:22:15.125Z",
+      "marker": "M14_A58_PDF_ACTIVE",
+      "toolCatalog": [
+        {
+          "name": "Agent",
+          "schemaDigest": "cbad9ee49d0c48747135c83d01154439d0fcac4c06816c1a2b8318a2310e8aa1"
+        },
+        {
+          "name": "AskUserQuestion",
+          "schemaDigest": "88c3daf70e465d9d0aa661d4c477cf74df4e5a66bde465cd260781008fb8b7bb"
+        },
+        {
+          "name": "Bash",
+          "schemaDigest": "26151960d0552f0eca1ec949939a629555ad2ecf3732e1cbe30273e019fde5bf"
+        },
+        {
+          "name": "CronCreate",
+          "schemaDigest": "eec04c70179b33c97871741bf94d3207cb003ded25c2a5cea91f36319b723b39"
+        },
+        {
+          "name": "CronDelete",
+          "schemaDigest": "865230a52e30149c5ebe16edda290f13f0ce72842bd49a8bef5afafd0e1199e3"
+        },
+        {
+          "name": "CronList",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "Edit",
+          "schemaDigest": "73c20da9a0cd63a1eb6f21ac29e3c9124ecd39c8a10076d94b4eb29c3a5018f0"
+        },
+        {
+          "name": "EnterPlanMode",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "EnterWorktree",
+          "schemaDigest": "a63d41e78ace78eb4ef61668d62738f29915825f322fbac68b5ebc1bed140247"
+        },
+        {
+          "name": "ExitPlanMode",
+          "schemaDigest": "d81b8e4a4e6bc2b2a9b05c9e768d51cc891e4a87aecb602732ecf1a9978198ed"
+        },
+        {
+          "name": "ExitWorktree",
+          "schemaDigest": "1e14cea36779910a1f0e521ac455ceba30c04595722408a1ff2ce924bfffba6d"
+        },
+        {
+          "name": "ListAgents",
+          "schemaDigest": "cc9b04911ffad78c6fc0aa7aa4d674d1e6c797bc8f492ead1129f6c2cf0d7e9f"
+        },
+        {
+          "name": "mcp__smartdd_project_fcf27bb7318d__project_context",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_attach_import_v2",
+          "schemaDigest": "c9442afc67fd13ba1bfe1ff0dd6a5e277ffd941704744a43ddec05562849d6d4"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_copy_v2",
+          "schemaDigest": "0228adec97ff7e0e86ed1af4e2c6e6652d438ef6ba6f76fe55f807d591cbb09c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_create_v2",
+          "schemaDigest": "5e2801913554fbc025fd441cff39a34c76151dfb24abf27d736846417b5555ee"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_get_v2",
+          "schemaDigest": "0a6afcb43c3217dfdcfc4254382be410418f471d0cf4fbbe5f7d0761daf2bf3e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_list_v2",
+          "schemaDigest": "327016564ed826fb02cc00ff1305a190c5ffc8454a9a5598a148a7449e3ede4c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_update_v2",
+          "schemaDigest": "ef6e31f1d9fcdf8d4a22476f9e7b993cf949dfd89dec660c1e9c8f13c2301cb3"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_query_v2",
+          "schemaDigest": "66d5ab0df24ffb488568d954c0616866595c83ae3505466808fb39adb8a1ec2e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_read_v2",
+          "schemaDigest": "9574db28ab5a12e9de4345c14be9949d593eb18be84f230740bb76b6940a43b9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_reply_create_v2",
+          "schemaDigest": "fcc7139649286d0e0a7042ae8f47040d16c4abde52ce5aabaf127b53c562bede"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_resource_read_v2",
+          "schemaDigest": "10ad3fe43685266c7983782283da9de5f22b06d7f18614a6a8d2ff1b6f0bda36"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_cancel_v2",
+          "schemaDigest": "3759f4b5687ffe9a055b8e911cf24ec9f8bc1ee980760d9d1259ce9a4b1b682a"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_execute_v2",
+          "schemaDigest": "3ca7d363e03d62f27b4ef7ef8ec809c736280ade18fc526b93299e7cc28e0ad9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_get_v2",
+          "schemaDigest": "0c477681329e15475509fd0fbec4fe3fa2ad8d51323355310cee6d26a8f38e67"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_prepare_v2",
+          "schemaDigest": "7784aaaeb2cc7707d6f544d03baa9d485dea23b3f99485d5d170462f3f7c3185"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_cancel",
+          "schemaDigest": "33be99a68b1b671c6b276d67528da8d6dae1ee806b0f70ab5c0902c69bc57c14"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_delegate",
+          "schemaDigest": "4976ffd512f4f17480a4989a221141bc796b46d152f93998078d79b39d6af32d"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_observe",
+          "schemaDigest": "52934374ed5230dbf7caabfe52870fd3243ecc61a867de6804ec957b93a1b317"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_send",
+          "schemaDigest": "599c191ce19df391342e4e22882da17d0acf40103fb6a3bcd6130b3b9e9eeceb"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_targets",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "Monitor",
+          "schemaDigest": "daf5134dfe1d8ff513d98d5a0ccf9e3ae403c37e2fc2f3b6d925655016ae0ecc"
+        },
+        {
+          "name": "NotebookEdit",
+          "schemaDigest": "353e011f2b233942c1e4f959ad0dea06510198acfbdcb7d15a6b6067ad4b8094"
+        },
+        {
+          "name": "Read",
+          "schemaDigest": "1348bedf9eb7005361bfec3643dac845d3fb8e865fbac220b31c28bb4aa1675b"
+        },
+        {
+          "name": "ReportFindings",
+          "schemaDigest": "e697ebc8acde980766f1655f3f5de098ca0b2b6da81a100cc0f49c4e5dc0e2db"
+        },
+        {
+          "name": "ScheduleWakeup",
+          "schemaDigest": "e0c4bb29b7c4250993298cb52cebef8f824d4b68e944993fb96cca95f5e83134"
+        },
+        {
+          "name": "SendMessage",
+          "schemaDigest": "0b7fa79f16527d2c62777be1403a0b505493fcde1a28faf30203d77ccfc5d905"
+        },
+        {
+          "name": "Skill",
+          "schemaDigest": "3f335f6d6bd8375071f441aaf822bf292a87b30ab7e1fb265eaefb24ec1bdb0f"
+        },
+        {
+          "name": "TaskStop",
+          "schemaDigest": "f482f227347b31054629609e6d668e1d660495823b3a9cac5130581f28bab8a8"
+        },
+        {
+          "name": "WebFetch",
+          "schemaDigest": "ec841b02dcd7f8297ffdbaa56039da03b8feb00a67094729d7a6bb2fffda004e"
+        },
+        {
+          "name": "WebSearch",
+          "schemaDigest": "ce035ada7312377e4219f1f4d74d325e1db5b9e3b9c4bf9b8e46e7e119b7cbbb"
+        },
+        {
+          "name": "Workflow",
+          "schemaDigest": "08828d2fe0b29f4f3269ff7dbc6cca61393d92642975d9c56e133249286770fb"
+        },
+        {
+          "name": "Write",
+          "schemaDigest": "32dd0537e15f621781fa35bd4db0fce13449e8171eb17b97246a7ed13e6e5038"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-19T00:22:16.018Z",
+      "marker": "M14_A58_PDF_ACTIVE",
+      "toolCatalog": [
+        {
+          "name": "Agent",
+          "schemaDigest": "cbad9ee49d0c48747135c83d01154439d0fcac4c06816c1a2b8318a2310e8aa1"
+        },
+        {
+          "name": "AskUserQuestion",
+          "schemaDigest": "88c3daf70e465d9d0aa661d4c477cf74df4e5a66bde465cd260781008fb8b7bb"
+        },
+        {
+          "name": "Bash",
+          "schemaDigest": "26151960d0552f0eca1ec949939a629555ad2ecf3732e1cbe30273e019fde5bf"
+        },
+        {
+          "name": "CronCreate",
+          "schemaDigest": "eec04c70179b33c97871741bf94d3207cb003ded25c2a5cea91f36319b723b39"
+        },
+        {
+          "name": "CronDelete",
+          "schemaDigest": "865230a52e30149c5ebe16edda290f13f0ce72842bd49a8bef5afafd0e1199e3"
+        },
+        {
+          "name": "CronList",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "Edit",
+          "schemaDigest": "73c20da9a0cd63a1eb6f21ac29e3c9124ecd39c8a10076d94b4eb29c3a5018f0"
+        },
+        {
+          "name": "EnterPlanMode",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "EnterWorktree",
+          "schemaDigest": "a63d41e78ace78eb4ef61668d62738f29915825f322fbac68b5ebc1bed140247"
+        },
+        {
+          "name": "ExitPlanMode",
+          "schemaDigest": "d81b8e4a4e6bc2b2a9b05c9e768d51cc891e4a87aecb602732ecf1a9978198ed"
+        },
+        {
+          "name": "ExitWorktree",
+          "schemaDigest": "1e14cea36779910a1f0e521ac455ceba30c04595722408a1ff2ce924bfffba6d"
+        },
+        {
+          "name": "ListAgents",
+          "schemaDigest": "cc9b04911ffad78c6fc0aa7aa4d674d1e6c797bc8f492ead1129f6c2cf0d7e9f"
+        },
+        {
+          "name": "mcp__smartdd_project_fcf27bb7318d__project_context",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_attach_import_v2",
+          "schemaDigest": "c9442afc67fd13ba1bfe1ff0dd6a5e277ffd941704744a43ddec05562849d6d4"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_copy_v2",
+          "schemaDigest": "0228adec97ff7e0e86ed1af4e2c6e6652d438ef6ba6f76fe55f807d591cbb09c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_create_v2",
+          "schemaDigest": "5e2801913554fbc025fd441cff39a34c76151dfb24abf27d736846417b5555ee"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_get_v2",
+          "schemaDigest": "0a6afcb43c3217dfdcfc4254382be410418f471d0cf4fbbe5f7d0761daf2bf3e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_list_v2",
+          "schemaDigest": "327016564ed826fb02cc00ff1305a190c5ffc8454a9a5598a148a7449e3ede4c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_update_v2",
+          "schemaDigest": "ef6e31f1d9fcdf8d4a22476f9e7b993cf949dfd89dec660c1e9c8f13c2301cb3"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_query_v2",
+          "schemaDigest": "66d5ab0df24ffb488568d954c0616866595c83ae3505466808fb39adb8a1ec2e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_read_v2",
+          "schemaDigest": "9574db28ab5a12e9de4345c14be9949d593eb18be84f230740bb76b6940a43b9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_reply_create_v2",
+          "schemaDigest": "fcc7139649286d0e0a7042ae8f47040d16c4abde52ce5aabaf127b53c562bede"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_resource_read_v2",
+          "schemaDigest": "10ad3fe43685266c7983782283da9de5f22b06d7f18614a6a8d2ff1b6f0bda36"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_cancel_v2",
+          "schemaDigest": "3759f4b5687ffe9a055b8e911cf24ec9f8bc1ee980760d9d1259ce9a4b1b682a"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_execute_v2",
+          "schemaDigest": "3ca7d363e03d62f27b4ef7ef8ec809c736280ade18fc526b93299e7cc28e0ad9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_get_v2",
+          "schemaDigest": "0c477681329e15475509fd0fbec4fe3fa2ad8d51323355310cee6d26a8f38e67"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_prepare_v2",
+          "schemaDigest": "7784aaaeb2cc7707d6f544d03baa9d485dea23b3f99485d5d170462f3f7c3185"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_cancel",
+          "schemaDigest": "33be99a68b1b671c6b276d67528da8d6dae1ee806b0f70ab5c0902c69bc57c14"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_delegate",
+          "schemaDigest": "4976ffd512f4f17480a4989a221141bc796b46d152f93998078d79b39d6af32d"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_observe",
+          "schemaDigest": "52934374ed5230dbf7caabfe52870fd3243ecc61a867de6804ec957b93a1b317"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_send",
+          "schemaDigest": "599c191ce19df391342e4e22882da17d0acf40103fb6a3bcd6130b3b9e9eeceb"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_targets",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "Monitor",
+          "schemaDigest": "daf5134dfe1d8ff513d98d5a0ccf9e3ae403c37e2fc2f3b6d925655016ae0ecc"
+        },
+        {
+          "name": "NotebookEdit",
+          "schemaDigest": "353e011f2b233942c1e4f959ad0dea06510198acfbdcb7d15a6b6067ad4b8094"
+        },
+        {
+          "name": "Read",
+          "schemaDigest": "1348bedf9eb7005361bfec3643dac845d3fb8e865fbac220b31c28bb4aa1675b"
+        },
+        {
+          "name": "ReportFindings",
+          "schemaDigest": "e697ebc8acde980766f1655f3f5de098ca0b2b6da81a100cc0f49c4e5dc0e2db"
+        },
+        {
+          "name": "ScheduleWakeup",
+          "schemaDigest": "e0c4bb29b7c4250993298cb52cebef8f824d4b68e944993fb96cca95f5e83134"
+        },
+        {
+          "name": "SendMessage",
+          "schemaDigest": "0b7fa79f16527d2c62777be1403a0b505493fcde1a28faf30203d77ccfc5d905"
+        },
+        {
+          "name": "Skill",
+          "schemaDigest": "3f335f6d6bd8375071f441aaf822bf292a87b30ab7e1fb265eaefb24ec1bdb0f"
+        },
+        {
+          "name": "TaskStop",
+          "schemaDigest": "f482f227347b31054629609e6d668e1d660495823b3a9cac5130581f28bab8a8"
+        },
+        {
+          "name": "WebFetch",
+          "schemaDigest": "ec841b02dcd7f8297ffdbaa56039da03b8feb00a67094729d7a6bb2fffda004e"
+        },
+        {
+          "name": "WebSearch",
+          "schemaDigest": "ce035ada7312377e4219f1f4d74d325e1db5b9e3b9c4bf9b8e46e7e119b7cbbb"
+        },
+        {
+          "name": "Workflow",
+          "schemaDigest": "08828d2fe0b29f4f3269ff7dbc6cca61393d92642975d9c56e133249286770fb"
+        },
+        {
+          "name": "Write",
+          "schemaDigest": "32dd0537e15f621781fa35bd4db0fce13449e8171eb17b97246a7ed13e6e5038"
+        }
+      ]
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "passed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-134/runtime-a0ReqP/project",
+    "pdf": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-134/runtime-a0ReqP/project/fixture.pdf",
+    "sourceSha": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+    "bytes": 56519
+  },
+  "pid": 58271,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-134/runtime-a0ReqP/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-134/runtime-a0ReqP/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-134/runtime-a0ReqP/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    58271
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "authorityBefore": {
+    "taskId": "682308c1-adbc-4b1c-9424-8300d0851f93",
+    "projectId": "a9d35862-bde4-444d-9556-ab791f4fdeec",
+    "runId": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+    "snapshotHash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+    "agentSelection": {
+      "tier": "ask",
+      "generation": 1,
+      "driver": "claude-sdk",
+      "selection": {
+        "driverId": "claude-sdk",
+        "profileId": "52dbe51f-613c-4f55-9bff-1b67c06d869a",
+        "tier": "ask",
+        "carryExtensions": true,
+        "extensionPreferences": {
+          "52dbe51f-613c-4f55-9bff-1b67c06d869a": true
+        },
+        "model": "fixture-parent"
+      },
+      "selectionRevision": 1
+    },
+    "legacySnapshotDiagnostic": {
+      "selection": "not-recorded",
+      "snapshotHash": null
+    },
+    "publicRun": {
+      "id": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+      "state": "active",
+      "startedAt": "2026-11-19T00:22:13.901Z",
+      "runPlan": {
+        "cliVersion": "2.1.326",
+        "verified": true,
+        "nativeSendEvidence": false,
+        "sandboxSource": "claude-managed-user-only-v1",
+        "levels": [
+          {
+            "level": "L0.skill",
+            "state": "declared"
+          },
+          {
+            "level": "L0.mcp",
+            "state": "declared"
+          },
+          {
+            "level": "L0.cli",
+            "state": "declared"
+          },
+          {
+            "level": "L1",
+            "state": "declared"
+          },
+          {
+            "level": "L2",
+            "state": "unverified"
+          },
+          {
+            "level": "L3",
+            "state": "unverified"
+          }
+        ],
+        "applications": [
+          {
+            "appId": "browser",
+            "primaryEntry": "cli",
+            "effectiveEntry": "cli",
+            "fallback": false,
+            "reason": null
+          },
+          {
+            "appId": "mail",
+            "primaryEntry": "mcp",
+            "effectiveEntry": "mcp",
+            "fallback": false,
+            "reason": null
+          }
+        ]
+      },
+      "restriction": null,
+      "preparation": null,
+      "runPlanIssue": null,
+      "restrictionIssue": null
+    },
+    "applications": [
+      {
+        "id": "browser",
+        "packageHash": null,
+        "permissions": [],
+        "resourceState": "unverified",
+        "policy": "enabled",
+        "connections": []
+      },
+      {
+        "id": "mail",
+        "packageHash": null,
+        "permissions": [],
+        "resourceState": "unverified",
+        "policy": "enabled",
+        "connections": [
+          {
+            "id": null,
+            "slot": "foxmail",
+            "selection": "missing"
+          },
+          {
+            "id": null,
+            "slot": "smtp",
+            "selection": "missing"
+          }
+        ]
+      }
+    ],
+    "plugins": [],
+    "persisted": {
+      "run": {
+        "run_id": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+        "task_id": "682308c1-adbc-4b1c-9424-8300d0851f93",
+        "project_id": "a9d35862-bde4-444d-9556-ab791f4fdeec",
+        "pid": 58406,
+        "state": "active",
+        "snapshot_hash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+        "owner_pid": 58271,
+        "process_started_at": "darwin-proc-v1:1795047734:168091",
+        "binding_id": "2258ef64-15ad-4264-a59f-d9ab8f8e1e39",
+        "generation": 1,
+        "revocation_state": "open",
+        "launch_plan_hash": "b053d0f1cede86fc79c6934a7008c31d219947c1d264657421c25131b3686c11",
+        "bindings_sha256": "f9592add9b830fbcd9fd5657d9d34798e34d58a2563b9a34a7c8abfb5a230944"
+      },
+      "snapshot": {
+        "hash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+        "basis": "M14 committed run plan"
+      },
+      "planHash": "662bee8abc4fb07767ddcb4179d4941761d7e924074c886c6d0ae39fba5bce44",
+      "planSha256": "b744bd264f99a7c8bfa5ffdd6b7dc95253e5e6808f2acf53657821d969acd729",
+      "sandboxSource": "claude-managed-user-only-v1",
+      "allowed": [
+        {
+          "appId": "browser",
+          "capabilityId": "browser.identity.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.identity.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.snapshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.screenshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.goto",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.back",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.reload",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.forward",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.eval",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.scroll",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.wait",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.pdf",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.full-screenshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.click",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.dblclick",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.fill",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.type",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.select",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.check",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.uncheck",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.focus",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.select-all",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.keypress",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.hover",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.drag",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.upload",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.scrollintoview",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.is",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.inserttext",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-move",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-down",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-up",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-wheel",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.find",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.download",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.highlight",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.show",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.current",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.switch",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.create",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.close",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.exec",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.create",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.delete",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.show",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.use-default",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.clone",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.delete",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-enable",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-disable",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.start",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.stop",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.console",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.network",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.viewport",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.geolocation",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-device",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-offline",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-headers",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-credentials",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-media",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.clipboard-read",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.clipboard-write",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.dialog-accept",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.dialog-dismiss",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.wait-fn",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.access.request",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.operation.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.message.query",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.message.read",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.resource.read",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.list",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.get",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.create",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.update",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.copy",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.reply.create",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.attachment.import",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.prepare",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.execute",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.get",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.cancel",
+          "entry": "mcp",
+          "contractMajor": 2
+        }
+      ],
+      "channels": [
+        {
+          "kind": "bridge",
+          "pid": 58450,
+          "state": "active",
+          "process_started_at": "darwin-proc-v1:1795047734:328624"
+        },
+        {
+          "kind": "cli",
+          "pid": 58406,
+          "state": "active",
+          "process_started_at": "darwin-proc-v1:1795047734:168091"
+        }
+      ]
+    }
+  },
+  "viewer": {
+    "sender": 1,
+    "resourceId": "72e4596c-ab4d-458f-90f9-5059fcf6583a",
+    "viewerResourceTokenHash": "892b3b46282287658f63f63bf90628c24d29aece7eea88d5d42de61b21dcbb34",
+    "sourceSha": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+    "originalBytes": 56519,
+    "pageMarker": "PAGE_ONE_MARKER",
+    "openedAt": 1795047735378,
+    "documentGeneration": 1
+  },
+  "authorityWhilePreviewing": {
+    "taskId": "682308c1-adbc-4b1c-9424-8300d0851f93",
+    "projectId": "a9d35862-bde4-444d-9556-ab791f4fdeec",
+    "runId": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+    "snapshotHash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+    "agentSelection": {
+      "tier": "ask",
+      "generation": 1,
+      "driver": "claude-sdk",
+      "selection": {
+        "driverId": "claude-sdk",
+        "profileId": "52dbe51f-613c-4f55-9bff-1b67c06d869a",
+        "tier": "ask",
+        "carryExtensions": true,
+        "extensionPreferences": {
+          "52dbe51f-613c-4f55-9bff-1b67c06d869a": true
+        },
+        "model": "fixture-parent"
+      },
+      "selectionRevision": 1
+    },
+    "legacySnapshotDiagnostic": {
+      "selection": "not-recorded",
+      "snapshotHash": null
+    },
+    "publicRun": {
+      "id": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+      "state": "active",
+      "startedAt": "2026-11-19T00:22:13.901Z",
+      "runPlan": {
+        "cliVersion": "2.1.326",
+        "verified": true,
+        "nativeSendEvidence": false,
+        "sandboxSource": "claude-managed-user-only-v1",
+        "levels": [
+          {
+            "level": "L0.skill",
+            "state": "declared"
+          },
+          {
+            "level": "L0.mcp",
+            "state": "declared"
+          },
+          {
+            "level": "L0.cli",
+            "state": "declared"
+          },
+          {
+            "level": "L1",
+            "state": "declared"
+          },
+          {
+            "level": "L2",
+            "state": "unverified"
+          },
+          {
+            "level": "L3",
+            "state": "unverified"
+          }
+        ],
+        "applications": [
+          {
+            "appId": "browser",
+            "primaryEntry": "cli",
+            "effectiveEntry": "cli",
+            "fallback": false,
+            "reason": null
+          },
+          {
+            "appId": "mail",
+            "primaryEntry": "mcp",
+            "effectiveEntry": "mcp",
+            "fallback": false,
+            "reason": null
+          }
+        ]
+      },
+      "restriction": null,
+      "preparation": null,
+      "runPlanIssue": null,
+      "restrictionIssue": null
+    },
+    "applications": [
+      {
+        "id": "browser",
+        "packageHash": null,
+        "permissions": [],
+        "resourceState": "unverified",
+        "policy": "enabled",
+        "connections": []
+      },
+      {
+        "id": "mail",
+        "packageHash": null,
+        "permissions": [],
+        "resourceState": "unverified",
+        "policy": "enabled",
+        "connections": [
+          {
+            "id": null,
+            "slot": "foxmail",
+            "selection": "missing"
+          },
+          {
+            "id": null,
+            "slot": "smtp",
+            "selection": "missing"
+          }
+        ]
+      }
+    ],
+    "plugins": [],
+    "persisted": {
+      "run": {
+        "run_id": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+        "task_id": "682308c1-adbc-4b1c-9424-8300d0851f93",
+        "project_id": "a9d35862-bde4-444d-9556-ab791f4fdeec",
+        "pid": 58406,
+        "state": "active",
+        "snapshot_hash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+        "owner_pid": 58271,
+        "process_started_at": "darwin-proc-v1:1795047734:168091",
+        "binding_id": "2258ef64-15ad-4264-a59f-d9ab8f8e1e39",
+        "generation": 1,
+        "revocation_state": "open",
+        "launch_plan_hash": "b053d0f1cede86fc79c6934a7008c31d219947c1d264657421c25131b3686c11",
+        "bindings_sha256": "f9592add9b830fbcd9fd5657d9d34798e34d58a2563b9a34a7c8abfb5a230944"
+      },
+      "snapshot": {
+        "hash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+        "basis": "M14 committed run plan"
+      },
+      "planHash": "662bee8abc4fb07767ddcb4179d4941761d7e924074c886c6d0ae39fba5bce44",
+      "planSha256": "b744bd264f99a7c8bfa5ffdd6b7dc95253e5e6808f2acf53657821d969acd729",
+      "sandboxSource": "claude-managed-user-only-v1",
+      "allowed": [
+        {
+          "appId": "browser",
+          "capabilityId": "browser.identity.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.identity.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.snapshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.screenshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.goto",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.back",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.reload",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.forward",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.eval",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.scroll",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.wait",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.pdf",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.full-screenshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.click",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.dblclick",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.fill",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.type",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.select",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.check",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.uncheck",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.focus",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.select-all",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.keypress",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.hover",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.drag",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.upload",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.scrollintoview",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.is",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.inserttext",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-move",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-down",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-up",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-wheel",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.find",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.download",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.highlight",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.show",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.current",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.switch",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.create",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.close",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.exec",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.create",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.delete",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.show",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.use-default",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.clone",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.delete",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-enable",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-disable",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.start",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.stop",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.console",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.network",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.viewport",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.geolocation",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-device",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-offline",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-headers",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-credentials",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-media",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.clipboard-read",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.clipboard-write",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.dialog-accept",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.dialog-dismiss",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.wait-fn",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.access.request",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.operation.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.message.query",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.message.read",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.resource.read",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.list",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.get",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.create",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.update",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.copy",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.reply.create",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.attachment.import",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.prepare",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.execute",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.get",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.cancel",
+          "entry": "mcp",
+          "contractMajor": 2
+        }
+      ],
+      "channels": [
+        {
+          "kind": "bridge",
+          "pid": 58450,
+          "state": "active",
+          "process_started_at": "darwin-proc-v1:1795047734:328624"
+        },
+        {
+          "kind": "cli",
+          "pid": 58406,
+          "state": "active",
+          "process_started_at": "darwin-proc-v1:1795047734:168091"
+        }
+      ]
+    }
+  },
+  "authorityAfter": {
+    "taskId": "682308c1-adbc-4b1c-9424-8300d0851f93",
+    "projectId": "a9d35862-bde4-444d-9556-ab791f4fdeec",
+    "runId": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+    "snapshotHash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+    "agentSelection": {
+      "tier": "ask",
+      "generation": 1,
+      "driver": "claude-sdk",
+      "selection": {
+        "driverId": "claude-sdk",
+        "profileId": "52dbe51f-613c-4f55-9bff-1b67c06d869a",
+        "tier": "ask",
+        "carryExtensions": true,
+        "extensionPreferences": {
+          "52dbe51f-613c-4f55-9bff-1b67c06d869a": true
+        },
+        "model": "fixture-parent"
+      },
+      "selectionRevision": 1
+    },
+    "legacySnapshotDiagnostic": {
+      "selection": "not-recorded",
+      "snapshotHash": null
+    },
+    "publicRun": {
+      "id": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+      "state": "active",
+      "startedAt": "2026-11-19T00:22:13.901Z",
+      "runPlan": {
+        "cliVersion": "2.1.326",
+        "verified": true,
+        "nativeSendEvidence": false,
+        "sandboxSource": "claude-managed-user-only-v1",
+        "levels": [
+          {
+            "level": "L0.skill",
+            "state": "declared"
+          },
+          {
+            "level": "L0.mcp",
+            "state": "declared"
+          },
+          {
+            "level": "L0.cli",
+            "state": "declared"
+          },
+          {
+            "level": "L1",
+            "state": "declared"
+          },
+          {
+            "level": "L2",
+            "state": "unverified"
+          },
+          {
+            "level": "L3",
+            "state": "unverified"
+          }
+        ],
+        "applications": [
+          {
+            "appId": "browser",
+            "primaryEntry": "cli",
+            "effectiveEntry": "cli",
+            "fallback": false,
+            "reason": null
+          },
+          {
+            "appId": "mail",
+            "primaryEntry": "mcp",
+            "effectiveEntry": "mcp",
+            "fallback": false,
+            "reason": null
+          }
+        ]
+      },
+      "restriction": null,
+      "preparation": null,
+      "runPlanIssue": null,
+      "restrictionIssue": null
+    },
+    "applications": [
+      {
+        "id": "browser",
+        "packageHash": null,
+        "permissions": [],
+        "resourceState": "unverified",
+        "policy": "enabled",
+        "connections": []
+      },
+      {
+        "id": "mail",
+        "packageHash": null,
+        "permissions": [],
+        "resourceState": "unverified",
+        "policy": "enabled",
+        "connections": [
+          {
+            "id": null,
+            "slot": "foxmail",
+            "selection": "missing"
+          },
+          {
+            "id": null,
+            "slot": "smtp",
+            "selection": "missing"
+          }
+        ]
+      }
+    ],
+    "plugins": [],
+    "persisted": {
+      "run": {
+        "run_id": "59da01fe-4ffa-4b9b-b179-f7559f2e0740",
+        "task_id": "682308c1-adbc-4b1c-9424-8300d0851f93",
+        "project_id": "a9d35862-bde4-444d-9556-ab791f4fdeec",
+        "pid": 58406,
+        "state": "active",
+        "snapshot_hash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+        "owner_pid": 58271,
+        "process_started_at": "darwin-proc-v1:1795047734:168091",
+        "binding_id": "2258ef64-15ad-4264-a59f-d9ab8f8e1e39",
+        "generation": 1,
+        "revocation_state": "open",
+        "launch_plan_hash": "b053d0f1cede86fc79c6934a7008c31d219947c1d264657421c25131b3686c11",
+        "bindings_sha256": "f9592add9b830fbcd9fd5657d9d34798e34d58a2563b9a34a7c8abfb5a230944"
+      },
+      "snapshot": {
+        "hash": "16844a7eb5c7d9c6fbf78cf44567877d051c11b9450ea945bf934d8e9f06126c",
+        "basis": "M14 committed run plan"
+      },
+      "planHash": "662bee8abc4fb07767ddcb4179d4941761d7e924074c886c6d0ae39fba5bce44",
+      "planSha256": "b744bd264f99a7c8bfa5ffdd6b7dc95253e5e6808f2acf53657821d969acd729",
+      "sandboxSource": "claude-managed-user-only-v1",
+      "allowed": [
+        {
+          "appId": "browser",
+          "capabilityId": "browser.identity.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.identity.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.snapshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.screenshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.goto",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.back",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.reload",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.forward",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.eval",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.scroll",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.wait",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.pdf",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.full-screenshot",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.click",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.dblclick",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.fill",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.type",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.select",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.check",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.uncheck",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.focus",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.select-all",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.keypress",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.hover",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.drag",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.upload",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.scrollintoview",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.is",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.inserttext",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-move",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-down",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-up",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.mouse-wheel",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.find",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.download",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.highlight",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.show",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.current",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.switch",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.create",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.tab.close",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.interact.exec",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.create",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.delete",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.show",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.use-default",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.profile.clone",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.cookie.delete",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-enable",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-disable",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.intercept-list",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.start",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.capture.stop",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.console",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.network",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.viewport",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.geolocation",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-device",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-offline",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-headers",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-credentials",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.set-media",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.clipboard-read",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.clipboard-write",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.dialog-accept",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.env.dialog-dismiss",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.local-clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-set",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.storage.session-clear",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.nav.wait-fn",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.access.request",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "browser",
+          "capabilityId": "browser.operation.get",
+          "entry": "cli",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.message.query",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.message.read",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.resource.read",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.list",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.get",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.create",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.update",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.draft.copy",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.reply.create",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.attachment.import",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.prepare",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.execute",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.get",
+          "entry": "mcp",
+          "contractMajor": 2
+        },
+        {
+          "appId": "mail",
+          "capabilityId": "mail.send.cancel",
+          "entry": "mcp",
+          "contractMajor": 2
+        }
+      ],
+      "channels": [
+        {
+          "kind": "bridge",
+          "pid": 58450,
+          "state": "active",
+          "process_started_at": "darwin-proc-v1:1795047734:328624"
+        },
+        {
+          "kind": "cli",
+          "pid": 58406,
+          "state": "active",
+          "process_started_at": "darwin-proc-v1:1795047734:168091"
+        }
+      ]
+    }
+  },
+  "nativeSameScope": [
+    {
+      "id": "toolu_32f15ca5-fd12-44a4-bf81-873fc95dda91",
+      "result": {
+        "targets": [
+          {
+            "profileId": "52dbe51f-613c-4f55-9bff-1b67c06d869a",
+            "driverId": "claude-sdk",
+            "name": "Fixture claude",
+            "models": [
+              "fixture-parent"
+            ],
+            "available": true,
+            "trustedRead": false,
+            "revision": "6e51158d8cf35ca7cb48b2f997ae79c52d37ff553b6bbe51e12f817e4f19126b"
+          }
+        ]
+      },
+      "toolCatalog": [
+        {
+          "name": "Agent",
+          "schemaDigest": "cbad9ee49d0c48747135c83d01154439d0fcac4c06816c1a2b8318a2310e8aa1"
+        },
+        {
+          "name": "AskUserQuestion",
+          "schemaDigest": "88c3daf70e465d9d0aa661d4c477cf74df4e5a66bde465cd260781008fb8b7bb"
+        },
+        {
+          "name": "Bash",
+          "schemaDigest": "26151960d0552f0eca1ec949939a629555ad2ecf3732e1cbe30273e019fde5bf"
+        },
+        {
+          "name": "CronCreate",
+          "schemaDigest": "eec04c70179b33c97871741bf94d3207cb003ded25c2a5cea91f36319b723b39"
+        },
+        {
+          "name": "CronDelete",
+          "schemaDigest": "865230a52e30149c5ebe16edda290f13f0ce72842bd49a8bef5afafd0e1199e3"
+        },
+        {
+          "name": "CronList",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "Edit",
+          "schemaDigest": "73c20da9a0cd63a1eb6f21ac29e3c9124ecd39c8a10076d94b4eb29c3a5018f0"
+        },
+        {
+          "name": "EnterPlanMode",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "EnterWorktree",
+          "schemaDigest": "a63d41e78ace78eb4ef61668d62738f29915825f322fbac68b5ebc1bed140247"
+        },
+        {
+          "name": "ExitPlanMode",
+          "schemaDigest": "d81b8e4a4e6bc2b2a9b05c9e768d51cc891e4a87aecb602732ecf1a9978198ed"
+        },
+        {
+          "name": "ExitWorktree",
+          "schemaDigest": "1e14cea36779910a1f0e521ac455ceba30c04595722408a1ff2ce924bfffba6d"
+        },
+        {
+          "name": "ListAgents",
+          "schemaDigest": "cc9b04911ffad78c6fc0aa7aa4d674d1e6c797bc8f492ead1129f6c2cf0d7e9f"
+        },
+        {
+          "name": "mcp__smartdd_project_fcf27bb7318d__project_context",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_attach_import_v2",
+          "schemaDigest": "c9442afc67fd13ba1bfe1ff0dd6a5e277ffd941704744a43ddec05562849d6d4"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_copy_v2",
+          "schemaDigest": "0228adec97ff7e0e86ed1af4e2c6e6652d438ef6ba6f76fe55f807d591cbb09c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_create_v2",
+          "schemaDigest": "5e2801913554fbc025fd441cff39a34c76151dfb24abf27d736846417b5555ee"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_get_v2",
+          "schemaDigest": "0a6afcb43c3217dfdcfc4254382be410418f471d0cf4fbbe5f7d0761daf2bf3e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_list_v2",
+          "schemaDigest": "327016564ed826fb02cc00ff1305a190c5ffc8454a9a5598a148a7449e3ede4c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_update_v2",
+          "schemaDigest": "ef6e31f1d9fcdf8d4a22476f9e7b993cf949dfd89dec660c1e9c8f13c2301cb3"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_query_v2",
+          "schemaDigest": "66d5ab0df24ffb488568d954c0616866595c83ae3505466808fb39adb8a1ec2e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_read_v2",
+          "schemaDigest": "9574db28ab5a12e9de4345c14be9949d593eb18be84f230740bb76b6940a43b9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_reply_create_v2",
+          "schemaDigest": "fcc7139649286d0e0a7042ae8f47040d16c4abde52ce5aabaf127b53c562bede"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_resource_read_v2",
+          "schemaDigest": "10ad3fe43685266c7983782283da9de5f22b06d7f18614a6a8d2ff1b6f0bda36"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_cancel_v2",
+          "schemaDigest": "3759f4b5687ffe9a055b8e911cf24ec9f8bc1ee980760d9d1259ce9a4b1b682a"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_execute_v2",
+          "schemaDigest": "3ca7d363e03d62f27b4ef7ef8ec809c736280ade18fc526b93299e7cc28e0ad9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_get_v2",
+          "schemaDigest": "0c477681329e15475509fd0fbec4fe3fa2ad8d51323355310cee6d26a8f38e67"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_prepare_v2",
+          "schemaDigest": "7784aaaeb2cc7707d6f544d03baa9d485dea23b3f99485d5d170462f3f7c3185"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_cancel",
+          "schemaDigest": "33be99a68b1b671c6b276d67528da8d6dae1ee806b0f70ab5c0902c69bc57c14"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_delegate",
+          "schemaDigest": "4976ffd512f4f17480a4989a221141bc796b46d152f93998078d79b39d6af32d"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_observe",
+          "schemaDigest": "52934374ed5230dbf7caabfe52870fd3243ecc61a867de6804ec957b93a1b317"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_send",
+          "schemaDigest": "599c191ce19df391342e4e22882da17d0acf40103fb6a3bcd6130b3b9e9eeceb"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_targets",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "Monitor",
+          "schemaDigest": "daf5134dfe1d8ff513d98d5a0ccf9e3ae403c37e2fc2f3b6d925655016ae0ecc"
+        },
+        {
+          "name": "NotebookEdit",
+          "schemaDigest": "353e011f2b233942c1e4f959ad0dea06510198acfbdcb7d15a6b6067ad4b8094"
+        },
+        {
+          "name": "Read",
+          "schemaDigest": "1348bedf9eb7005361bfec3643dac845d3fb8e865fbac220b31c28bb4aa1675b"
+        },
+        {
+          "name": "ReportFindings",
+          "schemaDigest": "e697ebc8acde980766f1655f3f5de098ca0b2b6da81a100cc0f49c4e5dc0e2db"
+        },
+        {
+          "name": "ScheduleWakeup",
+          "schemaDigest": "e0c4bb29b7c4250993298cb52cebef8f824d4b68e944993fb96cca95f5e83134"
+        },
+        {
+          "name": "SendMessage",
+          "schemaDigest": "0b7fa79f16527d2c62777be1403a0b505493fcde1a28faf30203d77ccfc5d905"
+        },
+        {
+          "name": "Skill",
+          "schemaDigest": "3f335f6d6bd8375071f441aaf822bf292a87b30ab7e1fb265eaefb24ec1bdb0f"
+        },
+        {
+          "name": "TaskStop",
+          "schemaDigest": "f482f227347b31054629609e6d668e1d660495823b3a9cac5130581f28bab8a8"
+        },
+        {
+          "name": "WebFetch",
+          "schemaDigest": "ec841b02dcd7f8297ffdbaa56039da03b8feb00a67094729d7a6bb2fffda004e"
+        },
+        {
+          "name": "WebSearch",
+          "schemaDigest": "ce035ada7312377e4219f1f4d74d325e1db5b9e3b9c4bf9b8e46e7e119b7cbbb"
+        },
+        {
+          "name": "Workflow",
+          "schemaDigest": "08828d2fe0b29f4f3269ff7dbc6cca61393d92642975d9c56e133249286770fb"
+        },
+        {
+          "name": "Write",
+          "schemaDigest": "32dd0537e15f621781fa35bd4db0fce13449e8171eb17b97246a7ed13e6e5038"
+        }
+      ],
+      "receivedAt": "2026-11-19T00:22:15.125Z"
+    },
+    {
+      "id": "toolu_631f478c-3a8c-4bde-a97c-c289f1f2e1a0",
+      "result": {
+        "targets": [
+          {
+            "profileId": "52dbe51f-613c-4f55-9bff-1b67c06d869a",
+            "driverId": "claude-sdk",
+            "name": "Fixture claude",
+            "models": [
+              "fixture-parent"
+            ],
+            "available": true,
+            "trustedRead": false,
+            "revision": "6e51158d8cf35ca7cb48b2f997ae79c52d37ff553b6bbe51e12f817e4f19126b"
+          }
+        ]
+      },
+      "toolCatalog": [
+        {
+          "name": "Agent",
+          "schemaDigest": "cbad9ee49d0c48747135c83d01154439d0fcac4c06816c1a2b8318a2310e8aa1"
+        },
+        {
+          "name": "AskUserQuestion",
+          "schemaDigest": "88c3daf70e465d9d0aa661d4c477cf74df4e5a66bde465cd260781008fb8b7bb"
+        },
+        {
+          "name": "Bash",
+          "schemaDigest": "26151960d0552f0eca1ec949939a629555ad2ecf3732e1cbe30273e019fde5bf"
+        },
+        {
+          "name": "CronCreate",
+          "schemaDigest": "eec04c70179b33c97871741bf94d3207cb003ded25c2a5cea91f36319b723b39"
+        },
+        {
+          "name": "CronDelete",
+          "schemaDigest": "865230a52e30149c5ebe16edda290f13f0ce72842bd49a8bef5afafd0e1199e3"
+        },
+        {
+          "name": "CronList",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "Edit",
+          "schemaDigest": "73c20da9a0cd63a1eb6f21ac29e3c9124ecd39c8a10076d94b4eb29c3a5018f0"
+        },
+        {
+          "name": "EnterPlanMode",
+          "schemaDigest": "71fc596a20f27da3dec80050e5d1f553eba34aea24c2853b853488a811e6b892"
+        },
+        {
+          "name": "EnterWorktree",
+          "schemaDigest": "a63d41e78ace78eb4ef61668d62738f29915825f322fbac68b5ebc1bed140247"
+        },
+        {
+          "name": "ExitPlanMode",
+          "schemaDigest": "d81b8e4a4e6bc2b2a9b05c9e768d51cc891e4a87aecb602732ecf1a9978198ed"
+        },
+        {
+          "name": "ExitWorktree",
+          "schemaDigest": "1e14cea36779910a1f0e521ac455ceba30c04595722408a1ff2ce924bfffba6d"
+        },
+        {
+          "name": "ListAgents",
+          "schemaDigest": "cc9b04911ffad78c6fc0aa7aa4d674d1e6c797bc8f492ead1129f6c2cf0d7e9f"
+        },
+        {
+          "name": "mcp__smartdd_project_fcf27bb7318d__project_context",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_attach_import_v2",
+          "schemaDigest": "c9442afc67fd13ba1bfe1ff0dd6a5e277ffd941704744a43ddec05562849d6d4"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_copy_v2",
+          "schemaDigest": "0228adec97ff7e0e86ed1af4e2c6e6652d438ef6ba6f76fe55f807d591cbb09c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_create_v2",
+          "schemaDigest": "5e2801913554fbc025fd441cff39a34c76151dfb24abf27d736846417b5555ee"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_get_v2",
+          "schemaDigest": "0a6afcb43c3217dfdcfc4254382be410418f471d0cf4fbbe5f7d0761daf2bf3e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_list_v2",
+          "schemaDigest": "327016564ed826fb02cc00ff1305a190c5ffc8454a9a5598a148a7449e3ede4c"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_draft_update_v2",
+          "schemaDigest": "ef6e31f1d9fcdf8d4a22476f9e7b993cf949dfd89dec660c1e9c8f13c2301cb3"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_query_v2",
+          "schemaDigest": "66d5ab0df24ffb488568d954c0616866595c83ae3505466808fb39adb8a1ec2e"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_read_v2",
+          "schemaDigest": "9574db28ab5a12e9de4345c14be9949d593eb18be84f230740bb76b6940a43b9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_reply_create_v2",
+          "schemaDigest": "fcc7139649286d0e0a7042ae8f47040d16c4abde52ce5aabaf127b53c562bede"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_resource_read_v2",
+          "schemaDigest": "10ad3fe43685266c7983782283da9de5f22b06d7f18614a6a8d2ff1b6f0bda36"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_cancel_v2",
+          "schemaDigest": "3759f4b5687ffe9a055b8e911cf24ec9f8bc1ee980760d9d1259ce9a4b1b682a"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_execute_v2",
+          "schemaDigest": "3ca7d363e03d62f27b4ef7ef8ec809c736280ade18fc526b93299e7cc28e0ad9"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_get_v2",
+          "schemaDigest": "0c477681329e15475509fd0fbec4fe3fa2ad8d51323355310cee6d26a8f38e67"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__smartdd_mail_send_prepare_v2",
+          "schemaDigest": "7784aaaeb2cc7707d6f544d03baa9d485dea23b3f99485d5d170462f3f7c3185"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_cancel",
+          "schemaDigest": "33be99a68b1b671c6b276d67528da8d6dae1ee806b0f70ab5c0902c69bc57c14"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_delegate",
+          "schemaDigest": "4976ffd512f4f17480a4989a221141bc796b46d152f93998078d79b39d6af32d"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_observe",
+          "schemaDigest": "52934374ed5230dbf7caabfe52870fd3243ecc61a867de6804ec957b93a1b317"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_send",
+          "schemaDigest": "599c191ce19df391342e4e22882da17d0acf40103fb6a3bcd6130b3b9e9eeceb"
+        },
+        {
+          "name": "mcp__wy_fcf27bb7318dde881a50e012__wy_targets",
+          "schemaDigest": "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+        },
+        {
+          "name": "Monitor",
+          "schemaDigest": "daf5134dfe1d8ff513d98d5a0ccf9e3ae403c37e2fc2f3b6d925655016ae0ecc"
+        },
+        {
+          "name": "NotebookEdit",
+          "schemaDigest": "353e011f2b233942c1e4f959ad0dea06510198acfbdcb7d15a6b6067ad4b8094"
+        },
+        {
+          "name": "Read",
+          "schemaDigest": "1348bedf9eb7005361bfec3643dac845d3fb8e865fbac220b31c28bb4aa1675b"
+        },
+        {
+          "name": "ReportFindings",
+          "schemaDigest": "e697ebc8acde980766f1655f3f5de098ca0b2b6da81a100cc0f49c4e5dc0e2db"
+        },
+        {
+          "name": "ScheduleWakeup",
+          "schemaDigest": "e0c4bb29b7c4250993298cb52cebef8f824d4b68e944993fb96cca95f5e83134"
+        },
+        {
+          "name": "SendMessage",
+          "schemaDigest": "0b7fa79f16527d2c62777be1403a0b505493fcde1a28faf30203d77ccfc5d905"
+        },
+        {
+          "name": "Skill",
+          "schemaDigest": "3f335f6d6bd8375071f441aaf822bf292a87b30ab7e1fb265eaefb24ec1bdb0f"
+        },
+        {
+          "name": "TaskStop",
+          "schemaDigest": "f482f227347b31054629609e6d668e1d660495823b3a9cac5130581f28bab8a8"
+        },
+        {
+          "name": "WebFetch",
+          "schemaDigest": "ec841b02dcd7f8297ffdbaa56039da03b8feb00a67094729d7a6bb2fffda004e"
+        },
+        {
+          "name": "WebSearch",
+          "schemaDigest": "ce035ada7312377e4219f1f4d74d325e1db5b9e3b9c4bf9b8e46e7e119b7cbbb"
+        },
+        {
+          "name": "Workflow",
+          "schemaDigest": "08828d2fe0b29f4f3269ff7dbc6cca61393d92642975d9c56e133249286770fb"
+        },
+        {
+          "name": "Write",
+          "schemaDigest": "32dd0537e15f621781fa35bd4db0fce13449e8171eb17b97246a7ed13e6e5038"
+        }
+      ],
+      "receivedAt": "2026-11-19T00:22:16.018Z"
+    }
+  ],
+  "boundary": {
+    "systemModifier": false,
+    "externalEditor": false,
+    "nativeDirectFileReadClaimed": false,
+    "meaning": "PDF viewer owner emitted a private resource grant, current Agent authority/catalog and real tool result unchanged"
+  },
+  "fileIpc": [
+    {
+      "method": "open",
+      "at": 1795047735363,
+      "sender": 1,
+      "delivered": true,
+      "documentId": "7ba59c05-83ad-4d48-82ad-715a2ad4ecbe"
+    },
+    {
+      "method": "openResource",
+      "at": 1795047735378,
+      "sender": 1,
+      "delivered": true,
+      "documentId": "7ba59c05-83ad-4d48-82ad-715a2ad4ecbe",
+      "previewId": "72e4596c-ab4d-458f-90f9-5059fcf6583a",
+      "hash": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80",
+      "size": 56519,
+      "mime": "application/pdf",
+      "transport": "protocol"
+    }
+  ],
+  "fileObserverRestored": {
+    "files.open": true,
+    "files.openResource": true,
+    "files.releaseResource": true
+  },
+  "preQuit": {
+    "at": "2026-11-19T00:22:16.258Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-134/quit-phase.jsonl",
+  "exit": {
+    "pid": 58271,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

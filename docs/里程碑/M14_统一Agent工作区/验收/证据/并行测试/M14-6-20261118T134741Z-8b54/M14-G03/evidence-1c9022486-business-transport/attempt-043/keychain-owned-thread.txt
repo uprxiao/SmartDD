@@ -1,0 +1,23 @@
+Analysis of sampling WillYou (pid 89878) every 10 milliseconds
+Process:         WillYou [89878]
+Path:            /private/tmp/*/WillYou.app/Contents/MacOS/WillYou
+Load Address:    0x1024bc000
+Identifier:      com.smartdd.desktop
+Version:         0.1.5 (0.1.5)
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  node [89832]
+Target Type:     live task
+    +                                                                                                                           86 node::AsyncWrap::~AsyncWrap()  (in Electron Framework) + 57084  [0x1106737bc]
+    +                                                                                                                             86 rust_bmp$cxxbridge1$194$Reader$alpha  (in Electron Framework) + 948908  [0x113691ee0]
+    +                                                                                                                               86 temporal_rs_PlainDateTime_second  (in Electron Framework) + 528168  [0x110d27d40]
+    +                                                                                                                                 86 rust_bmp$cxxbridge1$194$Reader$width  (in Electron Framework) + 739200  [0x1133a0c04]
+    +                                                                                                                                   86 SecItemAdd  (in Security) + 212  [0x19103aee0]
+    +                                                                                                                                     86 SecItemAdd_osx(__CFDictionary const*, void const**)  (in Security) + 1664  [0x19103b638]
+    +                                                                                                                                       86 SecKeychainItemCreateFromContent  (in Security) + 484  [0x191058f5c]
+    +                                                                                                                                         86 Security::KeychainCore::StorageManager::defaultKeychainUI(Security::KeychainCore::Item&)  (in Security) + 168  [0x191073aec]
+    +                                                                                                                                           86 Security::KeychainCore::StorageManager::makeLoginAuthUI(Security::KeychainCore::Item const*, bool)  (in Security) + 976  [0x191073748]
+    +                                                                                                                                             86 AuthorizationCopyRights  (in Security) + 384  [0x190f4feec]
+    +                                                                                                                                               86 _AuthorizationCopyRights_send_message  (in Security) + 48  [0x190f50278]
+    +                                                                                                                                                 86 xpc_connection_send_message_with_reply_sync  (in libxpc.dylib) + 284  [0x18d16beb0]
+    +                                                                                                                                                   86 dispatch_mach_send_with_result_and_wait_for_reply  (in libdispatch.dylib) + 60  [0x18d2f3004]

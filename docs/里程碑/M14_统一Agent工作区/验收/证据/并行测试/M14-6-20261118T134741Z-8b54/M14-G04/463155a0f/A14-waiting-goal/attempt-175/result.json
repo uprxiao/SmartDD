@@ -1,0 +1,201 @@
+{
+  "caseId": "M14-A14",
+  "sourceCommit": "463155a0f4c2cc0fbd85ae65116f882ddb2a0a36",
+  "scope": "M14-A14-waiting-goal",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "52c1841ced1aa0e340f660ba56e671aae08f354917b3fb25439708de8396f5ac"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T02:00:59.705Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A14-waiting-goal": {
+      "status": "partial",
+      "passed": [
+        "真实 Codex 目标过程中成功委派 Claude。自动等待时 UI 和当前版本的切换服务均拒绝其他执行器。清除后过期选择单独被拒，原任务不变。"
+      ],
+      "missing": [
+        "已有排队、过期预检的其他证据统一归账，当前脚本仅执行目标等待和服务拒绝。"
+      ],
+      "waiting": {
+        "goal": {
+          "nativeCreatedAt": 1795053667,
+          "nativeUpdatedAt": 1795053668,
+          "bindingId": "81cc9d73-d44e-4222-941e-24f3c7450946",
+          "objective": "A14-WAIT-DELEGATION-ACTUAL",
+          "revision": 1,
+          "status": "paused",
+          "pausedReason": "waiting_children",
+          "turns": 1,
+          "timeUsedSeconds": 0,
+          "updatedAt": "2026-11-19T02:01:08.196Z"
+        },
+        "locked": [
+          {
+            "name": "A14 Codex A",
+            "disabled": false,
+            "selected": "true"
+          },
+          {
+            "name": "A14 Codex B",
+            "disabled": true,
+            "selected": "false"
+          },
+          {
+            "name": "A14 Claude C",
+            "disabled": true,
+            "selected": "false"
+          }
+        ],
+        "childTaskId": "9dcdcdf9-cd8b-4f0c-a9ea-de17318d86f1",
+        "staleRejected": true,
+        "afterClear": "claude-sdk"
+      },
+      "firstClear": {
+        "calledAt": 1795053669826,
+        "returnedAt": 1795053670389,
+        "reply": {
+          "ok": true
+        }
+      },
+      "clearReceipts": [
+        {
+          "calledAt": 1795053669826,
+          "returnedAt": 1795053670389,
+          "reply": {
+            "ok": true
+          }
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T02:01:05.725Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T02:01:05.784Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T02:01:05.794Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T02:01:06.430Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"00b68db4-20d1-4769-abdf-fc74ca29d424\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T02:01:06.443Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:01:06.457Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:01:07.859Z",
+      "selector": "[data-testid=agent-delegation-toggle]",
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "at": "2026-11-19T02:01:07.966Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:01:07.977Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:01:09.638Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:01:09.826Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 635.3125
+    },
+    {
+      "at": "2026-11-19T02:01:10.475Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:01:10.486Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A14 Claude C\"]",
+      "x": 598,
+      "y": 552
+    },
+    {
+      "at": "2026-11-19T02:01:10.493Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 786.5,
+      "y": 627.0859375
+    }
+  ],
+  "model": [
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A14-USER-WAIT-WARM",
+      "goalCommand": false
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-175/home",
+    "at": "2026-11-19T02:01:01.078Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 6082,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-175/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-175/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-175/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:49588/73050d01-d4a6-43d3-b326-5b79be9e26be\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:49588/73050d01-d4a6-43d3-b326-5b79be9e26be\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:49587/devtools/browser/8e41dab5-99b0-4e1c-a522-17d96c0b14d6\n(node:6082) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\nError occurred in handler for 'agentTasks.switchProfile': DriverError: 清除目标后才能切换\n    at goalLock (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:54824:53)\n    at AgentTaskService.switchProfile (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:54830:5)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52664:97\n    at run (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52589:12)\n    at switchProfile (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52664:73)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677)\n    at Session.emit (node:events:509:28) {\n  code: 'STATE',\n  nativeCode: undefined\n}\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 6082,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T02:01:11.821Z"
+}

@@ -1,0 +1,37 @@
+[1119/014915.835900:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/014915.987362:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/delegation-service.test.ts (35 tests | 2 failed | 32 skipped) 2338ms
+   × A74 does not drain a directory writer while its first turn is preparing 1141ms
+   × A74 does not drain a directory writer while its first turn is registered 1136ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/delegation-service.test.ts > A74 does not drain a directory writer while its first turn is preparing
+ FAIL  src/main/core/agent/delegation-service.test.ts > A74 does not drain a directory writer while its first turn is registered
+AssertionError: expected undefined to be 'active' // Object.is equality
+
+- Expected:
+"active"
+
++ Received:
+undefined
+
+ ❯ src/main/core/agent/delegation-service.test.ts:174:58
+    172|     f.co.queue.enter(f.taskId, owner.directory_identity);
+    173|     await tick(80);
+    174|     expect(f.co.queue.forTask(child.childTaskId)?.state).toBe('active'…
+       |                                                          ^
+    175|     expect(f.runs.runForTask(child.childTaskId)?.runId).toBe(owner.run…
+    176|     expect(f.runs.closingForTask(child.childTaskId)).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed | 32 skipped (35)
+   Start at  01:49:15
+   Duration  2.73s (transform 256ms, setup 0ms, import 306ms, tests 2.34s, environment 0ms)
+

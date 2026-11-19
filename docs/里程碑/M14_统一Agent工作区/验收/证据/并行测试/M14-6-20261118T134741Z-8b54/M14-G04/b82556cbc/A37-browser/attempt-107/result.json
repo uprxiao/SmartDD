@@ -1,0 +1,442 @@
+{
+  "caseId": "M14-A37",
+  "scope": "Real packaged App via bound background CDP, real native Claude parent and provider Codex child, loopback synthetic inference only.",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-107/runtime-Z44veb/home",
+    "at": "2026-11-18T21:27:39.096Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "git",
+  "sourceCommit": "b82556cbc74646ec7ab2dfe9defc70a4e305ebac",
+  "asar": "898f908c7b2340262358d2adab2f1ade01eb14da46c796352bc668d7a59792fd",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a37-family-packaged.mjs": "9165eb254fbf67ab5b52cd4c45739deebb1d704ab2d77900c4d5da8661f37d7e",
+    "a74-native-target-receipts.mjs": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+  },
+  "observations": [
+    {
+      "label": "native Codex browser command",
+      "at": "2026-11-18T21:27:47.454Z",
+      "phase": 0,
+      "command": "willyou-app browser snapshot --task 02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+      "id": "call427862c9-2bfc-4fa4-a543-206affda3ff8"
+    },
+    {
+      "label": "native Codex browser command",
+      "at": "2026-11-18T21:27:48.331Z",
+      "phase": 1,
+      "command": "willyou-app browser access request --task 02d8c7fe-ef0e-419e-ae8d-f713190beff2 --mode observe",
+      "id": "callee06f0cf-976d-4a8b-80bf-fb819e56088f"
+    },
+    {
+      "label": "parent displayed real child request",
+      "at": "2026-11-18T21:27:49.495Z",
+      "parentPanel": "需要授权：访问任务「A37 parent git」的网页\n来自子任务 · A37 native observer\n申请访问的页面\nhttp://127.0.0.1:3425/a37-family-page\n\n仅限同一项目。授权绑定后仅在该次运行内有效，运行结束或你撤销后立即失效。\n\n请求会等你处理，Agent 可以先做别的工作。\n\n1\n允许观察\n只读，可查看页面、截图和读取内容\n2\n拒绝\n拒绝当前请求\n3\n打开子任务查看\n查看子任务的上下文，当前请求继续等待\n数字键选择 · Enter 确认\n停止子任务本轮\n确认",
+      "request": {
+        "requestId": "349ffeb8-1491-4739-972a-955979fb075a",
+        "class": "host_business",
+        "kind": "host_business",
+        "revision": 1,
+        "payload": {
+          "businessKind": "browser_access",
+          "title": "跨任务浏览器授权",
+          "review": {
+            "requester": "4e67ce8f-9852-4354-a098-256a94e12a95",
+            "targetTaskId": "02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+            "mode": "observe",
+            "pages": [
+              {
+                "id": "33da8343-f729-4a5c-b734-e9a14642bf73",
+                "url": "http://127.0.0.1:3425/a37-family-page"
+              }
+            ]
+          },
+          "data": {
+            "targetTaskId": "02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+            "mode": "observe",
+            "target": {
+              "projectId": "38915d05-7fe6-4153-8c5b-197230cb28a9",
+              "pages": [
+                {
+                  "id": "33da8343-f729-4a5c-b734-e9a14642bf73",
+                  "url": "http://127.0.0.1:3425/a37-family-page"
+                }
+              ]
+            }
+          },
+          "phase": "waiting_user",
+          "options": [
+            {
+              "label": "允许观察",
+              "value": "observe"
+            }
+          ]
+        },
+        "origin": {
+          "taskId": "4e67ce8f-9852-4354-a098-256a94e12a95",
+          "bindingId": "251f3eeb-67c6-46f2-9859-d6a5bcd0b4b9",
+          "runId": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+          "generation": 1
+        },
+        "status": "pending",
+        "createdAt": "2026-11-18T21:27:49.076Z",
+        "targetTaskTitle": "A37 parent git"
+      }
+    },
+    {
+      "label": "approved target child only",
+      "at": "2026-11-18T21:27:49.624Z",
+      "grant": {
+        "id": "349ffeb8-1491-4739-972a-955979fb075a",
+        "runId": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+        "projectId": "38915d05-7fe6-4153-8c5b-197230cb28a9",
+        "requesterTaskId": "4e67ce8f-9852-4354-a098-256a94e12a95",
+        "targetTaskId": "02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+        "mode": "observe",
+        "requestedMode": "observe",
+        "createdAt": 1795037269618,
+        "grantedAt": 1795037269618,
+        "requesterTitle": "A37 native observer",
+        "targetTitle": "A37 parent git",
+        "projectName": "M14 A37 mixed git"
+      }
+    },
+    {
+      "label": "native Codex browser command",
+      "at": "2026-11-18T21:27:49.624Z",
+      "phase": 2,
+      "command": "willyou-app browser snapshot --task 02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+      "id": "calla6ab7b97-0dd4-43f7-b390-39b57a0b1814"
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"02d8c7fe-ef0e-419e-ae8d-f713190beff2\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "text": "A37 父任务私有网页",
+      "button": "left",
+      "x": 567.83984375,
+      "y": 240.0390625
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "button": "left",
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 738.921875,
+      "y": 853
+    },
+    {
+      "selector": ".agent-request button[aria-label=\"允许观察\"]",
+      "text": null,
+      "button": "left",
+      "x": 537.9609375,
+      "y": 640
+    },
+    {
+      "selector": ".agent-confirm-choice",
+      "text": null,
+      "button": "left",
+      "x": 724.921875,
+      "y": 851
+    }
+  ],
+  "requests": [
+    {
+      "at": "2026-11-18T21:27:45.154Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T21:27:45.983Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T21:27:46.094Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false,
+      "pending": "wy_targets"
+    },
+    {
+      "at": "2026-11-18T21:27:46.215Z",
+      "kind": "claude",
+      "model": "fixture-parent",
+      "wake": false,
+      "pending": "observer"
+    },
+    {
+      "at": "2026-11-18T21:27:47.454Z",
+      "kind": "codex",
+      "model": "fixture-a37-observer",
+      "child": "observer",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T21:27:48.331Z",
+      "kind": "codex",
+      "model": "fixture-a37-observer",
+      "child": "observer",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T21:27:49.378Z",
+      "kind": "codex",
+      "model": "fixture-a37-observer",
+      "child": "observer",
+      "wake": false
+    },
+    {
+      "at": "2026-11-18T21:27:50.790Z",
+      "kind": "codex",
+      "model": "fixture-a37-observer",
+      "child": "observer",
+      "wake": false
+    }
+  ],
+  "revision": [
+    {
+      "tool": "wy_targets",
+      "receipt": "toolu_8b169195-e2b7-4d22-96bf-86538771f552",
+      "targets": [
+        {
+          "profileId": "e5586924-5d62-4e16-a41c-09789a1f6d79",
+          "driverId": "claude-sdk",
+          "revision": "81f41872d43c0b37a838a6dbc6b6cbd2895876cfc582be7d3c778f549c1c8e82",
+          "available": true,
+          "models": [
+            "fixture-parent",
+            "fixture-a37-observer"
+          ]
+        },
+        {
+          "profileId": "3a513611-1b27-4f19-87ec-5d381cf2cdf2",
+          "driverId": "codex-app-server",
+          "revision": "60b1b898c3cfd78dcbef12cb48b26679158782e079cdb469ba0f59d62a9b0f4d",
+          "available": true,
+          "models": [
+            "fixture-parent",
+            "fixture-a37-observer"
+          ]
+        }
+      ]
+    },
+    {
+      "tool": "wy_delegate invocation",
+      "child": "observer",
+      "args": {
+        "requestKey": "a37-git-observer",
+        "profileId": "3a513611-1b27-4f19-87ec-5d381cf2cdf2",
+        "profileRevision": "60b1b898c3cfd78dcbef12cb48b26679158782e079cdb469ba0f59d62a9b0f4d",
+        "title": "A37 native observer",
+        "instructions": "Answer the isolated acceptance prompt A37_X2_CHILD_observer",
+        "model": "fixture-a37-observer",
+        "access": "write",
+        "workspaceMode": "worktree"
+      }
+    },
+    {
+      "tool": "wy_delegate",
+      "receipt": "toolu_b2273c11-bdf7-42ee-9207-618babadb863",
+      "child": "observer",
+      "value": {
+        "delegationId": "28e6fad0-acff-4907-9ca2-b69b51a93437",
+        "childTaskId": "4e67ce8f-9852-4354-a098-256a94e12a95",
+        "state": "queued",
+        "resultRevision": 0,
+        "asynchronous": true,
+        "workspaceMode": "worktree",
+        "baseCommit": "8cc8b81759e82dee6ae45f95915805936cafe9e0",
+        "uncommittedFiles": 1,
+        "message": "已持久接受；不要在 shell 循环等待。 工作副本基于 8cc8b81759e82dee6ae45f95915805936cafe9e0；主目录有 1 个未提交文件，没有带进子任务。要带改动请先提交再派出。"
+      }
+    }
+  ],
+  "nativeReceipts": [
+    {
+      "phase": 0,
+      "text": "Chunk ID: c6abb0\nWall time: 0.5948 seconds\nProcess exited with code 2\nOriginal token count: 94\nOutput:\nwillyou-app: SCOPE_DENIED\n{\"error\":{\"effectState\":\"read-only\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"本次运行没有该任务的浏览器授权\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"bce822ac-28cc-41ad-a360-ba34a5f1f60a\",\"requestId\":\"4887c99d-6fed-487d-8518-3bc4849423d7\"}\n",
+      "result": {
+        "error": {
+          "effectState": "read-only",
+          "code": "SCOPE_DENIED",
+          "layer": "auth",
+          "message": "本次运行没有该任务的浏览器授权",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "operationId": "bce822ac-28cc-41ad-a360-ba34a5f1f60a",
+        "requestId": "4887c99d-6fed-487d-8518-3bc4849423d7"
+      }
+    },
+    {
+      "phase": 1,
+      "text": "Chunk ID: 3519fa\nWall time: 0.7239 seconds\nProcess exited with code 0\nOriginal token count: 162\nOutput:\n{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece\",\"connections\":[]},\"data\":{\"result\":{\"duplicate\":false,\"operationId\":\"9a4c2142-166b-4bb7-a07d-82df371846b0\",\"state\":\"awaiting_user\",\"requestId\":\"349ffeb8-1491-4739-972a-955979fb075a\"}},\"resources\":[],\"operation\":{\"id\":\"9a4c2142-166b-4bb7-a07d-82df371846b0\",\"requestId\":\"2a1cd5e9-4ab3-4e26-a7ef-fd5ec0a8cd0f\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.access.request\"}\n",
+      "result": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece",
+          "connections": []
+        },
+        "data": {
+          "result": {
+            "duplicate": false,
+            "operationId": "9a4c2142-166b-4bb7-a07d-82df371846b0",
+            "state": "awaiting_user",
+            "requestId": "349ffeb8-1491-4739-972a-955979fb075a"
+          }
+        },
+        "resources": [],
+        "operation": {
+          "id": "9a4c2142-166b-4bb7-a07d-82df371846b0",
+          "requestId": "2a1cd5e9-4ab3-4e26-a7ef-fd5ec0a8cd0f",
+          "effectState": "completed",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.access.request"
+      }
+    },
+    {
+      "phase": 2,
+      "text": "Chunk ID: 15be54\nWall time: 0.8899 seconds\nProcess exited with code 0\nOriginal token count: 226\nOutput:\n{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:3425\\/a37-family-page\",\"title\":\"A37 local family\",\"snapshot\":\"- heading \\\"A37 synthetic family page\\\" [level=1, ref=@k64ef74dc7247453faadbbeaf83e9ce34s5e1]\",\"browserPageId\":\"33da8343-f729-4a5c-b734-e9a14642bf73\",\"origin\":\"http:\\/\\/127.0.0.1:3425\\/a37-family-page\",\"refs\":[{\"available\":true,\"name\":\"A37 synthetic family page\",\"role\":\"heading\",\"ref\":\"@k64ef74dc7247453faadbbeaf83e9ce34s5e1\"}]},\"resources\":[],\"operation\":{\"id\":\"9442d3f5-7212-4c6c-93a1-87784b479573\",\"requestId\":\"b1d7a50f-31a6-4edb-a7be-c9b24262f244\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.snapshot\"}\n",
+      "result": {
+        "schema": "willyou-app-result-v2",
+        "status": "ok",
+        "source": {
+          "appId": "browser",
+          "revision": null,
+          "packageHash": "1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece",
+          "connections": []
+        },
+        "data": {
+          "url": "http://127.0.0.1:3425/a37-family-page",
+          "title": "A37 local family",
+          "snapshot": "- heading \"A37 synthetic family page\" [level=1, ref=@k64ef74dc7247453faadbbeaf83e9ce34s5e1]",
+          "browserPageId": "33da8343-f729-4a5c-b734-e9a14642bf73",
+          "origin": "http://127.0.0.1:3425/a37-family-page",
+          "refs": [
+            {
+              "available": true,
+              "name": "A37 synthetic family page",
+              "role": "heading",
+              "ref": "@k64ef74dc7247453faadbbeaf83e9ce34s5e1"
+            }
+          ]
+        },
+        "resources": [],
+        "operation": {
+          "id": "9442d3f5-7212-4c6c-93a1-87784b479573",
+          "requestId": "b1d7a50f-31a6-4edb-a7be-c9b24262f244",
+          "effectState": "read-only",
+          "origin": "cli"
+        },
+        "pagination": null,
+        "completeness": {
+          "missing": [],
+          "complete": true
+        },
+        "contractMajor": 2,
+        "capabilityId": "browser.nav.snapshot"
+      }
+    }
+  ],
+  "status": "passed",
+  "port": 3425,
+  "expectNoReadSnapshot": false,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-107/runtime-Z44veb/project",
+    "repository": "git",
+    "metadataBefore": {
+      "head": "8cc8b81759e82dee6ae45f95915805936cafe9e0",
+      "index": "bf58cc28edc73a55f6de81cf73c2309f1f9153e34680d88c97c1bdd1d0229553"
+    },
+    "originalSource": {
+      "external.txt": "A37_BEFORE_external.txt",
+      "reader.txt": "A37_BEFORE_reader.txt",
+      "writer.txt": "A37_BEFORE_writer.txt"
+    },
+    "hashes": {
+      "external.txt": "43154e4fd2d1698290417934c1c7521b0c95e74e09393a7ee3e05885cd517e89",
+      "reader.txt": "b449efb5fe1c180e4ca82f4cedb6965edf4a5c211b3aa32dd7ef034214174263",
+      "writer.txt": "e402edcfb89b13bd827123c05cf874b046b5eb7f4397aedbad3ebccaef402502"
+    }
+  },
+  "pid": 32593,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-107/runtime-Z44veb/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-107/runtime-Z44veb/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-107/runtime-Z44veb/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    32593
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "exitError": "Error: Isolated App did not finish its normal exit",
+  "forcedExit": {
+    "pid": 32593,
+    "code": null,
+    "signal": "SIGKILL"
+  },
+  "rendererErrors": []
+}

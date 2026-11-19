@@ -1,0 +1,164 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-042/runtime-PEefJt/home",
+    "at": "2026-11-18T17:03:42.789Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "1c9022486b5425bd8a092e99506b0c99aa6a81e0",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a24",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [],
+  "requests": [
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795021428768,
+      "repeatCall": 1,
+      "scheduledChild": "read-once"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795021428859,
+      "repeatCall": 2,
+      "scheduledChild": "read-once"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795021428929,
+      "observationCall": true
+    },
+    {
+      "model": "fixture-child-read-once",
+      "kind": "codex",
+      "child": "read-once",
+      "wake": false,
+      "at": 1795021429668,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795021430195
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"346aa7c2-2ed3-4bd6-950b-6332b1e41d48\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    }
+  ],
+  "status": "failed",
+  "pid": 93341,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-042/runtime-PEefJt/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-042/runtime-PEefJt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-042/runtime-PEefJt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    93341
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "346aa7c2-2ed3-4bd6-950b-6332b1e41d48",
+  "childTaskIds": {
+    "read-once": "b33c3b5d-cf76-4dc4-aafb-50e84854e231"
+  },
+  "serverError": "AssertionError [ERR_ASSERTION]: The dropped broker reply escaped to the original model client",
+  "phase": "duplicate child receipt and observation while parent busy",
+  "error": "Error: AssertionError [ERR_ASSERTION]: The dropped broker reply escaped to the original model client\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a24-unix-reply-loss-packaged.mjs:258:35)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a24-unix-reply-loss-packaged.mjs:448:5",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nM14 G03 a24\nAcceptance parent a24\n工作中\nAcceptance read-once - isolated delegation workspace\n设置\nAcceptance parent a24\n工作中\n任务关系 · 1\n插件 2\n允许新委派\n停止任务树\nDelegate the same unique read-only review request twice, observe results, then let the normal notification arrive.\n工作中 1 秒\n调用了 2 次工具\n正在调用 mcp__wy_ef5b2910e7960e5f9882b116__wy_observe\nAcceptance read-once - isolated delegation workspace · completed查看子任务\n来源：子任务结果\n{\"text\":\"M14_CHILD_DONE_READ-ONCE\",\"phase\":null}\n1 个子任务\n1 完成\nF\nAcceptance read-once - isolated delegation workspace\nFixture codex · 共用目录 · 只读并行\n已完成 · 等主任务领取\n0 秒\n等待 1 个子任务\n停止任务树\n宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 75707958-2749-4f9b-836e-4655832c1643；子任务 Acceptance read-once - isolated delegation workspace / b33c3b5d-cf76-4dc4-aafb-50e84854e231，attempt 1 状态 completed。正文通过 wy_observe 领取；此通知不含新授权。\n01:03 AM\n请求批准\n完全访问\nFixture claude\nfixture-parent\n运行中发送会排队\n任务关系 · 1\n主任务 · Acceptance parent a24\nAcceptance read-once - isolated delegation workspace\nFixture codex\n共用目录 · 只读并行\n已完成 · 等主任务领取",
+  "beforeQuit": [
+    {
+      "taskId": "b33c3b5d-cf76-4dc4-aafb-50e84854e231",
+      "title": "Acceptance read-once - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "346aa7c2-2ed3-4bd6-950b-6332b1e41d48"
+    },
+    {
+      "taskId": "346aa7c2-2ed3-4bd6-950b-6332b1e41d48",
+      "title": "Acceptance parent a24",
+      "status": "working",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance read-once - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance parent a24",
+      "fe9b073e-9496-429f-b326-6ad551610529",
+      true
+    ]
+  ],
+  "cleanupMadeIdle": [
+    "Acceptance parent a24"
+  ],
+  "tasksAfterCleanup": [
+    {
+      "title": "Acceptance read-once - isolated delegation workspace",
+      "status": "completed"
+    },
+    {
+      "title": "Acceptance parent a24",
+      "status": "stopped"
+    }
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 93341,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

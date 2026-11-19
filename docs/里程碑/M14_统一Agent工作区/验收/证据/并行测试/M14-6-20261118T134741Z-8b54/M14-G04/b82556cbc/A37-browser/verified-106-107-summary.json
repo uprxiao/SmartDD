@@ -1,0 +1,373 @@
+{
+  "case": "M14-A37",
+  "commit": "b82556cbc74646ec7ab2dfe9defc70a4e305ebac",
+  "asar": "898f908c7b2340262358d2adab2f1ade01eb14da46c796352bc668d7a59792fd",
+  "hashes": {
+    "attempt-106/result.json": "1483a0c00a84431431a853eb72db12c9fe8dfc9ec352d5219111ddfd951fff52",
+    "attempt-106/cleanup.json": "bf1bdbd162d2040e5e59fc783960fe31de9d507011bbcb7eb4971fc7e6efeb67",
+    "attempt-106/02-full-actual-denial.png": "59bc3550646510c85c3b4a5ed8e67ca42f4330ed4d965f3666c1a998392b00b4",
+    "attempt-106/source-a37-cli-phases-packaged.mjs": "231ea5bc6063397fb919b64f9680bbfae25175f26d18ae2d4ffd151b6d30aa61",
+    "attempt-107/result.json": "899beba3cb8a2facc951de4d6eaf6bfa4d6f823029fa991d17625197ba87466d",
+    "attempt-107/app.log": "a4ede928d3b8f3feff76202b1b884843ae333108d66ef1c086ecc868a931f495",
+    "attempt-107/01-real-child-request.png": "f2a4160372cc309ea5541189290ce960d14afc375499258b105d2d1e266a155c",
+    "attempt-107/02-real-child-read-finished.png": "cee29bc517b4b6c9f94fea64c6671223c6136f5b1d38bd6d2c9d08626bce19cb",
+    "attempt-107/source-a37-family-packaged.mjs": "9165eb254fbf67ab5b52cd4c45739deebb1d704ab2d77900c4d5da8661f37d7e",
+    "attempt-107/runtime-Z44veb/data/smartdd.db": "0615825034dfc62e574dc4432c2d0d52a6fb02c68f68d6acdf28edf34b6ead1b",
+    "attempt-107/runtime-Z44veb/data/smartdd.db-wal": "d3f9f10b644947d27a42ffc3ce015fbb4f90ff785a525da7cb97f8c36a1521b1"
+  },
+  "106": {
+    "status": "passed",
+    "tier": {
+      "expected": "full",
+      "accepted": "full",
+      "persisted": "full",
+      "shown": "full"
+    },
+    "decision": {
+      "nativeCommand": "willyou-app browser click --element @k55d0964e15134b5a951ec59aff7e0032s5e2 --task 40263ebf-97ff-490f-85b3-77b854a9cb13",
+      "nativeRef": "@k55d0964e15134b5a951ec59aff7e0032s5e2",
+      "at": "2026-11-18T21:27:06.295Z",
+      "approvalsBeforeCliReturned": 0,
+      "rawCli": "Chunk ID: 90c2a1\nWall time: 0.6074 seconds\nProcess exited with code 2\nOriginal token count: 95\nOutput:\nwillyou-app: SCOPE_DENIED\n{\"error\":{\"effectState\":\"not-started\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"本次运行没有该任务的浏览器授权\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"378fbd70-eb58-49c0-af2c-be8554f0f9c2\",\"requestId\":\"13b19aaa-bd02-473a-8593-280e190f396e\"}\n",
+      "cli": {
+        "error": {
+          "effectState": "not-started",
+          "code": "SCOPE_DENIED",
+          "layer": "auth",
+          "message": "本次运行没有该任务的浏览器授权",
+          "retryable": false,
+          "attemptCount": 1,
+          "nextAction": "核对本次错误后重新明确操作",
+          "retryExhausted": false
+        },
+        "operationId": "378fbd70-eb58-49c0-af2c-be8554f0f9c2",
+        "requestId": "13b19aaa-bd02-473a-8593-280e190f396e"
+      },
+      "cliExit": 2,
+      "writes": {
+        "invocations": [
+          {
+            "request_id": "13b19aaa-bd02-473a-8593-280e190f396e",
+            "operation_id": "378fbd70-eb58-49c0-af2c-be8554f0f9c2",
+            "run_id": "1a76f9b8-bff4-4d0e-bf83-73ffd398ff5f",
+            "task_id": "a5526bec-e2ff-4c66-9796-6b8db740c4f7",
+            "tool_name": "browser.interact.click",
+            "state": "failed",
+            "effect_state": "not-started",
+            "error_code": "SCOPE_DENIED",
+            "attempt_count": 1
+          }
+        ],
+        "audits": [
+          {
+            "request_id": "audit:13b19aaa-bd02-473a-8593-280e190f396e",
+            "run_id": "1a76f9b8-bff4-4d0e-bf83-73ffd398ff5f",
+            "task_id": "a5526bec-e2ff-4c66-9796-6b8db740c4f7",
+            "page_id": null,
+            "command": "click",
+            "state": "failed",
+            "effect_state": "not-started",
+            "error_code": "SCOPE_DENIED"
+          }
+        ]
+      }
+    },
+    "exit": {
+      "pid": 31132,
+      "code": 0,
+      "signal": null
+    },
+    "listenerClosed": true
+  },
+  "107": {
+    "functionalAuthorization": "passed",
+    "parentUIRequest": {
+      "label": "parent displayed real child request",
+      "at": "2026-11-18T21:27:49.495Z",
+      "parentPanel": "需要授权：访问任务「A37 parent git」的网页\n来自子任务 · A37 native observer\n申请访问的页面\nhttp://127.0.0.1:3425/a37-family-page\n\n仅限同一项目。授权绑定后仅在该次运行内有效，运行结束或你撤销后立即失效。\n\n请求会等你处理，Agent 可以先做别的工作。\n\n1\n允许观察\n只读，可查看页面、截图和读取内容\n2\n拒绝\n拒绝当前请求\n3\n打开子任务查看\n查看子任务的上下文，当前请求继续等待\n数字键选择 · Enter 确认\n停止子任务本轮\n确认",
+      "request": {
+        "requestId": "349ffeb8-1491-4739-972a-955979fb075a",
+        "class": "host_business",
+        "kind": "host_business",
+        "revision": 1,
+        "payload": {
+          "businessKind": "browser_access",
+          "title": "跨任务浏览器授权",
+          "review": {
+            "requester": "4e67ce8f-9852-4354-a098-256a94e12a95",
+            "targetTaskId": "02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+            "mode": "observe",
+            "pages": [
+              {
+                "id": "33da8343-f729-4a5c-b734-e9a14642bf73",
+                "url": "http://127.0.0.1:3425/a37-family-page"
+              }
+            ]
+          },
+          "data": {
+            "targetTaskId": "02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+            "mode": "observe",
+            "target": {
+              "projectId": "38915d05-7fe6-4153-8c5b-197230cb28a9",
+              "pages": [
+                {
+                  "id": "33da8343-f729-4a5c-b734-e9a14642bf73",
+                  "url": "http://127.0.0.1:3425/a37-family-page"
+                }
+              ]
+            }
+          },
+          "phase": "waiting_user",
+          "options": [
+            {
+              "label": "允许观察",
+              "value": "observe"
+            }
+          ]
+        },
+        "origin": {
+          "taskId": "4e67ce8f-9852-4354-a098-256a94e12a95",
+          "bindingId": "251f3eeb-67c6-46f2-9859-d6a5bcd0b4b9",
+          "runId": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+          "generation": 1
+        },
+        "status": "pending",
+        "createdAt": "2026-11-18T21:27:49.076Z",
+        "targetTaskTitle": "A37 parent git"
+      }
+    },
+    "grant": {
+      "id": "349ffeb8-1491-4739-972a-955979fb075a",
+      "runId": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+      "projectId": "38915d05-7fe6-4153-8c5b-197230cb28a9",
+      "requesterTaskId": "4e67ce8f-9852-4354-a098-256a94e12a95",
+      "targetTaskId": "02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+      "mode": "observe",
+      "requestedMode": "observe",
+      "createdAt": 1795037269618,
+      "grantedAt": 1795037269618,
+      "requesterTitle": "A37 native observer",
+      "targetTitle": "A37 parent git",
+      "projectName": "M14 A37 mixed git"
+    },
+    "nativeCLI": [
+      {
+        "phase": 0,
+        "text": "Chunk ID: c6abb0\nWall time: 0.5948 seconds\nProcess exited with code 2\nOriginal token count: 94\nOutput:\nwillyou-app: SCOPE_DENIED\n{\"error\":{\"effectState\":\"read-only\",\"code\":\"SCOPE_DENIED\",\"layer\":\"auth\",\"message\":\"本次运行没有该任务的浏览器授权\",\"retryable\":false,\"attemptCount\":1,\"nextAction\":\"核对本次错误后重新明确操作\",\"retryExhausted\":false},\"operationId\":\"bce822ac-28cc-41ad-a360-ba34a5f1f60a\",\"requestId\":\"4887c99d-6fed-487d-8518-3bc4849423d7\"}\n",
+        "result": {
+          "error": {
+            "effectState": "read-only",
+            "code": "SCOPE_DENIED",
+            "layer": "auth",
+            "message": "本次运行没有该任务的浏览器授权",
+            "retryable": false,
+            "attemptCount": 1,
+            "nextAction": "核对本次错误后重新明确操作",
+            "retryExhausted": false
+          },
+          "operationId": "bce822ac-28cc-41ad-a360-ba34a5f1f60a",
+          "requestId": "4887c99d-6fed-487d-8518-3bc4849423d7"
+        }
+      },
+      {
+        "phase": 1,
+        "text": "Chunk ID: 3519fa\nWall time: 0.7239 seconds\nProcess exited with code 0\nOriginal token count: 162\nOutput:\n{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece\",\"connections\":[]},\"data\":{\"result\":{\"duplicate\":false,\"operationId\":\"9a4c2142-166b-4bb7-a07d-82df371846b0\",\"state\":\"awaiting_user\",\"requestId\":\"349ffeb8-1491-4739-972a-955979fb075a\"}},\"resources\":[],\"operation\":{\"id\":\"9a4c2142-166b-4bb7-a07d-82df371846b0\",\"requestId\":\"2a1cd5e9-4ab3-4e26-a7ef-fd5ec0a8cd0f\",\"effectState\":\"completed\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.access.request\"}\n",
+        "result": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece",
+            "connections": []
+          },
+          "data": {
+            "result": {
+              "duplicate": false,
+              "operationId": "9a4c2142-166b-4bb7-a07d-82df371846b0",
+              "state": "awaiting_user",
+              "requestId": "349ffeb8-1491-4739-972a-955979fb075a"
+            }
+          },
+          "resources": [],
+          "operation": {
+            "id": "9a4c2142-166b-4bb7-a07d-82df371846b0",
+            "requestId": "2a1cd5e9-4ab3-4e26-a7ef-fd5ec0a8cd0f",
+            "effectState": "completed",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.access.request"
+        }
+      },
+      {
+        "phase": 2,
+        "text": "Chunk ID: 15be54\nWall time: 0.8899 seconds\nProcess exited with code 0\nOriginal token count: 226\nOutput:\n{\"schema\":\"willyou-app-result-v2\",\"status\":\"ok\",\"source\":{\"appId\":\"browser\",\"revision\":null,\"packageHash\":\"1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece\",\"connections\":[]},\"data\":{\"url\":\"http:\\/\\/127.0.0.1:3425\\/a37-family-page\",\"title\":\"A37 local family\",\"snapshot\":\"- heading \\\"A37 synthetic family page\\\" [level=1, ref=@k64ef74dc7247453faadbbeaf83e9ce34s5e1]\",\"browserPageId\":\"33da8343-f729-4a5c-b734-e9a14642bf73\",\"origin\":\"http:\\/\\/127.0.0.1:3425\\/a37-family-page\",\"refs\":[{\"available\":true,\"name\":\"A37 synthetic family page\",\"role\":\"heading\",\"ref\":\"@k64ef74dc7247453faadbbeaf83e9ce34s5e1\"}]},\"resources\":[],\"operation\":{\"id\":\"9442d3f5-7212-4c6c-93a1-87784b479573\",\"requestId\":\"b1d7a50f-31a6-4edb-a7be-c9b24262f244\",\"effectState\":\"read-only\",\"origin\":\"cli\"},\"pagination\":null,\"completeness\":{\"missing\":[],\"complete\":true},\"contractMajor\":2,\"capabilityId\":\"browser.nav.snapshot\"}\n",
+        "result": {
+          "schema": "willyou-app-result-v2",
+          "status": "ok",
+          "source": {
+            "appId": "browser",
+            "revision": null,
+            "packageHash": "1c64c585c80c4efdd554e82a936e5fd095713a19d7c023f527da79f0741d2ece",
+            "connections": []
+          },
+          "data": {
+            "url": "http://127.0.0.1:3425/a37-family-page",
+            "title": "A37 local family",
+            "snapshot": "- heading \"A37 synthetic family page\" [level=1, ref=@k64ef74dc7247453faadbbeaf83e9ce34s5e1]",
+            "browserPageId": "33da8343-f729-4a5c-b734-e9a14642bf73",
+            "origin": "http://127.0.0.1:3425/a37-family-page",
+            "refs": [
+              {
+                "available": true,
+                "name": "A37 synthetic family page",
+                "role": "heading",
+                "ref": "@k64ef74dc7247453faadbbeaf83e9ce34s5e1"
+              }
+            ]
+          },
+          "resources": [],
+          "operation": {
+            "id": "9442d3f5-7212-4c6c-93a1-87784b479573",
+            "requestId": "b1d7a50f-31a6-4edb-a7be-c9b24262f244",
+            "effectState": "read-only",
+            "origin": "cli"
+          },
+          "pagination": null,
+          "completeness": {
+            "missing": [],
+            "complete": true
+          },
+          "contractMajor": 2,
+          "capabilityId": "browser.nav.snapshot"
+        }
+      }
+    ],
+    "invocations": [
+      {
+        "request_id": "4887c99d-6fed-487d-8518-3bc4849423d7",
+        "run_id": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+        "tool_name": "browser.nav.snapshot",
+        "state": "failed",
+        "error_code": "SCOPE_DENIED",
+        "effect_state": "read-only"
+      },
+      {
+        "request_id": "2a1cd5e9-4ab3-4e26-a7ef-fd5ec0a8cd0f",
+        "run_id": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+        "tool_name": "browser.access.request",
+        "state": "succeeded",
+        "error_code": null,
+        "effect_state": "completed"
+      },
+      {
+        "request_id": "b1d7a50f-31a6-4edb-a7be-c9b24262f244",
+        "run_id": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+        "tool_name": "browser.nav.snapshot",
+        "state": "succeeded",
+        "error_code": null,
+        "effect_state": "read-only"
+      }
+    ],
+    "nativeOwners": [
+      {
+        "task_id": "02d8c7fe-ef0e-419e-ae8d-f713190beff2",
+        "run_id": "89a1418a-abc8-427b-bee8-79713642911c",
+        "runner": "claude-code",
+        "generation": 1,
+        "pid": 32768,
+        "process_started_at": "darwin-proc-v1:1795037264:635265",
+        "state": "stopped",
+        "revocation_state": "revoked",
+        "started_at": "2026-11-18T21:27:44.374Z",
+        "ended_at": "2026-11-18T21:27:50.968Z"
+      },
+      {
+        "task_id": "4e67ce8f-9852-4354-a098-256a94e12a95",
+        "run_id": "ef3a4fa2-231d-4821-8514-7ab71ad08956",
+        "runner": "codex",
+        "generation": 1,
+        "pid": 32974,
+        "process_started_at": "darwin-proc-v1:1795037266:882442",
+        "state": "stopped",
+        "revocation_state": "revoked",
+        "started_at": "2026-11-18T21:27:46.637Z",
+        "ended_at": "2026-11-18T21:27:50.901Z"
+      },
+      {
+        "task_id": "4e67ce8f-9852-4354-a098-256a94e12a95",
+        "run_id": "cf60351f-a910-41fa-9e6a-fb73547a41e8",
+        "runner": "codex-app-server",
+        "generation": 2,
+        "pid": null,
+        "process_started_at": null,
+        "state": "preparing",
+        "revocation_state": "open",
+        "started_at": "2026-11-18T21:27:51.043Z",
+        "ended_at": null
+      }
+    ],
+    "businessNotice": [
+      {
+        "run_id": null,
+        "client_input_id": "business-result-349ffeb8-1491-4739-972a-955979fb075a",
+        "status": "accepted",
+        "accepted_at": "2026-11-18T21:27:49.618Z",
+        "started_at": null,
+        "ended_at": null
+      }
+    ],
+    "normalExit": "failed",
+    "forcedExit": {
+      "pid": 32593,
+      "code": null,
+      "signal": "SIGKILL"
+    },
+    "shutdownFinding": {
+      "classification": "unresolved, driver requested quit before actual task/notification settlement; normal confirmation plausible, no native dialog probe recorded",
+      "functionalScreenshotMtimeUtc": "2026-11-18T21:27:51.025378+00:00",
+      "earliestScheduledAppQuitUtc": "2026-11-18T21:27:51.075378+00:00",
+      "originalChildAndParentEndedBeforeFinalScreenshot": true,
+      "newPreparingRecordBeforeEarliestQuit": true,
+      "lastInboundProviderRequest": {
+        "at": "2026-11-18T21:27:50.790Z",
+        "kind": "codex",
+        "model": "fixture-a37-observer",
+        "child": "observer",
+        "wake": false
+      },
+      "businessNoticeReachedNativeModel": false,
+      "productBehavior": "AgentTaskService.status returns working for accepted unpaused inputs even when no current run is busy; before-quit normally requests confirmation in that state.",
+      "followUp": "Test naturally settled status, empty queue and requests, actual child provider result notice, then passive quit phase including dialog observer without replacing result."
+    },
+    "released": {
+      "app": 32593,
+      "claude": 32768,
+      "codex": 32974,
+      "closedPorts": [
+        3425,
+        63886,
+        63905
+      ]
+    },
+    "preparingBeforeQuit": {
+      "created_at": "2026-11-18T21:27:51.043Z",
+      "run_id": "cf60351f-a910-41fa-9e6a-fb73547a41e8",
+      "pid": null
+    }
+  },
+  "pending": [
+    "SVN no active owner approval, restart/bind, stop before bind and revoke before bind",
+    "M15 unattended synthetic trigger"
+  ],
+  "nextFamilyDriver": {
+    "filename": "a37-family-packaged.mjs",
+    "sha256": "11e0b7d575e6671e99faec531b0c03127f89c7eaca4f2544d52897d3b50a8098"
+  }
+}

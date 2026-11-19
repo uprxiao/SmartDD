@@ -1,0 +1,50 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/agent/agent-task-service.test.ts -t 'only a writable native run' --maxWorkers=1
+
+[1119/032738.333778:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/032738.645413:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/agent-task-service.test.ts (60 tests | 1 failed | 59 skipped) 40ms
+   × A65: only a writable native run contributes a before and after snapshot 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-task-service.test.ts > A65: only a writable native run contributes a before and after snapshot
+AssertionError: expected [ [ …(3) ], [ …(3) ] ] to deeply equal [ [ …(3) ] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "e4678d8b-65a7-4946-bdb5-b24193a58059",
++     "5364ce76-fbf6-48fe-ba30-b474073474dc",
++     "c2840e21-6f07-436e-afb9-ee696794eacf",
++   ],
++   [
+      "53a4ce29-cbdf-4da0-9c7f-ab3e79660073",
+      "ddc52092-3072-46e7-a1a5-1826fad0f692",
+      "743e6314-54a3-4b3b-ae3a-517078b5582f",
+    ],
+  ]
+
+ ❯ src/main/core/agent/agent-task-service.test.ts:71:29
+     69|   insts[1].finish();
+     70|   await until(() => store.turn(read.turnId)?.status === 'completed' &&…
+     71|   expect(before.mock.calls).toEqual([[writer, write.turnId, runs.runFo…
+       |                             ^
+     72|   expect(after.mock.calls).toEqual([[writer, write.turnId]]);
+     73|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 59 skipped (60)
+   Start at  03:27:38
+   Duration  279ms (transform 135ms, setup 0ms, import 162ms, tests 40ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

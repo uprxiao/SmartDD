@@ -1,0 +1,125 @@
+{
+  "caseId": "M14-A43",
+  "scenario": "retry",
+  "commit": "333b163e5a16c8d082cca245ea0a6bc9f4a7fc36",
+  "asar": "a0bc26dce5dd81cda963f0b32791efb60d287e62141c3bf6e2e2639bc99b083a",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "actions": [
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "type": "insertText",
+      "text": "A43_FIRST_REQUEST_retry"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-launch\"]",
+      "x": 1206,
+      "y": 851
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-launch\"]",
+      "x": 1206,
+      "y": 851
+    }
+  ],
+  "responses": [
+    {
+      "at": "2026-11-18T18:18:31.886Z",
+      "id": "rb80ffed1-a4fe-45d6-9600-ab092ee842ff",
+      "model": "m14-fixture-a43-home",
+      "marker": "A43_FIRST_REQUEST_retry"
+    },
+    {
+      "at": "2026-11-18T18:18:31.888Z",
+      "id": "r5840227a-e2f0-4ddc-bbce-4fb109e12f0c",
+      "model": "m14-fixture-a43-home",
+      "marker": "A43_FIRST_REQUEST_retry"
+    }
+  ],
+  "findings": [
+    {
+      "case": "first send retry duplicate",
+      "matchedTasks": [
+        "f917def4-bcce-43b3-89e5-75453c10f82b",
+        "9eeeb05b-372f-4859-b292-c0bd62d97cf8"
+      ],
+      "receipts": [
+        {
+          "taskId": "9eeeb05b-372f-4859-b292-c0bd62d97cf8",
+          "clientInputId": "in-06f51fa829ce430cbe6f9347da6c3fe7",
+          "startedAt": 1795025910422,
+          "receipt": {
+            "turnId": "5d91626e-d966-4fde-b428-6f132f272af8",
+            "duplicate": false,
+            "status": "accepted"
+          },
+          "acceptedAt": 1795025910424,
+          "transportError": true
+        },
+        {
+          "taskId": "f917def4-bcce-43b3-89e5-75453c10f82b",
+          "clientInputId": "in-d5cbbf873c084459a3398d0f98eb116a",
+          "startedAt": 1795025910514,
+          "receipt": {
+            "turnId": "9693a7bd-bc67-4e62-b3d1-9a437134e6ea",
+            "duplicate": false,
+            "status": "accepted"
+          },
+          "acceptedAt": 1795025910515,
+          "deliveredAt": 1795025910515,
+          "releaseCount": 0
+        }
+      ],
+      "nativeRequests": 2
+    }
+  ],
+  "scope": "True packaged home UI and native local Codex. One precise original IPC receipt gated or lost after original acceptance.",
+  "status": "failed-assertions",
+  "identity": [
+    true,
+    53657,
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-060/runtime-O1d28V/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-060/runtime-O1d28V/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-060/runtime-O1d28V/data"
+  ],
+  "ipc": [
+    {
+      "taskId": "9eeeb05b-372f-4859-b292-c0bd62d97cf8",
+      "clientInputId": "in-06f51fa829ce430cbe6f9347da6c3fe7",
+      "startedAt": 1795025910422,
+      "receipt": {
+        "turnId": "5d91626e-d966-4fde-b428-6f132f272af8",
+        "duplicate": false,
+        "status": "accepted"
+      },
+      "acceptedAt": 1795025910424,
+      "transportError": true
+    },
+    {
+      "taskId": "f917def4-bcce-43b3-89e5-75453c10f82b",
+      "clientInputId": "in-d5cbbf873c084459a3398d0f98eb116a",
+      "startedAt": 1795025910514,
+      "receipt": {
+        "turnId": "9693a7bd-bc67-4e62-b3d1-9a437134e6ea",
+        "duplicate": false,
+        "status": "accepted"
+      },
+      "acceptedAt": 1795025910515,
+      "deliveredAt": 1795025910515,
+      "releaseCount": 0
+    }
+  ],
+  "exit": {
+    "pid": 53657,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

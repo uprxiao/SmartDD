@@ -1,0 +1,35 @@
+[1119/005943.064012:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/005943.214764:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/project-resources.test.ts (17 tests | 1 failed | 16 skipped) 33ms
+   × R1/R2 closes an idle native session before deleting an unarchived task with an open diff 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/project-resources.test.ts > R1/R2 closes an idle native session before deleting an unarchived task with an open diff
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/main/core/agent/project-resources.test.ts:332:33
+    330|   activeIds.add(legacyTask);
+    331|   const blocked = f.projects.deletePreview(p.project.id);
+    332|   expect(blocked.legacyRunning).toBe(1);
+       |                                 ^
+    333|   expect(() => f.projects.delete(p.project.id,{deleteSecrets:false,age…
+    334|   activeIds.delete(legacyTask);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 skipped (17)
+   Start at  00:59:43
+   Duration  645ms (transform 324ms, setup 0ms, import 535ms, tests 33ms, environment 0ms)
+

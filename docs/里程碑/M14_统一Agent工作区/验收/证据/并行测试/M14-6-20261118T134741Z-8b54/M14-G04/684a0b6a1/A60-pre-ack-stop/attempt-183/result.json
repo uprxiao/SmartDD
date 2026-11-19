@@ -1,0 +1,271 @@
+{
+  "caseId": "M14-A60",
+  "sourceCommit": "684a0b6a1e1ba01c12f405b89087aebf9e357a5d",
+  "scope": "M14-A60-stop-before-ack",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "237e4b90eb22fbae9329bb475094ba99a397433fd9d0f30d52ec1c34e53379fc"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T02:27:05.753Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A60-stop-before-ack": {
+      "status": "pass",
+      "passed": [
+        "真实停止先于原生开始回执。释放未改的原字节后，仅向正确的原生回合发送一次中断，原回合停止并关闭实际请求，下一次手动发送正常完成。"
+      ],
+      "missing": [],
+      "native": {
+        "pid": 55503,
+        "events": [
+          {
+            "stage": "forward-start",
+            "at": 1795055233746,
+            "id": 10,
+            "threadId": "01a1f1a1-2792-77c1-9ca4-253923d0a08c"
+          },
+          {
+            "stage": "start-reply",
+            "at": 1795055233750,
+            "turnId": "01a1f1a1-2ad4-7e30-8414-574eb4fe0ad8",
+            "held": true
+          },
+          {
+            "stage": "turn-started",
+            "at": 1795055233752,
+            "turnId": "01a1f1a1-2ad4-7e30-8414-574eb4fe0ad8",
+            "held": true
+          },
+          {
+            "stage": "release",
+            "at": 1795055233865,
+            "reason": "fixture-release-after-real-stop",
+            "withheld": 2
+          },
+          {
+            "stage": "forward-interrupt",
+            "at": 1795055233866,
+            "turnId": "01a1f1a1-2ad4-7e30-8414-574eb4fe0ad8",
+            "threadId": "01a1f1a1-2792-77c1-9ca4-253923d0a08c"
+          },
+          {
+            "stage": "turn-completed",
+            "at": 1795055233893,
+            "turnId": "01a1f1a1-2ad4-7e30-8414-574eb4fe0ad8",
+            "status": "interrupted"
+          }
+        ],
+        "providerClosedAt": 1795055233871
+      },
+      "host": {
+        "stopped": {
+          "taskId": "2febba11-f18f-4744-987f-f2bb229df676",
+          "seq": 35,
+          "type": "task.user_stopped",
+          "itemId": null,
+          "payload": {
+            "subtree": false
+          }
+        },
+        "stopObservedAt": 1795055233865,
+        "preAck": {
+          "turn_id": "7a73ffed-84cf-43b7-82c9-f64bd0a2f2e7",
+          "client_input_id": "in-1639fff864474cd5a0f5db24c7ed35c4",
+          "status": "dispatching",
+          "native_turn_id": null,
+          "accepted_at": "2026-11-19T02:27:13.548Z",
+          "started_at": null,
+          "ended_at": null,
+          "error_code": null,
+          "run_id": "cd8b2d5a-2b1e-4f05-862b-92bfb366176e",
+          "source_kind": "user"
+        },
+        "terminal": {
+          "turn_id": "7a73ffed-84cf-43b7-82c9-f64bd0a2f2e7",
+          "client_input_id": "in-1639fff864474cd5a0f5db24c7ed35c4",
+          "status": "interrupted",
+          "native_turn_id": "01a1f1a1-2ad4-7e30-8414-574eb4fe0ad8",
+          "accepted_at": "2026-11-19T02:27:13.548Z",
+          "started_at": "2026-11-19T02:27:13.865Z",
+          "ended_at": "2026-11-19T02:27:13.893Z",
+          "error_code": null,
+          "run_id": "cd8b2d5a-2b1e-4f05-862b-92bfb366176e",
+          "source_kind": "user"
+        },
+        "following": {
+          "turn_id": "deee38f7-5a5f-4605-b4e5-ddaeb6b909ed",
+          "client_input_id": "in-b0447b13eece48cab1ef3791f2129efc",
+          "status": "completed",
+          "native_turn_id": "01a1f1a1-303c-7552-9cf7-15727dc5ebb3",
+          "accepted_at": "2026-11-19T02:27:14.064Z",
+          "started_at": "2026-11-19T02:27:15.134Z",
+          "ended_at": "2026-11-19T02:27:15.165Z",
+          "error_code": null,
+          "run_id": "25e8dc51-66eb-4c34-9cd1-bc78a04ffe56",
+          "source_kind": "user"
+        }
+      },
+      "restored": true
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T02:27:11.689Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T02:27:11.732Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T02:27:11.744Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T02:27:12.271Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"2febba11-f18f-4744-987f-f2bb229df676\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T02:27:12.282Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:27:12.293Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:27:13.541Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:27:13.550Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:27:13.864Z",
+      "selector": ".agent-stop-run[title=\"停止本轮\"]",
+      "x": 1181.5,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T02:27:14.055Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T02:27:14.065Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "model": [
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-ACK-WARM"
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-STOP-BEFORE-ACK"
+    },
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A60-USER-ACK-RECOVER"
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-183/home",
+    "at": "2026-11-19T02:27:07.125Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 55325,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-183/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-183/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-183/home",
+    "packaged": true
+  },
+  "engine": "0.169.0",
+  "appLogs": "Debugger listening on ws://127.0.0.1:62094/07cf25aa-f4bb-4d52-b8ff-16f8ec5b6d2e\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:62094/07cf25aa-f4bb-4d52-b8ff-16f8ec5b6d2e\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:62093/devtools/browser/d8a0d344-125c-4a0f-8e76-233f9dcf10c2\n(node:55325) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 55325,
+    "code": 0,
+    "signal": null
+  },
+  "closedSessions": {
+    "rows": [
+      {
+        "run_id": "cd8b2d5a-2b1e-4f05-862b-92bfb366176e",
+        "binding_id": "845f3b23-f9a0-4201-95b5-f5bf4b63a264",
+        "generation": 1,
+        "state": "stopped",
+        "pid": 55503,
+        "process_started_at": "darwin-proc-v1:1795055232:828755",
+        "started_at": "2026-11-19T02:27:12.571Z",
+        "ended_at": "2026-11-19T02:27:14.359Z",
+        "native_id": "01a1f1a1-2792-77c1-9ca4-253923d0a08c"
+      },
+      {
+        "run_id": "25e8dc51-66eb-4c34-9cd1-bc78a04ffe56",
+        "binding_id": "845f3b23-f9a0-4201-95b5-f5bf4b63a264",
+        "generation": 2,
+        "state": "stopped",
+        "pid": 55916,
+        "process_started_at": "darwin-proc-v1:1795055234:673830",
+        "started_at": "2026-11-19T02:27:14.433Z",
+        "ended_at": "2026-11-19T02:27:15.897Z",
+        "native_id": "01a1f1a1-2792-77c1-9ca4-253923d0a08c"
+      }
+    ],
+    "processes": [
+      {
+        "pid": 55503,
+        "startedAt": "darwin-proc-v1:1795055232:828755",
+        "current": {
+          "schema": 1,
+          "state": "stopped"
+        }
+      },
+      {
+        "pid": 55916,
+        "startedAt": "darwin-proc-v1:1795055234:673830",
+        "current": {
+          "schema": 1,
+          "state": "stopped"
+        }
+      }
+    ]
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T02:27:16.079Z"
+}

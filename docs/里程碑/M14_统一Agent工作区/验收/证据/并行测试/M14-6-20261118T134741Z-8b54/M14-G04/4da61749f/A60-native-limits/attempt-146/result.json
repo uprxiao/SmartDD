@@ -1,0 +1,267 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App, actual Claude/Codex, loopback provider responses only, no protocol substitution",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-146/runtime-UkozqV/home",
+    "at": "2026-11-19T00:45:45.290Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "claude-output",
+  "sourceCommit": "4da61749fc24f8d05481b6139e276cf6c4afd5b0",
+  "asar": "39351e634975433afb8034cda4e3a387fbd534b3f982ad56b3f88e062864dbc4",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-native-limits-packaged.mjs": "77dcebf2cb2f7919273ab13da4d014345b3f920d46db8ae4a01076de91d0d928",
+    "a60-prep/provider-contract.mjs": "34868e75d6d60254cd7574ddfc3f48829dd2a814df51584ad666c0ca0acd85e6"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"d94d178e-e050-495b-8458-7d27bcc2483b\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "requests": [
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "warm",
+      "arrivedAt": 1795049151870,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only"
+    },
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "exercise",
+      "arrivedAt": 1795049152191,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "kind": "assistant-output-limit",
+        "wire": "max_tokens"
+      }
+    },
+    {
+      "kind": "claude",
+      "model": "a60-claude-output",
+      "lane": "unclassified",
+      "arrivedAt": 1795049152199,
+      "path": "/v1/messages",
+      "bodyScope": "current-user-marker-only"
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "failed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-146/runtime-UkozqV/project",
+    "model": "a60-claude-output",
+    "engine": "claude",
+    "expected": "output"
+  },
+  "pid": 9980,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-146/runtime-UkozqV/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-146/runtime-UkozqV/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-146/runtime-UkozqV/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    9980
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "run": {
+      "runId": "0cc34231-1e88-4f16-aad5-d611e01a9f65",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-claude-output",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-claude-output",
+          "name": "a60-claude-output",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    },
+    "turnId": "d87d2662-55e0-4cae-9374-2846051c16fd"
+  },
+  "serverError": "AssertionError [ERR_ASSERTION]: Unknown current user input; no fallback to historical markers\n+ actual - expected\n\n+ 'unclassified'\n- 'exercise'\n\n    at Server.<anonymous> (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-native-limits-packaged.mjs:75:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)",
+  "phase": "actual native executor receives local provider limit",
+  "error": "Error: AssertionError [ERR_ASSERTION]: Unknown current user input; no fallback to historical markers\n+ actual - expected\n\n+ 'unclassified'\n- 'exercise'\n\n    at Server.<anonymous> (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-native-limits-packaged.mjs:75:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-native-limits-packaged.mjs:99:35)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-native-limits-packaged.mjs:203:18",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nM14 A60 limit isolated\nA60 isolated claude-output\n工作中\n设置\nA60 isolated claude-output\n工作中\n插件 2\n单 Agent · 开启委派\nA60_PACKAGE_WARM\n\nA60_PACKAGE_WARM_DONE\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nA60_PACKAGE_LIMIT\n\nA60_NATIVE_PARTIAL_LIMIT_TEXT\n\nA60_NATIVE_PARTIAL_LIMIT_TEXT\n\n请求批准\n完全访问\nFixture claude\na60-claude-output\n运行中发送会排队",
+  "stoppedBeforeQuit": [
+    "d94d178e-e050-495b-8458-7d27bcc2483b"
+  ],
+  "preQuit": {
+    "at": "2026-11-19T00:45:52.326Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-146/quit-phase.jsonl",
+  "exit": {
+    "pid": 9980,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

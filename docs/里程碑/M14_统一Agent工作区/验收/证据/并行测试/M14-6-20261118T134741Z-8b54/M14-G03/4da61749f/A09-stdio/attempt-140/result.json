@@ -1,0 +1,612 @@
+{
+  "sourceCommit": "4da61749fc24f8d05481b6139e276cf6c4afd5b0",
+  "asar": "39351e634975433afb8034cda4e3a387fbd534b3f982ad56b3f88e062864dbc4",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "sourceHashes": {
+    "claude": "5b35673a5e4a0455d68c3df7cadff2bb0c261048c70e0d2d49db0297fe5b971f",
+    "codex": "9a1fb40d777910ade477a2b78c78e2712b1f92f5448288bb07d82d6502989d26"
+  },
+  "fixtures": {
+    "root": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/home",
+    "data": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/data",
+    "project": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project",
+    "sourcePaths": {
+      "claude": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/.mcp.json",
+      "codex": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/home/.codex/config.toml"
+    },
+    "expected": {
+      "a09_claude_stdio": {
+        "argv": [
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+          "a09_claude_stdio",
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_claude_stdio.json",
+          "--label",
+          "Claude 含空格 中文",
+          "one \"double\" and 'single'",
+          "lower\\path\\text",
+          "",
+          "Claude 已展开 值 suffix",
+          "$A09_LITERAL",
+          "无值 默认"
+        ],
+        "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Claude 中文 工作区",
+        "publicEnv": {
+          "A09_CLAUDE_MCP": "own Claude 已展开 值",
+          "A09_FIXED": "C own fixed literal"
+        }
+      },
+      "a09_codex_stdio": {
+        "argv": [
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+          "a09_codex_stdio",
+          "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_codex_stdio.json",
+          "--label",
+          "Codex 中文 两段",
+          "one 'single' and \"double\"",
+          "upper\\path\\text",
+          "",
+          "${A09_CLAUDE_PUBLIC} remains literal",
+          "$A09_LITERAL",
+          "@WYARG:public literal"
+        ],
+        "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Codex 合成 work area",
+        "publicEnv": {
+          "A09_CODEX_MCP": "own ${A09_CLAUDE_PUBLIC}",
+          "A09_FIXED": "X own fixed literal",
+          "A09_CODEX_PUBLIC": "Codex 原生导出 值"
+        }
+      }
+    }
+  },
+  "layer": "A packaged App with actual native MCP and synthetic loopback model",
+  "modelRequests": [
+    {
+      "kind": "claude",
+      "model": "a09-stdio-claude",
+      "marker": "A09_PRIVATE_CLAUDE",
+      "publicSyntheticAuthentication": true,
+      "sourceTools": [
+        "mcp__a09_claude_stdio__a09_stdio_projection",
+        "mcp__a09_codex_stdio__a09_stdio_projection"
+      ],
+      "leakedDisabledTools": [],
+      "bridgeTools": [
+        "mcp__wy_5f4ec80275fcf1c296117612__wy_delegate",
+        "mcp__wy_5f4ec80275fcf1c296117612__wy_targets"
+      ]
+    },
+    {
+      "kind": "codex",
+      "model": "a09-stdio-codex",
+      "marker": "A09_PRIVATE_CODEX",
+      "publicSyntheticAuthentication": true,
+      "sourceTools": [
+        "mcp__a09_claude_stdio__a09_stdio_projection",
+        "mcp__a09_codex_stdio__a09_stdio_projection"
+      ],
+      "leakedDisabledTools": [],
+      "bridgeTools": [
+        "mcp__wy_e4d18bc5ad4347963bfb56c0__wy_delegate",
+        "mcp__wy_e4d18bc5ad4347963bfb56c0__wy_targets"
+      ]
+    }
+  ],
+  "flows": {
+    "claude": {
+      "profileId": "71474396-73c2-4056-a0d2-81d241b1cb70",
+      "taskId": "bfca73ef-8a2f-4b46-80f6-e78fbabef0ee",
+      "runId": "1faa45cc-ef49-481d-99aa-ebd3ba2878b1",
+      "turnId": "423c3ab8-eba1-472e-a103-097e4ca1afdc",
+      "mcpProcesses": [
+        {
+          "source": "a09_claude_stdio",
+          "argv": [
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+            "a09_claude_stdio",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_claude_stdio.json",
+            "--label",
+            "Claude 含空格 中文",
+            "one \"double\" and 'single'",
+            "lower\\path\\text",
+            "",
+            "Claude 已展开 值 suffix",
+            "$A09_LITERAL",
+            "无值 默认"
+          ],
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Claude 中文 工作区",
+          "publicEnv": {
+            "A09_CLAUDE_MCP": "own Claude 已展开 值",
+            "A09_FIXED": "C own fixed literal"
+          },
+          "pid": 90481,
+          "published": [
+            "a09_stdio_projection",
+            "a09_disabled_probe"
+          ]
+        },
+        {
+          "source": "a09_codex_stdio",
+          "argv": [
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+            "a09_codex_stdio",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_codex_stdio.json",
+            "--label",
+            "Codex 中文 两段",
+            "one 'single' and \"double\"",
+            "upper\\path\\text",
+            "",
+            "${A09_CLAUDE_PUBLIC} remains literal",
+            "$A09_LITERAL",
+            "@WYARG:public literal"
+          ],
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Codex 合成 work area",
+          "publicEnv": {
+            "A09_CODEX_MCP": "own ${A09_CLAUDE_PUBLIC}",
+            "A09_FIXED": "X own fixed literal",
+            "A09_CODEX_PUBLIC": "Codex 原生导出 值"
+          },
+          "pid": 90480,
+          "published": [
+            "a09_stdio_projection",
+            "a09_disabled_probe"
+          ]
+        }
+      ]
+    },
+    "codex": {
+      "profileId": "e91f2567-3bec-4e32-9669-78c69815c906",
+      "taskId": "1141330b-a3cf-432a-bcc7-25fce5748a9b",
+      "runId": "10798ced-aef1-437b-9405-947be7712e62",
+      "turnId": "a789697f-dcee-4525-9161-4f052ceb3c1e",
+      "mcpProcesses": [
+        {
+          "source": "a09_claude_stdio",
+          "argv": [
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+            "a09_claude_stdio",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_claude_stdio.json",
+            "--label",
+            "Claude 含空格 中文",
+            "one \"double\" and 'single'",
+            "lower\\path\\text",
+            "",
+            "Claude 已展开 值 suffix",
+            "$A09_LITERAL",
+            "无值 默认"
+          ],
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Claude 中文 工作区",
+          "publicEnv": {
+            "A09_CLAUDE_MCP": "own Claude 已展开 值",
+            "A09_FIXED": "C own fixed literal"
+          },
+          "pid": 90604,
+          "published": [
+            "a09_stdio_projection",
+            "a09_disabled_probe"
+          ]
+        },
+        {
+          "source": "a09_codex_stdio",
+          "argv": [
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+            "a09_codex_stdio",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_codex_stdio.json",
+            "--label",
+            "Codex 中文 两段",
+            "one 'single' and \"double\"",
+            "upper\\path\\text",
+            "",
+            "${A09_CLAUDE_PUBLIC} remains literal",
+            "$A09_LITERAL",
+            "@WYARG:public literal"
+          ],
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Codex 合成 work area",
+          "publicEnv": {
+            "A09_CODEX_MCP": "own ${A09_CLAUDE_PUBLIC}",
+            "A09_FIXED": "X own fixed literal",
+            "A09_CODEX_PUBLIC": "Codex 原生导出 值"
+          },
+          "pid": 90605,
+          "published": [
+            "a09_stdio_projection",
+            "a09_disabled_probe"
+          ]
+        }
+      ]
+    }
+  },
+  "clicks": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"bfca73ef-8a2f-4b46-80f6-e78fbabef0ee\"]",
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"1141330b-a3cf-432a-bcc7-25fce5748a9b\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "passed": true,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    90148
+  ],
+  "tools": {
+    "claude": "2.1.326",
+    "codex": "0.169.0"
+  },
+  "discovered": [
+    {
+      "id": "6fd6cd9419716de4f4a9a7b52d433ad420d7b269c597141da1e6dff3381f4387",
+      "name": "a09_codex_stdio",
+      "runner": "codex",
+      "managed": false,
+      "enabled": true,
+      "present": true
+    },
+    {
+      "id": "2495fc82ac8f48063769a5f3965ceca9b93e2b9df615f20eaf5405a94187ad22",
+      "name": "a09_claude_stdio",
+      "runner": "claude",
+      "managed": false,
+      "enabled": true,
+      "present": true
+    },
+    {
+      "id": "89dfacf83c93afd7ce1dd84ebe60913e31aa7b31d57ca0bcd822ec12ea6950ce",
+      "name": "a09_registry_disabled",
+      "runner": "claude",
+      "managed": false,
+      "enabled": true,
+      "present": true
+    }
+  ],
+  "selected": [
+    {
+      "id": "6fd6cd9419716de4f4a9a7b52d433ad420d7b269c597141da1e6dff3381f4387",
+      "kind": "mcp",
+      "name": "a09_codex_stdio",
+      "runner": "codex",
+      "sourcePath": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/home/.codex/config.toml",
+      "sourceScope": "user",
+      "projectRoot": null,
+      "sourceLabel": "user",
+      "version": null,
+      "managed": true,
+      "enabled": true,
+      "autoApprove": true,
+      "present": true,
+      "status": "managed",
+      "issues": [
+        "runtime_dependencies_unverified"
+      ],
+      "loaded": "unverified",
+      "targetIssues": {}
+    },
+    {
+      "id": "2495fc82ac8f48063769a5f3965ceca9b93e2b9df615f20eaf5405a94187ad22",
+      "kind": "mcp",
+      "name": "a09_claude_stdio",
+      "runner": "claude",
+      "sourcePath": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/.mcp.json",
+      "sourceScope": "project",
+      "projectRoot": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project",
+      "sourceLabel": "project",
+      "version": null,
+      "managed": true,
+      "enabled": true,
+      "autoApprove": true,
+      "present": true,
+      "status": "managed",
+      "issues": [
+        "runtime_dependencies_unverified",
+        "project_trust_unverified"
+      ],
+      "loaded": "unverified",
+      "targetIssues": {}
+    },
+    {
+      "id": "89dfacf83c93afd7ce1dd84ebe60913e31aa7b31d57ca0bcd822ec12ea6950ce",
+      "kind": "mcp",
+      "name": "a09_registry_disabled",
+      "runner": "claude",
+      "sourcePath": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/.mcp.json",
+      "sourceScope": "project",
+      "projectRoot": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project",
+      "sourceLabel": "project",
+      "version": null,
+      "managed": true,
+      "enabled": false,
+      "autoApprove": true,
+      "present": true,
+      "status": "managed",
+      "issues": [
+        "runtime_dependencies_unverified",
+        "project_trust_unverified"
+      ],
+      "loaded": "unverified",
+      "targetIssues": {}
+    }
+  ],
+  "processes": [
+    {
+      "nativeTarget": "claude",
+      "source": "a09_claude_stdio",
+      "pid": 90481,
+      "observed": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90481,
+        "startedAt": "darwin-proc-v1:1795048436:850879"
+      }
+    },
+    {
+      "nativeTarget": "claude",
+      "source": "a09_codex_stdio",
+      "pid": 90480,
+      "observed": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90480,
+        "startedAt": "darwin-proc-v1:1795048436:850853"
+      }
+    },
+    {
+      "nativeTarget": "codex",
+      "source": "a09_claude_stdio",
+      "pid": 90604,
+      "observed": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90604,
+        "startedAt": "darwin-proc-v1:1795048439:564092"
+      }
+    },
+    {
+      "nativeTarget": "codex",
+      "source": "a09_codex_stdio",
+      "pid": 90605,
+      "observed": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90605,
+        "startedAt": "darwin-proc-v1:1795048439:564092"
+      }
+    }
+  ],
+  "sourceHashesAfterRounds": {
+    "claude": "5b35673a5e4a0455d68c3df7cadff2bb0c261048c70e0d2d49db0297fe5b971f",
+    "codex": "9a1fb40d777910ade477a2b78c78e2712b1f92f5448288bb07d82d6502989d26"
+  },
+  "witnesses": [
+    {
+      "source": "a09_claude_stdio",
+      "argv": [
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+        "a09_claude_stdio",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_claude_stdio.json",
+        "--label",
+        "Claude 含空格 中文",
+        "one \"double\" and 'single'",
+        "lower\\path\\text",
+        "",
+        "Claude 已展开 值 suffix",
+        "$A09_LITERAL",
+        "无值 默认"
+      ],
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Claude 中文 工作区",
+      "publicEnv": {
+        "A09_CLAUDE_MCP": "own Claude 已展开 值",
+        "A09_FIXED": "C own fixed literal"
+      },
+      "pid": 90481,
+      "published": [
+        "a09_stdio_projection",
+        "a09_disabled_probe"
+      ]
+    },
+    {
+      "source": "a09_claude_stdio",
+      "argv": [
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+        "a09_claude_stdio",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_claude_stdio.json",
+        "--label",
+        "Claude 含空格 中文",
+        "one \"double\" and 'single'",
+        "lower\\path\\text",
+        "",
+        "Claude 已展开 值 suffix",
+        "$A09_LITERAL",
+        "无值 默认"
+      ],
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Claude 中文 工作区",
+      "publicEnv": {
+        "A09_CLAUDE_MCP": "own Claude 已展开 值",
+        "A09_FIXED": "C own fixed literal"
+      },
+      "pid": 90604,
+      "published": [
+        "a09_stdio_projection",
+        "a09_disabled_probe"
+      ]
+    },
+    {
+      "source": "a09_codex_stdio",
+      "argv": [
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+        "a09_codex_stdio",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_codex_stdio.json",
+        "--label",
+        "Codex 中文 两段",
+        "one 'single' and \"double\"",
+        "upper\\path\\text",
+        "",
+        "${A09_CLAUDE_PUBLIC} remains literal",
+        "$A09_LITERAL",
+        "@WYARG:public literal"
+      ],
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Codex 合成 work area",
+      "publicEnv": {
+        "A09_CODEX_MCP": "own ${A09_CLAUDE_PUBLIC}",
+        "A09_FIXED": "X own fixed literal",
+        "A09_CODEX_PUBLIC": "Codex 原生导出 值"
+      },
+      "pid": 90480,
+      "published": [
+        "a09_stdio_projection",
+        "a09_disabled_probe"
+      ]
+    },
+    {
+      "source": "a09_codex_stdio",
+      "argv": [
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a09-stdio/observed-mcp.mjs",
+        "a09_codex_stdio",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/witness-a09_codex_stdio.json",
+        "--label",
+        "Codex 中文 两段",
+        "one 'single' and \"double\"",
+        "upper\\path\\text",
+        "",
+        "${A09_CLAUDE_PUBLIC} remains literal",
+        "$A09_LITERAL",
+        "@WYARG:public literal"
+      ],
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-140/runtime-uXMzCH/project/fixtures/Codex 合成 work area",
+      "publicEnv": {
+        "A09_CODEX_MCP": "own ${A09_CLAUDE_PUBLIC}",
+        "A09_FIXED": "X own fixed literal",
+        "A09_CODEX_PUBLIC": "Codex 原生导出 值"
+      },
+      "pid": 90605,
+      "published": [
+        "a09_stdio_projection",
+        "a09_disabled_probe"
+      ]
+    }
+  ],
+  "disabledToolPolicy": {
+    "tool": "a09_disabled_probe",
+    "sourceDeclarations": [
+      "a09_claude_stdio",
+      "a09_codex_stdio"
+    ],
+    "rawOfferCount": 4,
+    "absentFromEachNativeModelCatalog": [
+      "claude",
+      "codex"
+    ],
+    "disabledRegistryServer": "a09_registry_disabled"
+  },
+  "exit": {
+    "pid": 90148,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "sourceHashesAfterExit": {
+    "claude": "5b35673a5e4a0455d68c3df7cadff2bb0c261048c70e0d2d49db0297fe5b971f",
+    "codex": "9a1fb40d777910ade477a2b78c78e2712b1f92f5448288bb07d82d6502989d26"
+  },
+  "allProcessRecordsAfterExit": [
+    "witness-a09_claude_stdio-90481.json",
+    "witness-a09_claude_stdio-90604.json",
+    "witness-a09_codex_stdio-90480.json",
+    "witness-a09_codex_stdio-90605.json"
+  ],
+  "processesAfterExit": [
+    {
+      "pid": 90481,
+      "original": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90481,
+        "startedAt": "darwin-proc-v1:1795048436:850879"
+      },
+      "current": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    },
+    {
+      "pid": 90480,
+      "original": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90480,
+        "startedAt": "darwin-proc-v1:1795048436:850853"
+      },
+      "current": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    },
+    {
+      "pid": 90604,
+      "original": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90604,
+        "startedAt": "darwin-proc-v1:1795048439:564092"
+      },
+      "current": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    },
+    {
+      "pid": 90605,
+      "original": {
+        "schema": 1,
+        "state": "running",
+        "pid": 90605,
+        "startedAt": "darwin-proc-v1:1795048439:564092"
+      },
+      "current": {
+        "schema": 1,
+        "state": "stopped"
+      }
+    }
+  ]
+}

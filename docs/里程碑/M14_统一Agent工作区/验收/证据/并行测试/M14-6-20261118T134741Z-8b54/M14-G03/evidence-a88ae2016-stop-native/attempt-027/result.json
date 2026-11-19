@@ -1,0 +1,385 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-027/runtime-Zrw60O/home",
+    "at": "2026-11-18T15:36:06.780Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "a88ae2016252e68316cf04fb2f88459b4e766467",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a27",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A27 local packaged A/I: cancel queued writer, stop one child round, then stop a tree without affecting the independent task",
+      "at": "2026-11-18T15:36:16.077Z",
+      "writerNeverStarted": true,
+      "finalChildStates": {
+        "queued-writer": "canceled",
+        "reader-x": "canceled",
+        "reader-y": "canceled"
+      },
+      "independentRun": "452fbefe-ac4a-4dfb-8dad-c5898d17400a"
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795016173027
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795016174042,
+      "scheduledChild": "queued-writer"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795016174142,
+      "scheduledChild": "reader-x"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795016174235,
+      "scheduledChild": "reader-y"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795016174309
+    },
+    {
+      "model": "fixture-child-reader-y",
+      "kind": "codex",
+      "child": "reader-y",
+      "wake": false,
+      "at": 1795016175393,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-child-reader-x",
+      "kind": "codex",
+      "child": "reader-x",
+      "wake": false,
+      "at": 1795016175393,
+      "reReadPrompt": false
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"6fec1fd7-f4b6-4628-88f1-9393a354219f\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"e6f1af7b-0656-4fe0-b173-6ddc7f1bbfd9\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-card[data-child-id=\"8ba09844-0691-4b87-be9c-ece766f9058d\"] button[aria-label^=\"停止子任务\"]",
+      "text": null,
+      "x": 1392,
+      "y": 172.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-open",
+      "text": "Acceptance reader-x - isolated delegation workspace",
+      "x": 1269.5,
+      "y": 283.5
+    },
+    {
+      "selector": ".agent-task-view button[title=\"停止本轮\"]",
+      "text": null,
+      "x": 1032.5,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"e6f1af7b-0656-4fe0-b173-6ddc7f1bbfd9\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": ".agent-waiting-children button",
+      "text": "停止任务树",
+      "x": 505.328125,
+      "y": 569.2890625
+    }
+  ],
+  "status": "passed",
+  "pid": 11765,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-027/runtime-Zrw60O/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-027/runtime-Zrw60O/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-027/runtime-Zrw60O/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    11765
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "e6f1af7b-0656-4fe0-b173-6ddc7f1bbfd9",
+  "childTaskIds": {
+    "queued-writer": "8ba09844-0691-4b87-be9c-ece766f9058d",
+    "reader-x": "16593e4a-fc03-4919-a2e3-d4883f85ec5d",
+    "reader-y": "afd26b4c-9e0b-4de7-b7f1-690cf61cb589"
+  },
+  "firstChildStop": {
+    "sequenceBefore": 14,
+    "sequenceNow": 17,
+    "stopProgress": {
+      "runId": "1a5d2a1e-3eed-40a9-af84-998ea7a8d61b",
+      "requestedAt": 1795016175593,
+      "forceAt": 1795016185593,
+      "closing": false
+    },
+    "status": "working",
+    "run": {
+      "runId": "1a5d2a1e-3eed-40a9-af84-998ea7a8d61b",
+      "generation": 1,
+      "driverId": "codex-app-server",
+      "tier": "ask",
+      "defaultModel": "fixture-parent",
+      "models": [
+        {
+          "id": "fixture-parent",
+          "name": "fixture-parent",
+          "efforts": [],
+          "defaultEffort": "none"
+        },
+        {
+          "id": "fixture-independent",
+          "name": "fixture-independent",
+          "efforts": [],
+          "defaultEffort": "none"
+        },
+        {
+          "id": "fixture-child-queued-writer",
+          "name": "fixture-child-queued-writer",
+          "efforts": [],
+          "defaultEffort": "none"
+        },
+        {
+          "id": "fixture-child-reader-x",
+          "name": "fixture-child-reader-x",
+          "efforts": [],
+          "defaultEffort": "none"
+        },
+        {
+          "id": "fixture-child-reader-y",
+          "name": "fixture-child-reader-y",
+          "efforts": [],
+          "defaultEffort": "none"
+        }
+      ],
+      "busy": true,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "goal",
+          "compact",
+          "review"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser",
+            "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug",
+            "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-mail-work-assistant",
+            "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-project-db-diagnostics",
+            "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-remote-password-ssh",
+            "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "imagegen",
+            "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+          },
+          {
+            "name": "openai-docs",
+            "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+          },
+          {
+            "name": "review-agent",
+            "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+          },
+          {
+            "name": "skill-creator",
+            "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+          },
+          {
+            "name": "skill-installer",
+            "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+          }
+        ]
+      }
+    }
+  },
+  "stopTreeClickedAt": "2026-11-18T15:36:15.937Z",
+  "a27": {
+    "writerNeverStarted": true,
+    "finalChildStates": {
+      "queued-writer": "canceled",
+      "reader-x": "canceled",
+      "reader-y": "canceled"
+    },
+    "independentRun": "452fbefe-ac4a-4dfb-8dad-c5898d17400a",
+    "parentAfterStop": {
+      "at": "2026-11-18T15:36:16.182Z",
+      "status": "stopped",
+      "runId": null,
+      "stopping": null,
+      "turn": {
+        "turn_id": "ab4d4515-28b2-4f86-b8cb-6e4ccd183414",
+        "client_input_id": "in-a21ba7cb95454e58974343090337bbf0",
+        "status": "interrupted",
+        "native_turn_id": "3a414421-45f0-4063-b47f-466c2219f597:1",
+        "accepted_at": "2026-11-18T15:36:13.128Z",
+        "started_at": "2026-11-18T15:36:14.011Z",
+        "ended_at": "2026-11-18T15:36:15.906Z",
+        "error_code": null,
+        "run_id": "c790317f-1e68-4214-b19e-ffc3c8c55d11",
+        "source_kind": "user"
+      }
+    },
+    "singleStopTerminalObserved": true
+  },
+  "beforeQuit": [
+    {
+      "taskId": "afd26b4c-9e0b-4de7-b7f1-690cf61cb589",
+      "title": "Acceptance reader-y - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "e6f1af7b-0656-4fe0-b173-6ddc7f1bbfd9"
+    },
+    {
+      "taskId": "16593e4a-fc03-4919-a2e3-d4883f85ec5d",
+      "title": "Acceptance reader-x - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "e6f1af7b-0656-4fe0-b173-6ddc7f1bbfd9"
+    },
+    {
+      "taskId": "8ba09844-0691-4b87-be9c-ece766f9058d",
+      "title": "Acceptance queued-writer - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "e6f1af7b-0656-4fe0-b173-6ddc7f1bbfd9"
+    },
+    {
+      "taskId": "6fec1fd7-f4b6-4628-88f1-9393a354219f",
+      "title": "M14 isolated independent task",
+      "status": "completed",
+      "parentTaskId": null
+    },
+    {
+      "taskId": "e6f1af7b-0656-4fe0-b173-6ddc7f1bbfd9",
+      "title": "Acceptance parent a27",
+      "status": "stopped",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance reader-y - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance reader-x - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance queued-writer - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "M14 isolated independent task",
+      "452fbefe-ac4a-4dfb-8dad-c5898d17400a",
+      false
+    ],
+    [
+      "Acceptance parent a27",
+      null,
+      false
+    ]
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 11765,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

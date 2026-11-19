@@ -1,0 +1,194 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/home",
+    "at": "2026-11-18T15:13:02.747Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "fef791bc65cc7e82d1b83606a26b67714e99328d",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a83",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A83 local packaged A/I: the actual child runs the dirty-only passing test in the common directory while baseline fails",
+      "at": "2026-11-18T15:13:13.014Z",
+      "childCwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/work",
+      "baseline": "d77489fb27d0f50f5d424be921e87d31a07b8bab",
+      "userHead": "d77489fb27d0f50f5d424be921e87d31a07b8bab",
+      "command": {
+        "command": "/bin/zsh -lc 'pwd; node --test check.test.cjs'",
+        "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/work",
+        "output": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/work\nTAP version 13\n# Subtest: DIRTY_TEST_PASSES\nok 1 - DIRTY_TEST_PASSES\n  ---\n  duration_ms: 0.573458\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 34.498209\n",
+        "exitCode": 0,
+        "status": "completed"
+      },
+      "nativePass": true
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014789049,
+      "scheduledChild": "test-dirty"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795014789155
+    },
+    {
+      "model": "fixture-child-test-dirty",
+      "kind": "codex",
+      "child": "test-dirty",
+      "wake": false,
+      "at": 1795014791492,
+      "reReadPrompt": true,
+      "nativeCommand": "pwd; node --test check.test.cjs"
+    },
+    {
+      "model": "fixture-child-test-dirty",
+      "kind": "codex",
+      "child": "test-dirty",
+      "wake": false,
+      "at": 1795014791600,
+      "reReadPrompt": true,
+      "nativeTestPassed": true
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": true,
+      "at": 1795014792864
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"21958ed4-0db2-47e2-bb50-76612d00e1ce\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-open",
+      "text": "Acceptance test-dirty - isolated delegation workspace",
+      "x": 1287.5,
+      "y": 163.5
+    }
+  ],
+  "status": "passed",
+  "workspaceComparison": [
+    {
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/frozen-head",
+      "status": 1,
+      "stdout": "TAP version 13\n# Subtest: DIRTY_TEST_PASSES\nnot ok 1 - DIRTY_TEST_PASSES\n  ---\n  duration_ms: 0.916625\n  type: 'test'\n  location: '/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/frozen-head/check.test.cjs:3:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'BAD_HEAD'\n    - 'DIRTY_FIXTURE'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'DIRTY_FIXTURE'\n  actual: 'BAD_HEAD'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/frozen-head/check.test.cjs:3:40)\n    Test.runInAsyncScope (node:async_hooks:214:14)\n    Test.run (node:internal/test_runner/test:1047:25)\n    Test.start (node:internal/test_runner/test:944:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 31.223708\n"
+    },
+    {
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/work",
+      "status": 0,
+      "stdout": "TAP version 13\n# Subtest: DIRTY_TEST_PASSES\nok 1 - DIRTY_TEST_PASSES\n  ---\n  duration_ms: 0.498208\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 31.554167\n"
+    }
+  ],
+  "pid": 64652,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    64652
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "21958ed4-0db2-47e2-bb50-76612d00e1ce",
+  "childTaskIds": {
+    "test-dirty": "5ab0f42c-88df-4a5a-babc-d9297c1b49e0"
+  },
+  "a83": {
+    "childCwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/work",
+    "baseline": "d77489fb27d0f50f5d424be921e87d31a07b8bab",
+    "userHead": "d77489fb27d0f50f5d424be921e87d31a07b8bab",
+    "command": {
+      "command": "/bin/zsh -lc 'pwd; node --test check.test.cjs'",
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/work",
+      "output": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-020/runtime-5OZFd0/work\nTAP version 13\n# Subtest: DIRTY_TEST_PASSES\nok 1 - DIRTY_TEST_PASSES\n  ---\n  duration_ms: 0.573458\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 34.498209\n",
+      "exitCode": 0,
+      "status": "completed"
+    },
+    "nativePass": true
+  },
+  "beforeQuit": [
+    {
+      "taskId": "5ab0f42c-88df-4a5a-babc-d9297c1b49e0",
+      "title": "Acceptance test-dirty - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "21958ed4-0db2-47e2-bb50-76612d00e1ce"
+    },
+    {
+      "taskId": "21958ed4-0db2-47e2-bb50-76612d00e1ce",
+      "title": "Acceptance parent a83",
+      "status": "completed",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance test-dirty - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance parent a83",
+      "f140d214-dc85-4b02-9643-7b0aee959419",
+      false
+    ]
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 64652,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

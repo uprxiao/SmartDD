@@ -1,0 +1,215 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/agent/delegation-service.test.ts (36 tests | 35 failed | 1 skipped) 68ms
+   × A20 refuses a stale listed target but keeps a prior request receipt across configuration changes 11ms
+   × A59 persists one delegated creation record with the selected target and later native binding 2ms
+   × A20 revalidates a listed target after the asynchronous Git preflight before accepting 2ms
+   × A20 keeps the accepted receipt but never starts a child whose target changed during worktree preparation 1ms
+   × A20 rejects a delegated input when the target changes while the native owner is being opened 2ms
+   × A74 does not drain a directory writer while its first turn is preparing 1ms
+   × A74 does not drain a directory writer while its first turn is registered 2ms
+   × A74 an idle directory owner still hands off to a queued competitor 1ms
+   × A19/A24/A32: delegation is durable/idempotent and returns before the child starts; release requires actual exit plus independent drain 2ms
+   × A24/A31/A32: two children and a new parent input share FIFO; the parent cannot reacquire ahead of either child 2ms
+   × A25/A27/A28: stop cancels queued children, mode closes only after children drain, and unrelated tasks cannot observe results 2ms
+   × A26 applies parent tier ask → full on the delegated child’s next round 2ms
+   × A26 applies parent tier full → ask on the delegated child’s next round 1ms
+   × A27 stops the original parent round before its tree can drain the native run 2ms
+   × A66/A68: Git child runs in the mapped host worktree; child result is committed by the host and only its attempt commits are advertised 2ms
+   × A29/A32: native background work outlives the parent turn and retains the write slot until its own terminal event 2ms
+   × A70: pause intent precedes release; a child result resumes the identical native goal only after its notification turn starts 1ms
+   × A70: user stop while waiting preserves the result without waking or restoring the goal 1ms
+   × A70: a different native revision declines automatic recovery and leaves a manual continuation 1ms
+   × A33: only host-verified read roles run beside a writer; promotion closes read ownership before FIFO write admission 1ms
+   × A28: terminal child rework is atomic, reuses its native binding, and explicitly clears an earlier stop 1ms
+   × A67/A70: an active goal still reaches a stable merge check and resumes after a proven merge 2ms
+   × A67: exactly two failed merge rounds produce a persistent needs-attention state without another automatic retry 2ms
+   × E12/A05: a normal round end keeps the actual owner and binding alive when no directory handoff is needed 1ms
+   × P1: independent tasks in the same Git directory overlap and retain their native sessions 5ms
+   × P1: independent tasks in the same SVN directory overlap and retain their native sessions 1ms
+   × P1: independent tasks in the same plain directory overlap and retain their native sessions 1ms
+   × P1: another independent task can answer while a related parent and child hand off the same SVN directory 1ms
+   × P1: concurrent Git parents with identically named delegations get two distinct worktrees 2ms
+   × G3: explicit worktree prepares while an independent turn is running (active goal=false) 2ms
+   × G3: explicit worktree prepares while an independent turn is running (active goal=true) 1ms
+   × G3: Git defaults to serial shared writing, with visible uncommitted input and stable child session on rework 1ms
+   × P3: stop releases the canceled business reservation from the real directory FIFO 2ms
+   × P3: revoke releases the canceled business reservation from the real directory FIFO 1ms
+   × A28/A67: rework before the first result is merged includes the previous unmerged commits in its final range 1ms
+ ❯ src/main/core/agent/turn-diffs.test.ts (9 tests | 4 failed) 1493ms
+   × A73 captures a registered linked worktree below the private home while preserving the application data exclusion 7ms
+   × A73: service preserves incomplete first capture, never adopts a later before tree, and restores interrupted captures as incomplete 2ms
+   × A65 keeps explicit snapshot cancellation after the worker reports a later failure 2ms
+   × A65: long Unicode diff bodies use bounded, hash-bound chunks and preserve both original documents exactly 2ms
+ ❯ src/main/core/agent/agent-task-service.test.ts (68 tests | 68 failed) 91ms
+   × A14 waits for the in-progress run before clearing a goal during resolveLaunch 6ms
+   × A14 waits for the in-progress run before clearing a goal during integrate 1ms
+   × A04 cancels a stopped run without forking during integrate 1ms
+   × A04 cancels a stopped run without forking during beforeFork 1ms
+   × A71 saves the complete current plan of the selected project task only 2ms
+   × A65: only a writable native run contributes a before and after snapshot 1ms
+   × A05 dispatches another foreground turn while an earlier native background node is running 1ms
+   × A44 bounds event catch-up to its captured watermark and only refreshes explicitly requested history in the same task 1ms
+     × Codex 目标：设定后原生自行开出的回合按系统来源记录并计轮；停止键暂停目标；清除 1ms
+     × 目标续跑的回合进行中，用户新输入排队而不是记未知；续跑结束后发出 1ms
+     × 驱动在发送前拒绝时放回排队 1ms
+     × Claude 目标以 /goal 文字发送，不能暂停 2ms
+     × 插话：支持的版本并入当前回合；被原生拒绝则保留排队并说明原因 1ms
+     × A18 reports an image not sent to the frozen text-only model and preserves its original bytes 4ms
+     × 排队的输入保留自己的附件；执行器收到注明附件的文字与图片路径 2ms
+     × Codex compact／review 走协议；Claude 命令作为文字发送；Codex 未公布的命令拒绝 1ms
+     × CR01：排队期间项目内图片被换成指向根外的软链，派发仍只读接受时冻结的副本 2ms
+     × CR02：插话超时（可能已被接受）记未知，原回合结束后不再重发 1ms
+     × CR03：档案解析期间按停止，解析完成后不创建运行或派发输入 1ms
+     × CR03：已经打开的运行按停止后，迟到的目标自行回合立即中断 1ms
+     × CR04：关闭后进程未退出则保留占用（stopping），同任务不能开新运行 1ms
+     × CR06：超过 32 KiB 的输入原样送达；超过 256 KB 接受前拒绝 1ms
+     × CR12：Claude 档位跨越完全访问时重开并恢复原会话 1ms
+     × CR15：低于最低版本的可选能力被冻结为不可用，目标命令拒绝 1ms
+     × CR17／CR18：启动失败原因进时间线；额度受限与普通失败分开 1ms
+     × 快照只带最近 2000 条，更早的按页读取 1ms
+     × NR01：同一输入标识重试不重新冻结，已接受的图片副本不变 1ms
+     × NR03：上一轮先结束、start 回执后到时，排队输入仍自动发出且只发一次 2ms
+     × NR04：执行器实例不可再用时运行退役，下一条输入恢复会话后发出 1ms
+     × NR05：指定 A→B→默认，恢复默认用档案默认模型而不是最初的显式选择 1ms
+     × NR06：40 KiB 计划完整保存，快照给预览并标截断，范围读取得到全文；快照与分页守字节上限 1ms
+     × NR09：不能保证审批交还的 Codex 版本拒绝请求批准档位并写明原因 1ms
+     × NR12：附件来自其他目录时拒绝，不按新目录重新解释同名文件 2ms
+     × FR01：等待旧运行退出期间按了停止，旧进程退出后排队输入仍保留，不自动发出 1ms
+     × FR01：没有停止时，旧进程真实退出后排队输入自动发出 1ms
+     × FR02：多个大请求、大草稿、中文正文分段、事件页与单个事件都按最终字节守上限 1ms
+     × FR03：Codex 原生登录（档案无默认）下 默认→显式→默认，恢复默认时显式发出执行器默认模型 1ms
+     × FR03：恢复的线程按需向执行器查询默认；查不到时拒绝并说明，不靠省略字段 1ms
+     × FR06：模型修订变化后重发同一输入仍返回原收据，新输入用旧修订仍拒绝 3ms
+     × FR08：缺审批交还能力的 Codex 版本，/review 与普通发送同样拒绝；完全访问正常 1ms
+     × SR01：恢复线程查询默认模型期间按停止，不再发出新输入 1ms
+     × SR01：启动解析期间按停止、随后才发现旧运行在退出，旧进程退出后仍不自动发出 1ms
+     × SR02：上限内的文字与大量转义字符的草稿完整保存并逐字读回；超限明确拒绝且原草稿与修订不变 1ms
+     × SR02：旧版本截断写入的草稿如实标为受损，不当作空草稿 1ms
+     × SR03：真正关闭后恢复同一绑定，默认选择下查执行器默认；查不到则拒绝且不发出 1ms
+     × SR04：40 个约 90 KiB 的中文请求，快照仍守上限，全部请求可读取全文；单个正常请求仍完整显示 1ms
+     × T02：约 600 KiB 的计划经真实投影入库后可读回完整原文；超过上限的保留结构并标不完整 1ms
+     × U01：超限正文转 artifact，经正文接口逐字读回首尾；快照、历史、事件仍守上限 2ms
+     × U01：同一条目更新后引用新修订、旧文件清理；文件丢失、被改、越界引用都明确报错 1ms
+     × U01：同一原生条目更新后引用新修订的原文，旧修订文件被清理 1ms
+     × U01：没有 artifact 目录时降级为结构化截短并标不完整，不冒充完整保存 1ms
+     × A45 保留超限条目的预览并说明正文不完整，即使私有正文目录无法创建 1ms
+     × V01：大量短字段的结构化正文也保留原文引用，可完整读回；快照守界、没有无引用文件 1ms
+     × V02：转义后超过内联上限的合法用户输入，时间线逐字读回；幂等重试不重复写文件；投递原文不变 1ms
+     × V03：改名失败时删掉临时文件并标不完整；事务回滚删掉本次写出的文件；正常更新与旧文件清理不受影响 2ms
+     × 上一实例的运行收口为 orphaned，进行中的回合记未知，排队输入保留但暂停 1ms
+     × 新建任务只建任务与草稿，不隐式启动；首次提交才打开运行 1ms
+     × 运行中提交进入排队，本轮结束后按顺序自动派发 1ms
+     × 停止只停本轮：排队输入保留且不自动派发，可单条取消；再次提交恢复派发 1ms
+     × 选择 CAS：修订不符拒绝发送；Claude 选帮我批准降为请求批准 1ms
+     × 草稿 CAS 冲突返回服务端版本，不覆盖 1ms
+     × 请求回应走当前运行；状态为等待你处理 1ms
+     × 打开运行失败：该输入标失败并写入原因，排队暂停 1ms
+     × 归档：运行中拒绝，空闲时关闭运行并从列表移除；重复提交同一输入返回原收据 1ms
+   × A29/A45: native child messages have independent scoped pagination and cannot crowd the main timeline out of its snapshot 1ms
+     × edits the same input and preserves frozen attachment bytes into one verified steer 2ms
+     × retains the paused FIFO, refuses jumping the queue, and allows manual send of its head 1ms
+     × retries a known unsent input once and rejects retry of unknown delivery 1ms
+ ❯ src/main/core/agent/git-workspaces.test.ts (6 tests | 6 failed) 13ms
+   × A66: maps a subdirectory, keeps dirty files on the original branch, uses lowercase unique branches and never pushes 5ms
+   × A66: recorded worktree intent is reconciled without recreating it; exact commit recovery requires matching the expected parent 2ms
+   × A67: unrelated same-title commits fail, ancestor merge and patch-equivalent cherry-pick pass, in-progress state is resolved through Git 2ms
+   × A67: a resolved -x pick proves provenance while unfinished linked-worktree cherry-pick and marker/branch errors fail closed 2ms
+   × A66: dependency selection honors mapped cwd then repository root; failed install is recorded and does not hide the worktree 1ms
+   × A66: the actual installer materializes a local dependency inside the new worktree, with an isolated offline cache 1ms
+ ❯ src/main/core/agent/project-resources.test.ts (23 tests | 23 failed) 37ms
+   × waits for directory release to 'archive' the task family (exit verified: true) 6ms
+   × waits for directory release to 'delete' the task family (exit verified: true) 2ms
+   × waits for directory release to 'archive' the task family (exit verified: false) 1ms
+   × waits for directory release to 'delete' the task family (exit verified: false) 1ms
+   × G4 resolves registered cwd and rejects foreign, archived and missing directories 1ms
+   × A43 returns the durable task for a repeated creation intent only in the original directory 1ms
+   × G5 archives a family atomically, leaves history and bindings readable and restores the same identities 1ms
+   × A78 deletes archived Agent records and registered resources, preserves worktree and M13 history, and retries failed snapshot cleanup 1ms
+   × G2 removes unreferenced draft and canceled queue copies, and sweeps expired unattached files 2ms
+   × A43 keeps draft bytes through a conflicting save and until the last draft reference is released 1ms
+   × G2 reclaims the oldest eligible archived shadow snapshot before active history and retains a read lease 1ms
+   × G2 paginates all retained turns and retrieves older turns by exact ID 1ms
+   × R2 refuses deletion with an active turn 1ms
+   × R2 refuses deletion with an background command 1ms
+   × R2 refuses deletion with an active Codex goal 2ms
+   × R2 refuses deletion while a delegated child is unfinished 2ms
+   × R2 refuses deletion while Git worktree dependency preparation is pending 2ms
+   × R2 refuses deletion while a manual terminal is running 2ms
+   × R1/R2 closes an idle native session before deleting an unarchived task with an open diff 1ms
+   × R1 still refuses deletion while snapshot capture is in progress 1ms
+   × R4 runs captures in parallel and makes cleanup exclusive before allowing the next capture 1ms
+   × R4 persists exponential retry up to one hour across cleanup attempts 1ms
+   × S07 shows the pending stop until native completion and only closes the same run on explicit force stop 1ms
+ ❯ src/main/core/agent/agent-run-service.test.ts (21 tests | 21 failed) 31ms
+     × A04 exposes startup cancellation to business admission only while opening (stop while opening=true) 5ms
+     × A04 exposes startup cancellation to business admission only while opening (stop while opening=false) 2ms
+     × A05 closes only old native nodes confirmed gone by their precise launch-group identity 1ms
+     × A15/A33: ordinary bindings keep the phase-3 identity, while a read role cannot resume a writable native binding 1ms
+     × A04/A32: an integration failure before any native open has an explicit unforked drain receipt 2ms
+     × 新任务在同一事务写 tasks 与 agent_tasks，旧列表不受影响 1ms
+     × 打开运行：登记绑定、代次与本宿主 owner，原生 PID 只取自本宿主启动的进程 1ms
+     × 同一兼容身份再次打开恢复原生会话并升代次；兼容身份变化新建绑定 1ms
+     × A62: 缺少可选协议方法时可以聊天，恢复旧绑定时保留原生会话身份 2ms
+     × 预分配身份未确认前不恢复：只确认后才写入原生身份 1ms
+     × Claude 选帮我批准：降为请求批准并返回说明 1ms
+     × 提交输入：持久接受后派发，重复提交返回原收据 1ms
+     × 发送前协议拒绝记失败；超时或断开记未知且不自动重发（A16） 1ms
+     × 原生请求：按来源核对运行与代次，旧代次回应拒绝，运行结束请求退役 1ms
+     × 宿主回应期间原生侧发出的结束通知不把请求记成退役 1ms
+     × 回合结束时本回合挂起的原生请求退役；原生自行结束的请求不算用户回应 1ms
+     × 父回合停止后，继续等待原生子收口或由用户强制停止（completed） 1ms
+     × 父回合停止后，继续等待原生子收口或由用户强制停止（forced） 1ms
+     × 正常关闭：运行记 stopped；打开失败记 failed 且不留在线运行 1ms
+     × NR02：打开失败但原生进程已启动且未退出时保留占用，不准同任务新开运行 1ms
+     × 已归档任务与旧任务不能打开运行 1ms
+ ❯ src/main/core/agent/switching.test.ts (13 tests | 13 failed) 20ms
+   × A14/A15: A→B→A preserves task and draft; new B gets full history, returning A resumes and gets only missing B history 5ms
+   × A14: a busy task, a stale revision, and a live goal cannot switch; models remain selectable under a goal 2ms
+   × A14: a busy selection is persisted, then applied only after the native turn ends 1ms
+   × A14: the old native owner must actually exit before selection changes 1ms
+   × A07: extension preferences belong to task/profile, not the last selected executor 1ms
+   × A18: omissions are explicit and original content survives; unsent/unknown transfers do not claim coverage 1ms
+   × A18 describes the first handoff as full even when a fresh target has native startup notices 1ms
+   × P2: a 30-round switch favors the newest history and preserves chronological order within the input budget 1ms
+   × A14: stop cancels an unapplied switch 1ms
+   × A14: stopping during asynchronous target preflight cancels the switch and retry still returns the original input receipt 1ms
+   × A14: a restored idle pending selection is applied before accepting a new input under the old selection 1ms
+   × A14: validation is repeated immediately before dispatch, so stale configuration never receives the new input 1ms
+   × A03: only a published reasoning effort is dispatched; obsolete settings are visibly skipped 1ms
+ ❯ src/main/core/agent/host-business-requests.test.ts (13 tests | 13 failed) 21ms
+   × E12: waiting has no expiry, survives native exit/switch and restart, then executes once with current task authority 6ms
+   × E12: no owner approval is persistent pending-bind, never an early usable grant; a later registered run binds once 2ms
+   × E12: stopping/revoking before bind prevents the successor from receiving authority 1ms
+   × E12: changed account/content fails the late approval and cannot replace the stored original review 2ms
+   × E12: interrupted execution is recorded unknown after restart and never automatically replayed 1ms
+   × P3: a slot wait longer than 60 seconds does not consume the 60-second execution budget 1ms
+   × P3: stop during admission cancels the approval before any effect 1ms
+   × P3: revoke during admission cancels the approval before any effect 1ms
+   × P3: execution still times out after admission and retains its lease until the effect settles 1ms
+   × R2: with no admission callback the budget begins as soon as execution can proceed 1ms
+   × P3: after a restart a queued approval returns to the original review and cannot run without a fresh decision 1ms
+   × E12: a run ending during the FIFO wait produces pending-bind rather than a grant on its stale identity 1ms
+   × E12: cancellation cannot release a business lease while its executor still has an external effect in flight 1ms
+ ❯ src/main/core/agent/business-browser.test.ts (4 tests | 4 failed) 9ms
+   × E12/A37: browser approval after real owner end binds only to the registered successor; revoke before binding supplies no authority 5ms
+   × E12/A37: changed target page retires late approval and user stop retires an approved pending binding 1ms
+   × retains the pending approval across an unloaded target and binds it only after successor registration 1ms
+   × V24 resolves a same-project title for presentation without changing the frozen request 1ms
+ ❯ src/main/core/agent/discovery.test.ts (6 tests | 1 failed) 75ms
+     × 低于最低版本拒绝并说明；每次探测留档 4ms
+ ❯ src/main/core/agent/directory-queue.test.ts (3 tests | 3 failed) 8ms
+   × A31/A32: physical aliases/overlap share FIFO, canceled entries do not block, and incomplete drain cannot release 4ms
+   × A33: a complete host read policy can run beside a writer; a fresh queue instance preserves active ownership 1ms
+   × A31: adding an outer registered root cannot open a second writer over an existing inner root; overlap keeps FIFO 1ms
+ ❯ src/main/core/agent/message-links.test.ts (4 tests | 3 failed) 9ms
+   × A57/A58: identical filenames and absolute paths are routed by the message task/workspace, preserving line/column 4ms
+   × A57: decode once, preserve a literal percent path, and reject symlink escape, invalid positions, network paths and protocols 2ms
+   × A57: directories are distinct routes; a task without a project cannot open a web tab 2ms
+
+ Test Files  12 failed | 18 passed | 3 skipped (33)
+      Tests  194 failed | 191 passed | 7 skipped (392)
+   Start at  10:18:24
+   Duration  11.33s (transform 1.09s, setup 0ms, import 2.84s, tests 16.14s, environment 1.32s)
+

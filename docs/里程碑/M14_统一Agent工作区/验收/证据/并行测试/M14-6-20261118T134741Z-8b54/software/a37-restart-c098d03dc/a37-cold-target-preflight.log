@@ -1,0 +1,48 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/browser/__tests__/service-a37-cold-target.preflight.test.ts --maxWorkers=1 --reporter=verbose
+
+[1119/060259.803965:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/060300.023000:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ × src/main/core/browser/__tests__/service-a37-cold-target.preflight.test.ts > keeps the same persistent browser access target on cold startup without opening the native page 21ms
+   → expected { projectId: 'P1', pages: [] } to deeply equal { Object (projectId, pages) }
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/browser/__tests__/service-a37-cold-target.preflight.test.ts > keeps the same persistent browser access target on cold startup without opening the native page
+AssertionError: expected { projectId: 'P1', pages: [] } to deeply equal { Object (projectId, pages) }
+
+- Expected
++ Received
+
+  {
+-   "pages": [
+-     {
+-       "id": "8da1a5f2-a62b-46f2-8c51-77a05cf97736",
+-       "url": "https://fixture.example.test/cold",
+-     },
+-   ],
++   "pages": [],
+    "projectId": "P1",
+  }
+
+ ❯ src/main/core/browser/__tests__/service-a37-cold-target.preflight.test.ts:28:40
+     26|   expect(f.service.workspace.snapshot('T2').tabs).toMatchObject([{id,u…
+     27|   expect(f.service.pages.all()).toHaveLength(0);
+     28|   expect(f.service.accessTarget('T2')).toEqual({projectId:'P1',pages:[…
+       |                                        ^
+     29|   expect(create).not.toHaveBeenCalled();
+     30|   await f.service.workspace.close('T2',id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  06:02:59
+   Duration  888ms (transform 610ms, setup 0ms, import 780ms, tests 21ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

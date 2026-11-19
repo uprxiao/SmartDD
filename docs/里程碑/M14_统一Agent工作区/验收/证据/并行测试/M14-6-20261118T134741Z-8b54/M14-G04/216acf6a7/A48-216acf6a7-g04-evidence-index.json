@@ -1,0 +1,341 @@
+{
+  "caseId": "M14-A48",
+  "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
+  "asar": "5f088304047e4db029346b69b594d226a98082a690916de7d6bd1c26733d3821",
+  "qualification": "A-layer targeted archive behavior verified across one independent 065 A48 family and its same-data 067 reopen. All actual refusals also passed; 066 normal shutdown was not proved.",
+  "refusals": {
+    "active": {
+      "name": "active",
+      "requestedTaskId": "9f9ce5fc-352e-4311-9752-dbc683d2f468",
+      "visibleToast": "A48-active-and-queue stage 6：运行尚未收口，请先停止任务或等待完成",
+      "archiveState": null,
+      "queued": [],
+      "requests": [],
+      "run": {
+        "runId": "fe44d7af-30a6-44f6-91d0-ce4f6d8c60a8",
+        "busy": true
+      }
+    },
+    "queueOnly": {
+      "name": "queued-only",
+      "requestedTaskId": "9f9ce5fc-352e-4311-9752-dbc683d2f468",
+      "visibleToast": "A48-active-and-queue stage 6：仍有排队输入或结果通知",
+      "archiveState": null,
+      "queued": [
+        "4b42b167-140d-4f26-a464-69888ece2118"
+      ],
+      "requests": [],
+      "run": null,
+      "expectedOnlyReason": [
+        "仍有排队输入或结果通知"
+      ]
+    },
+    "native": {
+      "name": "native-request",
+      "requestedTaskId": "1891e21d-1c86-405a-b95b-5813e20bd13e",
+      "visibleToast": "A48-native-request stage 6：有待处理请求、运行尚未收口，请先停止任务或等待完成",
+      "archiveState": null,
+      "queued": [],
+      "requests": [
+        {
+          "requestId": "e13f5e5d-2d07-405e-b154-c57505048f20",
+          "revision": 1,
+          "requestClass": "native"
+        }
+      ],
+      "run": {
+        "runId": "8066bbcb-0f73-48e3-945a-54618159f613",
+        "busy": true
+      }
+    },
+    "business": {
+      "name": "business-request",
+      "requestedTaskId": "9cce04ab-9f3e-4be9-94d1-c3f1a556076b",
+      "visibleToast": "A48-business-request stage 6：业务请求尚未收口、有待处理请求、运行尚未收口，请先停止任务或等待完成",
+      "archiveState": null,
+      "queued": [],
+      "requests": [
+        {
+          "requestId": "6fe2a6fb-fa34-4844-8c43-df1d48b1790c",
+          "revision": 1,
+          "requestClass": "host_business"
+        }
+      ],
+      "run": {
+        "runId": "d9e2ac34-b31d-42bb-96d5-ef4b1e029830",
+        "busy": false
+      }
+    },
+    "unfinishedChild": {
+      "name": "unfinished-child",
+      "requestedTaskId": "b85e661d-0260-4a43-a623-af2830d12701",
+      "visibleToast": "A48-unfinished-child stage 6：委派或工作副本尚未收口",
+      "archiveState": null,
+      "queued": [],
+      "requests": [],
+      "run": null,
+      "childTaskId": "ab8dfca5-7f25-4e26-afbf-a1a49aac96f6"
+    }
+  },
+  "positive": {
+    "parent": "86240d63-aff8-45eb-8207-d8e9e72d2c07",
+    "child": "8f5d206a-fa82-4580-9057-10b5779f84cb",
+    "archiveTimestamps": [
+      "2026-11-18T18:42:46.827Z",
+      "2026-11-18T18:42:46.827Z"
+    ],
+    "oldLeaseAndArchiveSequence": [
+      {
+        "name": "agentTasks.holdDiff",
+        "taskId": "86240d63-aff8-45eb-8207-d8e9e72d2c07",
+        "argument": "f2c5e3d2-ed19-497d-9f52-03ec3ca2d970",
+        "enteredAt": 1795027366264,
+        "sender": 1,
+        "token": "e9c93804-4be3-4c55-85e6-c0b99aaefe35",
+        "ok": true,
+        "finishedAt": 1795027366264
+      },
+      {
+        "name": "agentTasks.archive",
+        "taskId": "86240d63-aff8-45eb-8207-d8e9e72d2c07",
+        "argument": null,
+        "enteredAt": 1795027366445,
+        "sender": 1,
+        "ok": true,
+        "finishedAt": 1795027366828
+      },
+      {
+        "name": "agentTasks.releaseDiff",
+        "taskId": "86240d63-aff8-45eb-8207-d8e9e72d2c07",
+        "argument": "e9c93804-4be3-4c55-85e6-c0b99aaefe35",
+        "enteredAt": 1795027366838,
+        "sender": 1,
+        "ok": true,
+        "finishedAt": 1795027366838
+      }
+    ],
+    "newReadLease": {
+      "sender": 1,
+      "task": "86240d63-aff8-45eb-8207-d8e9e72d2c07",
+      "turn": "f2c5e3d2-ed19-497d-9f52-03ec3ca2d970",
+      "token": "3b3f1b80-564f-45db-98cc-5078282c55f6",
+      "at": 1795027618506
+    },
+    "closedOriginalRun": {
+      "run_id": "ec8ef0c3-c6d0-4cb7-a310-84ad2705d5fa",
+      "pid": 20928,
+      "process_started_at": "darwin-proc-v1:1795027364:595972",
+      "state": "stopped",
+      "ended_at": "2026-11-18T18:42:46.775Z"
+    },
+    "patchSha": "f3f68a24313be93bcebaa21b95bce3c3c0a2692a230ac1de41c04838ada472dc",
+    "attachmentSha": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5",
+    "localBusinessDraft": {
+      "id": "eb2d5bac-5db4-49c8-aae9-595c94ae99a7",
+      "project_id": "f847ef60-77fc-4e76-8896-602f1dd121f2",
+      "source_task_id": "86240d63-aff8-45eb-8207-d8e9e72d2c07",
+      "subject": "A48 local draft retained",
+      "current_revision": 1,
+      "state": "draft",
+      "created_at": "2026-11-18T18:42:38.853Z",
+      "content_hash": "4d2bf0876b4d06d7676635814a8f0d2019d69041ce83112febb04b6a207b1d64"
+    },
+    "nativeSessions": [
+      {
+        "task_id": "86240d63-aff8-45eb-8207-d8e9e72d2c07",
+        "binding_id": "38eef879-1e60-4a1c-a20e-ba16028c0e47",
+        "native_id": "01a1eff7-c5b5-7690-9e18-aa5262d4e13b",
+        "driver_id": "codex-app-server",
+        "privateSessionPath": "attempt-065/data/agents/codex/7bc304a3cd086b4c5614ab00cb6141c1/sessions/2026/11/19/rollout-2026-11-19T02-42-35-01a1eff7-c5b5-7690-9e18-aa5262d4e13b.jsonl",
+        "sha256": "523a010bf208d4e72ea8138782c89cb18a799881a7d9f8ce710625dcc332b5f6",
+        "fileAndOriginalNativeIdReadBackAfterArchive": true
+      },
+      {
+        "task_id": "8f5d206a-fa82-4580-9057-10b5779f84cb",
+        "binding_id": "b80b0bd2-b591-4a2f-9667-6691d5d0888a",
+        "native_id": "01a1eff7-e393-7b73-881d-b7c26ab566d4",
+        "driver_id": "codex-app-server",
+        "privateSessionPath": "attempt-065/data/agents/codex/6aeca233574274cd1b6129707eabd623/sessions/2026/11/19/rollout-2026-11-19T02-42-42-01a1eff7-e393-7b73-881d-b7c26ab566d4.jsonl",
+        "sha256": "a9a8728b03d8a04b62ab0be3e113964c9763705b346155e7997eef114d616b6f",
+        "fileAndOriginalNativeIdReadBackAfterArchive": true
+      }
+    ]
+  },
+  "knownBoundaries": [
+    "No system clipboard, personal home, external inference or mail; no draft sending.",
+    "A79 separate prior evidence covers restoration and resumes; this A48 run verifies archive mechanics and readonly records.",
+    "064 initial driver observed valid original native discovery, then failed its own timing-prefix parser. 065 fixture exact label of archive list item was too broad; real archive and old view release already occurred. 067 reopened only the same archived family to finish.",
+    "066 actual process terminated only via bound App fallback with exitError. A durable business result notification was dispatching when shutdown began; no product root-cause claim. Confirmed all three exact native PIDs gone and 3425 free."
+  ],
+  "attempts": [
+    {
+      "attempt": "attempt-064",
+      "exit": {
+        "pid": 7780,
+        "code": 0,
+        "signal": null
+      },
+      "status": {
+        "A48-active-and-queue": "pass",
+        "A48-native-request": "failed-or-blocked",
+        "A48-business-request": "failed-or-blocked",
+        "A48-unfinished-child": "failed-or-blocked",
+        "A48-settled-family": "failed-or-blocked"
+      },
+      "files": [
+        {
+          "path": "attempt-064/A48-business-request-failed.png",
+          "sha256": "5ead93818356a7927fa5c04c98ae3b91e74cd0cf4346426196464d6a410255e5"
+        },
+        {
+          "path": "attempt-064/A48-native-receipts-exact.json",
+          "sha256": "870c9292584c3c7172bb4a0f088117288eec7432338f6562b145a0fe9c0b5e80"
+        },
+        {
+          "path": "attempt-064/A48-native-request-failed.png",
+          "sha256": "5a4408e576439db2a573ab457977d5f724576b9f6d90c09f378d6c488b17602c"
+        },
+        {
+          "path": "attempt-064/A48-settled-family-failed.png",
+          "sha256": "081eb0ed7ee1255d8e32d1fedc1a0129fb9a68ea5b1a529032c569d01b8480e6"
+        },
+        {
+          "path": "attempt-064/A48-unfinished-child-failed.png",
+          "sha256": "da93c91ea08ab7cdf2745820e92381b33b28dc80bbc1ec5425a2642a71b2cd43"
+        },
+        {
+          "path": "attempt-064/archive-refused-active.png",
+          "sha256": "ef40bdf87a09c99c63febce639dce51b9ff8e1fbc374c9f91a721379dc700946"
+        },
+        {
+          "path": "attempt-064/archive-refused-business-request.png",
+          "sha256": "e730a1ab62b59881edfc431427d5547535b9a66af9d7a2c9f136b6aed6b39d03"
+        },
+        {
+          "path": "attempt-064/archive-refused-native-request.png",
+          "sha256": "2690159c54b44d0d84d4ed5b4502563506d23629006fd9cdedefb586f3a94ce0"
+        },
+        {
+          "path": "attempt-064/archive-refused-queued-only.png",
+          "sha256": "67ef426d1d449f19c086fc85ba2dd6ffcbcf9d49250623842865e5882a34a165"
+        },
+        {
+          "path": "attempt-064/result.json",
+          "sha256": "9a0d52cf73c8db0379304bc51ad1e6249b755fb69c6934e3b8c43c3eadc7e142"
+        },
+        {
+          "path": "attempt-064/source-a48-archive-packaged.mjs",
+          "sha256": "9e80e0e789a0663411a48c023205e82419d2aab9db358bbbdc59f463c634084e"
+        },
+        {
+          "path": "attempt-064/source-a48-codex-target-receipt.mjs",
+          "sha256": "4696188b9d132469f8dafff3b6e98fe4133aba8efb8d748b7802a3d91b50114c"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-065",
+      "exit": {
+        "pid": 15201,
+        "code": 0,
+        "signal": null
+      },
+      "status": {
+        "A48-unfinished-child": "pass",
+        "A48-settled-family": "failed-or-blocked"
+      },
+      "files": [
+        {
+          "path": "attempt-065/A48-active-diff-view-before-archive.png",
+          "sha256": "8f04ae3820833e4a3f92be3d8db00f5c998de9e60d7a154e096a9336d1e6c8a9"
+        },
+        {
+          "path": "attempt-065/A48-settled-family-failed.png",
+          "sha256": "19537dd70e890aa102917fbbd94340cc4e697380d8f6c3dc8ea680fb8cf37cf5"
+        },
+        {
+          "path": "attempt-065/archive-refused-unfinished-child.png",
+          "sha256": "ca0ff1f26305121587575f1ebe2e7445d704ec8d46b84388b5f6318b80a8944b"
+        },
+        {
+          "path": "attempt-065/result.json",
+          "sha256": "a79a02657d6e99f7f96e7e310dc7212e009ed1fb01a8101ffb4c706620552ffe"
+        },
+        {
+          "path": "attempt-065/source-a48-archive-packaged.mjs",
+          "sha256": "fc97aa912e8868942e01108ba7c63d742bd01f644e851a7c26ee8e7e602db2be"
+        },
+        {
+          "path": "attempt-065/source-a48-codex-target-receipt.mjs",
+          "sha256": "54729e55c9cc10dd8e09fdcf70b899e6b8a7daeb810ca1a145b98eb68fb6bdcb"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-066",
+      "exit": null,
+      "status": {
+        "A48-active-and-queue": "pass",
+        "A48-native-request": "pass",
+        "A48-business-request": "pass"
+      },
+      "files": [
+        {
+          "path": "attempt-066/archive-refused-active.png",
+          "sha256": "e75573d86b8fdf0b70325b879de08cc147cc09ba319f3394a056573c9b92a3ee"
+        },
+        {
+          "path": "attempt-066/archive-refused-business-request.png",
+          "sha256": "404528a06953fb6160479747d7562dd8e595f4ae2ec45702adc8be5c2b9ec871"
+        },
+        {
+          "path": "attempt-066/archive-refused-native-request.png",
+          "sha256": "4865a6f60c9807b30609cd75a93b1117c0084988b81dd37b2f51623fd1285400"
+        },
+        {
+          "path": "attempt-066/archive-refused-queued-only.png",
+          "sha256": "74856fbcf7f327c88cc1ef27175c3e5e3ebcd8af37e9633d0e93c8773ccacd22"
+        },
+        {
+          "path": "attempt-066/cleanup-readonly.json",
+          "sha256": "5055bcd2a077cd72dd78caf475ff48811941e0df2afd77ffde48771a8a6f6bf5"
+        },
+        {
+          "path": "attempt-066/result.json",
+          "sha256": "dc78df958aa47220fd54a7d80bf0c1bca0b94d42372d0c44fe5d383fe7d6ef01"
+        },
+        {
+          "path": "attempt-066/source-a48-archive-packaged.mjs",
+          "sha256": "155ae59fe95df7841f9265c99234392fd3fa08319a97669b2cef41f2ed4e57ac"
+        },
+        {
+          "path": "attempt-066/source-a48-codex-target-receipt.mjs",
+          "sha256": "54729e55c9cc10dd8e09fdcf70b899e6b8a7daeb810ca1a145b98eb68fb6bdcb"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-067",
+      "exit": {
+        "pid": 26189,
+        "code": 0,
+        "signal": null
+      },
+      "status": "pass",
+      "files": [
+        {
+          "path": "attempt-067/A48-real-archived-history-and-diff.png",
+          "sha256": "444815aa337706fb3bff8fb1520c981874ce523383dbe0f2b98fbb9a4df5f88c"
+        },
+        {
+          "path": "attempt-067/result.json",
+          "sha256": "1a079d1ae5e40369152ac264e298e6326e4e95d3aaad8a89281bc71f829a930b"
+        },
+        {
+          "path": "attempt-067/source-a48-archive-resume-065.mjs",
+          "sha256": "9b1acc079d8a32b9c3b2b7cbcbae1dab7fb92237cb476e3faa662f41628433a9"
+        }
+      ]
+    }
+  ]
+}

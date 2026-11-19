@@ -1,0 +1,596 @@
+{
+  "caseId": "M14-A38",
+  "commit": "b241b547e092ad66aaa4d2b08284321996308a33",
+  "asar": "9525f83a3d1eab4c912eee9c6611f3c780e8e00b9b1d704558b6da962e6bcda0",
+  "status": "文件、任务引用和保存冲突通过；系统语音待验证",
+  "scope": "真实打包 WillYou、绑定后台 CDP、本机合成推理。独立文件冲突用真实产品保存处理器，首次受控时序。合成语音仅核真控件与草稿边界，未运行原生 Typeless、麦克风或系统剪贴板。",
+  "earlierEvidence": [
+    "003 实包使用磁盘版本及外部修改",
+    "fef791bc6 005 邮件实际交接且自然退出 0"
+  ],
+  "cleanup": "三个隔离 App 均正常退出 0。九个记录的 App/CLI/bridge PID 均无残留，归还时 3425 空闲。",
+  "attempts": [
+    {
+      "attempt": "attempt-100",
+      "scope": "A38-save",
+      "exit": {
+        "pid": 22405,
+        "code": 0,
+        "signal": null
+      },
+      "case": {
+        "status": "failed-or-blocked",
+        "passed": [],
+        "missing": [],
+        "route": {
+          "targetId": "cf8a03e7-83c2-45a4-8067-862a6d760a91",
+          "otherId": "129758b9-f44a-47dc-b0f5-23777534fc73",
+          "profileId": "4e34d9c7-af6d-47fe-accf-b224f7ebe130",
+          "persistedReference": {
+            "revision": 2,
+            "value": {
+              "text": "A38_NONSEND_DRAFT @docs/guide.txt ",
+              "attachments": []
+            }
+          },
+          "notesBody": "A38_DIRTY_NOTES_ACROSS_TASK_PROVIDER\n",
+          "turns": 1,
+          "otherTurns": 0
+        },
+        "actualSaveTrace": [],
+        "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(observedSaveKey?.trusted&&observedSaveKey.meta&&observedSaveKey.key.toLowerCase()==='s'&&observedSaveKey.prevented)\n\n    at caseSave (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a38-save-voice-packaged.mjs:413:5)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a38-save-voice-packaged.mjs:152:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a38-save-voice-packaged.mjs:589:3",
+        "dom": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nA38-save stage 6\nA38-save stage 6\nA38-save-other stage 6\nA38-save-other stage 6\n设置\nA38-save stage 6\n已完成\n插件 2\n单 Agent · 开启委派\nM14_A38-save_07fe0e71-7133-4388-ba9d-9c95d2f380cb Reply exactly once according to the local fixture.\n\nA38_SAVE_READY\n\n隔离校验文件\n\n编辑路由文件\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nMCP 启动 · wy_79192d2a06f889d2cf703e21\nMCP 启动 · smartdd_project_79192d2a06f8\n此处切换到 Workspace provider B\n请求批准\n帮我批准\n完全访问\nWorkspace provider B\nm14-workspace-fixture\n文件\na.txt\nnotes.txt\n任务启动目录\n›\na.txt\n打开\n正在保存…\n1\n2\nA38 本地未保存🙂\n\n\nA38-save · 任务启动目录\nA38-save\n.git\ndocs\nsrc\na.txt\ndeleted.txt\nescape.txt\nfixture.pdf\nnotes.txt\nM\n0.0 KiB\nUTF-8\n正在保存…"
+      },
+      "durableReadbackAfterNormalQuit": [
+        {
+          "task_id": "cf8a03e7-83c2-45a4-8067-862a6d760a91",
+          "draft_revision": 2,
+          "draft_json": {
+            "text": "A38_NONSEND_DRAFT @docs/guide.txt ",
+            "attachments": []
+          },
+          "selection_json": {
+            "driverId": "codex-app-server",
+            "profileId": "4e34d9c7-af6d-47fe-accf-b224f7ebe130",
+            "tier": "ask",
+            "carryExtensions": true,
+            "extensionPreferences": {
+              "0c149bfd-b52f-4b16-9c9f-ca679b7bc8a8": true
+            },
+            "model": "m14-workspace-fixture"
+          },
+          "turnCount": 1
+        },
+        {
+          "task_id": "129758b9-f44a-47dc-b0f5-23777534fc73",
+          "draft_revision": 0,
+          "draft_json": {},
+          "selection_json": {
+            "driverId": "codex-app-server",
+            "profileId": "0c149bfd-b52f-4b16-9c9f-ca679b7bc8a8",
+            "tier": "ask",
+            "carryExtensions": true,
+            "extensionPreferences": {
+              "0c149bfd-b52f-4b16-9c9f-ca679b7bc8a8": true
+            },
+            "model": "m14-workspace-fixture"
+          },
+          "turnCount": 0
+        }
+      ],
+      "nativeProcesses": [
+        {
+          "pid": 22746,
+          "kind": "cli",
+          "state": "exited",
+          "ended_at": "2026-11-18T20:37:02.846Z"
+        },
+        {
+          "pid": 22774,
+          "kind": "bridge",
+          "state": "exited",
+          "ended_at": "2026-11-18T20:37:03.149Z"
+        }
+      ],
+      "files": [
+        {
+          "path": "attempt-100/A38-actual-reference-and-file-after-switch.png",
+          "sha256": "c6a0e4fa3fcaf9a33dcd6a8a5e128ccb055a2157f7966b6db2afeab70fadbfd9"
+        },
+        {
+          "path": "attempt-100/A38-save-failed.png",
+          "sha256": "da1ed2b1b4a9a1434580b45ad02cfbac89b24750039cb4678a4837fd0dd80ec2"
+        },
+        {
+          "path": "attempt-100/cleanup.json",
+          "sha256": "b45d943d9c4ab5d463f37cc5774443631fd2d71231800775781828e01f6d0bfb"
+        },
+        {
+          "path": "attempt-100/in-flight.json",
+          "sha256": "38b2a93f65dc044c3ac2b1f88b5860455d26fc4c49985b0441900caa6c70e5a3"
+        },
+        {
+          "path": "attempt-100/manifest.json",
+          "sha256": "c574bdbe97bd5ac455e483418a39897764b1dae1febd0899426ce930b5822d96"
+        },
+        {
+          "path": "attempt-100/quit-phase.jsonl",
+          "sha256": "0a7bc9e930c1a641854d14d6a450fa8ebcb48b65763762968f8a854b7a0a0a54"
+        },
+        {
+          "path": "attempt-100/result.json",
+          "sha256": "24f1959e6c6936ad94a9a8f77273ba61db4237751a468db15cb86f25e20e24b0"
+        },
+        {
+          "path": "attempt-100/source-a38-save-voice-packaged.mjs",
+          "sha256": "c53de710d06c01a8734be1ed546549624241567c859c816aa2361ff53e5191d9"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-101",
+      "scope": "A38-save",
+      "exit": {
+        "pid": 23865,
+        "code": 0,
+        "signal": null
+      },
+      "case": {
+        "status": "pass",
+        "passed": [
+          "隔离实包用真实 Cmd+S 保存；外部写者在实际调用入口处理前修改文件，原保存处理器拒绝旧修订；真实“保留我的修改”使用磁盘现行哈希保存本地版，期间没有 Agent 自动发送"
+        ],
+        "missing": [],
+        "route": {
+          "targetId": "060bc5eb-e4ea-42b4-afff-a0173170db96",
+          "otherId": "548c2ad1-a577-4511-8bdc-b66c03cc6b87",
+          "profileId": "0b0dd08d-59c9-41f0-a380-42f4e6e6ae3a",
+          "persistedReference": {
+            "revision": 2,
+            "value": {
+              "text": "A38_NONSEND_DRAFT @docs/guide.txt ",
+              "attachments": []
+            }
+          },
+          "notesBody": "A38_DIRTY_NOTES_ACROSS_TASK_PROVIDER\n",
+          "turns": 1,
+          "otherTurns": 0
+        },
+        "explicitSaveKey": {
+          "trusted": true,
+          "key": "s",
+          "meta": true,
+          "at": 1795034276091
+        },
+        "staleSave": {
+          "observedSaveKey": {
+            "trusted": true,
+            "key": "s",
+            "meta": true,
+            "at": 1795034276091
+          },
+          "inbound": {
+            "request": {
+              "ref": {
+                "id": "65e55aa2-ce1f-4a98-9ab8-284f5e5d074a",
+                "lease": "0081eba5-5279-4bc6-a703-48bb7ace5424",
+                "generation": 1
+              },
+              "opId": "d4a48c9b-1227-4879-a37f-396b07f2eb5b",
+              "bufferVersion": 1,
+              "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+              "base64": "QTM4IOacrOWcsOacquS/neWtmPCfmYIK"
+            },
+            "sender": 1,
+            "enteredAt": 1795034276140
+          },
+          "externalPid": 24899,
+          "released": {
+            "request": {
+              "ref": {
+                "id": "65e55aa2-ce1f-4a98-9ab8-284f5e5d074a",
+                "lease": "0081eba5-5279-4bc6-a703-48bb7ace5424",
+                "generation": 1
+              },
+              "opId": "d4a48c9b-1227-4879-a37f-396b07f2eb5b",
+              "bufferVersion": 1,
+              "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+              "base64": "QTM4IOacrOWcsOacquS/neWtmPCfmYIK"
+            },
+            "enteredAt": 1795034276140,
+            "releasedAt": 1795034276230
+          },
+          "conflict": {
+            "request": {
+              "ref": {
+                "id": "65e55aa2-ce1f-4a98-9ab8-284f5e5d074a",
+                "lease": "0081eba5-5279-4bc6-a703-48bb7ace5424",
+                "generation": 1
+              },
+              "opId": "d4a48c9b-1227-4879-a37f-396b07f2eb5b",
+              "bufferVersion": 1,
+              "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+              "base64": "QTM4IOacrOWcsOacquS/neWtmPCfmYIK"
+            },
+            "sender": 1,
+            "enteredAt": 1795034276140,
+            "releasedAt": 1795034276230,
+            "beforeNativeAt": 1795034276230,
+            "receipt": {
+              "opId": "d4a48c9b-1227-4879-a37f-396b07f2eb5b",
+              "bufferVersion": 1,
+              "state": "conflict",
+              "message": "磁盘文件已改变；本地修改仍保留"
+            },
+            "returnedAt": 1795034276237
+          },
+          "localBuffer": "A38 本地未保存🙂\n",
+          "externalDisk": "A38 independent disk version\n"
+        },
+        "saved": {
+          "selected": {
+            "request": {
+              "ref": {
+                "id": "65e55aa2-ce1f-4a98-9ab8-284f5e5d074a",
+                "lease": "0081eba5-5279-4bc6-a703-48bb7ace5424",
+                "generation": 1
+              },
+              "opId": "1f23431b-aa9c-4661-b827-548f476aa283",
+              "bufferVersion": 2,
+              "baseHash": "d9a74d5dd3de8dd743a8aca9345522e044da8b31fa7ff55142a8cc2efb55793c",
+              "base64": "QTM4IOacrOWcsOacquS/neWtmPCfmYIK"
+            },
+            "sender": 1,
+            "enteredAt": 1795034276450,
+            "beforeNativeAt": 1795034276450,
+            "receipt": {
+              "revision": {
+                "size": 24,
+                "inode": "362909994",
+                "device": "16777231",
+                "changedNs": "1795034276501476246",
+                "modifiedNs": "1795034276492199000",
+                "hash": "ac6722b0beb3e0f16ea794c352f0694f8a925093277ce8731ad05ac009979750"
+              },
+              "bufferVersion": 2,
+              "opId": "1f23431b-aa9c-4661-b827-548f476aa283",
+              "state": "saved",
+              "recoveryId": "1f23431b-aa9c-4661-b827-548f476aa283"
+            },
+            "returnedAt": 1795034276507
+          },
+          "disk": "A38 本地未保存🙂\n",
+          "diskSha256": "ac6722b0beb3e0f16ea794c352f0694f8a925093277ce8731ad05ac009979750",
+          "turns": 1
+        },
+        "actualSaveTrace": [
+          {
+            "request": {
+              "ref": {
+                "id": "65e55aa2-ce1f-4a98-9ab8-284f5e5d074a",
+                "lease": "0081eba5-5279-4bc6-a703-48bb7ace5424",
+                "generation": 1
+              },
+              "opId": "d4a48c9b-1227-4879-a37f-396b07f2eb5b",
+              "bufferVersion": 1,
+              "baseHash": "4d0e5c8251c881b26be7e5420c9f769859bb0b56602199fd193f93533ea962cf",
+              "base64": "QTM4IOacrOWcsOacquS/neWtmPCfmYIK"
+            },
+            "sender": 1,
+            "enteredAt": 1795034276140,
+            "releasedAt": 1795034276230,
+            "beforeNativeAt": 1795034276230,
+            "receipt": {
+              "opId": "d4a48c9b-1227-4879-a37f-396b07f2eb5b",
+              "bufferVersion": 1,
+              "state": "conflict",
+              "message": "磁盘文件已改变；本地修改仍保留"
+            },
+            "returnedAt": 1795034276237
+          },
+          {
+            "request": {
+              "ref": {
+                "id": "65e55aa2-ce1f-4a98-9ab8-284f5e5d074a",
+                "lease": "0081eba5-5279-4bc6-a703-48bb7ace5424",
+                "generation": 1
+              },
+              "opId": "1f23431b-aa9c-4661-b827-548f476aa283",
+              "bufferVersion": 2,
+              "baseHash": "d9a74d5dd3de8dd743a8aca9345522e044da8b31fa7ff55142a8cc2efb55793c",
+              "base64": "QTM4IOacrOWcsOacquS/neWtmPCfmYIK"
+            },
+            "sender": 1,
+            "enteredAt": 1795034276450,
+            "beforeNativeAt": 1795034276450,
+            "receipt": {
+              "revision": {
+                "size": 24,
+                "inode": "362909994",
+                "device": "16777231",
+                "changedNs": "1795034276501476246",
+                "modifiedNs": "1795034276492199000",
+                "hash": "ac6722b0beb3e0f16ea794c352f0694f8a925093277ce8731ad05ac009979750"
+              },
+              "bufferVersion": 2,
+              "opId": "1f23431b-aa9c-4661-b827-548f476aa283",
+              "state": "saved",
+              "recoveryId": "1f23431b-aa9c-4661-b827-548f476aa283"
+            },
+            "returnedAt": 1795034276507
+          }
+        ]
+      },
+      "durableReadbackAfterNormalQuit": [
+        {
+          "task_id": "060bc5eb-e4ea-42b4-afff-a0173170db96",
+          "draft_revision": 2,
+          "draft_json": {
+            "text": "A38_NONSEND_DRAFT @docs/guide.txt ",
+            "attachments": []
+          },
+          "selection_json": {
+            "driverId": "codex-app-server",
+            "profileId": "0b0dd08d-59c9-41f0-a380-42f4e6e6ae3a",
+            "tier": "ask",
+            "carryExtensions": true,
+            "extensionPreferences": {
+              "3dfc34bf-9a8e-4665-9be9-678a46daf052": true
+            },
+            "model": "m14-workspace-fixture"
+          },
+          "turnCount": 1
+        },
+        {
+          "task_id": "548c2ad1-a577-4511-8bdc-b66c03cc6b87",
+          "draft_revision": 0,
+          "draft_json": {},
+          "selection_json": {
+            "driverId": "codex-app-server",
+            "profileId": "3dfc34bf-9a8e-4665-9be9-678a46daf052",
+            "tier": "ask",
+            "carryExtensions": true,
+            "extensionPreferences": {
+              "3dfc34bf-9a8e-4665-9be9-678a46daf052": true
+            },
+            "model": "m14-workspace-fixture"
+          },
+          "turnCount": 0
+        }
+      ],
+      "nativeProcesses": [
+        {
+          "pid": 24180,
+          "kind": "cli",
+          "state": "exited",
+          "ended_at": "2026-11-18T20:37:55.318Z"
+        },
+        {
+          "pid": 24210,
+          "kind": "bridge",
+          "state": "exited",
+          "ended_at": "2026-11-18T20:37:55.769Z"
+        }
+      ],
+      "files": [
+        {
+          "path": "attempt-101/A38-actual-reference-and-file-after-switch.png",
+          "sha256": "ca4a94e925ea8ff3dc36be823903cbfbbeda04f4ce090e85cc38d88b038df45c"
+        },
+        {
+          "path": "attempt-101/A38-explicit-save-keep-local.png",
+          "sha256": "682ec81a2aa2b542e6333352f71966875d0c311cb6a4a6e1769da47380d4c61c"
+        },
+        {
+          "path": "attempt-101/A38-save-both-versions.png",
+          "sha256": "5f94c92daf6af3ac928230953453ebca956ed6d1e5ac571f8924d57b8fbe7142"
+        },
+        {
+          "path": "attempt-101/cleanup.json",
+          "sha256": "887dab61da7d7015a664d78a599b7604106bfe7b8f147736720b6664d97f9e6e"
+        },
+        {
+          "path": "attempt-101/in-flight.json",
+          "sha256": "00822d0cde4962c67e8aafc37cb74126b82a1034c9e844ce81a22ade85df30ca"
+        },
+        {
+          "path": "attempt-101/manifest.json",
+          "sha256": "4d46a6bc1aa40525c9e236141afbce510411638200a0b68ee9dc7c73810bd396"
+        },
+        {
+          "path": "attempt-101/quit-phase.jsonl",
+          "sha256": "62e53c8e57de2874a840912041369d0148f98baeca260a280707079b46ae5809"
+        },
+        {
+          "path": "attempt-101/result.json",
+          "sha256": "65cabbcc617d0c8bde4ec220cfd02d1f601578030f262660cadc07ef81323090"
+        },
+        {
+          "path": "attempt-101/source-a38-save-voice-packaged.mjs",
+          "sha256": "7a0b7be15cbd05e6d5d89eedfc10be061bdf68f829320144dfcf6eddf838507a"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-102",
+      "scope": "A38-voice-routing",
+      "exit": {
+        "pid": 25118,
+        "code": 0,
+        "signal": null
+      },
+      "case": {
+        "status": "partial",
+        "passed": [
+          "实点任务语音按钮，验证焦点与光标、合成文本回填后的草稿及不自动发送，切任务取消原请求，切供应商保留文本和文件编辑"
+        ],
+        "missing": [
+          "Typeless 本人授权／转写／系统注入仍待验证。只替代系统语音边界，测试文本由绑定到隔离 renderer 的 CDP 输入，没有系统权限、键盘、剪贴板或服务。"
+        ],
+        "route": {
+          "targetId": "18c7ac59-7252-4a76-bf30-377830c1aced",
+          "otherId": "d4848a00-0c67-49bf-bcde-d30b2012bbb1",
+          "beforeVoice": {
+            "text": "草稿前缀--END",
+            "start": 5,
+            "end": 5,
+            "focused": true
+          },
+          "request": {
+            "name": "voice.trigger",
+            "input": {
+              "requestId": "029fe715-adbe-468e-ba88-638d098cdb5e",
+              "origin": "home"
+            },
+            "sender": 1,
+            "at": 1795034306838,
+            "nativeSkipped": true
+          },
+          "second": {
+            "name": "voice.trigger",
+            "input": {
+              "requestId": "c99bf2c0-0853-4c05-a968-e0f96b024215",
+              "origin": "home"
+            },
+            "sender": 1,
+            "at": 1795034308187,
+            "nativeSkipped": true
+          },
+          "cancelled": {
+            "name": "voice.cancel",
+            "id": "c99bf2c0-0853-4c05-a968-e0f96b024215",
+            "sender": 1,
+            "at": 1795034308200,
+            "nativeSkipped": true
+          },
+          "saved": {
+            "revision": 2,
+            "value": {
+              "text": "草稿前缀-中文转写🙂-END",
+              "attachments": []
+            }
+          },
+          "finalProfile": "561d66a4-b0a5-435f-8e1e-e26199ef085a",
+          "draft": "草稿前缀-中文转写🙂-END",
+          "retainedFile": "A38_FILE_BUFFER_REMAINS\n",
+          "targetTurns": 1,
+          "otherTurns": 0
+        },
+        "voiceBoundary": [
+          {
+            "name": "voice.trigger",
+            "input": {
+              "requestId": "029fe715-adbe-468e-ba88-638d098cdb5e",
+              "origin": "home"
+            },
+            "sender": 1,
+            "at": 1795034306838,
+            "nativeSkipped": true
+          },
+          {
+            "name": "voice.trigger",
+            "input": {
+              "requestId": "c99bf2c0-0853-4c05-a968-e0f96b024215",
+              "origin": "home"
+            },
+            "sender": 1,
+            "at": 1795034308187,
+            "nativeSkipped": true
+          },
+          {
+            "name": "voice.cancel",
+            "id": "c99bf2c0-0853-4c05-a968-e0f96b024215",
+            "sender": 1,
+            "at": 1795034308200,
+            "nativeSkipped": true
+          }
+        ]
+      },
+      "durableReadbackAfterNormalQuit": [
+        {
+          "task_id": "18c7ac59-7252-4a76-bf30-377830c1aced",
+          "draft_revision": 2,
+          "draft_json": {
+            "text": "草稿前缀-中文转写🙂-END",
+            "attachments": []
+          },
+          "selection_json": {
+            "driverId": "codex-app-server",
+            "profileId": "561d66a4-b0a5-435f-8e1e-e26199ef085a",
+            "tier": "ask",
+            "carryExtensions": true,
+            "extensionPreferences": {
+              "87191a7d-ae78-47e7-ae86-4125db2238d5": true
+            },
+            "model": "m14-workspace-fixture"
+          },
+          "turnCount": 1
+        },
+        {
+          "task_id": "d4848a00-0c67-49bf-bcde-d30b2012bbb1",
+          "draft_revision": 0,
+          "draft_json": {},
+          "selection_json": {
+            "driverId": "codex-app-server",
+            "profileId": "87191a7d-ae78-47e7-ae86-4125db2238d5",
+            "tier": "ask",
+            "carryExtensions": true,
+            "extensionPreferences": {
+              "87191a7d-ae78-47e7-ae86-4125db2238d5": true
+            },
+            "model": "m14-workspace-fixture"
+          },
+          "turnCount": 0
+        }
+      ],
+      "nativeProcesses": [
+        {
+          "pid": 25417,
+          "kind": "cli",
+          "state": "exited",
+          "ended_at": "2026-11-18T20:38:28.428Z"
+        },
+        {
+          "pid": 25445,
+          "kind": "bridge",
+          "state": "exited",
+          "ended_at": "2026-11-18T20:38:28.483Z"
+        }
+      ],
+      "files": [
+        {
+          "path": "attempt-102/A38-voice-routing-after-reopen-and-provider-switch.png",
+          "sha256": "a39a611d5a368a7bc655c6462924d946793fe6362d7f28fc273b8777c4e953d4"
+        },
+        {
+          "path": "attempt-102/A38-voice-routing-with-test-text.png",
+          "sha256": "130496a93914ea97def54f35dc7461396dc4ba4c78fbf23fad703723c0e865c1"
+        },
+        {
+          "path": "attempt-102/cleanup.json",
+          "sha256": "7c77064bce9d66a058fe3d0eb5a291e42c4d562ee2645121f4155e17f8933219"
+        },
+        {
+          "path": "attempt-102/in-flight.json",
+          "sha256": "6d810646ee47eed1efc21fa1d0426ed3e9f3015388d7f07b06e697e1ec065e3a"
+        },
+        {
+          "path": "attempt-102/manifest.json",
+          "sha256": "abaa22425f0cd60dace14d8dc36971b08e1131953f049067830a84bfca624f0d"
+        },
+        {
+          "path": "attempt-102/quit-phase.jsonl",
+          "sha256": "7754ea9f18898180bdcb8f648e1cc1ec9aed64a41f65385d3c2069926a5c5865"
+        },
+        {
+          "path": "attempt-102/result.json",
+          "sha256": "e3c3262bd1b2a22f1349a1f45222942664ae3d14e2fa890387a36eaf58e72303"
+        },
+        {
+          "path": "attempt-102/source-a38-save-voice-packaged.mjs",
+          "sha256": "7a0b7be15cbd05e6d5d89eedfc10be061bdf68f829320144dfcf6eddf838507a"
+        }
+      ]
+    }
+  ]
+}

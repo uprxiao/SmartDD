@@ -1,0 +1,296 @@
+{
+  "sourceCommit": "c098d03dc014acfe938a38d85d935431f7c9021e",
+  "asar": "3898cb90d47279b99c4c6e8881249a3321855c495507fe68113f8f5d23c5382a",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scratch": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-077/runtime-3lJ5wv",
+  "retryFixture": {
+    "claudeMaxRetries": 1
+  },
+  "checks": {
+    "bWarmup": {
+      "turn": {
+        "turn_id": "62be6349-84b2-4fb4-8f9f-66c1cbd6ba44",
+        "client_input_id": "in-4c6c4030a1454aebb19e229c94bf872c",
+        "status": "completed",
+        "native_turn_id": "01a1f0d2-e789-7d63-b03a-7343a52b0789",
+        "accepted_at": "2026-11-18T22:41:54.855Z",
+        "started_at": "2026-11-18T22:41:56.106Z",
+        "ended_at": "2026-11-18T22:41:56.136Z",
+        "error_code": null,
+        "run_id": "6ebdef30-b017-4ccd-95bd-6169dd9124da",
+        "source_kind": "user"
+      },
+      "runId": "6ebdef30-b017-4ccd-95bd-6169dd9124da"
+    }
+  },
+  "phases": [
+    {
+      "label": "Warmup the independent healthy Codex provider",
+      "at": "2026-11-18T22:41:54.819Z"
+    },
+    {
+      "label": "An actual Anthropic 401 while the independent Responses lane is live",
+      "at": "2026-11-18T22:41:56.191Z"
+    }
+  ],
+  "events": [
+    {
+      "marker": "A06_B_WARMUP",
+      "lane": "B",
+      "model": "a06-codex-account-b",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795041716126,
+      "result": 200
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041716992,
+      "result": 401
+    },
+    {
+      "marker": "A06_B_PARALLEL",
+      "lane": "B",
+      "model": "a06-codex-account-b",
+      "kind": "codex",
+      "path": "/v1/responses",
+      "routedAuthentication": true,
+      "arrival": 1795041717341,
+      "result": 200
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041717937,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041719079,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041721388,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041726284,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041735387,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041753352,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041786949,
+      "result": 401
+    },
+    {
+      "marker": "A06_A_UNAUTHORIZED",
+      "lane": "A",
+      "model": "a06-claude-account-a",
+      "kind": "claude",
+      "path": "/v1/messages?beta=true",
+      "routedAuthentication": true,
+      "arrival": 1795041823870,
+      "result": 401
+    }
+  ],
+  "clicks": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"ceb19b84-dbf8-44c4-a18a-ab018ead33fb\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0a82c9d4-960a-4a48-a102-9c39f511efe5\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"ceb19b84-dbf8-44c4-a18a-ab018ead33fb\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=submit]",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "passed": false,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-077/runtime-3lJ5wv/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-077/runtime-3lJ5wv/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    17683
+  ],
+  "tools": {
+    "claude": "2.1.326",
+    "codex": "0.169.0"
+  },
+  "fixtures": {
+    "A": {
+      "kind": "claude",
+      "model": "a06-claude-account-a",
+      "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-077/runtime-3lJ5wv/work-a",
+      "task": {
+        "taskId": "0a82c9d4-960a-4a48-a102-9c39f511efe5",
+        "selection": {
+          "driverId": "claude-sdk",
+          "profileId": "35d8a9e7-33bc-4909-a494-2e5119fa142e",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "35d8a9e7-33bc-4909-a494-2e5119fa142e": true
+          },
+          "model": "a06-claude-account-a"
+        }
+      },
+      "providerId": "e2f93c41-40ba-48fe-a12b-6784ab772e57",
+      "profileId": "35d8a9e7-33bc-4909-a494-2e5119fa142e",
+      "projectId": "7a2ada0a-7c63-4e82-ba70-5fd6c854c72e"
+    },
+    "B": {
+      "kind": "codex",
+      "model": "a06-codex-account-b",
+      "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-077/runtime-3lJ5wv/work-b",
+      "task": {
+        "taskId": "ceb19b84-dbf8-44c4-a18a-ab018ead33fb",
+        "selection": {
+          "driverId": "codex-app-server",
+          "profileId": "f9a58b19-92f3-42fb-ad17-108950d40ffa",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "f9a58b19-92f3-42fb-ad17-108950d40ffa": true
+          },
+          "model": "a06-codex-account-b"
+        }
+      },
+      "providerId": "7d954816-2b79-42df-a18d-c64e588fd528",
+      "profileId": "f9a58b19-92f3-42fb-ad17-108950d40ffa",
+      "projectId": "c6eadd10-9958-482b-b5f8-8718f48573f3"
+    },
+    "C": {
+      "kind": "codex",
+      "model": "a06-codex-proxy-c",
+      "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g02/attempt-077/runtime-3lJ5wv/work-c",
+      "task": {
+        "taskId": "9ec48baf-65ae-4868-942b-945640352112",
+        "selection": {
+          "driverId": "codex-app-server",
+          "profileId": "4ba1be7b-339d-4b9e-8b0c-eb71b7af3d9b",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "4ba1be7b-339d-4b9e-8b0c-eb71b7af3d9b": true
+          },
+          "model": "a06-codex-proxy-c"
+        }
+      },
+      "providerId": "b4d05479-8606-4bf4-9588-702084997a77",
+      "profileId": "4ba1be7b-339d-4b9e-8b0c-eb71b7af3d9b",
+      "projectId": "ef488107-b14d-445f-84e8-d6194899ca26"
+    }
+  },
+  "error": "Error: Timed out: A failure: A06_A_UNAUTHORIZED\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g02/provider-faults-a06.mjs:108:9)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g02/provider-faults-a06.mjs:205:23",
+  "screen": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nA06 Project A\nA06 task A\n工作中\nA06 Project B\nA06 task B\nA06 Project C\nA06 task C\n设置\nA06 task B\n已完成\n插件 2\n单 Agent · 开启委派\nA06_B_WARMUP\n本轮改动 · 首次快照仍在后台准备，本轮前态缺失；任务可以继续，不能以较晚状态补造\n查看差异\n观察到的变化可能包含用户或外部写入\n\nREPLY_A06_B_WARMUP\n\nMCP 启动 · smartdd_project_f96f5ed88229\nMCP 启动 · wy_f96f5ed88229348338c89d41\nA06_B_PARALLEL\n\nREPLY_A06_B_PARALLEL\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n请求批准\n帮我批准\n完全访问\nA06 Native B\na06-codex-account-b",
+  "quitError": "Error: Isolated App did not finish its normal exit",
+  "forced": {
+    "pid": 17683,
+    "code": null,
+    "signal": "SIGKILL"
+  },
+  "rendererErrors": []
+}

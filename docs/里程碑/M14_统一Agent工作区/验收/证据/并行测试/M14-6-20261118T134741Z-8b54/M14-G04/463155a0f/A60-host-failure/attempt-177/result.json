@@ -1,0 +1,873 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App, real Claude MCP pending request, local non-transient HTTP 400, actual manual approval",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-177/runtime-fyfZzf/home",
+    "at": "2026-11-19T02:06:40.765Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "host-400",
+  "sourceCommit": "463155a0f4c2cc0fbd85ae65116f882ddb2a0a36",
+  "asar": "52c1841ced1aa0e340f660ba56e671aae08f354917b3fb25439708de8396f5ac",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-host-400-packaged.mjs": "2230f72580505da9544e5520558ba36cde6175bd7d7beb5a575e00cd7bcc7d2d",
+    "a60-prep/provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "a60-prep/pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665",
+    "a60-prep/host-invalid-request-provider.mjs": "7d0d5d8d9c856ec436813fba535f69b61f32f86ee36fccf9642687f9329b4c27"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"27b422d8-f7c9-4b4a-b5f1-88c7685c1342\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795054006306
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795054006325
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795054006332
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795054007659
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795054007662
+    },
+    {
+      "selector": ".agent-request-options button[aria-label=\"批准\"]",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 700.25,
+      "at": 1795054008570
+    },
+    {
+      "selector": ".agent-confirm-choice",
+      "text": null,
+      "button": "left",
+      "x": 1205,
+      "y": 851,
+      "at": 1795054008572
+    }
+  ],
+  "requests": [
+    {
+      "lane": "warm",
+      "status": 200,
+      "at": 1795054007483
+    },
+    {
+      "lane": "native-mail-tool",
+      "tool": "mcp__wy_8ce4418807e83b8641a7ff64__smartdd_mail_draft_create_v2",
+      "callId": "toolu_966fb4177e474c79aaf00b9c2c8f52aa",
+      "status": 200,
+      "at": 1795054007881
+    },
+    {
+      "lane": "original-native-mcp-receipt",
+      "status": 400,
+      "receipt": {
+        "requestId": "fb092850-3552-417c-a2de-8ad567c91440",
+        "operationId": "e4fdd21e-29f2-4e28-af98-b9f99ccae930",
+        "observedAt": 1795054008022
+      },
+      "retry": false,
+      "at": 1795054008022,
+      "errorType": "invalid_request_error",
+      "shouldRetry": false
+    },
+    {
+      "lane": "original-native-mcp-receipt",
+      "status": 400,
+      "receipt": {
+        "requestId": "fb092850-3552-417c-a2de-8ad567c91440",
+        "operationId": "e4fdd21e-29f2-4e28-af98-b9f99ccae930",
+        "observedAt": 1795054008022
+      },
+      "retry": true,
+      "at": 1795054008298,
+      "errorType": "invalid_request_error",
+      "shouldRetry": false
+    },
+    {
+      "lane": "original-native-mcp-receipt",
+      "status": 400,
+      "receipt": {
+        "requestId": "fb092850-3552-417c-a2de-8ad567c91440",
+        "operationId": "e4fdd21e-29f2-4e28-af98-b9f99ccae930",
+        "observedAt": 1795054008022
+      },
+      "retry": true,
+      "at": 1795054008302,
+      "errorType": "invalid_request_error",
+      "shouldRetry": false
+    },
+    {
+      "lane": "actual-host-result",
+      "status": 200,
+      "at": 1795054010200,
+      "itemId": "16976272-97d2-4066-8cac-16eea344e0e8",
+      "retainedOriginalToolReceipt": true
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "passed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-177/runtime-fyfZzf/project",
+    "model": "a60-host-business-invalid-request",
+    "engine": "claude",
+    "expected": "ordinary provider failure, durable host request"
+  },
+  "pid": 10460,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-177/runtime-fyfZzf/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-177/runtime-fyfZzf/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-177/runtime-fyfZzf/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    10460
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "run": {
+      "runId": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-host-business-invalid-request",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-host-business-invalid-request",
+          "name": "a60-host-business-invalid-request",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    },
+    "turnId": "79781165-3821-49ee-97f6-496512769140"
+  },
+  "preFailure": {
+    "item": {
+      "requestId": "fb092850-3552-417c-a2de-8ad567c91440",
+      "class": "host_business",
+      "kind": "host_business",
+      "revision": 1,
+      "payload": {
+        "businessKind": "application_write",
+        "title": "需要批准：smartdd_mail_draft_create_v2",
+        "review": {
+          "application": "邮件",
+          "version": "1.1.0",
+          "operation": "smartdd_mail_draft_create_v2",
+          "targets": [],
+          "input": {
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": null,
+              "to": [],
+              "cc": [],
+              "bcc": [],
+              "subject": "A60 local no-send draft",
+              "text": "A60 frozen local draft should remain pending across the original native failure",
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            }
+          }
+        },
+        "data": {
+          "entry": "mcp",
+          "call": {
+            "operation": "smartdd_mail_draft_create_v2",
+            "contractMajor": 2,
+            "connectionId": null,
+            "arguments": {
+              "content": {
+                "mode": "new",
+                "sourceMessageRef": null,
+                "senderConnectionId": null,
+                "to": [],
+                "cc": [],
+                "bcc": [],
+                "subject": "A60 local no-send draft",
+                "text": "A60 frozen local draft should remain pending across the original native failure",
+                "html": null,
+                "inReplyTo": null,
+                "references": [],
+                "attachmentIds": []
+              }
+            }
+          },
+          "requestId": "d533c083-bd99-44af-9e57-0236ce4d51ea",
+          "originCallHash": "ee9db8675309cfad79e942f460f4d68cf0b115baa8bc63c44b33e380fed6848b",
+          "policyStamp": "6c67a097de4da30d976d56c49ad6cc19a62005622bab4adfb0216916042a946a"
+        },
+        "phase": "waiting_user"
+      },
+      "origin": {
+        "taskId": "27b422d8-f7c9-4b4a-b5f1-88c7685c1342",
+        "bindingId": "665701bc-de18-46db-8960-5aaed3cb9a94",
+        "runId": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+        "generation": 1
+      },
+      "status": "pending",
+      "createdAt": "2026-11-19T02:06:47.994Z"
+    },
+    "turn": {
+      "turn_id": "8fbc942b-4fd0-4331-ad35-f226ffebcd8c",
+      "client_input_id": "in-287410a886a340cb9c0bef018b9eb3d9",
+      "status": "started",
+      "native_turn_id": "43a14a2b-a6fd-49b2-98e0-06fdb7c20ed3:2",
+      "accepted_at": "2026-11-19T02:06:47.663Z",
+      "started_at": "2026-11-19T02:06:47.868Z",
+      "ended_at": null,
+      "error_code": null,
+      "run_id": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+      "source_kind": "user"
+    },
+    "run": {
+      "runId": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-host-business-invalid-request",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-host-business-invalid-request",
+          "name": "a60-host-business-invalid-request",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": true,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    }
+  },
+  "faultSentAt": 1795054008287,
+  "afterFailure": {
+    "turn": {
+      "turn_id": "8fbc942b-4fd0-4331-ad35-f226ffebcd8c",
+      "client_input_id": "in-287410a886a340cb9c0bef018b9eb3d9",
+      "status": "failed",
+      "native_turn_id": "43a14a2b-a6fd-49b2-98e0-06fdb7c20ed3:2",
+      "accepted_at": "2026-11-19T02:06:47.663Z",
+      "started_at": "2026-11-19T02:06:47.868Z",
+      "ended_at": "2026-11-19T02:06:48.312Z",
+      "error_code": "API Error: 400 A60 deliberately invalid request after real awaiting_user",
+      "run_id": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+      "source_kind": "user"
+    },
+    "status": "waiting",
+    "item": {
+      "requestId": "fb092850-3552-417c-a2de-8ad567c91440",
+      "class": "host_business",
+      "kind": "host_business",
+      "revision": 1,
+      "payload": {
+        "businessKind": "application_write",
+        "title": "需要批准：smartdd_mail_draft_create_v2",
+        "review": {
+          "application": "邮件",
+          "version": "1.1.0",
+          "operation": "smartdd_mail_draft_create_v2",
+          "targets": [],
+          "input": {
+            "content": {
+              "mode": "new",
+              "sourceMessageRef": null,
+              "senderConnectionId": null,
+              "to": [],
+              "cc": [],
+              "bcc": [],
+              "subject": "A60 local no-send draft",
+              "text": "A60 frozen local draft should remain pending across the original native failure",
+              "html": null,
+              "inReplyTo": null,
+              "references": [],
+              "attachmentIds": []
+            }
+          }
+        },
+        "data": {
+          "entry": "mcp",
+          "call": {
+            "operation": "smartdd_mail_draft_create_v2",
+            "contractMajor": 2,
+            "connectionId": null,
+            "arguments": {
+              "content": {
+                "mode": "new",
+                "sourceMessageRef": null,
+                "senderConnectionId": null,
+                "to": [],
+                "cc": [],
+                "bcc": [],
+                "subject": "A60 local no-send draft",
+                "text": "A60 frozen local draft should remain pending across the original native failure",
+                "html": null,
+                "inReplyTo": null,
+                "references": [],
+                "attachmentIds": []
+              }
+            }
+          },
+          "requestId": "d533c083-bd99-44af-9e57-0236ce4d51ea",
+          "originCallHash": "ee9db8675309cfad79e942f460f4d68cf0b115baa8bc63c44b33e380fed6848b",
+          "policyStamp": "6c67a097de4da30d976d56c49ad6cc19a62005622bab4adfb0216916042a946a"
+        },
+        "phase": "waiting_user"
+      },
+      "origin": {
+        "taskId": "27b422d8-f7c9-4b4a-b5f1-88c7685c1342",
+        "bindingId": "665701bc-de18-46db-8960-5aaed3cb9a94",
+        "runId": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+        "generation": 1
+      },
+      "status": "pending",
+      "createdAt": "2026-11-19T02:06:47.994Z"
+    },
+    "codes": [
+      {
+        "code": "unknown",
+        "message": "API Error: 400 A60 deliberately invalid request after real awaiting_user"
+      },
+      {
+        "code": "success",
+        "message": "API Error: 400 A60 deliberately invalid request after real awaiting_user"
+      }
+    ]
+  },
+  "originalFaultRequests": 3,
+  "approved": {
+    "at": 1795054008572,
+    "draft": {
+      "id": "540529e7-eae0-4d47-9263-326425c4ae92",
+      "revision": 1,
+      "state": "draft",
+      "subject": "A60 local no-send draft",
+      "attachmentCount": 0,
+      "createdAt": "2026-11-19T02:06:49.783Z",
+      "updatedAt": "2026-11-19T02:06:49.783Z"
+    },
+    "item": {
+      "itemId": "16976272-97d2-4066-8cac-16eea344e0e8",
+      "turnId": null,
+      "type": "notification",
+      "ordinal": 9,
+      "revision": 1,
+      "payload": {
+        "sourceKind": "system",
+        "title": "需要批准：smartdd_mail_draft_create_v2",
+        "status": "finished",
+        "operationId": "e4fdd21e-29f2-4e28-af98-b9f99ccae930",
+        "requestId": "fb092850-3552-417c-a2de-8ad567c91440",
+        "result": {
+          "schema": 1,
+          "id": "d533c083-bd99-44af-9e57-0236ce4d51ea",
+          "status": "ok",
+          "value": {
+            "schema": "willyou-app-result-v2",
+            "contractMajor": 2,
+            "status": "ok",
+            "capabilityId": "mail.draft.create",
+            "data": {
+              "draft": {
+                "id": "540529e7-eae0-4d47-9263-326425c4ae92",
+                "revision": 1,
+                "state": "draft",
+                "contentHash": "80980caab9e0f4320d3888b2de8db766b4596efd3fa15de49a266184150cf0ac",
+                "content": {
+                  "mode": "new",
+                  "sourceMessageRef": null,
+                  "senderConnectionId": null,
+                  "to": [],
+                  "cc": [],
+                  "bcc": [],
+                  "subject": "A60 local no-send draft",
+                  "text": {
+                    "id": "19cdbc9d-442a-493b-8fe7-fb03a0463062",
+                    "revision": "3f8fbd9c9735f0bdd6cf3fcd3a2d20e9e64bc11ac180aa9c259998af62934cc2",
+                    "mediaType": "text/plain;charset=utf-8",
+                    "size": 79
+                  },
+                  "html": null,
+                  "inReplyTo": null,
+                  "references": [],
+                  "attachmentIds": []
+                },
+                "attachments": [],
+                "activeIntentId": null,
+                "lastExecutionId": null,
+                "sourceTaskId": "27b422d8-f7c9-4b4a-b5f1-88c7685c1342",
+                "copiedFromDraftId": null,
+                "createdAt": "2026-11-19T02:06:49.783Z",
+                "updatedAt": "2026-11-19T02:06:49.783Z"
+              }
+            },
+            "source": {
+              "appId": "mail",
+              "packageHash": "7b3742354d27f2c1f99eb6f5e65467a35251c6d744072b7e46b1811e1882f504",
+              "revision": "1",
+              "connections": []
+            },
+            "completeness": {
+              "complete": true,
+              "missing": []
+            },
+            "pagination": null,
+            "resources": [
+              {
+                "id": "19cdbc9d-442a-493b-8fe7-fb03a0463062",
+                "revision": "3f8fbd9c9735f0bdd6cf3fcd3a2d20e9e64bc11ac180aa9c259998af62934cc2",
+                "mediaType": "text/plain;charset=utf-8",
+                "size": 79
+              }
+            ],
+            "operation": {
+              "id": "e4fdd21e-29f2-4e28-af98-b9f99ccae930",
+              "requestId": "d533c083-bd99-44af-9e57-0236ce4d51ea",
+              "origin": "mcp",
+              "effectState": "completed"
+            }
+          },
+          "operationId": "e4fdd21e-29f2-4e28-af98-b9f99ccae930",
+          "effectState": "completed"
+        }
+      },
+      "terminal": "completed",
+      "createdAt": "2026-11-19T02:06:50.051Z",
+      "updatedAt": "2026-11-19T02:06:50.051Z"
+    },
+    "turn": {
+      "turn_id": "1deb9388-1a50-481f-afd2-749486f9db98",
+      "client_input_id": "business-result-fb092850-3552-417c-a2de-8ad567c91440",
+      "status": "completed",
+      "native_turn_id": "43a14a2b-a6fd-49b2-98e0-06fdb7c20ed3:3",
+      "accepted_at": "2026-11-19T02:06:50.052Z",
+      "started_at": "2026-11-19T02:06:50.189Z",
+      "ended_at": "2026-11-19T02:06:50.204Z",
+      "error_code": null,
+      "run_id": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+      "source_kind": "notification"
+    },
+    "requests": [],
+    "queued": [],
+    "run": {
+      "runId": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+      "generation": 1,
+      "driverId": "claude-sdk",
+      "tier": "ask",
+      "defaultModel": "a60-host-business-invalid-request",
+      "models": [
+        {
+          "id": "default",
+          "name": "Default (recommended)",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        {
+          "id": "a60-host-business-invalid-request",
+          "name": "a60-host-business-invalid-request",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      ],
+      "busy": false,
+      "steer": false,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "agents",
+          "auto-mode-setup",
+          "autocompact",
+          "clear",
+          "compact",
+          "config",
+          "output-style",
+          "context",
+          "effort",
+          "fast",
+          "heapdump",
+          "init",
+          "mcp",
+          "model",
+          "__remote-workflow",
+          "workflow-launch-exec",
+          "reload-skills",
+          "rename",
+          "security-review",
+          "usage",
+          "insights",
+          "recap",
+          "goal",
+          "list-agents",
+          "team-onboarding"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug"
+          },
+          {
+            "name": "willyou-mail-work-assistant"
+          },
+          {
+            "name": "willyou-project-db-diagnostics"
+          },
+          {
+            "name": "willyou-remote-password-ssh"
+          },
+          {
+            "name": "deep-research"
+          },
+          {
+            "name": "dataviz"
+          },
+          {
+            "name": "update-config"
+          },
+          {
+            "name": "verify"
+          },
+          {
+            "name": "debug"
+          },
+          {
+            "name": "code-review"
+          },
+          {
+            "name": "simplify"
+          },
+          {
+            "name": "batch"
+          },
+          {
+            "name": "fewer-permission-prompts"
+          },
+          {
+            "name": "doctor"
+          },
+          {
+            "name": "loop"
+          },
+          {
+            "name": "claude-api"
+          },
+          {
+            "name": "workflow-authoring"
+          },
+          {
+            "name": "run"
+          },
+          {
+            "name": "run-skill-generator"
+          },
+          {
+            "name": "plugin-authoring"
+          }
+        ]
+      }
+    },
+    "original": {
+      "turn_id": "8fbc942b-4fd0-4331-ad35-f226ffebcd8c",
+      "client_input_id": "in-287410a886a340cb9c0bef018b9eb3d9",
+      "status": "failed",
+      "native_turn_id": "43a14a2b-a6fd-49b2-98e0-06fdb7c20ed3:2",
+      "accepted_at": "2026-11-19T02:06:47.663Z",
+      "started_at": "2026-11-19T02:06:47.868Z",
+      "ended_at": "2026-11-19T02:06:48.312Z",
+      "error_code": "API Error: 400 A60 deliberately invalid request after real awaiting_user",
+      "run_id": "25eebd6b-2b18-4477-99e6-6d35e9ebce49",
+      "source_kind": "user"
+    }
+  },
+  "preQuit": {
+    "at": "2026-11-19T02:06:50.478Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-177/quit-phase.jsonl",
+  "exit": {
+    "pid": 10460,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

@@ -1,0 +1,68 @@
+{
+  "candidate": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "6ea0906fe3d56d93d39b42be6d9458fc99458707bdecd0a54115fcfc637d4604"
+  },
+  "sourceCommit": "1c9022486b5425bd8a092e99506b0c99aa6a81e0",
+  "failure": "Actual delete dialog reports one legacy terminal even though this project only contains an unarchived M14 task with a live but idle native run and completed diff; delete button missing",
+  "project": "257b05e4-4b01-4071-aa6d-ddbb8584e9ba",
+  "newTask": {
+    "id": "45cc12e7-94e3-44c0-8f70-dc432707c99c",
+    "project_id": "257b05e4-4b01-4071-aa6d-ddbb8584e9ba",
+    "agent_task": "45cc12e7-94e3-44c0-8f70-dc432707c99c",
+    "archived_at": null
+  },
+  "run": {
+    "run_id": "144c9d1d-1c1c-4494-845e-af83b6e8e058",
+    "task_id": "45cc12e7-94e3-44c0-8f70-dc432707c99c",
+    "project_id": "257b05e4-4b01-4071-aa6d-ddbb8584e9ba",
+    "binding_id": "24fc73cf-c54d-4706-938d-ce479a397d0b",
+    "driver_id": "codex-app-server",
+    "pid": 87388,
+    "process_started_at": "darwin-proc-v1:1795021009:929312",
+    "started_at": "2026-11-18T16:56:49.597Z",
+    "ended_at": "2026-11-18T16:57:02.106Z"
+  },
+  "events": [
+    {
+      "event_type": "run.active",
+      "created_at": "2026-11-18T16:56:49.931Z",
+      "payload": "{\"runId\":\"144c9d1d-1c1c-4494-845e-af83b6e8e058\",\"pid\":87388,\"processStartedAt\":\"darwin-proc-v1:1795021009:929312\"}"
+    },
+    {
+      "event_type": "turn.ended",
+      "created_at": "2026-11-18T16:56:50.560Z",
+      "payload": "{\"turnId\":\"57a1a5ea-f06c-4bad-be0b-4b5b564c7c10\",\"status\":\"completed\",\"errorCode\":null}"
+    },
+    {
+      "event_type": "turn.ended",
+      "created_at": "2026-11-18T16:56:51.122Z",
+      "payload": "{\"turnId\":\"d8726eb9-3eab-473e-b307-2fd2c493743c\",\"status\":\"completed\",\"errorCode\":null}"
+    },
+    {
+      "event_type": "run.ended",
+      "created_at": "2026-11-18T16:57:02.135Z",
+      "payload": "{\"runId\":\"144c9d1d-1c1c-4494-845e-af83b6e8e058\",\"state\":\"stopped\",\"errorCode\":null,\"retiredRequests\":0}"
+    }
+  ],
+  "diff": {
+    "turn_id": "d8726eb9-3eab-473e-b307-2fd2c493743c",
+    "status": "complete",
+    "changed_files_json": "[{\"path\":\"a.txt\",\"added\":1,\"removed\":0,\"binary\":false}]"
+  },
+  "blockedDialog": "项目暂时无法删除\nClose\n\n处理以下任务后可重试。项目和任务记录仍然保留。\n\n还有 1 个终端任务在运行，请先停止。\n重新核对\n取消",
+  "legacyTasksInProject": 0,
+  "appExit": {
+    "pid": 87123,
+    "code": 0,
+    "signal": null
+  },
+  "resultSHA": "1b5e246692750dc73bf1372b4cdfa7ffdd3ff640bbb0f34368e08ee6f72f3ca5",
+  "screenshotSHA": "9991888bb908c6ea9ba5030ae01ae7477672e0358bcdaf44a039fa13ac860a00",
+  "codePath": [
+    "src/main/rpc.ts createProjectControllers passes TaskService.runningInProject without filter",
+    "src/main/core/tasks/task-service.ts projectActiveTaskIds includes managed capability run IDs",
+    "src/main/core/applications/task-capability-launcher.ts activeTaskIds includes every nonterminal capability_runs row for project",
+    "src/main/core/projects/controller.ts deletePreview exposes hook count as legacyRunning and delete checks again before cleanup"
+  ]
+}

@@ -1,0 +1,107 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/main/core/browser/__tests__/service-access.test.ts src/main/core/browser/__tests__/workspace.test.ts src/main/core/browser/__tests__/access.test.ts src/main/core/agent/business-browser.test.ts src/main/core/agent/host-business-requests.test.ts --maxWorkers=1 --reporter=verbose
+
+[1119/060418.193942:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/060418.350222:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: waiting has no expiry, survives native exit/switch and restart, then executes once with current task authority 24ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: no owner approval is persistent pending-bind, never an early usable grant; a later registered run binds once 17ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: stopping/revoking before bind prevents the successor from receiving authority 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: changed account/content fails the late approval and cannot replace the stored original review 15ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: interrupted execution is recorded unknown after restart and never automatically replayed 15ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: a slot wait longer than 60 seconds does not consume the 60-second execution budget 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: stop during admission cancels the approval before any effect 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: revoke during admission cancels the approval before any effect 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: execution still times out after admission and retains its lease until the effect settles 39ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > R2: with no admission callback the budget begins as soon as execution can proceed 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > P3: after a restart a queued approval returns to the original review and cannot run without a fresh decision 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: a run ending during the FIFO wait produces pending-bind rather than a grant on its stale identity 16ms
+ ✓ src/main/core/agent/host-business-requests.test.ts > E12: cancellation cannot release a business lease while its executor still has an external effect in flight 16ms
+[1119/060418.953917:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > revalidates previously reviewed saved tabs after startup without opening them or adding other dormant tabs 11ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > prefers the live browser address when the reviewed tab also has a saved address 2ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > keeps a click reference armed through the dialog and finishes it under the original page queue 10ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > keeps a exec reference armed through the dialog and finishes it under the original page queue 9ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > retains a replaced-node failure in the original click receipt while answering the real dialog successfully 7ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > stops an owned deferred kernel release before replacing the document 7ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > settles the retained guard for a trusted user dialog reply too 5ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > routes dedicated and compatibility dialog answers through the owned host without starting a cold Helper 6ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > fails an unavailable audit before native work with an honest not-started marker 6ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > allows self without a grant; rejects unauthorized, cross-project and missing-lifetime requests before page access 5ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > observe permits reads but refuses write, wait fn and foreign-profile clone/delete/selection even without --task 10ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > uses the trusted user-selected mode and preserves caller ownership and audit correlation 1ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > clones with caller identity, rejects forged run bindings and never inherits authorization after run end 7ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > revokes only this run queued work immediately, preserving an admitted write and another run queue 56ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > pause cancels restoration-time waits and blocks own/cross commands while trusted user changes remain available 10ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > cannot use an own-page foreign-profile alias after revocation 1ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > pause cancels all four queued writes immediately but lets the first admitted write complete 61ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > writes a cross-task read artifact to the authenticated caller directory 22ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > returns full Cookie results only to the command and journals a detached redacted read record 6ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > queries the retained input type before filling and masks the value even when the fill fails 9ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > routes compatibility credentials through the same user-prompt guard without entering the helper 3ms
+ ✓ src/main/core/browser/__tests__/service-access.test.ts > actual caller and target authority in the browser service > lets a started multi-page profile change finish after pause, then refuses new commands on the task 8ms
+[1119/060419.811389:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/agent/business-browser.test.ts > E12/A37: browser approval after real owner end binds only to the registered successor; revoke before binding supplies no authority 23ms
+ ✓ src/main/core/agent/business-browser.test.ts > E12/A37: changed target page retires late approval and user stop retires an approved pending binding 17ms
+ × src/main/core/agent/business-browser.test.ts > retains the pending approval across an unloaded target and binds it only after successor registration 19ms
+   → expected { …(15) } to match object { status: 'answered', …(1) }
+(13 matching properties omitted from actual)
+ ✓ src/main/core/agent/business-browser.test.ts > V24 resolves a same-project title for presentation without changing the frozen request 15ms
+[1119/060419.994508:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > does not allocate a native view for startup tabs; restores isolated task records without touching M9 bytes 5ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > retains exactly the last ten closed tabs and refuses tasks without projects 2ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > publishes each live activity deadline once per snapshot and never restores it from persisted tabs 1ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > changes unloaded bindings without allocating an engine and removes deleted profiles from reopen/restart records 1ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > does not change an unloaded profile binding when admission is revoked 0ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > cleans persisted orphan task tabs on startup without first loading their workspace 0ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > ignores a late viewport placement after shutdown without restoring a native page 0ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > rejects a late target restoration after shutdown and preserves the saved tab 0ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > keeps a dialog parked when an independent tab tooltip closes 0ms
+ ✓ src/main/core/browser/__tests__/workspace.test.ts > browser workspace persistence and startup pages (software only) > does not park after an obsolete tooltip capture resolves, or release a dialog when capture fails 0ms
+[1119/060420.117520:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ✓ src/main/core/browser/__tests__/access.test.ts > allows own task without a grant and offers a same-project request before any grant exists 2ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > denies cross-project, absent, self and forged-run requests without presenting a prompt 1ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > requires fresh control for writes, then revocation makes queued admission fail without changing own-task authority 1ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > denial and exact60-second timeout settle once, never install a grant, and reject late clicks 1ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > command cancellation removes only its prompt, and a run ending removes both grants and its remaining prompts 0ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > scope changes invalidate both pending requests and existing grants without persisting or reviving them 0ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > returns detached state copies, so mutating renderer snapshots cannot upgrade a grant 0ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > honors an explicit user mode choice while retaining the Agent requested mode in the audit 0ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > fails closed when audit storage fails before presenting or before granting authority 0ms
+ ✓ src/main/core/browser/__tests__/access.test.ts > rechecks run lifetime after a reentrant audit callback and tolerates a failed UI notification 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/business-browser.test.ts > retains the pending approval across an unloaded target and binds it only after successor registration
+AssertionError: expected { …(15) } to match object { status: 'answered', …(1) }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "bound_run_id": "041f9e2a-d6d7-48bd-9fad-23a3b19822df",
+-   "status": "answered",
++   "status": "resolved",
+  }
+
+ ❯ src/main/core/agent/business-browser.test.ts:17:46
+     15|   const successor=f.open();
+     16|   await f.service.bindPending(f.taskId,successor);
+     17|   expect(f.store.request(request.requestId)).toMatchObject({status:'an…
+       |                                              ^
+     18|   expect(f.grants()).toMatchObject([{id:request.requestId,binding:{run…
+     19| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 58 passed (59)
+   Start at  06:04:18
+   Duration  1.87s (transform 665ms, setup 0ms, import 914ms, tests 590ms, environment 0ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

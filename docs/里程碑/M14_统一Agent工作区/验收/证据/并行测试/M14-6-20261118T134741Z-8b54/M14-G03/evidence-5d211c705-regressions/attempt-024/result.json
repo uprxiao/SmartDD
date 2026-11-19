@@ -1,0 +1,169 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-024/runtime-5R2Y8E/home",
+    "at": "2026-11-18T15:22:31.933Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "5d211c705abc36f1b428e1e129c47989c360f667",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a24",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A24 native duplicate yielded one child; early wy_observe did not remove pending result notification",
+      "at": "2026-11-18T15:22:41.080Z",
+      "sameKeyCalls": 2,
+      "oneChild": true,
+      "nativeToolResultObserved": true,
+      "notificationPreserved": true
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015358501,
+      "repeatCall": 1,
+      "scheduledChild": "read-once"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015358609,
+      "repeatCall": 2,
+      "scheduledChild": "read-once"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015358700,
+      "observationCall": true
+    },
+    {
+      "model": "fixture-child-read-once",
+      "kind": "codex",
+      "child": "read-once",
+      "wake": false,
+      "at": 1795015359570,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015359970,
+      "nativeClaimConfirmed": true
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": true,
+      "at": 1795015361015
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"b13015d4-8155-4101-b328-021e4fbff8c5\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    }
+  ],
+  "status": "passed",
+  "pid": 28122,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-024/runtime-5R2Y8E/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-024/runtime-5R2Y8E/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-024/runtime-5R2Y8E/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    28122
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "b13015d4-8155-4101-b328-021e4fbff8c5",
+  "childTaskIds": {
+    "read-once": "801a683d-8b35-431e-b54d-72aa8a9b07ec"
+  },
+  "a24": {
+    "sameKeyCalls": 2,
+    "oneChild": true,
+    "nativeToolResultObserved": true,
+    "notificationPreserved": true
+  },
+  "beforeQuit": [
+    {
+      "taskId": "801a683d-8b35-431e-b54d-72aa8a9b07ec",
+      "title": "Acceptance read-once - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "b13015d4-8155-4101-b328-021e4fbff8c5"
+    },
+    {
+      "taskId": "b13015d4-8155-4101-b328-021e4fbff8c5",
+      "title": "Acceptance parent a24",
+      "status": "completed",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance read-once - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance parent a24",
+      "7cfc5774-7512-4009-861f-bd4c305c91ff",
+      false
+    ]
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 28122,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

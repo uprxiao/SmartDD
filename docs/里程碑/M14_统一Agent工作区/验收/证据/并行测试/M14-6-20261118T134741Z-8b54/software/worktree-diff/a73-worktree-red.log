@@ -1,0 +1,44 @@
+[1118/231351.298020:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1118/231351.624413:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/turn-diffs.test.ts (8 tests | 1 failed | 7 skipped) 384ms
+   × A73 captures a registered linked worktree below the private home while preserving the application data exclusion 383ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/turn-diffs.test.ts > A73 captures a registered linked worktree below the private home while preserving the application data exclusion
+AssertionError: expected { files: [] } to deeply equal { files: [ { …(4) } ] }
+
+- Expected
++ Received
+
+  {
+-   "files": [
+-     {
+-       "added": 1,
+-       "binary": false,
+-       "path": "module/a.txt",
+-       "removed": 1,
+-     },
+-   ],
++   "files": [],
+  }
+
+ ❯ src/main/core/agent/turn-diffs.test.ts:48:19
+     46|   const after=await capture(childId,'registered','after');
+     47|   const changes=await runDiffJob({action:'changes',cwd:childCwd,storag…
+     48|   expect(changes).toEqual({files:[{path:'module/a.txt',binary:false,ad…
+       |                   ^
+     49|   const unrelated=await capture(parentId,'unregistered','before');
+     50|   expect(await git(childCwd,'ls-tree','-r','--name-only',unrelated.com…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  23:13:51
+   Duration  601ms (transform 113ms, setup 0ms, import 140ms, tests 384ms, environment 0ms)
+

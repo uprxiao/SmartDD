@@ -1,0 +1,133 @@
+
+> smartdd@0.1.5 test /private/tmp/willyou-m14-stage6.WRvdST/source
+> node scripts/run-tests.mjs src/main/core/agent src/main/core/capabilities src/main/core/ai src/renderer/features/agent-tasks --maxWorkers=1
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/private/tmp/willyou-m14-stage6.WRvdST/source[39m
+
+ [32m✓[39m src/main/core/agent/delegation-service.test.ts [2m([22m[2m36 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[33m 21766[2mms[22m[39m
+   [33m[2m✓[22m[39m A59 persists one delegated creation record with the selected target and later native binding [33m 1043[2mms[22m[39m
+   [33m[2m✓[22m[39m A20 rejects a delegated input when the target changes while the native owner is being opened [33m 1046[2mms[22m[39m
+   [33m[2m✓[22m[39m A74 does not drain a directory writer while its first turn is preparing [33m 1135[2mms[22m[39m
+   [33m[2m✓[22m[39m A74 does not drain a directory writer while its first turn is registered [33m 1130[2mms[22m[39m
+   [33m[2m✓[22m[39m A19/A24/A32: delegation is durable/idempotent and returns before the child starts; release requires actual exit plus independent drain [33m 2050[2mms[22m[39m
+   [33m[2m✓[22m[39m A24/A31/A32: two children and a new parent input share FIFO; the parent cannot reacquire ahead of either child [33m 1073[2mms[22m[39m
+   [33m[2m✓[22m[39m A66/A68: Git child runs in the mapped host worktree; child result is committed by the host and only its attempt commits are advertised [33m 367[2mms[22m[39m
+   [33m[2m✓[22m[39m A29/A32: native background work outlives the parent turn and retains the write slot until its own terminal event [33m 1041[2mms[22m[39m
+   [33m[2m✓[22m[39m A70: pause intent precedes release; a child result resumes the identical native goal only after its notification turn starts [33m 1050[2mms[22m[39m
+   [33m[2m✓[22m[39m A70: user stop while waiting preserves the result without waking or restoring the goal [33m 1149[2mms[22m[39m
+   [33m[2m✓[22m[39m A70: a different native revision declines automatic recovery and leaves a manual continuation [33m 1065[2mms[22m[39m
+   [33m[2m✓[22m[39m A33: only host-verified read roles run beside a writer; promotion closes read ownership before FIFO write admission [33m 1043[2mms[22m[39m
+   [33m[2m✓[22m[39m A28: terminal child rework is atomic, reuses its native binding, and explicitly clears an earlier stop [33m 1062[2mms[22m[39m
+   [33m[2m✓[22m[39m A67/A70: an active goal still reaches a stable merge check and resumes after a proven merge [33m 453[2mms[22m[39m
+   [33m[2m✓[22m[39m A67: exactly two failed merge rounds produce a persistent needs-attention state without another automatic retry [33m 744[2mms[22m[39m
+   [33m[2m✓[22m[39m P1: another independent task can answer while a related parent and child hand off the same SVN directory [33m 1053[2mms[22m[39m
+   [33m[2m✓[22m[39m G3: Git defaults to serial shared writing, with visible uncommitted input and stable child session on rework [33m 1079[2mms[22m[39m
+   [33m[2m✓[22m[39m P3: stop releases the canceled business reservation from the real directory FIFO [33m 1064[2mms[22m[39m
+   [33m[2m✓[22m[39m P3: revoke releases the canceled business reservation from the real directory FIFO [33m 1061[2mms[22m[39m
+   [33m[2m✓[22m[39m A28/A67: rework before the first result is merged includes the previous unmerged commits in its final range [33m 517[2mms[22m[39m
+ [2m[90m↓[39m[22m src/main/core/agent/live.integration.test.ts [2m([22m[2m2 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m
+[90mstderr[2m | src/renderer/features/agent-tasks/agent-task-view.test.tsx[2m > [22m[2mA26 shows the delegated child’s inherited tier without opening another permission choice
+[22m[39mreact-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next or by passing it via props or context. In monorepo setups, make sure there is only one instance of react-i18next. { code: [32m'NO_I18NEXT_INSTANCE'[39m }
+
+ [32m✓[39m src/renderer/features/agent-tasks/agent-task-view.test.tsx [2m([22m[2m59 tests[22m[2m)[22m[33m 7114[2mms[22m[39m
+   [33m[2m✓[22m[39m SR02：草稿保存被拒时提示一次并保留本地内容 [33m 1532[2mms[22m[39m
+   [33m[2m✓[22m[39m T01：快照修订 1、实际读回修订 2，首次编辑按修订 2 保存 [33m 419[2mms[22m[39m
+   [33m[2m✓[22m[39m T01：分段读取中途草稿更新，重读到修订 2 后首次编辑按修订 2 保存 [33m 422[2mms[22m[39m
+   [33m[2m✓[22m[39m T01：读取期间已编辑，保留本地内容；真实冲突按修订比较，不被静默覆盖并提示 [33m 415[2mms[22m[39m
+   [33m[2m✓[22m[39m M14 A38/A42: a host reference appends at the current draft selection, preserves existing text, saves only the draft and never submits [33m 427[2mms[22m[39m
+   [33m[2m✓[22m[39m M14 A38: publishes an editable reference destination only after reading the saved draft [33m 426[2mms[22m[39m
+   [33m[2m✓[22m[39m F14 pauses autosave on a conflict and keeps local edits until replacing text and attachments is confirmed [33m 854[2mms[22m[39m
+   [33m[2m✓[22m[39m F14 requires another decision if keeping the local draft encounters a newer revision [33m 421[2mms[22m[39m
+   [33m[2m✓[22m[39m F14 refuses to replace the draft if the other version changes after the confirmation opens [33m 423[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-transfer.test.ts [2m([22m[2m29 tests[22m[2m)[22m[33m 4605[2mms[22m[39m
+   [33m[2m✓[22m[39m legacy secret env is encrypted for transfer and restored only to the new credential reference [33m 557[2mms[22m[39m
+   [33m[2m✓[22m[39m real GCM encrypted export accepts 8 codepoints, has fresh random salt/nonce, wrong password does not mutate, correct password imports Key [33m 1105[2mms[22m[39m
+   [33m[2m✓[22m[39m tampered GCM ciphertext refuses without mutation; foreign project-format envelope is rejected before import [33m 836[2mms[22m[39m
+   [33m[2m✓[22m[39m encrypted import secret failure rolls back earlier Provider Keys and profiles, preserving original credentials [33m 560[2mms[22m[39m
+   [33m[2m✓[22m[39m decrypted Key cannot reach preview via provider name, agent name or endpoint field echo [33m 549[2mms[22m[39m
+   [33m[2m✓[22m[39m disposal during async unlock invalidates pending result and never imports [33m 570[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/manual-terminal.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 4082[2mms[22m[39m
+     [33m[2m✓[22m[39m 代码块送入终端输入行：括号粘贴整段送入、不带回车；未开启括号粘贴时拒绝多行 [33m 4080[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/git-workspaces.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 2222[2mms[22m[39m
+   [33m[2m✓[22m[39m A67: unrelated same-title commits fail, ancestor merge and patch-equivalent cherry-pick pass, in-progress state is resolved through Git [33m 457[2mms[22m[39m
+   [33m[2m✓[22m[39m A67: a resolved -x pick proves provenance while unfinished linked-worktree cherry-pick and marker/branch errors fail closed [33m 563[2mms[22m[39m
+   [33m[2m✓[22m[39m A66: the actual installer materializes a local dependency inside the new worktree, with an isolated offline cache [33m 590[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/agent-task-service.test.ts [2m([22m[2m63 tests[22m[2m)[22m[33m 2477[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/turn-diffs.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 2418[2mms[22m[39m
+   [33m[2m✓[22m[39m A65/A73: real Git snapshots preserve HEAD and the user index, include unstaged/deleted/binary files, and never follow outside symlink bytes [33m 486[2mms[22m[39m
+   [33m[2m✓[22m[39m A73 captures a registered linked worktree below the private home while preserving the application data exclusion [33m 594[2mms[22m[39m
+   [33m[2m✓[22m[39m A73: incremental stat reuse still detects same-size edits with restored mtime, and rejects tracked files whose parent has become an outside symlink [33m 521[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/project-resources.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 1438[2mms[22m[39m
+   [33m[2m✓[22m[39m G2 reclaims the oldest eligible archived shadow snapshot before active history and retains a read lease [33m 468[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/capability-service.test.ts [2m([22m[2m26 tests[22m[2m)[22m[33m 940[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-runtime.test.ts [2m([22m[2m27 tests[22m[2m)[22m[33m 821[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/skill-projection.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 773[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/profile-tester.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 983[2mms[22m[39m
+     [33m[2m✓[22m[39m times out, kills the process and cleans up its directory [33m 813[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/resource-execution.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 875[2mms[22m[39m
+     [33m[2m✓[22m[39m uses passphrase authentication against the selected loopback server [33m 334[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/capability-registry.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 696[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/switching.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 599[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/task-runtime.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 506[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/provider-magpie.test.ts [2m([22m[2m27 tests[22m[2m)[22m[33m 490[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/provider-setup.integration.test.ts [2m([22m[2m29 tests[22m[2m)[22m[33m 477[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-service.test.ts [2m([22m[2m26 tests[22m[2m)[22m[33m 451[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/provider-service.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 403[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/agent-run-service.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 1087[2mms[22m[39m
+     [33m[2m✓[22m[39m A05 closes only old native nodes confirmed gone by their precise launch-group identity [33m 780[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/host-business-requests.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 252[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-tools.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 273[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/ai-profile-service.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 294[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/profile-health.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 209[2mms[22m[39m
+ [32m✓[39m src/renderer/features/agent-tasks/agent-model-picker.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 118[2mms[22m[39m
+ [32m✓[39m src/renderer/features/agent-tasks/workspace-panels.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 141[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-migration.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 145[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/drivers/codex-app-server.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 117[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/business-browser.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 78[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/message-links.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/runner-detect.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 244[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/directory-queue.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-runtime.legacy-closure.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 78[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-native-state.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/drivers/claude-sdk.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/controller.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/provider-client.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/discovery.test.ts [2m([22m[2m50 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/image-launch.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/managed-skill-links.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/codex-plugin-discovery.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/discovery.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/live-output.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/file-search.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/mcp-projection.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/attachments.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/profile-launch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-launch-files.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/renderer/features/agent-tasks/agent-timeline.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-transfer-controller.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/mcp-source.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/codex-global-config.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-launch-plan.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/timeline.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/bridge-cleanup.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/capabilities-permissions.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/main/core/agent/host-cli-command.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/legacy-permission-overlay.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/agent-run-state.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/renderer/features/agent-tasks/composer-menu.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/main/core/capabilities/managed-skill-links-security.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/zshrc-import.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/health-classify.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/renderer/features/agent-tasks/home-selection.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m src/main/core/ai/codex-model-catalog.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [2m[90m↓[39m[22m src/main/core/agent/native-history.integration.test.ts [2m([22m[2m3 tests[22m[2m | [22m[33m3 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m src/main/core/agent/owned-command.integration.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m src/main/core/capabilities/cli-smoke.test.ts [2m([22m[2m2 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m
+ [32m✓[39m src/renderer/features/agent-tasks/agent-terminal.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 37[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m67 passed[39m[22m[2m | [22m[33m4 skipped[39m[90m (71)[39m
+[2m      Tests [22m [1m[32m918 passed[39m[22m[2m | [22m[33m9 skipped[39m[90m (927)[39m
+[2m   Start at [22m 06:56:10
+[2m   Duration [22m 69.14s[2m (transform 1.19s, setup 0ms, import 4.96s, tests 58.03s, environment 998ms)[22m
+

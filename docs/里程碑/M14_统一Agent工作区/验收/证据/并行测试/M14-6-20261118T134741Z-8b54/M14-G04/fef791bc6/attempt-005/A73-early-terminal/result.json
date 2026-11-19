@@ -1,0 +1,103 @@
+{
+  "sourceCommit": "fef791bc65cc7e82d1b83606a26b67714e99328d",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "fixtures/archived-links.json": "f74296c9c404e9a0f6286bff9e41d890ab12155d8b6afade2cfc5a9666ea97c3",
+    "fixtures/normal.pdf": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "0bea10f0c2b22d38b6b777d22f82e0872ff05712f37f2db0a3ed18d56e166c62"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-18T14:59:47.284Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.12",
+  "cases": {
+    "A73-early-terminal": {
+      "status": "partial",
+      "passed": [
+        "实际首页在启动回执前接受关闭意图，真实收到回执后才收起抽屉"
+      ],
+      "missing": [
+        "关停真实原生进程的判据以最终 cleanup.json 正常退出和无活跃任务原生确认框为准；受控回执延迟"
+      ],
+      "earlyClose": {
+        "replyHeld": true,
+        "readyBeforeClose": false,
+        "fixtureProjectId": "f634c7e3-922d-443e-bc16-9102dd454312",
+        "closingBeforeRelease": true
+      }
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-18T14:59:55.278Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-18T14:59:55.286Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-18T14:59:55.300Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-18T14:59:55.926Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"7e6b7827-05fa-4d18-99a0-4ed0f525a235\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-18T14:59:55.942Z",
+      "selector": "[data-testid=\"nav-new-task\"]",
+      "x": 171.5,
+      "y": 111.5
+    },
+    {
+      "at": "2026-11-18T14:59:55.965Z",
+      "selector": ".agent-home-panels button[title^=\"底部终端抽屉\"]",
+      "x": 1406,
+      "y": 70
+    },
+    {
+      "at": "2026-11-18T14:59:55.994Z",
+      "selector": "[data-testid=\"agent-terminal\"] button[title=\"关闭终端\"]",
+      "x": 1419.5,
+      "y": 889.5
+    }
+  ],
+  "model": [],
+  "page": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-005/A73-early-terminal/home",
+    "at": "2026-11-18T14:59:48.764Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 14107,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-005/A73-early-terminal/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-005/A73-early-terminal/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-005/A73-early-terminal/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:63880/fad745aa-af8d-43a6-8c1f-13e210f16685\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:63880/fad745aa-af8d-43a6-8c1f-13e210f16685\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:63870/devtools/browser/1b02a094-860b-4263-b1c5-221a66548c29\n(node:14107) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "modelFailures": [],
+  "finishedAt": "2026-11-18T14:59:56.547Z"
+}

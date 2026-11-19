@@ -1,0 +1,90 @@
+{
+  "caseId": "M14-A43",
+  "scenario": "late-edit",
+  "commit": "333b163e5a16c8d082cca245ea0a6bc9f4a7fc36",
+  "asar": "a0bc26dce5dd81cda963f0b32791efb60d287e62141c3bf6e2e2639bc99b083a",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "actions": [
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "type": "insertText",
+      "text": "A43_FIRST_REQUEST_late-edit"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-launch\"]",
+      "x": 1206,
+      "y": 851
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "type": "insertTextWhileAckHeld",
+      "text": "A43_LATE_EDIT_SHOULD_REMAIN",
+      "editorValue": "A43_FIRST_REQUEST_late-edit\nA43_LATE_EDIT_SHOULD_REMAIN"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=nav-home]",
+      "x": 105,
+      "y": 21
+    }
+  ],
+  "responses": [
+    {
+      "at": "2026-11-18T18:19:50.220Z",
+      "id": "rcbb11a2e-5866-4061-b097-89a21db743d4",
+      "model": "m14-fixture-a43-home",
+      "marker": "A43_FIRST_REQUEST_late-edit"
+    }
+  ],
+  "findings": [
+    {
+      "case": "first send late ACK erased latest home text",
+      "expectedLatest": "A43_LATE_EDIT_SHOULD_REMAIN",
+      "editorBeforeAck": "A43_FIRST_REQUEST_late-edit\nA43_LATE_EDIT_SHOULD_REMAIN",
+      "observed": ""
+    }
+  ],
+  "scope": "True packaged home UI and native local Codex. One precise original IPC receipt gated or lost after original acceptance.",
+  "status": "failed-assertions",
+  "identity": [
+    true,
+    55151,
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-062/runtime-HnHpvt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-062/runtime-HnHpvt/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-062/runtime-HnHpvt/data"
+  ],
+  "editorBeforeAck": "A43_FIRST_REQUEST_late-edit\nA43_LATE_EDIT_SHOULD_REMAIN",
+  "ipc": [
+    {
+      "taskId": "074a5495-2bb3-483f-a2f4-05a46057ff65",
+      "clientInputId": "in-7a1c04309d5341f092d863476d5147c9",
+      "startedAt": 1795025989287,
+      "receipt": {
+        "turnId": "a4a133ef-f235-4e67-a9ec-9dd5a478ed0e",
+        "duplicate": false,
+        "status": "accepted"
+      },
+      "acceptedAt": 1795025989289,
+      "deliveredAt": 1795025989427,
+      "releaseCount": 1
+    }
+  ],
+  "exit": {
+    "pid": 55151,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

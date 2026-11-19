@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/agent/drivers/codex-app-server.test.ts (30 tests | 1 failed | 28 skipped) 9ms
+     × 发送即停止：原生开始信号到达后立即中断一次 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/drivers/codex-app-server.test.ts > Codex app-server 驱动 > 发送即停止：原生开始信号到达后立即中断一次
+AssertionError: expected [ { id: 5, …(2) }, …(2) ] to deeply equal [ ObjectContaining{…} ]
+
+- Expected
++ Received
+
+@@ -5,6 +5,22 @@
+      "params": {
+        "threadId": "thr-1",
+        "turnId": "turn-9",
+      },
+    },
++   {
++     "id": 6,
++     "method": "turn/interrupt",
++     "params": {
++       "threadId": "thr-1",
++       "turnId": "turn-9",
++     },
++   },
++   {
++     "id": 7,
++     "method": "turn/interrupt",
++     "params": {
++       "threadId": "thr-1",
++       "turnId": "turn-9",
++     },
++   },
+  ]
+
+ ❯ src/main/core/agent/drivers/codex-app-server.test.ts:220:44
+    218|     server.notify('turn/completed', { turn: { id: 'turn-9', status: 'i…
+    219|     await until(() => events.some(e => e.type === 'turn.completed'));
+    220|     expect(server.calls('turn/interrupt')).toEqual([expect.objectConta…
+       |                                            ^
+    221|     expect(events.find(e => e.type === 'turn.completed')).toMatchObjec…
+    222|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 28 skipped (30)
+   Start at  10:18:06
+   Duration  159ms (transform 69ms, setup 0ms, import 80ms, tests 9ms, environment 0ms)
+

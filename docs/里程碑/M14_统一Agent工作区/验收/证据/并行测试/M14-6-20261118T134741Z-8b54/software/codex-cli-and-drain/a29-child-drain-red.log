@@ -1,0 +1,65 @@
+[1119/000203.450477:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/000203.874870:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/agent-run-service.test.ts (17 tests | 2 failed | 15 skipped) 63ms
+     × 父回合停止后，继续等待原生子收口或由用户强制停止（completed） 39ms
+     × 父回合停止后，继续等待原生子收口或由用户强制停止（forced） 23ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/agent-run-service.test.ts > 运行服务 > 父回合停止后，继续等待原生子收口或由用户强制停止（completed）
+AssertionError: expected null to deeply equal { …(4) }
+
+- Expected:
+{
+  "closing": false,
+  "forceAt": 1795017734421,
+  "requestedAt": 1795017724421,
+  "runId": "bf78cc94-2e03-43be-93cd-765ee8b44102",
+}
+
++ Received:
+null
+
+ ❯ src/main/core/agent/agent-run-service.test.ts:197:47
+    195|     const stop = service.stopProgress(base.taskId)!;
+    196|     native.emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status…
+    197|     expect(service.stopProgress(base.taskId)).toEqual(stop);
+       |                                               ^
+    198|     expect(service.nativeBusy(h.runId)).toBe(true);
+    199|     expect(native.closed).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/main/core/agent/agent-run-service.test.ts > 运行服务 > 父回合停止后，继续等待原生子收口或由用户强制停止（forced）
+AssertionError: expected null to deeply equal { …(4) }
+
+- Expected:
+{
+  "closing": false,
+  "forceAt": 1795017734448,
+  "requestedAt": 1795017724448,
+  "runId": "4a32df44-fbbf-4a9b-a363-fda32f2a6142",
+}
+
++ Received:
+null
+
+ ❯ src/main/core/agent/agent-run-service.test.ts:197:47
+    195|     const stop = service.stopProgress(base.taskId)!;
+    196|     native.emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status…
+    197|     expect(service.stopProgress(base.taskId)).toEqual(stop);
+       |                                               ^
+    198|     expect(service.nativeBusy(h.runId)).toBe(true);
+    199|     expect(native.closed).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 skipped (17)
+   Start at  00:02:03
+   Duration  621ms (transform 354ms, setup 0ms, import 430ms, tests 63ms, environment 0ms)
+

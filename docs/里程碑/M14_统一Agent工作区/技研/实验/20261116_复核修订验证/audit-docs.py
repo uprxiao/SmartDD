@@ -41,7 +41,14 @@ check('R01-R13 each have one current definition',all(len(re.findall(r'^### M14-R
 casefile=(b/'验收/测试用例.md').read_text();ledger=(b/'验收/执行与缺陷记录.md').read_text()
 cases=re.findall(r'^### (M14-A\d+)',casefile,re.M);executed=re.findall(r'^### (M14-A\d+)',ledger,re.M)
 check('case IDs unique and match execution ledger',len(cases)==len(set(cases)) and set(cases)==set(executed),{'cases':len(cases)})
-check('no product pass prefilled','- 状态：通过' not in ledger and '整体通过率 0%' in ledger)
+execution_rows=re.findall(r'^### (M14-A\d+)\n\n(.*?)(?=^#{2,3} |\Z)',ledger,re.M|re.S)
+states=[re.search(r'^- 状态：(通过|失败|未执行|阻塞|范围外)(?=[。（])',row,re.M) for _,row in execution_rows]
+summary=re.search(r'当前适用用例 (\d+) 条；通过 (\d+)、失败 (\d+)、未执行 (\d+)、阻塞 (\d+)；范围外 (\d+) 条',ledger)
+counts=[sum(state is not None and state[1]==name for state in states) for name in ('通过','失败','未执行','阻塞','范围外')]
+pass_evidence=all(re.search(r'^- 证据／缺陷：.*\]\(证据/并行测试/[^)]+\)',row,re.M)
+                  for (_,row),state in zip(execution_rows,states) if state is not None and state[1]=='通过')
+check('execution totals match and product passes link to packaged evidence',len(states)==len(cases) and all(states)
+      and summary is not None and list(map(int,summary.groups()))==[sum(counts[:4]),*counts] and pass_evidence)
 report=(b/'技研/复核_20261116/复核报告.md').read_text()
 section=report.split('## 7. 用户已确认的决定（2026-11-16）\n',1)[1].split('\n## 8.',1)[0]
 decisions={

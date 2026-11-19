@@ -1,0 +1,305 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-014/runtime-v6uoy4/home",
+    "at": "2026-11-18T14:55:25.952Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "4d14684804f5d43f71514ab6b03140489a38a01d",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "git-codex-modes",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A30 and A33 mode split observed in packaged App",
+      "at": "2026-11-18T14:55:33.776Z",
+      "queued": "2f9494d6-e066-4bf8-8844-70e5672b2391",
+      "readonly": "f7604581-ee80-4bc7-9552-7786468c4f8a",
+      "parentBusy": true
+    },
+    {
+      "label": "A66 branch created at initial HEAD under isolated home, dirty parent omitted",
+      "at": "2026-11-18T14:55:33.799Z",
+      "branch": "main_willyou_acceptance-branch---isolated-delegation-workspac",
+      "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-014/runtime-v6uoy4/home/.willyou/worktrees/m14-g03-git-codex-modes-bdb6f3/main_willyou_acceptance-branch---isolated-delegation-workspac",
+      "head": "91a7bc8175e37922807bca2d58cfb56652f99ac7"
+    },
+    {
+      "label": "A74 lineage visible in running parent and child, navigation preserves selection, X closes",
+      "at": "2026-11-18T14:55:34.130Z",
+      "lineageText": "任务关系 · 3\n主任务 · Acceptance parent git-codex-modes\nAcceptance writer - isolated delegation workspace\nFixture claude\n共用目录 · 写入队列\n排队中\nAcceptance reader - isolated delegation workspace\nFixture codex\n共用目录 · 只读并行\n工作中\nAcceptance branch - isolated delegation workspace\nFixture claude\n工作副本 · main_willyou_acceptance-branch---isolated-delegation-workspac\n工作中\n目录写入队列\n当前无人持有写入权\nAcceptance writer - isolated delegation workspace\n排队中\nGit 工作副本\nmain_willyou_acceptance-branch---isolated-delegation-workspac\n工作中"
+    },
+    {
+      "label": "A26 two concurrent Claude children ask the same question and each receives only its distinct selected answer",
+      "at": "2026-11-18T14:55:36.905Z",
+      "choices": {
+        "writer": "G03_OPTION_ONE",
+        "branch": "G03_OPTION_TWO"
+      }
+    },
+    {
+      "label": "A77 final shared writer receives directive to reread files before modifying",
+      "at": "2026-11-18T14:55:39.478Z"
+    },
+    {
+      "label": "A19 actual MCP shared and worktree child results delivered; parent woke",
+      "at": "2026-11-18T14:55:39.494Z"
+    },
+    {
+      "label": "A74 opens completed child from timeline and auto opens lineage",
+      "at": "2026-11-18T14:55:39.649Z"
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795013731999,
+      "scheduledChild": "writer"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795013732159,
+      "scheduledChild": "reader"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795013732255,
+      "scheduledChild": "branch"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795013732401
+    },
+    {
+      "model": "fixture-child-reader",
+      "kind": "codex",
+      "child": "reader",
+      "wake": false,
+      "at": 1795013733287,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-child-branch",
+      "kind": "claude",
+      "child": "branch",
+      "wake": false,
+      "at": 1795013733725,
+      "reReadPrompt": false,
+      "childQuestionSent": true
+    },
+    {
+      "model": "fixture-child-writer",
+      "kind": "claude",
+      "child": "writer",
+      "wake": false,
+      "at": 1795013736097,
+      "reReadPrompt": true,
+      "childQuestionSent": true
+    },
+    {
+      "model": "fixture-child-writer",
+      "kind": "claude",
+      "child": "writer",
+      "wake": false,
+      "at": 1795013736407,
+      "reReadPrompt": true,
+      "choice": "G03_OPTION_ONE"
+    },
+    {
+      "model": "fixture-child-branch",
+      "kind": "claude",
+      "child": "branch",
+      "wake": false,
+      "at": 1795013736815,
+      "reReadPrompt": false,
+      "choice": "G03_OPTION_TWO"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": true,
+      "at": 1795013737549
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": true,
+      "at": 1795013738462
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "codex",
+      "wake": true,
+      "at": 1795013739400
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"1d60fad3-0c72-4847-983f-196ace973c5e\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-open",
+      "text": "Acceptance reader - isolated delegation workspace",
+      "x": 1269.5,
+      "y": 301.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-open",
+      "text": "主任务 · Acceptance parent git-codex-modes",
+      "x": 1287.5,
+      "y": 110
+    },
+    {
+      "selector": ".agent-lineage [aria-label=\"收起任务关系\"]",
+      "text": null,
+      "x": 1408,
+      "y": 74
+    },
+    {
+      "selector": ".agent-request .agent-form-q label",
+      "text": "G03_OPTION_ONE",
+      "x": 864,
+      "y": 679.359375
+    },
+    {
+      "selector": ".agent-request button",
+      "text": "提交回答",
+      "x": 1190,
+      "y": 814.25
+    },
+    {
+      "selector": ".agent-request .agent-form-q label",
+      "text": "G03_OPTION_TWO",
+      "x": 864,
+      "y": 730.453125
+    },
+    {
+      "selector": ".agent-request button",
+      "text": "提交回答",
+      "x": 1190,
+      "y": 814.25
+    },
+    {
+      "selector": ".agent-summary-children .agent-child-open",
+      "text": "Acceptance reader - isolated delegation workspace",
+      "x": 864,
+      "y": 629.640625
+    }
+  ],
+  "status": "passed",
+  "pid": 91137,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-014/runtime-v6uoy4/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-014/runtime-v6uoy4/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-014/runtime-v6uoy4/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    91137
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "beforeQuit": [
+    {
+      "taskId": "24738277-6de1-4cf7-bf09-cfde6df79f00",
+      "title": "Acceptance branch - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "1d60fad3-0c72-4847-983f-196ace973c5e"
+    },
+    {
+      "taskId": "f7604581-ee80-4bc7-9552-7786468c4f8a",
+      "title": "Acceptance reader - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "1d60fad3-0c72-4847-983f-196ace973c5e"
+    },
+    {
+      "taskId": "2f9494d6-e066-4bf8-8844-70e5672b2391",
+      "title": "Acceptance writer - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "1d60fad3-0c72-4847-983f-196ace973c5e"
+    },
+    {
+      "taskId": "1d60fad3-0c72-4847-983f-196ace973c5e",
+      "title": "Acceptance parent git-codex-modes",
+      "status": "completed",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance branch - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance reader - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance writer - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance parent git-codex-modes",
+      "d0207b19-9068-4dac-be18-c7bba7162389",
+      false
+    ]
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 91137,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

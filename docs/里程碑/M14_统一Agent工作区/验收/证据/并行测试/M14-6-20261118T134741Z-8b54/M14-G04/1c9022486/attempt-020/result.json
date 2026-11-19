@@ -1,0 +1,403 @@
+{
+  "sourceCommit": "1c9022486b5425bd8a092e99506b0c99aa6a81e0",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "fixtures/archived-links.json": "f74296c9c404e9a0f6286bff9e41d890ab12155d8b6afade2cfc5a9666ea97c3",
+    "fixtures/normal.pdf": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "6ea0906fe3d56d93d39b42be6d9458fc99458707bdecd0a54115fcfc637d4604"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-18T16:06:19.438Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.12",
+  "cases": {
+    "A64-scope-plugin": {
+      "status": "pass",
+      "passed": [
+        "原旧库启动后，通过首页实际创建同项目新任务；原生邮件请求记下任务、绑定、运行及代数，经实际批准只保存本地草稿",
+        "原库旧 PTY 与新任务身份组合未获得邮件插入授权，网页 scope 的多余旧 PTY 参数拒绝且无新页",
+        "实际切换 Provider 后，新绑定调用本机外部只读插件并取得原进程回执",
+        "同一任务新绑定通过本机原生 browser 调用请求观察，真实批准后授权绑定新 run"
+      ],
+      "missing": [],
+      "pluginFixture": {
+        "directory": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-020/plugin-package",
+        "files": {
+          ".willyou-plugin/plugin.json": "18149c920a8c0346f6891e8e68bbf84c704ce5ebe55fa2737f5090039fcf58e2",
+          "schemas/input.json": "1644a9776b94f257e85c32870309803016741f0dd592d6b0ca3d2810f401d7f8",
+          "schemas/output.json": "e88ac391350142fc3149a608403f50302a05f399e26502ede8622fdf7482282a",
+          "runtime/main.mjs": "75ceb1d7405cdc43c9b7950ccdf7d2a6830cd892f74c91788e96cff70253ba56"
+        },
+        "installedHash": "53c5614a7e9f129c34ad33ab3d91c310e1abd408c22a0baab1dc794c7cc41de4"
+      },
+      "mailOrigin": {
+        "taskId": "0c7525ec-f107-4afb-bf0d-6c052828e4a8",
+        "bindingId": "cacb673f-1771-4c20-a424-0e060e0fdf75",
+        "runId": "2a4a4708-8e88-4a36-bc31-e7021060d63d",
+        "generation": 1,
+        "requestId": "0005ee53-054e-4e5a-a490-1803eb1ab36d"
+      },
+      "localMailDraft": {
+        "id": "9dabe0a2-f73e-45e6-bc65-82668e6ec802",
+        "revision": 1,
+        "contentHash": "be8984758a488cefcd12d0b04e9ec573f419c61699dbe8372780ea9e27f6b707"
+      },
+      "scopeChecks": {
+        "legacy-pty": {
+          "status": "passed"
+        },
+        "plugin": {
+          "status": "passed"
+        },
+        "browser": {
+          "status": "passed"
+        }
+      },
+      "legacyPtyControls": {
+        "oldPty": "a64-old-pty",
+        "mailDenied": "CAPABILITY_UNAVAILABLE",
+        "browserStrictInputRejected": true
+      },
+      "pluginToolReply": "Wall time: 0.6149 seconds\nOutput:\n{\"label\":\"isolated local scope marker\",\"status\":\"A64_LOCAL_PLUGIN_RUNTIME_RESULT\"}",
+      "localPluginNative": {
+        "appId": "a64-scope-fixture",
+        "runId": "d1997d11-5225-45ee-81ce-15c072c4bb38",
+        "bindingId": "0b2b91c7-05d2-436a-bc73-64986f4fc824",
+        "generation": 1,
+        "markerSeen": true
+      },
+      "browserOrigin": {
+        "taskId": "0c7525ec-f107-4afb-bf0d-6c052828e4a8",
+        "bindingId": "0b2b91c7-05d2-436a-bc73-64986f4fc824",
+        "runId": "d1997d11-5225-45ee-81ce-15c072c4bb38",
+        "generation": 1,
+        "requestId": "9f771a32-da9a-4e77-8753-04ccb7ed46e0"
+      },
+      "browserGrant": {
+        "id": "9f771a32-da9a-4e77-8753-04ccb7ed46e0",
+        "runId": "d1997d11-5225-45ee-81ce-15c072c4bb38",
+        "mode": "observe"
+      },
+      "browserNativeScope": {
+        "authorizedPageMarker": true,
+        "legacyPtyRejected": true
+      }
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-18T16:06:27.110Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-18T16:06:27.161Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-18T16:06:27.174Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-18T16:06:28.116Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"cb7168d5-34e3-4931-82b9-213f9184d7c2\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-18T16:06:28.127Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T16:06:28.139Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T16:06:29.303Z",
+      "selector": ".agent-assistant:not(.streaming) .agent-md a[data-agent-link]",
+      "label": "浏览器作用域页面",
+      "x": 560,
+      "y": 261.734375
+    },
+    {
+      "at": "2026-11-18T16:06:29.596Z",
+      "selector": "[data-testid=\"nav-apps\"]",
+      "x": 171.5,
+      "y": 173.5
+    },
+    {
+      "at": "2026-11-18T16:06:29.667Z",
+      "selector": ".m13-add",
+      "x": 1304.5,
+      "y": 90
+    },
+    {
+      "at": "2026-11-18T16:06:29.678Z",
+      "selector": ".m10-menu button[role=\"menuitem\"]",
+      "label": "从本地文件夹安装…",
+      "x": 1243.5,
+      "y": 133
+    },
+    {
+      "at": "2026-11-18T16:06:29.847Z",
+      "selector": "dialog[open] .m10-dialog-actions button.m10-button.primary",
+      "label": "安装",
+      "x": 987,
+      "y": 707.046875
+    },
+    {
+      "at": "2026-11-18T16:06:30.291Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-18T16:06:30.302Z",
+      "selector": "[data-testid=\"sidebar-project\"][data-project-id=\"5fe177fc-a046-4d42-aa6e-23d8517976d1\"] .reference-project-name",
+      "x": 154.5,
+      "y": 272
+    },
+    {
+      "at": "2026-11-18T16:06:30.321Z",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 537.9609375,
+      "y": 814
+    },
+    {
+      "at": "2026-11-18T16:06:30.355Z",
+      "selector": "[data-testid=\"home-launch\"]",
+      "x": 769.96875,
+      "y": 852
+    },
+    {
+      "at": "2026-11-18T16:06:31.534Z",
+      "selector": ".agent-request-options button[aria-label*=\"批准\"]:not([aria-label*=\"拒绝\"])",
+      "x": 537.9609375,
+      "y": 700.25
+    },
+    {
+      "at": "2026-11-18T16:06:32.618Z",
+      "selector": ".agent-confirm-choice",
+      "x": 724.921875,
+      "y": 851
+    },
+    {
+      "at": "2026-11-18T16:06:33.029Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 511.484375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T16:06:33.034Z",
+      "selector": ".agent-picker-rail button[aria-label=\"Workspace provider B\"]",
+      "x": 426,
+      "y": 512
+    },
+    {
+      "at": "2026-11-18T16:06:33.046Z",
+      "selector": ".agent-model-row[aria-label=\"m14-workspace-fixture\"]",
+      "x": 614.5,
+      "y": 627.0859375
+    },
+    {
+      "at": "2026-11-18T16:06:33.296Z",
+      "selector": ".agent-task-view textarea",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T16:06:33.316Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 738.921875,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T16:06:35.332Z",
+      "selector": ".agent-task-view textarea",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T16:06:35.351Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 738.921875,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T16:06:36.526Z",
+      "selector": ".agent-request button[aria-label=\"允许观察\"]",
+      "x": 537.9609375,
+      "y": 692
+    },
+    {
+      "at": "2026-11-18T16:06:36.549Z",
+      "selector": ".agent-confirm-choice",
+      "x": 724.921875,
+      "y": 851
+    },
+    {
+      "at": "2026-11-18T16:06:36.566Z",
+      "selector": ".agent-task-view textarea",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T16:06:36.577Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 738.921875,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T16:06:38.225Z",
+      "selector": ".agent-task-view textarea",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T16:06:38.245Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 738.921875,
+      "y": 853
+    }
+  ],
+  "model": [
+    {
+      "caseId": "A64-target",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-mail",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_mail_draft_create_v2",
+      "invoke": true,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-mail",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_mail_draft_create_v2",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-mail",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_mail_draft_create_v2",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-plugin",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_p37eb60cbab6f8379_v1",
+      "invoke": true,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-plugin",
+      "model": "m14-workspace-fixture",
+      "tool": "smartdd_p37eb60cbab6f8379_v1",
+      "invoke": false,
+      "receiptObserved": true
+    },
+    {
+      "caseId": "A64-browser",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": true,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-browser",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-browser-read",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": true,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-browser-read",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": true
+    },
+    {
+      "caseId": "A64-browser-pty",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": true,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-browser-pty",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "A64-browser-pty",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    }
+  ],
+  "page": [
+    {
+      "query": "?A64=1",
+      "hasSyntheticLogin": false
+    }
+  ],
+  "seed": {
+    "source": "A64 legacy migration count 37",
+    "sha256": "692e87161475ad0b19c8f5c4be7162372ee8dfc43a30a4f2f0eee4ebc4f06223",
+    "legacyPty": "a64-old-pty"
+  },
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-020/home",
+    "at": "2026-11-18T16:06:20.891Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 17430,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-020/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-020/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-020/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:64494/fd97e7d8-0934-4011-afe6-55c086124d81\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:64494/fd97e7d8-0934-4011-afe6-55c086124d81\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:64459/devtools/browser/2b8da393-4484-4fbe-af45-9bbdba7b63a2\n(node:17430) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64683:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52085:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64683:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52085:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64683:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52085:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'files.list': FileError: [CANCELLED] 文件请求已取消\n    at AbortSignal.cancel (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:34107:38)\n    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:856:20)\n    at AbortSignal.dispatchEvent (node:internal/event_target:789:26)\n    at runAbort (node:internal/abort_controller:547:10)\n    at abortSignal (node:internal/abort_controller:524:5)\n    at AbortController.abort (node:internal/abort_controller:566:5)\n    at FileService.cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:64683:35)\n    at cancelResource (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52085:45)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677) {\n  code: 'CANCELLED'\n}\nError occurred in handler for 'browser.snapshot': ZodError: [\n  {\n    \"code\": \"unrecognized_keys\",\n    \"keys\": [\n      \"ptyId\"\n    ],\n    \"path\": [],\n    \"message\": \"Unrecognized key: \\\"ptyId\\\"\"\n  }\n]\n    at snapshot (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52362:70)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9234:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677)\n    at Session.emit (node:events:509:28)\n",
+  "rendererErrors": [],
+  "modelFailures": [],
+  "finishedAt": "2026-11-18T16:06:40.080Z"
+}

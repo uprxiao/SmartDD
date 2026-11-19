@@ -1,0 +1,46 @@
+[1118/231438.022909:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1118/231438.185215:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+[1118/231440.390305:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+ ❯ src/main/core/agent/turn-diffs.test.ts (8 tests | 1 failed) 2380ms
+   × A73 captures a registered linked worktree below the private home while preserving the application data exclusion 521ms
+[1118/231442.873844:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/turn-diffs.test.ts > A73 captures a registered linked worktree below the private home while preserving the application data exclusion
+AssertionError: expected { Object (path, added, ...) } to match object { beforeText: 'before\n', …(2) }
+(4 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "afterText": "after
+- ",
+-   "beforeText": "before
+- ",
+-   "patch": StringContaining "+after",
++   "afterText": "",
++   "beforeText": "",
++   "patch": "",
+  }
+
+ ❯ src/main/core/agent/turn-diffs.test.ts:50:17
+     48|   expect(changes).toEqual({files:[{path:'module/a.txt',binary:false,ad…
+     49|   const patch=await runDiffJob({action:'patch',cwd:childCwd,storage:f.…
+     50|   expect(patch).toMatchObject({beforeText:'before\n',afterText:'after\…
+       |                 ^
+     51|   const unrelated=await capture(parentId,'unregistered','before');
+     52|   expect(await git(childCwd,'ls-tree','-r','--name-only',unrelated.com…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 30 passed (31)
+   Start at  23:14:38
+   Duration  7.23s (transform 377ms, setup 0ms, import 686ms, tests 6.31s, environment 0ms)
+

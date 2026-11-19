@@ -1,0 +1,163 @@
+{
+  "sourceCommit": "1c9022486b5425bd8a092e99506b0c99aa6a81e0",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2",
+    "fixtures/archived-links.json": "f74296c9c404e9a0f6286bff9e41d890ab12155d8b6afade2cfc5a9666ea97c3",
+    "fixtures/normal.pdf": "b778a3850cabaf01dfd8bb6e684781ccbb408d890b556c4f4e8506ea46a51f80"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "6ea0906fe3d56d93d39b42be6d9458fc99458707bdecd0a54115fcfc637d4604"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-18T16:56:32.399Z",
+  "layer": "A / native Codex transport against synthetic loopback response",
+  "plan": "A1.12",
+  "cases": {
+    "A79-archived-project": {
+      "status": "pass",
+      "passed": [
+        "真实任务的附件发送后冻结；归档任务及所属项目后，设置页仍分组显示，已归档任务只读历史保留附件且私有副本逐字节完整"
+      ],
+      "missing": [],
+      "frozenBeforeArchive": {
+        "decodedName": "archive-fixture.png",
+        "files": [
+          {
+            "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-028/data/agent-attachments/frozen-4f5560cc-93fb-461d-b5fb-a410fac3666a/archive-fixture.png",
+            "sha": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+          }
+        ]
+      },
+      "attachment": {
+        "copies": [
+          {
+            "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-028/data/agent-attachments/frozen-4f5560cc-93fb-461d-b5fb-a410fac3666a/archive-fixture.png",
+            "sha": "327cd4054b15ed0249589f896e21d6d03c05e6ce148b97dde334fdbe368d06b5"
+          }
+        ],
+        "renderedHistory": true
+      }
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-18T16:56:38.797Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-18T16:56:38.806Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-18T16:56:38.834Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-18T16:56:39.431Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"1df64468-b23d-438d-94d4-6b5c9de58d3c\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-18T16:56:39.456Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-18T16:56:39.478Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-18T16:56:40.727Z",
+      "selector": ".agent-task-head button[title=\"更多\"]",
+      "x": 1364,
+      "y": 65.5
+    },
+    {
+      "at": "2026-11-18T16:56:40.739Z",
+      "selector": "[data-testid=\"agent-archive\"]",
+      "x": 1353,
+      "y": 146.5
+    },
+    {
+      "at": "2026-11-18T16:56:41.063Z",
+      "selector": "[data-testid=\"sidebar-project\"][data-project-id=\"0ebc2032-1ed9-41ad-b5e7-bf04c4c0af4a\"] [data-testid=\"sidebar-project-more\"]",
+      "x": 236.5,
+      "y": 272
+    },
+    {
+      "at": "2026-11-18T16:56:41.083Z",
+      "selector": "[data-testid=\"sidebar-project-archive\"]",
+      "x": 408.59999084472656,
+      "y": 421.97499084472656
+    },
+    {
+      "at": "2026-11-18T16:56:41.097Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-18T16:56:41.105Z",
+      "selector": ".settings-nav button.nav-row",
+      "label": "已归档任务",
+      "x": 171.5,
+      "y": 286
+    },
+    {
+      "at": "2026-11-18T16:56:41.250Z",
+      "selector": ".agent-archive-open",
+      "x": 824,
+      "y": 264
+    }
+  ],
+  "model": [
+    {
+      "caseId": "A79-archived-project",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    }
+  ],
+  "page": [],
+  "seed": {
+    "source": "Isolated old task and revision 37; used as sidebar exclusion reference",
+    "sha256": "692e87161475ad0b19c8f5c4be7162372ee8dfc43a30a4f2f0eee4ebc4f06223",
+    "legacyTask": "a64-legacy-task"
+  },
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-028/home",
+    "at": "2026-11-18T16:56:33.737Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 86307,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-028/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-028/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-028/home",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "version": "0.169.0",
+    "kind": "codex"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:65095/281b5f95-0846-4e8a-9a86-c801984bb842\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:65095/281b5f95-0846-4e8a-9a86-c801984bb842\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:65094/devtools/browser/1fa10b87-d9bf-4d21-8059-6751779cadc6\n(node:86307) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\n",
+  "rendererErrors": [],
+  "modelFailures": [],
+  "finishedAt": "2026-11-18T16:56:41.906Z"
+}

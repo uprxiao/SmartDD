@@ -1,0 +1,452 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home",
+    "at": "2026-11-18T15:22:14.721Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "5d211c705abc36f1b428e1e129c47989c360f667",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a80",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A65 child exact nested cwd, root-relative literal path, read-only body and main task isolation",
+      "at": "2026-11-18T15:22:26.135Z",
+      "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home/.willyou/worktrees/m14-g03-a80-4744d8/main_willyou_acceptance-feature-x---isolated-delegation-works/packages/web",
+      "observed": {
+        "turnId": "0dc50718-cd4c-43c9-925c-7b0838f42361",
+        "recordNumber": 1,
+        "status": "complete",
+        "reason": null,
+        "files": [
+          {
+            "path": "packages/web/feature-[x].txt",
+            "added": 1,
+            "removed": 0,
+            "binary": false
+          }
+        ],
+        "filesTotal": 1,
+        "observed": true,
+        "preparing": false,
+        "progress": {
+          "files": 2,
+          "bytes": 25
+        }
+      },
+      "patch": {
+        "path": "packages/web/feature-[x].txt",
+        "added": 1,
+        "removed": 0,
+        "binary": false,
+        "patch": "diff --git a/packages/web/feature-[x].txt b/packages/web/feature-[x].txt\nnew file mode 100644\nindex 0000000..182fc0a\n--- /dev/null\n+++ b/packages/web/feature-[x].txt\n@@ -0,0 +1 @@\n+FEATURE_X\n",
+        "beforeText": "",
+        "afterText": "FEATURE_X\n"
+      },
+      "shownRound": "改动记录 1",
+      "parentFileExcluded": true
+    },
+    {
+      "label": "A80 local packaged A/I: two isolated branches created and independently committed while native parent and unrelated task were active",
+      "at": "2026-11-18T15:22:26.185Z",
+      "pendingParent": true,
+      "unrelatedBusy": true,
+      "baseline": "7525ffb8181e380d7fa879a6d42af95584c866ff",
+      "userHead": "7525ffb8181e380d7fa879a6d42af95584c866ff",
+      "commits": [
+        {
+          "branch": "main_willyou_acceptance-feature-x---isolated-delegation-works",
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home/.willyou/worktrees/m14-g03-a80-4744d8/main_willyou_acceptance-feature-x---isolated-delegation-works",
+          "commit": "31455d1b7765c48e1dbc3fe355bfac45ba710e29",
+          "file": "packages/web/feature-[x].txt"
+        },
+        {
+          "branch": "main_willyou_acceptance-feature-y---isolated-delegation-works",
+          "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home/.willyou/worktrees/m14-g03-a80-4744d8/main_willyou_acceptance-feature-y---isolated-delegation-works",
+          "commit": "ac10eccb3bd529c14e344f9f3a059650fa1cba30",
+          "file": "packages/web/feature-y.txt"
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795015341563
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015342552,
+      "scheduledChild": "feature-x"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015342708,
+      "scheduledChild": "feature-y"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015342855,
+      "nativeCommand": "write parent file",
+      "bothChildrenStarted": true
+    },
+    {
+      "model": "fixture-child-feature-x",
+      "kind": "codex",
+      "child": "feature-x",
+      "wake": false,
+      "at": 1795015343941,
+      "reReadPrompt": false,
+      "nativeCommand": "printf '%s\\n' 'FEATURE_X' > 'feature-[x].txt'"
+    },
+    {
+      "model": "fixture-child-feature-y",
+      "kind": "codex",
+      "child": "feature-y",
+      "wake": false,
+      "at": 1795015344486,
+      "reReadPrompt": false,
+      "nativeCommand": "printf '%s\\n' 'FEATURE_Y' > feature-y.txt"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015344765
+    },
+    {
+      "model": "fixture-child-feature-x",
+      "kind": "codex",
+      "child": "feature-x",
+      "wake": false,
+      "at": 1795015344996,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-child-feature-y",
+      "kind": "codex",
+      "child": "feature-y",
+      "wake": false,
+      "at": 1795015344998,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795015346710
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": true,
+      "at": 1795015347205
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": true,
+      "at": 1795015348280
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"17b73770-3fd3-43bb-8c67-243ac414f727\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"d81208e3-9286-4525-ad1d-71b701eb5f67\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-request [role=\"option\"][aria-label=\"批准\"],.agent-request [role=\"option\"][aria-label=\"批准一次\"]",
+      "text": null,
+      "x": 864,
+      "y": 692
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "x": 1205,
+      "y": 851
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-open",
+      "text": "Acceptance feature-x - isolated delegation workspace",
+      "x": 1287.5,
+      "y": 181.5
+    },
+    {
+      "selector": ".agent-change-card",
+      "text": "feature-[x].txt",
+      "x": 715,
+      "y": 423.46484375
+    },
+    {
+      "selector": ".agent-diff-surface button[title=\"packages/web/feature-[x].txt\"]",
+      "text": null,
+      "x": 898.359375,
+      "y": 150.19921875
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"d81208e3-9286-4525-ad1d-71b701eb5f67\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"17b73770-3fd3-43bb-8c67-243ac414f727\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 738.921875,
+      "y": 853
+    }
+  ],
+  "status": "partial",
+  "pid": 25179,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    25179
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "d81208e3-9286-4525-ad1d-71b701eb5f67",
+  "childTaskIds": {
+    "feature-x": "a04e306a-d4fc-4790-acc3-175b7ff24b4d",
+    "feature-y": "f121ec35-c5d0-4e46-8c1f-eabeefa70db7"
+  },
+  "latestChildDiffRows": [
+    {
+      "turnId": "0dc50718-cd4c-43c9-925c-7b0838f42361",
+      "recordNumber": 1,
+      "status": "complete",
+      "reason": null,
+      "files": [
+        {
+          "path": "packages/web/feature-[x].txt",
+          "added": 1,
+          "removed": 0,
+          "binary": false
+        }
+      ],
+      "filesTotal": 1,
+      "observed": true,
+      "preparing": false,
+      "progress": {
+        "files": 2,
+        "bytes": 25
+      }
+    }
+  ],
+  "a65WorktreeDiff": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home/.willyou/worktrees/m14-g03-a80-4744d8/main_willyou_acceptance-feature-x---isolated-delegation-works/packages/web",
+    "observed": {
+      "turnId": "0dc50718-cd4c-43c9-925c-7b0838f42361",
+      "recordNumber": 1,
+      "status": "complete",
+      "reason": null,
+      "files": [
+        {
+          "path": "packages/web/feature-[x].txt",
+          "added": 1,
+          "removed": 0,
+          "binary": false
+        }
+      ],
+      "filesTotal": 1,
+      "observed": true,
+      "preparing": false,
+      "progress": {
+        "files": 2,
+        "bytes": 25
+      }
+    },
+    "patch": {
+      "path": "packages/web/feature-[x].txt",
+      "added": 1,
+      "removed": 0,
+      "binary": false,
+      "patch": "diff --git a/packages/web/feature-[x].txt b/packages/web/feature-[x].txt\nnew file mode 100644\nindex 0000000..182fc0a\n--- /dev/null\n+++ b/packages/web/feature-[x].txt\n@@ -0,0 +1 @@\n+FEATURE_X\n",
+      "beforeText": "",
+      "afterText": "FEATURE_X\n"
+    },
+    "shownRound": "改动记录 1",
+    "parentFileExcluded": true
+  },
+  "a80": {
+    "pendingParent": true,
+    "unrelatedBusy": true,
+    "baseline": "7525ffb8181e380d7fa879a6d42af95584c866ff",
+    "userHead": "7525ffb8181e380d7fa879a6d42af95584c866ff",
+    "commits": [
+      {
+        "branch": "main_willyou_acceptance-feature-x---isolated-delegation-works",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home/.willyou/worktrees/m14-g03-a80-4744d8/main_willyou_acceptance-feature-x---isolated-delegation-works",
+        "commit": "31455d1b7765c48e1dbc3fe355bfac45ba710e29",
+        "file": "packages/web/feature-[x].txt"
+      },
+      {
+        "branch": "main_willyou_acceptance-feature-y---isolated-delegation-works",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-025/runtime-wjJ8ui/home/.willyou/worktrees/m14-g03-a80-4744d8/main_willyou_acceptance-feature-y---isolated-delegation-works",
+        "commit": "ac10eccb3bd529c14e344f9f3a059650fa1cba30",
+        "file": "packages/web/feature-y.txt"
+      }
+    ],
+    "unrelatedSameRun": true
+  },
+  "beforeQuit": [
+    {
+      "taskId": "f121ec35-c5d0-4e46-8c1f-eabeefa70db7",
+      "title": "Acceptance feature-y - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "d81208e3-9286-4525-ad1d-71b701eb5f67"
+    },
+    {
+      "taskId": "a04e306a-d4fc-4790-acc3-175b7ff24b4d",
+      "title": "Acceptance feature-x - isolated delegation workspace",
+      "status": "completed",
+      "parentTaskId": "d81208e3-9286-4525-ad1d-71b701eb5f67"
+    },
+    {
+      "taskId": "17b73770-3fd3-43bb-8c67-243ac414f727",
+      "title": "M14 isolated independent task",
+      "status": "completed",
+      "parentTaskId": null
+    },
+    {
+      "taskId": "d81208e3-9286-4525-ad1d-71b701eb5f67",
+      "title": "Acceptance parent a80",
+      "status": "working",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance feature-y - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance feature-x - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "M14 isolated independent task",
+      "20cc5ac8-8575-427e-92d5-41f388fdec94",
+      false
+    ],
+    [
+      "Acceptance parent a80",
+      null,
+      false
+    ]
+  ],
+  "cleanupMadeIdle": [
+    "Acceptance parent a80"
+  ],
+  "tasksAfterCleanup": [
+    {
+      "title": "Acceptance feature-y - isolated delegation workspace",
+      "status": "completed"
+    },
+    {
+      "title": "Acceptance feature-x - isolated delegation workspace",
+      "status": "completed"
+    },
+    {
+      "title": "M14 isolated independent task",
+      "status": "completed"
+    },
+    {
+      "title": "Acceptance parent a80",
+      "status": "stopped"
+    }
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 25179,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "cleanupRequired": true
+}

@@ -1,0 +1,98 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App, real Claude MCP pending request, local natural HTTP 401, actual manual approval",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-172/runtime-bSnp8f/home",
+    "at": "2026-11-19T01:49:01.463Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "host-401",
+  "sourceCommit": "4f1d4c0a215820ce9256fce8bdd529986dc0d17b",
+  "asar": "0116ddf8720e421e00f6e3d8d48dbede8a493400eda18ccda34faf45f29fe6f0",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-host-401-packaged.mjs": "f9784e99d5b2487d0d515fcf06712bf3c482ca53215c49cd15dd2f1f035fda20",
+    "a60-prep/provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "a60-prep/pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665",
+    "a60-prep/host-failure-provider.mjs": "a5450b9e33fb1b3f90618366bc64406e7ac26907c79b34afd5548dd6cbb0aa87"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"3223e644-77b6-42a9-ab58-46165cddc029\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795052947019
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795052947157
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795052947161
+    }
+  ],
+  "requests": [],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "failed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-172/runtime-bSnp8f/project",
+    "model": "a60-host-business-auth-failure",
+    "engine": "claude",
+    "expected": "ordinary provider failure, durable host request"
+  },
+  "pid": 57280,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-172/runtime-bSnp8f/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-172/runtime-bSnp8f/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-172/runtime-bSnp8f/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    57280
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "serverError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '<system-reminder>\\n' +\n+   \"Attribution for git commits and pull requests you create from here on (this replaces Claude Code's own earlier attribution guidance, such as a previous copy of this reminder; the user's own instructions about these lines, such as a CLAUDE.md or memory rule, take precedence over this reminder, but do not add attribution lines this reminder leaves out):\\n\" +\n+   '- End git commit messages with:\\n' +\n+   'Co-Authored-By: Claude Code <noreply@anthropic.com>\\n' +\n+   '- End pull request descriptions with:\\n' +\n+   '🤖 Generated with [Claude Code](https://claude.com/claude-code)\\n' +\n+   '</system-reminder>\\n' +\n+   '\\n' +\n+   '[MESSAGE FROM NON-USER SOURCE - NOT USER INPUT]\\n' +\n+   '宿主业务约定：工具返回 awaiting_user 表示请求已持久等待用户，不会超时；不要轮询、重发或在 shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。\\n' +\n+   '\\n' +\n+   'A60_HOST_REQUEST_WARM'\n- 'A60_CREATE_MAIL_DRAFT_THEN_FAIL'\n\n    at Server.handle (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-prep/host-failure-provider.mjs:80:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)",
+  "phase": "warm up the actual installed native executor",
+  "error": "Error: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '<system-reminder>\\n' +\n+   \"Attribution for git commits and pull requests you create from here on (this replaces Claude Code's own earlier attribution guidance, such as a previous copy of this reminder; the user's own instructions about these lines, such as a CLAUDE.md or memory rule, take precedence over this reminder, but do not add attribution lines this reminder leaves out):\\n\" +\n+   '- End git commit messages with:\\n' +\n+   'Co-Authored-By: Claude Code <noreply@anthropic.com>\\n' +\n+   '- End pull request descriptions with:\\n' +\n+   '🤖 Generated with [Claude Code](https://claude.com/claude-code)\\n' +\n+   '</system-reminder>\\n' +\n+   '\\n' +\n+   '[MESSAGE FROM NON-USER SOURCE - NOT USER INPUT]\\n' +\n+   '宿主业务约定：工具返回 awaiting_user 表示请求已持久等待用户，不会超时；不要轮询、重发或在 shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。\\n' +\n+   '\\n' +\n+   'A60_HOST_REQUEST_WARM'\n- 'A60_CREATE_MAIL_DRAFT_THEN_FAIL'\n\n    at Server.handle (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-prep/host-failure-provider.mjs:80:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at until (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-host-401-packaged.mjs:59:35)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-host-401-packaged.mjs:169:19",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nM14 A60 limit isolated\nA60 business request survives failure\n工作中\n设置\nA60 business request survives failure\n工作中\n插件 2\n单 Agent · 开启委派\nA60_HOST_REQUEST_WARM\n工作中 0 秒\n思考中\n请求批准\n完全访问\nFixture claude\na60-host-business-auth-failure\n运行中发送会排队",
+  "stoppedBeforeQuit": [
+    "3223e644-77b6-42a9-ab58-46165cddc029"
+  ],
+  "preQuit": {
+    "at": "2026-11-19T01:49:08.311Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-172/quit-phase.jsonl",
+  "exit": {
+    "pid": 57280,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

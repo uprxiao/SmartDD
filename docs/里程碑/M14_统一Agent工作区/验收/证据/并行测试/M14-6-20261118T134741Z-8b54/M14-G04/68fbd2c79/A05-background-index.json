@@ -1,0 +1,459 @@
+{
+  "caseId": "M14-A05",
+  "commit": "68fbd2c79ea6ab0ea23d12fe4609f05f40dafa16",
+  "asar": "53e7a603168936d8abd8420de2a5a82372c9656f964979cfa7fcce05b03ae396",
+  "status": "尚未通过，保留真实后台执行和恢复反例",
+  "layer": "真实打包 App、真实 Claude Agent SDK 和后台 Bash。推理仅本机合成端点，不计 R。SQLite 只读含原未检查点 WAL。",
+  "released": "归还前独立核对所有精确宿主/原生 PID 和 3425 为空。",
+  "attempts": [
+    {
+      "attempt": "attempt-094",
+      "scenario": "stop",
+      "phase": "stop a foreground turn without stopping existing native background",
+      "findings": [
+        "原生后台运行时，前三轮完成，下一条前台输入持久接受但未派发，实际 CDP 界面仍排队。启动后台的一轮差异一直 capturing，无 after ref。两个后续停止动作尚未执行。",
+        "先释放隔离 Bash 自有门闩，Bash 确实退出。App 正常退出超时，只对本轮 App PID 执行 fallback SIGKILL。稍后原生 Claude 自动退出，无另行信号。"
+      ],
+      "processes": [
+        {
+          "identity": [
+            true,
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/home",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/data",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/home",
+            57264,
+            "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+          ],
+          "hook": {
+            "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/home",
+            "at": "2026-11-18T19:53:11.584Z",
+            "workerInspectorFlagRemoved": true
+          },
+          "rendererErrors": [],
+          "normalExitError": "Error: Isolated App did not finish its normal exit",
+          "fallback": {
+            "pid": 57264,
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        }
+      ],
+      "kernelAfterRelease": {
+        "57264": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "57388": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "58272": {
+          "schema": 1,
+          "state": "stopped"
+        }
+      },
+      "actualRequests": [
+        {
+          "at": "2026-11-18T19:53:17.537Z",
+          "appPid": 57264,
+          "marker": "first",
+          "toolUse": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "foundToolReceipt": null
+        },
+        {
+          "at": "2026-11-18T19:53:17.825Z",
+          "appPid": 57264,
+          "marker": "second",
+          "toolUse": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "foundToolReceipt": null
+        },
+        {
+          "at": "2026-11-18T19:53:18.221Z",
+          "appPid": 57264,
+          "marker": "background",
+          "toolUse": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "foundToolReceipt": null
+        },
+        {
+          "at": "2026-11-18T19:53:18.578Z",
+          "appPid": 57264,
+          "marker": "background",
+          "toolUse": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "foundToolReceipt": {
+            "error": false,
+            "content": "Command running in background with ID: bfd8yn80x. Output is being written to: /private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-094-runtime-wEjSmL-project/3df56d5c-d74f-405e-871e-9d170d1e1746/tasks/bfd8yn80x.output. You will be notified when it completes. To check interim output, use Read on that file path.\nSession cwd remains /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project; directory changes made by the backgrounded command do not apply to subsequent commands."
+          }
+        },
+        {
+          "at": "2026-11-18T19:53:37.148Z",
+          "appPid": 57264,
+          "marker": "background",
+          "toolUse": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "foundToolReceipt": {
+            "error": false,
+            "content": "Command running in background with ID: bfd8yn80x. Output is being written to: /private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-094-runtime-wEjSmL-project/3df56d5c-d74f-405e-871e-9d170d1e1746/tasks/bfd8yn80x.output. You will be notified when it completes. To check interim output, use Read on that file path.\nSession cwd remains /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project; directory changes made by the backgrounded command do not apply to subsequent commands."
+          }
+        }
+      ],
+      "turns": [
+        {
+          "turn_id": "c01f1c40-d298-4418-a846-f5647baeb839",
+          "status": "completed",
+          "native_turn_id": "3df56d5c-d74f-405e-871e-9d170d1e1746:1",
+          "run_id": "6ca2c303-3e53-49a2-9e9b-65190cb00f34",
+          "error_code": null,
+          "marker": "A05_FIRST_PERSISTED_ROUND",
+          "capture": "complete",
+          "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"dev\":\"16777231\",\"ino\":\"362733696\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/data/agent-diffs/cbc3bb7a5364b4886a6007bea524658cd308a3d2493f186866753d3503e8fe49\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"ref\":\"refs/willyou/turns/c01f1c40-d298-4418-a846-f5647baeb839/before\",\"commit\":\"3186a1698a37b33188aa2f87fc4caca0fc297c9c\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}",
+          "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"dev\":\"16777231\",\"ino\":\"362733696\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/data/agent-diffs/cbc3bb7a5364b4886a6007bea524658cd308a3d2493f186866753d3503e8fe49\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"ref\":\"refs/willyou/turns/c01f1c40-d298-4418-a846-f5647baeb839/after\",\"commit\":\"1ecf8941cc67a2891178a175d0e09776a70d6e8c\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}"
+        },
+        {
+          "turn_id": "9e52a39f-f711-4edb-8093-7c377f8617f3",
+          "status": "completed",
+          "native_turn_id": "3df56d5c-d74f-405e-871e-9d170d1e1746:2",
+          "run_id": "6ca2c303-3e53-49a2-9e9b-65190cb00f34",
+          "error_code": null,
+          "marker": "A05_SECOND_PERSISTED_ROUND",
+          "capture": "complete",
+          "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"dev\":\"16777231\",\"ino\":\"362733696\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/data/agent-diffs/cbc3bb7a5364b4886a6007bea524658cd308a3d2493f186866753d3503e8fe49\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"ref\":\"refs/willyou/turns/9e52a39f-f711-4edb-8093-7c377f8617f3/before\",\"commit\":\"e197c9dc62c8a18bd6b353417f512e668c8eefbc\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}",
+          "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"dev\":\"16777231\",\"ino\":\"362733696\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/data/agent-diffs/cbc3bb7a5364b4886a6007bea524658cd308a3d2493f186866753d3503e8fe49\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"ref\":\"refs/willyou/turns/9e52a39f-f711-4edb-8093-7c377f8617f3/after\",\"commit\":\"a55e3186884ca6d428862694f3d009c359112b3b\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}"
+        },
+        {
+          "turn_id": "cfabaa1f-4225-4054-a88e-a6fa2aa550db",
+          "status": "completed",
+          "native_turn_id": "3df56d5c-d74f-405e-871e-9d170d1e1746:3",
+          "run_id": "6ca2c303-3e53-49a2-9e9b-65190cb00f34",
+          "error_code": null,
+          "marker": "A05_BEGIN_NATIVE_BACKGROUND",
+          "capture": "capturing",
+          "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"dev\":\"16777231\",\"ino\":\"362733696\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/data/agent-diffs/cbc3bb7a5364b4886a6007bea524658cd308a3d2493f186866753d3503e8fe49\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-094/runtime-wEjSmL/project\",\"ref\":\"refs/willyou/turns/cfabaa1f-4225-4054-a88e-a6fa2aa550db/before\",\"commit\":\"f9ac9c8882f0b15b92974b92cb6f7f37d2e00426\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}",
+          "after_ref": null
+        },
+        {
+          "turn_id": "4edaeaf7-165b-4804-95c1-4fcaa9149aef",
+          "status": "accepted",
+          "native_turn_id": null,
+          "run_id": null,
+          "error_code": null,
+          "marker": "A05_STOP_ONLY_FOREGROUND_ROUND",
+          "capture": null,
+          "before_ref": null,
+          "after_ref": null
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "6ca2c303-3e53-49a2-9e9b-65190cb00f34",
+          "binding_id": "93fb4166-67d0-4806-aee9-76adf070adfb",
+          "pid": 57388,
+          "process_started_at": "darwin-proc-v1:1795031597:7442",
+          "state": "active",
+          "error_code": null,
+          "ended_at": null
+        }
+      ],
+      "bindings": [
+        {
+          "binding_id": "93fb4166-67d0-4806-aee9-76adf070adfb",
+          "native_id": "3df56d5c-d74f-405e-871e-9d170d1e1746"
+        }
+      ],
+      "rawNodeAndState": [
+        {
+          "item_id": "c742d43e-4ab9-4718-86ec-956cc9e3ea8a",
+          "run_id": "6ca2c303-3e53-49a2-9e9b-65190cb00f34",
+          "node_id": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "type": "subagent_status",
+          "revision": 2,
+          "terminal_state": "completed",
+          "payload": {
+            "state": "completed",
+            "nativeRunId": "0mwmjgts4-c23cdfdc"
+          }
+        },
+        {
+          "item_id": "2c3d2944-71bd-4eec-9432-e525f3c937ba",
+          "run_id": "6ca2c303-3e53-49a2-9e9b-65190cb00f34",
+          "node_id": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "type": "subagent_message",
+          "revision": 1,
+          "terminal_state": "completed",
+          "payload": {
+            "type": "system",
+            "subtype": "task_started",
+            "task_id": "bfd8yn80x",
+            "run_id": "0mwmjgts4-c23cdfdc",
+            "tool_use_id": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+            "description": "Run only this isolated A05 Bash process",
+            "is_backgrounded": true,
+            "task_type": "local_bash",
+            "uuid": "676f4d0b-6164-4c34-8f86-edc4043675f0",
+            "session_id": "3df56d5c-d74f-405e-871e-9d170d1e1746"
+          }
+        },
+        {
+          "item_id": "b4730d33-4ea3-4b2b-8d26-8ea93088c744",
+          "run_id": "6ca2c303-3e53-49a2-9e9b-65190cb00f34",
+          "node_id": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+          "type": "subagent_message",
+          "revision": 1,
+          "terminal_state": "completed",
+          "payload": {
+            "type": "system",
+            "subtype": "task_notification",
+            "task_id": "bfd8yn80x",
+            "run_id": "0mwmjgts4-c23cdfdc",
+            "tool_use_id": "toolu_e62859fc0bf2443e92d7c80e37cd9858",
+            "status": "completed",
+            "output_file": "/private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-094-runtime-wEjSmL-project/3df56d5c-d74f-405e-871e-9d170d1e1746/tasks/bfd8yn80x.output",
+            "summary": "Background command \"Run only this isolated A05 Bash process\" completed (exit code 0)",
+            "uuid": "0ccc606f-71e7-4b20-bfef-5c7a7831b883",
+            "session_id": "3df56d5c-d74f-405e-871e-9d170d1e1746"
+          }
+        }
+      ],
+      "files": [
+        {
+          "path": "attempt-094/01-native-background-after-foreground.png",
+          "sha256": "aff7a49188cbf19e0a928657689fd53bf37688ca5c89bcb1b92e8d4e98e48056"
+        },
+        {
+          "path": "attempt-094/99-failure.png",
+          "sha256": "b27832ea69d05343a6553f83bc1e55b25c940be1f6d37f1f3c2b67a7ed7ebacb"
+        },
+        {
+          "path": "attempt-094/app-57264.log",
+          "sha256": "49de6d35b1dd8dedbdc32ebaf05b50539df8b7f368fb670d13ada7a615bf456c"
+        },
+        {
+          "path": "attempt-094/result.json",
+          "sha256": "31f72f8009eb5faef6a74ab77b21562c8b8ab20de11def3f62f4d467cf666055"
+        },
+        {
+          "path": "attempt-094/source-a05-background-packaged.mjs",
+          "sha256": "007d24d5ae58f8cd6ca68fc2d43c22c895ed13e10a611997b46322a8c050a5c8"
+        }
+      ]
+    },
+    {
+      "attempt": "attempt-095",
+      "scenario": "restart",
+      "phase": "cold restart same userData and reopen original task",
+      "findings": [
+        "原宿主故障终止后原 Claude 和 Bash 仍然活着。重启同一私有数据并确认两个 PID 均退出，run orphaned/HOST_INTERRUPTED，原绑定、前三轮正常历史保留，未自动重发。本轮真正已退出后台仍被持久记为 running/revision 1。",
+        "重启时原任务以带 now 的旧侧栏行出现，未命中新 Agent 行。下一次须从真实设置核对开关后再打开原任务；未执行重启后显式继续。"
+      ],
+      "processes": [
+        {
+          "identity": [
+            true,
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/home",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/data",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/home",
+            59965,
+            "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+          ],
+          "hook": {
+            "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/home",
+            "at": "2026-11-18T19:54:46.515Z",
+            "workerInspectorFlagRemoved": true
+          },
+          "rendererErrors": [],
+          "intentionalCrash": {
+            "pid": 59965,
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        },
+        {
+          "identity": [
+            true,
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/home",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/data",
+            "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/home",
+            61167,
+            "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou"
+          ],
+          "hook": {
+            "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/home",
+            "at": "2026-11-18T19:54:54.750Z",
+            "workerInspectorFlagRemoved": true
+          },
+          "rendererErrors": [],
+          "exit": {
+            "pid": 61167,
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "kernelAfterRelease": {
+        "59965": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "61167": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "60274": {
+          "schema": 1,
+          "state": "stopped"
+        },
+        "61154": {
+          "schema": 1,
+          "state": "stopped"
+        }
+      },
+      "actualRequests": [
+        {
+          "at": "2026-11-18T19:54:52.333Z",
+          "appPid": 59965,
+          "marker": "first",
+          "toolUse": "toolu_b063ce0e5ca9413fbfa374cabbd44ad5",
+          "foundToolReceipt": null
+        },
+        {
+          "at": "2026-11-18T19:54:52.642Z",
+          "appPid": 59965,
+          "marker": "second",
+          "toolUse": "toolu_b063ce0e5ca9413fbfa374cabbd44ad5",
+          "foundToolReceipt": null
+        },
+        {
+          "at": "2026-11-18T19:54:53.004Z",
+          "appPid": 59965,
+          "marker": "background",
+          "toolUse": "toolu_b063ce0e5ca9413fbfa374cabbd44ad5",
+          "foundToolReceipt": null
+        },
+        {
+          "at": "2026-11-18T19:54:53.158Z",
+          "appPid": 59965,
+          "marker": "background",
+          "toolUse": "toolu_b063ce0e5ca9413fbfa374cabbd44ad5",
+          "foundToolReceipt": {
+            "error": false,
+            "content": "Command running in background with ID: bhh4ji79w. Output is being written to: /private/tmp/claude-501/-private-tmp-willyou-m14-stage6-WRvdST-g04-attempt-095-runtime-DjuFV6-project/0420a303-d66a-41b4-876c-5de4e7f6c249/tasks/bhh4ji79w.output. You will be notified when it completes. To check interim output, use Read on that file path.\nSession cwd remains /private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project; directory changes made by the backgrounded command do not apply to subsequent commands."
+          }
+        }
+      ],
+      "turns": [
+        {
+          "turn_id": "99453494-7234-4576-8043-91b1eaa166b3",
+          "status": "completed",
+          "native_turn_id": "0420a303-d66a-41b4-876c-5de4e7f6c249:1",
+          "run_id": "3beffb00-66ec-4cf8-9833-0ecc97d32bb3",
+          "error_code": null,
+          "marker": "A05_FIRST_PERSISTED_ROUND",
+          "capture": "complete",
+          "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"dev\":\"16777231\",\"ino\":\"362736659\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/data/agent-diffs/31f283efe2b1259c569c96c00e9d0a3ed5bdbab3a582bd6dcca7b54cb0115575\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"ref\":\"refs/willyou/turns/99453494-7234-4576-8043-91b1eaa166b3/before\",\"commit\":\"1f5a8395b5e95f5fc36075ab31b55785e246a092\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}",
+          "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"dev\":\"16777231\",\"ino\":\"362736659\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/data/agent-diffs/31f283efe2b1259c569c96c00e9d0a3ed5bdbab3a582bd6dcca7b54cb0115575\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"ref\":\"refs/willyou/turns/99453494-7234-4576-8043-91b1eaa166b3/after\",\"commit\":\"8efca69cf2f63994a8499b780a468eb33b03455b\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}"
+        },
+        {
+          "turn_id": "96c76051-a470-4a9d-9617-9c274eb58bd7",
+          "status": "completed",
+          "native_turn_id": "0420a303-d66a-41b4-876c-5de4e7f6c249:2",
+          "run_id": "3beffb00-66ec-4cf8-9833-0ecc97d32bb3",
+          "error_code": null,
+          "marker": "A05_SECOND_PERSISTED_ROUND",
+          "capture": "complete",
+          "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"dev\":\"16777231\",\"ino\":\"362736659\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/data/agent-diffs/31f283efe2b1259c569c96c00e9d0a3ed5bdbab3a582bd6dcca7b54cb0115575\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"ref\":\"refs/willyou/turns/96c76051-a470-4a9d-9617-9c274eb58bd7/before\",\"commit\":\"3335f107456a27000b7e1f0104d34cca5eb06ab8\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}",
+          "after_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"dev\":\"16777231\",\"ino\":\"362736659\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/data/agent-diffs/31f283efe2b1259c569c96c00e9d0a3ed5bdbab3a582bd6dcca7b54cb0115575\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"ref\":\"refs/willyou/turns/96c76051-a470-4a9d-9617-9c274eb58bd7/after\",\"commit\":\"e430c9532d627e00e2fa26d0f19084905fe1e816\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}"
+        },
+        {
+          "turn_id": "414beed6-05d0-486f-814b-8b1a4a21f8a9",
+          "status": "completed",
+          "native_turn_id": "0420a303-d66a-41b4-876c-5de4e7f6c249:3",
+          "run_id": "3beffb00-66ec-4cf8-9833-0ecc97d32bb3",
+          "error_code": null,
+          "marker": "A05_BEGIN_NATIVE_BACKGROUND",
+          "capture": "incomplete",
+          "before_ref": "{\"cwd\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"dev\":\"16777231\",\"ino\":\"362736659\",\"gitDir\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/data/agent-diffs/31f283efe2b1259c569c96c00e9d0a3ed5bdbab3a582bd6dcca7b54cb0115575\",\"workTree\":\"/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-095/runtime-DjuFV6/project\",\"ref\":\"refs/willyou/turns/414beed6-05d0-486f-814b-8b1a4a21f8a9/before\",\"commit\":\"857c3298ec514d6c91cb9da444ee630892b3008b\",\"tree\":\"ff4a1b95280a1b51ac51d88af71303f5ea2816d1\",\"private\":true}",
+          "after_ref": null
+        }
+      ],
+      "runs": [
+        {
+          "run_id": "3beffb00-66ec-4cf8-9833-0ecc97d32bb3",
+          "binding_id": "3f221f2d-ed19-4c87-bcef-92ccb97b2b7b",
+          "pid": 60274,
+          "process_started_at": "darwin-proc-v1:1795031691:821217",
+          "state": "orphaned",
+          "error_code": "HOST_INTERRUPTED",
+          "ended_at": "2026-11-18T19:54:55.941Z"
+        }
+      ],
+      "bindings": [
+        {
+          "binding_id": "3f221f2d-ed19-4c87-bcef-92ccb97b2b7b",
+          "native_id": "0420a303-d66a-41b4-876c-5de4e7f6c249"
+        }
+      ],
+      "rawNodeAndState": [
+        {
+          "item_id": "79cebb34-915d-4a55-8966-4e895e117019",
+          "run_id": "3beffb00-66ec-4cf8-9833-0ecc97d32bb3",
+          "node_id": "toolu_b063ce0e5ca9413fbfa374cabbd44ad5",
+          "type": "subagent_status",
+          "revision": 1,
+          "terminal_state": null,
+          "payload": {
+            "state": "running",
+            "nativeRunId": "0mwmjiurd-03154580"
+          }
+        },
+        {
+          "item_id": "eab8378e-3e17-481f-a179-f5bdf7df77b3",
+          "run_id": "3beffb00-66ec-4cf8-9833-0ecc97d32bb3",
+          "node_id": "toolu_b063ce0e5ca9413fbfa374cabbd44ad5",
+          "type": "subagent_message",
+          "revision": 1,
+          "terminal_state": "completed",
+          "payload": {
+            "type": "system",
+            "subtype": "task_started",
+            "task_id": "bhh4ji79w",
+            "run_id": "0mwmjiurd-03154580",
+            "tool_use_id": "toolu_b063ce0e5ca9413fbfa374cabbd44ad5",
+            "description": "Run only this isolated A05 Bash process",
+            "is_backgrounded": true,
+            "task_type": "local_bash",
+            "uuid": "10931d0a-130d-4418-baf0-53ac9334f57e",
+            "session_id": "0420a303-d66a-41b4-876c-5de4e7f6c249"
+          }
+        }
+      ],
+      "files": [
+        {
+          "path": "attempt-095/01-native-background-after-foreground.png",
+          "sha256": "8f41bd5204a65046af22c920130039e6fa9a6441f2b0b794c5603942dfe1d0d6"
+        },
+        {
+          "path": "attempt-095/99-failure.png",
+          "sha256": "c45c8a456aa2a80902c097df53fc1c7ab99d47ab4db112eee510b3f2d130ee9c"
+        },
+        {
+          "path": "attempt-095/app-59965.log",
+          "sha256": "3ee2ccb5ee1786d44ff3b4dbb543b430a82b6c93c5ca40401226317c124989ef"
+        },
+        {
+          "path": "attempt-095/app-61167.log",
+          "sha256": "c17f7d00b799601539874025f4b4e9f9c5b5d6231cccec212a03b6cfbfc1a189"
+        },
+        {
+          "path": "attempt-095/before-intentional-crash.json",
+          "sha256": "b169070b67e7d1485478e60e348842a5919f47542e51454bbb5583761a374693"
+        },
+        {
+          "path": "attempt-095/result.json",
+          "sha256": "888830d4edc79cd2a0d30aeccdcf937cfc74c56344a59712c7dbd802dcf79c41"
+        },
+        {
+          "path": "attempt-095/source-a05-background-packaged.mjs",
+          "sha256": "007d24d5ae58f8cd6ca68fc2d43c22c895ed13e10a611997b46322a8c050a5c8"
+        }
+      ]
+    }
+  ]
+}

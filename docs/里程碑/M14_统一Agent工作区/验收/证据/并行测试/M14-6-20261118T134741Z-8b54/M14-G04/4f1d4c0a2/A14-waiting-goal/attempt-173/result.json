@@ -1,0 +1,217 @@
+{
+  "caseId": "M14-A14",
+  "sourceCommit": "4f1d4c0a215820ce9256fce8bdd529986dc0d17b",
+  "scope": "M14-A14-waiting-goal",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "0116ddf8720e421e00f6e3d8d48dbede8a493400eda18ccda34faf45f29fe6f0"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T01:51:23.435Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A14-waiting-goal": {
+      "status": "partial",
+      "passed": [
+        "真实 Codex 目标过程中成功委派 Claude。自动等待时 UI 和当前版本的切换服务均拒绝其他执行器。清除后过期选择单独被拒，原任务不变。"
+      ],
+      "missing": [
+        "已有排队、过期预检的其他证据统一归账，当前脚本仅执行目标等待和服务拒绝。"
+      ],
+      "waiting": {
+        "goal": {
+          "nativeCreatedAt": 1795053092,
+          "nativeUpdatedAt": 1795053092,
+          "bindingId": "8b3b35ab-dafe-4347-a6d6-acdab560aeb7",
+          "objective": "A14-WAIT-DELEGATION-ACTUAL",
+          "revision": 1,
+          "status": "paused",
+          "pausedReason": "waiting_children",
+          "turns": 1,
+          "timeUsedSeconds": 0,
+          "updatedAt": "2026-11-19T01:51:32.532Z"
+        },
+        "locked": [
+          {
+            "name": "A14 Codex A",
+            "disabled": false,
+            "selected": "true"
+          },
+          {
+            "name": "A14 Codex B",
+            "disabled": true,
+            "selected": "false"
+          },
+          {
+            "name": "A14 Claude C",
+            "disabled": true,
+            "selected": "false"
+          }
+        ],
+        "childTaskId": "1d7eb5f6-c384-4203-aaf2-0946bd14e171",
+        "staleRejected": true,
+        "afterClear": "claude-sdk"
+      },
+      "firstClear": {
+        "calledAt": 1795053094135,
+        "returnedAt": 1795053094136,
+        "error": {
+          "code": "STATE",
+          "message": "会话尚未打开"
+        }
+      },
+      "clearReceipts": [
+        {
+          "calledAt": 1795053094135,
+          "returnedAt": 1795053094136,
+          "error": {
+            "code": "STATE",
+            "message": "会话尚未打开"
+          }
+        },
+        {
+          "calledAt": 1795053095012,
+          "returnedAt": 1795053095015,
+          "reply": {
+            "ok": true
+          }
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T01:51:29.810Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T01:51:29.828Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T01:51:29.842Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T01:51:30.493Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"19340ea5-2914-4727-9e45-a1b03e024df0\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T01:51:30.638Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:51:30.658Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:51:32.153Z",
+      "selector": "[data-testid=agent-delegation-toggle]",
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "at": "2026-11-19T01:51:32.259Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T01:51:32.283Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:51:33.939Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:51:34.137Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 635.3125
+    },
+    {
+      "at": "2026-11-19T01:51:35.017Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 677.1875
+    },
+    {
+      "at": "2026-11-19T01:51:35.035Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 703.4375,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T01:51:35.042Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A14 Claude C\"]",
+      "x": 598,
+      "y": 552
+    },
+    {
+      "at": "2026-11-19T01:51:35.057Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 786.5,
+      "y": 627.0859375
+    }
+  ],
+  "model": [
+    {
+      "kind": "codex",
+      "model": "m14-switch-model-one",
+      "marker": "A14-USER-WAIT-WARM",
+      "goalCommand": false
+    }
+  ],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-173/home",
+    "at": "2026-11-19T01:51:24.880Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 58234,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-173/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-173/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-173/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328"
+  },
+  "appLogs": "Debugger listening on ws://127.0.0.1:62731/0991eee5-0cea-4c19-9766-6f55f49c2bd1\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\nDebugger ending on ws://127.0.0.1:62731/0991eee5-0cea-4c19-9766-6f55f49c2bd1\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n\nDevTools listening on ws://127.0.0.1:62710/devtools/browser/6dfc3424-677d-4c2b-953e-b286d826063d\n(node:58234) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `WillYou --trace-deprecation ...` to show where the warning was created)\nDebugger attached.\nError occurred in handler for 'agentTasks.switchProfile': DriverError: 清除目标后才能切换\n    at goalLock (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:54823:53)\n    at AgentTaskService.switchProfile (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:54829:5)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52664:97\n    at run (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52589:12)\n    at switchProfile (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:52664:73)\n    at /private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:9244:25\n    at Session.<anonymous> (node:electron/js2c/browser_init:2:118677)\n    at Session.emit (node:events:509:28) {\n  code: 'STATE',\n  nativeCode: undefined\n}\nError occurred in handler for 'agentTasks.goal': DriverError: 会话尚未打开\n    at CodexAppServerInstance.goal (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:57842:44)\n    at AgentRunService.goal (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:56619:29)\n    at AgentTaskService.goal (/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/Resources/app.asar/out/main/index.js:55077:23)\n    at async eval (eval at <anonymous> (:1:131), <anonymous>:14:21)\n    at async Session.<anonymous> (node:electron/js2c/browser_init:2:118661) {\n  code: 'STATE',\n  nativeCode: undefined\n}\n",
+  "rendererErrors": [],
+  "exit": {
+    "pid": 58234,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T01:51:35.906Z"
+}

@@ -1,0 +1,36 @@
+
+> smartdd@0.1.5 test /Users/liubu/hx/4.uprxiao/SmartDD
+> node scripts/run-tests.mjs src/renderer/features/agent-tasks/agent-task-view.test.tsx --maxWorkers=1 -t 'A18 stops requesting'
+
+[1119/043214.000928:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+[1119/043214.313178:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+stderr | src/renderer/features/agent-tasks/agent-task-view.test.tsx > A18 stops requesting pieces of a history item after leaving its task
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next or by passing it via props or context. In monorepo setups, make sure there is only one instance of react-i18next. { code: 'NO_I18NEXT_INSTANCE' }
+
+ ❯ src/renderer/features/agent-tasks/agent-task-view.test.tsx (58 tests | 1 failed | 57 skipped) 127ms
+   × A18 stops requesting pieces of a history item after leaving its task 127ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/features/agent-tasks/agent-task-view.test.tsx > A18 stops requesting pieces of a history item after leaving its task
+AssertionError: expected "vi.fn()" to be called 2 times, but got 3 times
+ ❯ src/renderer/features/agent-tasks/agent-task-view.test.tsx:157:26
+    155|   await screen.findByRole('heading', { name: 'Other task' });
+    156|   await act(async () => finishSecond({ chunk: '"Old private history"',…
+    157|   expect(mocks.itemBody).toHaveBeenCalledTimes(2);
+       |                          ^
+    158|   expect(screen.queryByText('Old private history')).toBeNull();
+    159|   expect(mocks.toast).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 57 skipped (58)
+   Start at  04:32:14
+   Duration  1.10s (transform 266ms, setup 0ms, import 529ms, tests 127ms, environment 366ms)
+
+ ELIFECYCLE  Test failed. See above for more details.

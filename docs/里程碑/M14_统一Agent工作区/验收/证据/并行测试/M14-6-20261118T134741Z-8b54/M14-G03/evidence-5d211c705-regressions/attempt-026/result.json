@@ -1,0 +1,297 @@
+{
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-026/runtime-Da9bmV/home",
+    "at": "2026-11-18T15:23:07.878Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "5d211c705abc36f1b428e1e129c47989c360f667",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scenarioId": "a27",
+  "scope": "Packaged App with native drivers and authenticated private MCP. Local synthetic responses. No R-layer claims.",
+  "observations": [
+    {
+      "label": "A27 local packaged A/I: cancel queued writer, stop one child round, then stop a tree without affecting the independent task",
+      "at": "2026-11-18T15:23:17.266Z",
+      "writerNeverStarted": true,
+      "finalChildStates": {
+        "queued-writer": "canceled",
+        "reader-x": "canceled",
+        "reader-y": "canceled"
+      },
+      "independentRun": "796a018a-3f2d-49ed-98c2-d420015185eb"
+    }
+  ],
+  "requests": [
+    {
+      "model": "fixture-independent",
+      "kind": "codex",
+      "wake": false,
+      "at": 1795015394132
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015395168,
+      "scheduledChild": "queued-writer"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015395274,
+      "scheduledChild": "reader-x"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015395375,
+      "scheduledChild": "reader-y"
+    },
+    {
+      "model": "fixture-parent",
+      "kind": "claude",
+      "wake": false,
+      "at": 1795015395475
+    },
+    {
+      "model": "fixture-child-reader-y",
+      "kind": "codex",
+      "child": "reader-y",
+      "wake": false,
+      "at": 1795015396807,
+      "reReadPrompt": false
+    },
+    {
+      "model": "fixture-child-reader-x",
+      "kind": "codex",
+      "child": "reader-x",
+      "wake": false,
+      "at": 1795015396808,
+      "reReadPrompt": false
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"c0a1b155-a57a-4f23-8b68-81cadad990d3\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"595a4bde-4948-48e8-9113-e50991f5b5ef\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-lineage-toggle",
+      "text": null,
+      "x": 1239.8828125,
+      "y": 65.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-card[data-child-id=\"d771ac2e-ecc8-43b2-9d73-1bf6854e87d5\"] button[aria-label^=\"停止子任务\"]",
+      "text": null,
+      "x": 1392,
+      "y": 172.5
+    },
+    {
+      "selector": ".agent-lineage .agent-child-open",
+      "text": "Acceptance reader-x - isolated delegation workspace",
+      "x": 1269.5,
+      "y": 265.5
+    },
+    {
+      "selector": ".agent-task-view button[title=\"停止本轮\"]",
+      "text": null,
+      "x": 1032.5,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"595a4bde-4948-48e8-9113-e50991f5b5ef\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "selector": ".agent-waiting-children button",
+      "text": "停止任务树",
+      "x": 505.328125,
+      "y": 466.1953125
+    }
+  ],
+  "status": "failed",
+  "pid": 29294,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-026/runtime-Da9bmV/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-026/runtime-Da9bmV/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-026/runtime-Da9bmV/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    29294
+  ],
+  "explicitClaude": {
+    "version": "2.1.326",
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326"
+  },
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.326"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "parentTaskId": "595a4bde-4948-48e8-9113-e50991f5b5ef",
+  "childTaskIds": {
+    "queued-writer": "d771ac2e-ecc8-43b2-9d73-1bf6854e87d5",
+    "reader-x": "eeb73842-2a4a-424c-84cb-572babf3973c",
+    "reader-y": "c5c27ab3-29be-4058-b4c6-d586497322c3"
+  },
+  "firstChildStop": {
+    "sequenceBefore": 14,
+    "sequenceNow": 18,
+    "stopProgress": {
+      "runId": "10fd0e33-49a2-4356-9236-5098c072cbf2",
+      "requestedAt": 1795015397020,
+      "forceAt": 1795015407020,
+      "closing": true
+    },
+    "status": "working",
+    "run": null
+  },
+  "stopTreeClickedAt": "2026-11-18T15:23:17.156Z",
+  "a27": {
+    "writerNeverStarted": true,
+    "finalChildStates": {
+      "queued-writer": "canceled",
+      "reader-x": "canceled",
+      "reader-y": "canceled"
+    },
+    "independentRun": "796a018a-3f2d-49ed-98c2-d420015185eb",
+    "parentAfterStop": {
+      "at": "2026-11-18T15:23:19.308Z",
+      "status": "stopped",
+      "runId": null,
+      "stopping": null,
+      "turn": {
+        "turn_id": "3c43d230-8821-483b-97cf-8dadd0901a2b",
+        "client_input_id": "in-aa0d8285a811455089422fcc7d902c42",
+        "status": "failed",
+        "native_turn_id": "3a8484cd-15ea-45ba-8878-2e95a9e685b0:1",
+        "accepted_at": "2026-11-18T15:23:14.346Z",
+        "started_at": "2026-11-18T15:23:15.137Z",
+        "ended_at": "2026-11-18T15:23:19.216Z",
+        "error_code": "执行器退出",
+        "run_id": "e56b6513-050c-4a68-9e44-21aa5e7a5c9c",
+        "source_kind": "user"
+      }
+    }
+  },
+  "phase": "wait after exactly one tree-stop click for parent native terminal state",
+  "error": "AssertionError [ERR_ASSERTION]: Parent user turn should be interrupted\n+ actual - expected\n\n+ 'failed'\n- 'interrupted'\n\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a27-bound-stop-recheck.mjs:529:12",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nM14 G03 a27\nM14 isolated independent task\nAcceptance parent a27\n工作中\nAcceptance reader-y - isolated delegation workspace\n已停止\nAcceptance reader-x - isolated delegation workspace\n已停止\nAcceptance queued-writer - isolated delegation workspace\n已停止\n设置\nAcceptance parent a27\n已停止\n任务关系 · 3\n插件 2\n允许新委派\n停止任务树\nStart two read-only children and queue a shared writer.\n工作 4 秒后失败\n调用了 3 次工具\n已失败 · 共工作 4 秒\n查看错误详情\nAcceptance reader-y - isolated delegation workspace · canceled查看子任务\n来源：子任务结果\nAcceptance reader-x - isolated delegation workspace · canceled查看子任务\n来源：子任务结果\n3 个子任务\nF\nAcceptance queued-writer - isolated delegation workspace\nFixture codex · 共用目录 · 写入队列\n已停止\nF\nAcceptance reader-x - isolated delegation workspace\nFixture codex · 共用目录 · 只读并行\n已停止\n0 秒\nF\nAcceptance reader-y - isolated delegation workspace\nFixture codex · 共用目录 · 只读并行\n已停止\n0 秒\n宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 fe054203-05c7-4d6c-ab8c-baccb8802ca2；子任务 Acceptance reader-y - isolated delegation workspace / c5c27ab3-29be-4058-b4c6-d586497322c3，attempt 1 状态 canceled。正文通过 wy_observe 领取；此通知不含新授权。\n11:23 PM\n宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 9ab54349-0eaa-4f26-a8bd-ae2706ede920；子任务 Acceptance reader-x - isolated delegation workspace / eeb73842-2a4a-424c-84cb-572babf3973c，attempt 1 状态 canceled。正文通过 wy_observe 领取；此通知不含新授权。\n11:23 PM\n请求批准\n完全访问\nFixture claude\nfixture-parent\n任务关系 · 3\n主任务 · Acceptance parent a27\nAcceptance queued-writer - isolated delegation workspace\nFixture codex\n共用目录 · 写入队列\n已停止\nAcceptance reader-x - isolated delegation workspace\nFixture codex\n共用目录 · 只读并行\n已停止\nAcceptance reader-y - isolated delegation workspace\nFixture codex\n共用目录 · 只读并行\n已停止\n目录写入队列\n当前无人持有写入权",
+  "beforeQuit": [
+    {
+      "taskId": "c5c27ab3-29be-4058-b4c6-d586497322c3",
+      "title": "Acceptance reader-y - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "595a4bde-4948-48e8-9113-e50991f5b5ef"
+    },
+    {
+      "taskId": "eeb73842-2a4a-424c-84cb-572babf3973c",
+      "title": "Acceptance reader-x - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "595a4bde-4948-48e8-9113-e50991f5b5ef"
+    },
+    {
+      "taskId": "d771ac2e-ecc8-43b2-9d73-1bf6854e87d5",
+      "title": "Acceptance queued-writer - isolated delegation workspace",
+      "status": "stopped",
+      "parentTaskId": "595a4bde-4948-48e8-9113-e50991f5b5ef"
+    },
+    {
+      "taskId": "c0a1b155-a57a-4f23-8b68-81cadad990d3",
+      "title": "M14 isolated independent task",
+      "status": "completed",
+      "parentTaskId": null
+    },
+    {
+      "taskId": "595a4bde-4948-48e8-9113-e50991f5b5ef",
+      "title": "Acceptance parent a27",
+      "status": "stopped",
+      "parentTaskId": null
+    }
+  ],
+  "beforeQuitRuns": [
+    [
+      "Acceptance reader-y - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance reader-x - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "Acceptance queued-writer - isolated delegation workspace",
+      null,
+      false
+    ],
+    [
+      "M14 isolated independent task",
+      "796a018a-3f2d-49ed-98c2-d420015185eb",
+      false
+    ],
+    [
+      "Acceptance parent a27",
+      null,
+      false
+    ]
+  ],
+  "closeEvents": [
+    "G03_CLOSE_EVENT save",
+    "G03_CLOSE_EVENT commit"
+  ],
+  "exit": {
+    "pid": 29294,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

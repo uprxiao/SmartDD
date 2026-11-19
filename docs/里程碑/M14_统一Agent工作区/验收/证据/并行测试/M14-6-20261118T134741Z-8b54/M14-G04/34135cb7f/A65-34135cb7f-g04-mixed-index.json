@@ -1,0 +1,729 @@
+{
+  "caseId": "M14-A65",
+  "commit": "34135cb7f7684b6d5407204405ee29c7c46739c7",
+  "asar": "193d1833a1ad2bb7b6ac13eb574ae791e85dd53ffcf7708baf0ab3534762df83",
+  "scope": "真实打包 App，实际 native 联机请求走本机 3425 合成模型。",
+  "writerInterval": "083 SVN 和 084 Git 的单写资格、只读并发、外部独立进程在同一区间、原 Git 快照对象及文件字节已验。084 两个差异正文、只读属性与原生卡片免责声明也已验。",
+  "readerCaptureFinding": "084 同一组中 native 只读策略且无写资格的 reader 回合仍保存与 writer 相同两个文件的完整 before/after refs 与 files_changed 卡。需求 R09 和技术方案 §11 的 writer 区间约束待处理；保留为部分证据。",
+  "cleanup": "全部四个隔离 App PID 自然退出 0；无匹配私有测试进程，端口 3425 归还前确认为空。",
+  "attempts": [
+    {
+      "number": 81,
+      "repository": "svn",
+      "driverStatus": "failed",
+      "identity": [
+        true,
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-081/runtime-P5oIva/data",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-081/runtime-P5oIva/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-081/runtime-P5oIva/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        12703
+      ],
+      "exit": {
+        "pid": 12703,
+        "code": 0,
+        "signal": null
+      },
+      "driverIssue": "真实只读子任务绕过写入队列，夹具错误地要求它取得 read 队列行。",
+      "files": [
+        {
+          "path": "attempt-081/99-failure.png",
+          "sha256": "b1d2b33c2bde81be5c9e0506aee660e25dca51698dac410920c8b5d7c763fc14"
+        },
+        {
+          "path": "attempt-081/app.log",
+          "sha256": "660c12d02303a19e74c3e4fea247641194861c1d781b3df459267b6a4219a2d7"
+        },
+        {
+          "path": "attempt-081/result.json",
+          "sha256": "9e32c08edd2956e3062c7912881f95a42b6a2b3fc2cb2a545d9f3715f993aa99"
+        },
+        {
+          "path": "attempt-081/source-a65-mixed-observation.mjs",
+          "sha256": "60a7dabcc3352a7751876bd9014316b6a6d5de92b07eb78048658ff7bbfbd0df"
+        },
+        {
+          "path": "attempt-081/source-a65-mixed-receipts.mjs",
+          "sha256": "1da9609bc9f385281b8510eb792c2c02e38d033b2ab577b7cc34d738f372d65e"
+        },
+        {
+          "path": "attempt-081/source-a74-native-target-receipts.mjs",
+          "sha256": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+        }
+      ]
+    },
+    {
+      "number": 82,
+      "repository": "svn",
+      "driverStatus": "failed",
+      "identity": [
+        true,
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-082/runtime-iKRWr7/data",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-082/runtime-iKRWr7/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-082/runtime-iKRWr7/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        27296
+      ],
+      "exit": {
+        "pid": 27296,
+        "code": 0,
+        "signal": null
+      },
+      "driverIssue": "夹具的轮询函数达到条件后未返回本次读值。",
+      "files": [
+        {
+          "path": "attempt-082/99-failure.png",
+          "sha256": "1e9ec36066676d5ee6005b2e8f49e2b51d8a776746ddb3d7c8e7a2731afea32f"
+        },
+        {
+          "path": "attempt-082/app.log",
+          "sha256": "80569245d816d9dfb353733406d568a51376a5726178207a5d4b170aff8e7d00"
+        },
+        {
+          "path": "attempt-082/result.json",
+          "sha256": "1eb25057d40940acad9e560fa055da12a609d05435ec5cd6a127a66d2ccd56ab"
+        },
+        {
+          "path": "attempt-082/source-a65-mixed-observation.mjs",
+          "sha256": "9283d4bebc60c60f802bf9c208b171b79e06c583ed3069a1539b041f156ca439"
+        },
+        {
+          "path": "attempt-082/source-a65-mixed-receipts.mjs",
+          "sha256": "7def1f09f4034c3061f2893f1522d5b967efe633f6e8055ab51305e2761c776b"
+        },
+        {
+          "path": "attempt-082/source-a74-native-target-receipts.mjs",
+          "sha256": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+        }
+      ]
+    },
+    {
+      "number": 83,
+      "repository": "svn",
+      "driverStatus": "failed",
+      "identity": [
+        true,
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/data",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        28981
+      ],
+      "exit": {
+        "pid": 28981,
+        "code": 0,
+        "signal": null
+      },
+      "observed": {
+        "writerTurn": {
+          "taskId": "7efe30ae-8122-4636-9910-730e77637fa6",
+          "turnId": "05684ce3-9ed3-46d3-b062-7bc4d6ab30ac",
+          "runId": "dcac6127-462b-446e-931e-0caca889d229",
+          "nativeTurnId": "01a1f01d-0a69-78c2-8fc8-1f943547c4ba",
+          "status": "started"
+        },
+        "readerTurn": {
+          "taskId": "fe59c238-3671-4b81-82b6-a3908d08b0dc",
+          "turnId": "802b7225-8559-4037-861e-05dff89dd6b0",
+          "runId": "e2fc0df8-b012-4537-a1b1-7c69f3e62142",
+          "nativeTurnId": "01a1f01d-0424-7250-aaf7-3fd9e4250eb2",
+          "status": "started"
+        },
+        "diskBetween": {
+          "before": {
+            "external.txt": "A65_BEFORE_external.txt",
+            "reader.txt": "A65_BEFORE_reader.txt",
+            "writer.txt": "A65_BEFORE_writer.txt"
+          },
+          "after": {
+            "external.txt": "A65_EXTERNAL_PROCESS_INTERVAL",
+            "reader.txt": "A65_BEFORE_reader.txt",
+            "writer.txt": "A65_NATIVE_WRITER_INTERVAL"
+          }
+        },
+        "diff": {
+          "turnId": "05684ce3-9ed3-46d3-b062-7bc4d6ab30ac",
+          "recordNumber": 1,
+          "status": "complete",
+          "reason": null,
+          "files": [
+            {
+              "path": "external.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            },
+            {
+              "path": "writer.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            }
+          ],
+          "filesTotal": 2,
+          "observed": true,
+          "preparing": false,
+          "progress": {
+            "files": 3,
+            "bytes": 79
+          }
+        },
+        "metadata": {
+          "revision": "0",
+          "wcDb": "351d91cdca04282fa50bccafe8c572d1a0baa1b3f003ac0b77cb0beb9fa9a2fc"
+        },
+        "actualReadPolicy": {
+          "source": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/data/agents/codex/7a168313e851baf30743606831d78f9f/sessions/2026/11/19/rollout-2026-11-19T03-23-15-01a1f01d-029f-7e32-855d-4343a7ecd45c.jsonl",
+          "turnId": "01a1f01d-0424-7250-aaf7-3fd9e4250eb2",
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+          "sandbox": {
+            "type": "read-only"
+          }
+        },
+        "overlap": {
+          "active": {
+            "writer": {
+              "queue_id": "9f68a01a-2a0d-482b-9c81-f5cd191b8f45",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project:16777231:362629547",
+              "task_id": "7efe30ae-8122-4636-9910-730e77637fa6",
+              "run_id": "dcac6127-462b-446e-931e-0caca889d229",
+              "kind": "write",
+              "state": "active"
+            },
+            "reader": {
+              "task_id": "fe59c238-3671-4b81-82b6-a3908d08b0dc",
+              "kind": "read",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project:16777231:362629547",
+              "nativePolicy": "read-only"
+            },
+            "scope": [
+              {
+                "queue_id": "9f68a01a-2a0d-482b-9c81-f5cd191b8f45",
+                "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project:16777231:362629547",
+                "task_id": "7efe30ae-8122-4636-9910-730e77637fa6",
+                "run_id": "dcac6127-462b-446e-931e-0caca889d229",
+                "kind": "write",
+                "state": "active"
+              }
+            ]
+          },
+          "writerTurn": {
+            "taskId": "7efe30ae-8122-4636-9910-730e77637fa6",
+            "turnId": "05684ce3-9ed3-46d3-b062-7bc4d6ab30ac",
+            "runId": "dcac6127-462b-446e-931e-0caca889d229",
+            "nativeTurnId": "01a1f01d-0a69-78c2-8fc8-1f943547c4ba",
+            "status": "started"
+          },
+          "readerTurn": {
+            "taskId": "fe59c238-3671-4b81-82b6-a3908d08b0dc",
+            "turnId": "802b7225-8559-4037-861e-05dff89dd6b0",
+            "runId": "e2fc0df8-b012-4537-a1b1-7c69f3e62142",
+            "nativeTurnId": "01a1f01d-0424-7250-aaf7-3fd9e4250eb2",
+            "status": "started"
+          }
+        },
+        "nativeWriterOutput": {
+          "callId": "call053394fa-6c39-4815-811d-b2870d8e5d3a",
+          "text": "Chunk ID: 0d56b2\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 7\nOutput:\nA65_NATIVE_WRITER_INTERVAL\n",
+          "expected": [
+            "A65_NATIVE_WRITER_INTERVAL"
+          ]
+        },
+        "externalPid": 30156,
+        "nativeReaderOutput": {
+          "callId": "call211c50eb-c483-446e-9064-e2e11ca8d0fe",
+          "text": "Chunk ID: c76f81\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nA65_NATIVE_WRITER_INTERVAL\nA65_EXTERNAL_PROCESS_INTERVAL\n",
+          "expected": [
+            "A65_NATIVE_WRITER_INTERVAL",
+            "A65_EXTERNAL_PROCESS_INTERVAL"
+          ]
+        },
+        "sha256AfterByPath": {
+          "external.txt": "859c5f9f84381ddb618ba4f7f11059e07b29821d39164dda898e4bae57672d8c",
+          "reader.txt": "aba5ca891a0c3c875e0d4fe09e0a41b64454de4a5797a26f10278f0548485b77",
+          "writer.txt": "2ed925ac6f1725851475b72c68b4d5f35931136b66fd605933a191397dbab017"
+        },
+        "ui": {
+          "cardClick": {
+            "selector": "[data-turn-id=\"05684ce3-9ed3-46d3-b062-7bc4d6ab30ac\"] .agent-change-card .agent-change-head span",
+            "text": "查看差异",
+            "button": "left",
+            "x": 1027.5,
+            "y": 375.0703125
+          },
+          "screenshot": "attempt-083/99-failure.png",
+          "observationalText": "\n查看差异\nexternal.txt\n+1\n−1\nwriter.txt\n+1\n−1\n观察到的变化可能包含用户或外部写入\n提示\n请求批准\n帮我批准\n完全访问\nFixture codex\nfixture-a65-writer\n任务关系 · 2\n主任务 · A65 parent svn\n0 秒\nA65 native writer\nFixture codex\n共用目录 · 写入队列\n已完成\n1 秒\nA65 native reader\nFixture codex\n共用目录 · 只读并行\n工作中\n3 秒\n目录写入队列\nA65 parent svn\n正在写入\n文件\n差异\n本轮改动\n改动记录 1\nexternal.txt\n+1 −1\nwriter.txt\n+1 −1\nexternal.txt\nA65_BEFORE_external.txtEXTERNAL_PROCESS_INTERVAL\n\n\n区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+          "driverIssue": "实际卡已打开并渲染 external.txt。DOM 在字符级标注中复用公共前缀，按原文全文找 DOM 的读值断言超时，080 之后的实际内容应读 CodeMirror 文档模型。"
+        }
+      },
+      "persistedAfterQuit": {
+        "writer": {
+          "title": "A65 native writer",
+          "task_id": "7efe30ae-8122-4636-9910-730e77637fa6",
+          "turn_id": "05684ce3-9ed3-46d3-b062-7bc4d6ab30ac",
+          "run_id": "dcac6127-462b-446e-931e-0caca889d229",
+          "native_turn_id": "01a1f01d-0a69-78c2-8fc8-1f943547c4ba",
+          "turn_status": "completed",
+          "change_status": "complete",
+          "before_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "dev": "16777231",
+            "ino": "362629547",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/data/agent-diffs/5b34333bd38d3484d1139b2f0db85934230eeb26d4c8a1159d7d1b1109a0e471",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "ref": "refs/willyou/turns/05684ce3-9ed3-46d3-b062-7bc4d6ab30ac/before",
+            "commit": "f0c969bfd393cab5f643a18cc0b814747e8994fb",
+            "tree": "2d6d7831009e81abefd275902ad3ed6fdc68922b",
+            "private": true
+          },
+          "after_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "dev": "16777231",
+            "ino": "362629547",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/data/agent-diffs/5b34333bd38d3484d1139b2f0db85934230eeb26d4c8a1159d7d1b1109a0e471",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "ref": "refs/willyou/turns/05684ce3-9ed3-46d3-b062-7bc4d6ab30ac/after",
+            "commit": "1bbb8edb9b72e77853e408344bff86fed01b6b7d",
+            "tree": "1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c",
+            "private": true
+          },
+          "changed_files_json": [
+            {
+              "path": "external.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            },
+            {
+              "path": "writer.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            }
+          ],
+          "timeline_card": {
+            "turnId": "05684ce3-9ed3-46d3-b062-7bc4d6ab30ac",
+            "fileCount": 2,
+            "status": "complete",
+            "observed": true,
+            "note": "记录这个区间观察到的工作区变化，可能包含用户或外部写入"
+          }
+        },
+        "reader": {
+          "title": "A65 native reader",
+          "task_id": "fe59c238-3671-4b81-82b6-a3908d08b0dc",
+          "turn_id": "802b7225-8559-4037-861e-05dff89dd6b0",
+          "run_id": "e2fc0df8-b012-4537-a1b1-7c69f3e62142",
+          "native_turn_id": "01a1f01d-0424-7250-aaf7-3fd9e4250eb2",
+          "turn_status": "interrupted",
+          "change_status": "complete",
+          "before_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "dev": "16777231",
+            "ino": "362629547",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/data/agent-diffs/5b34333bd38d3484d1139b2f0db85934230eeb26d4c8a1159d7d1b1109a0e471",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "ref": "refs/willyou/turns/802b7225-8559-4037-861e-05dff89dd6b0/before",
+            "commit": "37be168bb3b5e660f6e09dc43678a369f264728e",
+            "tree": "2d6d7831009e81abefd275902ad3ed6fdc68922b",
+            "private": true
+          },
+          "after_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "dev": "16777231",
+            "ino": "362629547",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/data/agent-diffs/5b34333bd38d3484d1139b2f0db85934230eeb26d4c8a1159d7d1b1109a0e471",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-083/runtime-EZZLLh/project",
+            "ref": "refs/willyou/turns/802b7225-8559-4037-861e-05dff89dd6b0/after",
+            "commit": "a8cd2923a8199183b94e54a43c7037d4f67b69ea",
+            "tree": "1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c",
+            "private": true
+          },
+          "changed_files_json": [
+            {
+              "path": "external.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            },
+            {
+              "path": "writer.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            }
+          ],
+          "timeline_card": {
+            "turnId": "802b7225-8559-4037-861e-05dff89dd6b0",
+            "fileCount": 2,
+            "status": "complete",
+            "observed": true,
+            "note": "记录这个区间观察到的工作区变化，可能包含用户或外部写入"
+          }
+        }
+      },
+      "files": [
+        {
+          "path": "attempt-083/99-failure.png",
+          "sha256": "31812931ec61a44f153aa2cec518c37c32fbf6efb7587be9fa80e21546e0e74f"
+        },
+        {
+          "path": "attempt-083/app.log",
+          "sha256": "9dea998200afd74b8e47608e49b252847eff22673ef40e18842f49d71e0848a2"
+        },
+        {
+          "path": "attempt-083/result.json",
+          "sha256": "04983212460f125be5ae3d5110cef4371382368921e05b22ad178f83917d563d"
+        },
+        {
+          "path": "attempt-083/source-a65-mixed-observation.mjs",
+          "sha256": "66bf1b5f1d90f9e7200cdca75e47e320bb2cf8a8566441db7314394c1797bdcc"
+        },
+        {
+          "path": "attempt-083/source-a65-mixed-receipts.mjs",
+          "sha256": "7def1f09f4034c3061f2893f1522d5b967efe633f6e8055ab51305e2761c776b"
+        },
+        {
+          "path": "attempt-083/source-a74-native-target-receipts.mjs",
+          "sha256": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+        }
+      ]
+    },
+    {
+      "number": 84,
+      "repository": "git",
+      "driverStatus": "passed",
+      "identity": [
+        true,
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/data",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/home",
+        "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+        32093
+      ],
+      "exit": {
+        "pid": 32093,
+        "code": 0,
+        "signal": null
+      },
+      "observed": {
+        "writerTurn": {
+          "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+          "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+          "status": "started"
+        },
+        "readerTurn": {
+          "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+          "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+          "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "status": "started"
+        },
+        "diskBetween": {
+          "before": {
+            "external.txt": "A65_BEFORE_external.txt",
+            "reader.txt": "A65_BEFORE_reader.txt",
+            "writer.txt": "A65_BEFORE_writer.txt"
+          },
+          "after": {
+            "external.txt": "A65_EXTERNAL_PROCESS_INTERVAL",
+            "reader.txt": "A65_BEFORE_reader.txt",
+            "writer.txt": "A65_NATIVE_WRITER_INTERVAL"
+          }
+        },
+        "diff": {
+          "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "recordNumber": 1,
+          "status": "complete",
+          "reason": null,
+          "files": [
+            {
+              "path": "external.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            },
+            {
+              "path": "writer.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            }
+          ],
+          "filesTotal": 2,
+          "observed": true,
+          "preparing": false,
+          "progress": {
+            "files": 3,
+            "bytes": 79
+          }
+        },
+        "metadata": {
+          "head": "8ca59b195ca120138f068aed503e5ac89f1b00ca",
+          "index": "4995333f6b96e91dc9b60dc13bc64529642cf981474f91e2f01ddf2c79ee09b5"
+        },
+        "actualReadPolicy": {
+          "source": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/data/agents/codex/7f494be12d320afde7c3cce6caf90ba4/sessions/2026/11/19/rollout-2026-11-19T03-24-59-01a1f01e-9a1e-78c0-97d0-19ce7d1d4446.jsonl",
+          "turnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+          "sandbox": {
+            "type": "read-only"
+          }
+        },
+        "overlap": {
+          "active": {
+            "writer": {
+              "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+              "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+              "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+              "kind": "write",
+              "state": "active"
+            },
+            "reader": {
+              "task_id": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+              "kind": "read",
+              "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+              "nativePolicy": "read-only"
+            },
+            "scope": [
+              {
+                "queue_id": "3213271b-456e-4327-ac2f-b8a1a2dbdf2b",
+                "directory_identity": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project:16777231:362631345",
+                "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+                "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+                "kind": "write",
+                "state": "active"
+              }
+            ]
+          },
+          "writerTurn": {
+            "taskId": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+            "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+            "runId": "c447735f-469d-43c8-befc-e01047c52f10",
+            "nativeTurnId": "01a1f01e-a116-7c00-b459-327b92e562e2",
+            "status": "started"
+          },
+          "readerTurn": {
+            "taskId": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+            "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+            "runId": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+            "nativeTurnId": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+            "status": "started"
+          }
+        },
+        "nativeWriterOutput": {
+          "callId": "callfcd57e75-e9fb-4bcd-8ce0-de5ced02386e",
+          "text": "Chunk ID: bc835e\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 7\nOutput:\nA65_NATIVE_WRITER_INTERVAL\n",
+          "expected": [
+            "A65_NATIVE_WRITER_INTERVAL"
+          ]
+        },
+        "externalPid": 33859,
+        "nativeReaderOutput": {
+          "callId": "callf98a5043-5c3d-4bf8-850f-360ed3c69b50",
+          "text": "Chunk ID: bab7c6\nWall time: 0.0000 seconds\nProcess exited with code 0\nOriginal token count: 15\nOutput:\nA65_NATIVE_WRITER_INTERVAL\nA65_EXTERNAL_PROCESS_INTERVAL\n",
+          "expected": [
+            "A65_NATIVE_WRITER_INTERVAL",
+            "A65_EXTERNAL_PROCESS_INTERVAL"
+          ]
+        },
+        "sha256AfterByPath": {
+          "external.txt": "859c5f9f84381ddb618ba4f7f11059e07b29821d39164dda898e4bae57672d8c",
+          "reader.txt": "aba5ca891a0c3c875e0d4fe09e0a41b64454de4a5797a26f10278f0548485b77",
+          "writer.txt": "2ed925ac6f1725851475b72c68b4d5f35931136b66fd605933a191397dbab017"
+        },
+        "ui": {
+          "label": "real turn card and both read-only source bodies show interval caveat",
+          "at": "2026-11-18T19:25:04.043Z",
+          "cardText": "本轮改动 · 2 个文件\n查看差异\nexternal.txt\n+1\n−1\nwriter.txt\n+1\n−1\n观察到的变化可能包含用户或外部写入",
+          "panes": [
+            {
+              "rendered": {
+                "file": "external.txt",
+                "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+                "buttons": [
+                  "external.txt\n+1 −1",
+                  "writer.txt\n+1 −1"
+                ],
+                "model": "A65_EXTERNAL_PROCESS_INTERVAL\n",
+                "readOnly": true,
+                "editable": "false"
+              },
+              "patch": {
+                "path": "external.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false,
+                "patch": "diff --git a/external.txt b/external.txt\nindex 616c8c7..f89b2c1 100644\n--- a/external.txt\n+++ b/external.txt\n@@ -1 +1 @@\n-A65_BEFORE_external.txt\n+A65_EXTERNAL_PROCESS_INTERVAL\n",
+                "beforeText": "A65_BEFORE_external.txt\n",
+                "afterText": "A65_EXTERNAL_PROCESS_INTERVAL\n"
+              }
+            },
+            {
+              "rendered": {
+                "file": "writer.txt",
+                "footer": "区间内的用户及外部修改也可能出现在这里。回退请用 git／svn 命令。",
+                "buttons": [
+                  "external.txt\n+1 −1",
+                  "writer.txt\n+1 −1"
+                ],
+                "model": "A65_NATIVE_WRITER_INTERVAL\n",
+                "readOnly": true,
+                "editable": "false"
+              },
+              "patch": {
+                "path": "writer.txt",
+                "added": 1,
+                "removed": 1,
+                "binary": false,
+                "patch": "diff --git a/writer.txt b/writer.txt\nindex 9414130..77e3dc8 100644\n--- a/writer.txt\n+++ b/writer.txt\n@@ -1 +1 @@\n-A65_BEFORE_writer.txt\n+A65_NATIVE_WRITER_INTERVAL\n",
+                "beforeText": "A65_BEFORE_writer.txt\n",
+                "afterText": "A65_NATIVE_WRITER_INTERVAL\n"
+              }
+            }
+          ],
+          "unexpectedDiffMutators": []
+        }
+      },
+      "persistedAfterQuit": {
+        "writer": {
+          "title": "A65 native writer",
+          "task_id": "44600393-303b-4ecb-a3f2-31ebb8db4bef",
+          "turn_id": "0ea6a94d-1227-4a48-957a-d397884301f5",
+          "run_id": "c447735f-469d-43c8-befc-e01047c52f10",
+          "native_turn_id": "01a1f01e-a116-7c00-b459-327b92e562e2",
+          "turn_status": "completed",
+          "change_status": "complete",
+          "before_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "dev": "16777231",
+            "ino": "362631345",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project/.git",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "ref": "refs/willyou/turns/0ea6a94d-1227-4a48-957a-d397884301f5/before",
+            "commit": "aff94017919172d98a7680c908c4d85a9f281356",
+            "tree": "2d6d7831009e81abefd275902ad3ed6fdc68922b",
+            "private": false
+          },
+          "after_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "dev": "16777231",
+            "ino": "362631345",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project/.git",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "ref": "refs/willyou/turns/0ea6a94d-1227-4a48-957a-d397884301f5/after",
+            "commit": "9fa5bd49d6bbf72895f182560528eec5286c0dd5",
+            "tree": "1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c",
+            "private": false
+          },
+          "changed_files_json": [
+            {
+              "path": "external.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            },
+            {
+              "path": "writer.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            }
+          ],
+          "timeline_card": {
+            "turnId": "0ea6a94d-1227-4a48-957a-d397884301f5",
+            "fileCount": 2,
+            "status": "complete",
+            "observed": true,
+            "note": "记录这个区间观察到的工作区变化，可能包含用户或外部写入"
+          }
+        },
+        "reader": {
+          "title": "A65 native reader",
+          "task_id": "cbbdf1b9-ac3e-4341-b0a6-c913ff45b699",
+          "turn_id": "080bc668-cef0-4bda-b997-4fd8f3876257",
+          "run_id": "29b76c9b-9513-4d0c-82f2-6db36dba27e1",
+          "native_turn_id": "01a1f01e-9be4-71e0-97b7-57d4ce135e37",
+          "turn_status": "completed",
+          "change_status": "complete",
+          "before_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "dev": "16777231",
+            "ino": "362631345",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project/.git",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "ref": "refs/willyou/turns/080bc668-cef0-4bda-b997-4fd8f3876257/before",
+            "commit": "7a8c7e4fb727ad0957649a3a0ef8c62296608d23",
+            "tree": "2d6d7831009e81abefd275902ad3ed6fdc68922b",
+            "private": false
+          },
+          "after_ref": {
+            "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "dev": "16777231",
+            "ino": "362631345",
+            "gitDir": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project/.git",
+            "workTree": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-084/runtime-WowBjt/project",
+            "ref": "refs/willyou/turns/080bc668-cef0-4bda-b997-4fd8f3876257/after",
+            "commit": "dbc1bed47054d0599b83a8a1ac8525c3cca0166f",
+            "tree": "1c99b89b1f4cf105642898a5f1fa4d46c7f8aa5c",
+            "private": false
+          },
+          "changed_files_json": [
+            {
+              "path": "external.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            },
+            {
+              "path": "writer.txt",
+              "added": 1,
+              "removed": 1,
+              "binary": false
+            }
+          ],
+          "timeline_card": {
+            "turnId": "080bc668-cef0-4bda-b997-4fd8f3876257",
+            "fileCount": 2,
+            "status": "complete",
+            "observed": true,
+            "note": "记录这个区间观察到的工作区变化，可能包含用户或外部写入"
+          }
+        }
+      },
+      "files": [
+        {
+          "path": "attempt-084/A65-observed-external.txt.png",
+          "sha256": "f024859309f66c152484d504856d4d51d6c99738bb47bdc7b8fc7c39ecf81719"
+        },
+        {
+          "path": "attempt-084/A65-observed-writer.txt.png",
+          "sha256": "0b35224bdefc7d086dd2a1137c9e6ff75438c72ce1d77026a286982fb67c4595"
+        },
+        {
+          "path": "attempt-084/app.log",
+          "sha256": "494db6b448a6d4ee657d0ed20f6aa481cc748dd3f606dd468345a02f08ce1460"
+        },
+        {
+          "path": "attempt-084/result.json",
+          "sha256": "c4aa23339c55a0f9d0ffb66f055c7b40903e83ac52924daa4d18ce39c1c45942"
+        },
+        {
+          "path": "attempt-084/source-a65-mixed-observation.mjs",
+          "sha256": "13d55ac43edff3b60b05d2575388ae486686558bf5a30f9909dddb190d2db212"
+        },
+        {
+          "path": "attempt-084/source-a65-mixed-receipts.mjs",
+          "sha256": "7def1f09f4034c3061f2893f1522d5b967efe633f6e8055ab51305e2761c776b"
+        },
+        {
+          "path": "attempt-084/source-a74-native-target-receipts.mjs",
+          "sha256": "1d44432eec2a5e90c0ca76ed1086e19220943d3b908e993f2323bcc58bac20c7"
+        }
+      ]
+    }
+  ]
+}

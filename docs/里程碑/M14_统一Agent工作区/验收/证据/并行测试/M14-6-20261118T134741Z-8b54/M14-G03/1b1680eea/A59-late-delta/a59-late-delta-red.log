@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 /Users/liubu/hx/4.uprxiao/SmartDD
+
+ ❯ src/main/core/agent/drivers/codex-app-server.test.ts (31 tests | 1 failed | 30 skipped) 7ms
+     × A59 ignores Codex deltas after the same item finalizes and from an earlier native turn 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/core/agent/drivers/codex-app-server.test.ts > Codex app-server 驱动 > A59 ignores Codex deltas after the same item finalizes and from an earlier native turn
+AssertionError: expected [ 'first prefix', …(4) ] to deeply equal [ 'first prefix', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "first prefix",
++   "late after final",
+    "other active item",
++   "late after next start",
+    "next prefix",
+  ]
+
+ ❯ src/main/core/agent/drivers/codex-app-server.test.ts:183:8
+    181|     await until(() => events.some(event => event.type === 'message.del…
+    182|     expect(events.filter(event => event.type === 'message.delta').map(…
+    183|       .toEqual(['first prefix', 'other active item', 'next prefix']);
+       |        ^
+    184|     expect(events.filter(event => event.type === 'item.completed')).to…
+    185|       { type: 'item.completed', nativeItemId: 'first-item', itemType: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 30 skipped (31)
+   Start at  10:49:47
+   Duration  155ms (transform 59ms, setup 0ms, import 70ms, tests 7ms, environment 0ms)
+

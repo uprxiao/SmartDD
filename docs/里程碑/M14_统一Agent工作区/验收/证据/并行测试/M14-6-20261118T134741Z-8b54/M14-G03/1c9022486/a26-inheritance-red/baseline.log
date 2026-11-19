@@ -1,0 +1,58 @@
+[1119/002519.691983:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+
+ RUN  v4.1.11 /private/tmp/willyou-m14-stage6.WRvdST/source
+
+[1119/002520.303310:ERROR:electron/shell/common/mac/codesign_util.cc:79] task_name_for_pid: (os/kern) failure (5)
+stdout | ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 passes the new parent tier only to the next Codex child round
+{"firstTier":"ask","parentTier":"full","nextTier":"ask"}
+
+stdout | ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 records why Codex automatic approval falls back for a Claude child
+{"parentTier":"auto","childDriver":"claude-sdk","childTier":"ask","downgradeRecorded":false}
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts (2 tests | 2 failed) 142ms
+   × A26 passes the new parent tier only to the next Codex child round 85ms
+   × A26 records why Codex automatic approval falls back for a Claude child 56ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 passes the new parent tier only to the next Codex child round
+AssertionError: expected 'ask' to be 'full' // Object.is equality
+
+Expected: "full"
+Received: "ask"
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts:77:22
+     75|   expect(later.text).toContain('isolated next child round');
+     76|   console.log(JSON.stringify({firstTier:first.turns[0].tier,parentTier…
+     77|   expect(later.tier).toBe('full');
+       |                      ^
+     78| });
+     79|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ../g03/prep-next/a26-inheritance-i/a26.test.ts > A26 records why Codex automatic approval falls back for a Claude child
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ ../g03/prep-next/a26-inheritance-i/a26.test.ts:94:29
+     92|   const downgradeRecorded = /帮我批准不适用于该执行器|降.*请求批准/.test(JSON.stringify…
+     93|   console.log(JSON.stringify({parentTier:JSON.parse(f.store.task(f.tas…
+     94|   expect(downgradeRecorded).toBe(true);
+       |                             ^
+     95| });
+     96|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  00:25:20
+   Duration  548ms (transform 243ms, setup 0ms, import 316ms, tests 142ms, environment 0ms)
+
