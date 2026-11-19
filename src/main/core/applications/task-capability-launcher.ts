@@ -382,7 +382,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     }
     const available: RunPlanAvailability = { cli: !!this.cli&&this.cliReady&&cliPolicy?.available===true&&role?.access!=='read', mcp: true };
     const skills = this.pluginSkills?.describe(snapshot, input.runId, available);
-    if (skills) { this.pluginSkills!.checkNative(skills, native); this.pluginSkills!.materialize(skills); }
+    if (skills) this.pluginSkills!.checkNative(skills, native);
+    let skillsMaterialized = false;
     const sources = snapshot.packages.map(p => { const application = this.applications.builtin.retainedMetadata(p.packageHash); return { packageHash: p.packageHash, manifest: application.manifest, capabilities: builtinApplicationModules.capabilityViews(application.manifest) }; });
     const plan = createApplicationRunPlan({ runId: input.runId, snapshotHash: hash, snapshot, applications: sources, skills: skills?.skills ?? [], available, sandbox:cliPolicy?.available?{source:cliPolicy.source,digest:cliPolicy.digest}:undefined, cliVersion: input.version });
     const resourceIds = [...new Set([`agent-adapter:${snapshot.runner}:${adapter.hash}`, ...snapshot.packages.flatMap(p => ['app:' + p.packageHash, 'runtime:' + p.runtimeHash]), ...snapshot.mcp.map(m => (m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash)])];
@@ -390,10 +391,10 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
       this.support.adapters.verify(adapter.hash);
       for (const p of snapshot.packages) { const installed = this.applications.builtin.retainedMetadata(p.packageHash); verifyPackageTree(join(store.root, installed.relativePath), installed, store.storeId); new RuntimeRegistry(store).verify(p.runtimeHash); }
       new RuntimeRegistry(store).verify(server.runtimeHash);
-      if (skills) this.pluginSkills!.verify(skills);
+      if (skills && skillsMaterialized) this.pluginSkills!.verify(skills);
     };
     let nativeStarted=false;
-    const assertCurrent = () => { input.assertCurrent();if(!nativeStarted&&cliPolicy?.available){if('runner' in cliPolicy)verifyClaudeCliSandbox(cliPolicy);else verifyCodexCliSandbox(cliPolicy);} assertNoPendingApplicationSwitch(store, snapshot); if (skills) this.pluginSkills!.verify(skills); };
+    const assertCurrent = () => { input.assertCurrent();if(!nativeStarted&&cliPolicy?.available){if('runner' in cliPolicy)verifyClaudeCliSandbox(cliPolicy);else verifyCodexCliSandbox(cliPolicy);} assertNoPendingApplicationSwitch(store, snapshot); if (skills && skillsMaterialized) this.pluginSkills!.verify(skills); };
     // Per-binding version records coexist with M13's task snapshots; no global session pointer is rewritten.
     store.sqlite.transaction(() => {
       const reserved = store.sqlite.prepare("SELECT c.capability_session_id,c.snapshot_json FROM capability_runs r JOIN agent_capability_sessions c ON c.capability_session_id=r.capability_session_id WHERE r.run_id=? AND r.binding_id=? AND r.state='preparing' AND r.pid IS NULL").get(input.runId, input.bindingId) as { capability_session_id: string; snapshot_json: string } | undefined;
@@ -405,6 +406,12 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     let bridge: Awaited<ReturnType<PrivateApplicationBroker['prepare']>> | undefined;
     try {
       await run.prepare();
+      if (skills) {
+        assertCurrent();
+        // The copied Skill belongs to the prepared run, before any native process or bridge can launch.
+        this.pluginSkills!.materialize(skills);
+        skillsMaterialized = true;
+      }
       store.sqlite.transaction(()=>{for(const resourceId of resourceIds){const resource=store.get(resourceId);for(const [ownerKind,ownerId] of [['run',input.runId],['binding',input.bindingId]])store.sqlite.prepare('INSERT OR IGNORE INTO agent_resource_refs(owner_kind,owner_id,resource_kind,resource_id,hold_reason,created_at) VALUES(?,?,?,?,?,?)').run(ownerKind,ownerId,resource.kind,resourceId,JSON.stringify({contentHash:resource.contentHash,generation:resource.generation}),new Date().toISOString());}})();
       bridge = await this.broker.prepare(run, server.serverName, assertCurrent);
       const projectMcp=snapshot.mcp.find(m=>m.kind==='legacy-project-context');let runtime:PreparedRuntime|undefined;
@@ -444,7 +451,13 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
         exited: async () => { await run.cli.exited(); const deadline = Date.now() + 20_000; while (!['stopped', 'failed'].includes(this.runs.get(run.runId).state)) { if (Date.now() >= deadline) throw new ApplicationError('RESOURCE_BUSY', '业务或桥进程尚未排空'); await new Promise(r => setTimeout(r, 50)); } },
         cancelBeforeFork: async () => { this.broker.revokeRun(run.runId); await run.cli.cancelUnforked!(); await bridge!.bridge.releaseUnclaimed?.(); await run.stop('agent-unforked'); },
       };
-    } catch (e) { this.broker.revokeRun(run.runId); await run.cli.cancelUnforked?.().catch(() => {}); await run.stop('agent-prepare-failed').catch(() => {}); throw e; }
+    } catch (e) {
+      this.broker.revokeRun(run.runId);
+      await run.cli.cancelUnforked?.().catch(() => {});
+      await run.stop('agent-prepare-failed').catch(() => {});
+      if (skills) await this.releaseStopped({ run }).catch(() => {});
+      throw e;
+    }
   }
   private async prepareLibrary(input:TaskLaunchInput,native:NativeLaunchContext,selected:{adapterHash:string;current?:StoredCapabilitySession}):Promise<TaskCapabilityLaunch>{
     let current=selected.current;

@@ -762,6 +762,37 @@ describe('M13 P1 plugins through production task startup',()=>{
   expect(managed.runs.bridgePreparation(created.task.runtimeSnapshot!.runId).plan?.skills).toEqual([expect.objectContaining({appId:'demo-tracker',nativeName:'willyou-demo-tracker:query'})]);await putPlugin('0.2.0',false,false,true);expect(readFileSync(entry,'utf8')).toBe(before);expect(await invoke(created.task.id)).toMatchObject({status:'ok',value:{items:[{id:'0.2.0'}]}});
   const nativeId=await stopForSwitchFixture(created,'claude-code');await vi.waitFor(()=>expect(existsSync(oldRoot)).toBe(false));const resumed=await tasks.open({taskId:created.task.id}),next=ptys.launches.at(-1)!,nextRoot=next.args[next.args.indexOf('--plugin-dir')+1];expect(resumed.task.nativeSessionId).toBe(nativeId);expect(nextRoot).not.toBe(oldRoot);expect(readFileSync(join(nextRoot,'payload/skills/query/SKILL.md'),'utf8')).toContain('Synthetic query 0.2.0');
  });
+ it.each(['codex', 'claude'] as const)('M14 A40 prepares the %s plugin Skill and releases it when canceled before fork', async runner => {
+  await putPlugin('0.1.0', false, false, true);
+  cliPolicyAvailable = false;
+  const driverId = runner === 'codex' ? 'codex-app-server' : 'claude-sdk';
+  const profileId = runner === 'codex' ? codexId : claudeId;
+  const version = runner === 'codex' ? '0.169.0' : '2.1.326';
+  const stateRoot = join(home, runner === 'codex' ? '.codex' : '.claude');
+  mkdirSync(stateRoot, { recursive: true });
+  const command = profiles.resolve(profileId).command;
+  writeFileSync(command, `#!/bin/sh\ncase "$1" in --version) echo "${version}";; *) exit 70;; esac\n`, { mode: 0o700 });
+  const store = new AgentStore(sqlite);
+  const taskId = store.createTask({ projectId, dirId: null, cwd, title: 'M14 frozen Skill', selection: { driverId, profileId, tier: 'ask' } });
+  const bindingId = store.createBinding({ task_id: taskId, driver_id: driverId, profile_id: profileId,
+   continuation_hash: digest('m14-frozen-skill'), cwd_identity: cwd, state_root: stateRoot });
+  const runId = randomUUID();
+  store.insertRun({ runId, taskId, projectId, bindingId, generation: 1, driverId,
+   owner: { instanceId: randomUUID(), pid: process.pid, startedAt: reader.read(process.pid)?.startedAt ?? null },
+   launchPlanHash: digest('m14-frozen-skill-launch') });
+  const launch = await managed.prepareAgent({ runId, bindingId, generation: 1, version, assertCurrent: () => {},
+   task: { projectId, taskId, profile: profiles.resolve(profileId), cwd, home, stateRoot, claudeConfigExplicit: true,
+    mode: 'new', sessionId: null, previous: null, newTask: true, signal: new AbortController().signal,
+    environment: { HOME: home, PATH: process.env.PATH ?? '/usr/bin:/bin' } } });
+  expect(managed.runs.get(runId).state).toBe('prepared');
+  const skill = runner === 'codex' ? launch.skillRoots?.[0]?.path : join(launch.plugins![0].path, 'payload/skills/query');
+  expect(skill).toBeTruthy();
+  expect(readFileSync(join(skill!, 'references/version.txt'), 'utf8')).toBe('0.1.0');
+  expect(managed.runs.bridgePreparation(runId).plan?.skills).toHaveLength(1);
+  await launch.cancelBeforeFork();
+  expect(managed.runs.get(runId).state).toBe('stopped');
+  await vi.waitFor(() => expect(existsSync(skill!)).toBe(false));
+ });
  it('does not inject a project-closed Claude plugin into a new or resumed task',async()=>{
   await putPlugin('0.1.0',false,false,true);const created=await create(claudeId);await stopForSwitchFixture(created,'claude-code');const plugin=applications.plugins!.catalog()[0],target={appId:plugin.appId,packageHash:plugin.hash!},setting=applications.plugins!.connections.project(target,projectId);await applications.plugins!.connections.setProject({...target,projectId,expectedRevision:setting.binding_revision,mode:'follow',enabled:false});await tasks.open({taskId:created.task.id});expect(ptys.launches.at(-1)!.args).not.toContain('--plugin-dir');const fresh=await create(claudeId);expect(ptys.launches.at(-1)!.args).not.toContain('--plugin-dir');const current=await managed.sessions.get(fresh.task.id);expect(current.snapshot.schema===3&&current.snapshot.externalPlugins).toEqual([]);
  });
