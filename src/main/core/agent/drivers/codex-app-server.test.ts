@@ -165,6 +165,27 @@ describe('Codex app-server 驱动', () => {
     await inst.startTurn({ clientInputId: 'b', text: 'y', tier: 'ask' });
   });
 
+  it('A59 ignores Codex deltas after the same item finalizes and from an earlier native turn', async () => {
+    const { inst, server, events } = setup();
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: 'first', text: 'first', tier: 'ask' });
+    server.notify('item/agentMessage/delta', { turnId: 'turn-1', itemId: 'first-item', delta: 'first prefix' });
+    server.notify('item/completed', { turnId: 'turn-1', item: { id: 'first-item', type: 'agentMessage', text: 'first complete' } });
+    server.notify('item/agentMessage/delta', { turnId: 'turn-1', itemId: 'first-item', delta: 'late after final' });
+    server.notify('item/agentMessage/delta', { turnId: 'turn-1', itemId: 'other-item', delta: 'other active item' });
+    server.notify('turn/completed', { turn: { id: 'turn-1', status: 'completed' } });
+    await until(() => events.some(event => event.type === 'turn.completed'));
+    await inst.startTurn({ clientInputId: 'next', text: 'next', tier: 'ask' });
+    server.notify('item/agentMessage/delta', { turnId: 'turn-1', itemId: 'first-item', delta: 'late after next start' });
+    server.notify('item/agentMessage/delta', { turnId: 'turn-2', itemId: 'next-item', delta: 'next prefix' });
+    await until(() => events.some(event => event.type === 'message.delta' && event.nativeItemId === 'next-item'));
+    expect(events.filter(event => event.type === 'message.delta').map(event => event.text))
+      .toEqual(['first prefix', 'other active item', 'next prefix']);
+    expect(events.filter(event => event.type === 'item.completed')).toEqual([
+      { type: 'item.completed', nativeItemId: 'first-item', itemType: 'agentMessage', payload: { id: 'first-item', type: 'agentMessage', text: 'first complete' } },
+    ]);
+  });
+
   it('服务端审批请求原样转交并按原 id 回应；宿主不代办的请求明确拒绝', async () => {
     const { inst, server, events } = setup();
     await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });

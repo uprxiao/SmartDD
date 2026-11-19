@@ -34,6 +34,7 @@ export class CodexAppServerInstance implements DriverInstance {
     clientInputId: string;
     interrupted: boolean;
     interrupt?: Promise<void>;
+    finalizedMessages: Set<string>;
   } | null = null;
   private pendingInputId = '';
   private stopPending = false;
@@ -184,7 +185,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private markStarted(nativeTurnId: string, clientInputId: string) {
     if (this.startedTurns.has(nativeTurnId)) return;
     this.startedTurns.add(nativeTurnId);
-    this.activeTurn = { nativeTurnId, clientInputId, interrupted:false };
+    this.activeTurn = { nativeTurnId, clientInputId, interrupted: false, finalizedMessages: new Set() };
     const stopPending = this.stopPending;
     this.stopPending = false;
     this.emitter.emit({ type: 'turn.started', nativeTurnId, clientInputId });
@@ -217,12 +218,23 @@ export class CodexAppServerInstance implements DriverInstance {
         if (typeof id === 'string' && !this.startedTurns.has(id)) { this.markStarted(id, this.pendingInputId); this.pendingInputId = ''; }
         break;
       }
-      case 'item/agentMessage/delta':
-        if (typeof p.itemId === 'string' && typeof p.delta === 'string') this.emitter.emit({ type: 'message.delta', nativeItemId: p.itemId, text: p.delta });
+      case 'item/agentMessage/delta': {
+        const turn = this.activeTurn;
+        // A delayed preview must not reopen a finished item or appear in a later turn.
+        if (turn && p.turnId === turn.nativeTurnId && typeof p.itemId === 'string' && typeof p.delta === 'string'
+          && !turn.finalizedMessages.has(p.itemId)) {
+          this.emitter.emit({ type: 'message.delta', nativeItemId: p.itemId, text: p.delta });
+        }
         break;
-      case 'item/completed':
-        if (p.item && typeof p.item.id === 'string') this.emitter.emit({ type: 'item.completed', nativeItemId: p.item.id, itemType: String(p.item.type ?? 'unknown'), payload: p.item });
+      }
+      case 'item/completed': {
+        const item = p.item;
+        if (!item || typeof item.id !== 'string') break;
+        const turn = this.activeTurn;
+        if (turn && p.turnId === turn.nativeTurnId && item.type === 'agentMessage') turn.finalizedMessages.add(item.id);
+        this.emitter.emit({ type: 'item.completed', nativeItemId: item.id, itemType: String(item.type ?? 'unknown'), payload: item });
         break;
+      }
       case 'serverRequest/resolved': {
         const key = p.requestId !== undefined ? String(p.requestId) : null;
         if (key && this.openRequests.delete(key)) this.emitter.emit({ type: 'request.resolved', requestKey: key });
