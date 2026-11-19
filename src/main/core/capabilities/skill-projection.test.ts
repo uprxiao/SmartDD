@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -8,6 +8,7 @@ import { afterEach,beforeEach,expect,it } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
 import * as schema from '../../db/schema';
 import { CapabilityRegistryService, type CapabilityScanContext } from './capability-registry';
+import { discoverCapabilities } from './discovery';
 import { SkillProjectionService, type SkillProjectionInput } from './skill-projection';
 let root:string,sqlite:Database.Database,registry:CapabilityRegistryService,projection:SkillProjectionService,contexts:CapabilityScanContext[],input:SkillProjectionInput;
 const file=(path:string,content:string)=>{mkdirSync(dirname(path),{recursive:true});writeFileSync(path,content);return path;};
@@ -24,6 +25,21 @@ it('projects a user Skill into Codex without copying and cancellation removes on
 it('cleans dangling owned links at next scan and keeps the managed source as missing',()=>{
   const source=skill('gone');registry.scan();registry.adoptAll();projection.prepare(input);rmSync(dirname(source),{recursive:true});
   expect(registry.scan().items[0].status).toBe('missing');expect(existsSync(join(root,'home/.agents/skills/gone'))).toBe(false);
+});
+it('keeps native launch discovery usable after a projected Skill source vanishes before the next registry scan',()=>{
+  const removedSource=skill('a-removed');
+  skill('b-current');
+  registry.scan();
+  registry.adoptAll();
+  const stateRoot=join(root,'managed-claude');
+  expect(projection.prepare({...input,runner:'claude',stateRoot}).configured).toHaveLength(2);
+  rmSync(dirname(removedSource),{recursive:true});
+
+  const details={userSkillConfig:[],plugins:[],issues:[]};
+  const found=discoverCapabilities({...contexts[0],stateRoot,details});
+  expect(details.issues).toEqual([]);
+  expect(found.filter(item=>item.kind==='skill').map(item=>item.name)).toEqual(['b-current']);
+  expect(lstatSync(join(stateRoot,'skills/a-removed')).isSymbolicLink()).toBe(true);
 });
 it('removes an old persistent target when the source CLI disables its Skill, retaining its original file and config',()=>{
   const source=file(join(root,'home/.agents/skills/from-codex/SKILL.md'),'---\nname: from-codex\ndescription: source\n---\n');

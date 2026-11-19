@@ -178,7 +178,11 @@ export function discoverCapabilities(c: DiscoveryContext): DiscoveredCapability[
       for (const name of readdirSync(dir).sort()) {
         if (name.startsWith('.') || ['node_modules', 'validation', 'productions', '__pycache__'].includes(name)) continue;
         const p = join(dir, name);
-        if (statSync(p).isDirectory()) scanDir(p, source, command, enabled, version, depth + 1, visited);
+        // A removed Skill may still have a dangling projection until the next registry scan.
+        // There is no native capability at that path. Continue inspecting the remaining entries.
+        const entry = statSync(p, { throwIfNoEntry: false });
+        if (!entry) continue;
+        if (entry.isDirectory()) scanDir(p, source, command, enabled, version, depth + 1, visited);
         else if (command && name.endsWith('.md')) scanSkill(p, source, true, enabled, version);
       }
     } catch { badFile('skill', dir, source, 'path_unreadable'); }
