@@ -330,10 +330,20 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     }
     const target = parent ? JSON.parse(parent.target_json) as Target : undefined;
     const writing = this.queue.writeView(identities);
+    // A parent that delegated mid-turn keeps writing until its own turn ends and drains, before it has a FIFO row.
+    const holderId = parent ? parent.parent_task_id : taskId;
+    const holderRows = parent ? this.rows(holderId) : rows;
+    const holderWriting = !writing.some(r => r.task_id === holderId)
+      && holderRows.some(r => r.delivery_state === 'queued' && this.serialWriter(r))
+      && (this.draining.has(holderId) || !!this.d.runs.runForTask(holderId) || !!this.d.runs.closingForTask(holderId));
+    const queueRows = [
+      ...(holderWriting ? [{ task_id: holderId, state: 'active' as const }] : []),
+      ...writing.filter(r => r.state === 'active'), ...writing.filter(r => r.state === 'queued'),
+    ];
     const writeQueue = identities.size ? {
-      total: writing.length,
-      activeCount: writing.filter(r => r.state === 'active').length,
-      entries: [...writing.filter(r => r.state === 'active'), ...writing.filter(r => r.state === 'queued')].slice(0, 20)
+      total: queueRows.length,
+      activeCount: queueRows.filter(r => r.state === 'active').length,
+      entries: queueRows.slice(0, 20)
         .map(r => ({ taskId: r.task_id, state: r.state, title: (this.d.store.task(r.task_id)?.title ?? '任务').slice(0, 120) })),
     } : null;
     const currentTurn = rows.length ? this.d.store.sqlite.prepare(

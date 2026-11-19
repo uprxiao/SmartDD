@@ -489,6 +489,11 @@ it('G3: Git defaults to serial shared writing, with visible uncommitted input an
   const receipt=await f.delegate();
   expect(receipt.workspaceMode).toBe('shared');
   expect(f.runs.runForTask(receipt.childTaskId)).toBeUndefined();
+  // The parent still holds the directory mid-turn, before it has a FIFO row; the card must not say nobody is writing.
+  for (const id of [f.taskId, receipt.childTaskId]) {
+    expect(f.co.view(id).writeQueue).toMatchObject({ activeCount:1, total:2,
+      entries:[{ taskId:f.taskId, state:'active' }, { taskId:receipt.childTaskId, state:'queued' }] });
+  }
   const parentRun=f.runs.runForTask(f.taskId)!;
   f.db.prepare("INSERT INTO agent_turn_changes(turn_id,task_id,run_id,changed_files_json,status) VALUES(?,?,?,?,'complete')").run(parentRun.turnId,f.taskId,parentRun.runId,JSON.stringify([{path:'design.txt'}]));
   parent.finish();
