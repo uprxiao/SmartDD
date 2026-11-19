@@ -1083,3 +1083,22 @@ it('A69 shows an unknown goal state when the executor reply could not be recogni
   fireEvent.click(within(row).getByRole('button',{ name:'清除' }));
   await waitFor(() => expect(mocks.goal).toHaveBeenCalledWith('task',{ kind:'clear' }));
 });
+
+it('A41 marks a mail review whose draft was changed after creation as 已修改, like the confirmed prototype (D06-75)', async () => {
+  const review = (draftRevision:number) => ({ requestId:'mail', kind:'host_business', status:'pending', revision:1, origin:{},
+    payload:{ businessKind:'mail_send', phase:'waiting_user', title:'需要批准：发送邮件',
+      options:[{label:'批准发送',value:'allow'},{label:'拒绝',value:'deny'}],
+      review:{fromAddress:'sender@example.invalid',draftRevision,attachments:[],priorUnknownExecutionIds:[],
+        content:{to:['qa@example.invalid'],cc:[],bcc:[],subject:'主题',text:'正文',html:null}} } });
+  mocks.businessReview.mockResolvedValue({ displayReceiptId:'display-receipt' });
+  mocks.snapshot.mockResolvedValue(snapshot({ requests:[review(1)] }));
+  const first = render(<AgentTaskView taskId="task"/>);
+  const original = await screen.findByRole('region', {name:'邮件审阅'});
+  expect(within(original).queryByText('已修改')).toBeNull();
+  first.unmount();
+  mocks.snapshot.mockResolvedValue(snapshot({ requests:[review(3)] }));
+  render(<AgentTaskView taskId="task"/>);
+  const changed = await screen.findByRole('region', {name:'邮件审阅'});
+  expect(within(changed).getByText('已修改')).toBeTruthy();
+  expect(within(changed).getByText(/第 3 版/)).toBeTruthy();
+});

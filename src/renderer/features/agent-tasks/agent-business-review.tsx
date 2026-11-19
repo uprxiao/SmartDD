@@ -25,7 +25,7 @@ export function MailReviewCard({ review, state, edits, busy, unknownConfirmed, o
 
   const content = review.content;
   return <section className="agent-mail-review" aria-label="邮件审阅" ref={card}>
-    <header><Mail size={15} aria-hidden/><b>内置邮件</b><span>请求发送邮件</span><small>第 {review.draftRevision} 版 · 需要批准</small></header>
+    <header><Mail size={15} aria-hidden/><b>内置邮件</b><span>请求发送邮件</span>{review.draftRevision > 1 && !editing && <span className="agent-mail-edited" title={`草稿创建后已修改，当前为第 ${review.draftRevision} 版`}>已修改</span>}<small>第 {review.draftRevision} 版 · 需要批准</small></header>
     <dl><div><dt>发件账号</dt><dd>{review.fromAddress}</dd></div></dl>
     {state === 'loading' && <p role="status">正在读取完整邮件审阅…</p>}
     {state === 'error' && <p role="alert">无法读取邮件审阅，不能批准发送。</p>}
