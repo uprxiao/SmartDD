@@ -1,0 +1,139 @@
+{
+  "caseId": "M14-A69",
+  "sourceCommit": "2c9c58c73daf0ecb5ebe940f96c06420d4df08e5",
+  "scope": "M14-A69-goal-and-commands",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "d4036e2e57931dbbbacfdb95333585d0b288cf971bb1eb2b4f32af760c243adc"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T08:52:16.138Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A69-goal-and-commands": {
+      "status": "failed-or-blocked",
+      "passed": [
+        {
+          "label": "Codex command menu lists /review and /goal, not /init",
+          "data": [
+            "/terminal",
+            "/model",
+            "/goal",
+            "/compact",
+            "/review"
+          ]
+        },
+        {
+          "label": "Codex manual /init blocked: warning shown, nothing sent, input kept",
+          "data": {
+            "requests": 0
+          }
+        }
+      ],
+      "missing": [],
+      "codexMenu": [
+        "/terminal",
+        "/model",
+        "/goal",
+        "/compact",
+        "/review"
+      ],
+      "error": "Error: Error: Visible control has no unoccluded clickable rect: .agent-task-view .agent-composer button[type=\"submit\"]\n    at <anonymous>:13:11\n    at <anonymous>:14:5\n    at Object.evaluate (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/helpers/scripts/lib/electron-harness.mjs:196:15)\n    at async click (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a69-prep/a69-goal-packaged.mjs:91:15)\n    at async submitPrepared (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a69-prep/a69-goal-packaged.mjs:198:3)\n    at async caseA69 (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a69-prep/a69-goal-packaged.mjs:266:3)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a69-prep/a69-goal-packaged.mjs:128:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a69-prep/a69-goal-packaged.mjs:359:3"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T08:52:23.034Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T08:52:23.050Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T08:52:23.063Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T08:52:23.685Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"ecd79fa7-e2d5-4c98-b29f-0df8269741ca\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T08:52:23.697Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:52:23.730Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:52:25.425Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:52:25.455Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:52:25.466Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:52:27.126Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    }
+  ],
+  "model": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-375/home",
+    "at": "2026-11-19T08:52:17.587Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 15169,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-375/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-375/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-375/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328"
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 15169,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T08:52:27.837Z"
+}

@@ -1,0 +1,440 @@
+{
+  "caseId": "M14-A69",
+  "sourceCommit": "153e18f93f9910775765f7ab002578adea748491",
+  "scope": "M14-A69-goal-and-commands",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "96c56b1411025844b8a327d15bae4999943d4af828ae2df123b0f9946a5d04b8"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T08:58:02.612Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A69-goal-and-commands": {
+      "status": "pass",
+      "passed": [
+        {
+          "label": "Codex command menu lists /review and /goal, not /init",
+          "data": [
+            "/terminal",
+            "/model",
+            "/goal",
+            "/compact",
+            "/review"
+          ]
+        },
+        {
+          "label": "Codex manual /init blocked: warning shown, nothing sent, input kept",
+          "data": {
+            "requests": 0
+          }
+        },
+        {
+          "label": "Codex /goal intercepted by the host (never sent as text)",
+          "data": [
+            "A69-USER-WARM"
+          ]
+        },
+        {
+          "label": "Codex goal opens consecutive turns automatically",
+          "data": 2
+        },
+        {
+          "label": "goal row shows status, duration and host turn count, no token",
+          "data": "A69-CODEX-GOAL\n进行中 · 0 秒 · 1 轮\n暂停\n清除"
+        },
+        {
+          "label": "pause: no new turn after the current one ends",
+          "data": {
+            "pausedAt": 2,
+            "now": 2
+          }
+        },
+        "resume opens a new turn immediately",
+        {
+          "label": "stop = pause goal then interrupt; row shows paused, no further turns",
+          "data": {
+            "stopRow": "A69-CODEX-GOAL\n已暂停 · 0 秒 · 3 轮\n继续\n清除",
+            "stoppedAt": 3,
+            "now": 3
+          }
+        },
+        "clear removes the goal row",
+        {
+          "label": "Claude command menu lists /init",
+          "data": [
+            "/terminal",
+            "/model",
+            "/agents",
+            "/auto-mode-setup",
+            "/autocompact",
+            "/clear",
+            "/compact",
+            "/config",
+            "/output-style",
+            "/context",
+            "/effort",
+            "/fast",
+            "/heapdump",
+            "/init",
+            "/mcp",
+            "/model",
+            "/__remote-workflow",
+            "/workflow-launch-exec",
+            "/reload-skills",
+            "/rename",
+            "/security-review",
+            "/usage",
+            "/insights",
+            "/recap",
+            "/goal",
+            "/list-agents",
+            "/team-onboarding"
+          ]
+        },
+        {
+          "label": "Claude /goal is submitted as text to the CLI and recognised from its Goal set reply",
+          "data": [
+            [
+              "user_message",
+              "A69-USER-CLAUDE-WARM"
+            ],
+            [
+              "system_notice",
+              null
+            ],
+            [
+              "assistant_message",
+              "REPLY-A69-USER-CLAUDE-WARM"
+            ],
+            [
+              "user_message",
+              "/goal A69-CLAUDE-GOAL"
+            ],
+            [
+              "files_changed",
+              null
+            ],
+            [
+              "assistant_message",
+              "Goal set: A69-CLAUDE-GOAL"
+            ],
+            [
+              "assistant_message",
+              "A69-EXTRA-TURN"
+            ]
+          ]
+        },
+        {
+          "label": "Claude goal offers only clear",
+          "data": [
+            "清除"
+          ]
+        },
+        {
+          "label": "Claude clear sends /goal clear and removes the row",
+          "data": [
+            [
+              "user_message",
+              "A69-USER-CLAUDE-WARM"
+            ],
+            [
+              "system_notice",
+              null
+            ],
+            [
+              "assistant_message",
+              "REPLY-A69-USER-CLAUDE-WARM"
+            ],
+            [
+              "user_message",
+              "/goal A69-CLAUDE-GOAL"
+            ],
+            [
+              "files_changed",
+              null
+            ],
+            [
+              "assistant_message",
+              "Goal set: A69-CLAUDE-GOAL"
+            ],
+            [
+              "assistant_message",
+              "A69-EXTRA-TURN"
+            ],
+            [
+              "user_message",
+              "/goal clear"
+            ],
+            [
+              "files_changed",
+              null
+            ],
+            [
+              "assistant_message",
+              "Goal cleared: A69-CLAUDE-GOAL"
+            ]
+          ]
+        }
+      ],
+      "missing": [],
+      "codexMenu": [
+        "/terminal",
+        "/model",
+        "/goal",
+        "/compact",
+        "/review"
+      ],
+      "codexRowActive": "A69-CODEX-GOAL\n进行中 · 0 秒 · 1 轮\n暂停\n清除",
+      "claudeMenu": [
+        "/terminal",
+        "/model",
+        "/agents",
+        "/auto-mode-setup",
+        "/autocompact",
+        "/clear",
+        "/compact",
+        "/config",
+        "/output-style",
+        "/context",
+        "/effort",
+        "/fast",
+        "/heapdump",
+        "/init",
+        "/mcp",
+        "/model",
+        "/__remote-workflow",
+        "/workflow-launch-exec",
+        "/reload-skills",
+        "/rename",
+        "/security-review",
+        "/usage",
+        "/insights",
+        "/recap",
+        "/goal",
+        "/list-agents",
+        "/team-onboarding"
+      ],
+      "unknownBranch": "Not reachable with Claude CLI 2.1.326: the CLI answers /goal locally in the recognised format; covered by service and renderer tests (D06-66).",
+      "trace": {
+        "codex": [
+          {
+            "at": 1795078691687,
+            "latest": "A69-USER-WARM",
+            "slashLeak": false,
+            "text": "REPLY-A69-USER-WARM"
+          },
+          {
+            "at": 1795078698086,
+            "latest": "</codex_internal_context>",
+            "slashLeak": false,
+            "text": "A69-GOAL-TURN-1"
+          },
+          {
+            "at": 1795078698515,
+            "latest": "</codex_internal_context>",
+            "slashLeak": false,
+            "text": "A69-GOAL-TURN-2"
+          },
+          {
+            "at": 1795078701965,
+            "latest": "</codex_internal_context>",
+            "slashLeak": false,
+            "text": "A69-GOAL-TURN-3"
+          }
+        ],
+        "claude": [
+          {
+            "at": 1795078706300,
+            "latest": "A69-USER-CLAUDE-WARM",
+            "slashLeak": false,
+            "text": "REPLY-A69-USER-CLAUDE-WARM"
+          },
+          {
+            "at": 1795078706677,
+            "latest": "A session-scoped Stop hook is now active with condition: \"A69-CLAUDE-GOAL\". Brie",
+            "slashLeak": false,
+            "text": "A69-EXTRA-TURN"
+          },
+          {
+            "at": 1795078706682,
+            "latest": "ARGUMENTS: {\"session_id\":\"59d72059-ab98-4426-b996-4a84110c74b8\",\"transcript_path",
+            "slashLeak": false,
+            "text": "A69-EXTRA-TURN"
+          }
+        ]
+      }
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T08:58:09.792Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T08:58:09.803Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T08:58:09.819Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T08:58:10.478Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"fbafecac-9305-4085-8234-c41adb0be861\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T08:58:10.492Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:58:10.509Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:58:11.812Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:58:11.833Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:58:11.843Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:58:13.501Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:58:17.659Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:58:18.226Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "暂停",
+      "x": 1136,
+      "y": 567.2265625
+    },
+    {
+      "at": "2026-11-19T08:58:21.542Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "继续",
+      "x": 1136,
+      "y": 612.71875
+    },
+    {
+      "at": "2026-11-19T08:58:21.665Z",
+      "selector": ".agent-composer button.agent-stop-run",
+      "x": 1181.5,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:58:24.832Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1182.5,
+      "y": 677.1171875
+    },
+    {
+      "at": "2026-11-19T08:58:25.987Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"c0470336-5e0f-4553-999d-eb94101887f5\"]",
+      "x": 171.5,
+      "y": 379
+    },
+    {
+      "at": "2026-11-19T08:58:25.996Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:58:26.014Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:58:26.430Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:58:26.440Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T08:58:26.451Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T08:58:26.818Z",
+      "selector": "[data-testid=\"agent-goal\"] .agent-goal-actions button",
+      "label": "清除",
+      "x": 1188,
+      "y": 489.6171875
+    }
+  ],
+  "model": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-377/home",
+    "at": "2026-11-19T08:58:04.033Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 47241,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-377/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-377/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-377/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328"
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 47241,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T08:58:27.928Z"
+}
