@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T19:22:07+08:00",
+  "updatedAt": "2026-11-19T19:45:39+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -471,12 +471,12 @@
     "evidence": "../../../证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-2b78058ec/README.md"
   },
   "currentProgress": {
-    "passed": 53,
+    "passed": 54,
     "applicable": 73,
-    "notFullyExecuted": 20,
+    "notFullyExecuted": 19,
     "blocked": 0,
-    "verifiedAt": "2026-11-19T18:20:27+08:00",
-    "completionPercent": 72.6
+    "verifiedAt": "2026-11-19T19:45:39+08:00",
+    "completionPercent": 73.97
   },
   "checkpointHistory": [
     {
@@ -853,6 +853,61 @@
       ],
       "result": "428 Claude 本机真实模型从 `$` 菜单使用纳管 Skill，实际运行相对程序并回报一致结果。Codex 在该本机供应商的工具声明兼容处失败，更新／删除继续待验。",
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/fc61d9dcd/A08-real-local-claude/README.md"
+    },
+    {
+      "case": "M14-A66",
+      "package": "fc61d9dcd",
+      "asar": "3fe7e5cb995ffed2de34ec9fc393b6450e2feb414fee0e5c2ff44a85ba7a1427",
+      "attempts": [
+        "g03/attempt-528"
+      ],
+      "result": "528 同名活动项目拒绝、归档后同名新建、两个实际工作副本按项目身份分隔复验通过。显式路径拒绝正反例及 App 正常退出也通过。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/fc61d9dcd/A66-install-timeout-and-path/README.md"
+    },
+    {
+      "case": "M14-A08",
+      "source": "fc61d9dcd",
+      "attempts": [
+        "g03/attempt-431",
+        "g03/attempt-432"
+      ],
+      "result": "431 实际 Codex 执行相对脚本；432 实际 Claude 执行原始和更新脚本。删除后启动失败已定位 D06-73，9a9da26a7 定向与相关回归通过，实包复验待记。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/fc61d9dcd/A08-real-local-update-and-removal/README.md"
+    },
+    {
+      "case": "M14-A66",
+      "source": "fc61d9dcd",
+      "attempts": [
+        "g03/attempt-529"
+      ],
+      "result": "529 同仓子工作副本实际运行时，独立 Codex 原目标不变，真实输入进本任务队列、插话确认原回合。后续普通输入派发尚欠绿测。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/fc61d9dcd/A66-independent-goal/README.md"
+    },
+    {
+      "case": "M14-A07",
+      "source": "9a9da26a7",
+      "attempts": [],
+      "result": "本机原生进程三种项目位置验证，私有 HOME 可限制个人 Skill 晚到发现，同时保留纳管、宿主、项目与冻结入口；原生命令环境兼容待证，D06-72 仍开放。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/9a9da26a7/A07-private-home-probe/README.md"
+    },
+    {
+      "case": "M14-A23",
+      "source": "9a9da26a7",
+      "attempts": [],
+      "result": "复用正反例证据已盘点。还缺重新选择同一协作 Skill 的端到端流程；产品将第 5 子任务排队、A23 写数量超限拒绝，需核对并发判据。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/9a9da26a7/A23-skill-host-boundaries/README.md"
+    },
+    {
+      "case": "M14-A08",
+      "package": "9a9da26a7",
+      "asar": "3f8d39d0458accff2138e7e9a2c0309c8d47f1fb51437daf4f32dfe38857d357",
+      "attempts": [
+        "g03/attempt-433",
+        "g03/attempt-434",
+        "g03/attempt-435"
+      ],
+      "result": "已通过。新包 433／434 两端均用真实本机模型从界面选用，执行原始及更新的相对脚本，模型答案与原生回执一致；物理删除来源后新 run 正常且目录、面板都无原条目。D06-73 实包关闭，旧冻结证据沿用 A40。 435 确认两个执行器删除一项后仍保留同目录另一项，共六个运行。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/9a9da26a7/A08-managed-skill-lifecycle/README.md"
     }
   ]
 }
