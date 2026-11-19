@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T14:27:02+08:00",
+  "updatedAt": "2026-11-19T14:49:56+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -379,8 +379,9 @@
     "packagedUI": null,
     "nativeBuild": {
       "owner": "coordination",
-      "case": "M13 full application regression",
-      "baseline": "2b78058ec"
+      "case": "packaging D06-62 successor",
+      "baseline": "9a6e95cdc",
+      "sessionId": 97191
     }
   },
   "groups": {
@@ -401,7 +402,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "先完成 2b78058ec 的 M13 全量回归。D06-62 软件回归已通过，释放槽位后统一构建新包，实包复验 A60 并继续 A19、A05、A15 与 A34 合成样本。A61 仍按旧入口清理门槛执行。",
+  "next": "M13 全量已结束，唯一超时单独复验通过。9a6e95cdc 正在统一构建，待包签名和哈希核验后执行 A60、A19、A05、A15 与 A34。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
@@ -442,9 +443,24 @@
   },
   "m13Followup": {
     "commit": "2b78058ec1e55c027f69ceb2d3c8fcbef1c69286",
-    "status": "running",
+    "status": "completed-with-isolated-retry",
     "startedAt": "2026-11-19T14:04:43+08:00",
-    "log": "/private/tmp/willyou-m14-stage6.WRvdST/m13-full-2b78058ec.log"
+    "log": "/private/tmp/willyou-m14-stage6.WRvdST/m13-full-2b78058ec.log",
+    "endedAt": "2026-11-19T14:48:41+08:00",
+    "full": {
+      "passed": 2384,
+      "failed": 1,
+      "skipped": 9,
+      "total": 2394
+    },
+    "isolatedRetry": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 60,
+      "total": 61
+    },
+    "effectivePassed": 2385,
+    "evidence": "../../../证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-2b78058ec/README.md"
   },
   "currentProgress": {
     "passed": 42,
