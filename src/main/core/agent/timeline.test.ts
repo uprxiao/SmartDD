@@ -148,6 +148,21 @@ describe('复核 1755 投影回归', () => {
     expect(error('max_output_tokens mentioned in an ordinary error', 'other')?.payload).not.toHaveProperty('limited');
     expect(error('Context window too large', 'contextWindowExceeded')?.payload).toMatchObject({ limited: { kind: 'context' } });
   });
+  it('A60 marks Codex retries that ended on HTTP 429 as a rate limit (D06-63)', () => {
+    const p = new TimelineProjector('codex-app-server');
+    const error = (info: unknown, willRetry = false) => p.project({
+      type: 'native', name: 'error',
+      payload: { turnId: 'turn', error: { message: 'exceeded retry limit, last status: 429 Too Many Requests', codexErrorInfo: info, additionalDetails: null }, willRetry },
+    })[0];
+    // Payload shape from attempt 365: response_too_many_failed_attempts with http_status_code 429.
+    expect(error({ responseTooManyFailedAttempts: { httpStatusCode: 429 } })).toMatchObject({
+      type: 'error', payload: { code: 'responseTooManyFailedAttempts', message: 'exceeded retry limit, last status: 429 Too Many Requests', limited: { kind: 'rate' } },
+    });
+    expect(error({ responseTooManyFailedAttempts: { httpStatusCode: 429 } })?.payload.limited).not.toHaveProperty('resetAt');
+    expect(error({ responseTooManyFailedAttempts: { httpStatusCode: 503 } })?.payload).not.toHaveProperty('limited');
+    expect(error({ responseTooManyFailedAttempts: { httpStatusCode: null } })?.payload).not.toHaveProperty('limited');
+    expect(error({ responseStreamDisconnected: { httpStatusCode: 429 } }, true)?.payload).not.toHaveProperty('limited');
+  });
   it('NR08：Claude 额度拒绝与输出上限标为受限并保留重置时间', () => {
     const p = new TimelineProjector('claude-sdk');
     const a = p.project({ type: 'native', name: 'rate_limit_event', payload: { type: 'rate_limit_event', uuid: 'r', rate_limit_info: { status: 'rejected', resetsAt: 1800000000, rateLimitType: 'five_hour' } } });

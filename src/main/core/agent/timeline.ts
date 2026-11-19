@@ -209,7 +209,9 @@ export class TimelineProjector {
       const code = typeof info === 'string' ? info : info && typeof info === 'object' ? Object.keys(info)[0] : 'error';
       // 受限与普通失败分开（复核 CR18，需求 R02）：额度／限流与输出上限各自标明，保留原生事实。
       const outputLimit = code === 'other' && p?.willRetry !== true && p?.error?.message === 'Incomplete response returned, reason: max_output_tokens';
-      const limited = outputLimit ? { kind: 'output' } : code === 'usageLimitExceeded' ? { kind: 'usage' } : code === 'rateLimitExceeded' || code === 'tooManyRequests' ? { kind: 'rate' } : code === 'contextWindowExceeded' ? { kind: 'context' } : null;
+      // Codex reports a 429 that outlasted its own retries as an HTTP-status variant, not rateLimitExceeded (D06-63).
+      const http429 = p?.willRetry !== true && info && typeof info === 'object' && (info as any)[code]?.httpStatusCode === 429;
+      const limited = outputLimit ? { kind: 'output' } : code === 'usageLimitExceeded' ? { kind: 'usage' } : code === 'rateLimitExceeded' || code === 'tooManyRequests' || http429 ? { kind: 'rate' } : code === 'contextWindowExceeded' ? { kind: 'context' } : null;
       const resetAt = limited?.kind === 'usage' && p?.willRetry !== true && this.codexTurnId && p?.turnId === this.codexTurnId
         ? this.codexQuotaReset() : undefined;
       return [{ key: `error:${p?.turnId ?? ''}:${text(p?.error?.message).slice(0, 40)}`, type: 'error', payload: { code, message: text(p?.error?.message ?? p), ...(limited ? { limited: { ...limited, ...(resetAt ? { resetAt } : {}) } } : {}) }, terminal: 'failed' }];
