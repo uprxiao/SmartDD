@@ -74,6 +74,8 @@ export interface TurnRow { turn_id: string; task_id: string; run_id: string | nu
 export interface RequestRow { request_id: string; task_id: string; class: 'native' | 'host_business'; origin_json: string; revision: number; kind: string; payload_ref: string; status: string }
 export interface StoredEvent { taskId: string; seq: number; type: string; itemId: string | null; payload: unknown }
 export type EventListener = (event: StoredEvent) => void;
+type EmitEvent = (taskId: string, type: string, payload: unknown, itemId?: string | null, revision?: number | null) => void;
+const TURN_TOOL_TYPES = ['command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'proposed_plan'];
 type TimelineRow = { item_id: string; turn_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string };
 function timelineItem(row: TimelineRow) {
   return {
@@ -174,7 +176,7 @@ export class AgentStore {
     return { taskId, seq, type, itemId, payload: stored === JSON.stringify(payload ?? null) ? payload : JSON.parse(stored) };
   }
   /** 写库与事件在同一事务；提交成功后才通知。 */
-  tx<T>(fn: (emit: (taskId: string, type: string, payload: unknown, itemId?: string | null, revision?: number | null) => void) => T): T {
+  tx<T>(fn: (emit: EmitEvent) => T): T {
     const pending: StoredEvent[] = [];
     this.transactionEvents.push(pending);
     try {
@@ -294,6 +296,7 @@ export class AgentStore {
       for (const t of open) {
         // 已开始但没有原生终态：状态未知，不自动重发。
         this.sqlite.prepare("UPDATE agent_turns SET status='unknown',ended_at=?,error_code='RUN_ENDED' WHERE turn_id=?").run(now(), t.turn_id);
+        this.settleTurnTools(emit, { taskId, turnId: t.turn_id });
         emit(taskId, 'turn.ended', { turnId: t.turn_id, status: 'unknown' });
       }
       emit(taskId, 'run.ended', { runId, state, errorCode, retiredRequests: retired });
@@ -376,16 +379,32 @@ export class AgentStore {
     this.tx(emit => {
       if (this.sqlite.prepare("UPDATE agent_turns SET status=?,ended_at=?,error_code=? WHERE turn_id=? AND status IN ('accepted','dispatching','started')").run(status, now(), errorCode, turnId).changes) {
         this.sqlite.prepare("UPDATE agent_requests SET status='retired',updated_at=? WHERE class='native' AND status='pending' AND json_extract(origin_json,'$.turnId')=?").run(now(), turnId);
+        this.settleTurnTools(emit, { taskId: turn.task_id, turnId });
         emit(turn.task_id, 'turn.ended', { turnId, status, errorCode });
       }
     });
   }
 
+  /** Preserve the last native payload and its body revision, including any artifact. */
+  private settleTurnTools(emit: EmitEvent, turn?: { taskId: string; turnId: string }) {
+    const scope = turn
+      ? 'task_id=? AND turn_id=?'
+      : "turn_id IN (SELECT turn_id FROM agent_turns WHERE status IN ('completed','failed','interrupted','unknown','canceled'))";
+    const rows = this.sqlite.prepare(`UPDATE agent_items SET terminal_state='unconfirmed',updated_at=?
+      WHERE terminal_state IS NULL AND node_id IS NULL AND ${scope}
+        AND type IN (${TURN_TOOL_TYPES.map(() => '?').join(',')})
+      RETURNING task_id,item_id,type,revision`)
+      .all(now(), ...(turn ? [turn.taskId, turn.turnId] : []), ...TURN_TOOL_TYPES) as
+      { task_id: string; item_id: string; type: string; revision: number }[];
+    for (const row of rows) emit(row.task_id, 'item.updated', { type: row.type, terminal: 'unconfirmed' }, row.item_id, row.revision);
+  }
+
   /** 规范条目：ordinal 稳定；原生键包含 binding/run/generation，同一原生条目重复到达只升修订。 */
   upsertItem(i: { taskId: string; turnId: string | null; runId: string | null; nativeKey: string; nodeId?: string; type: string; payload: unknown; terminalState?: string | null }): string {
     return this.itemTx((written, replaced, emit) => {
-      const existing = this.sqlite.prepare('SELECT item_id,revision,payload_ref FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number; payload_ref: string } | undefined;
+      const existing = this.sqlite.prepare('SELECT item_id,revision,payload_ref,terminal_state FROM agent_items WHERE task_id=? AND native_key=?').get(i.taskId, i.nativeKey) as { item_id: string; revision: number; payload_ref: string; terminal_state: string | null } | undefined;
       if (existing) {
+        if (existing.terminal_state && !i.terminalState && TURN_TOOL_TYPES.includes(i.type)) return existing.item_id;
         const revision = existing.revision + 1;
         const old = AgentStore.artifactOf(existing.payload_ref); if (old) replaced.push(old.file);
         this.sqlite.prepare('UPDATE agent_items SET payload_ref=?,revision=?,terminal_state=?,updated_at=? WHERE item_id=?').run(this.itemBody(i.taskId, existing.item_id, revision, i.payload, written), revision, i.terminalState ?? null, now(), existing.item_id);
@@ -585,6 +604,8 @@ export class AgentStore {
         }
         emit(r.task_id, 'run.ended', { runId: r.run_id, state: 'orphaned', errorCode: 'HOST_RESTARTED' });
       }
+      // Repair historical turns that ended before the host settled their foreground tools.
+      this.settleTurnTools(emit);
       return rows.map(r => ({ runId: r.run_id, taskId: r.task_id, pid: r.pid, processStartedAt: r.process_started_at }));
     });
   }

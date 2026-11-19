@@ -1,4 +1,7 @@
 import Database from 'better-sqlite3';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore, sha256 } from './agent-store';
@@ -271,6 +274,76 @@ describe('运行服务', () => {
     instances[0].emit({ type: 'request.resolved', requestKey: '1' });
     instances[0].emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status: 'interrupted' });
     expect(db.prepare("SELECT json_extract(origin_json,'$.nativeRequest') AS k,status FROM agent_requests ORDER BY k").all()).toEqual([{ k: '1', status: 'retired' }, { k: '2', status: 'retired' }]);
+  });
+
+  it.each(['completed', 'interrupted', 'failed', 'exit', 'restart'] as const)(
+    'A60 settles foreground tools without a native outcome when the turn ends (%s)', async ending => {
+      const { db, store, service, base, instances, taskId } = setup();
+      const run = await service.open(base);
+      const native = instances[0];
+      await service.submit(run.runId, { clientInputId: 'a60-turn', text: '开始' });
+      const turn = store.turnByClientInput(taskId, 'a60-turn')!;
+      const start = (item: object) => native.emit({ type: 'native', name: 'item/started', payload: { turnId: 'nt-1', item } });
+      start({ id: 'foreground', type: 'commandExecution', command: 'ls', aggregatedOutput: 'partial' });
+      start({ id: 'mcp', type: 'mcpToolCall', tool: 'inspect' });
+      native.emit({ type: 'item.completed', nativeItemId: 'done', itemType: 'commandExecution', payload: { id: 'done', type: 'commandExecution', command: 'pwd', status: 'completed', exitCode: 0 } });
+      native.emit({ type: 'node.state', nodeId: 'background', state: 'running' });
+      native.emit({ type: 'request', requestKey: 'approval', kind: 'command_approval', payload: {} });
+      const request = store.requestByNative(run.runId, 'approval') as { request_id: string };
+      const before = store.items(taskId).find(i => i.payload.command === 'ls')!;
+      expect(before).toMatchObject({ terminal: null, payload: { status: 'running', output: 'partial' } });
+      const changes: unknown[] = [];
+      store.subscribe(event => { if (event.itemId === before.itemId) changes.push(event); });
+
+      if (ending === 'exit') native.emit({ type: 'exit', code: 1, signal: null });
+      else if (ending === 'restart') store.recoverOrphanRuns('host-after-crash');
+      else native.emit({ type: 'turn.completed', nativeTurnId: 'nt-1', status: ending });
+
+      expect(store.turn(turn.turn_id)?.status).toBe(ending === 'exit' || ending === 'restart' ? 'unknown' : ending);
+      expect(store.request(request.request_id)?.status).toBe('retired');
+      expect(store.items(taskId)).toEqual(expect.arrayContaining([
+        expect.objectContaining({ itemId: before.itemId, terminal: 'unconfirmed', payload: before.payload }),
+        expect.objectContaining({ type: 'tool_call', terminal: 'unconfirmed' }),
+        expect.objectContaining({ terminal: 'completed', payload: expect.objectContaining({ command: 'pwd', exitCode: 0 }) }),
+      ]));
+      expect(changes).toEqual([expect.objectContaining({ type: 'item.updated', itemId: before.itemId })]);
+      if (ending === 'exit') return; // The original native group has exited.
+      expect(db.prepare("SELECT terminal_state FROM agent_items WHERE node_id='background'").get()).toEqual({ terminal_state: null });
+      if (ending === 'restart') return; // Detached node recovery waits for verified process exit.
+
+      start({ id: 'foreground', type: 'commandExecution', command: 'ls' });
+      expect(store.items(taskId).find(i => i.itemId === before.itemId)).toMatchObject({ terminal: 'unconfirmed', payload: before.payload });
+      native.emit({ type: 'item.completed', nativeItemId: 'foreground', itemType: 'commandExecution', payload: { id: 'foreground', type: 'commandExecution', command: 'ls', status: 'completed', exitCode: 0 } });
+      expect(store.items(taskId).find(i => i.itemId === before.itemId)).toMatchObject({ terminal: 'completed', payload: { exitCode: 0 } });
+    },
+  );
+
+  it('A60 repairs a legacy terminal turn without changing or deleting its tool artifact', async () => {
+    const { db, service, base, taskId } = setup();
+    const run = await service.open(base);
+    await service.submit(run.runId, { clientInputId: 'legacy-tool', text: '开始' });
+    const dir = mkdtempSync(join(tmpdir(), 'agent-terminal-item-'));
+    try {
+      const store = new AgentStore(db, { artifactDir: dir });
+      const turn = store.turnByClientInput(taskId, 'legacy-tool')!;
+      const payload = { name: 'inspect', status: 'running', output: '原文'.repeat(200_000) };
+      const itemId = store.upsertItem({ taskId, turnId: turn.turn_id, runId: run.runId,
+        nativeKey: 'legacy', type: 'tool_call', payload });
+      const before = store.itemById(taskId, itemId)!;
+      expect(JSON.parse(before.payloadJson)).toHaveProperty('artifact.file');
+      db.prepare("UPDATE agent_turns SET status='interrupted' WHERE turn_id=?").run(turn.turn_id);
+
+      store.recoverOrphanRuns('host-1');
+
+      expect(store.items(taskId).find(i => i.itemId === itemId)).toMatchObject({ terminal: 'unconfirmed' });
+      expect(store.itemById(taskId, itemId)).toEqual(before);
+      expect(store.readItemBody(taskId, itemId)).toEqual({ revision: before.revision, text: JSON.stringify(payload) });
+      const watermark = store.watermark(taskId);
+      store.recoverOrphanRuns('host-1');
+      expect(store.watermark(taskId)).toBe(watermark);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it.each(['completed', 'forced'] as const)('父回合停止后，继续等待原生子收口或由用户强制停止（%s）', async childEnd => {

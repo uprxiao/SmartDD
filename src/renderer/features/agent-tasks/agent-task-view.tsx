@@ -415,7 +415,7 @@ function WorkItem({ it }: { it: TimelineItem }) {
   const { payload: p, truncated, load } = useFullPayload(it);
   const viewProcess = useContext(NativeProcessScope);
   const Icon = WORK_ICONS[it.type] ?? Info;
-  return <details className={`agent-work-row ${p.status ?? ''}`}>
+  return <details className={`agent-work-row ${it.terminal === 'unconfirmed' ? 'unconfirmed' : p.status ?? ''}`}>
     <summary><Icon size={14}/><span>{workLabel({ ...it, payload: p })}</span></summary>
     {p.output ? <pre>{String(p.output)}</pre> : it.type === 'reasoning' ? <Markdown itemId={it.itemId} text={String(p.text ?? '')} /> : null}
     {it.type === 'subagent' && <button type="button" className="agent-older" onClick={() => viewProcess(it)}>查看过程</button>}

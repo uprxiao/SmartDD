@@ -150,18 +150,22 @@ export function summarizeTools(items: readonly TimelineItem[]) {
 /** 工作条目的单行摘要。 */
 export function workLabel(it: TimelineItem): string {
   const p = it.payload ?? {};
+  const toolLabel = (action: string, target: string) => {
+    if (it.terminal === 'unconfirmed') return target ? `未收到工具结果 · ${target}` : '未收到工具结果';
+    return target ? `${action} ${target}` : action;
+  };
   switch (it.type) {
-    case 'command_execution': return `${p.status === 'running' ? '正在运行' : p.status === 'declined' ? '已拒绝运行' : p.status === 'failed' ? '运行失败' : '运行了'} ${p.command ?? p.input?.command ?? ''}`.trim();
+    case 'command_execution': return toolLabel(p.status === 'running' ? '正在运行' : p.status === 'declined' ? '已拒绝运行' : p.status === 'failed' ? '运行失败' : '运行了', p.command ?? p.input?.command ?? '');
     case 'file_change': {
       const paths: string[] = p.changes?.map((c: any) => c.path) ?? (p.input?.file_path ? [p.input.file_path] : []);
-      return `${p.status === 'running' ? '正在修改' : p.status === 'declined' ? '已拒绝修改' : p.status === 'failed' ? '未能修改' : '修改了'} ${paths.join('、')}`.trim();
+      return toolLabel(p.status === 'running' ? '正在修改' : p.status === 'declined' ? '已拒绝修改' : p.status === 'failed' ? '未能修改' : '修改了', paths.join('、'));
     }
-    case 'file_search': return `${p.status === 'running' ? '正在查看' : '查看了'} ${p.input?.file_path ?? p.input?.pattern ?? p.input?.path ?? ''}`.trim();
-    case 'web_search': return `搜索 ${p.query ?? p.input?.query ?? p.input?.url ?? ''}`.trim();
+    case 'file_search': return toolLabel(p.status === 'running' ? '正在查看' : '查看了', p.input?.file_path ?? p.input?.pattern ?? p.input?.path ?? '');
+    case 'web_search': return toolLabel('搜索', p.query ?? p.input?.query ?? p.input?.url ?? '');
     case 'reasoning': return '思考';
     case 'subagent': return `子 Agent ${p.input?.description ?? p.tool ?? ''}`.trim();
     case 'assistant_message': return String(p.text ?? '').split('\n')[0].slice(0, 120);
-    default: return `${p.status === 'running' ? '正在调用' : '调用了'} ${p.name ?? '工具'}`;
+    default: return toolLabel(p.status === 'running' ? '正在调用' : '调用了', p.name ?? '工具');
   }
 }
 

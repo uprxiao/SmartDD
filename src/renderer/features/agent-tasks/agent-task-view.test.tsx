@@ -981,6 +981,18 @@ it('F14 refuses to replace the draft if the other version changes after the conf
   expect(mocks.draftBody).toHaveBeenLastCalledWith(taskId,0,3);
 });
 
+it('A60 shows an unconfirmed command result, retaining its partial output after the turn stops', async () => {
+  const started = '2026-11-18T10:00:00Z', ended = '2026-11-18T10:00:12Z';
+  mocks.snapshot.mockResolvedValue(snapshot({ status:'stopped',
+    items:[{...item('command_execution',{command:'ls',status:'running',output:'partial output'}),turnId:'ended',terminal:'unconfirmed'}],
+    turns:[{turn_id:'ended',status:'interrupted',started_at:started,ended_at:ended}],
+  }));
+  render(<AgentTaskView taskId="task"/>);
+  const label = await screen.findByText('未收到工具结果 · ls');
+  expect(screen.queryByText('正在运行 ls')).toBeNull();
+  expect(label.closest('details')?.textContent).toContain('partial output');
+});
+
 describe.each([
   {status:'started', taskStatus:'working', stopping:true, title:'正在停止…'},
   {status:'interrupted', taskStatus:'stopped', stopping:false, title:'你在 12 秒后停止了'},
