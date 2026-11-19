@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T20:12:45+08:00",
+  "updatedAt": "2026-11-19T20:16:26+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -969,6 +969,19 @@
       ],
       "result": "真实本机模型 575／576 分别由 Claude 和 Codex 发出读写委派，同目标自动暂停并复用原会话恢复，双方两个真实结果均原样、一次交付。已对照 552／554 双目录、556 用户停止、564 实包长审批、565／566 取消与失败、568 冷重启等实包证据。",
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/9a9da26a7/A70-real-local/README.md"
+    },
+    {
+      "case": "M14-A23",
+      "package": "9a9da26a7",
+      "asar": "3f8d39d0458accff2138e7e9a2c0309c8d47f1fb51437daf4f32dfe38857d357",
+      "attempts": [
+        "g04/attempt-571",
+        "g04/attempt-572",
+        "g04/attempt-574",
+        "g04/attempt-577"
+      ],
+      "result": "577 新包两个真实 Codex 父端用本机模型重复选用同一 Skill、相对资源与真实宿主委派，Claude SDK 走确定性本机回复，两次原生子结果都经真实通知回父。571／572／574 的原生部分证据与测试限制保留。数量口径及剩余边界待确认。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/9a9da26a7/A23-local-collaboration/README.md"
     }
   ]
 }
