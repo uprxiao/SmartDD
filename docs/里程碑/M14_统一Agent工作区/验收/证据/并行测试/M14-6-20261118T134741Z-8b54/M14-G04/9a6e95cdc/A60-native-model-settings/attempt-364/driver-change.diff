@@ -1,0 +1,31 @@
+364a365,367
+>     // 360 opened the menu as soon as the host snapshot had the catalog, before the renderer's debounced reload.
+>     // Wait (bounded) for the open menu itself to show the published option, and keep every sample.
+>     result.traitsSamples=[];
+366c369,376
+<     assert(result.traitsAfter.buttons.some(b=>b.label==='high'&&b.selected));
+---
+>     const traitsStart=Date.now();
+>     while(!result.traitsAfter.buttons.some(b=>b.label==='high'&&b.selected)&&Date.now()-traitsStart<5000){
+>       await pause(200);
+>       result.traitsAfter=await app.evaluate(`(() => { const panel=document.querySelector('.agent-picker-traits'); return panel&&{text:panel.innerText,buttons:[...panel.querySelectorAll('button')].map(b=>({label:b.innerText.trim(),selected:!!b.querySelector('svg')}))}; })()`);
+>       result.traitsSamples.push({ms:Date.now()-traitsStart,buttons:result.traitsAfter?.buttons?.length??null});
+>     }
+>     result.traitsVisibleAfterMs=Date.now()-traitsStart;
+>     assert(result.traitsAfter.buttons.some(b=>b.label==='high'&&b.selected),'Open menu did not show the published effort within 5 s');
+400a411,425
+>       await app.invoke('agentTasks.stop',task.taskId,true).catch(()=>{});
+>       await until(async()=>!(await snapshot(task.taskId)).run?.busy,'failure cleanup stopped original run',7000).catch(()=>{});
+>     }
+>     try{await quitApp();}
+>     catch(error){
+>       result.cleanupError=String(error);
+>       if(app)try{appRun.forcedExit=await app.crash();}catch{}
+>     }
+>   }
+>   if(live){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+>   result.end=new Date().toISOString();
+>   writeFileSync(join(out,'result.json'),JSON.stringify(result,null,2),{mode:0o600});
+>   console.log(JSON.stringify({status:result.status,phase:result.phase,appRuns:result.appRuns.map(({pid,exit})=>({pid,exit})),out}));
+> }
+> if(result.status!=='pass'||result.appRuns.some(run=>run.exit?.code!==0||run.exit.signal))process.exitCode=1;
