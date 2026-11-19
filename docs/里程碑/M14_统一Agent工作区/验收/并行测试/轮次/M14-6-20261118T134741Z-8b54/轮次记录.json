@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T11:31:36+08:00",
+  "updatedAt": "2026-11-19T14:05:29+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -18,13 +18,10 @@
       }
     ],
     "candidate": {
-      "commit": "1214412aad05bb629e1d9ce7d532755195fe4dca",
+      "commit": "2b78058ec1e55c027f69ceb2d3c8fcbef1c69286",
       "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
-      "asarSha256": "023e1f888ae4aacee33642555cef939c3a739666b17a11eb8cdacab6c7eec901",
-      "status": "ad hoc signed isolated candidate; six native checks and strict signature verification passed",
-      "fixes": [
-        "D06-57"
-      ]
+      "asarSha256": "7712450f6430db759657bdec03a2e155b05cb96764b2e9a31711ad08306bcc5c",
+      "status": "ad hoc signed isolated candidate; verified the package and prior six native smoke checks"
     },
     "priorCandidates": [
       {
@@ -366,12 +363,25 @@
           "D06-55",
           "D06-56"
         ]
+      },
+      {
+        "commit": "1214412aad05bb629e1d9ce7d532755195fe4dca",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/package-1214412aa/mac-arm64/WillYou.app",
+        "asarSha256": "023e1f888ae4aacee33642555cef939c3a739666b17a11eb8cdacab6c7eec901",
+        "status": "ad hoc signed isolated candidate; six native checks and strict signature verification passed",
+        "fixes": [
+          "D06-57"
+        ]
       }
     ]
   },
   "leases": {
     "packagedUI": null,
-    "nativeBuild": null
+    "nativeBuild": {
+      "owner": "coordination",
+      "case": "M13 full application regression",
+      "baseline": "2b78058ec"
+    }
   },
   "groups": {
     "M14-G01": {
@@ -379,9 +389,8 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G01/attempt-008/result.json"
     },
     "M14-G03": {
-      "status": "A59 的原生子归属、折叠、计时及事件矩阵已归账，资源已释放。",
-      "agent": "delegation_acceptance",
-      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/2b0af2f96/A59-native-work/覆盖矩阵.md"
+      "status": "A80–A85 全组通过。A83 普通目录实包已经归档。",
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G03/2b78058ec/A83-plain/README.md"
     },
     "M14-G04": {
       "status": "A63 和 A40 已归账，末三次 App、原生进程和测试监听均已结束。",
@@ -393,7 +402,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "已达到用户要求的暂停点。恢复后按唯一执行账继续未完成的用例；仍按实施计划核实旧入口清理门槛、A61 和最终 M13 回归。",
+  "next": "M13 全量回归正在生产候选基线运行。A61 仍按旧入口清理门槛执行。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
@@ -431,5 +440,18 @@
     "blocked": 1,
     "outside": 10,
     "verifiedAt": "2026-11-19T11:31:36+08:00"
+  },
+  "m13Followup": {
+    "commit": "2b78058ec1e55c027f69ceb2d3c8fcbef1c69286",
+    "status": "running",
+    "startedAt": "2026-11-19T14:04:43+08:00",
+    "log": "/private/tmp/willyou-m14-stage6.WRvdST/m13-full-2b78058ec.log"
+  },
+  "currentProgress": {
+    "passed": 41,
+    "applicable": 73,
+    "notFullyExecuted": 31,
+    "blocked": 1,
+    "verifiedAt": "2026-11-19T14:05:29+08:00"
   }
 }
