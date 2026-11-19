@@ -1,0 +1,600 @@
+{
+  "caseId": "M14-A12",
+  "sourceCommit": "0ee3d5c316b0b1e292cb6beea0270cee0ce2fe1a",
+  "scope": "M14-A12-tiers",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "ae6e801b99ef1f543c1b7fa27cd340b91e79c127ed54ffb69ef26b47fe5143ef"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T09:24:09.775Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A12-tiers": {
+      "status": "partial",
+      "passed": [
+        {
+          "label": "Codex task tier list is ask/auto/full",
+          "data": [
+            "ask",
+            "auto",
+            "full"
+          ]
+        },
+        {
+          "label": "task page first full access asks with the required text; cancel keeps the tier",
+          "data": "使用完全访问权限？\n\n智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。\n\n插件的写操作也不再询问，发送邮件仍会每次询问。插件声明了更低权限上限时仍按该上限处理；Claude 交出的计划仍需批准。\n取消\n继续使用完全访问"
+        },
+        {
+          "label": "home lists three tiers for Codex and no 帮我批准 for Claude, no 自动接受编辑",
+          "data": {
+            "codexHome": [
+              "请求批准",
+              "帮我批准",
+              "完全访问权限"
+            ],
+            "claudeHome": [
+              "请求批准",
+              "完全访问权限"
+            ]
+          }
+        },
+        {
+          "label": "home uses the same confirmation text; cancel keeps 请求批准",
+          "data": {
+            "homeDialog": "使用完全访问权限？\n\n智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。\n\n插件的写操作也不再询问，发送邮件仍会每次询问。插件声明了更低权限上限时仍按该上限处理；Claude 交出的计划仍需批准。\n取消\n继续使用完全访问",
+            "afterCancel": "请求批准"
+          }
+        },
+        {
+          "label": "home-created task records full access and the native turn runs with never/dangerFullAccess",
+          "data": {
+            "tier": "full",
+            "homeTurn": {
+              "at": 1795080259278,
+              "pid": 77067,
+              "method": "turn/start",
+              "marker": "A12-HOME-FULL",
+              "approvalPolicy": "never",
+              "approvalsReviewer": "user",
+              "sandbox": "dangerFullAccess",
+              "threadId": "01a1f31f-04dd-7c20-9868-b98d32569a75"
+            }
+          }
+        },
+        "home selector still shows the chosen tier after creation",
+        "task page full access is not reconfirmed after the shared confirmation",
+        {
+          "label": "Codex full = never + dangerFullAccess",
+          "data": {
+            "at": 1795080260459,
+            "pid": 76514,
+            "method": "turn/start",
+            "marker": "A12-CODEX-FULL",
+            "approvalPolicy": "never",
+            "approvalsReviewer": "user",
+            "sandbox": "dangerFullAccess",
+            "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+          }
+        },
+        {
+          "label": "each turn sends the tier explicitly and the change applies from the next turn on the same thread",
+          "data": {
+            "ask": {
+              "at": 1795080257590,
+              "pid": 76514,
+              "method": "turn/start",
+              "marker": "A12-CODEX-ASK",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "user",
+              "sandbox": null,
+              "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+            },
+            "auto": {
+              "at": 1795080259540,
+              "pid": 76514,
+              "method": "turn/start",
+              "marker": "A12-CODEX-AUTO",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "auto_review",
+              "sandbox": null,
+              "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+            },
+            "full": {
+              "at": 1795080260459,
+              "pid": 76514,
+              "method": "turn/start",
+              "marker": "A12-CODEX-FULL",
+              "approvalPolicy": "never",
+              "approvalsReviewer": "user",
+              "sandbox": "dangerFullAccess",
+              "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+            }
+          }
+        },
+        {
+          "label": "Claude task tier list is ask/full only",
+          "data": [
+            "ask",
+            "full"
+          ]
+        },
+        {
+          "label": "task model and tier belong to the task across switching",
+          "data": {
+            "t1": {
+              "driverId": "codex-app-server",
+              "profileId": "efc0b992-fbc7-4a14-b63d-9a72a0d0237f",
+              "tier": "full",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "efc0b992-fbc7-4a14-b63d-9a72a0d0237f": true
+              },
+              "model": "m14-switch-model-two"
+            },
+            "t2": {
+              "driverId": "claude-sdk",
+              "profileId": "e28af75d-5302-4a9c-8b9c-97c047978b9d",
+              "tier": "full",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "e28af75d-5302-4a9c-8b9c-97c047978b9d": true
+              },
+              "model": "m14-switch-model-one"
+            }
+          }
+        }
+      ],
+      "missing": [
+        {
+          "label": "Codex ask = workspaceWrite + on-request + reviewer user",
+          "data": {
+            "at": 1795080257590,
+            "pid": 76514,
+            "method": "turn/start",
+            "marker": "A12-CODEX-ASK",
+            "approvalPolicy": "on-request",
+            "approvalsReviewer": "user",
+            "sandbox": null,
+            "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+          }
+        },
+        {
+          "label": "Codex auto = workspaceWrite + on-request + auto_review",
+          "data": {
+            "at": 1795080259540,
+            "pid": 76514,
+            "method": "turn/start",
+            "marker": "A12-CODEX-AUTO",
+            "approvalPolicy": "on-request",
+            "approvalsReviewer": "auto_review",
+            "sandbox": null,
+            "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+          }
+        },
+        {
+          "label": "Claude ask runs with permission-mode default, full with bypassPermissions and resumes the same session",
+          "data": {
+            "askCli": null,
+            "fullCli": null
+          }
+        }
+      ],
+      "codexTurns": {
+        "ask": {
+          "at": 1795080257590,
+          "pid": 76514,
+          "method": "turn/start",
+          "marker": "A12-CODEX-ASK",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandbox": null,
+          "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+        },
+        "auto": {
+          "at": 1795080259540,
+          "pid": 76514,
+          "method": "turn/start",
+          "marker": "A12-CODEX-AUTO",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "auto_review",
+          "sandbox": null,
+          "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+        },
+        "full": {
+          "at": 1795080260459,
+          "pid": 76514,
+          "method": "turn/start",
+          "marker": "A12-CODEX-FULL",
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "dangerFullAccess",
+          "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+        }
+      },
+      "claudeCli": {
+        "askCli": null,
+        "fullCli": null
+      },
+      "codexRows": [
+        {
+          "at": 1795080256624,
+          "pid": 76483,
+          "method": "thread/resume",
+          "marker": null,
+          "approvalPolicy": null,
+          "approvalsReviewer": null,
+          "sandbox": null,
+          "threadId": "7c131a5e-8136-49c9-bac6-4006a499b504"
+        },
+        {
+          "at": 1795080256625,
+          "pid": 76483,
+          "method": "thread/start",
+          "marker": null,
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "auto_review",
+          "sandbox": "read-only",
+          "threadId": null
+        },
+        {
+          "at": 1795080257090,
+          "pid": 76514,
+          "method": "thread/start",
+          "marker": null,
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandbox": null,
+          "threadId": null
+        },
+        {
+          "at": 1795080257590,
+          "pid": 76514,
+          "method": "turn/start",
+          "marker": "A12-CODEX-ASK",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandbox": null,
+          "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+        },
+        {
+          "at": 1795080258780,
+          "pid": 77067,
+          "method": "thread/start",
+          "marker": null,
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "danger-full-access",
+          "threadId": null
+        },
+        {
+          "at": 1795080259278,
+          "pid": 77067,
+          "method": "turn/start",
+          "marker": "A12-HOME-FULL",
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "dangerFullAccess",
+          "threadId": "01a1f31f-04dd-7c20-9868-b98d32569a75"
+        },
+        {
+          "at": 1795080259540,
+          "pid": 76514,
+          "method": "turn/start",
+          "marker": "A12-CODEX-AUTO",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "auto_review",
+          "sandbox": null,
+          "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+        },
+        {
+          "at": 1795080260459,
+          "pid": 76514,
+          "method": "turn/start",
+          "marker": "A12-CODEX-FULL",
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "dangerFullAccess",
+          "threadId": "01a1f31e-fe45-75c1-9471-ba697ac4b17c"
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T09:24:15.730Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T09:24:15.783Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T09:24:15.798Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T09:24:16.357Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0ed94e52-5aff-478b-97fb-5dbf8d91eabd\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T09:24:16.472Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:16.488Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:24:17.734Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:17.811Z",
+      "selector": ".m13-dialog button",
+      "label": "取消",
+      "x": 770,
+      "y": 530
+    },
+    {
+      "at": "2026-11-19T09:24:17.829Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T09:24:17.844Z",
+      "selector": ".agent-model-pill",
+      "x": 1054.34765625,
+      "y": 851
+    },
+    {
+      "at": "2026-11-19T09:24:17.856Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A12 Claude\"]",
+      "x": 883,
+      "y": 510
+    },
+    {
+      "at": "2026-11-19T09:24:17.866Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 1071.5,
+      "y": 625.0859375
+    },
+    {
+      "at": "2026-11-19T09:24:17.872Z",
+      "selector": "[data-testid=\"home-permission\"]",
+      "x": 595,
+      "y": 851
+    },
+    {
+      "at": "2026-11-19T09:24:17.995Z",
+      "selector": ".agent-model-pill",
+      "x": 1004.0859375,
+      "y": 851
+    },
+    {
+      "at": "2026-11-19T09:24:17.999Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A12 Codex\"]",
+      "x": 883,
+      "y": 470
+    },
+    {
+      "at": "2026-11-19T09:24:18.006Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 1071.5,
+      "y": 625.0859375
+    },
+    {
+      "at": "2026-11-19T09:24:18.015Z",
+      "selector": "[data-testid=\"home-permission\"]",
+      "x": 595,
+      "y": 851
+    },
+    {
+      "selector": "[role=menuitemradio]",
+      "text": "完全访问",
+      "x": 713.5,
+      "y": 800.5
+    },
+    {
+      "at": "2026-11-19T09:24:18.173Z",
+      "selector": ".m13-dialog button",
+      "label": "取消",
+      "x": 770,
+      "y": 530
+    },
+    {
+      "at": "2026-11-19T09:24:18.181Z",
+      "selector": "[data-testid=\"home-permission\"]",
+      "x": 595,
+      "y": 851
+    },
+    {
+      "selector": "[role=menuitemradio]",
+      "text": "完全访问",
+      "x": 713.5,
+      "y": 800.5
+    },
+    {
+      "at": "2026-11-19T09:24:18.301Z",
+      "selector": ".m13-dialog button",
+      "label": "继续使用完全访问",
+      "x": 871,
+      "y": 530
+    },
+    {
+      "at": "2026-11-19T09:24:18.406Z",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "at": "2026-11-19T09:24:19.338Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T09:24:19.353Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0ed94e52-5aff-478b-97fb-5dbf8d91eabd\"]",
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "at": "2026-11-19T09:24:19.364Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:19.382Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:19.390Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:24:19.700Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:20.308Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:20.325Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:24:20.946Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"5e268621-98a5-4c07-abe2-07389b3339b8\"]",
+      "x": 171.5,
+      "y": 410
+    },
+    {
+      "at": "2026-11-19T09:24:20.956Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:20.967Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:24:21.417Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:21.430Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:24:21.442Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:24:21.897Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0ed94e52-5aff-478b-97fb-5dbf8d91eabd\"]",
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "at": "2026-11-19T09:24:21.910Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 697.01953125,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:24:21.923Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A12 Codex\"]",
+      "x": 598,
+      "y": 472
+    },
+    {
+      "at": "2026-11-19T09:24:21.932Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-two\"]",
+      "x": 786.5,
+      "y": 659.0859375
+    },
+    {
+      "at": "2026-11-19T09:24:22.047Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"5e268621-98a5-4c07-abe2-07389b3339b8\"]",
+      "x": 171.5,
+      "y": 410
+    },
+    {
+      "at": "2026-11-19T09:24:22.070Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0ed94e52-5aff-478b-97fb-5dbf8d91eabd\"]",
+      "x": 171.5,
+      "y": 334
+    }
+  ],
+  "model": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-380/home",
+    "at": "2026-11-19T09:24:11.298Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 76353,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-380/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-380/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-380/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328",
+    "claudePath": null
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 76353,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T09:24:23.024Z"
+}

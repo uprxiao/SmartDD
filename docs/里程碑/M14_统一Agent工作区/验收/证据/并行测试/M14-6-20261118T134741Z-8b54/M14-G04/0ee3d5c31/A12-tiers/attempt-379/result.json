@@ -1,0 +1,124 @@
+{
+  "caseId": "M14-A12",
+  "sourceCommit": "0ee3d5c316b0b1e292cb6beea0270cee0ce2fe1a",
+  "scope": "M14-A12-tiers",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "ae6e801b99ef1f543c1b7fa27cd340b91e79c127ed54ffb69ef26b47fe5143ef"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T09:23:43.709Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A12-tiers": {
+      "status": "failed-or-blocked",
+      "passed": [
+        {
+          "label": "Codex task tier list is ask/auto/full",
+          "data": [
+            "ask",
+            "auto",
+            "full"
+          ]
+        },
+        {
+          "label": "task page first full access asks with the required text; cancel keeps the tier",
+          "data": "使用完全访问权限？\n\n智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。\n\n插件的写操作也不再询问，发送邮件仍会每次询问。插件声明了更低权限上限时仍按该上限处理；Claude 交出的计划仍需批准。\n取消\n继续使用完全访问"
+        }
+      ],
+      "missing": [],
+      "error": "Error: Error: Expected one control, found 0 for [data-testid=\"home-profile\"]\n    at <anonymous>:4:36\n    at <anonymous>:14:5\n    at Object.evaluate (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/helpers/scripts/lib/electron-harness.mjs:196:15)\n    at async click (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a12-prep/a12-tiers-packaged.mjs:91:15)\n    at async homeProfile (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a12-prep/a12-tiers-packaged.mjs:277:3)\n    at async caseA12 (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a12-prep/a12-tiers-packaged.mjs:300:3)\n    at async runCase (file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a12-prep/a12-tiers-packaged.mjs:128:7)\n    at async file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a12-prep/a12-tiers-packaged.mjs:413:3"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T09:23:49.695Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T09:23:49.737Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T09:23:49.756Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T09:23:50.215Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"e6d41a7a-3c52-4cbd-baaf-e97ed39ecd9c\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T09:23:50.227Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:23:50.250Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:23:51.540Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:23:51.603Z",
+      "selector": ".m13-dialog button",
+      "label": "取消",
+      "x": 770,
+      "y": 530
+    },
+    {
+      "at": "2026-11-19T09:23:51.617Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    }
+  ],
+  "model": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-379/home",
+    "at": "2026-11-19T09:23:45.172Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 75461,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-379/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-379/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-379/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328",
+    "claudePath": null
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 75461,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T09:23:52.488Z"
+}

@@ -1,0 +1,707 @@
+{
+  "caseId": "M14-A12",
+  "sourceCommit": "0ee3d5c316b0b1e292cb6beea0270cee0ce2fe1a",
+  "scope": "M14-A12-tiers",
+  "helpers": {
+    "scripts/lib/electron-harness.mjs": "4038a1063125c5c906b3da66780cb7d60494d3d5122c968c9e942caba7b3df69",
+    "scripts/applications/fixtures/home-redirect-main.mjs": "e0743d881d7891741558dedb8d0102bf60aced07f03b1c78dd2f1eb748dbbefc",
+    "scripts/lib/electron-isolation-paths.mjs": "0487fd353ea1d4176e80f3bd709b42f26b13f31aca4fc046fcfe3028bdda45e2"
+  },
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "ae6e801b99ef1f543c1b7fa27cd340b91e79c127ed54ffb69ef26b47fe5143ef"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "startedAt": "2026-11-19T09:26:06.817Z",
+  "layer": "A / installed Codex and Claude, private loopback",
+  "plan": "A1.13",
+  "cases": {
+    "M14-A12-tiers": {
+      "status": "pass",
+      "passed": [
+        {
+          "label": "Codex task tier list is ask/auto/full",
+          "data": [
+            "ask",
+            "auto",
+            "full"
+          ]
+        },
+        {
+          "label": "task page first full access asks with the required text; cancel keeps the tier",
+          "data": "使用完全访问权限？\n\n智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。\n\n插件的写操作也不再询问，发送邮件仍会每次询问。插件声明了更低权限上限时仍按该上限处理；Claude 交出的计划仍需批准。\n取消\n继续使用完全访问"
+        },
+        {
+          "label": "home lists three tiers for Codex and no 帮我批准 for Claude, no 自动接受编辑",
+          "data": {
+            "codexHome": [
+              "请求批准",
+              "帮我批准",
+              "完全访问权限"
+            ],
+            "claudeHome": [
+              "请求批准",
+              "完全访问权限"
+            ]
+          }
+        },
+        {
+          "label": "home uses the same confirmation text; cancel keeps 请求批准",
+          "data": {
+            "homeDialog": "使用完全访问权限？\n\n智能体可以不经询问修改你电脑上的任何文件、访问互联网，也可以运行任意命令。只建议在你信任当前任务和项目时使用。\n\n插件的写操作也不再询问，发送邮件仍会每次询问。插件声明了更低权限上限时仍按该上限处理；Claude 交出的计划仍需批准。\n取消\n继续使用完全访问",
+            "afterCancel": "请求批准"
+          }
+        },
+        {
+          "label": "home-created task records full access and the native turn runs with never/dangerFullAccess",
+          "data": {
+            "tier": "full",
+            "homeTurn": {
+              "at": 1795080376447,
+              "pid": 84496,
+              "method": "turn/start",
+              "marker": "A12-HOME-FULL",
+              "approvalPolicy": "never",
+              "approvalsReviewer": "user",
+              "sandbox": "dangerFullAccess",
+              "permissions": null,
+              "threadId": "01a1f320-ce1e-75b0-8f31-085d931919f5"
+            }
+          }
+        },
+        "home selector still shows the chosen tier after creation",
+        "task page full access is not reconfirmed after the shared confirmation",
+        {
+          "label": "Codex ask = workspace-write (named profile) + on-request + reviewer user",
+          "data": {
+            "turn": {
+              "at": 1795080374562,
+              "pid": 83933,
+              "method": "turn/start",
+              "marker": "A12-CODEX-ASK",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "user",
+              "sandbox": null,
+              "permissions": "wy_cli_95f8d268f6f9",
+              "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+            },
+            "spawnArgs": [
+              "-c",
+              "default_permissions=\"wy_cli_95f8d268f6f9\"",
+              "-c",
+              "permissions.wy_cli_95f8d268f6f9.extends=\":workspace\"",
+              "-c",
+              "permissions.wy_cli_95f8d268f6f9.network.unix_sockets={\"/private/tmp/wy-cli-501-Q1pzXE/cli.sock\"=\"allow\"}",
+              "-c",
+              "permissions.wy_cli_95f8d268f6f9.network.enabled=true",
+              "-c",
+              "default_permissions=\"wy_cli_95f8d268f6f9\"",
+              "-c",
+              "permissions.wy_cli_95f8d268f6f9.extends=\":workspace\"",
+              "-c",
+              "permissions.wy_cli_95f8d268f6f9.network.unix_sockets={\"/private/tmp/wy-cli-501-Q1pzXE/cli.sock\"=\"allow\"}",
+              "-c",
+              "permissions.wy_cli_95f8d268f6f9.network.enabled=true"
+            ]
+          }
+        },
+        {
+          "label": "Codex auto = workspace-write (named profile) + on-request + auto_review",
+          "data": {
+            "at": 1795080376697,
+            "pid": 83933,
+            "method": "turn/start",
+            "marker": "A12-CODEX-AUTO",
+            "approvalPolicy": "on-request",
+            "approvalsReviewer": "auto_review",
+            "sandbox": null,
+            "permissions": "wy_cli_95f8d268f6f9",
+            "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+          }
+        },
+        {
+          "label": "Codex full = never + dangerFullAccess",
+          "data": {
+            "at": 1795080377644,
+            "pid": 83933,
+            "method": "turn/start",
+            "marker": "A12-CODEX-FULL",
+            "approvalPolicy": "never",
+            "approvalsReviewer": "user",
+            "sandbox": "dangerFullAccess",
+            "permissions": null,
+            "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+          }
+        },
+        {
+          "label": "each turn sends the tier explicitly and the change applies from the next turn on the same thread",
+          "data": {
+            "ask": {
+              "at": 1795080374562,
+              "pid": 83933,
+              "method": "turn/start",
+              "marker": "A12-CODEX-ASK",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "user",
+              "sandbox": null,
+              "permissions": "wy_cli_95f8d268f6f9",
+              "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+            },
+            "auto": {
+              "at": 1795080376697,
+              "pid": 83933,
+              "method": "turn/start",
+              "marker": "A12-CODEX-AUTO",
+              "approvalPolicy": "on-request",
+              "approvalsReviewer": "auto_review",
+              "sandbox": null,
+              "permissions": "wy_cli_95f8d268f6f9",
+              "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+            },
+            "full": {
+              "at": 1795080377644,
+              "pid": 83933,
+              "method": "turn/start",
+              "marker": "A12-CODEX-FULL",
+              "approvalPolicy": "never",
+              "approvalsReviewer": "user",
+              "sandbox": "dangerFullAccess",
+              "permissions": null,
+              "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+            }
+          }
+        },
+        {
+          "label": "Claude task tier list is ask/full only",
+          "data": [
+            "ask",
+            "full"
+          ]
+        },
+        {
+          "label": "Claude ask runs with permission-mode default, full with bypassPermissions and resumes the same session",
+          "data": {
+            "askCli": {
+              "pid": 85998,
+              "mode": "default",
+              "resume": null
+            },
+            "fullCli": {
+              "pid": 86450,
+              "mode": "bypassPermissions",
+              "resume": "b289ebdf-9d62-4545-9088-d6e2ea7a1e1e"
+            }
+          }
+        },
+        {
+          "label": "task model and tier belong to the task across switching",
+          "data": {
+            "t1": {
+              "driverId": "codex-app-server",
+              "profileId": "27083272-ea46-4771-a680-cf485399a51e",
+              "tier": "full",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "27083272-ea46-4771-a680-cf485399a51e": true
+              },
+              "model": "m14-switch-model-two"
+            },
+            "t2": {
+              "driverId": "claude-sdk",
+              "profileId": "9a701151-0390-4dc3-a62a-bb4fd29003e4",
+              "tier": "full",
+              "carryExtensions": true,
+              "extensionPreferences": {
+                "9a701151-0390-4dc3-a62a-bb4fd29003e4": true
+              },
+              "model": "m14-switch-model-one"
+            }
+          }
+        }
+      ],
+      "missing": [],
+      "codexTurns": {
+        "ask": {
+          "at": 1795080374562,
+          "pid": 83933,
+          "method": "turn/start",
+          "marker": "A12-CODEX-ASK",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandbox": null,
+          "permissions": "wy_cli_95f8d268f6f9",
+          "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+        },
+        "auto": {
+          "at": 1795080376697,
+          "pid": 83933,
+          "method": "turn/start",
+          "marker": "A12-CODEX-AUTO",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "auto_review",
+          "sandbox": null,
+          "permissions": "wy_cli_95f8d268f6f9",
+          "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+        },
+        "full": {
+          "at": 1795080377644,
+          "pid": 83933,
+          "method": "turn/start",
+          "marker": "A12-CODEX-FULL",
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "dangerFullAccess",
+          "permissions": null,
+          "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+        }
+      },
+      "codexPermissionArgs": [
+        "-c",
+        "default_permissions=\"wy_cli_95f8d268f6f9\"",
+        "-c",
+        "permissions.wy_cli_95f8d268f6f9.extends=\":workspace\"",
+        "-c",
+        "permissions.wy_cli_95f8d268f6f9.network.unix_sockets={\"/private/tmp/wy-cli-501-Q1pzXE/cli.sock\"=\"allow\"}",
+        "-c",
+        "permissions.wy_cli_95f8d268f6f9.network.enabled=true",
+        "-c",
+        "default_permissions=\"wy_cli_95f8d268f6f9\"",
+        "-c",
+        "permissions.wy_cli_95f8d268f6f9.extends=\":workspace\"",
+        "-c",
+        "permissions.wy_cli_95f8d268f6f9.network.unix_sockets={\"/private/tmp/wy-cli-501-Q1pzXE/cli.sock\"=\"allow\"}",
+        "-c",
+        "permissions.wy_cli_95f8d268f6f9.network.enabled=true"
+      ],
+      "claudeCli": {
+        "askCli": {
+          "pid": 85998,
+          "mode": "default",
+          "resume": null
+        },
+        "fullCli": {
+          "pid": 86450,
+          "mode": "bypassPermissions",
+          "resume": "b289ebdf-9d62-4545-9088-d6e2ea7a1e1e"
+        }
+      },
+      "codexRows": [
+        {
+          "at": 1795080373457,
+          "pid": 83902,
+          "method": "spawn",
+          "permissionArgs": []
+        },
+        {
+          "at": 1795080373546,
+          "pid": 83902,
+          "method": "thread/resume",
+          "marker": null,
+          "approvalPolicy": null,
+          "approvalsReviewer": null,
+          "sandbox": null,
+          "permissions": null,
+          "threadId": "0f19f6af-54dc-40af-b4c0-5a4fc8bcb61e"
+        },
+        {
+          "at": 1795080373546,
+          "pid": 83902,
+          "method": "thread/start",
+          "marker": null,
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "auto_review",
+          "sandbox": "read-only",
+          "permissions": null,
+          "threadId": null
+        },
+        {
+          "at": 1795080373925,
+          "pid": 83933,
+          "method": "spawn",
+          "permissionArgs": [
+            "-c",
+            "default_permissions=\"wy_cli_95f8d268f6f9\"",
+            "-c",
+            "permissions.wy_cli_95f8d268f6f9.extends=\":workspace\"",
+            "-c",
+            "permissions.wy_cli_95f8d268f6f9.network.unix_sockets={\"/private/tmp/wy-cli-501-Q1pzXE/cli.sock\"=\"allow\"}",
+            "-c",
+            "permissions.wy_cli_95f8d268f6f9.network.enabled=true"
+          ]
+        },
+        {
+          "at": 1795080373999,
+          "pid": 83933,
+          "method": "thread/start",
+          "marker": null,
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandbox": null,
+          "permissions": "wy_cli_95f8d268f6f9",
+          "threadId": null
+        },
+        {
+          "at": 1795080374562,
+          "pid": 83933,
+          "method": "turn/start",
+          "marker": "A12-CODEX-ASK",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "user",
+          "sandbox": null,
+          "permissions": "wy_cli_95f8d268f6f9",
+          "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+        },
+        {
+          "at": 1795080375780,
+          "pid": 84496,
+          "method": "spawn",
+          "permissionArgs": [
+            "-c",
+            "default_permissions=\"wy_cli_95f8d268f6f9\"",
+            "-c",
+            "permissions.wy_cli_95f8d268f6f9.extends=\":workspace\"",
+            "-c",
+            "permissions.wy_cli_95f8d268f6f9.network.unix_sockets={\"/private/tmp/wy-cli-501-Q1pzXE/cli.sock\"=\"allow\"}",
+            "-c",
+            "permissions.wy_cli_95f8d268f6f9.network.enabled=true"
+          ]
+        },
+        {
+          "at": 1795080375836,
+          "pid": 84496,
+          "method": "thread/start",
+          "marker": null,
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "danger-full-access",
+          "permissions": null,
+          "threadId": null
+        },
+        {
+          "at": 1795080376447,
+          "pid": 84496,
+          "method": "turn/start",
+          "marker": "A12-HOME-FULL",
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "dangerFullAccess",
+          "permissions": null,
+          "threadId": "01a1f320-ce1e-75b0-8f31-085d931919f5"
+        },
+        {
+          "at": 1795080376697,
+          "pid": 83933,
+          "method": "turn/start",
+          "marker": "A12-CODEX-AUTO",
+          "approvalPolicy": "on-request",
+          "approvalsReviewer": "auto_review",
+          "sandbox": null,
+          "permissions": "wy_cli_95f8d268f6f9",
+          "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+        },
+        {
+          "at": 1795080377644,
+          "pid": 83933,
+          "method": "turn/start",
+          "marker": "A12-CODEX-FULL",
+          "approvalPolicy": "never",
+          "approvalsReviewer": "user",
+          "sandbox": "dangerFullAccess",
+          "permissions": null,
+          "threadId": "01a1f320-c6f1-7ad2-863e-f12ac7347398"
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T09:26:12.702Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-19T09:26:12.719Z",
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-19T09:26:12.730Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T09:26:13.261Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"5a9f5235-da8d-4fa4-9ea3-9732d0dca941\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-19T09:26:13.371Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:13.394Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:26:14.670Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:14.747Z",
+      "selector": ".m13-dialog button",
+      "label": "取消",
+      "x": 770,
+      "y": 530
+    },
+    {
+      "at": "2026-11-19T09:26:14.767Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T09:26:14.780Z",
+      "selector": ".agent-model-pill",
+      "x": 1054.34765625,
+      "y": 851
+    },
+    {
+      "at": "2026-11-19T09:26:14.784Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A12 Claude\"]",
+      "x": 883,
+      "y": 510
+    },
+    {
+      "at": "2026-11-19T09:26:14.795Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 1071.5,
+      "y": 625.0859375
+    },
+    {
+      "at": "2026-11-19T09:26:14.801Z",
+      "selector": "[data-testid=\"home-permission\"]",
+      "x": 595,
+      "y": 851
+    },
+    {
+      "at": "2026-11-19T09:26:14.921Z",
+      "selector": ".agent-model-pill",
+      "x": 1004.0859375,
+      "y": 851
+    },
+    {
+      "at": "2026-11-19T09:26:14.927Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A12 Codex\"]",
+      "x": 883,
+      "y": 470
+    },
+    {
+      "at": "2026-11-19T09:26:14.935Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-one\"]",
+      "x": 1071.5,
+      "y": 625.0859375
+    },
+    {
+      "at": "2026-11-19T09:26:14.945Z",
+      "selector": "[data-testid=\"home-permission\"]",
+      "x": 595,
+      "y": 851
+    },
+    {
+      "selector": "[role=menuitemradio]",
+      "text": "完全访问",
+      "x": 713.5,
+      "y": 800.5
+    },
+    {
+      "at": "2026-11-19T09:26:15.093Z",
+      "selector": ".m13-dialog button",
+      "label": "取消",
+      "x": 770,
+      "y": 530
+    },
+    {
+      "at": "2026-11-19T09:26:15.104Z",
+      "selector": "[data-testid=\"home-permission\"]",
+      "x": 595,
+      "y": 851
+    },
+    {
+      "selector": "[role=menuitemradio]",
+      "text": "完全访问",
+      "x": 713.5,
+      "y": 800.5
+    },
+    {
+      "at": "2026-11-19T09:26:15.222Z",
+      "selector": ".m13-dialog button",
+      "label": "继续使用完全访问",
+      "x": 871,
+      "y": 530
+    },
+    {
+      "at": "2026-11-19T09:26:15.326Z",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "at": "2026-11-19T09:26:16.505Z",
+      "selector": "[data-testid=\"nav-home\"]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-19T09:26:16.522Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"5a9f5235-da8d-4fa4-9ea3-9732d0dca941\"]",
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "at": "2026-11-19T09:26:16.540Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:16.557Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:16.565Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:26:16.877Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:17.492Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:17.509Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:26:18.155Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"7efcfb77-75ce-4030-97da-dc5779c1d12a\"]",
+      "x": 171.5,
+      "y": 410
+    },
+    {
+      "at": "2026-11-19T09:26:18.163Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:18.175Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:26:18.625Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:18.638Z",
+      "selector": ".agent-task-view .agent-composer textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-19T09:26:18.649Z",
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:26:19.108Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"5a9f5235-da8d-4fa4-9ea3-9732d0dca941\"]",
+      "x": 171.5,
+      "y": 334
+    },
+    {
+      "at": "2026-11-19T09:26:19.128Z",
+      "selector": ".agent-task-view .agent-model-pill",
+      "x": 697.01953125,
+      "y": 853
+    },
+    {
+      "at": "2026-11-19T09:26:19.142Z",
+      "selector": ".agent-picker-rail button[aria-label=\"A12 Codex\"]",
+      "x": 598,
+      "y": 472
+    },
+    {
+      "at": "2026-11-19T09:26:19.149Z",
+      "selector": ".agent-model-row[aria-label=\"m14-switch-model-two\"]",
+      "x": 786.5,
+      "y": 659.0859375
+    },
+    {
+      "at": "2026-11-19T09:26:19.267Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"7efcfb77-75ce-4030-97da-dc5779c1d12a\"]",
+      "x": 171.5,
+      "y": 410
+    },
+    {
+      "at": "2026-11-19T09:26:19.287Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"5a9f5235-da8d-4fa4-9ea3-9732d0dca941\"]",
+      "x": 171.5,
+      "y": 334
+    }
+  ],
+  "model": [],
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-382/home",
+    "at": "2026-11-19T09:26:08.261Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 83739,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-382/data",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-382/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-382/home",
+    "packaged": true
+  },
+  "engines": {
+    "codex": "0.169.0",
+    "claude": "2.1.328",
+    "claudePath": null
+  },
+  "rendererErrors": [],
+  "exit": {
+    "pid": 83739,
+    "code": 0,
+    "signal": null
+  },
+  "modelFailures": [],
+  "finishedAt": "2026-11-19T09:26:20.282Z"
+}
