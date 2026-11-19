@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T20:16:26+08:00",
+  "updatedAt": "2026-11-19T20:39:01+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -18,10 +18,10 @@
       }
     ],
     "candidate": {
-      "commit": "9a6e95cdc1003c93f04555b58cd60d8300d2a25c",
+      "commit": "9a9da26a785ef3b4bb35ad1d757bfb0cdbcad030",
       "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
-      "asarSha256": "ca01a1cc01b5a3ec5641e726101b1e09762a184f98243db7f0618a74f8fb14c9",
-      "status": "D06-62 isolated ad hoc signed build; codesign verified; six native smoke checks passed"
+      "asarSha256": "3f8d39d0458accff2138e7e9a2c0309c8d47f1fb51437daf4f32dfe38857d357",
+      "status": "signed isolated package; strict signature verified; packaged native smoke passed"
     },
     "priorCandidates": [
       {
@@ -378,6 +378,12 @@
         "path": "/private/tmp/willyou-m14-stage6.WRvdST/package-2b78058ec/mac-arm64/WillYou.app",
         "asarSha256": "7712450f6430db759657bdec03a2e155b05cb96764b2e9a31711ad08306bcc5c",
         "status": "ad hoc signed isolated candidate; verified the package and prior six native smoke checks"
+      },
+      {
+        "commit": "9a6e95cdc1003c93f04555b58cd60d8300d2a25c",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
+        "asarSha256": "ca01a1cc01b5a3ec5641e726101b1e09762a184f98243db7f0618a74f8fb14c9",
+        "status": "D06-62 isolated ad hoc signed build; codesign verified; six native smoke checks passed; alias superseded"
       }
     ]
   },
@@ -403,7 +409,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "A11、A60 已通过；继续 A66、A67、本机 Skill 与邮件等可自主判据，累计 61/73 时暂停。",
+  "next": "当前按用户要求暂停。Claude Code 接力先核执行账与隔离包，单独复测 M13 SMTP 钩子超时，从新隔离目录重跑全量，再处理 A23 待确认判据及剩余本人／环境前置。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
@@ -413,17 +419,16 @@
     "status": "combined successful coverage of the full run plus same-source ZenTao file rerun"
   },
   "m13LatestAttempt": {
-    "baseline": "2521f1b41",
-    "startedAt": "2026-11-19T05:45:59+08:00",
-    "endedAt": "2026-11-19T06:25:01+08:00",
-    "passed": 2381,
-    "skipped": 9,
-    "remainingFailures": 0,
-    "failedFirstPass": 1,
-    "firstPassReason": "same-commit ZenTao declaration fixture missing in sparse checkout",
-    "passedFiles": 148,
-    "skippedFiles": 5,
-    "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-2521f1b41/README.md"
+    "baseline": "9a9da26a785ef3b4bb35ad1d757bfb0cdbcad030",
+    "status": "interrupted_by_user",
+    "observedPassingTests": 384,
+    "observedFailures": 1,
+    "exitCode": 130,
+    "endedAt": "2026-11-19T20:39:01+08:00",
+    "loopback3425Released": true,
+    "loopback3426Released": true,
+    "remainingSuiteNotRun": true,
+    "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-9a9da26a7-paused/README.md"
   },
   "m13FocusedRegression": {
     "commit": "1214412aad05bb629e1d9ce7d532755195fe4dca",
@@ -433,20 +438,25 @@
     "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/1214412aa/A40-lifecycle/README.md"
   },
   "checkpoint": {
-    "reason": "用户要求第 45 条正式用例通过后暂停目标",
-    "lastPassingCase": "M14-A76",
-    "passed": 45,
+    "passed": 55,
     "applicable": 73,
-    "completionPercent": 61.64,
-    "notFullyExecuted": 28,
+    "notFullyExecuted": 18,
     "blocked": 0,
+    "verifiedAt": "2026-11-19T20:12:45+08:00",
+    "completionPercent": 75.34,
+    "reason": "用户要求暂停并交 Claude Code 接力",
+    "lastPassingCase": "M14-A70",
     "outside": 10,
-    "verifiedAt": "2026-11-19T15:22:55+08:00",
+    "pausedAt": "2026-11-19T20:39:01+08:00",
+    "takeoverDelta": 4,
+    "takeoverTarget": 10,
+    "distanceToPriorThreshold": 6,
     "released": {
       "packagedUI": true,
       "nativeBuild": true,
       "loopback3425": true,
-      "testExecutors": "finished"
+      "loopback3426": true,
+      "testExecutors": "stopped"
     }
   },
   "m13Followup": {
@@ -488,6 +498,23 @@
       "blocked": 1,
       "outside": 10,
       "verifiedAt": "2026-11-19T11:31:36+08:00"
+    },
+    {
+      "reason": "用户要求第 45 条正式用例通过后暂停目标",
+      "lastPassingCase": "M14-A76",
+      "passed": 45,
+      "applicable": 73,
+      "completionPercent": 61.64,
+      "notFullyExecuted": 28,
+      "blocked": 0,
+      "outside": 10,
+      "verifiedAt": "2026-11-19T15:22:55+08:00",
+      "released": {
+        "packagedUI": true,
+        "nativeBuild": true,
+        "loopback3425": true,
+        "testExecutors": "finished"
+      }
     }
   ],
   "claudeCodeTakeover": [
@@ -982,6 +1009,21 @@
       ],
       "result": "577 新包两个真实 Codex 父端用本机模型重复选用同一 Skill、相对资源与真实宿主委派，Claude SDK 走确定性本机回复，两次原生子结果都经真实通知回父。571／572／574 的原生部分证据与测试限制保留。数量口径及剩余边界待确认。",
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/M14-G04/9a9da26a7/A23-local-collaboration/README.md"
+    }
+  ],
+  "m13AttemptHistory": [
+    {
+      "baseline": "2521f1b41",
+      "startedAt": "2026-11-19T05:45:59+08:00",
+      "endedAt": "2026-11-19T06:25:01+08:00",
+      "passed": 2381,
+      "skipped": 9,
+      "remainingFailures": 0,
+      "failedFirstPass": 1,
+      "firstPassReason": "same-commit ZenTao declaration fixture missing in sparse checkout",
+      "passedFiles": 148,
+      "skippedFiles": 5,
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-2521f1b41/README.md"
     }
   ]
 }
