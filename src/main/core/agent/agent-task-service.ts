@@ -13,7 +13,7 @@ import { attachmentNote, freezeImages, prepareAttachment, verifyAttachments, typ
 import type { CapabilityName, CapabilityResult } from './capabilities';
 import { searchProjectFiles } from './file-search';
 import { HandoffService, type Transfer } from './handoff';
-import type { RunIntegration } from './run-integration';
+import type { RunIntegration, RunIntegrationContext } from './run-integration';
 import type { TaskCoordination } from './task-coordination';
 
 export interface ResolvedLaunch {
@@ -28,7 +28,7 @@ export interface ResolvedLaunch {
   capabilities?: Record<CapabilityName, CapabilityResult>;
   modelsWithoutImageInput?: ReadonlySet<string>;
   assertCurrent?(): void;
-  integrate?(context: { runId: string; bindingId: string; generation: number; nativeId?: string }): Promise<RunIntegration | undefined>;
+  integrate?(context: RunIntegrationContext): Promise<RunIntegration | undefined>;
 }
 /** 由宿主按配置档案解析（发现服务＋凭据服务＋托管文件），不接受客户端提供的路径或凭据。 */
 export type LaunchResolver = (input: { taskId?: string; profileId: string; cwd: string; runId: string; model?: string; carryExtensions?: boolean }) => Promise<ResolvedLaunch>;

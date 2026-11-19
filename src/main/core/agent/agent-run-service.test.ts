@@ -38,6 +38,45 @@ function setup() {
 }
 
 describe('运行服务', () => {
+  it.each([true, false])('A04 exposes startup cancellation to business admission only while opening (stop while opening=%s)', async stopWhileOpening => {
+    const f = setup();
+    let stopped = false;
+    let releaseRegistration!: () => void;
+    let registrationReached!: () => void;
+    const gate = new Promise<void>(resolve => { releaseRegistration = resolve; });
+    const reached = new Promise<void>(resolve => { registrationReached = resolve; });
+    let startupCancelled!: () => boolean;
+    const opened = f.service.open({
+      ...f.base,
+      startCancelled: () => stopped,
+      integrate: async context => {
+        startupCancelled = context.startupCancelled;
+        return {
+          beforeFork: async () => {},
+          attached: async () => { registrationReached(); await gate; },
+          exited: async () => {},
+          cancelBeforeFork: async () => {},
+        };
+      },
+    });
+    const outcome = opened.catch(error => error);
+    await reached;
+    expect(startupCancelled()).toBe(false);
+    if (stopWhileOpening) stopped = true;
+    expect(startupCancelled()).toBe(stopWhileOpening);
+    releaseRegistration();
+    if (stopWhileOpening) {
+      expect(await outcome).toMatchObject({ code: 'STATE' });
+      expect(f.service.runForTask(f.taskId)).toBeUndefined();
+    } else {
+      const run = await opened;
+      stopped = true;
+      expect(startupCancelled()).toBe(false);
+      expect(f.service.runForTask(f.taskId)?.runId).toBe(run.runId);
+      await f.service.close(run.runId);
+    }
+  });
+
   it('A05 closes only old native nodes confirmed gone by their precise launch-group identity', async () => {
     const f = setup();
     const run = await f.service.open(f.base);

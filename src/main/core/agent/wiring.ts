@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import type BetterSqlite3 from 'better-sqlite3';
 import { codeAgentKindSchema } from '@shared/ai-agents';
+import { ApplicationError } from '@shared/applications';
 import type { AgentLiveFrame } from '@shared/events';
 import type { AgentService } from '../ai/agent-service';
 import type { ProviderService } from '../ai/provider-service';
@@ -146,7 +147,12 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         if (projected?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
           code: 'managedMcpUnavailable', detail: projected.issues.map(issue => issue.reason).join('；'),
         });
-        const result = await business.prepareAgent({ ...context, version: probe.version!, assertCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home: base.HOME ?? homedir(), stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: context.nativeId ? 'resume' : 'new', sessionId: context.nativeId ?? null, previous: null, newTask: !context.nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
+        const assertRunCurrent = () => {
+          if (context.startupCancelled()) throw new ApplicationError('SCOPE_DENIED', '启动已停止');
+          assertCurrent();
+        };
+        const { runId, bindingId, generation, nativeId } = context;
+        const result = await business.prepareAgent({ runId, bindingId, generation, version: probe.version!, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home: base.HOME ?? homedir(), stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
         if (projected?.serverNames.some(name => Object.hasOwn(result.mcpServers ?? {}, name))) {
           await result.cancelBeforeFork();
           throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');

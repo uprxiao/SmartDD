@@ -10,7 +10,7 @@ import { resolveTier, type Tier } from './permissions';
 import { TimelineProjector } from './timeline';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { canonicalPath } from './identity';
-import type { RunIntegration } from './run-integration';
+import type { RunIntegration, RunIntegrationContext } from './run-integration';
 
 export interface HostIdentity { instanceId: string; pid: number; startedAt: string | null }
 export interface OpenRunInput {
@@ -37,7 +37,7 @@ export interface OpenRunInput {
   startCancelled?(): boolean;
   stopWhenWaiting?(): boolean;
   readOnly?: boolean;
-  integrate?(context: { runId: string; bindingId: string; generation: number; nativeId?: string }): Promise<RunIntegration | undefined>;
+  integrate?(context: RunIntegrationContext): Promise<RunIntegration | undefined>;
 }
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; models?: DriverModel[]; modelsWithoutImageInput?: ReadonlySet<string>; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; appliedModel?: string; appliedEffort?: string; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
@@ -94,12 +94,13 @@ export class AgentRunService {
     run.opening = true;
     run.assertCurrent = input.assertCurrent;
     instance.on(e => this.onDriverEvent(run, e));
+    const startupCancelled = () => run.opening === true && (run.closing || input.startCancelled?.() === true);
     const assertStarting = () => {
-      if (run.closing || input.startCancelled?.()) throw new DriverError('STATE', '启动已停止');
+      if (startupCancelled()) throw new DriverError('STATE', '启动已停止');
     };
     let forkAttempted = false;
     try {
-      run.integration = await input.integrate?.({ runId, bindingId, generation, nativeId: resumeNativeId });
+      run.integration = await input.integrate?.({ runId, bindingId, generation, nativeId: resumeNativeId, startupCancelled });
       assertStarting();
       const finalLaunchHash = sha256(JSON.stringify({ initial: launchPlanHash, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], envNames: Object.keys({ ...input.env, ...run.integration?.env }).sort(), mcp: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skills: run.integration?.skillRoots, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions }));
       if (store.sqlite.prepare("UPDATE capability_runs SET launch_plan_hash=? WHERE run_id=? AND launch_plan_hash=? AND state IN ('preparing','prepared') AND pid IS NULL").run(finalLaunchHash, runId, launchPlanHash).changes !== 1) throw new DriverError('REJECTED', '启动计划已变化或已经启动');
