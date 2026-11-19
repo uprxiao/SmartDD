@@ -1,0 +1,7 @@
+117a118,123
+>     // r3: Codex auto_review opens a separate guardian session whose prompt asks for {"outcome":"allow"} on low-risk actions.
+>     // r2 mistook that request for the parent's tool result. Answer it as the reviewer and record what was reviewed.
+>     if(protocol==='codex'&&JSON.stringify(body).includes('give the final answer directly: {\\"outcome\\":\\"allow\\"}')){
+>       (state.guardianReviews??=[]).push({at:Date.now(),model:body.model??null,commands:state.commands.length});
+>       return {type:'guardian-allow',answer:'{"outcome":"allow"}'};
+>     }
