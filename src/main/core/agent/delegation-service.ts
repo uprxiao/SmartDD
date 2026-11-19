@@ -625,7 +625,12 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     if(latest.attempt_id!==a.attempt_id||latest.notified_at||this.d.store.queuedTurns(row.child_task_id).length||(currentInput.followUps??[]).some(id=>['accepted','dispatching','started'].includes(this.d.store.turn(id)?.status??'unknown')))return;
     const turnIds = new Set([turn.turn_id, ...followUps.map(t => t.turn_id)]);
     const items = this.d.store.items(row.child_task_id, { limit: 500 }).filter(i => i.turnId && turnIds.has(i.turnId) && i.type === 'assistant_message');
-    const summary = items.map(i => this.d.store.readItemBody(row.child_task_id, i.itemId)?.text ?? '').join('\n').slice(-24 * 1024);
+    // Item bodies are stored payloads; the result summary carries the message text, not the payload JSON.
+    const summary = items.map(i => {
+      const body = this.d.store.readItemBody(row.child_task_id, i.itemId)?.text ?? '';
+      try { const value = JSON.parse(body) as { text?: unknown }; return typeof value?.text === 'string' ? value.text : body; }
+      catch { return body; }
+    }).join('\n').slice(-24 * 1024);
     const currentRow=this.parentOf(row.child_task_id)!;const success = turn.status === 'completed' && followUps.every(t => t.status === 'completed') && currentRow.delivery_state !== 'canceled';
     const result = { sourceKind: 'child_result', delegationId: row.delegation_id, childTaskId: row.child_task_id, attemptId: a.attempt_id, status: success ? 'completed' : currentRow.delivery_state === 'canceled' ? 'canceled' : 'failed', summary, sourceItemIds: items.map(i => i.itemId), commits, title: target.title };
     this.d.store.tx(() => {

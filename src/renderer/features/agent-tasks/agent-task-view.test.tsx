@@ -52,6 +52,15 @@ it('A59 shows the recorded target and model in one creation card and keeps old d
   expect(screen.getByRole('button', { name: '宿主子任务 · Old child' })).toBeTruthy();
 });
 
+it('child result card shows a Chinese status and the result text', async () => {
+  const notice = { ...item('notification', { sourceKind: 'child_result', childTaskId: 'child', title: 'Review child', status: 'completed', summary: 'Review text' }), itemId: 'result' };
+  mocks.snapshot.mockResolvedValue(snapshot({ items: [notice] }));
+  render(<AgentTaskView taskId="task" />);
+  expect(await screen.findByText('Review child · 已完成')).toBeTruthy();
+  expect(screen.getByText('Review text')).toBeTruthy();
+  expect(screen.queryByText(/completed/)).toBeNull();
+});
+
 it('A45 retains the available streaming prefix and marks a preview that exceeds its buffer', async () => {
   let publish!: (value: { taskId: string; itemKey: string; text: string }) => void;
   mocks.on.mockImplementation((event, callback) => { if (event.name === 'agentTasks:live') publish = callback; return () => {}; });

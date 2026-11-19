@@ -504,8 +504,11 @@ it('G3: Git defaults to serial shared writing, with visible uncommitted input an
   expect(first.turns[0].text).toContain('宿主不提交');
   const handoff=f.store.items(receipt.childTaskId).find(item=>item.payload?.code==='directoryHandoff');
   expect(handoff?.payload.detail).toContain('design.txt');
-  first.finish();
+  first.finish('M14_REVIEW_TEXT');
   await until(()=>!!f.runs.runForTask(f.taskId)?.turnId,4000);
+  // The parent's result card shows the child's message text, not the stored payload JSON.
+  const notice=f.store.items(f.taskId).find(item=>item.type==='notification'&&item.payload?.sourceKind==='child_result');
+  expect(notice?.payload.summary).toBe('M14_REVIEW_TEXT');
   await f.co.send(f.runs.runForTask(f.taskId)!.runId,receipt.childTaskId,'review-again','round two');
   expect(f.runs.runForTask(receipt.childTaskId)).toBeUndefined();
   f.instances[2].finish();

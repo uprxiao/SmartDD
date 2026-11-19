@@ -34,6 +34,7 @@ type Snapshot = Awaited<ReturnType<typeof rpc.agentTasks.snapshot>>;
 type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
 const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
 const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示' };
+const RESULT_STATUS: Record<string, string> = { completed: '已完成', canceled: '已取消', failed: '失败', unknown: '结果未知' };
 const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', needs_attention: '需要你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
 const LIVE_PREVIEW_BYTES = 8 * 1024 * 1024;
 const LIVE_PREVIEW_ITEMS = 2_000;
@@ -282,7 +283,7 @@ function ItemRow({ item }: { item: TimelineItem }) {
       </div>;
     }
     case 'files_changed': return <ChangeCard payload={p} />;
-    case 'notification': return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => openRelatedTask(useTaskId,p.childTaskId,archived)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{(p.summary||p.error||p.result)&&<pre>{p.summary??p.error??JSON.stringify(p.result,null,2)}</pre>}{more}</div>;
+    case 'notification': return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {RESULT_STATUS[p.status] ?? p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => openRelatedTask(useTaskId,p.childTaskId,archived)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{(p.summary||p.error||p.result)&&<pre>{p.summary??p.error??JSON.stringify(p.result,null,2)}</pre>}{more}</div>;
     case 'error': {
       if (!p.limited) return <div className="agent-error agent-error-details">
         <details><summary><CircleAlert size={15} aria-hidden/>查看错误详情</summary>
