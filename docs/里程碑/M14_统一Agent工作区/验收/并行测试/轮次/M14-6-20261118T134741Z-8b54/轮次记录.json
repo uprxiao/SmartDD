@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T14:49:56+08:00",
+  "updatedAt": "2026-11-19T14:55:38+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -18,10 +18,10 @@
       }
     ],
     "candidate": {
-      "commit": "2b78058ec1e55c027f69ceb2d3c8fcbef1c69286",
+      "commit": "9a6e95cdc1003c93f04555b58cd60d8300d2a25c",
       "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
-      "asarSha256": "7712450f6430db759657bdec03a2e155b05cb96764b2e9a31711ad08306bcc5c",
-      "status": "ad hoc signed isolated candidate; verified the package and prior six native smoke checks"
+      "asarSha256": "ca01a1cc01b5a3ec5641e726101b1e09762a184f98243db7f0618a74f8fb14c9",
+      "status": "D06-62 isolated ad hoc signed build; codesign verified; six native smoke checks passed"
     },
     "priorCandidates": [
       {
@@ -372,17 +372,25 @@
         "fixes": [
           "D06-57"
         ]
+      },
+      {
+        "commit": "2b78058ec1e55c027f69ceb2d3c8fcbef1c69286",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/package-2b78058ec/mac-arm64/WillYou.app",
+        "asarSha256": "7712450f6430db759657bdec03a2e155b05cb96764b2e9a31711ad08306bcc5c",
+        "status": "ad hoc signed isolated candidate; verified the package and prior six native smoke checks"
       }
     ]
   },
   "leases": {
-    "packagedUI": null,
-    "nativeBuild": {
+    "packagedUI": {
       "owner": "coordination",
-      "case": "packaging D06-62 successor",
+      "case": "A19 isolated real Codex parent to Claude child",
       "baseline": "9a6e95cdc",
-      "sessionId": 97191
-    }
+      "attempt": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-349",
+      "port": 3425,
+      "mode": "background CDP"
+    },
+    "nativeBuild": null
   },
   "groups": {
     "M14-G01": {
@@ -402,7 +410,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "M13 全量已结束，唯一超时单独复验通过。9a6e95cdc 正在统一构建，待包签名和哈希核验后执行 A60、A19、A05、A15 与 A34。",
+  "next": "9a6e95cdc 验收包已冻结，开始复验 A60 用户停止与崩溃恢复。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
