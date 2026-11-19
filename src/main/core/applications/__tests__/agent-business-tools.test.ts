@@ -50,3 +50,16 @@ it('A26 applies live parent permissions to a child’s plugin call before the ch
   expect((await f.invoke(randomUUID())).value.status).toBe('awaiting_user');
   expect(f.writes()).toBe(1);
 });
+it('A41 manual mail edit first cancels the pending send intent so the draft can be updated (D06-74)',async()=>{
+ const order:string[]=[];
+ const applications:any={
+  viewDraft:async()=>({draft:{content:{mode:'new',sourceMessageRef:null,senderConnectionId:'c',to:['old@example.invalid'],cc:[],bcc:[],subject:'old',text:'old',html:null,inReplyTo:null,references:[],attachmentIds:[]}}}),
+  cancelTaskMail:async(_s:unknown,project:string,intent:string)=>{order.push('cancel:'+project+':'+intent);},
+  editTaskMail:async(_s:unknown,_p:string,_d:string,_r:number,content:any)=>{order.push('edit:'+content.subject);throw new Error('stop after edit');},
+ };
+ const tools:any=new AgentBusinessTools({store:{} as any,requests:{register:()=>{}} as any,runs:{} as any,applications,services:new Map(),notify:()=>{}});
+ tools.mail=()=>({id:'intent-1',project_id:'p',draft_id:'draft-1',draft_revision:3});
+ const record:any={payload:{data:{mailIntentId:'intent-1',entry:'mcp'}},origin:{runId:'run'},row:{task_id:'t',request_id:'r'}};
+ await expect(tools.reviseMail(record,{edits:{to:'new@example.invalid',cc:'',bcc:'',subject:'new subject',text:'new body'}},{})).rejects.toThrow('stop after edit');
+ expect(order).toEqual(['cancel:p:intent-1','edit:new subject']);
+});

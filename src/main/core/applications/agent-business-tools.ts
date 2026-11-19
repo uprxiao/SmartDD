@@ -64,6 +64,8 @@ export class AgentBusinessTools {
  }
  private async cancelMail(sender:ApplicationUiSender|undefined,m:any){if(sender){await this.d.applications.cancelTaskMail(sender,m.project_id,m.id);return;}/* A retired task request cannot authorize the old intent; later expiry/invalidation remains conservative. */}
  private async reviseMail(r:BusinessRecord,decision:{edits?:{to:string;cc:string;bcc:string;subject:string;text:string}},sender:ApplicationUiSender){if(!decision.edits)throw Error('请先保存修改内容');const data=r.payload.data as Data,m=this.mail(data.mailIntentId!),draft=await this.d.applications.viewDraft(sender,m.project_id,m.draft_id,m.draft_revision),edits=decision.edits;
+  // D06-74: the pending send intent locks the draft. Cancel it first, as the agent-edit path does; the old approval cannot be reused.
+  await this.cancelMail(sender,m);
   const updated=await this.d.applications.editTaskMail(sender,m.project_id,m.draft_id,m.draft_revision,{...draft.draft.content,to:edits.to.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),cc:edits.cc.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),bcc:edits.bcc.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),subject:edits.subject,text:edits.text,html:null});
   // The UI edit is local only. A fresh native-scope preparation freezes the new revision; approval remains pending.
   const operationId=randomUUID(),requestId=randomUUID();const prepared=await this.d.runs.withTaskOperation(r.origin.runId,{operationId,callHash:'host-local-mail-preparation',signal:new AbortController().signal,assertCurrent:()=>this.fresh(r)},async()=>{
