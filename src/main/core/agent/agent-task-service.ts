@@ -131,7 +131,7 @@ function requestsForSnapshot(pending: PendingRequest[], level: number) {
 function queuedPreview(q: ReturnType<AgentStore['queuedTurns']>[number], chars: number) {
   const { text = '', attachments } = JSON.parse(q.input_ref) as { text?: string; attachments?: Attachment[] };
   return {
-    turnId: q.turn_id, text: text.slice(0, chars), acceptedAt: q.accepted_at, editable: q.source_kind === 'user',
+    turnId: q.turn_id, text: text.slice(0, chars), acceptedAt: q.accepted_at, editable: q.source_kind === 'user', sourceKind: q.source_kind,
     version: sha256(q.input_ref), attachmentCount: attachments?.length ?? 0,
     ...(text.length > chars ? { truncated: true } : {}),
   };

@@ -52,6 +52,17 @@ it('A59 shows the recorded target and model in one creation card and keeps old d
   expect(screen.getByRole('button', { name: '宿主子任务 · Old child' })).toBeTruthy();
 });
 
+it('queue shows host notifications as a status line, not their internal wording', async () => {
+  const host = { turnId: 'host', text: '宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 r1', acceptedAt: '2026-11-19T00:00:00Z', editable: false, sourceKind: 'notification', version: 'v', attachmentCount: 0 };
+  const user = { turnId: 'mine', text: 'My queued message', acceptedAt: '2026-11-19T00:00:01Z', editable: true, sourceKind: 'user', version: 'v2', attachmentCount: 0 };
+  mocks.snapshot.mockResolvedValue(snapshot({ queued: [host, user], queuedTotal: 2 }));
+  render(<AgentTaskView taskId="task" />);
+  expect(await screen.findByText('子任务结果已送达，主任务稍后继续')).toBeTruthy();
+  expect(screen.queryByText(/宿主子任务结果通知/)).toBeNull();
+  expect(screen.getByText('My queued message')).toBeTruthy();
+  expect(screen.getAllByTitle('编辑排队消息')).toHaveLength(1);
+});
+
 it('child result card shows a Chinese status and the result text', async () => {
   const notice = { ...item('notification', { sourceKind: 'child_result', childTaskId: 'child', title: 'Review child', status: 'completed', summary: 'Review text' }), itemId: 'result' };
   mocks.snapshot.mockResolvedValue(snapshot({ items: [notice] }));

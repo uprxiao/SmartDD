@@ -34,6 +34,12 @@ type Snapshot = Awaited<ReturnType<typeof rpc.agentTasks.snapshot>>;
 type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
 const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
 const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示' };
+/** Host inputs are written for the Agent; the queue shows a short status instead of their wording. */
+function hostQueueLabel(q: { sourceKind?: string; text: string }) {
+  if (q.sourceKind === 'notification') return q.text.startsWith('宿主子任务结果通知') ? '子任务结果已送达，主任务稍后继续' : '宿主通知已送达，任务稍后继续';
+  if (q.sourceKind === 'delegation') return '主任务派来的指令，待开始';
+  return '宿主提示，待处理';
+}
 const RESULT_STATUS: Record<string, string> = { completed: '已完成', canceled: '已取消', failed: '失败', unknown: '结果未知' };
 const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', needs_attention: '需要你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
 const LIVE_PREVIEW_BYTES = 8 * 1024 * 1024;
@@ -1331,7 +1337,9 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
         {canForceStop && <button type="button" className="agent-force-stop" onClick={() => void rpc.agentTasks.forceStop(taskId, stopping.runId, stopping.requestedAt).catch(e => toast.error(rpcErrorMessage(e)))}>强制停止</button>}
       </div>}
       {!archived && snap.queuedTotal > 0 && <div className="agent-queue" aria-label="排队消息">
-        {snap.queued.map(q => <div key={q.turnId} className="agent-queue-entry">
+        {snap.queued.map(q => q.sourceKind && q.sourceKind !== 'user' ? <div key={q.turnId} className="agent-queue-entry agent-queue-host" role="status">
+          <div className="agent-queue-row"><Clock3 size={14}/><span className="agent-queue-text">{hostQueueLabel(q)}</span></div>
+        </div> : <div key={q.turnId} className="agent-queue-entry">
           <div className="agent-queue-row"><Clock3 size={14}/><span className="agent-queue-text" title={q.text}>{q.text || '附件消息'}{q.attachmentCount > 0 && <small> · {q.attachmentCount} 个附件</small>}</span>
             {q.acceptedAt && <time dateTime={q.acceptedAt}>{new Date(q.acceptedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</time>}
             {q.editable && <div className="agent-queue-actions">
