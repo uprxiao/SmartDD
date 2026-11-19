@@ -189,22 +189,56 @@ describe('Codex app-server 驱动', () => {
   });
 
   it('发送即停止：原生开始信号到达后立即中断一次', async () => {
-    let hold: ((v: unknown) => void) | undefined;
+    let releaseStart: (() => void) | undefined;
     const { inst, server, events } = setup((msg, s) => {
+      if (msg.method === 'turn/interrupt') return true;
       if (msg.method !== 'turn/start') return false;
-      hold = () => { s.notify('turn/started', { turn: { id: 'turn-9' } }); s.reply(msg.id, { turn: { id: 'turn-9' } }); };
+      releaseStart = () => {
+        s.notify('turn/started', { turn: { id: 'turn-9' } });
+        s.reply(msg.id, { turn: { id: 'turn-9' } });
+      };
       return true;
     });
     await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
     const started = inst.startTurn({ clientInputId: 'a', text: 'x', tier: 'ask' });
-    await until(() => !!hold);
+    await until(() => !!releaseStart);
     await inst.interrupt(); // 还没开始：只记下待停止
     expect(server.calls('turn/interrupt')).toHaveLength(0);
-    hold!(undefined);
+    releaseStart!();
     await started;
+    // 派发成功后的宿主停止检查可以在原生中断回执抵达前再次要求停止。
+    const dispatchStop = inst.interrupt();
+    await until(() => server.calls('turn/interrupt').length > 0);
+    for (const call of server.calls('turn/interrupt')) server.reply(call.id, {});
+    await dispatchStop;
+    // 中断回执先到，终态尚未到时也复用原请求。
+    const acknowledgedStop = inst.interrupt();
+    for (const call of server.calls('turn/interrupt').slice(1)) server.reply(call.id, {});
+    await acknowledgedStop;
+    server.notify('turn/completed', { turn: { id: 'turn-9', status: 'interrupted' } });
     await until(() => events.some(e => e.type === 'turn.completed'));
     expect(server.calls('turn/interrupt')).toEqual([expect.objectContaining({ params: { threadId: 'thr-1', turnId: 'turn-9' } })]);
     expect(events.find(e => e.type === 'turn.completed')).toMatchObject({ status: 'interrupted' });
+
+    server.notify('turn/started', { turn: { id: 'turn-10' } });
+    await until(() => events.some(e => e.type === 'turn.started' && e.nativeTurnId === 'turn-10'));
+    for (const call of server.calls('turn/interrupt').slice(1)) server.reply(call.id, {});
+    expect(server.calls('turn/interrupt')).toHaveLength(1);
+  });
+
+  it('原生拒绝中断后仍可按原回合重试', async () => {
+    const { inst, server, events } = setup((msg, s) => {
+      if (msg.method !== 'turn/interrupt' || s.calls(msg.method).length > 1) return false;
+      s.send({ id: msg.id, error: { code: -32000, message: 'temporarily unavailable' } });
+      return true;
+    });
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    await inst.startTurn({ clientInputId: 'a', text: 'x', tier: 'ask' });
+    await inst.interrupt();
+    expect(events.some(e => e.type === 'diagnostic' && e.message.includes('temporarily unavailable'))).toBe(true);
+    await inst.interrupt();
+    await until(() => events.some(e => e.type === 'turn.completed'));
+    expect(server.calls('turn/interrupt').map(call => call.params.turnId)).toEqual(['turn-1', 'turn-1']);
   });
 
   it('进程中途退出：在途调用失败、当前回合记失败并发出退出事件', async () => {

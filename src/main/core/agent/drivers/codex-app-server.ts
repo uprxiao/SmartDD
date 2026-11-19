@@ -29,7 +29,12 @@ export class CodexAppServerInstance implements DriverInstance {
   private cwd = '';
   private readOnly = false;
   private turnCliPermissions?: string;
-  private activeTurn: { nativeTurnId: string; clientInputId: string; interrupted: boolean } | null = null;
+  private activeTurn: {
+    nativeTurnId: string;
+    clientInputId: string;
+    interrupted: boolean;
+    interrupt?: Promise<void>;
+  } | null = null;
   private pendingInputId = '';
   private stopPending = false;
   private readonly startedTurns = new Set<string>();
@@ -180,9 +185,11 @@ export class CodexAppServerInstance implements DriverInstance {
     if (this.startedTurns.has(nativeTurnId)) return;
     this.startedTurns.add(nativeTurnId);
     this.activeTurn = { nativeTurnId, clientInputId, interrupted:false };
+    const stopPending = this.stopPending;
+    this.stopPending = false;
     this.emitter.emit({ type: 'turn.started', nativeTurnId, clientInputId });
     // 发送即停止：原生开始信号到达后立即中断（技术方案 §3）。
-    if (this.stopPending) void this.sendInterrupt(nativeTurnId);
+    if (stopPending) void this.sendInterrupt(nativeTurnId);
   }
 
   private onNotification(method: string, params: unknown) {
@@ -299,10 +306,18 @@ export class CodexAppServerInstance implements DriverInstance {
     return (value.thread.turns ?? []).flatMap(t => (t.items ?? []).map(item => ({ key: `${t.id}:${item.id}`, payload: item })));
   }
 
-  private async sendInterrupt(nativeTurnId: string) {
-    if (this.activeTurn?.nativeTurnId === nativeTurnId) this.activeTurn.interrupted = true;
-    try { await this.rpc?.call('turn/interrupt', { threadId: this.threadId, turnId: nativeTurnId }, 15_000); }
-    catch (e) { this.emitter.emit({ type: 'diagnostic', message: `中断失败：${(e as Error).message}` }); }
+  private sendInterrupt(nativeTurnId: string) {
+    const turn = this.activeTurn;
+    if (turn?.nativeTurnId !== nativeTurnId || !this.rpc) return;
+    if (turn.interrupt) return turn.interrupt;
+    turn.interrupted = true;
+    // 原生开始和宿主派发完成可能同时处理同一次停止，直到回合结束都共用原请求。
+    turn.interrupt = this.rpc.call<void>('turn/interrupt', { threadId: this.threadId, turnId: nativeTurnId }, 15_000)
+      .catch(error => {
+        turn.interrupt = undefined;
+        this.emitter.emit({ type: 'diagnostic', message: `中断失败：${(error as Error).message}` });
+      });
+    return turn.interrupt;
   }
 
   async interrupt() {
