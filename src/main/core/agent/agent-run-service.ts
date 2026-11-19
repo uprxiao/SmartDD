@@ -172,7 +172,15 @@ export class AgentRunService {
           const before = store.goal(run.taskId);
           const heldActive = this.held.has(run.taskId) && e.status === 'active' && run.driverId === 'codex-app-server';
           if (heldActive) void run.instance.goal?.({ kind: 'pause' }).catch(() => {});
-          store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: heldActive ? 'paused' : e.status, pausedReason: heldActive ? before?.pausedReason ?? 'user' : undefined, timeUsedSeconds: e.timeUsedSeconds, nativeCreatedAt: e.nativeCreatedAt, nativeUpdatedAt: e.nativeUpdatedAt });
+          // Codex replays the current paused goal when resuming the thread. Keep the host's
+          // waiting reason only when the binding and native goal version are unchanged.
+          const sameWaitingPause = run.driverId === 'codex-app-server' && e.status === 'paused'
+            && before?.status === 'paused' && before.pausedReason === 'waiting_children'
+            && before.bindingId === run.bindingId && before.objective === e.objective
+            && Number.isFinite(e.nativeCreatedAt) && e.nativeCreatedAt === before.nativeCreatedAt
+            && Number.isFinite(e.nativeUpdatedAt) && e.nativeUpdatedAt === before.nativeUpdatedAt;
+          const pausedReason = sameWaitingPause ? 'waiting_children' : heldActive ? before?.pausedReason ?? 'user' : undefined;
+          store.upsertGoal({ taskId: run.taskId, bindingId: run.bindingId, objective: e.objective, status: heldActive ? 'paused' : e.status, pausedReason, timeUsedSeconds: e.timeUsedSeconds, nativeCreatedAt: e.nativeCreatedAt, nativeUpdatedAt: e.nativeUpdatedAt });
           // 目标在回合进行中设定：这一轮计入目标轮次（宿主计数）。
           const after = store.goal(run.taskId);
           if (after?.status === 'active' && run.turnId && (!before || before.status !== 'active' || before.revision !== after.revision)) store.countGoalTurn(run.taskId);

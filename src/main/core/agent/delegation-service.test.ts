@@ -23,7 +23,16 @@ class Instance implements DriverInstance {
   interrupts = 0;
   steers: TurnInput[] = [];
   constructor(readonly driverId: DriverId) {}
-  async open(o: DriverOpenOptions) { this.options = o; this.nativeId = o.resumeNativeId ?? randomUUID(); this.events.emit({ type: 'process', pid: ++pid }); return { nativeId: this.nativeId, confirmed: true, defaultModel: 'test' }; }
+  async open(o: DriverOpenOptions) {
+    this.options = o;
+    this.nativeId = o.resumeNativeId ?? randomUUID();
+    this.events.emit({ type: 'process', pid: ++pid });
+    const goal = o.resumeNativeId ? goals.get(this.nativeId) : undefined;
+    if (goal?.status === 'paused') this.events.emit({
+      type: 'goal', objective: goal.objective, status: 'paused', nativeCreatedAt: goal.createdAt, nativeUpdatedAt: goal.updatedAt,
+    });
+    return { nativeId: this.nativeId, confirmed: true, defaultModel: 'test' };
+  }
   async injectHistory(t: string) { this.history.push(t); }
   async startTurn(t: TurnInput) { this.turns.push(t); const id = `turn-${this.turns.length}`; this.events.emit({ type: 'turn.started', nativeTurnId: id, clientInputId: t.clientInputId }); return { nativeTurnId: id }; }
   async steer(t: TurnInput) { this.steers.push(t); }
@@ -333,12 +342,15 @@ it('A29/A32: native background work outlives the parent turn and retains the wri
   p.events.emit({ type: 'node.state', nodeId: 'native-child', state: 'completed' });
   await until(() => f.instances.length === 2, 4000);
 });
-it('A70: pause intent precedes release; a child result resumes the identical native goal only after its notification turn starts', async () => {
+it('A70: reopening the same paused goal preserves the wait and resumes it after the notification starts', async () => {
   const f = fixture(), p = await f.send('start'); await f.tasks.goal(f.taskId, { kind: 'set', objective: 'finish children' }); const c = await f.delegate(); p.finish();
   await until(() => f.instances.length === 2, 5000);
   expect(f.store.goal(f.taskId)).toMatchObject({ status: 'paused', pausedReason: 'waiting_children' });
   expect(f.db.prepare("SELECT state FROM agent_intents WHERE action='goal_pause'").get()).toEqual({ state: 'done' });
-  f.instances[1].finish('result'); await until(() => f.instances.length === 3 && f.store.goal(f.taskId)?.status === 'active', 5000);
+  f.instances[1].finish('result');
+  await until(() => !!f.instances[2]?.turns.length, 4000);
+  expect(f.store.goal(f.taskId)?.pausedReason).not.toBe('user');
+  await until(() => f.store.goal(f.taskId)?.status === 'active', 4000);
   expect(f.instances[2].nativeId).toBe(p.nativeId); expect(f.db.prepare('SELECT source_kind FROM agent_turns WHERE task_id=? ORDER BY rowid DESC LIMIT 1').get(f.taskId)).toEqual({ source_kind: 'notification' });
   expect(f.co.observe(f.taskId, c.childTaskId)[0].state).toBe('delivered');
   expect(f.db.prepare("SELECT state FROM agent_intents WHERE action='goal_resume'").get()).toEqual({ state: 'done' });
