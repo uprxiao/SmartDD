@@ -1,0 +1,478 @@
+{
+  "caseId": "M14-A60",
+  "scope": "Exact packaged App, actual Claude/Codex, loopback provider responses only, no protocol substitution",
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-365/runtime-RaeVvA/home",
+    "at": "2026-11-19T07:36:18.585Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "scenarioId": "codex-rate",
+  "sourceCommit": "9a6e95cdc1003c93f04555b58cd60d8300d2a25c",
+  "asar": "ca01a1cc01b5a3ec5641e726101b1e09762a184f98243db7f0618a74f8fb14c9",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "driverHashes": {
+    "a60-native-limits-packaged.mjs": "c0b445573b090475df022a76a5544bb26bf819e6869ab0f9d114e5987aec0e23",
+    "a60-prep/provider-contract.mjs": "9e87ffc98207c1eb9cabb37ae19ad958b8ab0d5c9993ec7f9bbb51e62ea5d994",
+    "a60-prep/pointer-guard.mjs": "99edaeb25be459c78524c35bc5e868fbd376861a32a537c9d733b5528e96f665"
+  },
+  "observations": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"33270131-cddc-4284-bf71-5300131e2fcf\"]",
+      "text": null,
+      "button": "left",
+      "x": 171.5,
+      "y": 303,
+      "at": 1795073783706
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795073783858
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795073783868
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "button": "left",
+      "x": 864,
+      "y": 786,
+      "at": 1795073785183
+    },
+    {
+      "selector": ".agent-task-view .agent-composer button[type=\"submit\"]",
+      "text": null,
+      "button": "left",
+      "x": 1219,
+      "y": 853,
+      "at": 1795073785203
+    }
+  ],
+  "requests": [
+    {
+      "kind": "codex",
+      "model": "a60-codex-rate",
+      "lane": "warm",
+      "arrivedAt": 1795073785087,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only"
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-rate",
+      "lane": "exercise",
+      "arrivedAt": 1795073785482,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "1"
+        },
+        "body": {
+          "error": {
+            "type": "rate_limit_exceeded",
+            "code": "rate_limit_exceeded",
+            "message": "A60 local request rate exceeded"
+          }
+        }
+      }
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-rate",
+      "lane": "exercise",
+      "arrivedAt": 1795073786499,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "1"
+        },
+        "body": {
+          "error": {
+            "type": "rate_limit_exceeded",
+            "code": "rate_limit_exceeded",
+            "message": "A60 local request rate exceeded"
+          }
+        }
+      }
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-rate",
+      "lane": "exercise",
+      "arrivedAt": 1795073787509,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "1"
+        },
+        "body": {
+          "error": {
+            "type": "rate_limit_exceeded",
+            "code": "rate_limit_exceeded",
+            "message": "A60 local request rate exceeded"
+          }
+        }
+      }
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-rate",
+      "lane": "exercise",
+      "arrivedAt": 1795073788520,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "1"
+        },
+        "body": {
+          "error": {
+            "type": "rate_limit_exceeded",
+            "code": "rate_limit_exceeded",
+            "message": "A60 local request rate exceeded"
+          }
+        }
+      }
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-rate",
+      "lane": "exercise",
+      "arrivedAt": 1795073789548,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "1"
+        },
+        "body": {
+          "error": {
+            "type": "rate_limit_exceeded",
+            "code": "rate_limit_exceeded",
+            "message": "A60 local request rate exceeded"
+          }
+        }
+      }
+    },
+    {
+      "kind": "codex",
+      "model": "a60-codex-rate",
+      "lane": "exercise",
+      "arrivedAt": 1795073790560,
+      "path": "/v1/responses",
+      "bodyScope": "current-user-marker-only",
+      "reply": {
+        "status": 429,
+        "headers": {
+          "content-type": "application/json",
+          "retry-after": "1"
+        },
+        "body": {
+          "error": {
+            "type": "rate_limit_exceeded",
+            "code": "rate_limit_exceeded",
+            "message": "A60 local request rate exceeded"
+          }
+        }
+      }
+    }
+  ],
+  "revision": [],
+  "nativeReceipts": [],
+  "status": "failed",
+  "port": 3425,
+  "fixture": {
+    "cwd": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-365/runtime-RaeVvA/project",
+    "model": "a60-codex-rate",
+    "engine": "codex",
+    "expected": "rate"
+  },
+  "pid": 38057,
+  "identity": [
+    true,
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-365/runtime-RaeVvA/data",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-365/runtime-RaeVvA/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-365/runtime-RaeVvA/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    38057
+  ],
+  "nativeTools": [
+    {
+      "kind": "claude",
+      "version": "2.1.328"
+    },
+    {
+      "kind": "codex",
+      "version": "0.169.0"
+    }
+  ],
+  "warm": {
+    "run": {
+      "runId": "dbd0b8fa-df76-422f-b820-64f51ddece4d",
+      "generation": 1,
+      "driverId": "codex-app-server",
+      "tier": "ask",
+      "defaultModel": "a60-codex-rate",
+      "models": [
+        {
+          "id": "a60-codex-rate",
+          "name": "a60-codex-rate",
+          "efforts": [],
+          "defaultEffort": "none"
+        }
+      ],
+      "busy": false,
+      "steer": true,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "goal",
+          "compact",
+          "review"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser",
+            "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug",
+            "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-mail-work-assistant",
+            "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-project-db-diagnostics",
+            "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-remote-password-ssh",
+            "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "imagegen",
+            "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+          },
+          {
+            "name": "openai-docs",
+            "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+          },
+          {
+            "name": "review-agent",
+            "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+          },
+          {
+            "name": "skill-creator",
+            "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+          },
+          {
+            "name": "skill-installer",
+            "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+          }
+        ]
+      }
+    },
+    "turnId": "acf84ddb-e03a-4e91-ab75-35f54b409963"
+  },
+  "terminal": {
+    "at": 1795073790583,
+    "turn": {
+      "turn_id": "407d8cd6-4955-47b4-9d45-c900eb31fb05",
+      "client_input_id": "in-752909fb75a343d5879d86b854e01fc0",
+      "status": "failed",
+      "native_turn_id": "01a1f2bc-3e78-7e83-a12a-565a4239d802",
+      "accepted_at": "2026-11-19T07:36:25.205Z",
+      "started_at": "2026-11-19T07:36:25.466Z",
+      "ended_at": "2026-11-19T07:36:30.566Z",
+      "error_code": "{\"message\":\"exceeded retry limit, last status: 429 Too Many Requests\",\"codexErrorInfo\":{\"responseTooManyFailedAttempts\":{\"httpStatusCode\":429}},\"additionalDetails\":null,\"misalignment\":null}",
+      "run_id": "dbd0b8fa-df76-422f-b820-64f51ddece4d",
+      "source_kind": "user"
+    },
+    "status": "failed",
+    "run": {
+      "runId": "dbd0b8fa-df76-422f-b820-64f51ddece4d",
+      "generation": 1,
+      "driverId": "codex-app-server",
+      "tier": "ask",
+      "defaultModel": "a60-codex-rate",
+      "models": [
+        {
+          "id": "a60-codex-rate",
+          "name": "a60-codex-rate",
+          "efforts": [],
+          "defaultEffort": "none"
+        }
+      ],
+      "busy": false,
+      "steer": true,
+      "goal": true,
+      "catalog": {
+        "commands": [
+          "goal",
+          "compact",
+          "review"
+        ],
+        "skills": [
+          {
+            "name": "willyou-browser-browser",
+            "description": "经宿主CLI操作本任务内置浏览器，保留页面引用与操作回执。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-browser-reproduce-bug",
+            "description": "复现用户指定的Bug，在同一登录态验证修复，报告环境、步骤和证据。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-mail-work-assistant",
+            "description": "查询项目选用的本机邮件、维护稳定草稿，并在发件身份和具体邮件均获确认后发送。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-project-db-diagnostics",
+            "description": "根据 WillYou 当前项目的数据库配置定位目标并执行只读诊断。支持 MySQL、PostgreSQL 协议及兼容数据库。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "willyou-remote-password-ssh",
+            "description": "使用 WillYou 当前项目的服务器配置执行 SSH 排查、日志读取和明确授权的远程命令；支持密码与私钥认证。（仅在 WillYou 任务中使用）"
+          },
+          {
+            "name": "imagegen",
+            "description": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-b"
+          },
+          {
+            "name": "openai-docs",
+            "description": "API first-timers, Codex/Work Q&A. If the user already has an OpenAI API integration, skip this skill for API questions and use the developer docs. Read this ski"
+          },
+          {
+            "name": "review-agent",
+            "description": "Perform a read-only, defect-first review of a specified code change and return every actionable finding. Use when another agent delegates review of uncommitted "
+          },
+          {
+            "name": "skill-creator",
+            "description": "Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources."
+          },
+          {
+            "name": "skill-installer",
+            "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill"
+          }
+        ]
+      }
+    },
+    "turns": [
+      {
+        "id": "acf84ddb-e03a-4e91-ab75-35f54b409963",
+        "status": "completed",
+        "source": "user"
+      },
+      {
+        "id": "407d8cd6-4955-47b4-9d45-c900eb31fb05",
+        "status": "failed",
+        "source": "user"
+      }
+    ],
+    "pending": 0,
+    "items": [
+      {
+        "itemId": "4a1b0be2-234a-40c1-802e-1f3cec65245b",
+        "type": "user_message",
+        "payload": {
+          "text": "A60_PACKAGE_LIMIT",
+          "sourceKind": "user"
+        }
+      },
+      {
+        "itemId": "ab705947-b8f4-439e-a6fa-9942ce8c0a9a",
+        "type": "error",
+        "payload": {
+          "code": "responseStreamDisconnected",
+          "message": "Reconnecting... 1/5"
+        }
+      },
+      {
+        "itemId": "88193f00-4c34-4430-9a87-898315a93a29",
+        "type": "error",
+        "payload": {
+          "code": "responseStreamDisconnected",
+          "message": "Reconnecting... 2/5"
+        }
+      },
+      {
+        "itemId": "f9b8de8e-1db5-4712-86f7-fb4809c0c0a7",
+        "type": "error",
+        "payload": {
+          "code": "responseStreamDisconnected",
+          "message": "Reconnecting... 3/5"
+        }
+      },
+      {
+        "itemId": "3d514f66-7be1-404e-91ca-a21aa4d38dce",
+        "type": "error",
+        "payload": {
+          "code": "responseStreamDisconnected",
+          "message": "Reconnecting... 4/5"
+        }
+      },
+      {
+        "itemId": "4d5ee523-caf3-4baf-a99f-e1d8670a870b",
+        "type": "error",
+        "payload": {
+          "code": "responseStreamDisconnected",
+          "message": "Reconnecting... 5/5"
+        }
+      },
+      {
+        "itemId": "d221f8de-e3be-43ae-9547-9074cef80440",
+        "type": "error",
+        "payload": {
+          "code": "responseTooManyFailedAttempts",
+          "message": "exceeded retry limit, last status: 429 Too Many Requests"
+        }
+      }
+    ],
+    "originalRequests": 6,
+    "nativeInTurnOutputResumes": 0
+  },
+  "terminalUi": {
+    "cards": [],
+    "taskText": "A60 isolated codex-rate\n工作中\n插件 2\n单 Agent · 开启委派\nA60_PACKAGE_WARM\n\nA60_PACKAGE_WARM_DONE\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nMCP 启动 · smartdd_project_df27cebe55bd\nMCP 启动 · wy_df27cebe55bd9a32c02a5e9c\nA60_PACKAGE_LIMIT\n查看错误详情\n查看错误详情\n查看错误详情\n查看错误详情\n查看错误详情\n请求批准\n帮我批准\n完全访问\nFixture codex\na60-codex-rate\n插话"
+  },
+  "nativeProjection": [],
+  "phase": "actual native executor receives local provider limit",
+  "error": "AssertionError [ERR_ASSERTION]: Native status was not projected to limited\n+ actual - expected\n\n+ 'failed'\n- 'limited'\n\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g04/a60-native-limits-packaged.mjs:240:10",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n1\n插件\n项目\nM14 A60 limit isolated\nA60 isolated codex-rate\n工作中\n设置\nA60 isolated codex-rate\n工作中\n插件 2\n单 Agent · 开启委派\nA60_PACKAGE_WARM\n\nA60_PACKAGE_WARM_DONE\n\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\nMCP 启动 · smartdd_project_df27cebe55bd\nMCP 启动 · wy_df27cebe55bd9a32c02a5e9c\nA60_PACKAGE_LIMIT\n查看错误详情\n查看错误详情\n查看错误详情\n查看错误详情\n查看错误详情\n请求批准\n帮我批准\n完全访问\nFixture codex\na60-codex-rate\n插话",
+  "stoppedBeforeQuit": [],
+  "preQuit": {
+    "at": "2026-11-19T07:36:30.680Z",
+    "active": []
+  },
+  "quitPhase": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-365/quit-phase.jsonl",
+  "exit": {
+    "pid": 38057,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

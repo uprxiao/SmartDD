@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-19T15:32:09+08:00",
+  "updatedAt": "2026-11-19T15:38:09+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -403,7 +403,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "Claude Code 接手：A05 第 363 次真实冷启动续聊通过（46/73）。下一项 A60 设置公布后与终态矩阵，再 A34 预算边界与读租约；A61 继续等待清理门槛。",
+  "next": "Claude Code 交回 Codex（46/73）。先修 M14-D06-63（Codex 429 重试用尽未标限流）并复验 codex-rate，再补 A60 其余终态缺项、A34。见 验收/Codex阶段6接力_20261119.md。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
@@ -498,6 +498,19 @@
       "driver": "g04/prep-a05-cold-resume-2",
       "result": "passed",
       "releasedAt": "2026-11-19T15:32:09+08:00",
+      "released": {
+        "packagedUI": true,
+        "loopback3425": true
+      }
+    },
+    {
+      "case": "M14-A60",
+      "attempts": [
+        "g04/attempt-364",
+        "g04/attempt-365"
+      ],
+      "result": "settings criterion passed; D06-63 red, unfixed",
+      "releasedAt": "2026-11-19T15:38:09+08:00",
       "released": {
         "packagedUI": true,
         "loopback3425": true
