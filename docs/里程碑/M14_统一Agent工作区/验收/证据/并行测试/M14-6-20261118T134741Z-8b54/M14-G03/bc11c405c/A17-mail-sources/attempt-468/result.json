@@ -1,0 +1,140 @@
+{
+  "isolatedKeychain": {
+    "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-468/runtime-Dp9tWf/home/Library/Keychains/login.keychain-db",
+    "default": "\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-468/runtime-Dp9tWf/home/Library/Keychains/login.keychain-db\"",
+    "userDefaultUnchanged": "\"/Users/liubu/Library/Keychains/login.keychain-db\""
+  },
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-468/runtime-Dp9tWf/home",
+    "at": "2026-11-19T15:43:29.770Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "bc11c405ca62419921e0a3d696cd9cc4050a505f",
+  "asar": "9af7e03ec049965c2a5ae1b96564ae7f517008b42c07a11387599db5440b0184",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scope": "A17: input sources vs mail send authorization; isolated real packaged App, real Claude and Codex, local synthetic models, non-relaying SMTP",
+  "observations": [],
+  "requests": [
+    {
+      "model": "a17-human",
+      "native": "mail_draft_create"
+    },
+    {
+      "model": "a17-human",
+      "native": "mail_send_prepare"
+    },
+    {
+      "model": "a17-human",
+      "native": "mail_send_execute"
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "text": null,
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"15934138-ef85-4dcd-839d-dffe63117f7f\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-request [aria-label=\"批准\"]",
+      "text": null,
+      "x": 864,
+      "y": 700.25
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "x": 1205,
+      "y": 851
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "status": "failed",
+  "checks": [
+    {
+      "label": "even after an explicit human instruction the send still asks for approval (R03)",
+      "ok": true
+    },
+    {
+      "label": "the human-source approval points at its task and current run",
+      "ok": true
+    },
+    {
+      "label": "the human input is shown as the user message in the timeline",
+      "ok": true
+    }
+  ],
+  "keychainWindow": {
+    "startedAt": "2026-11-19T15:43:34.872Z",
+    "testedAt": "2026-11-19T15:43:35.042Z",
+    "savedAt": "2026-11-19T15:43:35.192Z"
+  },
+  "sources": {
+    "human": {
+      "ref": "mail-draft://155f1be1-841c-4855-8222-ce9b80407e7b?revision=1&contentHash=e017b5f360b1f2531fafce493c4ed46254baa4a6111e79e38a414008e4c33c3c 原样发送",
+      "intentState": "awaiting-authorization",
+      "grant": null,
+      "requestOrigin": {
+        "taskId": "15934138-ef85-4dcd-839d-dffe63117f7f",
+        "bindingId": "ff6e2381-0d1d-4a78-a33b-da43d38dca0e",
+        "runId": "d0528c21-5376-4cbc-a234-2fc74c1561c7",
+        "generation": 1
+      },
+      "run": "d0528c21-5376-4cbc-a234-2fc74c1561c7"
+    }
+  },
+  "phase": "A17 current human input",
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(!permit&&destinations.includes(value.to)&&/^A41_/.test(value.subject)&&/^A41_/.test(value.text))\n\n    at Object.arm (file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a17-mail-sources/smtp.mjs:65:17)\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a17-mail-sources/a17-mail-sources.mjs:280:8",
+  "exit": {
+    "pid": 39579,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "smtp": {
+    "responses": 0,
+    "unexpected": 0,
+    "results": []
+  }
+}
