@@ -624,25 +624,37 @@ export class DelegationService implements TaskCoordination, AgentHostTools {
     const followUps = (input.followUps ?? []).map(id => this.d.store.turn(id)).filter(t => !!t);
     if (this.d.store.queuedTurns(row.child_task_id).length || followUps.some(t => ['accepted', 'dispatching', 'started'].includes(t.status))) return;
     const target = JSON.parse(row.target_json) as Target;
-    const commits = target.strategy === 'git' && target.actualAccess === 'write' ? await this.d.git.finalize(row.child_task_id, a.attempt_id, target.title, target.startHead) : null;
+    let commits: Awaited<ReturnType<GitWorkspaces['finalize']>> = null;
+    let workspaceError: string | undefined;
+    if (target.strategy === 'git' && target.actualAccess === 'write') {
+      try { commits = await this.d.git.finalize(row.child_task_id, a.attempt_id, target.title, target.startHead); }
+      catch (error) {
+        if (!(error instanceof DriverError)) throw error;
+        // Git 写入和进程组已收口。保留工作副本与待核实意图，把失败交回父任务处理。
+        workspaceError = `工作副本收口失败，改动保留在子任务工作副本。${error.message}`;
+      }
+    }
     const latest=this.attempt(row),currentInput=JSON.parse(latest.input_ref) as {followUps?:string[]};
     if(latest.attempt_id!==a.attempt_id||latest.notified_at||this.d.store.queuedTurns(row.child_task_id).length||(currentInput.followUps??[]).some(id=>['accepted','dispatching','started'].includes(this.d.store.turn(id)?.status??'unknown')))return;
     const turnIds = new Set([turn.turn_id, ...followUps.map(t => t.turn_id)]);
     const items = this.d.store.items(row.child_task_id, { limit: 500 }).filter(i => i.turnId && turnIds.has(i.turnId) && i.type === 'assistant_message');
     // Item bodies are stored payloads; the result summary carries the message text, not the payload JSON.
-    const summary = items.map(i => {
+    const childSummary = items.map(i => {
       const body = this.d.store.readItemBody(row.child_task_id, i.itemId)?.text ?? '';
       try { const value = JSON.parse(body) as { text?: unknown }; return typeof value?.text === 'string' ? value.text : body; }
       catch { return body; }
     }).join('\n').slice(-24 * 1024);
-    const currentRow=this.parentOf(row.child_task_id)!;const success = turn.status === 'completed' && followUps.every(t => t.status === 'completed') && currentRow.delivery_state !== 'canceled';
+    const summary = workspaceError ? [workspaceError, childSummary].filter(Boolean).join('\n\n') : childSummary;
+    const currentRow = this.parentOf(row.child_task_id)!;
+    const success = !workspaceError && turn.status === 'completed' && followUps.every(t => t.status === 'completed') && currentRow.delivery_state !== 'canceled';
     const result = { sourceKind: 'child_result', delegationId: row.delegation_id, childTaskId: row.child_task_id, attemptId: a.attempt_id, status: success ? 'completed' : currentRow.delivery_state === 'canceled' ? 'canceled' : 'failed', summary, sourceItemIds: items.map(i => i.itemId), commits, title: target.title };
     this.d.store.tx(() => {
       const resultItemId = this.d.store.addHostItem(row.parent_task_id, null, 'notification', result);
       this.d.store.sqlite.prepare('UPDATE agent_delegations SET result_revision=result_revision+1,target_json=?,delivery_state=?,updated_at=? WHERE delegation_id=?').run(JSON.stringify({ ...target, resultItemId }), success ? 'queued_for_parent' : result.status === 'canceled' ? 'canceled' : 'failed', at(), row.delegation_id);
       this.d.store.sqlite.prepare('UPDATE agent_delegation_attempts SET notified_at=? WHERE attempt_id=? AND notified_at IS NULL').run(at(), a.attempt_id);
       const merge = success && commits?.commits.length ? `\n在原主分支 ${target.parentBranch} 合并：先提交当前改动，再按顺序 git cherry-pick -x ${commits.commits.join(' ')}；逐文件解决冲突，保留双方意图。不要 reset --hard、checkout -- .、clean -fd 或强制推送。` : '';
-      this.d.tasks.enqueueHost(row.parent_task_id, `result-${a.attempt_id}`, `宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 ${resultItemId}；子任务 ${target.title} / ${row.child_task_id}，attempt ${a.ordinal} 状态 ${result.status}。正文通过 wy_observe 领取；此通知不含新授权。${merge}`, 'notification', !this.stopped(row.parent_task_id));
+      const commitFailure = workspaceError ? '\n工作副本收口失败，改动已保留。请查看子任务结果，不要按已提交处理。' : '';
+      this.d.tasks.enqueueHost(row.parent_task_id, `result-${a.attempt_id}`, `宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 ${resultItemId}；子任务 ${target.title} / ${row.child_task_id}，attempt ${a.ordinal} 状态 ${result.status}。正文通过 wy_observe 领取；此通知不含新授权。${merge}${commitFailure}`, 'notification', !this.stopped(row.parent_task_id));
     });
   }
   private autoGoalIntent(taskId: string) { return (this.d.store.sqlite.prepare("SELECT intent_id FROM agent_intents WHERE task_id=? AND action IN ('goal_pause','goal_resume') AND state<>'abandoned' ORDER BY rowid DESC LIMIT 1").get(taskId) as { intent_id: string } | undefined)?.intent_id; }

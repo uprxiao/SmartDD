@@ -296,6 +296,36 @@ it('A66/A68: Git child runs in the mapped host worktree; child result is committ
   const observed = f.co.observe(f.taskId, c.childTaskId)[0]; expect(observed.commitRange.commits).toHaveLength(1); expect(observed.commitRange.files).toContain('child.txt'); expect(observed.body?.chunk).toContain('child result');
 }, 20_000);
 
+it('D06-64 reports an unsuccessful worktree commit to the parent once and preserves the child changes', async () => {
+  const commit = vi.fn(async () => ({ stdout: '', stderr: 'Author identity unknown', code: 128 }));
+  const f = fixture((cwd, command, args, timeout, options) =>
+    options?.taskId && args[0] === 'commit' ? commit() : runWorkspaceCommand(cwd, command, args, timeout, options));
+  const git = async (...args: string[]) => {
+    const result = await runWorkspaceCommand(f.root, 'git', args);
+    if (result.code) throw Error(result.stderr);
+    return result.stdout.trim();
+  };
+  await git('init', '-q', '-b', 'main');
+  await git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgsign=false', 'commit', '--allow-empty', '-qm', 'base');
+  const base = await git('rev-parse', 'HEAD');
+  const parent = await f.send('start');
+  const child = await f.delegate(undefined, undefined, 'worktree');
+  parent.finish();
+  await until(() => !!f.instances[1]?.turns.length, 6000);
+  const worktree = f.instances[1].options.cwd;
+  writeFileSync(join(worktree, 'child.txt'), 'child change');
+  f.instances[1].finish('child result');
+  await until(() => f.store.items(f.taskId).some(item => item.type === 'notification'), 3500);
+  await tick(1100);
+  expect(commit).toHaveBeenCalledTimes(1);
+  expect(f.store.items(f.taskId).filter(item => item.type === 'notification')).toMatchObject([
+    { payload: { status: 'failed', summary: expect.stringContaining('Author identity unknown'), commits: null } },
+  ]);
+  expect(f.db.prepare("SELECT state FROM agent_intents WHERE action='child_result_commit'").all()).toEqual([{ state: 'needs_review' }]);
+  expect(readFileSync(join(worktree, 'child.txt'), 'utf8')).toBe('child change');
+  expect(await git('rev-parse', 'HEAD')).toBe(base);
+}, 12_000);
+
 it('A29/A32: native background work outlives the parent turn and retains the write slot until its own terminal event', async () => {
   const f = fixture(), p = await f.send('start'); await f.delegate();
   p.events.emit({ type: 'node.state', nodeId: 'native-child', state: 'running' }); p.finish();

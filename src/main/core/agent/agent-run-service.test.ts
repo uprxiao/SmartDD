@@ -254,6 +254,24 @@ describe('运行服务', () => {
     expect(db.prepare("SELECT status,error_code FROM agent_turns").get()).toEqual({ status: 'unknown', error_code: 'RUN_ENDED' });
   });
 
+  it('A11 forwards a Codex form answer to the native session without persisting the secret field', async () => {
+    const { db, service, base, instances, taskId } = setup();
+    const run = await service.open(base);
+    await service.submit(run.runId, { clientInputId: 'form', text: 'Ask me' });
+    instances[0].emit({ type: 'request', requestKey: 'form', kind: 'user_input', payload: {
+      method: 'item/tool/requestUserInput', params: { questions: [{ id: 'plain' }, { id: 'secret', isSecret: true }] },
+    } });
+    const { request_id } = db.prepare('SELECT request_id FROM agent_requests').get() as { request_id: string };
+    const result = { answers: { plain: { answers: ['ordinary answer'] }, secret: { answers: ['synthetic-secret'] } } };
+    await service.respond(request_id, { taskId, runId: run.runId, generation: 1, revision: 1 }, result);
+    expect(instances[0].responses).toEqual([['form', result]]);
+    const row = db.prepare('SELECT status,decision_ref FROM agent_requests').get() as { status: string; decision_ref: string };
+    expect(row.status).toBe('resolved');
+    expect(row.decision_ref).toContain('ordinary answer');
+    expect(row.decision_ref).not.toContain('synthetic-secret');
+    expect(db.serialize().includes(Buffer.from('synthetic-secret'))).toBe(false);
+  });
+
   it('宿主回应期间原生侧发出的结束通知不把请求记成退役', async () => {
     const { db, service, base, instances, taskId } = setup();
     const h = await service.open(base);

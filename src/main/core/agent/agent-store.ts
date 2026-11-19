@@ -435,8 +435,23 @@ export class AgentStore {
   }
   resolveRequest(requestId: string, decision: unknown) {
     const row = this.request(requestId)!;
+    let persisted = decision;
+    if (row.class === 'native' && row.kind === 'user_input') {
+      const payload = JSON.parse(row.payload_ref) as {
+        truncated?: boolean;
+        params?: { questions?: { id: string; isSecret?: boolean }[] };
+      };
+      if (payload.truncated) persisted = null;
+      else if (Array.isArray(payload.params?.questions)) {
+        const secrets = new Set(payload.params.questions.filter(q => q?.isSecret === true).map(q => q.id));
+        if (secrets.size) {
+          const answers = (decision as { answers?: Record<string, unknown> } | null)?.answers;
+          persisted = { answers: Object.fromEntries(Object.entries(answers ?? {}).filter(([id]) => !secrets.has(id))) };
+        }
+      }
+    }
     this.tx(emit => {
-      if (this.sqlite.prepare("UPDATE agent_requests SET status='resolved',decision_ref=?,updated_at=? WHERE request_id=? AND status='pending'").run(boundedJson(decision), now(), requestId).changes)
+      if (this.sqlite.prepare("UPDATE agent_requests SET status='resolved',decision_ref=?,updated_at=? WHERE request_id=? AND status='pending'").run(boundedJson(persisted), now(), requestId).changes)
         emit(row.task_id, 'request.resolved', { requestId });
     });
   }
