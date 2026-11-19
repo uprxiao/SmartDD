@@ -12,6 +12,7 @@ const SEARCH_TOOLS = new Set(['Glob', 'Grep', 'Read', 'LS']);
 const WEB_TOOLS = new Set(['WebSearch', 'WebFetch']);
 const TODO_TOOLS = new Set(['TaskCreate', 'TaskUpdate', 'TodoWrite']);
 const text = (v: unknown) => (typeof v === 'string' ? v : v == null ? '' : JSON.stringify(v));
+type CodexQuotaWindow = { usedPercent?: unknown; resetsAt?: unknown };
 
 function claudeToolType(name: string): ItemType {
   if (name === 'Bash') return 'command_execution';
@@ -37,6 +38,8 @@ export class TimelineProjector {
   private readonly finals = new Map<string, { payload: Record<string, unknown>; terminal: 'completed' | 'failed' }>();
   private readonly childToolParent = new Map<string, string>();
   private readonly closedNotices = new Set<string>();
+  private codexTurnId?: string;
+  private codexQuota: { primary?: CodexQuotaWindow; secondary?: CodexQuotaWindow } = {};
 
   constructor(private readonly driverId: 'claude-sdk' | 'codex-app-server') {}
 
@@ -143,6 +146,19 @@ export class TimelineProjector {
   }
 
   private codex(e: DriverEvent): ItemUpsert[] {
+    if (e.type === 'turn.started') {
+      this.codexTurnId = e.nativeTurnId;
+      this.codexQuota = {};
+    }
+    if (e.type === 'native' && e.name === 'account/rateLimits/updated') {
+      const limits = (e.payload as { rateLimits?: { limitId?: unknown; primary?: CodexQuotaWindow | null; secondary?: CodexQuotaWindow | null } } | null)?.rateLimits;
+      if (limits?.limitId === 'codex') {
+        // Native account notifications can update one window at a time. Keep this data private to the current turn.
+        if (limits.primary) this.codexQuota.primary = limits.primary;
+        if (limits.secondary) this.codexQuota.secondary = limits.secondary;
+      }
+      return [];
+    }
     if (e.type === 'native' && e.name === 'item/started') {
       const item = (e.payload as any)?.item;
       const mapped = item && this.codexItem(item, false);
@@ -194,9 +210,21 @@ export class TimelineProjector {
       // 受限与普通失败分开（复核 CR18，需求 R02）：额度／限流与输出上限各自标明，保留原生事实。
       const outputLimit = code === 'other' && p?.willRetry !== true && p?.error?.message === 'Incomplete response returned, reason: max_output_tokens';
       const limited = outputLimit ? { kind: 'output' } : code === 'usageLimitExceeded' ? { kind: 'usage' } : code === 'rateLimitExceeded' || code === 'tooManyRequests' ? { kind: 'rate' } : code === 'contextWindowExceeded' ? { kind: 'context' } : null;
-      return [{ key: `error:${p?.turnId ?? ''}:${text(p?.error?.message).slice(0, 40)}`, type: 'error', payload: { code, message: text(p?.error?.message ?? p), ...(limited ? { limited } : {}) }, terminal: 'failed' }];
+      const resetAt = limited?.kind === 'usage' && p?.willRetry !== true && this.codexTurnId && p?.turnId === this.codexTurnId
+        ? this.codexQuotaReset() : undefined;
+      return [{ key: `error:${p?.turnId ?? ''}:${text(p?.error?.message).slice(0, 40)}`, type: 'error', payload: { code, message: text(p?.error?.message ?? p), ...(limited ? { limited: { ...limited, ...(resetAt ? { resetAt } : {}) } } : {}) }, terminal: 'failed' }];
     }
     return [];
+  }
+
+  private codexQuotaReset() {
+    const resets = Object.values(this.codexQuota).flatMap(({ usedPercent, resetsAt }) => {
+      if (typeof usedPercent !== 'number' || !Number.isFinite(usedPercent) || usedPercent < 100 ||
+        typeof resetsAt !== 'number' || !Number.isSafeInteger(resetsAt) || resetsAt > 8_640_000_000_000) return [];
+      return [resetsAt * 1000];
+    });
+    const lastReset = Math.max(0, ...resets);
+    return lastReset > Date.now() ? new Date(lastReset).toISOString() : undefined;
   }
 
   private codexItem(item: any, done: boolean): ItemUpsert | null {

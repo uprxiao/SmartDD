@@ -103,6 +103,38 @@ describe('Codex 投影', () => {
 });
 
 describe('复核 1755 投影回归', () => {
+  it('A60 projects an exhausted Codex quota window from the current turn without exposing quota meters', () => {
+    const result = new TimelineProjector('codex-app-server');
+    const earlier = Math.floor(Date.now() / 1000) + 60;
+    const later = earlier + 60;
+    const window = (usedPercent: number, resetsAt: number | null) => ({ usedPercent, windowDurationMins: 300, resetsAt });
+    const report = (primary: unknown, secondary: unknown, limitId = 'codex') => result.project({
+      type: 'native', name: 'account/rateLimits/updated', payload: { rateLimits: { limitId, primary, secondary } },
+    });
+    const error = (code: string, turnId = 'native-one') => result.project({ type: 'native', name: 'error',
+      payload: { threadId: 'parent', turnId, error: { message: 'Original native message', codexErrorInfo: code }, willRetry: false },
+    })[0].payload;
+    result.project({ type: 'turn.started', nativeTurnId: 'native-one', clientInputId: 'first-input' });
+    expect(report(window(100, earlier), null)).toEqual([]);
+    expect(report(null, window(100, later))).toEqual([]);
+    expect(report(window(100, later + 100), null, 'another-limit')).toEqual([]);
+    expect(error('usageLimitExceeded')).toMatchObject({ limited: {
+      kind: 'usage', resetAt: new Date(later * 1000).toISOString(),
+    } });
+    expect(error('tooManyRequests')).toMatchObject({ limited: { kind: 'rate' } });
+    expect(error('tooManyRequests').limited).not.toHaveProperty('resetAt');
+    expect(report(null, window(20, later))).toEqual([]);
+    expect(error('usageLimitExceeded')).toMatchObject({ limited: {
+      kind: 'usage', resetAt: new Date(earlier * 1000).toISOString(),
+    } });
+    result.project({ type: 'turn.started', nativeTurnId: 'native-two', clientInputId: 'next-input' });
+    expect(error('usageLimitExceeded', 'native-two').limited).not.toHaveProperty('resetAt');
+    report(window(100, 9e20), window(100, earlier - 120));
+    expect(error('usageLimitExceeded', 'native-two').limited).not.toHaveProperty('resetAt');
+    report(window(100, later), null);
+    expect(error('usageLimitExceeded', 'native-one').limited).not.toHaveProperty('resetAt');
+  });
+
   it('A60 maps the Codex terminal output limit without relabeling other or context errors', () => {
     const p = new TimelineProjector('codex-app-server');
     const error = (message: string, codexErrorInfo: string) => p.project({
