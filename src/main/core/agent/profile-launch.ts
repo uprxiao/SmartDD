@@ -83,7 +83,19 @@ export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   if (p.runner === 'codex') {
     const { extraArgs, model } = codexArgsToDriver(p.args);
     const stateRoot = managed ? join(i.userData, 'agents', 'codex', createHash('sha256').update(i.config.id).digest('hex').slice(0, 32)) : env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex');
-    if (managed) { env.CODEX_HOME = stateRoot; p.env.CODEX_HOME = stateRoot; plan.codexRoot = stateRoot; }
+    if (managed) {
+      env.CODEX_HOME = stateRoot; p.env.CODEX_HOME = stateRoot; plan.codexRoot = stateRoot;
+      // D06-72: Codex also discovers Skills from shared folders under HOME, so a managed run gets a private HOME.
+      // The user's Git and SSH configuration still apply (user decision 2026-11-19); OpenSSH reads keys from the account home anyway.
+      const userHome = env.HOME ?? homedir();
+      env.HOME = join(stateRoot, 'home');
+      if (!env.GIT_CONFIG_GLOBAL) {
+        const gitConfig = [join(userHome, '.gitconfig'), join(env.XDG_CONFIG_HOME ?? join(userHome, '.config'), 'git', 'config')].find(f => existsSync(f));
+        if (gitConfig) env.GIT_CONFIG_GLOBAL = gitConfig;
+      }
+      const sshConfig = join(userHome, '.ssh', 'config');
+      if (!env.GIT_SSH_COMMAND && existsSync(sshConfig)) env.GIT_SSH_COMMAND = `ssh -F ${JSON.stringify(sshConfig)}`;
+    }
     if (!carry && !managed) {
       const file = join(stateRoot, 'config.toml');
       if (existsSync(file)) {

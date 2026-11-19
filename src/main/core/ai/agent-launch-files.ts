@@ -52,6 +52,8 @@ export function materializeAgentPlan(plan: AgentLaunchPlan, userData: string, cw
     const rest = relative(join(managed, 'codex'), resolve(plan.codexRoot));
     if (!/^[a-f0-9]{32}$/.test(rest)) throw new Error('Codex 管理目录身份异常');
     privateDirectory(base, plan.codexRoot);
+    // The managed Codex run uses this as HOME (D06-72); it must exist before the native process starts.
+    privateDirectory(base, join(plan.codexRoot, 'home'));
     if (existsSync(join(plan.codexRoot, 'auth.json'))) throw new Error('Codex 管理目录含有残留认证，请移除后重试');
   }
   if (plan.claudeRoot) {

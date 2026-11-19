@@ -38,3 +38,22 @@ it('A07: managed Codex has a materialized private state root and does not inheri
   materializeAgentPlan(result.plan,f.input.userData,f.input.cwd);expect(existsSync(result.stateRoot)).toBe(true);
   expect(readFileSync(userConfig,'utf8')).toContain('personal');
 });
+it('A07 D06-72: managed Codex runs with a private HOME so shared personal Skill folders are not discovered, while Git and SSH configuration still apply', () => {
+  const f = fixture(); mkdirSync(f.input.userData);
+  writeFileSync(join(f.home, '.gitconfig'), '[user]\n\tname = Fixture\n');
+  mkdirSync(join(f.home, '.ssh')); writeFileSync(join(f.home, '.ssh', 'config'), 'Host fixture\n');
+  mkdirSync(join(f.home, '.agents', 'skills', 'personal'), { recursive: true });
+  const provider={id:'p',name:'Fixture',preset:null,endpoints:{responses:'http://127.0.0.1:9/v1'},authType:'bearer' as const,hasKey:true,identityRevision:1,models:[{id:'a',name:'a',offline:false,contextWindow:null,availability:{claude:'untested' as const,codex:'untested' as const}}],recommended:{},refreshedAt:null};
+  const managed=resolveProfileLaunch({...f.input,config:{...config,source:'provider',providerId:'p',models:['a'],defaultModel:'a'},provider,key:'PUBLIC_FIXTURE_KEY'});
+  expect(managed.env.HOME).toBe(join(managed.stateRoot,'home'));
+  expect(managed.env.HOME?.startsWith(f.input.userData)).toBe(true);
+  materializeAgentPlan(managed.plan,f.input.userData,f.input.cwd);
+  expect(existsSync(managed.env.HOME!)).toBe(true);
+  expect(existsSync(join(managed.env.HOME!, '.agents'))).toBe(false);
+  expect(managed.env.GIT_CONFIG_GLOBAL).toBe(join(f.home, '.gitconfig'));
+  expect(managed.env.GIT_SSH_COMMAND).toBe(`ssh -F ${JSON.stringify(join(f.home, '.ssh', 'config'))}`);
+  // A subscription login keeps the user's own HOME.
+  const login=resolveProfileLaunch(f.input);
+  expect(login.env.HOME).toBe(f.home);
+  expect(login.env.GIT_CONFIG_GLOBAL).toBeUndefined();
+});
