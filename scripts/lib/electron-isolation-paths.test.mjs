@@ -1,6 +1,6 @@
 import {test}from'node:test';
 import assert from'node:assert/strict';
-import{isM13HomePath,isM13PreEntryRun}from'./electron-isolation-paths.mjs';
+import{isM13HomePath,isM13PreEntryRun,isM14HomePath,isM14PreEntryRun}from'./electron-isolation-paths.mjs';
 const executable='/private/tmp/willyou-m13-p1-App004/mac-arm64/WillYou.app/Contents/MacOS/WillYou';
 const userData='/private/tmp/willyou-m13-p1-App004-ui-002/userdata',home=userData.replace('/userdata','/home');
 test('pre-entry hook requires the matching M13 candidate, fresh run and home',()=>{
@@ -16,4 +16,18 @@ test('a matching private baseline copy can share the same upgrade home and data'
  const baseline=executable.replace('/mac-arm64/','/baseline/mac-arm64/');
  assert.equal(isM13PreEntryRun(baseline,userData,home),true);
  for(const candidate of [baseline.replace('App004','App003'),baseline.replace('/baseline/','/unknown/'),baseline.replace('/baseline/','/baseline/../')])assert.equal(isM13PreEntryRun(candidate,userData,home),false);
+});
+
+test('M14 requires a matching private package, group and attempt', () => {
+ const root = '/private/tmp/willyou-m14-stage6.Ab123Z';
+ const bundle = root + '/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou';
+ const attempt = root + '/g04/attempt-002/runtime-ASte12';
+ const isolatedHome = attempt + '/home';
+ assert(isM14HomePath(isolatedHome));
+ assert(isM14PreEntryRun(bundle, attempt + '/user-data', isolatedHome));
+ assert(!isM14PreEntryRun(bundle.replace('Ab123Z', 'Aa123Z'), attempt + '/user-data', isolatedHome));
+ assert(!isM14PreEntryRun(bundle, attempt.replace('attempt-002', 'attempt-003') + '/user-data', isolatedHome));
+ assert(!isM14PreEntryRun('/Applications/WillYou.app/Contents/MacOS/WillYou', attempt + '/user-data', isolatedHome));
+ assert(!isM14HomePath(root + '/g04/attempt-002/../home'));
+ assert(!isM14HomePath(root + '/g04/attempt-002/home/'));
 });

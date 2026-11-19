@@ -3,11 +3,11 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { realpath, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
-import { isM13PreEntryRun } from "./electron-isolation-paths.mjs";
+import { isM13PreEntryRun, isM14PreEntryRun } from "./electron-isolation-paths.mjs";
 
 const require = createRequire(import.meta.url);
 export const pause = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -54,12 +54,17 @@ export async function openElectron({
       !(nodeModeNegative && name === "ELECTRON_RUN_AS_NODE")
     )
       delete env[name];
+  const m14PreEntry = startupMainHook && isM14PreEntryRun(executable, userData, extraEnv.HOME);
+  if (m14PreEntry) {
+    const inputs = [executable, userData, extraEnv.HOME];
+    assert.deepEqual(await Promise.all(inputs.map(path => realpath(path))), inputs, "M14 private App paths must be canonical");
+  }
   assert(
     !startupMainHook ||
       (inspectMain &&
         (executable?.startsWith("/private/tmp/willyou-m10-") ||
           executable?.startsWith("/private/tmp/willyou-m11-s7/") ||
-          isM13PreEntryRun(executable,userData,extraEnv.HOME))),
+          isM13PreEntryRun(executable,userData,extraEnv.HOME) || m14PreEntry)),
     "Pre-entry hook requires this explicit private inspected App",
   );
   const child = spawn(
@@ -87,6 +92,7 @@ export async function openElectron({
     logs += b;
   });
   let ws, mainSession;
+  let lastTargets = [];
   const closeMainInspection = () => {
     mainSession?.then(
       (session) => session.close(),
@@ -106,15 +112,14 @@ export async function openElectron({
       if (child.exitCode !== null || child.signalCode !== null)
         throw new Error("Electron exited before opening its test window");
       try {
-        page = (
-          await (
-            await fetch(`http://127.0.0.1:${port}/json/list`, {
-              signal: AbortSignal.timeout(
-                Math.max(1, Math.min(1000, startupDeadline - Date.now())),
-              ),
-            })
-          ).json()
-        ).find((p) => p.type === "page" && (
+        lastTargets = await (
+          await fetch(`http://127.0.0.1:${port}/json/list`, {
+            signal: AbortSignal.timeout(
+              Math.max(1, Math.min(1000, startupDeadline - Date.now())),
+            ),
+          })
+        ).json();
+        page = lastTargets.find((p) => p.type === "page" && (
           /^file:/.test(p.url) && /\/out\/renderer\/index\.html(?:[?#]|$)/.test(p.url) ||
           env.ELECTRON_RENDERER_URL && p.url.startsWith(env.ELECTRON_RENDERER_URL)
         ));
@@ -590,6 +595,8 @@ export async function openElectron({
     child.kill("SIGKILL");
     if (error && typeof error === "object") {
       error.electronStartupLogs = logs;
+      if (m14PreEntry && Array.isArray(lastTargets))
+        error.electronStartupTargets = lastTargets.map(({type, url}) => ({type, url}));
       error.electronStartupProcess = {
         pid: child.pid,
         code: child.exitCode,

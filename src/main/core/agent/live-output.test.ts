@@ -49,3 +49,27 @@ it('A45 bounds each pending run without delaying other runs and discards unsent 
     expect(delivered.some(value => value.text === 'stale preview')).toBe(false);
   } finally { output.close(); }
 });
+
+it('A45 caps queued previews across runs at 64 MiB and admits new previews after draining', () => {
+  vi.useFakeTimers();
+  let deliveredBytes = 0;
+  const deliveredFrames = new Map<string, number>();
+  let finalText = '';
+  const output = new AgentLiveOutput(value => {
+    deliveredBytes += Buffer.byteLength(JSON.stringify(value));
+    deliveredFrames.set(value.runId, (deliveredFrames.get(value.runId) ?? 0) + 1);
+    finalText = value.text;
+  });
+  const backlog = 'x'.repeat(4 * 1024 * 1024);
+  try {
+    for (let index = 0; index < 20; index++) output.append(frame(backlog, 'answer', `parallel-${index}`));
+    vi.runAllTimers();
+    expect(deliveredBytes).toBeGreaterThan(63 * 1024 * 1024);
+    expect(deliveredBytes).toBeLessThanOrEqual(64 * 1024 * 1024);
+    expect([...deliveredFrames.values()].every(count => count <= 128)).toBe(true);
+
+    output.append(frame('new accepted preview', 'answer', 'after-drain'));
+    vi.runAllTimers();
+    expect(finalText).toBe('new accepted preview');
+  } finally { output.close(); }
+});
