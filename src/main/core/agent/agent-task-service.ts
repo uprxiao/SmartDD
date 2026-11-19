@@ -200,14 +200,16 @@ export class AgentTaskService {
   private readonly stopSeq = new Map<string, number>();
   /** Claude 目标命令已发出、尚未得到原生确认（复核 CR14）；确认后以原生事实为准。 */
   private readonly goalPending = new Map<string, { kind: 'set' | 'clear'; objective?: string; turnId?: string }>();
+  // A /goal turn that ended without a recognised confirmation: the goal state is unknown (A69, D06-66).
+  private readonly goalUnknown = new Map<string, { kind: 'set' | 'clear'; objective?: string }>();
 
   constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; profileName?(id: string): string; userData?: string }) {
     this.handoffs = new HandoffService(d.store);
     // 重启后排队的输入保留但不自动发出，等用户再次提交或取消（未知接收不自动重发）。
     for (const taskId of d.store.tasksWithQueue()) this.paused.add(taskId);
     d.store.subscribe(e => {
-      if (e.type === 'goal.changed') this.goalPending.delete(e.taskId);
-      if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g?.turnId === (e.payload as { turnId?: string }).turnId) this.goalPending.delete(e.taskId); }
+      if (e.type === 'goal.changed') { this.goalPending.delete(e.taskId); this.goalUnknown.delete(e.taskId); }
+      if (e.type === 'turn.ended') { const g = this.goalPending.get(e.taskId); if (g && g.turnId === (e.payload as { turnId?: string }).turnId) { this.goalPending.delete(e.taskId); this.goalUnknown.set(e.taskId, { kind: g.kind, ...(g.objective ? { objective: g.objective } : {}) }); } }
       // 只解除“等待旧运行退出”这一原因；等待期间用户又按了停止，则保持暂停（复核 FR01）。
       if (e.type === 'run.ended' && this.blockedByClosing.has(e.taskId)) { const since = this.blockedByClosing.get(e.taskId); this.blockedByClosing.delete(e.taskId); if (since === (this.stopSeq.get(e.taskId) ?? 0)) this.paused.delete(e.taskId); }
       if (e.type === 'turn.ended' && this.diffs) {
@@ -563,6 +565,7 @@ export class AgentTaskService {
       const text = op.kind === 'set' ? `/goal ${op.objective.trim()}` : '/goal clear';
       // 不预写目标状态：命令发出后等原生确认（active_goal 或 Goal set／cleared），期间显示“等待确认”（复核 CR14）。
       const r = await this.submit(taskId, { clientInputId: `goal-${randomUUID().replace(/-/g, '')}`, text, expectedSelectionRevision: this.selection(taskId).revision });
+      this.goalUnknown.delete(taskId);
       this.goalPending.set(taskId, { kind: op.kind === 'set' ? 'set' : 'clear', ...(op.kind === 'set' ? { objective: op.objective.trim() } : {}), turnId: r.turnId });
       return r;
     }
@@ -949,7 +952,7 @@ export class AgentTaskService {
         queued: queuedAll.slice(0, [10, 10, 5, 3][level]).map(q => queuedPreview(q, [1000, 1000, 400, 200][level])),
         queuedTotal: queuedAll.length,
         run: run ? { runId: run.runId, generation: run.generation, driverId: run.driverId, tier: run.tier, defaultModel: run.defaultModel, models: run.models?.slice(0, [60,60,30,5][level]), busy: this.d.runs.busy(run.runId), steer: !this.d.runs.stopProgress(taskId) && this.steerable(run), goal: run.capabilities.goal.state === 'enabled', catalog: catalogForSnapshot(catalog, level) } : null,
-        goal: goal ? boundGoal(goal) : goal, goalPending: this.goalPending.get(taskId) ?? null,
+        goal: goal ? boundGoal(goal) : goal, goalPending: this.goalPending.get(taskId) ?? null, goalUnknown: this.goalUnknown.get(taskId) ?? null,
         status: this.status(taskId), seq: this.d.store.watermark(taskId),
       };
       const recentTurns = allTurns.slice(-[20, 20, 10, 3][level]);

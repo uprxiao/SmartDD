@@ -1320,6 +1320,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
       {!!relations?.childrenTotal && <AgentChildSummary taskId={taskId} value={relations} readOnly={archived} reload={() => void reload()} />}
       {!archived && snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
       {!archived && snap.goalPending && <div className="agent-goal pending" data-testid="agent-goal-pending"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalPending.kind === 'set' ? snap.goalPending.objective : '清除目标'}</b><small>已发给执行器，等待确认</small></div></div>}
+      {!archived && !snap.goal && !snap.goalPending && snap.goalUnknown && <div className="agent-goal" data-testid="agent-goal-unknown"><Target size={14} /><div className="agent-goal-body"><b>{snap.goalUnknown.kind === 'set' ? snap.goalUnknown.objective : '清除目标'}</b><small>状态未知 · 执行器的回复无法识别</small></div><div className="agent-goal-actions"><button type="button" onClick={() => void goalOp('clear')}>清除</button></div></div>}
       {snap.selection.pendingSwitch && <div className="agent-limited">本轮和已有排队输入结束后切换到 {profiles.find(p => p.profileId === snap.selection.pendingSwitch?.profileId)?.name ?? snap.selection.pendingSwitch.profileId}</div>}
       {snap.switching && <div className="agent-limited">正在切换执行器，等待原运行退出…</div>}
       <div ref={setMailSlot} className="agent-mail-slot"/>

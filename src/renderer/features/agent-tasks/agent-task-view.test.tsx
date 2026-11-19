@@ -1054,3 +1054,14 @@ it('A69 blocks a known executor command the current executor has not published i
   submit();
   await waitFor(() => expect(mocks.submit).toHaveBeenCalledWith('task', expect.objectContaining({ text:'/tmp 满了' })));
 });
+
+it('A69 shows an unknown goal state when the executor reply could not be recognised, with clear available (D06-66)', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ selection:{ driverId:'claude-sdk', profileId:'p', tier:'ask' }, goalUnknown:{ kind:'set', objective:'修完断言' } }));
+  mocks.goal.mockResolvedValue({ ok:true });
+  render(<AgentTaskView taskId="task" />);
+  const row = await screen.findByTestId('agent-goal-unknown');
+  expect(row.textContent).toContain('修完断言');
+  expect(row.textContent).toContain('状态未知');
+  fireEvent.click(within(row).getByRole('button',{ name:'清除' }));
+  await waitFor(() => expect(mocks.goal).toHaveBeenCalledWith('task',{ kind:'clear' }));
+});

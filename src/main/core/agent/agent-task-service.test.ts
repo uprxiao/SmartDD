@@ -326,6 +326,20 @@ describe('目标与插话', () => {
     expect(svc.snapshot(taskId).goalPending).toBeNull();
     await expect(svc.goal(taskId, { kind: 'pause' })).rejects.toThrow('不能暂停');
   });
+  it('A69: a Claude /goal turn that ends without a recognised reply shows the goal state as unknown (D06-66)', async () => {
+    const { svc, insts } = setup();
+    const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cc', tier: 'ask' });
+    await svc.goal(taskId, { kind: 'set', objective: '修完断言' });
+    await until(() => insts[0]?.turns.length === 1);
+    insts[0].finish();
+    await until(() => svc.status(taskId) === 'completed');
+    expect(svc.snapshot(taskId).goal).toBeNull();
+    expect(svc.snapshot(taskId).goalPending).toBeNull();
+    expect(svc.snapshot(taskId).goalUnknown).toMatchObject({ kind: 'set', objective: '修完断言' });
+    // A later recognised goal event replaces the unknown state.
+    insts[0].emit({ type: 'goal', objective: '修完断言', status: 'active' });
+    expect(svc.snapshot(taskId).goalUnknown).toBeNull();
+  });
   it('插话：支持的版本并入当前回合；被原生拒绝则保留排队并说明原因', async () => {
     const { svc, insts, db } = setup();
     const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 't', profileId: 'cx', tier: 'ask' });
