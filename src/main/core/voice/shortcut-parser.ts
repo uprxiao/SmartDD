@@ -30,11 +30,23 @@ export function globalAccelerator(shortcut: string): string {
   return [...p.mods.map(c => families[c]).sort((a, b) => order.indexOf(a) - order.indexOf(b)), key === 'space' ? 'Space' : key.toUpperCase()].join('+');
 }
 
-export function shortcutCandidates(settings: unknown): ShortcutCandidate[] {
+/** Typeless 2.12 relabelled its shortcuts: `pushToTalk` is now 语音输入 (press to start/stop) and `handlesFreeMode` holds 随便问. */
+export const TYPELESS_TOGGLE_DICTATION_SINCE = '2.12.0';
+const atLeast = (version: string | null | undefined, floor: string) => {
+  if (!version || !/^\d+(\.\d+)*$/.test(version)) return false;
+  const a = version.split('.').map(Number), b = floor.split('.').map(Number);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) { const d = (a[i] ?? 0) - (b[i] ?? 0); if (d) return d > 0; }
+  return true;
+};
+
+export function shortcutCandidates(settings: unknown, typelessVersion?: string | null): ShortcutCandidate[] {
   if (!settings || typeof settings !== 'object') return [];
   const root = settings as Record<string, unknown>;
   const found: ShortcutCandidate[] = [];
-  for (const [group, names] of Object.entries({ featureShortcutBindings: ['dictationMode', 'handsFreeMode', 'handlesFreeMode'], keyboardShortcut: ['handsFreeMode', 'handlesFreeMode', 'pushToTalk'] })) {
+  // D06-80: on Typeless 2.12+, 语音输入 is `pushToTalk`; `handlesFreeMode` is 随便问 and must never be used as dictation.
+  const toggle = atLeast(typelessVersion, TYPELESS_TOGGLE_DICTATION_SINCE);
+  const keyboard = toggle ? ['pushToTalk'] : ['handsFreeMode', 'handlesFreeMode', 'pushToTalk'];
+  for (const [group, names] of Object.entries({ featureShortcutBindings: ['dictationMode', 'handsFreeMode', 'handlesFreeMode'], keyboardShortcut: keyboard })) {
     const fields = root[group];
     if (!fields || typeof fields !== 'object') continue;
     for (const name of names) {
@@ -42,7 +54,7 @@ export function shortcutCandidates(settings: unknown): ShortcutCandidate[] {
       const values = Array.isArray(raw) ? raw : [raw];
       for (const v of values) {
         if (typeof v !== 'string') continue;
-        try { parseShortcut(v); found.push({ shortcut: v.trim(), source: `${group}.${name}` }); } catch { /* Ignore unknown keys, never guess. */ }
+        try { parseShortcut(v); found.push({ shortcut: v.trim(), source: toggle && group === 'keyboardShortcut' && name === 'pushToTalk' ? 'keyboardShortcut.voiceInput' : `${group}.${name}` }); } catch { /* Ignore unknown keys, never guess. */ }
       }
     }
   }

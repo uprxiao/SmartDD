@@ -44,6 +44,14 @@ describe('Typeless keys and configuration', () => {
     expect(resolveCandidate(shortcutCandidates({ featureShortcutBindings: { dictationMode: ['RightOption'] }, keyboardShortcut: { handlesFreeMode: 'Fn+Space' } }))).toBeNull();
     expect(resolveCandidate(shortcutCandidates({ featureShortcutBindings: { dictationMode: ['RightOption'] } }))).toBe('RightOption');
   });
+  it('on Typeless 2.12+, uses 语音输入 (pushToTalk, press to start/stop) and never 随便问 (handlesFreeMode) (D06-80)', () => {
+    const v212 = { keyboardShortcut: { pushToTalk: 'RightOption', handlesFreeMode: 'Fn+Space', translationMode: 'Fn+LeftShift' } };
+    expect(resolveCandidate(shortcutCandidates(v212, '2.12.0'))).toBe('RightOption');
+    expect(shortcutCandidates(v212, '2.13.1').map(c => c.shortcut)).toEqual(['RightOption']);
+    // Older Typeless keeps the M7 rule: hands-free field, hold-to-talk excluded.
+    expect(resolveCandidate(shortcutCandidates(v212, '2.11.0'))).toBe('Fn+Space');
+    expect(resolveCandidate(shortcutCandidates(v212))).toBe('Fn+Space');
+  });
 });
 
 describe('VoiceService transactions', () => {

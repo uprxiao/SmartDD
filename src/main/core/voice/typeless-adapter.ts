@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFile, realpath, stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import type { VoiceResult, ShortcutCandidate } from '@shared/voice';
 import { parseShortcut, shortcutCandidates } from './shortcut-parser';
 
@@ -34,7 +35,7 @@ export class TypelessAdapter implements VoiceAdapter {
         const file = await realpath(join(homedir(), 'Library/Application Support', name, 'app-settings.json'));
         if (seen.has(file)) continue; seen.add(file);
         const meta = await stat(file); if (!meta.isFile() || meta.size > 1024 * 1024) continue;
-        result.push(...shortcutCandidates(JSON.parse(await readFile(file, 'utf8'))));
+        result.push(...shortcutCandidates(JSON.parse(await readFile(file, 'utf8')), await typelessVersion()));
       } catch { /* Missing/unreadable/invalid settings are an unresolved candidate, not a guessed shortcut. */ }
     }
     return result;
@@ -43,4 +44,17 @@ export class TypelessAdapter implements VoiceAdapter {
     return this.call<VoiceResult>('trigger', { codes: parseShortcut(shortcut).codes, waitCodes: waitShortcut ? parseShortcut(waitShortcut).codes : [] }, signal);
   }
   async released(shortcut: string) { return (await this.call<{ released: boolean }>('released', { codes: parseShortcut(shortcut).codes })).released; }
+}
+
+const execFileAsync = promisify(execFile);
+
+/** Installed Typeless version (CFBundleShortVersionString), or null when it cannot be read. */
+async function typelessVersion(): Promise<string | null> {
+  for (const app of ['/Applications/Typeless.app', join(homedir(), 'Applications/Typeless.app')]) {
+    try {
+      const { stdout } = await execFileAsync('/usr/bin/plutil', ['-extract', 'CFBundleShortVersionString', 'raw', '-o', '-', join(app, 'Contents/Info.plist')], { timeout: 3000 });
+      const v = stdout.trim(); if (/^\d+(\.\d+)*$/.test(v)) return v;
+    } catch { /* not installed here */ }
+  }
+  return null;
 }
