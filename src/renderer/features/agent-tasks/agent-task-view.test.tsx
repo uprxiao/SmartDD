@@ -9,7 +9,7 @@ vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { refresh:
 vi.mock('@renderer/core/navigation', () => ({ navigation: { newTask: vi.fn(), openAgentTask:vi.fn(), setAgentTaskReadOnly:vi.fn() } }));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey', () => ({ useAppSettingsKey: () => ({ value: { fullConfirmed: true }, update: vi.fn() }) }));
 vi.mock('@renderer/features/agents/ui', () => ({ AgentDialog: ({title,children,footer}: {title:string;children:React.ReactNode;footer:React.ReactNode}) => <div role="dialog" aria-label={title}>{children}{footer}</div> }));
-vi.mock('./agent-terminal', () => ({ AgentTerminalDrawer: () => null }));
+vi.mock('./agent-terminal', () => ({ AgentTerminalDrawer: ({ onClose }: { onClose: () => void }) => <div data-testid="mock-terminal"><button type="button" onClick={onClose}>mock-close-terminal</button></div> }));
 vi.mock('sonner', () => ({ toast: { warning: mocks.toast, error: mocks.toast, message: mocks.toast, success: mocks.toast } }));
 import {agentComposerTargets} from './composer-target';
 import { AgentTaskView } from './agent-task-view';
@@ -1149,4 +1149,31 @@ it('A72 for Claude the reason goes into the denial itself and is not sent twice'
   await waitFor(() => expect(mocks.respond).toHaveBeenCalledTimes(1));
   expect(mocks.respond).toHaveBeenCalledWith('task', 'command', 2, { behavior: 'deny', message: '改用 clean 脚本' });
   expect(mocks.submit).not.toHaveBeenCalled();
+});
+
+it('A52 closing the terminal drawer returns focus to the composer instead of leaving it on the page body (D06-78)', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'idle' }));
+  const { panelsFor } = await import('./workspace-panels-store');
+  render(<AgentTaskView taskId="task" />);
+  const box = await waitFor(() => { const t = document.querySelector('.agent-composer textarea') as HTMLTextAreaElement; expect(t).toBeTruthy(); return t; });
+  act(() => { panelsFor({ kind: 'task', taskId: 'task' }).drawer = true; });
+  const close = await screen.findByRole('button', { name: 'mock-close-terminal' });
+  close.focus();
+  expect(document.activeElement).toBe(close);
+  fireEvent.click(close);
+  await waitFor(() => expect(screen.queryByTestId('mock-terminal')).toBeNull());
+  await waitFor(() => expect(document.activeElement).toBe(box));
+});
+
+it('A52 closing the terminal does not steal focus the user already moved elsewhere', async () => {
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'idle' }));
+  const { panelsFor } = await import('./workspace-panels-store');
+  render(<><input aria-label="elsewhere" /><AgentTaskView taskId="task" /></>);
+  await waitFor(() => expect(document.querySelector('.agent-composer textarea')).toBeTruthy());
+  act(() => { panelsFor({ kind: 'task', taskId: 'task' }).drawer = true; });
+  await screen.findByTestId('mock-terminal');
+  const other = screen.getByLabelText('elsewhere'); other.focus();
+  act(() => { panelsFor({ kind: 'task', taskId: 'task' }).drawer = false; });
+  await waitFor(() => expect(screen.queryByTestId('mock-terminal')).toBeNull());
+  expect(document.activeElement).toBe(other);
 });

@@ -762,6 +762,16 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const [menuIndex, setMenuIndex] = useState(0);
   const [fileHits, setFileHits] = useState<string[]>([]);
   const textarea = useRef<HTMLTextAreaElement>(null);
+  // D06-78: when the terminal drawer closes, its focused xterm is removed and focus falls to <body>. Hand it back to the
+  // composer, but only if it really fell to the page; never steal focus the user already moved elsewhere.
+  const terminalWasOpen = useRef(terminalOpen);
+  useEffect(() => {
+    const wasOpen = terminalWasOpen.current; terminalWasOpen.current = terminalOpen;
+    if (!wasOpen || terminalOpen) return;
+    const lost = () => !document.activeElement || document.activeElement === document.body;
+    if (lost()) textarea.current?.focus();
+    else requestAnimationFrame(() => { if (lost()) textarea.current?.focus(); });
+  }, [terminalOpen]);
   const modelSelect = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (trigger?.kind !== '@') return;
