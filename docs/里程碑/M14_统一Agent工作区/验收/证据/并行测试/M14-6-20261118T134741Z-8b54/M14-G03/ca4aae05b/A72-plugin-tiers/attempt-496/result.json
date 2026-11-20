@@ -1,0 +1,250 @@
+{
+  "isolatedKeychain": {
+    "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-496/runtime-WqTLtw/home/Library/Keychains/login.keychain-db",
+    "default": "\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-496/runtime-WqTLtw/home/Library/Keychains/login.keychain-db\"",
+    "userDefaultUnchanged": "\"/Users/liubu/Library/Keychains/login.keychain-db\""
+  },
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-496/runtime-WqTLtw/home",
+    "at": "2026-11-20T01:57:49.551Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "ca4aae05bd952056b08a53c39f755a6e819f25f3",
+  "asar": "77afd5d5bc51074077ed7f0b270da7cb05ca2679fe48b593e8ebeab4a74663bf",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scope": "A72 Git: parent plugin write approved while an independent worktree child is still installing dependencies (R06/G3, no waiting); isolated real packaged App, real Claude and Codex, local synthetic models, non-relaying SMTP, UI plugin install with a recorded native-picker substitute",
+  "observations": [],
+  "requests": [
+    {
+      "model": "a72-g-parent",
+      "tool": "smartdd_p88a618651c7eb42d_v1",
+      "step": "write"
+    },
+    {
+      "model": "a72-g-parent",
+      "tool": "wy_targets",
+      "step": "targets"
+    },
+    {
+      "model": "a72-g-parent",
+      "tool": "wy_delegate",
+      "step": "delegate"
+    },
+    {
+      "model": "a72-g-parent",
+      "text": "A72_PARENT_YIELD_git"
+    },
+    {
+      "model": "a72-g-parent",
+      "text": "A72_PARENT_IDLE_git"
+    },
+    {
+      "model": "a72-g-child",
+      "text": "A72_CHILD_DONE_git"
+    },
+    {
+      "model": "a72-g-parent",
+      "text": "A72_PARENT_IDLE_git"
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "text": null,
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"nav-apps\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 173.5
+    },
+    {
+      "selector": ".m13-add",
+      "text": null,
+      "x": 1304.5,
+      "y": 90
+    },
+    {
+      "selector": ".m10-menu button[role=\"menuitem\"]",
+      "text": "从本地文件夹安装…",
+      "x": 1243.5,
+      "y": 133
+    },
+    {
+      "selector": "dialog[open] .m10-dialog-actions button.m10-button.primary",
+      "text": "安装",
+      "x": 987,
+      "y": 744.296875
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"01607860-3f78-4396-b68d-c7e997de8e74\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": "[data-testid=\"agent-delegation-toggle\"]",
+      "text": null,
+      "x": 378.58984375,
+      "y": 105
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-request [aria-label=\"批准\"]",
+      "text": null,
+      "x": 864,
+      "y": 567.75
+    },
+    {
+      "selector": ".agent-request .agent-confirm-choice",
+      "text": null,
+      "x": 1205,
+      "y": 718.5
+    }
+  ],
+  "status": "passed",
+  "checks": [
+    {
+      "label": "install review lists the lower ceiling of the ask-capped write",
+      "ok": true
+    },
+    {
+      "label": "install review shows the undeclared write without a ceiling and the read as read",
+      "ok": true
+    },
+    {
+      "label": "git: the child installs in its own host worktree, not the parent directory",
+      "ok": true
+    },
+    {
+      "label": "git: the parent request never waited for the slot (no queued_for_slot) and executed once",
+      "ok": true
+    },
+    {
+      "label": "git: it started right after approval, while the child dependency install was still running",
+      "ok": true
+    },
+    {
+      "label": "git: the child only started after its own install finished",
+      "ok": true
+    }
+  ],
+  "keychainWindow": {
+    "startedAt": "2026-11-20T01:57:54.408Z",
+    "testedAt": "2026-11-20T01:57:54.560Z",
+    "savedAt": "2026-11-20T01:57:54.671Z"
+  },
+  "installReview": [
+    "读取 A72 合成记录数 · 读取",
+    "写入 A72 合成记录（未声明上限） · 写入",
+    "写入 A72 合成记录（上限请求批准） · 写入 · 最高档位：请求批准"
+  ],
+  "pickerUsed": true,
+  "scenarios": {
+    "git": {
+      "taskId": "01607860-3f78-4396-b68d-c7e997de8e74",
+      "requestId": "bc2ce64b-4c0a-433a-873e-459d00187039",
+      "installCwd": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-496/runtime-WqTLtw/home/.willyou/worktrees/a72-private-tier-matrix-13f55b/main_willyou_a72",
+      "delegateOutput": "{\"delegationId\":\"79bd0912-89b0-45ce-94de-4bdc8e416412\",\"childTaskId\":\"ba16979e-700e-44ab-b087-7bbc48a7a85c\",\"state\":\"queued\",\"resultRevision\":0,\"asynchronous\":true,\"workspaceMode\":\"worktree\",\"baseCommit\":\"08bd2bd17a2c7c1d9ab26ace9dcfe00bc16368cd\",\"uncommittedFiles\":0,\"message\":\"已持久接受；不要在 shell 循环等待。 工作副本基于 08bd2bd17a2c7c1d9ab26ace9dcfe00bc16368cd；主目录有 0 个未提交文件，没有带进子任务。要带改动请先提交再派出。\"}",
+      "writeOutput": "{\"status\":\"awaiting_user\",\"requestId\":\"bc2ce64b-4c0a-433a-873e-459d00187039\",\"operationId\":\"fdcef5b6-b433-436d-afaa-518493e53808\",\"state\":\"awaiting_user\",\"duplicate\":false,\"next\":\"批准后会通知任务结果，先做别的。不要轮询或重复写调用。\"}",
+      "approvedAt": "2026-11-20T01:58:02.811Z",
+      "final": {
+        "businessKind": "application_write",
+        "title": "需要批准：写入 A72 合成记录（未声明上限）",
+        "review": {
+          "application": "A72 档位合成插件",
+          "version": "0.1.0",
+          "operation": "写入 A72 合成记录（未声明上限）",
+          "targets": [],
+          "input": {
+            "marker": "A72_TIER_NOTE",
+            "label": "A72_git_parent"
+          }
+        },
+        "data": {
+          "entry": "mcp",
+          "call": {
+            "operation": "smartdd_p88a618651c7eb42d_v1",
+            "contractMajor": 1,
+            "connectionId": null,
+            "arguments": {
+              "marker": "A72_TIER_NOTE",
+              "label": "A72_git_parent"
+            }
+          },
+          "requestId": "5d16f427-1907-4df3-8e67-3a410eeb112f",
+          "originCallHash": "731b0f4da6ce32a0300c75d1af6d321f18e6465e1520e63267953c50cb64b168",
+          "policyStamp": "719449a3d0bceb411be7c24844d2ef7f19743bb9f04be35b0b0f10a0c88c9674"
+        },
+        "phase": "finished",
+        "decision": {
+          "choice": "allow"
+        },
+        "executionStartedAt": "2026-11-20T01:58:02.353Z",
+        "resultItemId": "541983e3-1825-4e37-a56a-a510fbd1523d"
+      },
+      "effects": [
+        {
+          "operationId": "fdcef5b6-b433-436d-afaa-518493e53808",
+          "runId": "06ef9cb0-04bb-4730-82f1-e6d7402dc857",
+          "taskId": null,
+          "callerKind": "agent",
+          "capability": "a72-tier-fixture.note.write",
+          "label": "A72_git_parent",
+          "pid": 30171,
+          "at": "2026-11-20T01:58:02.900Z"
+        }
+      ],
+      "startedAfterApprovalMs": -458,
+      "installStillHeld": true,
+      "childStartedAfterReleaseMs": 2103,
+      "childCwdSeen": "willyou/worktrees/a72-private-tier-matrix-13f55b/main_willyou_a72",
+      "notices": [
+        "NPUT]\n宿主业务约定：工具返回 awaiting_user 表示请求已持久等待用户，不会超时；不要轮询、重发或在 shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。\n\n宿主业务结果通知：需要批准：写入 A72 合成记录（未声明上限），finished。详情引用 541983e3-1825-4e37-a56a-a510fbd1523d；这不是新的真人授权。",
+        " shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。\n\n宿主子任务结果通知（来源 child_result，不是新的真人授权）。结果引用 e54b944f-9cbf-4e1c-b72c-154d17812138；子任务 A72 独立工作副本子任务 / ba16979e-700e-44ab-b087-7bbc48a7a85c，attempt 1 状态 comp"
+      ]
+    }
+  },
+  "exit": {
+    "pid": 29117,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "smtp": {
+    "responses": 0,
+    "unexpected": 0,
+    "results": []
+  }
+}
