@@ -124,7 +124,8 @@ it('P3: the request panel can revoke a queued approval while the original approv
     }
   });
   render(<AgentTaskView taskId="task" />);
-  fireEvent.click(await screen.findByRole('option', { name: /批准/ }));
+  // The composer (with its tier select) now stays below the panel, so look inside the request panel.
+  fireEvent.click(within(await screen.findByRole('dialog', { name: '待处理请求' })).getByRole('option', { name: /^批准$/ }));
   expect(mocks.respond).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: '确认' }));
   expect(await screen.findByText(/正在等待宿主放行/)).toBeTruthy();
@@ -1101,4 +1102,51 @@ it('A41 marks a mail review whose draft was changed after creation as 已修改,
   const changed = await screen.findByRole('region', {name:'邮件审阅'});
   expect(within(changed).getByText('已修改')).toBeTruthy();
   expect(within(changed).getByText(/第 3 版/)).toBeTruthy();
+});
+
+// 2026-11-20 对齐 T3：请求面板在输入框上方，输入框与模型／档位入口始终保留（A72）。
+it('A72 keeps the composer, model and tier while a host business request waits; sending is a normal message', async () => {
+  const business = { requestId: 'business', kind: 'host_business', origin: {}, revision: 1, status: 'pending', payload: { title: '需要批准：写入合成记录', phase: 'waiting_user' } };
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'waiting', requests: [business] }));
+  mocks.respond.mockReset(); mocks.submit.mockReset().mockResolvedValue({ turnId: 't1', duplicate: false, status: 'accepted' });
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByRole('dialog', { name: '待处理请求' });
+  expect(screen.getByLabelText('权限档位')).toBeTruthy();
+  const box = document.querySelector('.agent-composer textarea') as HTMLTextAreaElement;
+  expect(box.placeholder).toContain('待批准的请求会继续保留');
+  fireEvent.change(box, { target: { value: '先说明一下情况' } });
+  fireEvent.submit(box.closest('form')!);
+  await waitFor(() => expect(mocks.submit).toHaveBeenCalledTimes(1));
+  expect(mocks.submit.mock.calls[0][1]).toMatchObject({ text: '先说明一下情况' });
+  expect(mocks.respond).not.toHaveBeenCalled();
+});
+
+it('A72 sending text while an own Codex command approval waits declines it and steers the sentence into the turn', async () => {
+  const command = { requestId: 'command', kind: 'command_approval', origin: {}, revision: 3, status: 'pending', payload: { params: { command: 'rm -rf build', availableDecisions: ['accept', 'decline'] } } };
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'waiting', requests: [command], run: { busy: true, steer: true } }));
+  mocks.respond.mockReset().mockResolvedValue(undefined); mocks.submit.mockReset().mockResolvedValue({ turnId: 't1', duplicate: false, status: 'accepted' });
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByRole('dialog', { name: '待处理请求' });
+  const box = document.querySelector('.agent-composer textarea') as HTMLTextAreaElement;
+  expect(box.placeholder).toBe('发送文字即拒绝这次请求并说明原因');
+  expect(document.querySelector('.agent-request-reason')).toBeNull();
+  fireEvent.change(box, { target: { value: '不要删 build，改用 clean 脚本' } });
+  fireEvent.submit(box.closest('form')!);
+  await waitFor(() => expect(mocks.submit).toHaveBeenCalledTimes(1));
+  expect(mocks.respond).toHaveBeenCalledExactlyOnceWith('task', 'command', 3, { decision: 'decline' });
+  expect(mocks.submit.mock.calls[0][1]).toMatchObject({ text: '不要删 build，改用 clean 脚本', mode: 'steer' });
+});
+
+it('A72 for Claude the reason goes into the denial itself and is not sent twice', async () => {
+  const command = { requestId: 'command', kind: 'command_approval', origin: {}, revision: 2, status: 'pending', payload: { input: { command: 'rm -rf build' } } };
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'waiting', selection: { driverId: 'claude-sdk', profileId: 'p', tier: 'ask' }, requests: [command], run: { busy: true, steer: false } }));
+  mocks.respond.mockReset().mockResolvedValue(undefined); mocks.submit.mockReset();
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByRole('dialog', { name: '待处理请求' });
+  const box = document.querySelector('.agent-composer textarea') as HTMLTextAreaElement;
+  fireEvent.change(box, { target: { value: '改用 clean 脚本' } });
+  fireEvent.submit(box.closest('form')!);
+  await waitFor(() => expect(mocks.respond).toHaveBeenCalledTimes(1));
+  expect(mocks.respond).toHaveBeenCalledWith('task', 'command', 2, { behavior: 'deny', message: '改用 clean 脚本' });
+  expect(mocks.submit).not.toHaveBeenCalled();
 });

@@ -1,5 +1,5 @@
 // M14 原型 P0.8：所有待处理请求（命令审批、Agent 提问、插件业务审批、M12 跨任务网页授权、子任务的请求）
-// 统一为输入框位置的一种面板：标题＋来源、必要的详情、带编号的选项（数字键选择），多个请求时可 1／N 切换。
+// 统一为输入框上方的一种面板（2026-11-20 对齐 T3：输入框与模型／档位入口始终保留）：标题＋来源、必要的详情、带编号的选项（数字键选择），多个请求时可 1／N 切换。
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Globe, ListChecks, Mail, MessageSquareReply, ShieldAlert } from 'lucide-react';
 
@@ -19,7 +19,7 @@ export function buildRequests(scenario, { resolved, childResolved = {}, mailEdit
   if (!resolved && scenario.pending === 'business') {
     const e = t.entries.find(x => x.kind === 'business');
     list.push({ id: 'own-business' + (mailRevision ? '-r' + mailRevision : ''), kind: 'business', icon: 'mail', title: `需要批准：${e.plugin} · ${e.action}`, note: mailEditing ? '正在编辑邮件：保存修改后才能批准发送' : mailEdited ? `已按修改更新邮件（第 ${mailRevision ?? 2} 版），请再次确认` : '邮件内容见上方卡片',
-      options: [{ key: 'approve', label: '批准发送', disabled: !!mailEditing, desc: mailEditing ? '先在上方卡片保存修改' : undefined }, { key: 'edit', label: '手动修改', desc: '在上方卡片里直接改收件人、主题、正文' }, { key: 'agentedit', label: '让 Agent 按我的说明修改', desc: '先在下方输入框写要求，Agent 重新起草后会再请你批准', needsText: true }, { key: 'deny', label: '拒绝', desc: '插件不发送；可在下方写原因' }] });
+      options: [{ key: 'approve', label: '批准发送', disabled: !!mailEditing, desc: mailEditing ? '先在上方卡片保存修改' : undefined }, { key: 'edit', label: '手动修改', desc: '在上方卡片里直接改收件人、主题、正文' }, { key: 'agentedit', label: '让 Agent 按我的说明修改', desc: '先在上方面板写要求，Agent 重新起草后会再请你批准', needsText: true }, { key: 'deny', label: '拒绝', desc: '插件不发送；可在下方写原因' }] });
   }
   if (!resolved && scenario.pending === 'access') {
     const a = scenario.access;
@@ -40,7 +40,7 @@ export function buildRequests(scenario, { resolved, childResolved = {}, mailEdit
 
 const ICONS = { shield: ShieldAlert, question: MessageSquareReply, mail: Mail, globe: Globe, plan: ListChecks };
 
-export function RequestPanel({ requests, index, setIndex, pick, setPick, inChild }) {
+export function RequestPanel({ requests, index, setIndex, pick, setPick, inChild, note = null, setNote }) {
   const r = requests[index];
   if (!r) return null;
   const Icon = ICONS[r.icon] || ShieldAlert;
@@ -54,6 +54,7 @@ export function RequestPanel({ requests, index, setIndex, pick, setPick, inChild
     {r.note && <p className="m14-req-note">{r.note}</p>}
     <div className="m14-req-options">{r.options.map((o, i) => <button type="button" key={o.key} disabled={!!o.disabled} className={'m14-req-opt' + (pick === o.key ? ' on' : '') + (o.danger ? ' danger' : '')} onClick={() => setPick(o.key)}>
       <span className="m14-opt-key">{i + 1}</span><span><b>{o.label}</b>{o.desc && <small>{o.desc}</small>}</span></button>)}</div>
+    {note !== null && <textarea className="m14-req-text" aria-label="请求说明" rows={2} placeholder={r.kind === 'business' ? '写给 Agent 的修改要求或拒绝原因（可选）' : '可写原因（可选）'} value={note} onChange={e => setNote?.(e.target.value)} />}
     <p className="m14-req-hint">{r.kind === 'question' ? '按数字键选择，或直接在下方输入自己的回答' : '按数字键选择，Enter 确认'}</p>
   </div>;
 }

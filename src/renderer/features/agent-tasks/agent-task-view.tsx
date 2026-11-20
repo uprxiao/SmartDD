@@ -589,8 +589,10 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
   } : requestTitle(r);
 
   useEffect(() => {
+    // 宿主业务／子任务请求不占回合，不从输入框抢焦点（2026-11-20 对齐 T3）。
+    if (hostBusiness || r.ownerTaskId) return;
     (panel.current?.querySelector<HTMLElement>('[aria-label="回答 Agent 的问题"]') ?? panel.current)?.focus();
-  }, [reqKey, incomplete]);
+  }, [reqKey, incomplete]); // eslint-disable-line react-hooks/exhaustive-deps
   const send = async (result: unknown) => {
     if (submitting.current.has(requestKey)) return;
     submitting.current.add(requestKey);
@@ -675,7 +677,7 @@ function RequestPanel({ requests, more = 0, driverId, visiblePlans, cwd: taskCwd
     {typeof cwd === 'string' && cwd && <small className="agent-request-cwd">工作目录 · <code>{cwd}</code></small>}
     {form ? <RequestFormView key={reqKey} form={form} busy={busy} onSubmit={result => void send(result)} /> : <>
       <div className="agent-request-options" role="listbox">{options.map((o, i) => <button key={o.key} type="button" role="option" aria-label={o.label} aria-selected={selected?.key === o.key} disabled={disabled(o.key)} className={`${o.deny ? 'deny' : ''}${selected?.key === o.key ? ' on' : ''}${o.key === 'open-child' ? ' agent-child-request-link' : ''}`} onClick={() => setSelection({ request: reqKey, option: o.key })}><kbd>{i + 1}</kbd><span>{o.label}{optionNote(o.key, o.deny) && <small>{optionNote(o.key, o.deny)}</small>}</span></button>)}</div>
-      {r.kind !== 'elicitation' && <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />}
+      {r.kind !== 'elicitation' && (r.ownerTaskId || hostBusiness || r.kind === 'plan_approval') && <textarea className="agent-request-reason" placeholder="可写原因或意见（可选）" value={reason[r.requestId] ?? ''} onChange={e => setReason(s => ({ ...s, [r.requestId]: e.target.value }))} rows={2} />}
     </>}
     <div className="agent-request-foot">
       {!form && options.length > 0 && <span className="agent-request-hint">数字键选择 · Enter 确认</span>}
@@ -1072,6 +1074,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     if (snap) navigation.setAgentTaskReadOnly(taskId,!!snap.archivedAt);
   }, [taskId,snap?.archivedAt]);
   const requests = [...(snap?.requests ?? []) as TimelineRequest[], ...childRequests].filter(r => r.status === 'pending' || r.status === 'approved_pending_bind');
+  // 回合确实在等的请求：本任务自己的原生请求（命令／文件／权限审批、计划、提问）。宿主业务请求不占回合（需求 R01），子任务请求属于子任务。
+  const blocking = requests.find(r => !r.ownerTaskId && r.kind !== 'host_business');
   const composerReady = draftReady && snap?.taskId === taskId && !snap.archivedAt && !navigation.agentTaskReadOnly && !requests.length;
   const composerProject = snap?.projectId ?? null;
   useEffect(()=>{
@@ -1190,8 +1194,27 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
     setTimeout(()=>saveDraft(textRef.current),0);
   };
 
+  const redirect = async (r: TimelineRequest, value: string) => {
+    const driver = r.driverId ?? snap.selection.driverId;
+    if (r.kind === 'elicitation' || requestForm(r, driver)) { toast.warning('请在上方回答 Agent 的问题'); return; }
+    const options = requestOptions(r, driver);
+    const option = r.kind === 'plan_approval' ? options.find(o => o.key === 'revise') : options.find(o => o.deny);
+    if (!option) { toast.warning('这个请求不能用文字拒绝，请在上方选择'); return; }
+    if (sendingRef.current) return;
+    sendingRef.current = true; setSending(true);
+    try {
+      await rpc.agentTasks.respond(taskId, r.requestId, r.revision, option.result(value));
+      // Codex 的拒绝不带原因：照 T3 把这句话并入当前回合（不支持插话时排队）。Claude 的原因已写进拒绝消息，不重复发送。
+      if (driver !== 'claude-sdk') await rpc.agentTasks.submit(taskId, { clientInputId: newClientInputId(), text: value, expectedSelectionRevision: snap.selectionRevision, mode: snap.run?.steer ? 'steer' : 'queue' });
+      setText(''); saveDraft('');
+      void reload();
+    } catch (e) { toast.error(rpcErrorMessage(e)); }
+    finally { sendingRef.current = false; setSending(false); }
+  };
   const send = async (mode: 'queue' | 'steer' = 'queue') => {
     const value = text.trim();
+    // 对齐 T3：本任务原生请求等待时，发送文字＝拒绝该请求并说明原因（计划审批＝继续修改）；宿主业务请求与子任务请求不拦截正常发送。
+    if (blocking) { if (value && !chips.length) await redirect(blocking, value); else if (chips.length) toast.warning('请先处理上方请求，附件已保留'); return; }
     // 准备中或失败的附件不能发送也不能排队，给出原因且不清空输入（用例 A75）。
     if (chips.some(c => c.status === 'preparing')) { toast.warning('附件还在准备中，准备好后再发送'); return; }
     if (chips.some(c => c.status === 'failed')) { toast.warning('有附件准备失败，请重试或移除后再发送'); return; }
@@ -1350,7 +1373,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
               <button type="button" disabled={!!action} title="编辑排队消息" onClick={() => void actOnInput('edit:' + q.turnId, async () => {
                 const { value } = await readInput(q.turnId, q.version); setQueueEdit({ taskId, turnId:q.turnId, version:q.version, text:value.text });
               })}><Pencil size={13}/></button>
-              <button type="button" title="立即发送" disabled={!!action || activeEdit?.turnId === q.turnId || !!stopping || !!snap.switching || requests.length > 0 || (snap.run?.busy ? !snap.run?.steer : q.turnId !== snap.queued[0]?.turnId)} onClick={() => void actOnInput('send:' + q.turnId, async () => {
+              <button type="button" title="立即发送" disabled={!!action || activeEdit?.turnId === q.turnId || !!stopping || !!snap.switching || !!blocking || (snap.run?.busy ? !snap.run?.steer : q.turnId !== snap.queued[0]?.turnId)} onClick={() => void actOnInput('send:' + q.turnId, async () => {
                 const result = await rpc.agentTasks.sendQueued(taskId, q.turnId, q.version, snap.selectionRevision);
                 if (result.status === 'unknown') toast.warning('无法确认插话是否已送达，请查看回答后再决定');
               })}><Send size={13}/></button>
@@ -1376,13 +1399,14 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
         })}>让 Agent 再试</button>
         <button type="button" className="agent-inline-action" onClick={() => setTerminalOpen(true)}>打开终端</button>
       </div>}
-      {archived ? <div className="agent-composer agent-archive-composer"><textarea rows={3} disabled aria-label="已归档任务输入" placeholder="恢复后可以继续此会话" /></div> : requests.length > 0
-        ? <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} cwd={snap.cwd} visiblePlans={visiblePlans} mailSlot={mailSlot} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />
-        : <form className="agent-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
+      {archived ? <div className="agent-composer agent-archive-composer"><textarea rows={3} disabled aria-label="已归档任务输入" placeholder="恢复后可以继续此会话" /></div> : <>
+        {/* 2026-11-20 对齐 T3：请求面板在输入框上方，输入框与模型／档位／执行器入口始终保留（A72）。 */}
+        {requests.length > 0 && <RequestPanel requests={requests} more={Math.max(0, (snap.requestsTotal ?? snap.requests.length) - snap.requests.length) + childRequestsMore} driverId={snap.selection.driverId} cwd={snap.cwd} visiblePlans={visiblePlans} mailSlot={mailSlot} onStop={r => void rpc.agentTasks.stop(r.ownerTaskId ?? taskId).then(reload).catch(e => toast.error(rpcErrorMessage(e)))} onRespond={async (r, result) => { await rpc.agentTasks.respond(r.ownerTaskId ?? taskId, r.requestId, r.revision, result); void reload(); }} />}
+        <form className="agent-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
           <AttachmentChips chips={chips} onRemove={removeChip} onRetry={retryChip} />
           <ComposerMenu items={menuItems} index={Math.min(menuIndex, Math.max(0, menuItems.length - 1))} onPick={pick} />
           <textarea ref={textarea} value={text} onSelect={e => refreshTrigger(e.currentTarget.value, e.currentTarget.selectionStart ?? 0)} onBlur={() => setTimeout(() => setTrigger(null), 150)} onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }}
-            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
+            onDragOver={e => { if (e.dataTransfer.types.includes('Files')||e.dataTransfer.types.includes(FILE_TERMINAL_DRAG_TYPE)) e.preventDefault(); }} onDrop={e => { const token=e.dataTransfer.getData(FILE_TERMINAL_DRAG_TYPE);if(token){e.preventDefault();void dropFileToAgentComposer(token,taskId,m=>toast.message(m));return;}const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} placeholder={blocking ? (blocking.kind === 'plan_approval' ? '发送文字即请 Agent 按意见继续修改计划' : blocking.kind === 'elicitation' || requestForm(blocking, blocking.driverId ?? snap.selection.driverId) ? '请在上方回答 Agent 的问题' : '发送文字即拒绝这次请求并说明原因') : working && snap.run?.busy ? '继续输入，本轮结束后发送' : requests.length ? '随心输入；待批准的请求会继续保留' : working ? '继续输入，本轮结束后发送' : '随心输入'} rows={3}
             onChange={e => { setText(e.target.value); saveDraft(e.target.value); refreshTrigger(e.target.value, e.target.selectionStart ?? e.target.value.length); }}
             onKeyDown={e => {
               if (menuItems.length && !e.nativeEvent.isComposing) {
@@ -1406,7 +1430,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
             {working && <button type="button" className="agent-stop agent-stop-run" onClick={() => void stop()} title="停止本轮" disabled={!!stopping}><CircleStop size={15} /></button>}
             <button type="submit" className="agent-send" disabled={sending || (!text.trim() && !chips.length)} title="发送"><Send size={15} /></button>
           </div>
-        </form>}
+        </form></>}
     </div>
     {!archived && terminalOpen && <AgentTerminalDrawer taskId={taskId} onClose={() => setTerminalOpen(false)} />}
     {!archived && draftConflict !== null && confirmOtherDraft && <AgentDialog title="用另一份草稿？" onClose={() => { if (!resolvingDraft) setConfirmOtherDraft(false); }} footer={<>
