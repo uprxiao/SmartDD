@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';import{it,expect,afterEach}from'vitest';import{randomUUID}from'node:crypto';
 import{runBundledMigrations}from'../../../db/migrations';import{AgentStore}from'../../agent/agent-store';import{HostBusinessRequests}from'../../agent/host-business-requests';import{AgentBusinessTools}from'../agent-business-tools';
+import{ApplicationError}from'@shared/applications';
 const clean:(()=>void)[]=[];afterEach(()=>clean.splice(0).forEach(f=>f()));
 function fixture(tier='ask',maxTier='full',parentTier?:string,entry:'mcp'|'cli'='mcp'){
  const db=new Database(':memory:');runBundledMigrations(db);db.prepare('INSERT INTO projects(id,name,created_at,updated_at) VALUES(?,?,?,?)').run('p','fixture',Date.now(),Date.now());const store=new AgentStore(db),parentTaskId=parentTier?store.createTask({projectId:'p',dirId:null,cwd:'/fixture',title:'parent',selection:{driverId:'codex-app-server',profileId:'p',tier:parentTier}}):undefined,taskId=store.createTask({projectId:'p',dirId:null,cwd:'/fixture',title:'business',parentTaskId,selection:{driverId:'codex-app-server',profileId:'p',tier}}),bindingId=store.createBinding({task_id:taskId,driver_id:'codex-app-server',profile_id:'p',continuation_hash:'a'.repeat(64),cwd_identity:'/fixture',state_root:'/fixture/state'}),runId=randomUUID();store.insertRun({runId,taskId,bindingId,projectId:'p',generation:1,driverId:'codex-app-server',owner:{instanceId:'fixture',pid:process.pid,startedAt:null},launchPlanHash:'b'.repeat(64)});store.attachRunProcess(runId,taskId,12345,'fixture');
@@ -62,4 +63,17 @@ it('A41 manual mail edit first cancels the pending send intent so the draft can 
  const record:any={payload:{data:{mailIntentId:'intent-1',entry:'mcp'}},origin:{runId:'run'},row:{task_id:'t',request_id:'r'}};
  await expect(tools.reviseMail(record,{edits:{to:'new@example.invalid',cc:'',bcc:'',subject:'new subject',text:'new body'}},{})).rejects.toThrow('stop after edit');
  expect(order).toEqual(['cancel:p:intent-1','edit:new subject']);
+});
+
+it('A72 a send whose authorization is refused before any delivery reports not executed, not unknown (D06-76)',async()=>{
+ const handlers=new Map<string,any>();const calls:string[]=[];
+ const applications:any={authorizeSend:async()=>{calls.push('authorize');throw new ApplicationError('INTENT_STALE','发件身份、配置或项目选用已改变，请重新明确操作');}};
+ const service:any={call:async()=>{calls.push('send');return {status:'ok'};},attachTaskInterceptor:()=>{}};
+ const tools:any=new AgentBusinessTools({store:{} as any,requests:{register:(kind:string,h:any)=>handlers.set(kind,h)} as any,runs:{} as any,applications,services:new Map([['mcp',service]]),notify:()=>{}});
+ tools.mail=()=>({id:'intent-1',project_id:'p',draft_id:'d',draft_revision:1,review_hash:'h',review_json:'{}'});
+ tools.scoped=(_r:unknown,_s:unknown,work:()=>Promise<unknown>)=>work();
+ const record:any={payload:{businessKind:'mail_send',data:{mailIntentId:'intent-1',entry:'mcp',requestId:'q',call:{operation:'smartdd_mail_send_execute_v2'}}},origin:{runId:'run'},row:{task_id:'t',request_id:'r'}};
+ const result=await handlers.get('mail_send').execute(record,{choice:'allow',displayReceiptId:'shown'},{signal:new AbortController().signal,sender:{}});
+ expect(calls).toEqual(['authorize']);
+ expect(result).toMatchObject({status:'error',error:{code:'INTENT_STALE',effectState:'none',message:'发件身份、配置或项目选用已改变，请重新明确操作'}});
 });

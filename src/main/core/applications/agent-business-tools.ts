@@ -26,7 +26,11 @@ export class AgentBusinessTools {
    execute:async(r,decision,{signal,sender})=>{const choice=decision as {choice:string;displayReceiptId?:string;instructions?:string;reviewedUnknownExecutionIds?:string[]};const data=r.payload.data as Data,m=this.mail(data.mailIntentId!);
     if(choice.choice==='agentedit'){if(!choice.instructions?.trim())throw Error('请先写修改要求');await this.scoped(r,signal,()=>this.cancelMail(sender,m));d.notify(r.row.task_id,'mail-revise-'+r.row.request_id,'用户要求修改邮件后重新请求批准：'+choice.instructions+'。原发送请求已取消，不能沿用原批准。');return{status:'revision_requested'};}
     if(!sender||!choice.displayReceiptId)throw new ApplicationError('AUTHORIZATION_REQUIRED','请完整审阅邮件后批准');
-    return this.scoped(r,signal,async()=>{const review=JSON.parse(m.review_json);await d.applications.authorizeSend(sender,m.project_id,{intentId:m.id,expectedReviewHash:m.review_hash,displayReceiptId:choice.displayReceiptId,reviewedUnknownExecutionIds:choice.reviewedUnknownExecutionIds??[]});const result=await this.service(data.entry).call(r.origin.runId,data.requestId,data.call,signal);while(this.d.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_kind='mail-send' AND owner_id=? AND state='active'").get(m.id))await new Promise(resolve=>setTimeout(resolve,50));return result;});
+    return this.scoped(r,signal,async()=>{const review=JSON.parse(m.review_json);
+     // D06-76: authorization runs before any delivery, so a refusal here (sender, config or project selection changed) is "not executed", not "unknown".
+     try{await d.applications.authorizeSend(sender,m.project_id,{intentId:m.id,expectedReviewHash:m.review_hash,displayReceiptId:choice.displayReceiptId,reviewedUnknownExecutionIds:choice.reviewedUnknownExecutionIds??[]});}
+     catch(e){if(!(e instanceof ApplicationError))throw e;return{status:'error',error:{code:e.code,message:e.message,effectState:'none'}};}
+     const result=await this.service(data.entry).call(r.origin.runId,data.requestId,data.call,signal);while(this.d.store.sqlite.prepare("SELECT 1 FROM capability_resource_leases WHERE owner_kind='mail-send' AND owner_id=? AND state='active'").get(m.id))await new Promise(resolve=>setTimeout(resolve,50));return result;});
    },
    retire:r=>{const data=r.payload.data as Data;return d.applications.retireTaskMail(r.row.task_id,r.origin.runId,data.mailIntentId!);},
   });
