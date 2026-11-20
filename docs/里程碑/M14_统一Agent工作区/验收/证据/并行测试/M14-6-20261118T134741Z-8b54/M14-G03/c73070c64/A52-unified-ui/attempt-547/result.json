@@ -1,0 +1,188 @@
+{
+  "isolatedKeychain": {
+    "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-547/runtime-Ld3rgf/home/Library/Keychains/login.keychain-db",
+    "default": "\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-547/runtime-Ld3rgf/home/Library/Keychains/login.keychain-db\"",
+    "userDefaultUnchanged": "\"/Users/liubu/Library/Keychains/login.keychain-db\""
+  },
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-547/runtime-Ld3rgf/home",
+    "at": "2026-11-20T06:30:07.955Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "c73070c64121bd75245cec03fe6e590459bf52ab",
+  "asar": "63333c67e2361149d5decc9ab9f6b271a9ab6266fd7125cae277d5b8c81952ca",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scope": "A52 foreground system layer: real Ctrl+` / Cmd+N shortcuts, focus return, real login shell in the manual terminal, Pinyin IME composition and Enter guard; exact-PID focus guard, input source restored; isolated real packaged App, real Claude and Codex, local synthetic models, non-relaying SMTP, UI plugin install with a recorded native-picker substitute",
+  "observations": [],
+  "requests": [
+    {
+      "model": "a52-main",
+      "text": "A52_OK"
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "text": null,
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"0649f063-7a77-4e6c-8148-413327adbf30\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    }
+  ],
+  "status": "passed",
+  "checks": [
+    {
+      "label": "real Ctrl+` opens the manual terminal and its real login shell answers pwd with the task directory",
+      "ok": true
+    },
+    {
+      "label": "closing the terminal with the real shortcut returns focus to the composer",
+      "ok": true
+    },
+    {
+      "label": "real Pinyin composition commits Chinese text into the composer",
+      "ok": true
+    },
+    {
+      "label": "Enter during IME composition only commits the letters and does not send",
+      "ok": true
+    },
+    {
+      "label": "a real Enter after composition sends the exact committed text, and focus stays in the composer",
+      "ok": true
+    },
+    {
+      "label": "real Cmd+N leaves the task and opens the new-task page with its composer focused",
+      "ok": true
+    },
+    {
+      "label": "the input source is restored to the user original one",
+      "ok": true
+    }
+  ],
+  "keychainWindow": {
+    "startedAt": "2026-11-20T06:30:12.814Z",
+    "testedAt": "2026-11-20T06:30:12.939Z",
+    "savedAt": "2026-11-20T06:30:13.051Z"
+  },
+  "fg": {
+    "pid": 76333,
+    "steps": [
+      {
+        "label": "ctrl+backquote open",
+        "front": 76333,
+        "at": 1795156219897
+      },
+      {
+        "label": "type pwd",
+        "front": 76333,
+        "at": 1795156221806
+      },
+      {
+        "label": "return in shell",
+        "front": 76333,
+        "at": 1795156222073
+      },
+      {
+        "label": "ctrl+backquote close",
+        "front": 76333,
+        "at": 1795156222489
+      },
+      {
+        "label": "type nihao",
+        "front": 76333,
+        "at": 1795156224280
+      },
+      {
+        "label": "space commits first candidate",
+        "front": 76333,
+        "at": 1795156225197
+      },
+      {
+        "label": "type ceshi",
+        "front": 76333,
+        "at": 1795156226077
+      },
+      {
+        "label": "return while composing",
+        "front": 76333,
+        "at": 1795156226964
+      },
+      {
+        "label": "return sends",
+        "front": 76333,
+        "at": 1795156229340
+      },
+      {
+        "label": "cmd+n",
+        "front": 76333,
+        "at": 1795156230837
+      }
+    ],
+    "imeBefore": "com.apple.inputmethod.SCIM.ITABC",
+    "focusSettled": true,
+    "terminalFocused": true,
+    "shell": "liubu@hxs-MacBook-Pro work % pwd\n/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-547/runtime-Ld3rgf/work\nliubu@hxs-MacBook-Pro work %  \n",
+    "afterClose": {
+      "drawer": false,
+      "active": "TEXTAREA.composer"
+    },
+    "imeSelect": "ok",
+    "imeDuring": "com.apple.inputmethod.SCIM.ITABC",
+    "composing": "ni hao",
+    "afterSpace": "你好",
+    "afterComposeReturn": "你好ceshi",
+    "turnsAfterComposeReturn": 0,
+    "sent": "你好ceshi",
+    "focusAfterSend": true,
+    "cmdN": {
+      "taskView": false,
+      "active": "TEXTAREA|随心输入",
+      "text": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nA72 private tier matrix\nA52 前台\n设置\n你想让我们在 A72 private tier matrix 中构建什么？\nA72 private tier matrix\n此计算机\n请求批准\nA72 Claude\n默认",
+      "homeFocused": true
+    },
+    "imeAfter": "com.apple.inputmethod.SCIM.ITABC"
+  },
+  "exitError": "Error: Isolated App did not finish its normal exit",
+  "forcedExit": {
+    "pid": 76333,
+    "code": null,
+    "signal": "SIGKILL"
+  },
+  "rendererErrors": [],
+  "smtp": {
+    "responses": 0,
+    "unexpected": 0,
+    "results": []
+  },
+  "realKnownHostsUnchanged": true
+}
