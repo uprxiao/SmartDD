@@ -1,0 +1,155 @@
+{
+  "isolatedKeychain": {
+    "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-587/runtime-suEdRw/home/Library/Keychains/willyou-test.keychain-db",
+    "default": "\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-587/runtime-suEdRw/home/Library/Keychains/willyou-test.keychain-db\"",
+    "userDefaultUnchanged": "\"/Users/liubu/Library/Keychains/login.keychain-db\""
+  },
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-587/runtime-suEdRw/home",
+    "at": "2026-11-20T08:48:02.684Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "15a8ea3ff2e3606bebd16dc96ead8dc4cd2f15a5",
+  "asar": "006dd741a95a1b901245bea68a816dd2545ae31d81d4a92dd2dc777485649efe",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scope": "A07+A54: real subscription Claude/Codex (user-logged-in test HOME), synthetic personal hook/MCP/Skill, carry-over toggle, explicit vs discovered path, config change, resume, managed isolation, files not rewritten; isolated real packaged App, real Claude and Codex, local synthetic models, non-relaying SMTP, UI plugin install with a recorded native-picker substitute",
+  "observations": [],
+  "requests": [],
+  "actions": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "text": null,
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"9ed55799-83fd-4237-b37f-678f619236d4\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": ".agent-task-view .agent-composer textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "status": "failed",
+  "checks": [
+    {
+      "label": "subscription Claude with 沿用 ON loads the personal hook and MCP",
+      "ok": true
+    },
+    {
+      "label": "subscription Claude with 沿用 ON can use the personal Skill",
+      "ok": true
+    },
+    {
+      "label": "in 请求批准 the Bash command still asks despite the user default bypassPermissions, and nothing runs after denial",
+      "ok": false,
+      "detail": {
+        "asked": false,
+        "kind": null,
+        "fileCreated": false
+      }
+    }
+  ],
+  "keychainWindow": {
+    "startedAt": "2026-11-20T08:48:07.766Z",
+    "testedAt": "2026-11-20T08:48:07.892Z",
+    "savedAt": "2026-11-20T08:48:07.996Z"
+  },
+  "sub": {
+    "hashesBefore": {
+      "claudeSettings": "68001ed3c4a527823d5bbc4e769937e58620b1d5783dfe2bdc99e8091a5255e7",
+      "claudeSkill": "189e7470db6cc635dc03ae4d84daea5076866d2652a9ed43efdc7863c18e16ad",
+      "codexConfig": "c1f88eab1dfc76b77dc4f22a42aabaa24627e6878a0f2b886e9e387cb734b691",
+      "codexSkill": "189e7470db6cc635dc03ae4d84daea5076866d2652a9ed43efdc7863c18e16ad"
+    },
+    "claudeMcpBefore": "5ce8efaae57bc5588401d61fcb7483899ba736f5ae463ed09342536107ecc51c",
+    "tools": [
+      {
+        "kind": "claude",
+        "installed": true,
+        "login": "local",
+        "executable": "/Users/liubu/.local/share/claude/versions/2.1.326",
+        "customPath": "/Users/liubu/.local/share/claude/versions/2.1.326",
+        "version": "2.1.326"
+      },
+      {
+        "kind": "codex",
+        "installed": true,
+        "login": "subscription",
+        "executable": "/Users/liubu/.local/bin/codex",
+        "customPath": null,
+        "version": "0.169.0"
+      }
+    ],
+    "claudeOn": {
+      "before": {
+        "hook": 0,
+        "claudeMcp": 0,
+        "codexMcp": 0
+      },
+      "after": {
+        "hook": 1,
+        "claudeMcp": 1,
+        "codexMcp": 0
+      },
+      "skillCalls": 1,
+      "answer": "You've hit your 5-hour limit · resets 6:30pm (Asia/Singapore)",
+      "carry": true
+    },
+    "permission": {
+      "asked": false,
+      "kind": null,
+      "fileCreated": false
+    }
+  },
+  "phase": "A07 explicit per-turn permission is not overridden by the user default (bypassPermissions)",
+  "error": "AssertionError [ERR_ASSERTION]: in 请求批准 the Bash command still asks despite the user default bypassPermissions, and nothing runs after denial\n    at expectCheck (file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a07-a54-sub/a07-a54-sub.mjs:124:156)\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a07-a54-sub/a07-a54-sub.mjs:336:3",
+  "visible": "WillYou\n新建任务\n⌘N\n任务历史\n插件\n项目\nA72 private tier matrix\nA07 Claude 沿用\n受限\n设置\nA07 Claude 沿用\n受限\n插件 2\n单 Agent · 开启委派\n请使用 a07-user-skill 技能，然后只回复技能里要求的那一句话。\n本轮改动 · 首次快照仍在后台准备，本轮前态缺失；任务可以继续，不能以较晚状态补造\n查看差异\n观察到的变化可能包含用户或外部写入\n已工作 5 秒\n调用了 Skill\n额度已用完\n本轮已暂停，部分结果已保留。可在 2026-11-20T10:30:00.000Z 后手动继续（不会自动换账号或到点重跑）。\n请求过于频繁，已被限流\n本轮已暂停，部分结果已保留。稍后手动继续（不会自动换账号或到点重跑）。\n\nYou've hit your 5-hour limit · resets 6:30pm (Asia/Singapore)\n\n查看错误详情\n已暂停 · 共工作 5 秒\n钩子 · SessionStart:startup\n请用 Bash 工具执行这条命令：touch a07-perm.txt\n请求过于频繁，已被限流\n本轮已暂停，部分结果已保留。稍后手动继续（不会自动换账号或到点重跑）。\n继续\n\nYou've hit your 5-hour limit · resets 6:30pm (Asia/Singapore)\n\n查看错误详情\n本轮改动 · 0 个文件\n查看差异\n观察到的变化可能包含用户或外部写入\n已暂停 · 共工作 1 秒\n请求批准\n完全访问\nA07 Claude 订阅\n默认",
+  "exit": {
+    "pid": 81246,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "smtp": {
+    "responses": 0,
+    "unexpected": 0,
+    "results": []
+  },
+  "realKnownHostsUnchanged": true
+}
