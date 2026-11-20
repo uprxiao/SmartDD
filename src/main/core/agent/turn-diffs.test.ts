@@ -93,6 +93,34 @@ it('A65 keeps explicit snapshot cancellation after the worker reports a later fa
  } finally { await diffs.close(); db.close(); }
 });
 
+it('A34 (D06-81) shows the real reason once a first background snapshot fails after the turn moved on, without overriding cancel', async () => {
+ const f = fixture(), db = new Database(':memory:');
+ runBundledMigrations(db);
+ const store = new AgentStore(db);
+ const taskId = store.createTask({ projectId: null, dirId: null, cwd: f.cwd, title: 'diff', selection: { profileId: 'p', driverId: 'codex-app-server', tier: 'ask' } });
+ const bindingId = store.createBinding({ task_id: taskId, driver_id: 'codex-app-server', profile_id: 'p', continuation_hash: 'a'.repeat(64), state_root: f.root, cwd_identity: f.cwd });
+ store.insertRun({ runId: 'test-run', taskId, bindingId, generation: 1, projectId: null, driverId: 'codex-app-server', owner: { instanceId: 'fixture', pid: process.pid, startedAt: null }, launchPlanHash: 'b'.repeat(64) });
+ const turnId = store.acceptTurn({ taskId, clientInputId: 'slow-first', text: 'work', sourceKind: 'user' }).turn.turn_id;
+ const fails: ((error: Error) => void)[] = [];
+ const diffs = new TurnDiffs({ store, storage: f.storage, changed: () => {}, execute: () => new Promise((_, reject) => { fails.push(reject); }) });
+ try {
+  await diffs.before(taskId, turnId, 'test-run');
+  expect(diffs.turn(taskId, turnId)).toMatchObject({ status: 'incomplete', reason: expect.stringContaining('首次快照仍在后台准备'), preparing: true });
+  fails[0](Error('文件数量或内容规模超过已验证范围（20481 文件／10 GiB）'));
+  for (let i = 0; i < 50 && diffs.turn(taskId, turnId).preparing; i++) await new Promise(r => setTimeout(r, 10));
+  const reason = '首次快照未完成：文件数量或内容规模超过已验证范围（20481 文件／10 GiB）；本轮差异不可用，任务可以继续';
+  expect(diffs.turn(taskId, turnId)).toMatchObject({ status: 'incomplete', reason, preparing: false });
+  expect(store.items(taskId).filter(item => item.type === 'files_changed').at(-1)).toEqual(expect.objectContaining({ payload: expect.objectContaining({ reason }) }));
+
+  const canceledTurn = store.acceptTurn({ taskId, clientInputId: 'slow-cancel', text: 'more', sourceKind: 'user' }).turn.turn_id;
+  await diffs.before(taskId, canceledTurn, 'test-run');
+  expect(diffs.cancel(taskId, canceledTurn)).toEqual({ canceled: true });
+  fails[1](Error('差异捕获已取消'));
+  for (let i = 0; i < 50 && diffs.turn(taskId, canceledTurn).preparing; i++) await new Promise(r => setTimeout(r, 10));
+  expect(diffs.turn(taskId, canceledTurn)).toMatchObject({ status: 'incomplete', reason: '用户取消差异捕获；本轮不可补造' });
+ } finally { await diffs.close(); db.close(); }
+});
+
 it('A65: long Unicode diff bodies use bounded, hash-bound chunks and preserve both original documents exactly',async()=>{
  const f=fixture(),db=new Database(':memory:');runBundledMigrations(db);const store=new AgentStore(db),taskId=store.createTask({projectId:null,dirId:null,cwd:f.cwd,title:'large diff',selection:{driverId:'codex-app-server',profileId:'p',tier:'ask'}}),turn=store.acceptTurn({taskId,clientInputId:'large-diff-input',text:'change',sourceKind:'user'}).turn,body={path:'a.txt',binary:false,patch:'omitted test patch',beforeText:'中🙂\\'.repeat(80000),afterText:'后🙂\\'.repeat(80000)};
  const ref=await runDiffJob({...f,action:'capture',turnId:turn.turn_id,side:'before'}) as TreeRef;

@@ -9,6 +9,7 @@ import type { DiffJob,TreeRef } from './turn-diff-worker';
 interface ChangeRow {ordinal:number;turn_id:string;task_id:string;run_id:string|null;before_ref:string|null;after_ref:string|null;changed_files_json:string;status:string;incomplete_reason:string|null}
 interface DiffPatch {path:string;binary:boolean;patch:string|null;reason?:string;beforeText?:string;afterText?:string;bodyHash?:string}
 export interface ObservedFile {path:string;added:number|null;removed:number|null;binary:boolean}
+const FIRST_PREPARING='首次快照仍在后台准备，本轮前态缺失；任务可以继续，不能以较晚状态补造';
 /** Canonical changes are observed worktree intervals, never an edit/rollback API. */
 export class TurnDiffs {
  private readonly locks=new Map<string,{writer?:Promise<void>;readers:Set<Promise<void>>}>();
@@ -55,6 +56,14 @@ export class TurnDiffs {
   this.card(taskId,turnId,{turnId,fileCount:0,status:'incomplete',reason:detail,observed:true});
   this.d.changed(taskId);
   return true;
+ }
+ /** A first snapshot that outlived its turn failed later: replace only the still-"preparing" reason with the real one (D06-81). */
+ private firstFailed(taskId:string,turnId:string,error:unknown){
+  const detail=('首次快照未完成：'+(error instanceof Error?error.message:String(error))+'；本轮差异不可用，任务可以继续').slice(0,2000);
+  const changed=this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET incomplete_reason=? WHERE task_id=? AND turn_id=? AND status='incomplete' AND incomplete_reason=?").run(detail,taskId,turnId,FIRST_PREPARING);
+  if(!changed.changes)return;
+  this.card(taskId,turnId,{turnId,fileCount:0,status:'incomplete',reason:detail,observed:true});
+  this.d.changed(taskId);
  }
  private async locked<T>(root:string,mode:'capture'|'cleanup',perform:()=>Promise<T>):Promise<T>{
   const gate=this.locks.get(root)??{readers:new Set<Promise<void>>()};
@@ -181,10 +190,10 @@ export class TurnDiffs {
   const work=this.capture(taskId,{action:'capture',cwd:task.cwd,storage:this.d.storage,turnId,side:'before',timeoutMs:this.warm.has(task.cwd)?5000:120000} as DiffJob);
   this.preparing.set(task.cwd,work);
   void work.finally(()=>{if(this.preparing.get(task.cwd)===work)this.preparing.delete(task.cwd);}).catch(()=>{});
-  let adopted=true;const capture=work.then(async(ref:TreeRef)=>{this.warm.add(task.cwd);if(adopted&&this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET before_ref=? WHERE turn_id=? AND status='capturing'").run(JSON.stringify(ref),turnId).changes===1)return;await this.locked(realpathSync(task.cwd),'cleanup',()=>this.job({action:'release',cwd:task.cwd,storage:this.d.storage,turnId,before:ref}));}).catch(e=>{if(adopted)this.report(taskId,turnId,(e as Error).message);});
+  let adopted=true;const capture=work.then(async(ref:TreeRef)=>{this.warm.add(task.cwd);if(adopted&&this.d.store.sqlite.prepare("UPDATE agent_turn_changes SET before_ref=? WHERE turn_id=? AND status='capturing'").run(JSON.stringify(ref),turnId).changes===1)return;await this.locked(realpathSync(task.cwd),'cleanup',()=>this.job({action:'release',cwd:task.cwd,storage:this.d.storage,turnId,before:ref}));}).catch(e=>{if(adopted)this.report(taskId,turnId,(e as Error).message);else this.firstFailed(taskId,turnId,e);});
   const key='before:'+turnId;this.jobs.set(key,capture);void capture.finally(()=>{this.jobs.delete(key);this.progress.delete(turnId);this.d.changed(taskId);});
   const done=capture.then(()=>true);let timer:ReturnType<typeof setTimeout>|undefined;const ready=await Promise.race([done,new Promise<false>(r=>{timer=setTimeout(()=>r(false),this.warm.has(task.cwd)?5500:250);})]);if(timer)clearTimeout(timer);
-  if(!ready){adopted=false;this.report(taskId,turnId,'首次快照仍在后台准备，本轮前态缺失；任务可以继续，不能以较晚状态补造');}
+  if(!ready){adopted=false;this.report(taskId,turnId,FIRST_PREPARING);}
 
  }
  async after(taskId:string,turnId:string,backgroundActive=false){
@@ -220,7 +229,7 @@ export class TurnDiffs {
  }
  private prepareIdle(taskId:string,turnId:string){
   const task=this.task(taskId);if(this.closed||this.warm.has(task.cwd)||this.preparing.has(task.cwd)||this.d.stable&&!this.d.stable(taskId,turnId))return;
-  const key='before:'+turnId,work=this.capture(taskId,{action:'capture',cwd:task.cwd,storage:this.d.storage,turnId,side:'before',timeoutMs:120000}).then(async(ref:TreeRef)=>{this.warm.add(task.cwd);await this.locked(ref.cwd,'cleanup',()=>this.job({action:'release',cwd:ref.cwd,storage:this.d.storage,turnId,before:ref}));}).catch(()=>{/* Retain the explicit incomplete result. A future idle boundary may retry. */});
+  const key='before:'+turnId,work=this.capture(taskId,{action:'capture',cwd:task.cwd,storage:this.d.storage,turnId,side:'before',timeoutMs:120000}).then(async(ref:TreeRef)=>{this.warm.add(task.cwd);await this.locked(ref.cwd,'cleanup',()=>this.job({action:'release',cwd:ref.cwd,storage:this.d.storage,turnId,before:ref}));}).catch(e=>{this.firstFailed(taskId,turnId,e);/* A future idle boundary may retry. */});
   this.preparing.set(task.cwd,work);this.jobs.set(key,work);void work.finally(()=>{if(this.preparing.get(task.cwd)===work)this.preparing.delete(task.cwd);this.jobs.delete(key);this.progress.delete(turnId);this.d.changed(taskId);});
  }
  async drained(taskId:string){const turns=this.d.store.sqlite.prepare("SELECT turn_id FROM agent_turn_changes WHERE task_id=? AND status='capturing'").all(taskId) as {turn_id:string}[];for(const t of turns)await this.after(taskId,t.turn_id);}
