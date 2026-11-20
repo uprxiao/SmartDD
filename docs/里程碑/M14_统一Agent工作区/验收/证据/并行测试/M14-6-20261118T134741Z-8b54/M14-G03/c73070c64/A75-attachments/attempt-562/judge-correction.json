@@ -1,0 +1,39 @@
+{
+  "attempt": 562,
+  "original": "the system clipboard is restored byte for byte -> false (hash included manifest changeCount)",
+  "reason": "the original judge hashed manifest.json, which records NSPasteboard.changeCount; every write increments it, so it can never match",
+  "corrected": "compare item count, type list and per-type data SHA-256 only",
+  "sameItemsTypesAndData": true,
+  "items": 1,
+  "otherChecks": [
+    [
+      "a pasted image becomes an image attachment card",
+      true
+    ],
+    [
+      "a pasted project file becomes a path reference",
+      true
+    ],
+    [
+      "a pasted outside file becomes a marked copy",
+      true
+    ],
+    [
+      "with a real pointer the remove control shows only while hovering the card",
+      true
+    ],
+    [
+      "real Cmd+V on the home composer adds the attachment card",
+      true
+    ],
+    [
+      "real Cmd+click on a deleted or outside file link is refused and nothing opens externally",
+      true
+    ],
+    [
+      "real Cmd+click on a project file link opens it in the system default app (TextEdit)",
+      true
+    ]
+  ],
+  "rerun": false
+}
