@@ -1,0 +1,151 @@
+{
+  "isolatedKeychain": {
+    "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-507/runtime-BTSPCr/home/Library/Keychains/login.keychain-db",
+    "default": "\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-507/runtime-BTSPCr/home/Library/Keychains/login.keychain-db\"",
+    "userDefaultUnchanged": "\"/Users/liubu/Library/Keychains/login.keychain-db\""
+  },
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-507/runtime-BTSPCr/home",
+    "at": "2026-11-20T03:00:02.872Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "ca4aae05bd952056b08a53c39f755a6e819f25f3",
+  "asar": "77afd5d5bc51074077ed7f0b270da7cb05ca2679fe48b593e8ebeab4a74663bf",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scope": "A42: standard DB/SSH Skills in M14 tasks against a private PostgreSQL and a ForceCommand sshd, file reference into draft, project export/import with AI config; isolated real packaged App, real Claude and Codex, local synthetic models, non-relaying SMTP, UI plugin install with a recorded native-picker substitute",
+  "observations": [],
+  "requests": [
+    {
+      "model": "a42-db",
+      "tool": "Skill",
+      "step": "skill"
+    },
+    {
+      "model": "a42-db",
+      "tool": "Bash",
+      "step": "list"
+    },
+    {
+      "model": "a42-db",
+      "tool": "Bash",
+      "step": "run"
+    },
+    {
+      "model": "a42-db",
+      "text": "A42_DONE_a42-db"
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "text": null,
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"22f88922-1fe2-478f-b8f5-c29775353c46\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": "[data-testid=\"agent-confirm-full\"]",
+      "text": null,
+      "x": 871,
+      "y": 530
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "status": "failed",
+  "checks": [
+    {
+      "label": "the DB password went to the secret store, not the resource row",
+      "ok": true
+    },
+    {
+      "label": "the standard DB Skill ran its real script and read the synthetic rows",
+      "ok": false,
+      "detail": {
+        "skill": "willyou-project-db-diagnostics",
+        "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-507/runtime-BTSPCr/data/agents/claude/05fe3fd94096506c03a922388beb53e1/skills/willyou-project-db-diagnostics",
+        "injected": true,
+        "list": "Project 58ecbd59-0c47-44e4-aac7-d3a92daa44f1\n  - 4a718db8-da5c-4921-a17f-0d6902764979 (default): type=postgres env=test host=127.0.0.1 port=54342 database=a42_orders user=a42_reader passwordEnv=SMARTDD_DB_4A718DB8_DA5C_4921_A17F_0D6902764979_PASSWORD",
+        "run": "Exit code 1\ndb_query failed: Database not found under project 58ecbd59-0c47-44e4-aac7-d3a92daa44f1: 58ecbd59-0c47-44e4-aac7-d3a92daa44f1"
+      }
+    }
+  ],
+  "fixtures": {
+    "pg": {
+      "port": 54342,
+      "database": "a42_orders",
+      "username": "a42_reader"
+    },
+    "sshd": {
+      "port": 22342,
+      "user": "liubu"
+    }
+  },
+  "keychainWindow": {
+    "startedAt": "2026-11-20T03:00:07.426Z",
+    "testedAt": "2026-11-20T03:00:07.545Z",
+    "savedAt": "2026-11-20T03:00:07.703Z"
+  },
+  "resources": {
+    "db": {
+      "id": "4a718db8-da5c-4921-a17f-0d6902764979",
+      "hasPassword": true
+    },
+    "server": {
+      "id": "06bbbde4-393c-4693-9a5a-c7c6cbaee742"
+    }
+  },
+  "db": {
+    "skill": "willyou-project-db-diagnostics",
+    "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-507/runtime-BTSPCr/data/agents/claude/05fe3fd94096506c03a922388beb53e1/skills/willyou-project-db-diagnostics",
+    "injected": true,
+    "list": "Project 58ecbd59-0c47-44e4-aac7-d3a92daa44f1\n  - 4a718db8-da5c-4921-a17f-0d6902764979 (default): type=postgres env=test host=127.0.0.1 port=54342 database=a42_orders user=a42_reader passwordEnv=SMARTDD_DB_4A718DB8_DA5C_4921_A17F_0D6902764979_PASSWORD",
+    "run": "Exit code 1\ndb_query failed: Database not found under project 58ecbd59-0c47-44e4-aac7-d3a92daa44f1: 58ecbd59-0c47-44e4-aac7-d3a92daa44f1"
+  },
+  "phase": "DB skill in an M14 task",
+  "error": "AssertionError [ERR_ASSERTION]: the standard DB Skill ran its real script and read the synthetic rows\n    at expectCheck (file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a42-db-ssh/a42-db-ssh.mjs:116:156)\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a42-db-ssh/a42-db-ssh.mjs:287:3",
+  "exit": {
+    "pid": 63470,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "smtp": {
+    "responses": 0,
+    "unexpected": 0,
+    "results": []
+  }
+}

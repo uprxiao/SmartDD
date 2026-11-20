@@ -1,0 +1,211 @@
+{
+  "isolatedKeychain": {
+    "path": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-508/runtime-F5oACV/home/Library/Keychains/login.keychain-db",
+    "default": "\"/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-508/runtime-F5oACV/home/Library/Keychains/login.keychain-db\"",
+    "userDefaultUnchanged": "\"/Users/liubu/Library/Keychains/login.keychain-db\""
+  },
+  "bootstrap": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-508/runtime-F5oACV/home",
+    "at": "2026-11-20T03:00:28.629Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "sourceCommit": "ca4aae05bd952056b08a53c39f755a6e819f25f3",
+  "asar": "77afd5d5bc51074077ed7f0b270da7cb05ca2679fe48b593e8ebeab4a74663bf",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "scope": "A42: standard DB/SSH Skills in M14 tasks against a private PostgreSQL and a ForceCommand sshd, file reference into draft, project export/import with AI config; isolated real packaged App, real Claude and Codex, local synthetic models, non-relaying SMTP, UI plugin install with a recorded native-picker substitute",
+  "observations": [],
+  "requests": [
+    {
+      "model": "a42-db",
+      "tool": "Skill",
+      "step": "skill"
+    },
+    {
+      "model": "a42-db",
+      "tool": "Bash",
+      "step": "list"
+    },
+    {
+      "model": "a42-db",
+      "tool": "Bash",
+      "step": "run"
+    },
+    {
+      "model": "a42-db",
+      "text": "A42_DONE_a42-db"
+    },
+    {
+      "model": "a42-ssh",
+      "tool": "Skill",
+      "step": "skill"
+    },
+    {
+      "model": "a42-ssh",
+      "tool": "Bash",
+      "step": "list"
+    },
+    {
+      "model": "a42-ssh",
+      "tool": "Bash",
+      "step": "run"
+    },
+    {
+      "model": "a42-ssh",
+      "text": "A42_DONE_a42-ssh"
+    }
+  ],
+  "actions": [
+    {
+      "selector": "[data-testid=\"nav-settings\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "selector": "[data-testid=\"m14-toggle\"]",
+      "text": null,
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "selector": "[data-testid=\"nav-home\"]",
+      "text": null,
+      "x": 105,
+      "y": 21
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"f52eab62-0bf3-444a-916c-be4bc299353f\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": "[data-testid=\"agent-confirm-full\"]",
+      "text": null,
+      "x": 871,
+      "y": 530
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"fbadf23d-ba4d-42c6-9465-8a36343c68e4\"]",
+      "text": null,
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-task-view textarea",
+      "text": null,
+      "x": 864,
+      "y": 786
+    },
+    {
+      "selector": ".agent-composer button[type=\"submit\"]",
+      "text": null,
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "status": "failed",
+  "checks": [
+    {
+      "label": "the DB password went to the secret store, not the resource row",
+      "ok": true
+    },
+    {
+      "label": "the standard DB Skill ran its real script and read the synthetic rows",
+      "ok": true
+    },
+    {
+      "label": "no DB password appears in the task timeline or skill output",
+      "ok": true
+    },
+    {
+      "label": "the standard SSH Skill reached the private server through system ssh with the project key",
+      "ok": false,
+      "detail": {
+        "skill": "willyou-remote-password-ssh",
+        "list": "1. liubu@127.0.0.1:22342 alias=A42 合成服务器 aliases=b0425176-1a1d-4ff6-bcbc-9ab570155c97,a42-synth env=test",
+        "run": "Exit code 255\nWarning: Permanently added '[127.0.0.1]:22342' (ED25519) to the list of known hosts.\r\r\nPTY allocation request failed on channel 0",
+        "serverSaw": [
+          "hostname; id"
+        ]
+      }
+    }
+  ],
+  "fixtures": {
+    "pg": {
+      "port": 54342,
+      "database": "a42_orders",
+      "username": "a42_reader"
+    },
+    "sshd": {
+      "port": 22342,
+      "user": "liubu"
+    }
+  },
+  "keychainWindow": {
+    "startedAt": "2026-11-20T03:00:33.484Z",
+    "testedAt": "2026-11-20T03:00:33.645Z",
+    "savedAt": "2026-11-20T03:00:33.809Z"
+  },
+  "resources": {
+    "db": {
+      "id": "9c04673a-0243-4d86-a237-ed9989238fef",
+      "hasPassword": true
+    },
+    "server": {
+      "id": "b0425176-1a1d-4ff6-bcbc-9ab570155c97"
+    }
+  },
+  "db": {
+    "skill": "willyou-project-db-diagnostics",
+    "dir": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-508/runtime-F5oACV/data/agents/claude/7fa469b5a2de5638a503468d481aecae/skills/willyou-project-db-diagnostics",
+    "injected": true,
+    "list": "Project bb0211bb-9b91-4ab3-a40a-cfb4d75a2a93\n  - 9c04673a-0243-4d86-a237-ed9989238fef (default): type=postgres env=test host=127.0.0.1 port=54342 database=a42_orders user=a42_reader passwordEnv=SMARTDD_DB_9C04673A_0243_4D86_A237_ED9989238FEF_PASSWORD",
+    "run": "{\n  \"project\": \"bb0211bb-9b91-4ab3-a40a-cfb4d75a2a93\",\n  \"database\": {\n    \"key\": \"9c04673a-0243-4d86-a237-ed9989238fef\",\n    \"resourceId\": \"9c04673a-0243-4d86-a237-ed9989238fef\",\n    \"projectId\": \"bb0211bb-9b91-4ab3-a40a-cfb4d75a2a93\",\n    \"name\": \"A42 合成订单库\",\n    \"label\": \"A42 合成订单库\",\n    \"aliases\": [\n      \"a42-orders\"\n    ],\n    \"environment\": \"test\",\n    \"type\": \"postgres\",\n    \"vendor\": \"postgres\",\n    \"host\": \"127.0.0.1\",\n    \"port\": 54342,\n    \"database\": \"a42_orders\",\n    \"schema\": null,\n    \"username\": \"a42_reader\",\n    \"accessLevel\": \"readonly\",\n    \"passwordEnv\": \"SMARTDD_DB_9C04673A_0243_4D86_A237_ED9989238FEF_PASSWORD\"\n  }\n}\n[\n  {\n    \"customer\": \"合成客户甲\",\n    \"status\": \"paid\",\n    \"amount\": \"120.50\"\n  },\n  {\n    \"customer\": \"合成客户乙\",\n    \"status\": \"pending\",\n    \"amount\": \"88."
+  },
+  "ssh": {
+    "skill": "willyou-remote-password-ssh",
+    "list": "1. liubu@127.0.0.1:22342 alias=A42 合成服务器 aliases=b0425176-1a1d-4ff6-bcbc-9ab570155c97,a42-synth env=test",
+    "run": "Exit code 255\nWarning: Permanently added '[127.0.0.1]:22342' (ED25519) to the list of known hosts.\r\r\nPTY allocation request failed on channel 0",
+    "serverSaw": [
+      "hostname; id"
+    ]
+  },
+  "phase": "SSH skill in an M14 task",
+  "error": "AssertionError [ERR_ASSERTION]: the standard SSH Skill reached the private server through system ssh with the project key\n    at expectCheck (file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a42-db-ssh/a42-db-ssh.mjs:116:156)\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a42-db-ssh/a42-db-ssh.mjs:294:3",
+  "exit": {
+    "pid": 64231,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "smtp": {
+    "responses": 0,
+    "unexpected": 0,
+    "results": []
+  }
+}
