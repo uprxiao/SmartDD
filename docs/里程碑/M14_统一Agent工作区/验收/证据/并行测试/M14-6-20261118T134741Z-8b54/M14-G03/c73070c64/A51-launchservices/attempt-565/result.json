@@ -1,0 +1,83 @@
+{
+  "commit": "ff0dea44e5fdbc15436471b0f2290c2dd8f24355",
+  "asar": "a79457ba56a02ebe5083bbde9963d35ef1cd757d24496172f95a7b9a4196caa8",
+  "scope": "A51 LaunchServices launch (open -g -n -a, no terminal env), login-shell CLI discovery, native build, proxy from the login shell",
+  "checks": [
+    {
+      "label": "the App was started by LaunchServices (parent launchd) with the test package and the isolated data directory",
+      "ok": true
+    },
+    {
+      "label": "it inherited no terminal PATH (no ~/.local/bin, no proxy)",
+      "ok": true
+    },
+    {
+      "label": "LaunchServices-started App discovers the real Claude and Codex CLIs through the login shell",
+      "ok": true
+    },
+    {
+      "label": "an explicit CLI path works in the LaunchServices-started App",
+      "ok": true
+    },
+    {
+      "label": "a real Claude turn runs from the LaunchServices-started App",
+      "ok": true
+    },
+    {
+      "label": "the CLI launched by the LaunchServices-started App carries the login shell proxy variables",
+      "ok": true
+    }
+  ],
+  "status": "passed",
+  "process": {
+    "pid": 23920,
+    "command": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou --remote-debugging-address=127.0.0.1 --remote-debugging-port=9351",
+    "ppid": "1",
+    "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+    "hasUserData": true
+  },
+  "identity": null,
+  "tools": [
+    {
+      "kind": "claude",
+      "installed": true,
+      "executable": "/Users/liubu/.local/bin/claude",
+      "version": "2.1.329"
+    },
+    {
+      "kind": "codex",
+      "installed": true,
+      "executable": "/Users/liubu/.local/bin/codex",
+      "version": "0.169.0"
+    }
+  ],
+  "explicit": {
+    "path": "/Users/liubu/.local/share/claude/versions/2.1.326",
+    "version": "2.1.326",
+    "installed": true,
+    "back": {
+      "executable": "/Users/liubu/.local/bin/claude",
+      "version": "2.1.329"
+    }
+  },
+  "cliEnv": {
+    "pid": 24065,
+    "httpsProxy": "http://127.0.0.1:3426",
+    "httpProxy": "http://127.0.0.1:3426",
+    "noProxy": null,
+    "pathHasLocalBin": true
+  },
+  "turn": {
+    "status": "working",
+    "answered": true
+  },
+  "proxied": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3425/v1/messages?beta=true"
+    }
+  ],
+  "proxyUsed": true,
+  "native": "Error: {\"exceptionId\":2,\"text\":\"Uncaught (in promise) Error: Error invoking remote method 'agentTasks.terminalOpen': Err",
+  "exited": true
+}

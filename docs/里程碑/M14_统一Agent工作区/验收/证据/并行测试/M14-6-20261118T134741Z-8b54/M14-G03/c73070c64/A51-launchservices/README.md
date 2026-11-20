@@ -16,6 +16,10 @@
 
 包库存（[inventory.json](inventory.json)）：锁定 SDK JS 库 0.3.321，`app.asar` 5108 项、Resources 18466 个文件，无 SDK 平台原生包、无内置 claude／codex 可执行文件。SQLite／PTY：打包原生检查通过；手动 PTY 真实 shell 见 A52 第 547 次（同包）。
 
-**代理（观察，待用户决定）**：559／560 在回合进行中读取 CLI 进程自身环境——有登录 shell 的 PATH，但**没有**登录 shell 里设置的 `HTTPS_PROXY`／`HTTP_PROXY`；本机记录代理零请求。即从 Finder／Dock 启动时，只在 shell 配置文件里设代理的用户，CLI 不会经该代理联网。代码中没有代理处理；用例“明确预期”未列代理判定。
+**代理（D06-79，已修复）**：559／560 在回合进行中读取 CLI 进程自身环境——有登录 shell 的 PATH，但**没有**登录 shell 里设置的 `HTTPS_PROXY`／`HTTP_PROXY`；本机记录代理零请求。即从 Finder／Dock 启动时，只在 shell 配置文件里设代理的用户，CLI 不会经该代理联网。代码中没有代理处理；用例“明确预期”未列代理判定。
 
 **平台**：按需求 R01，首期真实平台为 macOS arm64；Windows、Linux 未执行，保留未验，不宣称支持。
+
+## D06-79 修复与复验（第 565 次，包 `ff0dea44e`）
+
+用户 2026-11-20 判定为缺陷：从 Finder／Dock 启动时，登录 shell 中的代理也应带给 CLI。修复 `ff0dea44e`：登录 shell 探测同时输出 `HTTP(S)_PROXY`、`ALL_PROXY`、`NO_PROXY`（含小写），M14 与 M13 两条启动路径只补 App 自身没有的代理变量（终端启动时保持原值）；单元测试 zsh／bash 红绿（5 项）。565 共 6/6：新增“CLI 进程环境带登录 shell 的 `HTTPS_PROXY`／`HTTP_PROXY`”，本机记录代理收到模型请求。新包库存同前（[inventory-ff0dea44e.json](inventory-ff0dea44e.json)）。

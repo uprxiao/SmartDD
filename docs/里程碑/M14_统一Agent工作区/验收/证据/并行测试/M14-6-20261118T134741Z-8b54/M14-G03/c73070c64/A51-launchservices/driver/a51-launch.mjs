@@ -86,6 +86,8 @@ try{
   result.proxied=proxied.slice(0,10);
   check('a real Claude turn runs from the LaunchServices-started App',result.turn.answered,result.turn);
   result.proxyUsed=proxied.some(p=>String(p.url).includes(String(port)));
+  // D06-79: the CLI must carry the login shell's proxy variables even though the App got none.
+  check('the CLI launched by the LaunchServices-started App carries the login shell proxy variables',result.cliEnv?.httpsProxy==='http://127.0.0.1:'+proxyPort&&result.cliEnv?.httpProxy==='http://127.0.0.1:'+proxyPort,{cliEnv:result.cliEnv,proxied:proxied.slice(0,5)});
   // native build: SQLite and PTY are exercised (task store, manual shell)
   result.native=await invoke('agentTasks.terminalOpen',task.taskId).then(()=>'terminal-opened',e=>String(e).slice(0,120));
   result.status='passed';

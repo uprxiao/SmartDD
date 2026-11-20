@@ -1,0 +1,109 @@
+{
+  "caseId": "M14-A43",
+  "scenario": "late-edit",
+  "commit": "ff0dea44e5fdbc15436471b0f2290c2dd8f24355",
+  "asar": "a79457ba56a02ebe5083bbde9963d35ef1cd757d24496172f95a7b9a4196caa8",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "actions": [
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "type": "insertText",
+      "text": "A43_FIRST_REQUEST_late-edit"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-launch\"]",
+      "x": 1206,
+      "y": 851
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "type": "insertTextWhileAckHeld",
+      "text": "A43_LATE_EDIT_SHOULD_REMAIN",
+      "editorValue": "A43_FIRST_REQUEST_late-edit\nA43_LATE_EDIT_SHOULD_REMAIN"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"6d7da1f2-025b-446c-a752-e4af3a596b63\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=nav-home]",
+      "x": 105,
+      "y": 21
+    }
+  ],
+  "responses": [
+    {
+      "at": "2026-11-20T07:21:47.605Z",
+      "id": "r7455127a-f15c-4f2e-969b-73c88b168ae5",
+      "model": "m14-fixture-a43-home",
+      "marker": "A43_FIRST_REQUEST_late-edit"
+    }
+  ],
+  "findings": [],
+  "scope": "True packaged home UI and native local Codex. One precise original IPC receipt gated or lost after original acceptance.",
+  "status": "passed-subset",
+  "identity": [
+    true,
+    25103,
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-602/runtime-WHIkEb/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-602/runtime-WHIkEb/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-602/runtime-WHIkEb/data"
+  ],
+  "editorBeforeAck": "A43_FIRST_REQUEST_late-edit\nA43_LATE_EDIT_SHOULD_REMAIN",
+  "ipc": [
+    {
+      "taskId": "6d7da1f2-025b-446c-a752-e4af3a596b63",
+      "clientInputId": "in-c5e7f9a4fa634dc3b32f1eb7d2e33e50",
+      "startedAt": 1795159306400,
+      "receipt": {
+        "turnId": "bfb23d53-6ab2-4b4b-99ad-68cdaf8b36f3",
+        "duplicate": false,
+        "status": "accepted"
+      },
+      "acceptedAt": 1795159306402,
+      "deliveredAt": 1795159306486,
+      "releaseCount": 1
+    }
+  ],
+  "creations": [
+    {
+      "requestedTaskId": "6d7da1f2-025b-446c-a752-e4af3a596b63",
+      "startedAt": 1795159306365,
+      "receipt": {
+        "taskId": "6d7da1f2-025b-446c-a752-e4af3a596b63",
+        "selection": {
+          "driverId": "codex-app-server",
+          "profileId": "536b731c-952e-4d5b-9090-23f57c4ee598",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "536b731c-952e-4d5b-9090-23f57c4ee598": true
+          }
+        }
+      },
+      "committedAt": 1795159306367,
+      "deliveredAt": 1795159306367
+    }
+  ],
+  "exit": {
+    "pid": 25103,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}

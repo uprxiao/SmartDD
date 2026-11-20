@@ -1,0 +1,101 @@
+{
+  "caseId": "M14-A43",
+  "scenario": "late-switch",
+  "commit": "ff0dea44e5fdbc15436471b0f2290c2dd8f24355",
+  "asar": "a79457ba56a02ebe5083bbde9963d35ef1cd757d24496172f95a7b9a4196caa8",
+  "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+  "actions": [
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-input\"]",
+      "x": 864,
+      "y": 814
+    },
+    {
+      "type": "insertText",
+      "text": "A43_FIRST_REQUEST_late-switch"
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"home-launch\"]",
+      "x": 1206,
+      "y": 851
+    },
+    {
+      "type": "click",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"dfec96b4-a278-4d85-a78f-49971aea70c7\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "type": "click",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "type": "insertText",
+      "text": "A43_SWITCHED_OTHER_TASK_DRAFT"
+    }
+  ],
+  "responses": [
+    {
+      "at": "2026-11-20T07:21:55.557Z",
+      "id": "r4ad06bdd-3faf-4aca-adea-cf3a40fc7f1a",
+      "model": "m14-fixture-a43-home",
+      "marker": "A43_FIRST_REQUEST_late-switch"
+    }
+  ],
+  "findings": [],
+  "scope": "True packaged home UI and native local Codex. One precise original IPC receipt gated or lost after original acceptance.",
+  "status": "passed-subset",
+  "identity": [
+    true,
+    25281,
+    "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-603/runtime-39grZW/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-603/runtime-39grZW/home",
+    "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-603/runtime-39grZW/data"
+  ],
+  "ipc": [
+    {
+      "taskId": "ae01d5a3-7977-44a7-8e6a-b6a77b63514c",
+      "clientInputId": "in-cd54b5743f554bb584327b2fb9b91832",
+      "startedAt": 1795159314357,
+      "receipt": {
+        "turnId": "f16c5f62-84bc-43a5-888e-3f1d85004c57",
+        "duplicate": false,
+        "status": "accepted"
+      },
+      "acceptedAt": 1795159314358,
+      "deliveredAt": 1795159314915,
+      "releaseCount": 1
+    }
+  ],
+  "creations": [
+    {
+      "requestedTaskId": "ae01d5a3-7977-44a7-8e6a-b6a77b63514c",
+      "startedAt": 1795159314355,
+      "receipt": {
+        "taskId": "ae01d5a3-7977-44a7-8e6a-b6a77b63514c",
+        "selection": {
+          "driverId": "codex-app-server",
+          "profileId": "3a3af2ac-aad2-440d-be16-5ec01b0f5070",
+          "tier": "ask",
+          "carryExtensions": true,
+          "extensionPreferences": {
+            "3a3af2ac-aad2-440d-be16-5ec01b0f5070": true
+          }
+        }
+      },
+      "committedAt": 1795159314356,
+      "deliveredAt": 1795159314356
+    }
+  ],
+  "exit": {
+    "pid": 25281,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": []
+}
