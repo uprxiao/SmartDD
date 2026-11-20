@@ -1,0 +1,28 @@
+{
+  "commit": "c73070c64121bd75245cec03fe6e590459bf52ab",
+  "asar": "63333c67e2361149d5decc9ab9f6b271a9ab6266fd7125cae277d5b8c81952ca",
+  "scope": "A51 LaunchServices launch (open -g -n -a, no terminal env), login-shell CLI discovery, native build, proxy from the login shell",
+  "checks": [
+    {
+      "label": "the App was started by LaunchServices (parent launchd) with the test package and the isolated data directory",
+      "ok": true
+    },
+    {
+      "label": "it inherited no terminal PATH (no ~/.local/bin, no proxy)",
+      "ok": false,
+      "detail": {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/Users/liubu/.local/bin"
+      }
+    }
+  ],
+  "status": "failed",
+  "process": {
+    "pid": 92305,
+    "command": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou --remote-debugging-address=127.0.0.1 --remote-debugging-port=9351",
+    "ppid": "1",
+    "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/Users/liubu/.local/bin",
+    "hasUserData": true
+  },
+  "error": "AssertionError [ERR_ASSERTION]: it inherited no terminal PATH (no ~/.local/bin, no proxy)\n    at check (file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a51-launch/a51-launch.mjs:24:89)\n    at file:///private/tmp/willyou-m14-stage6.WRvdST/g03/prep-next/a51-launch/a51-launch.mjs:50:3",
+  "exited": true
+}
