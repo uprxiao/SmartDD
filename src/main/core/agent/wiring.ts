@@ -8,6 +8,7 @@ import { TurnDiffs } from './turn-diffs';
 // M14 统一 Agent 工作区的主进程装配：配置档案解析、本机程序发现、托管文件落盘与事件推送。
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { withShellProxy } from '../ai/runner-detect';
 import type BetterSqlite3 from 'better-sqlite3';
 import { codeAgentKindSchema } from '@shared/ai-agents';
 import { ApplicationError } from '@shared/applications';
@@ -128,7 +129,8 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     };
     assertCurrent();
     materializeAgentPlan(launch.plan, d.userData, cwd);
-    const env = probe.shellPath ? { ...launch.env, PATH: probe.shellPath } : launch.env;
+    // D06-79: a Finder/Dock launch gets neither the login-shell PATH nor its proxy variables; give the CLI both.
+    const env = withShellProxy(probe.shellPath ? { ...launch.env, PATH: probe.shellPath } : launch.env, probe.shellProxy);
     const modelsWithoutImageInput = kind === 'codex' && provider
       ? new Set(provider.models.filter(model => model.codex && !model.codex.inputModalities.includes('image')).map(model => model.id))
       : undefined;

@@ -22,6 +22,8 @@ export interface DriverProbe extends DriverCapabilities {
   binaryPath: string | null;
   realpath: string | null;
   shellPath: string | null;
+  /** Proxy variables set by the login shell (D06-79). */
+  shellProxy?: Record<string, string>;
   missing?: { searched: string; hint: string };
 }
 
@@ -95,7 +97,7 @@ export async function probeDriver(driverId: DriverId, o: ProbeOptions): Promise<
   const info = await (o.detect ?? detectNativeCli)(RUNNER[driverId], o.executable ?? null, o);
   if (!info.path) {
     const caps = evaluateCapabilities(driverId, null);
-    return { ...caps, state: 'unsupported', reason: info.error ?? '找不到执行器', binaryPath: null, realpath: null, shellPath: info.shellPath, missing: { searched: info.command, hint: INSTALL_HINT[driverId] } };
+    return { ...caps, state: 'unsupported', reason: info.error ?? '找不到执行器', binaryPath: null, realpath: null, shellPath: info.shellPath, shellProxy: info.shellProxy, missing: { searched: info.command, hint: INSTALL_HINT[driverId] } };
   }
   let real: string | null = null;
   try {
@@ -104,14 +106,14 @@ export async function probeDriver(driverId: DriverId, o: ProbeOptions): Promise<
     accessSync(real, constants.X_OK);
   } catch (e) {
     const caps = evaluateCapabilities(driverId, null);
-    return { ...caps, state: 'unsupported', reason: `执行器不可用：${(e as Error).message}`, binaryPath: info.path, realpath: real, shellPath: info.shellPath };
+    return { ...caps, state: 'unsupported', reason: `执行器不可用：${(e as Error).message}`, binaryPath: info.path, realpath: real, shellPath: info.shellPath, shellProxy: info.shellProxy };
   }
   let caps = evaluateCapabilities(driverId, info.version, o.probe);
   if (o.inspectCodexProtocol && driverId === 'codex-app-server' && caps.state !== 'unsupported' && caps.version) {
     const missing = await inspectCodex(real, info.shellPath ?? o.env.PATH, caps.version, o.env).catch(() => new Set<CapabilityName>());
     caps = evaluateCapabilities(driverId, info.version, name => !missing.has(name) && o.probe?.(name) !== false);
   }
-  return { ...caps, binaryPath: info.path, realpath: real, shellPath: info.shellPath };
+  return { ...caps, binaryPath: info.path, realpath: real, shellPath: info.shellPath, shellProxy: info.shellProxy };
 }
 
 /** 探测并留档；每次结果都记录，旧记录不覆盖。 */

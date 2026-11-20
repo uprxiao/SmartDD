@@ -54,6 +54,7 @@ import { codexSupportsTurnPermissions } from '../agent/permissions';
 import { RuntimeRegistry } from './runtime-registry';
 import { verifyPackageTree } from './package-files';
 import type { BridgeResponse } from '@shared/application-bridge';
+import { withShellProxy } from '../ai/runner-detect';
 /** Resource kinds only pre-R1.0 launches used (shared discovery, per-session projections, Claude plugin, M4 originals). */
 const RETIRED_RESOURCE_KINDS:ReadonlySet<string>=new Set(['session-projection','claude-projection-source','claude-projection-archive','claude-delivery','agent-projection','legacy-agent-projection','legacy-static-plugin','legacy-plugin-source']);
 interface ActiveLaunch {run:OwnedCapabilityRun;runtime?:PreparedRuntime;codex?:PrivateCodexTaskServer;releasing?:Promise<void>}
@@ -246,7 +247,8 @@ export class ManagedTaskCapabilities implements TaskCapabilityLauncher {
     try{const delivery=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner);native=await(this.options.inspectNative??delivery.inspectNative).call(delivery,input);}catch(error){if(input.signal.aborted||error instanceof ApplicationError&&error.code==='CANCELED')throw error;if(!(error instanceof ApplicationError)||error.code!=='AGENT_ADAPTER_UNSUPPORTED')throw error;unavailable=error.code;}
     if(native)this.planningAgents.set(input.taskId,native);
     // Later native checks and the CLI PATH must see the terminal's PATH; the app's own PATH is bare when started from the Dock.
-    return this.prepareCurrent(native?.shellPath?{...input,environment:{...input.environment,PATH:native.shellPath}}:input,native,unavailable);
+    // D06-79: carry the login shell's proxy variables with its PATH (a Finder/Dock launch inherits neither).
+    return this.prepareCurrent(native?.shellPath?{...input,environment:withShellProxy({...input.environment,PATH:native.shellPath},native.shellProxy)}:input,native,unavailable);
   }
   /** R1.0 production launch: the library when the Agent can use it, otherwise native only; never the shared discovery catalog. */
   private async prepareCurrent(input:TaskLaunchInput,native:NativeLaunchContext|undefined,unavailable:string|undefined):Promise<TaskCapabilityLaunch>{

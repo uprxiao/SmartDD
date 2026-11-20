@@ -5,7 +5,7 @@ import { discoverCapabilities, type DiscoveryContext, type NativeDiscoveryDetail
 import type { TaskCapabilityLauncher } from '../tasks/capability-lifecycle';
 import { detectNativeCli } from '../ai/runner-detect';
 export type TaskLaunchInput = Parameters<TaskCapabilityLauncher['prepare']>[0];
-export interface NativeLaunchContext { command: string; version: string; inventory: NativeInventory; userSkillConfig: NativeUserSkillConfig;shellPath?: string;skillConfigSources?:NativeDiscoveryDetails['skillConfigSources'] }
+export interface NativeLaunchContext { command: string; version: string; inventory: NativeInventory; userSkillConfig: NativeUserSkillConfig;shellPath?: string;shellProxy?: Record<string,string>;skillConfigSources?:NativeDiscoveryDetails['skillConfigSources'] }
 /** Read only native files and execute exactly --version in the login shell, never profile arguments, login helpers or a model. */
 export async function inspectNativeLaunch(input: TaskLaunchInput): Promise<NativeLaunchContext> {
   const env = input.environment, requested = input.profile.command;
@@ -21,5 +21,5 @@ export async function inspectNativeLaunch(input: TaskLaunchInput): Promise<Nativ
   const found = discoverCapabilities(context);
   const userSkillConfig=details.effectiveSkillConfig??details.userSkillConfig;
   if (details.issues.length || found.length >= 2000 || !nativeLaunchFieldSchemas.userSkillConfig.safeParse(userSkillConfig).success) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED','原生能力配置尚未完整核验；本次不覆盖用户能力配置');
-  return {command,version,shellPath:detected.shellPath,userSkillConfig,skillConfigSources:details.skillConfigSources??[],inventory:[...found.map(row=>({kind:row.kind,name:row.name,path:row.path,ownerStoreId:null,contentHash:null})),...details.plugins.map(p=>({kind:'plugin' as const,...p,ownerStoreId:null,contentHash:null}))]};
+  return {command,version,shellPath:detected.shellPath,shellProxy:detected.shellProxy,userSkillConfig,skillConfigSources:details.skillConfigSources??[],inventory:[...found.map(row=>({kind:row.kind,name:row.name,path:row.path,ownerStoreId:null,contentHash:null})),...details.plugins.map(p=>({kind:'plugin' as const,...p,ownerStoreId:null,contentHash:null}))]};
 }

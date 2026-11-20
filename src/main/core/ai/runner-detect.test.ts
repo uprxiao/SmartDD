@@ -2,7 +2,7 @@ import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { detectRunner, parseDetectOutput } from './runner-detect';
+import { detectNativeCli, detectRunner, parseDetectOutput, withShellProxy } from './runner-detect';
 
 let fixtureDir: string;
 let bin: string;
@@ -58,4 +58,24 @@ describe('parseDetectOutput', () => {
 
 it('recognizes the native Codex version after a fresh-config warning', () => {
   expect(parseDetectOutput('codex', 'codex', '__SMARTDD_PATH__/opt/codex\nWARNING: CODEX_HOME points to a path that does not exist\ncodex-cli 0.169.0\n').version).toBe('codex-cli 0.169.0');
+});
+
+describe.each(['/bin/zsh', '/bin/bash'])('login-shell proxy via %s (D06-79)', (shell) => {
+  it('returns the proxy variables the login shell sets, and only those', async () => {
+    for (const rc of ['.zshrc', '.bashrc']) writeFileSync(join(fixtureDir, rc), `export PATH="${bin}:/usr/bin:/bin"\nexport HTTPS_PROXY=http://127.0.0.1:7890\nexport no_proxy=localhost,127.0.0.1\nexport UNRELATED_SECRET=nope\n`);
+    const r = await detectNativeCli('claude', null, { env: env(), shell });
+    expect(r.path).toBe(join(bin, 'claude'));
+    expect(r.shellProxy).toEqual({ HTTPS_PROXY: 'http://127.0.0.1:7890', no_proxy: 'localhost,127.0.0.1' });
+  });
+
+  it('returns no proxy when the login shell sets none', async () => {
+    const r = await detectNativeCli('claude', null, { env: env(), shell });
+    expect(r.shellProxy).toEqual({});
+  });
+});
+
+it('fills only proxy variables the App environment lacks', () => {
+  expect(withShellProxy({ PATH: '/x', HTTP_PROXY: 'http://app' }, { HTTP_PROXY: 'http://shell', HTTPS_PROXY: 'http://shell-s' }))
+    .toEqual({ PATH: '/x', HTTP_PROXY: 'http://app', HTTPS_PROXY: 'http://shell-s' });
+  expect(withShellProxy({ PATH: '/x' }, undefined)).toEqual({ PATH: '/x' });
 });

@@ -8,8 +8,11 @@ import { loginShell } from '../../pty-manager';
 // answer matches what a task will actually run (Finder-launched apps have a bare PATH).
 // Markers separate our output from whatever the rc files print. A PATH-only lookup (not
 // `command -v`, which reports aliases) matches the launch, where `exec` skips aliases too.
+/** Proxy variables a login shell may set; a Finder/Dock launch does not inherit them (D06-79). */
+export const SHELL_PROXY_VARS = ['HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'] as const;
 const DETECT_SCRIPT = [
   'printf "__SMARTDD_SHELL_PATH__%s\\n" "$PATH"',
+  ...SHELL_PROXY_VARS.map(name => `[ -n "\${${name}+x}" ] && printf "__SMARTDD_SHELL_ENV__${name}=%s\\n" "\$${name}"`),
   'if [ -n "$ZSH_VERSION" ]; then p=$(whence -p -- "$1" 2>/dev/null); else p=$(type -P -- "$1" 2>/dev/null); fi',
   '[ -n "$p" ] || { printf "__SMARTDD_MISSING__\\n"; exit 0; }',
   'case "$p" in /*) ;; *) printf "__SMARTDD_MISSING__\\n"; exit 0;; esac',
@@ -42,10 +45,30 @@ export function parseDetectOutput(runner: Runner, command: string, stdout: strin
 }
 
 /** detectRunner plus the login shell's PATH, which every later native step must share with the launch. */
-export async function detectNativeCli(runner: Runner, executable: string | null, o: DetectOptions): Promise<RunnerInfo & { shellPath: string | null }> {
+export async function detectNativeCli(runner: Runner, executable: string | null, o: DetectOptions): Promise<RunnerInfo & { shellPath: string | null; shellProxy: Record<string, string> }> {
   const { info, stdout } = await runDetect(runner, executable, o);
-  const line = stdout.split(/\r?\n/).find((l) => l.startsWith('__SMARTDD_SHELL_PATH__'));
-  return { ...info, shellPath: line ? line.slice('__SMARTDD_SHELL_PATH__'.length) : null };
+  const lines = stdout.split(/\r?\n/);
+  const line = lines.find((l) => l.startsWith('__SMARTDD_SHELL_PATH__'));
+  return { ...info, shellPath: line ? line.slice('__SMARTDD_SHELL_PATH__'.length) : null, shellProxy: parseShellProxy(lines) };
+}
+
+export function parseShellProxy(lines: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const l of lines) {
+    if (!l.startsWith('__SMARTDD_SHELL_ENV__')) continue;
+    const pair = l.slice('__SMARTDD_SHELL_ENV__'.length), i = pair.indexOf('=');
+    const name = pair.slice(0, i);
+    if ((SHELL_PROXY_VARS as readonly string[]).includes(name)) out[name] = pair.slice(i + 1);
+  }
+  return out;
+}
+
+/** Fill only the proxy variables the App itself did not get (a terminal launch already carries them). */
+export function withShellProxy(env: Record<string, string>, shellProxy: Record<string, string> | null | undefined): Record<string, string> {
+  if (!shellProxy) return env;
+  const next = { ...env };
+  for (const [name, value] of Object.entries(shellProxy)) if (next[name] === undefined) next[name] = value;
+  return next;
 }
 
 export async function detectRunner(runner: Runner, executable: string | null, o: DetectOptions): Promise<RunnerInfo> {
