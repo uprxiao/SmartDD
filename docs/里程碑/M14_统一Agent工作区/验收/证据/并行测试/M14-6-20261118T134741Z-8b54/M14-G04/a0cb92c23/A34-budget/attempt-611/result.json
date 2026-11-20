@@ -1,0 +1,236 @@
+{
+  "sourceCommit": "a0cb92c23bf843d4b2405b173d438c6bf597bd57",
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "a854be426e4a936c0974536d5adb441784d809cd4cbecac8648e94a71576a92b"
+  },
+  "scenario": "pressure",
+  "sourceAttempt": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610",
+  "layer": "A: packaged App, real diff worker and private SVN shadow, native Codex with isolated local model, background CDP UI. Sparse logical pressure / disk image disclosed per case.",
+  "actions": [
+    {
+      "at": "2026-11-20T13:30:46.065Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"922ee249-b44d-43eb-a439-de1b30beccb6\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-20T13:30:46.116Z",
+      "selector": "[data-turn-id=\"0cacd375-c1d7-4cc2-8d3b-bbf13d0f359f\"] .agent-change-card .agent-change-head span",
+      "x": 716.421875,
+      "y": 424.7578125
+    },
+    {
+      "at": "2026-11-20T13:30:46.225Z",
+      "selector": ".agent-task-view textarea",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "at": "2026-11-20T13:30:46.250Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 738.921875,
+      "y": 853
+    },
+    {
+      "at": "2026-11-20T13:30:48.404Z",
+      "selector": ".agent-task-view textarea",
+      "x": 537.9609375,
+      "y": 786
+    },
+    {
+      "at": "2026-11-20T13:30:48.426Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 738.921875,
+      "y": 853
+    }
+  ],
+  "model": [
+    {
+      "caseId": "P_T1",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "P_T2",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    }
+  ],
+  "page": [],
+  "cases": {
+    "A34-pressure": {
+      "status": "pass",
+      "passed": [
+        "at the 0.9 GiB threshold: archived task B1 reclaimed first, then oldest unleased A2; leased A1 and newer A3 kept; new turn captured complete; UI shows 快照已清理（空间回收）",
+        "all reclaimable snapshots under read leases: new turn shows 影子库空间已满, no refs, leased turns kept, task answered"
+      ],
+      "missing": [],
+      "marker1": {
+        "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610/data/agent-diffs/a83b69a5c3d85661d64096c3c9e6679c6c3591406f4048702671a5c79fa727a3/a34-sparse-pressure",
+        "logicalBytes": 1023361839,
+        "allocatedBytes": 0
+      },
+      "afterFirst": {
+        "t1": {
+          "turnId": "400d2dd5-7410-4f22-b742-a9bb0e81d210",
+          "recordNumber": 5,
+          "status": "complete",
+          "reason": null,
+          "files": [],
+          "filesTotal": 0,
+          "observed": true,
+          "preparing": false,
+          "progress": {
+            "files": 2,
+            "bytes": 23
+          }
+        },
+        "rows": {
+          "A1": {
+            "status": "complete",
+            "reason": null
+          },
+          "A2": {
+            "status": "none",
+            "reason": "快照已清理（空间回收）"
+          },
+          "A3": {
+            "status": "complete",
+            "reason": null
+          },
+          "B1": {
+            "status": "none",
+            "reason": "快照已清理（空间回收）"
+          }
+        },
+        "shadowBytes": 949569215,
+        "a2card": "本轮改动 · 快照已清理（空间回收）\n查看差异\n观察到的变化可能包含用户或外部写入"
+      },
+      "marker2": {
+        "logicalBytes": 1023361839,
+        "shadowBytesBefore": 949569215,
+        "shadowBytesAfter": 1090519040
+      },
+      "allLeased": {
+        "t2": {
+          "turnId": "d6a6e321-0e98-49e0-ae1e-df1f19b76ebd",
+          "recordNumber": 6,
+          "status": "incomplete",
+          "reason": "影子库空间已满：达到 1 GiB 存储预算",
+          "files": [],
+          "filesTotal": 0,
+          "observed": true,
+          "preparing": false
+        },
+        "t2card": "本轮改动 · 影子库空间已满：达到 1 GiB 存储预算\n查看差异\n观察到的变化可能包含用户或外部写入",
+        "kept": {
+          "A1": "complete",
+          "A3": "complete",
+          "T1": "complete"
+        }
+      },
+      "leaseTrace": [
+        {
+          "channel": "agentTasks.holdDiff",
+          "input": "0cacd375-c1d7-4cc2-8d3b-bbf13d0f359f",
+          "token": "35bd99ed-7faf-4e95-8e34-f012bb001023",
+          "at": 1795181446121,
+          "sender": 1
+        },
+        {
+          "channel": "agentTasks.releaseDiff",
+          "input": "4ccd963a-d61c-4e2a-855d-7c34be2f7206",
+          "token": null,
+          "at": 1795181449034,
+          "sender": 1
+        },
+        {
+          "channel": "agentTasks.releaseDiff",
+          "input": "573aacb2-66cb-4d8d-be83-54c25a640fe4",
+          "token": null,
+          "at": 1795181449035,
+          "sender": 1
+        }
+      ]
+    }
+  },
+  "startedAt": "2026-11-20T13:30:42.454Z",
+  "pressureFixture": {
+    "file": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610/data/agent-diffs/a83b69a5c3d85661d64096c3c9e6679c6c3591406f4048702671a5c79fa727a3/a34-sparse-pressure",
+    "logicalBytes": 882412014,
+    "allocatedBytes": 0,
+    "shadowBytesBefore": 134287276,
+    "shadowBytesWithMarker": 1016699290
+  },
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610/home",
+    "at": "2026-11-20T13:30:43.838Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 14526,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610/home",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610/data",
+    "packaged": true
+  },
+  "cardClicks": [
+    {
+      "turnId": "0cacd375-c1d7-4cc2-8d3b-bbf13d0f359f",
+      "observed": {
+        "trusted": true,
+        "x": 716,
+        "y": 424
+      }
+    }
+  ],
+  "timing": {
+    "P_T1": {
+      "answerMs": 1764
+    },
+    "P_T2": {
+      "answerMs": 391
+    }
+  },
+  "exit": {
+    "pid": 14526,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "cleanup": {
+    "isolationAttempt": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-611",
+    "activeStateRoot": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-610",
+    "loopbackPort": 3425,
+    "pid": 14526,
+    "beforeQuit": [
+      {
+        "taskId": "004de7c3-d61f-4896-9aff-a2f89d9110f1",
+        "status": "completed"
+      },
+      {
+        "taskId": "873e7c22-ede0-4192-bccf-7c3a970474b7",
+        "status": "completed"
+      },
+      {
+        "taskId": "0122aed2-f553-428d-aeee-745b418ecd1d",
+        "status": "completed"
+      },
+      {
+        "taskId": "922ee249-b44d-43eb-a439-de1b30beccb6",
+        "runId": "abd438a8-04fd-4e4e-898a-00cd73b28392",
+        "busy": false,
+        "status": "completed"
+      }
+    ],
+    "sparseMarkerRemoved": true
+  },
+  "finishedAt": "2026-11-20T13:30:49.676Z",
+  "modelFailures": []
+}

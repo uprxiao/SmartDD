@@ -1,0 +1,157 @@
+{
+  "sourceCommit": "15a8ea3ff2e3606bebd16dc96ead8dc4cd2f15a5",
+  "build": {
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "appAsarSha256": "006dd741a95a1b901245bea68a816dd2545ae31d81d4a92dd2dc777485649efe"
+  },
+  "scenario": "disk",
+  "sourceAttempt": null,
+  "layer": "A: packaged App, real diff worker and private SVN shadow, native Codex with isolated local model, background CDP UI. Sparse logical pressure / disk image disclosed per case.",
+  "actions": [
+    {
+      "at": "2026-11-20T13:23:46.063Z",
+      "selector": "[data-testid=\"nav-settings\"]",
+      "x": 171.5,
+      "y": 868.5
+    },
+    {
+      "at": "2026-11-20T13:23:46.104Z",
+      "selector": "[data-testid=m14-toggle]",
+      "x": 1187,
+      "y": 407.5
+    },
+    {
+      "at": "2026-11-20T13:23:46.134Z",
+      "selector": "[data-testid=nav-home]",
+      "x": 105,
+      "y": 21
+    },
+    {
+      "at": "2026-11-20T13:23:48.363Z",
+      "selector": "[data-testid=\"sidebar-agent-task\"][data-task-id=\"a45281e3-81eb-4e1c-af41-a6156999aa26\"]",
+      "x": 171.5,
+      "y": 303
+    },
+    {
+      "at": "2026-11-20T13:23:48.378Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-20T13:23:48.410Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    },
+    {
+      "at": "2026-11-20T13:23:49.599Z",
+      "selector": ".agent-task-view textarea",
+      "x": 864,
+      "y": 786
+    },
+    {
+      "at": "2026-11-20T13:23:49.628Z",
+      "selector": ".agent-task-view button[type=\"submit\"]",
+      "x": 1219,
+      "y": 853
+    }
+  ],
+  "model": [
+    {
+      "caseId": "D_FIRST",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    },
+    {
+      "caseId": "D_SECOND",
+      "model": "m14-workspace-fixture",
+      "tool": "exec_command",
+      "invoke": false,
+      "receiptObserved": false
+    }
+  ],
+  "page": [],
+  "cases": {
+    "A34-disk": {
+      "status": "pass",
+      "passed": [
+        "storage volume below the 2 GiB reserve: both turns answered, diff incomplete with 可用磁盘不足预留 2 GiB, no shadow written"
+      ],
+      "missing": [],
+      "volume": {
+        "freeBytes": 1288486912,
+        "blockSize": 4096
+      },
+      "result": {
+        "r1": {
+          "status": "incomplete",
+          "reason": "可用磁盘不足预留 2 GiB，未捕获差异"
+        },
+        "r2": {
+          "status": "incomplete",
+          "reason": "可用磁盘不足预留 2 GiB，未捕获差异"
+        },
+        "card": "本轮改动 · 可用磁盘不足预留 2 GiB，未捕获差异\n查看差异\n观察到的变化可能包含用户或外部写入"
+      }
+    }
+  },
+  "startedAt": "2026-11-20T13:23:37.548Z",
+  "diskFixture": {
+    "image": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-607/a34-volume.dmg",
+    "sizeGiB": 3,
+    "fillerBytes": 1571885876,
+    "freeAfterFill": 1288486912
+  },
+  "isolationHook": {
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-607/home",
+    "at": "2026-11-20T13:23:41.549Z",
+    "workerInspectorFlagRemoved": true
+  },
+  "binding": {
+    "pid": 81351,
+    "executable": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app/Contents/MacOS/WillYou",
+    "home": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-607/home",
+    "electronHome": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-607/home",
+    "userData": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-607/data",
+    "packaged": true
+  },
+  "nativeCodex": {
+    "kind": "codex",
+    "version": "0.169.0"
+  },
+  "timing": {
+    "D_FIRST": {
+      "answerMs": 1225
+    },
+    "D_SECOND": {
+      "answerMs": 164
+    }
+  },
+  "exit": {
+    "pid": 81351,
+    "code": 0,
+    "signal": null
+  },
+  "rendererErrors": [],
+  "cleanup": {
+    "isolationAttempt": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-607",
+    "activeStateRoot": "/private/tmp/willyou-m14-stage6.WRvdST/g04/attempt-607",
+    "loopbackPort": 3425,
+    "pid": 81351,
+    "beforeQuit": [
+      {
+        "taskId": "a45281e3-81eb-4e1c-af41-a6156999aa26",
+        "runId": "668cfa51-9ac9-422b-8d06-f6afb4e0031c",
+        "busy": false,
+        "status": "completed"
+      }
+    ],
+    "diskDetached": true,
+    "diskImageRemoved": true
+  },
+  "finishedAt": "2026-11-20T13:23:50.817Z",
+  "modelFailures": []
+}

@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-20T20:54:14+08:00",
+  "updatedAt": "2026-11-20T21:33:02+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -18,12 +18,18 @@
       }
     ],
     "candidate": {
-      "commit": "9a9da26a785ef3b4bb35ad1d757bfb0cdbcad030",
+      "commit": "a0cb92c23bf843d4b2405b173d438c6bf597bd57",
       "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
-      "asarSha256": "3f8d39d0458accff2138e7e9a2c0309c8d47f1fb51437daf4f32dfe38857d357",
-      "status": "signed isolated package; strict signature verified; packaged native smoke passed"
+      "asarSha256": "a854be426e4a936c0974536d5adb441784d809cd4cbecac8648e94a71576a92b",
+      "status": "signed isolated package; strict signature verified; six native checks passed; D06-81 fix"
     },
     "priorCandidates": [
+      {
+        "commit": "9a9da26a785ef3b4bb35ad1d757bfb0cdbcad030",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
+        "asarSha256": "3f8d39d0458accff2138e7e9a2c0309c8d47f1fb51437daf4f32dfe38857d357",
+        "status": "signed isolated package; strict signature verified; packaged native smoke passed"
+      },
       {
         "commit": "4d14684804f5d43f71514ab6b03140489a38a01d",
         "path": "/private/tmp/willyou-m14-stage6.WRvdST/package-4d1468480/mac-arm64/WillYou.app",
@@ -409,7 +415,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "当前包 15a8ea3ff。剩 2 条：A34 企业 SVN 样本（需用户决定是否提供）、A61 清理复验。订阅测试 HOME 在 g03/subscription-home（测试钥匙串 willyou-test.keychain-db），测完删除；测试包辅助功能授权待用户移除。",
+  "next": "当前包 a0cb92c23（app.asar a854be42…a92b，含 D06-81）。剩 1 条：A61 旧任务代码清理后复验（清理、静态引用检查、重建，重跑 A08–A12/A37–A42/A51/A52/A63 及 M13 全量）。订阅测试 HOME 在 g03/subscription-home（测试钥匙串 willyou-test.keychain-db），测完删除；测试包辅助功能授权待用户移除。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
@@ -481,12 +487,12 @@
     "evidence": "../../../证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-2b78058ec/README.md"
   },
   "currentProgress": {
-    "passed": 71,
+    "passed": 72,
     "applicable": 73,
-    "notFullyExecuted": 2,
+    "notFullyExecuted": 1,
     "blocked": 0,
-    "verifiedAt": "2026-11-20T20:54:14+08:00",
-    "completionPercent": 97.26
+    "verifiedAt": "2026-11-20T21:33:02+08:00",
+    "completionPercent": 98.63
   },
   "checkpointHistory": [
     {
@@ -835,6 +841,28 @@
       ],
       "result": "passed",
       "releasedAt": "2026-11-20T20:54:14+08:00"
+    },
+    {
+      "case": "M14-A34",
+      "package": "a0cb92c23",
+      "final": [
+        610,
+        611,
+        612,
+        613
+      ],
+      "earlierPackage15a8ea3ff": [
+        605,
+        606,
+        607,
+        608,
+        609
+      ],
+      "defects": [
+        "D06-81 fixed a0cb92c23"
+      ],
+      "result": "passed",
+      "releasedAt": "2026-11-20T21:33:02+08:00"
     }
   ],
   "codexTakeover20261119": [
