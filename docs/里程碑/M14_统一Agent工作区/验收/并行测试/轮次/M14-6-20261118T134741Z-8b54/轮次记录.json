@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-21T08:48:17+08:00",
+  "updatedAt": "2026-11-21T09:51:11+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -21,7 +21,7 @@
       "commit": "f308e26c116e4613863d1edc48e11ce8dccc0ff1",
       "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
       "asarSha256": "b07f8f4add78c22f4e231b357b4ef7fb9d5b6c42dbdaba549f9d2dfdde4fd00e",
-      "status": "A61 candidate with D06-82 fix; strict signature, six native probes, attempt 740 and A11 attempts 741–742 passed"
+      "status": "A61 candidate with D06-82 fix; strict signature, native smoke and A51 nonactivating launch/normal exit verified"
     },
     "priorCandidates": [
       {
@@ -427,7 +427,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "剩余 A61。A08–A12、A37–A42 和 A63 的后台应用判据已复验；A51 后台启动与业务链路通过，退出待复验。冻结包 f308e26c1 的 M13 专项全量正在执行，之后集中处理真实语音及系统前台步骤。",
+  "next": "剩余 A61。M13 全量和两个超时文件同提交复跑结束，A51 非激活启动与正常退出通过。等待用户确认后集中完成 A38／A42 语音和 A51／A52 前台复验，A52 后台矩阵一并执行。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
@@ -437,16 +437,15 @@
     "status": "combined successful coverage of the full run plus same-source ZenTao file rerun"
   },
   "m13LatestAttempt": {
-    "baseline": "9a9da26a785ef3b4bb35ad1d757bfb0cdbcad030",
-    "status": "interrupted_by_user",
-    "observedPassingTests": 384,
-    "observedFailures": 1,
-    "exitCode": 130,
-    "endedAt": "2026-11-19T20:39:01+08:00",
-    "loopback3425Released": true,
-    "loopback3426Released": true,
-    "remainingSuiteNotRun": true,
-    "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-9a9da26a7-paused/README.md"
+    "baseline": "f308e26c116e4613863d1edc48e11ce8dccc0ff1",
+    "status": "combined_success_after_focused_rerun",
+    "firstPassPassed": 2384,
+    "firstPassFailures": 2,
+    "totalUniquePassed": 2386,
+    "skipped": 9,
+    "remainingFailures": 0,
+    "files": 153,
+    "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-f308e26c1/README.md"
   },
   "m13FocusedRegression": {
     "commit": "1214412aad05bb629e1d9ce7d532755195fe4dca",
@@ -503,7 +502,7 @@
     "applicable": 73,
     "notFullyExecuted": 1,
     "blocked": 0,
-    "verifiedAt": "2026-11-21T08:48:17+08:00",
+    "verifiedAt": "2026-11-21T09:51:11+08:00",
     "completionPercent": 98.63
   },
   "checkpointHistory": [
@@ -1277,6 +1276,17 @@
       "passedFiles": 148,
       "skippedFiles": 5,
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-2521f1b41/README.md"
+    },
+    {
+      "baseline": "f308e26c116e4613863d1edc48e11ce8dccc0ff1",
+      "startedAt": "2026-11-21T09:11:37+08:00",
+      "endedAt": "2026-11-21T09:48:12+08:00",
+      "passed": 2384,
+      "skipped": 9,
+      "failedFirstPass": 2,
+      "firstPassReason": "Browser test timed out at 5s and private Codex test hook timed out at 10s",
+      "remainingFailures": 0,
+      "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/m13-f308e26c1/README.md"
     }
   ]
 }
