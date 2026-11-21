@@ -147,7 +147,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         const home = base.HOME ?? homedir();
         const runRoot = join(d.userData, 'agents', 'runs', context.runId);
         const skills = role?.access === 'read' ? undefined : d.skillProjection?.prepare({
-          runner: kind, home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
+          runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
         });
         const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
         if (skills?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
