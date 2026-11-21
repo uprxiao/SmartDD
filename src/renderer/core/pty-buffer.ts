@@ -1,8 +1,8 @@
 import { ptyDataEvent, ptyExitEvent } from '@shared/events';
 import { events } from '@renderer/lib/ipc';
 
-// A PTY starts printing as soon as main spawns it, before React has mounted its xterm.
-// Output for terminals nobody is attached to yet is kept here and flushed on attach.
+// A PTY may write before its view mounts and stays alive when its task view unmounts.
+// Keep recent output in the renderer so each new xterm can reconstruct the live shell.
 
 const MAX_BUFFERED = 2 * 1024 * 1024;
 
@@ -11,38 +11,53 @@ interface Sink {
   exit: (code: number) => void;
 }
 
-const pending = new Map<string, { chunks: string[]; size: number; exit: number | null }>();
-const sinks = new Map<string, Sink>();
-export const exitedPtys = new Map<string, number>();
+interface BufferedOutput {
+  chunks: string[];
+  size: number;
+  earlyExit: number | null;
+  mounted: boolean;
+  sinks: Set<Sink>;
+}
+
+const buffers = new Map<string, BufferedOutput>();
+
+function outputFor(ptyId: string): BufferedOutput {
+  let output = buffers.get(ptyId);
+  if (!output) {
+    output = { chunks: [], size: 0, earlyExit: null, mounted: false, sinks: new Set() };
+    buffers.set(ptyId, output);
+  }
+  return output;
+}
 
 events.on(ptyDataEvent, ({ ptyId, data }) => {
-  const sink = sinks.get(ptyId);
-  if (sink) return sink.data(data);
-  const p = pending.get(ptyId) ?? { chunks: [], size: 0, exit: null };
-  p.chunks.push(data);
-  p.size += data.length;
-  while (p.size > MAX_BUFFERED && p.chunks.length > 1) p.size -= p.chunks.shift()!.length;
-  pending.set(ptyId, p);
+  const output = outputFor(ptyId);
+  const chunk = data.slice(-MAX_BUFFERED);
+  output.chunks.push(chunk);
+  output.size += chunk.length;
+  while (output.size > MAX_BUFFERED) output.size -= output.chunks.shift()!.length;
+  for (const sink of output.sinks) sink.data(data);
 });
 
 events.on(ptyExitEvent, ({ ptyId, code }) => {
-  exitedPtys.set(ptyId, code);
-  const sink = sinks.get(ptyId);
-  if (sink) return sink.exit(code);
-  const p = pending.get(ptyId) ?? { chunks: [], size: 0, exit: null };
-  p.exit = code;
-  pending.set(ptyId, p);
+  const output = outputFor(ptyId);
+  if (!output.mounted) {
+    output.earlyExit = code;
+    return;
+  }
+  buffers.delete(ptyId);
+  for (const sink of output.sinks) sink.exit(code);
 });
 
 export function attachPty(ptyId: string, sink: Sink): () => void {
-  const p = pending.get(ptyId);
-  pending.delete(ptyId);
-  if (p) {
-    for (const c of p.chunks) sink.data(c);
-    if (p.exit !== null) sink.exit(p.exit);
+  const output = outputFor(ptyId);
+  output.mounted = true;
+  for (const chunk of output.chunks) sink.data(chunk);
+  if (output.earlyExit !== null) {
+    buffers.delete(ptyId);
+    sink.exit(output.earlyExit);
+  } else {
+    output.sinks.add(sink);
   }
-  sinks.set(ptyId, sink);
-  return () => {
-    if (sinks.get(ptyId) === sink) sinks.delete(ptyId);
-  };
+  return () => { output.sinks.delete(sink); };
 }
