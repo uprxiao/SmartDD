@@ -12,8 +12,6 @@ import {readDraftSendHistory} from './mail-draft-send-history';
 import {applicationCleanupProgressEvent} from '@shared/events';
 import {ApplicationUiReads} from './ui-read-requests';
 import type {ApplicationHealthChange,PluginRuntimeChange,PluginApprovalChange} from '@shared/events';
-import {pluginApprovalTargetSchema,type PluginWriteDecision} from '@shared/plugin-approval';
-import type {TerminalTarget} from '@shared/file-terminal';
 import {randomUUID} from 'node:crypto';
 import {existsSync} from 'node:fs';
 import {AttachmentExportStore,safeAttachmentFilename} from './attachment-export-store';
@@ -179,15 +177,6 @@ export class ApplicationService {
   pluginSetEnabled(sender:ApplicationUiSender,appId:string,enabled:boolean,revision:number){return this.pluginService(sender).setEnabled(appId,z.boolean().parse(enabled),z.number().int().nonnegative().parse(revision));}
   pluginUninstall(sender:ApplicationUiSender,appId:string,deleteData:boolean,revision:number){return this.pluginService(sender).uninstall(appId,z.boolean().parse(deleteData),z.number().int().nonnegative().parse(revision));}
   pluginRestart(sender:ApplicationUiSender,appId:string){return this.pluginService(sender).restart(appId);}
-  pluginApprovalList(sender:ApplicationUiSender,target:TerminalTarget){
-    this.options.requireSender(sender);const parsed=pluginApprovalTargetSchema.parse(target);if(!this.options.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端授权通道不可用');
-    this.options.terminal.access.authorize(sender,parsed);return this.plugins?.approvals.present(this.pluginOwner(sender),parsed)??[];
-  }
-  pluginApprovalDecide(sender:ApplicationUiSender,input:PluginWriteDecision){
-    const service=this.pluginService(sender),target=pluginApprovalTargetSchema.parse({taskId:input?.taskId,ptyId:input?.ptyId});
-    if(!this.options.terminal)throw new ApplicationError('CAPABILITY_UNAVAILABLE','当前终端授权通道不可用');this.options.terminal.access.authorize(sender,target);
-    return service.approvals.decide(this.pluginOwner(sender),input);
-  }
   pluginRead(sender:ApplicationUiSender,input:PluginUiRead){return this.pluginService(sender).ui.read(this.pluginOwner(sender),input);}
   pluginPageContext(sender:ApplicationUiSender,input:PluginPageContext){const service=this.pluginService(sender),parsed=pluginPageContextSchema.parse(input);service.selections(parsed.projectId);return service.ui.context(parsed);}
   pluginCancelRead(sender:ApplicationUiSender,requestId:string){return this.pluginService(sender).ui.cancel(this.pluginOwner(sender),requestId);}

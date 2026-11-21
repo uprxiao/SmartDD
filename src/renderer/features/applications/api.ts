@@ -16,9 +16,8 @@ export const appNames=Object.fromEntries(applicationModuleMetadata.map(m=>[m.app
 // Display only;null prototype keeps unknown Skill IDs from inheriting labels.
 export const skillNames:Readonly<Record<string,string>>=Object.freeze(Object.assign(Object.create(null) as Record<string,string>,skillLabels));
 export function useApplicationEvents(){const client=useQueryClient();useEffect(()=>events.on(applicationsChangedEvent,change=>{
- if(change?.kind==='plugin-approval'){
-  void client.invalidateQueries({queryKey:['applications','plugin-approvals',change.taskId]});
- }else if(change?.kind==='plugin-runtime'){
+ if(change?.kind==='plugin-approval')return;
+ if(change?.kind==='plugin-runtime'){
   // Closing a child is metadata, never an instruction to replay a page's business read.
   void client.invalidateQueries({queryKey:['applications','plugins']});
  }else if(change?.kind==='health'){

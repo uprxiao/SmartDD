@@ -15,8 +15,6 @@ import type { MailSourceRef } from '@shared/application-mail-data';
 import type { ZentaoWorkInput,ZentaoDetailInput } from '@shared/application-zentao';
 import type { ApplicationService } from './application-service';
 import type {PluginUiRead,PluginPageContext} from '@shared/plugins';
-import type {PluginWriteDecision} from '@shared/plugin-approval';
-import type {TerminalTarget} from '@shared/file-terminal';
 import type {PluginUiActionRequest} from '@shared/plugin-actions';
 import type {PluginConnectionTarget,PluginConnectionTest,PluginConnectionSave,PluginDefaultInput,PluginDeleteConnection,PluginProjectConnection} from '@shared/plugin-connections';
 export function createApplicationController(service:ApplicationService|undefined,requireSender:(sender:IpcMainInvokeEvent)=>void){
@@ -47,8 +45,6 @@ export function createApplicationController(service:ApplicationService|undefined
     pluginSetEnabled:(event,appId:string,enabled:boolean,revision:number)=>run(event,current=>current.pluginSetEnabled(event,appId,enabled,revision)),
     pluginUninstall:(event,appId:string,deleteData:boolean,revision:number)=>run(event,current=>current.pluginUninstall(event,appId,deleteData,revision)),
     pluginRestart:(event,appId:string)=>run(event,current=>current.pluginRestart(event,appId)),
-    pluginApprovalList:(event,target:TerminalTarget)=>run(event,current=>current.pluginApprovalList(event,target)),
-    pluginApprovalDecide:(event,input:PluginWriteDecision)=>run(event,current=>current.pluginApprovalDecide(event,input)),
     pluginRead:(event,input:PluginUiRead)=>run(event,current=>current.pluginRead(event,input)),
     pluginPageContext:(event,input:PluginPageContext)=>run(event,current=>current.pluginPageContext(event,input)),
     pluginCancelRead:(event,requestId:string)=>run(event,current=>current.pluginCancelRead(event,requestId)),
