@@ -1,0 +1,83 @@
+{
+  "sourceCommit": "1985413a18004f4c17f7dda195c2a36991583aab",
+  "asar": "0ddeab3e608bc80c5eb9298212cd15f1a4ebecd8010d55c3a952d7288dcb934b",
+  "strictSignature": "passed",
+  "oldAppPaths": {
+    "attempt": 775,
+    "hiddenFromSidebarAndSearch": true,
+    "oldDataAndNativeIdentifierPreserved": true,
+    "bootEvidence": [
+      {
+        "windowFocused": false,
+        "retiredHandlers": [],
+        "currentHandlers": true,
+        "exit": {
+          "pid": 72765,
+          "code": 0,
+          "signal": null
+        }
+      },
+      {
+        "windowFocused": false,
+        "retiredHandlers": [],
+        "currentHandlers": true,
+        "exit": {
+          "pid": 72817,
+          "code": 0,
+          "signal": null
+        }
+      }
+    ],
+    "originalSha256": "441e8599e26357891a3eaa7917e2b0a76f9e68666cc3ef2f2d83c497dfe91d6a"
+  },
+  "unifiedRequests": {
+    "attempt": 776,
+    "checks": [
+      "two requests share one panel at the composer with title, source, numbered options and 1/N switching",
+      "Claude command approval offers 批准, 拒绝 and opening the child, no 拒绝并停止",
+      "reasons are kept per request: r2 empty, r1 keeps its own text",
+      "first option takes keyboard focus",
+      "a digit key during IME composition (keyCode 229) does not select an option",
+      "number key + Enter rejected r1 and the native rejection carries the r1 reason, not the draft",
+      "mouse approval ran only the approved command, in its own worktree",
+      "the composer draft is kept untouched and never sent",
+      "stop is available and works while a command approval is pending: request retired, old approval refused, sidebar and timeline show 已停止",
+      "stop is available and works while a question is pending: request retired, old approval refused, sidebar and timeline show 已停止",
+      "stop is available and works while a plan approval is pending: request retired, old approval refused, sidebar and timeline show 已停止",
+      "child request appears in the parent panel with its source",
+      "the child page can select its own rejection by number",
+      "the child page supports numbered selections while its composer stays visible",
+      "sending text through the child composer denies the native request with exactly this reason",
+      "child second request takes keyboard focus",
+      "number and Enter deny the request on the child page",
+      "stopping a child request from the parent stops only that child turn; the child shows 已停止 and does not continue"
+    ],
+    "exit": {
+      "pid": 72998,
+      "code": 0,
+      "signal": null
+    },
+    "rendererErrors": [],
+    "originalSha256": "aaf9cc52fdd80097b88f1c3c31136a5318a481c13ba48683979b15733704c59b"
+  },
+  "buildChecks": [
+    "sqlite",
+    "pty",
+    "voiceBridge",
+    "fileBroker",
+    "officeRenderer",
+    "fileWatcher"
+  ],
+  "asarAudit": {
+    "compiledJavascriptFiles": 82,
+    "testFixturesPresent": false,
+    "retiredApprovalSymbolsPresent": false
+  },
+  "testRun": {
+    "passed": 191,
+    "skipped": 36,
+    "failed": 0,
+    "testLogSha256": "11e831e4297dffaed674f23e396db7c453c68d4926b88ae1107eb251fb4e61ab",
+    "typecheckLogSha256": "d7f6f9b029edf85ffc043dc9a87ff32515f430a0db3e708e632537b86506a874"
+  }
+}
