@@ -49,3 +49,14 @@ node real-turn-override.mjs /tmp/out                                            
 按原报告 §9 对 Codex 修订的独立复核结论见[二次复核](二次复核.md)。
 
 按二次复核 §5 的第三轮复核结论见[三次复核](三次复核.md)：§9 全部关闭。
+
+## Windows 检出兼容归档（2026-11-21）
+
+38 个已跟踪的探针原始日志超过 Windows CI 的检出路径长度限制。仓库改为保存短路径归档，解包后仍得到每个原相对路径和原始字节。已在空目录实际恢复并逐项核对 SHA-256、文件模式及原 Git blob。既有报告和历史清单保留原路径记录。[原 CI 失败](https://github.com/uprxiao/SmartDD/actions/runs/44890259052) · [归档](probes/evidence/windows-checkout-evidence-20261121.tar.gz) · [原路径与哈希清单](probes/evidence/windows-checkout-evidence-20261121.json)
+
+在 macOS 或 Linux 上可将归档解到一个空目录。路径从仓库根开始，恢复后可按清单核对文件。
+
+```bash
+restore_dir="$(mktemp -d)"
+tar -xzf probes/evidence/windows-checkout-evidence-20261121.tar.gz -C "$restore_dir"
+```
