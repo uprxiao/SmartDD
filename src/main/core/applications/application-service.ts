@@ -57,7 +57,7 @@ import type { MailSourceRef } from '@shared/application-mail-data';
 import type { ZentaoWorkInput,ZentaoDetailInput,ZentaoWorkData,ZentaoDetailData } from '@shared/application-zentao';
 import type { SecretsStore } from '../../secrets';
 import type { ProjectService } from '../projects/project-service';
-import type { TaskService } from '../tasks/task-service';
+import type { AgentApplicationRuns } from '../agent/application-runs';
 import { ApplicationConnectionService } from './connection-service';
 import { ProviderConnectionVerifier } from './providers/connection-verifier';
 import { ApplicationSelectionService } from './selection-service';
@@ -121,11 +121,11 @@ export class ApplicationService {
   private cacheRepairPromise?:Promise<void>;
   private closed=false;private closing?:Promise<void>;private readonly readRecoveryProcesses:ProcessIdentityReader;
   constructor(readonly store:ResourceStore,private readonly options:{
-    browser?:BrowserService;distributionRoot?:string;uiReadRetryDelays?:readonly number[];uiReadTimeoutMs?:number;secrets:SecretsStore;projects:ProjectService;tasks:Pick<TaskService,'stopProject'|'runningInProject'>;
+    browser?:BrowserService;distributionRoot?:string;uiReadRetryDelays?:readonly number[];uiReadTimeoutMs?:number;secrets:SecretsStore;projects:ProjectService;tasks?:{stopProject(projectId:string,timeoutMs:number,matches:(taskId:string)=>boolean):Promise<boolean>;runningInProject(projectId:string,matches:(taskId:string)=>boolean):number}; agentRuns?:AgentApplicationRuns;
     terminal?:{access:PtyAccess;bracketedPaste(ptyId:string):Promise<boolean>;write(ptyId:string,data:string):void};
     openPluginUrl?:(url:string)=>Promise<void>;
     plugins?:Omit<PluginHostOptions,'processes'|'changed'>&{processes?:ProcessIdentityReader};
-    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;fileNative?:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;changed?(change?:ApplicationHealthChange|PluginRuntimeChange|PluginApprovalChange):void;
+    requireSender(sender:ApplicationUiSender):void;mailWorker:string;foxmailNative:string;fileNative?:string;workspaceFiles?:FileService;mailSend?:Pick<MailExecutionOptions,'submit'|'submissionTimeoutMs'|'checkpoint'>;processes?:ProcessIdentityReader;mailRead?:{now?:()=>Date;query?:{batchSize?:number;workMs?:number;maxBatches?:number}};activePty?:(taskId:string)=>string|null;agentSessionActive?:(taskId:string)=>boolean;changed?(change?:ApplicationHealthChange|PluginRuntimeChange|PluginApprovalChange):void;
   }){
     const processes=options.processes??new MacProcessIdentityReader(join(dirname(options.foxmailNative),'willyou-process-identity')),move=(input:Parameters<typeof restoreOwnedDirectory>[1])=>restoreOwnedDirectory(join(dirname(options.foxmailNative),'willyou-process-identity'),input);
     this.readRecoveryProcesses=processes;
@@ -138,7 +138,7 @@ export class ApplicationService {
     this.connections=new ApplicationConnectionService(store,options.secrets,new ProviderConnectionVerifier(options.mailWorker,options.foxmailNative),10000,undefined,undefined,{committed:(id,created)=>this.builtinPreferences?.connectionSaved(id,created)});
     this.builtinPreferences=new BuiltinPluginPreferences(store,this.connections,options.secrets,{available:appId=>!!this.builtin.packages.active(appId),validateSelection:(projectId,appId,slots)=>this.data?.policy(appId)?.validateSelection?.(projectId,slots),afterSelection:(projectId,appId)=>this.data?.policy(appId)?.afterSelection?.(projectId)});
     this.projectPreferencesDispose=options.projects.onCreated(id=>this.builtinPreferences.initialize(id));
-    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:(id,appId)=>options.tasks.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,appId)),runningInProject:(id,appId)=>options.tasks.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,appId)),validateSelection:(projectId,appId,slots)=>this.data?.policy(appId)?.validateSelection?.(projectId,slots),afterSelection:(projectId,appId)=>this.data?.policy(appId)?.afterSelection?.(projectId)});
+    this.selections=new ApplicationSelectionService(store,this.connections,{requireProject:id=>options.projects.getProject(id),stopProjectRuns:(id,appId)=>options.agentRuns?.stopProject(id,appId)??options.tasks!.stopProject(id,5000,taskId=>taskUsesApplication(store,id,taskId,appId)),runningInProject:(id,appId)=>options.agentRuns?.runningInProject(id,appId)??options.tasks!.runningInProject(id,taskId=>taskUsesApplication(store,id,taskId,appId)),validateSelection:(projectId,appId,slots)=>this.data?.policy(appId)?.validateSelection?.(projectId,slots),afterSelection:(projectId,appId)=>this.data?.policy(appId)?.afterSelection?.(projectId)});
     this.sessionDiagnostics=new ApplicationSessionDiagnostics(store,this.connections,this.selections,{runs:()=>this.runs,activePty:options.activePty,prepareStoppedSkillRead:(runId,targets)=>this.nativeMessages.prepareStoppedSkillRead(runId,targets),skillReads:(runId,targets)=>this.nativeMessages.skillReads(runId,targets),skillDiscoveries:(runId,targets)=>this.nativeMessages.skillDiscoveries(runId,targets),skillObservationRevision:(runId,snapshotHash)=>this.nativeMessages.skillObservationRevision(runId,snapshotHash),externalPluginState:(appId,projectId)=>{
       if(!this.plugins)return null;
       const state=this.plugins.lifecycle.state(appId),manifest=state.installed&&state.hash?this.plugins.lifecycle.packages.get(state.hash).plugin.manifest:null;
@@ -230,7 +230,7 @@ export class ApplicationService {
     const unfinished=this.store.sqlite.prepare("SELECT 1 FROM mail_send_intents WHERE state IN ('preparing','awaiting-authorization','authorized','executing') LIMIT 1").get();
     if(unfinished)try{await this.mailExecution();}catch(error){this.mailRecoveryIssue={code:error instanceof ApplicationError?error.code:'CAPABILITY_UNAVAILABLE',message:'原邮件执行的恢复核查尚未完成；保留原结果，不自动重发'};}
   }
-  sessionChangeImpact(sender:ApplicationUiSender,input:SessionChangeQuery){this.options.requireSender(sender);return new SessionChangeImpactService(this.store.sqlite,this.options.activePty??(()=>null)).inspect(input);}
+  sessionChangeImpact(sender:ApplicationUiSender,input:SessionChangeQuery){this.options.requireSender(sender);return new SessionChangeImpactService(this.store.sqlite,id=>this.options.agentSessionActive?.(id)??this.options.activePty?.(id)??null).inspect(input);}
   impact(sender:ApplicationUiSender,input:ApplicationImpactQuery){this.options.requireSender(sender);return new ApplicationImpactService(this.store).inspect(input);}
   diagnoseSession(sender:ApplicationUiSender,taskId:string){this.options.requireSender(sender);return this.sessionDiagnostics.inspect(taskId);}
   async listVersions(sender:ApplicationUiSender,appId:ApplicationId):Promise<import('@shared/application-maintenance').ApplicationVersions>{

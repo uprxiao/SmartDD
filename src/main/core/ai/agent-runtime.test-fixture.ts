@@ -18,7 +18,7 @@ import { planAgentLaunch } from './agent-launch-plan';
 import { materializeAgentPlan } from './agent-launch-files';
 import { agentSourceIdentity, assertResumeSource, resumeModel } from './agent-run-state';
 import { copyClaudeSession, readCodexProviderId, readRequestedModel, type ClaudeRestoreReceipt } from './agent-native-state';
-import { overlayLegacyPermission } from './legacy-permission-overlay';
+import { overlayLegacyPermission } from './legacy-permission-overlay.test-fixture';
 import type { SkillProjectionService } from '../capabilities/skill-projection';
 import type { McpProjectionService } from '../capabilities/mcp-projection';
 

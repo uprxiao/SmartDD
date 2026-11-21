@@ -47,9 +47,9 @@ export function ProjectDeleteDialog({ project, open, onOpenChange }: { project: 
     return () => { alive = false; };
   }, [open,project.id,attempt]);
   const current = preview?.projectId === project.id ? preview.result : null;
-  const blocked = !!(current && (current.legacyRunning || current.blockers.length));
+  const blocked = !!(current && current.blockers.length);
   const count = current?.taskCount ?? 0;
-  const detailed = !!current && (agentTasksStore.enabled || count>0);
+  const detailed = !!current;
   const body = blocked ? '处理以下任务后可重试。项目和任务记录仍然保留。'
     : detailed ? `将删除 ${count} 个 Agent 任务，其中 ${current?.archivedCount} 个已归档。WillYou 中的对话、差异和附件副本会被清除，无法恢复。`
     : current ? t('projects.confirm.projectBody') : '正在核对项目的任务和保留路径。';
@@ -67,7 +67,6 @@ export function ProjectDeleteDialog({ project, open, onOpenChange }: { project: 
       details={error ? <div role="alert" className="text-sm text-foreground-destructive">{error}<button type="button" className="ml-2 underline" onClick={() => retry(n=>n+1)}>重新核对</button></div>
         : blocked ? <ul className="space-y-2 text-sm">
           {current?.blockers.map(task => <li key={task.taskId}><b>{task.title}</b><p className="text-foreground-muted">{task.reasons.join('、')}</p></li>)}
-          {!!current?.legacyRunning && <li>还有 {current.legacyRunning} 个终端任务在运行，请先停止。</li>}
           <li><button type="button" className="underline" onClick={() => retry(n=>n+1)}>重新核对</button></li>
         </ul> : detailed && <><div className="space-y-2 rounded-lg border p-3 text-sm">
           <b>保留的内容</b>
@@ -82,7 +81,7 @@ export function ProjectDeleteDialog({ project, open, onOpenChange }: { project: 
           await rpc.projects.delete(project.id, { deleteSecrets, ...(count && current?.confirmation ? { agentTaskDeletionConfirmation: current.confirmation } : {}) });
         } catch(e) { setPreview(null); retry(n=>n+1); throw e; }
         navigation.closeProject(project.id);
-        if (agentTasksStore.enabled) await agentTasksStore.refresh();
+        await agentTasksStore.refresh();
         await refresh();
         toast.success(t('projects.deleted'));
       }}

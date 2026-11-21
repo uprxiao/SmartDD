@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { useState } from 'react';
 import { cleanup,fireEvent,render,screen,waitFor,within,act } from '@testing-library/react';
 import { QueryClient,QueryClientProvider } from '@tanstack/react-query';
 import { afterEach,beforeEach,expect,it,vi } from 'vitest';
@@ -7,8 +6,8 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { AgentPermission } from '@shared/agent-permissions';
 import type { RunConfigView,ProviderView } from '@shared/ai-agents';
-import { homeAgents,homeAgentId,HomeAgentPicker,HomePermissionPicker } from './home-agent-controls';
-import { AgentList } from './agent-list';
+import { homeAgents,homeAgentId,HomePermissionPicker } from './home-agent-controls';
+import { AgentModelPicker } from '../agent-tasks/agent-model-picker';
 const api=vi.hoisted(()=>({store:{selected:'ask' as AgentPermission,fullConfirmed:false},get:vi.fn<(...args:any[])=>Promise<any>>(),update:vi.fn<(...args:any[])=>Promise<any>>(),reset:vi.fn<(...args:any[])=>Promise<any>>(),settings:vi.fn(),toastError:vi.fn()}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{appSettings:{getWithMeta:api.get,update:api.update,reset:api.reset}}}));
 vi.mock('@renderer/core/navigation',()=>({navigation:{openSettings:api.settings}}));
@@ -23,23 +22,16 @@ async function openPermission(){const button=screen.getByTestId('home-permission
 const fullItem=()=>screen.getByRole('menuitemradio',{name:/^完全访问权限/});
 function deferred<T>(){let resolve!:(x:T)=>void;const promise=new Promise<T>(r=>resolve=r);return {promise,resolve};}
 
-it('home filtering preserves service order, fixed default and eligible legacy while excluding hidden/logout/uninstalled',()=>{
- const rows=[config({id:'d',name:'Default',isDefault:true,order:0}),config({id:'h',homeVisible:false}),config({id:'out',loggedOut:true}),config({id:'missing',available:false}),config({id:'later',order:99}),config({id:'legacy',source:'legacy',providerId:null,order:2})];expect(homeAgents(rows).map(c=>c.id)).toEqual(['d','later','legacy']);expect(rows.map(c=>c.id)).toEqual(['d','h','out','missing','later','legacy']);
+it('home filtering preserves service order, fixed default and excludes legacy, hidden, logged-out and missing tools',()=>{
+ const rows=[config({id:'d',name:'Default',isDefault:true,order:0}),config({id:'h',homeVisible:false}),config({id:'out',loggedOut:true}),config({id:'missing',available:false}),config({id:'later',order:99}),config({id:'legacy',source:'legacy',providerId:null,order:2})];expect(homeAgents(rows).map(c=>c.id)).toEqual(['d','later']);expect(rows.map(c=>c.id)).toEqual(['d','h','out','missing','later','legacy']);
 });
 it('initial selection prioritizes eligible default then remembered ID then first, with empty list null',()=>{
  const rows=homeAgents([config({id:'hidden-default',isDefault:true,homeVisible:false}),config({id:'a'}),config({id:'d',isDefault:true})]);expect(homeAgentId(rows,'a')).toBe('d');expect(homeAgentId(rows.filter(c=>!c.isDefault),'a')).toBe('a');expect(homeAgentId([config({id:'first'})],'gone')).toBe('first');expect(homeAgentId([],'gone')).toBeNull();
 });
-it('missing Key and offline-model configs remain selectable so launch preflight can explain repairs',async()=>{
- const a=config({id:'no-key',name:'Missing Key'}),b=config({id:'offline',name:'Offline Model'}),p=provider({hasKey:false});p.models[0].offline=true;const change=vi.fn();render(<HomeAgentPicker configs={homeAgents([a,b])} providers={[p]} value={a.id} onChange={change}/>);fireEvent.click(screen.getByRole('button',{name:'选择智能体'}));await waitFor(()=>expect(screen.getByRole('menuitem',{name:'Offline Model'})).toBeTruthy());fireEvent.click(screen.getByRole('menuitem',{name:'Offline Model'}));expect(change).toHaveBeenCalledExactlyOnceWith('offline');
-});
-it('home and settings share actual AgentIcon asset identities, Provider badge and legacy terminal fallback',async()=>{
- const rows=[config({id:'native',name:'Native Login',source:'login',providerId:null}),config({id:'provider',name:'Provider Agent'}),config({id:'legacy',name:'Legacy Agent',source:'legacy',providerId:null})],p=provider();
- const actions={edit:vi.fn(),remove:vi.fn(),setDefault:vi.fn(),toggleVisible:vi.fn(),reorder:vi.fn(),create:vi.fn()};
- function Parent(){const [value,setValue]=useState('native');return <><AgentList configs={rows} providers={[p]} tools={[{id:'codex',kind:'codex',installed:true,login:'api',executable:'/synthetic/codex',version:'synthetic'}]} actions={actions}/><HomeAgentPicker configs={rows} providers={[p]} value={value} onChange={setValue}/></>;}
- render(<Parent/>);const trigger=screen.getByTestId('home-profile');expect(trigger.querySelector('.m13-agent-badge')).toBeNull();fireEvent.click(trigger);await waitFor(()=>expect(screen.getByRole('menuitem',{name:'Provider Agent'})).toBeTruthy());const homeItem=screen.getByRole('menuitem',{name:'Provider Agent'}),list=document.querySelector('[data-agent="provider"] [data-agent-icon]')!;const assets=(e:Element)=>[...e.querySelectorAll('image')].map(x=>x.getAttribute('href'));expect(assets(homeItem)).toEqual(assets(list));expect(homeItem.querySelector('.m13-agent-badge')).toBeTruthy();fireEvent.click(homeItem);expect(trigger.textContent).toContain('Provider Agent');expect(trigger.querySelector('.m13-agent-badge')).toBeTruthy();fireEvent.click(trigger);await waitFor(()=>expect(screen.getByRole('menuitem',{name:'Legacy Agent'})).toBeTruthy());fireEvent.click(screen.getByRole('menuitem',{name:'Legacy Agent'}));expect(trigger.querySelector('.m13-agent-badge')).toBeNull();expect(trigger.querySelector('polyline')).toBeTruthy();
-});
-it('manage menu navigates to actual aiProfiles settings only',async()=>{
- render(<HomeAgentPicker configs={[config()]} providers={[provider()]} value="c" onChange={vi.fn()}/>);fireEvent.click(screen.getByTestId('home-profile'));await waitFor(()=>expect(screen.getByRole('menuitem',{name:'管理智能体'})).toBeTruthy());fireEvent.click(screen.getByRole('menuitem',{name:'管理智能体'}));expect(api.settings).toHaveBeenCalledExactlyOnceWith('aiProfiles');
+it('keeps a missing-key provider config eligible so launch preflight can explain repairs',()=>{
+ const p=provider({hasKey:false});
+ const c=config({id:'no-key',providerId:p.id});
+ expect(homeAgentId(homeAgents([c]))).toBe('no-key');
 });
 it('Claude hides auto, remembered auto falls back without a settings write and returns when switched to Codex',async()=>{
  api.store={selected:'auto',fullConfirmed:false};const view=permission('claude');await waitFor(()=>expect(screen.getByTestId('home-permission').textContent).toBe('请求批准'));await openPermission();expect(screen.queryByRole('menuitemradio',{name:/^帮我批准/})).toBeNull();expect(screen.getAllByRole('menuitemradio')).toHaveLength(2);expect(api.update).not.toHaveBeenCalled();fireEvent.keyDown(screen.getByRole('menu',{name:'权限'}),{key:'Escape',code:'Escape'});await waitFor(()=>expect(screen.queryByRole('menu',{name:'权限'})).toBeNull());view.kind('codex');await waitFor(()=>expect(screen.getByTestId('home-permission').textContent).toBe('帮我批准'));await openPermission();expect(screen.getAllByRole('menuitemradio')).toHaveLength(3);expect(screen.getByRole('menuitemradio',{name:/^帮我批准/}).getAttribute('aria-checked')).toBe('true');expect(api.store.selected).toBe('auto');expect(api.update).not.toHaveBeenCalled();
@@ -57,8 +49,14 @@ it('real settings hook rolls optimistic permission back when main update fails, 
 it('loading or explicitly disabled permission control cannot invoke mutation',async()=>{
  const pending=deferred<any>();api.get.mockReturnValue(pending.promise);const view=permission();expect((screen.getByTestId('home-permission') as HTMLButtonElement).disabled).toBe(true);fireEvent.click(screen.getByTestId('home-permission'));expect(screen.queryByRole('menu',{name:'权限'})).toBeNull();await act(async()=>pending.resolve({value:{selected:'ask',fullConfirmed:false},defaults:{selected:'ask',fullConfirmed:false},overrides:{}}));view.unmount();permission('codex',true);await waitFor(()=>expect(api.get).toHaveBeenCalledTimes(2));expect((screen.getByTestId('home-permission') as HTMLButtonElement).disabled).toBe(true);expect(api.update).not.toHaveBeenCalled();
 });
-it('agent popup opens with keyboard, accepts focused item by Enter, and Escape dismisses without a second selection',async()=>{
- const change=vi.fn();render(<HomeAgentPicker configs={[config({id:'a',name:'Agent A'}),config({id:'b',name:'Agent B'})]} providers={[provider()]} value="a" onChange={change}/>);const trigger=screen.getByTestId('home-profile');trigger.focus();fireEvent.keyDown(trigger,{key:'ArrowDown',code:'ArrowDown'});await waitFor(()=>expect(screen.getByRole('menu',{name:'智能体'})).toBeTruthy());const target=screen.getByRole('menuitem',{name:'Agent B'});target.focus();fireEvent.keyDown(target,{key:'Enter',code:'Enter'});await waitFor(()=>expect(change).toHaveBeenCalledExactlyOnceWith('b'));fireEvent.click(trigger);await waitFor(()=>expect(screen.getByRole('menu',{name:'智能体'})).toBeTruthy());fireEvent.keyDown(screen.getByRole('menu',{name:'智能体'}),{key:'Escape',code:'Escape'});await waitFor(()=>expect(screen.queryByRole('menu',{name:'智能体'})).toBeNull());expect(change).toHaveBeenCalledOnce();
+it('lets Escape close the current model picker without changing the selected Agent',async()=>{
+ const pick=vi.fn();
+ render(<AgentModelPicker profiles={[{profileId:'a',kind:'codex',source:'login',name:'Agent A',models:[],available:true}]} profileId="a" onPick={pick} onExtensions={()=>{}} />);
+ fireEvent.click(screen.getByRole('button',{name:'选择智能体与模型'}));
+ expect(screen.getByRole('dialog')).toBeTruthy();
+ fireEvent.keyDown(document,{key:'Escape'});
+ await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
+ expect(pick).not.toHaveBeenCalled();
 });
 it('permission popup keyboard Escape dismisses without mutating the remembered choice',async()=>{
  permission();const trigger=screen.getByTestId('home-permission');await waitFor(()=>expect((trigger as HTMLButtonElement).disabled).toBe(false));trigger.focus();fireEvent.keyDown(trigger,{key:'ArrowDown',code:'ArrowDown'});await waitFor(()=>expect(screen.getByRole('menu',{name:'权限'})).toBeTruthy());fireEvent.keyDown(screen.getByRole('menu',{name:'权限'}),{key:'Escape',code:'Escape'});await waitFor(()=>expect(screen.queryByRole('menu',{name:'权限'})).toBeNull());expect(api.update).not.toHaveBeenCalled();

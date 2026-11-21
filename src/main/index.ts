@@ -17,7 +17,6 @@ import {
   menuToggleLeftSidebarEvent,
   ptyDataEvent,
   ptyExitEvent,
-  tasksChangedEvent,
   voiceStatusChangedEvent,
   voiceGlobalErrorEvent,
   fileCloseEvent,
@@ -30,7 +29,7 @@ import { applyNativeTheme, createMainWindow, getMainWindow, isMainRenderer, mark
 import { AiProfileService } from './core/ai/ai-profile-service';
 import { AgentService } from './core/ai/agent-service';
 import { ProviderService } from './core/ai/provider-service';
-import { AgentRuntimeService } from './core/ai/agent-runtime';
+import { managedMcpSourceEnvironment } from './core/ai/managed-mcp-source-environment';
 import { AgentToolService } from './core/ai/agent-tools';
 import { migrateAgentProfiles } from './core/ai/agent-migration';
 import { ProfileHealth } from './core/ai/profile-health';
@@ -42,13 +41,11 @@ import { managedSourceProfiles } from './core/capabilities/managed-source-profil
 import { SkillProjectionService } from './core/capabilities/skill-projection';
 import { ResourceStore } from './core/applications/resource-store';
 import {MacProcessIdentityReader} from './core/applications/process-identity';
-import {CodexInitializationCoordinator} from './core/applications/codex-initialization';
 import { AgentSupportService } from './core/applications/agent-support-service';
 import { ApplicationService } from './core/applications/application-service';
 import { ManagedTaskCapabilities } from './core/applications/task-capability-launcher';
 import { ProjectService } from './core/projects/project-service';
 import { SettingsStore } from './core/settings/settings-service';
-import { TaskService } from './core/tasks/task-service';
 import { openDbClient, type DbClient } from './db/client';
 import { runBundledMigrations } from './db/migrations';
 import { openManagedDatabase } from './db/managed-client';
@@ -171,8 +168,7 @@ async function main(): Promise<void> {
     return stored.plugin.skills.map(skill=>({appId:plugin.appId,pluginName:plugin.displayName,id:skill.id,path:join(stored.directory,skill.path),version:plugin.version!,enabled:plugin.enabled}));
   })??[]});
   const skillProjection=new SkillProjectionService(client.db,capabilityRegistry);
-  const mcpProjection:McpProjectionService=new McpProjectionService(capabilityRegistry,{userData:app.getPath('userData'),executable:process.execPath,profileEnvironment:(id):Record<string,string>=>agentRuns.sourceEnvironment(id)});
-  const agentRuns:AgentRuntimeService=new AgentRuntimeService({db:client.db,agents,tools:agentTools,providers,profiles:aiProfiles,userData:app.getPath('userData'),baseEnv,permissionPreferences:()=>settings.get('agentPermissions'),skills:skillProjection,mcp:mcpProjection});
+  const mcpProjection:McpProjectionService=new McpProjectionService(capabilityRegistry,{userData:app.getPath('userData'),executable:process.execPath,profileEnvironment:id=>managedMcpSourceEnvironment(id,{agents,providers,profiles:aiProfiles,userData:app.getPath('userData')})});
   const scanManagedCapabilities=()=>{try{capabilityRegistry.scan();}catch{console.warn('[capabilities] Static discovery incomplete; retry from skills');}};
   scanManagedCapabilities();
   let agentSupport: AgentSupportService | undefined;
@@ -192,19 +188,6 @@ async function main(): Promise<void> {
   const agentProcesses=new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'));
   const agentWorkspace=createAgentWorkspace({sqlite:client.sqlite,agents,providers,userData:app.getPath('userData'),baseEnv,processes:agentProcesses,mcpProjection,skillProjection,
     host:{instanceId:agentInstanceId(),pid:process.pid,startedAt:agentProcesses.read(process.pid)?.startedAt??null},emitEvent:e=>events.emit(agentTaskEvent,e),emitLive:e=>events.emit(agentTaskLiveEvent,e),ptys});
-  const tasks = new TaskService({
-    db: client.db,
-    ptys,
-    profiles: aiProfiles,
-    agentRuns,
-    projects,
-    baseEnv,
-    health,
-    capabilities,
-    codexInitialization:process.platform==='darwin'?new CodexInitializationCoordinator(app.getPath('userData'),new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))):undefined,
-    onChanged: () => {events.emit(tasksChangedEvent, undefined);browserOrphans();},
-  });
-
   const fileBroker = new NativeFileBroker(app.isPackaged ? join(process.resourcesPath, 'native/willyou-files') : join(app.getAppPath(), 'out/native/willyou-files'));
   const fileSources = new FileSourceResolver(client.db);agentWorkspace.attachFiles(fileSources);
   const diagrams = new FileDiagramRenderer(join(app.getAppPath(), 'out/renderer'), process.env.ELECTRON_RENDERER_URL);
@@ -221,12 +204,11 @@ async function main(): Promise<void> {
   ptys.on('exit', (ptyId: string, code: number) => events.emit(ptyExitEvent, { ptyId, code }));
   const ptyAccess = new PtyAccess({
     trusted: isMainRenderer,
-    activePty: (id) => tasks.activePty(id) ?? agentWorkspace.terminals?.activePty(id) ?? null,
+    activePty: (id) => agentWorkspace.terminals?.activePty(id) ?? null,
     alive: (id) => ptys.has(id),
     write: (id, data) => ptys.write(id, data),
     resize: (id, cols, rows) => ptys.resize(id, cols, rows),
-    killTask: (id) => { if (agentWorkspace.terminals?.activePty(id)) agentWorkspace.terminals.close(id); else tasks.kill(id); },
-    observedInput:(event,target,data)=>applications?.observeInput(event,target,data),
+    killTask: (id) => agentWorkspace.terminals?.close(id),
   });
   registerPtyInput(ipcMain, ptyAccess);
 
@@ -239,13 +221,12 @@ async function main(): Promise<void> {
         if(binary)browser=new BrowserService({sqlite:agentSupport.store.sqlite,userData:app.getPath('userData'),helper:{executable:join(browserRoot,binary.path),sha256:binary.sha256,processes:new MacProcessIdentityReader(app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'))},taskProject:id=>(agentSupport.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(id) as {project_id:string|null}|undefined)?.project_id??null,taskDirectory:id=>(agentSupport.store.sqlite.prepare('SELECT cwd FROM tasks WHERE id=?').get(id) as {cwd:string}|undefined)?.cwd??null,window:getMainWindow,changed:taskId=>events.emit(browserChangedEvent,{taskId}),accessChanged:()=>events.emit(browserAccessChangedEvent,{}),shortcut:(taskId,action)=>events.emit(browserShortcutEvent,{taskId,action})});
       }
       await browser?.reconcile();
-      applications=new ApplicationService(agentSupport.store,{browser,openPluginUrl:url=>shell.openExternal(url),plugins:process.platform==='darwin'?{bundledZentao:app.isPackaged?join(process.resourcesPath,'plugins/zentao'):join(app.getAppPath(),'out/plugins/zentao'),runtime:{executable:process.execPath,readOnlyRoots:pluginHostReadOnlyRoots(app.getAppPath(),process.execPath),keychainRoots:[join(app.getPath('home'),'Library/Keychains'),'/Library/Keychains']}}:undefined,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,tasks,workspaceFiles:files,activePty:id=>tasks.activePty(id),terminal:{access:ptyAccess,bracketedPaste:id=>ptys.bracketedPaste(id),write:(id,data)=>ptys.writeControlled(id,data)},requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>{events.emit(applicationsChangedEvent,change);void agentWorkspace.requests.reconcile();if(change?.kind!=='plugin-runtime'&&change?.kind!=='plugin-approval')managedTasks?.syncSkillLibrary();}});
+      applications=new ApplicationService(agentSupport.store,{browser,openPluginUrl:url=>shell.openExternal(url),plugins:process.platform==='darwin'?{bundledZentao:app.isPackaged?join(process.resourcesPath,'plugins/zentao'):join(app.getAppPath(),'out/plugins/zentao'),runtime:{executable:process.execPath,readOnlyRoots:pluginHostReadOnlyRoots(app.getAppPath(),process.execPath),keychainRoots:[join(app.getPath('home'),'Library/Keychains'),'/Library/Keychains']}}:undefined,distributionRoot:app.isPackaged?join(process.resourcesPath,'capability-bundles'):join(app.getAppPath(),'out/capability-bundles'),secrets,projects,agentRuns:agentWorkspace.applicationRuns,agentSessionActive:id=>Boolean(agentWorkspace.runs.runForTask(id)??agentWorkspace.runs.closingForTask(id)),workspaceFiles:files,requireSender:event=>ptyAccess.requireSender(event),mailWorker:join(app.getAppPath(),'out/main/m10-mail-reader.js'),foxmailNative:app.isPackaged?join(process.resourcesPath,'native/willyou-foxmail'):join(app.getAppPath(),'out/native/willyou-foxmail'),changed:change=>{events.emit(applicationsChangedEvent,change);void agentWorkspace.requests.reconcile();if(change?.kind!=='plugin-runtime'&&change?.kind!=='plugin-approval')managedTasks?.syncSkillLibrary();}});
 
       await applications.recover();
       if(browser)installBrowserProjectDefaults(projects,applications.selections,()=>events.emit(applicationsChangedEvent,undefined));
       if(process.platform==='darwin'&&process.arch==='arm64'&&['ready','partial'].includes(agentSupport.status().state)){
         managedTasks=await ManagedTaskCapabilities.open(agentSupport,capabilities,applications,{helper:app.isPackaged?join(process.resourcesPath,'native/willyou-process-identity'):join(app.getAppPath(),'out/native/willyou-process-identity'),cliPath:app.isPackaged?join(process.resourcesPath,'native/willyou-app'):join(app.getAppPath(),'out/native/willyou-app'),skillLibraryHome:app.getPath('home'),cleanupUnattributable:app.isPackaged,stopPty:id=>ptys.kill(id)});
-        tasks.attachManagedCapabilities(managedTasks);
         agentWorkspace.attachBusiness(managedTasks);if(browser)agentWorkspace.attachBrowser(browser);
       }
     }
@@ -290,7 +271,6 @@ async function main(): Promise<void> {
       providers,
       agentTransfer,
       health,
-      tasks,
       capabilities,
       capabilityRegistry,
       onCapabilityChanged:()=>managedTasks?.syncSkillLibrary(),
@@ -298,8 +278,7 @@ async function main(): Promise<void> {
       applications,
       browser,
       agentWorkspace,
-      onProjectDeleted:()=>{events.emit(tasksChangedEvent,undefined);browserOrphans();},
-      onTaskProfilesChanged:()=>events.emit(tasksChangedEvent,undefined),
+      onProjectDeleted:browserOrphans,
       ptys,
       ptyAccess,
       baseEnv,
@@ -325,13 +304,14 @@ async function main(): Promise<void> {
     // 新任务区正在工作或等待处理的任务也计入（复核 CR05）。
     const agentBusy = agentWorkspace.tasks.list().filter(t => t.status === 'working' || t.status === 'waiting').length;
     if (ptys.count > 0 || agentBusy > 0) {
+      const running = [agentBusy && `${agentBusy} 个 Agent 任务`, ptys.count && `${ptys.count} 个手动终端`].filter(Boolean).join('和');
       const choice = dialog.showMessageBoxSync({
         type: 'warning',
         buttons: ['退出', '取消'],
         defaultId: 1,
         cancelId: 1,
-        message: `有 ${ptys.count + agentBusy} 个任务正在运行`,
-        detail: '退出 WillYou 会结束这些终端进程。重新打开后可在侧栏中点任务恢复（resume）。',
+        message: `有 ${running}正在运行`,
+        detail: '退出 WillYou 会结束这些运行。重新打开后可在侧栏中查看任务和历史。',
       });
       if (choice !== 0) {
         return;
@@ -369,7 +349,6 @@ async function main(): Promise<void> {
       }
       // 退出已确认（含未保存文件的选择）后，才关闭新任务的 Agent 运行与手动终端，并等其收口再关数据库（复核 CR05）。
       await agentWorkspace.closeAll().catch(() => {});
-      tasks.dispose();
       ptys.killAll();
       // Keep read-only native evidence and storage available until owned run
       // shutdown has drained. Revocation itself still happens immediately.
@@ -395,7 +374,6 @@ async function main(): Promise<void> {
     fileBroker.dispose();
     projectTransfer.disposeAll();
     voice.dispose();
-    tasks.dispose();
     ptys.killAll();
     capabilities.dispose();
     client.close();

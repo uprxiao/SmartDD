@@ -2,8 +2,7 @@
 import{it,expect,vi,beforeEach,afterEach}from'vitest';import{act,render,screen,fireEvent,waitFor,cleanup}from'@testing-library/react';
 const m=vi.hoisted(()=>({reference:vi.fn(),insert:vi.fn(),opened:vi.fn(),nav:{currentViewId:'apps',currentAgentTaskId:'agent',applicationAgentTaskId:'agent'} as any}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{agentTasks:{applicationReference:m.reference},applications:{}},events:{on:()=>()=>{}}}));
-vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{current:null}}));
-vi.mock('@renderer/core/agent-tasks-store',()=>({agentTasksStore:{enabled:true,tasks:[{taskId:'agent',projectId:'p',title:'Chosen task'}]}}));
+vi.mock('@renderer/core/agent-tasks-store',()=>({agentTasksStore:{tasks:[{taskId:'agent',projectId:'p',title:'Chosen task'}]}}));
 vi.mock('@renderer/core/navigation',()=>({navigation:{get currentViewId(){return m.nav.currentViewId;},get currentAgentTaskId(){return m.nav.currentAgentTaskId;},get applicationAgentTaskId(){return m.nav.applicationAgentTaskId;},openAgentTask:(id:string)=>m.opened(id)}}));
 import {ApplicationTerminalButton}from'./terminal-insertion';import{agentComposerTargets}from'../agent-tasks/composer-target';
 beforeEach(()=>{m.opened.mockImplementation(()=>{m.nav.currentViewId='agentTask';});});

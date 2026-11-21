@@ -13,10 +13,10 @@ import { SecretsStore, type SecretCipher } from '../../secrets';
 import type { SpawnOptions } from '../../pty-manager';
 import { VALUE_PREFIX } from '../../launch-env';
 import { ProjectService } from '../projects/project-service';
-import { TaskService, type PtyHost } from '../tasks/task-service';
+import { TaskService, type PtyHost } from '../tasks/task-service.test-fixture';
 import { AgentService } from './agent-service';
 import { migrateAgentProfiles } from './agent-migration';
-import { AgentRuntimeService } from './agent-runtime';
+import { AgentRuntimeService } from './agent-runtime.test-fixture';
 import { AiProfileService } from './ai-profile-service';
 import { ProviderService } from './provider-service';
 

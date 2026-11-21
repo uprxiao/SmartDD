@@ -12,7 +12,6 @@ import type { SpawnOptions } from '../../pty-manager';
 import { SecretsStore } from '../../secrets';
 import { AiProfileService } from '../ai/ai-profile-service';
 import type { HealthEvent } from '../ai/health-classify';
-import { createProjectControllers } from '../projects/controller';
 import { ProjectService } from '../projects/project-service';
 
 // Regressions for the M3 review (docs/review): races between tasks, runs and settings.
@@ -24,7 +23,7 @@ vi.mock('./native-sessions', async (importOriginal) => ({
   recentCodexRollouts: rollouts,
 }));
 
-import { TaskService, type PtyHost } from './task-service';
+import { TaskService, type PtyHost } from './task-service.test-fixture';
 
 class FakePtys extends EventEmitter implements PtyHost {
   spawned: SpawnOptions[] = [];
@@ -156,21 +155,6 @@ describe('Codex session ownership (review H1)', () => {
 
     expect(svc.get(first.id).nativeSessionId).toBe('after-reopen');
     expect(svc.get(first.id).recovery).toBe('resumable');
-  });
-});
-
-describe('project delete with running tasks (review M2)', () => {
-  it('is refused while a task runs, and allowed after it ended', async () => {
-    const p = profile('claude', 'claude');
-    const created = (await create(p.id));
-    const ctl = createProjectControllers(projects, { runningTasks: (id) => svc.runningInProject(id) }).projects;
-    expect(() => ctl.delete(projectId, { deleteSecrets: true })).toThrow('项目下有 1 个任务正在运行，请先结束');
-    expect(svc.get(created.task.id).ptyId).toBe('pty-1');
-
-    svc.kill(created.task.id);
-    expect(svc.runningInProject(projectId)).toBe(0);
-    ctl.delete(projectId, { deleteSecrets: true });
-    expect(svc.list()).toEqual([]);
   });
 });
 

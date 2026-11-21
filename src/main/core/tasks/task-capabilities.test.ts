@@ -13,7 +13,7 @@ import { CapabilityService } from '../capabilities/capability-service';
 import { CapabilityRunRegistry } from '../applications/run-registry';
 import { agentFixture } from '../applications/__tests__/agent-fixture';
 import { FixtureProcessReader } from '../applications/__tests__/run-fixture';
-import { TaskService, type PtyHost } from './task-service';
+import { TaskService, type PtyHost } from './task-service.test-fixture';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
 let f:Awaited<ReturnType<typeof agentFixture>>,svc:TaskService,capabilities:CapabilityService,projects:ProjectService,profiles:AiProfileService,reader:FixtureProcessReader,runs:CapabilityRunRegistry,ptys:ControlledPtys;
 let projectId:string,profileId:string,clock:number,gate:(()=>Promise<void>)|undefined,afterAttach:(()=>Promise<void>)|undefined,bindGate:(()=>Promise<void>)|undefined,calls:number;

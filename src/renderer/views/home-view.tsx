@@ -2,13 +2,12 @@ import { homeWorkspace } from '@renderer/features/agent-tasks/workspace-panels-s
 import { VoiceButton } from './voice-controls';
 import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 // Composer layout follows Yoda (Apache-2.0) src/renderer/features/tasks/home-composer.
-import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, Square, Wrench } from 'lucide-react';
+import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, Wrench } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { navigation } from '@renderer/core/navigation';
-import { tasksStore } from '@renderer/core/tasks-store';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { newClientInputId } from '@renderer/features/agent-tasks/agent-ids';
 import { AgentModelPicker } from '@renderer/features/agent-tasks/agent-model-picker';
@@ -17,7 +16,7 @@ import { AttachmentChips, prepareChip, type Chip } from '@renderer/features/agen
 import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
-import { homeAgents, homeAgentId, HomeAgentPicker, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
+import { homeAgents, homeAgentId, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
 import { agentPermission } from '@shared/agent-permissions';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
@@ -51,7 +50,6 @@ export const HomeView = observer(function HomeView() {
   useEffect(() => { try { localStorage.setItem('willyou-m14-home-selection', JSON.stringify(homeSelection)); } catch { /* 偏好缓存不可写不阻塞当前任务 */ } }, [homeSelection]);
   const [error, setError] = useState('');
   const [launching, setLaunching] = useState(false);
-  const [canceling, setCanceling] = useState(false);
   const launchToken = useRef<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { data: project } = useProject(projectId);
@@ -145,7 +143,7 @@ export const HomeView = observer(function HomeView() {
   }, [projectId, dir?.id]);
   useEffect(()=>()=>preparing.current.clear(),[]); // eslint-disable-line react-hooks/exhaustive-deps
   const addFiles = (files: File[]) => {
-    if (!agentTasksStore.enabled || !dir) return;
+    if (!dir) return;
     for (const file of files) {
       const localId = crypto.randomUUID(), preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
       preparing.current.add(localId);
@@ -163,60 +161,47 @@ export const HomeView = observer(function HomeView() {
   };
   const launch = async () => {
     if (!ready || launchToken.current || !projectId || !profile || !dir) return;
-    if (agentTasksStore.enabled && chips.some(c => c.status === 'preparing')) { setError('附件还在准备中，准备好后再开始任务'); return; }
-    if (agentTasksStore.enabled && chips.some(c => c.status === 'failed')) { setError('有附件准备失败，请重试或移除后再开始任务'); return; }
+    if (chips.some(c => c.status === 'preparing')) { setError('附件还在准备中，准备好后再开始任务'); return; }
+    if (chips.some(c => c.status === 'failed')) { setError('有附件准备失败，请重试或移除后再开始任务'); return; }
     setError('');
     const token=crypto.randomUUID();launchToken.current=token;
     setLaunching(true);
     try {
       const permission=agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id;
-      if(agentTasksStore.enabled){
-        const revision = navigation.homeInputRevision(projectId);
-        const presetAtLaunch = navigation.homePreset;
-        const model = homeSelection.models[profile.id] || undefined;
-        const carryExtensions = homeSelection.extensions[profile.id] !== false;
-        const chipIds = new Set(chips.map(chip => chip.localId));
-        const key = JSON.stringify([revision, dir.id, dir.path, profile.id, permission, model, Object.entries(homeSelection.extensions).sort(), [...chipIds]]);
-        const previous = navigation.homeLaunchAttempts.get(projectId);
-        const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
-        navigation.homeLaunchAttempts.set(projectId, attempt);
-        const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, carryExtensions, extensionPreferences: homeSelection.extensions });
-        if (created.tierNotice) toast.message(created.tierNotice);
-        const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
-        if (message.trim() || attachments.length) await rpc.agentTasks.submit(created.taskId, { clientInputId: attempt.inputId, text: message, expectedSelectionRevision: 1, attachments });
-        if (navigation.homeLaunchAttempts.get(projectId)?.taskId === attempt.taskId) navigation.homeLaunchAttempts.delete(projectId);
-        void agentTasksStore.refresh();
+      const revision = navigation.homeInputRevision(projectId);
+      const presetAtLaunch = navigation.homePreset;
+      const model = homeSelection.models[profile.id] || undefined;
+      const carryExtensions = homeSelection.extensions[profile.id] !== false;
+      const chipIds = new Set(chips.map(chip => chip.localId));
+      const key = JSON.stringify([revision, dir.id, dir.path, profile.id, permission, model, Object.entries(homeSelection.extensions).sort(), [...chipIds]]);
+      const previous = navigation.homeLaunchAttempts.get(projectId);
+      const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
+      navigation.homeLaunchAttempts.set(projectId, attempt);
+      const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, carryExtensions, extensionPreferences: homeSelection.extensions });
+      if (created.tierNotice) toast.message(created.tierNotice);
+      const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
+      if (message.trim() || attachments.length) await rpc.agentTasks.submit(created.taskId, { clientInputId: attempt.inputId, text: message, expectedSelectionRevision: 1, attachments });
+      if (navigation.homeLaunchAttempts.get(projectId)?.taskId === attempt.taskId) navigation.homeLaunchAttempts.delete(projectId);
+      void agentTasksStore.refresh();
 
-        const current = activeComposer.current;
-        const sameScope = mounted.current && current.projectId === projectId && current.dirId === dir.id;
-        const sameAttachments = current.chips.length === chipIds.size && current.chips.every(chip => chipIds.has(chip.localId));
-        const sameDraft = navigation.homeInputRevision(projectId) === revision && sameAttachments;
-        if (sameScope) {
-          for (const chip of chips) if (chip.preview) URL.revokeObjectURL(chip.preview);
-          setChips(currentChips => currentChips.filter(chip => !chipIds.has(chip.localId)));
-        }
-        if (sameDraft) navigation.setHomeInput(projectId, '');
-        if (sameScope && sameDraft && navigation.currentViewId === 'home' && navigation.homePreset === presetAtLaunch) {
-          draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
-          navigation.openAgentTask(created.taskId);
-        }
-      } else {
-        await tasksStore.create({ projectId, dirId: dir.id, aiProfileId: profile.id, firstMessage: message, launchToken:token, permission });
+      const current = activeComposer.current;
+      const sameScope = mounted.current && current.projectId === projectId && current.dirId === dir.id;
+      const sameAttachments = current.chips.length === chipIds.size && current.chips.every(chip => chipIds.has(chip.localId));
+      const sameDraft = navigation.homeInputRevision(projectId) === revision && sameAttachments;
+      if (sameScope) {
+        for (const chip of chips) if (chip.preview) URL.revokeObjectURL(chip.preview);
+        setChips(currentChips => currentChips.filter(chip => !chipIds.has(chip.localId)));
+      }
+      if (sameDraft) navigation.setHomeInput(projectId, '');
+      if (sameScope && sameDraft && navigation.currentViewId === 'home' && navigation.homePreset === presetAtLaunch) {
         draft.update({ projectId, dirId: dir.id, aiProfileId: profile.id });
-        setMessage('');
+        navigation.openAgentTask(created.taskId);
       }
     } catch (e) {
       setError(rpcErrorMessage(e));
     } finally {
-      launchToken.current=null;setCanceling(false);setLaunching(false);
+      launchToken.current=null;setLaunching(false);
     }
-  };
-
-  const cancelPreparation = async () => {
-    const token=launchToken.current;if(!token||canceling)return;
-    setCanceling(true);
-    try { await tasksStore.cancelCreate(token); }
-    catch(e) { setError(rpcErrorMessage(e));setCanceling(false); }
   };
 
   const suggestions = [
@@ -230,10 +215,10 @@ export const HomeView = observer(function HomeView() {
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;
-  const profilePicker = agentTasksStore.enabled && profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => ({ profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, extensionSupport: p.kind === 'codex' ? 'partial' : 'full' }))} profileId={profileId} model={homeSelection.models[profileId]} extensions={homeSelection.extensions}
+  const profilePicker = profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => ({ profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, extensionSupport: p.kind === 'codex' ? 'partial' : 'full' }))} profileId={profileId} model={homeSelection.models[profileId]} extensions={homeSelection.extensions}
     onPick={(id, model) => { profileChosen.current = true; setProfileId(id); setHomeSelection(v => ({ ...v, models: { ...v.models, [id]: model ?? '' } })); }}
     onExtensions={(id, enabled) => setHomeSelection(v => ({ ...v, extensions: { ...v.extensions, [id]: enabled } }))} />
-    : <HomeAgentPicker configs={profiles??[]} providers={agents?.providers??[]} value={profileId} onChange={id=>{profileChosen.current=true;setProfileId(id);}} />;
+    : <button type="button" className="m13-home-agent-trigger" data-testid="home-profile" onClick={()=>navigation.openSettings('aiProfiles')}>{t('home.pickProfile')}</button>;
   const directoryPicker = <Select value={dir?.id ?? null} onValueChange={(v) => setDirId(v as string | null)}>
     <SelectTrigger className={CHIP} data-testid="home-dir" aria-label={t('m6.directory')} title={dir?.path}><FolderTree size={15} /><SelectValue placeholder={t('home.noDir')} /></SelectTrigger>
     <SelectContent>{dirs.map((d) => <SelectItem key={d.id} value={d.id}>{d.label || d.path}</SelectItem>)}</SelectContent>
@@ -249,8 +234,8 @@ export const HomeView = observer(function HomeView() {
         <button data-testid="home-task-settings" className="composer-settings" title={t('m6.taskSettings')} aria-label={t('m6.taskSettings')} onClick={() => setLaunchSettings(true)}><Settings size={16} /></button>
       </div>
       <form className="reference-composer" onSubmit={(e) => { e.preventDefault(); void launch(); }}>
-        {agentTasksStore.enabled && <AttachmentChips chips={chips} onRemove={removeChip} onRetry={id => { const c = chips.find(x => x.localId === id); removeChip(id); if (c?.file) addFiles([c.file]); }} />}
-        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length && agentTasksStore.enabled) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (agentTasksStore.enabled && e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length && agentTasksStore.enabled) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void launch(); } }} />
+        <AttachmentChips chips={chips} onRemove={removeChip} onRetry={id => { const c = chips.find(x => x.localId === id); removeChip(id); if (c?.file) addFiles([c.file]); }} />
+        <textarea ref={inputRef} data-testid="home-input" onPaste={e => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { const files = [...e.dataTransfer.files]; if (files.length) { e.preventDefault(); addFiles(files); } }} aria-label={t('m6.taskDescription')} value={message} placeholder={t('m6.promptPlaceholder')} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void launch(); } }} />
         <div className="reference-composer-toolbar">
           <DropdownMenu><DropdownMenuTrigger className="row-action" aria-label={t('m6.addContext')}><Plus size={20} /></DropdownMenuTrigger><DropdownMenuContent side="top" align="start">
             <DropdownMenuItem onClick={() => setCreatingProject(true)}><Plus />{t('projects.new')}</DropdownMenuItem>
@@ -261,7 +246,7 @@ export const HomeView = observer(function HomeView() {
           <HomePermissionPicker kind={profile?.kind??'claude'} disabled={!profile||launching} />
           <div className="reference-home-picker composer-profile">{profilePicker}</div>
           <VoiceButton compact disabled={launching} onClick={() => void voiceStore.trigger(textareaVoiceTarget(inputRef.current), 'home')} />
-          <button type={launching ? "button" : "submit"} data-testid="home-launch" className="reference-send" disabled={launching ? canceling : !ready} onClick={launching ? () => void cancelPreparation() : undefined} aria-label={t(launching ? "home.cancelPreparation" : "home.launchHint")} title={t(launching ? "home.cancelPreparation" : "home.launchHint")}>{canceling ? <Loader2 size={19} className="animate-spin" /> : launching ? <Square size={17} fill="currentColor" /> : <ArrowUp size={19} />}</button>
+          <button type="submit" data-testid="home-launch" className="reference-send" disabled={!ready} aria-label={t('home.launchHint')} title={t('home.launchHint')}>{launching ? <Loader2 size={19} className="animate-spin" /> : <ArrowUp size={19} />}</button>
         </div>
       </form>
     </div>

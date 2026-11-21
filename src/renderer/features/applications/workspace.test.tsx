@@ -13,8 +13,8 @@ import type {CatalogItem} from './api';
 import type {PluginPanel} from '@shared/plugins';
 const m=vi.hoisted(()=>({sessionChangeImpact:vi.fn(async()=>({ok:true,value:{runningCount:0,globalDisabled:false,checkedAt:"2026-11-13T00:00:00Z"}})),pluginChoose:vi.fn(),pluginSetEnabled:vi.fn(),pluginUninstall:vi.fn(),pluginStartupStatus:vi.fn(async()=>({ok:true,value:null})),pluginCatalog:vi.fn(async()=>({ok:true,value:[]})),impact:vi.fn(),versions:vi.fn(async()=>({ok:true,value:{appId:'mail',items:[],checkedAt:'2026-10-20T00:00:00.000Z',recoveryPending:0}})),catalog:vi.fn(),connections:vi.fn(),projectSettings:vi.fn(),select:vi.fn(),setAdded:vi.fn(),setEnabled:vi.fn(),setConnectionEnabled:vi.fn(),disconnect:vi.fn(),builtinDefaults:vi.fn(),testConnection:vi.fn(),saveConnection:vi.fn(),discardConnectionTest:vi.fn(),projectList:vi.fn(),projectGet:vi.fn(),refreshTasks:vi.fn(),tasks:[] as {id:string;projectId:string;ptyId:string|null;title:string}[]}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m,projects:{list:m.projectList,get:m.projectGet},dialog:{pickDirectory:vi.fn()}},events:{on:()=>()=>{}}}));
-vi.mock('@renderer/core/tasks-store',()=>({tasksStore:{get tasks(){return m.tasks;},refresh:m.refreshTasks}}));
-vi.mock('./plugin-panel',()=>({PluginPages:({onNavigate}:{onNavigate?:()=>void})=><button onClick={()=>{navigation.openTask('fixture-handoff-task');onNavigate?.();}}>Fixture task handoff</button>}));
+vi.mock('@renderer/core/agent-tasks-store',()=>({agentTasksStore:{get tasks(){return m.tasks;},refresh:m.refreshTasks}}));
+vi.mock('./plugin-panel',()=>({PluginPages:({onNavigate}:{onNavigate?:()=>void})=><button onClick={()=>{navigation.openAgentTask('fixture-handoff-task');onNavigate?.();}}>Fixture task handoff</button>}));
 const uid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const app=(id:ApplicationId,added=true):CatalogItem=>({...applicationMetadata(id),appId:id,added,enabled:added,revision:3,displayName:id==='mail'?'邮件':'禅道',description:id==='mail'?'本机邮件与草稿':'本人 Bug 与研发需求',defaultPackageHash:'a'.repeat(64),version:'1.0.0',skills:[{id:id==='mail'?'work-assistant':'bug-analysis',description:'Private fixture skill'}],tools:[],versions:[],connectionCount:0});
 const candidate=(n=1):VerifiedConnectionCandidate=>({operationId:uid(n),connectionId:uid(100+n),candidateHash:'b'.repeat(64),expectedRevision:0,identity:{providerId:'zentao',serviceId:'private-service',accountId:'private-user',contractMajor:1},compatibility:{connectionId:null,expectedRevision:0,configHash:'c'.repeat(64),referenceHash:'d'.repeat(64),impacts:[],planHash:'e'.repeat(64)},expiresAt:new Date(Date.now()+60000).toISOString()});
@@ -166,7 +166,7 @@ describe('M13 plugin routes and retained interaction boundaries',()=>{
 
  it('does not navigate back to plugin detail after a business page hands off to an actual task',async()=>{
   const p=pluginFixture();p.panels.push({id:'work',title:'我的工作',kind:'list',refresh:false,tabs:[],source:{capability:'zentao-list',input:{},items:'items'},rowKey:'id',columns:[],details:{},rowActions:[]});externalCatalog([p]);navigation.openApplications('plugin:zentao/work');mount(<ApplicationsWorkspace/>);
-  fireEvent.click(await screen.findByRole('button',{name:'Fixture task handoff'}));expect(navigation.currentViewId).toBe('task');expect(navigation.currentTaskId).toBe('fixture-handoff-task');
+  fireEvent.click(await screen.findByRole('button',{name:'Fixture task handoff'}));expect(navigation.currentViewId).toBe('agentTask');expect(navigation.currentAgentTaskId).toBe('fixture-handoff-task');
  });
  it('filters builtin and external plugins together, keeps exact groups and exposes no retired navigation',async()=>{
   externalCatalog([pluginFixture(),pluginFixture('demo-tracker',false)]);catalog=[app('mail'),{...app('browser'),displayName:'浏览器'}];mount(<ApplicationsWorkspace/>);

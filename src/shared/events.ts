@@ -13,7 +13,6 @@ import type {BrowserShortcut} from './browser-workspace';
 export const ptyDataEvent = defineEvent<{ ptyId: string; data: string }>('pty:data');
 export const ptyExitEvent = defineEvent<{ ptyId: string; code: number }>('pty:exit');
 /** The task list or a task's running state changed; the renderer re-reads tasks.list. */
-export const tasksChangedEvent = defineEvent<void>('tasks:changed');
 /** M14 统一 Agent 工作区：已提交的任务事件（含 seq）与只推在线订阅者的流式增量。 */
 export const agentTaskEvent = defineEvent<{ taskId: string; seq: number; type: string; itemId: string | null; payload: unknown }>('agentTasks:event');
 export interface AgentLiveFrame { taskId: string; runId: string; itemKey: string; text: string; previewIncomplete?: boolean }

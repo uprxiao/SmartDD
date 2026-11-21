@@ -9,6 +9,8 @@ import { AgentRunService, type OpenRunInput } from './agent-run-service';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import { evaluateCapabilities, type DriverId } from './capabilities';
 import type { ProcessIdentityReader } from '../applications/process-identity';
+import { applicationRunsForAgent } from './application-runs';
+import type { AgentTaskService } from './agent-task-service';
 
 // M14-A04 启动门闩与实际 owner、A13 新绑定、A16 发送前失败与接收未知、A64 运行身份接口（阶段 1：U／I 层）。
 class ScriptedInstance implements DriverInstance {
@@ -41,6 +43,43 @@ function setup() {
 }
 
 describe('运行服务', () => {
+  it('A61 drains only the matching owned Agent run before a project application source switch', async () => {
+    const f = setup();
+    const run = await f.service.open(f.base);
+    const hash = 'a'.repeat(64);
+    const snapshot = {
+      schema: 3, taskId: f.taskId, projectId: 'p1', createdAt: new Date().toISOString(),
+      runner: 'codex', adapterBinding: { id: 'codex', version: '1.0.0', hash, projectionFormatVersion: 1, nativeToolNames: {} },
+      native: { sessionId: null, stateRoot: '/h/.codex', cwd: '/w' },
+      agentAtCreation: { version: '0.169.0', adapterRevision: 1 }, catalogGeneration: 'library',
+      packages: [{
+        appId: 'zentao', version: '1.0.0', packageHash: hash, hashAlgorithm: 'app-manifest-v1',
+        hostApi: { min: 1, max: 1 }, dataApi: 1, runtimeHash: hash,
+        toolContractMajors: {}, capabilityContractMajors: {}, skills: [], bindings: [], allowedOperations: [], entry: 'mcp',
+      }],
+      standardSkills: [], mcp: [], provenance: 'created',
+    };
+    const data = JSON.stringify({ kind: 'business', runId: run.runId, snapshot });
+    f.db.prepare('UPDATE agent_capability_sessions SET snapshot_json=?, content_hash=? WHERE capability_session_id=(SELECT capability_session_id FROM capability_runs WHERE run_id=?)')
+      .run(data, sha256(data), run.runId);
+    const stop = vi.fn(async () => {});
+    const task = { stop } as unknown as AgentTaskService;
+    const processes: ProcessIdentityReader = { read: () => null, state: vi.fn(() => 'running' as const) };
+    const foreign = applicationRunsForAgent(f.store, f.service, task, processes, 'another host');
+    expect(await foreign.stopProject('p1', 'zentao')).toBe(false);
+    expect(stop).not.toHaveBeenCalled();
+
+    const policy = applicationRunsForAgent(f.store, f.service, task, processes, 'host-1');
+    expect(policy.runningInProject('p1', 'mail')).toBe(0);
+    expect(policy.runningInProject('p2', 'zentao')).toBe(0);
+    expect(policy.runningInProject('p1', 'zentao')).toBe(1);
+    expect(await policy.stopProject('p1', 'zentao')).toBe(true);
+    expect(stop).toHaveBeenCalledExactlyOnceWith(f.taskId, false, run.runId);
+    expect(processes.state).toHaveBeenCalledWith({ pid: 777, startedAt: 'darwin-proc-v1:777:1' });
+    expect(policy.runningInProject('p1', 'zentao')).toBe(0);
+    expect(f.instances[0].closed).toBe(true);
+  });
+
   it.each([true, false])('A04 exposes startup cancellation to business admission only while opening (stop while opening=%s)', async stopWhileOpening => {
     const f = setup();
     let stopped = false;

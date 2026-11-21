@@ -5,16 +5,12 @@ import { testSsh } from '../connections/ssh-tester';
 import type { DeleteOptions, ProjectService } from './project-service';
 
 export interface ProjectControllerHooks {
-  /** Live tasks in the project, optionally restricted to tasks with a matching owner. */
-  runningTasks?: (projectId: string, matches?: (taskId: string) => boolean) => number;
-  agentTasks?: Pick<import('../agent/project-resources').AgentProjectResources, 'managesTask' | 'inspect' | 'removeProject'>;
+  agentTasks?: Pick<import('../agent/project-resources').AgentProjectResources, 'inspect' | 'removeProject'>;
   deleted?: (projectId:string)=>void;
 }
 
 export function createProjectControllers(svc: ProjectService, hooks: ProjectControllerHooks = {}) {
   const { agentTasks } = hooks;
-  const terminalTaskCount = (projectId: string) =>
-    hooks.runningTasks?.(projectId, agentTasks ? taskId => !agentTasks.managesTask(taskId) : undefined) ?? 0;
   const runDbTest = (input: DatabaseInput, existingId?: string) => {
     const { vendor, ...t } = svc.databaseTarget(input, existingId);
     return testDatabase({ transport: DB_VENDORS[vendor].transport, ...t });
@@ -30,13 +26,10 @@ export function createProjectControllers(svc: ProjectService, hooks: ProjectCont
       setArchived: (id: string, archived: boolean) => svc.setArchived(id, archived),
       deletePreview: (id: string) => {
         const project = svc.getProject(id);
-        return { ...(agentTasks?.inspect(id) ?? { taskCount: 0, archivedCount: 0, paths: project.dirs.map(dir => dir.path), worktrees: [], blockers: [], confirmation: null }), legacyRunning: terminalTaskCount(id) };
+        return agentTasks?.inspect(id) ?? { taskCount: 0, archivedCount: 0, paths: project.dirs.map(dir => dir.path), worktrees: [], blockers: [], confirmation: null };
       },
       delete: (id: string, opts: DeleteOptions) => {
-        const n = terminalTaskCount(id);
-        if (n > 0) throw new Error(`项目下有 ${n} 个任务正在运行，请先结束`);
         const remove = (purge?: () => void) => {
-          if (terminalTaskCount(id) > 0) throw new Error('项目下出现新的运行，请先结束');
           svc.deleteProject(id, opts, purge);
           hooks.deleted?.(id);
         };

@@ -12,7 +12,7 @@ import { PtyManager } from '../../../pty-manager';
 import { ProjectService } from '../../projects/project-service';
 import { AiProfileService } from '../../ai/ai-profile-service';
 import { detectRunner } from '../../ai/runner-detect';
-import { TaskService } from '../../tasks/task-service';
+import { TaskService } from '../../tasks/task-service.test-fixture';
 import { builtinRunnerAdapters, RunnerAdapterRegistry, type RunnerAdapter } from '../../tasks/runner-adapters';
 import { CapabilityService, MCP_CAPABILITY } from '../../capabilities/capability-service';
 import { ResourceStore } from '../resource-store';
@@ -20,7 +20,7 @@ import { AgentSupportService } from '../agent-support-service';
 import { AgentAdapterRegistry } from '../agent-adapter-registry';
 import { builtinCapabilityDeliveryAdapters, CapabilityDeliveryAdapterRegistry, type CapabilityDeliveryAdapter, type SkillProjectionContext } from '../capability-delivery-adapters';
 import { ApplicationService } from '../application-service';
-import { ManagedTaskCapabilities } from '../task-capability-launcher';
+import { TerminalTaskCapabilityFixture as ManagedTaskCapabilities } from '../task-capability-launcher.test-fixture';
 import { MacProcessIdentityReader } from '../process-identity';
 import type { TaskLaunchInput } from '../native-launch-context';
 

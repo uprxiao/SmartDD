@@ -8,13 +8,11 @@ import type {BrowserWorkspaceState,BrowserShortcut} from '@shared/browser-worksp
 import type {BrowserProfile} from '@shared/browser-profiles';
 import {BROWSER_BLANK_URL,normalizeBrowserNavigationUrl} from '@shared/browser-navigation';
 import {events,rpc} from '@renderer/lib/ipc';
-import {FileWorkspacePanel} from '@renderer/features/files/workspace-panel';
 import {browserWorkspaceFor,openNewBrowserTab,type BrowserWorkspaceStore} from './store';
 import './workspace.css';
 import {agentTasksStore} from '@renderer/core/agent-tasks-store';
 import {panelsFor} from '@renderer/features/agent-tasks/workspace-panels-store';
 import {navigation} from '@renderer/core/navigation';
-import {tasksStore} from '@renderer/core/tasks-store';
 import {BrowserSettingsDialog,type BrowserPreferences} from './settings-dialog';
 import {BrowserProfileSiteStates,type ProfileSiteStates} from './profile-site-states';
 import {BrowserPermissionBar} from './permission-bar';
@@ -28,40 +26,26 @@ export function useBrowserShortcuts(){
     const key=(event:KeyboardEvent)=>{
       if(event.defaultPrevented||event.isComposing||!(event.metaKey||event.ctrlKey)||!event.shiftKey||event.altKey||event.key.toLowerCase()!=='b')return;
       if(event.target instanceof Element&&event.target.closest('[data-browser-shortcut-owner]'))return;
-      if(navigation.currentViewId==='agentTask'&&navigation.currentAgentTaskId){const id=navigation.currentAgentTaskId;if(!agentTasksStore.tasks.find(t=>t.taskId===id)?.projectId)return;event.preventDefault();panelsFor({kind:'task',taskId:id}).open('browser');void browserWorkspaceFor(id).create();return;}
-      const taskId=document.querySelector<HTMLElement>('[data-browser-task]')?.dataset.browserTask;
-      // The title-bar entry exists even when the right workspace is closed.
-      const header=document.querySelector<HTMLButtonElement>('[data-testid=task-new-browser]');
-      if(header){event.preventDefault();header.click();}else if(taskId){event.preventDefault();openNewBrowserTab(taskId);}
+      if(navigation.currentViewId!=='agentTask'||!navigation.currentAgentTaskId||navigation.agentTaskReadOnly)return;
+      event.preventDefault();
+      openNewBrowserTab(navigation.currentAgentTaskId);
     };
     let showGeneration=0;
     const off=events.on(browserShortcutEvent,event=>{
       if(event.action!=='show')return;
       const generation=++showGeneration;
-      const agent=agentTasksStore.tasks.find(t=>t.taskId===event.taskId);if(agent?.projectId){navigation.openAgentTask(agent.taskId);panelsFor({kind:'task',taskId:agent.taskId}).open('browser');return;}
-      if(agentTasksStore.enabled)return;
       const reveal=()=>{
-        const task=tasksStore.byId.get(event.taskId);
-        if(generation!==showGeneration||!task?.projectId||tasksStore.closing.has(event.taskId))return;
-        // Reveal the requested browser without resuming an idle Agent.
-        navigation.openTask(event.taskId);
-        if(!navigation.filePanelOpen)navigation.toggleFilePanel();
+        const task=agentTasksStore.tasks.find(t=>t.taskId===event.taskId);
+        if(generation!==showGeneration||!task?.projectId)return;
+        navigation.openAgentTask(task.taskId);
+        panelsFor({kind:'task',taskId:task.taskId}).open('browser');
       };
-      if(tasksStore.byId.has(event.taskId))reveal();
-      else void tasksStore.refresh().then(reveal).catch(()=>console.warn('[browser] focused task lookup unavailable'));
+      if(agentTasksStore.tasks.some(t=>t.taskId===event.taskId))reveal();
+      else void agentTasksStore.refresh().then(reveal);
     });
     document.addEventListener('keydown',key);return()=>{showGeneration++;document.removeEventListener('keydown',key);off();};
   },[]);
 }
-export function TaskBrowserWorkspace({taskId,onClose}:{taskId:string;onClose:()=>void}){
-  const store=browserWorkspaceFor(taskId),{state,error}=useSyncExternalStore(store.subscribe,store.snapshot);
-  useEffect(()=>{void store.refresh();return events.on(browserChangedEvent,event=>{if(event.taskId===taskId)void store.refresh();});},[store,taskId]);
-  const titleTip=useTreePathTooltip(JSON.stringify([taskId,state?.activeId,state?.tabs.map(tab=>[tab.id,tab.title,tab.url])]));
-  const titleTooltip:BrowserTabTooltip|null=titleTip.target?{target:titleTip.target,element:titleTip.element,dismiss:titleTip.dismiss}:null;
-  const web={tabTooltip:titleTip.bind,inactiveTooltip:titleTooltip&&<div className="bw-tab-tooltip">{titleTooltip.element}</div>,tabs:state?.tabs??[],paused:state?.paused??false,activeId:state?.activeId??null,onSelect:(id:string)=>void store.select(id),onFiles:()=>void store.select(null),onClose:(id:string)=>void store.close(id),onNew:()=>openNewBrowserTab(taskId),view:state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={titleTooltip}/>:null};
-  return <FileWorkspacePanel scope={{kind:'task',taskId}} onClose={onClose} web={web}/>;
-}
-/** M14: page tabs belong to the browser surface, separate from file document tabs. */
 export function AgentBrowserSurface({taskId}:{taskId:string}){
  const store=browserWorkspaceFor(taskId),{state,error}=useSyncExternalStore(store.subscribe,store.snapshot);
  useEffect(()=>{void store.refresh();return events.on(browserChangedEvent,e=>{if(e.taskId===taskId)void store.refresh();});},[store,taskId]);
@@ -199,7 +183,7 @@ function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceSta
     </div>
     {state.javascriptDialog&&javascriptOpenId===state.javascriptDialog.id&&<BrowserJavascriptDialogView key={state.javascriptDialog.id} dialog={state.javascriptDialog} onRespond={async(accept,text)=>{await rpc.browser.respondJavascriptDialog({taskId,id:state.javascriptDialog!.id,accept,text});await store.refresh();}}/>}
     {state.auth&&authOpenId===state.auth.id&&<BrowserAuthDialog key={state.auth.id} prompt={state.auth} onRespond={async credentials=>{await rpc.browser.respondAuthentication({taskId,id:state.auth!.id,credentials});await store.refresh();}}/>}
-    {profileRecords&&<BrowserProfileSiteStates taskId={taskId} tabId={tabId} taskTitle={tasksStore.current?.title} currentProfile={tab.profileId} initial={profileRecords} initialImport={initialImport} onClose={closeSettings}/>}
+    {profileRecords&&<BrowserProfileSiteStates taskId={taskId} tabId={tabId} taskTitle={agentTasksStore.tasks.find(task => task.taskId === taskId)?.title} currentProfile={tab.profileId} initial={profileRecords} initialImport={initialImport} onClose={closeSettings}/>}
     {preferences&&<BrowserSettingsDialog taskId={taskId} initial={preferences} onClose={closeSettings}/>}
     <BrowserAccessSurface ready={accessReady}/>
   </div>;

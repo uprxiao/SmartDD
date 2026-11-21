@@ -11,7 +11,7 @@ import { SecretsStore } from '../../secrets';
 import { AgentService } from './agent-service';
 import { AiProfileService } from './ai-profile-service';
 import { ProviderService } from './provider-service';
-import { AgentRuntimeService } from './agent-runtime';
+import { AgentRuntimeService } from './agent-runtime.test-fixture';
 import { providerTargetForTool, type ProviderTarget } from './provider-client';
 import { buildCodexModelCatalog, CODEX_CATALOG_BASE_INSTRUCTIONS } from './codex-model-catalog';
 

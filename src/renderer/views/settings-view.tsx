@@ -1,4 +1,4 @@
-import { agentTasksStore, requestNotifyEnabled, setRequestNotify } from '@renderer/core/agent-tasks-store';
+import { requestNotifyEnabled, setRequestNotify } from '@renderer/core/agent-tasks-store';
 import { VoiceSettingsSection, readableVoiceKey } from './settings/voice';
 import { voiceStore } from '@renderer/core/voice-store';
 import { Archive, ChevronDown, Info, Keyboard, Mic, Search, Settings, Bot, SquareTerminal, Sun, Zap, Puzzle } from 'lucide-react';
@@ -37,20 +37,19 @@ export const SettingsView = observer(function SettingsView() {
   const section = navigation.settingsSection;
   useEffect(()=>{if(section==='applications')navigation.openApplications();else if(section==='capabilities')navigation.openApplications('skills');},[section]);
   const [search, setSearch] = useState('');
-  const sections = SECTIONS.filter(item=>item.id!=='archivedAgentTasks'||agentTasksStore.enabled);
   const label = (id: SettingsSectionId) => t(id === 'about' || id === 'shortcuts' ? `m6.${id}` : `settings.sections.${id}`);
   return <div className="settings-shell">
     <nav className="settings-nav" aria-label={t('nav.settings')}>
       <h2>{t('nav.settings')}</h2>
       <label className="settings-search"><Search size={15} /><input aria-label={t('m6.searchSettings')} placeholder={t('m6.search')} value={search} onChange={(e) => setSearch(e.target.value)} /></label>
       {(['personal', 'integrations', 'application'] as const).map((group) => {
-        const items = sections.filter((item) => item.group === group && label(item.id).toLowerCase().includes(search.toLowerCase()));
+        const items = SECTIONS.filter((item) => item.group === group && label(item.id).toLowerCase().includes(search.toLowerCase()));
         return items.length > 0 && <div className="settings-nav-group" key={group}><h3>{t(`m6.${group}`)}</h3>{items.map(({ id, Icon }) => <button key={id} className={`nav-row ${section === id ? 'selected' : ''}`} aria-current={section === id ? 'page' : undefined} onClick={() => navigation.openSettings(id)}><Icon size={16} /><span>{label(id)}</span></button>)}</div>;
       })}
-      {!sections.some((item) => label(item.id).toLowerCase().includes(search.toLowerCase())) && <p className="settings-search-empty">{t('m6.noSettings')}</p>}
+      {!SECTIONS.some((item) => label(item.id).toLowerCase().includes(search.toLowerCase())) && <p className="settings-search-empty">{t('m6.noSettings')}</p>}
     </nav>
     <div className="settings-content" key={section}><div className={`settings-inner ${section==='aiProfiles'?'m13-settings-inner':''}`}>{section !== 'aiProfiles' && <div className="page-heading"><h1>{label(section)}</h1></div>}
-      {section === 'archivedAgentTasks' && agentTasksStore.enabled && <ArchivedAgentTasks />}
+      {section === 'archivedAgentTasks' && <ArchivedAgentTasks />}
       {section === 'voice' && <VoiceSettingsSection />}
       {section === 'general' && <GeneralSection />}
       {section === 'aiProfiles' && <AgentsSection />}
@@ -78,14 +77,8 @@ function AboutSection() {
   return <SettingsGroup title="WillYou"><SettingRow label={t('m6.version')}><span data-testid="app-version">{info.data?.version ?? '…'}</span></SettingRow><SettingRow label={t('settings.dataDir')} hint={<span className="font-mono break-all select-text">{info.data?.userDataPath}</span>}><Button variant="outline" size="sm" onClick={() => void rpc.app.revealDataDir()}>{t('settings.reveal')}</Button></SettingRow></SettingsGroup>;
 }
 
-const AgentWorkspaceToggle = observer(function AgentWorkspaceToggle() {
-  return <SettingRow label="新任务区（M14 开发中）" hint="开启后新建任务使用统一 Agent 工作区（程序化运行，不再启动终端会话）；侧栏只列新任务，旧任务保留不迁移。关闭即回到原任务入口。">
-    <Button variant="outline" size="sm" data-testid="m14-toggle" onClick={() => agentTasksStore.setEnabled(!agentTasksStore.enabled)}>{agentTasksStore.enabled ? '已开启，点击关闭' : '开启'}</Button>
-  </SettingRow>;
-});
 const RequestNotifyToggle = observer(function RequestNotifyToggle() {
   const [on, setOn] = useState(requestNotifyEnabled());
-  if (!agentTasksStore.enabled) return null;
   return <SettingRow label="待处理请求的系统通知" hint="窗口在后台时，任务出现需要你处理的请求就用系统通知提醒。">
     <Button variant="outline" size="sm" onClick={() => { setRequestNotify(!on); setOn(!on); }}>{on ? '已开启，点击关闭' : '开启'}</Button>
   </SettingRow>;
@@ -121,7 +114,6 @@ function GeneralSection() {
           </SelectContent>
         </Select>
       </SettingRow>
-      <AgentWorkspaceToggle />
       <RequestNotifyToggle />
       <SettingRow label={t('settings.probes')} hint={t('settings.probesHint')}>
         <Button

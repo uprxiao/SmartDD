@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {overlayLegacyPermission as overlay} from './legacy-permission-overlay';
+import {overlayLegacyPermission as overlay} from './legacy-permission-overlay.test-fixture';
 
 it.each(['claude','codex'] as const)('retains unrelated saved argv and overlays full then ask only on run copies (%s)',kind=>{
   const input=kind==='claude'?['--max-turns','7','--permission-mode=bypassPermissions']:['--search','--dangerously-bypass-approvals-and-sandbox'];

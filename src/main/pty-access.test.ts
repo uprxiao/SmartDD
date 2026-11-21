@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import type { IpcMainInvokeEvent } from 'electron';
 import { registerRPCRouter } from '@shared/ipc/rpc';
-import { createTaskController } from './core/tasks/controller';
+import { createAgentTaskController } from './core/agent/controller';
 import { createPtyController, PtyAccess, registerPtyInput } from './pty-access';
 
 const sender = (id: number) => ({ id, mainFrame: {}, isDestroyed: () => false });
@@ -64,7 +64,7 @@ describe('main-process PTY ownership', () => {
     for (const cols of [0, -1, 1.5, Infinity, 1001, '120']) expect(access.resize(event, { ...payload, cols, rows: 32 })).toBe(false);
     expect(write).not.toHaveBeenCalled(); expect(resize).not.toHaveBeenCalled();
   });
-  it('scoped kill RPC uses Electron context and the task service, never a renderer-supplied owner', () => {
+  it('scoped kill RPC uses Electron context and the bound manual terminal', () => {
     const handlers = new Map<string, Function>();
     registerRPCRouter({ pty: createPtyController(access) }, { handle: (name: string, fn: Function) => handlers.set(name, fn) } as never);
     const invoke = handlers.get('pty.kill')!;
@@ -81,21 +81,18 @@ describe('main-process PTY ownership', () => {
   it('keeps an accepted keyboard write successful when evidence collection fails,so callers cannot duplicate it',()=>{
     const current=new PtyAccess({trusted:()=>true,activePty:()=>payload.ptyId,alive:()=>true,write,resize,killTask:kill,observedInput:()=>{throw new Error('observation unavailable');}});expect(current.input(event,payload)).toBe(true);expect(write).toHaveBeenCalledExactlyOnceWith(payload.ptyId,payload.data);
   });
-  it('passes only the real Electron sender to task launch origin,ignoring renderer-supplied sender arguments',()=>{
-    const create=vi.fn(),handlers=new Map<string,Function>();registerRPCRouter(createTaskController({create} as never,e=>access.requireSender(e)),{handle:(name:string,fn:Function)=>handlers.set(name,fn)} as never);
-    const forged={sender:sender(99),senderFrame:{}},req={projectId:'p1',firstMessage:'literal initial prompt',initialSender:forged};handlers.get('tasks.create')!(event,req,forged);expect(create).toHaveBeenCalledExactlyOnceWith(req,event);
-    expect(()=>handlers.get('tasks.create')!(forged,req,event)).toThrow('TERMINAL_SENDER_DENIED');expect(create).toHaveBeenCalledTimes(1);
-  });
-  it('task endpoints cannot bypass sender checks for create/open/delete/kill/archive', () => {
-    const names = ['list', 'get', 'create', 'open', 'rename', 'setArchived', 'stopAndArchive', 'delete', 'kill'];
-    const svc = Object.fromEntries(names.map(n => [n, vi.fn()]));
+  it('takes the initial input sender from Electron and checks it before entering the new task service', () => {
+    const submit = vi.fn();
     const handlers = new Map<string, Function>();
-    registerRPCRouter(createTaskController(svc as never, e => access.requireSender(e)), { handle: (name: string, fn: Function) => handlers.set(name, fn) } as never);
-    for (const name of names) {
-      const invoke = handlers.get(`tasks.${name}`)!;
-      expect(() => invoke({ sender: main, senderFrame: {} }, 'task-a')).toThrow('TERMINAL_SENDER_DENIED');
-      expect(svc[name]).not.toHaveBeenCalled();
-      invoke(event, 'task-a'); expect(svc[name]).toHaveBeenCalledTimes(1);
-    }
+    registerRPCRouter(createAgentTaskController({ tasks: { submit } } as never, e => access.requireSender(e)), {
+      handle: (name: string, fn: Function) => handlers.set(name, fn),
+    } as never);
+    const forged = { sender: sender(99), senderFrame: {} };
+    const request = { clientInputId: 'input-1', text: 'literal initial prompt' };
+    const invoke = handlers.get('agentTasks.submit')!;
+    expect(() => invoke(forged, 'task-a', request, event)).toThrow('TERMINAL_SENDER_DENIED');
+    expect(submit).not.toHaveBeenCalled();
+    invoke(event, 'task-a', request, forged);
+    expect(submit).toHaveBeenCalledExactlyOnceWith('task-a', request, event);
   });
 });

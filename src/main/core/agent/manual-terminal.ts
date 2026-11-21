@@ -12,21 +12,22 @@ export interface TerminalPtys {
 }
 
 export class AgentManualTerminals {
-  private readonly byTask = new Map<string, string>();
-  constructor(private readonly d: { ptys: TerminalPtys; taskCwd: (taskId: string) => string; baseEnv: () => Record<string, string> }) {
-    d.ptys.on('exit', id => { for (const [t, p] of this.byTask) if (p === id) this.byTask.delete(t); });
+  private readonly byTask = new Map<string, { ptyId: string; projectId: string | null }>();
+  constructor(private readonly d: { ptys: TerminalPtys; taskCwd: (taskId: string) => string; baseEnv: () => Record<string, string>; taskProject?: (taskId: string) => string | null }) {
+    d.ptys.on('exit', id => { for (const [t, p] of this.byTask) if (p.ptyId === id) this.byTask.delete(t); });
   }
-  activePty(taskId: string) { const id = this.byTask.get(taskId); return id && this.d.ptys.has(id) ? id : null; }
+  activePty(taskId: string) { const id = this.byTask.get(taskId)?.ptyId; return id && this.d.ptys.has(id) ? id : null; }
+  project(terminalKey: string) { return this.activePty(terminalKey) ? this.byTask.get(terminalKey)?.projectId ?? null : null; }
   open(taskId: string, size?: { cols: number; rows: number }) {
-    return this.openAt(taskId,this.d.taskCwd(taskId),size);
+    return this.openAt(taskId,this.d.taskCwd(taskId),size,this.d.taskProject?.(taskId)??null);
   }
   /** Host-only named shell (e.g. a selected registered home directory), not an Agent identity. */
-  openAt(taskId:string,cwd:string,size?:{cols:number;rows:number}){
+  openAt(taskId:string,cwd:string,size?:{cols:number;rows:number},projectId:string|null=null){
     const existing = this.activePty(taskId);
     if (existing) return { ptyId: existing };
     const cols = Math.min(Math.max(size?.cols ?? 120, 20), 500), rows = Math.min(Math.max(size?.rows ?? 24, 5), 200);
     const ptyId = this.d.ptys.spawn({ command: loginShell(), args: ['-i'], cwd, env: { ...this.d.baseEnv(), TERM: 'xterm-256color' }, cols, rows });
-    this.byTask.set(taskId, ptyId);
+    this.byTask.set(taskId, { ptyId, projectId });
     return { ptyId };
   }
   /**

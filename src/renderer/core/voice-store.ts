@@ -36,7 +36,7 @@ class VoiceStore {
     const offGlobalError = events.on(voiceGlobalErrorEvent, error => {
       runInAction(() => { this.notice = { kind: 'error', error }; });
     });
-    const offRoute = reaction(() => [navigation.currentViewId, navigation.currentTaskId, navigation.currentAgentTaskId, navigation.currentProjectId, navigation.settingsSection, navigation.homePreset?.seq], () => this.clear());
+    const offRoute = reaction(() => [navigation.currentViewId, navigation.currentAgentTaskId, navigation.currentProjectId, navigation.settingsSection, navigation.homePreset?.seq], () => this.clear());
     // Returning from System Settings rechecks the running bridge without
     // requesting permission or replaying the previous dictation shortcut.
     const recheck = () => void this.inspect();

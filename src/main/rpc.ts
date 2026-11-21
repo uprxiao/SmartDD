@@ -13,6 +13,7 @@ import type { AgentService } from './core/ai/agent-service';
 import type { AgentToolService } from './core/ai/agent-tools';
 import type { ProviderService } from './core/ai/provider-service';
 import type { ProfileHealth } from './core/ai/profile-health';
+import { codexConfigNotices } from './core/ai/codex-config-notices';
 import { createCapabilityController } from './core/capabilities/controller';
 import type { CapabilityService } from './core/capabilities/capability-service';
 import type { CapabilityRegistryService } from './core/capabilities/capability-registry';
@@ -20,8 +21,6 @@ import { createProjectControllers } from './core/projects/controller';
 import type { ProjectService } from './core/projects/project-service';
 import { createAppSettingsController } from './core/settings/controller';
 import type { SettingsStore } from './core/settings/settings-service';
-import { createTaskController } from './core/tasks/controller';
-import type { TaskService } from './core/tasks/task-service';
 import type { AgentSupportService } from './core/applications/agent-support-service';
 import { createApplicationController } from './core/applications/controller';
 import type { ApplicationService } from './core/applications/application-service';
@@ -36,7 +35,6 @@ import { createFileController } from './core/files/controller';
 import type { FileService } from './core/files/file-service';
 import { FileWorkspacePersistence } from './core/files/workspace-persistence';
 import { FileTerminalService } from './core/files/terminal-context';
-import { TerminalImageCache } from './core/files/terminal-image-cache';
 import {createBrowserController} from './core/browser/controller';
 import type {BrowserService} from './core/browser/service';
 import { createAgentTaskController } from './core/agent/controller';
@@ -57,7 +55,6 @@ export interface RpcDeps {
   agentTools: AgentToolService;
   providers: ProviderService;
   health: ProfileHealth;
-  tasks: TaskService;
   capabilities: CapabilityService;
   capabilityRegistry?:CapabilityRegistryService;
   onCapabilityChanged?:()=>void;
@@ -66,7 +63,6 @@ export interface RpcDeps {
   browser?:BrowserService;
   agentWorkspace?: AgentWorkspace;
   onProjectDeleted?:()=>void;
-  onTaskProfilesChanged?:()=>void;
   ptys: PtyManager;
   ptyAccess: PtyAccess;
   baseEnv: () => Record<string, string>;
@@ -74,14 +70,12 @@ export interface RpcDeps {
 }
 
 export function createRpcRouter(d: RpcDeps) {
-  const imageCache = new TerminalImageCache();
-  d.ptys.on('exit', (ptyId: string) => imageCache.releasePty(ptyId));
+  const notices = codexConfigNotices(d.client.db);
   return createRPCRouter({
     files: createFileController(d.files, d.trustedRenderer, new FileWorkspacePersistence(d.client.db), new FileTerminalService({
-      access: d.ptyAccess, roots: d.files.roots, taskProject: (taskId) => d.tasks.get(taskId).projectId,
+      access: d.ptyAccess, roots: d.files.roots, taskProject: (terminalKey) => d.agentWorkspace?.terminals?.project(terminalKey) ?? null,
       source: (owner, target, identity) => d.files.terminalSource(owner, target, identity),
       bracketedPaste: (ptyId) => d.ptys.bracketedPaste(ptyId), write: (ptyId, data) => d.ptys.writeControlled(ptyId, data),
-      images: { capability: (taskId, ptyId) => d.tasks.imageInput(taskId, ptyId), source: (owner, ref, baseHash) => d.files.terminalImageSource(owner, ref, baseHash), cache: imageCache },
     })),
     app: createRPCController({
       getInfo: () => ({
@@ -103,13 +97,17 @@ export function createRpcRouter(d: RpcDeps) {
     voice: createVoiceController(d.voice),
     projectTransfer: createTransferController(d.projectTransfer),
     appSettings: createAppSettingsController(d.settings, d.onSettingChanged, d.voice),
-    ...createProjectControllers(d.projects, { runningTasks: (id, matches) => d.tasks.runningInProject(id, matches), agentTasks: d.agentWorkspace?.projectResources, deleted: () => d.onProjectDeleted?.() }),
+    ...createProjectControllers(d.projects, { agentTasks: d.agentWorkspace?.projectResources, deleted: () => d.onProjectDeleted?.() }),
     ...createAiProfileController(d.aiProfiles, d.health, d.baseEnv),
-    ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles,d.onTaskProfilesChanged),
+    ...createAgentController(d.agents, d.agentTools, d.providers,d.aiProfiles),
+    codexConfig: createScopedRPCController({
+      notices: event => { d.ptyAccess.requireSender(event); return notices.list(); },
+      dismissNotice: (event, id: string) => { d.ptyAccess.requireSender(event); notices.dismiss(id); },
+      open: (event, id: string) => { d.ptyAccess.requireSender(event); return shell.openPath(notices.path(id)); },
+    }),
     agentTransfer: createAgentTransferController(d.agentTransfer),
     providerSetup: createProviderSetupController(d.providers),
     ...createAgentTaskController(d.agentWorkspace, (event) => d.ptyAccess.requireSender(event), d.files),
-    ...createTaskController(d.tasks, (event) => d.ptyAccess.requireSender(event),path=>shell.openPath(path)),
     ...createCapabilityController(d.capabilities, d.aiProfiles, d.baseEnv,d.capabilityRegistry,d.onCapabilityChanged),
     dialog: createRPCController({
       /** Native folder picker; null when cancelled. */

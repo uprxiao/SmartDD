@@ -4,8 +4,9 @@ import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import type {ApplicationVersionUsage} from '@shared/application-maintenance';
 import {ApplicationVersionsPanel} from './versions';
-const m=vi.hoisted(()=>({versions:vi.fn(),cleanupVersion:vi.fn(),cancelCleanupWait:vi.fn(),cancelCleanup:vi.fn(),openTask:vi.fn(),progressListeners:new Set<(v:{waitToken:string;phase:string})=>void>()}));
-vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m},events:{on:(_event:unknown,listener:(v:{waitToken:string;phase:string})=>void)=>{m.progressListeners.add(listener);return()=>m.progressListeners.delete(listener);}}}));vi.mock('@renderer/core/navigation',()=>({navigation:{openTask:m.openTask}}));
+const m=vi.hoisted(()=>({versions:vi.fn(),cleanupVersion:vi.fn(),cancelCleanupWait:vi.fn(),cancelCleanup:vi.fn(),openAgentTask:vi.fn(),progressListeners:new Set<(v:{waitToken:string;phase:string})=>void>()}));
+vi.mock('@renderer/lib/ipc',()=>({rpc:{applications:m},events:{on:(_event:unknown,listener:(v:{waitToken:string;phase:string})=>void)=>{m.progressListeners.add(listener);return()=>m.progressListeners.delete(listener);}}}));vi.mock('@renderer/core/navigation',()=>({navigation:{openAgentTask:m.openAgentTask}}));
+vi.mock('@renderer/core/agent-tasks-store',()=>({agentTasksStore:{tasks:[{taskId:'t1'}]}}));
 let client:QueryClient;
 const fixture=(more:Partial<ApplicationVersionUsage>={}):ApplicationVersionUsage=>({appId:'mail',version:'1.0.0',packageHash:'a'.repeat(64),resourceId:'app:'+'a'.repeat(64),state:'ready',defaultForNewSessions:false,sessionRefCount:0,tombstoneRefCount:0,activeRunCount:0,references:[],sourceBytes:2048,projectionBytes:0,reclaimableBytes:2048,integrity:'valid',compatibility:'compatible',retentionReasons:[],issues:[],canCleanup:true,planHash:'b'.repeat(64),...more});
 const response=(items:ApplicationVersionUsage[])=>({ok:true,value:{appId:'mail',items,checkedAt:'2026-10-20T00:00:00.000Z',recoveryPending:0}});
@@ -33,7 +34,22 @@ describe('version occupancy and explicit cleanup UI',()=>{
  it('shows default, history and deleted-task references separately and offers no cleanup for retained resources',async()=>{m.versions.mockResolvedValue(response([fixture({defaultForNewSessions:true,sessionRefCount:2,tombstoneRefCount:1,activeRunCount:1,canCleanup:false,retentionReasons:['新会话默认版本','已删除任务保留的原生历史引用']})]));mount();await screen.findByText('新会话默认');await screen.findByText('2 个会话 · 1 个已删任务保留引用 · 1 个运行占用');expect(screen.queryByRole('button',{name:'清理版本 v1.0.0'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'检查占用'}));await waitFor(()=>expect(m.versions).toHaveBeenCalledTimes(2));expect(m.cleanupVersion).not.toHaveBeenCalled();});
  it('keeps cleanup inert until concrete confirmation and submits only the original host plan',async()=>{mount();fireEvent.click(await screen.findByRole('button',{name:'清理版本 v1.0.0'}));expect(m.cleanupVersion).not.toHaveBeenCalled();fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'取消'}));expect(m.cleanupVersion).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'清理版本 v1.0.0'}));fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'确认清理版本'}));await waitFor(()=>expect(m.cleanupVersion).toHaveBeenCalledWith({appId:'mail',packageHash:'a'.repeat(64),planHash:'b'.repeat(64),waitToken:expect.any(String)}));await screen.findByText('已清理版本文件 2.0 KB；版本身份与业务数据保留。');});
  it('shows a changed-occupancy error and retains the original confirmation instead of silently cleaning a different plan',async()=>{m.cleanupVersion.mockResolvedValue({ok:false,code:'RESOURCE_STATE_CHANGED',message:'占用已变化，请重新检查'});mount();fireEvent.click(await screen.findByRole('button',{name:'清理版本 v1.0.0'}));fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'确认清理版本'}));await within(screen.getByRole('dialog')).findByText('占用已变化，请重新检查');expect(m.cleanupVersion).toHaveBeenCalledTimes(1);expect(screen.queryByText(/已清理版本文件/)).toBeNull();});
- it('opens a retained existing task explicitly but keeps deleted history without a fabricated task link',async()=>{m.versions.mockResolvedValue(response([fixture({canCleanup:false,references:[{taskId:'t1',title:'原会话',projectId:'p1',runner:'codex',deleted:false,retention:'active'},{taskId:'t2',title:null,projectId:'p1',runner:'claude-code',deleted:true,retention:'tombstone'}]})]));mount();fireEvent.click(await screen.findByRole('button',{name:'查看引用 v1.0.0'}));await screen.findByText('已删除任务的原生历史');expect(within(screen.getByRole('dialog')).getAllByRole('button',{name:'打开原任务'})).toHaveLength(1);expect(m.openTask).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'打开原任务'}));expect(m.openTask).toHaveBeenCalledWith('t1');});
+ it('opens a current Agent task while preserving historical references without obsolete task links',async()=>{
+  m.versions.mockResolvedValue(response([fixture({canCleanup:false,references:[
+   {taskId:'t1',title:'当前任务',projectId:'p1',runner:'codex',deleted:false,retention:'active'},
+   {taskId:'t2',title:null,projectId:'p1',runner:'claude-code',deleted:true,retention:'tombstone'},
+   {taskId:'t3',title:'历史终端任务',projectId:'p1',runner:'codex',deleted:false,retention:'active'},
+  ]})]));
+  mount();
+  fireEvent.click(await screen.findByRole('button',{name:/引用/}));
+  const dialog=within(screen.getByRole('dialog'));
+  expect(dialog.getByText('已删除任务的原生历史')).toBeTruthy();
+  expect(dialog.getByText('历史终端任务')).toBeTruthy();
+  expect(dialog.getAllByRole('button',{name:'打开原任务'})).toHaveLength(1);
+  expect(m.openAgentTask).not.toHaveBeenCalled();
+  fireEvent.click(dialog.getByRole('button',{name:'打开原任务'}));
+  expect(m.openAgentTask).toHaveBeenCalledExactlyOnceWith('t1');
+ });
 });
 
 it('shows upgrade blockers with target versions and affected identities without offering activation',async()=>{
@@ -48,7 +64,7 @@ it('never labels an existing upgrade target as passed when preflight is missing'
  const r=response([]);m.versions.mockResolvedValue({ok:true,value:{...r.value,upgrade:{state:'checked',targets:[{appId:'mail',version:'2.0.0',packageHash:'target'}],preflight:null}}});mount();await screen.findByText(/升级条件尚未核验/);expect(screen.queryByText('升级预检已通过，等待维护时切换')).toBeNull();expect(m.cleanupVersion).not.toHaveBeenCalled();
 });
 it('shows verified original version and public names with scoped actions, retaining a read-only impact report',async()=>{
- const r=response([]);m.versions.mockResolvedValue({ok:true,value:{...r.value,upgrade:{state:'checked',targets:[{appId:'mail',version:'2.0.0',packageHash:'target'}],preflight:{requiredBytes:10,availableBytes:'20',issues:[{code:'CONNECTION_CONTRACT_UNVERIFIED',causeCode:'CONFIG_INCOMPATIBLE',packageHash:'old-hash',taskId:'history-1',connectionId:'mail-1'}]},impacts:[{code:'CONNECTION_CONTRACT_UNVERIFIED',causeCode:'CONFIG_INCOMPATIBLE',packageHash:'old-hash',appId:'mail',appName:'邮件',version:'1.0.1',taskId:'history-1',taskTitle:'原邮件汇总会话',connectionId:'mail-1',connectionName:'本机测试来源',operations:['mail.read'],scope:'connection',verified:true}]}}});mount();const panel=await screen.findByRole('region',{name:'升级预检'});await within(panel).findByText('邮件 v1.0.1 · 原版本');expect(within(panel).getByText(/原邮件汇总会话/)).toBeTruthy();expect(within(panel).getByText(/本机测试来源/)).toBeTruthy();expect(within(panel).getByText(/读取邮件、正文及附件/)).toBeTruthy();expect(within(panel).getByText(/不能等价转换/)).toBeTruthy();expect(m.cleanupVersion).not.toHaveBeenCalled();expect(m.openTask).not.toHaveBeenCalled();
+ const r=response([]);m.versions.mockResolvedValue({ok:true,value:{...r.value,upgrade:{state:'checked',targets:[{appId:'mail',version:'2.0.0',packageHash:'target'}],preflight:{requiredBytes:10,availableBytes:'20',issues:[{code:'CONNECTION_CONTRACT_UNVERIFIED',causeCode:'CONFIG_INCOMPATIBLE',packageHash:'old-hash',taskId:'history-1',connectionId:'mail-1'}]},impacts:[{code:'CONNECTION_CONTRACT_UNVERIFIED',causeCode:'CONFIG_INCOMPATIBLE',packageHash:'old-hash',appId:'mail',appName:'邮件',version:'1.0.1',taskId:'history-1',taskTitle:'原邮件汇总会话',connectionId:'mail-1',connectionName:'本机测试来源',operations:['mail.read'],scope:'connection',verified:true}]}}});mount();const panel=await screen.findByRole('region',{name:'升级预检'});await within(panel).findByText('邮件 v1.0.1 · 原版本');expect(within(panel).getByText(/原邮件汇总会话/)).toBeTruthy();expect(within(panel).getByText(/本机测试来源/)).toBeTruthy();expect(within(panel).getByText(/读取邮件、正文及附件/)).toBeTruthy();expect(within(panel).getByText(/不能等价转换/)).toBeTruthy();expect(m.cleanupVersion).not.toHaveBeenCalled();expect(m.openAgentTask).not.toHaveBeenCalled();
 });
 
 it('keeps damaged historical actions unverified even when a stale display payload lists permissions',async()=>{

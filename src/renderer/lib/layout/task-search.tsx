@@ -4,10 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProjectList } from '@renderer/lib/hooks/useProjects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@renderer/lib/ui/select';
-import { matchTask } from '@shared/tasks';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
-import { tasksStore } from '@renderer/core/tasks-store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@renderer/lib/ui/dialog';
 import { cn } from '@renderer/utils/utils';
 
@@ -31,16 +29,15 @@ export const TaskSearchDialog = observer(function TaskSearchDialog() {
   }, [open]);
 
   const term = query.trim().toLowerCase();
-  const inProject = (id: string | null) => projectFilter==='all'||(id??'orphan')===projectFilter;
-  const all = agentTasksStore.enabled ? agentTasksStore.tasks
+  const inProject = (id: string | null) => projectFilter==='all'||id===projectFilter;
+  const all = agentTasksStore.tasks
     .filter(task=>inProject(task.projectId)&&task.title.toLowerCase().includes(term))
-    .map(task=>({id:task.taskId,title:task.title,projectName:projects.find(p=>p.id===task.projectId)?.name,archivedAt:null,aiProfileColor:null}))
-    : tasksStore.tasks.filter(task=>inProject(task.projectId)&&(matchTask(task,query)||(task.aiProfileName??'').toLowerCase().includes(term)));
+    .map(task=>({id:task.taskId,title:task.title,projectName:projects.find(p=>p.id===task.projectId)?.name,archivedAt:null,aiProfileColor:null}));
   const results = all.slice(0, LIMIT);
   const pick = (id: string | undefined) => {
     if (!id) return;
     navigation.setSearchOpen(false);
-    if (agentTasksStore.enabled) navigation.openAgentTask(id); else tasksStore.show(id);
+    navigation.openAgentTask(id);
   };
 
   useEffect(() => {
@@ -78,11 +75,11 @@ export const TaskSearchDialog = observer(function TaskSearchDialog() {
           />
           <kbd>Esc</kbd>
         </div>
-        <div className="m6-search-filter"><span>{t('projects.sidebar')}</span><Select value={projectFilter} onValueChange={(value) => { setProjectFilter(String(value)); setSelected(0); }}><SelectTrigger aria-label={t('m6.filterProject')}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{t('m6.allProjects')}</SelectItem>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}{!agentTasksStore.enabled && <SelectItem value="orphan">{t('task.noProject')}</SelectItem>}</SelectContent></Select></div>
+        <div className="m6-search-filter"><span>{t('projects.sidebar')}</span><Select value={projectFilter} onValueChange={(value) => { setProjectFilter(String(value)); setSelected(0); }}><SelectTrigger aria-label={t('m6.filterProject')}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{t('m6.allProjects')}</SelectItem>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
         <div ref={listRef} className="max-h-96 overflow-y-auto p-1.5">
           {results.length === 0 && (
             <div className="px-3 py-6 text-center text-sm text-foreground-passive">
-              {(agentTasksStore.enabled ? agentTasksStore.tasks : tasksStore.tasks).length === 0 ? t('search.noTasks') : t('search.noMatch')}
+              {agentTasksStore.tasks.length === 0 ? t('search.noTasks') : t('search.noMatch')}
             </div>
           )}
           {results.map((task, i) => (

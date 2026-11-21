@@ -6,14 +6,14 @@ import {sessionChangeQuerySchema,type SessionChangeImpact,type SessionChangeQuer
 type Task={id:string;projectId:string|null;cwd:string;runner:string};
 type Capability={sourceScope:string;projectRoot:string|null;runner:string};
 const physical=(path:string)=>{try{return realpathSync(path);}catch{return resolve(path);}};
-/** Actual live PTYs determine running status; old DB run rows never imply a live session.
+/** The runtime owner determines whether a session is still open; old DB run rows never imply a live session.
  * No credentials, process spawning, filesystem writes or task lists leave this service. */
 export class SessionChangeImpactService {
- constructor(private readonly db:Database.Database,private readonly activePty:(id:string)=>string|null,private readonly now=()=>new Date().toISOString()){}
+ constructor(private readonly db:Database.Database,private readonly sessionActive:(id:string)=>boolean|string|null,private readonly now=()=>new Date().toISOString()){}
  inspect(input:SessionChangeQuery):SessionChangeImpact {
   const q=sessionChangeQuerySchema.parse(input);
   return this.db.transaction(()=>{
-   const tasks=(this.db.prepare('SELECT t.id,t.project_id AS projectId,t.cwd,t.runner FROM tasks t LEFT JOIN projects p ON p.id=t.project_id WHERE t.archived_at IS NULL AND (t.project_id IS NULL OR p.id IS NOT NULL AND p.archived_at IS NULL)').all() as Task[]).filter(t=>this.activePty(t.id)!==null);
+   const tasks=(this.db.prepare('SELECT t.id,t.project_id AS projectId,t.cwd,t.runner FROM tasks t LEFT JOIN projects p ON p.id=t.project_id WHERE t.archived_at IS NULL AND (t.project_id IS NULL OR p.id IS NOT NULL AND p.archived_at IS NULL)').all() as Task[]).filter(t=>this.sessionActive(t.id));
    let affected:Task[],globalDisabled=false;
    if(q.kind==='plugin'){
     const global=this.db.prepare('SELECT added,enabled FROM application_catalog_state WHERE app_id=?').get(q.appId) as {added:number;enabled:number}|undefined;

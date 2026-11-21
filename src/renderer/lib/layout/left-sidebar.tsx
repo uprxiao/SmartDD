@@ -3,12 +3,11 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
-import { tasksStore } from '@renderer/core/tasks-store';
 import { SidebarProjects } from '@renderer/lib/layout/sidebar-projects';
 
 export const LeftSidebar = observer(function LeftSidebar() {
   const { t } = useTranslation();
-  const running = agentTasksStore.enabled ? agentTasksStore.tasks.filter(task=>task.status==='working').length : tasksStore.tasks.filter(task=>task.ptyId).length;
+  const running = agentTasksStore.tasks.filter(task=>task.status==='working').length;
   return <aside className="sidebar reference-sidebar">
     <div className="reference-sidebar-head">
       <button className="workspace-picker" onClick={() => navigation.openSettings('about')}>WillYou <ChevronDown size={14} /></button>

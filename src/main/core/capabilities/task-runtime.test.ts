@@ -11,7 +11,7 @@ import * as schema from '../../db/schema';
 import { SecretsStore } from '../../secrets';
 import { AiProfileService } from '../ai/ai-profile-service';
 import { ProjectService } from '../projects/project-service';
-import { TaskService } from '../tasks/task-service';
+import { TaskService } from '../tasks/task-service.test-fixture';
 import { CapabilityService } from './capability-service';
 import { LAUNCH_SCRIPT } from '../../launch-env';
 import type { SpawnOptions } from '../../pty-manager';

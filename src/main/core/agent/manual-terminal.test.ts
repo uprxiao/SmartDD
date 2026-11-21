@@ -1,5 +1,9 @@
 import { EventEmitter } from 'node:events';
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { PtyManager } from '../../pty-manager';
 import { AgentManualTerminals } from './manual-terminal';
 
 // M14-A52 手动终端（服务层）：任务目录、每任务一个、与 Agent 运行分离。
@@ -12,6 +16,45 @@ class Ptys extends EventEmitter {
   kill(id: string) { this.alive.delete(id); this.emit('exit', id, 0); }
 }
 describe('手动终端', () => {
+  it.skipIf(process.platform === 'win32')('A61 uses a real interactive shell in the selected directory after legacy task removal', async () => {
+    const cwd = realpathSync(mkdtempSync(join(tmpdir(), 'willyou-a61-shell-')));
+    const previousShell = process.env.SHELL;
+    process.env.SHELL = '/bin/sh';
+    const ptys = new PtyManager();
+    const terminals = new AgentManualTerminals({
+      ptys, baseEnv: () => ({ HOME: cwd, PATH: '/usr/bin:/bin', SHELL: '/bin/sh', ENV: '/dev/null' }),
+      taskCwd: () => cwd, taskProject: () => 'fixture-project',
+    });
+    const marker = 'A61_SHELL_READY';
+    try {
+      const { ptyId } = terminals.open('manual-only');
+      let transcript = '';
+      const output = new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(Error('手动 shell 未回报工作目录')), 5000);
+        ptys.on('data', (id, text) => {
+          if (id !== ptyId) return;
+          transcript += text;
+          if (transcript.includes(marker + ':' + cwd)) { clearTimeout(timer); resolve(); }
+        });
+      });
+      expect(terminals.project('manual-only')).toBe('fixture-project');
+      ptys.write(ptyId, `printf '%s:%s\\n' '${marker}' "$PWD"\r`);
+      await output;
+      const closed = new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(Error('手动 shell 未退出')), 5000);
+        ptys.on('exit', id => { if (id === ptyId) { clearTimeout(timer); resolve(); } });
+      });
+      ptys.write(ptyId, 'exit\r');
+      await closed;
+      expect(terminals.activePty('manual-only')).toBeNull();
+    } finally {
+      terminals.closeAll();
+      if (previousShell === undefined) delete process.env.SHELL;
+      else process.env.SHELL = previousShell;
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  }, 12_000);
+
   it('在任务目录起登录 shell，重复打开复用，退出或关闭后可重开', () => {
     const ptys = new Ptys();
     const t = new AgentManualTerminals({ ptys, baseEnv: () => ({ PATH: '/bin' }), taskCwd: id => `/w/${id}` });

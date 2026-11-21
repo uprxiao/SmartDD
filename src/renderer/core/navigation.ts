@@ -4,7 +4,7 @@ import { makeAutoObservable } from 'mobx';
 import { normalizedFilePanelWidth, readFilePanelWidthPreference } from '@shared/file-panel-layout.mjs';
 
 /** The view registry: every top-level view the main area can show. */
-export const VIEW_IDS = ['home', 'task', 'agentTask', 'settings', 'project', 'scheduled', 'apps'] as const;
+export const VIEW_IDS = ['home', 'agentTask', 'settings', 'project', 'scheduled', 'apps'] as const;
 export type ViewId = (typeof VIEW_IDS)[number];
 
 export type ApplicationPage = 'catalog' | 'skills' | 'projects' | 'activity' | ApplicationId | `plugin:${string}`;
@@ -21,8 +21,6 @@ class NavigationStore {
   projectSection: ProjectSectionId = 'overview';
   /** The project the 'project' view shows. */
   currentProjectId: string | null = null;
-  /** The task the 'task' view shows. */
-  currentTaskId: string | null = null;
   /** M14 新任务区显示的任务。 */
   currentAgentTaskId: string | null = null;
   agentTaskReadOnly = false;
@@ -82,11 +80,6 @@ class NavigationStore {
     if (this.currentAgentTaskId===id) this.agentTaskReadOnly=readOnly;
   }
 
-  openTask(id: string): void {
-    this.currentTaskId = id;
-    this.currentViewId = 'task';
-  }
-
   setSearchOpen(open: boolean): void {
     this.searchOpen = open;
   }
@@ -143,11 +136,6 @@ class NavigationStore {
     if (this.currentViewId === 'project') this.currentViewId = 'home';
   }
 
-  closeTask(id: string): void {
-    if (this.currentTaskId !== id) return;
-    this.currentTaskId = null;
-    if (this.currentViewId === 'task') this.currentViewId = 'home';
-  }
 }
 
 export const navigation = new NavigationStore();

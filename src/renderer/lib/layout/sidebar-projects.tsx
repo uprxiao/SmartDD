@@ -3,11 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProjectSummary } from '@shared/projects';
-import type { TaskView } from '@shared/tasks';
 import { navigation } from '@renderer/core/navigation';
-import { tasksStore } from '@renderer/core/tasks-store';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
-import { TaskRow } from '@renderer/lib/layout/sidebar-tasks';
 import { agentTasksStore, type AgentTaskSummary } from '@renderer/core/agent-tasks-store';
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/lib/ui/popover';
 import { cn } from '@renderer/utils/utils';
@@ -17,7 +14,7 @@ import { rpc } from '@renderer/lib/ipc';
 import { projectTransferNavigation } from '@renderer/core/project-transfer';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
 
-const ProjectNode = observer(function ProjectNode({ project, tasks }: { project: ProjectSummary; tasks: TaskView[] }) {
+const ProjectNode = observer(function ProjectNode({ project }: { project: ProjectSummary }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(true);
   const [menu, setMenu] = useState(false);
@@ -35,7 +32,7 @@ const ProjectNode = observer(function ProjectNode({ project, tasks }: { project:
       <button className="reference-project-name" title={project.name} onClick={() => archived ? edit() : navigation.newTask(project.id)}>{project.name}</button>
       <div className="row-actions"><Popover open={menu} onOpenChange={setMenu}><PopoverTrigger ref={menuTrigger} className="row-action" data-testid="sidebar-project-more" aria-label={`${t('m6.projectMenu')}: ${project.name}`}><Ellipsis size={16} /></PopoverTrigger><PopoverContent side="right" align="start" sideOffset={8} className="m6-project-popup project-detail-popup" data-testid="project-detail-popup">
         <button className="popup-project-title" onClick={edit}><Folder size={16} /><span>{project.name}</span></button>
-        <div className="popup-meta"><MessageCircle size={15} /><span>{t('m6.taskCount', { count: agentTasksStore.enabled ? agentTasksStore.of(project.id).length : tasks.length })}</span></div>
+        <div className="popup-meta"><MessageCircle size={15} /><span>{t('m6.taskCount', { count: agentTasksStore.of(project.id).length })}</span></div>
         <div className="popup-divider" /><div className="popup-meta popup-project-path" title={dir?.path}><Folder size={15} /><span>{dir?.path ?? t('home.noDir')}</span></div><div className="popup-divider" />
         <button data-testid="sidebar-project-edit" onClick={edit}><Settings size={16} />{t('m6.projectResources')}</button>
         <button data-testid="sidebar-project-export" onClick={() => { setMenu(false); projectTransferNavigation.openExport(project.id, menuTrigger.current); }}><Download size={16} />导出项目</button>
@@ -45,7 +42,7 @@ const ProjectNode = observer(function ProjectNode({ project, tasks }: { project:
       {!archived && <button className="row-action" data-testid="sidebar-project-new-task" title={t('tasks.newInProject')} onClick={() => navigation.newTask(project.id)}><SquarePen size={15} /></button>}</div>
     </div>
     {detail && <ProjectDeleteDialog project={detail} open={deleting} onOpenChange={setDeleting} />}
-    {open && <div className="reference-project-tasks">{agentTasksStore.enabled ? agentTasksStore.of(project.id).map(task => <AgentTaskRow key={task.taskId} task={task} />) : tasks.map((task) => <TaskRow key={task.id} task={task} indent />)}</div>}
+    {open && <div className="reference-project-tasks">{agentTasksStore.of(project.id).map(task => <AgentTaskRow key={task.taskId} task={task} />)}</div>}
   </div>;
 });
 
@@ -72,23 +69,15 @@ const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskS
   </button>;
 });
 
-/** Project → task tree (PRD F05). Archived tasks and projects are folded away at the bottom. */
+/** Project → task tree (PRD F05). Archived projects are folded away at the bottom. */
 export const SidebarProjects = observer(function SidebarProjects() {
   const { t } = useTranslation();
   const { data: all = [] } = useProjectList(true);
   const [creating, setCreating] = useState(0);
   const projectActions = useRef<HTMLButtonElement>(null);
   const [showArchivedProjects, setShowArchivedProjects] = useState(false);
-  const [showArchivedTasks, setShowArchivedTasks] = useState(false);
   const activeProjects = all.filter((p) => p.archivedAt === null);
   const archivedProjects = all.filter((p) => p.archivedAt !== null);
-
-  const liveTasks = tasksStore.tasks.filter((x) => x.archivedAt === null);
-  const archivedTasks = tasksStore.tasks.filter((x) => x.archivedAt !== null);
-  const tasksOf = (projectId: string) => liveTasks.filter((x) => x.projectId === projectId);
-  const known = new Set(all.map((p) => p.id));
-  // Records without a project: migrated from M0 sessions.
-  const orphans = liveTasks.filter((x) => x.projectId === null || !known.has(x.projectId));
 
   return (
     <div className="reference-projects">
@@ -99,7 +88,7 @@ export const SidebarProjects = observer(function SidebarProjects() {
       <div className="m6-project-tree">
         {activeProjects.length === 0 && <div className="px-2 py-2 text-xs text-foreground-passive">{t('projects.none')}</div>}
         {activeProjects.map((p) => (
-          <ProjectNode key={p.id} project={p} tasks={tasksOf(p.id)} />
+          <ProjectNode key={p.id} project={p} />
         ))}
         {archivedProjects.length > 0 && (
           <>
@@ -109,27 +98,8 @@ export const SidebarProjects = observer(function SidebarProjects() {
               onClick={() => setShowArchivedProjects((v) => !v)}
               label={t('projects.archived', { count: archivedProjects.length })}
             />
-            {showArchivedProjects && archivedProjects.map((p) => <ProjectNode key={p.id} project={p} tasks={tasksOf(p.id)} />)}
+            {showArchivedProjects && archivedProjects.map((p) => <ProjectNode key={p.id} project={p} />)}
           </>
-        )}
-        {!agentTasksStore.enabled && orphans.length > 0 && (
-          <>
-            <div className="mt-3 px-2 pb-1 text-xs text-foreground-passive">{t('tasks.noProjectGroup')}</div>
-            {orphans.map((task) => (
-              <TaskRow key={task.id} task={task} />
-            ))}
-          </>
-        )}
-        {!agentTasksStore.enabled && archivedTasks.length > 0 && (
-          <div className="mt-3">
-            <Toggle
-              testId="sidebar-archived-tasks-toggle"
-              open={showArchivedTasks}
-              onClick={() => setShowArchivedTasks((v) => !v)}
-              label={t('tasks.archivedGroup', { count: archivedTasks.length })}
-            />
-            {showArchivedTasks && archivedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
-          </div>
         )}
       </div>
       {creating > 0 && <ProjectDialog key={creating} open onOpenChange={(open) => !open && setCreating(0)} />}

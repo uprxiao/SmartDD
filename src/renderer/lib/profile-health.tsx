@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { AiProfileView, ProfileCheck } from '@shared/ai-profiles';
 import { aiProfilesChangedEvent } from '@shared/events';
-import { tasksStore } from '@renderer/core/tasks-store';
+import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { aiProfilesKey } from '@renderer/lib/hooks/useAiProfiles';
 import { events } from '@renderer/lib/ipc';
 import { cn } from '@renderer/utils/utils';
@@ -49,7 +49,7 @@ export function healthLabel(t: TFunction, state: HealthState): string {
 function sourceLabel(t: TFunction, source: ProfileCheck['source']): string {
   if (source === 'manual') return t('aiProfiles.health.sourceManual');
   if (source === 'auto') return t('aiProfiles.health.sourceAuto');
-  const task = tasksStore.byId.get(source.slice('task:'.length));
+  const task = agentTasksStore.tasks.find(task => task.taskId === source.slice('task:'.length));
   return task ? t('aiProfiles.health.sourceTask', { title: task.title }) : t('aiProfiles.health.sourceTaskGone');
 }
 

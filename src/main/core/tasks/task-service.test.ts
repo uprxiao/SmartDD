@@ -13,7 +13,7 @@ import { SecretsStore, type SecretCipher } from '../../secrets';
 import { AiProfileService } from '../ai/ai-profile-service';
 import type { HealthEvent } from '../ai/health-classify';
 import { ProjectService } from '../projects/project-service';
-import { ARCHIVE_STOP_TIMEOUT_MS, TaskService, type PtyHost } from './task-service';
+import { ARCHIVE_STOP_TIMEOUT_MS, TaskService, type PtyHost } from './task-service.test-fixture';
 import { builtinRunnerAdapters, RunnerAdapterRegistry, type RunnerAdapter } from './runner-adapters';
 import type {CodexInitializationGate,CodexInitializationLease} from '../applications/codex-initialization';
 
@@ -663,12 +663,13 @@ describe('rename / archive / list', () => {
     expect(svc.list()).toHaveLength(1);
   });
 
-  it('deleting the project deletes its tasks', async () => {
+  it('retains a historical terminal task when its project is deleted', async () => {
     const p = project();
-    (await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'a' }));
+    const { task } = await svc.create({ projectId: p.id, dirId: null, aiProfileId: claudeProfile().id, firstMessage: 'historic input' });
     ptys.emit('exit', 'pty-1', 0);
     projects.deleteProject(p.id, { deleteSecrets: true });
-    expect(svc.list({ includeArchived: true })).toEqual([]);
+    expect(() => projects.getProject(p.id)).toThrow();
+    expect(svc.get(task.id)).toMatchObject({ projectId: null, cwd: task.cwd, firstMessage: 'historic input', ptyId: null });
   });
 });
 

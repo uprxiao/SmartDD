@@ -30,7 +30,7 @@ import { SessionTail } from './session-health';
 import { ServiceFailureStreak } from './service-failure';
 import type { TaskCapabilityLaunch, TaskCapabilityLauncher, TaskInputSender } from './capability-lifecycle';
 import { imageInputCapability, type TerminalImageCapability } from '@shared/terminal-image';
-import type { AgentRuntimeService, PreparedAgentRun, AgentRestoreInput } from '../ai/agent-runtime';
+import type { AgentRuntimeService, PreparedAgentRun, AgentRestoreInput } from '../ai/agent-runtime.test-fixture';
 import type { AgentPermission } from '@shared/agent-permissions';
 import type {CodexInitializationGate,CodexInitializationLease} from '../applications/codex-initialization';
 

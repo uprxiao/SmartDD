@@ -22,7 +22,7 @@ import {
   type TestCategory,
 } from '@shared/projects';
 import type { AppDb } from '../../db/client';
-import { projectDatabases, projectDirs, projects, projectServers } from '../../db/schema';
+import { projectDatabases, projectDirs, projects, projectServers, tasks } from '../../db/schema';
 import type { SecretsStore } from '../../secrets';
 import { inspectDir, pathIdentity } from './dir-status';
 import { secretKeys } from './secret-keys';
@@ -178,7 +178,11 @@ export class ProjectService {
         ]);
       }
       purgeAgentTasks?.();
-      // Child rows go with it (ON DELETE CASCADE).
+      // Agent tasks above follow the confirmed removal plan. Historic task rows
+      // and their native/AI snapshots remain even when their project is removed.
+      this.db.update(tasks).set({ projectId: null })
+        .where(and(eq(tasks.projectId, id), sql`NOT EXISTS (SELECT 1 FROM agent_tasks WHERE task_id = ${tasks.id})`)).run();
+      // Other project-owned child rows still follow ON DELETE CASCADE.
       this.db.delete(projects).where(eq(projects.id, id)).run();
     });
     this.cleanupOwnedKeys();

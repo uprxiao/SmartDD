@@ -1,12 +1,11 @@
 import { Menu } from '@base-ui/react/menu';
 import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from './full-access-confirm';
-import { Check, ChevronDown, Settings } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useState } from 'react';
-import type { ProviderView, RunConfigView } from '@shared/ai-agents';
+import type { RunConfigView } from '@shared/ai-agents';
 import { agentPermission, type AgentPermission } from '@shared/agent-permissions';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
-import { navigation } from '@renderer/core/navigation';
-import { AgentIcon, PermIcon } from './icons';
+import { PermIcon } from './icons';
 import { AgentDialog } from './ui';
 import './style.css';
 import './home.css';
@@ -16,23 +15,10 @@ export { permissionLabels } from './permission-labels';
 export function homeAgents(configs: readonly RunConfigView[]) {
   // Service order is authoritative, including its fixed first default. Missing Key
   // or an offline model remains selectable so preflight can offer the right repair.
-  return configs.filter(c => c.homeVisible && c.available && !c.loggedOut);
+  return configs.filter(c => c.source !== 'legacy' && ['claude', 'codex'].includes(c.kind) && c.homeVisible && c.available && !c.loggedOut);
 }
 export function homeAgentId(configs: readonly RunConfigView[], lastId?: string|null) {
   return configs.find(c => c.isDefault)?.id ?? configs.find(c => c.id === lastId)?.id ?? configs[0]?.id ?? null;
-}
-export function HomeAgentPicker({configs, providers, value, onChange}: {
-  configs: RunConfigView[]; providers: ProviderView[]; value: string|null; onChange(id:string):void;
-}) {
-  const selected=configs.find(c=>c.id===value);
-  const icon=(c:RunConfigView,size:number)=>{const p=providers.find(p=>p.id===c.providerId);return <AgentIcon tool={c.kind} provider={p?{catalog:p.preset,name:p.name}:null} legacy={c.source==='legacy'} size={size}/>;};
-  return <Menu.Root><Menu.Trigger className="m13-home-agent-trigger" data-testid="home-profile" aria-label="选择智能体">
-    {selected&&icon(selected,16)}<span>{selected?.name??'选择智能体'}</span><ChevronDown size={12}/>
-  </Menu.Trigger><Menu.Portal><div className="m13-shell"><Menu.Positioner side="top" align="center" sideOffset={8} className="m13-home-positioner">
-    <Menu.Popup className="m13-home-agent-menu" aria-label="智能体"><span className="m13-home-menu-label">智能体</span>
-      {configs.map(c=><Menu.Item render={<button type="button"/>} key={c.id} className="agent-choice" onClick={()=>onChange(c.id)}>{icon(c,20)}<span>{c.name}</span>{value===c.id&&<Check size={14}/>}</Menu.Item>)}
-      <Menu.Separator className="popup-divider"/><Menu.Item render={<button type="button"/>} onClick={()=>navigation.openSettings('aiProfiles')}><Settings size={15}/>管理智能体</Menu.Item>
-    </Menu.Popup></Menu.Positioner></div></Menu.Portal></Menu.Root>;
 }
 export function HomePermissionPicker({kind,disabled=false}:{kind:string;disabled?:boolean}) {
   const pref=useAppSettingsKey('agentPermissions'),[confirm,setConfirm]=useState(false),[help,setHelp]=useState(false);

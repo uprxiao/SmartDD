@@ -9,7 +9,6 @@ import { navigation,type ProjectSectionId } from '@renderer/core/navigation';
 import { ProjectApplications } from '@renderer/features/applications/project-applications';
 import '@renderer/features/applications/style.css';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
-import { tasksStore } from '@renderer/core/tasks-store';
 import { useProject, useRefreshProjects } from '@renderer/lib/hooks/useProjects';
 import { rpc } from '@renderer/lib/ipc';
 import { Badge } from '@renderer/lib/ui/badge';
@@ -179,8 +178,7 @@ function Card({ prod, children, testId }: { prod?: boolean; children: ReactNode;
 
 const Tasks = observer(function Tasks({ project }: { project: ProjectDetail }) {
   const { t } = useTranslation();
-  const tasks = agentTasksStore.enabled ? [] : tasksStore.tasks.filter((x) => x.projectId === project.id);
-  const agentTasks = agentTasksStore.enabled ? agentTasksStore.of(project.id) : [];
+  const agentTasks = agentTasksStore.of(project.id);
   return (
     <div className="flex flex-col gap-3">
       {project.archivedAt === null && (
@@ -191,31 +189,12 @@ const Tasks = observer(function Tasks({ project }: { project: ProjectDetail }) {
           </Button>
         </div>
       )}
-      {tasks.length + agentTasks.length === 0 && <p className="text-sm text-foreground-passive">{t('tasks.noneInProject')}</p>}
+      {agentTasks.length === 0 && <p className="text-sm text-foreground-passive">{t('tasks.noneInProject')}</p>}
       {agentTasks.map(task=><button key={task.taskId} type="button" data-testid="project-agent-task"
         className="flex items-center rounded-lg border border-border px-4 py-2.5 text-left hover:bg-background-1"
         onClick={()=>navigation.openAgentTask(task.taskId)}>
         <span className="truncate text-sm">{task.title}</span>
       </button>)}
-      {tasks.map((task) => (
-        <button
-          key={task.id}
-          type="button"
-          data-testid="project-task"
-          onClick={() => tasksStore.show(task.id)}
-          className={cn(
-            'flex items-center gap-3 rounded-lg border border-border px-4 py-2.5 text-left hover:bg-background-1',
-            task.archivedAt !== null && 'opacity-60'
-          )}
-        >
-          <span className="h-4 w-[3px] shrink-0 rounded-full" style={{ background: task.aiProfileColor ?? 'var(--color-border)' }} />
-          <span className="min-w-0 flex-1 truncate text-sm">{task.title}</span>
-          <span className="shrink-0 text-xs text-foreground-passive">{task.aiProfileName ?? '—'}</span>
-          <span className="shrink-0 text-xs text-foreground-passive">
-            {task.ptyId ? t('task.running') : task.archivedAt !== null ? t('search.archived') : t(`task.recovery.${task.recovery}`)}
-          </span>
-        </button>
-      ))}
     </div>
   );
 });

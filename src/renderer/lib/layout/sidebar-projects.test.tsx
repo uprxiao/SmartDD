@@ -18,10 +18,10 @@ vi.mock('@renderer/lib/hooks/useProjects', () => ({
   useRefreshProjects: () => m.refresh,
 }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { projects: { setArchived: m.setArchived, delete: m.remove, deletePreview:m.preview } }, events: { on: () => () => undefined } }));
-vi.mock('@renderer/lib/layout/sidebar-tasks', () => ({ TaskRow: () => null }));
+vi.mock('@renderer/core/agent-tasks-store', () => ({ agentTasksStore: { of: () => [], refresh: m.refresh } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-beforeEach(() => { vi.clearAllMocks(); m.setArchived.mockResolvedValue(undefined); m.remove.mockResolvedValue(undefined); m.preview.mockResolvedValue({taskCount:0,archivedCount:0,paths:[],worktrees:[],blockers:[],confirmation:null,legacyRunning:0}); m.refresh.mockResolvedValue(undefined); });
+beforeEach(() => { vi.clearAllMocks(); m.setArchived.mockResolvedValue(undefined); m.remove.mockResolvedValue(undefined); m.preview.mockResolvedValue({taskCount:0,archivedCount:0,paths:[],worktrees:[],blockers:[],confirmation:null}); m.refresh.mockResolvedValue(undefined); });
 afterEach(() => cleanup());
 
 const openMenu = async () => { fireEvent.click(screen.getByTestId('sidebar-project-more')); return screen.findByTestId('sidebar-project-delete'); };
@@ -44,15 +44,15 @@ describe('sidebar project menu', () => {
     fireEvent.click(await openMenu());
     const title = await screen.findByText('projects.confirm.projectTitle');
     expect(m.remove).not.toHaveBeenCalled();
-    await waitFor(() => expect(screen.getByText('projects.confirm.projectBody')).toBeTruthy());
-    const confirm = screen.getAllByRole('button', { name: 'projects.actions.delete' }).find((b) => title.closest('[role="dialog"]')?.contains(b));
+    await waitFor(() => expect(screen.getByText(/将删除 0 个 Agent 任务/)).toBeTruthy());
+    const confirm = screen.getAllByRole('button', { name: '删除项目' }).find((b) => title.closest('[role="dialog"]')?.contains(b));
     fireEvent.click(confirm!);
     await waitFor(() => expect(m.remove).toHaveBeenCalledWith('p1', { deleteSecrets: true }));
   });
 });
 
 it('G1 shows the precise delete inventory and sends the checked confirmation', async () => {
-  m.preview.mockResolvedValueOnce({taskCount:3,archivedCount:1,paths:['/private/ais'],worktrees:['/private/fixture/worktree'],blockers:[],confirmation:'listed-records',legacyRunning:0});
+  m.preview.mockResolvedValueOnce({taskCount:3,archivedCount:1,paths:['/private/ais'],worktrees:['/private/fixture/worktree'],blockers:[],confirmation:'listed-records'});
   render(<SidebarProjects />);
   fireEvent.click(await openMenu());
   expect(await screen.findByText(/将删除 3 个 Agent 任务/)).toBeTruthy();
@@ -62,7 +62,7 @@ it('G1 shows the precise delete inventory and sends the checked confirmation', a
 });
 
 it('G1 names the blocker without offering destructive confirmation', async () => {
-  m.preview.mockResolvedValueOnce({taskCount:1,archivedCount:0,paths:[],worktrees:[],blockers:[{taskId:'busy',title:'写入任务',reasons:['有待处理请求']}],confirmation:'busy',legacyRunning:0});
+  m.preview.mockResolvedValueOnce({taskCount:1,archivedCount:0,paths:[],worktrees:[],blockers:[{taskId:'busy',title:'写入任务',reasons:['有待处理请求']}],confirmation:'busy'});
   render(<SidebarProjects />);
   fireEvent.click(await openMenu());
   expect(await screen.findByText('项目暂时无法删除')).toBeTruthy();
