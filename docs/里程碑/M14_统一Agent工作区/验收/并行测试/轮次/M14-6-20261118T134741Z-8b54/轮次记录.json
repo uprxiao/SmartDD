@@ -1,6 +1,6 @@
 {
   "runId": "M14-6-20261118T134741Z-8b54",
-  "updatedAt": "2026-11-20T21:33:02+08:00",
+  "updatedAt": "2026-11-21T08:48:17+08:00",
   "sourceCommit": "36dfb7ae652d6c37f4b9355e772d924d5b8f6c81",
   "plan": "../../../并行测试分组.json",
   "build": {
@@ -18,10 +18,10 @@
       }
     ],
     "candidate": {
-      "commit": "a0cb92c23bf843d4b2405b173d438c6bf597bd57",
+      "commit": "f308e26c116e4613863d1edc48e11ce8dccc0ff1",
       "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
-      "asarSha256": "a854be426e4a936c0974536d5adb441784d809cd4cbecac8648e94a71576a92b",
-      "status": "signed isolated package; strict signature verified; six native checks passed; D06-81 fix"
+      "asarSha256": "b07f8f4add78c22f4e231b357b4ef7fb9d5b6c42dbdaba549f9d2dfdde4fd00e",
+      "status": "A61 candidate with D06-82 fix; strict signature, six native probes, attempt 740 and A11 attempts 741–742 passed"
     },
     "priorCandidates": [
       {
@@ -390,6 +390,18 @@
         "path": "/private/tmp/willyou-m14-stage6.WRvdST/package/mac-arm64/WillYou.app",
         "asarSha256": "ca01a1cc01b5a3ec5641e726101b1e09762a184f98243db7f0618a74f8fb14c9",
         "status": "D06-62 isolated ad hoc signed build; codesign verified; six native smoke checks passed; alias superseded"
+      },
+      {
+        "commit": "a0cb92c23bf843d4b2405b173d438c6bf597bd57",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/package-a0cb92c23/mac-arm64/WillYou.app",
+        "asarSha256": "a854be426e4a936c0974536d5adb441784d809cd4cbecac8648e94a71576a92b",
+        "status": "signed isolated package; strict signature verified; six native checks passed; D06-81 fix"
+      },
+      {
+        "commit": "d77367b7354db827ccb04f4ef9ac84ce1a4baef1",
+        "path": "/private/tmp/willyou-m14-stage6.WRvdST/package-d77367b73/mac-arm64/WillYou.app",
+        "asarSha256": "6b1382b205c59ffe017685f85fef44bc30741d9da07a366164b284e4f229800a",
+        "status": "A61 cleanup candidate; strict signature and native smoke passed; D06-82 reproduced"
       }
     ]
   },
@@ -415,7 +427,7 @@
       "evidence": "证据/并行测试/M14-6-20261118T134741Z-8b54/software/a06-a10-a28-preflight/README.md"
     }
   },
-  "next": "当前包 a0cb92c23（app.asar a854be42…a92b，含 D06-81）。剩 1 条：A61 旧任务代码清理后复验（清理、静态引用检查、重建，重跑 A08–A12/A37–A42/A51/A52/A63 及 M13 全量）。订阅测试 HOME 在 g03/subscription-home（测试钥匙串 willyou-test.keychain-db），测完删除；测试包辅助功能授权待用户移除。",
+  "next": "剩余 A61。A08–A12、A37–A42 和 A63 的后台应用判据已复验；A51 后台启动与业务链路通过，退出待复验。冻结包 f308e26c1 的 M13 专项全量正在执行，之后集中处理真实语音及系统前台步骤。",
   "m13Regression": {
     "commit": "216acf6a7bf486f9031a836dea957f94ccf7d76b",
     "passed": 2378,
@@ -491,7 +503,7 @@
     "applicable": 73,
     "notFullyExecuted": 1,
     "blocked": 0,
-    "verifiedAt": "2026-11-20T21:33:02+08:00",
+    "verifiedAt": "2026-11-21T08:48:17+08:00",
     "completionPercent": 98.63
   },
   "checkpointHistory": [
