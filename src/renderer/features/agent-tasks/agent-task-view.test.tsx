@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 // M14-A45 长内容全文与复制、A43 草稿初始化竞态（复核 2127 FR04／FR05）：组件层回归，不代替打包 App 验收。
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render as renderView, screen, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), history: vi.fn(), events: vi.fn(), historyItems: vi.fn(), profiles: vi.fn(), submit: vi.fn(), saveDraft: vi.fn(), holdDraftAttachments: vi.fn(), on: vi.fn(), archive:vi.fn(), unarchive:vi.fn(), discardAttachment:vi.fn(), prepareAttachment: vi.fn(), itemBody: vi.fn(), draftBody: vi.fn(), businessReview: vi.fn(), requestBody: vi.fn(), respond: vi.fn(), readUserInput: vi.fn(), editQueued: vi.fn(), sendQueued: vi.fn(), cancelQueued: vi.fn(), retryFailedInput: vi.fn(), forceStop: vi.fn(), saveProjectPlan: vi.fn(), command: vi.fn(), goal: vi.fn(), toast: vi.fn() }));
 vi.mock('@renderer/lib/ipc', () => ({ rpc: { agentTasks: mocks }, events: { on: mocks.on } }));
@@ -15,6 +16,10 @@ import {agentComposerTargets} from './composer-target';
 import { AgentTaskView } from './agent-task-view';
 import { AgentChildSummary, type Relations } from './agent-relations';
 
+function render(element: React.ReactElement) {
+  const client = new QueryClient({defaultOptions:{queries:{retry:false, gcTime:0}}});
+  return renderView(element, {wrapper: ({children}) => <QueryClientProvider client={client}>{children}</QueryClientProvider>});
+}
 afterEach(() => cleanup());
 beforeEach(() => {
   vi.clearAllMocks();
@@ -34,6 +39,39 @@ const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', 
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
 /** 把完整正文按两段返回，模拟按字节分段读取。 */
 const serveInTwo = (payload: unknown) => { const t = JSON.stringify(payload), mid = Math.floor(t.length / 2); return (_: string, __: string, off: number) => Promise.resolve(off === 0 ? { chunk: t.slice(0, mid), next: 1, done: false } : { chunk: t.slice(mid), next: 2, done: true }); };
+
+it('A59 keeps the active status with the user message while startup diagnostics arrive', async () => {
+  const turnId = 'hello-turn';
+  const entry = (ordinal: number, type: string, payload: unknown) => ({ ...item(type, payload), itemId: `hello-${ordinal}`, turnId, ordinal });
+  const items = [entry(1, 'user_message', { text: '你好' }), entry(2, 'system_notice', {
+    code: 'mcpStartup', title: 'MCP 启动 · personal', severity: 'warning', diagnosticOnly: false, detail: '握手失败',
+  })];
+  const now = new Date().toISOString();
+  const turn = { turn_id: turnId, status: 'accepted', accepted_at: now, started_at: null, ended_at: null, error_code: null };
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', preparingTurnId: turnId, turns: [turn], items }));
+  const preparing = render(<AgentTaskView taskId="task" />);
+  const user = await screen.findByText('你好');
+  expect(within(user.closest('.agent-turn') as HTMLElement).getByText('正在准备执行器…')).toBeTruthy();
+  expect(screen.queryByText('思考中')).toBeNull();
+  preparing.unmount();
+
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', turns: [{ ...turn, started_at: now, status: 'started' }], items }));
+  const active = render(<AgentTaskView taskId="task" />);
+  await screen.findByText('思考中');
+  expect(screen.queryByText(/MCP 启动 · personal/)).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: '更多' }));
+  fireEvent.click(screen.getByRole('button', { name: '运行诊断' }));
+  expect(within(screen.getByRole('dialog', { name: '运行诊断' })).getByText('MCP 启动 · personal')).toBeTruthy();
+  active.unmount();
+
+  mocks.snapshot.mockResolvedValue(snapshot({ status: 'completed', turns: [{ ...turn, started_at: now, ended_at: now, status: 'completed' }], items: [
+    ...items, entry(3, 'assistant_message', { text: '今天想一起做点什么？' }), entry(4, 'files_changed', { fileCount: 0, status: 'complete' }),
+  ] }));
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByText('今天想一起做点什么？');
+  expect(screen.queryByText('思考中')).toBeNull();
+  expect(screen.queryByText('查看差异')).toBeNull();
+});
 
 it('A26 shows the delegated child’s inherited tier without opening another permission choice', async () => {
   mocks.snapshot.mockResolvedValue(snapshot({ parentTaskId: 'parent' }));

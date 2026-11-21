@@ -27,6 +27,7 @@ import {useBrowserShortcuts} from '@renderer/features/browser/workspace';
 export const Workspace = observer(function Workspace() {
   const { t } = useTranslation();
   const [isLeftOpen, setIsLeftOpen] = useState(true);
+  const [taskTitlebar, setTaskTitlebar] = useState<HTMLDivElement | null>(null);
   const width = navigation.sidebarWidth;
   useEffect(() => events.on(menuToggleLeftSidebarEvent, () => setIsLeftOpen((v) => !v)), []);
   const view = navigation.currentViewId;
@@ -48,7 +49,9 @@ export const Workspace = observer(function Workspace() {
         <button data-testid="nav-home" className="icon-button" title={t('nav.home')} onClick={() => navigation.newTask()}><ArrowLeft size={17} /></button>
         {!settings && !apps && <button className="icon-button" title={t('nav.toggleSidebar')} onClick={() => setIsLeftOpen((v) => !v)}><PanelLeft size={16} /></button>}
       </div>
-      <nav className="app-rail" aria-label={t('m6.navigation')}><div className="rail-links">
+      {view === 'home' && <HomeTitlebarActions />}
+      {view === 'agentTask' && <div ref={setTaskTitlebar} className="agent-task-titlebar" data-testid="agent-task-titlebar" />}
+    <nav className="app-rail" aria-label={t('m6.navigation')}><div className="rail-links">
         {railButton('home', t('nav.home'), () => navigation.newTask())}
         {railButton('clock', t('m6.scheduled'), () => navigation.navigate('scheduled'))}
         {railButton('settings', t('nav.settings'), () => navigation.openSettings('general'))}
@@ -62,12 +65,25 @@ export const Workspace = observer(function Workspace() {
         onPointerUp={(e) => { e.currentTarget.releasePointerCapture(e.pointerId); localStorage.setItem('smartdd-sidebar-width', String(width)); }}
         onKeyDown={(e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); const next = Math.max(240, Math.min(420, width + (e.key === 'ArrowRight' ? 10 : -10))); resize(next); localStorage.setItem('smartdd-sidebar-width', String(next)); } }} />}
       {scheduled && <aside className="sidebar scheduled-sidebar"><h2>{t('m6.scheduled')}</h2><button className="nav-row" disabled><Plus size={18} />{t('nav.newTask')}</button><p>{t('m6.upcoming')}</p><span className="scheduled-empty">{t('m6.noScheduled')}</span></aside>}
-      <MainContent key="main" />
+      <MainContent key="main" taskTitlebar={taskTitlebar} />
     </div>
   );
 });
 
-const MainContent = observer(function MainContent() {
+const HomeTitlebarActions = observer(function HomeTitlebarActions() {
+  const panels = panelsFor({ kind: 'project', projectId: homeWorkspace.projectId ?? 'm14-home-unselected' });
+  const open = navigation.filePanelOpen;
+  return <div className="agent-home-titlebar-actions app-no-drag" data-testid="agent-home-titlebar-actions">
+    <button type="button" className="icon-button" title={open ? '收起右侧面板' : '打开右侧面板'} aria-pressed={open} onClick={() => {
+      if (open) panels.maximized = false;
+      navigation.toggleFilePanel();
+    }}><FolderOpen size={16} /></button>
+    <button type="button" className="icon-button" title={'底部终端抽屉（⌃`）'} disabled={!homeWorkspace.cwd}
+      aria-pressed={panels.drawer} onClick={() => panels.terminalDrawer()}><PanelBottom size={16} /></button>
+  </div>;
+});
+
+const MainContent = observer(function MainContent({ taskTitlebar }: { taskTitlebar: HTMLDivElement | null }) {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const view = navigation.currentViewId;
@@ -77,6 +93,7 @@ const MainContent = observer(function MainContent() {
   const agentPanel=view==='agentTask'||view==='home';
   const fileScope = view==='agentTask'&&navigation.currentAgentTaskId?{kind:'task' as const,taskId:navigation.currentAgentTaskId}:view==='home'?{kind:'project' as const,projectId:homeWorkspace.projectId??'m14-home-unselected'}:view === 'project' && navigation.currentProjectId ? { kind: 'project' as const, projectId: navigation.currentProjectId } : null;
   const homePanels=panelsFor({kind:'project',projectId:homeWorkspace.projectId??'m14-home-unselected'});
+  const maximized = !!(agentPanel && navigation.filePanelOpen && fileScope && panelsFor(fileScope).maximized);
   useEffect(()=>{const key=(e:KeyboardEvent)=>{if(!agentPanel||readOnlyAgent||e.isComposing||e.defaultPrevented||!e.ctrlKey||e.metaKey||e.altKey||!['`','Backquote'].includes(e.code==='Backquote'?'Backquote':e.key)||e.target instanceof Element&&e.target.closest('dialog,[role=dialog]'))return;const scope=view==='agentTask'&&navigation.currentAgentTaskId?{kind:'task' as const,taskId:navigation.currentAgentTaskId}:{kind:'project' as const,projectId:homeWorkspace.projectId??'m14-home-unselected'};if(scope.kind==='project'&&!homeWorkspace.cwd)return;e.preventDefault();panelsFor(scope).terminalDrawer();};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[view,agentPanel,readOnlyAgent,homeWorkspace.projectId,homeWorkspace.cwd]);
   const split = useRef<HTMLDivElement>(null), [available, setAvailable] = useState(1000);
   useEffect(() => {
@@ -89,23 +106,23 @@ const MainContent = observer(function MainContent() {
   useEffect(() => { split.current?.closest<HTMLElement>('.codex-frame')?.style.setProperty('--m9-panel-measured', `${fileWidth}px`); }, [fileWidth]);
   return <main className={`workspace ${fileScope ? `m9-${fileScope.kind}-scope` : ''}`}>
     {view === 'project' && <header className="topbar"><div className="breadcrumbs"><button onClick={() => navigation.newTask()}>{t('nav.home')}</button><span>›</span><span>{project?.name}</span></div><div className="topbar-actions"><button type="button" className="m9-file-entry" data-testid="project-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button><button className="icon-button" title={t('settings.theme')} onClick={() => setTheme((theme ?? (document.documentElement.classList.contains('ydark') ? 'ydark' : 'ylight')) === 'ydark' ? 'ylight' : 'ydark')} >{theme === 'ydark' ? <Sun size={17} /> : <Moon size={17} />}</button></div></header>}
-    <div ref={split} className="m9-workspace-split" style={{ '--file-panel-width': `${fileWidth}px` } as CSSProperties}><div data-testid="main-body" className="m6-main-body">
-      <ViewSlot active={view === 'home'}><HomeView />{!navigation.filePanelOpen&&<div className='agent-home-panels'><button type='button' title='打开右侧面板' onClick={()=>navigation.toggleFilePanel()}><FolderOpen size={16}/></button><button type='button' title='底部终端抽屉（⌃`）' disabled={!homeWorkspace.cwd} aria-pressed={homePanels.drawer} onClick={()=>homePanels.terminalDrawer()}><PanelBottom size={16}/></button></div>}{homePanels.drawer&&homeWorkspace.projectId&&homeWorkspace.dirId&&<AgentTerminalDrawer key={homeWorkspace.projectId+homeWorkspace.dirId} home={{projectId:homeWorkspace.projectId,dirId:homeWorkspace.dirId}} onClose={()=>{homePanels.drawer=false;}}/>}</ViewSlot>
-      <ViewSlot active={view === 'agentTask'}>{navigation.currentAgentTaskId && <AgentTaskView key={navigation.currentAgentTaskId} taskId={navigation.currentAgentTaskId} />}</ViewSlot>
+    <div ref={split} className={`m9-workspace-split ${maximized ? 'agent-panel-maximized' : ''}`} style={{ '--file-panel-width': `${fileWidth}px` } as CSSProperties}><div data-testid="main-body" className="m6-main-body" inert={maximized}>
+      <ViewSlot active={view === 'home'} className="m6-home-slot"><HomeView />{homePanels.drawer&&homeWorkspace.projectId&&homeWorkspace.dirId&&<AgentTerminalDrawer key={homeWorkspace.projectId+homeWorkspace.dirId} home={{projectId:homeWorkspace.projectId,dirId:homeWorkspace.dirId}} onClose={()=>{homePanels.drawer=false;}}/>}</ViewSlot>
+      <ViewSlot active={view === 'agentTask'}>{navigation.currentAgentTaskId && <AgentTaskView key={navigation.currentAgentTaskId} taskId={navigation.currentAgentTaskId} titlebarTarget={taskTitlebar} />}</ViewSlot>
       <ViewSlot active={view === 'apps'}><ApplicationsWorkspace /></ViewSlot>
       <ViewSlot active={view === 'settings'}><SettingsView /></ViewSlot>
       <ViewSlot active={view === 'project'}><ProjectView key={navigation.currentProjectId ?? ''} /></ViewSlot>
       <ViewSlot active={view === 'scheduled'}><div className="scheduled-placeholder"><div className="scheduled-clock">🕘</div><h1>{t('m6.arrangeTasks')}</h1><p>{t('m6.scheduleDescription')}</p><span className="scheduled-planned">{t('m6.planned')}</span><p className="scheduled-note">{t('m6.scheduleNote')}</p></div></ViewSlot>
     </div>
-    {navigation.filePanelOpen && fileScope && <><div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
+    {navigation.filePanelOpen && fileScope && <>{!maximized && <div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
       onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) navigation.setFilePanelWidth((split.current?.getBoundingClientRect().right ?? 0) - event.clientX, available); }}
-      onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available); } }} />
+      onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available); } }} />}
       {agentPanel?<AgentWorkspacePanels key={fileScope.kind==='task'?fileScope.taskId:fileScope.projectId} scope={fileScope} readOnly={readOnlyAgent} projectId={view==='home'?homeWorkspace.projectId:agentTask?.projectId??null} onClose={()=>navigation.toggleFilePanel()}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
     </div>
   </main>;
 });
 
-function ViewSlot({ active, children }: { active: boolean; children: ReactNode }) {
+function ViewSlot({ active, children, className = '' }: { active: boolean; children: ReactNode; className?: string }) {
   if (!active) return null;
-  return <div className="m6-view-slot" hidden={!active}>{children}</div>;
+  return <div className={`m6-view-slot ${className}`} hidden={!active}>{children}</div>;
 }

@@ -23,6 +23,58 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it('uses the same verified account directory on the first turn and discovers a different account independently', async () => {
+    const cache = new Map<string, Awaited<ReturnType<CodexAppServerInstance['modelCatalog']>>>();
+    for (const [accountId, expectedQueries] of [['a', 1], ['a', 0], ['b', 1]] as const) {
+      const f = setup((m, s) => {
+        if (m.method === 'account/read') {
+          expect(m.params).toEqual({ refreshToken: false });
+          s.reply(m.id, { account: { type: 'chatgpt', accountId } });
+        } else if (m.method === 'model/list') {
+          s.reply(m.id, { data: [{ model: accountId, supportedReasoningEfforts: [{ reasoningEffort: 'medium' }] }] });
+        } else return false;
+        return true;
+      });
+      await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask',
+        modelCache: { read: id => cache.get(id), write: (id, rows) => { cache.set(id, rows); } } });
+      expect((await f.inst.modelCatalog())[0]).toMatchObject({id:accountId, efforts:['medium']});
+      expect(f.server.calls('account/read')).toHaveLength(1);
+      expect(f.server.calls('model/list')).toHaveLength(expectedQueries);
+    }
+  });
+  it('accepts a native catalogue after the five-second network fallback and follows visible pages', async () => {
+    const f = setup((m, s) => {
+      if (m.method !== 'model/list') return false;
+      if (!m.params.cursor) {
+        setTimeout(() => s.reply(m.id, { data: [{ model: 'first' }], nextCursor: 'second' }), 5050);
+      } else {
+        s.reply(m.id, { data: [{ model: 'first' }, { model: 'sol', isDefault: true, supportedReasoningEfforts: [{ reasoningEffort: 'medium' }] }], nextCursor: null });
+      }
+      return true;
+    });
+    await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    const models = await f.inst.modelCatalog();
+    expect(models.map(model => model.id)).toEqual(['first', 'sol']);
+    expect(models[1]).toMatchObject({ isDefault: true, efforts: ['medium'] });
+    expect(f.server.calls('model/list').every(call => !call.params.includeHidden)).toBe(true);
+  }, 9000);
+
+  it('recovers from a temporary native refresh failure without accepting the built-in fallback as final', async () => {
+    let calls = 0;
+    const f = setup((m, s) => {
+      if (m.method !== 'model/list') return false;
+      if (++calls === 1) {
+        f.child.stderr.write('codex_models_manager::manager: failed to refresh available models: request timed out\n');
+        s.reply(m.id, { data: [{ model: 'fallback' }] });
+      } else {
+        s.reply(m.id, { data: [{ model: 'account-model' }] });
+      }
+      return true;
+    });
+    await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    expect((await f.inst.modelCatalog()).map(model => model.id)).toEqual(['account-model']);
+    expect(calls).toBe(2);
+  });
   it.each(['form', 'url'])('A09 accepts only cancel for a native MCP %s request', async mode => {
     const { inst, server, events } = setup();
     await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
@@ -382,6 +434,16 @@ describe('Codex app-server 驱动', () => {
     expect(b.server.calls('thread/resume')[0].params.model).toBe('sticky');
     expect(await b.inst.defaultModel()).toBe('gpt-default');
     expect(b.server.calls('config/read')[0].params).toEqual({ cwd: '/w' });
+  });
+
+  it('retains the native default when an older catalogue supplies only its id', async () => {
+    const f = setup((m, s) => {
+      if (m.method === 'config/read') { s.reply(m.id, { config: {} }); return true; }
+      if (m.method === 'model/list') { s.reply(m.id, { data: [{ id: 'legacy-default', isDefault: true }] }); return true; }
+      return false;
+    });
+    await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', resumeNativeId: 'old-thread' });
+    expect(await f.inst.defaultModel()).toBe('legacy-default');
   });
 
   it('线程响应缺少 id 判协议错误', async () => {

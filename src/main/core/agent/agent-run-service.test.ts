@@ -43,6 +43,42 @@ function setup() {
 }
 
 describe('运行服务', () => {
+  it('A59 binds early MCP failures and late hooks by native identity across two turns', async () => {
+    const f = setup();
+    const run = await f.service.open(f.base);
+    const instance = f.instances[0];
+    const mcp = (threadId: string, name: string, status: string, turnId?: string) => instance.emit({
+      type: 'native', name: 'mcpServer/startupStatus/updated', payload: { threadId, name, status, turnId },
+    });
+    const start = async (clientInputId: string) => {
+      const {turn} = f.store.acceptTurn({taskId:f.taskId, clientInputId, text:'test', sourceKind:'user'});
+      await f.service.dispatch(run.runId, turn.turn_id, {clientInputId, text:'test', tier:'ask'});
+      return turn.turn_id;
+    };
+    mcp('foreign', 'wrong-thread', 'failed');
+    mcp('native-1', 'recovered', 'failed');
+    mcp('native-1', 'recovered', 'ready');
+    mcp('native-1', 'missing', 'failed');
+    const first = await start('early-lifecycle');
+    instance.emit({type:'turn.completed',nativeTurnId:'nt-1',status:'completed'});
+    mcp('native-1', 'idle-failure', 'failed');
+    const second = await start('late-lifecycle');
+    mcp('native-1', 'missing', 'failed', 'nt-2');
+    mcp('native-1', 'late-failure', 'failed', 'nt-1');
+    instance.emit({type:'native',name:'hook/completed',payload:{threadId:'native-1',turnId:'nt-1',
+      run:{id:'one',eventName:'stop',status:'stopped',entries:[{kind:'stop',text:'fixture reason'}]}}});
+    const rows = (f.db.prepare("SELECT turn_id,payload_ref FROM agent_items WHERE type = 'system_notice' ORDER BY ordinal").all() as
+      {turn_id:string|null;payload_ref:string}[]).map(row => ({turnId:row.turn_id, ...JSON.parse(row.payload_ref)}));
+    expect(rows.map(row=>row.title)).not.toContain('MCP 启动 · wrong-thread');
+    expect(rows.filter(row=>!row.diagnosticOnly)).toEqual([
+      expect.objectContaining({turnId:first,title:'MCP 启动 · missing'}),
+      expect.objectContaining({turnId:null,title:'MCP 启动 · idle-failure'}),
+      expect.objectContaining({turnId:second,title:'MCP 启动 · missing'}),
+      expect.objectContaining({turnId:first,title:'MCP 启动 · late-failure'}),
+      expect.objectContaining({turnId:first,title:'钩子 · stop',detail:'fixture reason'}),
+    ]);
+  });
+
   it('A61 drains only the matching owned Agent run before a project application source switch', async () => {
     const f = setup();
     const run = await f.service.open(f.base);

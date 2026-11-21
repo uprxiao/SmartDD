@@ -353,6 +353,8 @@ async function main(): Promise<void> {
       // Keep read-only native evidence and storage available until owned run
       // shutdown has drained. Revocation itself still happens immediately.
       try { await managedTasks?.dispose(); } finally { await applications?.dispose(); }
+      // Wait for native subscription jobs before Electron tears down their N-API environment.
+      await files.watcher.dispose({ shutdown: true });
       quitConfirmed = true; markAppQuitting(); app.quit();
     })().catch((error) => {
       const win = getMainWindow();
@@ -370,7 +372,6 @@ async function main(): Promise<void> {
     files.officePages.dispose();
     diagrams.dispose();
     files.searcher.dispose();
-    void files.watcher.dispose();
     fileBroker.dispose();
     projectTransfer.disposeAll();
     voice.dispose();

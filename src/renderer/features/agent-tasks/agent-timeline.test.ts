@@ -1,9 +1,57 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, retainOlderTimeline, requestForm, requestOptions, requestTitle, workLabel, type TimelineItem } from './agent-timeline';
+import { buildTimeline, runDiagnostics, visibleRunDiagnostics, retainOlderTimeline, requestForm, requestOptions, requestTitle, workLabel, type TimelineItem } from './agent-timeline';
 
 // M14-A52 统一时间线与工作折叠、A60 终态尾注、A11 请求选项（界面逻辑层）。
 const item = (o: Partial<TimelineItem> & { type: string; ordinal: number }): TimelineItem => ({ itemId: `i${o.ordinal}`, turnId: 't1', revision: 1, payload: {}, terminal: 'completed', createdAt: '', updatedAt: '', ...o });
 const turn = (status: string, s = '2026-11-17T00:00:00Z', e: string | null = '2026-11-17T00:00:12Z') => ({ turn_id: 't1', status, accepted_at: s, started_at: s, ended_at: e, error_code: null });
+
+it('A59 retains startup and configuration diagnostics separately from actionable warnings', () => {
+  const records = [
+    item({ ordinal: 1, type: 'user_message' }),
+    item({ ordinal: 2, type: 'command_execution' }),
+    item({ ordinal: 3, type: 'system_notice', payload: { title: '钩子 · sessionStart', severity: 'info' } }),
+    item({ ordinal: 4, type: 'system_notice', payload: { code: 'mcpStartup', diagnosticOnly: true, severity: 'warning' } }),
+    item({ ordinal: 5, type: 'command_execution' }),
+    item({ ordinal: 6, type: 'system_notice', payload: { code: 'mcpStartup', diagnosticOnly: false, severity: 'warning' } }),
+    item({ ordinal: 7, type: 'system_notice', turnId: null, payload: { title: 'MCP 启动 · legacy', severity: 'warning' } }),
+    item({ ordinal: 8, type: 'system_notice', turnId: null, payload: { code: 'configWarning', detail: 'Ignored configuration', severity: 'warning' } }),
+    item({ ordinal: 9, type: 'system_notice', turnId: null, payload: { code: 'warning', detail: 'Ignored configuration', severity: 'warning' } }),
+    item({ ordinal: 10, type: 'system_notice', payload: { code: 'guardianWarning', detail: 'Approval needs attention' } }),
+    item({ ordinal: 11, type: 'system_notice', payload: { code: 'hookLifecycle', diagnosticOnly: false, severity: 'warning' } }),
+    item({ ordinal: 12, type: 'system_notice', payload: { code: 'warning', detail: 'Different warning' } }),
+    item({ ordinal: 13, type: 'assistant_message' }),
+  ];
+  expect(runDiagnostics(records).map(record => record.ordinal)).toEqual([3, 4, 6, 7, 8, 9, 12]);
+  expect(buildTimeline(records, [turn('completed')]).flatMap(group => group.rows.map(row => row.kind === 'item' ? row.item.ordinal : row.kind === 'work' ? row.items.map(record => record.ordinal) : row.kind)))
+    .toEqual([1, [2, 5], 10, 11, 13]);
+});
+
+it('deduplicates the same diagnostic in one run while retaining separate MCP failures', () => {
+  const mcp = { code: 'mcpStartup', title: 'MCP 启动 · memex', status: 'failed', detail: 'handshake' };
+  const notice = (ordinal: number, data: Partial<TimelineItem>) => item({ ordinal, type: 'system_notice', runId: 'a', payload: mcp, ...data });
+  expect(visibleRunDiagnostics([
+    notice(1, { turnId: null }), notice(2, {}), notice(3, { runId: 'b', turnId: null }),
+    notice(4, { payload: { code: 'warning', detail: 'configuration' }, turnId: null }),
+    notice(5, { payload: { code: 'configWarning', detail: 'configuration' }, turnId: null }),
+    notice(6, { runId: 'b', turnId: null }), notice(7, { turnId: 't2' }),
+  ]).map(record => record.ordinal)).toEqual([2, 3, 5, 7]);
+});
+
+it('A59 keeps a simple response clean and retains real changes, incomplete capture and recoverable reasoning', () => {
+  const rows = buildTimeline([
+    item({ ordinal: 1, type: 'user_message' }),
+    item({ ordinal: 2, type: 'reasoning', payload: { text: '' } }),
+    item({ ordinal: 3, type: 'assistant_message' }),
+    item({ ordinal: 4, type: 'files_changed', payload: { status: 'complete', fileCount: 0 } }),
+  ], [turn('completed')])[0].rows;
+  expect(rows).toMatchObject([{ item: { ordinal: 1 } }, { item: { ordinal: 3 } }]);
+  const meaningful = buildTimeline([
+    item({ ordinal: 5, type: 'reasoning', payload: { text: '', truncated: true } }),
+    item({ ordinal: 6, type: 'files_changed', payload: { status: 'complete', fileCount: 1 } }),
+    item({ ordinal: 7, type: 'files_changed', payload: { status: 'incomplete', fileCount: 0 } }),
+  ], [turn('completed')])[0].rows;
+  expect(meaningful).toMatchObject([{ items: [{ ordinal: 5 }] }, { item: { ordinal: 6 } }, { item: { ordinal: 7 } }]);
+});
 
 describe('A45 历史显示预算', () => {
   it('保留当前快照和刚请求的较早记录，不重复计入快照条目', () => {

@@ -29,11 +29,13 @@ export class FileWatchService {
   private readonly stops = new Set<Promise<void>>();
   private readonly starts = new Set<Promise<void>>();
   private readonly scans = new Set<Promise<void>>();
+  private disposed = false;
   constructor(private readonly roots: FileRootsService, private readonly broker: NativeFileBroker, private readonly recovery: FileRecoveryStore,
     private readonly nativeSubscribe: Subscribe = (path, callback) => subscribe(path, callback, process.platform === 'darwin' ? { backend: 'fs-events' } : {})) {}
 
   get resourceCounts() { return { roots: this.shared.size, consumers: this.consumers.size, timers: [...this.shared.values()].filter((item) => item.timer).length, stopping: this.stops.size }; }
   start(owner: string, lease: RootLease, directories: string[], files: string[], emit: Consumer['emit']): FileWatchUpdate {
+    if (this.disposed) throw new FileError('CANCELLED', '文件监听已停止');
     const key = `${lease.canonicalPath}:${identityKey(lease.identity)}`;
     let watch = this.shared.get(key);
     if (!watch) { watch = { key, path: lease.canonicalPath, consumers: new Map(), coverage: 'none', native: null, pending: null, timer: null, running: false, again: false, closed: false, interval: budget.minPollIntervalMs, retryAt: 0, hints: 0, abort: new AbortController(), due: 0, connection: 0, nextAllowedAt: 0 }; this.shared.set(key, watch); }
@@ -166,7 +168,8 @@ export class FileWatchService {
     });
     cache.set(key, result); return result;
   }
-  async dispose(): Promise<void> {
+  async dispose({ shutdown = false } = {}): Promise<void> {
+    if (shutdown) this.disposed = true;
     for (const { consumer } of [...this.consumers.values()]) this.stop(consumer.owner, consumer.id);
     await Promise.allSettled([...this.starts]); await Promise.allSettled([...this.scans]); await Promise.allSettled([...this.stops]);
   }

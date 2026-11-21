@@ -1,3 +1,4 @@
+import type { AgentModelScope, CatalogReadMode } from '@shared/agent-model-choice';
 // M14 任务命令 IPC（技术方案 T1.5 §3）。发送方由 Electron 提供并核对，渲染进程参数不能指定来源、PID 或运行身份。
 import type { IpcMainInvokeEvent, WebContents } from 'electron';
 import { randomUUID } from 'node:crypto';
@@ -35,7 +36,10 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       setMode: (e, taskId: string, enabled: boolean) => run(e, w => w.delegations.setMode(taskId, enabled)),
       cancelChild: (e, taskId: string, childTaskId: string) => run(e, w => w.delegations.cancel(taskId, childTaskId)),
       list: e => run(e, w => w.tasks.list()),
-      create: (e, req: { clientTaskId?: string; projectId: string; dirId: string; cwd?: string; title: string; profileId: string; tier: Tier; model?: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean> }) => run(e, w => w.tasks.create({ ...req, cwd: w.projectCwd(req.projectId, req.dirId) })),
+      modelCatalog: (e, scope: AgentModelScope, profileId: string, mode?: CatalogReadMode) => run(e, w => w.modelCatalog(scope, profileId, mode)),
+      create: (e, req: { clientTaskId?: string; projectId: string; dirId: string; cwd?: string; title: string; profileId: string; tier: Tier; model?: string; effort?: string; initialCodexDefault?: boolean; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean> }) => run(e, w => w.tasks.create({
+        ...req, initialCodexDefault: req.initialCodexDefault === true && w.isCodexSubscription(req.profileId), cwd: w.projectCwd(req.projectId, req.dirId),
+      })),
       snapshot: (e, taskId: string) => run(e, w => w.tasks.snapshot(taskId)),
       events: (e, taskId: string, afterSeq: number, throughSeq?: number) => run(e, w => w.tasks.events(taskId, afterSeq, 128, throughSeq)),
       history: (e, taskId: string, cursor: number | string) => run(e, w => w.tasks.history(taskId, cursor)),
@@ -79,7 +83,7 @@ export function createAgentTaskController(w: AgentWorkspace | undefined, require
       }),
       goal: (e, taskId: string, op: { kind: 'set'; objective: string } | { kind: 'pause' } | { kind: 'resume' } | { kind: 'clear' }) => run(e, w => w.tasks.goal(taskId, op)),
       setSelection: (e, taskId: string, patch: { tier?: Tier; model?: string | null; effort?: string | null; carryExtensions?: boolean }, expectedRevision: number) => run(e, w => w.tasks.setSelection(taskId, patch, expectedRevision)),
-      switchProfile: (e, taskId: string, profileId: string, expectedRevision: number, model?: string | null) => run(e, w => w.tasks.switchProfile(taskId, profileId, expectedRevision, model)),
+      switchProfile: (e, taskId: string, profileId: string, expectedRevision: number, model?: string | null, effort?: string | null) => run(e, w => w.tasks.switchProfile(taskId, profileId, expectedRevision, model, effort)),
       setExtensions: (e, taskId: string, profileId: string, enabled: boolean, expectedRevision: number) => run(e, w => w.tasks.setExtensions(taskId, profileId, enabled, expectedRevision)),
       saveDraft: (e, taskId: string, draft: unknown, expectedRevision: number) => run(e, w => w.tasks.saveDraft(taskId, draft, expectedRevision)),
       stop: (e, taskId: string, subtree?: boolean, expectedRunId?: string) => run(e, w => w.tasks.stop(taskId, subtree, expectedRunId)),

@@ -24,6 +24,7 @@ const sameEndpoints = (a: ProviderRow, b: z.infer<typeof providerEndpointsSchema
 
 /** M13 metadata shares the existing profile IDs, task foreign keys and encrypted store. */
 export class AgentService {
+  onSubscriptionDetected?: (profile: RunConfigView, tool: CodeAgentTool) => void;
   // Ephemeral probe metadata: re-detection replaces/clears it, restart requires a new probe.
   private readonly toolLoginSources = new Map<string, NonNullable<CodeAgentTool['loginSourceEnv']>>();
   constructor(private readonly db: AppDb, private readonly secrets: SecretsStore, private readonly now = () => Date.now()) {}
@@ -67,6 +68,11 @@ export class AgentService {
     for (const tool of inputs) {
       if (tool.kind === 'claude' && tool.installed && tool.login === 'api' && tool.loginSourceEnv === 'ANTHROPIC_API_KEY') this.toolLoginSources.set(tool.id, tool.loginSourceEnv);
       else this.toolLoginSources.delete(tool.id);
+      if (this.onSubscriptionDetected && tool.kind === 'codex' && tool.installed && tool.login === 'subscription') {
+        for (const profile of this.configs().filter(p => p.toolId === tool.id && p.source === 'login' && p.available)) {
+          this.onSubscriptionDetected(profile, tool);
+        }
+      }
     }
   }
 
@@ -118,7 +124,7 @@ export class AgentService {
 
   saveConfig(input: RunConfigInput, id?: string): RunConfigView {
     const data = runConfigInputSchema.parse(input);
-    return this.db.transaction(() => {
+    const profile = this.db.transaction(() => {
       const tool = this.db.select().from(aiTools).where(eq(aiTools.id, data.toolId)).get();
       if (!tool || !tool.installed) throw new Error('Code Agent 尚未安装');
       const kind = codeAgentKindSchema.parse(tool.kind);
@@ -157,6 +163,11 @@ export class AgentService {
       }
       return this.configs().find((row) => row.id === profileId)!;
     });
+    if (this.onSubscriptionDetected && profile.source === 'login' && profile.kind === 'codex' && profile.available) {
+      const tool = this.tools().find(t => t.id === profile.toolId && t.login === 'subscription');
+      if (tool) this.onSubscriptionDetected(profile, tool);
+    }
+    return profile;
   }
 
   /** Reconcile after one atomic external import, retaining a still-valid default. */

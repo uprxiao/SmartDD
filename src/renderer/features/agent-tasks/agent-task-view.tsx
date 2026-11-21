@@ -9,7 +9,7 @@ import { panelsFor } from './workspace-panels-store';
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, MoreHorizontal, Plug, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, FilePenLine, FileSearch, Globe, Info, Loader2, Network, Pencil, Send, SquareTerminal, Target, Trash2, TriangleAlert, Wrench, X, Zap } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, FilePenLine, FileSearch, Globe, Info, List, Loader2, Network, Pencil, Send, SquareTerminal, Target, Trash2, TriangleAlert, Wrench, X, Zap } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
 import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
@@ -28,13 +28,14 @@ import { toast } from 'sonner';
 import { agentTaskEvent, agentTaskLiveEvent, applicationsChangedEvent, windowShownEvent } from '@shared/events';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { events, rpc } from '@renderer/lib/ipc';
-import { buildTimeline, retainOlderTimeline, turnSeconds, formatDuration, requestForm, requestOptions, requestTitle, workLabel, workSegments, summarizeTools, type RequestForm, type TurnGroup, type TurnInfo, type TimelineItem, type TimelineRequest } from './agent-timeline';
+import { useProject } from '@renderer/lib/hooks/useProjects';
+import { buildTimeline, visibleRunDiagnostics, retainOlderTimeline, formatDuration, requestForm, requestOptions, requestTitle, workLabel, workSegments, summarizeTools, type RequestForm, type TurnGroup, type TurnInfo, type TimelineItem, type TimelineRequest } from './agent-timeline';
 import './agent-tasks.css';
 
 type Snapshot = Awaited<ReturnType<typeof rpc.agentTasks.snapshot>>;
 type Profile = Awaited<ReturnType<typeof rpc.agentTasks.profiles>>[number];
 const TIER_LABEL: Record<string, string> = { ask: '请求批准', auto: '帮我批准', full: '完全访问' };
-const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示' };
+const NOTICE_LABEL: Record<string, string> = { configWarning: '配置提示', warning: '提示', deprecationNotice: '弃用提示', guardianWarning: '自动审核提示', settingSkipped: '所选推理强度未应用' };
 /** Host inputs are written for the Agent; the queue shows a short status instead of their wording. */
 function hostQueueLabel(q: { sourceKind?: string; text: string }) {
   if (q.sourceKind === 'notification') return q.text.startsWith('宿主子任务结果通知') ? '子任务结果已送达，主任务稍后继续' : '宿主通知已送达，任务稍后继续';
@@ -456,7 +457,10 @@ function WorkRow({ items, running, seconds, expanded, turnFold }: { items: Timel
   </div>;
 }
 
-function TurnRows({ group, stopping }: { group: TurnGroup; stopping: boolean }) {
+const countsAsActivity = (row: TurnGroup['rows'][number]) => row.kind !== 'item'
+  || !['user_message', 'system_notice', 'files_changed', 'handoff'].includes(row.item.type);
+
+function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stopping: boolean; showActivity: boolean }) {
   const [workOpen, setWorkOpen] = useState(true);
   const duration = formatDuration(group.seconds);
   let heading: WorkHeading | undefined;
@@ -477,6 +481,15 @@ function TurnRows({ group, stopping }: { group: TurnGroup; stopping: boolean }) 
     const userRow = group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
     rows.splice(userRow + 1, 0, <div key="work-status" className={`agent-turn-start${heading.tone === 'failed' ? ' agent-turn-failed' : ''}`}>
       <WorkHeadingLabel heading={heading}/>
+    </div>);
+  }
+  if (showActivity && !heading && !group.rows.some(countsAsActivity)) {
+    const userRow = group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
+    rows.splice(userRow + 1, 0, <div key="work-status" className="agent-starting" role="status">
+      {group.status === 'started' ? <>
+        <div className="agent-work-head shine"><Clock3 size={14} aria-hidden/>工作中 {duration}</div>
+        <div><Brain size={14} aria-hidden/>思考中</div>
+      </> : <div><Clock3 size={14} aria-hidden/>正在准备执行器…</div>}
     </div>);
   }
   return <div className="agent-turn" data-turn-id={group.turnId ?? undefined} data-status={group.status ?? undefined}>
@@ -701,7 +714,14 @@ function GoalRow({ goal, driverId, onOp }: { goal: NonNullable<Snapshot['goal']>
   </div>;
 }
 
-export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId: string }) {
+function TaskProjectBreadcrumb({projectId}: {projectId: string | null}) {
+  const {data: project} = useProject(projectId);
+  return project && <><span className="agent-task-project" title={project.name}>{project.name}</span><span className="agent-task-project-divider" aria-hidden="true">/</span></>;
+}
+
+export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTarget }: {
+  taskId: string; titlebarTarget?: HTMLElement | null;
+}) {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [mailSlot, setMailSlot] = useState<HTMLDivElement | null>(null);
   const [relations, setRelations] = useState<Relations | null>(null);
@@ -757,7 +777,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const [now, setNow] = useState(Date.now());
   const permissionPref = useAppSettingsKey('agentPermissions');
   const [confirmFull, setConfirmFull] = useState(false);
-  const panels=panelsFor({kind:'task',taskId}),terminalOpen=panels.drawer,setTerminalOpen=(value:boolean|((v:boolean)=>boolean))=>{panels.drawer=typeof value==='function'?value(panels.drawer):value;};const[moreMenu,setMoreMenu]=useState(false);
+  const panels=panelsFor({kind:'task',taskId}),terminalOpen=panels.drawer,setTerminalOpen=(value:boolean|((v:boolean)=>boolean))=>{panels.setDrawer(typeof value==='function'?value(panels.drawer):value);};const[moreMenu,setMoreMenu]=useState(false);
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const [trigger, setTrigger] = useState<MenuTrigger | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const [fileHits, setFileHits] = useState<string[]>([]);
@@ -1123,9 +1144,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const items = [...byItemId.values()];
   const coveredChildren = new Set(relations?.children.map(child => child.childTaskId));
   const groups = buildTimeline(items.filter(it => {
-    if (it.type === 'user_message' && it.turnId && turnById.get(it.turnId)?.status === 'accepted') return false;
+    if (it.type === 'user_message' && it.turnId && it.turnId !== snap.preparingTurnId && turnById.get(it.turnId)?.status === 'accepted') return false;
     return it.type !== 'subtask' || !coveredChildren.has(it.payload?.childTaskId);
   }), turns, now);
+  const diagnostics = diagnosticsOpen ? visibleRunDiagnostics(items).sort((a,b)=>a.ordinal-b.ordinal) : [];
   const visiblePlans = new Map<string,string>(items.filter(it => it.type === 'proposed_plan' && !it.payload?.truncated && !isIncomplete(it.payload) && it.turnId).map(it => [it.turnId!, it.payload.plan]));
   const hasOlder = history.hasOlder ?? snap.hasOlder;
   const loadOlder = async () => {
@@ -1165,10 +1187,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const stopping = snap.stopping;
   const stopElapsed = stopping ? Math.max(0, Math.floor((now - stopping.requestedAt) / 1000)) : 0;
   const canForceStop = stopping && !stopping.closing && now >= stopping.forceAt;
-  const recentTurn = [...snap.turns as TurnInfo[]].reverse().find(t => ['dispatching','started'].includes(t.status));
-  const waitingForWork = working && snap.status === 'working' && !stopping &&
-    recentTurn && ['dispatching','started'].includes(recentTurn.status) &&
-    !snap.items.some(item => item.turnId === recentTurn.turn_id && item.type !== 'user_message');
+  const activeTurnId = (snap.turns as TurnInfo[]).findLast(t => t.status === 'dispatching' || t.status === 'started')?.turn_id
+    ?? snap.preparingTurnId;
   const liveText = Object.values(live.items).join('');
 
   const addFiles = (files: File[]) => {
@@ -1337,10 +1357,36 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
   const lineageToggle=lineageLabel ? <button type="button" className="agent-head-btn agent-lineage-toggle" aria-label={lineageLabel} title={lineageLabel} aria-expanded={lineage.lineage}
     onClick={()=>{if(!lineage.lineage)setNativeProcess(null);lineage.setLineage(!lineage.lineage);}}><Network size={14}/><span className="agent-head-label">{lineageLabel}</span></button> : null;
   const activeProcess=nativeProcess && (snap.items.find(item=>item.itemId===nativeProcess.itemId) ?? nativeProcess);
+  const panelOpen = navigation.filePanelOpen;
+  const panelTitle = panelOpen ? '收起右侧面板' : '打开右侧面板';
+  const taskHeader = <header className="agent-task-head" aria-label="当前任务">
+    {titlebarTarget && snap.projectId && <TaskProjectBreadcrumb projectId={snap.projectId} />}
+    <h1 title={snap.title}>{snap.title}</h1>
+    {(archived || stopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{archived ? '已归档 · 只读' : stopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}
+    <span className="push" />
+    {lineageToggle}
+    {archived ? <>
+      <button type="button" className="agent-head-btn" title="运行诊断" aria-label="运行诊断" onClick={()=>setDiagnosticsOpen(true)}><List size={15}/></button>
+      <button type="button" className="agent-head-btn" onClick={()=>void restore()}>恢复</button>
+      <button type="button" className="agent-head-btn" title="打开差异面板" onClick={()=>panels.open('diff')}><PanelRight size={15}/></button>
+    </> : <>
+      <button type="button" className="agent-head-btn agent-plugin-btn" aria-label="项目插件" title="项目插件" onClick={()=>setPluginsOpen(true)}><Plug size={15}/><span className="agent-head-label">插件 {plugins.length}</span></button>
+      <button type="button" className="agent-head-btn" title="更多" aria-expanded={moreMenu} onClick={()=>setMoreMenu(v=>!v)}><MoreHorizontal size={16}/></button>
+      {titlebarTarget && <button type="button" className="agent-head-btn" data-testid="agent-titlebar-terminal-toggle" title="底部终端抽屉（⌃`）" aria-pressed={terminalOpen} onClick={()=>panels.terminalDrawer()}><PanelBottom size={15}/></button>}
+      <button type="button" className="agent-head-btn" title={panelTitle} aria-pressed={panelOpen} onClick={()=>{
+        if (panelOpen) panels.maximized = false;
+        navigation.toggleFilePanel();
+      }}><PanelRight size={15}/></button>
+      {moreMenu && <div className="agent-head-menu">
+        <button type="button" data-testid="agent-terminal-toggle" onClick={()=>{panels.terminalDrawer();setMoreMenu(false);}}>底部终端</button>
+        <button type="button" onClick={()=>{setMoreMenu(false);setDiagnosticsOpen(true);}}>运行诊断</button>
+        <button type="button" data-testid="agent-archive" onClick={()=>{setMoreMenu(false);void archive();}}>归档任务</button>
+      </div>}
+    </>}
+  </header>;
 
   return <RelationsScope.Provider value={relations}><ArchivedScope.Provider value={archived}><RunInTerminal.Provider value={archived ? null : code=>{setTerminalOpen(true);void rpc.agentTasks.pasteToTerminal(taskId,code).then(()=>toast.message('已送入终端输入行，按回车执行')).catch(e=>toast.error(rpcErrorMessage(e)));}}><TaskScope.Provider value={taskId}><section className="agent-task-view agent-task-layout" aria-label="统一任务区"><NativeProcessScope.Provider value={openNativeProcess}><div className="agent-task-main">
-    {archived ? <header className="agent-task-head"><h1>{snap.title}</h1><span className="agent-status">已归档 · 只读</span><span className="push"/>{lineageToggle}<button type="button" className="agent-head-btn" onClick={()=>void restore()}>恢复</button><button type="button" className="agent-head-btn" title="打开差异面板" onClick={()=>panels.open('diff')}><PanelRight size={15}/></button></header> :
-    <header className="agent-task-head"><h1>{snap.title}</h1>{(stopping || STATUS_LABEL[snap.status]) && <span className={`agent-status ${snap.status}`}>{stopping ? '正在停止…' : STATUS_LABEL[snap.status]}</span>}<span className="push" />{lineageToggle}<button type="button" className="agent-head-btn agent-plugin-btn" aria-label="项目插件" title="项目插件" onClick={()=>setPluginsOpen(true)}><Plug size={15}/><span className="agent-head-label">插件 {plugins.length}</span></button><button type="button" className="agent-head-btn" title="更多" aria-expanded={moreMenu} onClick={()=>setMoreMenu(v=>!v)}><MoreHorizontal size={16}/></button><button type="button" className="agent-head-btn" title="打开右侧面板" onClick={()=>navigation.toggleFilePanel()}><PanelRight size={15}/></button>{moreMenu&&<div className="agent-head-menu"><button type="button" data-testid="agent-terminal-toggle" onClick={()=>{panels.terminalDrawer();setMoreMenu(false);}}>底部终端</button><button type="button" data-testid="agent-archive" onClick={()=>{setMoreMenu(false);void archive();}}>归档任务</button></div>}</header>}
+    {titlebarTarget === undefined ? taskHeader : titlebarTarget && createPortal(taskHeader, titlebarTarget)}
     <AgentRelations taskId={taskId} value={relations} readOnly={archived} reload={() => { loadRelations(); void reload(); }} />
     <div className="agent-scroll" ref={scroller}><div className="agent-timeline"><TimelineActionScope.Provider value={timelineActions}>
       {hasOlder && <button type="button" className="agent-older" disabled={loadingOlder} onClick={() => void loadOlder()}>加载更早的记录</button>}
@@ -1348,8 +1394,11 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
         resetHistory();
         requestAnimationFrame(() => { const el = scroller.current; if (el) el.scrollTop = el.scrollHeight; });
       }}>回到最新记录</button></div>}
-      {groups.map(group => <TurnRows key={group.key} group={group} stopping={!!stopping && !!group.turnId && group.turnId === recentTurn?.turn_id}/>)}
-      {!archived && waitingForWork && !liveText && <div className="agent-starting" role="status"><div className="agent-work-head shine"><Clock3 size={14}/>工作中 {formatDuration(turnSeconds(recentTurn, now))}</div><div><Brain size={14}/>思考中</div></div>}
+      {groups.map(group => {
+        const active = group.turnId !== null && group.turnId === activeTurnId;
+        return <TurnRows key={group.key} group={group} stopping={active && !!stopping}
+          showActivity={active && !archived && !stopping && snap.status === 'working' && !liveText && !live.incomplete}/>;
+      })}
       {working && (liveText || live.incomplete) && <div className="agent-assistant streaming">{liveText && <Markdown text={liveText} />}{live.incomplete && <p role="status">部分内容未在流式预览中显示，完成后可查看全文。</p>}</div>}
       {!!relations?.childrenTotal && <AgentChildSummary taskId={taskId} value={relations} readOnly={archived} reload={() => void reload()} />}
       {!archived && snap.goal && <GoalRow goal={snap.goal} driverId={snap.selection.driverId} onOp={op => void goalOp(op)} />}
@@ -1383,7 +1432,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
               <button type="button" disabled={!!action} title="编辑排队消息" onClick={() => void actOnInput('edit:' + q.turnId, async () => {
                 const { value } = await readInput(q.turnId, q.version); setQueueEdit({ taskId, turnId:q.turnId, version:q.version, text:value.text });
               })}><Pencil size={13}/></button>
-              <button type="button" title="立即发送" disabled={!!action || activeEdit?.turnId === q.turnId || !!stopping || !!snap.switching || !!blocking || (snap.run?.busy ? !snap.run?.steer : q.turnId !== snap.queued[0]?.turnId)} onClick={() => void actOnInput('send:' + q.turnId, async () => {
+              <button type="button" title="立即发送" disabled={!!action || !!snap.preparingTurnId || activeEdit?.turnId === q.turnId || !!stopping || !!snap.switching || !!blocking || (snap.run?.busy ? !snap.run?.steer : q.turnId !== snap.queued[0]?.turnId)} onClick={() => void actOnInput('send:' + q.turnId, async () => {
                 const result = await rpc.agentTasks.sendQueued(taskId, q.turnId, q.version, snap.selectionRevision);
                 if (result.status === 'unknown') toast.warning('无法确认插话是否已送达，请查看回答后再决定');
               })}><Send size={13}/></button>
@@ -1430,10 +1479,22 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
             <select aria-label="权限档位" value={snap.selection.tier} disabled={!!snap.parentTaskId} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined} onChange={e => { if (e.target.value === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true); else void setSelection({ tier: e.target.value }); }}>
               {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
             </select>
-            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} onEffort={effort => void setSelection({ effort })} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions}
-              onPick={async (id, model) => { try { const r = await rpc.agentTasks.switchProfile(taskId, id, snap.selectionRevision, model); if (!r.ok) toast.warning('选择已在别处变化，请重试'); else if (r.selection.pendingSwitch) toast.message('本轮和已有排队输入结束后切换'); void reload(); return r.ok; } catch (e) { toast.error(rpcErrorMessage(e)); return false; } }}
-              onExtensions={async (id, enabled) => { try { const r = await rpc.agentTasks.setExtensions(taskId, id, enabled, snap.selectionRevision); if (!r.ok) toast.warning('选择已在别处变化，请重试'); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } }} />
             <span className="push" />
+            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} pendingSwitch={snap.selection.pendingSwitch}
+              onPick={async (id, model, effort) => {
+                const scope = timelineScope.current;
+                try {
+                  const result = await rpc.agentTasks.switchProfile(taskId, id, snap.selectionRevision, model, effort);
+                  if (scope !== timelineScope.current) return false;
+                  setSnap(current => !current || current.selectionRevision >= result.revision
+                    ? current : { ...current, selection: result.selection, selectionRevision: result.revision });
+                  if (!result.ok) toast.warning('选择已在别处变化，请重试');
+                  else if (result.selection.pendingSwitch) toast.message('本轮和已有排队输入结束后切换');
+                  await reload();
+                  return result.ok;
+                } catch (e) { toast.error(rpcErrorMessage(e)); return false; }
+              }}
+              onExtensions={async (id, enabled) => { try { const r = await rpc.agentTasks.setExtensions(taskId, id, enabled, snap.selectionRevision); if (!r.ok) toast.warning('选择已在别处变化，请重试'); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } }} />
             <VoiceButton compact disabled={sending} onClick={()=>void voiceStore.trigger(textareaVoiceTarget(textarea.current),'home')}/>
             {working && snap.run?.steer && <button type="button" className="agent-stop agent-steer" aria-label="插话" disabled={!text.trim()} onClick={() => void send('steer')} title="插话：并入当前这一轮（⌘Enter）"><Zap size={14} /><span>插话</span></button>}
             {working && snap.run && !snap.run.steer && <span className="agent-composer-agent" title="该执行器版本没有插话的验证证据">运行中发送会排队</span>}
@@ -1443,6 +1504,15 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId }: { taskId:
         </form></>}
     </div>
     {!archived && terminalOpen && <AgentTerminalDrawer taskId={taskId} onClose={() => setTerminalOpen(false)} />}
+    {diagnosticsOpen && <AgentDialog title="运行诊断" onClose={()=>setDiagnosticsOpen(false)}>
+      <div data-testid="agent-run-diagnostics">
+        <TimelineActionScope.Provider value={timelineActions}>
+          {!diagnostics.length && <p>当前记录没有运行诊断。</p>}
+          {diagnostics.map(item=><ItemRow key={item.itemId} item={item}/>)}
+        </TimelineActionScope.Provider>
+        {hasOlder && <button type="button" className="m10-button" disabled={loadingOlder} onClick={()=>void loadOlder()}>加载更早的记录</button>}
+      </div>
+    </AgentDialog>}
     {!archived && draftConflict !== null && confirmOtherDraft && <AgentDialog title="用另一份草稿？" onClose={() => { if (!resolvingDraft) setConfirmOtherDraft(false); }} footer={<>
       <button type="button" className="m10-button" disabled={resolvingDraft} onClick={() => setConfirmOtherDraft(false)}>取消</button>
       <button type="button" className="m10-button primary" disabled={resolvingDraft} onClick={() => void resolveDraft(true)}>确认替换</button>

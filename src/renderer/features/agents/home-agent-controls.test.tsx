@@ -51,7 +51,9 @@ it('loading or explicitly disabled permission control cannot invoke mutation',as
 });
 it('lets Escape close the current model picker without changing the selected Agent',async()=>{
  const pick=vi.fn();
- render(<AgentModelPicker profiles={[{profileId:'a',kind:'codex',source:'login',name:'Agent A',models:[],available:true}]} profileId="a" onPick={pick} onExtensions={()=>{}} />);
+ const client=new QueryClient({defaultOptions:{queries:{gcTime:0}}});
+ clients.push(client);
+ render(<QueryClientProvider client={client}><AgentModelPicker profiles={[{profileId:'a',kind:'codex',source:'login',name:'Agent A',models:[],available:true}]} profileId="a" onPick={pick} onExtensions={()=>{}} /></QueryClientProvider>);
  fireEvent.click(screen.getByRole('button',{name:'选择智能体与模型'}));
  expect(screen.getByRole('dialog')).toBeTruthy();
  fireEvent.keyDown(document,{key:'Escape'});

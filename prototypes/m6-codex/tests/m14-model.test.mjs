@@ -87,8 +87,14 @@ test('P0.7：业务审批在场时不显示“思考中”；计划与压缩在�
 });
 test('P0.7：系统提示随整轮折叠；演示用 openFold 默认展开、点击可收起', () => {
   const t = SCENARIOS.find(s => s.id === 'extensions').turns[0];
-  assert.ok(kinds(t).includes('sysnote'));
+  assert.deepEqual(deriveRows(t).filter(row => row.kind === 'sysnote').map(row => row.entry.id), ['n3']);
   assert.ok(!kinds(t, { expandedTurns: new Set([t.id]) }).includes('sysnote'));
+});
+test('A59：寒暄结束后直接显示回答，有实际文件变化或快照状态时才生成改动行', () => {
+  const t = { id: 'hello', state: 'done', entries: [{ id: 'mcp', kind: 'sysnote', diagnostic: true }], final: ['你好！'], changes: [] };
+  assert.deepEqual(kinds(t), ['final']);
+  assert.ok(kinds({ ...t, changes: [{path:'notes.txt'}] }).includes('changes'));
+  assert.ok(kinds({ ...t, diffState: {kind:'reclaimed'} }).includes('changes'));
 });
 test('P0.7：正在停止时轮首写“正在停止…”，不再显示“思考中”', () => {
   const t = SCENARIOS.find(s => s.id === 'stopping').turns[0];

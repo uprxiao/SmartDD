@@ -171,12 +171,20 @@ export function AgentDialog({ initial, preset, copy, store, onClose, onSave, onA
 // ================= 添加供应商：选择 → 填写 Key 并获取模型 → 完成（P0.13 起不自动生成智能体，完成页提供“用它新建智能体”） =================
 const STEPS = ['catalog', 'form', 'done'];
 export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider, onNewAgent, forTool }) {
-  const { providers } = store;
+  const { providers, setProviders } = store;
   const [step, setStep] = useState('catalog'), [item, setItem] = useState(null), [query, setQuery] = useState('');
   const [key, setKey] = useState(''), [showKey, setShowKey] = useState(false);
   const [context,setContext]=useState(''),[efforts,setEfforts]=useState(''),[reasoning,setReasoning]=useState('');
   const [cName, setCName] = useState(''), [proto, setProto] = useState('responses'), [url, setUrl] = useState(''), [more, setMore] = useState({}), [detected, setDetected] = useState(null), [demo, setDemo] = useState('ok'), [manual, setManual] = useState('');
   const [result, setResult] = useState(null), [models, setModels] = useState([]), [busy, setBusy] = useState(false), [done, setDone] = useState(null), [err, setErr] = useState('');
+  const testCompletedModel = (model, tool) => {
+    if (live) return onOpenProvider(done.provider.id);
+    const provider = { ...done.provider, models: done.provider.models.map(entry => entry.id === model.id
+      ? { ...entry, avail: { ...entry.avail, [tool]: entry.detail && availOf(entry, tool) === 'bad' ? 'bad' : 'ok' } }
+      : entry) };
+    setProviders(values => values.map(entry => entry.id === provider.id ? provider : entry));
+    setDone({ ...done, provider });
+  };
   const connected = id => providers.find(p => p.catalog === id);
   const custom = item?.group === 'custom', live = !!item?.live;
   const endpoints = custom ? Object.fromEntries([[proto, url], ...Object.entries(more).filter(([, v]) => v.trim())].filter(([, v]) => v)) : item?.endpoints || {};
@@ -283,9 +291,9 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
       {done.probed && <p className="m13-hint m13-probe-line">接口探测：{[['anthropic', 'Anthropic'], ['openai', 'OpenAI 兼容'], ['responses', 'OpenAI Responses']].map(([k, l]) => <span key={k} className={done.probed[k] ? 'ok' : 'no'}>{done.probed[k] ? <Check size={12} /> : '✕'}{l}</span>)}</p>}
       {(() => { const ts2 = toolsFor(done.provider); return <><h3 className="m13-sub">模型（{done.provider.models.length}）</h3>
         <div className="m13-table matrix done-models" role="table" aria-label="模型"><div role="row" className="m13-th"><span>模型</span><span>上下文</span>{ts2.map(t => <span key={t} className="m13-th-tool"><ToolIcon tool={t} size={14} />{AGENTS[t]}</span>)}</div>
-          {done.provider.models.map(m => <div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name">{m.name}{recOf(done.provider, ts2[0]) === m.id && <Pill tone="info">推荐</Pill>}</span><span>{m.ctx}</span>{ts2.map(t => { const a = availOf(m, t); return <span key={t} className="m13-cell" title={m.lastTest || ''}><Pill tone={availTone(a)}>{AVAIL_LABEL[a]}</Pill></span>; })}</div>)}</div>
+          {done.provider.models.map(m => <div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name">{m.name}{recOf(done.provider, ts2[0]) === m.id && <Pill tone="info">推荐</Pill>}</span><span>{m.ctx}</span>{ts2.map(t => { const a = availOf(m, t); return <span key={t} className="m13-cell" title={m.lastTest || ''}><Pill tone={availTone(a)}>{AVAIL_LABEL[a]}</Pill>{(a === 'untested' || a === 'bad') && <button type="button" className="m13-link" onClick={() => testCompletedModel(m, t)}>{live ? '查看详情' : a === 'bad' ? '重测（合成）' : '测试（合成）'}</button>}</span>; })}</div>)}</div>
         {!ts2.length && <div className="m13-alert warn"><Info size={16} /><div><p>这个供应商只提供 OpenAI 兼容协议，两个 Code Agent 都不能直接使用。可以把它接入 Magpie，再在这里添加 Magpie。</p></div></div>}
-        <p className="m13-hint">已用推荐模型做过一次测试，其他模型可在供应商详情中测试。Key 与测试结果保存在供应商上，创建智能体时不需要再填。</p></>; })()}
+        <p className="m13-hint">接入时每种适用协议只测试一个推荐模型。「未测试」表示已加入目录，尚未验证实际调用。</p></>; })()}
     </div>}
   </Dialog>;
 }

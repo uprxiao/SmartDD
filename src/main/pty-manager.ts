@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import * as pty from 'node-pty';
-import { shellWrapped } from './launch-env';
+import { loginShell, shellWrapped } from './launch-env';
 export { loginShell, shellWrapped } from './launch-env';
 import { TerminalModes } from './terminal-modes';
 
@@ -18,14 +18,26 @@ export interface SpawnOptions {
   rows?: number;
 }
 
+export type InteractiveShellOptions = Pick<SpawnOptions, 'cwd' | 'env' | 'cols' | 'rows'>;
+
 export class PtyManager extends EventEmitter {
   private readonly ptys = new Map<string, pty.IPty>();
   private readonly modes = new Map<string, TerminalModes>();
 
   spawn(opts: SpawnOptions): string {
-    const id = opts.id ?? randomUUID();
-    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id) || this.ptys.has(id)) throw new Error('PTY_IDENTITY_CONFLICT');
     const { file, args } = shellWrapped(opts.command, opts.args, opts.scriptArgs);
+    return this.spawnPty(file, args, opts, opts.id);
+  }
+
+  spawnInteractiveShell(opts: InteractiveShellOptions): string {
+    // A manual terminal is itself the login shell. Nesting it in the Agent
+    // launch envelope would source interactive startup files twice.
+    if (process.platform === 'win32') return this.spawnPty(process.env.ComSpec || 'cmd.exe', [], opts);
+    return this.spawnPty(loginShell(), ['-l', '-i'], opts);
+  }
+
+  private spawnPty(file: string, args: string[], opts: InteractiveShellOptions, id: string = randomUUID()): string {
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id) || this.ptys.has(id)) throw new Error('PTY_IDENTITY_CONFLICT');
     const p = pty.spawn(file, args, {
       name: 'xterm-256color',
       cols: opts.cols ?? 120,

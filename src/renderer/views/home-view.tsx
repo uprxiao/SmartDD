@@ -5,18 +5,20 @@ import { voiceStore, textareaVoiceTarget } from '@renderer/core/voice-store';
 import { ArrowUp, CircleAlert, ClipboardCheck, Compass, Folder, FolderTree, Hammer, Info, Loader2, Monitor, Plus, Settings, Wrench } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
 import { navigation } from '@renderer/core/navigation';
 import { agentTasksStore } from '@renderer/core/agent-tasks-store';
 import { newClientInputId } from '@renderer/features/agent-tasks/agent-ids';
-import { AgentModelPicker } from '@renderer/features/agent-tasks/agent-model-picker';
+import { AgentModelPicker, modelCatalogQuery } from '@renderer/features/agent-tasks/agent-model-picker';
 import { readHomeSelection, type HomeSelection } from '@renderer/features/agent-tasks/home-selection';
 import { AttachmentChips, prepareChip, type Chip } from '@renderer/features/agent-tasks/attachment-chips';
 import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
 import { homeAgents, homeAgentId, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
+import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, offersCodexLoginDefault } from '@shared/agent-model-choice';
 import { agentPermission } from '@shared/agent-permissions';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
@@ -115,6 +117,20 @@ export const HomeView = observer(function HomeView() {
   const dir = dirs.find((d) => d.id === dirId) ?? dirs.find((d) => d.isDefault) ?? dirs[0] ?? null;
   useEffect(()=>homeWorkspace.set(projectId,dir?.id??null,dir?.path??null),[projectId,dir?.id,dir?.path]);
   const profile = profiles?.find((p) => p.id === profileId) ?? null;
+  const catalogProject = projectId ?? '';
+  const catalogDir = dir?.id ?? '';
+  const isCodexLogin = profile?.kind === 'codex' && profile.source === 'login';
+  const isCodexSubscription = (candidate: NonNullable<typeof profile>) => candidate.kind === 'codex' && candidate.source === 'login'
+    && agents?.tools.some(tool => tool.id === candidate.toolId && tool.login === 'subscription') === true;
+  const catalogScope = catalogProject && catalogDir ? {kind:'project' as const,projectId:catalogProject,dirId:catalogDir} : undefined;
+  const catalog = useQuery({...modelCatalogQuery(catalogScope, profileId ?? ''), enabled:!!(catalogScope && isCodexLogin && profile?.available)});
+  const hasModelChoice = !!profileId && Object.hasOwn(homeSelection.models, profileId);
+  const implicitCodexChoice = !!profile && isCodexSubscription(profile) && !hasModelChoice;
+  const offeredDefault = implicitCodexChoice && offersCodexLoginDefault(catalog.data?.models);
+  const defaultNotice = implicitCodexChoice && catalog.data?.status === 'ready' && !offeredDefault ? CODEX_LOGIN_FALLBACK : undefined;
+  const selectedModel = hasModelChoice && profileId ? homeSelection.models[profileId] : offeredDefault ? CODEX_LOGIN_MODEL : undefined;
+  const selectedEffort = hasModelChoice && profileId ? homeSelection.efforts[profileId] : offeredDefault ? CODEX_LOGIN_EFFORT : undefined;
+
   const selectedProvider=agents?.providers.find(p=>p.id===profile?.providerId);
   const missingProviderKey=profile?.source==='provider'&&selectedProvider&&!selectedProvider.hasKey;
   const dirProblem = project && project.id === projectId && (!dir ? t('home.noDir') : !dir.status.available ? t('home.dirUnavailable', { path: dir.path }) : '');
@@ -170,14 +186,19 @@ export const HomeView = observer(function HomeView() {
       const permission=agentPermission(profile.kind==='codex'?'codex':'claude',permissions.value?.selected??'ask').id;
       const revision = navigation.homeInputRevision(projectId);
       const presetAtLaunch = navigation.homePreset;
-      const model = homeSelection.models[profile.id] || undefined;
+      // A cold directory is resolved by the active executor after the first message is saved.
+      const initialCodexDefault = implicitCodexChoice && (catalog.data?.status !== 'ready' || offeredDefault);
+      const model = initialCodexDefault ? CODEX_LOGIN_MODEL : homeSelection.models[profile.id] || undefined;
+      const effort = initialCodexDefault ? CODEX_LOGIN_EFFORT : homeSelection.efforts[profile.id] || undefined;
+      if (implicitCodexChoice && !initialCodexDefault) toast.message(CODEX_LOGIN_FALLBACK);
       const carryExtensions = homeSelection.extensions[profile.id] !== false;
       const chipIds = new Set(chips.map(chip => chip.localId));
-      const key = JSON.stringify([revision, dir.id, dir.path, profile.id, permission, model, Object.entries(homeSelection.extensions).sort(), [...chipIds]]);
+      const modelChoice = implicitCodexChoice ? 'subscription-default' : [model, effort];
+      const key = JSON.stringify([revision, dir.id, dir.path, profile.id, permission, modelChoice, Object.entries(homeSelection.extensions).sort(), [...chipIds]]);
       const previous = navigation.homeLaunchAttempts.get(projectId);
       const attempt = previous?.key === key ? previous : { key, taskId: token, inputId: newClientInputId() };
       navigation.homeLaunchAttempts.set(projectId, attempt);
-      const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, carryExtensions, extensionPreferences: homeSelection.extensions });
+      const created = await rpc.agentTasks.create({ clientTaskId: attempt.taskId, projectId, dirId: dir.id, cwd: dir.path, title: message.split('\n')[0].slice(0, 60), profileId: profile.id, tier: permission, model, effort, initialCodexDefault, carryExtensions, extensionPreferences: homeSelection.extensions });
       if (created.tierNotice) toast.message(created.tierNotice);
       const attachments = chips.flatMap(chip => chip.data ? [chip.data] : []);
       if (message.trim() || attachments.length) await rpc.agentTasks.submit(created.taskId, { clientInputId: attempt.inputId, text: message, expectedSelectionRevision: 1, attachments });
@@ -215,8 +236,19 @@ export const HomeView = observer(function HomeView() {
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;
-  const profilePicker = profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => ({ profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, extensionSupport: p.kind === 'codex' ? 'partial' : 'full' }))} profileId={profileId} model={homeSelection.models[profileId]} extensions={homeSelection.extensions}
-    onPick={(id, model) => { profileChosen.current = true; setProfileId(id); setHomeSelection(v => ({ ...v, models: { ...v.models, [id]: model ?? '' } })); }}
+  const profilePicker = profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => ({ profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, codexSubscription: isCodexSubscription(p), extensionSupport: p.kind === 'codex' ? 'partial' : 'full' }))} profileId={profileId} model={selectedModel} effort={selectedEffort} extensions={homeSelection.extensions}
+    nativeModels={catalog.data?.models} scope={catalogScope} defaultNotice={defaultNotice}
+    defaultPending={implicitCodexChoice && !!catalogScope && !offeredDefault && !catalog.isError && (catalog.isPending || catalog.data?.status === 'loading' || catalog.data?.status === 'refreshing')}
+    onPick={(id, model, effort) => {
+      profileChosen.current = true;
+      setProfileId(id);
+      setHomeSelection(v => {
+        const efforts = { ...v.efforts };
+        if (effort) efforts[id] = effort;
+        else delete efforts[id];
+        return { ...v, models: { ...v.models, [id]: model ?? '' }, efforts };
+      });
+    }}
     onExtensions={(id, enabled) => setHomeSelection(v => ({ ...v, extensions: { ...v.extensions, [id]: enabled } }))} />
     : <button type="button" className="m13-home-agent-trigger" data-testid="home-profile" onClick={()=>navigation.openSettings('aiProfiles')}>{t('home.pickProfile')}</button>;
   const directoryPicker = <Select value={dir?.id ?? null} onValueChange={(v) => setDirId(v as string | null)}>

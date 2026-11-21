@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { accessSync, constants, realpathSync, statSync } from 'node:fs';
 import type { RunnerInfo } from '@shared/ai-profiles';
 import { RUNNERS } from '@shared/ai-profiles';
 import type { Runner } from '@shared/types';
@@ -25,6 +26,19 @@ export interface DetectOptions {
   shell?: string;
   timeoutMs?: number;
   signal?: AbortSignal;
+}
+
+/** Reuse of --version is limited to the same verified executable in the same launch. */
+export interface CheckedNativeCli {
+  runner: Runner; path: string; version: string; shellPath: string; shellProxy?: Record<string, string>; identity: string;
+}
+export function nativeExecutableIdentity(path: string): string | undefined {
+  try {
+    const real = realpathSync(path), file = statSync(real);
+    accessSync(real, constants.X_OK);
+    if (file.isFile()) return JSON.stringify([real, file.dev, file.ino, file.size, file.mtimeMs, file.ctimeMs]);
+  } catch { /* Rediscover missing, replaced or inaccessible executables. */ }
+  return undefined;
 }
 
 /** Parse the script output; exported for tests. */

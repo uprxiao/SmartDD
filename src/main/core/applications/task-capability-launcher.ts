@@ -31,6 +31,7 @@ import {RunBackendAuthority} from './run-backend-authority';
 import { MacProcessIdentityReader, type ProcessIdentityReader } from './process-identity';
 import { MacUnixPeerIdentityReader, type UnixPeerIdentityReader } from './unix-peer-identity';
 import { inspectNativeLaunch, type NativeLaunchContext, type TaskLaunchInput } from './native-launch-context';
+import type { CheckedNativeCli } from '../ai/runner-detect';
 import { canonicalJson, digest } from './manifest';
 import {EmbeddedNodeRuntime} from './embedded-node-runtime';
 import {builtinApplicationModules} from './modules';
@@ -243,12 +244,13 @@ export class ManagedTaskCapabilities {
   recordAgentHumanInput(runId:string,sender:import('./execution-context').ApplicationUiSender,text:string,sequence:number){const context=this.runs.assertActive(runId),row=this.support.store.sqlite.prepare('SELECT pty_id FROM capability_runs WHERE run_id=? AND binding_id IS NOT NULL').get(runId) as {pty_id:string}|undefined;if(row)this.applications.nativeInputs.observeAgent(sender,context,row.pty_id,text,sequence);}
   agentContext(runId:string){return this.runs.assertActive(runId);}
   assertAgentApplication(taskId:string,appId:'browser'){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string}|undefined;if(!task)throw new ApplicationError('SCOPE_DENIED','任务不存在');this.applications.selections.requireApplicationEnabled(task.project_id,appId);}
-  async prepareAgent(input: { runId: string; bindingId: string; generation: number; task: TaskLaunchInput; version: string; assertCurrent(): void }): Promise<RunIntegration> {
+  async prepareAgent(input: { runId: string; bindingId: string; generation: number; task: TaskLaunchInput; version: string; checkedCli?: CheckedNativeCli; assertCurrent(): void }): Promise<RunIntegration> {
     if (this.closed) throw new ApplicationError('CANCELED', '应用服务已关闭');
     const store = this.support.store, task = input.task, runner = this.support.adapters.deliveryAdapters.forRunner(task.profile.runner).id;
     const adapter = this.libraryAdapter(runner, input.version); if (!adapter) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '没有此执行器的受控交付资源');
     input.assertCurrent(); this.syncSkillLibrary(task.profile.runner === 'claude' ? task.stateRoot : undefined);
-    const native = await (this.options.inspectNative ?? inspectNativeLaunch)(task);
+    const native = await (this.options.inspectNative ?? inspectNativeLaunch)(task, input.checkedCli);
+    if (input.checkedCli && native.version !== input.version) throw new ApplicationError('RESOURCE_STATE_CHANGED', '执行器版本在准备期间已变化，请重新发送');
     const snapshot = this.createLibrarySnapshot(task, input.version, adapter.hash), bytes = canonicalJson(snapshot), hash = digest(bytes);
     const server = snapshot.mcp.find(m => m.kind === 'applications');
     if (!server) throw new ApplicationError('CAPABILITY_UNAVAILABLE', '应用桥资源尚未准备');

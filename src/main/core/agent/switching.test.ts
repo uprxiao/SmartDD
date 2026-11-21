@@ -86,6 +86,23 @@ it('A14: a busy selection is persisted, then applied only after the native turn 
   expect(s.runs.runForTask(s.taskId)).toBeUndefined(); // Selecting a target does not start it.
 });
 
+it('A14 saves each profile selection on switch, including an explicit executor default', async () => {
+  const s = setup();
+  const snapshot = () => s.service.snapshot(s.taskId);
+  s.service.setSelection(s.taskId, { model: 'native-default', effort: 'high' }, snapshot().selectionRevision);
+  await s.change('b');
+  expect(snapshot().selection.profileChoices?.a).toEqual({ model: 'native-default', effort: 'high' });
+  await s.change('a');
+  expect(snapshot().selection).toMatchObject({ profileId: 'a', model: 'native-default', effort: 'high' });
+  await s.change('b');
+  const active = await s.send('wait while switching');
+  await s.service.switchProfile(s.taskId, 'a', snapshot().selectionRevision, null, null);
+  active.finish('done');
+  await until(() => snapshot().selection.profileId === 'a');
+  expect(snapshot().selection.model).toBeUndefined();
+  expect(snapshot().selection.effort).toBeUndefined();
+});
+
 it('A14: the old native owner must actually exit before selection changes', async () => {
   const s = setup(), a = await s.send('work'); a.finish('done'); a.delayedExit = true;
   await expect(s.change('b')).rejects.toThrow('仍在退出');

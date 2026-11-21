@@ -611,9 +611,10 @@ button.m14-log:hover { background: var(--hover); }
 
 /* ===== P0.8：右侧统一面板（照 T3） ===== */
 .m9-active > .m14-rp:not(.max) { flex: 0 0 var(--prototype-file-width, 57%); width: var(--prototype-file-width, 57%); min-width: 0; }
-.m14-rp { position: relative; display: flex; flex-direction: column; height: calc(100% + 40px); margin-top: -40px; background: var(--bg); border-left: 1px solid var(--border); z-index: 6; }
-.m14-rp.max { position: absolute; left: calc(52px + var(--sidebar-width)); right: 4px; top: 4px; bottom: 4px; width: auto; height: auto; margin: 0; z-index: 10; border-radius: 10px; border: 1px solid var(--border); }
-.sidebar-collapsed .m14-rp.max { left: 52px; }
+.m14-rp { position: relative; display: flex; flex-direction: column; height: 100%; background: var(--bg); border-left: 1px solid var(--border); z-index: 6; }
+.m14-rp.max { flex: 1; width: 0; min-width: 0; height: 100%; margin: 0; }
+.m14-panel-maximized > :is(.workspace, .m9-panel-resizer) { display: none; }
+.m14-diagnostics { position: absolute; top: 46px; right: 14px; width: min(340px, 95%); max-height: 65vh; overflow: auto; z-index: 25; background: var(--surface); padding: 12px; border: 1px solid var(--border); border-radius: 9px; }
 .m14-rp-bar { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 8px 0 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .m14-rp-tabs { display: flex; align-items: center; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .m14-rp-tab { display: flex; align-items: center; border-radius: 8px; flex-shrink: 0; }
@@ -793,7 +794,7 @@ button.m14-log:hover { background: var(--hover); }
 .m14-crumb ~ .m14-lineage { top: 50px; }
 .m14-demobar .m14-lineage-btn { margin-left: auto; }
 /* 新建任务页：右上角收缩按钮、底部终端抽屉（照 VS Code／T3） */
-.m14-home-controls { position: absolute; top: 8px; right: 12px; z-index: 12; display: flex; gap: 2px; }
+.m14-home-controls { position: absolute; top: 6px; right: 12px; z-index: 12; display: flex; gap: 2px; }
 .m14-home-controls button { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); }
 .m14-home-controls button:hover { background: var(--hover); color: var(--text); }
 .m14-home-drawer { flex: 0 0 230px; display: flex; flex-direction: column; border-top: 1px solid var(--border); background: var(--bg); }
@@ -878,3 +879,8 @@ button.m14-log:hover { background: var(--hover); }
 /* 2026-11-20 对齐 T3：批准操作挪到请求面板底部，输入框工具栏保持模型／档位／委派入口。 */
 .m14-req-actions { justify-content: flex-end; padding: 0 12px 8px; margin-left: 0; }
 .m14-req-text { display: block; width: calc(100% - 24px); margin: 6px 12px 0; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; font-size: 13px; resize: vertical; }
+
+.m14-preview .task-window-header { right: 12px; }
+.m14-title-project, .m14-title-slash { color: var(--muted); }
+.m14-title-project { max-width: 140px; }
+.m14-preview .task-window-header:is([data-header-layout="compact"], [data-header-layout="minimal"]) :is(.m14-title-project, .m14-title-slash) { display: none; }

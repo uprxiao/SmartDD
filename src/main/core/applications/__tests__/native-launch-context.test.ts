@@ -4,6 +4,7 @@ import {join} from 'node:path';
 import {afterEach,beforeEach,describe,expect,it} from 'vitest';
 import {inspectNativeLaunch,type TaskLaunchInput} from '../native-launch-context';
 import {planAgentLaunch} from '../../ai/agent-launch-plan';
+import { nativeExecutableIdentity } from '../../ai/runner-detect';
 import type {CodeAgentTool,ProviderView,RunConfigView} from '@shared/ai-agents';
 
 const roots:string[]=[];
@@ -62,6 +63,14 @@ const input = (command: string): TaskLaunchInput => ({
 });
 
 describe('inspectNativeLaunch with a bare app PATH', () => {
+  it('reuses the checked executable for this launch only and redetects a replaced executable', async () => {
+    const command = join(bin, 'codex'), task = input(command);
+    const checked = { runner: task.profile.runner, path: command, version: '0.168.0', shellPath: bin,
+      identity: nativeExecutableIdentity(command)! };
+    expect((await inspectNativeLaunch(task, checked)).version).toBe('0.168.0');
+    writeFileSync(command, '#!/bin/sh\necho "codex-cli 0.169.0"\n');
+    expect((await inspectNativeLaunch(task, checked)).version).toBe('0.169.0');
+  });
   it('verifies an absolute script CLI whose interpreter is only on the login-shell PATH', async () => {
     const context = await inspectNativeLaunch(input(join(bin, 'codex')));
     expect(context).toMatchObject({ command: join(bin, 'codex'), version: '0.166.0', shellPath: `${bin}:/usr/bin:/bin` });

@@ -10,6 +10,7 @@ const DIRECTORIES = new Set(['docs', 'src', 'src/renderer', 'fixtures', 'resourc
 export const AGENTS = [
   { id: 'cc-sub', tool: 'claude', caps: { goal: true, compact: true, init: true }, name: 'Claude Code · 订阅', short: 'Claude Code', source: '本机登录（订阅）', models: [{ id: 'default', name: '默认模型', note: '执行器当前默认' }, { id: 'opus', name: 'Opus' }, { id: 'sonnet', name: 'Sonnet' }, { id: 'haiku', name: 'Haiku' }, { id: 'opus-1m', name: 'Opus（1M 上下文）', more: true }], efforts: ['低', '中', '高'], defaultEffort: '中', steer: true },
   { id: 'cc-ds', tool: 'claude', caps: { goal: true, compact: true, init: true }, provider: true, name: 'Claude Code · DeepSeek', short: 'DeepSeek', source: 'WillYou 托管 · 隔离配置', models: [{ id: 'deepseek-flash', name: 'deepseek-flash' }, { id: 'deepseek-pro', name: 'deepseek-pro' }], efforts: [], steer: true },
+  { id: 'cx-sub', tool: 'codex', caps: { goal: true, compact: true, review: true }, name: 'Codex · 订阅', short: 'Codex', source: '本机登录（订阅）', models: [{ id: 'gpt-6.2-sol', name: 'GPT-6.2-Sol' }, { id: 'default', name: '执行器默认' }], efforts: ['低', '中等', '高'], defaultEffort: '中等', steer: true },
   { id: 'cx-ds', tool: 'codex', caps: { goal: true, compact: true, review: true }, provider: true, name: 'Codex · DeepSeek', short: 'Codex', source: 'WillYou 托管 · 隔离配置', models: [{ id: 'deepseek-flash', name: 'deepseek-flash' }], efforts: ['低', '中', '高'], defaultEffort: '中', steer: true },
   { id: 'cc-rj', tool: null, name: 'CC-rj', short: 'CC-rj', source: '本机程序 · 旧版配置', status: { kind: 'unavailable', label: '不可用', reason: '本机 claude 2.0.1 低于已验证的最低版本 2.1.321，请升级后重新检测' }, models: [{ id: 'default', name: '默认模型', note: '执行器当前默认' }], efforts: [], steer: false, steerReason: '未验证运行中插话，只能排队' },
   { id: 'oc', name: 'OpenCode', placeholder: '后续接入', models: [] },
@@ -159,7 +160,8 @@ const KEEP_WHEN_FOLDED = ['notice', 'subagents', 'error', 'created', 'plan', 'co
 // 6. 被停止或失败的轮次不折叠（T3：interrupted／failed 轮次跳过折叠），轮首显示“你在 N 秒后停止了”／“工作 N 秒后失败”。
 export function deriveRows(turn, ui = {}) {
   const rows = [];
-  const { entries = [], state } = turn;
+  const { state } = turn;
+  const entries = (turn.entries ?? []).filter(entry => !entry.diagnostic);
   const live = state === 'live';
   const elapsed = turn.elapsed ?? unionSeconds(entries.filter(e => e.at).map(e => e.at));
   const pendingApproval = entries.some(e => e.kind === 'approval' || e.kind === 'business' || (e.kind === 'plan' && turn.state === 'live'));
@@ -191,7 +193,7 @@ export function deriveRows(turn, ui = {}) {
   if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent });
   if (turn.length) rows.push({ kind: 'length', id: turn.id + ':len' });
   if (footer) rows.push(footer);
-  if (turn.changes && !live) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes, turnId: turn.id, diffState: turn.diffState });
+  if (!live && (turn.changes?.length || turn.diffState)) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes ?? [], turnId: turn.id, diffState: turn.diffState });
   return rows;
 }
 
@@ -359,13 +361,13 @@ SCENARIOS.push(
     { id: 'w0', kind: 'thought', at: [0, 3], text: '**需要读取另一个任务的网页**\n接口文档页开在任务「梳理项目结构和关键模块」里，先申请控制权限。' },
     { id: 'w1', kind: 'tool', name: 'willyou-browser access request --task structure --mode control', at: [3, 4] }] }],
     access: { target: '梳理项目结构和关键模块', mode: '控制', pageUrl: 'https://qa.example.test/api/' } },
-  { id: 'extensions', group: '基础', name: 'S15 系统提示与用户扩展', desc: '沿用你的 MCP／hooks 后出现的系统提示行（低打扰，可展开）', status: 'done', turns: [{ id: 't1', user: USER1, state: 'done', openFold: true, entries: [
-    { id: 'n1', kind: 'sysnote', level: 'info', text: 'hooks · PreToolUse 已执行 2 个', detail: '~/.claude/settings.json：lint-check（0.3 秒）、secret-scan（0.1 秒）' },
-    { id: 'n2', kind: 'sysnote', level: 'warn', text: 'MCP 服务器 zentao-personal 启动失败', detail: '来自你的 ~/.codex/config.toml；连接 127.0.0.1:7788 超时。本任务其他能力不受影响。可在选择器里关闭“沿用我的扩展”。' },
+  { id: 'extensions', group: '基础', name: 'S15 系统提示与用户扩展', desc: 'Hook、MCP 启动与配置提示可在运行诊断查看，自动审核记录可展开', status: 'done', turns: [{ id: 't1', user: USER1, state: 'done', openFold: true, entries: [
+    { id: 'n1', kind: 'sysnote', level: 'info', diagnostic: true, text: 'hooks · PreToolUse 已执行 2 个', detail: '~/.claude/settings.json：lint-check（0.3 秒）、secret-scan（0.1 秒）' },
+    { id: 'n2', kind: 'sysnote', level: 'warn', diagnostic: true, text: 'MCP 服务器 zentao-personal 启动失败', detail: '来自你的 ~/.codex/config.toml；连接 127.0.0.1:7788 超时。本任务其他能力不受影响。可在选择器里关闭“沿用我的扩展”。' },
     T.think1, T.read1, T.read2,
     { id: 'n3', kind: 'sysnote', level: 'info', text: '自动审核已批准：pnpm test:release', detail: '执行器自带的自动审核（auto_review）。WillYou 托管的业务写操作仍需你在任务区批准。' },
     T.test1,
-    { id: 'n4', kind: 'sysnote', level: 'warn', text: '配置告警：model_reasoning_effort = "max" 不被当前模型支持，已按“高”运行', detail: '来自你的 ~/.codex/config.toml' },
+    { id: 'n4', kind: 'sysnote', level: 'warn', diagnostic: true, text: '配置告警：model_reasoning_effort = "max" 不被当前模型支持，已按“高”运行', detail: '来自你的 ~/.codex/config.toml' },
   ], final: ['发布测试通过，基线正常。'] }] },
   { id: 'stopping', group: '终态', name: 'S07 正在停止／强制停止', desc: '点停止后“正在停止…”；执行器不响应时出现强制停止', status: 'stopping', turns: [{ id: 't1', user: USER1, state: 'live', stopping: true, elapsed: 40, entries: [T.think1, T.msg1, T.read1, T.read2, { ...T.test1, live: true, output: undefined }] }] },
   { id: 'plan', group: '基础', name: 'S02 计划卡（Claude 自己交计划）', desc: '不做计划开关；Claude 进入它的计划模式交出计划，显示计划卡，批准在输入框位置处理', status: 'waiting', pending: 'plan', turns: [

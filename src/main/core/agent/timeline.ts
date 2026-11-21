@@ -51,10 +51,10 @@ export class TimelineProjector {
     return { key: 'todo', type: 'todo_list', payload: { entries: [...this.todos.values()] } };
   }
 
-  private lifecycleNotice(key: string, title: string, detail: string, terminal: ItemUpsert['terminal'], severity: 'info' | 'warning', reusable = false): ItemUpsert[] {
+  private lifecycleNotice(key: string, title: string, detail: string, terminal: ItemUpsert['terminal'], severity: 'info' | 'warning', reusable = false, lifecycle?: {code: string; status: string; diagnosticOnly: boolean}): ItemUpsert[] {
     if (!reusable && this.closedNotices.has(key)) return [];
     if (!reusable && terminal) this.closedNotices.add(key);
-    return [{ key, type: 'system_notice', payload: { severity, title, detail: detail.slice(0, 4000) }, terminal }];
+    return [{ key, type: 'system_notice', payload: { severity, title, detail: detail.slice(0, 4000), ...lifecycle }, terminal }];
   }
 
   private claude(e: DriverEvent): ItemUpsert[] {
@@ -134,9 +134,10 @@ export class TimelineProjector {
       const p = e.payload as { hook_id?: string; hook_name?: string; hook_event?: string; outcome?: string; exit_code?: number };
       if (!p?.hook_id) return [];
       const done = e.name === 'system/hook_response';
-      const failed = done && p.outcome !== 'success';
+      const failed = done && p.outcome !== 'success' && p.outcome !== 'cancelled';
       const detail = [p.hook_event, done ? p.outcome : '运行中', p.exit_code == null ? null : `退出码 ${p.exit_code}`].filter(Boolean).join(' · ');
-      return this.lifecycleNotice(`hook:${p.hook_id}`, `钩子 · ${p.hook_name ?? p.hook_event ?? 'Claude'}`, detail, done ? failed ? 'failed' : 'completed' : null, failed ? 'warning' : 'info');
+      return this.lifecycleNotice(`hook:${p.hook_id}`, `钩子 · ${p.hook_name ?? p.hook_event ?? 'Claude'}`, detail, done ? failed ? 'failed' : 'completed' : null, failed ? 'warning' : 'info', false,
+        { code: 'hookLifecycle', status: done ? p.outcome ?? 'unknown' : 'running', diagnosticOnly: !failed });
     }
     if (e.type === 'native' && (e.payload as any)?.type === 'result' && (e.payload as any).is_error && (e.payload as any).subtype !== 'error_during_execution') {
       const p = e.payload as any;
@@ -179,18 +180,21 @@ export class TimelineProjector {
       return [{ key: `unsupported:${text((e.payload as any)?.method)}:${Date.now()}`, type: 'system_notice', payload: { severity: 'warning', code: 'unsupportedRequest', detail: `执行器发来 WillYou 不支持的请求（${text((e.payload as any)?.method)}），已拒绝` }, terminal: 'completed' }];
     }
     if (e.type === 'native' && (e.name === 'hook/started' || e.name === 'hook/completed')) {
-      const p = e.payload as { run?: { id?: string; eventName?: string; status?: string; statusMessage?: string } };
+      const p = e.payload as { run?: { id?: string; eventName?: string; status?: string; statusMessage?: string; entries?: {kind?: string; text?: string}[] } };
       const hook = p?.run;
       if (!hook?.id) return [];
       const done = e.name === 'hook/completed';
-      const failed = done && hook.status !== 'completed';
-      return this.lifecycleNotice(`hook:${hook.id}`, `钩子 · ${hook.eventName ?? 'Codex'}`, hook.statusMessage ?? hook.status ?? '', done ? failed ? 'failed' : 'completed' : null, failed ? 'warning' : 'info');
+      const failed = done && ['failed','stopped'].includes(hook.status ?? '');
+      const reason = Array.isArray(hook.entries) ? hook.entries.filter(x => x.kind === 'stop' && typeof x.text === 'string').map(x => x.text).join('\n') : '';
+      return this.lifecycleNotice(`hook:${hook.id}`, `钩子 · ${hook.eventName ?? 'Codex'}`, reason || hook.statusMessage || hook.status || '', done ? failed ? 'failed' : 'completed' : null, failed ? 'warning' : 'info', false,
+        { code: 'hookLifecycle', status: hook.status ?? (done ? 'unknown' : 'running'), diagnosticOnly: !failed });
     }
     if (e.type === 'native' && e.name === 'mcpServer/startupStatus/updated') {
       const p = e.payload as { name?: string; status?: string; error?: string };
       if (!p?.name || !p.status) return [];
       const failed = p.status === 'failed' || p.status === 'cancelled';
-      return this.lifecycleNotice(`mcp-startup:${p.name}`, `MCP 启动 · ${p.name}`, p.error ?? p.status, failed ? 'failed' : p.status === 'ready' ? 'completed' : null, failed ? 'warning' : 'info', true);
+      return this.lifecycleNotice(`mcp-startup:${p.name}`, `MCP 启动 · ${p.name}`, p.error ?? p.status, failed ? 'failed' : p.status === 'ready' ? 'completed' : null, failed ? 'warning' : 'info', true,
+        { code: 'mcpStartup', status: p.status, diagnosticOnly: p.status !== 'failed' });
     }
     if (e.type === 'native' && (e.name === 'item/autoApprovalReview/started' || e.name === 'item/autoApprovalReview/completed')) {
       const p = e.payload as { reviewId?: string; review?: { status?: string; rationale?: string } };

@@ -3,11 +3,11 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import { evaluateCapabilities, type CapabilityName, type CapabilityResult, type DriverId } from './capabilities';
-import type { AgentDriver, DriverEvent, DriverExecutable, DriverInstance, DriverModel } from './driver';
+import type { AgentDriver, DriverEvent, DriverExecutable, DriverInstance, DriverModel, DriverModelCache } from './driver';
 import { DriverError } from './driver';
 import { AgentStore, sha256 } from './agent-store';
 import { resolveTier, type Tier } from './permissions';
-import { TimelineProjector } from './timeline';
+import { TimelineProjector, type ItemUpsert } from './timeline';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { canonicalPath } from './identity';
 import type { RunIntegration, RunIntegrationContext } from './run-integration';
@@ -15,6 +15,7 @@ import type { RunIntegration, RunIntegrationContext } from './run-integration';
 export interface HostIdentity { instanceId: string; pid: number; startedAt: string | null }
 export interface OpenRunInput {
   taskId: string;
+  modelCache?: DriverModelCache;
   driverId: DriverId;
   profileId: string;
   executable: DriverExecutable;
@@ -45,6 +46,18 @@ interface ActiveRun extends RunHandle { assertCurrent?(): void; openError?: stri
 
 const FORCE_STOP_DELAY_MS = 10_000;
 interface ActiveRun { readonly readOnly: boolean; userStop?: { requestedAt: number; turnId: string | null }; integration?: RunIntegration; registration?: Promise<void>; exitFinishing?: Promise<void>; nodeReads?: Set<Promise<void>>; nativeNodes?: Set<string>; opening?: boolean; startingNativeWork?: number }
+type NativeNotice = Extract<DriverEvent, { type: 'native' }>;
+const LIFECYCLE_NOTICES = new Set([
+  'hook/started', 'hook/completed', 'mcpServer/startupStatus/updated',
+  'system/hook_started', 'system/hook_progress', 'system/hook_response',
+]);
+interface ActiveRun {
+  pendingNotices?: NativeNotice[];
+  mcpFailures?: Map<string, ItemUpsert>;
+  firstNativeTurnStarted?: boolean;
+  claudeHookTurns?: Map<string, string | null>;
+  modelCatalog?: Promise<DriverModel[] | undefined>;
+}
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
   private readonly previousRecovery = new Map<string, Promise<void>>();
@@ -108,7 +121,7 @@ export class AgentRunService {
       await run.integration?.beforeFork();
       assertStarting();
       forkAttempted = true;
-      const opened = await instance.open({ executable: input.executable, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, beforeInitialize: async () => { await run.registration; assertStarting(); } });
+      const opened = await instance.open({ executable: input.executable, modelCache: input.modelCache, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, beforeInitialize: async () => { await run.registration; assertStarting(); } });
       await run.registration;
       assertStarting();
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
@@ -118,11 +131,17 @@ export class AgentRunService {
       if (unavailable.length) store.addHostItem(input.taskId, null, 'system_notice', { severity: 'warning', code: 'optionalProtocolUnavailable', title: `当前执行器不支持${unavailable.join('、')}`, detail: '基本对话仍可使用。' });
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
       if (!run.defaultModel && opened.defaultModel) run.defaultModel = opened.defaultModel;
-      if (instance.modelCatalog) void instance.modelCatalog().then(models => {
-        if (this.runs.get(runId) !== run || run.closing) return;
-        run.models = models.slice(0, 200).map(m => ({ id: m.id.slice(0, 256), name: m.name.slice(0, 160), efforts: m.efforts.slice(0, 12).map(x => x.slice(0, 24)), defaultEffort: m.defaultEffort }));
+      if (instance.modelCatalog) run.modelCatalog = instance.modelCatalog().then(models => {
+        if (this.runs.get(runId) !== run || run.closing) return undefined;
+        run.models = models.slice(0, 200).map(model => ({
+          id: model.id.slice(0, 256), name: model.name.slice(0, 160),
+          efforts: model.efforts.slice(0, 12).map(effort => effort.slice(0, 24)),
+          defaultEffort: model.defaultEffort?.slice(0, 24),
+          ...(model.isDefault ? { isDefault: true } : {}),
+        }));
         store.tx(emit => emit(run.taskId, 'run.models', {}));
-      }).catch(() => { /* 未公布的可选设置不应用，界面明确说明 */ });
+        return run.models;
+      }).catch(() => undefined);
     } catch (e) {
       // 已启动原生进程时，取消和打开失败都按真实退出收口（复核 NR02）。
       run.closing = true;
@@ -139,10 +158,83 @@ export class AgentRunService {
     return { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: run.defaultModel, ...(run.tierNotice ? { tierNotice: run.tierNotice } : {}) };
   }
 
+  private writeNotice(run: ActiveRun, item: ItemUpsert, turnId: string | null) {
+    this.deps.store.upsertItem({
+      taskId: run.taskId, runId: run.runId, turnId,
+      nativeKey: `${run.bindingId}:${run.generation}:${item.key}`,
+      type: item.type, payload: item.payload, terminalState: item.terminal ?? null,
+    });
+  }
+
+  private projectLifecycleNotice(run: ActiveRun, event: NativeNotice, discardUnresolved = false) {
+    const { store } = this.deps;
+    const payload = event.payload as {threadId?: string; turnId?: string; session_id?: string; parent_tool_use_id?: string} | null;
+    const codex = run.driverId === 'codex-app-server';
+    const binding = store.binding(run.bindingId);
+    const reportedId = codex ? payload?.threadId : payload?.session_id;
+    const confirmedId = binding?.native_confirmed_at ? binding.native_id : null;
+    if (payload?.parent_tool_use_id || reportedId && confirmedId && reportedId !== confirmedId) return true;
+    if (reportedId && !confirmedId && !discardUnresolved) return false;
+    const owned = !!confirmedId && reportedId === confirmedId;
+    const nativeTurn = codex && owned && payload?.turnId ? store.turnByNative(run.runId, payload.turnId) : undefined;
+    if (codex && owned && payload?.turnId && !nativeTurn && !discardUnresolved) return false;
+
+    for (const item of run.projector.project(event)) {
+      if (item.payload.code === 'mcpStartup') {
+        this.writeNotice(run, { ...item, payload: { ...item.payload, diagnosticOnly: true } }, null);
+        if (!owned || (payload?.turnId && !nativeTurn)) continue;
+        if (nativeTurn || run.firstNativeTurnStarted) {
+          if (item.payload.status === 'failed') {
+            const turnId = nativeTurn?.turn_id ?? null;
+            this.writeNotice(run, { ...item, key: `${item.key}:warning:${turnId ?? 'session'}` }, turnId);
+          }
+          continue;
+        }
+        const failures = run.mcpFailures ??= new Map();
+        if (item.payload.status === 'failed') {
+          if (failures.size < 200 || failures.has(item.key)) failures.set(item.key, item);
+        } else failures.delete(item.key);
+        this.publishMcpFailures(run);
+      } else {
+        let turnId = nativeTurn?.turn_id ?? null;
+        if (!codex && owned) {
+          const origins = run.claudeHookTurns ??= new Map();
+          if (origins.size < 200 && !origins.has(item.key)) origins.set(item.key, run.turnId);
+          turnId = origins.get(item.key) ?? null;
+          if (item.terminal) origins.delete(item.key);
+        }
+        const scoped = turnId || (!codex && owned);
+        this.writeNotice(run, scoped ? item : { ...item, payload: { ...item.payload, diagnosticOnly: true } }, turnId);
+      }
+    }
+    return true;
+  }
+
+  private publishMcpFailures(run: ActiveRun) {
+    if (!run.mcpFailures?.size || !run.turnId || !this.deps.store.turn(run.turnId)?.native_turn_id) return;
+    for (const item of run.mcpFailures.values()) {
+      this.writeNotice(run, { ...item, key: `${item.key}:warning:${run.turnId}` }, run.turnId);
+    }
+    run.mcpFailures.clear();
+  }
+
+  private flushLifecycleNotices(run: ActiveRun, discardUnresolved = false) {
+    run.pendingNotices = run.pendingNotices?.filter(event => !this.projectLifecycleNotice(run, event, discardUnresolved));
+    if (!discardUnresolved) this.publishMcpFailures(run);
+  }
+
   private onDriverEvent(run: ActiveRun, e: DriverEvent) {
     const { store } = this.deps;
     for (const l of [...this.live]) { try { l({ taskId: run.taskId, runId: run.runId, event: e }); } catch { /* 订阅者自身负责 */ } }
     try {
+      if (e.type === 'native' && LIFECYCLE_NOTICES.has(e.name)) {
+        if (!this.projectLifecycleNotice(run, e)) {
+          const pending = run.pendingNotices ??= [];
+          if (pending.length >= 200) this.projectLifecycleNotice(run, pending.shift()!, true);
+          pending.push(e);
+        }
+        return;
+      }
       for (const item of run.projector.project(e)) {
         store.upsertItem({ taskId: run.taskId, turnId: run.turnId, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:${item.key}`, type: item.type, payload: item.payload, terminalState: item.terminal ?? null });
         if (item.type === 'subagent' && item.payload.nativeNodeIds && run.instance.nativeChildHistory) for (const nodeId of item.payload.nativeNodeIds as string[]) this.captureNode(run, nodeId);
@@ -158,7 +250,10 @@ export class AgentRunService {
           }
           break;
         }
-        case 'session': store.confirmNative(run.bindingId, e.nativeId); break;
+        case 'session':
+          store.confirmNative(run.bindingId, e.nativeId);
+          this.flushLifecycleNotices(run);
+          break;
         case 'turn.started':
           if (run.turnId) store.startTurn(run.turnId, e.nativeTurnId);
           else if (!e.clientInputId) {
@@ -166,6 +261,8 @@ export class AgentRunService {
             if (this.held.has(run.taskId)) void run.instance.interrupt().catch(() => {});
           }
           if (store.goal(run.taskId)?.status === 'active') store.countGoalTurn(run.taskId);
+          this.flushLifecycleNotices(run);
+          run.firstNativeTurnStarted = true;
           break;
         case 'catalog': run.catalog = { commands: e.commands.slice(0, 200), skills: e.skills.slice(0, 500) }; break;
         case 'goal': {
@@ -231,6 +328,7 @@ export class AgentRunService {
           break;
         case 'exit': {
           const closing = run.closing; run.closing = true;
+          this.flushLifecycleNotices(run, true);
           const finish = () => { for (const nodeId of run.nativeNodes ?? []) store.upsertItem({ taskId: run.taskId, turnId: null, runId: run.runId, nativeKey: `${run.bindingId}:${run.generation}:node-state:${nodeId}`, nodeId, type: 'subagent_status', payload: { state: 'interrupted', reason: 'owner-exited' }, terminalState: 'failed' }); run.nativeNodes?.clear(); store.finishRun(run.runId, run.taskId, run.openError ? 'failed' : closing ? 'stopped' : 'failed', run.openError ?? (closing ? null : `EXIT_${e.code ?? e.signal}`)); this.runs.delete(run.runId); run.markEnded(); };
           if (!run.integration) finish();
           else if (!run.exitFinishing) { run.exitFinishing = Promise.resolve(run.registration).catch(() => {}).then(async () => { if (!await this.drainNativeGroup(run.runId)) throw new Error('原生进程组退出不明'); await run.integration!.exited(); }).then(finish); void run.exitFinishing.catch(error => { store.markRunStopping(run.runId, run.taskId); store.addHostItem(run.taskId, run.turnId, 'error', { message: `进程已退出，业务或后代尚未排空，保留占用：${(error as Error).message}` }); }); }
@@ -344,6 +442,7 @@ export class AgentRunService {
     if (!run.defaultModel && run.instance.defaultModel) run.defaultModel = await run.instance.defaultModel();
     return run.defaultModel;
   }
+  async resolveModelCatalog(runId: string) { return await this.runs.get(runId)?.modelCatalog; }
   runForTask(taskId: string) { for (const r of this.runs.values()) if (r.taskId === taskId && !r.closing) return r; return undefined; }
   closingForTask(taskId: string) { for (const r of this.runs.values()) if (r.taskId === taskId && r.closing) return r; return undefined; }
 

@@ -5,6 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import type { DriverId } from './capabilities';
+import type { AgentModelChoice } from '@shared/agent-model-choice';
 
 export const EVENT_PAYLOAD_LIMIT = 32 * 1024;
 /** 历史正文与输入原文的上限（复核 CR06）：输入在接受前按文字预算校验，这里只防异常大对象。 */
@@ -67,7 +68,7 @@ export function itemJson(value: unknown): string {
   return shortenedJson(value, { storedTruncated: true, bytes, sha256: sha256(text) }) ?? boundedJson(value, BODY_LIMIT);
 }
 
-export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; effort?: string; tier: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean>; pendingSwitch?: { profileId: string; model?: string } }
+export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; effort?: string; initialCodexDefault?: boolean; tier: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean>; profileChoices?: Record<string, AgentModelChoice>; pendingSwitch?: AgentModelChoice & { profileId: string } }
 export interface CreateTaskInput { taskId?: string; projectId: string | null; dirId: string | null; cwd: string; title: string; selection: AgentSelection; parentTaskId?: string }
 export interface BindingRow { binding_id: string; task_id: string; driver_id: string; profile_id: string; continuation_hash: string; state_root: string; cwd_identity: string; native_id: string | null; native_confirmed_at: string | null }
 export interface TurnRow { turn_id: string; task_id: string; run_id: string | null; client_input_id: string; status: string; native_turn_id: string | null; source_kind: 'user' | 'delegation' | 'notification' | 'system' }
@@ -76,10 +77,10 @@ export interface StoredEvent { taskId: string; seq: number; type: string; itemId
 export type EventListener = (event: StoredEvent) => void;
 type EmitEvent = (taskId: string, type: string, payload: unknown, itemId?: string | null, revision?: number | null) => void;
 const TURN_TOOL_TYPES = ['command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'proposed_plan'];
-type TimelineRow = { item_id: string; turn_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string };
+type TimelineRow = { item_id: string; turn_id: string | null; run_id: string | null; type: string; ordinal: number; revision: number; payload_ref: string; terminal_state: string | null; created_at: string; updated_at: string };
 function timelineItem(row: TimelineRow) {
   return {
-    itemId: row.item_id, turnId: row.turn_id, type: row.type, ordinal: row.ordinal, revision: row.revision,
+    itemId: row.item_id, turnId: row.turn_id, runId: row.run_id, type: row.type, ordinal: row.ordinal, revision: row.revision,
     payload: JSON.parse(row.payload_ref), terminal: row.terminal_state, createdAt: row.created_at, updatedAt: row.updated_at,
   };
 }
@@ -570,13 +571,13 @@ export class AgentStore {
   /** 最近的条目（renderer 每任务上限 2000 条，技术方案 §3.1）；beforeOrdinal 分页读更早的。 */
   items(taskId: string, opts: { limit?: number; beforeOrdinal?: number } = {}) {
     const limit = Math.min(opts.limit ?? 2000, 2000);
-    return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as TimelineRow[])
+    return (this.sqlite.prepare(`SELECT * FROM (SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND ordinal<? ORDER BY ordinal DESC LIMIT ?) ORDER BY ordinal`).all(taskId, opts.beforeOrdinal ?? Number.MAX_SAFE_INTEGER, limit) as TimelineRow[])
       .map(timelineItem);
   }
   historyItems(taskId: string, itemIds: string[]) {
     if (!itemIds.length) return [];
     const params = itemIds.map(() => '?').join(',');
-    const rows = this.sqlite.prepare(`SELECT item_id,turn_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at
+    const rows = this.sqlite.prepare(`SELECT item_id,turn_id,run_id,type,ordinal,revision,payload_ref,terminal_state,created_at,updated_at
       FROM agent_items WHERE task_id=? AND type NOT IN ('subagent_message','subagent_status') AND item_id IN (${params}) ORDER BY ordinal`)
       .all(taskId, ...itemIds) as TimelineRow[];
     return rows.map(timelineItem);

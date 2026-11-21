@@ -27,6 +27,20 @@ beforeEach(() => {
 });
 afterEach(() => sqlite.close());
 
+it('offers committed subscription profiles for model discovery when saved or redetected', () => {
+  const seen: string[] = [];
+  service.onSubscriptionDetected = (profile, tool) => {
+    expect(service.configs().find(p => p.id === profile.id)?.available).toBe(true);
+    expect(tool.login).toBe('subscription');
+    seen.push(profile.id);
+  };
+  const profile = service.saveConfig({name:'Codex', toolId:'codex', source:'login'});
+  const tool = service.tools().find(t => t.id === 'codex')!;
+  service.recordTool({...tool, login:'none'});
+  service.recordTool(tool);
+  expect(seen).toEqual([profile.id, profile.id]);
+});
+
 const provider = (changes: Partial<ProviderInput> = {}): ProviderInput => ({
   name: 'Synthetic provider', preset: 'synthetic-test-only', endpoints: { anthropic: 'https://provider.invalid', responses: 'https://provider.invalid/v1' },
   key: 'PUBLIC_TEST_KEY', models: [{ id: 'm1', name: 'M1', availability: { claude: 'available', codex: 'available' } }, { id: 'm2', name: 'M2' }], ...changes,

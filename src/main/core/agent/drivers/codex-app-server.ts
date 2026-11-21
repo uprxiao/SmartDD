@@ -5,6 +5,7 @@ import { CODEX_TIERS, codexSupportsTurnPermissions, type CodexTierParams } from 
 import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import { JsonlRpcPeer } from '../jsonl-rpc';
 import { redact } from '../../connections/redact';
+import { catalogAccount, CodexCatalogReader, type CatalogObserver } from './codex-catalog';
 
 const SANDBOX_MODE: Record<CodexTierParams['sandboxPolicy']['type'], string> = { workspaceWrite: 'workspace-write', dangerFullAccess: 'danger-full-access' };
 const REQUEST_KIND: Record<string, DriverRequestKind> = {
@@ -20,11 +21,54 @@ const REQUEST_KIND: Record<string, DriverRequestKind> = {
 const REFUSED = new Set(['account/chatgptAuthTokens/refresh', 'attestation/generate', 'item/tool/call']);
 
 export interface CodexSpawn { (command: string, args: string[], options: { cwd: string; env: Record<string, string> }): ChildProcess }
+// The native catalogue may refresh before initialize; use the same WillYou client for both paths.
+const clientInfo = { name: 'willyou', version: '1' };
+const codexEnv = (env: Record<string, string>) => ({ ...env, CODEX_INTERNAL_ORIGINATOR_OVERRIDE: clientInfo.name });
+
+/** Query an account's model capabilities without creating a native thread or sending input. */
+export async function previewCodexModels(executable: string, cwd: string, env: Record<string, string>, extraArgs: string[], observer: CatalogObserver = {}, signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  const child = spawn(executable, ['app-server', ...extraArgs, '-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'],
+    { cwd, env: codexEnv(env), stdio: ['pipe', 'pipe', 'pipe'] });
+  const closed = new Promise<void>(resolve => child.once('close', () => resolve()));
+  const peer = new JsonlRpcPeer(child.stdout, child.stdin, {
+    notification() {},
+    request(id) { peer.replyError(id, -32601, '仅查询模型目录'); },
+  }, 10_000);
+  const catalog = new CodexCatalogReader(peer, child.stderr);
+  const abort = () => peer.close(new DriverError('EXITED', '模型目录读取已取消'));
+  signal?.addEventListener('abort', abort, { once: true });
+  child.once('error', error => peer.close(error));
+  child.once('exit', () => peer.close(new Error('目录查询已退出')));
+  child.stdin.on('error', error => peer.close(error));
+  try {
+    await peer.call('initialize', { clientInfo, capabilities: { experimentalApi: true } });
+    peer.notify('initialized');
+    const identity = observer.account && catalogAccount(peer).then(observer.account, () => {});
+    const [result] = await Promise.all([catalog.read(observer.fallback), identity]);
+    return result;
+  } finally {
+    signal?.removeEventListener('abort', abort);
+    child.stdin.end();
+    const terminate = setTimeout(() => child.kill('SIGTERM'), 250);
+    const force = setTimeout(() => child.kill('SIGKILL'), 900);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([closed, new Promise<void>(resolve => { timeout = setTimeout(resolve, 1500); })]);
+    clearTimeout(terminate);
+    clearTimeout(force);
+    clearTimeout(timeout);
+    child.stdout.destroy();
+    child.stderr.destroy();
+  }
+}
 
 export class CodexAppServerInstance implements DriverInstance {
   readonly driverId = 'codex-app-server' as const;
   private child?: ChildProcess;
   private rpc?: JsonlRpcPeer;
+  private catalog?: CodexCatalogReader;
+  private modelCache?: DriverOpenOptions['modelCache'];
+  private catalogRequest?: Promise<DriverModel[]>;
   private threadId?: string;
   private cwd = '';
   private readOnly = false;
@@ -55,11 +99,12 @@ export class CodexAppServerInstance implements DriverInstance {
 
   async open(o: DriverOpenOptions) {
     if (this.child) throw new DriverError('STATE', '实例已打开');
+    this.modelCache = o.modelCache;
     this.secrets = Object.entries(o.env).filter(([name]) => /KEY|TOKEN|PASSWORD|SECRET/.test(name)).map(([,value]) => value).filter(Boolean);
     this.cwd = o.cwd; this.readOnly = o.readOnly === true;
     this.turnCliPermissions = !this.readOnly && codexSupportsTurnPermissions(o.executable.version) ? o.codexCliPermissions : undefined;
     o.assertStarting?.();
-    const child = this.spawnFn(o.executable.path, ['app-server', ...(o.extraArgs ?? []), ...(this.readOnly ? ['-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'] : [])], { cwd: o.cwd, env: o.env });
+    const child = this.spawnFn(o.executable.path, ['app-server', ...(o.extraArgs ?? []), ...(this.readOnly ? ['-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'] : [])], { cwd: o.cwd, env: codexEnv(o.env) });
     this.child = child;
     child.stderr?.on('data', (b: Buffer) => { const message = redact(b.toString('utf8'), this.secrets); this.stderrTail = (this.stderrTail + message).slice(-2000); this.emitter.emit({ type: 'diagnostic', message: message.slice(0, 4000) }); });
     const spawnError = new Promise<never>((_, reject) => child.once('error', e => reject(new DriverError('EXITED', `无法启动 Codex：${e.message}`))));
@@ -81,10 +126,11 @@ export class CodexAppServerInstance implements DriverInstance {
       request: (id, m, p) => this.onRequest(id, m, p),
       invalid: line => this.emitter.emit({ type: 'diagnostic', message: `无法解析的输出：${line.slice(0, 500)}` }),
     });
+    this.catalog = new CodexCatalogReader(this.rpc, child.stderr);
     const tier = CODEX_TIERS[o.tier];
     const work = (async () => {
       await o.beforeInitialize?.();
-      await this.rpc!.call('initialize', { clientInfo: { name: 'willyou', version: '1' }, capabilities: { experimentalApi: true } });
+      await this.rpc!.call('initialize', { clientInfo, capabilities: { experimentalApi: true } });
       o.assertStarting?.();
       this.rpc!.notify('initialized');
       if (o.resumeNativeId && o.recoverGoals) {
@@ -142,16 +188,23 @@ export class CodexAppServerInstance implements DriverInstance {
     try {
       const c = await this.rpc.call<{ config?: { model?: string | null } }>('config/read', { cwd: this.cwd }, 5_000);
       if (c?.config?.model) return c.config.model;
-      const l = await this.rpc.call<{ data?: { model?: string; id?: string; isDefault?: boolean }[] }>('model/list', {}, 5_000);
-      const d = l?.data?.find(m => m.isDefault);
-      return d ? d.model ?? d.id : undefined;
+      return (await this.modelCatalog()).find(m => m.isDefault)?.id;
     } catch { return undefined; }
   }
 
   async modelCatalog(): Promise<DriverModel[]> {
-    if (!this.rpc) return [];
-    const response = await this.rpc.call<{ data?: { model: string; displayName?: string; supportedReasoningEfforts?: { reasoningEffort: string }[]; defaultReasoningEffort?: string }[] }>('model/list', {}, 5000);
-    return (response.data ?? []).slice(0, 200).filter(m => typeof m.model === 'string').map(m => ({ id: m.model, name: m.displayName ?? m.model, efforts: (m.supportedReasoningEfforts ?? []).map(e => e.reasoningEffort), defaultEffort: m.defaultReasoningEffort }));
+    if (!this.catalog || !this.rpc) return [];
+    this.catalogRequest ??= this.readModels(this.catalog, this.rpc).finally(() => { this.catalogRequest = undefined; });
+    return this.catalogRequest;
+  }
+
+  private async readModels(catalog: CodexCatalogReader, peer: JsonlRpcPeer) {
+    const account = this.modelCache && await catalogAccount(peer).catch(() => undefined);
+    const saved = account ? await this.modelCache?.read(account) : undefined;
+    if (saved) return saved;
+    const result = await catalog.read();
+    if (account && result.confirmed) this.modelCache?.write(account, result.models);
+    return result.models;
   }
   async injectHistory(text: string) {
     if (!this.rpc || !this.threadId || this.activeTurn) throw new DriverError('STATE', '历史交接需要空闲会话');

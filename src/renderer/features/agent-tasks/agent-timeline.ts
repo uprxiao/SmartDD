@@ -1,7 +1,7 @@
 // 新任务区时间线的纯函数（便于单测）：按回合分组，工作条目聚合为“工作了 Ns”，
 // 用户消息、最终回答、待处理请求、错误与计划保持可见（技术方案 T1.5 §4、需求 R01）。
 
-export interface TimelineItem { itemId: string; turnId: string | null; type: string; ordinal: number; revision: number; payload: any; terminal: string | null; createdAt: string; updatedAt: string }
+export interface TimelineItem { itemId: string; turnId: string | null; runId?: string | null; type: string; ordinal: number; revision: number; payload: any; terminal: string | null; createdAt: string; updatedAt: string }
 export interface TurnInfo { turn_id: string; status: string; accepted_at: string; started_at: string | null; ended_at: string | null; error_code: string | null; source_kind?: string; run_id?: string | null; native_turn_id?: string | null; native_wait_ms?: number; native_wait_since?: number }
 export interface TimelineRequest { requestId: string; kind: string; revision: number; payload: any; origin: { turnId?: string | null; nodeId?: string }; status: string; ownerTaskId?: string; ownerName?: string; driverId?: string; targetTaskTitle?: string }
 
@@ -63,12 +63,47 @@ function turnTiming(t: TurnInfo | undefined, now: number) {
   const wait = Math.min(elapsed, (t.native_wait_ms ?? 0) + ongoingWait);
   return { seconds: Math.round((elapsed - wait) / 1000), waitingSeconds: Math.round(wait / 1000) };
 }
-export const turnSeconds = (turn: TurnInfo | undefined, now = Date.now()) => turnTiming(turn, now).seconds;
 export function formatDuration(s: number) { return s < 60 ? `${s} 秒` : `${Math.floor(s / 60)} 分 ${s % 60} 秒`; }
 
+const isConfigNotice = (code: unknown) => code === 'configWarning' || code === 'deprecationNotice';
+const isMcpStartup = (p: TimelineItem['payload']) => p?.code === 'mcpStartup'
+  || (typeof p?.title === 'string' && p.title.startsWith('MCP 启动 · '));
+
+export function runDiagnostics(items: TimelineItem[]): TimelineItem[] {
+  return items.filter(({type, payload}) => {
+    if (type !== 'system_notice') return false;
+    if (isMcpStartup(payload) || isConfigNotice(payload?.code) || payload?.code === 'warning'
+      || payload?.code === 'businessCapabilitiesUnverified') return true;
+    return payload?.diagnosticOnly ?? (payload?.severity === 'info' && /^钩子 · /.test(payload.title ?? ''));
+  });
+}
+
+export function visibleRunDiagnostics(items: TimelineItem[]): TimelineItem[] {
+  const diagnostics = runDiagnostics(items);
+  const configKey = (item: TimelineItem) => JSON.stringify([item.runId, item.payload.detail]);
+  const mcpKey = (item: TimelineItem) => JSON.stringify([item.runId, item.payload.title, item.payload.status, item.payload.detail]);
+  const configuration = new Set(diagnostics.filter(item => isConfigNotice(item.payload.code)).map(configKey));
+  const reportedInTurn = new Set(diagnostics.filter(item => item.runId && item.turnId && isMcpStartup(item.payload)).map(mcpKey));
+  const seenMcp = new Set<string>();
+  return diagnostics.filter(item => {
+    if (item.payload.code === 'warning' && configuration.has(configKey(item))) return false;
+    if (!item.runId || !isMcpStartup(item.payload)) return true;
+    const notice = mcpKey(item);
+    if (!item.turnId && reportedInTurn.has(notice)) return false;
+    const slot = JSON.stringify([notice, item.turnId]);
+    if (seenMcp.has(slot)) return false;
+    seenMcp.add(slot);
+    return true;
+  });
+}
 export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Date.now()): TurnGroup[] {
+  const diagnostics = new Set(runDiagnostics(items));
   const byTurn = new Map<string, { turnId: string | null; items: TimelineItem[] }>();
   for (const it of [...items].sort((a, b) => a.ordinal - b.ordinal)) {
+    if (diagnostics.has(it)) continue;
+    if (it.type === 'files_changed' && it.payload?.status === 'complete' && it.payload.fileCount === 0) continue;
+    if (it.type === 'reasoning' && it.terminal === 'completed' && it.payload?.text === ''
+      && !it.payload.truncated && !it.payload.storedTruncated) continue;
     const k = it.turnId ?? `host:${it.itemId}`;
     if (!byTurn.has(k)) byTurn.set(k, { turnId: it.turnId ?? null, items: [] });
     byTurn.get(k)!.items.push(it);

@@ -11,7 +11,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { withShellProxy } from '../ai/runner-detect';
 import type BetterSqlite3 from 'better-sqlite3';
-import { codeAgentKindSchema } from '@shared/ai-agents';
+import { codeAgentKindSchema, type CodeAgentTool, type RunConfigView } from '@shared/ai-agents';
 import { ApplicationError } from '@shared/applications';
 import type { AgentLiveFrame } from '@shared/events';
 import type { AgentService } from '../ai/agent-service';
@@ -22,11 +22,14 @@ import { materializeAgentPlan } from '../ai/agent-launch-files';
 import { AgentStore, sha256, type StoredEvent } from './agent-store';
 import { AgentRunService, type LiveListener } from './agent-run-service';
 import { AgentTaskService, boundedEvent, type LaunchResolver } from './agent-task-service';
-import { probeAndRecord } from './discovery';
+import { probeAndRecord, probeDriver } from './discovery';
 import { resolveProfileLaunch } from './profile-launch';
 import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
 import { DriverError } from './driver';
+import { previewCodexModels } from './drivers/codex-app-server';
+import { SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
+import type { AgentModelCatalog, AgentModelScope, CatalogReadMode } from '@shared/agent-model-choice';
 import { tiersFor } from './permissions';
 import { AgentManualTerminals } from './manual-terminal';
 import { canonicalPath } from './identity';
@@ -82,6 +85,8 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (r.pid && r.processStartedAt && d.processes.state({ pid: r.pid, startedAt: r.processStartedAt }) === 'running') { try { process.kill(r.pid, 'SIGTERM'); } catch { /* 已退出 */ } }
   }
   const runs = new AgentRunService({ store, drivers: DRIVERS, processes: d.processes, host: d.host });
+  const modelCatalogs = new SubscriptionCatalogs(d.sqlite);
+  const catalogAccountId = (account: string, path: string, version: string | null) => sha256(JSON.stringify([account, path, version]));
   const recoveryAbort = new AbortController();
   const reconcileRecoveredRun = async (runId: string) => {
     let run = store.run(runId);
@@ -135,7 +140,15 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const modelsWithoutImageInput = kind === 'codex' && provider
       ? new Set(provider.models.filter(model => model.codex && !model.codex.inputModalities.includes('image')).map(model => model.id))
       : undefined;
+    const scope = kind === 'codex' && c.source === 'login' ? subscriptionCatalogScope(profileId, launch, tool, cwd) : undefined;
+    const bindAccount = (account: string) => catalogAccountId(account, probe.realpath!, probe.version);
     return { driverId: launch.driverId, executable: { path: probe.realpath, version: probe.version }, env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, model: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: probe.capabilities, modelsWithoutImageInput, assertCurrent,
+      modelCache: scope && {
+        read: account => modelCatalogs.modelsForRun(scope.key, bindAccount(account), () => {
+          void readSubscriptionCatalog(c, tool, cwd).catch(() => {});
+        }),
+        write: (account, models) => modelCatalogs.remember(scope.key, bindAccount(account), models),
+      },
       integrate: async context => {
         if (!business || !taskId || probe.capabilities.mcp.state !== 'enabled') return undefined;
         const task = store.task(taskId); if (!task?.project_id) return undefined;
@@ -165,7 +178,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
           assertCurrent();
         };
         const { runId, bindingId, generation, nativeId } = context;
-        const result = await business.prepareAgent({ runId, bindingId, generation, version: probe.version!, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
+        const result = await business.prepareAgent({ runId, bindingId, generation, checkedCli: probe.checkedCli, version: probe.version!, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
         if (projected?.serverNames.some(name => Object.hasOwn(result.mcpServers ?? {}, name))) {
           await result.cancelBeforeFork();
           throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
@@ -207,14 +220,43 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (event.type === 'turn.completed' || event.type === 'exit') liveOutput.end(runId);
   };
   const unsubscribeLive = runs.onLive(live);
+  const isCodexSubscription = (profile: ReturnType<typeof config>) => profile.kind === 'codex' && profile.source === 'login'
+    && d.agents.tools().some(tool => tool.id === profile.toolId && tool.login === 'subscription');
   /** 首页与任务页的智能体列表：只列可用于新任务的配置，带执行器与可选档位。 */
   const profiles = () => d.agents.configs().filter(c => c.source !== 'legacy' && codeAgentKindSchema.safeParse(c.kind).success).map(c => {
     const driverId = driverForKind(c.kind);
-    return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const };
+    return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, codexSubscription: isCodexSubscription(c), tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const };
   });
+  const readSubscriptionCatalog = async (profile: RunConfigView, tool: CodeAgentTool, cwd: string, mode?: CatalogReadMode) => {
+    const baseEnv = d.baseEnv();
+    const launch = resolveProfileLaunch({ config: profile, tool, cwd, userData: d.userData, runId: randomUUID(), baseEnv });
+    const { key, localLoginBound } = subscriptionCatalogScope(profile.id, launch, tool, cwd);
+    return modelCatalogs.read(key, async observer => {
+      const info = await probeDriver('codex-app-server', { env: baseEnv, executable: launch.command });
+      if (!info.realpath || info.state === 'unsupported') throw new DriverError('UNSUPPORTED', info.reason ?? '执行器不可用');
+      const env = withShellProxy(info.shellPath ? { ...launch.env, PATH: info.shellPath } : launch.env, info.shellProxy);
+      return previewCodexModels(info.realpath, cwd, env, launch.extraArgs, {
+        ...observer, account: id => observer.account?.(id && catalogAccountId(id, info.realpath!, info.version)),
+      }, recoveryAbort.signal);
+    }, mode, localLoginBound);
+  };
+  d.agents.onSubscriptionDetected = (profile, tool) => {
+    if (!recoveryAbort.signal.aborted) void readSubscriptionCatalog(profile, tool, d.baseEnv().HOME ?? homedir()).catch(() => {});
+  };
+  const modelCatalog = async (scope: AgentModelScope, profileId: string, mode?: CatalogReadMode): Promise<AgentModelCatalog> => {
+    const profile = config(profileId);
+    if (profile.kind !== 'codex' || profile.source !== 'login') return { status: 'ready', models: [] };
+    if (profile.loggedOut || !profile.available) return { status: 'unavailable', models: [] };
+    const task = scope.kind === 'task' ? store.task(scope.taskId) : undefined;
+    if (scope.kind !== 'project' && (!task || task.archived_at)) throw new DriverError('REJECTED', '任务目录不可用');
+    const cwd = scope.kind === 'project' ? registeredProjectCwd(d.sqlite, scope.projectId, scope.dirId) : canonicalPath(task!.cwd);
+    const tool = d.agents.tools().find(item => item.id === profile.toolId);
+    if (!tool) throw new DriverError('REJECTED', '执行器不可用');
+    return readSubscriptionCatalog(profile, tool, cwd, mode);
+  };
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskProject: taskId => store.task(taskId)?.project_id ?? null, taskCwd: id => { tasks.assertWritable(id); const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
   const projectResources = new AgentProjectResources({ store, tasks, diffs, terminals, userData: d.userData });
   tasks.attachAttachmentCleanup((taskId,data)=>projectResources.discardAttachments(taskId,data));
-  return { store, runs, tasks, profiles, terminals, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
+  return { store, runs, tasks, profiles, terminals, isCodexSubscription: (profileId: string) => isCodexSubscription(config(profileId)), modelCatalog, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

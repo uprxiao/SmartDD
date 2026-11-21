@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { detectNativeCli, type DetectOptions } from '../ai/runner-detect';
+import { detectNativeCli, nativeExecutableIdentity, type CheckedNativeCli, type DetectOptions } from '../ai/runner-detect';
 import { evaluateCapabilities, type CapabilityName, type DriverCapabilities, type DriverId } from './capabilities';
 import type { AgentStore } from './agent-store';
 import { DriverError } from './driver';
@@ -19,6 +19,7 @@ const INSTALL_HINT: Record<DriverId, string> = {
 };
 
 export interface DriverProbe extends DriverCapabilities {
+  checkedCli?: CheckedNativeCli;
   binaryPath: string | null;
   realpath: string | null;
   shellPath: string | null;
@@ -109,11 +110,15 @@ export async function probeDriver(driverId: DriverId, o: ProbeOptions): Promise<
     return { ...caps, state: 'unsupported', reason: `执行器不可用：${(e as Error).message}`, binaryPath: info.path, realpath: real, shellPath: info.shellPath, shellProxy: info.shellProxy };
   }
   let caps = evaluateCapabilities(driverId, info.version, o.probe);
+  const identity = nativeExecutableIdentity(real);
+  const checkedCli = identity && caps.version && info.shellPath
+    ? { runner: RUNNER[driverId], path: real, version: caps.version, shellPath: info.shellPath, shellProxy: info.shellProxy, identity }
+    : undefined;
   if (o.inspectCodexProtocol && driverId === 'codex-app-server' && caps.state !== 'unsupported' && caps.version) {
     const missing = await inspectCodex(real, info.shellPath ?? o.env.PATH, caps.version, o.env).catch(() => new Set<CapabilityName>());
     caps = evaluateCapabilities(driverId, info.version, name => !missing.has(name) && o.probe?.(name) !== false);
   }
-  return { ...caps, binaryPath: info.path, realpath: real, shellPath: info.shellPath, shellProxy: info.shellProxy };
+  return { ...caps, binaryPath: info.path, realpath: real, shellPath: info.shellPath, shellProxy: info.shellProxy, checkedCli };
 }
 
 /** 探测并留档；每次结果都记录，旧记录不覆盖。 */

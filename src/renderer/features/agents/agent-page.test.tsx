@@ -54,6 +54,25 @@ it('SMG upstream errors remain unavailable with the original message and an expl
 });
 const footer=()=>document.querySelector('.m13-dialog-foot') as HTMLElement;
 function custom(){fireEvent.click(screen.getByRole('button',{name:/^自定义供应商/}));fireEvent.change(screen.getByLabelText('名称'),{target:{value:'Custom Provider'}});fireEvent.change(screen.getByLabelText('服务地址'),{target:{value:'https://custom.example.invalid/v1'}});fireEvent.change(screen.getByLabelText('API 密钥'),{target:{value:'PUBLIC_UI_KEY_ONLY'}});}
+
+it('checks an untested model on the completion page without repeating the recommended checks', async () => {
+  const flash = {...model('deepseek-flash'), name: 'DeepSeek-V4.1-Flash', availability: {claude:'untested' as const, codex:'untested' as const}};
+  const saved = provider({ name:'DeepSeek', models: [flash, model('deepseek-v4-pro')] });
+  api.connect.mockResolvedValue({ok:true,value:saved});
+  api.check.mockResolvedValue({...saved, models: [{...flash, availability: {...flash.availability, codex:'available'}}, saved.models[1]]});
+  catalog();
+  custom();
+  fireEvent.change(screen.getByLabelText('模型'), {target:{value:'deepseek-flash,deepseek-v4-pro'}});
+  fireEvent.click(screen.getByRole('button', {name:'接入'}));
+  const check = await screen.findByRole('button', {name:'测试 DeepSeek-V4.1-Flash · Codex'});
+  const row = within(check.closest('[role="row"]') as HTMLElement);
+  expect(row.getAllByText('未测试')).toHaveLength(2);
+  expect(api.check).not.toHaveBeenCalled();
+  fireEvent.click(check);
+  expect(await row.findByText('可用')).toBeTruthy();
+  expect(row.getAllByText('未测试')).toHaveLength(1);
+  expect(api.check).toHaveBeenCalledExactlyOnceWith('p', 'codex', 'deepseek-flash');
+});
 function profile():AiProfileView{return {id:'legacy',name:'Old Agent',runner:'codex',executable:'/synthetic/legacy/bin/codex',env:[{name:'MODE',secret:false,value:'old-value',hasValue:true},{name:'OPENAI_API_KEY',secret:true,value:'PUBLIC_SECRET_NEVER_RENDER',hasValue:true}],args:['--label','two words','--flag'],color:'#c59be8',isDefault:false,check:null,checking:false,createdAt:1,updatedAt:2};}
 function legacy(){const c=new QueryClient({defaultOptions:{queries:{retry:false,gcTime:Infinity}}});clients.push(c);const props={config:config({id:'legacy',name:'Old Agent',source:'legacy',providerId:null,legacyReason:'保留配置'}),onClose:vi.fn(),onSaved:vi.fn(async()=>{})};return {props,...render(<QueryClientProvider client={c}><LegacyAgentEditor {...props}/></QueryClientProvider>)};}
 

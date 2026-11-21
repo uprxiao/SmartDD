@@ -1,9 +1,9 @@
 // 新任务的手动终端（需求 R01、技术方案 §3 terminal.open／close）：在任务目录起用户的登录 shell，
 // 与 Agent 运行分离，不取得 Agent 业务身份；每个任务至多一个。
-import { loginShell } from '../../launch-env';
+import type { InteractiveShellOptions } from '../../pty-manager';
 
 export interface TerminalPtys {
-  spawn(opts: { command: string; args: string[]; cwd: string; env: Record<string, string>; cols?: number; rows?: number }): string;
+  spawnInteractiveShell(opts: InteractiveShellOptions): string;
   has(id: string): boolean;
   kill(id: string): void;
   writeControlled?(id: string, data: string): void;
@@ -26,7 +26,7 @@ export class AgentManualTerminals {
     const existing = this.activePty(taskId);
     if (existing) return { ptyId: existing };
     const cols = Math.min(Math.max(size?.cols ?? 120, 20), 500), rows = Math.min(Math.max(size?.rows ?? 24, 5), 200);
-    const ptyId = this.d.ptys.spawn({ command: loginShell(), args: ['-i'], cwd, env: { ...this.d.baseEnv(), TERM: 'xterm-256color' }, cols, rows });
+    const ptyId = this.d.ptys.spawnInteractiveShell({ cwd, env: { ...this.d.baseEnv(), TERM: 'xterm-256color' }, cols, rows });
     this.byTask.set(taskId, { ptyId, projectId });
     return { ptyId };
   }

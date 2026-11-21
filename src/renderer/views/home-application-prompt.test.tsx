@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
-import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {act,cleanup,fireEvent,render as renderView,screen,waitFor} from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {HomeView} from './home-view';
 import {navigation} from '@renderer/core/navigation';
-const m=vi.hoisted(()=>({update:vi.fn(),projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
-const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn()}));
+const m=vi.hoisted(()=>({update:vi.fn(),subscribed:false,projects:[{id:'p1',name:'Original project'}],profiles:[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}] as {id:string;name:string;runner:string;isDefault:boolean;checking?:boolean;check?:{status:string}|null}[],draft:{projectId:'p1',dirId:'dir1',aiProfileId:'profile'},project:{id:'p1',name:'Original project',dirs:[{id:'dir1',path:'/private/fixture',label:'Fixture',isDefault:true,status:{available:true}}]}}));
+const agent=vi.hoisted(()=>({store:{refresh:vi.fn()},create:vi.fn(),submit:vi.fn(),modelCatalog:vi.fn()}));
 vi.mock('react-i18next',()=>({useTranslation:()=>({t:(key:string)=>key})}));
 vi.mock('@renderer/lib/hooks/useProjects',()=>({useProjectList:()=>({data:m.projects}),useProject:()=>({data:m.project})}));
-vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'login',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:[]}})}));
+vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>({data:{configs:m.profiles.map(p=>({...p,kind:p.runner,toolId:p.runner,source:'login',providerId:null,models:[],defaultModel:null,homeVisible:true,loggedOut:false,nameCustomized:true,order:0,available:true,legacyReason:null})),providers:[],tools:m.subscribed?[{id:"codex",login:"subscription"}]:[]}})}));
 vi.mock('@renderer/lib/hooks/useAppSettingsKey',()=>({useAppSettingsKey:(key:string)=>({value:key==='agentPermissions'?{selected:'ask',fullConfirmed:false}:m.draft,update:m.update})}));
 vi.mock('@renderer/core/agent-tasks-store',()=>({agentTasksStore:agent.store}));
 vi.mock('@renderer/lib/ipc',()=>({rpc:{agentTasks:agent}}));
@@ -15,7 +16,11 @@ vi.mock('./voice-controls',()=>({VoiceButton:()=>null}));
 vi.mock('./capabilities',()=>({CapabilityLaunchPreview:()=>null}));
 vi.mock('./projects/project-dialogs',()=>({ProjectDialog:()=>null}));
 vi.mock('@renderer/lib/profile-health',()=>({ProfileHealthMark:()=>null}));
-beforeEach(()=>{vi.clearAllMocks();navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.pluginPromptRequest=null;navigation.currentProjectId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
+function render(element: React.ReactElement) {
+  const client = new QueryClient({defaultOptions:{queries:{retry:false, gcTime:0}}});
+  return renderView(element, {wrapper: ({children}) => <QueryClientProvider client={client}>{children}</QueryClientProvider>});
+}
+beforeEach(()=>{vi.clearAllMocks();m.subscribed=false;agent.modelCatalog.mockResolvedValue({status:"loading",models:[]});navigation.homeInputDrafts.clear();navigation.homePreset=null;navigation.pluginPromptRequest=null;navigation.currentProjectId=null;navigation.currentViewId='home';m.projects.splice(0,m.projects.length,{id:'p1',name:'Original project'});m.profiles=[{id:'profile',name:'Private profile',runner:'codex',isDefault:true}];m.draft.aiProfileId='profile';});
 afterEach(()=>{cleanup();agent.create.mockReset();agent.submit.mockReset();});
 describe('application example handoff to the real home composer',()=>{
  it.each([false,true])('M13 appends one exact plugin example without submitting, Home already mounted=%s',async alreadyMounted=>{
@@ -94,6 +99,19 @@ describe('M14-A43 home first send',()=>{
     await waitFor(()=>expect(launch).toHaveProperty('disabled',false));
     return {input,launch};
   }
+
+  it('persists and opens the first subscription message while discovery has no response', async () => {
+    m.subscribed = true;
+    agent.modelCatalog.mockImplementation(() => new Promise(() => {}));
+    agent.create.mockResolvedValue({taskId:'cold-catalog-task'});
+    agent.submit.mockResolvedValue({turnId:'accepted'});
+    const {launch} = await prepareHome();
+    fireEvent.click(launch);
+    await waitFor(() => expect(agent.submit).toHaveBeenCalled());
+    expect(agent.create.mock.calls[0][0]).toMatchObject({model:'gpt-6.2-sol',effort:'medium',initialCodexDefault:true});
+    expect(navigation.currentViewId).toBe('agentTask');
+    expect(agent.modelCatalog.mock.calls.some(args => args[2] === 'wait')).toBe(false);
+  });
 
   it.each(['create','submit'] as const)('reuses the intent when the %s acknowledgement was lost', async phase=>{
     const {launch}=await prepareHome();

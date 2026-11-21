@@ -32,6 +32,7 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   const [more,setMore]=useState<Partial<Record<Protocol,string>>>({}),[manual,setManual]=useState(''),[detected,setDetected]=useState<string|null>(null);
   const [result,setResult]=useState<{models:ProviderModel[];recommended:{claude?:string;codex?:string};note:string|null}|null>(null),[picked,setPicked]=useState<string[]>([]);
   const [done,setDone]=useState<ProviderView|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState<'fetch'|'probe'|'connect'|null>(null);
+  const [testing, setTesting] = useState<{ model: string; kind: CodeAgentKind } | null>(null);
   const [context,setContext]=useState(''),[efforts,setEfforts]=useState(''),[reasoning,setReasoning]=useState('');
   const custom=item===null,editable=custom||item.requiresAddress;
   useEffect(()=>()=>{void rpc.providerSetup.cancel();},[]);
@@ -79,9 +80,22 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   const number=step==='catalog'?0:step==='form'?1:2;
   const title=step==='catalog'?'添加供应商':step==='done'?'已添加':custom?(name||'自定义供应商'):item.name;
   const supported=done?(['claude','codex'] as const).filter(k=>providerFits(done,k)):[];
+  const testModel = async (model: string, kind: CodeAgentKind) => {
+    if (!done || testing) return;
+    setTesting({ model, kind });
+    setError('');
+    try {
+      setDone(await rpc.agents.checkProviderModel(done.id, kind, model));
+      await onConnected();
+    } catch (e) {
+      setError(rpcErrorMessage(e));
+    } finally {
+      setTesting(null);
+    }
+  };
   const fieldChange=()=>{setResult(null);setDetected(null);};
   return <AgentDialog title={title} sub={step==='catalog'?'选择目录中的供应商，或添加自定义供应商':step==='done'?'供应商已保存，可以用它创建智能体':editable?'填写服务地址与 Key，获取模型':'地址与协议已预填，填写 Key 并获取模型'} wide onClose={onClose}
-    footer={step==='catalog'?<button className="m10-button secondary" onClick={onClose}>取消</button>:step==='done'?<>{done&&supported.length>0&&<button className="m10-button secondary" onClick={()=>onNewAgent(done,forTool&&supported.includes(forTool)?forTool:supported[0])}><Plus size={14}/>创建智能体</button>}<button className="m10-button primary" onClick={onClose}>完成</button></>:<><button className="m10-button secondary m13-foot-left" disabled={Boolean(busy)} onClick={()=>{setError('');setStep('catalog');}}><ArrowLeft size={14}/>返回</button><button className="m10-button secondary" onClick={onClose}>取消</button>{!result&&!manual.trim()?<button className="m10-button primary" disabled={Boolean(busy)} onClick={()=>void fetchModels()}>{busy==='fetch'?'获取中…':'获取模型'}</button>:<button className="m10-button primary" disabled={Boolean(busy)||(!picked.length&&!manual.trim())} onClick={()=>void connect()}>{busy?'正在确认…':'接入'}</button>}</>}>
+    footer={step==='catalog'?<button className="m10-button secondary" onClick={onClose}>取消</button>:step==='done'?<>{done&&supported.length>0&&<button className="m10-button secondary" disabled={!!testing} onClick={()=>onNewAgent(done,forTool&&supported.includes(forTool)?forTool:supported[0])}><Plus size={14}/>创建智能体</button>}<button className="m10-button primary" onClick={onClose}>完成</button></>:<><button className="m10-button secondary m13-foot-left" disabled={Boolean(busy)} onClick={()=>{setError('');setStep('catalog');}}><ArrowLeft size={14}/>返回</button><button className="m10-button secondary" onClick={onClose}>取消</button>{!result&&!manual.trim()?<button className="m10-button primary" disabled={Boolean(busy)} onClick={()=>void fetchModels()}>{busy==='fetch'?'获取中…':'获取模型'}</button>:<button className="m10-button primary" disabled={Boolean(busy)||(!picked.length&&!manual.trim())} onClick={()=>void connect()}>{busy?'正在确认…':'接入'}</button>}</>}>
     <ol className="m13-steps" aria-label="步骤">{['选择','填写 Key 并获取模型','完成'].map((s,i)=><li key={s} className={(number>=i?'on':'')+(number===i?' cur':'')} aria-current={number===i?'step':undefined}><i>{number>i?<Check size={11}/>:i+1}</i>{s}</li>)}</ol>
     {step==='catalog'&&<><label className="m10-search m13-cat-search"><Search size={14}/><input aria-label="查找供应商" placeholder="查找供应商" value={query} onChange={e=>setQuery(e.target.value)}/></label>
       <section className="m13-cat-group"><h3>供应商<span>{forTool?`适用 ${agentLabels[forTool]} 的排在前面`:''}</span></h3><div className="m13-cat-grid">{providerCatalog.filter(p=>p.name.toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>forTool?Number(b.tools.includes(forTool))-Number(a.tools.includes(forTool)):0).map(p=>{
@@ -105,6 +119,28 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
     </>}
     {busy&&<p className="m13-desc"><RefreshCw size={14} className="m13-spin"/> {busy==='fetch'?'正在获取模型列表…':busy==='probe'?'正在探测候选协议…':'正在确认接口并测试推荐模型…'}</p>}
     {error&&<div className="m13-alert danger" role="alert"><TriangleAlert size={16}/><div><p>{error}</p></div></div>}
-    {step==='done'&&done&&<div className="m13-done"><div className="m13-right-head"><ProviderIcon catalog={done.preset} name={done.name} size={44}/><div><b>{done.name} 已添加</b><small>{pairing(supported)} · {done.models.length} 个模型</small></div></div><h3 className="m13-sub">模型（{done.models.length}）</h3><div className="m13-table matrix done-models" role="table" aria-label="模型"><div role="row" className="m13-th"><span>模型</span><span>上下文</span>{supported.map(k=><span key={k} className="m13-th-tool"><ToolIcon tool={k} size={14}/>{agentLabels[k]}</span>)}</div>{done.models.map(m=><div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name">{m.name}</span><span>{contextLabel(m.contextWindow)}</span>{supported.map(k=><span className="m13-cell" key={k} title={modelCheckDescription(m,k)}><Pill tone={m.availability[k]==='available'?'ok':m.availability[k]==='unavailable'?'warn':'muted'}>{m.availability[k]==='available'?'可用':m.availability[k]==='unavailable'?'不可用':'未测试'}</Pill></span>)}</div>)}</div>{!supported.length&&<div className="m13-alert warn"><Info size={16}/><div><p>两个 Code Agent 都不能直接使用这个供应商。可先通过 Magpie 等网关接入，或在详情里核对并重测协议。</p></div></div>}<p className="m13-hint">已用推荐模型做过一次测试，其他模型可在供应商详情中测试。Key 与测试结果保存在供应商上，创建智能体时不需要再填。</p></div>}
+    {step === 'done' && done && <div className="m13-done">
+      <div className="m13-right-head"><ProviderIcon catalog={done.preset} name={done.name} size={44}/><div><b>{done.name} 已添加</b><small>{pairing(supported)} · {done.models.length} 个模型</small></div></div>
+      <h3 className="m13-sub">模型（{done.models.length}）</h3>
+      <div className="m13-table matrix done-models" role="table" aria-label="模型">
+        <div role="row" className="m13-th"><span>模型</span><span>上下文</span>{supported.map(kind => <span key={kind} className="m13-th-tool"><ToolIcon tool={kind} size={14}/>{agentLabels[kind]}</span>)}</div>
+        {done.models.map(model => <div role="row" key={model.id} data-model={model.id}>
+          <span className="m13-cell-name">{model.name}</span><span>{contextLabel(model.contextWindow)}</span>
+          {supported.map(kind => {
+            const status = model.availability[kind];
+            const checking = testing?.model === model.id && testing.kind === kind;
+            return <span className="m13-cell" key={kind} title={modelCheckDescription(model, kind)}>
+              <Pill tone={status === 'available' ? 'ok' : status === 'unavailable' ? 'warn' : 'muted'}>{checking ? '测试中…' : status === 'available' ? '可用' : status === 'unavailable' ? '不可用' : '未测试'}</Pill>
+              {!checking && status !== 'available' && !model.offline && <button type="button" className="m13-link" disabled={!!testing || !done.hasKey}
+                aria-label={`${status === 'unavailable' ? '重测' : '测试'} ${model.name} · ${agentLabels[kind]}`} onClick={() => void testModel(model.id, kind)}>
+                {status === 'unavailable' ? '重测' : '测试'}
+              </button>}
+            </span>;
+          })}
+        </div>)}
+      </div>
+      {!supported.length && <div className="m13-alert warn"><Info size={16}/><div><p>两个 Code Agent 都不能直接使用这个供应商。可先通过 Magpie 等网关接入，或在详情里核对并重测协议。</p></div></div>}
+      <p className="m13-hint">接入时每种适用协议只测试一个推荐模型。「未测试」表示模型已加入目录，尚未验证该工具的实际调用。点击「测试」会发起一次最小调用，结果保存在供应商上。</p>
+    </div>}
   </AgentDialog>;
 }

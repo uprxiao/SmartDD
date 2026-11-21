@@ -11,6 +11,7 @@ export interface DriverExecutable {
 
 export interface DriverOpenOptions {
   executable: DriverExecutable;
+  modelCache?: DriverModelCache;
   cwd: string;
   /** 宿主组装的环境；凭据由现有凭据服务解析后注入，不写入任何文件。 */
   env: Record<string, string>;
@@ -116,7 +117,11 @@ export interface DriverInstance {
   on(listener: DriverListener): () => void;
 }
 
-export interface DriverModel { id: string; name: string; efforts: string[]; defaultEffort?: string }
+export type DriverModel = import('@shared/agent-model-choice').AgentModelOption;
+export interface DriverModelCache {
+  read(account: string): DriverModel[] | undefined | Promise<DriverModel[] | undefined>;
+  write(account: string, models: DriverModel[]): void;
+}
 
 export interface AgentDriver {
   readonly id: DriverId;

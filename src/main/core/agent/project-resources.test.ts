@@ -62,7 +62,7 @@ function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob) {
   const diffs = new TurnDiffs({store,storage,execute,changed:()=>{}});
   const ptys=new Set<string>();
   const terminals = new AgentManualTerminals({
-    ptys:{spawn:()=>{ptys.add('fixture-pty');return 'fixture-pty';},has:id=>ptys.has(id),kill:id=>{ptys.delete(id);},on:()=>{}},
+    ptys:{spawnInteractiveShell:()=>{ptys.add('fixture-pty');return 'fixture-pty';},has:id=>ptys.has(id),kill:id=>{ptys.delete(id);},on:()=>{}},
     taskCwd:id=>store.task(id)!.cwd,baseEnv:()=>({}),
   });
   const resources = new AgentProjectResources({store,tasks,diffs,terminals,userData:root});

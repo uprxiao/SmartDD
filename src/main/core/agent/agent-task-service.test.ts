@@ -4,7 +4,7 @@ import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore } from './agent-store';
 import { AgentRunService } from './agent-run-service';
 import { AgentTaskService, type LaunchResolver } from './agent-task-service';
-import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
+import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverModel, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
 import { until } from './test-doubles';
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
@@ -17,6 +17,7 @@ class Inst implements DriverInstance {
   constructor(readonly driverId: DriverId) {}
   on = this.emitter.on.bind(this.emitter); emit = this.emitter.emit.bind(this.emitter);
   nativeDefault?: string; lazyDefault?: string;
+  modelCatalog?: () => Promise<DriverModel[]>;
   async open(o: DriverOpenOptions) { this.opened = o; this.emit({ type: 'process', pid: 9 }); return { nativeId: o.resumeNativeId ?? 'n1', confirmed: true, ...(this.nativeDefault ? { defaultModel: this.nativeDefault } : {}) }; }
   async defaultModel() { return this.lazyDefault; }
   async startTurn(t: TurnInput) { this.turns.push(t); const id = `nt-${this.turns.length}`; this.emit({ type: 'turn.started', nativeTurnId: id, clientInputId: t.clientInputId }); return { nativeTurnId: id }; }
@@ -33,11 +34,11 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string> } = {}) {
+function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; modelCatalog?: () => Promise<DriverModel[]>; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string> } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db, { artifactDir: opts.artifactDir });
   const insts: Inst[] = [];
-  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.nativeDefault = opts.nativeDefault; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
+  const drv = (id: DriverId): AgentDriver => ({ id, command: id, create: () => { const i = new Inst(id); i.nativeDefault = opts.nativeDefault; i.modelCatalog = opts.modelCatalog; i.lazyDefault = 'lazyDefault' in opts ? opts.lazyDefault : 'inst-default'; insts.push(i); return i; } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
   const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], modelsWithoutImageInput: opts.modelsWithoutImageInput, ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
@@ -45,6 +46,42 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
   return { db, store, runs, svc, insts, launches };
 }
 const id = (n: number) => `client-input-${n}`;
+
+it('shows the first accepted input in the conversation while the executor starts and keeps a follow-up queued', async () => {
+  let release!: () => void;
+  const openGate = new Promise<void>(resolve => { release = resolve; });
+  const { svc, insts } = setup({ openGate });
+  const { taskId } = svc.create({ projectId:null, dirId:null, cwd:'/w', title:'first send', profileId:'cx', tier:'ask' });
+  const first = await svc.submit(taskId, {clientInputId:id(321), text:'first message', expectedSelectionRevision:1});
+  const followup = await svc.submit(taskId, {clientInputId:id(322), text:'follow-up', expectedSelectionRevision:1});
+  const pending = svc.snapshot(taskId);
+  expect(pending.preparingTurnId).toBe(first.turnId);
+  expect(pending.queued.map(row => row.turnId)).toEqual([followup.turnId]);
+  expect(pending.items.some(row => row.type === 'user_message' && row.turnId === first.turnId)).toBe(true);
+  await svc.stop(taskId);
+  release();
+  await until(() => !svc.isDispatching(taskId));
+  expect(svc.snapshot(taskId).preparingTurnId).toBeNull();
+  expect(svc.snapshot(taskId).queued.map(row => row.turnId)).toEqual([first.turnId, followup.turnId]);
+  expect(insts.flatMap(instance => instance.turns)).toEqual([]);
+});
+
+it.each([true,false])('A14 waits for the live first-turn catalog and combines the model and effort (offered=%s)', async offered => {
+  let publish!: (models: DriverModel[]) => void;
+  const catalog = new Promise<DriverModel[]>(resolve => { publish = resolve; });
+  const {svc,insts} = setup({nativeDefault:'native-default',modelCatalog:()=>catalog});
+  const {taskId} = svc.create({projectId:null,dirId:null,cwd:'/w',title:'subscription',profileId:'cx',tier:'ask',
+    model:'gpt-6.2-sol', effort:'medium', initialCodexDefault:true});
+  await svc.submit(taskId,{clientInputId:id(124),text:'first',expectedSelectionRevision:1});
+  await until(()=>!!insts[0]?.opened);
+  expect(insts[0].turns).toEqual([]);
+  publish([{id:'gpt-6.2-sol',name:'GPT-6.2-Sol',efforts:offered?['medium']:['low']}]);
+  await until(()=>insts[0].turns.length===1 && !svc.isDispatching(taskId));
+  expect(insts[0].turns[0].model).toBe(offered ? 'gpt-6.2-sol' : 'native-default');
+  expect(insts[0].turns[0].effort).toBe(offered ? 'medium' : undefined);
+  expect(svc.snapshot(taskId).selection.initialCodexDefault).toBeUndefined();
+  expect(svc.snapshot(taskId).selection.model).toBe(offered ? 'gpt-6.2-sol' : undefined);
+});
 
 it('A59 keeps overlapping foreground request waits separate from work in live and historical turns', async () => {
   const { db, svc, store, runs, insts } = setup();
