@@ -1,0 +1,66 @@
+{
+  "sourceCommit": "1985413a18004f4c17f7dda195c2a36991583aab",
+  "asar": "0ddeab3e608bc80c5eb9298212cd15f1a4ebecd8010d55c3a952d7288dcb934b",
+  "platform": "macOS arm64",
+  "caseIds": [
+    "M14-A38",
+    "M14-A42",
+    "M14-A61"
+  ],
+  "attempts": [
+    {
+      "attempt": 780,
+      "passed": false,
+      "reason": "After the test project and profiles were seeded through IPC, the home view still showed the empty project list. The test did not reach dictation. The next attempt revisited the home view through Settings and Home.",
+      "exit": {
+        "pid": 39581,
+        "code": 0,
+        "signal": null
+      },
+      "privateReceipt": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-780/result.json",
+      "privateReceiptSha256": "0c86fcecce29b145698c07267f6e4f43ebc2d69a809f139198b78c98ea990606"
+    },
+    {
+      "attempt": 781,
+      "passed": true,
+      "inputStartedAt": "2026-11-21T06:49:19.050Z",
+      "privateReceipt": "/private/tmp/willyou-m14-stage6.WRvdST/g03/attempt-781/result.json",
+      "privateReceiptSha256": "884454b6bba28ec5bf105548bddbd7d64ed615267757ca90b942068afa78f3ba",
+      "input": {
+        "humanSpeaker": true,
+        "mode": "real native mouse and Typeless",
+        "shortcut": "RightOption",
+        "accessibilityVerified": true,
+        "nativeTargetPid": 41391,
+        "textareaRoleAfterMic": "AXTextArea",
+        "turnsCreated": 0
+      },
+      "checks": [
+        {
+          "label": "real Typeless transcription lands at the caret inside the existing draft",
+          "ok": true
+        },
+        {
+          "label": "the voice text is not sent automatically",
+          "ok": true
+        },
+        {
+          "label": "after switching to another task and back, the voice draft is intact and the other task did not get it",
+          "ok": true
+        },
+        {
+          "label": "after switching the provider to Codex the voice draft is intact and still unsent",
+          "ok": true
+        }
+      ],
+      "exit": {
+        "pid": 41391,
+        "code": 0,
+        "signal": null
+      },
+      "rendererErrors": [],
+      "realKnownHostsUnchanged": true,
+      "privacy": "The transcript and screenshots containing it are kept in the private attempt directory."
+    }
+  ]
+}
