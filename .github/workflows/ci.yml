@@ -61,6 +61,11 @@ jobs:
         run: node scripts/applications/check-module-onboarding.mjs --app sample-kv
       - run: pnpm test:release
       - name: Prepare immutable application bundles and native test helpers
-        run: pnpm test:prepare
+        run: |
+          pnpm test:prepare
+          broker_build="$(node scripts/files/build-test-broker.mjs)"
+          printf '%s\n' "$broker_build"
+          broker_path="$(node -p 'JSON.parse(require("node:fs").readFileSync(0, "utf8")).executable' <<< "$broker_build")"
+          printf 'SMARTDD_PREBUILT_TEST_FILE_BROKER=%s\n' "$broker_path" >> "$GITHUB_ENV"
       - run: pnpm test --maxWorkers=2
       - run: pnpm build

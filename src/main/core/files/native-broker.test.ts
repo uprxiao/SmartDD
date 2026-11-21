@@ -20,14 +20,18 @@ const hash = (s: string) => createHash('sha256').update(s).digest('hex');
 const descriptor = (path: string): RootDescriptor => {
   const s = statSync(path, { bigint: true }); return { path: realpathSync(path), identity: { device: String(s.dev), inode: String(s.ino) } };
 };
-let buildDir: string, fixture: string, project: string, userData: string, broker: NativeFileBroker;
+let buildDir: string | undefined;
+let fixture: string, project: string, userData: string, broker: NativeFileBroker;
 describe.skipIf(process.platform !== 'darwin')('native file boundary (real macOS filesystem)', () => {
   beforeAll(() => {
-    buildDir = mkdtempSync(join(tmpdir(), 'willyou-files-test-build-'));
     // Selected tests that do not use suspension failpoints can validate the
     // actual packaged production helper without compiling another executable.
-    const executable = process.env.SMARTDD_M9_FILE_BROKER ?? join(buildDir, 'willyou-files-test');
-    if (!process.env.SMARTDD_M9_FILE_BROKER) execFileSync('xcrun', ['clang++', '-std=c++17', '-fobjc-arc', '-O1', '-Wno-deprecated-declarations', '-DWILLYOU_FILE_BROKER_TEST=1', '-framework', 'Foundation', '-framework', 'AppKit', '-framework', 'ImageIO', '-framework', 'CoreGraphics', '-framework', 'CoreText', resolve('native/files/broker.mm'), '-o', executable]);
+    let executable = process.env.SMARTDD_M9_FILE_BROKER ?? process.env.SMARTDD_PREBUILT_TEST_FILE_BROKER;
+    if (!executable) {
+      buildDir = mkdtempSync(join(tmpdir(), 'willyou-files-test-build-'));
+      executable = join(buildDir, 'willyou-files-test');
+      execFileSync('xcrun', ['clang++', '-std=c++17', '-fobjc-arc', '-O1', '-Wno-deprecated-declarations', '-DWILLYOU_FILE_BROKER_TEST=1', '-framework', 'Foundation', '-framework', 'AppKit', '-framework', 'ImageIO', '-framework', 'CoreGraphics', '-framework', 'CoreText', resolve('native/files/broker.mm'), '-o', executable]);
+    }
     broker = new NativeFileBroker(executable);
   });
   beforeEach(() => {
@@ -36,7 +40,7 @@ describe.skipIf(process.platform !== 'darwin')('native file boundary (real macOS
     mkdirSync(project); mkdirSync(userData); writeFileSync(join(project, 'a.txt'), 'BASE\r\n');
   });
   afterEach(() => { broker.dispose(); rmSync(fixture, { recursive: true, force: true }); });
-  afterAll(() => rmSync(buildDir, { recursive: true, force: true }));
+  afterAll(() => { if (buildDir) rmSync(buildDir, { recursive: true, force: true }); });
   const read = (relativePath: string, extra = {}) => broker.request<NativeFileResult>({ operation: 'read', root: descriptor(project), relativePath, ...extra });
   const saveRequest = async (extra = {}) => {
     const recoveryRoot = await broker.request<RootDescriptor>({ operation: 'initialize-recovery', path: userData });

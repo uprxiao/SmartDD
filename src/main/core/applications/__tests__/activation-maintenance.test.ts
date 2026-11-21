@@ -85,10 +85,10 @@ it.skipIf(process.platform!=='darwin')('runs pending activation recovery under e
 
 it('preflights without writes and refuses changed default generations or unverifiable historical references',async()=>{
  const target=await install(),requests=[{hash:target.packageHash,expectedGeneration:0}],before=db.serialize();
- expect(planApplicationActivation(packages,requests).issues).toEqual([]);expect(db.serialize()).toEqual(before);
+ expect(planApplicationActivation(packages,requests).issues).toEqual([]);expect(db.serialize().equals(before)).toBe(true);
  expect(planApplicationActivation(packages,[{hash:target.packageHash,expectedGeneration:1}]).issues).toContainEqual({code:'DEFAULT_CHANGED',packageHash:target.packageHash});
  db.prepare("INSERT INTO capability_session_snapshots VALUES('legacy',2,'{}','unknown','now','unknown','hold')").run();db.prepare("INSERT INTO capability_session_refs VALUES('legacy','application-package',?,?,?)").run(target.resourceId,'f'.repeat(64),target.relativePath);
- const preserved=db.serialize(),plan=planApplicationActivation(packages,requests);expect(plan.issues).toContainEqual({code:'HISTORICAL_REFERENCE_UNVERIFIED',taskId:'legacy'});expect(plan.issues).toContainEqual({code:'RETAINED_PACKAGE_INCOMPATIBLE',causeCode:'NOT_FOUND',packageHash:'f'.repeat(64),taskId:'legacy'});expect(db.serialize()).toEqual(preserved);
+ const preserved=db.serialize(),plan=planApplicationActivation(packages,requests);expect(plan.issues).toContainEqual({code:'HISTORICAL_REFERENCE_UNVERIFIED',taskId:'legacy'});expect(plan.issues).toContainEqual({code:'RETAINED_PACKAGE_INCOMPATIBLE',causeCode:'NOT_FOUND',packageHash:'f'.repeat(64),taskId:'legacy'});expect(db.serialize().equals(preserved)).toBe(true);
 });
 
 it.skipIf(process.platform!=='darwin')('rejects insufficient space before creating an upgrade intent',async()=>{
@@ -139,7 +139,7 @@ it('binds upgrade preflight to converter evidence and reports missing converters
 
  const original=builtinConfigViews.resolve.bind(builtinConfigViews),spy=vi.spyOn(builtinConfigViews,'resolve');
  try{spy.mockImplementation((...args)=>({...original(...args),converterHash:'f'.repeat(64)}));const changed=planApplicationActivation(packages,requests);expect(changed.referenceHash).not.toBe(initial.referenceHash);expect(changed.planHash).not.toBe(initial.planHash);
- spy.mockImplementation(()=>{throw Error('private-user-canary');});const missing=planApplicationActivation(packages,requests);expect(missing.issues).toContainEqual({code:'CONNECTION_CONTRACT_UNVERIFIED',causeCode:'CAPABILITY_UNAVAILABLE',packageHash:target.packageHash,connectionId:'converter-connection'});expect(JSON.stringify(missing)).not.toContain('private-user-canary');expect(db.serialize()).toEqual(before);
+ spy.mockImplementation(()=>{throw Error('private-user-canary');});const missing=planApplicationActivation(packages,requests);expect(missing.issues).toContainEqual({code:'CONNECTION_CONTRACT_UNVERIFIED',causeCode:'CAPABILITY_UNAVAILABLE',packageHash:target.packageHash,connectionId:'converter-connection'});expect(JSON.stringify(missing)).not.toContain('private-user-canary');expect(db.serialize().equals(before)).toBe(true);
  }finally{spy.mockRestore();}
 });
 
@@ -164,7 +164,7 @@ it.each(['empty','wrong-provider','unsupported-contract','hash-mismatch'])('refu
  if(fault!=='empty')db.prepare("UPDATE application_connections SET verified_identity_json=?,identity_hash=? WHERE id='unknown-identity'").run(JSON.stringify(identity),fault==='hash-mismatch'?'changed':digest(canonicalJson(identity)));
  const before=db.serialize(),plan=planApplicationActivation(packages,[{hash:target.packageHash,expectedGeneration:0}]);
  expect(plan.issues).toContainEqual({code:'CONNECTION_CONTRACT_UNVERIFIED',causeCode:'AUTH_REQUIRED',packageHash:target.packageHash,connectionId:'unknown-identity'});
- expect(db.serialize()).toEqual(before);
+ expect(db.serialize().equals(before)).toBe(true);
 });
 
 it.skipIf(process.platform!=='darwin')('rejects identity drift between final preview and the activation transaction',async()=>{
