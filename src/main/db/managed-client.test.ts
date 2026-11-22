@@ -21,14 +21,14 @@ import {resolve} from 'node:path';
 const AGENT_TABLES=['agent_resource_refs','agent_turn_changes','agent_goals','agent_commit_provenance','agent_intents','agent_workspaces','agent_directory_queue','agent_delegation_attempts','agent_delegations','agent_transfers','agent_requests','agent_events','agent_items','agent_turns'];
 /** Undo 0037 exactly: restore capability_runs to its 0036 shape and drop the M14 agent tables. */
 function revertAgentWorkspace(db:Database.Database){
- const removed=bundledMigrations().slice(-2);expect(removed.map(m=>m.tag)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup']);expect(db.prepare("SELECT count(*) n FROM capability_runs WHERE binding_id IS NOT NULL").get()).toEqual({n:0});
+ const removed=bundledMigrations().slice(37);expect(removed.map(m=>m.tag)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup','0039_agent_task_pin']);expect(db.prepare("SELECT count(*) n FROM capability_runs WHERE binding_id IS NOT NULL").get()).toEqual({n:0});
  const fk=db.pragma('foreign_keys',{simple:true});db.pragma('foreign_keys=OFF');
  db.exec(`DROP TRIGGER capability_runs_owner_insert; DROP TRIGGER capability_runs_owner_update; DROP INDEX capability_runs_binding_generation; DROP TABLE agent_retained_run_identity; DROP TABLE agent_pending_cleanup;
  CREATE TABLE capability_runs_old (run_id TEXT PRIMARY KEY NOT NULL, task_id TEXT NOT NULL REFERENCES capability_session_snapshots(task_id) ON DELETE RESTRICT, project_id TEXT NOT NULL, runner TEXT NOT NULL, pid INTEGER, process_started_at TEXT, state TEXT NOT NULL, started_at TEXT NOT NULL, ended_at TEXT, error_code TEXT, snapshot_hash TEXT, owner_instance_id TEXT, owner_pid INTEGER, owner_started_at TEXT, bindings_json TEXT NOT NULL DEFAULT '[]', pty_id TEXT, revocation_state TEXT NOT NULL DEFAULT 'open', binding_mode TEXT NOT NULL DEFAULT 'current' CHECK(binding_mode IN ('current','run')));
  INSERT INTO capability_runs_old SELECT run_id,task_id,project_id,runner,pid,process_started_at,state,started_at,ended_at,error_code,snapshot_hash,owner_instance_id,owner_pid,owner_started_at,bindings_json,pty_id,revocation_state,binding_mode FROM capability_runs;
  DROP TABLE capability_runs; ALTER TABLE capability_runs_old RENAME TO capability_runs;
  ${AGENT_TABLES.map(t=>`DROP TABLE ${t};`).join(' ')} DROP TABLE agent_capability_sessions; DROP TABLE agent_driver_probes; DROP TABLE agent_bindings; DROP TABLE agent_tasks;`);
- db.prepare('DELETE FROM __drizzle_migrations WHERE hash IN (?,?)').run(...removed.map(m=>m.hash));db.pragma('foreign_keys='+(fk?'ON':'OFF'));
+ db.prepare('DELETE FROM __drizzle_migrations WHERE created_at>=?').run(removed[0].when);db.pragma('foreign_keys='+(fk?'ON':'OFF'));
 }
 it.skipIf(process.platform!=='darwin')('holds shared ownership for the live client and releases it on close, then reopens retained data',async()=>{
  const root=realpathSync(mkdtempSync(join(tmpdir(),'willyou-managed-db-')));let client:Awaited<ReturnType<typeof openManagedDatabase>>|undefined;

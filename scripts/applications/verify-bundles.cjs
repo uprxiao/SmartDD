@@ -42,12 +42,15 @@ function verifyCapabilityBundles(root,expectedVersion,options={}) {
         const policy=compiled.capabilities.find(c=>c.id===capability.id&&c.contractMajors.includes(capability.contractMajor));assert(policy,'Compiled capability contract');
         for(const key of ['semantics','permission','retry','slots','protection','approval'])assert.equal(canonical(capability[key]??null),canonical(policy[key]??null),'Trusted capability '+key);
         assert(files.has(capability.inputSchemaPath)&&files.has(capability.outputSchemaPath),'Complete capability contracts');
-        assert.equal(!!capability.binding.mcp+!!capability.binding.cli,1,'One primary capability entry');
-        if(capability.semantics!=='read'){assert(capability.protection&&capability.retry==='never'&&!capability.binding.fallback,'Protected writes have one entry');}
+        const {cli,mcp,fallback}=capability.binding;
+        const browserStartChoice=a.appId==='browser'&&manifest.mixedEntries===true&&cli&&mcp&&!fallback;
+        assert(Boolean(cli)!==Boolean(mcp)||browserStartChoice,'One primary entry or a browser transport choice at launch');
+        if(capability.semantics!=='read'){assert(capability.protection&&capability.retry==='never'&&!fallback,'Protected writes have no transport retry');}
         const binding=capability.binding.mcp??capability.binding.fallback?.mcp;if(binding)tools.push({...capability,name:binding.tool});
       }
     }
-    for(const tool of tools){assert(Buffer.byteLength('mcp__wy_'+'0'.repeat(24)+'__'+tool.name)<=64,'Portable built-in native tool-name budget');assert(files.has(tool.inputSchemaPath)&&files.has(tool.outputSchemaPath),'Complete tool contracts');assert.equal(readJson(join(dir,tool.inputSchemaPath)).type,'object');assert.equal(readJson(join(dir,tool.outputSchemaPath)).type,'object');assert(manifest.permissions.includes(tool.permission),'Declared original permission');}
+    const prefixLength=a.appId==='browser'?16:24;
+    for(const tool of tools){assert(Buffer.byteLength('mcp__wy_'+'0'.repeat(prefixLength)+'__'+tool.name)<=64,'Portable built-in native tool-name budget');assert(files.has(tool.inputSchemaPath)&&files.has(tool.outputSchemaPath),'Complete tool contracts');assert.equal(readJson(join(dir,tool.inputSchemaPath)).type,'object');assert.equal(readJson(join(dir,tool.outputSchemaPath)).type,'object');assert(manifest.permissions.includes(tool.permission),'Declared original permission');}
     apps.push({appId:a.appId,version:a.version,hash:a.hash,skills:manifest.skills.length,tools:tools.length,files:manifest.files.length});
   }
   return {indexHash,resourceSetHash:index.build.resourceSetHash,adapters:index.adapters.length,runtimes:index.runtimes.length,apps};

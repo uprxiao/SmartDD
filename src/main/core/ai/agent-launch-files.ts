@@ -13,7 +13,7 @@ function jsonFile(path: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function privateDirectory(base: string, path: string): void {
+export function requirePrivateDirectory(base: string, path: string): void {
   const rest = relative(base, path);
   if (rest === '..' || rest.startsWith(`..${sep}`) || resolve(path) === resolve(base)) throw new Error('管理配置超出 WillYou 私有目录');
   let current = base;
@@ -51,15 +51,15 @@ export function materializeAgentPlan(plan: AgentLaunchPlan, userData: string, cw
   if (plan.codexRoot) {
     const rest = relative(join(managed, 'codex'), resolve(plan.codexRoot));
     if (!/^[a-f0-9]{32}$/.test(rest)) throw new Error('Codex 管理目录身份异常');
-    privateDirectory(base, plan.codexRoot);
+    requirePrivateDirectory(base, plan.codexRoot);
     // The managed Codex run uses this as HOME (D06-72); it must exist before the native process starts.
-    privateDirectory(base, join(plan.codexRoot, 'home'));
+    requirePrivateDirectory(base, join(plan.codexRoot, 'home'));
     if (existsSync(join(plan.codexRoot, 'auth.json'))) throw new Error('Codex 管理目录含有残留认证，请移除后重试');
   }
   if (plan.claudeRoot) {
     const rest = relative(join(managed, 'claude'), resolve(plan.claudeRoot));
     if (!/^[a-f0-9]{32}$/.test(rest)) throw new Error('Claude 管理目录身份异常');
-    privateDirectory(base, plan.claudeRoot);
+    requirePrivateDirectory(base, plan.claudeRoot);
     if (existsSync(join(plan.claudeRoot, '.credentials.json'))) throw new Error('Claude 管理目录含有残留认证，请移除后重试');
     const settings = jsonFile(join(plan.claudeRoot, 'settings.json'));
     if (['env','apiKeyHelper','headersHelper','awsAuthRefresh','awsCredentialExport','forceLoginMethod'].some((key) => Object.hasOwn(settings, key))) throw new Error('Claude 管理目录含有残留认证配置，请检查后重试');
@@ -70,12 +70,12 @@ export function materializeAgentPlan(plan: AgentLaunchPlan, userData: string, cw
     atomicJson(join(plan.claudeRoot, '.claude.json'), { ...native, hasCompletedOnboarding: true,
       projects: { ...projects, [cwd]: { ...(previous && typeof previous === 'object' && !Array.isArray(previous) ? previous : {}), hasTrustDialogAccepted: true, hasCompletedProjectOnboarding: true } } });
     for (const file of plan.files) {
-      privateDirectory(base, dirname(file.path));
+      requirePrivateDirectory(base, dirname(file.path));
       atomicJson(file.path, file.path === join(plan.claudeRoot, 'settings.json') ? { ...settings, ...(file.value as object) } : file.value);
     }
   } else {
     for (const file of plan.files) {
-      privateDirectory(base, dirname(file.path));
+      requirePrivateDirectory(base, dirname(file.path));
       if (existsSync(file.path)) throw new Error('本次运行配置已存在，请重新创建运行');
       atomicJson(file.path, file.value);
     }

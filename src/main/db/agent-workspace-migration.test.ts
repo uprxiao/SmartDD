@@ -19,11 +19,11 @@ const insertRun = (d: Database.Database, run: string, task: string, binding: str
 
 it('keeps legacy run rows byte-for-byte and leaves foreign keys consistent', () => {
   const d = db(), all = bundledMigrations();
-  runMigrations(d, all.slice(0, -2));
+  runMigrations(d, all.slice(0, 37));
   d.exec("INSERT INTO capability_session_snapshots VALUES('old-task',2,'snapshot bytes','old-hash',?,'created','active')".replace('?', `'${at}'`));
   d.exec(`INSERT INTO capability_runs(run_id,task_id,project_id,runner,state,started_at,snapshot_hash,pty_id,bindings_json) VALUES('old-run','old-task','p','codex','stopped','${at}','old-hash','pty-1','[{"x":1}]')`);
   const before = d.prepare('SELECT * FROM capability_runs').all() as object[];
-  expect(runBundledMigrations(d)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup']);
+  expect(runBundledMigrations(d)).toEqual(['0037_agent_workspace','0038_agent_resource_cleanup','0039_agent_task_pin']);
   expect(d.prepare('SELECT * FROM capability_runs').all()).toEqual(before.map(r => ({ ...r, binding_id: null, capability_session_id: null, generation: null, driver_id: null, launch_plan_hash: null })));
   expect(d.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
   // 子表仍引用 capability_runs（重建后名称不变）
@@ -35,8 +35,8 @@ it('replays without rebuilding twice when the watermark is lost after commit', (
   runBundledMigrations(d);
   seedNewTask(d);
   insertRun(d, 'r1', 't1', 'b1', 'claude-sdk', 1);
-  d.prepare('DELETE FROM __drizzle_migrations WHERE hash=?').run(bundledMigrations().at(-1)!.hash);
-  expect(runBundledMigrations(d)).toEqual(['0038_agent_resource_cleanup']);
+  d.prepare('DELETE FROM __drizzle_migrations WHERE created_at>=?').run(bundledMigrations()[38].when);
+  expect(runBundledMigrations(d)).toEqual(['0038_agent_resource_cleanup','0039_agent_task_pin']);
   expect(d.prepare('SELECT run_id,binding_id,generation FROM capability_runs').all()).toEqual([{ run_id: 'r1', binding_id: 'b1', generation: 1 }]);
 });
 

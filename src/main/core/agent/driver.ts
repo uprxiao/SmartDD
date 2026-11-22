@@ -29,6 +29,7 @@ export interface DriverOpenOptions {
   claudeSettings?:Record<string,unknown>;
   settingSources?: readonly ('user' | 'project' | 'local')[];
   mcpServers?: Record<string, { command: string; args: string[]; env?: Record<string, string> }>;
+  browserMcp?: { serverName: string; toolNames: readonly string[]; alwaysLoad?: boolean };
   claudeMcp?: import('../capabilities/mcp-projection').ClaudeMcpProjection;
   skillRoots?: readonly { name: string; path: string }[];
   plugins?: { type: 'local'; path: string }[];
@@ -109,6 +110,7 @@ export interface DriverInstance {
     confirmed: boolean;
     defaultModel?: string;
     hostBusinessInstructionsInstalled?: boolean;
+    browserMcpReady?: boolean;
     nativeSelection?: { model: string; effort: string };
   }>;
   /** 等原生开始信号后才 resolve。 */

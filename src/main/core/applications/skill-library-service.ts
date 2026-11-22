@@ -9,6 +9,7 @@ import {builtinApplicationModules} from './modules';
 import {verifyPackageTree} from './package-files';
 import type {ResourceStore} from './resource-store';
 import {hasExternalPluginOwner} from './plugins/legacy-routing';
+import {requirePrivateDirectory} from '../ai/agent-launch-files';
 
 /**
  * R16: one library copy per application Skill, for every application the user has added and enabled,
@@ -20,9 +21,10 @@ export class SkillLibraryService {
     /** Active bundled standard Skills (2026-11-04: in the library for every session, no per-project switch). */
     standardSkills?:()=>readonly {skillId:string;files:Readonly<Record<string,Buffer>>}[];modules?:Pick<typeof builtinApplicationModules,'appIds'>}){}
 
-  skills():LibrarySkill[]{
+  skills(appScope?:'browser'):LibrarySkill[]{
     const result:LibrarySkill[]=[];
     for(const appId of (this.options.modules??builtinApplicationModules).appIds()){
+      if(appScope&&appId!==appScope)continue;
       if(!this.options.added(appId)||hasExternalPluginOwner(this.store.sqlite,appId))continue;
       const active=this.builtin.packages.active(appId);if(!active)continue;
       const installed=this.builtin.packages.get(active.packageHash),root=join(this.store.root,installed.relativePath);
@@ -38,7 +40,7 @@ export class SkillLibraryService {
         result.push({name,files,executables});
       }
     }
-    for(const standard of this.options.standardSkills?.()??[]){
+    for(const standard of appScope?[]:this.options.standardSkills?.()??[]){
       const name=libraryName(undefined,standard.skillId),files={...standard.files};
       if(!files['SKILL.md'])throw new ApplicationError('INVALID_PACKAGE','标准Skill缺少入口');
       files['SKILL.md']=libraryFrontMatter(files['SKILL.md'],name);result.push({name,files,executables:new Set()});
@@ -58,6 +60,10 @@ export class SkillLibraryService {
     }
     this.last=syncAgentSkillLibrary({home:this.options.home,targets,skills:this.skills()});
     return this.last;
+  }
+  syncManagedBrowser(home:string):void{
+    requirePrivateDirectory(home,join(home,'.agents','skills'));
+    syncAgentSkillLibrary({home,targets:[],skills:this.skills('browser')});
   }
   /** Names another owner already holds; shown on the application page instead of overwriting. */
   conflicts(){return this.last?.conflicts??[];}

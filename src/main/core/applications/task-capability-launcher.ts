@@ -161,9 +161,13 @@ export class ManagedTaskCapabilities {
       this.syncSkillLibrary();await this.broker.start();if(this.cli)try{await this.cli.start();this.cliReady=true;}catch{await this.cli.close();}this.applications.attachRuns(this.runs);}catch(error){await this.dispose();throw error;}
   }
   /** Converge the Skill library after startup and every application change; a failure never blocks tasks. */
-  syncSkillLibrary(claudeStateRoot?:string):void{
+  syncSkillLibrary(claudeStateRoot?:string,managedCodexHome?:string):void{
     if(!this.library)return;
-    try{this.library.sync(claudeStateRoot);this.recoveryWarnings.splice(0,this.recoveryWarnings.length,...this.recoveryWarnings.filter(w=>w.homeId!=='skill-library'));}
+    try{
+      if(managedCodexHome)this.library.syncManagedBrowser(managedCodexHome);
+      else this.library.sync(claudeStateRoot);
+      this.recoveryWarnings.splice(0,this.recoveryWarnings.length,...this.recoveryWarnings.filter(w=>w.homeId!=='skill-library'));
+    }
     catch(error){if(!this.recoveryWarnings.some(w=>w.homeId==='skill-library'))this.recoveryWarnings.push({homeId:'skill-library',code:error instanceof ApplicationError?error.code:'RESOURCE_RECOVERY_REQUIRED'});}
   }
   skillLibraryConflicts(){return this.library?.conflicts()??[];}
@@ -212,20 +216,30 @@ export class ManagedTaskCapabilities {
     return null;
   }
   /** Audit record of the session; what it may call is decided per call (R17), and Skills come from the library (R16). */
-  protected createLibrarySnapshot(input:TaskLaunchInput,agentVersion:string,adapterHash:string):CapabilitySessionSnapshot{
+  protected createLibrarySnapshot(input:TaskLaunchInput,agentVersion:string,adapterHash:string,options:{scope?:'browser';nativeAgent?:boolean}={}):CapabilitySessionSnapshot{
     const runner=this.support.adapters.deliveryAdapters.forRunner(input.profile.runner).id,adapter=this.support.adapters.get(adapterHash).metadata;
-    const apps=this.selectedApps(input.projectId),bindings=this.bindings(input.projectId,apps.map(a=>a.appId)),packages=apps.map(a=>this.authorization.packageSelection(input.projectId,a.packageHash,bindings,[]));
-    const runtimeHash=packages[0]?.runtimeHash??this.applicationRuntimeHash(),appMcp=applicationMcpServerName(digest(input.taskId));
+    const {scope,nativeAgent}=options;
+    const apps=this.selectedApps(input.projectId).filter(app=>!scope||app.appId===scope);
+    const bindings=this.bindings(input.projectId,apps.map(a=>a.appId)),packages=apps.map(a=>this.authorization.packageSelection(input.projectId,a.packageHash,bindings,[]));
+    const runtimeHash=packages[0]?.runtimeHash??this.applicationRuntimeHash(),taskDigest=digest(input.taskId);
+    // The Responses function name includes both the server and tool name.
+    const appMcp=applicationMcpServerName(nativeAgent?taskDigest.slice(0,16):taskDigest);
     if(new Set(packages.map(p=>p.runtimeHash)).size>1)throw new ApplicationError('HOST_INCOMPATIBLE','本次应用选择使用了不兼容的桥运行版本');
     const mcp:CapabilitySessionSnapshot['mcp']=runtimeHash?[{kind:'applications',serverName:appMcp,protocolMajor:1,runtimeHash}]:[];
-    const externalPlugins=this.applications.plugins?.selections(input.projectId);
-    if(this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
+    const externalPlugins=scope?undefined:this.applications.plugins?.selections(input.projectId);
+    if(!scope&&this.capabilities.enabled(input.projectId,MCP_CAPABILITY))mcp.push({kind:'legacy-project-context',serverName:'smartdd_project_'+digest(input.taskId).slice(0,12),protocolMajor:1,runtimeHash:this.capabilities.runtimeIdentity().hash});
     const toolNames=[...packages.flatMap(p=>Object.keys(p.toolContractMajors)),...(externalPlugins??[]).flatMap(p=>p.capabilities.flatMap(c=>[c.mcpTool,...c.aliases]))];
     return{schema:3,taskId:input.taskId,projectId:input.projectId,createdAt:new Date().toISOString(),runner,adapterBinding:{id:runner,version:adapter.version,hash:adapterHash,projectionFormatVersion:1,nativeToolNames:Object.fromEntries(toolNames.map(name=>[name,'mcp__'+appMcp+'__'+name]))},native:{sessionId:input.sessionId,stateRoot:input.stateRoot,cwd:input.cwd},agentAtCreation:{version:agentVersion,adapterRevision:1},catalogGeneration:'library',packages,...(externalPlugins?{externalPlugins}:{}),standardSkills:[],mcp,provenance:'created'};
   }
   /** M14 binds capabilities to a real SDK/app-server run, never to a synthetic PTY process. */
   private cliProof?:import('../agent/host-cli-command').HostBusinessCli;
-  supportsAgentDelivery(runner:string,version:string){const adapter=this.libraryAdapter(this.support.adapters.deliveryAdapters.forRunner(runner).id,version);return !!adapter&&this.support.adapters.levels(adapter.hash,version).includes('L0.mcp');}
+  agentDelivery(runner:string,version:string,browserMcpCandidate=false):'verified'|'browser'|undefined{
+    const delivery=this.support.adapters.deliveryAdapters.forRunner(runner);
+    const adapter=this.libraryAdapter(delivery.id,version);
+    if(!adapter)return;
+    if(this.support.adapters.levels(adapter.hash,version).includes('L0.mcp'))return 'verified';
+    if(browserMcpCandidate&&delivery.entryDelivery('mcp')&&this.support.adapters.versionSupport(adapter.hash,version)==='best-effort')return 'browser';
+  }
   taskPlugins(taskId:string){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string|null}|undefined;if(!task?.project_id)return[];const result=this.selectedApps(task.project_id).map(p=>({id:p.appId,name:this.applications.builtin.retainedMetadata(p.packageHash).manifest.displayName}));for(const p of this.applications.plugins?.selections(task.project_id)??[]){const state=this.applications.plugins!.lifecycle.state(p.appId);if(state.hash)result.push({id:p.appId,name:this.applications.plugins!.lifecycle.packages.get(state.hash).plugin.manifest.displayName});}return result;}
   async agentReference(sender:import('./execution-context').ApplicationUiSender,taskId:string,raw:import('@shared/application-terminal').ApplicationTerminalSource){
     const {applicationTerminalSourceSchema,applicationReferenceText,terminalSourceApp}=await import('@shared/application-terminal');
@@ -244,18 +258,19 @@ export class ManagedTaskCapabilities {
   recordAgentHumanInput(runId:string,sender:import('./execution-context').ApplicationUiSender,text:string,sequence:number){const context=this.runs.assertActive(runId),row=this.support.store.sqlite.prepare('SELECT pty_id FROM capability_runs WHERE run_id=? AND binding_id IS NOT NULL').get(runId) as {pty_id:string}|undefined;if(row)this.applications.nativeInputs.observeAgent(sender,context,row.pty_id,text,sequence);}
   agentContext(runId:string){return this.runs.assertActive(runId);}
   assertAgentApplication(taskId:string,appId:'browser'){const task=this.support.store.sqlite.prepare('SELECT project_id FROM tasks WHERE id=?').get(taskId) as {project_id:string}|undefined;if(!task)throw new ApplicationError('SCOPE_DENIED','任务不存在');this.applications.selections.requireApplicationEnabled(task.project_id,appId);}
-  async prepareAgent(input: { runId: string; bindingId: string; generation: number; task: TaskLaunchInput; version: string; checkedCli?: CheckedNativeCli; assertCurrent(): void }): Promise<RunIntegration> {
+  async prepareAgent(input: { runId: string; bindingId: string; generation: number; task: TaskLaunchInput; version: string; checkedCli?: CheckedNativeCli; applicationScope?: 'browser'; managedCodexHome?: string; assertCurrent(): void }): Promise<RunIntegration> {
     if (this.closed) throw new ApplicationError('CANCELED', '应用服务已关闭');
     const store = this.support.store, task = input.task, runner = this.support.adapters.deliveryAdapters.forRunner(task.profile.runner).id;
     const adapter = this.libraryAdapter(runner, input.version); if (!adapter) throw new ApplicationError('AGENT_ADAPTER_UNSUPPORTED', '没有此执行器的受控交付资源');
-    input.assertCurrent(); this.syncSkillLibrary(task.profile.runner === 'claude' ? task.stateRoot : undefined);
+    input.assertCurrent();
+    this.syncSkillLibrary(task.profile.runner === 'claude' ? task.stateRoot : undefined,input.managedCodexHome);
     const native = await (this.options.inspectNative ?? inspectNativeLaunch)(task, input.checkedCli);
     if (input.checkedCli && native.version !== input.version) throw new ApplicationError('RESOURCE_STATE_CHANGED', '执行器版本在准备期间已变化，请重新发送');
-    const snapshot = this.createLibrarySnapshot(task, input.version, adapter.hash), bytes = canonicalJson(snapshot), hash = digest(bytes);
+    const snapshot = this.createLibrarySnapshot(task, input.version, adapter.hash, {scope:input.applicationScope,nativeAgent:true}), bytes = canonicalJson(snapshot), hash = digest(bytes);
     const server = snapshot.mcp.find(m => m.kind === 'applications');
     if (!server) throw new ApplicationError('CAPABILITY_UNAVAILABLE', '应用桥资源尚未准备');
     if (native.inventory.some(x => x.kind === 'mcp' && x.name === server.serverName)) throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT', '用户 MCP 已使用 WillYou 服务名，未覆盖');
-    const bindings = this.applications.builtinPreferences.capture(task.projectId);
+    const bindings = input.applicationScope ? [] : this.applications.builtinPreferences.capture(task.projectId);
     const selection=JSON.parse((store.sqlite.prepare('SELECT selection_json FROM agent_tasks WHERE task_id=?').get(task.taskId) as {selection_json:string}).selection_json),role=store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(task.taskId) as {access:string}|undefined;
     // The driver supplies the effective per-turn tier. Inspect the same host choice, retaining all other source flags.
     const args:string[]=[];for(let i=0;i<task.profile.args.length;i++){const a=task.profile.args[i];if(['--permission-mode','--sandbox','-s','--ask-for-approval','-a','--setting-sources'].includes(a)){i++;continue;}if(['--dangerously-bypass-approvals-and-sandbox','--yolo','--approve-for-me','--not-so-yolo','--full-auto'].includes(a))continue;args.push(a);}
@@ -267,7 +282,7 @@ export class ManagedTaskCapabilities {
     if (codex) args.push('--sandbox', fullAccess && !prepareRestrictedProfile ? 'danger-full-access' : 'workspace-write');
     else args.push('--setting-sources', 'user', '--permission-mode', fullAccess ? 'bypassPermissions' : 'default');
     const cliTask = { ...task, profile: { ...task.profile, args } };
-    let cliPolicy = role?.access === 'read' ? undefined : await this.configureCli(cliTask,native,snapshot);
+    let cliPolicy = role?.access === 'read' || input.applicationScope ? undefined : await this.configureCli(cliTask,native,snapshot);
     if (cliPolicy && !cliPolicy.available && fullAccess && prepareRestrictedProfile) {
       const fullArgs = [...args.slice(0, -1), 'danger-full-access'];
       cliPolicy = await this.configureCli({ ...cliTask, profile: { ...cliTask.profile, args: fullArgs } }, native, snapshot);
@@ -277,7 +292,15 @@ export class ManagedTaskCapabilities {
     if (skills) this.pluginSkills!.checkNative(skills, native);
     let skillsMaterialized = false;
     const sources = snapshot.packages.map(p => { const application = this.applications.builtin.retainedMetadata(p.packageHash); return { packageHash: p.packageHash, manifest: application.manifest, capabilities: builtinApplicationModules.capabilityViews(application.manifest) }; });
-    const plan = createApplicationRunPlan({ runId: input.runId, snapshotHash: hash, snapshot, applications: sources, skills: skills?.skills ?? [], available, sandbox:cliPolicy?.available?{source:cliPolicy.source,digest:cliPolicy.digest}:undefined, cliVersion: input.version });
+    const plan = createApplicationRunPlan({ runId: input.runId, snapshotHash: hash, snapshot, applications: sources, skills: skills?.skills ?? [], available, applicationScope: input.applicationScope, sandbox:cliPolicy?.available?{source:cliPolicy.source,digest:cliPolicy.digest}:undefined, cliVersion: input.version });
+    const browserEntry = plan.allowed.find(capability=>capability.capabilityId==='browser.tab.create')?.entry;
+    const browserMcp = !codex && browserEntry === 'mcp' ? {
+      serverName: server.serverName,
+      alwaysLoad: input.applicationScope === 'browser',
+      toolNames: plan.allowed.flatMap(capability =>
+        capability.mcpTool && ['browser.tab.create', 'browser.nav.goto', 'browser.nav.snapshot'].includes(capability.capabilityId)
+          ? [capability.mcpTool] : []),
+    } : undefined;
     const resourceIds = [...new Set([`agent-adapter:${snapshot.runner}:${adapter.hash}`, ...snapshot.packages.flatMap(p => ['app:' + p.packageHash, 'runtime:' + p.runtimeHash]), ...snapshot.mcp.map(m => (m.kind === 'applications' ? 'runtime:' : 'legacy-runtime:') + m.runtimeHash)])];
     const verify = async () => {
       this.support.adapters.verify(adapter.hash);
@@ -338,7 +361,7 @@ export class ManagedTaskCapabilities {
       if (task.profile.runner === 'codex') for (const [name, m] of Object.entries(mcpServers)) extraArgs.push('-c', `mcp_servers.${name}={command=${JSON.stringify(m.command)},args=${JSON.stringify(m.args)},env={ELECTRON_RUN_AS_NODE="1"},default_tools_approval_mode="approve",startup_timeout_sec=30,tool_timeout_sec=120}`);
       this.active.set(run.runId, { run,...(runtime?{runtime}:{}) });
       return {
-        extraArgs, mcpServers,env:{...runtime?.env,...cliEnvironment},claudeSettings,codexCliPermissions,...(available.cli&&this.options.cliPath?{hostBusinessCli:this.cliProof}:{}),
+        extraArgs, mcpServers,browserEntry,browserMcp,env:{...runtime?.env,...cliEnvironment},claudeSettings,codexCliPermissions,...(available.cli&&this.options.cliPath?{hostBusinessCli:this.cliProof}:{}),
         plugins: task.profile.runner === 'claude' ? skills?.claudeRoots.map(path => ({ type: 'local' as const, path })) : undefined,
         skillRoots: task.profile.runner === 'codex' ? skills?.codexRoots.map((path, i) => ({ path, name: skills.skills[i].nativeName })) : undefined,
         assertCurrent, beforeFork: async () => { assertCurrent(); if (!opensNativeThread) await bridge!.bridge.arm(); await run.cli.arm(); },

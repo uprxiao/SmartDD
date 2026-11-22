@@ -3,7 +3,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import type { OnElicitation } from '@anthropic-ai/claude-agent-sdk';
+import type { McpServerStatus, OnElicitation } from '@anthropic-ai/claude-agent-sdk';
 import {isHostBusinessCli} from '../host-cli-command';
 import { CLAUDE_TIERS } from '../permissions';
 import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
@@ -16,6 +16,7 @@ export interface SdkQuery extends AsyncIterable<any> {
   setPermissionMode(mode: string): Promise<void>;
   setModel?(model?: string): Promise<void>;
   supportedModels?(): Promise<{ value: string; displayName: string; supportsEffort?: boolean; supportedEffortLevels?: string[] }[]>;
+  mcpServerStatus?(): Promise<McpServerStatus[]>;
   applyFlagSettings?(settings: { effortLevel: string | null }): Promise<void>;
   close?(): void;
 }
@@ -103,7 +104,12 @@ export class ClaudeSdkInstance implements DriverInstance {
     const nativeId = o.resumeNativeId ?? randomUUID();
     this.sessionId = nativeId;
     const managed = o.claudeMcp;
-    const mcpServers = { ...managed?.servers, ...o.mcpServers };
+    const browserMcp = o.browserMcp;
+    const browserServer = browserMcp && o.mcpServers?.[browserMcp.serverName];
+    const mcpServers = {
+      ...managed?.servers, ...o.mcpServers,
+      ...(browserMcp?.alwaysLoad && browserServer ? { [browserMcp.serverName]: { ...browserServer, alwaysLoad: true } } : {}),
+    };
     const allowedTools = [...(managed?.allowTools ?? []), ...Object.keys(o.mcpServers ?? {}).map(name => `mcp__${name}__*`)];
     const settings = { ...o.claudeSettings };
     if (managed?.askTools.length) {
@@ -142,8 +148,38 @@ export class ClaudeSdkInstance implements DriverInstance {
     };
     this.query = queryFn({ prompt: this.input, options });
     this.pump = this.consume();
+    if (o.browserMcp) await o.beforeInitialize?.();
+    const browserMcpReady = o.browserMcp ? await this.checkBrowserMcp(o.browserMcp) : undefined;
     // 新会话的预分配 ID 与恢复的 ID 都等 system/init 确认后才算原生身份（技术方案 §2）。
-    return { nativeId, confirmed: false };
+    return { nativeId, confirmed: false, browserMcpReady };
+  }
+
+  private async checkBrowserMcp({ serverName, toolNames }: NonNullable<DriverOpenOptions['browserMcp']>): Promise<boolean> {
+    const query = this.query;
+    if (!query?.mcpServerStatus || toolNames.length === 0) return false;
+    const budget = 2_500;
+    const deadline = performance.now() + budget;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const inspect = async () => {
+      while (!this.exited && !this.ended && performance.now() < deadline) {
+        const servers = await query.mcpServerStatus!();
+        const status = Array.isArray(servers) ? servers.find(server => server.name === serverName) : undefined;
+        if (status?.status === 'connected') {
+          const tools = new Set(status.tools?.map(tool => tool.name));
+          return toolNames.every(name => tools.has(name) || tools.has(`mcp__${serverName}__${name}`));
+        }
+        if (status?.status !== 'pending') return false;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return false;
+    };
+    try {
+      return await Promise.race([inspect(), new Promise<false>(resolve => { timer = setTimeout(() => resolve(false), budget); })]);
+    } catch {
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   private onExit(code: number | null, signal: string | null) {

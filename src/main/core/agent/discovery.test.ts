@@ -71,7 +71,12 @@ describe('本机程序发现', () => {
     db.close();
   });
 
-  it.each([true, false])('A55 negotiates each optional Codex protocol capability in an empty home (%s)', async missingOptional => {
+  it.each([
+    { missingOptional: true, version: '0.169.0', mcp: '"error":{"code":-32601,"message":"missing"}', hasMcp: false },
+    { missingOptional: false, version: '0.171.0', mcp: '"result":{"data":[]}', hasMcp: true },
+    { missingOptional: false, version: '0.172.0', mcp: '"result":{"unexpected":[]}', hasMcp: false },
+    { missingOptional: false, version: '0.173.0', mcp: '"error":{"code":-32603,"message":"failed"}', hasMcp: false },
+  ])('A55 negotiates MCP independently on Codex $version ($mcp)', async ({ missingOptional, version, mcp, hasMcp }) => {
     const { link, real } = fakeBin('codex');
     writeFileSync(real, String.raw`#!/bin/sh
 [ "$1" = 'app-server' ] && [ "$HOME" = "$CODEX_HOME" ] && [ "$HOME" = "$PWD" ] && [ -z "$OPENAI_API_KEY" ] || exit 41
@@ -79,7 +84,7 @@ while IFS= read -r line; do
   id=$(printf '%s' "$line" | sed -n 's/.*"id":\([0-9][0-9]*\).*/\1/p')
   case "$line" in
     *'"method":"initialize"'*) printf '{"id":%s,"result":{"userAgent":"fixture"}}\n' "$id" ;;
-    *'"method":"mcpServerStatus/list"'*) printf '{"id":%s,"error":{"code":-32601,"message":"missing"}}\n' "$id" ;;
+    *'"method":"mcpServerStatus/list"'*) printf '{"id":%s,%s}\n' "$id" '${mcp}' ;;
     *'"method":"thread/resume"'*) printf '{"id":%s,"error":{"code":${missingOptional ? -32601 : -32600},"message":"no session"}}\n' "$id" ;;
     *'"method":"turn/steer"'*) printf '{"id":%s,"error":{"code":${missingOptional ? -32601 : -32600},"message":"no session"}}\n' "$id" ;;
     *'"method":"skills/list"'*) ${missingOptional ? String.raw`printf '{"id":%s,"error":{"code":-32601,"message":"missing"}}\n' "$id"` : String.raw`printf '{"id":%s,"result":{"data":[]}}\n' "$id"`} ;;
@@ -88,11 +93,11 @@ while IFS= read -r line; do
 done
 `);
     const r = await probeDriver('codex-app-server', {
-      env: { OPENAI_API_KEY: 'synthetic-not-inherited' }, detect: detect(link, '0.169.0') as never, inspectCodexProtocol: true,
+      env: { OPENAI_API_KEY: 'synthetic-not-inherited' }, detect: detect(link, version) as never, inspectCodexProtocol: true,
     });
-    expect(r.state).toBe('limited');
+    expect(r.state).toBe(hasMcp ? 'ready' : 'limited');
     expect(r.capabilities.basic.state).toBe('enabled');
-    expect(r.capabilities.mcp).toMatchObject({ state: 'disabled', reason: 'probe-unavailable' });
+    expect(r.capabilities.mcp).toMatchObject(hasMcp ? { state: 'enabled' } : { state: 'disabled', reason: 'probe-unavailable' });
     for (const key of ['resume', 'steer', 'skills', 'approvalsReviewer'] as const) {
       expect(r.capabilities[key].state).toBe(missingOptional ? 'disabled' : 'enabled');
     }

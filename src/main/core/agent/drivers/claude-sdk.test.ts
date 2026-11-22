@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { McpServerStatus } from '@anthropic-ai/claude-agent-sdk';
 import type { DriverEvent } from '../driver';
 import { until } from '../test-doubles';
 import { ClaudeSdkInstance, type SdkQuery, type SdkQueryFn } from './claude-sdk';
@@ -7,7 +8,7 @@ const exe = { path: '/Users/me/.local/bin/claude', version: '2.1.326' };
 type Turn = (ctx: { options: any; emit: (m: any) => void; ask: (tool: string, input: any) => Promise<any>; interrupted: () => boolean }) => Promise<void>;
 
 /** SDK 替身：读取流式输入，每条用户消息按脚本产生消息；记录 options 与权限模式切换。 */
-function fakeSdk(turns: Turn[]) {
+function fakeSdk(turns: Turn[], mcpServerStatus?: () => Promise<McpServerStatus[]>) {
   const state = { options: undefined as any, modes: [] as string[], interrupts: 0, closed: false, prompts: [] as any[], stoppedTasks: [] as string[] };
   const fn: SdkQueryFn = ({ prompt, options }) => {
     state.options = options;
@@ -33,6 +34,7 @@ function fakeSdk(turns: Turn[]) {
       },
       setPermissionMode: async m => { state.modes.push(m); },
       setModel: async (m?: string) => { await (wrapper as any).setModelHook?.(m); },
+      mcpServerStatus,
       close: () => { state.closed = true; },
     };
     return q;
@@ -45,13 +47,49 @@ const ok = (text: string): Turn => async ({ emit }) => {
   emit({ type: 'assistant', uuid: 'a1', message: { role: 'assistant', content: [{ type: 'text', text }] } });
   emit({ type: 'result', subtype: 'success', is_error: false, session_id: 's' });
 };
-function make(turns: Turn[]) {
-  const sdk = fakeSdk(turns);
+function make(turns: Turn[], mcpServerStatus?: () => Promise<McpServerStatus[]>) {
+  const sdk = fakeSdk(turns, mcpServerStatus);
   const inst = new ClaudeSdkInstance(async () => sdk.fn);
   const events: DriverEvent[] = [];
   inst.on(e => events.push(e));
   return { inst, sdk, events };
 }
+
+it.each([
+  ['pending', true, true],
+  ['connected', true, true],
+  ['connected', false, false],
+  ['failed', false, false],
+] as const)('checks the expected browser tools before a Claude prompt (%s, names present=%s)', async (status, complete, ready) => {
+  const serverName = 'wy_browser_fixture';
+  const toolNames = ['smartdd_browser_tab_create_v2', 'smartdd_browser_nav_goto_v2', 'smartdd_browser_nav_snapshot_v2'];
+  const host = { command: '/host/electron', args: ['bridge.cjs'] };
+  const other = { command: '/user/other', args: [] };
+  let checks = 0;
+  const { inst, sdk, events } = make([ok('继续对话')], async () => {
+    checks++;
+    if (status === 'pending' && checks === 1) return [{ name: serverName, status }];
+    return [{
+      name: serverName,
+      status: status === 'pending' ? 'connected' : status,
+      tools: (complete ? toolNames : toolNames.slice(1)).map(name => ({
+        name: status === 'pending' ? name : `mcp__${serverName}__${name}`,
+      })),
+    }];
+  });
+  try {
+    const opened = await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', browserMcp: { serverName, toolNames, alwaysLoad: true },
+      mcpServers: { [serverName]: host, other } });
+    expect(opened.browserMcpReady).toBe(ready);
+    expect(sdk.state.prompts).toHaveLength(0);
+    expect(sdk.state.options.mcpServers).toEqual({ [serverName]: { ...host, alwaysLoad: true }, other });
+    expect(checks).toBe(status === 'pending' ? 2 : 1);
+    await inst.startTurn({ clientInputId: 'plain-after-inspection', text: '继续对话', tier: 'ask' });
+    await until(() => events.some(e => e.type === 'turn.completed' && e.status === 'completed'));
+  } finally {
+    await inst.close();
+  }
+});
 
 it('A09 routes Claude MCP elicitation to its own request and only sends cancellation', async () => {
   const { inst, sdk, events } = make([]);

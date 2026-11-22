@@ -19,6 +19,9 @@ class AgentTasksStore {
   start() {
     if (this.unsubscribe) return;
     this.unsubscribe = events.on(agentTaskEvent, e => {
+      if (e.type === 'task.removed' && navigation.currentViewId === 'agentTask' && navigation.currentAgentTaskId === e.taskId) {
+        navigation.newTask(this.tasks.find(task => task.taskId === e.taskId)?.projectId ?? undefined);
+      }
       this.scheduleRefresh();
       // 窗口在后台时用系统通知提醒待处理请求（需求 R01，设置可关）；页面内不做通知卡片。
       if (e.type === 'request.opened' && requestNotifyEnabled() && typeof Notification !== 'undefined' && !document.hasFocus()) {
@@ -35,7 +38,11 @@ class AgentTasksStore {
     try { const list = await rpc.agentTasks.list(); runInAction(() => { this.tasks = list; }); }
     catch { /* 主进程未就绪时保留旧列表 */ }
   }
-  of(projectId: string) { const rows = this.tasks.filter(t => t.projectId === projectId); const ids = new Set(rows.map(t => t.taskId)); return rows.filter(t => !t.parentTaskId || !ids.has(t.parentTaskId)).flatMap(t => [t, ...rows.filter(c => c.parentTaskId === t.taskId)]); }
+  of(projectId: string) {
+    const rows = this.tasks.filter(t => t.projectId === projectId).sort((a, b) => (b.pinnedAt ?? '').localeCompare(a.pinnedAt ?? ''));
+    const ids = new Set(rows.map(t => t.taskId));
+    return rows.filter(t => !t.parentTaskId || !ids.has(t.parentTaskId)).flatMap(t => [t, ...rows.filter(c => c.parentTaskId === t.taskId)]);
+  }
 }
 
 export const agentTasksStore = new AgentTasksStore();

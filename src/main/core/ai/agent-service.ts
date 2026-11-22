@@ -99,7 +99,7 @@ export class AgentService {
       const row = {
         id: providerId, name: data.name, preset: data.preset, endpoints: JSON.stringify(data.endpoints),
         authType: data.authType, secretRef, keyHint, identityRevision: (before?.identityRevision ?? 1) + Number(identityChanged),
-        models: JSON.stringify(identityChanged ? data.models.map((model) => ({ ...model, availability: { claude: 'untested', codex: 'untested' }, checks: undefined })) : data.models), recommended: JSON.stringify(data.recommended),
+        models: JSON.stringify(identityChanged ? data.models.map((model) => ({ ...model, claude: undefined, availability: { claude: 'untested', codex: 'untested' }, checks: undefined })) : data.models), recommended: JSON.stringify(data.recommended),
         refreshedAt: identityChanged ? null : before?.refreshedAt ?? null, createdAt: before?.createdAt ?? this.now(), updatedAt: this.now(),
       };
       this.db.insert(aiProviders).values(row).onConflictDoUpdate({ target: aiProviders.id, set: row }).run();

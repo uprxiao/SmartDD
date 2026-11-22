@@ -27,6 +27,45 @@ it('SMG upstream errors retry once and preserve the final error without exposing
 });
 
 describe('Provider model list', () => {
+  it('reads reasoning levels declared by the Anthropic catalog without reusing Responses levels', async () => {
+    const data = [
+      { id: 'documented', capabilities: { effort: { supported: true, low: { supported: true }, medium: { supported: false }, high: { supported: true }, default_level: 'high' } }, supported_reasoning_levels: ['ultra'] },
+      { id: 'responses-only', supported_reasoning_levels: ['medium', 'high'] },
+    ];
+    const models = await fetchProviderModels({ ...target, endpoints: { anthropic: target.endpoints.anthropic } }, { fetch: async () => json({ data }) });
+    expect(models[0].claude).toEqual({ reasoningLevels: ['low', 'high'], defaultReasoning: 'high' });
+    expect(models[1].claude).toBeUndefined();
+    const otherRoute = await fetchProviderModels({ ...target, endpoints: { responses: target.endpoints.responses } }, { fetch: async () => json({ data }) });
+    expect(otherRoute.every(model => model.claude === undefined)).toBe(true);
+  });
+
+  it('classifies mixed gateway catalogs without treating image input as image generation', async () => {
+    const models = await fetchProviderModels(target, { fetch: async () => json({ data: [
+      { id: 'glm-5.1', owned_by: '智谱' },
+      { id: 'gemini-3.1-pro', owned_by: 'Gemini', input_modalities: ['text', 'image'] },
+      { id: 'wan3.0-video', owned_by: '千问万相' },
+      { id: 'gemini-nano-banana-2.1', model_type: 'LLM' },
+      { id: 'claude-sonnet-4-6', owned_by: 'system' },
+      { id: 'private-model', owned_by: 'openai-compatible' },
+      { id: 'gpt-custom', owned_by: 'Anthropic' },
+      { id: 'custom-image-tool', output_modalities: ['image'] },
+      { id: 'custom-text-model', output_modalities: ['text', 'image'] },
+      { id: 'custom-embedding', type: 'embedding' },
+    ] }) });
+    expect(models.map(({id,vendor,purpose})=>({id,vendor,purpose}))).toEqual([
+      { id: 'glm-5.1', vendor: '智谱', purpose: 'conversation' },
+      { id: 'gemini-3.1-pro', vendor: 'Google', purpose: 'conversation' },
+      { id: 'wan3.0-video', vendor: '阿里云', purpose: 'video' },
+      { id: 'gemini-nano-banana-2.1', vendor: 'Google', purpose: 'image' },
+      { id: 'claude-sonnet-4-6', vendor: 'Anthropic', purpose: 'conversation' },
+      { id: 'private-model', vendor: undefined, purpose: undefined },
+      { id: 'gpt-custom', vendor: undefined, purpose: 'conversation' },
+      { id: 'custom-image-tool', vendor: undefined, purpose: 'image' },
+      { id: 'custom-text-model', vendor: undefined, purpose: 'conversation' },
+      { id: 'custom-embedding', vendor: undefined, purpose: 'embedding' },
+    ]);
+  });
+
   it('reads OpenAI/Anthropic and catalog forms, retaining metadata without guessing availability', async () => {
     const fake = vi.fn(async () => json({ data: [{ id: 'one', display_name: 'One', context_window: 12345 }, { id: 'one', name: 'Last name' }, { id: 'two' }, { id: '\ninvalid' }] }));
     const models = await fetchProviderModels({ ...target, endpoints: { responses: target.endpoints.responses } }, { fetch: fake });

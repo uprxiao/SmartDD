@@ -5,7 +5,7 @@ import { verifiedPresetProtocol } from '@shared/ai-provider-presets';
  * Only metadata is copied; remote prompt templates and policy overrides are not.
  * https://api-docs.deepseek.com/quick_start/agent_integrations/codex/
  */
-export function presetModelMetadata(preset:string|null,endpoints:ProviderView['endpoints'],models:ProviderModel[]):ProviderModel[]{
+export function presetModelMetadata<T extends ProviderModel>(preset:string|null,endpoints:ProviderView['endpoints'],models:T[]):T[]{
   if(preset!=='deepseek'||!verifiedPresetProtocol(preset,endpoints,'codex'))return models;
   return models.map(m=>{
     if(!['deepseek-flash','deepseek-v4-pro'].includes(m.id))return m;

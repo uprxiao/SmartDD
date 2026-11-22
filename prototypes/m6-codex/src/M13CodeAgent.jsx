@@ -7,6 +7,8 @@ import { AGENTS, AVAIL_LABEL, applyProviderKey, CATALOG, CODE_AGENTS, agentModel
 import { AgentIcon, ProviderIcon, ToolIcon } from './m13-icons.jsx';
 import { Dialog, Menu, Pill } from './m13-ui.jsx';
 import { clearLiveKey, getLiveKey, isLive, liveClaudeTest, liveModels, liveProbe, setLiveKey } from './m13-live.mjs';
+import { ProviderModelPicker } from '../../../src/renderer/features/agents/provider-model-picker';
+import { providerModelMetadata } from '@shared/provider-model-metadata';
 
 const TOOL_IDS = ['claude', 'codex'];
 const providerKind = p => p.type === 'custom' ? '自定义' : '目录';
@@ -177,11 +179,13 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
   const [context,setContext]=useState(''),[efforts,setEfforts]=useState(''),[reasoning,setReasoning]=useState('');
   const [cName, setCName] = useState(''), [proto, setProto] = useState('responses'), [url, setUrl] = useState(''), [more, setMore] = useState({}), [detected, setDetected] = useState(null), [demo, setDemo] = useState('ok'), [manual, setManual] = useState('');
   const [result, setResult] = useState(null), [models, setModels] = useState([]), [busy, setBusy] = useState(false), [done, setDone] = useState(null), [err, setErr] = useState('');
-  const testCompletedModel = (model, tool) => {
+  const testCompletedModels = (checks) => {
     if (live) return onOpenProvider(done.provider.id);
-    const provider = { ...done.provider, models: done.provider.models.map(entry => entry.id === model.id
-      ? { ...entry, avail: { ...entry.avail, [tool]: entry.detail && availOf(entry, tool) === 'bad' ? 'bad' : 'ok' } }
-      : entry) };
+    const provider = { ...done.provider, models: done.provider.models.map(entry => {
+      const results = checks.filter(([model]) => model.id === entry.id).map(([, tool]) =>
+        [tool, entry.detail && availOf(entry, tool) === 'bad' ? 'bad' : 'ok']);
+      return results.length ? { ...entry, avail: { ...entry.avail, ...Object.fromEntries(results) } } : entry;
+    }) };
     setProviders(values => values.map(entry => entry.id === provider.id ? provider : entry));
     setDone({ ...done, provider });
   };
@@ -196,10 +200,10 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
     if (custom && !url.trim()) return setErr('请填写服务地址');
     if (!key.trim()) return setErr(`请填写${item.keyLabel || 'API 密钥'}`);
     if (item.id === 'magpie' && scene === 'magpie-down') return setErr('Magpie 未运行：无法连接 http://127.0.0.1:3425。请先打开 Magpie。');
-    if (live) return (async () => { setBusy('fetch'); const r = await liveModels(item.id, key.trim()); setBusy(false); if (!r.ok) return setErr(r.error); setResult({ models: r.models, note: r.models.length ? null : '网关返回的模型列表为空' }); setModels(r.models.map(m => m.id)); })();
+    if (live) return (async () => { setBusy('fetch'); const r = await liveModels(item.id, key.trim()); setBusy(false); if (!r.ok) return setErr(r.error); setResult({ models: r.models, note: r.models.length ? null : '网关返回的模型列表为空' }); setModels(previous => previous.filter(id => r.models.some(model => model.id === id))); })();
     const r = custom ? (manual.trim() ? { ok: true, models: manual.split(/[,，\s]+/).filter(Boolean).map(id => ({ id, name: id, ctx: '—', catalogSource: 'manual' })) } : probe(url, key, demo === 'model-fail' || demo === 'partial' || demo === 'tools-fail' ? 'ok' : demo)) : { ok: true, models: item.models };
     if (!r.ok) return setErr(r.error);
-    setResult({ models: r.models, note: r.note }); setModels(r.models.map(m => m.id));
+    setResult({ models: r.models, note: r.note }); setModels(previous => previous.filter(id => r.models.some(model => model.id === id)));
   };
   const connectLive = async () => {
     setErr(''); setBusy('connect');
@@ -280,18 +284,26 @@ export function CatalogDialog({ store, scene, onClose, onConnect, onOpenProvider
       <span className="m13-form-label">高级设置</span><details className="m13-adv"><summary>Codex 模型元数据</summary><label className="m13-field"><span>上下文窗口（tokens）</span><input inputMode="numeric" value={context} onChange={e=>setContext(e.target.value)} placeholder="使用目录或通用默认值" /></label><label className="m13-field"><span>支持的推理档位</span><input value={efforts} onChange={e=>setEfforts(e.target.value)} placeholder="例如 low, medium, high" /></label><label className="m13-field"><span>默认推理档位</span><input value={reasoning} onChange={e=>setReasoning(e.target.value)} /></label></details>
       <span className="m13-form-label m13-demo-label">结果</span><select className="m13-select" aria-label="演示结果" value={demo} onChange={e => { setDemo(e.target.value); setResult(null); }}><option value="ok">成功</option><option value="empty">模型列表为空</option><option value="bad-key">Key 无效（401）</option><option value="unreachable">服务不可达</option><option value="partial">只有 Responses 确认通过</option><option value="tools-fail">能列出模型但工具调用失败</option><option value="model-fail">推荐模型在 Claude Code 中测试失败</option></select>
     </div>}
-    {step === 'form' && result && <section className="m13-fetched"><h3 className="m13-sub">已获取 {result.models.length} 个模型{result.models.length > 0 && <span>取消勾选的不会接入</span>}</h3>
-      {result.models.length ? <div className="m13-checks-list">{result.models.map(m => <label key={m.id}><input type="checkbox" checked={models.includes(m.id)} onChange={e => setModels(ms => e.target.checked ? [...ms, m.id] : ms.filter(x => x !== m.id))} />{m.name}<small>{m.ctx}</small></label>)}</div>
-        : <><div className="m13-alert info"><Info size={16} /><div><p>{result.note || '没有获取到模型列表'}，请手动填写模型 ID。</p></div></div><label className="m13-field"><span>模型 ID</span><input value={manual} onChange={e => setManual(e.target.value)} placeholder="例如 acme-coder-large" /></label></>}
-      <p className="m13-hint">接入时先用一次最小的流式＋工具调用确认接口，再用推荐模型为每个适用的工具各测试一次，可能产生少量费用。</p></section>}
+    {step === 'form' && result && <>
+      {result.models.length ? <ProviderModelPicker models={result.models.map(m => ({ ...m, ...providerModelMetadata(m, m.id) }))} picked={models} onPick={setModels} busy={Boolean(busy)}/>
+        : <section className="m13-fetched"><h3 className="m13-sub">已获取 0 个模型</h3><div className="m13-alert info"><Info size={16} /><div><p>{result.note || '没有获取到模型列表'}，请手动填写模型 ID。</p></div></div><label className="m13-field"><span>模型 ID</span><input value={manual} onChange={e => setManual(e.target.value)} placeholder="例如 acme-coder-large" /></label></section>}
+      <p className="m13-hint">接入时先用一次最小的流式＋工具调用确认接口，再用推荐模型为每个适用的工具各测试一次，可能产生少量费用。</p></>}
     {busy && <p className="m13-desc"><RefreshCw size={14} className="m13-spin" /> {busy === 'fetch' ? '正在获取模型列表…' : '正在确认接口并测试推荐模型…'}</p>}
     {err && <div className="m13-alert danger"><TriangleAlert size={16} /><div><p>{err}</p></div></div>}
     {step === 'done' && done && <div className="m13-done">
       <div className="m13-right-head"><ProviderIcon catalog={done.provider.catalog} name={done.provider.name} size={44} /><div><b>{done.provider.name} 已添加</b><small>{pairingNote(done.provider)} · {done.provider.models.length} 个模型</small></div></div>
       {done.probed && <p className="m13-hint m13-probe-line">接口探测：{[['anthropic', 'Anthropic'], ['openai', 'OpenAI 兼容'], ['responses', 'OpenAI Responses']].map(([k, l]) => <span key={k} className={done.probed[k] ? 'ok' : 'no'}>{done.probed[k] ? <Check size={12} /> : '✕'}{l}</span>)}</p>}
-      {(() => { const ts2 = toolsFor(done.provider); return <><h3 className="m13-sub">模型（{done.provider.models.length}）</h3>
+      {(() => {
+        const ts2 = toolsFor(done.provider);
+        const untested = done.provider.models.flatMap(model => model.offline ? [] : ts2
+          .filter(tool => availOf(model, tool) === 'untested').map(tool => [model, tool]));
+        return <><h3 className="m13-sub m13-sub-row">模型（{done.provider.models.length}）
+          {untested.length > 0 && <button type="button" className="m13-link" onClick={() => testCompletedModels(untested)}>
+            {live ? '查看详情' : `测试全部未测试（${untested.length}）`}
+          </button>}
+        </h3>
         <div className="m13-table matrix done-models" role="table" aria-label="模型"><div role="row" className="m13-th"><span>模型</span><span>上下文</span>{ts2.map(t => <span key={t} className="m13-th-tool"><ToolIcon tool={t} size={14} />{AGENTS[t]}</span>)}</div>
-          {done.provider.models.map(m => <div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name">{m.name}{recOf(done.provider, ts2[0]) === m.id && <Pill tone="info">推荐</Pill>}</span><span>{m.ctx}</span>{ts2.map(t => { const a = availOf(m, t); return <span key={t} className="m13-cell" title={m.lastTest || ''}><Pill tone={availTone(a)}>{AVAIL_LABEL[a]}</Pill>{(a === 'untested' || a === 'bad') && <button type="button" className="m13-link" onClick={() => testCompletedModel(m, t)}>{live ? '查看详情' : a === 'bad' ? '重测（合成）' : '测试（合成）'}</button>}</span>; })}</div>)}</div>
+          {done.provider.models.map(m => <div role="row" key={m.id} data-model={m.id}><span className="m13-cell-name">{m.name}{recOf(done.provider, ts2[0]) === m.id && <Pill tone="info">推荐</Pill>}</span><span>{m.ctx}</span>{ts2.map(t => { const a = availOf(m, t); return <span key={t} className="m13-cell" title={m.lastTest || ''}><Pill tone={availTone(a)}>{AVAIL_LABEL[a]}</Pill>{(a === 'untested' || a === 'bad') && <button type="button" className="m13-link" onClick={() => testCompletedModels([[m, t]])}>{live ? '查看详情' : a === 'bad' ? '重测（合成）' : '测试（合成）'}</button>}</span>; })}</div>)}</div>
         {!ts2.length && <div className="m13-alert warn"><Info size={16} /><div><p>这个供应商只提供 OpenAI 兼容协议，两个 Code Agent 都不能直接使用。可以把它接入 Magpie，再在这里添加 Magpie。</p></div></div>}
         <p className="m13-hint">接入时每种适用协议只测试一个推荐模型。「未测试」表示已加入目录，尚未验证实际调用。</p></>; })()}
     </div>}

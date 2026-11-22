@@ -30,6 +30,7 @@ import { DriverError } from './driver';
 import { previewCodexModels } from './drivers/codex-app-server';
 import { SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
 import type { AgentModelCatalog, AgentModelScope, CatalogReadMode } from '@shared/agent-model-choice';
+import { providerModelOptions } from '@shared/agent-model-choice';
 import { tiersFor } from './permissions';
 import { AgentManualTerminals } from './manual-terminal';
 import { canonicalPath } from './identity';
@@ -163,18 +164,23 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         assertCurrent();
         const actual = resolveProfileLaunch({ ...input, runId: context.runId, carryExtensions: launch.compatibility.extensions !== false });
         materializeAgentPlan(actual.plan, d.userData, cwd);
-        if(!business.supportsAgentDelivery(actual.plan.profile.runner,probe.version!)){store.addHostItem(taskId,null,'system_notice',{code:'businessCapabilitiesUnverified',detail:'当前执行器版本的业务 Skill／MCP／CLI 交付尚未验证；本轮保留对话与代码能力，不注入未经验证的业务通道。'});return undefined;}
+        const delivery = business.agentDelivery(actual.plan.profile.runner, probe.version!, true);
+        if (!delivery) {
+          store.addHostItem(taskId,null,'system_notice',{code:'businessCapabilitiesUnverified',detail:'当前执行器版本的业务 Skill／MCP／CLI 交付尚未验证，本轮可继续对话和写代码。'});
+          return undefined;
+        }
+        const applicationScope = delivery === 'browser' ? delivery : undefined;
         const role = store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(taskId) as { access: string } | undefined;
         const home = base.HOME ?? homedir();
         const runRoot = join(d.userData, 'agents', 'runs', context.runId);
-        const skills = role?.access === 'read' ? undefined : d.skillProjection?.prepare({
+        const skills = role?.access === 'read' || applicationScope ? undefined : d.skillProjection?.prepare({
           runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
         });
         const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
         if (skills?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
           code: 'managedSkillUnavailable', detail: skills.issues.map(issue => issue.reason).join('；'),
         });
-        const projected = role?.access === 'read' ? undefined : d.mcpProjection?.prepare({
+        const projected = role?.access === 'read' || applicationScope ? undefined : d.mcpProjection?.prepare({
           runner: actual.plan.profile.runner, cwd, runRoot,
           injectedNames: Object.keys(actual.plan.profile.env), requireKnownFields: true,
         });
@@ -186,7 +192,8 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
           assertCurrent();
         };
         const { runId, bindingId, generation, nativeId } = context;
-        const result = await business.prepareAgent({ runId, bindingId, generation, checkedCli: probe.checkedCli, version: probe.version!, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
+        const managedCodexHome = actual.plan.codexRoot && actual.env.HOME === join(actual.stateRoot, 'home') ? actual.env.HOME : undefined;
+        const result = await business.prepareAgent({ runId, bindingId, generation, checkedCli: probe.checkedCli, version: probe.version!, applicationScope, managedCodexHome, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
         if (projected?.serverNames.some(name => Object.hasOwn(result.mcpServers ?? {}, name))) {
           await result.cancelBeforeFork();
           throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
@@ -200,7 +207,17 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
       },
     };
   };
-  const tasks = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: id => driverForKind(config(id).kind), profileName: id => d.agents.configs().find(c => c.id === id)?.name ?? '已删除的配置', userData: d.userData });
+  const tasks = new AgentTaskService({
+    store, runs, resolveLaunch, profileDriver: id => driverForKind(config(id).kind),
+    profileName: id => d.agents.configs().find(c => c.id === id)?.name ?? '已删除的配置',
+    profileModelSettings: id => {
+      const profile = d.agents.configs().find(c => c.id === id);
+      if (!profile) return { options: [] };
+      const provider = profile.providerId ? d.agents.providers().find(p => p.id === profile.providerId) : undefined;
+      return { defaultModel: profile.defaultModel, providerBacked: profile.source === 'provider', options: providerModelOptions(provider, profile) };
+    },
+    userData: d.userData,
+  });
   const ownedCommand = ownedWorkspaceCommand({processes:d.processes,env:d.baseEnv,blocked:(options,_proof,detail)=>{if(options.taskId)store.addHostItem(options.taskId,null,'system_notice',{code:'host_job_drain_unknown',detail});}});
   const git = new GitWorkspaces({ store, command:(cwd,command,args,timeout,options)=>options?ownedCommand(cwd,command,args,timeout,options):runWorkspaceCommand(cwd,command,args,timeout), home: d.baseEnv().HOME ?? homedir(), recoverySafe: async taskId => {
     const rows = store.sqlite.prepare('SELECT run_id,state,pid FROM capability_runs WHERE task_id=?').all(taskId) as { run_id: string; state: string; pid: number | null }[];
@@ -233,7 +250,10 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   /** 首页与任务页的智能体列表：只列可用于新任务的配置，带执行器与可选档位。 */
   const profiles = () => d.agents.configs().filter(c => c.source !== 'legacy' && codeAgentKindSchema.safeParse(c.kind).success).map(c => {
     const driverId = driverForKind(c.kind);
-    return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, codexSubscription: isCodexSubscription(c), tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const };
+    const provider = c.providerId ? d.agents.providers().find(p => p.id === c.providerId) : undefined;
+    return { profileId: c.id, name: c.name, kind: c.kind, driverId, source: c.source, models: c.models, defaultModel: c.defaultModel, available: c.available, isDefault: c.isDefault, codexSubscription: isCodexSubscription(c), tiers: tiersFor(driverId), extensionSupport: driverId === 'codex-app-server' ? 'partial' as const : 'full' as const,
+      provider: provider ? { name: provider.name, catalog: provider.preset } : undefined, modelOptions: providerModelOptions(provider, c),
+    };
   });
   const readSubscriptionCatalog = async (profile: RunConfigView, tool: CodeAgentTool, cwd: string, mode?: CatalogReadMode) => {
     const baseEnv = d.baseEnv();

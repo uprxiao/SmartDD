@@ -151,7 +151,7 @@ import { CATALOG, CATALOG_GROUPS, detectProtocols, pairingNote, toolsFor } from 
 test('供应商目录（P0.12）：不再有订阅组；加 Anthropic、OpenAI 官方；SMG 按用户提供的地址；未核实的标为占位', () => {
   assert.deepEqual(CATALOG_GROUPS.map(g => g[0]), ['vendor', 'custom']);
   assert.deepEqual(CATALOG.filter(c => c.group === 'vendor').map(c => c.id), ['anthropic', 'openai', 'deepseek', 'glm', 'smg', 'ultracloud', 'magpie']);
-  assert.deepEqual(CATALOG.filter(c => c.verified === false).map(c => c.id), ['glm', 'ultracloud']);
+  assert.deepEqual(CATALOG.filter(c => c.verified === false).map(c => c.id), ['glm']);
   assert.deepEqual(toolsFor(CATALOG.find(c => c.id === 'smg')), ['claude'], 'SMG 只有 Anthropic 与 OpenAI 兼容接口，只适用 Claude Code');
 });
 test('适用工具：Codex 需 Responses、Claude Code 需 Anthropic；只有 OpenAI 兼容时都不能用', () => {
@@ -160,8 +160,8 @@ test('适用工具：Codex 需 Responses、Claude Code 需 Anthropic；只有 Op
   assert.deepEqual(toolsFor(by('anthropic')), ['claude']);
   assert.deepEqual(toolsFor(by('openai')), ['codex']);
   assert.deepEqual(toolsFor(by('glm')), ['claude']);
-  assert.deepEqual(toolsFor(by('ultracloud')), []);
-  assert.match(pairingNote(by('ultracloud')), /网关/);
+  assert.deepEqual(toolsFor(by('ultracloud')), ['claude', 'codex']);
+  assert.deepEqual(by('ultracloud').endpoints, { responses: 'https://rjmodel.rjupc.com/v1', anthropic: 'https://rjmodel.rjupc.com' });
   assert.deepEqual(toolsFor({ type: 'custom', protocols: ['responses', 'openai'] }), ['codex']);
 });
 test('自定义供应商检测协议（合成）', () => {

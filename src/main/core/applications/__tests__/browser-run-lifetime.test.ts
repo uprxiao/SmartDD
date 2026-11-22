@@ -6,6 +6,7 @@ import {agentFixture} from './agent-fixture';
 import {FixtureProcessReader} from './run-fixture';
 import {CapabilityBundleSource} from '../bundle-source';
 import {RuntimeRegistry} from '../runtime-registry';
+import {digest} from '../manifest';
 import {BuiltinPackageRegistry} from '../builtin-package-registry';
 import {ApplicationService} from '../application-service';
 import {CapabilityRunRegistry, type OwnedCapabilityRun} from '../run-registry';
@@ -16,7 +17,7 @@ import {builtinApplicationModules} from '../modules';
 import {applicationSkillContentHash} from '../session-registry';
 import {BrowserService} from '../../browser/service';
 import {applicationToolDeclarations} from '@shared/application-capabilities';
-import {applicationNativeSkillName, type CapabilitySessionSnapshot} from '@shared/application-session';
+import {applicationMcpServerName, applicationNativeSkillName, type CapabilitySessionSnapshot} from '@shared/application-session';
 import type {BridgeResponse} from '@shared/application-bridge';
 import {SecretsStore} from '../../../secrets';
 import {ProjectService} from '../../projects/project-service';
@@ -72,10 +73,13 @@ async function start(existingTaskId?: string): Promise<StartedRun> {
     const adapter = f.installedAdapters.find(a => a.metadata.agentId === 'codex' && a.metadata.version === '1.3.0');
     if (!adapter) throw new Error('Bundled Codex 1.3.0 adapter required');
     const declarations = applicationToolDeclarations(manifest);
+    const serverName = applicationMcpServerName(digest(base.taskId).slice(0, 16));
     const snapshot: CapabilitySessionSnapshot = {
-      ...base, schema: 3, standardSkills: [], mcp: [],
+      ...base, schema: 3, standardSkills: [],
+      mcp: [{kind:'applications', serverName, protocolMajor:manifest.runtime.protocolMajor, runtimeHash:manifest.runtime.hash}],
       agentAtCreation: {version: '0.166.0', adapterRevision: 1},
-      adapterBinding: {...base.adapterBinding, version: adapter.metadata.version, hash: adapter.hash, nativeToolNames: {}},
+      adapterBinding: {...base.adapterBinding, version: adapter.metadata.version, hash: adapter.hash,
+        nativeToolNames: Object.fromEntries(declarations.map(tool => [tool.name, `mcp__${serverName}__${tool.name}`]))},
       packages: [{
         appId: 'browser', version: manifest.version, packageHash: selected.packageHash,
         hashAlgorithm: 'app-manifest-v1', hostApi: manifest.hostApi, dataApi: manifest.dataApi,

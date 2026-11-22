@@ -17,8 +17,8 @@ class BrowserModuleData implements ApplicationModuleData {
   constructor(private readonly services:ApplicationModuleServices){}
   resolve(version:1,method:string,binding:Readonly<ApplicationDataBinding>){
     const rule=rules[method];
-    if(version!==1||!rule||binding.appId!=='browser'||binding.entry!=='cli')
-      throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器只接受已登记的CLI能力');
+    if(version!==1||!rule||binding.appId!=='browser')
+      throw new ApplicationError('CAPABILITY_UNAVAILABLE','浏览器只接受已登记的能力');
     return {
       semantics:rule.semantics,retry:rule.retry,timeoutMs:110000,
       authorize:(run:RunContext)=>{
@@ -35,8 +35,8 @@ class BrowserModuleData implements ApplicationModuleData {
     if(!rule||!command)throw new ApplicationError('CAPABILITY_UNAVAILABLE','此浏览器命令尚未登记');
     this.services.contexts.require(context,rule.permission);
     const caller=this.services.contexts.caller(context);
-    if(caller.kind!=='agent'||caller.entry!=='cli'||!context.projectId||!context.taskId||!context.runId)
-      throw new ApplicationError('SCOPE_DENIED','浏览器需要宿主签发的项目任务CLI运行身份');
+    if(caller.kind!=='agent'||!context.projectId||!context.taskId||!context.runId)
+      throw new ApplicationError('SCOPE_DENIED','浏览器需要宿主签发的项目任务运行身份');
     this.services.selections.requireApplicationEnabled(context.projectId,'browser');
     const runtime=this.services.contexts.agentRuntime(context),runSignal=runtime.signal;
     if(!input||typeof input!=='object'||Array.isArray(input))throw new ApplicationError('INVALID_INPUT','浏览器参数必须为对象');

@@ -2,7 +2,7 @@ import type { CodeAgentKind, ProviderView } from './ai-agents';
 
 /** Protocol identities already verified in M13 research. Editing a preset URL
  * makes it a custom connection for confirmation purposes, regardless of label.
- * SMG's local endpoint is supplied separately; GLM/UltraCloud remain unverified.
+ * SMG's local endpoint is supplied separately; GLM/Model Hub remain unverified.
  */
 const verified: Record<string, Partial<Record<CodeAgentKind, string>>> = {
   anthropic: { claude: 'https://api.anthropic.com/' },

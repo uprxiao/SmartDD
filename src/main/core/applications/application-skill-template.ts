@@ -31,7 +31,7 @@ export function applicationSkillParameters(manifest:ApplicationPackageManifest,r
   return{appId:manifest.appId,entrypoints:applicationCapabilityViews(manifest).filter(c=>delivery.allowedOperations.includes(c.permission)).flatMap(capability=>{
     const choice=selectCapabilityEntry(capability,delivery.available);if(!choice.entry)return[];
     const binding=choice.fallback?capability.binding.fallback!:capability.binding;
-    const invocation='mcp'in binding&&binding.mcp?`MCP 工具 ${binding.mcp.tool}`:'cli'in binding&&binding.cli?`willyou-app ${binding.cli.command.join(' ')}`:'';
+    const invocation=describeBinding(binding,choice.entry);
     return[{capabilityId:capability.id,entry:choice.entry,invocation}];
   })};
 }
@@ -42,12 +42,18 @@ export function renderApplicationSkill(bytes:Buffer,manifest:ApplicationPackageM
   return renderSkillTemplate(bytes,applicationSkillParameters(manifest,delivery)).bytes;
 }
 
-const describeBinding=(binding:ApplicationCapability['binding']|NonNullable<ApplicationCapability['binding']['fallback']>):string=>'mcp'in binding&&binding.mcp?`MCP 工具 ${binding.mcp.tool}`:'cli'in binding&&binding.cli?`willyou-app ${binding.cli.command.join(' ')}`:'';
+const describeBinding=(binding:ApplicationCapability['binding']|NonNullable<ApplicationCapability['binding']['fallback']>,entry:'cli'|'mcp'):string=>
+  entry==='mcp'&&'mcp'in binding&&binding.mcp?`MCP 工具 ${binding.mcp.tool}`:
+  entry==='cli'&&'cli'in binding&&binding.cli?`willyou-app ${binding.cli.command.join(' ')}`:'';
 /** Every declared capability with its primary entry and, for reads, the declared fallback; the host authorizes each call. */
 export function libraryEntrypoints(capabilities:readonly ApplicationCapability[]):SkillRenderParameters['entrypoints']{
   return capabilities.map(capability=>{
-    const primary=describeBinding(capability.binding),fallback=capability.semantics==='read'&&capability.binding.fallback?describeBinding(capability.binding.fallback):'';
-    return{capabilityId:capability.id,entry:capability.binding.cli?'cli':'mcp',invocation:fallback?`${primary}；本会话没有该${capability.binding.cli?'命令':'工具'}时改用 ${fallback}`:primary};
+    const entry=capability.binding.cli?'cli':'mcp',other=entry==='cli'?'mcp':'cli';
+    const primary=describeBinding(capability.binding,entry),alternate=describeBinding(capability.binding,other);
+    const fallback=capability.semantics==='read'&&capability.binding.fallback?describeBinding(capability.binding.fallback,other):'';
+    const invocation=alternate?`${primary} / ${alternate}（按本次任务提供的入口选择）`:
+      fallback?`${primary}；本会话没有该${entry==='cli'?'命令':'工具'}时改用 ${fallback}`:primary;
+    return{capabilityId:capability.id,entry,invocation};
   });
 }
 const WILLYOU_ONLY='（仅在 WillYou 任务中使用）';

@@ -55,6 +55,67 @@ it('SMG upstream errors remain unavailable with the original message and an expl
 const footer=()=>document.querySelector('.m13-dialog-foot') as HTMLElement;
 function custom(){fireEvent.click(screen.getByRole('button',{name:/^自定义供应商/}));fireEvent.change(screen.getByLabelText('名称'),{target:{value:'Custom Provider'}});fireEvent.change(screen.getByLabelText('服务地址'),{target:{value:'https://custom.example.invalid/v1'}});fireEvent.change(screen.getByLabelText('API 密钥'),{target:{value:'PUBLIC_UI_KEY_ONLY'}});}
 
+it('adds Model Hub from a mixed directory with no initial selection, then submits only explicit picks', async () => {
+  const models = [
+    { ...model('glm-5.1'), name: 'GLM 5.1', vendor: '智谱', purpose: 'conversation' },
+    { ...model('wan3.0-video'), name: '万相视频', vendor: '阿里云', purpose: 'video' },
+    { ...model('qwen3.8-max'), name: '千问 Max', vendor: '阿里云', purpose: 'conversation' },
+    { ...model('private-model'), name: 'Private model' },
+  ];
+  api.models.mockResolvedValue({ok:true,value:{models,recommended:{},note:null}});
+  catalog();
+  const card = screen.getByRole('button',{name:/^Model Hub/});
+  expect(card.querySelector('image')?.getAttribute('href')).toMatch(/model-hub\.svg$/);
+  fireEvent.click(card);
+  expect(screen.queryByRole('textbox',{name:'服务地址'})).toBeNull();
+  expect(screen.getByText('https://rjmodel.rjupc.com/v1')).toBeTruthy();
+  expect(screen.getByText('https://rjmodel.rjupc.com')).toBeTruthy();
+  fireEvent.change(screen.getByLabelText('Model Hub Key'),{target:{value:'PUBLIC_UI_KEY_ONLY'}});
+  fireEvent.click(within(footer()).getByRole('button',{name:'获取模型'}));
+
+  const picker = await screen.findByRole('region',{name:'选择模型'});
+  const selection = within(picker);
+  expect(api.models).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+    endpoints:{responses:'https://rjmodel.rjupc.com/v1',anthropic:'https://rjmodel.rjupc.com'},
+    key:'PUBLIC_UI_KEY_ONLY',
+  }));
+  const search = selection.getByRole('textbox',{name:'搜索模型'});
+  const vendor = selection.getByRole('combobox',{name:'厂商'});
+  const connect = screen.getByRole<HTMLButtonElement>('button',{name:'接入'});
+  expect(selection.getByRole('status').textContent).toBe('已选 0 个');
+  expect(connect.disabled).toBe(true);
+  expect(selection.queryByRole('checkbox',{name:'万相视频'})).toBeNull();
+
+  fireEvent.change(search,{target:{value:'GLM-5.1'}});
+  expect(selection.getAllByRole('checkbox')).toHaveLength(1);
+  fireEvent.click(selection.getByRole('button',{name:'选择筛选结果'}));
+  fireEvent.change(search,{target:{value:''}});
+  fireEvent.change(vendor,{target:{value:'其他'}});
+  expect(selection.getByRole('checkbox',{name:'Private model'})).toBeTruthy();
+  expect(selection.getByText('待确认')).toBeTruthy();
+
+  fireEvent.change(vendor,{target:{value:'阿里云'}});
+  fireEvent.click(selection.getByRole('button',{name:'全部'}));
+  expect(selection.getByRole('checkbox',{name:'万相视频'})).toBeTruthy();
+  fireEvent.click(selection.getByRole('checkbox',{name:'千问 Max'}));
+  fireEvent.change(vendor,{target:{value:''}});
+  fireEvent.click(selection.getByRole('button',{name:'已选'}));
+  expect(selection.getAllByRole('checkbox').map(checkbox=>(checkbox as HTMLInputElement).checked)).toEqual([true,true]);
+  expect(selection.getByRole('status').textContent).toBe('已选 2 个');
+
+  fireEvent.click(selection.getByRole('button',{name:'清空'}));
+  expect(selection.getByText('没有符合条件的模型')).toBeTruthy();
+  expect(connect.disabled).toBe(true);
+  fireEvent.click(selection.getByRole('button',{name:'对话与编程'}));
+  fireEvent.click(selection.getByRole('checkbox',{name:'GLM 5.1'}));
+  fireEvent.click(connect);
+  await waitFor(()=>expect(api.connect).toHaveBeenCalledOnce());
+  const payload = api.connect.mock.calls[0][0];
+  expect(payload).toMatchObject({preset:'ultracloud',name:'Model Hub',models:[{id:'glm-5.1'}]});
+  expect(payload.models[0]).not.toHaveProperty('vendor');
+  expect(payload.models[0]).not.toHaveProperty('purpose');
+});
+
 it('checks an untested model on the completion page without repeating the recommended checks', async () => {
   const flash = {...model('deepseek-flash'), name: 'DeepSeek-V4.1-Flash', availability: {claude:'untested' as const, codex:'untested' as const}};
   const saved = provider({ name:'DeepSeek', models: [flash, model('deepseek-v4-pro')] });
@@ -73,12 +134,89 @@ it('checks an untested model on the completion page without repeating the recomm
   expect(row.getAllByText('未测试')).toHaveLength(1);
   expect(api.check).toHaveBeenCalledExactlyOnceWith('p', 'codex', 'deepseek-flash');
 });
+
+it('allows a Claude model check on the completion page when its configured protocol has yet to pass', async () => {
+  const claude = {...model('claude-opus-5-5'), availability: {claude: 'untested' as const, codex: 'unavailable' as const}};
+  const gpt = {...model('gpt-6.1-sol'), availability: {claude: 'unavailable' as const, codex: 'available' as const}};
+  const saved = provider({name:'Model Hub', preset:'ultracloud', models:[gpt, claude]});
+  api.connect.mockResolvedValue({ok:true, value:saved});
+  api.check.mockResolvedValue({...saved, models:[gpt, {...claude, availability:{...claude.availability, claude:'available'}}]});
+  catalog();
+  custom();
+  fireEvent.change(screen.getByLabelText('模型'), {target:{value:'gpt-6.1-sol,claude-opus-5-5'}});
+  fireEvent.click(screen.getByRole('button', {name:'接入'}));
+  const batch = await screen.findByRole('button', {name:'测试全部未测试（1）'});
+  expect(screen.getByText('可用于 Codex · 2 个模型')).toBeTruthy();
+  fireEvent.click(batch);
+  expect(await screen.findByText('可用于 Claude Code、Codex · 2 个模型')).toBeTruthy();
+  expect(api.check).toHaveBeenCalledExactlyOnceWith('p', 'claude', 'claude-opus-5-5');
+});
+
+async function openBatchCatalog() {
+  const saved = provider({models: [
+    model('a'),
+    {...model('b'), availability: {claude: 'unavailable', codex: 'untested'}},
+    {...model('c'), availability: {claude: 'untested', codex: 'available'}},
+    {...model('d'), offline: true, availability: {claude: 'untested', codex: 'untested'}},
+  ]});
+  api.connect.mockResolvedValue({ok: true, value: saved});
+  const rendered = catalog();
+  custom();
+  fireEvent.change(screen.getByLabelText('模型'), {target: {value: 'a,b,c,d'}});
+  fireEvent.click(screen.getByRole('button', {name: '接入'}));
+  const batch = await screen.findByRole('button', {name: '测试全部未测试（2）'});
+  return {...rendered, saved, batch};
+}
+
+it('sequentially tests all pending online model and tool pairs and displays each result as it arrives', async () => {
+  const {saved, batch, props} = await openBatchCatalog();
+  const first = deferred<ProviderView>();
+  const second = deferred<ProviderView>();
+  const afterFirst = {...saved, models: saved.models.map(entry => entry.id === 'b'
+    ? {...entry, availability: {...entry.availability, codex: 'unavailable' as const}}
+    : entry)};
+  const afterSecond = {...afterFirst, models: afterFirst.models.map(entry => entry.id === 'c'
+    ? {...entry, availability: {...entry.availability, claude: 'available' as const}}
+    : entry)};
+  api.check.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
+  expect(api.check).not.toHaveBeenCalled();
+
+  fireEvent.click(batch);
+  expect(api.check).toHaveBeenCalledExactlyOnceWith('p', 'codex', 'b');
+  expect((screen.getByRole('button', {name: '测试中 1/2'}) as HTMLButtonElement).disabled).toBe(true);
+  const individual = screen.getByRole('button', {name: '测试 Model C · Claude Code'});
+  expect((individual as HTMLButtonElement).disabled).toBe(true);
+
+  await act(async () => first.resolve(afterFirst));
+  expect(screen.getByRole('button', {name: '重测 Model B · Codex'})).toBeTruthy();
+  expect(screen.getByRole('button', {name: '测试中 2/2'})).toBeTruthy();
+  expect(api.check.mock.calls).toEqual([['p', 'codex', 'b'], ['p', 'claude', 'c']]);
+
+  await act(async () => second.resolve(afterSecond));
+  const row = screen.getByText('Model C').closest('[role="row"]') as HTMLElement;
+  expect(within(row).getAllByText('可用')).toHaveLength(2);
+  expect(screen.queryByRole('button', {name: /测试全部未测试/})).toBeNull();
+  expect(props.onConnected).toHaveBeenCalledTimes(2);
+});
+
+it('stops starting new tests when the completion dialog closes while preserving a saved result', async () => {
+  const {saved, batch, props} = await openBatchCatalog();
+  const pending = deferred<ProviderView>();
+  api.check.mockReturnValueOnce(pending.promise);
+  fireEvent.click(batch);
+  fireEvent.click(screen.getByRole('button', {name: '完成'}));
+  expect(props.onClose).toHaveBeenCalledOnce();
+  await act(async () => pending.resolve(saved));
+  expect(api.check).toHaveBeenCalledExactlyOnceWith('p', 'codex', 'b');
+  expect(props.onConnected).toHaveBeenCalledTimes(2);
+});
+
 function profile():AiProfileView{return {id:'legacy',name:'Old Agent',runner:'codex',executable:'/synthetic/legacy/bin/codex',env:[{name:'MODE',secret:false,value:'old-value',hasValue:true},{name:'OPENAI_API_KEY',secret:true,value:'PUBLIC_SECRET_NEVER_RENDER',hasValue:true}],args:['--label','two words','--flag'],color:'#c59be8',isDefault:false,check:null,checking:false,createdAt:1,updatedAt:2};}
 function legacy(){const c=new QueryClient({defaultOptions:{queries:{retry:false,gcTime:Infinity}}});clients.push(c);const props={config:config({id:'legacy',name:'Old Agent',source:'legacy',providerId:null,legacyReason:'保留配置'}),onClose:vi.fn(),onSaved:vi.fn(async()=>{})};return {props,...render(<QueryClientProvider client={c}><LegacyAgentEditor {...props}/></QueryClientProvider>)};}
 
 it('catalog three-step flow waits for real models/connect RPC, never saves Provider directly or automatically creates an Agent',async()=>{
  const pending=deferred<any>();api.models.mockReturnValue(pending.promise);const {props}=catalog({forTool:'codex'});expect(screen.getByRole('list',{name:'步骤'})).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:/^DeepSeek/}));fireEvent.change(screen.getByLabelText('DeepSeek API Key'),{target:{value:'PUBLIC_UI_KEY_ONLY'}});fireEvent.click(within(footer()).getByRole('button',{name:'获取模型'}));expect(api.models).toHaveBeenCalledOnce();expect(screen.queryByText('已获取 2 个模型')).toBeNull();expect(api.connect).not.toHaveBeenCalled();
- await act(async()=>pending.resolve({ok:true,value:{models:[model('a'),model('b')],recommended:{claude:'a',codex:'b'},note:null}}));await waitFor(()=>expect(screen.getByRole('checkbox',{name:/Model A/})).toBeTruthy());fireEvent.click(screen.getByRole('checkbox',{name:/Model B/}));fireEvent.click(screen.getByRole('button',{name:'接入'}));await waitFor(()=>expect(screen.getByRole('heading',{name:'已添加'})).toBeTruthy());expect(api.connect.mock.calls[0][0]).toMatchObject({preset:'deepseek',key:'PUBLIC_UI_KEY_ONLY',models:[expect.objectContaining({id:'a'})]});expect(api.saveProvider).not.toHaveBeenCalled();expect(api.save).not.toHaveBeenCalled();expect(props.onConnected).toHaveBeenCalledOnce();expect(props.onNewAgent).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'创建智能体'}));expect(props.onNewAgent).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({id:'p'}),'codex');
+ await act(async()=>pending.resolve({ok:true,value:{models:[model('a'),model('b')],recommended:{claude:'a',codex:'b'},note:null}}));await waitFor(()=>expect(screen.getByRole('checkbox',{name:/Model A/})).toBeTruthy());fireEvent.click(screen.getByRole('checkbox',{name:/Model A/}));fireEvent.click(screen.getByRole('button',{name:'接入'}));await waitFor(()=>expect(screen.getByRole('heading',{name:'已添加'})).toBeTruthy());expect(api.connect.mock.calls[0][0]).toMatchObject({preset:'deepseek',key:'PUBLIC_UI_KEY_ONLY',models:[expect.objectContaining({id:'a'})]});expect(api.saveProvider).not.toHaveBeenCalled();expect(api.save).not.toHaveBeenCalled();expect(props.onConnected).toHaveBeenCalledOnce();expect(props.onNewAgent).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'创建智能体'}));expect(props.onNewAgent).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({id:'p'}),'codex');
 });
 it('custom probe is readonly candidate RPC; empty models permits manual selected IDs and does not manufacture availability',async()=>{
  api.models.mockResolvedValue({ok:true,value:{models:[],recommended:{},note:'请手动填写'}});catalog();custom();fireEvent.click(screen.getByRole('button',{name:'检测协议'}));await waitFor(()=>expect(api.probe).toHaveBeenCalledOnce());expect(api.probe.mock.calls[0][1]).toBe('codex');expect(api.saveProvider).not.toHaveBeenCalled();fireEvent.click(within(footer()).getByRole('button',{name:'获取模型'}));await waitFor(()=>expect(screen.getByText(/请手动填写.*模型 ID/)).toBeTruthy());fireEvent.change(screen.getByLabelText('模型'),{target:{value:'a, b a'}});fireEvent.click(screen.getByRole('button',{name:'接入'}));await waitFor(()=>expect(api.connect).toHaveBeenCalledOnce());expect(api.connect.mock.calls[0][0].models.every((m:any)=>m.catalogSource==='manual')).toBe(true);expect(api.connect.mock.calls[0][0].models.map((m:any)=>[m.id,m.availability])).toEqual([['a',{claude:'untested',codex:'untested'}],['b',{claude:'untested',codex:'untested'}]]);

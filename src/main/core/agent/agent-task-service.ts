@@ -1,4 +1,4 @@
-import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, offersCodexLoginDefault } from '@shared/agent-model-choice';
+import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, modelEffortKey, offersCodexLoginDefault, resolveModelEffort, type AgentModelOption } from '@shared/agent-model-choice';
 import type { HostBusinessRequests } from './host-business-requests';
 import type { TurnDiffs } from './turn-diffs';
 // M14 任务命令服务（技术方案 T1.5 §3 TaskCommandService）：输入框、IPC 与（后续）MCP 共用。
@@ -37,10 +37,7 @@ export type LaunchResolver = (input: { taskId?: string; profileId: string; cwd: 
 export type ProfileDriver = (profileId: string) => DriverId;
 
 const PREWARM_IDLE_MS = 60_000;
-const HOST_BUSINESS_INSTRUCTIONS = [
-  '宿主业务约定：工具返回 awaiting_user 表示请求已持久等待用户，不会超时；不要轮询、重发或在 shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。',
-  '在 WillYou 任务内，用户未指定外部浏览器时，打开浏览器或网页应优先读取本次运行提供的 willyou-browser-browser Skill 并使用 willyou-app browser。通用 computer-use 的 iab 与系统 Chrome 不属于此任务的浏览器。用户要求使用内置浏览器时，如果任务浏览器能力不可用，说明原因并先征询用户再改用外部窗口。开页成功后根据页面快照区分搜索结果、加载失败与需要用户验证。',
-].join('\n');
+const HOST_BUSINESS_INSTRUCTIONS = '宿主工具返回 awaiting_user 时，可继续其他工作。用户批准后由宿主执行并通知。不要轮询或重复提交。宿主通知不构成新的真人授权。';
 interface PrewarmingRun {
   controller: AbortController;
   opening: Promise<RunHandle | undefined>;
@@ -220,7 +217,7 @@ export class AgentTaskService {
   // A /goal turn that ended without a recognised confirmation: the goal state is unknown (A69, D06-66).
   private readonly goalUnknown = new Map<string, { kind: 'set' | 'clear'; objective?: string }>();
 
-  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; profileName?(id: string): string; userData?: string }) {
+  constructor(private readonly d: { store: AgentStore; runs: AgentRunService; resolveLaunch: LaunchResolver; profileDriver: ProfileDriver; profileName?(id: string): string; profileModelSettings?(id: string): { defaultModel?: string | null; providerBacked?: boolean; options: AgentModelOption[] }; userData?: string }) {
     this.handoffs = new HandoffService(d.store);
     // 重启后排队的输入保留但不自动发出，等用户再次提交或取消（未知接收不自动重发）。
     for (const taskId of d.store.tasksWithQueue()) this.paused.add(taskId);
@@ -287,6 +284,28 @@ export class AgentTaskService {
 
   private requireStableSelection(taskId: string) { if (this.switching.has(taskId)) throw new DriverError('STATE', '正在切换执行器，请稍后'); }
 
+  private applyModelChoice(taskId: string, previous: AgentSelection, profileId: string, model?: string | null, effort?: string | null): Partial<AgentSelection> {
+    const run = this.d.runs.runForTask(taskId);
+    const previousDefault = run?.defaultModel ?? this.d.profileModelSettings?.(previous.profileId)?.defaultModel;
+    const previousKey = modelEffortKey(previous.profileId, previous.model ?? previousDefault);
+    const choices = { ...previous.modelEfforts };
+    if (!previous.modelEfforts) {
+      for (const [id, saved] of Object.entries(previous.profileChoices ?? {})) {
+        const model = saved.model ?? this.d.profileModelSettings?.(id)?.defaultModel;
+        if (saved.effort) choices[modelEffortKey(id, model)] = saved.effort;
+      }
+      if (previous.effort) choices[previousKey] = previous.effort;
+    }
+    const sameProfile = profileId === previous.profileId;
+    const saved = sameProfile ? previous : previous.profileChoices?.[profileId];
+    const nextModel = model === undefined ? saved?.model : model;
+    const defaultModel = sameProfile ? previousDefault : this.d.profileModelSettings?.(profileId)?.defaultModel;
+    const key = modelEffortKey(profileId, nextModel ?? defaultModel);
+    if (effort === null) delete choices[key];
+    else if (effort !== undefined) choices[key] = effort;
+    return { model: nextModel ?? undefined, effort: choices[key], modelEfforts: choices, initialCodexDefault: undefined };
+  }
+
   /** 模型／档位在下一轮生效；扩展开关只影响此后新建绑定。 */
   setSelection(taskId: string, patch: { tier?: Tier; model?: string | null; effort?: string | null; carryExtensions?: boolean }, expectedRevision: number) {
     this.requireStableSelection(taskId);
@@ -301,14 +320,12 @@ export class AgentTaskService {
     }
     if (patch.model !== undefined) {
       if (patch.model !== null && (!patch.model.trim() || patch.model.length > 256 || /[\x00-\x1f]/.test(patch.model))) throw new DriverError('REJECTED', '模型无效');
-      next.initialCodexDefault = undefined;
-      next.model = patch.model ?? undefined;
-      if (next.model !== selection.model) next.effort = undefined;
     }
     if (patch.effort !== undefined) {
       if (patch.effort !== null && !/^[a-z][a-z0-9_-]{0,23}$/.test(patch.effort)) throw new DriverError('REJECTED', '推理强度无效');
-      next.initialCodexDefault = undefined;
-      next.effort = patch.effort ?? undefined;
+    }
+    if (patch.model !== undefined || patch.effort !== undefined) {
+      Object.assign(next, this.applyModelChoice(taskId, selection, selection.profileId, patch.model, patch.effort));
     }
     if (patch.carryExtensions !== undefined) {
       if (typeof patch.carryExtensions !== 'boolean') throw new DriverError('REJECTED', '扩展选择无效');
@@ -327,12 +344,7 @@ export class AgentTaskService {
     if (effort !== undefined && effort !== null && (typeof effort !== 'string' || !/^[a-z][a-z0-9_-]{0,23}$/.test(effort))) throw new DriverError('REJECTED', '推理强度无效');
     if (profileId === before.selection.profileId) {
       const next: Partial<AgentSelection> = { pendingSwitch: undefined };
-      if (model !== undefined) {
-        next.model = model ?? undefined;
-        if (next.model !== before.selection.model) next.effort = undefined;
-      }
-      if (effort !== undefined) next.effort = effort ?? undefined;
-      if (model !== undefined || effort !== undefined) next.initialCodexDefault = undefined;
+      if (model !== undefined || effort !== undefined) Object.assign(next, this.applyModelChoice(taskId, before.selection, profileId, model, effort));
       return this.d.store.updateSelection(taskId, next, expectedRevision);
     }
     const driverId = this.d.profileDriver(profileId);
@@ -347,6 +359,7 @@ export class AgentTaskService {
     goalLock();
     if (busy()) return this.d.store.updateSelection(taskId, { pendingSwitch: { profileId, model, effort } }, expectedRevision);
     if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一执行器仍在退出，请等待');
+    const modelChoice = this.applyModelChoice(taskId, before.selection, profileId, model, effort);
     this.switching.add(taskId);
     const seq = this.stopSeq.get(taskId) ?? 0;
     this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: true }));
@@ -366,10 +379,8 @@ export class AgentTaskService {
       const tier = resolveTier(driverId, before.selection.tier as Tier);
       if (!tier.ok) throw new DriverError('REJECTED', '目标不支持当前档位');
       const previous = before.selection;
-      const saved = model === undefined && effort === undefined ? previous.profileChoices?.[profileId] : undefined;
       const changed = this.d.store.updateSelection(taskId, {
-        driverId, profileId, model: (saved?.model ?? model) ?? undefined, effort: (saved?.effort ?? effort) ?? undefined,
-        initialCodexDefault: undefined, tier: tier.tier, pendingSwitch: undefined,
+        ...modelChoice, driverId, profileId, tier: tier.tier, pendingSwitch: undefined,
         profileChoices: { ...previous.profileChoices, [previous.profileId]: { model: previous.model, effort: previous.effort } },
         carryExtensions: previous.extensionPreferences?.[profileId] ?? true,
         extensionPreferences: { ...previous.extensionPreferences, [previous.profileId]: previous.carryExtensions !== false },
@@ -636,7 +647,7 @@ export class AgentTaskService {
       this.coordination?.assertTargetCurrent(taskId);
       launch.assertCurrent?.();
     };
-    return { taskId, driverId: launch.driverId, modelCache: launch.modelCache, hostBusinessInstructions: this.business && launch.driverId === 'codex-app-server' ? HOST_BUSINESS_INSTRUCTIONS : undefined, profileId: selection.profileId, executable: launch.executable, cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, startCancelled, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) };
+    return { taskId, driverId: launch.driverId, modelCache: launch.modelCache, hostBusinessInstructions: this.business ? HOST_BUSINESS_INSTRUCTIONS : undefined, profileId: selection.profileId, executable: launch.executable, cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, startCancelled, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) };
   }
 
   private async commandContext(taskId: string, run: RunHandle) {
@@ -732,12 +743,14 @@ export class AgentTaskService {
       if (stoppedSince()) return;
       const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[] };
       const selectedModel = selection.model ?? run.defaultModel;
+      const modelSettings = this.d.profileModelSettings?.(selection.profileId);
+      const providerOptions = modelSettings?.options ?? [];
       const native = run.nativeSelection;
       const matchesNativeSelection = !!selection.effort
         && (!selection.initialCodexDefault || run.defaultModel === selectedModel)
         && native?.model === selectedModel && native?.effort === selection.effort;
       let models = run.models;
-      if (run.driverId === 'codex-app-server' && selection.effort && !models && !matchesNativeSelection) {
+      if (run.driverId === 'codex-app-server' && selection.effort && !models && !matchesNativeSelection && !providerOptions.some(item => item.id === selectedModel)) {
         models = await this.d.runs.resolveModelCatalog(run.runId, selectedModel, selection.effort);
         if (stoppedSince()) return;
       }
@@ -758,13 +771,20 @@ export class AgentTaskService {
       if (stoppedSince()) return;
       const { omittedImages, ...input } = this.agentInput(frozen.text, frozen.attachments ?? [], run, model);
       models ??= run.models;
-      const modelInfo = models?.find(m => m.id === model);
-      let effort = modelInfo?.defaultEffort;
-      if (selection.effort) {
-        if (modelInfo?.efforts.includes(selection.effort) || (model === selectedModel && matchesNativeSelection)) effort = selection.effort;
-        else this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${selection.effort}：执行器未公布该模型的此选项。` });
-      }
-      const hostContext = [this.coordination?.dispatchContext?.(taskId), this.business && !run.hostBusinessInstructionsInstalled ? HOST_BUSINESS_INSTRUCTIONS : undefined].filter(Boolean).join('\n\n');
+      const nativeModel = models?.find(m => m.id === model);
+      const providerModel = providerOptions.find(m => m.id === model);
+      const isCodex = run.driverId === 'codex-app-server';
+      const modelInfo = !isCodex && modelSettings?.providerBacked
+        ? providerModel
+        : nativeModel?.efforts.length ? nativeModel : providerModel ?? nativeModel;
+      const preferred = selection.modelEfforts
+        ? selection.modelEfforts[modelEffortKey(selection.profileId, model)]
+        : selection.effort;
+      const confirmedNativeEffort = !modelInfo?.efforts.length && model === selectedModel &&
+        matchesNativeSelection && preferred === selection.effort && preferred !== 'none';
+      const effort = confirmedNativeEffort ? preferred : resolveModelEffort(modelInfo, preferred, isCodex);
+      if (preferred && effort !== preferred) this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${preferred}：执行器未公布该模型的此选项。` });
+      const hostContext = [this.coordination?.dispatchContext?.(taskId), run.hostBusinessInstructionsInstalled ? undefined : run.hostBusinessInstructions].filter(Boolean).join('\n\n');
       const remaining = INPUT_TEXT_LIMIT - Buffer.byteLength(input.text) - (hostContext ? Buffer.byteLength(hostContext) + 2 : 0);
       transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, remaining);
       const context = [transfer?.text, hostContext].filter(Boolean).join('\n\n');
@@ -1031,6 +1051,20 @@ export class AgentTaskService {
     }
   }
 
+  rename(taskId: string, name: string) {
+    this.assertWritable(taskId);
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 120 || /[\x00-\x1f\x7f]/.test(name)) {
+      throw new DriverError('REJECTED', '任务名称须为 1–120 个字符');
+    }
+    this.d.store.renameTask(taskId, name.trim());
+  }
+
+  setPinned(taskId: string, pinned: boolean) {
+    const { task } = this.selection(taskId);
+    if (!task.project_id || typeof pinned !== 'boolean') throw new DriverError('REJECTED', '无法更改此任务的置顶状态');
+    this.d.store.setTaskPinned(taskId, pinned);
+  }
+
   unarchive(taskId: string) {
     if (this.archiving.has(taskId)) throw new DriverError('STATE','任务正在删除或归档');
     const { task } = this.selection(taskId, true);
@@ -1067,7 +1101,7 @@ export class AgentTaskService {
   }
 
   list() {
-    return this.d.store.listTasks().map(t => ({ taskId: t.id, parentTaskId: t.parent_task_id, projectId: t.project_id, dirId: t.dir_id, cwd: t.cwd, title: t.title, selection: JSON.parse(t.selection_json) as AgentSelection, createdAt: t.created_at, updatedAt: t.updated_at, status: this.status(t.id), stopping: !!this.d.runs.stopProgress(t.id) }));
+    return this.d.store.listTasks().map(t => ({ taskId: t.id, parentTaskId: t.parent_task_id, projectId: t.project_id, dirId: t.dir_id, cwd: t.cwd, title: t.title, selection: JSON.parse(t.selection_json) as AgentSelection, createdAt: t.created_at, updatedAt: t.updated_at, pinnedAt: t.pinned_at, status: this.status(t.id), stopping: !!this.d.runs.stopProgress(t.id) }));
   }
   /** Parent item fixes run/node identity. The renderer cannot provide a foreign native thread ID. */
   nativeHistory(taskId: string, itemId: string, beforeOrdinal = Number.MAX_SAFE_INTEGER) {

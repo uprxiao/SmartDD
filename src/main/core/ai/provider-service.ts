@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { modelForStorage, type ProviderCatalogModel } from '@shared/provider-model-metadata';
 import { codeAgentKindSchema, providerInputSchema, providerModelSchema, type CodeAgentKind, type ProviderInput, type ProviderModel, type ProviderView } from '@shared/ai-agents';
 import type { AppDb } from '../../db/client';
 import { aiProviders, appSecrets } from '../../db/schema';
@@ -8,7 +9,7 @@ import type { SecretsStore } from '../../secrets';
 import type { AgentService } from './agent-service';
 import { fetchProviderModels, probeProviderProtocol, providerTargetForTool, ProviderRequestError, verifyProviderModel, type ProviderClientOptions, type ProviderTarget } from './provider-client';
 import { publicLocalMagpie, verifiedPresetProtocol } from '@shared/ai-provider-presets';
-import { recommendedProviderModel } from '@shared/provider-catalog';
+import { modelHubEndpoints, recommendedProviderModel } from '@shared/provider-catalog';
 import { presetModelMetadata } from './provider-metadata';
 
 type ProviderRow = typeof aiProviders.$inferSelect;
@@ -43,7 +44,7 @@ export class ProviderService {
   /** Setup requests do not create a Provider, a Key reference or an Agent. */
   async previewDraft(input:ProviderInput,signal?:AbortSignal){
     const {data,target,options,check}=this.draft(input,signal);
-    let models:ProviderModel[],note:string|undefined;
+    let models:ProviderCatalogModel[],note:string|undefined;
     try{models=presetModelMetadata(data.preset,data.endpoints,await fetchProviderModels(target,options));}
     catch(error){if(error instanceof ProviderRequestError&&error.status===404){models=[];note='模型列表接口不存在，请手动填写模型 ID';}else throw error;}
     check();
@@ -57,10 +58,10 @@ export class ProviderService {
   async connect(input:ProviderInput,signal?:AbortSignal):Promise<ProviderView>{
     const {data,target,options,check}=this.draft(input,signal);
     if(!data.models.length)throw new ProviderRequestError('请至少勾选或手动填写一个模型');
-    let models=presetModelMetadata(data.preset,data.endpoints,data.models.map(m=>({...m,availability:{claude:'untested',codex:'untested'},checks:undefined})));
+    let models:ProviderModel[]=presetModelMetadata(data.preset,data.endpoints,data.models.map(m=>({...m,availability:{claude:'untested',codex:'untested'},checks:undefined})));
     if(publicLocalMagpie(data.preset,data.endpoints)){
       const current=await fetchProviderModels(target,options);check();
-      models=data.models.map(selected=>{const model=current.find(m=>m.id===selected.id&&!m.offline);if(!model)throw new ProviderRequestError('选中的模型已下线，请重新获取模型');return model;});
+      models=data.models.map(selected=>{const model=current.find(m=>m.id===selected.id&&!m.offline);if(!model)throw new ProviderRequestError('选中的模型已下线，请重新获取模型');return modelForStorage(model);});
     }
     const endpoints={...data.endpoints},recommended:{claude?:string;codex?:string}={};
     const successful:CodeAgentKind[]=[],failures:string[]=[];
@@ -75,7 +76,11 @@ export class ProviderService {
       else{
         failures.push(result.message);
         if(result.failures.some(f=>f.status===401||f.status===403))throw new ProviderRequestError(result.message,result.failures.at(-1)?.status??null);
-        if(!verifiedPresetProtocol(data.preset,endpoints,kind))delete endpoints[kind==='claude'?'anthropic':'responses'];
+        // Model Hub documents Messages. Keep its address so a failed model
+        // check can be retried with a different model from the same directory.
+        const canRetestModelHub = data.preset === 'ultracloud' && kind === 'claude'
+          && endpoints.anthropic === modelHubEndpoints.anthropic;
+        if(!canRetestModelHub&&!verifiedPresetProtocol(data.preset,endpoints,kind))delete endpoints[kind==='claude'?'anthropic':'responses'];
       }
     }
     check();
@@ -108,7 +113,8 @@ export class ProviderService {
       if(signal?.aborted)throw new Error('请求已取消');
       const captured = this.capture(id);
       const options={...this.client,...(signal?{signal:this.client.signal?AbortSignal.any([this.client.signal,signal]):signal}:{})};
-      const received = z.array(providerModelSchema).max(4096).parse(presetModelMetadata(captured.row.preset,captured.target.endpoints,await fetchProviderModels(captured.target, options)));
+      const catalog = await fetchProviderModels(captured.target, options);
+      const received = z.array(providerModelSchema).max(4096).parse(presetModelMetadata(captured.row.preset,captured.target.endpoints,catalog.map(modelForStorage)));
       if(signal?.aborted)throw new Error('请求已取消');
       this.assertCurrent(id, captured.fingerprint);
       const old = new Map(this.models(captured.row).map((model) => [model.id, model]));

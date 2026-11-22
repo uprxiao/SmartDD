@@ -21,3 +21,9 @@ it('does not silently substitute a different model if a selected identity is off
   expect(() => buildCodexModelCatalog([model('a')], ['b'])).toThrow('已不可用');
   expect(() => buildCodexModelCatalog([{ ...model('a'), availability: { claude: 'available', codex: 'unavailable' } }], ['a'])).toThrow('已不可用');
 });
+
+it('publishes the same reasoning fallback before and after Codex loads its catalog', () => {
+  const withMedium = { ...model('a'), codex: { reasoningLevels: ['low', 'medium'], defaultReasoning: 'none', inputModalities: ['text' as const], supportVerbosity: false } };
+  const unknownDefault = { ...withMedium, id: 'b', codex: { ...withMedium.codex, reasoningLevels: ['high'] } };
+  expect(buildCodexModelCatalog([withMedium, unknownDefault], ['a', 'b']).models.map(item => item.default_reasoning_level)).toEqual(['medium', null]);
+});

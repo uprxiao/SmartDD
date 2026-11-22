@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { ProviderInput } from '@shared/ai-agents';
+import { providerCatalog } from '@shared/provider-catalog';
 import { registerRPCRouter } from '@shared/ipc/rpc';
 import { runBundledMigrations } from '../../db/migrations';
 import * as schema from '../../db/schema';
@@ -35,6 +36,66 @@ function scoped(s:ProviderService){
 
 it('models preview reads normalized directory without creating Provider, encrypted secret or Agent',async()=>{
  const fake=vi.fn(async()=>json({data:[{id:'a',display_name:' A ',context_window:128000},{id:'b',name:'B'}]})),s=service(fake),before=state();const result=await s.previewDraft(input());expect(result.models.map(m=>[m.id,m.name])).toEqual([['a','A'],['b','B']]);expect(result.models.every(m=>m.availability.codex==='untested'&&m.availability.claude==='untested')).toBe(true);expect(state()).toBe(before);expect(fake).toHaveBeenCalledTimes(1);expect(JSON.stringify(result)).not.toContain(KEY);
+});
+it('uses the Model Hub preset Key for its directory and verifies both configured protocols before saving', async () => {
+  const preset = providerCatalog.find(entry => entry.name === 'Model Hub')!;
+  const requests: [string, string, string?][] = [];
+  const setup = service(async (url, init) => {
+    expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer ' + KEY);
+    const method = init?.method ?? 'GET';
+    if (method === 'GET') {
+      requests.push([method, String(url)]);
+      return json({data:[{id:'gpt-6.1-sol'},{id:'claude-opus-5-5'},{id:'wan3.0-video',owned_by:'千问万相'}]});
+    }
+    const body = JSON.parse(String(init?.body));
+    expect(body.stream).toBe(true);
+    requests.push([method, String(url), body.model]);
+    return stream(String(url).endsWith('/messages')?'claude':'codex');
+  });
+  const draft: ProviderInput = {name:preset.name,preset:preset.id,endpoints:preset.endpoints,key:KEY,authType:preset.authType};
+  const preview = await setup.previewDraft(draft);
+  expect(preview.models[2]).toMatchObject({id:'wan3.0-video',vendor:'阿里云',purpose:'video'});
+  expect(preview.recommended).toEqual({claude:'claude-opus-5-5',codex:'gpt-6.1-sol'});
+  const saved = await setup.connect({...draft,models:[
+    {id:'gpt-6.1-sol',name:'gpt-6.1-sol'}, {id:'claude-opus-5-5',name:'claude-opus-5-5'},
+  ]});
+  expect(requests).toEqual([
+    ['GET','https://rjmodel.rjupc.com/v1/models'],
+    ['POST','https://rjmodel.rjupc.com/v1/messages','claude-opus-5-5'],
+    ['POST','https://rjmodel.rjupc.com/v1/responses','gpt-6.1-sol'],
+  ]);
+  expect(saved.endpoints).toEqual({
+    anthropic:'https://rjmodel.rjupc.com', responses:'https://rjmodel.rjupc.com/v1',
+  });
+  expect(saved.models.map(model=>[model.id,model.availability])).toEqual([
+    ['gpt-6.1-sol',{claude:'untested',codex:'available'}],
+    ['claude-opus-5-5',{claude:'available',codex:'untested'}],
+  ]);
+  const refreshed = await setup.refresh(saved.id);
+  expect(refreshed.models[0]).not.toHaveProperty('vendor');
+  expect(refreshed.models[0]).not.toHaveProperty('purpose');
+});
+
+it('keeps the documented Model Hub Messages endpoint testable after the first model fails', async () => {
+  const preset = providerCatalog.find(entry => entry.id === 'ultracloud')!;
+  const setup = service(async (url, init) => {
+    if (String(url).endsWith('/responses')) return stream('codex');
+    expect(String(url)).toBe('https://rjmodel.rjupc.com/v1/messages');
+    const {model} = JSON.parse(String(init?.body));
+    return model === 'claude-opus-5-5' ? stream('claude') : json({error:{message:'model not found'}}, 404);
+  });
+  const saved = await setup.connect({
+    name:preset.name,preset:preset.id,endpoints:preset.endpoints,key:KEY,authType:preset.authType,
+    models:['gpt-6.1-sol','claude-sonnet-5-5','claude-opus-5-5'].map(id=>({id,name:id})),
+  });
+  expect(saved.endpoints.anthropic).toBe('https://rjmodel.rjupc.com');
+  expect(saved.models.find(model=>model.id==='claude-sonnet-5-5')?.checks?.claude).toMatchObject({
+    status:'unavailable',failures:[{status:404}],
+  });
+  expect(saved.models.some(model=>model.availability.claude==='available')).toBe(false);
+  const retested = await setup.check(saved.id, 'claude', 'claude-opus-5-5');
+  expect(retested.models.find(model=>model.id==='claude-opus-5-5')?.availability.claude).toBe('available');
+  expect(retested.models.find(model=>model.id==='gpt-6.1-sol')?.availability.codex).toBe('available');
 });
 it.each(['empty','404'])('models %s offers manual-entry opportunity without mutation',async reason=>{
  const s=service(vi.fn(async()=>reason==='empty'?json({data:[]}):json({message:'absent'},404))),before=state(),result=await s.previewDraft(input());expect(result.models).toEqual([]);expect(result.note).toContain('手动');expect(state()).toBe(before);

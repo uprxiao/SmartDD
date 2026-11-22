@@ -6,19 +6,19 @@ import { rpc } from '@renderer/lib/ipc';
 import { AgentDialog, Pill } from './ui';
 import { ProviderIcon, ToolIcon } from './icons';
 import { agentLabels, providerFits } from './agent-editor';
-import { contextLabel, protocolLabels, modelCheckDescription } from './provider-catalog';
+import { contextLabel, protocolLabels, modelCheckDescription, configuredModelCheckKinds, untestedModelChecks } from './provider-catalog';
 
 export function ProviderDetail({provider:p,configs,onClose,onRefresh,onNewAgent}:{provider:ProviderView;configs:RunConfigView[];onClose:()=>void;onRefresh:()=>Promise<void>;onNewAgent:(p:ProviderView,kind:CodeAgentKind)=>void}){
   const [tab,setTab]=useState<'overview'|'agents'>('overview'),[key,setKey]=useState<string|null>(p.hasKey?null:'');
   const [deleting,setDeleting]=useState(false),[busy,setBusy]=useState<string|null>(null),[error,setError]=useState('');
   const [editingAddress,setEditingAddress]=useState(false),[addresses,setAddresses]=useState({...p.endpoints});
   const refs=configs.filter(c=>c.providerId===p.id),supported=(['claude','codex'] as const).filter(k=>providerFits(p,k));
-  const possible=(['claude','codex'] as const).filter(k=>p.endpoints[k==='claude'?'anthropic':'responses']);
+  const possible=configuredModelCheckKinds(p);
   const manualModels=p.models.length>0&&p.models.every(m=>m.catalogSource==='manual');
   const input=(changes:Partial<ProviderInput>={}):ProviderInput=>({name:p.name,preset:p.preset,endpoints:p.endpoints,authType:p.authType,models:p.models,recommended:p.recommended,...changes});
   const perform=async(label:string,fn:()=>Promise<unknown>)=>{if(busy)return;setBusy(label);setError('');try{await fn();await onRefresh();}catch(e){setError(rpcErrorMessage(e));}finally{setBusy(null);}};
   const check=(model:string,kind:CodeAgentKind)=>perform(model+':'+kind,()=>rpc.agents.checkProviderModel(p.id,kind,model));
-  const untested=p.models.flatMap(m=>m.offline?[]:possible.filter(k=>m.availability[k]==='untested').map(kind=>({model:m.id,kind})));
+  const untested=untestedModelChecks(p, possible);
   const saveKey=()=>perform('key',async()=>{await rpc.agents.saveProvider(input({key:key?.trim()||null}),p.id);setKey(null);});
   if(deleting)return <AgentDialog title={`删除 ${p.name}？`} sub="供应商与它的 Key 会一并删除" onClose={()=>setDeleting(false)} footer={<><button className="m10-button secondary" disabled={Boolean(busy)} onClick={()=>setDeleting(false)}>取消</button><button className="m10-button primary m13-danger-btn" disabled={Boolean(busy)} onClick={()=>void perform('delete',async()=>{await rpc.agents.deleteProvider(p.id);onClose();})}>删除</button></>}>
     {refs.length?<><p className="m13-desc">使用它的 {refs.length} 个智能体会一起删除：</p><ul className="m13-gen-list">{refs.map(c=><li key={c.id}><ToolIcon tool={c.kind} size={16}/><b>{c.name}</b>{c.isDefault&&<Pill tone="ok"><Star size={11}/>默认</Pill>}</li>)}</ul>{refs.some(c=>c.isDefault)&&<p className="m13-hint">默认智能体删除后，默认改为首页显示中的下一个。</p>}<p className="m13-hint">使用过这些智能体的历史任务恢复时会提示重新选择，不会悄悄换成别的账号。</p></>:<p className="m13-desc">还没有智能体使用它。</p>}

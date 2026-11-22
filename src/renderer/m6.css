@@ -251,6 +251,12 @@ body { font-size:14px; font-weight:430; -webkit-font-smoothing:antialiased; }
 :root.ylight .reference-sidebar { --sidebar:#fcfcfc; --sidebar-foreground:#3b3e40; --selected:#efefef; }
 :root.ydark .reference-sidebar { --sidebar-foreground:#ccc; }
 .reference-task-row[aria-current="page"] { background:var(--selected); }
+.agent-sidebar-row[data-active],.agent-sidebar-row[data-menu-open] { background:var(--selected); }
+.agent-sidebar-row .agent-sidebar-pinned { color:var(--muted); flex-shrink:0; }
+.agent-sidebar-actions { display:flex; gap:2px; position:absolute; right:6px; opacity:0; pointer-events:none; }
+.agent-sidebar-row:is(:hover,:focus-within,[data-menu-open]) { padding-right:62px; }
+.agent-sidebar-row:is(:hover,:focus-within,[data-menu-open]) .agent-sidebar-actions { opacity:1; pointer-events:auto; }
+.agent-sidebar-row:is(:hover,:focus-within,[data-menu-open]) :is(.task-state-tail,.agent-sidebar-pinned) { display:none; }
 .reference-sidebar.is-collapsed { display: none; }
 .reference-sidebar-head { display: flex; align-items: center; gap: 6px; height: 48px; padding: 0 14px 0 16px; flex-shrink: 0; }
 .workspace-picker { display: flex; align-items: center; gap: 8px; font-size: 18px; line-height: 24px; font-weight: 600; flex: 1; text-align: left; color: var(--sidebar-foreground); }

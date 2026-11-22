@@ -74,6 +74,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private cwd = '';
   private readOnly = false;
   private turnCliPermissions?: string;
+  private hasTurnEffort = false;
   private activeTurn: {
     nativeTurnId: string;
     clientInputId: string;
@@ -276,6 +277,11 @@ export class CodexAppServerInstance implements DriverInstance {
     const sandbox = this.turnCliPermissions && input.tier !== 'full'
       ? { permissions: this.turnCliPermissions }
       : { sandboxPolicy: this.readOnly ? { type: 'readOnly', networkAccess: false } : tier.sandboxPolicy };
+    // Omitting effort (or passing null directly) preserves the previous override. The
+    // default-mode settings clear it while keeping the thread and its developer context.
+    const clearEffort = this.hasTurnEffort && !input.effort && input.model
+      ? { mode: 'default', settings: { model: input.model, reasoning_effort: null, developer_instructions: null } }
+      : undefined;
     this.stopPending = false;
     this.pendingInputId = input.clientInputId;
     const r = await this.rpc.call<{ turn: { id: string } }>('turn/start', {
@@ -285,9 +291,11 @@ export class CodexAppServerInstance implements DriverInstance {
       approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, ...sandbox,
       ...(input.model ? { model: input.model } : {}),
       ...(input.effort ? { effort: input.effort } : {}),
+      ...(clearEffort ? { collaborationMode: clearEffort } : {}),
     });
     const nativeTurnId = r?.turn?.id;
     if (!nativeTurnId) throw new DriverError('PROTOCOL', 'turn/start 响应缺少 turn.id');
+    if (input.effort || clearEffort) this.hasTurnEffort = !!input.effort;
     this.markStarted(nativeTurnId, input.clientInputId);
     this.pendingInputId = '';
     return { nativeTurnId };

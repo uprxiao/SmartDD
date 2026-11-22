@@ -79,8 +79,11 @@ export const applicationManifestV2Schema = z.object({
   for (const c of manifest.capabilities) {
     if (!c.id.startsWith(manifest.appId + '.')) issue('能力标识前缀与应用不符');
     if (!manifest.permissions.includes(c.permission)) issue('能力权限未在包声明中提供');
-    const primary = c.binding.mcp ? 'mcp' : c.binding.cli ? 'cli' : null;
-    if (!primary || !!c.binding.mcp === !!c.binding.cli) issue('能力必须恰好声明一个主入口');
+    const primary = c.binding.cli ? 'cli' : c.binding.mcp ? 'mcp' : null;
+    const dual = c.binding.cli && c.binding.mcp;
+    // Built-in browser commands can select one equivalent transport at launch.
+    // A second transport is never a retry path for a dispatched write.
+    if (!primary || dual && (manifest.appId !== 'browser' || !manifest.mixedEntries || c.binding.fallback)) issue('能力必须恰好声明一个主入口');
     if (primary && primary !== manifest.entry && !manifest.mixedEntries) issue('能力主入口与应用入口不同');
     if (c.semantics !== 'read' && (!c.protection || c.retry !== 'never')) issue('写能力必须声明业务级保护且不得自动重试');
     if (c.semantics === 'external-write' && !c.approval) issue('外部写能力必须声明宿主观察授权');

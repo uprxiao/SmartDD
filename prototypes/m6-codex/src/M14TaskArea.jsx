@@ -221,15 +221,23 @@ export function ModelPicker({ agent, model, effort, onPick, onClose, onToast, ru
   const setExt = v => { EXT[extKey] = v; setExtState(v); };
   useEffect(() => { setExtState(EXT[extKey] ?? true); }, [extKey]);
   const a = AGENTS.find(x => x.id === rail);
-  const remembered = taskState(taskId).profileChoices?.[rail];
+  const state = taskState(taskId);
+  const remembered = state.profileChoices?.[rail];
   const preview = rail === agent ? { model, effort } : remembered ?? (rail === 'cx-sub'
     ? { model: 'gpt-6.2-sol', effort: '中等' } : null);
-  const modelEffort = id => id === preview?.model ? preview.effort : id === 'default' ? null : a.defaultEffort ?? null;
+  const effortKey = (profile, id) => JSON.stringify([profile, id]);
+  const modelEffort = id => id === preview?.model ? preview.effort : state.modelEfforts?.[effortKey(rail, id)] ??
+    (id === 'default' ? null : a.models.find(m => m.id === id)?.defaultEffort ?? a.defaultEffort ?? null);
   const pick = (id, intensity) => {
-    if (rail !== agent) taskState(taskId, { profileChoices: { ...taskState(taskId).profileChoices, [agent]: { model, effort } } });
+    const modelEfforts = { ...state.modelEfforts, [effortKey(agent, model)]: effort, [effortKey(rail, id)]: intensity };
+    const profileChoices = rail === agent ? state.profileChoices : { ...state.profileChoices, [agent]: { model, effort } };
+    taskState(taskId, { profileChoices, modelEfforts });
     onPick(rail, id, intensity, true);
   };
   const models = a.models.filter(m => (more || !m.more) && m.name.toLowerCase().includes(q.toLowerCase()));
+  const previewModel = a.models.find(m => m.id === preview?.model) ?? a.models[0];
+  const efforts = previewModel.efforts ?? a.efforts;
+  const defaultEffort = previewModel.defaultEffort ?? a.defaultEffort;
   const hidden = a.models.filter(m => m.more).length;
   const cur = AGENTS.find(x => x.id === agent);
   useEffect(() => { const k = e => { if (e.metaKey && /^[1-9]$/.test(e.key)) { const m = models[Number(e.key) - 1]; if (m) { e.preventDefault(); pick(m.id, modelEffort(m.id)); } } if (e.key === 'Escape') onClose(); }; addEventListener('keydown', k); return () => removeEventListener('keydown', k); });
@@ -246,7 +254,7 @@ export function ModelPicker({ agent, model, effort, onPick, onClose, onToast, ru
           }
           const locked = goal && x.id !== agent;
           return <button type="button" key={x.id} title={locked ? x.name + '：当前任务有目标，清除目标后才能切换执行器' : x.name} aria-pressed={rail === x.id} disabled={locked} className={(rail === x.id ? 'on' : '') + (locked ? ' locked' : '')} onClick={() => { setRail(x.id); setQ(''); setMore(false); }}>
-            {x.tool ? <AgentIcon tool={x.tool} provider={x.provider ? { catalog: 'deepseek', name: 'DeepSeek' } : null} size={20} /> : <span className="m14-glyph">{x.glyph || <SquareTerminal size={14} />}</span>}
+            {x.tool ? <AgentIcon tool={x.tool} provider={x.providerBadge ?? (x.provider ? { catalog: 'deepseek', name: 'DeepSeek' } : null)} size={20} /> : <span className="m14-glyph">{x.glyph || <SquareTerminal size={14} />}</span>}
             {x.status && <i className={'m14-rail-badge k-' + x.status.kind} title={x.status.label} />}
           </button>;
         })}
@@ -266,8 +274,8 @@ export function ModelPicker({ agent, model, effort, onPick, onClose, onToast, ru
       </div>
       <div className="m14-picker-traits">
         <div className="m14-traits-head"><span>推理强度</span><small>{a.models.find(m => m.id === (preview?.model ?? a.models[0].id))?.name}</small></div>
-        {a.efforts.length ? a.efforts.map(x => <button type="button" key={x} className={preview?.effort === x ? 'on' : ''} onClick={() => pick(preview?.model ?? a.models[0].id, x)}>{x}{x === a.defaultEffort && <small>默认</small>}{preview?.effort === x && <Check size={13} />}</button>)
-          : <p className="m14-traits-none">该执行器未公布推理强度选项</p>}
+        {efforts.length ? efforts.map(x => <button type="button" key={x} className={(preview?.effort ?? defaultEffort) === x ? 'on' : ''} onClick={() => pick(previewModel.id, x)}>{x}{x === defaultEffort && <small>默认</small>}{(preview?.effort ?? defaultEffort) === x && <Check size={13} />}</button>)
+          : <p className="m14-traits-none">{a.provider ? '由供应商决定' : '该执行器未公布推理强度选项'}</p>}
       </div>
     </div>
     <div className="m14-picker-foot">
@@ -279,7 +287,7 @@ export function ModelPicker({ agent, model, effort, onPick, onClose, onToast, ru
 export function ModelPill({ agent, model, effort, onClick, open }) {
   const a = AGENTS.find(x => x.id === agent); const m = a.models.find(x => x.id === model);
   return <button type="button" className="m14-pill-btn" aria-haspopup="dialog" aria-expanded={open} onClick={onClick}>
-    {a.tool ? <AgentIcon tool={a.tool} provider={a.provider ? { catalog: 'deepseek', name: 'DeepSeek' } : null} size={16} /> : <SquareTerminal size={14} />}
+    {a.tool ? <AgentIcon tool={a.tool} provider={a.providerBadge ?? (a.provider ? { catalog: 'deepseek', name: 'DeepSeek' } : null)} size={16} /> : <SquareTerminal size={14} />}
     <span>{a.short}</span><span className="m14-pill-model">{m?.name}{effort ? ' ' + effort : ''}</span><ChevronDown size={12} />
   </button>;
 }

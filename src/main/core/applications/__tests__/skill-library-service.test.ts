@@ -1,4 +1,4 @@
-import {existsSync,lstatSync,mkdirSync,readFileSync,readdirSync,readlinkSync,writeFileSync} from 'node:fs';
+import {existsSync,lstatSync,mkdirSync,readFileSync,readdirSync,readlinkSync,symlinkSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {CurrentApplicationAuthorization} from '../current-authorization';
@@ -67,6 +67,15 @@ describe('M11 R16 Skill library delivery',()=>{
   const result=library.sync();
   expect(result.conflicts).toContainEqual({name,location:shared()});expect(library.conflicts()).toContainEqual({name,location:shared()});
   expect(readFileSync(join(user,'SKILL.md'),'utf8')).toBe('user owned\n');expect(existsSync(join(claude(),name))).toBe(false);
+ });
+ it('rejects a managed Codex browser Skill directory redirected into the shared library',()=>{
+  library.sync();
+  const privateHome=join(f.root,'private-codex-home'),name=library.skills()[0].name;
+  const file=join(shared(),name,'SKILL.md'),original=readFileSync(file,'utf8');
+  mkdirSync(privateHome);
+  symlinkSync(join(f.home,'.agents'),join(privateHome,'.agents'));
+  expect(()=>library.syncManagedBrowser(privateHome)).toThrow('智能体管理目录身份异常');
+  expect(readFileSync(file,'utf8')).toBe(original);
  });
 });
 

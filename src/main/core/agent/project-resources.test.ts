@@ -87,6 +87,46 @@ function fixture(execute: (job: DiffJob) => Promise<unknown> = runDiffJob) {
   return {root,db,store,tasks,runs,instances,terminals,open,coordination,diffs,resources,storage,service,projects,create,makeProject};
 }
 
+it('renames and pins a task by ID and preserves the project and its other tasks when deleting it', async () => {
+  const f = fixture(), project = f.makeProject('single-task-removal');
+  const target = f.create(project, '同名任务'), sibling = f.create(project, '同名任务');
+  const file = join(project.cwd, 'project-file.txt');
+  writeFileSync(file, 'kept');
+  f.tasks.rename(target, '  新标题  ');
+  f.tasks.setPinned(target, true);
+  const reopened = new AgentStore(f.db);
+  expect(reopened.task(target)?.title).toBe('新标题');
+  expect(reopened.task(sibling)?.title).toBe('同名任务');
+  expect(reopened.listTasks().find(task => task.id === target)?.pinned_at).toBeTruthy();
+  f.tasks.setPinned(target, false);
+  expect(reopened.listTasks().find(task => task.id === target)?.pinned_at).toBeNull();
+
+  await f.tasks.archive(target);
+  expect(f.tasks.list().map(task => task.taskId)).toEqual([sibling]);
+  await expect(f.resources.removeTask(target)).rejects.toThrow(/恢复已归档/);
+  f.tasks.unarchive(target);
+  const run = await f.open(target);
+  await f.resources.removeTask(target);
+
+  expect(f.tasks.list().map(task => task.taskId)).toEqual([sibling]);
+  expect(f.db.prepare('SELECT id FROM tasks WHERE id=?').get(target)).toBeUndefined();
+  expect(f.db.prepare('SELECT run_id FROM agent_retained_run_identity WHERE run_id=?').get(run.runId)).toEqual({ run_id: run.runId });
+  expect(f.service.getProject(project.project.id).name).toBe('single-task-removal');
+  expect(existsSync(file)).toBe(true);
+  expect(f.db.pragma('foreign_key_check')).toEqual([]);
+});
+
+it('refuses to permanently delete a delegation family or a task with an open manual terminal', async () => {
+  const f = fixture(), project = f.makeProject('guard-single-removal');
+  const parent = f.create(project, 'parent'), child = f.create(project, 'child', parent);
+  const other = f.create(project, 'terminal');
+  f.terminals.open(other);
+  await expect(f.resources.removeTask(parent)).rejects.toThrow(/委派任务/);
+  await expect(f.resources.removeTask(child)).rejects.toThrow(/委派任务/);
+  await expect(f.resources.removeTask(other)).rejects.toThrow(/手动终端/);
+  expect(f.tasks.list().map(task => task.taskId).sort()).toEqual([parent, child, other].sort());
+});
+
 it.each([
   { action: 'archive', proven: true },
   { action: 'delete', proven: true },

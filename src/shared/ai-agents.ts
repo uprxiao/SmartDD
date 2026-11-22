@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const codeAgentKindSchema = z.enum(['claude', 'codex']);
 export type CodeAgentKind = z.infer<typeof codeAgentKindSchema>;
+export const claudeEffortSchema = z.enum(['low', 'medium', 'high', 'xhigh', 'max']);
 export const cliLoginSchema = z.enum(['none', 'subscription', 'api', 'local']);
 export type CliLogin = z.infer<typeof cliLoginSchema>;
 export const modelAvailabilitySchema = z.enum(['untested', 'available', 'unavailable']);
@@ -34,6 +35,10 @@ export const providerModelSchema = z.object({
     codex: modelAvailabilitySchema.default('untested'),
   }).default({ claude: 'untested', codex: 'untested' }),
   checks: z.object({ claude: modelCheckSchema.optional(), codex: modelCheckSchema.optional() }).optional(),
+  claude: z.object({
+    reasoningLevels: z.array(claudeEffortSchema).max(claudeEffortSchema.options.length),
+    defaultReasoning: claudeEffortSchema.nullable().default(null),
+  }).strict().optional(),
   codex: z.object({
     reasoningLevels: z.array(z.string().regex(/^[a-z][a-z0-9_-]{0,31}$/)).max(16).default([]),
     defaultReasoning: z.string().max(32).nullable().default(null),

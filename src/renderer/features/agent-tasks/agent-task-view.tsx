@@ -1,3 +1,4 @@
+import { archiveAgentTask, registerTaskDraftSaver } from './agent-task-actions';
 import { observer } from 'mobx-react-lite';
 import { inlineCodeFilePathCandidate,absoluteFilePathMatches,markdownDestinationHostPath } from '@shared/t3-links/markdownLinks';
 import { openMessageLink,resolveMessageLink } from './message-links';
@@ -1075,6 +1076,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     draftDirty.current = true;
     scheduleDraftSave();
   };
+  useEffect(() => registerTaskDraftSaver(taskId, async () => {
+    if (draftTimer.current) { clearTimeout(draftTimer.current); draftTimer.current = null; }
+    return await persistDraft() && !draftDirty.current;
+  }));
   useEffect(() => () => {
     let saving = draftWrite.current;
     if (draftTimer.current) {
@@ -1332,12 +1337,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   };
   const archive = async () => {
     try {
-      if (draftTimer.current) { clearTimeout(draftTimer.current); draftTimer.current = null; }
-      if (!await persistDraft() || draftDirty.current) throw Error('当前草稿还未保存，请处理后再归档');
-      await rpc.agentTasks.archive(taskId);
-      await agentTasksStore.refresh();
-      navigation.newTask(snap.projectId ?? undefined);
-      toast.success('已归档', { action: { label: '撤销', onClick: () => void restore() } });
+      await archiveAgentTask(taskId, snap.projectId);
     } catch (e) { toast.error(rpcErrorMessage(e)); }
   };
   const stop = async () => { try { await rpc.agentTasks.stop(taskId); } catch (e) { toast.error(rpcErrorMessage(e)); } };
@@ -1513,7 +1513,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
               {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
             </select>
             <span className="push" />
-            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} pendingSwitch={snap.selection.pendingSwitch}
+            <AgentModelPicker triggerRef={modelSelect} profiles={profiles} profileId={snap.selection.profileId} model={snap.selection.model} effort={snap.selection.effort} defaultModel={snap.run?.defaultModel} nativeModels={snap.run?.models} scope={{kind:'task',taskId}} disabled={snap.switching} locked={!!snap.goal && snap.goal.status !== 'complete'} busy={working} extensions={snap.selection.extensionPreferences} carryExtensions={snap.selection.carryExtensions} profileChoices={snap.selection.profileChoices} modelEfforts={snap.selection.modelEfforts} pendingSwitch={snap.selection.pendingSwitch}
               onPick={async (id, model, effort) => {
                 const scope = timelineScope.current;
                 try {

@@ -260,6 +260,22 @@ describe('Codex app-server 驱动', () => {
     await inst.startTurn({ clientInputId: 'next', text: '原始输入', tier: 'ask', effort: 'high' });
     expect(server.calls('turn/start')[0].params).toMatchObject({ effort: 'high', input: [{ type: 'text', text: '原始输入', text_elements: [] }] });
   });
+
+  it('clears the last turn effort when the next model has no verified effort, keeping the same thread', async () => {
+    const { inst, server, events } = setup();
+    await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
+    for (const [model, effort] of [['known', 'high'], ['unknown', undefined], ['unknown', undefined], ['known', 'high']] as const) {
+      const { nativeTurnId } = await inst.startTurn({ clientInputId: 'next-' + server.calls('turn/start').length, text: 'continue', tier: 'ask', model, effort });
+      server.notify('turn/completed', { threadId: 'thr-1', turn: { id: nativeTurnId, status: 'completed' } });
+      await until(() => events.some(event => event.type === 'turn.completed' && event.nativeTurnId === nativeTurnId));
+    }
+    const turns = server.calls('turn/start').map(call => call.params);
+    expect(turns.map(turn => turn.threadId)).toEqual(['thr-1', 'thr-1', 'thr-1', 'thr-1']);
+    expect(turns.map(turn => turn.effort)).toEqual(['high', undefined, undefined, 'high']);
+    expect(turns[1].collaborationMode).toEqual({ mode: 'default', settings: { model: 'unknown', reasoning_effort: null, developer_instructions: null } });
+    expect(turns[2]).not.toHaveProperty('collaborationMode');
+  });
+
   it('初始化握手后新建线程，并按档位下发线程参数', async () => {
     const { inst, server, events, spawned } = setup();
     const r = await inst.open({ executable: exe, cwd: '/w', env: { PATH: '/bin' }, tier: 'ask', model: 'gpt-x', extraArgs: ['--disable', 'plugins'] });

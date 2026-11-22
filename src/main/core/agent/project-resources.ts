@@ -87,13 +87,42 @@ export class AgentProjectResources {
       const taskIds = new Set(this.projectTasks(projectId).map(t => t.id));
       await this.d.tasks.withTaskRemoval([...taskIds], () => {
         assertReady(true);
-        remove(() => this.purgeProjectTasks(projectId));
-        for (const [editorId, lease] of this.draftAttachmentLeases) {
-          if (taskIds.has(lease.taskId)) this.draftAttachmentLeases.delete(editorId);
-        }
+        remove(() => this.purgeTasks('project', projectId));
+        this.clearDraftLeases(taskIds);
       });
     } finally { this.deleting.delete(projectId); }
     this.kick();
+  }
+
+  async removeTask(taskId: string) {
+    const db = this.d.store.sqlite;
+    const assertReady = (ownsRemoval = false) => {
+      const task = this.d.store.task(taskId);
+      if (!task) throw Error('任务不存在');
+      if (task.archived_at) throw Error('请先恢复已归档的任务');
+      if (task.project_id) this.assertProjectWritable(task.project_id);
+      if (this.d.terminals?.activePty(taskId)) throw Error('请先关闭此任务的手动终端');
+      if (task.parent_task_id || db.prepare('SELECT 1 FROM agent_tasks WHERE parent_task_id=?').get(taskId)) {
+        throw Error('存在关联的委派任务，请先归档');
+      }
+      if (ownsRemoval) {
+        const reasons = this.d.tasks.taskBlockers(taskId, true, true);
+        if (reasons.length) throw Error(reasons.join('、'));
+      }
+    };
+    assertReady();
+    await this.d.tasks.withTaskRemoval([taskId], () => {
+      assertReady(true);
+      this.d.store.deleteTask(taskId, () => this.purgeTasks('task', taskId));
+      this.clearDraftLeases(new Set([taskId]));
+    });
+    this.kick();
+  }
+
+  private clearDraftLeases(taskIds: ReadonlySet<string>) {
+    for (const [editorId, lease] of this.draftAttachmentLeases) {
+      if (taskIds.has(lease.taskId)) this.draftAttachmentLeases.delete(editorId);
+    }
   }
 
   private record(projectId: string | null, taskId: string | null, resource: Resource) {
@@ -103,11 +132,12 @@ export class AgentProjectResources {
       .run(sha256(resource.kind + '\0' + value), projectId, taskId, resource.kind, value);
   }
 
-  private purgeProjectTasks(projectId: string) {
+  private purgeTasks(scope: 'project' | 'task', target: string) {
     const db = this.d.store.sqlite;
-    const tasks = this.projectTasks(projectId);
-    const doomed = 'SELECT a.task_id FROM agent_tasks a JOIN tasks t ON t.id=a.task_id WHERE t.project_id=?';
-    for (const { id } of tasks) {
+    const from = `FROM agent_tasks a JOIN tasks t ON t.id=a.task_id WHERE t.${scope === 'project' ? 'project_id' : 'id'}=?`;
+    const doomed = `SELECT a.task_id ${from}`;
+    const tasks = db.prepare(`SELECT t.id,t.project_id ${from}`).all(target) as { id: string; project_id: string | null }[];
+    for (const { id, project_id: projectId } of tasks) {
       for (const row of db.prepare(`SELECT turn_id,before_ref,after_ref FROM agent_turn_changes
         WHERE task_id=? AND (before_ref IS NOT NULL OR after_ref IS NOT NULL)`).all(id) as Snapshot[]) {
         this.record(projectId, id, { kind: 'snapshot', value: row });
@@ -125,26 +155,26 @@ export class AgentProjectResources {
       }
     }
     for (const table of ['agent_events','agent_items','agent_requests','agent_turn_changes','agent_directory_queue','agent_goals','agent_transfers']) {
-      db.prepare(`DELETE FROM ${table} WHERE task_id IN (${doomed})`).run(projectId);
+      db.prepare(`DELETE FROM ${table} WHERE task_id IN (${doomed})`).run(target);
     }
     db.prepare(`DELETE FROM agent_commit_provenance WHERE workspace_id IN
-      (SELECT w.workspace_id FROM agent_workspaces w JOIN tasks t ON t.id=w.task_id WHERE t.project_id=?)`).run(projectId);
+      (SELECT w.workspace_id FROM agent_workspaces w WHERE w.task_id IN (${doomed}))`).run(target);
     db.prepare(`DELETE FROM agent_delegation_attempts WHERE delegation_id IN
-      (SELECT d.delegation_id FROM agent_delegations d JOIN tasks t ON t.id=d.parent_task_id WHERE t.project_id=?)`).run(projectId);
+      (SELECT d.delegation_id FROM agent_delegations d WHERE d.parent_task_id IN (${doomed}))`).run(target);
     for (const [table,key] of [['agent_delegations','parent_task_id'],['agent_workspaces','task_id'],['agent_intents','task_id'],['agent_turns','task_id']]) {
-      db.prepare(`DELETE FROM ${table} WHERE ${key} IN (${doomed})`).run(projectId);
+      db.prepare(`DELETE FROM ${table} WHERE ${key} IN (${doomed})`).run(target);
     }
     db.prepare(`INSERT OR IGNORE INTO agent_retained_run_identity(run_id,binding_id,capability_session_id,driver_id,generation)
       SELECT run_id,binding_id,capability_session_id,driver_id,generation FROM capability_runs
-      WHERE task_id IN (${doomed}) AND binding_id IS NOT NULL`).run(projectId);
+      WHERE task_id IN (${doomed}) AND binding_id IS NOT NULL`).run(target);
     db.prepare(`UPDATE capability_runs SET binding_id=NULL,capability_session_id=NULL,driver_id=NULL,generation=NULL
-      WHERE task_id IN (${doomed}) AND binding_id IS NOT NULL`).run(projectId);
+      WHERE task_id IN (${doomed}) AND binding_id IS NOT NULL`).run(target);
     db.prepare(`DELETE FROM agent_capability_sessions WHERE binding_id IN
-      (SELECT b.binding_id FROM agent_bindings b JOIN tasks t ON t.id=b.task_id WHERE t.project_id=?)`).run(projectId);
-    db.prepare(`DELETE FROM agent_bindings WHERE task_id IN (${doomed})`).run(projectId);
-    db.prepare(`DELETE FROM agent_resource_refs WHERE owner_kind='task' AND owner_id IN (${doomed})`).run(projectId);
-    db.prepare(`UPDATE agent_tasks SET parent_task_id=NULL WHERE task_id IN (${doomed})`).run(projectId);
-    db.prepare(`DELETE FROM agent_tasks WHERE task_id IN (${doomed})`).run(projectId);
+      (SELECT b.binding_id FROM agent_bindings b WHERE b.task_id IN (${doomed}))`).run(target);
+    db.prepare(`DELETE FROM agent_bindings WHERE task_id IN (${doomed})`).run(target);
+    db.prepare(`DELETE FROM agent_resource_refs WHERE owner_kind='task' AND owner_id IN (${doomed})`).run(target);
+    db.prepare(`UPDATE agent_tasks SET parent_task_id=NULL WHERE task_id IN (${doomed})`).run(target);
+    db.prepare(`DELETE FROM agent_tasks WHERE task_id IN (${doomed})`).run(target);
   }
 
   holdDraftAttachments(taskId: string, editorId: string, paths: string[], ownerId?: number) {

@@ -10,6 +10,8 @@ import { until } from './test-doubles';
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { providerModelOptions } from '@shared/agent-model-choice';
+import { modelHubEndpoints } from '@shared/provider-catalog';
 
 // M14-A05 连续回合与中断、A11 请求面板后端、A16 发送失败、A43 草稿 CAS、A48 归档（阶段 2：U／I 层）。
 class Inst implements DriverInstance {
@@ -36,7 +38,7 @@ class Inst implements DriverInstance {
 }
 const dbs: Database.Database[] = [];
 afterEach(() => dbs.splice(0).forEach(d => d.close()));
-function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; modelCatalog?: Inst['modelCatalog']; nativeSelection?: Inst['nativeSelection']; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string> } = {}) {
+function setup(opts: { failOpen?: boolean; userData?: string; version?: string; openGate?: Promise<void>; modelCatalog?: Inst['modelCatalog']; nativeSelection?: Inst['nativeSelection']; launchModel?: string; nativeDefault?: string; lazyDefault?: string; artifactDir?: string; modelsWithoutImageInput?: ReadonlySet<string>; profileModelSettings?: ConstructorParameters<typeof AgentTaskService>[0]['profileModelSettings'] } = {}) {
   const db = new Database(':memory:'); dbs.push(db); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db, { artifactDir: opts.artifactDir });
   const insts: Inst[] = [];
@@ -44,10 +46,83 @@ function setup(opts: { failOpen?: boolean; userData?: string; version?: string; 
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', drv('codex-app-server')], ['claude-sdk', drv('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'h', pid: 1, startedAt: null } });
   const launches: Parameters<LaunchResolver>[0][] = [];
   const resolveLaunch: LaunchResolver = async (i) => { launches.push(i); if (opts.openGate) await opts.openGate; if (opts.failOpen) throw new Error('找不到 codex'); return { driverId: i.profileId === 'cc' ? 'claude-sdk' : 'codex-app-server', executable: { path: '/x', version: opts.version ?? (i.profileId === 'cc' ? '2.1.326' : '0.169.0') }, env: {}, stateRoot: '/s', compatibility: {}, extraArgs: [], modelsWithoutImageInput: opts.modelsWithoutImageInput, ...(opts.launchModel ? { model: opts.launchModel } : {}) }; };
-  const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData });
+  const svc = new AgentTaskService({ store, runs, resolveLaunch, profileDriver: p => p === 'cc' ? 'claude-sdk' : 'codex-app-server', userData: opts.userData, profileModelSettings: opts.profileModelSettings });
   return { db, store, runs, svc, insts, launches };
 }
 const id = (n: number) => `client-input-${n}`;
+
+it('sends the first Claude turn with the selected DeepSeek level and keeps each model setting on resume', async () => {
+  const flash = 'deepseek-flash', pro = 'deepseek-v4-pro', other = 'unverified';
+  const models = [flash, pro, other];
+  const provider = {
+    id: 'deepseek', name: 'DeepSeek', preset: 'deepseek', endpoints: { anthropic: 'https://api.deepseek.com/anthropic' },
+    identityRevision: 1, authType: 'bearer' as const, hasKey: true, recommended: {}, refreshedAt: null,
+    models: models.map(model => ({ id: model, name: model, contextWindow: null, offline: false, availability: { claude: 'available' as const, codex: 'untested' as const } })),
+  };
+  const { svc, store, runs, insts } = setup({
+    launchModel: flash,
+    modelCatalog: async () => models.map(id => ({ id, name: id, efforts: ['medium'], defaultEffort: 'medium' })),
+    profileModelSettings: () => ({ defaultModel: flash, providerBacked: true, options: providerModelOptions(provider, { kind: 'claude', models }) }),
+  });
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'DeepSeek effort', profileId: 'cc', tier: 'ask', effort: 'low' });
+  const revision = () => svc.snapshot(taskId).selectionRevision;
+  const turns = [
+    { model: flash, expected: 'low' }, { model: pro, effort: 'max', expected: 'max' },
+    { model: other, effort: 'medium', expected: undefined }, { model: flash, expected: 'low' },
+  ];
+  for (const [index, choice] of turns.entries()) {
+    if (index) expect((await svc.switchProfile(taskId, 'cc', revision(), choice.model, choice.effort)).ok).toBe(true);
+    const { turnId } = await svc.submit(taskId, { clientInputId: id(930 + index), text: 'check effort', expectedSelectionRevision: revision() });
+    await until(() => store.turn(turnId)?.status === 'started' && !svc.isDispatching(taskId));
+    const instance = insts.at(-1)!;
+    expect(instance.turns.at(-1)?.model).toBe(choice.model);
+    expect(instance.turns.at(-1)?.effort).toBe(choice.expected);
+    instance.finish();
+    await until(() => store.turn(turnId)?.status === 'completed');
+    if (index === 2) await runs.close(runs.runForTask(taskId)!.runId);
+  }
+  expect(insts.at(-1)?.opened?.resumeNativeId).toBe('n1');
+});
+
+it('uses Model Hub medium on both turns and after resuming a binding with legacy none', async () => {
+  const model = 'gpt-6.1-sol';
+  const provider = {
+    id: 'provider', name: 'Model Hub', preset: 'ultracloud', endpoints: modelHubEndpoints,
+    identityRevision: 1, authType: 'bearer' as const, hasKey: true, recommended: {}, refreshedAt: null,
+    models: [{ id: model, name: model, contextWindow: null, offline: false, availability: { claude: 'untested' as const, codex: 'available' as const } }],
+  };
+  const options = providerModelOptions(provider, { kind: 'codex', models: [model] });
+  const { svc, insts, runs, store } = setup({
+    launchModel: model, nativeDefault: model, nativeSelection: { model, effort: 'none' },
+    modelCatalog: async () => [{ id: model, name: model, efforts: [], defaultEffort: 'none' }],
+    profileModelSettings: () => ({ defaultModel: model, options }),
+  });
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'Model Hub', profileId: 'hub', tier: 'ask', model, effort: 'none' });
+  for (const [round, instanceIndex, turnCount] of [[0, 0, 1], [1, 0, 2], [2, 1, 1]]) {
+    const { turnId } = await svc.submit(taskId, { clientInputId: id(900 + round), text: 'check effort', expectedSelectionRevision: 1 });
+    await until(() => store.turn(turnId)?.status === 'started' && !svc.isDispatching(taskId));
+    expect(insts[instanceIndex].turns.at(-1)).toMatchObject({ model, effort: 'medium' });
+    expect(insts[instanceIndex].turns).toHaveLength(turnCount);
+    insts[instanceIndex].finish();
+    await until(() => store.turn(turnId)?.status === 'completed');
+    if (round === 1) await runs.close(runs.runForTask(taskId)!.runId);
+  }
+  expect(insts[1].opened?.resumeNativeId).toBe('n1');
+});
+
+it('remembers distinct efforts across models and profiles and clears only the selected pair on reset', async () => {
+  const { svc } = setup();
+  const { taskId } = svc.create({ projectId: null, dirId: null, cwd: '/w', title: 'effort preferences', profileId: 'a', tier: 'ask', model: 'one', effort: 'high' });
+  const choice = (profile: string, model: string, effort?: string | null) =>
+    svc.switchProfile(taskId, profile, svc.snapshot(taskId).selectionRevision, model, effort);
+  expect((await choice('a', 'two', 'low')).selection.effort).toBe('low');
+  expect((await choice('b', 'one', 'medium')).selection.effort).toBe('medium');
+  expect((await choice('a', 'one')).selection.effort).toBe('high');
+  expect((await choice('a', 'one', null)).selection.effort).toBeUndefined();
+  expect((await choice('a', 'two')).selection.effort).toBe('low');
+  expect((await choice('a', 'one')).selection.effort).toBeUndefined();
+  expect((await choice('b', 'one')).selection.effort).toBe('medium');
+});
 
 it('shows the first accepted input in the conversation while the executor starts and keeps a follow-up queued', async () => {
   let release!: () => void;

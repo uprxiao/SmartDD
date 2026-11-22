@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Archive, ArchiveRestore, ArrowDownToLine, ArrowUpFromLine, ChevronDown, Ellipsis, Folder, FolderOpen, History, MessageCircle, Pencil, Plus, Search, Settings, SquarePen } from 'lucide-react';
+import { Archive, ArchiveRestore, ArrowDownToLine, ArrowUpFromLine, ChevronDown, Ellipsis, Folder, FolderOpen, History, MessageCircle, Pencil, Pin, PinOff, Plus, Search, Settings, SquarePen, Trash2 } from 'lucide-react';
 
 function Popup({ position, children, onClose, className = '' }) {
   const ref = useRef(null);
@@ -23,7 +23,7 @@ function Popup({ position, children, onClose, className = '' }) {
     }}>{children}</div></>, document.body);
 }
 
-export function ReferenceSidebar({ agentMode = false, taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onSettings, onInfo }) {
+export function ReferenceSidebar({ agentMode = false, taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onPinTask, onDeleteTask, onSettings, onInfo }) {
   const [menu, setMenu] = useState(null);
   const [showArchived, setShowArchived] = useState(false), [showArchivedProjects, setShowArchivedProjects] = useState(false);
   const close = () => setMenu(null);
@@ -35,14 +35,20 @@ export function ReferenceSidebar({ agentMode = false, taskStatus = null, project
     trigger?.focus({ preventScroll: true });
     const rect = row.getBoundingClientRect();
     const width = type === 'project' ? 320 : 204;
-    const height = type === 'project' ? 210 : 112;
+    const height = type === 'project' ? 210 : type === 'task' && agentMode ? 164 : 112;
     setMenu({ type, item, x: Math.max(8, Math.min(innerWidth - width - 8, context ? event.clientX : type === 'project' ? rect.right + 3 : rect.right - width + 4)), y: Math.max(8, Math.min(innerHeight - height - 8, context ? event.clientY : type === 'project' ? rect.top : rect.top + 24)) });
   };
-  const taskRow = t => <div data-sidebar-row key={t.id} className={'reference-task-row ' + (activeTaskId === t.id || menu?.item.id === t.id ? 'selected' : '')} onContextMenu={e => open(e, 'task', t, true)}>
+  const taskRow = t => <div data-sidebar-row data-menu-open={menu?.type === 'task' && menu.item.id === t.id || undefined} key={t.id} className={'reference-task-row ' + (activeTaskId === t.id || menu?.item.id === t.id ? 'selected' : '')} onContextMenu={e => open(e, 'task', t, true)}>
     <button className="reference-task-title" title={t.title} onClick={() => onOpenTask(t.id)}><span className="reference-task-label">{t.title}</span></button>
     {taskStatus?.(t) ? (st => <span className={'m14-side-status k-' + st.kind} title={st.title || st.label}>{st.kind === 'running' && <i className="m14-side-spin" />}{st.kind === 'waiting' && <i className="m14-side-dot" />}{st.label}</span>)(taskStatus(t))
       : <span className={'task-state-tail ' + (t.status === 'running' ? 'running' : '')} title={t.status === 'running' ? '运行中' : t.time}>{t.status === 'running' ? '' : t.time}</span>}
-    <button className="row-action task-more" title={'更多操作：' + t.title} aria-label={'更多操作：' + t.title} aria-haspopup="menu" aria-expanded={menu?.type === 'task' && menu.item.id === t.id} onClick={e => open(e, 'task', t)}><Ellipsis size={16} /></button>
+    {agentMode ? <>
+      {t.pinnedAt && <Pin className="m14-sidebar-pinned" size={13} aria-label="已置顶" />}
+      <div className="m14-sidebar-quick">
+        <button type="button" className="row-action" aria-label={t.pinnedAt ? '取消置顶' : '置顶'} onClick={() => onPinTask(t)}>{t.pinnedAt ? <PinOff size={14} /> : <Pin size={14} />}</button>
+        <button type="button" className="row-action" aria-label="归档" onClick={() => onArchiveTask(t)}><Archive size={14} /></button>
+      </div>
+    </> : <button className="row-action task-more" title={'更多操作：' + t.title} aria-label={'更多操作：' + t.title} aria-haspopup="menu" aria-expanded={menu?.type === 'task' && menu.item.id === t.id} onClick={e => open(e, 'task', t)}><Ellipsis size={16} /></button>}
   </div>;
   return <aside className={'sidebar reference-sidebar ' + (collapsed ? 'is-collapsed' : '')} aria-label="项目与任务">
     <div className="reference-sidebar-head"><button className="workspace-picker" onClick={onInfo}>WillYou<ChevronDown size={13} /></button><button className="row-action" aria-label="任务历史" onClick={onSearch}><History size={16} /></button><button className="row-action" aria-label="搜索任务" onClick={onSearch}><Search size={16} /></button></div>
@@ -52,7 +58,7 @@ export function ReferenceSidebar({ agentMode = false, taskStatus = null, project
         <button className="reference-project-toggle" aria-label={(closedProjects.includes(p.id) ? '展开' : '折叠') + p.name} onClick={() => onToggleProject(p.id)}>{closedProjects.includes(p.id) ? <Folder size={16} /> : <FolderOpen size={16} />}</button>
         <button className="reference-project-name" title={p.name} onClick={() => onSelectProject(p.id)}>{p.name}</button>
         <div className="row-actions"><button className="row-action" aria-label={'项目菜单：' + p.name} title="项目详情" aria-haspopup="menu" aria-expanded={menu?.type === 'project' && menu.item.id === p.id} onClick={e => open(e, 'project', p)}><Ellipsis size={16} /></button><button className="row-action" aria-label={'在 ' + p.name + ' 新建任务'} title="新建任务" onClick={() => onHome(p.id)}><SquarePen size={15} /></button></div>
-      </div>{!closedProjects.includes(p.id) && <div className="reference-project-tasks">{tasks.filter(t => t.project === p.id && !t.archived && (!agentMode || !t.parentId)).map(taskRow)}{!tasks.some(t => t.project === p.id && !t.archived) && <p className="sidebar-empty">还没有任务</p>}</div>}</div>)}
+      </div>{!closedProjects.includes(p.id) && <div className="reference-project-tasks">{tasks.filter(t => t.project === p.id && !t.archived && (!agentMode || !t.parentId)).sort((a, b) => (b.pinnedAt ?? 0) - (a.pinnedAt ?? 0)).map(taskRow)}{!tasks.some(t => t.project === p.id && !t.archived) && <p className="sidebar-empty">还没有任务</p>}</div>}</div>)}
       {projects.some(p => p.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchivedProjects(!showArchivedProjects)}><Archive size={16} />已归档项目<ChevronDown size={13} /></button>{showArchivedProjects && projects.filter(p => p.archived).map(p => <button key={p.id} className="nav-row" onClick={() => onEditProject(p)}><Folder size={16} />{p.name}</button>)}</div>}
       {!agentMode && tasks.some(t => !projects.some(p => p.id === t.project) && !t.archived) && <div className="archived-tasks"><p className="sidebar-empty">未关联项目</p>{tasks.filter(t => !projects.some(p => p.id === t.project) && !t.archived).map(taskRow)}</div>}
       {!agentMode && tasks.some(t => t.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchived(!showArchived)}><Archive size={16} />已归档<ChevronDown size={13} /></button>{showArchived && tasks.filter(t => t.archived).map(taskRow)}</div>}
@@ -71,7 +77,9 @@ export function ReferenceSidebar({ agentMode = false, taskStatus = null, project
     </Popup>}
     {menu?.type === 'task' && <Popup position={menu} onClose={close}>
       <button role="menuitem" onClick={() => { onRenameTask(menu.item); close(); }}><Pencil size={15} />重命名</button>
+      {agentMode && <button role="menuitem" onClick={() => { onPinTask(menu.item); close(); }}>{menu.item.pinnedAt ? <PinOff size={15} /> : <Pin size={15} />}{menu.item.pinnedAt ? '取消置顶' : '置顶'}</button>}
       <button role="menuitem" onClick={() => { onArchiveTask(menu.item); close(); }}>{menu.item.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />}{menu.item.archived ? '取消归档' : '归档'}</button>
+      {agentMode && <button role="menuitem" onClick={() => { onDeleteTask(menu.item); close(); }}><Trash2 size={15} />永久删除</button>}
     </Popup>}
   </aside>;
 }

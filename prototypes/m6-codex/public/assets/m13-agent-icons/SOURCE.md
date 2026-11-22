@@ -20,5 +20,6 @@
 ## 差异与待办
 
 - **Codex 专用图标已替换（2026-11-13）**：使用上表官方公开专用符号，与OpenAI供应商标志区分。保留原临时回退文件及历史来源，不再以“本机没有Codex.app”为当前事实。遵守[OpenAI品牌指南](https://openai.com/brand/)；网页图标没有单独的宽松许可声明，不将官方仓库Apache-2源码许可套用于商标。
-- **SMG**：用户 2026-11-11 提供了网关地址，没有官方图标，仍用首字母方块。**UltraCloud**：地址、协议和图标都待用户提供，仍是占位。
+- **SMG**：用户 2026-11-11 提供了网关地址，没有官方图标，仍用首字母方块。
+- **Model Hub**（目录标识沿用 `ultracloud`）：`model-hub.svg` 来自[官网公开资源](https://modelhub.ailemac.com/assets/logo-b0a02ee4.svg)，SHA-256 `b0a02ee4b4c0d32ec9be52bf60c76fe543766bc5e1dc2ee9ec25a00891e803b9`。
 - 自定义供应商使用名称首字母方块。

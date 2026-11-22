@@ -987,11 +987,16 @@ describe('M13 Claude CLI through indexed production resource',()=>{
 it('M14: a new agent run uses its own frozen capability source without requiring or overwriting an M13 task snapshot', async () => {
   writeFileSync(profiles.resolve(codexId).command, '#!/bin/sh\ncase "$1" in --version) echo "codex-cli 0.169.0";; *) exit 70;; esac\n', {mode:0o700});
   // This fixture intentionally loads the retained M13 distribution (verified library version 0.166.0), not the current App resources.
-  expect(managed.supportsAgentDelivery('codex','0.166.0')).toBe(true);expect(managed.supportsAgentDelivery('codex','0.999.0')).toBe(false);
+  expect(managed.agentDelivery('codex','0.166.0')).toBe('verified');
+  expect(managed.agentDelivery('codex','0.171.0')).toBeUndefined();
+  expect(managed.agentDelivery('codex','0.171.0',true)).toBe('browser');
+  expect(managed.agentDelivery('codex','0.999.0',true)).toBe('browser');
+  expect(managed.agentDelivery('claude','2.1.329')).toBeUndefined();
+  expect(managed.agentDelivery('claude','2.1.329',true)).toBe('browser');
   const store = new AgentStore(sqlite), taskId = store.createTask({projectId,dirId:null,cwd,title:'M14 native source',selection:{driverId:'codex-app-server',profileId:'fixture',tier:'ask'}});
   const bindingId=store.createBinding({task_id:taskId,driver_id:'codex-app-server',profile_id:'fixture',continuation_hash:digest('native-source'),cwd_identity:cwd,state_root:join(home,'.codex')});
   const runId=randomUUID();store.insertRun({runId,taskId,projectId,bindingId,generation:1,driverId:'codex-app-server',owner:{instanceId:randomUUID(),pid:process.pid,startedAt:reader.read(process.pid)?.startedAt??null},launchPlanHash:digest('M14-native-launch')});
-  const integration=await managed.prepareAgent({runId,bindingId,generation:1,version:'0.169.0',assertCurrent:()=>{},task:{projectId,taskId,profile:profiles.resolve(codexId),cwd,home,stateRoot:join(home,'.codex'),claudeConfigExplicit:false,mode:'new',sessionId:null,previous:null,newTask:true,signal:new AbortController().signal,environment:{HOME:home,PATH:process.env.PATH??'/usr/bin:/bin'}}});
+  const integration=await managed.prepareAgent({runId,bindingId,generation:1,version:'0.169.0',applicationScope:'browser',assertCurrent:()=>{},task:{projectId,taskId,profile:profiles.resolve(codexId),cwd,home,stateRoot:join(home,'.codex'),claudeConfigExplicit:false,mode:'new',sessionId:null,previous:null,newTask:true,signal:new AbortController().signal,environment:{HOME:home,PATH:process.env.PATH??'/usr/bin:/bin'}}});
   expect(sqlite.prepare('SELECT 1 FROM capability_session_snapshots WHERE task_id=?').get(taskId)).toBeUndefined();
   expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'prepared'});
   expect(integration.extraArgs?.join(' ')).toContain('mcp_servers');
@@ -1004,9 +1009,13 @@ it('M14: a new agent run uses its own frozen capability source without requiring
   await integration.cancelBeforeFork();
   expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'stopped'});
   expect(()=>managed.runs.assertActive(runId)).toThrow();
+  await applications.selections.setAdded('mail',true,0);
+  await applications.selections.select({projectId,appId:'mail',enabled:true,expectedRevision:0,connections:{foxmail:null,smtp:null}});
   const operationId=randomUUID();let live=true;
   await managed.runs.withTaskOperation(runId,{operationId,callHash:digest('frozen-call'),signal:new AbortController().signal,assertCurrent:()=>{if(!live)throw Error('request retired');}},async()=>{
     const context=managed.runs.assertActive(runId);expect(context.run.state).toBe('stopped');expect(context.run.pid).toBeNull();expect(context.taskBusiness).toEqual({operationId,callHash:digest('frozen-call')});
+    expect(context.plan).toMatchObject({applicationScope:'browser',allowed:[],grades:{mcp:true,cli:false}});
+    expect(context.unavailableApplication?.('smartdd_mail_draft_create_v1','mcp')).toMatchObject({code:'ENTRY_NOT_ACTIVE'});
     await managed.runs.withActivity(runId,async own=>{expect(own.run.taskId).toBe(taskId);});live=false;expect(()=>managed.runs.assertActive(runId)).toThrow('retired');
   });
   expect(()=>managed.runs.assertActive(runId)).toThrow();

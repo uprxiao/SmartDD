@@ -73,12 +73,18 @@ export class CurrentApplicationAuthorization {
   /** Replace the launch-time application list and allowed table with the project's current ones. */
   view(context:RunContext):RunContext{
     const launch=context.plan;if(!launch||context.snapshot.schema!==3)return context;
-    const projectId=context.run.projectId,apps=this.selectedApps(projectId),bindings=context.bindingMode==='run'?[...context.bindings,...this.bindings(projectId,apps.filter(a=>a.appId!=='mail'&&a.appId!=='browser').map(a=>a.appId))]:this.bindings(projectId,apps.map(a=>a.appId));
+    const projectId=context.run.projectId,selected=this.selectedApps(projectId);
+    const apps=launch.applicationScope?selected.filter(a=>a.appId===launch.applicationScope):selected;
+    const bindings=context.bindingMode==='run'?[...context.bindings,...this.bindings(projectId,apps.filter(a=>a.appId!=='mail'&&a.appId!=='browser').map(a=>a.appId))]:this.bindings(projectId,apps.map(a=>a.appId));
     // Library Skills are delivered once per machine (R16), not per run; the view carries no per-run Skill paths.
     const packages=apps.map(a=>this.packageSelection(projectId,a.packageHash,bindings,[]));
     const snapshot:CapabilitySessionSnapshotV3={...context.snapshot,packages};
     const applications=apps.map(a=>{const manifest=this.builtin.retainedMetadata(a.packageHash).manifest;return{packageHash:a.packageHash,manifest,capabilities:this.modules.capabilityViews(manifest)};});
-    const plan=createApplicationRunPlan({runId:launch.runId,snapshotHash:launch.snapshotHash,snapshot,applications,skills:[],available:{mcp:launch.grades.mcp,cli:launch.grades.cli},cliVersion:launch.cliVersion,sandbox:launch.sandbox,now:launch.createdAt});
-    return{...context,recorded:context.snapshot,snapshot,plan,bindings,notEnabledCommands:()=>this.notEnabledCommands(projectId,apps),unavailableApplication:(operation,entry)=>{const appId=this.owner(operation,entry);return appId&&!apps.some(a=>a.appId===appId)?this.notEnabled(projectId,appId):null;}};
+    const plan=createApplicationRunPlan({runId:launch.runId,snapshotHash:launch.snapshotHash,snapshot,applications,skills:[],available:{mcp:launch.grades.mcp,cli:launch.grades.cli},applicationScope:launch.applicationScope,cliVersion:launch.cliVersion,sandbox:launch.sandbox,now:launch.createdAt});
+    return{...context,recorded:context.snapshot,snapshot,plan,bindings,notEnabledCommands:()=>this.notEnabledCommands(projectId,apps),unavailableApplication:(operation,entry)=>{
+      const appId=this.owner(operation,entry);
+      if(launch.applicationScope&&appId&&appId!==launch.applicationScope)return new ApplicationError('ENTRY_NOT_ACTIVE','此运行仅启用了内置浏览器应用工具');
+      return appId&&!apps.some(a=>a.appId===appId)?this.notEnabled(projectId,appId):null;
+    }};
   }
 }

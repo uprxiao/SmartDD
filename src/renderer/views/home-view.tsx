@@ -18,7 +18,7 @@ import { rpc } from '@renderer/lib/ipc';
 import { toast } from 'sonner';
 import { useAgents } from '@renderer/lib/hooks/useAgents';
 import { homeAgents, homeAgentId, HomePermissionPicker } from '@renderer/features/agents/home-agent-controls';
-import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, offersCodexLoginDefault } from '@shared/agent-model-choice';
+import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_FALLBACK, CODEX_LOGIN_MODEL, modelEffortKey, offersCodexLoginDefault, providerModelOptions } from '@shared/agent-model-choice';
 import { agentPermission } from '@shared/agent-permissions';
 import { useAppSettingsKey } from '@renderer/lib/hooks/useAppSettingsKey';
 import { useProject, useProjectList } from '@renderer/lib/hooks/useProjects';
@@ -129,7 +129,13 @@ export const HomeView = observer(function HomeView() {
   const offeredDefault = implicitCodexChoice && offersCodexLoginDefault(catalog.data?.models);
   const defaultNotice = implicitCodexChoice && catalog.data?.status === 'ready' && !offeredDefault ? CODEX_LOGIN_FALLBACK : undefined;
   const selectedModel = hasModelChoice && profileId ? homeSelection.models[profileId] : offeredDefault ? CODEX_LOGIN_MODEL : undefined;
-  const selectedEffort = hasModelChoice && profileId ? homeSelection.efforts[profileId] : offeredDefault ? CODEX_LOGIN_EFFORT : undefined;
+  const profileDefaultModel = (id: string) => profiles?.find(p => p.id === id)?.defaultModel ??
+    (id === profileId ? catalog.data?.models.find(item => item.isDefault)?.id : undefined);
+  const selectedEffort = hasModelChoice && profileId
+    ? homeSelection.modelEfforts
+      ? homeSelection.modelEfforts[modelEffortKey(profileId, selectedModel || profileDefaultModel(profileId))]
+      : homeSelection.efforts[profileId]
+    : offeredDefault ? CODEX_LOGIN_EFFORT : undefined;
 
   const selectedProvider=agents?.providers.find(p=>p.id===profile?.providerId);
   const missingProviderKey=profile?.source==='provider'&&selectedProvider&&!selectedProvider.hasKey;
@@ -189,7 +195,7 @@ export const HomeView = observer(function HomeView() {
       // A cold directory is resolved by the active executor after the first message is saved.
       const initialCodexDefault = implicitCodexChoice && (catalog.data?.status !== 'ready' || offeredDefault);
       const model = initialCodexDefault ? CODEX_LOGIN_MODEL : homeSelection.models[profile.id] || undefined;
-      const effort = initialCodexDefault ? CODEX_LOGIN_EFFORT : homeSelection.efforts[profile.id] || undefined;
+      const effort = initialCodexDefault ? CODEX_LOGIN_EFFORT : hasModelChoice ? selectedEffort : undefined;
       if (implicitCodexChoice && !initialCodexDefault) toast.message(CODEX_LOGIN_FALLBACK);
       const carryExtensions = homeSelection.extensions[profile.id] !== false;
       const chipIds = new Set(chips.map(chip => chip.localId));
@@ -236,17 +242,29 @@ export const HomeView = observer(function HomeView() {
     <SelectTrigger className={CHIP} data-testid="home-project" aria-label={t('home.pickProject')}><Folder size={15} /><SelectValue placeholder={t('home.pickProject')} /></SelectTrigger>
     <SelectContent>{(projects ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
   </Select>;
-  const profilePicker = profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => ({ profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, codexSubscription: isCodexSubscription(p), extensionSupport: p.kind === 'codex' ? 'partial' : 'full' }))} profileId={profileId} model={selectedModel} effort={selectedEffort} extensions={homeSelection.extensions}
+  const profilePicker = profileId ? <AgentModelPicker profiles={(profiles ?? []).map(p => {
+    const provider = agents?.providers.find(item => item.id === p.providerId);
+    return { profileId: p.id, name: p.name, kind: p.kind, source: p.source, models: p.models, defaultModel: p.defaultModel, available: p.available, codexSubscription: isCodexSubscription(p), extensionSupport: p.kind === 'codex' ? 'partial' : 'full',
+      provider: provider ? { name: provider.name, catalog: provider.preset } : undefined, modelOptions: providerModelOptions(provider, p) };
+  })} profileId={profileId} model={selectedModel} effort={selectedEffort} extensions={homeSelection.extensions}
+    modelEfforts={offeredDefault ? { ...homeSelection.modelEfforts, [modelEffortKey(profileId, CODEX_LOGIN_MODEL)]: CODEX_LOGIN_EFFORT } : homeSelection.modelEfforts}
+    profileChoices={Object.fromEntries(Object.entries(homeSelection.models).map(([id, model]) => [id, { model, effort: homeSelection.modelEfforts ? undefined : homeSelection.efforts[id] }]))}
     nativeModels={catalog.data?.models} scope={catalogScope} defaultNotice={defaultNotice}
     defaultPending={implicitCodexChoice && !!catalogScope && !offeredDefault && !catalog.isError && (catalog.isPending || catalog.data?.status === 'loading' || catalog.data?.status === 'refreshing')}
     onPick={(id, model, effort) => {
       profileChosen.current = true;
       setProfileId(id);
       setHomeSelection(v => {
-        const efforts = { ...v.efforts };
-        if (effort) efforts[id] = effort;
-        else delete efforts[id];
-        return { ...v, models: { ...v.models, [id]: model ?? '' }, efforts };
+        const choices = { ...v.modelEfforts };
+        if (!v.modelEfforts) {
+          for (const [otherId, value] of Object.entries(v.efforts)) {
+            choices[modelEffortKey(otherId, v.models[otherId] || profileDefaultModel(otherId))] = value;
+          }
+        }
+        const key = modelEffortKey(id, model || profileDefaultModel(id));
+        if (effort === null) delete choices[key];
+        else if (effort !== undefined) choices[key] = effort;
+        return { ...v, models: { ...v.models, [id]: model ?? '' }, efforts: {}, modelEfforts: choices };
       });
     }}
     onExtensions={(id, enabled) => setHomeSelection(v => ({ ...v, extensions: { ...v.extensions, [id]: enabled } }))} />

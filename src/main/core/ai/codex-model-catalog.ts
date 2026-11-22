@@ -1,4 +1,5 @@
 import type { ProviderModel } from '@shared/ai-agents';
+import { resolveModelEffort } from '@shared/agent-model-choice';
 
 /**
  * ModelInfo wire fields are pinned to the verified native client, not copied model prompts.
@@ -24,7 +25,7 @@ export function buildCodexModelCatalog(models: ProviderModel[], selected: string
       return {
         slug: model.id, display_name: model.name, description: 'Model from the selected WillYou provider',
         base_instructions: CODEX_CATALOG_BASE_INSTRUCTIONS,
-        default_reasoning_level: reasoning && levels.includes(reasoning) ? reasoning : levels[0] ?? null,
+        default_reasoning_level: resolveModelEffort({ efforts: levels, defaultEffort: reasoning ?? undefined }) ?? null,
         supported_reasoning_levels: levels.map((effort) => ({ effort, description: effort })),
         shell_type: 'unified_exec', visibility: 'list', supported_in_api: true, priority,
         availability_nux: null, upgrade: null,

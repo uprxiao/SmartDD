@@ -1,4 +1,4 @@
-export type HomeSelection = { models: Record<string, string>; efforts: Record<string, string>; extensions: Record<string, boolean> };
+export type HomeSelection = { models: Record<string, string>; efforts: Record<string, string>; extensions: Record<string, boolean>; modelEfforts?: Record<string, string> };
 /** 本地偏好是非可信缓存：旧配置、数组、超大值或坏 JSON 不能阻塞首页。 */
 export function readHomeSelection(storage: Pick<Storage, 'getItem'>): HomeSelection {
   const empty = { models: {}, efforts: {}, extensions: {} };
@@ -7,10 +7,16 @@ export function readHomeSelection(storage: Pick<Storage, 'getItem'>): HomeSelect
     if (!text || text.length > 128 * 1024) return empty;
     const v = JSON.parse(text);
     const entries = (x: unknown) => x && typeof x === 'object' && !Array.isArray(x) ? Object.entries(x).slice(0, 200).filter(([k]) => /^[A-Za-z0-9_-]{1,128}$/.test(k)) : [];
+    const modelEfforts = Object.entries(v?.modelEfforts ?? {}).slice(0, 200).filter((entry): entry is [string, string] => {
+      const [key, value] = entry;
+      return key.length <= 700 && /^\["[A-Za-z0-9_-]{1,128}",(?:null|"(?:[^"\\]|\\.)*")\]$/.test(key) &&
+        typeof value === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(value);
+    });
     return {
       models: Object.fromEntries(entries(v?.models).filter(([, x]) => typeof x === 'string' && x.length <= 256 && !/[\x00-\x1f]/.test(x))),
       efforts: Object.fromEntries(entries(v?.efforts).filter(([, x]) => typeof x === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(x))),
       extensions: Object.fromEntries(entries(v?.extensions).filter(([, x]) => typeof x === 'boolean')),
+      ...(modelEfforts.length ? { modelEfforts: Object.fromEntries(modelEfforts) } : {}),
     };
   } catch { return empty; }
 }

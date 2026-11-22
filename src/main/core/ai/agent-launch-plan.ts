@@ -5,6 +5,7 @@ import { agentPermission, type AgentPermission } from '@shared/agent-permissions
 import { verifiedPresetProtocol } from '@shared/ai-provider-presets';
 import type { ResolvedProfile } from './ai-profile-service';
 import { buildCodexModelCatalog } from './codex-model-catalog';
+import { providerCodexMetadata } from '@shared/agent-model-choice';
 
 export const CLAUDE_MODEL_VARIABLES = ['ANTHROPIC_MODEL', 'ANTHROPIC_DEFAULT_OPUS_MODEL', 'ANTHROPIC_DEFAULT_SONNET_MODEL',
   'ANTHROPIC_DEFAULT_HAIKU_MODEL', 'ANTHROPIC_DEFAULT_FABLE_MODEL', 'ANTHROPIC_SMALL_FAST_MODEL', 'CLAUDE_CODE_SUBAGENT_MODEL'] as const;
@@ -110,7 +111,9 @@ export function planAgentLaunch(input: AgentLaunchInput): AgentLaunchPlan {
     profile.env.OPENAI_API_KEY = input.key;
     profile.isolateNames = ['OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORGANIZATION', 'OPENAI_PROJECT_ID'];
     return { profile, permission, model, claudeRoot: null,
-      files: [{ path: catalog, value: buildCodexModelCatalog(provider.models, allowed.map((item) => item!.id)) }] };
+      files: [{ path: catalog, value: buildCodexModelCatalog(provider.models.map(item => ({
+        ...item, codex: providerCodexMetadata(provider, item),
+      })), allowed.map((item) => item!.id)) }] };
   }
   if (!provider.endpoints.anthropic) throw new Error('供应商没有 Anthropic 协议');
   const claudeRoot = managedClaudeRoot(input.userData,config.id);

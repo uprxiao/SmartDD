@@ -1,6 +1,8 @@
 import { verifiedPresetProtocol } from '@shared/ai-provider-presets';
 import { CODEX_CATALOG_VERSION } from './codex-model-catalog';
-import type { CodeAgentKind, ProviderModel } from '@shared/ai-agents';
+import { claudeEffortSchema, type CodeAgentKind, type ProviderModel } from '@shared/ai-agents';
+import { modelHubEndpoints } from '@shared/provider-catalog';
+import { providerModelMetadata, type ProviderCatalogModel } from '@shared/provider-model-metadata';
 
 export interface ProviderTarget {
   endpoints: { anthropic?: string; responses?: string; openai?: string };
@@ -181,10 +183,22 @@ export function providerTargetForTool(target:ProviderTarget,kind:CodeAgentKind):
   }
   return target;
 }
-function decodeProviderModels(body:unknown,key:string):ProviderModel[]{
+function readClaudeEfforts(row: Record<string, unknown>): ProviderModel['claude'] {
+  const capability = (row.capabilities as { effort?: unknown } | undefined)?.effort;
+  if (!capability || typeof capability !== 'object') return undefined;
+  const effort = capability as Record<string, unknown>;
+  if (effort.supported === false) return undefined;
+  const reasoningLevels = claudeEffortSchema.options.filter(level =>
+    (effort[level] as { supported?: unknown } | undefined)?.supported === true);
+  if (!reasoningLevels.length) return undefined;
+  const reportedDefault = claudeEffortSchema.safeParse(effort.default_level);
+  return { reasoningLevels, defaultReasoning: reportedDefault.success && reasoningLevels.includes(reportedDefault.data) ? reportedDefault.data : null };
+}
+
+function decodeProviderModels(body:unknown,key:string,fromAnthropic:boolean):ProviderCatalogModel[]{
   const rows = (body as { data?: unknown; models?: unknown })?.data ?? (body as { models?: unknown })?.models;
   if (!Array.isArray(rows)) throw new ProviderRequestError('模型列表格式无法识别');
-  const found = new Map<string, ProviderModel>();
+  const found = new Map<string, ProviderCatalogModel>();
   for (const raw of rows) {
     if (!raw || typeof raw !== 'object') continue;
     const row = raw as Record<string, unknown>, id = row.id ?? row.slug;
@@ -199,9 +213,12 @@ function decodeProviderModels(body:unknown,key:string):ProviderModel[]{
       .filter((value): value is string => typeof value === 'string' && /^[a-z][a-z0-9_-]{0,31}$/.test(value)).slice(0, 16);
     const defaultReasoning = row.default_reasoning_level ?? effort?.default_level;
     const inputModalities = Array.isArray(row.input_modalities) ? row.input_modalities.filter((value): value is 'text' | 'image' | 'audio' => ['text', 'image', 'audio'].includes(String(value))) : [];
-    found.set(id, { id, name,
+    const metadata = providerModelMetadata(row, id);
+    const claude = fromAnthropic ? readClaudeEfforts(row) : undefined;
+    found.set(id, { id, name, ...metadata,
       contextWindow: typeof context === 'number' && Number.isSafeInteger(context) && context > 0 ? context : null,
       offline: false, availability: { claude: 'untested', codex: 'untested' },
+      ...(claude ? { claude } : {}),
       codex: { reasoningLevels, defaultReasoning: typeof defaultReasoning === 'string' && reasoningLevels.includes(defaultReasoning) ? defaultReasoning : null,
     inputModalities: inputModalities.length ? inputModalities : ['text'], supportVerbosity: row.support_verbosity === true } });
     if (found.size > 4096) throw new ProviderRequestError('模型数量超过本次目录预算');
@@ -210,8 +227,8 @@ function decodeProviderModels(body:unknown,key:string):ProviderModel[]{
   if (containsCredential(JSON.stringify(models), key)) throw new ProviderRequestError('模型目录包含认证值，已拒绝保存');
   return models;
 }
-async function fetchMagpieModels(target:ProviderTarget,options:ProviderClientOptions):Promise<ProviderModel[]>{
-  const indexes=new Map<CodeAgentKind,ProviderModel[]>();
+async function fetchMagpieModels(target:ProviderTarget,options:ProviderClientOptions):Promise<ProviderCatalogModel[]>{
+  const indexes=new Map<CodeAgentKind,ProviderCatalogModel[]>();
   for(const kind of ['codex','claude'] as const){
     if(!verifiedPresetProtocol('magpie',target.endpoints,kind))continue;
     const scoped=providerTargetForTool(target,kind),base=kind==='codex'?target.endpoints.responses!:target.endpoints.anthropic!;
@@ -226,31 +243,34 @@ async function fetchMagpieModels(target:ProviderTarget,options:ProviderClientOpt
     if(response.status<200||response.status>=300)throw responseError(response.status,response.text,scoped.key);
     if(response.leftOut!==null&&response.leftOut!=='0')throw new ProviderRequestError('Magpie 模型目录被截断，请升级网关或减少模型后重试');
     let body:unknown;try{body=JSON.parse(response.text);}catch{throw new ProviderRequestError('模型列表 JSON 无效');}
-    indexes.set(kind,decodeProviderModels(body,scoped.key));
+    indexes.set(kind,decodeProviderModels(body,scoped.key,kind==='claude'));
   }
-  const merged=new Map<string,ProviderModel>();
+  const merged=new Map<string,ProviderCatalogModel>();
   for(const [kind,models]of indexes)for(const model of models){
     const existing=merged.get(model.id);
-    if(existing){existing.availability[kind]='untested';if(kind==='codex'){existing.codex=model.codex;existing.contextWindow=model.contextWindow??existing.contextWindow;}}
+    if(existing){existing.availability[kind]='untested';if(kind==='codex'){existing.codex=model.codex;existing.contextWindow=model.contextWindow??existing.contextWindow;}else existing.claude=model.claude;}
     else merged.set(model.id,{...model,availability:{claude:kind==='claude'?'untested':'unavailable',codex:kind==='codex'?'untested':'unavailable'}});
   }
   if(merged.size>4096)throw new ProviderRequestError('模型数量超过本次目录预算');
   return [...merged.values()];
 }
 
-export async function fetchProviderModels(target: ProviderTarget, options: ProviderClientOptions = {}): Promise<ProviderModel[]> {
+export async function fetchProviderModels(target: ProviderTarget, options: ProviderClientOptions = {}): Promise<ProviderCatalogModel[]> {
   if(target.preset==='magpie'&&(['codex','claude'] as const).some(kind=>verifiedPresetProtocol('magpie',target.endpoints,kind)))return fetchMagpieModels(target,options);
   const endpoints = Object.entries(target.endpoints).filter((entry): entry is [string, string] => Boolean(entry[1]));
   let last: ProviderRequestError | undefined;
   for (const [protocol, base] of endpoints) {
-    const first = serviceUrl(base, 'models');
+    // The documented Model Hub directory remains under /v1 for both API protocols.
+    const modelHubRoot = target.preset === 'ultracloud' && base === modelHubEndpoints.anthropic;
+    const first = serviceUrl(base, modelHubRoot ? 'v1/models' : 'models');
     const paths = /\/v1\/models$/.test(new URL(first).pathname) ? [first] : [...new Set([first, serviceUrl(base, 'v1/models')])];
     for (const url of paths) {
       const response = await request(target, url, { headers: { ...auth(target, protocol === 'anthropic' ? 'claude' : 'codex'), Accept: 'application/json', 'anthropic-version': '2023-06-01' } }, options);
       if (response.status === 404) { last = responseError(404, response.text, target.key); continue; }
       if (response.status < 200 || response.status >= 300) throw responseError(response.status, response.text, target.key);
       let body: unknown; try { body = JSON.parse(response.text); } catch { throw new ProviderRequestError('模型列表 JSON 无效'); }
-      const found=new Map(decodeProviderModels(body,target.key).map(model=>[model.id,model])),cursors=new Set<string>();
+      const fromAnthropic=protocol==='anthropic';
+      const found=new Map(decodeProviderModels(body,target.key,fromAnthropic).map(model=>[model.id,model])),cursors=new Set<string>();
       let page=1;
       while((body as {has_more?:unknown})?.has_more===true){
         const cursor=(body as {last_id?:unknown}).last_id;
@@ -259,7 +279,7 @@ export async function fetchProviderModels(target: ProviderTarget, options: Provi
         const result=await request(target,next.toString(),{headers:{...auth(target,protocol==='anthropic'?'claude':'codex'),Accept:'application/json','anthropic-version':'2023-06-01'}},options);
         if(result.status<200||result.status>=300)throw responseError(result.status,result.text,target.key);
         try{body=JSON.parse(result.text);}catch{throw new ProviderRequestError('模型列表 JSON 无效');}
-        for(const model of decodeProviderModels(body,target.key))found.set(model.id,model);
+        for(const model of decodeProviderModels(body,target.key,fromAnthropic))found.set(model.id,model);
         if(found.size>4096)throw new ProviderRequestError('模型数量超过本次目录预算');
       }
       return [...found.values()];

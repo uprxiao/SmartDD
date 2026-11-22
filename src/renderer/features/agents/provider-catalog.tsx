@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Check, Eye, EyeOff, Info, Plus, RefreshCw, Search, TriangleAlert } from 'lucide-react';
 import type { CodeAgentKind, ProviderInput, ProviderModel, ProviderView } from '@shared/ai-agents';
+import { modelForStorage, type ProviderCatalogModel } from '@shared/provider-model-metadata';
 import { providerCatalog, type ProviderPreset } from '@shared/provider-catalog';
 import { transferValue } from '@shared/project-transfer';
 import { rpcErrorMessage } from '@shared/ipc/rpc';
@@ -8,12 +9,25 @@ import { rpc } from '@renderer/lib/ipc';
 import { AgentDialog, Pill } from './ui';
 import { ProviderIcon, ToolIcon } from './icons';
 import { agentLabels, providerFits } from './agent-editor';
+import { ProviderModelPicker } from './provider-model-picker';
 
 export function modelCheckDescription(model:ProviderModel,kind:CodeAgentKind):string{
   const check=model.checks?.[kind];
   if(!check)return '';
   const retried=check.status==='available'&&model.availability[kind]==='available'&&check.attempts===2&&check.failures.length>0;
   return retried?'首次失败后重试成功 · '+check.message:check.message;
+}
+
+type ModelCheck = { model: string; kind: CodeAgentKind };
+
+export function configuredModelCheckKinds(provider: ProviderView): CodeAgentKind[] {
+  return (['claude', 'codex'] as const).filter(kind => provider.endpoints[kind === 'claude' ? 'anthropic' : 'responses']);
+}
+
+export function untestedModelChecks(provider: ProviderView, kinds: readonly CodeAgentKind[]): ModelCheck[] {
+  return provider.models.flatMap(model => model.offline ? [] : kinds
+    .filter(kind => model.availability[kind] === 'untested')
+    .map(kind => ({ model: model.id, kind })));
 }
 
 export const protocolLabels={responses:'OpenAI Responses',anthropic:'Anthropic',openai:'OpenAI 兼容'};
@@ -30,12 +44,23 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   const [step,setStep]=useState<'catalog'|'form'|'done'>('catalog'),[item,setItem]=useState<ProviderPreset|null>(null),[query,setQuery]=useState('');
   const [name,setName]=useState(''),[key,setKey]=useState(''),[showKey,setShowKey]=useState(false),[proto,setProto]=useState<Protocol>('responses'),[url,setUrl]=useState('');
   const [more,setMore]=useState<Partial<Record<Protocol,string>>>({}),[manual,setManual]=useState(''),[detected,setDetected]=useState<string|null>(null);
-  const [result,setResult]=useState<{models:ProviderModel[];recommended:{claude?:string;codex?:string};note:string|null}|null>(null),[picked,setPicked]=useState<string[]>([]);
+  const [result,setResult]=useState<{models:ProviderCatalogModel[];recommended:{claude?:string;codex?:string};note:string|null}|null>(null),[picked,setPicked]=useState<string[]>([]);
   const [done,setDone]=useState<ProviderView|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState<'fetch'|'probe'|'connect'|null>(null);
-  const [testing, setTesting] = useState<{ model: string; kind: CodeAgentKind } | null>(null);
+  const [testing, setTesting] = useState<(ModelCheck & { progress?: string }) | null>(null);
+  const closed = useRef(false);
   const [context,setContext]=useState(''),[efforts,setEfforts]=useState(''),[reasoning,setReasoning]=useState('');
   const custom=item===null,editable=custom||item.requiresAddress;
-  useEffect(()=>()=>{void rpc.providerSetup.cancel();},[]);
+  useEffect(() => {
+    closed.current = false;
+    return () => {
+      closed.current = true;
+      void rpc.providerSetup.cancel();
+    };
+  }, []);
+  const closeDialog = () => {
+    closed.current = true;
+    onClose();
+  };
   const choose=(p:ProviderPreset|null)=>{
     setItem(p);setName(p?.name??'');setKey(p?.id==='magpie'?'magpie':'');setProto(p?.id==='smg'?'anthropic':'responses');setUrl('');setMore({});
     setManual('');setDetected(null);setResult(null);setPicked([]);setError('');setContext('');setEfforts('');setReasoning('');setStep('form');
@@ -50,8 +75,12 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   const fetchModels=async()=>{
     if(busy)return;setError('');try{validate();}catch(e){setError(rpcErrorMessage(e));return;}
     setBusy('fetch');
-    try{const r=transferValue(await rpc.providerSetup.models(input()));setResult(r);setPicked(r.models.map(m=>m.id));}
-    catch(e){setError(rpcErrorMessage(e));setResult(null);}finally{setBusy(null);}
+    try{
+      const r=transferValue(await rpc.providerSetup.models(input()));
+      const ids=new Set(r.models.map(m=>m.id));
+      setResult(r);setPicked(previous=>previous.filter(id=>ids.has(id)));
+    }
+    catch(e){setError(rpcErrorMessage(e));setResult(null);setPicked([]);}finally{setBusy(null);}
   };
   const probe=async()=>{
     if(busy)return;setError('');try{validate();}catch(e){setError(rpcErrorMessage(e));return;}setBusy('probe');
@@ -65,7 +94,7 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   const connect=async()=>{
     if(busy)return;setError('');
     try{
-      validate();let models=result?.models.filter(m=>picked.includes(m.id))??[];
+      validate();let models=result?.models.filter(m=>picked.includes(m.id)).map(modelForStorage)??[];
       if(!models.length&&manual.trim())models=[...new Set(manual.split(/[,，\s]+/).filter(Boolean))].map(blankModel);
       if(!models.length)throw Error('请至少勾选或手动填写一个模型');
       if(custom&&(context||efforts||reasoning)){
@@ -79,23 +108,35 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
   };
   const number=step==='catalog'?0:step==='form'?1:2;
   const title=step==='catalog'?'添加供应商':step==='done'?'已添加':custom?(name||'自定义供应商'):item.name;
-  const supported=done?(['claude','codex'] as const).filter(k=>providerFits(done,k)):[];
-  const testModel = async (model: string, kind: CodeAgentKind) => {
-    if (!done || testing) return;
-    setTesting({ model, kind });
+  const configured = done ? configuredModelCheckKinds(done) : [];
+  const supported = done ? configured.filter(kind => providerFits(done, kind)) : [];
+  const untested = done ? untestedModelChecks(done, configured) : [];
+  const testModels = async (checks: ModelCheck[], batch = false) => {
+    if (!done?.hasKey || testing || closed.current) return;
     setError('');
+    let updated = false;
     try {
-      setDone(await rpc.agents.checkProviderModel(done.id, kind, model));
-      await onConnected();
+      for (const [index, check] of checks.entries()) {
+        if (closed.current) break;
+        setTesting({ ...check, progress: batch ? `测试中 ${index + 1}/${checks.length}` : undefined });
+        const provider = await rpc.agents.checkProviderModel(done.id, check.kind, check.model);
+        updated = true;
+        if (!closed.current) setDone(provider);
+      }
     } catch (e) {
-      setError(rpcErrorMessage(e));
+      if (!closed.current) setError(rpcErrorMessage(e));
+    }
+    try {
+      if (updated) await onConnected();
+    } catch (e) {
+      if (!closed.current) setError(previous => previous || rpcErrorMessage(e));
     } finally {
-      setTesting(null);
+      if (!closed.current) setTesting(null);
     }
   };
-  const fieldChange=()=>{setResult(null);setDetected(null);};
-  return <AgentDialog title={title} sub={step==='catalog'?'选择目录中的供应商，或添加自定义供应商':step==='done'?'供应商已保存，可以用它创建智能体':editable?'填写服务地址与 Key，获取模型':'地址与协议已预填，填写 Key 并获取模型'} wide onClose={onClose}
-    footer={step==='catalog'?<button className="m10-button secondary" onClick={onClose}>取消</button>:step==='done'?<>{done&&supported.length>0&&<button className="m10-button secondary" disabled={!!testing} onClick={()=>onNewAgent(done,forTool&&supported.includes(forTool)?forTool:supported[0])}><Plus size={14}/>创建智能体</button>}<button className="m10-button primary" onClick={onClose}>完成</button></>:<><button className="m10-button secondary m13-foot-left" disabled={Boolean(busy)} onClick={()=>{setError('');setStep('catalog');}}><ArrowLeft size={14}/>返回</button><button className="m10-button secondary" onClick={onClose}>取消</button>{!result&&!manual.trim()?<button className="m10-button primary" disabled={Boolean(busy)} onClick={()=>void fetchModels()}>{busy==='fetch'?'获取中…':'获取模型'}</button>:<button className="m10-button primary" disabled={Boolean(busy)||(!picked.length&&!manual.trim())} onClick={()=>void connect()}>{busy?'正在确认…':'接入'}</button>}</>}>
+  const fieldChange=()=>{setResult(null);setPicked([]);setDetected(null);};
+  return <AgentDialog title={title} sub={step==='catalog'?'选择目录中的供应商，或添加自定义供应商':step==='done'?'供应商已保存，可以用它创建智能体':editable?'填写服务地址与 Key，获取模型':'地址与协议已预填，填写 Key 并获取模型'} wide onClose={closeDialog}
+    footer={step==='catalog'?<button className="m10-button secondary" onClick={onClose}>取消</button>:step==='done'?<>{done&&supported.length>0&&<button className="m10-button secondary" disabled={!!testing} onClick={()=>onNewAgent(done,forTool&&supported.includes(forTool)?forTool:supported[0])}><Plus size={14}/>创建智能体</button>}<button className="m10-button primary" onClick={closeDialog}>完成</button></>:<><button className="m10-button secondary m13-foot-left" disabled={Boolean(busy)} onClick={()=>{setError('');setStep('catalog');}}><ArrowLeft size={14}/>返回</button><button className="m10-button secondary" onClick={onClose}>取消</button>{!result&&!manual.trim()?<button className="m10-button primary" disabled={Boolean(busy)} onClick={()=>void fetchModels()}>{busy==='fetch'?'获取中…':'获取模型'}</button>:<button className="m10-button primary" disabled={Boolean(busy)||(!picked.length&&!manual.trim())} onClick={()=>void connect()}>{busy?'正在确认…':'接入'}</button>}</>}>
     <ol className="m13-steps" aria-label="步骤">{['选择','填写 Key 并获取模型','完成'].map((s,i)=><li key={s} className={(number>=i?'on':'')+(number===i?' cur':'')} aria-current={number===i?'step':undefined}><i>{number>i?<Check size={11}/>:i+1}</i>{s}</li>)}</ol>
     {step==='catalog'&&<><label className="m10-search m13-cat-search"><Search size={14}/><input aria-label="查找供应商" placeholder="查找供应商" value={query} onChange={e=>setQuery(e.target.value)}/></label>
       <section className="m13-cat-group"><h3>供应商<span>{forTool?`适用 ${agentLabels[forTool]} 的排在前面`:''}</span></h3><div className="m13-cat-grid">{providerCatalog.filter(p=>p.name.toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>forTool?Number(b.tools.includes(forTool))-Number(a.tools.includes(forTool)):0).map(p=>{
@@ -114,25 +155,32 @@ export function ProviderCatalogDialog({providers,forTool,onClose,onConnected,onN
         {editable&&<><span className="m13-form-label">图标</span><div className="m13-inline-actions"><ProviderIcon catalog={item?.id??'custom-'+name} name={name||'?'} size={28}/><span className="m13-hint">{custom?'默认使用名称首字母':'使用供应商图标'}</span></div><label className="m13-form-label" htmlFor="provider-manual-models">模型</label><div><input id="provider-manual-models" className="m13-input" value={manual} onChange={e=>setManual(e.target.value)} placeholder="模型 ID，逗号分隔；留空则从服务获取"/><button type="button" className="m13-link" onClick={()=>void fetchModels()}>获取模型</button></div></>}
         {custom&&<><span className="m13-form-label">高级设置</span><details className="m13-adv"><summary>Codex 模型元数据</summary><label className="m13-field"><span>上下文窗口（tokens）</span><input inputMode="numeric" value={context} onChange={e=>setContext(e.target.value)} placeholder="使用目录或通用默认值"/></label><label className="m13-field"><span>支持的推理档位</span><input value={efforts} onChange={e=>setEfforts(e.target.value)} placeholder="例如 low, medium, high"/></label><label className="m13-field"><span>默认推理档位</span><input value={reasoning} onChange={e=>setReasoning(e.target.value)}/></label></details></>}
       </fieldset>
-      {result&&<section className="m13-fetched"><h3 className="m13-sub">已获取 {result.models.length} 个模型{result.models.length>0&&<span>取消勾选的不会接入</span>}</h3>{result.models.length?<div className="m13-checks-list">{result.models.map(m=><label key={m.id}><input type="checkbox" disabled={Boolean(busy)} checked={picked.includes(m.id)} onChange={e=>setPicked(old=>e.target.checked?[...old,m.id]:old.filter(id=>id!==m.id))}/>{m.name}<small>{contextLabel(m.contextWindow)}</small></label>)}</div>:<><div className="m13-alert info"><Info size={16}/><div><p>{result.note||'没有获取到模型列表'}{!result.note?.includes('手动填写模型 ID')&&'，请手动填写模型 ID。'}</p></div></div>{!editable&&<label className="m13-field"><span>模型 ID</span><input value={manual} onChange={e=>setManual(e.target.value)} placeholder="例如 acme-coder-large"/></label>}</>}</section>}
+      {result&&(result.models.length
+        ? <ProviderModelPicker models={result.models} picked={picked} onPick={setPicked} busy={Boolean(busy)}/>
+        : <section className="m13-fetched"><h3 className="m13-sub">已获取 0 个模型</h3><div className="m13-alert info"><Info size={16}/><div><p>{result.note||'没有获取到模型列表'}{!result.note?.includes('手动填写模型 ID')&&'，请手动填写模型 ID。'}</p></div></div>{!editable&&<label className="m13-field"><span>模型 ID</span><input value={manual} onChange={e=>setManual(e.target.value)} placeholder="例如 acme-coder-large"/></label>}</section>)}
       <p className="m13-hint">协议探测与接入确认可能产生少量费用。接入时以最小的流式＋工具调用验证，并为每个适用的工具测试推荐模型。</p>
     </>}
     {busy&&<p className="m13-desc"><RefreshCw size={14} className="m13-spin"/> {busy==='fetch'?'正在获取模型列表…':busy==='probe'?'正在探测候选协议…':'正在确认接口并测试推荐模型…'}</p>}
     {error&&<div className="m13-alert danger" role="alert"><TriangleAlert size={16}/><div><p>{error}</p></div></div>}
     {step === 'done' && done && <div className="m13-done">
       <div className="m13-right-head"><ProviderIcon catalog={done.preset} name={done.name} size={44}/><div><b>{done.name} 已添加</b><small>{pairing(supported)} · {done.models.length} 个模型</small></div></div>
-      <h3 className="m13-sub">模型（{done.models.length}）</h3>
+      <h3 className="m13-sub m13-sub-row">模型（{done.models.length}）
+        {(untested.length > 0 || testing?.progress) && <button type="button" className="m13-link"
+          disabled={!!testing || !done.hasKey} onClick={() => void testModels(untested, true)}>
+          {testing?.progress ?? `测试全部未测试（${untested.length}）`}
+        </button>}
+      </h3>
       <div className="m13-table matrix done-models" role="table" aria-label="模型">
-        <div role="row" className="m13-th"><span>模型</span><span>上下文</span>{supported.map(kind => <span key={kind} className="m13-th-tool"><ToolIcon tool={kind} size={14}/>{agentLabels[kind]}</span>)}</div>
+        <div role="row" className="m13-th"><span>模型</span><span>上下文</span>{configured.map(kind => <span key={kind} className="m13-th-tool"><ToolIcon tool={kind} size={14}/>{agentLabels[kind]}</span>)}</div>
         {done.models.map(model => <div role="row" key={model.id} data-model={model.id}>
           <span className="m13-cell-name">{model.name}</span><span>{contextLabel(model.contextWindow)}</span>
-          {supported.map(kind => {
+          {configured.map(kind => {
             const status = model.availability[kind];
             const checking = testing?.model === model.id && testing.kind === kind;
             return <span className="m13-cell" key={kind} title={modelCheckDescription(model, kind)}>
               <Pill tone={status === 'available' ? 'ok' : status === 'unavailable' ? 'warn' : 'muted'}>{checking ? '测试中…' : status === 'available' ? '可用' : status === 'unavailable' ? '不可用' : '未测试'}</Pill>
               {!checking && status !== 'available' && !model.offline && <button type="button" className="m13-link" disabled={!!testing || !done.hasKey}
-                aria-label={`${status === 'unavailable' ? '重测' : '测试'} ${model.name} · ${agentLabels[kind]}`} onClick={() => void testModel(model.id, kind)}>
+                aria-label={`${status === 'unavailable' ? '重测' : '测试'} ${model.name} · ${agentLabels[kind]}`} onClick={() => void testModels([{ model: model.id, kind }])}>
                 {status === 'unavailable' ? '重测' : '测试'}
               </button>}
             </span>;

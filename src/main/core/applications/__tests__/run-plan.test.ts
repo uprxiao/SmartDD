@@ -26,6 +26,14 @@ describe('M11 immutable, transport-independent application run plans',()=>{
   expect(selectCapabilityEntry({...read,semantics:'write'},{mcp:true,cli:false}).entry).toBeNull();
   expect(selectCapabilityEntry(read,{mcp:false,cli:false}).entry).toBeNull();
  });
+ it('selects one declared browser entry before a write is invoked',()=>{
+  const capability={...capabilities()[1],id:'browser.tab.create',binding:{
+   cli:{command:['browser','tab','create']},mcp:{tool:'smartdd_browser_tab_create_v2'},
+  }};
+  expect(selectCapabilityEntry(capability,{mcp:true,cli:true})).toEqual({entry:'cli',fallback:false,reason:null});
+  expect(selectCapabilityEntry(capability,{mcp:true,cli:false})).toEqual({entry:'mcp',fallback:false,reason:null});
+  expect(selectCapabilityEntry(capability,{mcp:false,cli:false}).entry).toBeNull();
+ });
  it('pins allowed permissions and entry contracts, rejecting a non-active entry and an unknown capability',()=>{
   const plan=build();expect(Object.isFrozen(plan.allowed[0])).toBe(true);
   expect(requirePlanEntry(plan,'zentao.object.get',1,'mcp')).toMatchObject({packageHash:f.application!.packageHash});

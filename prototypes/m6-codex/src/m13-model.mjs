@@ -462,8 +462,8 @@ export const CATALOG = [
     models: [{ id: 'glm-5', name: 'GLM-5', ctx: '128K' }, { id: 'glm-5-air', name: 'GLM-5-Air', ctx: '128K' }] },
   // SMG（SmartModelGate）：用户 2026-11-11 提供的内网网关；原型中真实接入（live，见 m13-live.mjs）。公开的 /openapi.json 只有 /v1/messages、/v1/chat/completions、/v1/models 等，没有 Responses；Codex 0.166 已不支持 chat 接口，所以只适用 Claude Code（补验 D）。
   { id: 'smg', group: 'vendor', name: 'SMG', desc: '公司内网模型网关', endpoints: { anthropic: SMG_URL, openai: SMG_URL + '/v1' }, keyLabel: 'SMG API Key', verified: true, live: true, recommended: 'deepseek-v4-pro', models: [] },
-  { id: 'ultracloud', group: 'vendor', name: 'UltraCloud', desc: '地址与协议待用户提供', endpoints: { openai: 'https://ultracloud.example.invalid/v1' }, keyLabel: 'UltraCloud Key', verified: false,
-    models: [{ id: 'uc-chat', name: 'uc-chat（占位）', ctx: '—' }] },
+  { id: 'ultracloud', group: 'vendor', name: 'Model Hub', desc: '模型网关', endpoints: { responses: 'https://rjmodel.rjupc.com/v1', anthropic: 'https://rjmodel.rjupc.com' }, keyLabel: 'Model Hub Key', verified: true,
+    models: ['qwen3.8-max', 'glm-5.1', 'gpt-5.4', 'claude-sonnet-4-6', 'wan3.0-video', 'gemini-nano-banana-2.1'].map(id => ({ id, name: id, ctx: '—' })) },
   { id: 'magpie', group: 'vendor', name: 'Magpie', desc: '本机网关，真实 Key 与路由留在 Magpie', endpoints: { responses: 'http://127.0.0.1:3425/v1', anthropic: 'http://127.0.0.1:3425' }, keyLabel: '令牌', defaultKey: 'magpie-codex', verified: true, recommended: { codex: 'gpt-5.5', claude: 'claude-sonnet-5-5' },
     models: [{ id: 'gpt-5.5', name: 'gpt-5.5', ctx: '256K' }, { id: 'claude-sonnet-5-5', name: 'claude-sonnet-5-5', ctx: '200K' }] },
 ];

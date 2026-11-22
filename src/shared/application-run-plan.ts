@@ -6,6 +6,7 @@ const allowed=z.object({capabilityId:applicationInvocationIdSchema,contractMajor
 export const applicationRunPlanSchema=z.object({
   schema:z.literal('willyou-application-run-plan-v1'),runId:z.uuid(),taskId:id,projectId:id,snapshotHash:hash,
   runner:adapter,capabilityAdapter:adapter,cliVersion:z.string().min(1).max(128),
+  applicationScope:z.literal('browser').optional(),
   grades:z.object({skill:z.boolean(),mcp:z.boolean(),cli:z.boolean(),configuration:z.boolean(),discoveryObserved:z.boolean(),userMessageObserved:z.boolean(),evidence:z.array(z.string().min(1).max(512)).max(32)}).strict(),
   applications:z.array(z.object({appId:id,packageHash:hash,primaryEntry:z.enum(['mcp','cli']),effectiveEntry:z.enum(['mcp','cli','mixed','unavailable']),fallback:z.boolean(),reason:z.string().max(512).nullable()}).strict()).max(32),
   allowed:z.array(allowed).max(8192),
@@ -17,6 +18,7 @@ export const applicationRunPlanSchema=z.object({
   const commands=plan.allowed.filter(c=>c.entry==='cli').map(c=>JSON.stringify(c.cliCommand));if(new Set(commands).size!==commands.length)fail('运行CLI命令重复');
   for(const c of plan.allowed){if(!plan.applications.some(a=>a.appId===c.appId&&a.packageHash===c.packageHash)||!c.capabilityId.startsWith(c.appId+'.')||c.entry==='mcp'&&!c.mcpTool||c.entry==='cli'&&!c.cliCommand)fail('运行允许表与应用或入口不一致');}
   if(plan.skills.some(s=>!plan.applications.some(a=>a.appId===s.appId)))fail('运行Skill不属于选用应用');
+  if(plan.applicationScope==='browser'&&(plan.grades.cli||plan.applications.some(a=>a.appId!=='browser')))fail('本次运行只允许浏览器MCP');
 });
 export type ApplicationRunPlan=z.infer<typeof applicationRunPlanSchema>;
 export type RunPlanAllowedCapability=ApplicationRunPlan['allowed'][number];

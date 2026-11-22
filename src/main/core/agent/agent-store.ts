@@ -68,7 +68,7 @@ export function itemJson(value: unknown): string {
   return shortenedJson(value, { storedTruncated: true, bytes, sha256: sha256(text) }) ?? boundedJson(value, BODY_LIMIT);
 }
 
-export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; effort?: string; initialCodexDefault?: boolean; tier: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean>; profileChoices?: Record<string, AgentModelChoice>; pendingSwitch?: AgentModelChoice & { profileId: string } }
+export interface AgentSelection { driverId: DriverId; profileId: string; model?: string; effort?: string; modelEfforts?: Record<string, string>; initialCodexDefault?: boolean; tier: string; carryExtensions?: boolean; extensionPreferences?: Record<string, boolean>; profileChoices?: Record<string, AgentModelChoice>; pendingSwitch?: AgentModelChoice & { profileId: string } }
 export interface CreateTaskInput { taskId?: string; projectId: string | null; dirId: string | null; cwd: string; title: string; selection: AgentSelection; parentTaskId?: string }
 export interface BindingRow { binding_id: string; task_id: string; driver_id: string; profile_id: string; continuation_hash: string; state_root: string; cwd_identity: string; native_id: string | null; native_confirmed_at: string | null }
 export interface TurnRow { turn_id: string; task_id: string; run_id: string | null; client_input_id: string; status: string; native_turn_id: string | null; source_kind: 'user' | 'delegation' | 'notification' | 'system' }
@@ -514,9 +514,35 @@ export class AgentStore {
     });
   }
 
+  renameTask(taskId: string, title: string) {
+    this.tx(emit => {
+      if (this.sqlite.prepare('UPDATE tasks SET title=? WHERE id=? AND title<>?').run(title, taskId, title).changes) {
+        emit(taskId, 'task.renamed', { title });
+      }
+    });
+  }
+
+  setTaskPinned(taskId: string, pinned: boolean) {
+    this.tx(emit => {
+      const result = this.sqlite.prepare(`UPDATE agent_tasks SET pinned_at=? WHERE task_id=? AND pinned_at IS ${pinned ? '' : 'NOT '}NULL`)
+        .run(pinned ? now() : null, taskId);
+      if (result.changes) emit(taskId, 'task.pinChanged', { pinned });
+    });
+  }
+
+  deleteTask(taskId: string, purge: () => void) {
+    const event = this.sqlite.transaction(() => {
+      const { seq } = this.sqlite.prepare('SELECT COALESCE(MAX(seq),0)+1 AS seq FROM agent_events WHERE task_id=?').get(taskId) as { seq: number };
+      purge();
+      this.sqlite.prepare('DELETE FROM tasks WHERE id=?').run(taskId);
+      return { taskId, seq, type: 'task.removed', itemId: null, payload: {} };
+    })();
+    this.notify([event]);
+  }
+
   listTasks(includeArchived = false) {
-    return this.sqlite.prepare(`SELECT t.id,t.project_id,t.dir_id,t.cwd,t.title,a.selection_json,a.archived_at,a.created_at,a.updated_at,a.parent_task_id FROM tasks t JOIN agent_tasks a ON a.task_id=t.id ${includeArchived ? '' : 'WHERE a.archived_at IS NULL'} ORDER BY a.created_at DESC`).all() as
-      { id: string; project_id: string | null; dir_id: string | null; cwd: string; title: string; selection_json: string; archived_at: string | null; created_at: string; updated_at: string; parent_task_id: string | null }[];
+    return this.sqlite.prepare(`SELECT t.id,t.project_id,t.dir_id,t.cwd,t.title,a.selection_json,a.archived_at,a.created_at,a.updated_at,a.parent_task_id,a.pinned_at FROM tasks t JOIN agent_tasks a ON a.task_id=t.id ${includeArchived ? '' : 'WHERE a.archived_at IS NULL'} ORDER BY a.created_at DESC, a.rowid DESC`).all() as
+      { id: string; project_id: string | null; dir_id: string | null; cwd: string; title: string; selection_json: string; archived_at: string | null; created_at: string; updated_at: string; parent_task_id: string | null; pinned_at: string | null }[];
   }
   /** 排队中的输入：已接受、尚未派发，按接受顺序。 */
   queuedTurns(taskId: string) {

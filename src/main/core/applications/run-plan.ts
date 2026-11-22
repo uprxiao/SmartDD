@@ -15,6 +15,7 @@ export function pluginCliCommand(appId:string,capabilityId:string):string[]{
 export function selectCapabilityEntry(capability:ApplicationCapability,available:RunPlanAvailability):{entry:ApplicationEntry|null;fallback:boolean;reason:string|null}{
   const primary:ApplicationEntry=capability.binding.cli?'cli':'mcp';
   if(available[primary])return{entry:primary,fallback:false,reason:null};
+  if(capability.binding.cli&&capability.binding.mcp&&available.mcp)return{entry:'mcp',fallback:false,reason:null};
   const fallback=capability.binding.fallback,entry=fallback&&('mcp'in fallback?'mcp':'cli');
   if(capability.semantics==='read'&&entry&&available[entry])return{entry,fallback:true,reason:available.reason??`${primary} unavailable`};
   return{entry:null,fallback:false,reason:available.reason??`${primary} unavailable; no permitted fallback`};
@@ -28,7 +29,7 @@ export function renderSkillTemplate(template:Buffer,parameters:SkillRenderParame
   const bytes=Buffer.from(rendered);return{bytes,templateHash:digest(template),parametersHash:digest(canonicalJson(parameters)),renderedHash:digest(bytes)};
 }
 export const skillFilesHash=(files:Readonly<Record<string,Buffer>>):string=>digest(canonicalJson(Object.entries(files).sort(([a],[b])=>compareCodePoints(a,b)).map(([path,bytes])=>({path,size:bytes.length,sha256:digest(bytes)}))));
-export function createApplicationRunPlan(input:{runId:string;snapshotHash:string;snapshot:CapabilitySessionSnapshot;applications:readonly RunPlanApplication[];available:RunPlanAvailability;skills:ApplicationRunPlan['skills'];cliVersion?:string;sandbox?:ApplicationRunPlan['sandbox'];now?:string}):ApplicationRunPlan{
+export function createApplicationRunPlan(input:{runId:string;snapshotHash:string;snapshot:CapabilitySessionSnapshot;applications:readonly RunPlanApplication[];available:RunPlanAvailability;skills:ApplicationRunPlan['skills'];applicationScope?:ApplicationRunPlan['applicationScope'];cliVersion?:string;sandbox?:ApplicationRunPlan['sandbox'];now?:string}):ApplicationRunPlan{
   const {snapshot}=input,allowed:RunPlanAllowedCapability[]=[],applications:ApplicationRunPlan['applications']=[];
   for(const selected of snapshot.packages){
     const source=input.applications.find(a=>a.packageHash===selected.packageHash&&a.manifest.appId===selected.appId);
@@ -49,7 +50,7 @@ export function createApplicationRunPlan(input:{runId:string;snapshotHash:string
     for(const cap of selected.capabilities)if(entry)allowed.push({capabilityId:cap.id,contractMajor:1,appId:selected.appId,packageHash:selected.packageHash,entry,mcpTool:cap.mcpTool,...(entry==='cli'?{cliCommand:pluginCliCommand(selected.appId,cap.id)}: {})});
   }
   const binding={id:snapshot.adapterBinding.id,version:snapshot.adapterBinding.version,hash:snapshot.adapterBinding.hash};
-  const payload={schema:'willyou-application-run-plan-v1' as const,runId:input.runId,taskId:snapshot.taskId,projectId:snapshot.projectId,snapshotHash:input.snapshotHash,runner:binding,capabilityAdapter:binding,cliVersion:input.cliVersion??snapshot.agentAtCreation.version,grades:{skill:true,mcp:input.available.mcp,cli:input.available.cli,configuration:true,discoveryObserved:false,userMessageObserved:false,evidence:[`agent-adapter:${binding.id}:${binding.hash}`]},applications,allowed,skills:input.skills,sandbox:input.sandbox??{source:'unchanged-user-policy',digest:null},createdAt:input.now??new Date().toISOString()};
+  const payload={schema:'willyou-application-run-plan-v1' as const,runId:input.runId,taskId:snapshot.taskId,projectId:snapshot.projectId,snapshotHash:input.snapshotHash,runner:binding,capabilityAdapter:binding,cliVersion:input.cliVersion??snapshot.agentAtCreation.version,...(input.applicationScope?{applicationScope:input.applicationScope}:{}),grades:{skill:true,mcp:input.available.mcp,cli:input.available.cli,configuration:true,discoveryObserved:false,userMessageObserved:false,evidence:[`agent-adapter:${binding.id}:${binding.hash}`]},applications,allowed,skills:input.skills,sandbox:input.sandbox??{source:'unchanged-user-policy',digest:null},createdAt:input.now??new Date().toISOString()};
   return verifyApplicationRunPlan({...payload,planHash:digest(canonicalJson(payload))});
 }
 export function verifyApplicationRunPlan(value:unknown,expectedHash?:string):ApplicationRunPlan{

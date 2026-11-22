@@ -6,10 +6,10 @@ import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { navigation } from '@renderer/core/navigation';
 import { AgentIcon } from '@renderer/features/agents/icons';
 import { rpc } from '@renderer/lib/ipc';
-import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_MODEL, offersCodexLoginDefault, type AgentModelCatalog, type AgentModelChoice, type AgentModelOption, type AgentModelScope } from '@shared/agent-model-choice';
+import { CODEX_LOGIN_EFFORT, CODEX_LOGIN_MODEL, modelEffortKey, offersCodexLoginDefault, resolveModelEffort, type AgentModelCatalog, type AgentModelChoice, type AgentModelOption, type AgentModelScope } from '@shared/agent-model-choice';
 import './agent-model-picker.css';
 
-export interface PickerProfile { profileId: string; name: string; kind: string; source: string; models: string[]; defaultModel?: string | null; available: boolean; codexSubscription?: boolean; extensionSupport?: string }
+export interface PickerProfile { profileId: string; name: string; kind: string; source: string; models: string[]; defaultModel?: string | null; available: boolean; codexSubscription?: boolean; extensionSupport?: string; provider?: { name: string; catalog: string | null }; modelOptions?: AgentModelOption[] }
 export function modelCatalogQuery(scope: AgentModelScope | undefined, profileId: string) {
   return queryOptions({
     queryKey: ['agent-model-catalog', scope, profileId] as const,
@@ -21,13 +21,26 @@ export function modelCatalogQuery(scope: AgentModelScope | undefined, profileId:
     },
   });
 }
-const effortLabel = (value: string) => value === 'medium' ? '中等' : value;
+const effortLabels = new Map([['low', '低'], ['medium', '中等'], ['high', '高'], ['xhigh', '更高'], ['max', '最高']]);
+const effortLabel = (value: string) => effortLabels.get(value) ?? value;
 const modelLabel = (value: string) => value === CODEX_LOGIN_MODEL ? 'GPT-6.2-Sol' : value;
+const toolLabel = (kind: string) => kind === 'codex' ? 'Codex' : kind === 'claude' ? 'Claude Code' : kind;
+function profileLabel(profile: PickerProfile) {
+  if (!profile.provider) return profile.name;
+  return [profile.name, toolLabel(profile.kind), profile.provider.name].filter((part, i) => i === 0 || !profile.name.includes(part)).join(' · ');
+}
+function modelOption(profile: PickerProfile | undefined, native: AgentModelOption[], model: string | undefined) {
+  const option = native.find(m => m.id === model);
+  const provider = profile?.modelOptions?.find(m => m.id === model);
+  if (profile?.kind === 'claude' && profile.source === 'provider') return provider;
+  return option?.efforts.length ? option : provider ?? option;
+}
 interface Props {
   profiles: PickerProfile[]; profileId: string; model?: string; locked?: boolean; busy?: boolean; disabled?: boolean;
   extensions?: Record<string, boolean>; carryExtensions?: boolean;
   effort?: string; defaultModel?: string; nativeModels?: AgentModelOption[]; scope?: AgentModelScope;
   profileChoices?: Record<string, AgentModelChoice>;
+  modelEfforts?: Record<string, string>;
   pendingSwitch?: AgentModelChoice & { profileId: string };
   defaultPending?: boolean; defaultNotice?: string;
   triggerRef?: Ref<HTMLButtonElement>;
@@ -36,7 +49,7 @@ interface Props {
 }
 export function AgentModelPicker(p: Props) {
   const [open, setOpen] = useState(false), [rail, setRail] = useState(p.profileId), [query, setQuery] = useState('');
-  const [choice, setChoice] = useState<{ profileId: string; model: string; effort: string | null }>();
+  const [choice, setChoice] = useState<{ profileId: string; model: string; effort?: string | null }>();
   const [saving, setSaving] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const popup = useRef<HTMLDivElement>(null);
@@ -75,10 +88,17 @@ export function AgentModelPicker(p: Props) {
     ? { model: CODEX_LOGIN_MODEL, effort: CODEX_LOGIN_EFFORT } : undefined;
   const applied = localChoice ?? currentChoice ?? pendingChoice ?? rememberedChoice ?? suggestedChoice;
   const appliedModel = applied?.model ?? '';
-  const appliedEffort = applied?.effort;
   const defaultModel = (targetId === p.profileId ? p.defaultModel : undefined) ?? target?.defaultModel ?? native.find(m => m.isDefault)?.id;
-  const modelInfo = native.find(m => m.id === (appliedModel || defaultModel));
-  const pick = async (model: string, effort: string | null = null, keep = false) => {
+  const effectiveModel = appliedModel || defaultModel;
+  const modelInfo = modelOption(target, native, effectiveModel);
+  const rememberedEffort = (model?: string) => targetId ? p.modelEfforts?.[modelEffortKey(targetId, model)] : undefined;
+  const preferredEffort = localChoice?.effort === null || pendingChoice?.effort === null
+    ? undefined
+    : localChoice?.effort ?? pendingChoice?.effort ??
+      (p.modelEfforts ? rememberedEffort(effectiveModel) ?? (applied === suggestedChoice ? suggestedChoice?.effort : undefined) : applied?.effort);
+  const appliedEffort = preferredEffort && modelInfo?.efforts.includes(preferredEffort) ? preferredEffort : undefined;
+  const defaultEffort = resolveModelEffort(modelInfo, undefined, target?.kind === 'codex');
+  const pick = async (model: string, effort?: string | null, keep = false) => {
     if (!targetId || saving) return;
     setSaving(true);
     try {
@@ -90,9 +110,9 @@ export function AgentModelPicker(p: Props) {
     } finally { setSaving(false); }
   };
   const pickModel = (model: string) => {
-    const info = native.find(m => m.id === (model || defaultModel));
-    const effort = model === appliedModel ? appliedEffort ?? null : info?.defaultEffort ?? null;
-    void pick(model, model ? effort : null, !!info?.efforts.length);
+    const info = modelOption(target, native, model || defaultModel);
+    const suggested = !currentChoice && !pendingChoice && !rememberedChoice && model === suggestedChoice?.model ? suggestedChoice.effort : undefined;
+    void pick(model, suggested, !!info?.efforts.length);
   };
   useEffect(() => {
     if (!open) return;
@@ -105,20 +125,25 @@ export function AgentModelPicker(p: Props) {
     document.addEventListener('mousedown', outside); document.addEventListener('keydown', key);
     return () => { document.removeEventListener('mousedown', outside); document.removeEventListener('keydown', key); };
   }, [open, models, target, saving]); // a current model list is required for the keyboard shortcuts
-  const profileLabel = selected?.codexSubscription ? 'Codex' : selected?.name ?? p.profileId;
-  const label = p.defaultPending ? '正在读取模型' : p.model ? p.nativeModels?.find(m => m.id === p.model)?.name ?? modelLabel(p.model) : '执行器默认';
-  const detail = `${label}${p.effort ? ` · ${effortLabel(p.effort)}` : ''}`;
+  const triggerProfile = selected?.codexSubscription ? 'Codex' : selected ? profileLabel(selected) : p.profileId;
+  const triggerModel = p.model || p.defaultModel || selected?.defaultModel || undefined;
+  const label = p.defaultPending ? '正在读取模型' : p.model
+    ? p.nativeModels?.find(m => m.id === p.model)?.name ?? modelLabel(p.model)
+    : selected?.source === 'provider' && triggerModel ? modelLabel(triggerModel) : '执行器默认';
+  const triggerOption = modelOption(selected, p.nativeModels ?? [], triggerModel);
+  const triggerEffort = resolveModelEffort(triggerOption, p.modelEfforts ? p.modelEfforts[modelEffortKey(p.profileId, triggerModel)] : p.effort, selected?.kind === 'codex');
+  const detail = `${label}${triggerEffort ? ` · ${effortLabel(triggerEffort)}` : ''}`;
   return <div className="agent-model-picker" ref={root}>
     <button type="button" disabled={p.disabled} ref={p.triggerRef} className="agent-model-pill" aria-label="选择智能体与模型" aria-haspopup="dialog" aria-expanded={open} onClick={() => { setRail(p.profileId); setQuery(''); setChoice(undefined); setOpen(v => !v); }}>
-      <AgentIcon tool={selected?.kind ?? 'codex'} size={16} /><span className="agent-model-profile" title={profileLabel}>{profileLabel}</span><small title={detail}>· {detail}</small><ChevronDown size={12} />
+      <AgentIcon tool={selected?.kind ?? 'codex'} provider={selected?.provider} size={16} /><span className="agent-model-profile" title={triggerProfile}>{triggerProfile}</span><small title={detail}>· {detail}</small><ChevronDown size={12} />
     </button>
     {open && target && createPortal(<div ref={popup} style={position} className="agent-picker" role="dialog" aria-label="选择智能体与模型">
       <div className="agent-picker-main">
         <div className="agent-picker-rail" aria-label="智能体">
-          {p.profiles.map(profile => <button type="button" key={profile.profileId} title={p.locked && profile.profileId !== p.profileId ? `${profile.name}：清除目标后才能切换` : profile.name} disabled={!profile.available || (!!p.locked && profile.profileId !== p.profileId)} aria-label={profile.name} aria-pressed={rail === profile.profileId} className={rail === profile.profileId ? 'on' : ''} onClick={() => { setRail(profile.profileId); setQuery(''); }}><AgentIcon tool={profile.kind} size={20} /></button>)}
+          {p.profiles.map(profile => <button type="button" key={profile.profileId} title={p.locked && profile.profileId !== p.profileId ? `${profileLabel(profile)}：清除目标后才能切换` : profileLabel(profile)} disabled={!profile.available || (!!p.locked && profile.profileId !== p.profileId)} aria-label={profileLabel(profile)} aria-pressed={rail === profile.profileId} className={rail === profile.profileId ? 'on' : ''} onClick={() => { setRail(profile.profileId); setQuery(''); }}><AgentIcon tool={profile.kind} provider={profile.provider} size={20} /></button>)}
         </div>
         <div className="agent-picker-list">
-          <div className="agent-picker-head"><b>{target.name}</b><small>{target.source === 'provider' ? 'WillYou 托管供应商' : '本机订阅／原生登录'}</small></div>
+          <div className="agent-picker-head"><b>{profileLabel(target)}</b><small>{target.source === 'provider' ? 'WillYou 托管供应商' : '本机订阅／原生登录'}</small></div>
           {p.locked && <div className="agent-picker-note" role="note"><Lock size={12} />清除目标后才能切换；本执行器内换模型不受限</div>}
           <label className="agent-picker-search"><Search size={14} /><input autoFocus value={query} placeholder="搜索模型…" onChange={e => setQuery(e.target.value)} /></label>
           {target.source === 'provider' ? <div className="agent-extension-toggle"><Lock size={13} /><span>托管配置已隔离<small>不加载你的个人扩展</small></span></div>
@@ -131,8 +156,8 @@ export function AgentModelPicker(p: Props) {
           {!models.length && <p className="agent-picker-note">没有匹配的模型</p>}
         </div>
         <div className="agent-picker-traits"><div className="agent-traits-head">推理强度</div>{!!modelInfo?.efforts.length ? <>
-          <button type="button" aria-pressed={!!applied && !appliedEffort} disabled={saving || !target.available} onClick={() => void pick(appliedModel, null, true)}>默认{applied && !appliedEffort && <Check size={14} />}</button>
-          {modelInfo.efforts.map(e => <button type="button" key={e} aria-pressed={appliedEffort === e} disabled={saving || !target.available} onClick={() => void pick(appliedModel, e, true)}>{effortLabel(e)}{appliedEffort === e && <Check size={14} />}</button>)}</> : (!status || status === 'ready') && <p>{native.some(m => m.efforts.length) ? '选择模型后查看推理强度' : '执行器尚未公布可用选项'}</p>}</div>
+          <button type="button" aria-pressed={!!applied && !appliedEffort} disabled={saving || !target.available} onClick={() => void pick(appliedModel, null, true)}>{target.source === 'provider' && defaultEffort ? `默认（${effortLabel(defaultEffort)}）` : '默认'}{applied && !appliedEffort && <Check size={14} />}</button>
+          {modelInfo.efforts.map(e => <button type="button" key={e} aria-pressed={appliedEffort === e} disabled={saving || !target.available} onClick={() => void pick(appliedModel, e, true)}>{effortLabel(e)}{appliedEffort === e && <Check size={14} />}</button>)}</> : (!status || status === 'ready') && <p>{target.source === 'provider' ? '由供应商决定' : native.some(m => m.efforts.length) ? '选择模型后查看推理强度' : '执行器尚未公布可用选项'}</p>}</div>
       </div>
       <div className="agent-picker-foot"><span>{saving ? '正在应用选择…' : p.busy ? '本轮和已有排队输入结束后切换' : '切换后新建或恢复该执行器的会话'}</span><button type="button" onClick={() => navigation.openSettings('aiProfiles')}><Settings size={13} />管理智能体</button></div>
     </div>, document.body)}

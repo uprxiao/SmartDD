@@ -102,10 +102,11 @@ async function probeCodex(executable: string, shellPath: string | undefined, bas
   const missingMethod = (error: unknown) => error instanceof DriverError && error.nativeCode === -32601;
   try {
     try { await peer.call('initialize', { clientInfo: { name: 'willyou-probe', version: '1' }, capabilities: { experimentalApi: true } }); }
-    catch { missing.add('basic'); return missing; }
+    catch { missing.add('basic'); missing.add('mcp'); return missing; }
     peer.notify('initialized');
     await Promise.all([
-      peer.call('mcpServerStatus/list', {}).catch(error => { if (missingMethod(error)) missing.add('mcp'); }),
+      peer.call<{ data?: unknown }>('mcpServerStatus/list', {})
+        .then(result => { if (!Array.isArray(result?.data)) missing.add('mcp'); }, () => missing.add('mcp')),
       // The probe home has no saved sessions. A recognized method rejects the absent UUID without changing user state.
       peer.call('thread/resume', { threadId: randomUUID(), excludeTurns: true }).catch(error => { if (missingMethod(error)) missing.add('resume'); }),
       peer.call('turn/steer', { threadId: randomUUID(), expectedTurnId: randomUUID(), input: [] })
@@ -149,7 +150,7 @@ export async function probeDriver(driverId: DriverId, o: ProbeOptions): Promise<
     ? { runner: RUNNER[driverId], path: real, version: caps.version, shellPath: info.shellPath, shellProxy: info.shellProxy, identity }
     : undefined;
   if (o.inspectCodexProtocol && driverId === 'codex-app-server' && caps.state !== 'unsupported' && caps.version) {
-    const missing = await inspectCodex(real, info.shellPath ?? o.env.PATH, caps.version, o.env).catch(() => new Set<CapabilityName>());
+    const missing = await inspectCodex(real, info.shellPath ?? o.env.PATH, caps.version, o.env).catch(() => new Set<CapabilityName>(['mcp']));
     caps = evaluateCapabilities(driverId, info.version, name => !missing.has(name) && o.probe?.(name) !== false);
   }
   return { ...caps, binaryPath: info.path, realpath: real, shellPath: info.shellPath, shellProxy: info.shellProxy, checkedCli };

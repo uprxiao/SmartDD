@@ -9,7 +9,7 @@ import { BrowserParkWindow } from './park-window';
 import { browserDigest } from './artifacts';
 import { BrowserError } from './errors';
 import {browserProjectProfile,type BrowserProfiles} from './profiles';
-import {awaitBrowserNavigation} from './navigation-wait';
+import {awaitBrowserNavigation,loadBrowserUrl} from './navigation-wait';
 export {browserProjectProfile} from './profiles';
 
 export interface BrowserPage {
@@ -138,7 +138,7 @@ export class BrowserPageRegistry {
     let normalized:string;
     try{const parsed=new URL(url);if(!['http:','https:','file:','about:'].includes(parsed.protocol)||parsed.protocol==='about:'&&url!=='about:blank')throw Error();normalized=parsed.href;}catch{throw new BrowserError('BROWSER_ERROR','请输入有效的 http(s)、file 或 about:blank 地址');}
     const request={};this.navigationRequests.set(page,request);page.references.invalidate(true);page.hostNavigation=normalized;
-    const navigation=(async()=>{try{await page.contents.loadURL(normalized);}finally{if(this.navigationRequests.get(page)===request){this.navigationRequests.delete(page);page.hostNavigation=null;}}})();
+    const navigation=(async()=>{try{await loadBrowserUrl(page.contents,normalized,navigationSignal);}finally{if(this.navigationRequests.get(page)===request){this.navigationRequests.delete(page);page.hostNavigation=null;}}})();
     await awaitBrowserNavigation(navigation,navigationSignal);
   }
   async placement(taskId:string,pageId:string,rect:Rectangle|null):Promise<void>{

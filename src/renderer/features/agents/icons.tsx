@@ -54,10 +54,11 @@ const PROVIDER_IMAGES:Record<string,{href:string;bleed?:number;bg?:string;inset?
   'tool-claude': { href: A + 'claude.png', bleed: 1.22 }, 'tool-codex': { href: A + 'codex.svg', bg: '#fff', inset: 5, border: true },
   anthropic: { href: A + 'anthropic.png', bleed: 1 }, openai: { href: A + 'openai.svg', bg: '#fff', inset: 7, border: true },
   deepseek: { href: A + 'deepseek.png', bg: '#fff', inset: 3, border: true },
+  ultracloud: { href: A + 'model-hub.svg', bg: '#fff', inset: 3, border: true },
   'agent-opencode': { href: A + 'opencode.png', bleed: 1 }, 'agent-pi': { href: A + 'pi.svg', bg: '#fff', inset: 2, border: true }, 'agent-zcode': { href: A + 'zcode.png', bleed: 1.22 }, 'agent-dsh': { href: A + 'dsh.png', bleed: 1.22 }, glm: { href: A + 'zhipu.png', bleed: 1.04 }, magpie: { href: A + 'magpie.png', bleed: 1.22 },
 };
 PROVIDER_IMAGES['native-claude'] = PROVIDER_IMAGES['tool-claude']; PROVIDER_IMAGES['native-codex'] = PROVIDER_IMAGES['tool-codex'];
-const PROVIDER_TILES:Record<string,string[]> = { smg: ['#25b39e', '#12867a'], ultracloud: ['#ff9a3d', '#e86b13'] };
+const PROVIDER_TILES:Record<string,string[]> = { smg: ['#25b39e', '#12867a'] };
 export function ProviderIcon({ catalog='', name = '', size = 28 }:{catalog?:string|null;name?:string;size?:number}) {
   const unique=useId();
   const r = size >= 30 ? 9 : size >= 20 ? 6 : 4, rv = r * 36 / size, gid = 'm13p-' + unique.replace(/:/g,'');

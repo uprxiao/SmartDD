@@ -30,6 +30,26 @@ function stream(kind: 'claude' | 'codex') {
 }
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>((r) => { resolve = r; }); return { promise, resolve }; }
 
+it('keeps the Claude effort declared by the Model Hub Messages directory only for the refreshed connection', async () => {
+  const fetch = vi.fn(async () => json({ data: [
+    { id: 'a', capabilities: { effort: { low: { supported: true }, high: { supported: true } } } },
+    { id: 'b', effort: { supported_levels: ['medium'] } },
+  ] }));
+  const service = new ProviderService(db, secrets, agents, { fetch });
+  const saved = service.save(input({
+    name: 'Model Hub', preset: 'ultracloud',
+    endpoints: { anthropic: 'https://rjmodel.rjupc.com', responses: 'https://rjmodel.rjupc.com/v1' },
+  }));
+  const refreshed = await service.refresh(saved.id);
+  expect(fetch).toHaveBeenCalledWith('https://rjmodel.rjupc.com/v1/models',
+    expect.objectContaining({ headers: expect.objectContaining({ 'anthropic-version': '2023-06-01' }) }));
+  expect(refreshed.models[0].claude).toEqual({ reasoningLevels: ['low', 'high'], defaultReasoning: null });
+  expect(refreshed.models[1].claude).toBeUndefined();
+  expect(agents.providers()[0].models[0].claude).toEqual(refreshed.models[0].claude);
+  expect(service.save(input({ name: refreshed.name, preset: refreshed.preset, key: undefined, endpoints: { anthropic: 'https://different.example' },
+    models: refreshed.models }), saved.id).models[0].claude).toBeUndefined();
+});
+
 it('keeps a manual model list at launch and checks the protocol without calling a broken model directory', async () => {
   const p = agents.saveProvider(input({ models: [{ id: 'a', name: 'A', catalogSource: 'manual' }] }));
   const before = agents.providers().find(x => x.id === p.id)!;

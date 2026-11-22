@@ -10,7 +10,7 @@ import { resolveTier, type Tier } from './permissions';
 import { TimelineProjector, type ItemUpsert } from './timeline';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { canonicalPath } from './identity';
-import type { RunIntegration, RunIntegrationContext } from './run-integration';
+import { browserInstructions, type RunIntegration, type RunIntegrationContext } from './run-integration';
 
 export interface HostIdentity { instanceId: string; pid: number; startedAt: string | null }
 export interface OpenRunInput {
@@ -45,6 +45,7 @@ export interface OpenRunInput {
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; models?: DriverModel[]; modelsWithoutImageInput?: ReadonlySet<string>; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; appliedModel?: string; appliedEffort?: string; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
 export interface RunHandle {
+  hostBusinessInstructions?: string;
   hostBusinessInstructionsInstalled?: boolean;
   nativeSelection?: { model: string; effort: string };
 }
@@ -126,14 +127,17 @@ export class AgentRunService {
     let forkAttempted = false;
     try {
       run.integration = await input.integrate?.({ runId, bindingId, generation, nativeId: resumeNativeId, startupCancelled });
+      if (input.hostBusinessInstructions) {
+        run.hostBusinessInstructions = input.hostBusinessInstructions + '\n' + browserInstructions(run.integration?.browserEntry, run.readOnly);
+      }
       assertStarting();
-      const finalLaunchHash = sha256(JSON.stringify({ initial: launchPlanHash, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], envNames: Object.keys({ ...input.env, ...run.integration?.env }).sort(), mcp: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skills: run.integration?.skillRoots, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions }));
+      const finalLaunchHash = sha256(JSON.stringify({ initial: launchPlanHash, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], envNames: Object.keys({ ...input.env, ...run.integration?.env }).sort(), mcp: run.integration?.mcpServers, browserMcp: run.integration?.browserMcp, claudeMcp: run.integration?.claudeMcp, skills: run.integration?.skillRoots, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions }));
       if (store.sqlite.prepare("UPDATE capability_runs SET launch_plan_hash=? WHERE run_id=? AND launch_plan_hash=? AND state IN ('preparing','prepared') AND pid IS NULL").run(finalLaunchHash, runId, launchPlanHash).changes !== 1) throw new DriverError('REJECTED', '启动计划已变化或已经启动');
       if (!run.integration) store.freezeNativeRun(runId, { version: input.executable.version, capabilities, launchPlanHash: finalLaunchHash });
       await run.integration?.beforeFork();
       assertStarting();
       forkAttempted = true;
-      const opened = await instance.open({ executable: input.executable, modelCache: input.modelCache, hostBusinessInstructions: input.hostBusinessInstructions, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, startupSignal: input.startupSignal, beforeThreadOpen: run.integration?.beforeThreadOpen, beforeInitialize: async () => { await run.registration; assertStarting(); } });
+      const opened = await instance.open({ executable: input.executable, modelCache: input.modelCache, hostBusinessInstructions: run.hostBusinessInstructions, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, browserMcp: run.integration?.browserMcp, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, startupSignal: input.startupSignal, beforeThreadOpen: run.integration?.beforeThreadOpen, beforeInitialize: async () => { await run.registration; assertStarting(); } });
       await run.registration;
       assertStarting();
       if (run.closing || this.runs.get(runId) !== run) throw new DriverError('EXITED', '执行器在会话就绪前退出');
@@ -144,11 +148,21 @@ export class AgentRunService {
       const optional = [['mcp', 'MCP 业务通道'], ['resume', '原生会话恢复'], ['steer', '插话'], ['skills', 'Skill 目录'], ['approvalsReviewer', '审批审阅档位']] as const;
       const unavailable = optional.filter(([name]) => capabilities[name].reason === 'probe-unavailable').map(([, label]) => label);
       if (unavailable.length) store.addHostItem(input.taskId, null, 'system_notice', { severity: 'warning', code: 'optionalProtocolUnavailable', title: `当前执行器不支持${unavailable.join('、')}`, detail: '基本对话仍可使用。' });
+      if (opened.browserMcpReady === false) {
+        if (input.hostBusinessInstructions) {
+          run.hostBusinessInstructions = input.hostBusinessInstructions + '\n' + browserInstructions(undefined, run.readOnly);
+        }
+        store.addHostItem(input.taskId, null, 'system_notice', {
+          severity: 'warning', code: 'browserMcpUnavailable', title: '内置浏览器工具尚未就绪', detail: 'Claude Code 启动时未确认浏览器 MCP 工具。基本对话仍可使用。',
+        });
+      }
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
       if (!run.defaultModel && opened.defaultModel) run.defaultModel = opened.defaultModel;
       run.nativeSelection = opened.nativeSelection;
       run.hostBusinessInstructionsInstalled = opened.hostBusinessInstructionsInstalled;
-      store.tx(emit => emit(run.taskId, 'run.session_ready', { runId, bindingId, resumed: !!resumeNativeId, background: mode === 'resume-only', ...(input.hostBusinessInstructions ? { businessContext: opened.hostBusinessInstructionsInstalled ? 'developer' : 'history' } : {}) }));
+      store.tx(emit => emit(run.taskId, 'run.session_ready', { runId, bindingId, resumed: !!resumeNativeId, background: mode === 'resume-only',
+        ...(opened.browserMcpReady !== undefined ? { browserMcp: opened.browserMcpReady ? 'ready' : 'unavailable' } : {}),
+        ...(input.hostBusinessInstructions ? { businessContext: opened.hostBusinessInstructionsInstalled ? 'developer' : 'history' } : {}) }));
       if (instance.modelCatalog) {
         const catalogStarted = performance.now();
         let publishFirst!: (models: DriverModel[] | undefined) => void;

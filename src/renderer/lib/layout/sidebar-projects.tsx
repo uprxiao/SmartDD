@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, ChevronDown, ChevronRight, Ellipsis, Folder, FolderOpen, MessageCircle, Plus, Settings, SquarePen, Download, Trash2, Upload } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronDown, ChevronRight, Edit3, Ellipsis, Folder, FolderOpen, MessageCircle, Pin, PinOff, Plus, Settings, SquarePen, Download, Trash2, Upload } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,8 +11,14 @@ import { cn } from '@renderer/utils/utils';
 import { ProjectDialog } from '@renderer/views/projects/project-dialogs';
 import { ProjectDeleteDialog, useProjectAction } from '@renderer/views/projects/project-actions';
 import { rpc } from '@renderer/lib/ipc';
+import { rpcErrorMessage } from '@shared/ipc/rpc';
+import { toast } from 'sonner';
+import { archiveAgentTask } from '@renderer/features/agent-tasks/agent-task-actions';
 import { projectTransferNavigation } from '@renderer/core/project-transfer';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@renderer/lib/ui/menu';
+import { Dialog, DialogContent, DialogContentArea, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@renderer/lib/ui/dialog';
+import { Button } from '@renderer/lib/ui/button';
+import { Input } from '@renderer/lib/ui/input';
 
 const ProjectNode = observer(function ProjectNode({ project }: { project: ProjectSummary }) {
   const { t } = useTranslation();
@@ -63,10 +69,64 @@ function Toggle({ open, onClick, label, testId }: { open: boolean; onClick: () =
 const AGENT_STATUS: Record<string, string> = { working: '工作中', waiting: '等待批准', stopped: '已停止', failed: '失败', limited: '受限', needs_attention: '需要你处理', completed: '' };
 /** M14 新任务行：只列新任务（旧任务不迁移，需求 R10）。 */
 const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskSummary }) {
+  const [dialog, setDialog] = useState<'rename' | 'delete' | null>(null);
+  const [menu, setMenu] = useState(false);
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
   const active = navigation.currentViewId === 'agentTask' && navigation.currentAgentTaskId === task.taskId;
-  return <button type="button" data-testid="sidebar-agent-task" data-task-id={task.taskId} aria-current={active ? 'page' : undefined} className="reference-task-row" style={task.parentTaskId ? { paddingLeft: 28 } : undefined} onClick={() => navigation.openAgentTask(task.taskId)}>
-    <span className="truncate flex-1 text-left">{task.title}</span>{(task.stopping || AGENT_STATUS[task.status]) && <span className={`task-state-tail agent-tail ${task.status}`}>{task.stopping ? '正在停止…' : AGENT_STATUS[task.status]}</span>}
-  </button>;
+  const pinLabel = task.pinnedAt ? '取消置顶' : '置顶';
+  const PinIcon = task.pinnedAt ? PinOff : Pin;
+  const run = async (action: () => Promise<unknown>) => {
+    if (busy) return;
+    setBusy(true);
+    try { await action(); setDialog(null); await agentTasksStore.refresh(); }
+    catch (error) { toast.error(rpcErrorMessage(error)); }
+    finally { setBusy(false); }
+  };
+  const pin = () => void run(() => rpc.agentTasks.setPinned(task.taskId, !task.pinnedAt));
+  const archive = () => void run(() => archiveAgentTask(task.taskId, task.projectId));
+  return <>
+    <ContextMenu onOpenChange={setMenu}>
+      <ContextMenuTrigger className="reference-task-row agent-sidebar-row" data-menu-open={menu || undefined} data-active={active || undefined} style={task.parentTaskId ? { paddingLeft: 42 } : undefined}>
+        <button type="button" data-testid="sidebar-agent-task" data-task-id={task.taskId} aria-current={active ? 'page' : undefined} className="reference-task-title" title={task.title} onClick={() => navigation.openAgentTask(task.taskId)}>
+          <span className="truncate">{task.title}</span>
+        </button>
+        {task.pinnedAt && <Pin className="agent-sidebar-pinned" aria-label="已置顶" size={13} />}
+        {(task.stopping || AGENT_STATUS[task.status]) && <span className={`task-state-tail agent-tail ${task.status}`}>{task.stopping ? '正在停止…' : AGENT_STATUS[task.status]}</span>}
+        <div className="agent-sidebar-actions">
+          <button type="button" className="row-action" title={pinLabel} aria-label={pinLabel} disabled={busy} onClick={pin}><PinIcon size={14} /></button>
+          <button type="button" className="row-action" title="归档" aria-label="归档" disabled={busy} onClick={archive}><Archive size={14} /></button>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem disabled={busy} onClick={() => { setName(task.title); setDialog('rename'); }}><Edit3 />重命名</ContextMenuItem>
+        <ContextMenuItem disabled={busy} onClick={pin}><PinIcon />{pinLabel}</ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem disabled={busy} onClick={archive}><Archive />归档</ContextMenuItem>
+        <ContextMenuItem disabled={busy} variant="destructive" onClick={() => setDialog('delete')}><Trash2 />永久删除</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+    {dialog && <Dialog open onOpenChange={open => { if (!open && !busy) setDialog(null); }}>
+      <DialogContent>
+        <form onSubmit={event => {
+          event.preventDefault();
+          if (dialog === 'delete') void run(() => rpc.agentTasks.delete(task.taskId));
+          else if (name.trim()) void run(() => rpc.agentTasks.rename(task.taskId, name));
+        }}>
+          <DialogHeader showCloseButton={false}><DialogTitle>{dialog === 'rename' ? '重命名任务' : '永久删除任务'}</DialogTitle></DialogHeader>
+          <DialogContentArea>
+            {dialog === 'rename'
+              ? <Input autoFocus aria-label="任务名称" value={name} maxLength={120} disabled={busy} onChange={event => setName(event.target.value)} />
+              : <DialogDescription className="break-words">将永久删除 WillYou 中的「{task.title}」和该任务的对话记录。</DialogDescription>}
+          </DialogContentArea>
+          <DialogFooter>
+            <Button type="button" variant="outline" disabled={busy} onClick={() => setDialog(null)}>取消</Button>
+            <Button type="submit" variant={dialog === 'delete' ? 'destructive' : 'default'} disabled={busy || dialog === 'rename' && !name.trim()}>{dialog === 'rename' ? '保存' : '永久删除'}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>}
+  </>;
 });
 
 /** Project → task tree (PRD F05). Archived projects are folded away at the bottom. */

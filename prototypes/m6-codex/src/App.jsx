@@ -515,6 +515,11 @@ export function App() {
       onCreateProject={() => setModal({ type: 'project' })} onEditProject={p => { setProjectId(p.id); nav('project/' + p.id); }}
       onImportProject={() => setModal({ type: 'project-transfer', mode: 'import' })} onExportProject={p => setModal({ type: 'project-transfer', mode: 'export', project: p })}
       onRenameTask={t => setModal({ type: 'rename-task', task: t })} onArchiveTask={requestArchive}
+      onPinTask={item => setTasks(old => old.map(t => t.id === item.id ? { ...t, pinnedAt: t.pinnedAt ? null : Date.now() } : t))}
+      onDeleteTask={item => {
+        if (item.status === 'running' || item.parentId || tasks.some(t => t.parentId === item.id)) return notify('当前任务或委派任务需要先收口（合成）');
+        setModal({ type: 'delete-agent-task', task: item });
+      }}
       onSettings={() => nav('settings/general')} onInfo={() => setModal({ type: 'preview' })} />
     {route === 'scheduled' && <aside className="sidebar scheduled-sidebar"><h2>定时任务</h2><button className="nav-row" disabled title="后续开放"><Plus size={16} />新建任务</button><p>即将执行</p><span className="scheduled-empty">暂未开放</span></aside>}
     {!collapsed && <div className="sidebar-resizer" role="separator" aria-label="调整侧栏宽度" aria-orientation="vertical" tabIndex={0} aria-valuenow={sidebarWidth} aria-valuemin={240} aria-valuemax={420} onPointerDown={resize} onKeyDown={e => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); setSidebarWidth(w => Math.max(240, Math.min(420, w + (e.key === 'ArrowRight' ? 10 : -10)))); } }} />}
@@ -604,6 +609,14 @@ export function App() {
       setModal(null); setProjectId(key); nav('project/' + key);
     }} onStartTask={key => { setModal(null); setProjectId(key); nav('home'); }} />}
     {modal?.type === 'rename-task' && <Dialog title="重命名任务" onClose={() => setModal(null)}><form onSubmit={e => { e.preventDefault(); const title = String(new FormData(e.currentTarget).get('title')).trim(); if (!title) return; setTasks(old => old.map(t => t.id === modal.task.id ? { ...t, title } : t)); setModal(null); }}><label className="field">任务名称<input name="title" required autoFocus defaultValue={modal.task.title} onFocus={e => e.target.select()} /></label><div className="dialog-footer"><button type="button" className="button secondary" onClick={() => setModal(null)}>取消</button><button className="button primary">保存</button></div></form></Dialog>}
+    {modal?.type === 'delete-agent-task' && <Dialog title="永久删除任务" onClose={() => setModal(null)}>
+      <p className="section-description">将永久删除「{modal.task.title}」及其对话记录（合成）。</p>
+      <div className="dialog-footer"><button className="button secondary" onClick={() => setModal(null)}>取消</button><button className="button primary" onClick={() => {
+        setTasks(old => old.filter(t => t.id !== modal.task.id));
+        if (taskId === modal.task.id) { setProjectId(modal.task.project); nav('home'); }
+        setModal(null);
+      }}>永久删除</button></div>
+    </Dialog>}
     {modal?.type === 'close-task' && <Dialog title="关闭此会话？" onClose={() => setModal(null)}><p className="section-description">关闭“{modal.task.title}”前会保存文件并结束此会话的终端。任务历史、项目数据和已有恢复材料会保留。</p>{modal.error && <p role="alert">{modal.error}</p>}<div className="dialog-footer"><button className="button secondary" onClick={() => setModal(null)}>{modal.error ? '继续查看' : '取消'}</button>{modal.canDiscard && <button className="button secondary" onClick={() => closeSession(modal.task, 'discard')}>放弃修改并关闭</button>}<button className="button primary" onClick={() => closeSession(modal.task)}>保存并关闭</button></div></Dialog>}
     {modal?.type === 'archive-task' && <Dialog title="结束并归档此会话？" onClose={() => setModal(null)}><p className="section-description">“{modal.task.title}”正在运行。归档将结束该会话的终端，保留任务记录与 CLI 会话文件。之后可在已归档列表中查看或取消归档。</p><div className="dialog-footer"><button className="button secondary" onClick={() => setModal(null)}>取消</button><button className="button primary" onClick={() => archiveTask(modal.task, true)}>结束并归档</button></div></Dialog>}
     {modal?.type === 'session-apps' && task && m13Active && <M13SessionPlugins task={task} m13={m13} onClose={() => setModal(null)} />}

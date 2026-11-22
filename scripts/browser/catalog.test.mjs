@@ -11,6 +11,21 @@ test('all approved commands are discoverable once with complete input and output
  const manifest=browserDefinition({type:'builtin'},(_app,_policy,data)=>data);assert.equal(manifest.capabilities.length,82);
  for(const capability of manifest.capabilities){assert.ok(capability.input);assert.ok(capability.output);assert.equal(capability.retry,capability.semantics==='read'?'safe-read':'never');}
 });
+test('opening and operating a page through MCP uses the existing browser command contracts',()=>{
+ const manifest=browserDefinition({type:'builtin'},(_app,_policy,data)=>data);
+ for(const id of ['tab.create','nav.goto','nav.snapshot','interact.click','operation.get']){
+  const command=commands.find(c=>c.id==='browser.'+id);
+  const capability=manifest.capabilities.find(c=>c.id===command.id);
+  assert.deepEqual(capability.binding.cli.command,command.command);
+  assert.equal(capability.binding.mcp?.tool,`smartdd_browser_${id.replaceAll('.','_')}_v2`);
+  assert.deepEqual(capability.input.properties,command.input.properties);
+  assert.equal(capability.semantics,command.semantics);
+  assert.equal(capability.binding.fallback,undefined);
+ }
+ for(const id of ['interact.eval','interact.exec','cookie.get','env.clipboard-read']){
+  assert.equal(manifest.capabilities.find(c=>c.id==='browser.'+id).binding.mcp,undefined);
+ }
+});
 test('native JSON textual values remain text-compatible while object coercion is rejected',()=>{
  for(const value of ['123',123,false])assert.equal(valid('fill',{element:'@held',value}),true);
  for(const value of [{value:'text'},['text']])assert.equal(valid('fill',{element:'@held',value}),false);
