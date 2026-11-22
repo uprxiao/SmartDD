@@ -16,6 +16,12 @@ const brokerRequestSchema = z.discriminatedUnion('method', [
   bridgeRequestSchema.options[4],
 ]);
 interface Ticket { runId: string;bridge: OwnedRunProcess;path: string;dev: number;ino: number;expiresAt: number;authorize?:()=>void;claiming?:boolean;expiry?:ReturnType<typeof setTimeout> }
+interface BridgeReservation {
+  bootstrapPath: string;
+  bridge: OwnedRunProcess;
+  issue(): void;
+  cancel(): Promise<void>;
+}
 interface Binding { runId: string;bridgeId: string;digest: string;expiresAt: number;revoked: boolean;ready:boolean;authorize?:()=>void }
 interface Peer { socket: Socket;binding?: Binding;buffer: Buffer;controllers: Map<string,AbortController>;inFlight: number }
 const errorResponse = (id: string,error: unknown): BridgeResponse => ({ schema: 1,id,status: 'error',error: { code: error instanceof ApplicationError ? error.code : 'CAPABILITY_UNAVAILABLE',message: error instanceof ApplicationError ? error.message : '本机应用通道不可用',layer: 'bridge',retryable: false,attemptCount: 0,retryExhausted: false,effectState: 'not-started',nextAction: '查看应用能力状态；不要自动重发外部写操作' } });
@@ -44,34 +50,59 @@ export class PrivateApplicationBroker {
     try { await new Promise<void>((resolve,reject) => { server.once('error',reject); server.listen(endpoint,() => { server.off('error',reject); resolve(); }); }); chmodSync(endpoint,0o600); const stat = lstatSync(endpoint); this.socketIdentity = { dev: stat.dev,ino: stat.ino }; server.on('error',() => { for (const peer of this.peers) peer.socket.destroy(); }); }
     catch { await this.close(); throw new ApplicationError('CAPABILITY_UNAVAILABLE','无法建立本次私有应用通道'); }
   }
-  async prepare(run: OwnedCapabilityRun,serverName: string,authorize?:()=>void): Promise<{ bootstrapPath: string;bridge: OwnedRunProcess;cancel(): Promise<void> }> {
+  async prepare(run: OwnedCapabilityRun,serverName: string,authorize?:()=>void): Promise<BridgeReservation> {
+    const reservation = await this.reserve(run, serverName, authorize);
+    try { reservation.issue(); return reservation; }
+    catch (error) { await reservation.cancel().catch(() => undefined); throw error; }
+  }
+  /** Reserve the path for native configuration before issuing a usable one-time ticket. */
+  async reserve(run: OwnedCapabilityRun,serverName: string,authorize?:()=>void): Promise<BridgeReservation> {
     authorize?.();
     const endpoint = this.endpoint, bridge = await run.reserveBridge();
-    try {
+    const assertPrepared = () => {
       // The owned run handle, not caller-supplied project/package fields, authorizes preparation.
       authorize?.();
       const context = this.runs.bridgePreparation(run.runId);
       if (!context.snapshot.mcp.some(m => m.kind === 'applications' && m.serverName === serverName)) throw new ApplicationError('SCOPE_DENIED','此服务名不属于原会话应用桥');
-      const secret = randomBytes(32).toString('hex'), path = join(this.directory,bridge.processId + '.json'), expiresAt = this.clock() + Math.min(60000,Math.max(1,this.options.ticketTtlMs ?? 30000));
-      const bootstrap: BridgeBootstrap = { schema: 1,endpoint,runId: run.runId,bridgeId: bridge.processId,secret,hostGeneration: this.hostGeneration,expiresAt };
-      writeFileSync(path,JSON.stringify(bootstrap) + '\n',{ flag: 'wx',mode: 0o600 }); const stat = lstatSync(path);
-      const ticket:Ticket={runId:run.runId,bridge,path,expiresAt,authorize,dev:stat.dev,ino:stat.ino};this.tickets.set(digest(secret),ticket);
-      ticket.expiry=setTimeout(()=>{
-        if(this.tickets.get(digest(secret))!==ticket)return;
-        this.tickets.delete(digest(secret));const unread=this.cleanupTicket(ticket);this.finishHandshake(run.runId,bridge.processId,false);if(unread)this.releaseUnclaimed(ticket);
-        // Only a never-armed reservation can be released; unknown native children retain protection.
-        const cleanup=bridge.cancelBeforeLaunch().catch(()=>undefined);this.expiredReservations.add(cleanup);void cleanup.finally(()=>this.expiredReservations.delete(cleanup));
-      },Math.max(1,expiresAt-this.clock()));ticket.expiry.unref();
-      return { bootstrapPath: path,bridge,cancel: async () => {
+    };
+    try { assertPrepared(); }
+    catch (error) { await bridge.cancelBeforeLaunch().catch(() => undefined); throw error; }
+    const path = join(this.directory,bridge.processId + '.json');
+    let ticketKey: string | undefined;
+    let canceled = false;
+    return {
+      bootstrapPath: path,
+      bridge,
+      issue: () => {
+        if (canceled || ticketKey !== undefined || this.closed) throw new ApplicationError('CANCELED', '工具桥启动票据已取消或已签发');
+        assertPrepared();
+        const secret = randomBytes(32).toString('hex'), key = digest(secret);
+        const expiresAt = this.clock() + Math.min(60000,Math.max(1,this.options.ticketTtlMs ?? 30000));
+        const bootstrap: BridgeBootstrap = { schema: 1,endpoint,runId: run.runId,bridgeId: bridge.processId,secret,hostGeneration: this.hostGeneration,expiresAt };
+        writeFileSync(path,JSON.stringify(bootstrap) + '\n',{ flag: 'wx',mode: 0o600 }); const stat = lstatSync(path);
+        const ticket:Ticket={runId:run.runId,bridge,path,expiresAt,authorize,dev:stat.dev,ino:stat.ino};
+        ticketKey = key;
+        this.tickets.set(key,ticket);
+        ticket.expiry=setTimeout(()=>{
+          if(this.tickets.get(key)!==ticket)return;
+          this.tickets.delete(key);const unread=this.cleanupTicket(ticket);this.finishHandshake(run.runId,bridge.processId,false);if(unread)this.releaseUnclaimed(ticket);
+          // Only a never-armed reservation can be released; unknown native children retain protection.
+          const cleanup=bridge.cancelBeforeLaunch().catch(()=>undefined);this.expiredReservations.add(cleanup);void cleanup.finally(()=>this.expiredReservations.delete(cleanup));
+        },Math.max(1,expiresAt-this.clock()));ticket.expiry.unref();
+      },
+      cancel: async () => {
+        canceled = true;
         // This host closure owns exactly one instance; never revoke another replacement.
         this.finishHandshake(run.runId,bridge.processId,false);
-        const ticket=this.tickets.get(digest(secret));
-        if(ticket?.bridge===bridge){this.tickets.delete(digest(secret));this.cleanupTicket(ticket);}
+        if (ticketKey !== undefined) {
+          const ticket = this.tickets.get(ticketKey);
+          if(ticket?.bridge===bridge){this.tickets.delete(ticketKey);this.cleanupTicket(ticket);}
+        }
         for(const peer of this.peers)if(peer.binding?.runId===run.runId&&peer.binding.bridgeId===bridge.processId){this.revokePeer(peer);peer.socket.destroy();}
         // An armed/unknown fork cannot be declared exited merely because its ticket is revoked.
         await bridge.cancelBeforeLaunch();
-      } };
-    } catch (error) { await bridge.cancelBeforeLaunch().catch(() => undefined); throw error; }
+      },
+    };
   }
   waitForAuthentication(runId:string,bridgeId:string,signal:AbortSignal):Promise<boolean> {
     if(this.closed||signal.aborted)return Promise.resolve(false);

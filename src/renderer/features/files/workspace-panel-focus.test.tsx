@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { EditorView } from '@codemirror/view';
 import { undoDepth } from '@codemirror/commands';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FileDocument, FileRoot, FileSaveInput, FileSaveReceipt, FileSearchRow } from '@shared/files';
@@ -37,7 +37,8 @@ vi.mock('./tex/preview', () => ({ FileTexPreview: () => null }));
 
 const observations: unknown[] = [];
 type SearchHostCase = 'local' | 'missing-host' | 'missing-root' | 'missing-select' | 'missing-service' | 'durable' | 'host-denied';
-async function fixture(names = ['A.txt', 'B.txt', 'C.txt'], searchHost: SearchHostCase = 'local') {
+async function fixture(names = ['A.txt', 'B.txt', 'C.txt'], searchHost: SearchHostCase = 'local',
+    workspaceHeader?: Parameters<typeof FileWorkspacePanel>[0]['workspaceHeader']) {
   const root: FileRoot = { source: 'project-directory', sourceId: 'root', path: '/fixture', canonicalPath: '/fixture', lease: randomUUID(), generation: 1, label: 'Fixture', identity: { device: '1', inode: '2' } }, documents = new Map<string, FileDocument>();
   // Explicit host DTO fixture; UI never grants a native lease from this data.
   Object.assign(root, { hostId: searchHost === 'missing-host' ? undefined : searchHost === 'durable' ? 'durable' : 'local', capabilities: { searchContent: searchHost !== 'host-denied' } });
@@ -59,7 +60,7 @@ async function fixture(names = ['A.txt', 'B.txt', 'C.txt'], searchHost: SearchHo
   await store.initialize(); if (searchHost !== 'missing-root') for (const name of names) await store.open(root, name, true);
   const b = store.tabs[1], c = store.tabs[2]; if (b) store.activate(b.id);
   if (searchHost === 'missing-select') Object.defineProperty(store, 'openSearchRow', { value: undefined });
-  render(<><input aria-label="Outside workspace focus sentinel" /><FileWorkspacePanel scope={store.scope} onClose={() => undefined} /></>);
+  render(<><input aria-label="Outside workspace focus sentinel" /><FileWorkspacePanel scope={store.scope} onClose={() => undefined} workspaceHeader={workspaceHeader} /></>);
   const editor = document.querySelector('.cm-editor') ? EditorView.findFromDOM(document.querySelector('.cm-editor') as HTMLElement)! : null!;
   return { store, api, b, c, editor };
 }
@@ -213,4 +214,26 @@ describe('E10 successful mode DOM replacement',()=>{
   source.scrollDOM.scrollTop=654;source.scrollDOM.scrollLeft=83;await user.click(screen.getByRole('button',{name:'查看文档'}));await waitFor(()=>expect(buffer.mode).toBe('document'));
   const restored=EditorView.findFromDOM(document.querySelector('.cm-editor') as HTMLElement)!;expect(restored).not.toBe(source);expect(restored.hasFocus).toBe(true);expect(restored.state.doc).toBe(doc);expect(restored.state.selection.main.head).toBe(2);expect(buffer.dirty).toBe(false);expect(buffer.raw).toBe('BASE\n');expect(f.api.read).toHaveBeenCalledTimes(3);expect(f.api.save).not.toHaveBeenCalled();
  });
+});
+
+it('puts real file tabs in the titlebar and only shows the directory tab after the last file closes', async () => {
+  const titlebar = document.createElement('div');
+  document.body.append(titlebar);
+  const onActivate = vi.fn();
+  try {
+    const { store } = await fixture(['A.txt', 'B.txt'], 'local', {
+      target:titlebar, active:true, browseRequest:0, onActivate, onCloseDirectory:vi.fn(),
+    });
+    const user = userEvent.setup();
+    const header = within(titlebar);
+    expect(screen.queryByRole('tablist', { name:'文件标签' })).toBeNull();
+    expect(header.queryByRole('tab', { name:'文件' })).toBeNull();
+    await user.click(header.getByRole('tab', { name:'A.txt' }));
+    expect(onActivate).toHaveBeenCalledOnce();
+    expect(store.active?.buffer?.file.name).toBe('A.txt');
+    await user.click(header.getByRole('button', { name:'关闭 A.txt' }));
+    await waitFor(() => expect(header.getByRole('tab', {name:'B.txt'}).getAttribute('aria-selected')).toBe('true'));
+    await user.click(header.getByRole('button', { name:'关闭 B.txt' }));
+    expect(await header.findByRole('tab', {name:'文件'})).toBeTruthy();
+  } finally { cleanup(); titlebar.remove(); }
 });

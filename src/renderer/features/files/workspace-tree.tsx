@@ -193,7 +193,7 @@ export function WorkspaceTree({ store, run, git }: { store: FileWorkspaceStore; 
       const button = buttons.current.get(path); if (button?.isConnected) button.focus({ preventScroll: true });
     });
   };
-  const open = (row: Row, pin = false) => { if (!root || !row.entry) return; if (row.entry.kind === 'directory') store.toggleDirectory(row.path); else if (row.entry.kind === 'file') void store.open(root, row.path, pin, { reveal: false }); };
+  const open = (row: Row) => { if (!root || !row.entry) return; if (row.entry.kind === 'directory') store.toggleDirectory(row.path); else if (row.entry.kind === 'file') void store.open(root, row.path, true, { reveal: false }); };
   const selectPaths = (paths: string[]) => {
     setSelected(paths);
     // The host accepts one file from a multi-selection. Opening a visible
@@ -212,7 +212,7 @@ export function WorkspaceTree({ store, run, git }: { store: FileWorkspaceStore; 
       const index = Math.max(0, keyboardRows.findIndex((row) => row.path === focused)), row = keyboardRows[index]; if (!row) return;
       let next = index;
       if ((event.metaKey || event.ctrlKey) && event.key === ' ') { event.preventDefault(); anchor.current = row.path; setSelected(selected.includes(row.path) ? selected.filter((path) => path !== row.path) : [...selected, row.path]); return; }
-      if (event.key === 'Enter') { event.preventDefault(); open(row, true); return; }
+      if (event.key === 'Enter') { event.preventDefault(); open(row); return; }
       if (event.key === ' ') { event.preventDefault(); anchor.current = row.path; setSelected([row.path]); open(row); return; }
       if (event.key === 'ArrowRight' && row.entry?.kind !== 'directory') return;
       if (event.key === 'ArrowRight' && row.entry?.kind === 'directory' && !expanded.includes(row.path) || event.key === 'ArrowLeft' && row.entry?.kind === 'directory' && expanded.includes(row.path)) { event.preventDefault(); store.toggleDirectory(row.path); return; }
@@ -235,7 +235,7 @@ export function WorkspaceTree({ store, run, git }: { store: FileWorkspaceStore; 
           if (event.shiftKey) { let from = navigable.findIndex((candidate) => candidate.path === anchor.current); if (from < 0) from = Math.max(0, navigable.findIndex((candidate) => candidate.path === focused)); const to = navigable.indexOf(row); selectPaths(navigable.slice(Math.min(from, to), Math.max(from, to) + 1).map((candidate) => candidate.path)); }
           else if (event.metaKey || event.ctrlKey) selectPaths(selected.includes(row.path) ? selected.filter((path) => path !== row.path) : [...selected, row.path]);
           else { anchor.current = row.path; setSelected([row.path]); open(row); }
-        }} onDoubleClick={() => { if (root && row.entry?.kind === 'file') void store.open(root, row.path, true, { reveal: false }); }}>
+        }}>
         {row.entry?.kind === 'directory' ? expanded.includes(row.path) ? <ChevronDown size={13} /> : <ChevronRight size={13} /> : <span className="fw-tree-spacer" />}{row.entry?.kind !== 'directory' && <FileTreeIcon path={row.path} />}<span className="fw-tree-name">{row.name}</span><GitStatusMark entry={git?.get(row.path)} />
       </button>; return row.entry?.kind === 'file' && root ? <FileContextActions key={row.path} target={{ kind: 'path', path: { lease: root.lease, generation: root.generation, relativePath: row.path }, directory: false }} absolutePath={`${root.canonicalPath}/${row.path}`} relativePath={row.path} origin="tree" run={run}>{node}</FileContextActions> : node; })}</div>
   </div>{store.rootExpanded && sticky.length > 0 && <div className="fw-sticky-folders" aria-label="当前目录层级">{sticky.map((row) => <button className="fw-tree-row" key={row.path} onClick={() => focus(row.path)}><ChevronDown size={13} /><span>{row.name}</span></button>)}</div>}{pathTooltip.element}</div>;

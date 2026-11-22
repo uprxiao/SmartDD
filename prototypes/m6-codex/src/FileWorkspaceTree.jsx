@@ -178,10 +178,10 @@ export function FileWorkspaceTree({ files, scope, rootPath, query, searchScenari
     if (query.trim()) setCollapsed(old => expand ? old.filter(item => item !== path) : [...new Set([...old, path])]);
     else onExpandedChange(expand ? [...new Set([...expanded, path])] : expanded.filter(item => item !== path));
   }
-  function selectPaths(paths) {
+  function selectPaths(paths, pin = false) {
     onSelectedChange(paths);
     const files = new Set(navigable.filter(row => !row.folder).map(row => row.path)), first = paths.find(path => files.has(path));
-    if (first) onOpen(first, false);
+    if (first) onOpen(first, pin);
   }
   function select(event, row) {
     clearTooltip(); onFocusedChange(row.path);
@@ -193,7 +193,7 @@ export function FileWorkspaceTree({ files, scope, rootPath, query, searchScenari
       next = navigable.slice(Math.min(from,to), Math.max(from,to)+1).map(item => item.path);
     } else if (event.metaKey || event.ctrlKey) next = selected.includes(row.path) ? selected.filter(path => path !== row.path) : [...selected,row.path];
     else anchor.current = row.path;
-    selectPaths(next);
+    selectPaths(next, !event.shiftKey && !event.metaKey && !event.ctrlKey);
   }
   function keydown(event) {
     if (composing(event) || event.defaultPrevented || !event.target.closest('[role=treeitem]')) return;
@@ -204,7 +204,7 @@ export function FileWorkspaceTree({ files, scope, rootPath, query, searchScenari
     if (intent.expand) toggle(intent.expand,true); if (intent.collapse) toggle(intent.collapse,false);
     if (intent.selected) {
       if ((event.metaKey || event.ctrlKey) && event.key === ' ') onSelectedChange(intent.selected);
-      else selectPaths(intent.selected);
+      else selectPaths(intent.selected, event.key === ' ' && !event.shiftKey);
     }
     if (intent.anchor) anchor.current = intent.anchor;
     if (intent.focus) focusPath(intent.focus);
@@ -227,7 +227,7 @@ export function FileWorkspaceTree({ files, scope, rootPath, query, searchScenari
       <div className="fw-tree-virtual" style={{ height: windowed.total }}>
         {renderRows.map(({row,index}) => row.status ? <div key={row.path} className={'fw-tree-status '+row.status} style={{top:index*TREE_ROW_HEIGHT,paddingLeft:3+row.depth*16}} role={row.status==='error'?'alert':'status'}>{row.name}{row.status==='error'&&<button onClick={()=>retryDirectory(row.parent)}>重试</button>}</div> : <button key={row.path} role="treeitem" aria-expanded={row.folder?effectiveExpanded.includes(row.path):undefined} aria-selected={selected.includes(row.path)} aria-level={row.depth+1} aria-posinset={positions[row.path]?.pos} aria-setsize={positions[row.path]?.size} aria-describedby={tooltip?.path===row.path?'m9-tree-path-tooltip':undefined} data-path={row.path}
           tabIndex={focused===row.path||(!rowIndex.has(focused)&&navigable[0]?.path===row.path)?0:-1} className={'fw-tree-row fw-tree-virtual-row '+(activePath===row.path?'selected':'')} style={{top:index*TREE_ROW_HEIGHT,paddingLeft:3+row.depth*16}}
-          onFocus={event=>{onFocusedChange(row.path);tooltipFor(event,row.path,true);}} onBlur={event=>{if(!event.relatedTarget?.closest?.('.fw-path-tooltip'))clearTooltip();}} onPointerEnter={event=>tooltipFor(event,row.path)} onPointerMove={event=>{if(event.buttons||event.pointerType==='touch'||event.target.closest('.fw-git-state'))clearTooltip();}} onPointerLeave={event=>{if(!tipPopup.current?.contains(event.relatedTarget))clearTooltip();}} onPointerDown={clearTooltip} onClick={event=>select(event,row)} onDoubleClick={()=>!row.folder&&onOpen(row.path,true)} draggable={!row.folder} onDragStart={event=>{clearTooltip();onDrag(event,row.path);}} onDragEnd={onDragEnd}
+          onFocus={event=>{onFocusedChange(row.path);tooltipFor(event,row.path,true);}} onBlur={event=>{if(!event.relatedTarget?.closest?.('.fw-path-tooltip'))clearTooltip();}} onPointerEnter={event=>tooltipFor(event,row.path)} onPointerMove={event=>{if(event.buttons||event.pointerType==='touch'||event.target.closest('.fw-git-state'))clearTooltip();}} onPointerLeave={event=>{if(!tipPopup.current?.contains(event.relatedTarget))clearTooltip();}} onPointerDown={clearTooltip} onClick={event=>select(event,row)} draggable={!row.folder} onDragStart={event=>{clearTooltip();onDrag(event,row.path);}} onDragEnd={onDragEnd}
           onKeyDown={event=>{if(composing(event))return;if((event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10'))&&!row.folder){event.preventDefault();const box=event.currentTarget.getBoundingClientRect();onMenu(row.path,{x:box.left,y:box.bottom});}if(event.key==='Enter'){event.preventDefault();row.folder?toggle(row.path):onOpen(row.path,true);}}}
           onContextMenu={event=>{if(row.folder)return;event.preventDefault();clearTooltip();onMenu(row.path,{x:event.clientX,y:event.clientY});}}>
           {row.folder?(effectiveExpanded.includes(row.path)?<ChevronDown size={13}/>:<ChevronRight size={13}/>):<span className="fw-tree-spacer"/>}{!row.folder&&renderIcon(row.path)}<span className="fw-tree-name">{query&&row.indices?.length?Array.from(row.name.matchAll(/[\s\S]/gu),match=><span key={match.index} className={row.indices.some(i=>i>=match.index&&i<match.index+match[0].length)?'fw-fuzzy-hit':''}>{match[0]}</span>):row.name}</span>{!row.folder&&CHANGED[row.path]&&<small className="fw-git-state" aria-label="Git 状态示例">{CHANGED[row.path]}</small>}

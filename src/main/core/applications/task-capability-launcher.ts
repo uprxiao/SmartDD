@@ -305,7 +305,10 @@ export class ManagedTaskCapabilities {
         skillsMaterialized = true;
       }
       store.sqlite.transaction(()=>{for(const resourceId of resourceIds){const resource=store.get(resourceId);for(const [ownerKind,ownerId] of [['run',input.runId],['binding',input.bindingId]])store.sqlite.prepare('INSERT OR IGNORE INTO agent_resource_refs(owner_kind,owner_id,resource_kind,resource_id,hold_reason,created_at) VALUES(?,?,?,?,?,?)').run(ownerKind,ownerId,resource.kind,resourceId,JSON.stringify({contentHash:resource.contentHash,generation:resource.generation}),new Date().toISOString());}})();
-      bridge = await this.broker.prepare(run, server.serverName, assertCurrent);
+      const opensNativeThread = task.profile.runner === 'codex';
+      bridge = opensNativeThread
+        ? await this.broker.reserve(run, server.serverName, assertCurrent)
+        : await this.broker.prepare(run, server.serverName, assertCurrent);
       const projectMcp=snapshot.mcp.find(m=>m.kind==='legacy-project-context');let runtime:PreparedRuntime|undefined;
       if(projectMcp){if(native.inventory.some(x=>x.kind==='mcp'&&x.name===projectMcp.serverName))throw new ApplicationError('AGENT_CAPABILITY_NAME_CONFLICT','用户 MCP 已使用项目上下文名称');runtime=this.capabilities.prepare({projectId:task.projectId,taskId:task.taskId,runner:task.profile.runner,cwd:task.cwd,home:task.home,profileArgs:task.profile.args,previous:task.previous,managed:{runId:run.runId,runtimeHash:projectMcp.runtimeHash,mcpName:projectMcp.serverName}});}
       const mcpServers: NonNullable<DriverOpenOptions['mcpServers']> = { [server.serverName]: { command: process.execPath, args: [join(store.root, 'runtime', server.runtimeHash, 'mcp-bridge.cjs'), '--bootstrap', bridge.bootstrapPath], env: { ELECTRON_RUN_AS_NODE: '1' } } };
@@ -338,7 +341,13 @@ export class ManagedTaskCapabilities {
         extraArgs, mcpServers,env:{...runtime?.env,...cliEnvironment},claudeSettings,codexCliPermissions,...(available.cli&&this.options.cliPath?{hostBusinessCli:this.cliProof}:{}),
         plugins: task.profile.runner === 'claude' ? skills?.claudeRoots.map(path => ({ type: 'local' as const, path })) : undefined,
         skillRoots: task.profile.runner === 'codex' ? skills?.codexRoots.map((path, i) => ({ path, name: skills.skills[i].nativeName })) : undefined,
-        assertCurrent, beforeFork: async () => { assertCurrent(); await bridge!.bridge.arm(); await run.cli.arm(); },
+        assertCurrent, beforeFork: async () => { assertCurrent(); if (!opensNativeThread) await bridge!.bridge.arm(); await run.cli.arm(); },
+        ...(opensNativeThread ? { beforeThreadOpen: async () => {
+          assertCurrent();
+          await bridge!.bridge.arm();
+          try { bridge!.issue(); }
+          catch (error) { await bridge!.bridge.releaseUnclaimed?.(); throw error; }
+        } } : {}),
         attached: async pid => {await run.cli.attach(pid);nativeStarted=true;this.applications.nativeMessages.register(run.runId,input.version,run.signal);},
         exited: async () => { await run.cli.exited(); const deadline = Date.now() + 20_000; while (!['stopped', 'failed'].includes(this.runs.get(run.runId).state)) { if (Date.now() >= deadline) throw new ApplicationError('RESOURCE_BUSY', '业务或桥进程尚未排空'); await new Promise(r => setTimeout(r, 50)); } },
         cancelBeforeFork: async () => { this.broker.revokeRun(run.runId); await run.cli.cancelUnforked!(); await bridge!.bridge.releaseUnclaimed?.(); await run.stop('agent-unforked'); },

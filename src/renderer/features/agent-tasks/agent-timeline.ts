@@ -44,24 +44,26 @@ export function retainOlderTimeline(older: TimelineSlice, current: TimelineSlice
   return { items, turns, clipped: false };
 }
 
-const VISIBLE = new Set(['user_message', 'assistant_message', 'proposed_plan', 'error', 'todo_list', 'compaction', 'system_notice', 'files_changed']);
+const VISIBLE = new Set(['user_message', 'assistant_message', 'proposed_plan', 'error', 'todo_list', 'compaction', 'system_notice']);
 const WORK = new Set(['reasoning', 'command_execution', 'file_change', 'file_search', 'web_search', 'tool_call', 'subagent']);
 
 export type Row =
-  | { kind: 'item'; item: TimelineItem }
+  | { kind: 'item'; item: TimelineItem; finalReply?: boolean }
   | { kind: 'work'; id: string; items: TimelineItem[]; running: boolean; seconds: number }
   | { kind: 'footer'; id: string; label: string; failed: boolean };
 
-export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[]; seconds: number; waitingSeconds: number; failed: boolean; failureCode: string | null }
+export interface TurnGroup { key: string; turnId: string | null; status: string | null; rows: Row[]; seconds: number; activeSeconds: number; waitingSeconds: number; failed: boolean; failureCode: string | null }
 
 /** The foreground clock counts observed work once, with blocking waits reported separately. */
 function turnTiming(t: TurnInfo | undefined, now: number) {
-  if (!t?.started_at) return { seconds: 0, waitingSeconds: 0 };
+  if (!t) return { seconds: 0, activeSeconds: 0, waitingSeconds: 0 };
   const end = t.ended_at ? Date.parse(t.ended_at) : now;
+  const activeElapsed = Math.max(0, end - Date.parse(t.accepted_at));
+  if (!t.started_at) return { seconds: 0, activeSeconds: Math.floor(activeElapsed / 1000), waitingSeconds: 0 };
   const elapsed = Math.max(0, end - Date.parse(t.started_at));
   const ongoingWait = t.native_wait_since === undefined ? 0 : Math.max(0, end - t.native_wait_since);
   const wait = Math.min(elapsed, (t.native_wait_ms ?? 0) + ongoingWait);
-  return { seconds: Math.round((elapsed - wait) / 1000), waitingSeconds: Math.round(wait / 1000) };
+  return { seconds: Math.round((elapsed - wait) / 1000), activeSeconds: Math.floor(Math.max(0, activeElapsed - wait) / 1000), waitingSeconds: Math.round(wait / 1000) };
 }
 export function formatDuration(s: number) { return s < 60 ? `${s} 秒` : `${Math.floor(s / 60)} 分 ${s % 60} 秒`; }
 
@@ -98,25 +100,48 @@ export function visibleRunDiagnostics(items: TimelineItem[]): TimelineItem[] {
 }
 export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Date.now()): TurnGroup[] {
   const diagnostics = new Set(runDiagnostics(items));
+  const turnMap = new Map(turns.map(t => [t.turn_id, t]));
+  const nativeOwners = new Map<string, TurnInfo>();
+  const owners = new Map<string, TurnInfo>();
+  const nativeTurns = turns.filter(turn => turn.run_id && turn.native_turn_id && turn.started_at)
+    .sort((a, b) => a.started_at!.localeCompare(b.started_at!) || a.accepted_at.localeCompare(b.accepted_at));
+  for (const turn of nativeTurns) {
+    const nativeKey = JSON.stringify([turn.run_id, turn.native_turn_id]);
+    const owner = nativeOwners.get(nativeKey) ?? turn;
+    nativeOwners.set(nativeKey, owner);
+    owners.set(turn.turn_id, owner);
+  }
   const byTurn = new Map<string, { turnId: string | null; items: TimelineItem[] }>();
   for (const it of [...items].sort((a, b) => a.ordinal - b.ordinal)) {
     if (diagnostics.has(it)) continue;
-    if (it.type === 'files_changed' && it.payload?.status === 'complete' && it.payload.fileCount === 0) continue;
+    if (it.type === 'files_changed' && !(it.payload?.status === 'complete' && it.payload.fileCount > 0)) continue;
     if (it.type === 'reasoning' && it.terminal === 'completed' && it.payload?.text === ''
       && !it.payload.truncated && !it.payload.storedTruncated) continue;
-    const k = it.turnId ?? `host:${it.itemId}`;
-    if (!byTurn.has(k)) byTurn.set(k, { turnId: it.turnId ?? null, items: [] });
+    const turnId = it.turnId ? owners.get(it.turnId)?.turn_id ?? it.turnId : null;
+    const k = turnId ?? `host:${it.itemId}`;
+    if (!byTurn.has(k)) byTurn.set(k, { turnId, items: [] });
     byTurn.get(k)!.items.push(it);
   }
-  const turnMap = new Map(turns.map(t => [t.turn_id, t]));
   const order = [...byTurn.keys()];
   const groups: TurnGroup[] = [];
   for (const key of order) {
     const { items: list, turnId } = byTurn.get(key)!;
+    // A queued input is persisted at submission. Its receipt determines where
+    // it enters the native timeline when promoted into an existing turn.
+    const receipts = new Map(list.flatMap(it => {
+      if (it.type !== 'user_message' || !it.turnId || it.turnId === turnId) return [];
+      const received = turnMap.get(it.turnId)?.started_at;
+      return received ? [[it.itemId, received] as const] : [];
+    }));
+    if (receipts.size && list.every(it => it.createdAt)) {
+      list.sort((a, b) => (receipts.get(a.itemId) ?? a.createdAt).localeCompare(receipts.get(b.itemId) ?? b.createdAt)
+        || a.ordinal - b.ordinal);
+    }
     const turn = turnId ? turnMap.get(turnId) : undefined;
     const live = !!turn && ['dispatching', 'started'].includes(turn.status);
     const timing = turnTiming(turn, now);
     const rows: Row[] = [];
+    const changes: Row[] = [];
     let work: TimelineItem[] = [];
     const flush = (last: boolean) => {
       if (!work.length) return;
@@ -124,15 +149,19 @@ export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Da
       rows.push({ kind: 'work', id: `work:${work[0].itemId}`, items: work, running, seconds: timing.seconds });
       work = [];
     };
-    list.forEach((it, idx) => {
-      if (WORK.has(it.type)) { work.push(it); return; }
+    for (const it of list) {
+      if (it.type === 'files_changed') { changes.push({ kind: 'item', item: it }); continue; }
+      if (WORK.has(it.type)) { work.push(it); continue; }
       // 过程正文随回合展开，但会隔开工具分组；最终回答独立显示。
-      if (it.type === 'assistant_message' && it.payload?.phase === 'commentary') { work.push(it); return; }
+      if (it.type === 'assistant_message' && it.payload?.phase === 'commentary') { work.push(it); continue; }
       flush(false);
       if (VISIBLE.has(it.type) || !WORK.has(it.type)) rows.push({ kind: 'item', item: it });
-      if (idx === list.length - 1) flush(true);
-    });
+    }
     flush(true);
+    const lastReply = rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'assistant_message' && row.item.terminal === 'completed');
+    const reply = rows[lastReply];
+    if (reply?.kind === 'item' && turn?.status === 'completed') reply.finalReply = true;
+    rows.splice(lastReply < 0 ? rows.length : lastReply + 1, 0, ...changes);
     const limited = list.find(it => it.type === 'error' && it.payload?.limited)?.payload.limited.kind;
     if (turn && (turn.status === 'interrupted' || turn.status === 'failed' || turn.status === 'unknown' || turn.status === 'completed' && limited && limited !== 'output')) {
       // An output limit leaves a partial answer. An exhausted quota pauses work.

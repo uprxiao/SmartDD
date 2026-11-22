@@ -51,8 +51,10 @@ it('A59 keeps the active status with the user message while startup diagnostics 
   mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', preparingTurnId: turnId, turns: [turn], items }));
   const preparing = render(<AgentTaskView taskId="task" />);
   const user = await screen.findByText('你好');
-  expect(within(user.closest('.agent-turn') as HTMLElement).getByText('正在准备执行器…')).toBeTruthy();
-  expect(screen.queryByText('思考中')).toBeNull();
+  const work = within(user.closest('.agent-turn') as HTMLElement);
+  expect(work.getByText('工作中 0 秒')).toBeTruthy();
+  expect(work.getByText('思考中')).toBeTruthy();
+  expect(work.queryByText(/正在启动|正在准备执行器/)).toBeNull();
   preparing.unmount();
 
   mocks.snapshot.mockResolvedValue(snapshot({ status: 'working', turns: [{ ...turn, started_at: now, status: 'started' }], items }));
@@ -65,12 +67,19 @@ it('A59 keeps the active status with the user message while startup diagnostics 
   active.unmount();
 
   mocks.snapshot.mockResolvedValue(snapshot({ status: 'completed', turns: [{ ...turn, started_at: now, ended_at: now, status: 'completed' }], items: [
-    ...items, entry(3, 'assistant_message', { text: '今天想一起做点什么？' }), entry(4, 'files_changed', { fileCount: 0, status: 'complete' }),
+    ...items, entry(3, 'files_changed', { fileCount: 0, status: 'incomplete', reason: '首次快照仍在后台准备' }),
+    { ...entry(4, 'assistant_message', { text: '今天想一起做点什么？' }), updatedAt: now },
   ] }));
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
   render(<AgentTaskView taskId="task" />);
   await screen.findByText('今天想一起做点什么？');
   expect(screen.queryByText('思考中')).toBeNull();
   expect(screen.queryByText('查看差异')).toBeNull();
+  expect(screen.queryByText(/首次快照仍在后台准备/)).toBeNull();
+  expect(screen.getByText('今天想一起做点什么？').closest('.agent-assistant')?.querySelector('time')?.dateTime).toBe(now);
+  fireEvent.click(screen.getByRole('button', { name: '复制回复' }));
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith('今天想一起做点什么？'));
 });
 
 it('A26 shows the delegated child’s inherited tier without opening another permission choice', async () => {
@@ -99,7 +108,7 @@ it('queue shows host notifications as a status line, not their internal wording'
   expect(await screen.findByText('子任务结果已送达，主任务稍后继续')).toBeTruthy();
   expect(screen.queryByText(/宿主子任务结果通知/)).toBeNull();
   expect(screen.getByText('My queued message')).toBeTruthy();
-  expect(screen.getAllByTitle('编辑排队消息')).toHaveLength(1);
+  expect(screen.getAllByTitle('删除排队消息')).toHaveLength(1);
 });
 
 it('child result card shows a Chinese status and the result text', async () => {
@@ -800,31 +809,62 @@ it('F03 shows the command directory and confirms keyboard selection against the 
   await waitFor(() => expect(mocks.respond).toHaveBeenCalledExactlyOnceWith('task','permission',4,{decision:'decline'}));
 });
 
-it('F02 edits the exact queued input, then sends and removes it without using the composer', async () => {
-  const queued = {turnId:'q', version:'v1', text:'旧预览', acceptedAt:'2026-11-18T00:00:00Z', editable:true, attachmentCount:1};
+it('F02 offers send and delete for queued inputs', async () => {
+  const queued = {turnId:'q', version:'v1', text:'排队内容', acceptedAt:'2026-11-18T00:00:00Z', editable:true, attachmentCount:1};
   let state = snapshot({queued:[queued], queuedTotal:1});
   mocks.snapshot.mockImplementation(async () => state);
-  mocks.readUserInput.mockImplementation(serveInTwo({text:'全文与附件'}));
-  mocks.editQueued.mockImplementation(async () => { state = snapshot({seq:2, queued:[{...queued,text:'修改后',version:'v2'}],queuedTotal:1}); });
   mocks.sendQueued.mockResolvedValue({status:'queued'});
   mocks.cancelQueued.mockImplementation(async () => {state = snapshot({seq:3});});
   render(<AgentTaskView taskId="task" />);
-  const edit = await screen.findByTitle('编辑排队消息');
-  expect(edit.closest('.agent-bottom')).toBeTruthy();
-  fireEvent.click(edit);
-  const editor = await screen.findByRole('textbox', {name:'编辑排队消息'});
-  expect((editor as HTMLTextAreaElement).value).toBe('全文与附件');
-  fireEvent.change(editor, {target:{value:'修改后'}});
-  fireEvent.click(screen.getByRole('button',{name:'保存'}));
-  await screen.findByText('修改后');
-  expect(mocks.editQueued).toHaveBeenCalledExactlyOnceWith('task','q','v1','修改后');
-  await waitFor(() => expect((screen.getByTitle('立即发送') as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(screen.getByTitle('立即发送'));
-  await waitFor(() => expect(mocks.sendQueued).toHaveBeenCalledExactlyOnceWith('task','q','v2',1));
+  const send = await screen.findByRole('button', {name:'立即发送'});
+  expect(send.closest('.agent-queue')).toBeTruthy();
+  expect(screen.queryByTitle('编辑排队消息')).toBeNull();
+  fireEvent.click(send);
+  await waitFor(() => expect(mocks.sendQueued).toHaveBeenCalledExactlyOnceWith('task','q','v1',1));
   await waitFor(() => expect((screen.getByTitle('删除排队消息') as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByTitle('删除排队消息'));
   await waitFor(() => expect(mocks.cancelQueued).toHaveBeenCalledExactlyOnceWith('task','q'));
   expect(mocks.submit).not.toHaveBeenCalled();
+});
+
+it('hides a deleted queued message when its stored input remains in the snapshot', async () => {
+  const text = '已删除的排队输入';
+  mocks.snapshot.mockResolvedValue(snapshot({
+    items: [{ itemId:'canceled-message', turnId:'canceled-turn', type:'user_message', ordinal:1, revision:1,
+      payload:{ text, sourceKind:'user' }, terminal:'completed', createdAt:'2026-11-22T03:18:33Z', updatedAt:'2026-11-22T03:18:33Z' }],
+    turns: [{ turn_id:'canceled-turn', status:'canceled', source_kind:'user', error_code:'USER_CANCELED',
+      accepted_at:'2026-11-22T03:18:33Z', started_at:null, ended_at:'2026-11-22T03:18:40Z' }],
+  }));
+  render(<AgentTaskView taskId="task" />);
+  await screen.findByPlaceholderText('随心输入');
+  expect(screen.queryByText(text)).toBeNull();
+});
+
+it.each([false, true])('queues a normal follow-up and only promotes it from the queue (shortcut=%s)', async metaKey => {
+  const queued = {turnId:'q', version:'v1', text:'补充指令', acceptedAt:'2026-11-22T00:00:00Z', editable:true, attachmentCount:0};
+  const run = {runId:'run', generation:1, driverId:'codex-app-server', tier:'ask', busy:true, steer:true};
+  let state = snapshot({status:'working', run});
+  mocks.snapshot.mockImplementation(async () => state);
+  mocks.submit.mockImplementation(async () => {
+    state = snapshot({seq:2, status:'working', run, queued:[queued], queuedTotal:1});
+    return {turnId:'q', status:'queued'};
+  });
+  mocks.sendQueued.mockImplementation(async () => {
+    state = snapshot({seq:3, status:'working', run});
+    return {status:'steered'};
+  });
+  render(<AgentTaskView taskId="task" />);
+  const input = await screen.findByPlaceholderText('继续输入，本轮结束后发送');
+  expect(screen.queryByRole('button', {name:'插话'})).toBeNull();
+  fireEvent.change(input, {target:{value:'补充指令'}});
+  fireEvent.keyDown(input, {key:'Enter', metaKey});
+  const send = await screen.findByRole('button', {name:'插入当前轮'});
+  expect(send.closest('.agent-queue')).toBeTruthy();
+  expect(mocks.submit.mock.calls[0][1]).toMatchObject({text:'补充指令', mode:'queue'});
+  expect(mocks.sendQueued).not.toHaveBeenCalled();
+  fireEvent.click(send);
+  await waitFor(() => expect(mocks.sendQueued).toHaveBeenCalledExactlyOnceWith('task','q','v1',1));
+  await waitFor(() => expect(screen.queryByRole('button', {name:'插入当前轮'})).toBeNull());
 });
 
 it('F14 folds long user messages and restores only a proven unsent input to an empty composer', async () => {

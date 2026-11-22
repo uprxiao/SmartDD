@@ -2,10 +2,11 @@ import Database from 'better-sqlite3';
 import { chmodSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore } from './agent-store';
-import { probeAndRecord, probeDriver } from './discovery';
+import { createNativeCliDetector, probeAndRecord, probeDriver } from './discovery';
+import type { detectNativeCli } from '../ai/runner-detect';
 
 // M14-A62 本机程序发现与缺失、A51 本机 CLI、A54 用户显式路径（阶段 1：U／I 层，不含打包）。
 const dirs: string[] = [];
@@ -20,6 +21,26 @@ const detect = (path: string | null, version: string | null, error: string | nul
   ({ runner, command: executable ?? runner, path, version, error, shellPath: '/usr/bin:/bin' });
 
 describe('本机程序发现', () => {
+  it('shares recent shell discovery and probes again after changes to the executable or environment', async () => {
+    const { link, real } = fakeBin('claude');
+    const probe = vi.fn<typeof detectNativeCli>().mockImplementation(async (runner, command) => ({
+      runner, command: command ?? 'claude', path: link, version: '2.1.329', error: null,
+      shellPath: '/usr/bin:/bin', shellProxy: {},
+    }));
+    const cached = createNativeCliDetector(probe);
+    const run = (env = {}) => probeDriver('claude-sdk', { env, detect: cached, executable: link });
+    await Promise.all([run(), run()]);
+    expect((await run()).realpath).toBe(real);
+    expect(probe).toHaveBeenCalledTimes(1);
+    if (process.platform !== 'win32') {
+      await run({ CLAUDE_AGENT_SDK_VERSION: '0.3.321', NoDefaultCurrentDirectoryInExePath: '1' });
+      expect(probe).toHaveBeenCalledTimes(1);
+    }
+    writeFileSync(real, '#!/bin/sh\necho changed\n');
+    expect((await run()).state).toBe('ready');
+    await run({ PATH: '/first:/bin' });
+    expect(probe).toHaveBeenCalledTimes(3);
+  });
   it('解析 realpath、核对可执行位并按版本求能力', async () => {
     const { link, real } = fakeBin('codex');
     const r = await probeDriver('codex-app-server', { env: {}, detect: detect(link, 'codex-cli 0.169.0') as never });

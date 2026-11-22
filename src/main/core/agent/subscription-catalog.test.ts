@@ -72,13 +72,13 @@ it('shares cold probes, serves partial rows, then restores only a verified match
   const cache = new SubscriptionCatalogs(db);
   expect(await cache.read('scope', probe.load)).toEqual({ status: 'loading', models: [] });
   probe.observe().account?.('account-A');
-  const sameRun = cache.modelsForRun('scope', 'account-A');
+  expect(await cache.modelsForRun('scope', 'account-A')).toBeUndefined();
   expect(await cache.modelsForRun('scope', 'account-B')).toBeUndefined();
   probe.observe().fallback?.(partial);
   expect(await cache.read('scope', probe.load)).toEqual({ status: 'refreshing', models: partial });
   probe.resolve({ models: full, confirmed: true });
-  expect(await sameRun).toEqual(full);
   expect(await cache.read('scope', probe.load, 'wait')).toEqual({ status: 'ready', models: full });
+  expect(await cache.modelsForRun('scope', 'account-A')).toEqual(full);
   expect((await cache.read('scope', probe.load)).models).toEqual(full);
   expect(probe.load).toHaveBeenCalledTimes(1);
 

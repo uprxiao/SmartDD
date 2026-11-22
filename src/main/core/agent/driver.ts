@@ -12,6 +12,7 @@ export interface DriverExecutable {
 export interface DriverOpenOptions {
   executable: DriverExecutable;
   modelCache?: DriverModelCache;
+  hostBusinessInstructions?: string;
   cwd: string;
   /** 宿主组装的环境；凭据由现有凭据服务解析后注入，不写入任何文件。 */
   env: Record<string, string>;
@@ -38,7 +39,9 @@ export interface DriverOpenOptions {
   readOnly?: boolean;
   requiredMcpServers?: readonly string[];
   assertStarting?(): void;
+  startupSignal?: AbortSignal;
   beforeInitialize?(): Promise<void>;
+  beforeThreadOpen?(): Promise<void>;
   signal?: AbortSignal;
 }
 
@@ -66,6 +69,7 @@ export function requireElicitationCancellation(result: unknown): void {
 export type DriverEvent =
   | { type: 'process'; pid: number }
   | { type: 'session'; nativeId: string }
+  | { type: 'model_cache'; result: 'hit' | 'miss' | 'read_failed' | 'account_unavailable' | 'account_timeout' | 'account_failed'; elapsedMs: number }
   /** clientInputId 为空表示原生自行开始的回合（如 Codex 目标自动续跑）。 */
   | { type: 'turn.started'; nativeTurnId: string; clientInputId: string }
   | { type: 'goal'; objective: string | null; status: 'active' | 'paused' | 'complete' | 'cleared' | 'limited'; timeUsedSeconds?: number; nativeCreatedAt?: number; nativeUpdatedAt?: number }
@@ -96,10 +100,17 @@ export interface DriverInstance {
    */
   /** 解析执行器自己的默认模型（Codex：配置与模型目录）。 */
   defaultModel?(): Promise<string | undefined>;
-  modelCatalog?(): Promise<DriverModel[]>;
+  /** 在线刷新失败时，原生执行器可能先返回当下可用的内置目录。 */
+  modelCatalog?(onFallback?: (models: DriverModel[]) => void): Promise<DriverModel[]>;
   /** 只追加模型可见历史，不触发新回合；不改变真人输入的命令文本。 */
   injectHistory?(text: string): Promise<void>;
-  open(options: DriverOpenOptions): Promise<{ nativeId: string; confirmed: boolean; defaultModel?: string }>;
+  open(options: DriverOpenOptions): Promise<{
+    nativeId: string;
+    confirmed: boolean;
+    defaultModel?: string;
+    hostBusinessInstructionsInstalled?: boolean;
+    nativeSelection?: { model: string; effort: string };
+  }>;
   /** 等原生开始信号后才 resolve。 */
   startTurn(input: TurnInput): Promise<{ nativeTurnId: string }>;
   /** 原样回传原生选项或结构化回答，不压成布尔值。 */

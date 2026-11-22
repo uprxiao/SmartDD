@@ -9,7 +9,7 @@ import { VoiceButton } from './VoicePreview';
 import { FILE_DRAG_TYPE, resolveFileDrag } from './file-drag-model.mjs';
 import { RequestPanel, buildRequests } from './M14Requests.jsx';
 import { GoalRow, slashBlocked } from './M14Extras';
-import { AttachmentChips, Banner, BackgroundWork, BusinessApprovalRow, CodeBlock, ComposerChips, CompactionRow, DiffStateNote, LinkMenu, MentionMenu, NativeDrawer, NativeSubagentRow, pasteToChips, PlanCard, SysNoteRow, TodoRow, mentionItems, mentionTrigger } from './M14Extras.jsx';
+import { AttachmentChips, Banner, BackgroundWork, BusinessApprovalRow, CodeBlock, ComposerChips, CompactionRow, LinkMenu, MentionMenu, NativeDrawer, NativeSubagentRow, pasteToChips, PlanCard, SysNoteRow, TodoRow, mentionItems, mentionTrigger } from './M14Extras.jsx';
 import { AGENTS, PERMISSIONS, SCENARIOS, TEAM_CHILDREN, clock, deriveRows, entryLabel, formatDuration, inlineSegments, routeLink, statusLine, thoughtHeading, goalLock } from './m14-model.mjs';
 
 const ICON = { thought: Brain, read: FileText, edit: Pencil, command: SquareTerminal, search: Search, web: Globe, tool: Wrench, mixed: Layers };
@@ -195,8 +195,8 @@ function Row({ row, ui, onLink, onToast, onOpenChild }) {
       </div>;
     }
     case 'message': return <div className="m14-assistant"><Markdown lines={row.entry.lines} onLink={onLink} /></div>;
-    case 'final': return <div className={'m14-assistant' + (row.partial ? ' partial' : '')}>{row.agent && <div className="m14-agent-tag"><AgentIcon tool={row.agent} size={14} />Codex · DeepSeek · deepseek-flash</div>}<Markdown lines={row.lines} onLink={onLink} streaming={row.streaming} />{!row.streaming && <div className="m14-assistant-meta"><button aria-label="复制回答" title="复制回答" onClick={() => onToast('已复制回答')}><Copy size={12} /></button><span>14:04</span></div>}</div>;
-    case 'changes': return <>{row.diffState && <><DiffStateNote st={row.diffState} onToast={onToast} />{['reclaimed', 'storage-full'].includes(row.diffState.kind) && <button type="button" className="text-button" onClick={() => UICtx.openDiff(row.files, undefined, row.turnId)}>查看记录</button>}</>}{row.files.length > 0 && <ChangesCard files={row.files} label={row.turnId} />}</>;
+    case 'final': return <div className={'m14-assistant' + (row.partial ? ' partial' : '')}>{row.agent && <div className="m14-agent-tag"><AgentIcon tool={row.agent} size={14} />Codex · DeepSeek · deepseek-flash</div>}<Markdown lines={row.lines} onLink={onLink} streaming={row.streaming} />{row.showActions && !row.streaming && <div className="m14-assistant-meta"><button aria-label="复制回复" title="复制回复" onClick={() => onToast('已复制回复（合成）')}><Copy size={12} /></button><span>14:04</span></div>}</div>;
+    case 'changes': return <ChangesCard files={row.files} label={row.turnId} />;
     case 'subagents': return <Subagents e={row.entry} onToast={onToast} onOpenChild={onOpenChild} />;
     case 'created': return <LogRow icon={<FilePlus2 size={14} />} label={`创建子任务「${row.entry.title}」`} detail={`${row.entry.target} · ${row.entry.access}${row.entry.branch ? ' · 工作副本 ' + row.entry.branch : ''}`} />;
     case 'notice': return <LogRow icon={<Bell size={14} />} label={row.entry.text} detail={row.entry.sub} />;
@@ -285,7 +285,7 @@ export function ModelPill({ agent, model, effort, onClick, open }) {
 }
 
 // ---------- 输入框（WillYou reference-composer 外壳；待处理请求时按 T3 换成审批／提问面板） ----------
-function Composer({ scenario, sel, setSel, bound, permission, setPermission, fullConfirmed, requestFullAccess, queued, setQueued, onToast, onDecide, requests = [], reqIndex = 0, setReqIndex, statusNode, taskId, ptyId, delegation, setDelegation }) {
+function Composer({ scenario, sel, setSel, bound, permission, setPermission, fullConfirmed, requestFullAccess, queued, setQueued, onPromote, onToast, onDecide, requests = [], reqIndex = 0, setReqIndex, statusNode, taskId, ptyId, delegation, setDelegation }) {
   const [text, setTextRaw] = useState(() => DRAFTS.get(taskId) ?? '');
   const setTextState = v => { DRAFTS.set(taskId, v); setTextRaw(v); };
   const [menu, setMenu] = useState(null), [pick, setPick] = useState(null);
@@ -328,11 +328,9 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
   const pending = req?.kind;
   return <div className="m14-composer-wrap">
     {queued.length > 0 && <div className="m14-queue" aria-label="排队消息">{queued.map(q => <div key={q.id} className="m14-queued">
-      {q.chips?.length > 0 && <div className="m14-queued-chips"><AttachmentChips items={q.chips} small /></div>}
-      <div className="m14-queued-bubble">{q.text}</div>
+      <div className="m14-queued-bubble" title={q.text}>{q.text}{q.chips?.length > 0 && <small> · {q.chips.length} 个附件</small>}</div>
       <div className="m14-queued-meta"><span>{q.time}</span>
-        <button disabled={!ba.steer} title={ba.steer ? '插入当前这一轮，不等本轮结束' : ba.steerReason} onClick={() => { setQueued(qs => qs.filter(x => x.id !== q.id)); onToast(`已插入当前这一轮${q.chips?.length ? `（含 ${q.chips.length} 个附件）` : ''} · 合成`); }}><ArrowUp size={12} />立即发送</button>
-        <button aria-label="编辑" title="编辑" onClick={() => { setText(q.text); setChips(q.chips || []); setQueued(qs => qs.filter(x => x.id !== q.id)); }}><Pencil size={12} /></button>
+        <button type="button" disabled={running && !ba.steer} title={running && !ba.steer ? '当前轮暂不能接收插话，消息将在本轮结束后发送' : undefined} onClick={() => onPromote(q)}><ArrowUp size={12} />{running ? '插入当前轮' : '立即发送'}</button>
         <button aria-label="删除" title="删除" onClick={() => setQueued(qs => qs.filter(x => x.id !== q.id))}><X size={12} /></button>
       </div></div>)}</div>}
     {statusNode}
@@ -349,7 +347,7 @@ function Composer({ scenario, sel, setSel, bound, permission, setPermission, ful
       {req && <RequestPanel requests={requests} index={reqIndex} setIndex={setReqIndex} pick={pick} setPick={setPick} note={blocking ? null : rtext} setNote={setRtext} />}
       {req && <div className="m14-approve-actions m14-req-actions">{req.kind === 'question' && <button type="button" className="outline" onClick={() => decide('skip')}>跳过</button>}<button type="button" className="primary" disabled={(!pick && !(req.kind === 'question' && rtext.trim())) || (req.options.find(o => o.key === pick)?.needsText && !rtext.trim())} onClick={() => decide(pick ?? 'text')}>{req.kind === 'question' ? '提交' : '确认'}</button><button type="button" className="reference-send m14-stop" aria-label="停止" title="停止本轮（挂起的请求随之作废）" onClick={() => dispatchEvent(new Event('m14:stop'))}><Square size={11} fill="currentColor" /></button></div>}
       {!blocking && <ComposerChips chips={chips} onRemove={id => setChips(cs => cs.filter(c => c.id !== id))} onRetry={id => { setChips(cs => cs.map(c => c.id === id ? { ...c, state: 'preparing' } : c)); setTimeout(() => setChips(cs => cs.map(c => c.id === id ? { ...c, state: null } : c)), 1200); }} />}
-      <textarea ref={box} aria-label="消息输入" placeholder={blocking ? (pending === 'question' ? '输入自己的回答…' : pending === 'plan' ? '发送文字即请 Claude 按意见继续修改计划' : '发送文字即拒绝这次请求并说明原因') : req ? '随心输入；待批准的请求会继续保留' : running ? '继续输入，发送后排队；排队消息可“立即发送”' : '随心输入，@ 引用文件，$ 选用 Skill'} value={blocking ? rtext : text} onChange={e => { const v = e.target.value; if (blocking) setRtext(v); else setText(v); }} onPaste={e => { if (!req && pasteToChips(e, setChips, onToast)) e.preventDefault(); }} onKeyDown={e => {
+      <textarea ref={box} aria-label="消息输入" placeholder={blocking ? (pending === 'question' ? '输入自己的回答…' : pending === 'plan' ? '发送文字即请 Claude 按意见继续修改计划' : '发送文字即拒绝这次请求并说明原因') : req ? '随心输入；待批准的请求会继续保留' : running ? '继续输入，本轮结束后发送' : '随心输入，@ 引用文件，$ 选用 Skill'} value={blocking ? rtext : text} onChange={e => { const v = e.target.value; if (blocking) setRtext(v); else setText(v); }} onPaste={e => { if (!req && pasteToChips(e, setChips, onToast)) e.preventDefault(); }} onKeyDown={e => {
         if (trig && items.length && ['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); if (e.key === 'ArrowDown') setActive(i => (i + 1) % items.length); else if (e.key === 'ArrowUp') setActive(i => (i - 1 + items.length) % items.length); else if (e.key === 'Escape') setTrig(null); else pickMention(items[active]); return; }
         if (e.key === 'Escape' && trig) { setTrig(null); return; }
         if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (blocking && pick) decide(); else submit(); } if (blocking && !rtext && !e.nativeEvent.isComposing && /^[1-9]$/.test(e.key) && req.options[Number(e.key) - 1] && !req.options[Number(e.key) - 1].disabled) { e.preventDefault(); setPick(req.options[Number(e.key) - 1].key); } }} />
@@ -401,6 +399,14 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
   const [linkMenu, setLinkMenu] = useState(null), [delegation, setDelegation] = useState(true), [reqIndex, setReqIndex] = useState(0), [mail, setMail] = useState({ editing: false, edited: false, values: null }), [native, setNative] = useState(null);
   const [diagnostics, setDiagnostics] = useState(false);
   useEffect(() => { const open = () => setDiagnostics(true); addEventListener('m14:diagnostics', open); return () => removeEventListener('m14:diagnostics', open); }, []);
+  useEffect(() => {
+    const open = () => {
+      const last = UICtx.revisions?.at(-1);
+      if (last) UICtx.openDiff(last.files, undefined, last.id);
+    };
+    addEventListener('m14:show-diff', open);
+    return () => removeEventListener('m14:show-diff', open);
+  }, []);
   const [scenarioId, setScenarioId] = useState(() => new URLSearchParams(location.search).get('m14') || 'done');
   const scenario = SCENARIOS.find(s => s.id === (archived ? 'done' : scenarioId)) || SCENARIOS[0];
   const [sel, setSelRaw] = useState(() => taskState(taskId).sel ?? initialSel ?? { agent: 'cc-sub', model: 'default', effort: '中' }); // 首页所选用于新任务，之后归属任务（评审 RV09／RR05）
@@ -410,6 +416,7 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
   const setPermission = p => { taskState(taskId, { permission: p }); setPermissionRaw(p); };
   const [stopped, setStopped] = useState(false), [termTick, setTermTick] = useState(0); // 停止后挂起请求作废（评审 RR07）
   const [queued, setQueued] = useState(scenario.queued || []);
+  const [promoted, setPromoted] = useState([]);
   const [resolved, setResolved] = useState(false);
   const [openChild, setOpenChild] = useState(null), [lineage, setLineage] = useState(false), [childResolved, setChildResolved] = useState({}), [childStopped, setChildStopped] = useState({});
   const [toast, setToast] = useState(null);
@@ -422,7 +429,7 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
   const [openEntries, toggleEntry] = useToggles(), [expandedGroups, toggleGroup] = useToggles(), [expandedTurns, toggleTurn] = useToggles();
   const scroller = useRef(null);
   useEffect(() => { setStopped(false); if (scenario.agent) { const ag = AGENTS.find(x => x.id === scenario.agent); const s2 = { agent: ag.id, model: ag.models[0].id, effort: ag.defaultEffort ?? null }; setSel(s2); setBound(s2); } else setBound(sel); }, [scenario.id]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setQueued(scenario.queued || []); setResolved(false); setOpenChild(null); setLineage(false); setChildResolved({}); setChildStopped({}); setReqIndex(0); setNative(null); setMail({ editing: false, edited: false, values: null }); const u = new URL(location.href); u.searchParams.set('m14', scenario.id); history.replaceState(null, '', u); requestAnimationFrame(() => { if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight; }); }, [scenario.id]);
+  useEffect(() => { setQueued(scenario.queued || []); setPromoted([]); setResolved(false); setOpenChild(null); setLineage(false); setChildResolved({}); setChildStopped({}); setReqIndex(0); setNative(null); setMail({ editing: false, edited: false, values: null }); const u = new URL(location.href); u.searchParams.set('m14', scenario.id); history.replaceState(null, '', u); requestAnimationFrame(() => { if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight; }); }, [scenario.id]);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3200); return () => clearTimeout(t); }, [toast]);
   useEffect(() => { const k = e => { if (!archived && e.ctrlKey && e.key === '`') { e.preventDefault(); onTerminal(!terminalOpen); } }; addEventListener('keydown', k); return () => removeEventListener('keydown', k); }, [terminalOpen, onTerminal, archived]);
   const onLink = (href, external) => {
@@ -468,7 +475,7 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
     setResolved(true); setReqIndex(0); setToast({ text: label + extra + ' · 合成' });
   };
   const resolveChild = (cid, text) => { setChildResolved(r => ({ ...r, [cid]: true })); setToast({ text: text + ' · 合成' }); };
-  UICtx.revisions = (child ? child.turns : eff.turns).filter(t => t.changes || t.diffState).map((t, idx) => ({ id: t.id, title: t.diffLabel || '改动记录 ' + (idx + 1), files: t.changes || [], status: t.diffState?.kind }));
+  UICtx.revisions = (child ? child.turns : eff.turns).filter(t => t.changes || t.diffState).map((t, idx) => ({ id: t.id, title: t.diffLabel || '改动记录 ' + (idx + 1), files: t.diffState ? [] : t.changes || [], diffState: t.diffState }));
   const renderTurns = (turns, key) => turns.map(t => <div key={key + t.id} className="m14-turn">
     {t.switchBefore && <SwitchDivider sw={t.switchBefore} />}
     {t.user && <UserRow user={t.user} />}
@@ -476,6 +483,7 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
     {t.state === 'unknown' ? <div className="m14-unknown"><CircleDashed size={14} /><div><b>发送后连接中断，无法确认 Codex 是否收到这条消息</b><small>正在核对原生记录；确认前不会自动重发</small></div><button onClick={() => setToast({ text: '已重新核对（合成）' })}>重新核对</button></div>
       : t.state === 'queued' ? <div className="m14-queued-turn"><Hourglass size={14} /><div><b>排队中，尚未启动</b><small>主任务本轮结束并交出共用目录的写入资格后，子任务将继续。</small></div></div>
       : <div className="m14-turn-rows">{deriveRows(t, { expandedGroups, expandedTurns }).map(r => <Row key={r.id} row={r} ui={ui} onLink={onLink} onToast={text => setToast({ text })} onOpenChild={archived ? undefined : enterChild} />)}</div>}
+    {!child && t === turns.at(-1) && promoted.filter(q => q.steer).map(q => <UserRow key={q.id} user={{text:q.text,time:q.time,attachments:q.chips}}/>)}
   </div>);
   if (child) {
     const c = childState(child);
@@ -500,12 +508,17 @@ export function M14TaskArea({ onOpenFile, onRevealDir, onOpenUrl, onOpenDiff, te
       <div className="m14-timeline">
         {initialMessage && <div className="m14-turn"><UserRow user={{ text: initialMessage.text || '（只有附件）', attachments: initialMessage.chips?.length ? initialMessage.chips : undefined }} /><LogRow icon={<Check size={14} />} label="新任务的第一条消息（含附件）已发送 · 下方为演示状态" /></div>}
         {renderTurns(effTurns, scenario.id)}
+        {promoted.filter(q => !q.steer).map(q => <UserRow key={q.id} user={{text:q.text,time:q.time,attachments:q.chips}}/>)}
         {resolved && !stopped && <LogRow icon={<CheckCircle2 size={14} />} label="请求已处理，Agent 继续工作" />}
         {stopped && <LogRow icon={<Square size={12} />} label="已停止本轮 · 挂起的请求已作废" />}
       </div>
     </div>
     <div className="m14-bottom">
-      {archived ? <div className="m14-archive-composer"><textarea aria-label="已归档任务输入" disabled placeholder="恢复后可以继续此会话" /></div> : <Composer requests={requests} reqIndex={Math.min(reqIndex, Math.max(0, requests.length - 1))} setReqIndex={setReqIndex} onDecide={onDecide} taskId={taskId} ptyId={ptyId} delegation={delegation} setDelegation={setDelegation} scenario={eff} sel={sel} setSel={setSel} bound={bound} fullConfirmed={fullConfirmed} requestFullAccess={requestFullAccess} permission={permission} setPermission={setPermission} queued={queued} setQueued={setQueued} onToast={text => setToast({ text })}
+      {archived ? <div className="m14-archive-composer"><textarea aria-label="已归档任务输入" disabled placeholder="恢复后可以继续此会话" /></div> : <Composer requests={requests} reqIndex={Math.min(reqIndex, Math.max(0, requests.length - 1))} setReqIndex={setReqIndex} onDecide={onDecide} taskId={taskId} ptyId={ptyId} delegation={delegation} setDelegation={setDelegation} scenario={eff} sel={sel} setSel={setSel} bound={bound} fullConfirmed={fullConfirmed} requestFullAccess={requestFullAccess} permission={permission} setPermission={setPermission} queued={queued} setQueued={setQueued} onPromote={q => {
+          setQueued(items => items.filter(item => item.id !== q.id));
+          setPromoted(items => [...items, { ...q, steer: eff.turns.at(-1)?.state === 'running' }]);
+          requestAnimationFrame(() => { if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight; });
+        }} onToast={text => setToast({ text })}
         statusNode={line && <div className={'m14-statusline t-' + line.tone}><CircleDashed size={13} /><span>{line.text}</span><span className="m14-statusline-detail">{line.detail}</span><button onClick={() => setToast({ text: '停止范围：主任务及其子任务（合成）' })}>停止</button></div>} />}
       {!archived && terminalOpen && <TerminalDrawer key={termTick} pending={taskState(taskId).term ?? []} onClose={() => onTerminal(false)} />}
     </div>

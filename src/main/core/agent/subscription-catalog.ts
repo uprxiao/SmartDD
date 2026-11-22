@@ -133,10 +133,7 @@ export class SubscriptionCatalogs {
       if (saved.checkedAt + FRESH_FOR <= Date.now()) refresh?.();
       return saved.models;
     }
-    const pending = this.entries.get(key);
-    if (!pending?.pending || (pending.account && pending.account !== account)) return undefined;
-    await pending.pending;
-    return this.restore(cacheKey(PREFIX, key, account))?.models;
+    return undefined;
   }
 
   remember(key: string, account: string, models: AgentModelOption[]) {

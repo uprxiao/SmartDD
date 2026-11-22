@@ -16,6 +16,7 @@ export interface HostIdentity { instanceId: string; pid: number; startedAt: stri
 export interface OpenRunInput {
   taskId: string;
   modelCache?: DriverModelCache;
+  hostBusinessInstructions?: string;
   driverId: DriverId;
   profileId: string;
   executable: DriverExecutable;
@@ -36,12 +37,17 @@ export interface OpenRunInput {
   modelsWithoutImageInput?: ReadonlySet<string>;
   assertCurrent?(): void;
   startCancelled?(): boolean;
+  startupSignal?: AbortSignal;
   stopWhenWaiting?(): boolean;
   readOnly?: boolean;
   integrate?(context: RunIntegrationContext): Promise<RunIntegration | undefined>;
 }
 export interface RunHandle { runId: string; taskId: string; bindingId: string; generation: number; driverId: DriverId; tier: Tier; tierNotice?: string; version: string; capabilities: Record<CapabilityName, CapabilityResult>; model?: string; defaultModel?: string; models?: DriverModel[]; modelsWithoutImageInput?: ReadonlySet<string>; /** 线程上一次生效的档位（打开或最近一轮）。 */ appliedTier?: Tier; appliedModel?: string; appliedEffort?: string; /** 本运行已发过显式模型。 */ sentModel?: boolean; /** 恢复的原生会话（可能带着旧的模型覆盖）。 */ resumed?: boolean }
 export type LiveListener = (e: { taskId: string; runId: string; event: DriverEvent }) => void;
+export interface RunHandle {
+  hostBusinessInstructionsInstalled?: boolean;
+  nativeSelection?: { model: string; effort: string };
+}
 interface ActiveRun extends RunHandle { assertCurrent?(): void; openError?: string; catalog?: { commands: string[]; skills: { name: string; description?: string }[] }; instance: DriverInstance; projector: TimelineProjector; turnId: string | null; closing: boolean; ended: Promise<void>; markEnded(): void }
 
 const FORCE_STOP_DELAY_MS = 10_000;
@@ -52,11 +58,13 @@ const LIFECYCLE_NOTICES = new Set([
   'system/hook_started', 'system/hook_progress', 'system/hook_response',
 ]);
 interface ActiveRun {
+  prewarmNativeId?: string;
   pendingNotices?: NativeNotice[];
   mcpFailures?: Map<string, ItemUpsert>;
   firstNativeTurnStarted?: boolean;
   claudeHookTurns?: Map<string, string | null>;
   modelCatalog?: Promise<DriverModel[] | undefined>;
+  firstModelCatalog?: Promise<DriverModel[] | undefined>;
 }
 export class AgentRunService {
   private readonly runs = new Map<string, ActiveRun>();
@@ -74,7 +82,9 @@ export class AgentRunService {
 
   active(runId: string) { return this.runs.get(runId); }
 
-  async open(input: OpenRunInput): Promise<RunHandle> {
+  async open(input: OpenRunInput): Promise<RunHandle>;
+  async open(input: OpenRunInput, mode: 'resume-only'): Promise<RunHandle | undefined>;
+  async open(input: OpenRunInput, mode?: 'resume-only'): Promise<RunHandle | undefined> {
     const { store } = this.deps;
     const task = store.task(input.taskId);
     if (!task) throw new DriverError('REJECTED', '任务不存在或不是新任务');
@@ -91,6 +101,7 @@ export class AgentRunService {
     const existing = store.findBinding(input.taskId, input.driverId, continuationHash);
     const capabilities = input.capabilities ?? evaluateCapabilities(input.driverId, input.executable.version).capabilities;
     const resumeNativeId = existing?.native_confirmed_at ? existing.native_id ?? undefined : undefined;
+    if (mode === 'resume-only' && (!resumeNativeId || capabilities.resume.state !== 'enabled')) return;
     if (resumeNativeId && capabilities.resume.state !== 'enabled') throw new DriverError('UNSUPPORTED', '当前执行器不支持恢复原生会话');
     const bindingId = existing?.binding_id ?? store.createBinding({ task_id: input.taskId, driver_id: input.driverId, profile_id: input.profileId, continuation_hash: continuationHash, state_root: stateIdentity, cwd_identity: cwdIdentity });
     store.freezeBinding(bindingId, { compatibility: input.compatibility, stateRoot: stateIdentity, cwd: cwdIdentity });
@@ -105,6 +116,7 @@ export class AgentRunService {
     const run: ActiveRun = { runId, taskId: input.taskId, bindingId, generation, driverId: input.driverId, tier: tier.tier, version: input.executable.version, capabilities, model: input.model, defaultModel: input.defaultModel, modelsWithoutImageInput: input.modelsWithoutImageInput, appliedTier: tier.tier, sentModel: !!(resumeNativeId && input.model && input.driverId === 'codex-app-server'), resumed: !!resumeNativeId, readOnly: input.readOnly === true, ...(tier.downgraded ? { tierNotice: tier.reason } : {}), instance, projector: new TimelineProjector(input.driverId), turnId: null, closing: false, ended, markEnded };
     this.runs.set(runId, run);
     run.opening = true;
+    if (mode === 'resume-only') run.prewarmNativeId = resumeNativeId;
     run.assertCurrent = input.assertCurrent;
     instance.on(e => this.onDriverEvent(run, e));
     const startupCancelled = () => run.opening === true && (run.closing || input.startCancelled?.() === true);
@@ -121,33 +133,46 @@ export class AgentRunService {
       await run.integration?.beforeFork();
       assertStarting();
       forkAttempted = true;
-      const opened = await instance.open({ executable: input.executable, modelCache: input.modelCache, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, beforeInitialize: async () => { await run.registration; assertStarting(); } });
+      const opened = await instance.open({ executable: input.executable, modelCache: input.modelCache, hostBusinessInstructions: input.hostBusinessInstructions, cwd: input.cwd, env: { ...input.env, ...run.integration?.env }, model: input.model, tier: tier.tier, resumeNativeId, extraArgs: [...(input.extraArgs ?? []), ...(run.integration?.extraArgs ?? [])], settingSources: input.settingSources, mcpServers: run.integration?.mcpServers, claudeMcp: run.integration?.claudeMcp, skillRoots: capabilities.skills.state === 'enabled' ? run.integration?.skillRoots : undefined, plugins: run.integration?.plugins,hostBusinessCli:run.integration?.hostBusinessCli,claudeSettings:run.integration?.claudeSettings,codexCliPermissions:run.integration?.codexCliPermissions, stopWhenWaiting: input.stopWhenWaiting, recoverGoals: capabilities.goal.state === 'enabled', readOnly: input.readOnly, requiredMcpServers: Object.keys(run.integration?.mcpServers ?? {}), assertStarting, startupSignal: input.startupSignal, beforeThreadOpen: run.integration?.beforeThreadOpen, beforeInitialize: async () => { await run.registration; assertStarting(); } });
       await run.registration;
       assertStarting();
+      if (run.closing || this.runs.get(runId) !== run) throw new DriverError('EXITED', '执行器在会话就绪前退出');
+      if (mode === 'resume-only' && (!opened.confirmed || opened.nativeId !== resumeNativeId)) throw new DriverError('PROTOCOL', '预恢复未确认原会话');
       if (opened.confirmed) store.confirmNative(bindingId, opened.nativeId);
       run.opening = false;
+      run.prewarmNativeId = undefined;
       const optional = [['mcp', 'MCP 业务通道'], ['resume', '原生会话恢复'], ['steer', '插话'], ['skills', 'Skill 目录'], ['approvalsReviewer', '审批审阅档位']] as const;
       const unavailable = optional.filter(([name]) => capabilities[name].reason === 'probe-unavailable').map(([, label]) => label);
       if (unavailable.length) store.addHostItem(input.taskId, null, 'system_notice', { severity: 'warning', code: 'optionalProtocolUnavailable', title: `当前执行器不支持${unavailable.join('、')}`, detail: '基本对话仍可使用。' });
       // 档案没有指定默认模型时，用执行器报告的原生默认（复核 FR03）。
       if (!run.defaultModel && opened.defaultModel) run.defaultModel = opened.defaultModel;
-      if (instance.modelCatalog) run.modelCatalog = instance.modelCatalog().then(models => {
-        if (this.runs.get(runId) !== run || run.closing) return undefined;
-        run.models = models.slice(0, 200).map(model => ({
-          id: model.id.slice(0, 256), name: model.name.slice(0, 160),
-          efforts: model.efforts.slice(0, 12).map(effort => effort.slice(0, 24)),
-          defaultEffort: model.defaultEffort?.slice(0, 24),
-          ...(model.isDefault ? { isDefault: true } : {}),
-        }));
-        store.tx(emit => emit(run.taskId, 'run.models', {}));
-        return run.models;
-      }).catch(() => undefined);
+      run.nativeSelection = opened.nativeSelection;
+      run.hostBusinessInstructionsInstalled = opened.hostBusinessInstructionsInstalled;
+      store.tx(emit => emit(run.taskId, 'run.session_ready', { runId, bindingId, resumed: !!resumeNativeId, background: mode === 'resume-only', ...(input.hostBusinessInstructions ? { businessContext: opened.hostBusinessInstructionsInstalled ? 'developer' : 'history' } : {}) }));
+      if (instance.modelCatalog) {
+        const catalogStarted = performance.now();
+        let publishFirst!: (models: DriverModel[] | undefined) => void;
+        run.firstModelCatalog = new Promise(resolve => { publishFirst = resolve; });
+        run.modelCatalog = instance.modelCatalog(publishFirst).then(models => {
+          if (this.runs.get(runId) !== run || run.closing) return undefined;
+          run.models = models.slice(0, 200).map(model => ({
+            id: model.id.slice(0, 256), name: model.name.slice(0, 160),
+            efforts: model.efforts.slice(0, 12).map(effort => effort.slice(0, 24)),
+            defaultEffort: model.defaultEffort?.slice(0, 24),
+            ...(model.isDefault ? { isDefault: true } : {}),
+          }));
+          store.tx(emit => emit(run.taskId, 'run.models', { runId, elapsedMs: Math.round(performance.now() - catalogStarted) }));
+          return run.models;
+        }).catch(() => undefined);
+        void run.modelCatalog.then(publishFirst);
+      }
     } catch (e) {
       // 已启动原生进程时，取消和打开失败都按真实退出收口（复核 NR02）。
       run.closing = true;
       const cancelled = input.startCancelled?.() === true;
       run.openError = cancelled ? undefined : !forkAttempted ? 'OPEN_FAILED_UNFORKED' : e instanceof DriverError ? e.code : 'OPEN_FAILED';
       await instance.close().catch(() => {});
+      if (run.exitFinishing) await run.exitFinishing.catch(() => {});
       if (!store.run(runId)?.pid) await run.integration?.cancelBeforeFork().catch(() => {});
       if (this.runs.has(runId)) {
         if (!store.run(runId)?.pid) { store.finishRun(runId, input.taskId, cancelled ? 'stopped' : 'failed', run.openError ?? null); this.runs.delete(runId); run.markEnded(); }
@@ -246,11 +271,20 @@ export class AgentRunService {
           store.attachRunProcess(run.runId, run.taskId, e.pid, identity?.pid === e.pid ? identity.startedAt : null);
           if (run.integration) {
             run.registration = run.integration.attached(e.pid);
-            void run.registration.catch(error => { run.openError = 'IDENTITY_REGISTRATION_FAILED'; store.addHostItem(run.taskId, run.turnId, 'error', { message: `业务运行身份登记失败：${(error as Error).message}` }); void this.close(run.runId); });
+            void run.registration.catch(error => {
+              run.openError = 'IDENTITY_REGISTRATION_FAILED';
+              if (run.opening && run.prewarmNativeId) return; // The speculative open owns its cleanup.
+              store.addHostItem(run.taskId, run.turnId, 'error', { message: `业务运行身份登记失败：${(error as Error).message}` });
+              void this.close(run.runId);
+            });
           }
           break;
         }
+        case 'model_cache':
+          store.tx(emit => emit(run.taskId, 'run.model_cache_checked', { runId: run.runId, result: e.result, elapsedMs: e.elapsedMs }));
+          break;
         case 'session':
+          if (run.prewarmNativeId && e.nativeId !== run.prewarmNativeId) break;
           store.confirmNative(run.bindingId, e.nativeId);
           this.flushLifecycleNotices(run);
           break;
@@ -416,7 +450,9 @@ export class AgentRunService {
     if (!run || run.closing || run.turnId) throw new DriverError('STATE', '历史交接需要空闲会话');
     if (!run.instance.injectHistory) throw new DriverError('UNSUPPORTED', '该执行器未公布历史追加接口，无法安全交接');
     this.assertIdleRunCurrent(run);
+    const started = performance.now();
     await run.instance.injectHistory(text);
+    this.deps.store.tx(emit => emit(run.taskId, 'run.history_injected', { runId, elapsedMs: Math.round(performance.now() - started) }));
   }
   async goal(runId: string, op: Parameters<NonNullable<DriverInstance['goal']>>[0]) {
     const run = this.runs.get(runId);
@@ -442,7 +478,13 @@ export class AgentRunService {
     if (!run.defaultModel && run.instance.defaultModel) run.defaultModel = await run.instance.defaultModel();
     return run.defaultModel;
   }
-  async resolveModelCatalog(runId: string) { return await this.runs.get(runId)?.modelCatalog; }
+  async resolveModelCatalog(runId: string, model: string | undefined, effort: string) {
+    const run = this.runs.get(runId);
+    if (run?.models) return run.models;
+    const first = await run?.firstModelCatalog;
+    if (first?.some(item => item.id === model && item.efforts.includes(effort))) return first;
+    return run?.modelCatalog;
+  }
   runForTask(taskId: string) { for (const r of this.runs.values()) if (r.taskId === taskId && !r.closing) return r; return undefined; }
   closingForTask(taskId: string) { for (const r of this.runs.values()) if (r.taskId === taskId && r.closing) return r; return undefined; }
 
@@ -500,6 +542,7 @@ export class AgentRunService {
   async close(runId: string) {
     const run = this.runs.get(runId);
     if (!run) return;
+    if (!run.closing) this.deps.store.tx(emit => emit(run.taskId, 'run.close_requested', { runId }));
     run.closing = true;
     if(run.userStop)this.deps.store.tx(emit=>emit(run.taskId,'run.force_stopping',{runId}));
     await Promise.allSettled([...(run.nodeReads ?? [])]);

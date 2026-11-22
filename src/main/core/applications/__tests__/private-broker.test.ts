@@ -74,6 +74,25 @@ describe.skipIf(process.platform !== 'darwin')('private Unix broker credentials,
     await vi.waitFor(()=>expect(f.sqlite.prepare('SELECT state FROM capability_run_processes WHERE process_id=?').get(prepared.bridge.processId)).toEqual({state:'canceled'}));
     expect(f.runs.get(run.runId).state).toBe('active');
   });
+  it('starts the one-use ticket lifetime when the bridge is ready to launch',async()=>{
+    const prepared=await broker.reserve(run,f.snapshot.mcp[0].serverName);
+    expect(existsSync(prepared.bootstrapPath)).toBe(false);
+    time+=31_000;
+    await prepared.bridge.arm();
+    prepared.issue();
+    const data=JSON.parse(readFileSync(prepared.bootstrapPath,'utf8')) as BridgeBootstrap;
+    expect(data.expiresAt-time).toBe(30_000);
+    expect(()=>prepared.issue()).toThrow();
+    const client=await peer(broker.endpoint);
+    valueToken(await client.send(exchange(data)));
+    await prepared.bridge.exited();
+  });
+  it('cannot issue the reserved startup ticket after cancellation',async()=>{
+    const prepared=await broker.reserve(run,f.snapshot.mcp[0].serverName);
+    await prepared.cancel();
+    expect(()=>prepared.issue()).toThrow();
+    expect(existsSync(prepared.bootstrapPath)).toBe(false);
+  });
   it('expires an armed ticket without fabricating a native child exit',async()=>{
     ticketTtlMs=30;const prepared=await ticket();
     await vi.waitFor(()=>expect(existsSync(prepared.bootstrapPath)).toBe(false));

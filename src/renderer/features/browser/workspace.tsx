@@ -2,6 +2,7 @@ import {useTreePathTooltip} from '@renderer/features/files/tree-path-tooltip';
 import {useBrowserTabTooltip,type BrowserTabTooltip} from './tab-tooltip';
 import {BrowserJavascriptDialogView} from './javascript-dialog';
 import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {createPortal} from 'react-dom';
 import {ArrowLeft,ArrowRight,RotateCw,X,Search,Files,Globe,MoreHorizontal,ChevronUp,ChevronDown,Info,ShieldAlert,AlertTriangle,WifiOff,UserRound,Download,KeyRound,Pause,Play,Bot,ExternalLink} from 'lucide-react';
 import {browserChangedEvent,browserShortcutEvent} from '@shared/events';
 import type {BrowserWorkspaceState,BrowserShortcut} from '@shared/browser-workspace';
@@ -46,10 +47,57 @@ export function useBrowserShortcuts(){
     document.addEventListener('keydown',key);return()=>{showGeneration++;document.removeEventListener('keydown',key);off();};
   },[]);
 }
-export function AgentBrowserSurface({taskId}:{taskId:string}){
- const store=browserWorkspaceFor(taskId),{state,error}=useSyncExternalStore(store.subscribe,store.snapshot);
- useEffect(()=>{void store.refresh();return events.on(browserChangedEvent,e=>{if(e.taskId===taskId)void store.refresh();});},[store,taskId]);
- return <div className="agent-browser-surface"><div className="agent-webtabs" role="tablist" aria-label="网页标签">{state?.tabs.map(tab=><div key={tab.id}><button type="button" role="tab" aria-selected={tab.id===state.activeId} title={tab.url} onClick={()=>void store.select(tab.id)}><Globe size={12}/>{tab.title||'新标签页'}{tab.agentActive&&<span aria-label="Agent 活动">●</span>}</button><button type="button" aria-label={'关闭网页 '+tab.title} onClick={()=>void store.close(tab.id)}><X size={11}/></button></div>)}<button type="button" title="新建网页标签" onClick={()=>void store.create()}>+</button></div>{state?.activeId?<BrowserView state={state} store={store} error={error} titleTooltip={null}/>:<div className="agent-panel-empty"><p>{error||'还没有网页'}</p><button type="button" onClick={()=>void store.create()}>新建网页标签</button></div>}</div>;
+interface BrowserHeader {
+  target: HTMLElement | null;
+  active: boolean;
+  onActivate: () => void;
+  onClose: () => void;
+}
+
+export function AgentBrowserSurface({ taskId, workspaceHeader }: { taskId: string; workspaceHeader?: BrowserHeader }) {
+  const store = browserWorkspaceFor(taskId);
+  const { state, error } = useSyncExternalStore(store.subscribe, store.snapshot);
+  const hadTabs = useRef(false);
+  const onCloseSurface = workspaceHeader?.onClose;
+  const openingTab = store.openingTab;
+  useEffect(() => {
+    void store.refresh();
+    return events.on(browserChangedEvent, event => { if (event.taskId === taskId) void store.refresh(); });
+  }, [store, taskId]);
+  useEffect(() => {
+    if (!onCloseSurface || !state) return;
+    if (state.tabs.length) {
+      hadTabs.current = true;
+    } else if (hadTabs.current && !store.openingTab) {
+      // The current subscription can arrive after close() resolves.
+      hadTabs.current = false;
+      onCloseSurface();
+    }
+  }, [state, openingTab, onCloseSurface, store]);
+  const tabs = state?.tabs.map(tab => {
+    const title = tab.title || '新标签页';
+    const selected = (workspaceHeader?.active ?? true) && tab.id === state.activeId;
+    return <div key={tab.id} className={`agent-surface-tab ${selected ? 'on' : ''}`}>
+      <button type="button" role="tab" aria-selected={selected} title={tab.url} onClick={() => {
+        workspaceHeader?.onActivate();
+        if (tab.id !== state.activeId) void store.select(tab.id);
+      }}>
+        {tab.favicon ? <img className="bw-tab-icon" src={tab.favicon} alt="" /> : <Globe size={14}/>}
+        <span className="agent-tab-label">{title}</span>{tab.agentActive && <i className={'bw-agent-dot' + (state.paused ? ' paused' : '')} aria-label={state.paused ? 'Agent 已暂停' : 'Agent 活动'}/>}
+      </button>
+      <button type="button" aria-label={'关闭网页 ' + title} onClick={() => void store.close(tab.id)}><X size={11}/></button>
+    </div>;
+  });
+  return <>
+    {workspaceHeader?.target && createPortal(tabs?.length ? tabs : <div className={`agent-surface-tab ${workspaceHeader.active ? 'on' : ''}`}>
+      <button type="button" role="tab" aria-selected={workspaceHeader.active} onClick={workspaceHeader.onActivate}><Globe size={14}/>浏览器</button>
+      <button type="button" aria-label="关闭浏览器面板" onClick={workspaceHeader.onClose}><X size={11}/></button>
+    </div>, workspaceHeader.target)}
+    {(workspaceHeader?.active ?? true) && <div className="agent-browser-surface">
+      {!workspaceHeader && <div className="agent-webtabs" role="tablist" aria-label="网页标签">{tabs}<button type="button" title="新建网页标签" onClick={() => void store.create()}>+</button></div>}
+      {state?.activeId ? <BrowserView state={state} store={store} error={error} titleTooltip={null}/> : <div className="agent-panel-empty"><p>{error || (state ? '还没有网页' : '正在读取网页')}</p><button type="button" onClick={() => void store.create()}>新建网页标签</button></div>}
+    </div>}
+  </>;
 }
 function BrowserView({state,store,error,titleTooltip}:{state:BrowserWorkspaceState;store:BrowserWorkspaceStore;error:string;titleTooltip:BrowserTabTooltip|null}){
   const access=useSyncExternalStore(browserAccess.subscribe,browserAccess.snapshot),accessOpen=!!access.state.requests.length||access.grantsOpen,[accessReady,setAccessReady]=useState(false);

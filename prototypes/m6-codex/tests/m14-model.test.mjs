@@ -94,7 +94,7 @@ test('A59：寒暄结束后直接显示回答，有实际文件变化或快照�
   const t = { id: 'hello', state: 'done', entries: [{ id: 'mcp', kind: 'sysnote', diagnostic: true }], final: ['你好！'], changes: [] };
   assert.deepEqual(kinds(t), ['final']);
   assert.ok(kinds({ ...t, changes: [{path:'notes.txt'}] }).includes('changes'));
-  assert.ok(kinds({ ...t, diffState: {kind:'reclaimed'} }).includes('changes'));
+  assert.ok(!kinds({ ...t, diffState: {kind:'reclaimed'} }).includes('changes'));
 });
 test('P0.7：正在停止时轮首写“正在停止…”，不再显示“思考中”', () => {
   const t = SCENARIOS.find(s => s.id === 'stopping').turns[0];

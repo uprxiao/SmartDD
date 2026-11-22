@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { DriverEvent } from '../driver';
 import { FakeAppServer, FakeChild, until } from '../test-doubles';
 import { CodexAppServerInstance } from './codex-app-server';
@@ -23,6 +23,49 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it.each([undefined, null, '已有的开发者指令'])('uses native host instructions when config is known (%s)', async configured => {
+    const { inst, server } = setup((message, peer) => {
+      if (message.method !== 'config/read') return false;
+      peer.reply(message.id, { config: { developer_instructions: configured } });
+      return true;
+    });
+    try {
+      const opening = await inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', hostBusinessInstructions: '宿主约定' });
+      expect(opening.hostBusinessInstructionsInstalled).toBe(configured === undefined ? undefined : true);
+      expect(server.calls('thread/start')[0].params.developerInstructions).toBe(
+        configured === undefined ? undefined : configured ? configured + '\n\n宿主约定' : '宿主约定',
+      );
+      expect(server.calls('thread/inject_items')).toHaveLength(0);
+    } finally { await inst.close(); }
+  });
+
+  it.each([true, false])('checks freshly mounted Skills without forcing a second scan (visible=%s)', async visible => {
+    const root = { name: 'willyou-host', path: '/run/skills/willyou-host' };
+    const { inst, server } = setup((m, s) => {
+      if (m.method === 'skills/extraRoots/set') {
+        s.reply(m.id, {});
+      } else if (m.method === 'skills/list' && s.calls('thread/start').length === 0) {
+        if (m.params.forceReload) {
+          s.send({ id: m.id, error: { code: -32603, message: 'forced Skill reload stalled' } });
+        } else {
+          s.reply(m.id, { data: [{ skills: [{ name: root.name, path: `${root.path}/SKILL.md`, enabled: visible }] }] });
+        }
+      } else return false;
+      return true;
+    });
+    const beforeThreadOpen = vi.fn(async () => {
+      expect(server.calls('skills/list')).toHaveLength(1);
+      expect(server.calls('thread/start')).toEqual([]);
+    });
+    const opening = inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', skillRoots: [root], beforeThreadOpen });
+    if (visible) await expect(opening).resolves.toMatchObject({ nativeId: 'thr-1', confirmed: true });
+    else await expect(opening).rejects.toThrow('Skill 未按冻结目录加载');
+    expect(server.calls('skills/extraRoots/set').map(row => row.params)).toEqual([{ extraRoots: [root.path] }]);
+    expect(server.calls('thread/start')).toHaveLength(visible ? 1 : 0);
+    expect(beforeThreadOpen).toHaveBeenCalledTimes(visible ? 1 : 0);
+    await inst.close();
+  });
+
   it('uses the same verified account directory on the first turn and discovers a different account independently', async () => {
     const cache = new Map<string, Awaited<ReturnType<CodexAppServerInstance['modelCatalog']>>>();
     for (const [accountId, expectedQueries] of [['a', 1], ['a', 0], ['b', 1]] as const) {
@@ -40,7 +83,51 @@ describe('Codex app-server 驱动', () => {
       expect((await f.inst.modelCatalog())[0]).toMatchObject({id:accountId, efforts:['medium']});
       expect(f.server.calls('account/read')).toHaveLength(1);
       expect(f.server.calls('model/list')).toHaveLength(expectedQueries);
+      expect(f.events).toContainEqual({type:'model_cache',result:expectedQueries ? 'miss' : 'hit',elapsedMs:expect.any(Number)});
+      await f.inst.close();
     }
+  });
+
+  it('does not retry or treat a successful catalog as fallback after an earlier startup warning', async () => {
+    const f = setup((message, peer) => {
+      if (message.method !== 'model/list') return false;
+      peer.reply(message.id, { data:[{ model:'catalog-model' }] });
+      return true;
+    });
+    try {
+      await f.inst.open({ executable:exe, cwd:'/w', env:{}, tier:'ask' });
+      f.child.stderr.write('failed to refresh available models during thread start\n');
+      const fallback = vi.fn();
+      expect(await f.inst.modelCatalog(fallback)).toMatchObject([{ id:'catalog-model' }]);
+      expect(fallback).not.toHaveBeenCalled();
+      expect(f.server.calls('model/list')).toHaveLength(1);
+    } finally { await f.inst.close(); }
+  });
+  it('looks up the verified catalog while opening a resumed thread, without waiting on model discovery', async () => {
+    let finishResume: (() => void) | undefined;
+    const cached = [{ id: 'gpt-6.2-sol', name: 'GPT-6.2 Sol', efforts: ['medium'] }];
+    const read = vi.fn(() => cached);
+    const f = setup((m, s) => {
+      if (m.method === 'thread/resume') {
+        finishResume = () => s.reply(m.id, { thread: { id: 'thr-1' } });
+      } else if (m.method === 'account/read') {
+        s.reply(m.id, { account: { type: 'chatgpt', accountId: 'same-account' } });
+      } else {
+        return false;
+      }
+      return true;
+    });
+    const opening = f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', resumeNativeId: 'thr-1',
+      modelCache: { read, write: vi.fn() } });
+    try {
+      await until(() => !!finishResume);
+      expect(read).toHaveBeenCalledTimes(1);
+    } finally {
+      finishResume?.();
+      await opening;
+    }
+    expect(await f.inst.modelCatalog()).toEqual(cached);
+    expect(f.server.calls('model/list')).toHaveLength(0);
   });
   it('accepts a native catalogue after the five-second network fallback and follows visible pages', async () => {
     const f = setup((m, s) => {
@@ -59,21 +146,23 @@ describe('Codex app-server 驱动', () => {
     expect(f.server.calls('model/list').every(call => !call.params.includeHidden)).toBe(true);
   }, 9000);
 
-  it('recovers from a temporary native refresh failure without accepting the built-in fallback as final', async () => {
+  it('returns the running session catalogue after the first native fallback without retrying', async () => {
     let calls = 0;
+    const fallback = vi.fn();
     const f = setup((m, s) => {
       if (m.method !== 'model/list') return false;
       if (++calls === 1) {
         f.child.stderr.write('codex_models_manager::manager: failed to refresh available models: request timed out\n');
         s.reply(m.id, { data: [{ model: 'fallback' }] });
       } else {
+        expect(fallback).toHaveBeenCalledWith([expect.objectContaining({ id: 'fallback' })]);
         s.reply(m.id, { data: [{ model: 'account-model' }] });
       }
       return true;
     });
     await f.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask' });
-    expect((await f.inst.modelCatalog()).map(model => model.id)).toEqual(['account-model']);
-    expect(calls).toBe(2);
+    expect((await f.inst.modelCatalog(fallback)).map(model => model.id)).toEqual(['fallback']);
+    expect(calls).toBe(1);
   });
   it.each(['form', 'url'])('A09 accepts only cancel for a native MCP %s request', async mode => {
     const { inst, server, events } = setup();
@@ -425,12 +514,14 @@ describe('Codex app-server 驱动', () => {
     expect(r).toEqual({ nativeId: 'thr-1', confirmed: true, defaultModel: 'native-default' });
     expect(a.server.calls('thread/start')[0].params.model).toBeUndefined();
     const b = setup((m, s) => {
+      if (m.method === 'thread/resume') { s.reply(m.id, { thread: { id: 'thr-old' }, model: 'sticky', reasoningEffort: 'medium' }); return true; }
       if (m.method === 'config/read') { s.reply(m.id, { config: { model: null } }); return true; }
       if (m.method === 'model/list') { s.reply(m.id, { data: [{ id: 'x', model: 'x', isDefault: false }, { id: 'd', model: 'gpt-default', isDefault: true }] }); return true; }
       return false;
     });
     const rb = await b.inst.open({ executable: exe, cwd: '/w', env: {}, tier: 'ask', resumeNativeId: 'thr-old', model: 'sticky' });
     expect(rb.defaultModel).toBeUndefined();
+    expect(rb.nativeSelection).toEqual({ model: 'sticky', effort: 'medium' });
     expect(b.server.calls('thread/resume')[0].params.model).toBe('sticky');
     expect(await b.inst.defaultModel()).toBe('gpt-default');
     expect(b.server.calls('config/read')[0].params).toEqual({ cwd: '/w' });

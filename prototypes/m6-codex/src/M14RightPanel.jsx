@@ -1,19 +1,28 @@
-// M14 原型 P0.8：右侧统一面板（照 T3 RightPanelSurfaceContent／PanelLayoutControls）。
-// 顶部一排面板标签：文件／浏览器／终端／差异，“+”菜单再打开一种；右上角：最大化、底部终端抽屉、收起面板。
-// 文件内容沿用 M9 文件区，浏览器内容沿用 M12 浏览器，终端为手动终端；面板只是外层容器，不改它们的内部合同。
+// M14 右侧工作区。当前文件、网页、终端与差异都在窗口标题栏。
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useVisibleWorkspaceTab } from '../../../src/renderer/lib/hooks/useVisibleWorkspaceTab';
 import { FileDiff, FolderOpen, Globe, Maximize2, Minimize2, PanelBottom, PanelRight, Plus, SquareTerminal, X } from 'lucide-react';
+
+import { DiffStateNote } from './M14Extras';
 
 export const SURFACES = { files: { label: '文件', icon: FolderOpen, key: 'F' }, browser: { label: '浏览器', icon: Globe, key: 'B' }, terminal: { label: '终端', icon: SquareTerminal, key: 'T' }, diff: { label: '差异', icon: FileDiff, key: 'D' } };
 
-export function M14RightPanel({ open, active, disabled = {}, onActive, onAdd, onRemove, onClosePanel, maximized, onMaximize, drawerOpen, onToggleDrawer, children }) {
+export function M14RightPanel({ open, active, disabled = {}, onActive, onAdd, onRemove, maximized, onMaximize, headerTarget, onTerminal, terminalOpen, onCollapse, webTabs, children }) {
   const [menu, setMenu] = useState(false);
+  const [fileTabs, setFileTabs] = useState(null);
+  const [browseRequest, setBrowseRequest] = useState(0);
+  const [tabStrip, setTabStrip] = useState(null);
+  useVisibleWorkspaceTab(tabStrip);
   const addable = Object.keys(SURFACES);
-  useEffect(() => { const k = e => { if (e.target.closest?.('input,textarea,[contenteditable]')) return; const id = addable.find(s => !disabled[s] && SURFACES[s].key.toLowerCase() === e.key.toLowerCase()); if (e.key === 'Escape' && menu) setMenu(false); else if ((menu || open.length === 0) && id && !e.metaKey && !e.ctrlKey) { e.preventDefault(); setMenu(false); onAdd(id); } }; addEventListener('keydown', k); return () => removeEventListener('keydown', k); }, [menu, onAdd, open.length, addable.join()]); // eslint-disable-line react-hooks/exhaustive-deps
-  const list = (cls, after) => <div className={cls} role="menu">{addable.map(id => { const S = SURFACES[id]; return <button key={id} role="menuitem" disabled={!!disabled[id]} title={disabled[id]} onClick={() => { setMenu(false); onAdd(id); }}><S.icon size={14} />{S.label}{open.includes(id) && <small>已打开</small>}{disabled[id] && <small>{disabled[id]}</small>}<kbd>{S.key}</kbd></button>; })}{after}</div>;
-  return <aside className={'m14-rp' + (maximized ? ' max' : '')} aria-label="右侧面板">
-    <div className="m14-rp-bar">
-      <div className="m14-rp-tabs" role="tablist">{open.map(id => { const S = SURFACES[id]; return <div key={id} className={'m14-rp-tab' + (active === id ? ' on' : '')}>
+  const add = id => { if (id === 'files') setBrowseRequest(value => value + 1); setMenu(false); onAdd(id); };
+  useEffect(() => { const k = e => { if (e.target.closest?.('input,textarea,[contenteditable]')) return; const id = addable.find(s => !disabled[s] && SURFACES[s].key.toLowerCase() === e.key.toLowerCase()); if (e.key === 'Escape' && menu) setMenu(false); else if ((menu || open.length === 0) && id && !e.metaKey && !e.ctrlKey) { e.preventDefault(); add(id); } }; addEventListener('keydown', k); return () => removeEventListener('keydown', k); }, [menu, onAdd, open.length, addable.join()]); // eslint-disable-line react-hooks/exhaustive-deps
+  const list = (cls, after) => <div className={cls} role="menu">{addable.map(id => { const S = SURFACES[id]; return <button key={id} role="menuitem" disabled={!!disabled[id]} title={disabled[id] || (id === 'browser' ? '新建网页标签' : undefined)} onClick={() => add(id)}><S.icon size={14} />{S.label}{id !== 'browser' && open.includes(id) && <small>已打开</small>}{disabled[id] && <small>{disabled[id]}</small>}<kbd>{S.key}</kbd></button>; })}{after}</div>;
+  const header = <div className="m14-rp-bar">
+      <div className="m14-rp-tabs" ref={setTabStrip} role="tablist" aria-label="工作面板">{open.map(id => {
+        if (id === 'files') return <div key={id} className="m14-rp-tab-slot" ref={setFileTabs}/>;
+        if (id === 'browser' && webTabs) return <WebTabs key={id} {...webTabs} activeId={active === 'browser' ? webTabs.activeId : null} onSelect={tabId => { onActive('browser'); webTabs.onSelect(tabId); }}/>;
+        const S = SURFACES[id]; return <div key={id} className={'m14-rp-tab' + (active === id ? ' on' : '')}>
         <button role="tab" aria-selected={active === id} onClick={() => onActive(id)}><S.icon size={14} />{S.label}</button>
         <button className="m14-rp-tab-x" aria-label={'关闭' + S.label} onClick={() => onRemove(id)}><X size={11} /></button></div>; })}</div>
       {/* “+”放在滚动的标签容器之外，菜单才不会被裁掉 */}
@@ -22,21 +31,23 @@ export function M14RightPanel({ open, active, disabled = {}, onActive, onAdd, on
       <span className="m14-rp-push" />
       <div className="m14-rp-ctl">
         <button title={maximized ? '还原面板' : '最大化面板'} aria-label={maximized ? '还原面板' : '最大化面板'} onClick={onMaximize}>{maximized ? <Minimize2 size={15} /> : <Maximize2 size={15} />}</button>
-        <button title="底部终端抽屉（⌃`）" aria-label="底部终端抽屉" aria-pressed={drawerOpen} className={drawerOpen ? 'on' : ''} onClick={onToggleDrawer}><PanelBottom size={15} /></button>
-        <button title="收起右侧面板" aria-label="收起右侧面板" className="on" onClick={onClosePanel}><PanelRight size={15} /></button>
+        {onTerminal && <button title="底部终端抽屉" aria-label="底部终端抽屉" aria-pressed={terminalOpen} onClick={onTerminal}><PanelBottom size={15}/></button>}
+        {onCollapse && <button title="收起右侧面板" aria-label="收起右侧面板" onClick={onCollapse}><PanelRight size={15}/></button>}
       </div>
-    </div>
+    </div>;
+  return <aside className={'m14-rp' + (maximized ? ' max' : '')} aria-label="右侧面板">
+    {headerTarget ? createPortal(header, headerTarget) : header}
     <div className="m14-rp-body">
       {open.length === 0 && <div className="m14-rp-empty"><b>打开面板</b>{list('m14-rp-empty-list')}</div>}
-      {open.map(id => <div key={id} className="m14-rp-surface" hidden={active !== id}>{children[id]}</div>)}
+      {open.map(id => <div key={id} className="m14-rp-surface" hidden={active !== id}>{id === 'files' ?
+        children.files({ target: fileTabs, active: active === id, browseRequest, onActivate: () => onActive(id),
+          onRemove: () => { setBrowseRequest(0); onRemove(id); } }) : children[id]}</div>)}
     </div>
   </aside>;
 }
 
-// 浏览器面板内的网页标签（M12 的网页标签从文件区标签条移到这里）
-export function WebTabs({ tabs, activeId, onSelect, onClose, onNew }) {
-  return <div className="m14-webtabs">{tabs.map(t => <div key={t.id} className={'m14-webtab' + (t.id === activeId ? ' on' : '')}><button onClick={() => onSelect(t.id)} title={t.url}><Globe size={12} /><span>{t.title}</span>{t.marked && <i className="m14-webtab-dot" title="Agent 正在操作" />}</button><button aria-label={'关闭网页 ' + t.title} onClick={() => onClose(t.id)}><X size={11} /></button></div>)}
-    <button className="m14-webtab-new" aria-label="新建网页标签" title="新建网页标签（⇧⌘B）" onClick={onNew}><Plus size={13} /></button></div>;
+function WebTabs({ tabs, activeId, onSelect, onClose }) {
+  return tabs.map(t => <div key={t.id} className={'m14-rp-tab' + (t.id === activeId ? ' on' : '')}><button role="tab" aria-selected={t.id === activeId} onClick={() => onSelect(t.id)} title={t.url}><Globe size={14} /><span>{t.title}</span>{t.marked && <i className="m14-webtab-dot" title="Agent 正在操作" />}</button><button className="m14-rp-tab-x" aria-label={'关闭网页 ' + t.title} onClick={() => onClose(t.id)}><X size={11} /></button></div>);
 }
 
 // 差异面板（T3 DiffPanel 的位置；内容复用 M9 差异展示能力，此处为示意）
@@ -48,15 +59,16 @@ export function DiffSurface({ diff, onOpenFile, readOnly = false }) {
 function RoundDiff({ initial, onOpenFile }) {
   const [turnId, setTurn] = useState(initial.turnId);
   const [sel, setSel] = useState(initial.path);
+  const [notice, setNotice] = useState('');
   const revision = initial.revisions?.find(turn => turn.id === turnId);
   const diff = revision ?? initial;
   const rounds = initial.revisions?.length > 0 && <label className="m14-round-selector">轮次
-    <select aria-label="差异轮次" value={turnId || ''} onChange={event => { setTurn(event.target.value); setSel(null); }}>
+    <select aria-label="差异轮次" value={turnId || ''} onChange={event => { setTurn(event.target.value); setSel(null); setNotice(''); }}>
       {initial.revisions.map(round => <option key={round.id} value={round.id}>{round.title}</option>)}
     </select>
   </label>;
   if (!diff.files.length) return <div className="m14-diffsurf"><div className="m14-diffsurf-head">{rounds}</div>
-    <div className="m14-diff-empty-state"><FileDiff size={22} /><p>{diff.status === 'reclaimed' ? '快照已清理（空间回收）' : diff.status === 'storage-full' ? '影子库空间已满' : '本轮没有可显示的差异'}</p></div>
+    <div className="m14-diff-empty-state">{diff.diffState ? <DiffStateNote st={diff.diffState} onToast={setNotice} /> : <><FileDiff size={22} /><p>本轮没有文件改动</p></>}{notice && <small role="status">{notice}</small>}</div>
   </div>;
   const f = diff.files.find(x => x.path === sel) || diff.files[0];
   const add = diff.files.reduce((n, x) => n + x.add, 0), del = diff.files.reduce((n, x) => n + x.del, 0);

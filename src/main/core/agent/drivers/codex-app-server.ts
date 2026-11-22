@@ -2,7 +2,7 @@
 // 恢复线程也重新下发，不依赖创建时默认值（技术方案 T1.5 §7.2，V08／V09）。
 import { spawn, type ChildProcess } from 'node:child_process';
 import { CODEX_TIERS, codexSupportsTurnPermissions, type CodexTierParams } from '../permissions';
-import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
+import { DriverError, Emitter, requireElicitationCancellation, type AgentDriver, type DriverEvent, type DriverInstance, type DriverOpenOptions, type DriverRequestKind, type TurnInput, type DriverModel } from '../driver';
 import { JsonlRpcPeer } from '../jsonl-rpc';
 import { redact } from '../../connections/redact';
 import { catalogAccount, CodexCatalogReader, type CatalogObserver } from './codex-catalog';
@@ -68,6 +68,7 @@ export class CodexAppServerInstance implements DriverInstance {
   private rpc?: JsonlRpcPeer;
   private catalog?: CodexCatalogReader;
   private modelCache?: DriverOpenOptions['modelCache'];
+  private savedCatalog?: Promise<{ account: string; models: DriverModel[] | undefined } | undefined>;
   private catalogRequest?: Promise<DriverModel[]>;
   private threadId?: string;
   private cwd = '';
@@ -127,12 +128,19 @@ export class CodexAppServerInstance implements DriverInstance {
       invalid: line => this.emitter.emit({ type: 'diagnostic', message: `无法解析的输出：${line.slice(0, 500)}` }),
     });
     this.catalog = new CodexCatalogReader(this.rpc, child.stderr);
+    const abort = () => this.rpc?.close(new DriverError('STATE', '会话预恢复已取消'));
+    o.startupSignal?.addEventListener('abort', abort, { once: true });
+    if (o.startupSignal?.aborted) abort();
     const tier = CODEX_TIERS[o.tier];
     const work = (async () => {
       await o.beforeInitialize?.();
       await this.rpc!.call('initialize', { clientInfo, capabilities: { experimentalApi: true } });
       o.assertStarting?.();
       this.rpc!.notify('initialized');
+      this.savedCatalog = this.readSavedCatalog(this.rpc!);
+      const instructions = o.hostBusinessInstructions
+        ? this.readDeveloperInstructions(this.rpc!, o.cwd, o.hostBusinessInstructions)
+        : undefined;
       if (o.resumeNativeId && o.recoverGoals) {
         const state = await this.rpc!.call<{ goal?: { objective: string; status: string; createdAt: number; updatedAt: number } | null }>('thread/goal/get', { threadId: o.resumeNativeId });
         if (state.goal?.status === 'active') {
@@ -142,7 +150,8 @@ export class CodexAppServerInstance implements DriverInstance {
       }
       if (o.skillRoots?.length) {
         await this.rpc!.call('skills/extraRoots/set', { extraRoots: o.skillRoots.map(s => s.path) });
-        const listed = await this.rpc!.call<{ data?: { skills?: { name: string; path: string; enabled: boolean }[] }[] }>('skills/list', { cwds: [o.cwd], forceReload: true });
+        // Updating the extra roots already invalidates the native Skill cache.
+        const listed = await this.rpc!.call<{ data?: { skills?: { name: string; path: string; enabled: boolean }[] }[] }>('skills/list', { cwds: [o.cwd] });
         const skills = listed.data?.flatMap(d => d.skills ?? []) ?? [];
         for (const root of o.skillRoots) if (skills.filter(s => s.name === root.name && s.enabled).length !== 1 || !skills.some(s => s.name === root.name && s.path === root.path + '/SKILL.md' && s.enabled)) throw new DriverError('REJECTED', `Skill 未按冻结目录加载：${root.name}`);
       }
@@ -150,11 +159,17 @@ export class CodexAppServerInstance implements DriverInstance {
       const sandbox = !this.readOnly && o.tier !== 'full' && o.codexCliPermissions
         ? { permissions: o.codexCliPermissions }
         : { sandbox: this.readOnly ? 'read-only' : SANDBOX_MODE[tier.sandboxPolicy.type] };
-      const common = { cwd: o.cwd, approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, ...sandbox };
+      const developerInstructions = await instructions;
+      const common = { cwd: o.cwd, approvalPolicy: this.readOnly ? 'never' : tier.approvalPolicy, approvalsReviewer: tier.approvalsReviewer, ...sandbox,
+        ...(developerInstructions ? { developerInstructions } : {}) };
       o.assertStarting?.();
+      if (o.beforeThreadOpen) {
+        await o.beforeThreadOpen();
+        o.assertStarting?.();
+      }
       const r = o.resumeNativeId
-        ? await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/resume', { threadId: o.resumeNativeId, excludeTurns: true, ...common, ...(o.model ? { model: o.model } : {}) })
-        : await this.rpc!.call<{ thread: { id: string }; model?: string }>('thread/start', common);
+        ? await this.rpc!.call<{ thread: { id: string }; model?: string; reasoningEffort?: string | null }>('thread/resume', { threadId: o.resumeNativeId, excludeTurns: true, ...common, ...(o.model ? { model: o.model } : {}) })
+        : await this.rpc!.call<{ thread: { id: string }; model?: string; reasoningEffort?: string | null }>('thread/start', common);
       o.assertStarting?.();
       if (!r?.thread?.id) throw new DriverError('PROTOCOL', 'thread 响应缺少 id');
       this.threadId = r.thread.id;
@@ -177,9 +192,17 @@ export class CodexAppServerInstance implements DriverInstance {
         .catch(() => this.emitter.emit({ type: 'catalog', commands: ['goal', 'compact', 'review'], skills: [] }));
       // 恢复的线程带着上次的模型覆盖，不能当默认；需要时再经 defaultModel() 从配置与模型目录读取。
       const defaultModel = !o.resumeNativeId && typeof r.model === 'string' && r.model ? r.model : undefined;
-      return { nativeId: r.thread.id, confirmed: true, ...(defaultModel ? { defaultModel } : {}) };
+      const nativeSelection = (!o.resumeNativeId || r.thread.id === o.resumeNativeId) && typeof r.model === 'string' && r.model
+        && typeof r.reasoningEffort === 'string' && r.reasoningEffort
+        ? { model: r.model, effort: r.reasoningEffort } : undefined;
+      return { nativeId: r.thread.id, confirmed: true, ...(defaultModel ? { defaultModel } : {}),
+        ...(nativeSelection ? { nativeSelection } : {}), ...(developerInstructions ? { hostBusinessInstructionsInstalled: true } : {}) };
     })();
-    return Promise.race([work, spawnError]);
+    try {
+      return await Promise.race([work, spawnError]);
+    } finally {
+      o.startupSignal?.removeEventListener('abort', abort);
+    }
   }
 
   /** 执行器默认模型：用户配置的 model，否则模型目录里标记为默认的那个；读不到返回 undefined。 */
@@ -192,18 +215,53 @@ export class CodexAppServerInstance implements DriverInstance {
     } catch { return undefined; }
   }
 
-  async modelCatalog(): Promise<DriverModel[]> {
+  async modelCatalog(onFallback?: (models: DriverModel[]) => void): Promise<DriverModel[]> {
     if (!this.catalog || !this.rpc) return [];
-    this.catalogRequest ??= this.readModels(this.catalog, this.rpc).finally(() => { this.catalogRequest = undefined; });
+    this.catalogRequest ??= this.readModels(this.catalog, onFallback).finally(() => { this.catalogRequest = undefined; });
     return this.catalogRequest;
   }
 
-  private async readModels(catalog: CodexCatalogReader, peer: JsonlRpcPeer) {
-    const account = this.modelCache && await catalogAccount(peer).catch(() => undefined);
-    const saved = account ? await this.modelCache?.read(account) : undefined;
-    if (saved) return saved;
-    const result = await catalog.read();
-    if (account && result.confirmed) this.modelCache?.write(account, result.models);
+  private async readDeveloperInstructions(peer: JsonlRpcPeer, cwd: string, hostInstructions: string) {
+    try {
+      const { config } = await peer.call<{ config?: { developer_instructions?: unknown } }>('config/read', { cwd }, 750);
+      const configured = config?.developer_instructions;
+      // Avoid overriding a setting when the native configuration could not be verified.
+      if (configured === null || typeof configured === 'string') {
+        return configured ? configured + '\n\n' + hostInstructions : hostInstructions;
+      }
+    } catch { /* Use the existing turn-time context path. */ }
+    return undefined;
+  }
+
+  private async readSavedCatalog(peer: JsonlRpcPeer) {
+    if (!this.modelCache) return undefined;
+    const started = performance.now();
+    const report = (result: Extract<DriverEvent, { type: 'model_cache' }>['result']) =>
+      this.emitter.emit({ type: 'model_cache', result, elapsedMs: Math.round(performance.now() - started) });
+    let account: string | undefined;
+    try { account = await catalogAccount(peer); }
+    catch (error) {
+      report(error instanceof DriverError && error.code === 'TIMEOUT' ? 'account_timeout' : 'account_failed');
+      return undefined;
+    }
+    if (!account) { report('account_unavailable'); return undefined; }
+    try {
+      const models = await this.modelCache.read(account);
+      report(models ? 'hit' : 'miss');
+      return { account, models };
+    }
+    catch { report('read_failed'); return { account, models: undefined }; }
+  }
+
+  private async readModels(catalog: CodexCatalogReader, onFallback?: (models: DriverModel[]) => void) {
+    const lookup = this.savedCatalog ?? this.readSavedCatalog(this.rpc!);
+    this.savedCatalog = undefined;
+    const saved = await lookup;
+    if (saved?.models) return saved.models;
+    // The chooser can refresh its independent catalogue. The running session
+    // needs one bounded native read so retries cannot hold a user's turn.
+    const result = await catalog.read(onFallback, { attempts: 1, timeoutMs: 6_000 });
+    if (saved && result.confirmed) this.modelCache?.write(saved.account, result.models);
     return result.models;
   }
   async injectHistory(text: string) {

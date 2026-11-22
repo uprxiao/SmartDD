@@ -3,6 +3,7 @@ import { FileLanguageProvider, LanguageSettingsMenu, LanguageResults } from './l
 import { FileOfficePagesPreview } from './office/pages-preview';
 import { TaskDocxPreview } from './office/docx-preview';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, Check, ChevronDown, Code2, Copy, Download, File, FileSearch, FolderOpen, Globe, GitBranch, Loader2, Maximize2, Minimize2, MoreHorizontal, PanelRight, Pin, Plus, RotateCcw, Save, Undo2, WrapText, X } from 'lucide-react';
 import type { FileScope } from '@shared/files';
 import { decodeFileText } from '@shared/file-text';
@@ -46,12 +47,20 @@ function Tool({ label, children, active, disabled, preserveEditorFocus = false, 
   }} onClick={onClick}>{children}</button>;
 }
 export interface WebWorkspaceExtension {tabs:{id:string;title:string;url:string;favicon:string|null;agentActive?:boolean}[];paused?:boolean;activeId:string|null;onSelect:(id:string)=>void;onFiles:()=>void;onClose:(id:string)=>void;onNew:()=>void;tabTooltip?:ReturnType<typeof useTreePathTooltip>['bind'];inactiveTooltip?:ReactNode;view:ReactNode}
-export function FileWorkspacePanel({ scope, onClose,web }: { scope: FileScope; onClose: () => void;web?:WebWorkspaceExtension }) {
+interface WorkspaceHeader {
+  target: HTMLElement | null;
+  active: boolean;
+  browseRequest: number;
+  onActivate: () => void;
+  onCloseDirectory: () => void;
+}
+
+export function FileWorkspacePanel({ scope, onClose, web, workspaceHeader }: { scope: FileScope; onClose?: () => void; web?: WebWorkspaceExtension; workspaceHeader?: WorkspaceHeader }) {
   const key = fileScopeKey(scope), store = useMemo(() => fileWorkspaceFor(scope), [key]);
   useSyncExternalStore(store.subscribe, store.snapshot);
-  return <FileTerminalContextProvider workspace={store}><FileLanguageProvider workspace={store}><WorkspaceContents store={store} onClose={onClose} web={web}/></FileLanguageProvider></FileTerminalContextProvider>;
+  return <FileTerminalContextProvider workspace={store}><FileLanguageProvider workspace={store}><WorkspaceContents store={store} onClose={onClose} web={web} workspaceHeader={workspaceHeader}/></FileLanguageProvider></FileTerminalContextProvider>;
 }
-function WorkspaceContents({ store, onClose,web }: { store: ReturnType<typeof fileWorkspaceFor>; onClose: () => void;web?:WebWorkspaceExtension }) {
+function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: ReturnType<typeof fileWorkspaceFor>; onClose?: () => void; web?: WebWorkspaceExtension; workspaceHeader?: WorkspaceHeader }) {
   useSyncExternalStore(store.subscribe, store.snapshot);
   const terminal = useFileTerminalContext();
   const panel = useRef<HTMLElement>(null), [full, setFull] = useState(false), [wrap, setWrap] = useState(false), [closePrompt, setClosePrompt] = useState<{ id: string; instance?: string } | null>(null);
@@ -67,6 +76,13 @@ function WorkspaceContents({ store, onClose,web }: { store: ReturnType<typeof fi
   const [actionNotice, setActionNotice] = useState('');
   useEffect(() => { void store.initialize(); }, [store]);
   useEffect(() => store.attach(), [store]);
+  const browseRequest = workspaceHeader?.browseRequest;
+  useEffect(() => {
+    if (!browseRequest) return;
+    store.setTreeVisible(true);
+    const frame = requestAnimationFrame(() => panel.current?.querySelector<HTMLInputElement>('[aria-label="筛选文件"]')?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [browseRequest, store]);
   useEffect(() => {
     const node = panel.current; if (!node) return;
     const resize = new ResizeObserver(() => setWidth(node.clientWidth)); resize.observe(node); return () => resize.disconnect();
@@ -99,11 +115,14 @@ function WorkspaceContents({ store, onClose,web }: { store: ReturnType<typeof fi
     const previousFocus = document.activeElement;
     const restoreFocus = trigger === previousFocus || Boolean(panel.current?.contains(previousFocus));
     const result = await store.close(id);
-    if (result === 'blocked' && store.tabs.some((item) => item === tab)) setClosePrompt({ id, instance });
+    if (result === 'blocked' && store.tabs.some((item) => item === tab)) {
+      workspaceHeader?.onActivate();
+      setClosePrompt({ id, instance });
+    }
     else if (result === 'closed' && restoreFocus) requestAnimationFrame(() => {
       if (previousFocus?.isConnected && previousFocus !== trigger) return;
       if (document.activeElement !== document.body && document.activeElement !== trigger) return;
-      (panel.current?.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]') ?? panel.current?.querySelector<HTMLButtonElement>('[aria-label="查找并打开文件"]'))?.focus();
+      (workspaceHeader?.target?.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]') ?? panel.current?.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"], [aria-label="查找并打开文件"]'))?.focus();
     });
   };
   const action = (run: () => Promise<unknown>) => {
@@ -130,14 +149,23 @@ function WorkspaceContents({ store, onClose,web }: { store: ReturnType<typeof fi
       const result = await saveFileCopy({ kind: 'document', ref: buffer.file.ref }, buffer);
       if (result.state === 'saved') setActionNotice(`副本已保存到 ${result.path}`);
     } : undefined;
+  const fileTabs = store.tabs.map((tab) => {
+    const selected = (workspaceHeader?.active ?? !web?.activeId) && tab.id === store.activeId;
+    const name = tab.route.relativePath.split('/').at(-1);
+    return <div key={tab.id} className={`fw-tab ${selected ? 'selected' : ''} ${tab.pinned ? '' : 'preview'}`} draggable onDragStart={(event) => { event.dataTransfer.setData('application/x-willyou-file-tab', tab.id); const file = tab.buffer?.file; const drag = file && terminal?.startDrag({ lease: file.ref.lease, generation: file.ref.generation, relativePath: file.relativePath }, file.revision); if (drag) event.dataTransfer.setData(FILE_TERMINAL_DRAG_TYPE, drag.token); event.dataTransfer.effectAllowed = 'copyMove'; }} onDragEnd={() => endFileDrag()} onDragOver={(event) => { if (event.dataTransfer.types.includes('application/x-willyou-file-tab')) event.preventDefault(); }} onDrop={(event) => { const from = event.dataTransfer.getData('application/x-willyou-file-tab'); if (from) { event.preventDefault(); store.reorder(from, tab.id); } }}>
+      <button role="tab" aria-selected={selected} title={`${tab.route.sourcePath}/${tab.route.relativePath}`} onClick={() => { workspaceHeader?.onActivate(); web?.onFiles(); store.activate(tab.id); }} onDoubleClick={() => store.pin(tab.id)}><FileTreeIcon path={tab.route.relativePath} /><span>{name}</span>{tab.buffer?.dirty && <i className="fw-dirty" aria-label="未保存" />}</button><button className="fw-tab-close" aria-label={`关闭 ${name}`} onMouseDown={(event) => { if (event.button === 0) event.preventDefault(); }} onClick={(event) => void close(tab.id, event.currentTarget)}><X size={13} /></button>
+    </div>;
+  });
   return <aside ref={panel} className={`file-workspace fw-production ${full ? 'fw-full' : ''}`} aria-label="文件工作区" data-testid="file-workspace">
-    <div className="fw-tabs" role="tablist" aria-label="文件标签">
-      {store.tabs.map((tab) => <div key={tab.id} className={`fw-tab ${!web?.activeId&&tab.id === store.activeId ? 'selected' : ''} ${tab.pinned ? '' : 'preview'}`} draggable onDragStart={(event) => { event.dataTransfer.setData('application/x-willyou-file-tab', tab.id); const file = tab.buffer?.file; const drag = file && terminal?.startDrag({ lease: file.ref.lease, generation: file.ref.generation, relativePath: file.relativePath }, file.revision); if (drag) event.dataTransfer.setData(FILE_TERMINAL_DRAG_TYPE, drag.token); event.dataTransfer.effectAllowed = 'copyMove'; }} onDragEnd={() => endFileDrag()} onDragOver={(event) => { if (event.dataTransfer.types.includes('application/x-willyou-file-tab')) event.preventDefault(); }} onDrop={(event) => { const from = event.dataTransfer.getData('application/x-willyou-file-tab'); if (from) { event.preventDefault(); store.reorder(from, tab.id); } }}>
-        <button role="tab" aria-selected={!web?.activeId&&tab.id === store.activeId} title={`${tab.route.sourcePath}/${tab.route.relativePath}`} onClick={() => {web?.onFiles();store.activate(tab.id);}} onDoubleClick={() => store.pin(tab.id)}><FileTreeIcon path={tab.route.relativePath} /><span>{tab.route.relativePath.split('/').at(-1)}</span>{tab.buffer?.dirty && <i className="fw-dirty" aria-label="未保存" />}</button><button className="fw-tab-close" aria-label={`关闭 ${tab.route.relativePath.split('/').at(-1)}`} onMouseDown={(event) => { if (event.button === 0) event.preventDefault(); }} onClick={(event) => void close(tab.id, event.currentTarget)}><X size={13} /></button>
-      </div>)}
+    {workspaceHeader?.target && createPortal(fileTabs.length ? fileTabs : <div className={`agent-surface-tab ${workspaceHeader.active ? 'on' : ''}`}>
+      <button type="button" role="tab" aria-selected={workspaceHeader.active} onClick={workspaceHeader.onActivate}><FolderOpen size={14}/>文件</button>
+      <button type="button" aria-label="关闭文件面板" onClick={workspaceHeader.onCloseDirectory}><X size={10}/></button>
+    </div>, workspaceHeader.target)}
+    {!workspaceHeader && <div className="fw-tabs" role="tablist" aria-label="文件标签">
+      {fileTabs}
       {web?.tabs.map(tab=><div key={tab.id} className={`fw-tab fw-web-tab ${tab.id===web.activeId?'selected':''}`}><button role="tab" aria-selected={tab.id===web.activeId} {...web.tabTooltip?.([tab.title||'新标签页',tab.url].filter(Boolean).join('\n'))} onClick={()=>web.onSelect(tab.id)}>{tab.favicon?<img className="bw-tab-icon" src={tab.favicon} alt=""/>:<Globe size={14} strokeWidth={1.7}/>}<span>{tab.title||'新标签页'}</span>{tab.agentActive&&<i className={'bw-agent-dot'+(web.paused?' paused':'')} aria-label={web.paused?'Agent 已暂停':'Agent 活动'}/>}</button><button className="fw-tab-close" aria-label={`关闭网页 ${tab.title||'新标签页'}`} onClick={()=>web.onClose(tab.id)}><X size={14}/></button></div>)}
-      <Tool label="查找并打开文件" onClick={() => {web?.onFiles();setTreeVisible(true); requestAnimationFrame(() => panel.current?.querySelector<HTMLInputElement>('[aria-label="筛选文件"]')?.focus()); }}><Plus size={17} strokeWidth={1.65} /></Tool>{web&&<Tool label="新建网页标签" onClick={web.onNew}><Globe size={17} strokeWidth={1.65}/></Tool>}<span className="fw-push" /><Tool label={full ? '退出文件全屏' : '文件全屏'} onClick={() => setFull((value) => !value)}>{full ? <Minimize2 size={17} strokeWidth={1.65} /> : <Maximize2 size={17} strokeWidth={1.65} />}</Tool><Tool label="隐藏文件区域" onClick={onClose}><PanelRight size={17} strokeWidth={1.65} /></Tool>
-    </div>
+      <Tool label="查找并打开文件" onClick={() => {web?.onFiles();setTreeVisible(true); requestAnimationFrame(() => panel.current?.querySelector<HTMLInputElement>('[aria-label="筛选文件"]')?.focus()); }}><Plus size={17} strokeWidth={1.65} /></Tool>{web&&<Tool label="新建网页标签" onClick={web.onNew}><Globe size={17} strokeWidth={1.65}/></Tool>}<span className="fw-push" /><Tool label={full ? '退出文件全屏' : '文件全屏'} onClick={() => setFull((value) => !value)}>{full ? <Minimize2 size={17} strokeWidth={1.65} /> : <Maximize2 size={17} strokeWidth={1.65} />}</Tool>{onClose && <Tool label="隐藏文件区域" onClick={onClose}><PanelRight size={17} strokeWidth={1.65} /></Tool>}
+    </div>}
     {!web?.activeId&&web?.inactiveTooltip}
     {web?.activeId&&web.view}
     <div className="fw-file-main" hidden={Boolean(web?.activeId)}>

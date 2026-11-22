@@ -22,7 +22,7 @@ import { materializeAgentPlan } from '../ai/agent-launch-files';
 import { AgentStore, sha256, type StoredEvent } from './agent-store';
 import { AgentRunService, type LiveListener } from './agent-run-service';
 import { AgentTaskService, boundedEvent, type LaunchResolver } from './agent-task-service';
-import { probeAndRecord, probeDriver } from './discovery';
+import { createNativeCliDetector, probeAndRecord, probeDriver } from './discovery';
 import { resolveProfileLaunch } from './profile-launch';
 import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
@@ -106,8 +106,11 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (c.source === 'legacy') throw new DriverError('UNSUPPORTED', '旧配置不能用于新任务，请另选智能体');
     return c;
   };
+  const detect = createNativeCliDetector();
   const resolveLaunch: LaunchResolver = async ({ taskId, profileId, cwd, model, carryExtensions }) => {
+    const resolveStarted = performance.now();
     if (taskId) await runs.recoverPreviousNativeNodes(recoveryAbort.signal, reconcileRecoveredRun, taskId);
+    const recoveryDone = performance.now();
     const c = config(profileId);
     const tool = d.agents.tools().find(t => t.id === c.toolId);
     if (!tool) throw new DriverError('REJECTED', 'Code Agent 已删除，请重新检测');
@@ -122,7 +125,12 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     if (old && old.frozen.cwd === canonicalPath(cwd) && old.frozen.stateRoot === canonicalPath(launch.stateRoot) && JSON.stringify(withoutExtensions(old.frozen.compatibility)) === JSON.stringify(withoutExtensions(launch.compatibility))) {
       launch = resolveProfileLaunch({ ...input, carryExtensions: old.frozen.compatibility.extensions !== false });
     }
-    const probe = await probeAndRecord(store, launch.driverId, { env: base, executable: launch.command, inspectCodexProtocol: launch.driverId === 'codex-app-server' });
+    const probeStarted = performance.now();
+    const probe = await probeAndRecord(store, launch.driverId, { env: base, executable: launch.command, detect, inspectCodexProtocol: launch.driverId === 'codex-app-server' });
+    if (taskId) store.tx(emit => emit(taskId, 'run.launch_preflight', {
+      driverId: launch.driverId, recoveryMs: Math.round(recoveryDone - resolveStarted),
+      configurationMs: Math.round(probeStarted - recoveryDone), probeMs: Math.round(performance.now() - probeStarted),
+    }));
     if (probe.state === 'unsupported' || !probe.realpath || !probe.version) throw new DriverError('UNSUPPORTED', probe.missing ? `${probe.reason}。${probe.missing.hint}` : probe.reason ?? '执行器不可用');
     connection?.assertCurrent();
     const expectedConfig = JSON.stringify({ kind: c.kind, source: c.source, providerId: c.providerId, toolId: c.toolId, models: c.models, defaultModel: c.defaultModel });
@@ -232,7 +240,7 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
     const launch = resolveProfileLaunch({ config: profile, tool, cwd, userData: d.userData, runId: randomUUID(), baseEnv });
     const { key, localLoginBound } = subscriptionCatalogScope(profile.id, launch, tool, cwd);
     return modelCatalogs.read(key, async observer => {
-      const info = await probeDriver('codex-app-server', { env: baseEnv, executable: launch.command });
+      const info = await probeDriver('codex-app-server', { env: baseEnv, executable: launch.command, detect });
       if (!info.realpath || info.state === 'unsupported') throw new DriverError('UNSUPPORTED', info.reason ?? '执行器不可用');
       const env = withShellProxy(info.shellPath ? { ...launch.env, PATH: info.shellPath } : launch.env, info.shellProxy);
       return previewCodexModels(info.realpath, cwd, env, launch.extraArgs, {
@@ -257,6 +265,6 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
   const terminals = d.ptys ? new AgentManualTerminals({ ptys: d.ptys, baseEnv: d.baseEnv, taskProject: taskId => store.task(taskId)?.project_id ?? null, taskCwd: id => { tasks.assertWritable(id); const t = store.task(id); if (!t || t.archived_at) throw new DriverError('REJECTED', '任务不存在或已归档'); return t.cwd; } }) : undefined;
   const projectResources = new AgentProjectResources({ store, tasks, diffs, terminals, userData: d.userData });
   tasks.attachAttachmentCleanup((taskId,data)=>projectResources.discardAttachments(taskId,data));
-  return { store, runs, tasks, profiles, terminals, isCodexSubscription: (profileId: string) => isCodexSubscription(config(profileId)), modelCatalog, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
+  return { store, runs, tasks, profiles, terminals, isCodexSubscription: (profileId: string) => isCodexSubscription(config(profileId)), modelCatalog, applicationRuns: applicationRunsForAgent(store,runs,tasks,d.processes,d.host.instanceId), git, delegations, requests, diffs, projectResources, projectCwd: (projectId: string, dirId: string) => { projectResources.assertProjectWritable(projectId); return registeredProjectCwd(d.sqlite, projectId, dirId); },applicationReference:(sender:import('../applications/execution-context').ApplicationUiSender,taskId:string,source:import('@shared/application-terminal').ApplicationTerminalSource)=>{if(!business)throw new Error('业务服务不可用');return business.agentReference(sender,taskId,source);},plugins:(taskId:string)=>{if(!store.task(taskId))throw new Error('任务不存在');return business?.taskPlugins(taskId)??[];}, openHomeTerminal:(projectId:string,dirId:string,size?:{cols:number;rows:number})=>{if(!terminals)throw new Error('终端不可用');const cwd=registeredProjectCwd(d.sqlite,projectId,dirId),terminalKey='home-shell-'+sha256(projectId+dirId+cwd).slice(0,32);return{...terminals.openAt(terminalKey,cwd,size,projectId),terminalKey};}, get links(){return links;}, attachBrowser:(browser:import('../browser/service').BrowserService)=>attachAgentBrowserRequests({store,requests,browser,context:runId=>{if(!business)throw new Error('应用运行通道不可用');return business.agentContext(runId);},enabled:taskId=>{if(!business)throw new Error('应用通道不可用');business.assertAgentApplication(taskId,'browser');}}), attachFiles:(sources:SourceResolver)=>{links=new MessageLinks(store,sources,d.baseEnv().HOME??homedir());}, attachBusiness: (value: ManagedTaskCapabilities) => { business = value;tasks.attachHumanRecorder((runId,sender,text,sequence)=>value.recordAgentHumanInput(runId,sender,text,sequence)); value.attachAgentTools(delegations);value.attachAgentRequests(store,requests,(taskId,id,text)=>tasks.enqueueHost(taskId,id,text,'notification',true)); }, closeAll: async () => { recoveryAbort.abort(); await tasks.closePrewarms(); await runs.waitForPreviousRecoveries(); unsubscribeLive(); liveOutput.close(); await requests.close(); await delegations.close(); terminals?.closeAll(); await runs.closeAll(); await projectResources.close(); await diffs.close(); } };
 }
 export type AgentWorkspace = ReturnType<typeof createAgentWorkspace>;

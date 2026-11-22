@@ -360,7 +360,7 @@ export class AgentStore {
     });
   }
   turn(turnId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE turn_id=?').get(turnId) as TurnRow | undefined; }
-  turnByNative(runId: string, nativeTurnId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE run_id=? AND native_turn_id=?').get(runId, nativeTurnId) as TurnRow | undefined; }
+  turnByNative(runId: string, nativeTurnId: string) { return this.sqlite.prepare('SELECT * FROM agent_turns WHERE run_id=? AND native_turn_id=? ORDER BY started_at,rowid LIMIT 1').get(runId, nativeTurnId) as TurnRow | undefined; }
   dispatchTurn(turnId: string, runId: string) {
     const turn = this.turn(turnId)!;
     this.tx(emit => {

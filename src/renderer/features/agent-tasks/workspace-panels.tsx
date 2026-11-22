@@ -1,12 +1,16 @@
-// Layout follows P0.19 M14RightPanel; existing M9 files/M12 browser keep their stores and viewers.
+// Layout follows the M14 workspace prototype; existing M9 files/M12 browser keep their stores and viewers.
 import {rpcErrorMessage} from '@shared/ipc/rpc';
 import {observer} from 'mobx-react-lite';
 import {useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import {Files,Globe,TerminalSquare,FileDiff,Plus,X,Maximize2,Minimize2,PanelBottom,PanelRight} from 'lucide-react';
+import {navigation} from '@renderer/core/navigation';
+import {useVisibleWorkspaceTab} from '@renderer/lib/hooks/useVisibleWorkspaceTab';
 import {EditorView} from '@codemirror/view';import {Compartment,EditorState} from '@codemirror/state';
 import {syncFileConflictDiff} from '@renderer/features/files/conflict-diff';
 import type {FileScope} from '@shared/files';import {agentTaskEvent} from '@shared/events';import {rpc,events} from '@renderer/lib/ipc';
 import {FileWorkspacePanel} from '@renderer/features/files/workspace-panel';import {AgentBrowserSurface} from '@renderer/features/browser/workspace';
+import {browserWorkspaceFor} from '@renderer/features/browser/store';
 import {AgentTerminalDrawer} from './agent-terminal';import {panelsFor,homeWorkspace,type AgentPanel} from './workspace-panels-store';
 const definitions={files:{label:'文件',key:'F',Icon:Files},browser:{label:'浏览器',key:'B',Icon:Globe},terminal:{label:'终端',key:'T',Icon:TerminalSquare},diff:{label:'差异',key:'D',Icon:FileDiff}};
 function ReadonlyDiff({before,after}:{before:string;after:string}){const host=useRef<HTMLDivElement>(null);useEffect(()=>{if(!host.current)return;const slot=new Compartment(),view=new EditorView({parent:host.current,state:EditorState.create({doc:after,extensions:[EditorState.readOnly.of(true),EditorView.editable.of(false),slot.of([]),EditorView.theme({'&':{height:'100%'},'.cm-scroller':{overflow:'auto',fontFamily:'ui-monospace, SFMono-Regular, monospace',fontSize:'12px'}})]})});syncFileConflictDiff(view,slot,before,after);return()=>view.destroy();},[before,after]);return <div className="agent-readonly-diff" ref={host} aria-label="只读差异"/>;}
@@ -75,7 +79,7 @@ const DiffSurface = observer(function DiffSurface({taskId,readOnly}:{taskId:stri
 
  useEffect(()=>{
   let alive=true,token:string|undefined;
-  if(turn?.status!=='complete')return;
+  if(turn?.status!=='complete'||!turn.filesTotal)return;
   const turnId=turn.turnId;
   const renew = () => {
    void rpc.agentTasks.holdDiff(taskId,turnId).then(receipt=>{
@@ -87,16 +91,16 @@ const DiffSurface = observer(function DiffSurface({taskId,readOnly}:{taskId:stri
   renew();
   const timer=setInterval(renew,30_000);
   return()=>{alive=false;clearInterval(timer);if(token)void rpc.agentTasks.releaseDiff(taskId,token).catch(()=>{});};
- },[taskId,turn?.turnId,turn?.status]);
+ },[taskId,turn?.turnId,turn?.status,turn?.filesTotal]);
 
  useEffect(()=>{
   let alive=true;
   setFiles(null);setContent(null);setPath('');setError('');
-  if(turn?.status==='complete')void rpc.agentTasks.changeFiles(taskId,turn.turnId,0).then(result=>{
+  if(turn?.status==='complete'&&turn.filesTotal)void rpc.agentTasks.changeFiles(taskId,turn.turnId,0).then(result=>{
    if(alive){setFiles(result);setPath(result.files[0]?.path??'');}
   }).catch(e=>{if(alive)setError(rpcErrorMessage(e));});
   return()=>{alive=false;};
- },[taskId,turn?.turnId,turn?.status]);
+ },[taskId,turn?.turnId,turn?.status,turn?.filesTotal]);
  useEffect(()=>{
   let alive=true;
   setContent(null);
@@ -132,7 +136,7 @@ const DiffSurface = observer(function DiffSurface({taskId,readOnly}:{taskId:stri
    {turn.preparing&&<p>后台准备中：{turn.progress?.files??0} 个文件 · {Math.round((turn.progress?.bytes??0)/1024)} KiB
     {!readOnly&&<button type="button" onClick={()=>void rpc.agentTasks.cancelDiff(taskId,turn.turnId).catch(e=>setSelectionError(rpcErrorMessage(e)))}>取消快照</button>}
    </p>}
-  </div>:<div className="agent-diff-main">
+  </div>:!turn.filesTotal?<p role="status">本轮没有文件改动</p>:<div className="agent-diff-main">
    <ul>{files?.files.map(file=><li key={file.path}><button type="button" className={path===file.path?'on':''} onClick={()=>{setError('');setPath(file.path);}} title={file.path}>{file.path}<small>{file.binary?'二进制':` +${file.added} −${file.removed}`}</small></button></li>)}
     {files?.hasMore&&<li><button type="button" onClick={()=>{
      const expected=turn.turnId;
@@ -147,10 +151,80 @@ const DiffSurface = observer(function DiffSurface({taskId,readOnly}:{taskId:stri
  </div>;
 });
 
-export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,projectId,onClose,readOnly=false}:{scope:FileScope;projectId:string|null;onClose():void;readOnly?:boolean}){
- const panels=panelsFor(scope),[menu,setMenu]=useState(false),taskId=scope.kind==='task'?scope.taskId:null;const tabs=readOnly?['diff' as const]:panels.tabs;const active=readOnly?'diff':panels.active;const available=(id:AgentPanel)=>readOnly?id==='diff':id==='files'||id==='terminal'&&(!!taskId||!!homeWorkspace.cwd)||id==='diff'&&!!taskId||id==='browser'&&!!taskId&&!!projectId;
- useEffect(()=>{const key=(e:KeyboardEvent)=>{if(readOnly||e.defaultPrevented||e.isComposing||e.metaKey||e.ctrlKey||e.altKey||e.target instanceof Element&&e.target.closest('input,textarea,[contenteditable],dialog,[role=dialog]'))return;if(e.key==='Escape'&&menu){setMenu(false);return;}if(!menu&&panels.tabs.length)return;const entry=Object.entries(definitions).find(([,v])=>v.key.toLowerCase()===e.key.toLowerCase());if(entry&&available(entry[0] as AgentPanel)){e.preventDefault();panels.open(entry[0] as AgentPanel);setMenu(false);}};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[menu,panels,panels.tabs.length,taskId,projectId,homeWorkspace.cwd,readOnly]);
- const list=()=>Object.entries(definitions).map(([key,{label,Icon,key:shortcut}])=><button key={key} type="button" disabled={!available(key as AgentPanel)} title={!available(key as AgentPanel)?'创建并关联项目任务后可用':label} onClick={()=>{panels.open(key as AgentPanel);setMenu(false);}}><Icon size={15}/>{label}{panels.tabs.includes(key as AgentPanel)&&' ✓'}{!available(key as AgentPanel)&&<small>创建任务后可用</small>}<kbd>{shortcut}</kbd></button>);
+export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,projectId,readOnly=false,titlebarTarget}:{
+ scope:FileScope; projectId:string|null; readOnly?:boolean; titlebarTarget?:HTMLElement|null;
+}){
+ const panels=panelsFor(scope),[menu,setMenu]=useState(false),taskId=scope.kind==='task'?scope.taskId:null;
+ const [fileTabsTarget, setFileTabsTarget] = useState<HTMLDivElement | null>(null);
+ const [webTabsTarget, setWebTabsTarget] = useState<HTMLDivElement | null>(null);
+ const [browseRequest, setBrowseRequest] = useState(0);
+ const [tabStrip, setTabStrip] = useState<HTMLDivElement | null>(null);
+ useVisibleWorkspaceTab(tabStrip);
+ const tabs=readOnly?['diff' as const]:panels.tabs;
+ const active=readOnly?'diff':panels.active;
+ const projectMissing=scope.kind==='project'&&!projectId;
+ const hasHomeDir=!!homeWorkspace.cwd;
+ const available=(id:AgentPanel)=>readOnly?id==='diff':id==='files'||id==='terminal'&&(!!taskId||hasHomeDir)||id==='diff'&&!!taskId||id==='browser'&&!!taskId&&!!projectId;
+ const add=(id:AgentPanel)=>{
+   panels.open(id);
+   if(id==='files'&&!projectMissing)setBrowseRequest(value=>value+1);
+   if(id==='browser'&&taskId)void browserWorkspaceFor(taskId).create();
+   setMenu(false);
+ };
+ useEffect(()=>{
+   const key=(e:KeyboardEvent)=>{
+     if(readOnly||e.defaultPrevented||e.isComposing||e.metaKey||e.ctrlKey||e.altKey)return;
+     if(e.key==='Escape'&&menu){setMenu(false);return;}
+     if ((!menu&&panels.tabs.length)||e.target instanceof Element&&e.target.closest('input,textarea,[contenteditable],dialog,[role=dialog]'))return;
+     const entry=(Object.keys(definitions) as AgentPanel[]).find(id=>definitions[id].key.toLowerCase()===e.key.toLowerCase()&&available(id));
+     if(entry){e.preventDefault();add(entry);}
+   };
+   document.addEventListener('keydown',key);
+   return()=>document.removeEventListener('keydown',key);
+ },[menu,panels,taskId,projectId,hasHomeDir,projectMissing,readOnly]);
+ const list=()=>Object.entries(definitions).map(([key,{label,Icon,key:shortcut}])=><button key={key} type="button" disabled={!available(key as AgentPanel)} title={!available(key as AgentPanel)?'创建并关联项目任务后可用':key==='browser'?'新建网页标签':label} onClick={()=>add(key as AgentPanel)}><Icon size={15}/>{label}{key!=='browser'&&panels.tabs.includes(key as AgentPanel)&&' ✓'}{!available(key as AgentPanel)&&<small>创建任务后可用</small>}<kbd>{shortcut}</kbd></button>);
  const terminal=taskId?<AgentTerminalDrawer taskId={taskId} onClose={()=>panels.close('terminal')}/>:homeWorkspace.projectId&&homeWorkspace.dirId?<AgentTerminalDrawer home={{projectId:homeWorkspace.projectId,dirId:homeWorkspace.dirId}} onClose={()=>panels.close('terminal')}/>:<p>先选择可用的项目工作目录</p>;
- return <aside className={'agent-right-panel'+(panels.maximized?' maximized':'')} aria-label="统一工作面板" data-testid="agent-workspace-panel" data-maximized={panels.maximized}><header><div className="agent-panel-tabs" role="tablist" aria-label="工作面板">{tabs.map(id=>{const {label,Icon}=definitions[id];return <div key={id} className={active===id?'on':''}><button type="button" role="tab" aria-selected={active===id} onClick={()=>panels.open(id)}><Icon size={14}/>{label}</button>{!readOnly&&<button type="button" aria-label={'关闭'+label+'面板'} onClick={()=>panels.close(id)}><X size={10}/></button>}</div>;})}</div>{!readOnly&&<div className="agent-panel-add"><button type="button" title="打开面板" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}><Plus size={15}/></button>{menu&&<><button type="button" className="agent-context-scrim" aria-label="关闭面板菜单" onClick={()=>setMenu(false)}/><div className="agent-panel-menu">{list()}</div></>}</div>}<span className="push"/><button type="button" title={panels.maximized?'还原面板':'最大化面板'} onClick={()=>{panels.maximized=!panels.maximized;}}>{panels.maximized?<Minimize2 size={15}/>:<Maximize2 size={15}/>}</button>{!readOnly&&!!taskId&&<button type="button" title="底部终端抽屉（⌃`）" disabled={!taskId&&!homeWorkspace.cwd} aria-pressed={panels.drawer} onClick={()=>panels.terminalDrawer()}><PanelBottom size={15}/></button>}{taskId && <button type="button" title="收起右侧面板" onClick={()=>{panels.maximized=false;onClose();}}><PanelRight size={15}/></button>}</header><div className="agent-panel-body">{!tabs.length?<div className="agent-panel-empty"><b>打开面板</b>{list()}</div>:active==='files'&&scope.kind==='project'&&!projectId?<div className='agent-panel-empty'>先选择项目工作目录</div>:active==='files'?<FileWorkspacePanel scope={scope} onClose={onClose}/>:active==='browser'&&taskId?<AgentBrowserSurface taskId={taskId}/>:active==='terminal'?terminal:active==='diff'&&taskId?<DiffSurface taskId={taskId} readOnly={readOnly}/>:<p>此面板在任务创建后可用</p>}</div></aside>;
+ const header = <header className="agent-panel-header" data-testid="agent-workspace-panel-header">
+   <div className="agent-panel-tabs" ref={setTabStrip} role="tablist" aria-label="工作面板">
+     {tabs.map(id => {
+       if(id==='files'&&!projectMissing)return <div key={id} className="agent-panel-tab-slot" ref={setFileTabsTarget}/>;
+       if(id==='browser'&&taskId)return <div key={id} className="agent-panel-tab-slot" ref={setWebTabsTarget}/>;
+       const { label, Icon } = definitions[id];
+       return <div key={id} className={'agent-surface-tab'+(active === id ? ' on' : '')}>
+         <button type="button" role="tab" aria-selected={active === id} onClick={() => panels.open(id)}><Icon size={14}/>{label}</button>
+         {!readOnly && <button type="button" aria-label={`关闭${label}面板`} onClick={() => panels.close(id)}><X size={10}/></button>}
+       </div>;
+     })}
+   </div>
+   {!readOnly && <div className="agent-panel-add">
+     <button type="button" aria-label="打开面板" title="打开面板" aria-expanded={menu} onClick={() => setMenu(value => !value)}><Plus size={15}/></button>
+     {menu && <><button type="button" className="agent-context-scrim" aria-label="关闭面板菜单" onClick={() => setMenu(false)}/><div className="agent-panel-menu">{list()}</div></>}
+   </div>}
+   <span className="push"/>
+   <button type="button" title={panels.maximized ? '还原面板' : '最大化面板'} onClick={() => { panels.maximized = !panels.maximized; }}>
+     {panels.maximized ? <Minimize2 size={15}/> : <Maximize2 size={15}/>}
+   </button>
+   {titlebarTarget && !readOnly && <button type="button" data-testid="agent-titlebar-terminal-toggle" title="底部终端抽屉（⌃`）"
+     disabled={!taskId && !homeWorkspace.cwd} aria-pressed={panels.drawer} onClick={() => panels.terminalDrawer()}><PanelBottom size={15}/></button>}
+   {titlebarTarget && <button type="button" title="收起右侧面板" aria-pressed onClick={() => {
+     panels.maximized = false;
+     navigation.toggleFilePanel();
+   }}><PanelRight size={15}/></button>}
+ </header>;
+ return <aside className={'agent-right-panel'+(panels.maximized?' maximized':'')} aria-label="统一工作面板" data-testid="agent-workspace-panel" data-maximized={panels.maximized}>
+   {titlebarTarget ? createPortal(header, titlebarTarget) : header}
+   <div className="agent-panel-body">
+     {!tabs.length&&<div className="agent-panel-empty"><b>打开面板</b>{list()}</div>}
+     {tabs.includes('files')&&(projectMissing?active==='files'&&<div className="agent-panel-empty">先选择项目工作目录</div>:
+       <div className="agent-file-surface" hidden={active!=='files'}><FileWorkspacePanel scope={scope} workspaceHeader={{
+         target:fileTabsTarget,active:active==='files',browseRequest,
+         onActivate:()=>panels.open('files'),onCloseDirectory:()=>{panels.close('files');setBrowseRequest(0);},
+       }}/></div>)}
+     {tabs.includes('browser')&&taskId&&<AgentBrowserSurface taskId={taskId} workspaceHeader={{
+       target:webTabsTarget,active:active==='browser',onActivate:()=>panels.open('browser'),onClose:()=>panels.close('browser'),
+     }}/>}
+     {tabs.includes('terminal')&&active==='terminal'&&terminal}
+     {tabs.includes('diff')&&active==='diff'&&taskId&&<DiffSurface taskId={taskId} readOnly={readOnly}/>}
+   </div>
+ </aside>;
 });

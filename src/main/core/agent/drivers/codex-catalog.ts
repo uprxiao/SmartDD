@@ -35,9 +35,9 @@ export class CodexCatalogReader {
     });
   }
 
-  private async pages() {
+  private async pages(timeoutMs: number) {
     const models = new Map<string, DriverModel>(), cursors = new Set<string>();
-    const deadline = Date.now() + 12_000;
+    const deadline = Date.now() + timeoutMs;
     let cursor: string | undefined;
     do {
       const remaining = deadline - Date.now();
@@ -61,15 +61,16 @@ export class CodexCatalogReader {
     return [...models.values()];
   }
 
-  async read(onFallback?: (models: DriverModel[]) => void): Promise<CodexCatalogResult> {
+  async read(onFallback?: (models: DriverModel[]) => void, { attempts = 3, timeoutMs = 12_000 } = {}): Promise<CodexCatalogResult> {
     let fallback: DriverModel[] | undefined;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < attempts; attempt++) {
       let models: DriverModel[];
-      try { models = await this.pages(); }
+      // Opening a thread can log its own refresh failure before this request.
+      this.refreshFailed = false;
+      try { models = await this.pages(timeoutMs); }
       catch (error) { if (fallback) break; throw error; }
       await afterIO(); // stderr and stdout are separate pipes.
       if (!this.refreshFailed) return { models, confirmed: true };
-      this.refreshFailed = false;
       fallback = models;
       onFallback?.(models);
     }

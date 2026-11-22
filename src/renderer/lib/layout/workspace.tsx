@@ -28,6 +28,7 @@ export const Workspace = observer(function Workspace() {
   const { t } = useTranslation();
   const [isLeftOpen, setIsLeftOpen] = useState(true);
   const [taskTitlebar, setTaskTitlebar] = useState<HTMLDivElement | null>(null);
+  const [panelTitlebar, setPanelTitlebar] = useState<HTMLDivElement | null>(null);
   const width = navigation.sidebarWidth;
   useEffect(() => events.on(menuToggleLeftSidebarEvent, () => setIsLeftOpen((v) => !v)), []);
   const view = navigation.currentViewId;
@@ -36,6 +37,7 @@ export const Workspace = observer(function Workspace() {
   const apps=view==='apps';
   const settings = view === 'settings';
   const scheduled = view === 'scheduled';
+  const panelInTitlebar = navigation.filePanelOpen && (view === 'home' || view === 'agentTask');
   const resize = (value: number) => navigation.setSidebarWidth(value);
   const resourceProject = (view === 'agentTask' ? agentTasksStore.tasks.find(task => task.taskId === navigation.currentAgentTaskId)?.projectId : null)
     ?? navigation.currentProjectId ?? navigation.homePreset?.projectId;
@@ -49,8 +51,9 @@ export const Workspace = observer(function Workspace() {
         <button data-testid="nav-home" className="icon-button" title={t('nav.home')} onClick={() => navigation.newTask()}><ArrowLeft size={17} /></button>
         {!settings && !apps && <button className="icon-button" title={t('nav.toggleSidebar')} onClick={() => setIsLeftOpen((v) => !v)}><PanelLeft size={16} /></button>}
       </div>
-      {view === 'home' && <HomeTitlebarActions />}
+      {view === 'home' && !panelInTitlebar && <HomeTitlebarActions />}
       {view === 'agentTask' && <div ref={setTaskTitlebar} className="agent-task-titlebar" data-testid="agent-task-titlebar" />}
+      {panelInTitlebar && <div ref={setPanelTitlebar} className="agent-workspace-titlebar" />}
     <nav className="app-rail" aria-label={t('m6.navigation')}><div className="rail-links">
         {railButton('home', t('nav.home'), () => navigation.newTask())}
         {railButton('clock', t('m6.scheduled'), () => navigation.navigate('scheduled'))}
@@ -65,7 +68,7 @@ export const Workspace = observer(function Workspace() {
         onPointerUp={(e) => { e.currentTarget.releasePointerCapture(e.pointerId); localStorage.setItem('smartdd-sidebar-width', String(width)); }}
         onKeyDown={(e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); const next = Math.max(240, Math.min(420, width + (e.key === 'ArrowRight' ? 10 : -10))); resize(next); localStorage.setItem('smartdd-sidebar-width', String(next)); } }} />}
       {scheduled && <aside className="sidebar scheduled-sidebar"><h2>{t('m6.scheduled')}</h2><button className="nav-row" disabled><Plus size={18} />{t('nav.newTask')}</button><p>{t('m6.upcoming')}</p><span className="scheduled-empty">{t('m6.noScheduled')}</span></aside>}
-      <MainContent key="main" taskTitlebar={taskTitlebar} />
+      <MainContent key="main" taskTitlebar={taskTitlebar} panelTitlebar={panelTitlebar} />
     </div>
   );
 });
@@ -83,7 +86,7 @@ const HomeTitlebarActions = observer(function HomeTitlebarActions() {
   </div>;
 });
 
-const MainContent = observer(function MainContent({ taskTitlebar }: { taskTitlebar: HTMLDivElement | null }) {
+const MainContent = observer(function MainContent({ taskTitlebar, panelTitlebar }: { taskTitlebar: HTMLDivElement | null; panelTitlebar: HTMLDivElement | null }) {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const view = navigation.currentViewId;
@@ -108,7 +111,7 @@ const MainContent = observer(function MainContent({ taskTitlebar }: { taskTitleb
     {view === 'project' && <header className="topbar"><div className="breadcrumbs"><button onClick={() => navigation.newTask()}>{t('nav.home')}</button><span>›</span><span>{project?.name}</span></div><div className="topbar-actions"><button type="button" className="m9-file-entry" data-testid="project-files" aria-pressed={navigation.filePanelOpen} onClick={() => navigation.toggleFilePanel()}><FolderOpen size={16} />文件</button><button className="icon-button" title={t('settings.theme')} onClick={() => setTheme((theme ?? (document.documentElement.classList.contains('ydark') ? 'ydark' : 'ylight')) === 'ydark' ? 'ylight' : 'ydark')} >{theme === 'ydark' ? <Sun size={17} /> : <Moon size={17} />}</button></div></header>}
     <div ref={split} className={`m9-workspace-split ${maximized ? 'agent-panel-maximized' : ''}`} style={{ '--file-panel-width': `${fileWidth}px` } as CSSProperties}><div data-testid="main-body" className="m6-main-body" inert={maximized}>
       <ViewSlot active={view === 'home'} className="m6-home-slot"><HomeView />{homePanels.drawer&&homeWorkspace.projectId&&homeWorkspace.dirId&&<AgentTerminalDrawer key={homeWorkspace.projectId+homeWorkspace.dirId} home={{projectId:homeWorkspace.projectId,dirId:homeWorkspace.dirId}} onClose={()=>{homePanels.drawer=false;}}/>}</ViewSlot>
-      <ViewSlot active={view === 'agentTask'}>{navigation.currentAgentTaskId && <AgentTaskView key={navigation.currentAgentTaskId} taskId={navigation.currentAgentTaskId} titlebarTarget={taskTitlebar} />}</ViewSlot>
+      <ViewSlot active={view === 'agentTask'}>{navigation.currentAgentTaskId && <AgentTaskView key={navigation.currentAgentTaskId} taskId={navigation.currentAgentTaskId} titlebarTarget={taskTitlebar} panelControlsInTitlebar={!!panelTitlebar} />}</ViewSlot>
       <ViewSlot active={view === 'apps'}><ApplicationsWorkspace /></ViewSlot>
       <ViewSlot active={view === 'settings'}><SettingsView /></ViewSlot>
       <ViewSlot active={view === 'project'}><ProjectView key={navigation.currentProjectId ?? ''} /></ViewSlot>
@@ -117,7 +120,7 @@ const MainContent = observer(function MainContent({ taskTitlebar }: { taskTitleb
     {navigation.filePanelOpen && fileScope && <>{!maximized && <div className="m9-panel-resizer" role="separator" aria-label="调整文件区域宽度" aria-orientation="vertical" aria-valuenow={Math.round(fileWidth)} aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} tabIndex={0}
       onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) navigation.setFilePanelWidth((split.current?.getBoundingClientRect().right ?? 0) - event.clientX, available); }}
       onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); navigation.setFilePanelWidth(fileWidth + (event.key === 'ArrowLeft' ? 10 : -10), available); } }} />}
-      {agentPanel?<AgentWorkspacePanels key={fileScope.kind==='task'?fileScope.taskId:fileScope.projectId} scope={fileScope} readOnly={readOnlyAgent} projectId={view==='home'?homeWorkspace.projectId:agentTask?.projectId??null} onClose={()=>navigation.toggleFilePanel()}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
+      {agentPanel?<AgentWorkspacePanels key={fileScope.kind==='task'?fileScope.taskId:fileScope.projectId} scope={fileScope} titlebarTarget={panelTitlebar} readOnly={readOnlyAgent} projectId={view==='home'?homeWorkspace.projectId:agentTask?.projectId??null}/>:<FileWorkspacePanel key={fileScope.kind === 'task' ? `task:${fileScope.taskId}` : `project:${fileScope.projectId}`} scope={fileScope} onClose={() => navigation.toggleFilePanel()} />}</>}
     </div>
   </main>;
 });

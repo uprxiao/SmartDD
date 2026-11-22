@@ -995,6 +995,12 @@ it('M14: a new agent run uses its own frozen capability source without requiring
   expect(sqlite.prepare('SELECT 1 FROM capability_session_snapshots WHERE task_id=?').get(taskId)).toBeUndefined();
   expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'prepared'});
   expect(integration.extraArgs?.join(' ')).toContain('mcp_servers');
+  const bootstrap = Object.entries(integration.mcpServers ?? {}).find(([name]) => name.startsWith('wy_'))?.[1].args[2];
+  expect(bootstrap).toBeDefined();
+  expect(existsSync(bootstrap!)).toBe(false);
+  await integration.beforeFork();
+  expect(existsSync(bootstrap!)).toBe(false);
+  expect(integration.beforeThreadOpen).toBeTypeOf('function');
   await integration.cancelBeforeFork();
   expect(sqlite.prepare('SELECT state FROM capability_runs WHERE run_id=?').get(runId)).toEqual({state:'stopped'});
   expect(()=>managed.runs.assertActive(runId)).toThrow();

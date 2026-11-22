@@ -8,7 +8,7 @@ import type { DriverId } from './capabilities';
 import type { DriverExecutable, DriverModelCache } from './driver';
 import { DriverError } from './driver';
 import { AgentStore, INPUT_TEXT_LIMIT, sha256, type AgentSelection, type StoredEvent } from './agent-store';
-import { AgentRunService, type RunHandle } from './agent-run-service';
+import { AgentRunService, type OpenRunInput, type RunHandle } from './agent-run-service';
 import { isTier, resolveTier, type Tier } from './permissions';
 import { attachmentNote, freezeImages, prepareAttachment, verifyAttachments, type Attachment } from './attachments';
 import type { CapabilityName, CapabilityResult } from './capabilities';
@@ -35,6 +35,18 @@ export interface ResolvedLaunch {
 /** 由宿主按配置档案解析（发现服务＋凭据服务＋托管文件），不接受客户端提供的路径或凭据。 */
 export type LaunchResolver = (input: { taskId?: string; profileId: string; cwd: string; runId: string; model?: string; carryExtensions?: boolean }) => Promise<ResolvedLaunch>;
 export type ProfileDriver = (profileId: string) => DriverId;
+
+const PREWARM_IDLE_MS = 60_000;
+const HOST_BUSINESS_INSTRUCTIONS = [
+  '宿主业务约定：工具返回 awaiting_user 表示请求已持久等待用户，不会超时；不要轮询、重发或在 shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。',
+  '在 WillYou 任务内，用户未指定外部浏览器时，打开浏览器或网页应优先读取本次运行提供的 willyou-browser-browser Skill 并使用 willyou-app browser。通用 computer-use 的 iab 与系统 Chrome 不属于此任务的浏览器。用户要求使用内置浏览器时，如果任务浏览器能力不可用，说明原因并先征询用户再改用外部窗口。开页成功后根据页面快照区分搜索结果、加载失败与需要用户验证。',
+].join('\n');
+interface PrewarmingRun {
+  controller: AbortController;
+  opening: Promise<RunHandle | undefined>;
+  expiry?: ReturnType<typeof setTimeout>;
+  closing?: Promise<void>;
+}
 
 /** 容量合同（技术方案 §3.1、A45）：IPC 响应 256 KiB、事件 32 KiB、正文段 128 KiB，全部按最终序列化后的 UTF-8 字节计。 */
 export const RESPONSE_LIMIT = 256 * 1024, EVENT_LIMIT = 32 * 1024, RANGE_LIMIT = 128 * 1024;
@@ -196,6 +208,8 @@ export class AgentTaskService {
   private readonly dispatching = new Set<string>();
   private readonly preparingTurns = new Map<string, string>();
   private readonly openingRuns = new Map<string, ReturnType<AgentTaskService['openOrReuseRun']>>();
+  private readonly prewarmingRuns = new Map<string, PrewarmingRun>();
+  private prewarmingClosed = false;
   private readonly queuedSteers = new Set<string>();
   private readonly missedPump = new Set<string>();
   private readonly blockedByClosing = new Map<string, number>();
@@ -328,7 +342,7 @@ export class AgentTaskService {
     };
     const busy = () => {
       const run = this.d.runs.runForTask(taskId);
-      return !!this.coordination?.blocked(taskId) || this.dispatching.has(taskId) || this.d.runs.respondingForTask(taskId) || this.d.store.queuedTurns(taskId).length > 0 || !!(run && this.d.runs.busy(run.runId));
+      return !!this.coordination?.blocked(taskId) || this.dispatching.has(taskId) || this.openingRuns.has(taskId) || this.d.runs.respondingForTask(taskId) || this.d.store.queuedTurns(taskId).length > 0 || !!(run && this.d.runs.busy(run.runId));
     };
     goalLock();
     if (busy()) return this.d.store.updateSelection(taskId, { pendingSwitch: { profileId, model, effort } }, expectedRevision);
@@ -336,12 +350,14 @@ export class AgentTaskService {
     this.switching.add(taskId);
     const seq = this.stopSeq.get(taskId) ?? 0;
     this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: true }));
+    let prewarmLaunch: ResolvedLaunch | undefined;
     try {
       const launch = await this.d.resolveLaunch({ taskId, profileId, cwd: before.task.cwd, runId: randomUUID(), carryExtensions: before.selection.extensionPreferences?.[profileId] ?? true });
       if (launch.driverId !== driverId) throw new DriverError('REJECTED', '目标配置的执行器已变化');
       if ((this.stopSeq.get(taskId) ?? 0) !== seq) throw new DriverError('STATE', '切换已被停止');
       goalLock();
       if (busy()) throw new DriverError('STATE', '切换预检已过期，请在空闲边界重试');
+      if (this.prewarmingRuns.has(taskId)) await this.cancelPrewarm(taskId);
       const run = this.d.runs.runForTask(taskId);
       if (run) await this.d.runs.close(run.runId);
       if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一执行器仍在退出，确认退出后可再次切换');
@@ -358,10 +374,12 @@ export class AgentTaskService {
         carryExtensions: previous.extensionPreferences?.[profileId] ?? true,
         extensionPreferences: { ...previous.extensionPreferences, [previous.profileId]: previous.carryExtensions !== false },
       }, expectedRevision, { from: this.d.profileName?.(previous.profileId) ?? previous.profileId, to: this.d.profileName?.(profileId) ?? profileId });
+      if (changed.ok && driverId === 'codex-app-server') prewarmLaunch = launch;
       return changed;
     } finally {
       this.switching.delete(taskId);
       this.d.store.tx(emit => emit(taskId, 'selection.switching', { switching: false }));
+      if (prewarmLaunch) this.prewarm(taskId, prewarmLaunch);
     }
   }
 
@@ -505,25 +523,98 @@ export class AgentTaskService {
     if (run.driverId === 'codex-app-server' && tier !== 'full') this.requireCapability(run, 'approvalsReviewer', `${tier === 'ask' ? '请求批准' : '帮我批准'}档位`);
   }
 
+  /** While idle, resume only an existing, compatible Codex thread. The foreground owns all input and handoff. */
+  private prewarm(taskId: string, launch: ResolvedLaunch) {
+    const task = this.d.store.task(taskId);
+    if (this.prewarmingClosed || !task || task.archived_at || task.parent_task_id || this.archiving.has(taskId)
+        || this.paused.has(taskId) || this.openingRuns.has(taskId) || this.prewarmingRuns.has(taskId)
+        || this.d.store.queuedTurns(taskId).length || this.d.store.pendingRequests(taskId).length
+        || this.d.runs.runForTask(taskId) || this.d.runs.closingForTask(taskId)
+        || this.business?.busy(taskId) || this.coordination?.blocked(taskId) || this.coordination?.hasUnfinishedChildren(taskId)) return;
+    const selection = JSON.parse(task.selection_json) as AgentSelection;
+    const controller = new AbortController();
+    const { signal } = controller;
+    const options = this.runInput(taskId, task.cwd, selection, launch, () => signal.aborted);
+    const opening = Promise.resolve().then(() => {
+      if (signal.aborted) return;
+      options.assertCurrent?.();
+      return this.d.runs.open({ ...options, startupSignal: signal }, 'resume-only');
+    }).catch(error => {
+      if (!signal.aborted) this.d.store.tx(emit => emit(taskId, 'run.prewarm_failed', {
+        code: error instanceof DriverError ? error.code : 'OPEN_FAILED',
+      }));
+      return undefined;
+    });
+    const warm: PrewarmingRun = { controller, opening };
+    this.prewarmingRuns.set(taskId, warm);
+    void opening.then(run => {
+      if (warm.closing || this.prewarmingRuns.get(taskId) !== warm) return;
+      if (!run) this.prewarmingRuns.delete(taskId);
+      else {
+        warm.expiry = setTimeout(() => {
+          if (this.prewarmingRuns.get(taskId) === warm) void this.cancelPrewarm(taskId)?.catch(() => {});
+        }, PREWARM_IDLE_MS);
+        warm.expiry.unref();
+      }
+    });
+  }
+
+  private cancelPrewarm(taskId: string) {
+    const warm = this.prewarmingRuns.get(taskId);
+    if (!warm) return;
+    clearTimeout(warm.expiry);
+    warm.controller.abort();
+    warm.closing ??= warm.opening.then(async run => {
+      if (run && this.d.runs.runForTask(taskId)?.runId === run.runId) await this.d.runs.close(run.runId);
+    }).finally(() => {
+      if (this.prewarmingRuns.get(taskId) === warm) this.prewarmingRuns.delete(taskId);
+    });
+    return warm.closing;
+  }
+
+  async closePrewarms() {
+    this.prewarmingClosed = true;
+    await Promise.allSettled([...this.prewarmingRuns.keys()].map(taskId => this.cancelPrewarm(taskId)));
+  }
+
   /** 打开或恢复本任务的运行（不派发输入）。 */
   private ensureRun(taskId: string) {
     const pending = this.openingRuns.get(taskId);
     if (pending) return pending;
-    // 恢复中的运行可用于停止和登记，目标与输入要等原生会话打开后才能用。
-    const opening = this.openOrReuseRun(taskId).finally(() => this.openingRuns.delete(taskId));
+    const warm = this.prewarmingRuns.get(taskId);
+    const seq = this.stopSeq.get(taskId) ?? 0;
+    const opening = (async () => {
+      if (warm) {
+        const ready = await warm.opening;
+        await warm.closing;
+        if ((this.stopSeq.get(taskId) ?? 0) !== seq) throw new DriverError('STATE', '启动已停止');
+        if (this.prewarmingRuns.get(taskId) === warm) {
+          clearTimeout(warm.expiry);
+          this.prewarmingRuns.delete(taskId);
+        }
+        return this.openOrReuseRun(taskId, ready?.runId);
+      }
+      return this.openOrReuseRun(taskId);
+    })().finally(() => this.openingRuns.delete(taskId));
     this.openingRuns.set(taskId, opening);
     return opening;
   }
 
-  private async openOrReuseRun(taskId: string) {
+  private async openOrReuseRun(taskId: string, prewarmedRunId?: string) {
     const seq = this.stopSeq.get(taskId) ?? 0;
     const startCancelled = () => (this.stopSeq.get(taskId) ?? 0) !== seq;
     if (this.coordination && !await this.coordination.beforeDispatch(taskId)) throw new DriverError('STATE', '正在等待工作目录写入资格，请稍后再执行命令');
     if (startCancelled()) throw new DriverError('STATE', '启动已停止');
     const existing = this.d.runs.runForTask(taskId);
     if (existing) {
-      try { existing.assertCurrent?.(); return existing; }
-      catch (e) { if (!this.d.runs.busy(existing.runId)) await this.d.runs.close(existing.runId); throw e; }
+      try {
+        existing.assertCurrent?.();
+        if (existing.runId === prewarmedRunId) this.coordination?.opened(taskId, existing);
+        return existing;
+      } catch (e) {
+        if (!this.d.runs.busy(existing.runId)) await this.d.runs.close(existing.runId);
+        if (existing.runId !== prewarmedRunId) throw e;
+      }
     }
     const { task, selection } = this.selection(taskId);
     // 不带当前选择解析启动参数，得到档案自己的默认模型；“恢复默认”用它（复核 NR05）。
@@ -531,14 +622,21 @@ export class AgentTaskService {
     if (startCancelled()) throw new DriverError('STATE', '启动已停止');
     if (launch.driverId !== selection.driverId) throw new DriverError('REJECTED', '配置档案的执行器已变化');
     if (this.d.runs.closingForTask(taskId)) throw new DriverError('STATE', '上一运行仍在退出，请稍后');
+    const options = this.runInput(taskId, task.cwd, selection, launch, startCancelled);
+    options.assertCurrent?.();
+    const opened = await this.d.runs.open(options);
+    const run = this.d.runs.runForTask(taskId);
+    if (run?.runId !== opened.runId) throw new DriverError('EXITED', '会话就绪前执行器已退出');
+    this.coordination?.opened(taskId, run);
+    return run;
+  }
+
+  private runInput(taskId: string, cwd: string, selection: AgentSelection, launch: ResolvedLaunch, startCancelled: () => boolean): OpenRunInput {
     const assertCurrent = () => {
       this.coordination?.assertTargetCurrent(taskId);
       launch.assertCurrent?.();
     };
-    assertCurrent();
-    await this.d.runs.open({ taskId, driverId: launch.driverId, modelCache: launch.modelCache, profileId: selection.profileId, executable: launch.executable, cwd: task.cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, startCancelled, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) });
-    this.coordination?.opened(taskId, this.d.runs.runForTask(taskId)!);
-    return this.d.runs.runForTask(taskId)!;
+    return { taskId, driverId: launch.driverId, modelCache: launch.modelCache, hostBusinessInstructions: this.business && launch.driverId === 'codex-app-server' ? HOST_BUSINESS_INSTRUCTIONS : undefined, profileId: selection.profileId, executable: launch.executable, cwd, env: launch.env, stateRoot: launch.stateRoot, compatibility: launch.compatibility, tier: selection.tier as Tier, model: selection.model ?? launch.model, defaultModel: launch.model, extraArgs: launch.extraArgs, settingSources: launch.settingSources, capabilities: launch.capabilities, modelsWithoutImageInput: launch.modelsWithoutImageInput, assertCurrent, startCancelled, integrate: launch.integrate, stopWhenWaiting: () => this.coordination?.waitingChildren(taskId) ?? false, readOnly: this.coordination?.readOnly?.(taskId) };
   }
 
   private async commandContext(taskId: string, run: RunHandle) {
@@ -633,11 +731,17 @@ export class AgentTaskService {
       // 异步打开期间用户按了停止：输入保留在排队，不派发（复核 CR03）。
       if (stoppedSince()) return;
       const frozen = JSON.parse(next.input_ref) as { text: string; attachments?: Attachment[] };
-      if (run.driverId === 'codex-app-server' && selection.effort) {
-        await this.d.runs.resolveModelCatalog(run.runId);
+      const selectedModel = selection.model ?? run.defaultModel;
+      const native = run.nativeSelection;
+      const matchesNativeSelection = !!selection.effort
+        && (!selection.initialCodexDefault || run.defaultModel === selectedModel)
+        && native?.model === selectedModel && native?.effort === selection.effort;
+      let models = run.models;
+      if (run.driverId === 'codex-app-server' && selection.effort && !models && !matchesNativeSelection) {
+        models = await this.d.runs.resolveModelCatalog(run.runId, selectedModel, selection.effort);
         if (stoppedSince()) return;
       }
-      if (selection.initialCodexDefault && !offersCodexLoginDefault(run.models)) {
+      if (selection.initialCodexDefault && !matchesNativeSelection && !offersCodexLoginDefault(models)) {
         const current = this.selection(taskId);
         if (current.selection.initialCodexDefault) this.d.store.updateSelection(taskId, {
           model: undefined, effort: undefined, initialCodexDefault: undefined,
@@ -653,13 +757,14 @@ export class AgentTaskService {
       // 派发前最后核对停止：上面每个异步前置（打开、默认模型查询）期间都可能按了停止（复核 SR01）。
       if (stoppedSince()) return;
       const { omittedImages, ...input } = this.agentInput(frozen.text, frozen.attachments ?? [], run, model);
-      const modelInfo = run.models?.find(m => m.id === model);
+      models ??= run.models;
+      const modelInfo = models?.find(m => m.id === model);
       let effort = modelInfo?.defaultEffort;
       if (selection.effort) {
-        if (modelInfo?.efforts.includes(selection.effort)) effort = selection.effort;
+        if (modelInfo?.efforts.includes(selection.effort) || (model === selectedModel && matchesNativeSelection)) effort = selection.effort;
         else this.d.store.addHostItem(taskId, next.turn_id, 'system_notice', { code: 'settingSkipped', detail: `未应用推理强度 ${selection.effort}：执行器未公布该模型的此选项。` });
       }
-      const hostContext = [this.coordination?.dispatchContext?.(taskId), this.business ? '宿主业务约定：工具返回 awaiting_user 表示请求已持久等待用户，不会超时；不要轮询、重发或在 shell 等待，先做其他工作。批准后宿主执行并向此任务通知结果，通知不构成新的真人授权。' : undefined].filter(Boolean).join('\n\n');
+      const hostContext = [this.coordination?.dispatchContext?.(taskId), this.business && !run.hostBusinessInstructionsInstalled ? HOST_BUSINESS_INSTRUCTIONS : undefined].filter(Boolean).join('\n\n');
       const remaining = INPUT_TEXT_LIMIT - Buffer.byteLength(input.text) - (hostContext ? Buffer.byteLength(hostContext) + 2 : 0);
       transfer = this.handoffs.prepare(taskId, run.bindingId, next.turn_id, remaining);
       const context = [transfer?.text, hostContext].filter(Boolean).join('\n\n');
@@ -706,6 +811,7 @@ export class AgentTaskService {
   async stop(taskId: string, subtree = false, expectedRunId?: string) {
     const selected = this.selection(taskId);
     const run = this.d.runs.runForTask(taskId);
+    const prewarming = this.prewarmingRuns.has(taskId);
     if (expectedRunId !== undefined && run?.runId !== expectedRunId) {
       throw new DriverError('STATE', '所属运行已结束或变化，请重新打开原生子 Agent');
     }
@@ -716,6 +822,7 @@ export class AgentTaskService {
     this.d.runs.hold(taskId, true);
     this.business?.stop(taskId);
     const interrupt = async () => {
+      if (prewarming) { await this.cancelPrewarm(taskId); return; }
       if (!run) return;
       // Codex：停止键＝停止本轮并暂停目标（需求 R02）。
       if (run.driverId === 'codex-app-server' && this.d.store.goal(taskId)?.status === 'active') { try { await this.d.runs.goal(run.runId, { kind: 'pause' }); } catch { /* 目标接口失败不阻止停止 */ } }
@@ -725,7 +832,7 @@ export class AgentTaskService {
       await this.d.runs.interrupt(run.runId,true);
     };
     await Promise.all([interrupt(), this.coordination?.userStopped(taskId, subtree)]);
-    return { stopped: !!run || this.dispatching.has(taskId) };
+    return { stopped: prewarming || !!run || this.dispatching.has(taskId) };
   }
 
   forceStop(taskId: string, runId: string, requestedAt: number) {
@@ -877,6 +984,7 @@ export class AgentTaskService {
   }
 
   private async closeIdleRunForRemoval(taskId: string) {
+    if (this.prewarmingRuns.has(taskId)) await this.cancelPrewarm(taskId);
     const run = this.d.runs.runForTask(taskId);
     if (!run) return;
     await this.d.runs.close(run.runId);

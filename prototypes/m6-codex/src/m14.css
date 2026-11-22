@@ -494,7 +494,8 @@ button.m14-log:hover { background: var(--hover); }
 .m14-code pre code { background: none; border: 0; padding: 0; }
 /* B1 回答下方复制与时间 */
 .m14-assistant-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: var(--muted); opacity: 0; transition: opacity .15s; }
-.m14-assistant:hover .m14-assistant-meta { opacity: 1; }
+.m14-assistant:hover .m14-assistant-meta, .m14-assistant:focus-within .m14-assistant-meta { opacity: 1; }
+@media (hover:none) { .m14-assistant-meta { opacity: 1; } }
 .m14-assistant-meta button { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: var(--muted); }
 .m14-assistant-meta button:hover { background: var(--hover); color: var(--text); }
 /* B3 用户消息 */
@@ -646,17 +647,7 @@ button.m14-log:hover { background: var(--hover); }
 /* 浏览器面板：网页标签条＋M12 浏览器 */
 .m14-browser-surface { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .m14-browser-surface > :last-child { flex: 1; min-height: 0; }
-.m14-webtabs { display: flex; align-items: center; gap: 2px; height: 36px; padding: 0 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
-.m14-webtab { display: flex; align-items: center; max-width: 220px; border-radius: 7px; flex-shrink: 0; }
-.m14-webtab.on { background: var(--selected); }
-.m14-webtab:hover { background: var(--hover); }
-.m14-webtab > button:first-child { display: inline-flex; align-items: center; gap: 6px; min-width: 0; height: 26px; padding: 0 6px 0 9px; font-size: 12px; color: var(--secondary); }
-.m14-webtab.on > button:first-child { color: var(--text); }
-.m14-webtab > button:first-child span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.m14-webtab > button:last-child { display: grid; place-items: center; width: 18px; height: 18px; margin-right: 4px; border-radius: 5px; color: var(--muted); }
 .m14-webtab-dot { width: 6px; height: 6px; border-radius: 50%; background: #3385ff; }
-.m14-webtab-new { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; color: var(--muted); flex-shrink: 0; }
-.m14-webtab-new:hover { background: var(--hover); color: var(--text); }
 /* 终端面板 */
 .m14-term.surface { margin: 0; border: 0; border-radius: 0; flex: 1; display: flex; flex-direction: column; }
 .m14-term.surface .m14-term-body { flex: 1; height: auto; }
@@ -728,6 +719,16 @@ button.m14-log:hover { background: var(--hover); }
 /* 右侧面板 */
 .m14-rp-push { flex: 1; }
 .m14-rp-tabs { flex: 0 1 auto; }
+.m14-rp-tab-slot { display: contents; }
+.m14-rp-tabs :is(.m14-rp-tab,.fw-tab) { flex: 0 0 auto; min-width: 0; max-width: 208px; height: 30px; }
+.m14-rp-tabs :is(.m14-rp-tab.on,.fw-tab.selected) {
+  background: var(--hover);
+  box-shadow: inset 0 -2px var(--muted);
+}
+.m14-rp-tabs button[role=tab] { min-width: 0; }
+.m14-rp-tabs button[role=tab] > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m14-rp-tabs button[role=tab] > svg { flex: none; }
+.m14-rp-tabs :focus-within :is(.m14-rp-tab-x,.fw-tab-close) { opacity: 1; }
 .m14-rp-menu kbd { margin-left: auto; }
 .m14-rp-menu small { margin-left: 6px; font-size: 11px; color: var(--muted); }
 .m14-rp-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; }
@@ -884,3 +885,16 @@ button.m14-log:hover { background: var(--hover); }
 .m14-title-project, .m14-title-slash { color: var(--muted); }
 .m14-title-project { max-width: 140px; }
 .m14-preview .task-window-header:is([data-header-layout="compact"], [data-header-layout="minimal"]) :is(.m14-title-project, .m14-title-slash) { display: none; }
+
+.m14-rp-titlebar { position:absolute; z-index:9; top:0; right:4px; width:var(--prototype-file-width, 57%); }
+.m14-rp-titlebar .m14-rp-bar { border-bottom:0; border-left:1px solid var(--border); }
+.m14-docked .task-window-header { right:calc(var(--prototype-file-width, 57%) + 4px); }
+.m14-panel-maximized .task-window-header { visibility:hidden; }
+.m14-panel-maximized .m14-rp-titlebar { left:calc(52px + var(--sidebar-width) + 6px); width:auto; }
+@media (max-width:1200px) {
+  .m14-panel-maximized .m14-rp-titlebar { left:165px; }
+}
+.m14-panel-maximized.sidebar-collapsed .m14-rp-titlebar { left:165px; }
+.m14-queued { flex-direction:row; align-items:center; width:min(100%, 540px); padding:4px 7px; border:1px solid var(--border); border-radius:9px; }
+.m14-queued .m14-queued-bubble { flex:1; min-width:0; padding:2px 3px; background:transparent; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.m14-queued .m14-queued-meta { flex:none; }

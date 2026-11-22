@@ -5,6 +5,28 @@ import { buildTimeline, runDiagnostics, visibleRunDiagnostics, retainOlderTimeli
 const item = (o: Partial<TimelineItem> & { type: string; ordinal: number }): TimelineItem => ({ itemId: `i${o.ordinal}`, turnId: 't1', revision: 1, payload: {}, terminal: 'completed', createdAt: '', updatedAt: '', ...o });
 const turn = (status: string, s = '2026-11-17T00:00:00Z', e: string | null = '2026-11-17T00:00:12Z') => ({ turn_id: 't1', status, accepted_at: s, started_at: s, ended_at: e, error_code: null });
 
+it('keeps a confirmed steer and later work in the same native turn', () => {
+  const at = (second: string) => `2026-11-22T03:18:${second}Z`;
+  const original = { ...turn('started', at('03'), null), run_id: 'r', native_turn_id: 'n' };
+  const steer = { ...original, turn_id: 'steer', accepted_at: at('33'), started_at: at('36') };
+  const groups = buildTimeline([
+    item({ ordinal: 1, type: 'user_message', createdAt: at('03') }),
+    item({ ordinal: 2, type: 'tool_call', createdAt: at('06') }),
+    item({ ordinal: 3, type: 'user_message', turnId: 'steer', createdAt: at('33') }),
+    item({ ordinal: 4, type: 'tool_call', createdAt: at('34') }),
+    item({ ordinal: 5, type: 'tool_call', createdAt: at('37') }),
+    item({ ordinal: 6, type: 'assistant_message', createdAt: at('52') }),
+  ], [original, steer], Date.parse(at('55')));
+  expect(groups).toHaveLength(1);
+  expect(groups[0]).toMatchObject({ turnId: 't1', activeSeconds: 52, rows: [
+    { item: { ordinal: 1 } },
+    { items: [{ ordinal: 2 }, { ordinal: 4 }] },
+    { item: { ordinal: 3 } },
+    { items: [{ ordinal: 5 }] },
+    { item: { ordinal: 6 } },
+  ] });
+});
+
 it('A59 retains startup and configuration diagnostics separately from actionable warnings', () => {
   const records = [
     item({ ordinal: 1, type: 'user_message' }),
@@ -37,7 +59,7 @@ it('deduplicates the same diagnostic in one run while retaining separate MCP fai
   ]).map(record => record.ordinal)).toEqual([2, 3, 5, 7]);
 });
 
-it('A59 keeps a simple response clean and retains real changes, incomplete capture and recoverable reasoning', () => {
+it('A59 keeps incomplete captures out of chat and anchors real changes after the final reply', () => {
   const rows = buildTimeline([
     item({ ordinal: 1, type: 'user_message' }),
     item({ ordinal: 2, type: 'reasoning', payload: { text: '' } }),
@@ -48,9 +70,16 @@ it('A59 keeps a simple response clean and retains real changes, incomplete captu
   const meaningful = buildTimeline([
     item({ ordinal: 5, type: 'reasoning', payload: { text: '', truncated: true } }),
     item({ ordinal: 6, type: 'files_changed', payload: { status: 'complete', fileCount: 1 } }),
-    item({ ordinal: 7, type: 'files_changed', payload: { status: 'incomplete', fileCount: 0 } }),
+    item({ ordinal: 7, type: 'files_changed', payload: { status: 'incomplete', fileCount: 0, reason: '首次快照仍在后台准备' } }),
+    item({ ordinal: 8, type: 'assistant_message', payload: { phase: 'commentary', text: '我先检查' } }),
+    item({ ordinal: 9, type: 'assistant_message', payload: { text: '处理完了' } }),
+    item({ ordinal: 10, type: 'files_changed', payload: { status: 'none', fileCount: 0 } }),
   ], [turn('completed')])[0].rows;
-  expect(meaningful).toMatchObject([{ items: [{ ordinal: 5 }] }, { item: { ordinal: 6 } }, { item: { ordinal: 7 } }]);
+  expect(meaningful).toMatchObject([
+    { items: [{ ordinal: 5 }, { ordinal: 8 }] },
+    { item: { ordinal: 9 }, finalReply: true },
+    { item: { ordinal: 6 } },
+  ]);
 });
 
 describe('A45 历史显示预算', () => {

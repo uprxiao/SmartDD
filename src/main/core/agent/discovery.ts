@@ -3,7 +3,7 @@
 import { accessSync, constants, realpathSync, statSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { detectNativeCli, nativeExecutableIdentity, type CheckedNativeCli, type DetectOptions } from '../ai/runner-detect';
@@ -38,6 +38,40 @@ export interface ProbeOptions extends DetectOptions {
 }
 
 const protocolProbes = new Map<string, Promise<ReadonlySet<CapabilityName>>>();
+
+/** Reuse recent login shell results across switches within the same App instance. */
+export function createNativeCliDetector(detect = detectNativeCli): typeof detectNativeCli {
+  type Detection = Awaited<ReturnType<typeof detectNativeCli>>;
+  const entries = new Map<string, { value: Detection; identity: string; expires: number }>();
+  const pending = new Map<string, Promise<Detection>>();
+  return async (runner, executable, options) => {
+    if (options.signal || options.timeoutMs !== undefined) return detect(runner, executable, options);
+    // Loading the Claude SDK mutates these process-global values on demand.
+    // Keep SDK metadata out of the login shell used for CLI discovery.
+    const env = { ...options.env };
+    delete env.CLAUDE_AGENT_SDK_VERSION;
+    if (process.platform !== 'win32') delete env.NoDefaultCurrentDirectoryInExePath;
+    const key = createHash('sha256')
+      .update(JSON.stringify([runner, executable, options.shell, Object.entries(env).sort()])).digest('hex');
+    const previous = entries.get(key);
+    if (previous && previous.expires > Date.now() && previous.value.path &&
+      previous.identity === nativeExecutableIdentity(previous.value.path)) return previous.value;
+    entries.delete(key);
+    let request = pending.get(key);
+    if (!request) {
+      request = detect(runner, executable, { ...options, env }).then(value => {
+        const identity = value.path && nativeExecutableIdentity(value.path);
+        if (identity && value.version && value.shellPath) {
+          if (entries.size >= 16) entries.delete(entries.keys().next().value!);
+          entries.set(key, { value, identity, expires: Date.now() + 60_000 });
+        }
+        return value;
+      }).finally(() => pending.delete(key));
+      pending.set(key, request);
+    }
+    return request;
+  };
+}
 
 /** Probes the protocol in an empty home. No model input or host business scope is prepared. */
 async function inspectCodex(executable: string, shellPath: string | undefined, version: string, base: Record<string, string>) {

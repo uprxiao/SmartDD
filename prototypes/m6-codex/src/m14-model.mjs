@@ -190,10 +190,10 @@ export function deriveRows(turn, ui = {}) {
   const tailLive = rows.at(-1)?.kind === 'work-live';
   const footer = state === 'stopped' ? { kind: 'turn-footer', id: turn.id + ':f', label: `已停止 · 共工作 ${formatDuration(elapsed)}` } : state === 'failed' ? { kind: 'turn-footer', id: turn.id + ':f', failed: true, label: `已失败 · 共工作 ${formatDuration(elapsed)}` } : null;
   if (live && !tailLive && !pendingApproval && !turn.question && !turn.streaming && !turn.stopping) rows.push({ kind: 'thinking', id: turn.id + ':thinking', label: turn.waitingLabel ?? (turn.waitingOn ? `等待 ${turn.waitingOn} 个子任务` : '思考中') });
-  if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent });
+  if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent, showActions: state === 'done' });
+  if (!live && !turn.diffState && turn.changes?.length) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes, turnId: turn.id });
   if (turn.length) rows.push({ kind: 'length', id: turn.id + ':len' });
   if (footer) rows.push(footer);
-  if (!live && (turn.changes?.length || turn.diffState)) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes ?? [], turnId: turn.id, diffState: turn.diffState });
   return rows;
 }
 
@@ -232,7 +232,7 @@ const live = e => ({ ...e, live: true });
 
 export const SCENARIOS = [
   { id: 'done', group: '基础', name: 'S02 一轮完成', desc: '整轮折叠成“已工作”，只露最终回答和改动；展开可逐条看', status: 'done', turns: [DONE_TURN] },
-  { id: 'starting', group: '基础', name: 'S02 刚开始（思考中）', desc: '“工作中”计时＋末尾“思考中”', status: 'running', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 2, entries: [] }] },
+  { id: 'starting', group: '基础', name: 'S02 刚开始（思考中）', desc: '“工作中”计时＋末尾“思考中”', status: 'running', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 0, entries: [] }] },
   { id: 'running', group: '基础', name: 'S02 工作中＋排队', desc: '思考、中间正文、已完成的一组和实时行；排队消息可“立即发送”', status: 'running', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 38, entries: [T.think1, T.msg1, T.read1, T.read2, T.read3, T.grep, T.msgMid, live({ id: 'e7t', kind: 'thought', at: [10, 12], text: '**跑基线测试**\n先确认现有发布测试全部通过，再动构建脚本。' }), live({ ...T.test1, output: undefined })] }], queued: [{ id: 'q1', text: '顺便把 Linux 的 deb 也检查一下', time: '14:03' }] },
   { id: 'streaming', group: '基础', name: 'S02 输出最终回答中', desc: '工作结束、回答流式输出时不折叠', status: 'running', turns: [{ ...DONE_TURN, state: 'live', elapsed: 136, streaming: true, final: FINAL1.slice(0, 2) }] },
   { id: 'approval', group: '请求', name: 'S03 命令审批', desc: '时间线显示待批准内容；批准／拒绝在输入框上方，发送文字即拒绝并说明原因（对齐 T3）', status: 'waiting', turns: [{ id: 't1', user: USER1, state: 'live', elapsed: 12, entries: [T.think1, T.msg1, T.read1, T.read2, { id: 'r1', kind: 'approval', title: '命令审批', command: 'pnpm package:release --platform mac --arch x64', cwd: '/workspace/SmartDD', reason: '需要在沙箱外写入 release/ 目录' }] }], pending: 'approval' },

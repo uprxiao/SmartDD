@@ -1,11 +1,11 @@
 import Database from 'better-sqlite3';
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { runBundledMigrations } from '../../db/migrations';
 import { AgentStore } from './agent-store';
 import { AgentRunService } from './agent-run-service';
 import { AgentTaskService, type LaunchResolver } from './agent-task-service';
-import { Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
+import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverOpenOptions, type TurnInput } from './driver';
 import type { DriverId } from './capabilities';
 import { HandoffService } from './handoff';
 import { until } from './test-doubles';
@@ -26,21 +26,159 @@ class Instance implements DriverInstance {
   async respond() {} async interrupt() {}
   async close() { if (!this.delayedExit) this.events.emit({ type: 'exit', code: 0, signal: null }); }
 }
-const fixtures: { db: Database.Database; runs: AgentRunService }[] = [];
-afterEach(async () => { for (const f of fixtures.splice(0)) { await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } });
-function setup(resolve?: LaunchResolver) {
+const fixtures: { db: Database.Database; runs: AgentRunService; service: AgentTaskService }[] = [];
+afterEach(async () => { for (const f of fixtures.splice(0)) { await f.service.closePrewarms(); await f.runs.closeAll(); await new Promise(r => setTimeout(r, 0)); f.db.close(); } });
+function setup(resolve?: LaunchResolver, resume?: (options: DriverOpenOptions) => Promise<void>) {
   const db = new Database(':memory:'); db.pragma('foreign_keys=ON'); runBundledMigrations(db);
   const store = new AgentStore(db), instances: Instance[] = [];
-  const make = (id: DriverId): AgentDriver => ({ id, command: 'fake', create: () => { const i = new Instance(id); instances.push(i); return i; } });
+  const make = (id: DriverId): AgentDriver => ({ id, command: 'fake', create: () => {
+    const i = new Instance(id);
+    const open = i.open.bind(i);
+    i.open = async options => {
+      i.opened = options;
+      if (options.resumeNativeId) await resume?.(options);
+      return open(options);
+    };
+    instances.push(i);
+    return i;
+  } });
   const runs = new AgentRunService({ store, drivers: new Map([['codex-app-server', make('codex-app-server')], ['claude-sdk', make('claude-sdk')]]), processes: { read: () => null, state: () => 'unknown' }, host: { instanceId: 'test', pid: process.pid, startedAt: null } });
   const driver = (id: string) => id === 'a' ? 'codex-app-server' as const : 'claude-sdk' as const;
   const service = new AgentTaskService({ store, runs, profileDriver: driver, resolveLaunch: resolve ?? (async i => ({ driverId: driver(i.profileId), executable: { path: '/synthetic', version: i.profileId === 'a' ? '0.169.0' : '2.1.326' }, env: {}, stateRoot: `/state/${i.profileId}`, compatibility: { account: i.profileId }, settingSources: ['project'], extraArgs: [] })) });
   const { taskId } = service.create({ projectId: null, dirId: null, cwd: '/work', title: 'switch test', profileId: 'a', tier: 'ask' });
-  fixtures.push({ db, runs });
+  fixtures.push({ db, runs, service });
   const send = async (text: string) => { const r = await service.submit(taskId, { clientInputId: randomUUID(), text, expectedSelectionRevision: service.snapshot(taskId).selectionRevision }); await until(() => instances.at(-1)?.turns.at(-1)?.clientInputId === store.turn(r.turnId)?.client_input_id); return instances.at(-1)!; };
   const change = (profile: string) => service.switchProfile(taskId, profile, service.snapshot(taskId).selectionRevision);
   return { db, store, runs, service, instances, taskId, send, change };
 }
+
+async function visitClaude(s: ReturnType<typeof setup>) {
+  const original = await s.send('original Codex input');
+  original.finish('original reply');
+  await s.change('b');
+  const claude = await s.send('Claude input');
+  claude.finish('Claude reply');
+  return original;
+}
+
+it('restores the existing Codex thread in the background and sends no input until the user continues', async () => {
+  const s = setup();
+  const original = await visitClaude(s);
+  const event = (type: string) => s.db.prepare('SELECT COUNT(*) AS n FROM agent_events WHERE task_id=? AND event_type=?').pluck().get(s.taskId, type);
+  const readyEvents = event('run.session_ready');
+  await s.change('a');
+  await until(() => event('run.session_ready') === Number(readyEvents) + 1);
+  expect(s.instances[2].opened.resumeNativeId).toBe(original.nativeId);
+  expect(s.instances[2].turns).toEqual([]);
+  expect(s.instances[2].history).toEqual([]);
+  expect(s.service.snapshot(s.taskId).status).toBe('completed');
+  expect(await s.send('after background recovery')).toBe(s.instances[2]);
+  expect(s.instances[2].history).toHaveLength(1);
+  expect(s.instances[2].turns.map(turn => turn.text)).toEqual(['after background recovery']);
+});
+
+it('shares an in-flight background resume when the user sends immediately', async () => {
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const s = setup(undefined, () => gate);
+  await visitClaude(s);
+  await s.change('a');
+  await until(() => !!s.instances[2]?.opened);
+  const { turnId } = await s.service.submit(s.taskId, { clientInputId: randomUUID(), text: 'immediate', expectedSelectionRevision: s.service.snapshot(s.taskId).selectionRevision });
+  expect(s.store.turn(turnId)?.status).toBe('accepted');
+  expect(s.instances[2].turns).toEqual([]);
+  release();
+  await until(() => s.store.turn(turnId)?.status === 'started');
+  expect(s.instances).toHaveLength(3);
+  expect(s.instances[2].turns.map(turn => turn.text)).toEqual(['immediate']);
+});
+
+it('retries an unsuccessful background resume on send without losing or replaying the input', async () => {
+  let attempts = 0;
+  const s = setup(undefined, async () => { if (++attempts === 1) throw new DriverError('REJECTED', 'resume failed'); });
+  const original = await visitClaude(s);
+  await s.change('a');
+  const resumed = await s.send('send after speculative failure');
+  expect(resumed.opened.resumeNativeId).toBe(original.nativeId);
+  expect(attempts).toBe(2);
+  expect(s.instances[2].turns).toEqual([]);
+  expect(resumed.turns.map(turn => turn.text)).toEqual(['send after speculative failure']);
+  expect(s.service.snapshot(s.taskId).items.filter(item => item.type === 'error')).toEqual([]);
+});
+
+it.each(['switch again', 'stop', 'archive'] as const)('closes an in-flight background resume on %s without sending a turn', async action => {
+  const s = setup(undefined, options => {
+    if (!options.startupSignal) return Promise.resolve();
+    const signal = options.startupSignal;
+    return new Promise<void>((_resolve, reject) => {
+      signal.addEventListener('abort', () => reject(new DriverError('STATE', 'canceled')), { once: true });
+    });
+  });
+  await visitClaude(s);
+  await s.change('a');
+  await until(() => !!s.instances[2]?.opened);
+  if (action === 'switch again') await s.change('b');
+  if (action === 'stop') await s.service.stop(s.taskId);
+  if (action === 'archive') await s.service.archive(s.taskId);
+  expect(s.runs.runForTask(s.taskId)).toBeUndefined();
+  expect(s.runs.closingForTask(s.taskId)).toBeUndefined();
+  expect(s.instances[2].turns).toEqual([]);
+  expect(s.instances[2].history).toEqual([]);
+  if (action !== 'archive') {
+    const next = await s.send('after ' + action);
+    expect(next).not.toBe(s.instances[2]);
+    expect(next.turns.map(turn => turn.text)).toEqual(['after ' + action]);
+  } else expect(s.service.snapshot(s.taskId).archivedAt).toBeTruthy();
+});
+
+it('leaves a Codex profile with no native session unopened until its first input', async () => {
+  const s = setup();
+  await s.change('b');
+  const claude = await s.send('first ever input');
+  claude.finish('reply');
+  await s.change('a');
+  expect(s.instances).toHaveLength(1);
+  const codex = await s.send('first Codex input');
+  expect(codex.opened.resumeNativeId).toBeUndefined();
+  expect(s.instances).toHaveLength(2);
+});
+
+it('does not background-resume a binding when the target account has changed', async () => {
+  let account = 'original';
+  const s = setup(async ({profileId}) => ({
+    driverId: profileId === 'a' ? 'codex-app-server' : 'claude-sdk',
+    executable: {path:'/synthetic', version:profileId === 'a' ? '0.169.0' : '2.1.326'},
+    env: {}, stateRoot: `/state/${profileId}`,
+    compatibility: {account: profileId === 'a' ? account : 'claude'}, extraArgs: [],
+  }));
+  const original = await visitClaude(s);
+  account = 'changed';
+  await s.change('a');
+  expect(s.instances).toHaveLength(2);
+  const next = await s.send('on the new account');
+  expect(next.opened.resumeNativeId).toBeUndefined();
+  expect(next.nativeId).not.toBe(original.nativeId);
+});
+
+it('reclaims an unused background process and can still resume when the user returns', async () => {
+  const s = setup();
+  const original = await visitClaude(s);
+  vi.useFakeTimers({toFake:['setTimeout', 'clearTimeout']});
+  try {
+    await s.change('a');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(s.instances[2].nativeId).toBe(original.nativeId);
+    expect(s.runs.runForTask(s.taskId)).toBeDefined();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(s.runs.runForTask(s.taskId)).toBeUndefined();
+    expect(s.instances[2].turns).toEqual([]);
+  } finally {
+    vi.useRealTimers();
+  }
+  const next = await s.send('after idle expiry');
+  expect(next).not.toBe(s.instances[2]);
+  expect(next.opened.resumeNativeId).toBe(original.nativeId);
+});
 
 it('A14/A15: A→B→A preserves task and draft; new B gets full history, returning A resumes and gets only missing B history', async () => {
   const s = setup();

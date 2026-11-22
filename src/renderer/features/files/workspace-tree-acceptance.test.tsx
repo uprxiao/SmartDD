@@ -92,20 +92,35 @@ describe('Y20 tree keyboard anchor, toggle-only selection and ARIA position', ()
 });
 
 describe('B18 production tree first-double-click diagnostic', () => {
+  it('keeps three single-clicked files and reactivates their existing tabs', async () => {
+    const f = fixture('none', true);
+    await f.store.initialize();
+    render(<Tree store={f.store} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('treeitem', { name: 'A.txt' }));
+    const first = f.store.active?.id;
+    await user.click(screen.getByRole('treeitem', { name: 'B.txt' }));
+    await user.click(screen.getByRole('treeitem', { name: 'folder' }));
+    await user.click(await screen.findByRole('treeitem', { name: 'child.txt' }));
+    expect(f.store.tabs.map(tab => tab.route.relativePath)).toEqual(['A.txt', 'B.txt', 'folder/child.txt']);
+    await user.click(screen.getByRole('treeitem', { name: 'A.txt' }));
+    expect(f.store.active?.id).toBe(first);
+    expect(f.store.tabs).toHaveLength(3);
+  });
   it.each(['none', 'open', 'read'] as const)('pins a never-opened B on its first double click with %s delivery delay', async (delayed) => {
     const f = fixture(delayed); await f.store.initialize(); render(<Tree store={f.store} />); const user = userEvent.setup();
     await user.click(screen.getByRole('treeitem', { name: 'A.txt' }));
-    expect(f.store.active?.route.relativePath).toBe('A.txt'); expect(f.store.active?.pinned).toBe(false);
+    expect(f.store.active?.route.relativePath).toBe('A.txt'); expect(f.store.active?.pinned).toBe(true);
     const before = screen.getByRole('treeitem', { name: 'B.txt' }), events: { type: string; detail: number }[] = [];
     for (const type of ['mousedown', 'mouseup', 'click', 'dblclick']) before.addEventListener(type, (event) => events.push({ type: event.type, detail: (event as MouseEvent).detail }));
     await user.dblClick(before);
     expect(screen.getByRole('treeitem', { name: 'B.txt' })).toBe(before);
-    expect(f.store.tabs).toHaveLength(1); expect(f.store.active?.route.relativePath).toBe('B.txt'); expect(f.store.active?.pinned).toBe(true);
+    expect(f.store.tabs).toHaveLength(2); expect(f.store.active?.route.relativePath).toBe('B.txt'); expect(f.store.active?.pinned).toBe(true);
     expect(events.filter((event) => event.type === 'click').map((event) => event.detail)).toEqual([1, 2]);
     expect(events.filter((event) => event.type === 'dblclick')).toEqual([{ type: 'dblclick', detail: 2 }]);
     await act(async () => { f.gate.resolve(); });
     await waitFor(() => expect(f.store.active?.buffer?.loadState).toBe('ready'));
-    expect(f.store.tabs).toHaveLength(1); expect(f.store.active?.pinned).toBe(true);
+    expect(f.store.tabs).toHaveLength(2); expect(f.store.active?.pinned).toBe(true);
     expect(f.api.open.mock.calls.filter(([request]) => request.relativePath === 'B.txt')).toHaveLength(1);
     await user.click(screen.getByRole('treeitem', { name: 'folder' }));
     expect(f.store.currentExpanded).toContain('folder'); expect(f.store.active?.route.relativePath).toBe('B.txt');

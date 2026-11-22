@@ -16,6 +16,7 @@ export interface RunIntegration {
   claudeMcp?: DriverOpenOptions['claudeMcp'];
   skillRoots?: DriverOpenOptions['skillRoots']; plugins?: DriverOpenOptions['plugins'];
   beforeFork(): Promise<void>;
+  beforeThreadOpen?(): Promise<void>;
   attached(pid: number): Promise<void>;
   exited(): Promise<void>;
   cancelBeforeFork(): Promise<void>;

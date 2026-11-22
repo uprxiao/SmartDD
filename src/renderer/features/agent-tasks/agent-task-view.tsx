@@ -6,10 +6,11 @@ import {voiceStore,textareaVoiceTarget} from '@renderer/core/voice-store';
 import {FILE_TERMINAL_DRAG_TYPE,dropFileToAgentComposer} from '@renderer/features/files/terminal-context/store';
 import {agentComposerTargets} from './composer-target';
 import { panelsFor } from './workspace-panels-store';
+import { revealBrowserTab } from '@renderer/features/browser/store';
 // M14 新任务区（阶段 2：单 Agent）。时间线、工作折叠、请求面板（输入框位置）、输入框（档位／模型／排队／停止）。
 // 视觉以共享原型 prototypes/m6-codex/?preview=m14 为准，逐项对齐在原型评审基线上继续。
 import MarkdownIt from 'markdown-it';
-import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, FilePenLine, FileSearch, Globe, Info, List, Loader2, Network, Pencil, Send, SquareTerminal, Target, Trash2, TriangleAlert, Wrench, X, Zap } from 'lucide-react';
+import { Archive, MoreHorizontal, Plug, PanelBottom, PanelRight, Brain, ChevronRight, CircleAlert, CircleStop, Clock3, Copy, FilePenLine, FileSearch, Globe, Info, List, Loader2, Network, Send, SquareTerminal, Target, Trash2, TriangleAlert, Wrench, X } from 'lucide-react';
 import { AgentTerminalDrawer } from './agent-terminal';
 import { AgentModelPicker } from './agent-model-picker';
 import { FULL_ACCESS_NOTE, FULL_ACCESS_WARNING } from '@renderer/features/agents/full-access-confirm';
@@ -42,7 +43,7 @@ function hostQueueLabel(q: { sourceKind?: string; text: string }) {
   if (q.sourceKind === 'delegation') return '主任务派来的指令，待开始';
   return '宿主提示，待处理';
 }
-const RESULT_STATUS: Record<string, string> = { completed: '已完成', canceled: '已取消', failed: '失败', unknown: '结果未知' };
+const RESULT_STATUS: Record<string, string> = { completed: '已完成', finished: '已完成', canceled: '已取消', failed: '失败', unknown: '结果未知' };
 const STATUS_LABEL: Record<string, string> = { idle: '', working: '工作中', waiting: '等待你处理', needs_attention: '需要你处理', completed: '已完成', stopped: '已停止', failed: '失败', limited: '受限' };
 const LIVE_PREVIEW_BYTES = 8 * 1024 * 1024;
 const LIVE_PREVIEW_ITEMS = 2_000;
@@ -226,7 +227,7 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
   return <button type="button" className="agent-older" onClick={onClick}>内容较长，已截断显示 · 展开全文</button>;
 }
 
-function ItemRow({ item }: { item: TimelineItem }) {
+function ItemRow({ item, finalReply }: { item: TimelineItem; finalReply?: boolean }) {
   const useTaskId=useContext(TaskScope);
   const archived=useContext(ArchivedScope);
   const relations=useContext(RelationsScope);
@@ -270,7 +271,25 @@ function ItemRow({ item }: { item: TimelineItem }) {
         </div>}
       </div></div>;
     }
-    case 'assistant_message': return <div className="agent-assistant"><Markdown itemId={item.itemId} text={String(p.text ?? '')} />{more}</div>;
+    case 'assistant_message': {
+      const text = String(p.text ?? '');
+      const stamp = new Date(item.updatedAt || item.createdAt);
+      const hasTime = !Number.isNaN(stamp.getTime());
+      const copy = async () => {
+        const value = truncated ? await load() : p;
+        if (!value) return;
+        if (isIncomplete(value)) { toast.error('历史只保留了开头部分，无法复制完整回复'); return; }
+        if (typeof value.text !== 'string' || !value.text.trim()) return;
+        try { await navigator.clipboard.writeText(value.text); toast.success('已复制回复'); }
+        catch (e) { toast.error(`复制失败：${rpcErrorMessage(e)}`); }
+      };
+      return <div className="agent-assistant"><Markdown itemId={item.itemId} text={text} />{more}
+        {finalReply && (text.trim() || truncated) && <div className="agent-reply-actions">
+          {(truncated || !isIncomplete(p)) && <button type="button" className="agent-head-btn" aria-label="复制回复" title="复制回复" onClick={() => void copy()}><Copy size={14} aria-hidden/></button>}
+          {hasTime && <time dateTime={stamp.toISOString()} title={stamp.toLocaleString()}>{stamp.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</time>}
+        </div>}
+      </div>;
+    }
     case 'proposed_plan': return <div className="agent-plan"><div className="agent-plan-head">计划 · Claude Code 计划模式</div><Markdown itemId={item.itemId} text={String(p.plan ?? '')} />{more}
       <div className="agent-plan-actions"><button type="button" onClick={() => void copyPlan()}>复制</button>
         <button type="button" onClick={() => void downloadPlan()}>下载</button>
@@ -291,7 +310,20 @@ function ItemRow({ item }: { item: TimelineItem }) {
       </div>;
     }
     case 'files_changed': return <ChangeCard payload={p} />;
-    case 'notification': return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {RESULT_STATUS[p.status] ?? p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => openRelatedTask(useTaskId,p.childTaskId,archived)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{(p.summary||p.error||p.result)&&<pre>{p.summary??p.error??JSON.stringify(p.result,null,2)}</pre>}{more}</div>;
+    case 'notification': {
+      const receipt = p.result?.value;
+      const pageId = receipt?.data?.pageId;
+      if (p.status === 'finished' && receipt?.status === 'ok' && receipt.source?.appId === 'browser'
+        && receipt.capabilityId === 'browser.tab.create' && typeof pageId === 'string') {
+        return <div className="agent-child-result">
+          <b>内置浏览器已创建标签</b>
+          {typeof receipt.data?.url === 'string' && <small>{receipt.data.url}</small>}
+          {!archived && useTaskId && <button type="button" onClick={() => void revealBrowserTab(useTaskId, pageId)
+            .catch(error => toast.error(rpcErrorMessage(error)))}>查看网页标签</button>}
+        </div>;
+      }
+      return <div className="agent-child-result"><b>{p.title ?? '任务结果'} · {RESULT_STATUS[p.status] ?? p.status ?? '已收到'}</b>{p.childTaskId && <button type="button" onClick={() => openRelatedTask(useTaskId,p.childTaskId,archived)}>查看子任务</button>}<small>来源：{p.sourceKind === 'child_result' ? '子任务结果' : '宿主业务通知'}</small>{(p.summary||p.error||p.result)&&<pre>{p.summary??p.error??JSON.stringify(p.result,null,2)}</pre>}{more}</div>;
+    }
     case 'error': {
       if (!p.limited) return <div className="agent-error agent-error-details">
         <details><summary><CircleAlert size={15} aria-hidden/>查看错误详情</summary>
@@ -320,26 +352,25 @@ function ItemRow({ item }: { item: TimelineItem }) {
 }
 
 type ChangedFile = { path: string; added: number | null; removed: number | null; binary: boolean };
-function ChangeCard({ payload }: { payload: {turnId:string; status:string; reason?:string; fileCount:number; files?:ChangedFile[]} }) {
+function ChangeCard({ payload }: { payload: {turnId:string; fileCount:number; files?:ChangedFile[]} }) {
   const taskId = useContext(TaskScope);
-  const {turnId, status, reason, fileCount, files} = payload;
+  const {turnId, fileCount, files} = payload;
   const [loaded, setLoaded] = useState<{turnId:string; files:ChangedFile[]}>();
   useEffect(() => {
-    if (files || status !== 'complete' || !fileCount) return;
+    if (files) return;
     let current = true;
     void rpc.agentTasks.changeFiles(taskId, turnId).then(result => {
       if (current) setLoaded({ turnId, files: result.files.slice(0, 8) });
     }).catch(() => {});
     return () => { current = false; };
-  }, [taskId, turnId, fileCount, status, files]);
+  }, [taskId, turnId, fileCount, files]);
   const rows = files ?? (loaded?.turnId === turnId ? loaded.files : []);
   return <button type="button" className="agent-change-card" onClick={() => {
     const panel = panelsFor({ kind: 'task', taskId }); panel.diffTurn = turnId; panel.open('diff');
   }}>
-    <span className="agent-change-head"><b>本轮改动 · {reason ?? (status === 'incomplete' ? '差异不完整' : fileCount + ' 个文件')}</b><span>查看差异 <ChevronRight size={12}/></span></span>
+    <span className="agent-change-head"><b>本轮改动 · {fileCount} 个文件</b><span>查看差异 <ChevronRight size={12}/></span></span>
     {rows.length > 0 && <span className="agent-change-files">{rows.map(file => <span key={file.path}><code title={file.path}>{file.path}</code>{file.binary ? <span>二进制</span> : <><em className="added">{file.added === null ? '—' : '+' + file.added}</em><em className="removed">{file.removed === null ? '—' : '−' + file.removed}</em></>}</span>)}</span>}
     {rows.length > 0 && fileCount > rows.length && <small>另有 {fileCount - rows.length} 个文件</small>}
-    <small>观察到的变化可能包含用户或外部写入</small>
   </button>;
 }
 
@@ -433,14 +464,14 @@ function WorkHeadingLabel({ heading }: { heading: WorkHeading }) {
   return <><Icon size={15} aria-hidden/>{heading.text}</>;
 }
 
-function WorkRow({ items, running, seconds, expanded, turnFold }: { items: TimelineItem[]; running: boolean; seconds: number; expanded: boolean; turnFold?: TurnWorkFold }) {
+function WorkRow({ items, running, seconds, expanded, showTime, turnFold }: { items: TimelineItem[]; running: boolean; seconds: number; expanded: boolean; showTime: boolean; turnFold?: TurnWorkFold }) {
   const [choice, setChoice] = useState<boolean>();
   const open = turnFold?.open ?? choice ?? expanded;
   const heading = turnFold?.heading;
   const tone = heading?.tone === 'failed' ? ' agent-turn-failed' : '';
   return <div className="agent-work">
     {(!turnFold || heading) && <button type="button" className={`agent-work-head${tone}${!heading && running ? ' shine' : ''}`} aria-expanded={open} onClick={turnFold?.toggle ?? (() => setChoice(!open))}>
-      {heading ? <WorkHeadingLabel heading={heading}/> : `${running ? '工作中' : '已工作'} ${formatDuration(seconds)}`}
+      {heading ? <WorkHeadingLabel heading={heading}/> : showTime ? `${running ? '工作中' : '已工作'} ${formatDuration(seconds)}` : '工作过程'}
       <ChevronRight size={13} className={open ? 'open' : ''} aria-hidden/>
     </button>}
     {open && <div className="agent-work-rows">{workSegments(items).map(segment => {
@@ -469,11 +500,16 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
   else if (group.failed) heading = { text:`工作 ${duration}后失败`, tone:'failed' };
 
   const firstWork = heading ? group.rows.findIndex(row => row.kind === 'work') : -1;
+  const lastSteer = group.rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'user_message'
+    && row.item.turnId !== group.turnId);
+  const lastWork = group.rows.findLastIndex(row => row.kind === 'work');
+  const showThinking = showActivity && !heading && !group.rows.slice(lastSteer + 1).some(countsAsActivity);
   const toggle = () => setWorkOpen(open => !open);
   const rows = group.rows.map((row, index) => {
-    if (row.kind === 'item') return <ItemRow key={row.item.itemId} item={row.item}/>;
+    if (row.kind === 'item') return <ItemRow key={row.item.itemId} item={row.item} finalReply={row.finalReply}/>;
     if (row.kind === 'footer') return <div key={row.id} className={`agent-turn-footer${row.failed ? ' failed' : ''}`}>{row.label}</div>;
-    return <WorkRow key={row.id} items={row.items} running={row.running} seconds={row.seconds}
+    return <WorkRow key={row.id} items={row.items} running={row.running} seconds={row.running ? group.activeSeconds : row.seconds}
+      showTime={lastSteer < 0 || (index === lastWork && !showThinking)}
       expanded={row.running || ['started','interrupted','failed'].includes(group.status ?? '')}
       turnFold={heading ? { heading:index === firstWork ? heading : undefined, open:workOpen, toggle } : undefined}/>;
   });
@@ -483,13 +519,13 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
       <WorkHeadingLabel heading={heading}/>
     </div>);
   }
-  if (showActivity && !heading && !group.rows.some(countsAsActivity)) {
-    const userRow = group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
-    rows.splice(userRow + 1, 0, <div key="work-status" className="agent-starting" role="status">
-      {group.status === 'started' ? <>
-        <div className="agent-work-head shine"><Clock3 size={14} aria-hidden/>工作中 {duration}</div>
-        <div><Brain size={14} aria-hidden/>思考中</div>
-      </> : <div><Clock3 size={14} aria-hidden/>正在准备执行器…</div>}
+  if (showThinking) {
+    const userRow = lastSteer >= 0 ? lastSteer : group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
+    rows.splice(userRow + 1, 0, <div key="work-status" className="agent-starting">
+      <div className="agent-work-head shine">工作中 {formatDuration(group.activeSeconds)}</div>
+      <div className="agent-starting-phase" role="status">
+        <Brain size={14} aria-hidden/>思考中
+      </div>
     </div>);
   }
   return <div className="agent-turn" data-turn-id={group.turnId ?? undefined} data-status={group.status ?? undefined}>
@@ -719,8 +755,8 @@ function TaskProjectBreadcrumb({projectId}: {projectId: string | null}) {
   return project && <><span className="agent-task-project" title={project.name}>{project.name}</span><span className="agent-task-project-divider" aria-hidden="true">/</span></>;
 }
 
-export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTarget }: {
-  taskId: string; titlebarTarget?: HTMLElement | null;
+export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTarget, panelControlsInTitlebar = false }: {
+  taskId: string; titlebarTarget?: HTMLElement | null; panelControlsInTitlebar?: boolean;
 }) {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [mailSlot, setMailSlot] = useState<HTMLDivElement | null>(null);
@@ -767,7 +803,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   }, [chips, isArchived, holdDraftAttachments]);
   const removedWhilePreparing = useRef(new Set<string>());
   const [sending, setSending] = useState(false);
-  const [queueEdit, setQueueEdit] = useState<{taskId:string; turnId:string; version:string; text:string}>();
   const [action, setAction] = useState<string | null>(null);
   const actionRef = useRef(false);
   const actionInputs = useRef(new Map<string, string>());
@@ -1144,7 +1179,10 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const items = [...byItemId.values()];
   const coveredChildren = new Set(relations?.children.map(child => child.childTaskId));
   const groups = buildTimeline(items.filter(it => {
-    if (it.type === 'user_message' && it.turnId && it.turnId !== snap.preparingTurnId && turnById.get(it.turnId)?.status === 'accepted') return false;
+    if (it.type === 'user_message' && it.turnId) {
+      const status = turnById.get(it.turnId)?.status;
+      if (status === 'canceled' || (status === 'accepted' && it.turnId !== snap.preparingTurnId)) return false;
+    }
     return it.type !== 'subtask' || !coveredChildren.has(it.payload?.childTaskId);
   }), turns, now);
   const diagnostics = diagnosticsOpen ? visibleRunDiagnostics(items).sort((a,b)=>a.ordinal-b.ordinal) : [];
@@ -1187,7 +1225,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const stopping = snap.stopping;
   const stopElapsed = stopping ? Math.max(0, Math.floor((now - stopping.requestedAt) / 1000)) : 0;
   const canForceStop = stopping && !stopping.closing && now >= stopping.forceAt;
-  const activeTurnId = (snap.turns as TurnInfo[]).findLast(t => t.status === 'dispatching' || t.status === 'started')?.turn_id
+  const activeTurnId = groups.findLast(group => group.status === 'dispatching' || group.status === 'started')?.turnId
     ?? snap.preparingTurnId;
   const liveText = Object.values(live.items).join('');
 
@@ -1241,7 +1279,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     } catch (e) { toast.error(rpcErrorMessage(e)); }
     finally { sendingRef.current = false; setSending(false); }
   };
-  const send = async (mode: 'queue' | 'steer' = 'queue') => {
+  const send = async () => {
     const value = text.trim();
     // 对齐 T3：本任务原生请求等待时，发送文字＝拒绝该请求并说明原因（计划审批＝继续修改）；宿主业务请求与子任务请求不拦截正常发送。
     if (blocking) { if (value && !chips.length) await redirect(blocking, value); else if (chips.length) toast.warning('请先处理上方请求，附件已保留'); return; }
@@ -1272,9 +1310,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
         if (!arg) { toast.warning('在 /goal 后写目标，或用 /goal clear 清除'); return; }
         await rpc.agentTasks.goal(taskId, arg === 'clear' ? { kind: 'clear' } : { kind: 'set', objective: arg });
       } else {
-        const r = await rpc.agentTasks.submit(taskId, { clientInputId, text: value, expectedSelectionRevision: snap.selectionRevision, mode, attachments });
-        if ('steerRefused' in r && r.steerRefused) toast.warning(r.steerRefused);
-        else if (r.status === 'queued') toast.message('已排队，本轮结束后发送');
+        await rpc.agentTasks.submit(taskId, { clientInputId, text: value, expectedSelectionRevision: snap.selectionRevision, mode: 'queue', attachments });
       }
       pendingInput.current = null;
       // 只清除这次发出的内容：回执期间新写的文字与新加的附件保留。
@@ -1318,7 +1354,6 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     await rpc.agentTasks.submit(taskId, { clientInputId, text: value, expectedSelectionRevision: snap.selectionRevision });
   });
   const readInput = (turnId: string, version: string | null) => readRange(off => rpc.agentTasks.readUserInput(taskId, turnId, off, version));
-  const activeEdit = queueEdit?.taskId === taskId ? queueEdit : undefined;
   const lastLimit = [...snap.items].reverse().find(i => i.type === 'error' && i.payload?.limited);
   const timelineActions: TimelineActions = {
     busy: !!action,
@@ -1336,7 +1371,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
       chipsRef.current = restored; setChips(restored);
       saveDraft(value.text); textarea.current?.focus();
     }),
-    continuation: itemId => !snap.archivedAt && !stopping && !working && !requests.length && lastLimit?.itemId === itemId && turns.at(-1)?.turn_id === lastLimit.turnId
+    continuation: itemId => !snap.archivedAt && !stopping && !working && !requests.length && lastLimit?.itemId === itemId && groups.findLast(group => group.turnId)?.turnId === lastLimit.turnId
       ? () => followUp('continue:' + itemId, '继续') : undefined,
   };
   const setSelection = async (patch: { tier?: string; model?: string | null; effort?: string | null; carryExtensions?: boolean }) => {
@@ -1359,6 +1394,8 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
   const activeProcess=nativeProcess && (snap.items.find(item=>item.itemId===nativeProcess.itemId) ?? nativeProcess);
   const panelOpen = navigation.filePanelOpen;
   const panelTitle = panelOpen ? '收起右侧面板' : '打开右侧面板';
+  const queueSendLabel = snap.run?.busy ? '插入当前轮' : '立即发送';
+  const queueSteerUnavailable = !!snap.run?.busy && !snap.run.steer;
   const taskHeader = <header className="agent-task-head" aria-label="当前任务">
     {titlebarTarget && snap.projectId && <TaskProjectBreadcrumb projectId={snap.projectId} />}
     <h1 title={snap.title}>{snap.title}</h1>
@@ -1368,15 +1405,18 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
     {archived ? <>
       <button type="button" className="agent-head-btn" title="运行诊断" aria-label="运行诊断" onClick={()=>setDiagnosticsOpen(true)}><List size={15}/></button>
       <button type="button" className="agent-head-btn" onClick={()=>void restore()}>恢复</button>
-      <button type="button" className="agent-head-btn" title="打开差异面板" onClick={()=>panels.open('diff')}><PanelRight size={15}/></button>
+      {!panelControlsInTitlebar && <button type="button" className="agent-head-btn" title={panelOpen ? panelTitle : '打开差异面板'} aria-pressed={panelOpen} onClick={()=>{
+        if (panelOpen) { panels.maximized = false; navigation.toggleFilePanel(); }
+        else panels.open('diff');
+      }}><PanelRight size={15}/></button>}
     </> : <>
       <button type="button" className="agent-head-btn agent-plugin-btn" aria-label="项目插件" title="项目插件" onClick={()=>setPluginsOpen(true)}><Plug size={15}/><span className="agent-head-label">插件 {plugins.length}</span></button>
       <button type="button" className="agent-head-btn" title="更多" aria-expanded={moreMenu} onClick={()=>setMoreMenu(v=>!v)}><MoreHorizontal size={16}/></button>
-      {titlebarTarget && <button type="button" className="agent-head-btn" data-testid="agent-titlebar-terminal-toggle" title="底部终端抽屉（⌃`）" aria-pressed={terminalOpen} onClick={()=>panels.terminalDrawer()}><PanelBottom size={15}/></button>}
-      <button type="button" className="agent-head-btn" title={panelTitle} aria-pressed={panelOpen} onClick={()=>{
+      {titlebarTarget && !panelControlsInTitlebar && <button type="button" className="agent-head-btn" data-testid="agent-titlebar-terminal-toggle" title="底部终端抽屉（⌃`）" aria-pressed={terminalOpen} onClick={()=>panels.terminalDrawer()}><PanelBottom size={15}/></button>}
+      {!panelControlsInTitlebar && <button type="button" className="agent-head-btn" title={panelTitle} aria-pressed={panelOpen} onClick={()=>{
         if (panelOpen) panels.maximized = false;
         navigation.toggleFilePanel();
-      }}><PanelRight size={15}/></button>
+      }}><PanelRight size={15}/></button>}
       {moreMenu && <div className="agent-head-menu">
         <button type="button" data-testid="agent-terminal-toggle" onClick={()=>{panels.terminalDrawer();setMoreMenu(false);}}>底部终端</button>
         <button type="button" onClick={()=>{setMoreMenu(false);setDiagnosticsOpen(true);}}>运行诊断</button>
@@ -1429,22 +1469,15 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
           <div className="agent-queue-row"><Clock3 size={14}/><span className="agent-queue-text" title={q.text}>{q.text || '附件消息'}{q.attachmentCount > 0 && <small> · {q.attachmentCount} 个附件</small>}</span>
             {q.acceptedAt && <time dateTime={q.acceptedAt}>{new Date(q.acceptedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</time>}
             {q.editable && <div className="agent-queue-actions">
-              <button type="button" disabled={!!action} title="编辑排队消息" onClick={() => void actOnInput('edit:' + q.turnId, async () => {
-                const { value } = await readInput(q.turnId, q.version); setQueueEdit({ taskId, turnId:q.turnId, version:q.version, text:value.text });
-              })}><Pencil size={13}/></button>
-              <button type="button" title="立即发送" disabled={!!action || !!snap.preparingTurnId || activeEdit?.turnId === q.turnId || !!stopping || !!snap.switching || !!blocking || (snap.run?.busy ? !snap.run?.steer : q.turnId !== snap.queued[0]?.turnId)} onClick={() => void actOnInput('send:' + q.turnId, async () => {
+              <button type="button" className="agent-queue-send" aria-label={queueSendLabel} title={queueSteerUnavailable ? '当前轮暂不能接收插话，消息将在本轮结束后发送' : queueSendLabel}
+                disabled={queueSteerUnavailable || !!action || !!snap.preparingTurnId || !!stopping || !!snap.switching || !!snap.selection.pendingSwitch || !!blocking || (!snap.run?.busy && q.turnId !== snap.queued[0]?.turnId)}
+                onClick={() => void actOnInput('send:' + q.turnId, async () => {
                 const result = await rpc.agentTasks.sendQueued(taskId, q.turnId, q.version, snap.selectionRevision);
-                if (result.status === 'unknown') toast.warning('无法确认插话是否已送达，请查看回答后再决定');
-              })}><Send size={13}/></button>
-              <button type="button" disabled={!!action} title="删除排队消息" onClick={() => void actOnInput('delete:' + q.turnId, async () => { await rpc.agentTasks.cancelQueued(taskId, q.turnId); if (activeEdit?.turnId === q.turnId) setQueueEdit(undefined); })}><Trash2 size={13}/></button>
+                if (result.status === 'unknown') toast.warning('无法确认消息是否已送达，请查看回答后再决定');
+              })}><Send size={13}/><span>{queueSendLabel}</span></button>
+              <button type="button" disabled={!!action} title="删除排队消息" onClick={() => void actOnInput('delete:' + q.turnId, () => rpc.agentTasks.cancelQueued(taskId, q.turnId))}><Trash2 size={13}/></button>
             </div>}
           </div>
-          {activeEdit?.turnId === q.turnId && <div className="agent-queue-edit">
-            <textarea aria-label="编辑排队消息" value={activeEdit.text} onChange={e => setQueueEdit({ ...activeEdit, text:e.target.value })} rows={3} />
-            <div><button type="button" onClick={() => setQueueEdit(undefined)}>取消</button><button type="button" disabled={!!action} onClick={() => void actOnInput('save:' + q.turnId, async () => {
-              await rpc.agentTasks.editQueued(taskId, q.turnId, activeEdit.version, activeEdit.text); setQueueEdit(undefined);
-            })}>保存</button></div>
-          </div>}
         </div>)}
         {snap.queuedTotal > snap.queued.length && <small>另有 {snap.queuedTotal - snap.queued.length} 条排队</small>}
       </div>}
@@ -1474,7 +1507,7 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
                 if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pick(menuItems[Math.min(menuIndex, menuItems.length - 1)]); return; }
                 if (e.key === 'Escape') { e.preventDefault(); setTrigger(null); return; }
               }
-              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send((e.metaKey || e.ctrlKey) && working && snap.run?.steer ? 'steer' : 'queue'); } }} />
+              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(); } }} />
           <div className="agent-composer-bar">
             <select aria-label="权限档位" value={snap.selection.tier} disabled={!!snap.parentTaskId} title={snap.parentTaskId ? '跟随主任务的权限档位' : undefined} onChange={e => { if (e.target.value === 'full' && !permissionPref.value?.fullConfirmed) setConfirmFull(true); else void setSelection({ tier: e.target.value }); }}>
               {(profile?.tiers ?? [snap.selection.tier]).map(t => <option key={t} value={t}>{TIER_LABEL[t] ?? t}</option>)}
@@ -1490,14 +1523,12 @@ export const AgentTaskView=observer(function AgentTaskView({ taskId, titlebarTar
                     ? current : { ...current, selection: result.selection, selectionRevision: result.revision });
                   if (!result.ok) toast.warning('选择已在别处变化，请重试');
                   else if (result.selection.pendingSwitch) toast.message('本轮和已有排队输入结束后切换');
-                  await reload();
+                  void reload();
                   return result.ok;
                 } catch (e) { toast.error(rpcErrorMessage(e)); return false; }
               }}
               onExtensions={async (id, enabled) => { try { const r = await rpc.agentTasks.setExtensions(taskId, id, enabled, snap.selectionRevision); if (!r.ok) toast.warning('选择已在别处变化，请重试'); void reload(); } catch (e) { toast.error(rpcErrorMessage(e)); } }} />
             <VoiceButton compact disabled={sending} onClick={()=>void voiceStore.trigger(textareaVoiceTarget(textarea.current),'home')}/>
-            {working && snap.run?.steer && <button type="button" className="agent-stop agent-steer" aria-label="插话" disabled={!text.trim()} onClick={() => void send('steer')} title="插话：并入当前这一轮（⌘Enter）"><Zap size={14} /><span>插话</span></button>}
-            {working && snap.run && !snap.run.steer && <span className="agent-composer-agent" title="该执行器版本没有插话的验证证据">运行中发送会排队</span>}
             {working && <button type="button" className="agent-stop agent-stop-run" onClick={() => void stop()} title="停止本轮" disabled={!!stopping}><CircleStop size={15} /></button>}
             <button type="submit" className="agent-send" disabled={sending || (!text.trim() && !chips.length)} title="发送"><Send size={15} /></button>
           </div>
