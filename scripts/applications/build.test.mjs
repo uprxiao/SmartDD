@@ -28,10 +28,11 @@ test('CLI builds pinned application bundles from an escaped native path with com
   execFileSync(process.execPath, [join(root, 'scripts/applications/build-bundles.mjs'), bundles, runtimeEntry], child);
   const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
   const verified = bundleVerifier.verifyCapabilityBundles(bundles, version);
-  assert.equal(verified.adapters, 12);
+  assert.equal(verified.adapters, 13);
   assert.equal(verified.runtimes, 1);
   assert.deepEqual(verified.apps.map(app => app.appId).sort(), definitions.map(app=>app.appId).sort());
   const index = JSON.parse(readFileSync(join(bundles, 'index.json'), 'utf8'));
+  assert.deepEqual(index.adapters.filter(adapter => adapter.agentId === 'antigravity').map(adapter => adapter.version), ['1.0.0']);
   for (const definition of definitions) {
     assert.equal(index.runtimes[0].hash, definition.runtime.hash, 'Original pinned runtime is unchanged');
     const app = index.apps.find(item => item.appId === definition.appId);

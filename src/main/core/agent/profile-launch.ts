@@ -7,6 +7,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { parse as parseToml } from 'smol-toml';
 import type { CodeAgentTool, ProviderView, RunConfigView } from '@shared/ai-agents';
 import { planAgentLaunch, type AgentLaunchPlan } from '../ai/agent-launch-plan';
+import { RUNTIME_ISOLATION } from '../capabilities/capability-service';
 import type { DriverId } from './capabilities';
 import { antigravityArgs } from './drivers/antigravity-acp';
 
@@ -64,7 +65,7 @@ function isolatedEnv(base: Record<string, string>, prefixes: readonly string[], 
 export function resolveProfileLaunch(i: ProfileLaunchInput): ProfileLaunch {
   const plan = planAgentLaunch({ config: i.config, tool: i.tool, provider: i.provider, key: i.key, permission: 'ask', cwd: i.cwd, userData: i.userData, runId: i.runId, ...(i.model ? { model: i.model } : {}) });
   const p = plan.profile;
-  const env = isolatedEnv(i.baseEnv, p.isolatePrefixes ?? [], p.isolateNames ?? [], p.env);
+  const env = isolatedEnv(i.baseEnv, [...(p.isolatePrefixes ?? []), ...RUNTIME_ISOLATION], p.isolateNames ?? [], p.env);
   const managed = i.config.source === 'provider';
   const carry = managed ? false : i.carryExtensions !== false;
   // 只保存凭据与端点来源的摘要；换账号／凭据或端点不能恢复旧账号的原生绑定。

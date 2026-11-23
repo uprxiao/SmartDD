@@ -18,6 +18,8 @@ import type { AgentLiveFrame } from '@shared/events';
 import type { AgentService } from '../ai/agent-service';
 import type { ProviderService } from '../ai/provider-service';
 import type { McpProjectionService } from '../capabilities/mcp-projection';
+import { MCP_CAPABILITY, type CapabilityService } from '../capabilities/capability-service';
+import { discoverCapabilities, type NativeDiscoveryDetails } from '../capabilities/discovery';
 import type { ProcessIdentityReader } from '../applications/process-identity';
 import { materializeAgentPlan } from '../ai/agent-launch-files';
 import { AgentStore, sha256, type StoredEvent } from './agent-store';
@@ -27,7 +29,7 @@ import { createNativeCliDetector, probeAndRecord, probeDriver } from './discover
 import { resolveProfileLaunch } from './profile-launch';
 import { DRIVERS } from './registry';
 import type { DriverId } from './capabilities';
-import { DriverError } from './driver';
+import { DriverError, type DriverOpenOptions } from './driver';
 import { previewCodexModels } from './drivers/codex-app-server';
 import { antigravityArgs, previewAntigravityModels } from './drivers/antigravity-acp';
 import { SubscriptionCatalogs, subscriptionCatalogScope } from './subscription-catalog';
@@ -62,6 +64,7 @@ export interface AgentWorkspaceDeps {
   sqlite: BetterSqlite3.Database;
   agents: AgentService;
   providers: ProviderService;
+  capabilities: CapabilityService;
   userData: string;
   baseEnv(): Record<string, string>;
   processes: ProcessIdentityReader;
@@ -161,31 +164,34 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         write: (account, models) => modelCatalogs.remember(scope.key, bindAccount(account), models),
       },
       integrate: async context => {
-        if (!business || !taskId || probe.capabilities.mcp.state !== 'enabled') return undefined;
+        if (!taskId) return undefined;
         const task = store.task(taskId); if (!task?.project_id) return undefined;
         assertCurrent();
+        const projectId = task.project_id;
         const actual = resolveProfileLaunch({ ...input, runId: context.runId, carryExtensions: launch.compatibility.extensions !== false });
         materializeAgentPlan(actual.plan, d.userData, cwd);
-        const delivery = business.agentDelivery(actual.plan.profile.runner, probe.version!, true);
-        if (!delivery) {
+        const supportsMcp = probe.capabilities.mcp.state === 'enabled';
+        const delivery = supportsMcp ? business?.agentDelivery(kind, probe.version!, true) : undefined;
+        if (supportsMcp && business && !delivery) {
           store.addHostItem(taskId,null,'system_notice',{code:'businessCapabilitiesUnverified',detail:'当前执行器版本的业务 Skill／MCP／CLI 交付尚未验证，本轮可继续对话和写代码。'});
-          return undefined;
         }
         const applicationScope = delivery === 'browser' ? delivery : undefined;
         const role = store.sqlite.prepare('SELECT access FROM agent_delegations WHERE child_task_id=?').get(taskId) as { access: string } | undefined;
         const home = base.HOME ?? homedir();
         const runRoot = join(d.userData, 'agents', 'runs', context.runId);
-        const skills = kind === 'antigravity' || role?.access === 'read' || applicationScope ? undefined : d.skillProjection?.prepare({
+        const projectResourcesAllowed = kind !== 'antigravity' && role?.access !== 'read';
+        const extensionsAllowed = projectResourcesAllowed && delivery === 'verified';
+        const skills = extensionsAllowed ? d.skillProjection?.prepare({
           runner: kind, home: actual.env.HOME ?? home, stateRoot: actual.stateRoot, cwd, runRoot, nativeLogin: c.source === 'login',
-        });
+        }) : undefined;
         const skillPlugin = skills?.args[0] === '--plugin-dir' ? skills.args[1] : undefined;
         if (skills?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
           code: 'managedSkillUnavailable', detail: skills.issues.map(issue => issue.reason).join('；'),
         });
-        const projected = kind === 'antigravity' || role?.access === 'read' || applicationScope ? undefined : d.mcpProjection?.prepare({
+        const projected = extensionsAllowed ? d.mcpProjection?.prepare({
           runner: actual.plan.profile.runner, cwd, runRoot,
           injectedNames: Object.keys(actual.plan.profile.env), requireKnownFields: true,
-        });
+        }) : undefined;
         if (projected?.issues.length) store.addHostItem(taskId, null, 'system_notice', {
           code: 'managedMcpUnavailable', detail: projected.issues.map(issue => issue.reason).join('；'),
         });
@@ -195,17 +201,66 @@ export function createAgentWorkspace(d: AgentWorkspaceDeps) {
         };
         const { runId, bindingId, generation, nativeId } = context;
         const managedCodexHome = actual.plan.codexRoot && actual.env.HOME === join(actual.stateRoot, 'home') ? actual.env.HOME : undefined;
-        const result = await business.prepareAgent({ runId, bindingId, generation, checkedCli: probe.checkedCli, version: probe.version!, applicationScope, managedCodexHome, assertCurrent: assertRunCurrent, task: { projectId: task.project_id, taskId, profile: { ...actual.plan.profile, command: probe.realpath! }, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true, mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId, signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } } });
-        if (projected?.serverNames.some(name => Object.hasOwn(result.mcpServers ?? {}, name))) {
-          await result.cancelBeforeFork();
-          throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
+        const profile = { ...actual.plan.profile, command: probe.realpath! };
+        let mcpName: string | null = null;
+        const contextUnavailable = (detail: string) => store.addHostItem(taskId, null, 'system_notice', {
+          severity: 'warning', code: 'projectContextMcpUnavailable', title: '项目上下文 MCP 不可用', detail,
+        });
+        if (projectResourcesAllowed && d.capabilities.enabled(projectId, MCP_CAPABILITY)) {
+          if (!supportsMcp) {
+            contextUnavailable('当前执行器未提供 MCP 通道，可使用已启用的数据库和 SSH 诊断 Skill。');
+          } else {
+            const candidate = 'smartdd_project_' + sha256(taskId).slice(0, 12);
+            const details: NativeDiscoveryDetails = { userSkillConfig: [], plugins: [], issues: [] };
+            const inventory = discoverCapabilities({
+              runner: kind, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true,
+              path: env.PATH ?? '', args: profile.args, details, nativeVersion: probe.version!,
+            });
+            if (projected?.serverNames.includes(candidate) || inventory.some(item => item.kind === 'mcp' && item.name === candidate)) {
+              contextUnavailable('用户 MCP 已使用项目上下文名称。数据库和 SSH 诊断仍可使用。');
+            } else if (details.issues.length || inventory.length >= 2000) {
+              contextUnavailable('未能核验 MCP 配置。数据库和 SSH 诊断仍可使用。');
+            } else {
+              mcpName = candidate;
+            }
+          }
         }
-        return {
-          ...result, env: { ...actual.env, ...result.env, ...projected?.env },
-          extraArgs: [...(kind === 'antigravity' ? [] : actual.extraArgs), ...(result.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
-          claudeMcp: projected?.claude,
-          plugins: skillPlugin ? [...(result.plugins ?? []), { type: 'local' as const, path: skillPlugin }] : result.plugins,
-        };
+        const runtime = projectResourcesAllowed ? d.capabilities.runtimeIdentity() : undefined;
+        const projectRuntime = runtime && d.capabilities.prepare({
+          projectId, taskId, runner: kind, cwd, home, profileArgs: profile.args,
+          managed: { runId, runtimeHash: runtime.hash, mcpName },
+        });
+        const serverName = projectRuntime?.snapshot.mcp[0]?.name;
+        const projectContextMcp: DriverOpenOptions['projectContextMcp'] = serverName && runtime && projectRuntime ? {
+          name: serverName, command: 'python3',
+          args: [join(runtime.path, 'context_mcp.py'), projectRuntime.env.SMARTDD_PROJECT_CONTEXT],
+        } : undefined;
+        try {
+          if (!delivery && kind !== 'antigravity') business?.syncSkillLibrary(kind === 'claude' ? actual.stateRoot : undefined, managedCodexHome);
+          const result = delivery && business ? await business.prepareAgent({
+            runId, bindingId, generation, checkedCli: probe.checkedCli, version: probe.version!, applicationScope,
+            managedCodexHome, assertCurrent: assertRunCurrent,
+            projectContext: projectContextMcp && runtime ? { serverName: projectContextMcp.name, runtimeHash: runtime.hash } : undefined,
+            task: { projectId, taskId, profile, cwd, home, stateRoot: actual.stateRoot, claudeConfigExplicit: true,
+              mode: nativeId ? 'resume' : 'new', sessionId: nativeId ?? null, previous: null, newTask: !nativeId,
+              signal: new AbortController().signal, environment: { ...actual.env, ...(probe.shellPath ? { PATH: probe.shellPath } : {}) } },
+          }) : undefined;
+          if (result && projected?.serverNames.some(name => Object.hasOwn(result.mcpServers ?? {}, name))) {
+            await result.cancelBeforeFork();
+            throw new DriverError('REJECTED', '已纳管的 MCP 与 WillYou 宿主服务重名，请调整名称');
+          }
+          if (!result && !projectRuntime) return undefined;
+          return {
+            ...result, projectRuntime, projectContextMcp,
+            env: { ...actual.env, ...result?.env, ...projected?.env, ...projectRuntime?.env },
+            extraArgs: [...(kind === 'antigravity' ? [] : actual.extraArgs), ...(result?.extraArgs ?? []), ...(kind === 'codex' ? projected?.args ?? [] : [])],
+            claudeMcp: projected?.claude,
+            plugins: skillPlugin ? [...(result?.plugins ?? []), { type: 'local' as const, path: skillPlugin }] : result?.plugins,
+          };
+        } catch (error) {
+          projectRuntime?.release();
+          throw error;
+        }
       },
     };
   };

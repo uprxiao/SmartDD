@@ -465,7 +465,7 @@ function WorkHeadingLabel({ heading }: { heading: WorkHeading }) {
   return <><Icon size={15} aria-hidden/>{heading.text}</>;
 }
 
-function WorkRow({ items, running, seconds, expanded, showTime, turnFold }: { items: TimelineItem[]; running: boolean; seconds: number; expanded: boolean; showTime: boolean; turnFold?: TurnWorkFold }) {
+function WorkRow({ items, running, seconds, expanded, showTime, turnFold, waitDetail }: { items: TimelineItem[]; running: boolean; seconds: number; expanded: boolean; showTime: boolean; turnFold?: TurnWorkFold; waitDetail?: string }) {
   const [choice, setChoice] = useState<boolean>();
   const open = turnFold?.open ?? choice ?? expanded;
   const heading = turnFold?.heading;
@@ -485,7 +485,9 @@ function WorkRow({ items, running, seconds, expanded, showTime, turnFold }: { it
         <summary><Wrench size={14} aria-hidden/><span>{summarizeTools(segment.items)}</span><ChevronRight size={13} aria-hidden/></summary>
         {segment.items.map(item => <WorkItem key={item.itemId} it={item}/>)}
       </details>;
-    })}</div>}
+    })}
+      {waitDetail && <div className="agent-turn-footer">{waitDetail}</div>}
+    </div>}
   </div>;
 }
 
@@ -504,17 +506,26 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
   const lastSteer = group.rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'user_message'
     && row.item.turnId !== group.turnId);
   const lastWork = group.rows.findLastIndex(row => row.kind === 'work');
+  const waitDetail = !stopping && ['completed', 'interrupted', 'failed', 'unknown'].includes(group.status ?? '') && group.waitingSeconds > 0
+    ? `用户处理耗时 ${formatDuration(group.waitingSeconds)}` : undefined;
+  const waitWork = heading ? firstWork : lastWork;
   const showThinking = showActivity && !heading && !group.rows.slice(lastSteer + 1).some(countsAsActivity);
   const toggle = () => setWorkOpen(open => !open);
   const rows = group.rows.map((row, index) => {
     if (row.kind === 'item') return <ItemRow key={row.item.itemId} item={row.item} finalReply={row.finalReply}/>;
     if (row.kind === 'footer') return <div key={row.id} className={`agent-turn-footer${row.failed ? ' failed' : ''}`}>{row.label}</div>;
     return <WorkRow key={row.id} items={row.items} running={row.running} seconds={row.running ? group.activeSeconds : row.seconds}
-      showTime={lastSteer < 0 || (index === lastWork && !showThinking)}
+      showTime={lastSteer < 0 || (index === lastWork && !showThinking) || (index === waitWork && !!waitDetail)}
       expanded={row.running || ['started','interrupted','failed'].includes(group.status ?? '')}
-      turnFold={heading ? { heading:index === firstWork ? heading : undefined, open:workOpen, toggle } : undefined}/>;
+      turnFold={heading ? { heading:index === firstWork ? heading : undefined, open:workOpen, toggle } : undefined}
+      waitDetail={index === waitWork ? waitDetail : undefined}/>;
   });
-  if (heading && firstWork < 0) {
+  if (waitDetail && waitWork < 0) {
+    const userRow = group.rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'user_message');
+    rows.splice(userRow + 1, 0, <WorkRow key="work-status" items={[]} running={false} seconds={group.seconds}
+      showTime expanded={false} waitDetail={waitDetail}
+      turnFold={heading ? { heading, open:workOpen, toggle } : undefined}/>);
+  } else if (heading && firstWork < 0) {
     const userRow = group.rows.findIndex(row => row.kind === 'item' && row.item.type === 'user_message');
     rows.splice(userRow + 1, 0, <div key="work-status" className={`agent-turn-start${heading.tone === 'failed' ? ' agent-turn-failed' : ''}`}>
       <WorkHeadingLabel heading={heading}/>
@@ -531,7 +542,6 @@ function TurnRows({ group, stopping, showActivity }: { group: TurnGroup; stoppin
   }
   return <div className="agent-turn" data-turn-id={group.turnId ?? undefined} data-status={group.status ?? undefined}>
     {rows}
-    {group.waitingSeconds > 0 && <div className="agent-turn-footer">等待用户处理 {formatDuration(group.waitingSeconds)}</div>}
     {group.failed && !group.rows.some(row => row.kind === 'item' && row.item.type === 'error') && <div className="agent-error agent-error-details"><details>
       <summary><CircleAlert size={15} aria-hidden/>查看错误详情</summary><pre>{group.failureCode ?? '未提供错误详情'}</pre>
     </details></div>}

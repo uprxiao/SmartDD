@@ -40,6 +40,14 @@ test('T3 规则：正常结束整轮折叠，只露最终回答和改动；展�
   const open = kinds(turn('done'), { expandedTurns: new Set(['t1']) });
   assert.equal(open[0], 'turn-fold'); assert.ok(open.includes('message') && open.includes('work-toggle')); assert.equal(open.at(-2), 'final');
 });
+test('已结束的用户处理耗时随工作过程展开，最终回复独立显示', () => {
+  const example = { id: 'wait', state: 'done', elapsed: 35, waitingSeconds: 7, final: ['合成回复'] };
+  assert.deepEqual(kinds(example), ['turn-fold', 'final']);
+  const rows = deriveRows(example, { expandedTurns: new Set([example.id]) });
+  assert.deepEqual(rows.map(row => row.kind), ['turn-fold', 'turn-footer', 'final']);
+  assert.equal(rows[0].label, '已工作 35 秒');
+  assert.equal(rows[1].label, '用户处理耗时 7 秒');
+});
 test('T3 规则：运行中不折叠，轮首“工作中”，末尾实时行或“思考中”', () => {
   assert.deepEqual(kinds(turn('starting')), ['working', 'thinking']);
   const r = kinds(turn('running')); assert.equal(r[0], 'working'); assert.equal(r.at(-1), 'work-live');

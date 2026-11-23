@@ -37,6 +37,33 @@ beforeEach(() => {
 });
 const snapshot = (extra: any = {}) => ({ taskId: 'task', title: 't', cwd: '/w', projectId: null, selection: { driverId: 'codex-app-server', profileId: 'p', tier: 'ask' }, selectionRevision: 1, draft: null, items: [], turns: [], requests: [], queued: [], queuedTotal: 0, run: null, goal: null, goalPending: null, status: 'idle', seq: 1, hasOlder: false, ...extra });
 const item = (type: string, payload: any) => ({ itemId: 'long', turnId: null, ordinal: 1, revision: 1, type, terminal: 'completed', createdAt: '', updatedAt: '', payload });
+
+it.each([true, false])('keeps completed request timing inside the work fold (has work items: %s)', async (hasWork) => {
+  const turnId = 'wait-turn';
+  const entries = [
+    { ...item('user_message', { text: '用户问题' }), itemId: 'question' },
+    ...(hasWork ? [{ ...item('tool_call', { name: 'fixture', status: 'completed' }), itemId: 'tool' }] : []),
+    { ...item('assistant_message', { text: '完成后的回复' }), itemId: 'reply' },
+  ].map((entry, ordinal) => ({ ...entry, ordinal, turnId }));
+  mocks.snapshot.mockResolvedValue(snapshot({
+    items: entries,
+    turns: [{
+      turn_id: turnId, status: 'completed', accepted_at: '2026-11-18T00:00:00Z',
+      started_at: '2026-11-18T00:00:00Z', ended_at: '2026-11-18T00:00:42Z', native_wait_ms: 7000,
+    }],
+  }));
+  render(<AgentTaskView taskId="task" />);
+  const reply = await screen.findByText('完成后的回复');
+  expect(screen.queryByText(/等待用户处理|用户处理耗时/)).toBeNull();
+  const fold = screen.getByRole('button', { name: '已工作 35 秒' });
+  expect(fold.compareDocumentPosition(reply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  fireEvent.click(fold);
+  const wait = screen.getByText('用户处理耗时 7 秒');
+  expect(wait.closest('.agent-work')).toBe(fold.closest('.agent-work'));
+  fireEvent.click(fold);
+  expect(screen.queryByText('用户处理耗时 7 秒')).toBeNull();
+});
+
 /** 把完整正文按两段返回，模拟按字节分段读取。 */
 const serveInTwo = (payload: unknown) => { const t = JSON.stringify(payload), mid = Math.floor(t.length / 2); return (_: string, __: string, off: number) => Promise.resolve(off === 0 ? { chunk: t.slice(0, mid), next: 1, done: false } : { chunk: t.slice(mid), next: 2, done: true }); };
 
@@ -1200,11 +1227,19 @@ it('A72 keeps the composer, model and tier while a host business request waits; 
 });
 
 it('A72 sending text while an own Codex command approval waits declines it and steers the sentence into the turn', async () => {
-  const command = { requestId: 'command', kind: 'command_approval', origin: {}, revision: 3, status: 'pending', payload: { params: { command: 'rm -rf build', availableDecisions: ['accept', 'decline'] } } };
-  mocks.snapshot.mockResolvedValue(snapshot({ status: 'waiting', requests: [command], run: { busy: true, steer: true } }));
+  const now = Date.now();
+  const turnId = 'approval-turn';
+  const start = new Date(now - 12_000).toISOString();
+  const command = { requestId: 'command', kind: 'command_approval', origin: { turnId }, revision: 3, status: 'pending', payload: { params: { command: 'rm -rf build', availableDecisions: ['accept', 'decline'] } } };
+  mocks.snapshot.mockResolvedValue(snapshot({
+    status: 'waiting', requests: [command], run: { busy: true, steer: true },
+    items: [{ ...item('user_message', { text: '清理合成目录' }), turnId }],
+    turns: [{ turn_id: turnId, status: 'started', accepted_at: start, started_at: start, ended_at: null, native_wait_since: now - 7_000 }],
+  }));
   mocks.respond.mockReset().mockResolvedValue(undefined); mocks.submit.mockReset().mockResolvedValue({ turnId: 't1', duplicate: false, status: 'accepted' });
   render(<AgentTaskView taskId="task" />);
   await screen.findByRole('dialog', { name: '待处理请求' });
+  expect(screen.queryByText(/等待用户处理|用户处理耗时/)).toBeNull();
   const box = document.querySelector('.agent-composer textarea') as HTMLTextAreaElement;
   expect(box.placeholder).toBe('发送文字即拒绝这次请求并说明原因');
   expect(document.querySelector('.agent-request-reason')).toBeNull();

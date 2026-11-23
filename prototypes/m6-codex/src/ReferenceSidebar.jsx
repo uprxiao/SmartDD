@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Archive, ArchiveRestore, ArrowDownToLine, ArrowUpFromLine, ChevronDown, Ellipsis, Folder, FolderOpen, History, MessageCircle, Pencil, Pin, PinOff, Plus, Search, Settings, SquarePen, Trash2 } from 'lucide-react';
 
@@ -23,7 +23,8 @@ function Popup({ position, children, onClose, className = '' }) {
     }}>{children}</div></>, document.body);
 }
 
-export function ReferenceSidebar({ agentMode = false, taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onSelectProject, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onPinTask, onDeleteTask, onSettings, onInfo }) {
+export function ReferenceSidebar({ agentMode = false, taskStatus = null, projects, tasks, activeProject, activeTaskId, route, collapsed, closedProjects, onToggleProject, onHome, onSearch, onOpenTask, onCreateProject, onEditProject, onImportProject, onExportProject, onRenameTask, onArchiveTask, onPinTask, onDeleteTask, onSettings, onInfo }) {
+  const treeId = useId();
   const [menu, setMenu] = useState(null);
   const [showArchived, setShowArchived] = useState(false), [showArchivedProjects, setShowArchivedProjects] = useState(false);
   const close = () => setMenu(null);
@@ -54,11 +55,26 @@ export function ReferenceSidebar({ agentMode = false, taskStatus = null, project
     <div className="reference-sidebar-head"><button className="workspace-picker" onClick={onInfo}>WillYou<ChevronDown size={13} /></button><button className="row-action" aria-label="任务历史" onClick={onSearch}><History size={16} /></button><button className="row-action" aria-label="搜索任务" onClick={onSearch}><Search size={16} /></button></div>
     <nav className="reference-primary"><button className="nav-row" onClick={() => onHome()}><SquarePen size={16} />新建任务</button><button className="nav-row" onClick={onSearch}><History size={16} />任务历史<span className="history-count">{tasks.filter(t => t.status === 'running').length}</span></button></nav>
     <div className="reference-projects"><div className="reference-project-heading"><span>项目<ChevronDown size={13} /></span><button className="row-action" aria-label="添加项目" aria-haspopup="menu" aria-expanded={menu?.type === 'add-project'} onClick={e => open(e, 'add-project', { id: 'add-project' })}><Plus size={15} /></button></div>
-      {projects.filter(p => !p.archived).map(p => <div className="reference-project-group" key={p.id}><div data-sidebar-row className={'reference-project-row ' + (activeProject === p.id || menu?.item.id === p.id ? 'selected' : '')} onContextMenu={e => open(e, 'project', p)}>
-        <button className="reference-project-toggle" aria-label={(closedProjects.includes(p.id) ? '展开' : '折叠') + p.name} onClick={() => onToggleProject(p.id)}>{closedProjects.includes(p.id) ? <Folder size={16} /> : <FolderOpen size={16} />}</button>
-        <button className="reference-project-name" title={p.name} onClick={() => onSelectProject(p.id)}>{p.name}</button>
-        <div className="row-actions"><button className="row-action" aria-label={'项目菜单：' + p.name} title="项目详情" aria-haspopup="menu" aria-expanded={menu?.type === 'project' && menu.item.id === p.id} onClick={e => open(e, 'project', p)}><Ellipsis size={16} /></button><button className="row-action" aria-label={'在 ' + p.name + ' 新建任务'} title="新建任务" onClick={() => onHome(p.id)}><SquarePen size={15} /></button></div>
-      </div>{!closedProjects.includes(p.id) && <div className="reference-project-tasks">{tasks.filter(t => t.project === p.id && !t.archived && (!agentMode || !t.parentId)).sort((a, b) => (b.pinnedAt ?? 0) - (a.pinnedAt ?? 0)).map(taskRow)}{!tasks.some(t => t.project === p.id && !t.archived) && <p className="sidebar-empty">还没有任务</p>}</div>}</div>)}
+      {projects.filter(p => !p.archived).map(p => {
+        const isOpen = !closedProjects.includes(p.id);
+        const tasksId = `${treeId}-${p.id}`;
+        const toggleLabel = `${isOpen ? '收起' : '展开'}「${p.name}」的会话`;
+        return <div className="reference-project-group" key={p.id}>
+          <div data-sidebar-row className={'reference-project-row ' + (activeProject === p.id || menu?.item.id === p.id ? 'selected' : '')} onContextMenu={e => open(e, 'project', p)}>
+            <button type="button" className="reference-project-toggle" title={toggleLabel} aria-label={toggleLabel} aria-expanded={isOpen} aria-controls={tasksId} onClick={() => onToggleProject(p.id)}>
+              <span className="reference-project-icon" aria-hidden="true">
+                {isOpen ? <FolderOpen size={16} /> : <Folder size={16} />}
+              </span>
+              <span className="reference-project-name" title={p.name}>{p.name}</span>
+            </button>
+            <div className="row-actions"><button className="row-action" aria-label={'项目菜单：' + p.name} title="项目详情" aria-haspopup="menu" aria-expanded={menu?.type === 'project' && menu.item.id === p.id} onClick={e => open(e, 'project', p)}><Ellipsis size={16} /></button><button className="row-action" aria-label={'在 ' + p.name + ' 新建任务'} title="新建任务" onClick={() => onHome(p.id)}><SquarePen size={15} /></button></div>
+          </div>
+          <div id={tasksId} className="reference-project-tasks" hidden={!isOpen}>{isOpen && <>
+            {tasks.filter(t => t.project === p.id && !t.archived && (!agentMode || !t.parentId)).sort((a, b) => (b.pinnedAt ?? 0) - (a.pinnedAt ?? 0)).map(taskRow)}
+            {!tasks.some(t => t.project === p.id && !t.archived) && <p className="sidebar-empty">还没有任务</p>}
+          </>}</div>
+        </div>;
+      })}
       {projects.some(p => p.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchivedProjects(!showArchivedProjects)}><Archive size={16} />已归档项目<ChevronDown size={13} /></button>{showArchivedProjects && projects.filter(p => p.archived).map(p => <button key={p.id} className="nav-row" onClick={() => onEditProject(p)}><Folder size={16} />{p.name}</button>)}</div>}
       {!agentMode && tasks.some(t => !projects.some(p => p.id === t.project) && !t.archived) && <div className="archived-tasks"><p className="sidebar-empty">未关联项目</p>{tasks.filter(t => !projects.some(p => p.id === t.project) && !t.archived).map(taskRow)}</div>}
       {!agentMode && tasks.some(t => t.archived) && <div className="archived-tasks"><button className="nav-row" onClick={() => setShowArchived(!showArchived)}><Archive size={16} />已归档<ChevronDown size={13} /></button>{showArchived && tasks.filter(t => t.archived).map(taskRow)}</div>}

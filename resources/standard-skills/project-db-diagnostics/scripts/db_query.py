@@ -23,9 +23,11 @@ WRITE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 ENVIRONMENT_ALIASES = {
-    "dev": {"dev", "develop", "development", "test", "testing", "yanfa", "ceshi", "开发", "开发库", "研发", "研发库", "测试", "测试库"},
+    "dev": {"dev", "develop", "development", "yanfa", "开发", "开发库", "研发", "研发库"},
+    "test": {"test", "testing", "ceshi", "测试", "测试库"},
     "prod": {"prod", "production", "shengchan", "生产", "生产库", "正式", "正式库"},
 }
+ENVIRONMENTS = {alias: environment for environment, aliases in ENVIRONMENT_ALIASES.items() for alias in aliases}
 
 
 def parse_args():
@@ -35,9 +37,10 @@ def parse_args():
     parser.add_argument("--cwd", default=os.getcwd(), help="Directory used for project auto-match.")
     parser.add_argument("--project", help="Project key or alias.")
     parser.add_argument("--db", help="Database key/name/label under the selected project.")
-    parser.add_argument("--target", help="Database environment, alias, host/IP fragment, or natural target such as 开发库/生产库.")
-    parser.add_argument("--type", help="Database type, for example mysql, postgres, opengauss, oracle.")
-    parser.add_argument("--sql", help="SQL to run. Required unless --list is used.")
+    parser.add_argument("--env", help="Environment (dev, test, prod, or an exact custom value).")
+    parser.add_argument("--target", help="Exact name, alias, database name, host, or host:port. Use --env for environment.")
+    parser.add_argument("--type", help="Database type or vendor, for example mysql, postgres, opengauss, oracle.")
+    parser.add_argument("--sql", help="SQL to run. Omit for --list or --show-selected metadata only.")
     parser.add_argument("--format", choices=("table", "json"), default="table")
     parser.add_argument("--limit", type=int, default=200, help="Maximum rows printed for result sets.")
     parser.add_argument("--connect-timeout", type=int, default=8)
@@ -77,16 +80,12 @@ def load_secrets(path):
 
 
 def normalize(value):
-    return re.sub(r"\s+", "", str(value or "").strip().lower())
+    return str(value or "").strip().casefold()
 
 
-def environment_tokens(environment):
+def normalize_environment(environment):
     normalized = normalize(environment)
-    if not normalized:
-        return set()
-    tokens = {normalized}
-    tokens.update(ENVIRONMENT_ALIASES.get(normalized, set()))
-    return {normalize(token) for token in tokens}
+    return ENVIRONMENTS.get(normalized, normalized)
 
 
 def is_under(path, root):
@@ -134,103 +133,83 @@ def aliases_list(value):
 def db_matches(db, query):
     q = normalize(query)
     keys = [db.get("key"), db.get("name"), db.get("label"), *aliases_list(db.get("aliases"))]
-    return any(normalize(key) == q for key in keys)
-
-
-def db_match_tokens(db):
-    tokens = {
-        normalize(db.get("key")),
-        normalize(db.get("name")),
-        normalize(db.get("label")),
-        normalize(db.get("type")),
-        normalize(db.get("host")),
-        normalize(db.get("database")),
-    }
-    tokens.update(normalize(alias) for alias in aliases_list(db.get("aliases")))
-    tokens.update(environment_tokens(db.get("environment")))
-    return {token for token in tokens if token}
+    return bool(q) and any(normalize(key) == q for key in keys)
 
 
 def db_target_matches(db, target):
-    raw_target = str(target or "").strip()
-    normalized_target = normalize(raw_target)
-    if not normalized_target:
-        return False
-    host = str(db.get("host") or "")
-    if raw_target and raw_target in host:
+    if db_matches(db, target):
         return True
-    tokens = db_match_tokens(db)
-    if normalized_target in normalize(host) or normalized_target in tokens:
-        return True
-    return any(normalized_target == token or normalized_target in token for token in tokens)
+    q = normalize(target)
+    host = normalize(db.get("host"))
+    endpoint_host = f"[{host}]" if ":" in host and not host.startswith("[") else host
+    endpoint = f"{endpoint_host}:{db['port']}" if host and db.get("port") else ""
+    return q in {value for value in (host, endpoint, normalize(db.get("database"))) if value}
 
 
 def describe_db(db):
+    aliases = ", ".join(aliases_list(db.get("aliases"))) or "<empty>"
     return (
-        f"{db.get('key')}: type={db.get('type')} "
+        f"{db.get('key')}: name={db.get('label') or db.get('name') or '<empty>'} aliases={aliases} "
         f"env={db.get('environment') or '<empty>'} "
+        f"type={db.get('vendor') or db.get('type')} "
         f"host={db.get('host') or '<empty>'} port={db.get('port') or '<empty>'} "
         f"database={db.get('database') or db.get('serviceName') or db.get('sid') or '<empty>'}"
     )
 
 
-def select_unique_database(databases, predicate, query, query_label):
-    matches = [db for db in databases if predicate(db)]
-    if not matches:
-        return None
-    if len(matches) == 1:
-        return matches[0]
-    choices = "\n".join(f"  {index}. {describe_db(db)}" for index, db in enumerate(matches, start=1))
-    raise ValueError(
-        f"Multiple databases matched {query_label} {query!r}. Please clarify with --db.\n{choices}"
-    )
+def selection_error(message, databases):
+    choices = "\n".join(f"  - {describe_db(db)}" for db in databases)
+    return ValueError(f"{message} Please clarify with --env and/or --db.\n{choices}")
 
 
-def select_database(project, db_query=None, target_query=None, type_query=None):
+def select_database(project, db_query=None, target_query=None, type_query=None, env_query=None):
     databases = project.get("databases") or []
     if not databases:
         raise ValueError(f"No databases configured for project {project.get('key')}")
-    if db_query:
-        db = select_unique_database(databases, lambda item: db_matches(item, db_query), db_query, "database")
-        if db:
-            return db
-        raise ValueError(f"Database not found under project {project.get('key')}: {db_query}")
-    if target_query:
-        db = select_unique_database(databases, lambda item: db_target_matches(item, target_query), target_query, "target")
-        if db:
-            return db
-        raise ValueError(f"Database target not found under project {project.get('key')}: {target_query}")
-    if type_query:
+    # Preserve the existing shorthand --target 开发库, but an explicit --env
+    # lets callers use a reserved environment word as a database alias.
+    if env_query is None and normalize(target_query) in ENVIRONMENTS:
+        env_query, target_query = target_query, None
+    if all(query is None for query in (db_query, target_query, type_query, env_query)):
+        default_key = project.get("defaultDatabase")
+        defaults = [db for db in databases if default_key and db.get("key") == default_key]
+        if len(defaults) == 1 and normalize_environment(defaults[0].get("environment")) not in ("", "prod"):
+            return defaults[0]
+        raise selection_error("No non-production default database is configured.", databases)
+
+    in_environment = databases
+    if env_query is not None:
+        wanted = normalize_environment(env_query)
+        in_environment = [db for db in databases if wanted and normalize_environment(db.get("environment")) == wanted]
+    matches = in_environment
+    if db_query is not None:
+        # A stable key must never resolve to a different database whose alias happens to match it.
+        wanted = normalize(db_query)
+        if wanted and any(normalize(db.get("key")) == wanted for db in databases):
+            matches = [db for db in matches if normalize(db.get("key")) == wanted]
+        else:
+            matches = [db for db in matches if db_matches(db, db_query)]
+    if target_query is not None:
+        matches = [db for db in matches if db_target_matches(db, target_query)]
+    if type_query is not None:
         wanted = normalize(type_query)
-        db = select_unique_database(
-            databases,
-            lambda item: normalize(item.get("type")) == wanted or wanted in [normalize(v) for v in aliases_list(item.get("aliases"))],
-            type_query,
-            "type",
-        )
-        if db:
-            return db
-        raise ValueError(f"Database type not found under project {project.get('key')}: {type_query}")
-    default_key = project.get("defaultDatabase")
-    if default_key:
-        for db in databases:
-            if db_matches(db, default_key):
-                return db
-    return databases[0]
+        matches = [db for db in matches if wanted and wanted in {normalize(db.get("type")), normalize(db.get("vendor"))}]
+    if len(matches) == 1:
+        return matches[0]
+    selectors = ", ".join(f"{label}={value!r}" for label, value in (
+        ("env", env_query), ("db", db_query), ("target", target_query), ("type", type_query)
+    ) if value is not None)
+    if not matches:
+        raise selection_error(f"No database matches {selectors}.", in_environment or databases)
+    raise selection_error(f"Multiple databases match {selectors}.", matches)
 
 
 def list_config(config):
     for project in config.get("projects") or []:
         print(f"Project {project.get('key')}")
         for db in project.get("databases") or []:
-            marker = " (default)" if db_matches(db, project.get("defaultDatabase")) else ""
-            print(
-                f"  - {db.get('key')}{marker}: type={db.get('type')} "
-                f"env={db.get('environment') or '<empty>'} "
-                f"host={db.get('host') or '<empty>'} port={db.get('port') or '<empty>'} "
-                f"database={db.get('database') or db.get('serviceName') or db.get('sid') or '<empty>'} "
-                f"user={db.get('username') or '<empty>'} passwordEnv={db.get('passwordEnv') or '<empty>'}"
-            )
+            marker = " (default)" if db.get("key") == project.get("defaultDatabase") else ""
+            print(f"  - {describe_db(db)}{marker}")
 
 
 def assert_safe_sql(sql, allow_write):
@@ -443,7 +422,7 @@ def main():
         return
 
     project = select_project(config, args.project, args.cwd)
-    db = select_database(project, args.db, args.target, args.type)
+    db = select_database(project, args.db, args.target, args.type, args.env)
     if args.show_selected:
         print(json.dumps(redacted_selected(project, db), ensure_ascii=False, indent=2))
         if not args.sql:

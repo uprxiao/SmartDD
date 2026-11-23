@@ -105,12 +105,15 @@ export class ClaudeSdkInstance implements DriverInstance {
     this.sessionId = nativeId;
     const managed = o.claudeMcp;
     const browserMcp = o.browserMcp;
+    const projectContext = o.projectContextMcp;
     const browserServer = browserMcp && o.mcpServers?.[browserMcp.serverName];
     const mcpServers = {
       ...managed?.servers, ...o.mcpServers,
       ...(browserMcp?.alwaysLoad && browserServer ? { [browserMcp.serverName]: { ...browserServer, alwaysLoad: true } } : {}),
+      ...(projectContext ? { [projectContext.name]: { command: projectContext.command, args: projectContext.args, alwaysLoad: true } } : {}),
     };
     const allowedTools = [...(managed?.allowTools ?? []), ...Object.keys(o.mcpServers ?? {}).map(name => `mcp__${name}__*`)];
+    if (projectContext) allowedTools.push(`mcp__${projectContext.name}__project_context`);
     const settings = { ...o.claudeSettings };
     if (managed?.askTools.length) {
       const permissions = (settings.permissions ?? {}) as { ask?: string[] };
@@ -148,13 +151,16 @@ export class ClaudeSdkInstance implements DriverInstance {
     };
     this.query = queryFn({ prompt: this.input, options });
     this.pump = this.consume();
-    if (o.browserMcp) await o.beforeInitialize?.();
-    const browserMcpReady = o.browserMcp ? await this.checkBrowserMcp(o.browserMcp) : undefined;
+    if (browserMcp || projectContext) await o.beforeInitialize?.();
+    const [browserMcpReady, projectContextMcpReady] = await Promise.all([
+      browserMcp && this.checkMcpTools(browserMcp.serverName, browserMcp.toolNames),
+      projectContext && this.checkMcpTools(projectContext.name, ['project_context']),
+    ]);
     // 新会话的预分配 ID 与恢复的 ID 都等 system/init 确认后才算原生身份（技术方案 §2）。
-    return { nativeId, confirmed: false, browserMcpReady };
+    return { nativeId, confirmed: false, browserMcpReady, projectContextMcpReady };
   }
 
-  private async checkBrowserMcp({ serverName, toolNames }: NonNullable<DriverOpenOptions['browserMcp']>): Promise<boolean> {
+  private async checkMcpTools(serverName: string, toolNames: readonly string[]): Promise<boolean> {
     const query = this.query;
     if (!query?.mcpServerStatus || toolNames.length === 0) return false;
     const budget = 2_500;

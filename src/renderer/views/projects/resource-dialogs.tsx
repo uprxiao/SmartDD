@@ -24,22 +24,43 @@ import { Field, PathInput, ProdWarning, SecretInput, secretChange, splitAliases,
 import { FormDialog, useSave } from './project-dialogs';
 
 const KEEP: SecretDraft = { mode: 'keep' };
+type EnvironmentChoice = (typeof ENV_PRESETS)[number] | 'custom';
 
-function EnvInput({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <>
-      <Input id={id} list={`${id}-presets`} value={value} onChange={(e) => onChange(e.target.value)} />
-      <datalist id={`${id}-presets`}>
-        {ENV_PRESETS.map((e) => (
-          <option key={e} value={e} />
-        ))}
-      </datalist>
-    </>
+function useEnvironmentField(prefix: 'db' | 'srv', savedEnv?: string) {
+  const { t } = useTranslation();
+  const [choice, setChoice] = useState<EnvironmentChoice | null>(() => {
+    if (!savedEnv) return null;
+    return ENV_PRESETS.find(preset => preset === savedEnv) ?? 'custom';
+  });
+  const [custom, setCustom] = useState(choice === 'custom' ? savedEnv ?? '' : '');
+  const env = choice === 'custom' ? custom.trim() : choice ?? '';
+  const id = `${prefix}-env`;
+  const customId = `${prefix}-custom-env`;
+  const environmentField = (
+    <Field id={id} label={t('projects.fields.env')}>
+      <Select value={choice} onValueChange={setChoice} required>
+        <SelectTrigger id={id} className="w-full">
+          <SelectValue placeholder={t('projects.fields.environmentPlaceholder')} />
+        </SelectTrigger>
+        <SelectContent>
+          {ENV_PRESETS.map(preset => (
+            <SelectItem key={preset} value={preset}>{t(`projects.fields.environments.${preset}`)}</SelectItem>
+          ))}
+          <SelectItem value="custom">{t('projects.fields.environments.custom')}</SelectItem>
+        </SelectContent>
+      </Select>
+      {choice === 'custom' && (
+        <Field id={customId} label={t('projects.fields.customEnvironment')}>
+          <Input id={customId} value={custom} onChange={e => setCustom(e.target.value)} maxLength={32} />
+        </Field>
+      )}
+    </Field>
   );
+  return { env, environmentField };
 }
 
 /** Test-connection button plus its last result; the test never saves anything. */
-function useDraftTest(test: () => Promise<ConnectionTestResult>) {
+function useDraftTest(test: () => Promise<ConnectionTestResult>, disabled = false) {
   const { t } = useTranslation();
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<ConnectionTestResult | null>(null);
@@ -59,7 +80,7 @@ function useDraftTest(test: () => Promise<ConnectionTestResult>) {
   };
   const node = (
     <div className="flex min-w-0 items-start gap-3">
-      <Button type="button" variant="outline" disabled={testing} onClick={() => void run()} data-testid="test-draft">
+      <Button type="button" variant="outline" disabled={testing || disabled} onClick={() => void run()} data-testid="test-draft">
         {testing
           ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" strokeWidth={1.75} aria-hidden="true" />
           : <Plug className="size-4" strokeWidth={1.75} aria-hidden="true" />}
@@ -86,7 +107,7 @@ export function DatabaseDialog({
   db?: DatabaseView;
 }) {
   const { t } = useTranslation();
-  const [env, setEnv] = useState(db?.env ?? 'dev');
+  const { env, environmentField } = useEnvironmentField('db', db?.env);
   const [label, setLabel] = useState(db?.label ?? '');
   const [vendor, setVendor] = useState<DbVendor>(db?.vendor ?? 'mysql');
   const [host, setHost] = useState(db?.host ?? '');
@@ -116,7 +137,7 @@ export function DatabaseDialog({
     note,
     password: secretChange(password),
   });
-  const testNode = useDraftTest(() => rpc.databases.testDraft(input(), db?.id));
+  const testNode = useDraftTest(() => rpc.databases.testDraft(input(), db?.id), !env);
 
   const changeVendor = (next: DbVendor) => {
     // Follow the vendor's default port unless the user typed their own.
@@ -135,15 +156,14 @@ export function DatabaseDialog({
       title={db ? t('projects.dialog.editDatabase') : t('projects.dialog.newDatabase')}
       error={error}
       busy={busy}
+      submitDisabled={!env}
       submitLabel={db ? t('projects.actions.save') : t('projects.actions.add')}
       onSubmit={submit}
       footerStart={testNode}
     >
       {isProdEnv(env) && <ProdWarning />}
       <div className="grid grid-cols-2 gap-4">
-        <Field id="db-env" label={t('projects.fields.env')} hint={t('projects.fields.envHint')}>
-          <EnvInput id="db-env" value={env} onChange={setEnv} />
-        </Field>
+        {environmentField}
         <Field id="db-label" label={t('projects.fields.label')}>
           <Input id="db-label" value={label} onChange={(e) => setLabel(e.target.value)} />
         </Field>
@@ -201,7 +221,7 @@ export function DatabaseDialog({
             <Switch checked={isDefault} onCheckedChange={setIsDefault} data-testid="db-default" />
           </div>
         </Field>
-        <Field id="db-aliases" label={t('projects.fields.aliases')} hint={t('projects.fields.aliasesHint')}>
+        <Field id="db-aliases" label={t('projects.fields.aliases')} hint={t('projects.fields.dbAliasesHint')}>
           <Input id="db-aliases" value={aliases} onChange={(e) => setAliases(e.target.value)} />
         </Field>
         <Field id="db-note" label={t('projects.fields.note')}>
@@ -226,7 +246,7 @@ export function ServerDialog({
   server?: ServerView;
 }) {
   const { t } = useTranslation();
-  const [env, setEnv] = useState(server?.env ?? 'dev');
+  const { env, environmentField } = useEnvironmentField('srv', server?.env);
   const [label, setLabel] = useState(server?.label ?? '');
   const [host, setHost] = useState(server?.host ?? '');
   const [port, setPort] = useState(String(server?.port ?? 22));
@@ -263,7 +283,7 @@ export function ServerDialog({
     // A separate sudo password only exists under the 'separate' policy.
     sudoPassword: sudoPolicy === 'separate' ? secretChange(sudoPassword) : server?.hasSudoPassword ? null : undefined,
   });
-  const testNode = useDraftTest(() => rpc.servers.testDraft(input(), server?.id));
+  const testNode = useDraftTest(() => rpc.servers.testDraft(input(), server?.id), !env);
 
   const submit = () =>
     void run(() => (server ? rpc.servers.update(server.id, input()) : rpc.servers.create(projectId, input())));
@@ -276,15 +296,14 @@ export function ServerDialog({
       title={server ? t('projects.dialog.editServer') : t('projects.dialog.newServer')}
       error={error}
       busy={busy}
+      submitDisabled={!env}
       submitLabel={server ? t('projects.actions.save') : t('projects.actions.add')}
       onSubmit={submit}
       footerStart={testNode}
     >
       {isProdEnv(env) && <ProdWarning />}
       <div className="grid grid-cols-2 gap-4">
-        <Field id="srv-env" label={t('projects.fields.env')} hint={t('projects.fields.envHint')}>
-          <EnvInput id="srv-env" value={env} onChange={setEnv} />
-        </Field>
+        {environmentField}
         <Field id="srv-label" label={t('projects.fields.label')}>
           <Input id="srv-label" value={label} onChange={(e) => setLabel(e.target.value)} />
         </Field>

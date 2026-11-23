@@ -175,13 +175,14 @@ export function deriveRows(turn, ui = {}) {
   const elapsed = turn.elapsed ?? unionSeconds(entries.filter(e => e.at).map(e => e.at));
   const pendingApproval = entries.some(e => e.kind === 'approval' || e.kind === 'business' || (e.kind === 'plan' && turn.state === 'live'));
   const foldable = state === 'done';
+  const waitingSeconds = foldable ? turn.waitingSeconds ?? 0 : 0;
   const unfolded = !foldable || (!!ui.expandedTurns?.has(turn.id) !== !!turn.openFold); // openFold：演示时默认展开，点击可收起
   if (live && turn.stopping) rows.push({ kind: 'working', id: turn.id + ':working', label: '正在停止…', stopping: true });
   else if (live) rows.push({ kind: 'working', id: turn.id + ':working', label: `工作中 ${formatDuration(elapsed)}` });
   else if (state === 'stopped') rows.push({ kind: 'turn-header', id: turn.id + ':h', label: `你在 ${formatDuration(elapsed)}后停止了` });
   else if (state === 'failed') rows.push({ kind: 'turn-header', id: turn.id + ':h', label: `工作 ${formatDuration(elapsed)}后失败`, failed: true });
   else if (state === 'limited') rows.push({ kind: 'turn-header', id: turn.id + ':h', label: `额度用完，已暂停（工作 ${formatDuration(elapsed)}）`, warn: true });
-  else if (foldable && entries.length) rows.push({ kind: 'turn-fold', id: turn.id + ':fold', turnId: turn.id, label: `已工作 ${formatDuration(elapsed)}`, expanded: !!unfolded });
+  else if (foldable && (entries.length || waitingSeconds > 0)) rows.push({ kind: 'turn-fold', id: turn.id + ':fold', turnId: turn.id, label: `已工作 ${formatDuration(elapsed)}`, expanded: !!unfolded });
   const visible = unfolded ? entries : entries.filter(e => (KEEP_WHEN_FOLDED.includes(e.kind) || e.keep) && !e.foldable);
   for (let i = 0; i < visible.length; i++) {
     const e = visible[i];
@@ -199,6 +200,7 @@ export function deriveRows(turn, ui = {}) {
   const tailLive = rows.at(-1)?.kind === 'work-live';
   const footer = state === 'stopped' ? { kind: 'turn-footer', id: turn.id + ':f', label: `已停止 · 共工作 ${formatDuration(elapsed)}` } : state === 'failed' ? { kind: 'turn-footer', id: turn.id + ':f', failed: true, label: `已失败 · 共工作 ${formatDuration(elapsed)}` } : null;
   if (live && !tailLive && !pendingApproval && !turn.question && !turn.streaming && !turn.stopping) rows.push({ kind: 'thinking', id: turn.id + ':thinking', label: turn.waitingLabel ?? (turn.waitingOn ? `等待 ${turn.waitingOn} 个子任务` : '思考中') });
+  if (unfolded && waitingSeconds > 0) rows.push({ kind: 'turn-footer', id: turn.id + ':user-wait', label: `用户处理耗时 ${formatDuration(waitingSeconds)}` });
   if (turn.final && (!live || turn.streaming)) rows.push({ kind: 'final', id: turn.id + ':final', lines: turn.final, streaming: turn.streaming, partial: turn.partial, agent: turn.agent, showActions: state === 'done' });
   if (!live && !turn.diffState && turn.changes?.length) rows.push({ kind: 'changes', id: turn.id + ':changes', files: turn.changes, turnId: turn.id });
   if (turn.length) rows.push({ kind: 'length', id: turn.id + ':len' });

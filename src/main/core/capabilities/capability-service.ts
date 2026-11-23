@@ -77,9 +77,20 @@ export class CapabilityService {
   private install(bundle: BundledSkill): void {
     const id = `${bundle.id}:${bundle.hash}`;
     writeOwnedTree(this.packageRoot(id), bundle.files, this.backupRoot);
-    if (this.d.db.select().from(skillVersions).where(eq(skillVersions.id, id)).get()) return;
-    const active = !this.d.db.select().from(skillVersions).where(and(eq(skillVersions.skillId, bundle.id), eq(skillVersions.active, true))).get();
-    this.d.db.insert(skillVersions).values({ id, skillId: bundle.id, name: bundle.name, version: bundle.version, hash: bundle.hash, installedAt: Date.now(), active }).run();
+    this.d.db.transaction(() => {
+      const current = this.d.db.select().from(skillVersions)
+        .where(and(eq(skillVersions.skillId, bundle.id), eq(skillVersions.active, true))).get();
+      if (!this.d.db.select().from(skillVersions).where(eq(skillVersions.id, id)).get()) {
+        this.d.db.insert(skillVersions).values({
+          id, skillId: bundle.id, name: bundle.name, version: bundle.version,
+          hash: bundle.hash, installedAt: Date.now(), active: !current,
+        }).run();
+      }
+      if (current && current.hash === bundle.replacesActiveHash) {
+        this.d.db.update(skillVersions).set({ active: false }).where(eq(skillVersions.id, current.id)).run();
+        this.d.db.update(skillVersions).set({ active: true }).where(eq(skillVersions.id, id)).run();
+      }
+    });
   }
 
   private packageRoot(id: string): string {

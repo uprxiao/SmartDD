@@ -23,6 +23,27 @@ function setup(extra?: (msg: any, s: FakeAppServer) => boolean) {
 }
 
 describe('Codex app-server 驱动', () => {
+  it.each(['ready', 'failed', 'unsupported'] as const)('starts a usable turn when optional project MCP is %s', async status => {
+    const name = 'smartdd_project_fixture';
+    const f = setup((message, peer) => {
+      if (message.method !== 'mcpServerStatus/list') return false;
+      if (status === 'unsupported') peer.send({ id: message.id, error: { code: -32601, message: 'Unavailable' } });
+      else peer.reply(message.id, { data: [{ name, tools: status === 'ready' ? { project_context: {} } : {} }] });
+      return true;
+    });
+    try {
+      const opened = await f.inst.open({
+        executable: exe, cwd: '/w', env: { PROJECT_DB_CONFIG: '/fixture/db.json' }, tier: 'ask',
+        projectContextMcp: { name, command: 'python3', args: ['/fixture/context_mcp.py'] },
+      });
+      expect(opened.projectContextMcpReady).toBe(status === 'ready');
+      expect(f.spawned().args.join(' ')).toContain('required=false');
+      expect(f.spawned().options.env.PROJECT_DB_CONFIG).toBe('/fixture/db.json');
+      await expect(f.inst.startTurn({ clientInputId: 'start', text: 'Use the diagnostic Skill', tier: 'ask' }))
+        .resolves.toMatchObject({ nativeTurnId: 'turn-1' });
+    } finally { await f.inst.close(); }
+  });
+
   it.each([undefined, null, '已有的开发者指令'])('uses native host instructions when config is known (%s)', async configured => {
     const { inst, server } = setup((message, peer) => {
       if (message.method !== 'config/read') return false;

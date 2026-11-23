@@ -1,6 +1,6 @@
 import { Archive, ArchiveRestore, ChevronDown, ChevronRight, Edit3, Ellipsis, Folder, FolderOpen, MessageCircle, Pin, PinOff, Plus, Settings, SquarePen, Download, Trash2, Upload } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProjectSummary } from '@shared/projects';
 import { navigation } from '@renderer/core/navigation';
@@ -22,7 +22,9 @@ import { Input } from '@renderer/lib/ui/input';
 
 const ProjectNode = observer(function ProjectNode({ project }: { project: ProjectSummary }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(true);
+  const open = !navigation.collapsedSidebarProjects.has(project.id);
+  const tasksId = useId();
+  const toggleLabel = t(open ? 'tasks.collapseProject' : 'tasks.expandProject', { name: project.name });
   const [menu, setMenu] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const menuTrigger = useRef<HTMLButtonElement>(null);
@@ -34,8 +36,21 @@ const ProjectNode = observer(function ProjectNode({ project }: { project: Projec
   const edit = () => { setMenu(false); navigation.openProject(project.id); };
   return <div className="reference-project-group">
     <div data-testid="sidebar-project" data-project-id={project.id} className={cn('reference-project-row', (active || menu) && 'selected', archived && 'opacity-60')} onContextMenu={(e) => { e.preventDefault(); setMenu(true); }}>
-      <button className="reference-project-toggle" data-testid="sidebar-project-toggle" title={open ? t('tasks.collapse') : t('tasks.expand')} onClick={() => setOpen((v) => !v)}>{open ? <FolderOpen size={16} /> : <Folder size={16} />}</button>
-      <button className="reference-project-name" title={project.name} onClick={() => archived ? edit() : navigation.newTask(project.id)}>{project.name}</button>
+      <button
+        type="button"
+        className="reference-project-toggle"
+        data-testid="sidebar-project-toggle"
+        title={toggleLabel}
+        aria-label={toggleLabel}
+        aria-expanded={open}
+        aria-controls={tasksId}
+        onClick={() => navigation.toggleSidebarProject(project.id)}
+      >
+        <span className="reference-project-icon" aria-hidden="true">
+          {open ? <FolderOpen size={16} /> : <Folder size={16} />}
+        </span>
+        <span className="reference-project-name" title={project.name}>{project.name}</span>
+      </button>
       <div className="row-actions"><Popover open={menu} onOpenChange={setMenu}><PopoverTrigger ref={menuTrigger} className="row-action" data-testid="sidebar-project-more" aria-label={`${t('m6.projectMenu')}: ${project.name}`}><Ellipsis size={16} /></PopoverTrigger><PopoverContent side="right" align="start" sideOffset={8} className="m6-project-popup project-detail-popup" data-testid="project-detail-popup">
         <button className="popup-project-title" onClick={edit}><Folder size={16} /><span>{project.name}</span></button>
         <div className="popup-meta"><MessageCircle size={15} /><span>{t('m6.taskCount', { count: agentTasksStore.of(project.id).length })}</span></div>
@@ -48,7 +63,9 @@ const ProjectNode = observer(function ProjectNode({ project }: { project: Projec
       {!archived && <button className="row-action" data-testid="sidebar-project-new-task" title={t('tasks.newInProject')} onClick={() => navigation.newTask(project.id)}><SquarePen size={15} /></button>}</div>
     </div>
     {detail && <ProjectDeleteDialog project={detail} open={deleting} onOpenChange={setDeleting} />}
-    {open && <div className="reference-project-tasks">{agentTasksStore.of(project.id).map(task => <AgentTaskRow key={task.taskId} task={task} />)}</div>}
+    <div id={tasksId} className="reference-project-tasks" hidden={!open}>
+      {open && agentTasksStore.of(project.id).map(task => <AgentTaskRow key={task.taskId} task={task} />)}
+    </div>
   </div>;
 });
 
@@ -87,7 +104,7 @@ const AgentTaskRow = observer(function AgentTaskRow({ task }: { task: AgentTaskS
   const archive = () => void run(() => archiveAgentTask(task.taskId, task.projectId));
   return <>
     <ContextMenu onOpenChange={setMenu}>
-      <ContextMenuTrigger className="reference-task-row agent-sidebar-row" data-menu-open={menu || undefined} data-active={active || undefined} style={task.parentTaskId ? { paddingLeft: 42 } : undefined}>
+      <ContextMenuTrigger className="reference-task-row agent-sidebar-row" data-menu-open={menu || undefined} data-active={active || undefined} style={task.parentTaskId ? { paddingLeft: 43 } : undefined}>
         <button type="button" data-testid="sidebar-agent-task" data-task-id={task.taskId} aria-current={active ? 'page' : undefined} className="reference-task-title" title={task.title} onClick={() => navigation.openAgentTask(task.taskId)}>
           <span className="truncate">{task.title}</span>
         </button>

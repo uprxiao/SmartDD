@@ -215,7 +215,7 @@ export const AgentWorkspacePanels=observer(function AgentWorkspacePanels({scope,
    {titlebarTarget ? createPortal(header, titlebarTarget) : header}
    <div className="agent-panel-body">
      {!tabs.length&&<div className="agent-panel-empty"><b>打开面板</b>{list()}</div>}
-     {tabs.includes('files')&&(projectMissing?active==='files'&&<div className="agent-panel-empty">先选择项目工作目录</div>:
+     {tabs.includes('files')&&(projectMissing?active==='files'&&<div className="agent-panel-empty fw-directory-only">先选择项目工作目录</div>:
        <div className="agent-file-surface" hidden={active!=='files'}><FileWorkspacePanel scope={scope} workspaceHeader={{
          target:fileTabsTarget,active:active==='files',browseRequest,
          onActivate:()=>panels.open('files'),onCloseDirectory:()=>{panels.close('files');setBrowseRequest(0);},

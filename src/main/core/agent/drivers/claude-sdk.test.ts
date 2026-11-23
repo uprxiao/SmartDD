@@ -115,6 +115,22 @@ it('A09 routes Claude MCP elicitation to its own request and only sends cancella
   }
 });
 
+it('keeps Claude commands available after project context MCP fails its handshake', async () => {
+  const name = 'smartdd_project_fixture';
+  const { inst, sdk, events } = make([ok('继续诊断')], async () => [{ name, status: 'failed' }]);
+  try {
+    const opened = await inst.open({
+      executable: exe, cwd: '/w', env: { REMOTE_SERVERS_CONFIG: '/fixture/servers.json' }, tier: 'ask',
+      projectContextMcp: { name, command: 'python3', args: ['/fixture/context_mcp.py'] },
+    });
+    expect(opened.projectContextMcpReady).toBe(false);
+    expect(sdk.state.options.env.REMOTE_SERVERS_CONFIG).toBe('/fixture/servers.json');
+    expect(sdk.state.options.mcpServers[name]).toEqual({ command: 'python3', args: ['/fixture/context_mcp.py'], alwaysLoad: true });
+    await inst.startTurn({ clientInputId: 'start', text: '继续诊断', tier: 'ask' });
+    await until(() => events.some(e => e.type === 'turn.completed' && e.status === 'completed'));
+  } finally { await inst.close(); }
+});
+
 describe('复核 1755：目标确认只认目标命令那一轮', () => {
   it('历史交接用 synthetic/shouldQuery=false 追加，不触发回合，也不改写随后 /goal 命令', async () => {
     const { inst, sdk, events } = make([ok('Goal set: exact goal')]);

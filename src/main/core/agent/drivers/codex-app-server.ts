@@ -106,7 +106,11 @@ export class CodexAppServerInstance implements DriverInstance {
     this.cwd = o.cwd; this.readOnly = o.readOnly === true;
     this.turnCliPermissions = !this.readOnly && codexSupportsTurnPermissions(o.executable.version) ? o.codexCliPermissions : undefined;
     o.assertStarting?.();
-    const child = this.spawnFn(o.executable.path, ['app-server', ...(o.extraArgs ?? []), ...(this.readOnly ? ['-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false'] : [])], { cwd: o.cwd, env: codexEnv(o.env) });
+    const extraArgs = [...(o.extraArgs ?? [])];
+    const projectContext = o.projectContextMcp;
+    if (projectContext) extraArgs.push('-c', `mcp_servers.${projectContext.name}={command=${JSON.stringify(projectContext.command)},args=${JSON.stringify(projectContext.args)},default_tools_approval_mode="approve",startup_timeout_sec=3,required=false}`);
+    if (this.readOnly) extraArgs.push('-c', 'features.hooks=false', '-c', 'features.plugins=false', '-c', 'features.remote_plugin=false');
+    const child = this.spawnFn(o.executable.path, ['app-server', ...extraArgs], { cwd: o.cwd, env: codexEnv(o.env) });
     this.child = child;
     child.stderr?.on('data', (b: Buffer) => { const message = redact(b.toString('utf8'), this.secrets); this.stderrTail = (this.stderrTail + message).slice(-2000); this.emitter.emit({ type: 'diagnostic', message: message.slice(0, 4000) }); });
     const spawnError = new Promise<never>((_, reject) => child.once('error', e => reject(new DriverError('EXITED', `无法启动 Codex：${e.message}`))));
@@ -186,6 +190,8 @@ export class CodexAppServerInstance implements DriverInstance {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
+      const projectContextMcpReady = projectContext && await this.checkProjectContext(r.thread.id, projectContext.name);
+      o.assertStarting?.();
       this.emitter.emit({ type: 'session', nativeId: r.thread.id });
       // Skill 目录：协议探测失败只让 $Skill 菜单为空，不影响会话。
       void this.rpc!.call<{ data?: { skills?: { name: string; description?: string; enabled?: boolean }[] }[] }>('skills/list', { cwds: [o.cwd] }, 15_000)
@@ -196,13 +202,25 @@ export class CodexAppServerInstance implements DriverInstance {
       const nativeSelection = (!o.resumeNativeId || r.thread.id === o.resumeNativeId) && typeof r.model === 'string' && r.model
         && typeof r.reasoningEffort === 'string' && r.reasoningEffort
         ? { model: r.model, effort: r.reasoningEffort } : undefined;
-      return { nativeId: r.thread.id, confirmed: true, ...(defaultModel ? { defaultModel } : {}),
+      return { nativeId: r.thread.id, confirmed: true, projectContextMcpReady, ...(defaultModel ? { defaultModel } : {}),
         ...(nativeSelection ? { nativeSelection } : {}), ...(developerInstructions ? { hostBusinessInstructionsInstalled: true } : {}) };
     })();
     try {
       return await Promise.race([work, spawnError]);
     } finally {
       o.startupSignal?.removeEventListener('abort', abort);
+    }
+  }
+
+  private async checkProjectContext(threadId: string, serverName: string): Promise<boolean> {
+    try {
+      const status = await this.rpc!.call<{ data?: { name: string; tools?: Record<string, unknown> }[] }>(
+        'mcpServerStatus/list', { threadId, serverName, detail: 'full' }, 3_500,
+      );
+      const server = status.data?.find(item => item.name === serverName);
+      return Boolean(server?.tools && Object.hasOwn(server.tools, 'project_context'));
+    } catch {
+      return false;
     }
   }
 

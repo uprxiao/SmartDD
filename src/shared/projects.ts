@@ -272,5 +272,5 @@ export interface ConnectionTestResult {
 }
 
 export function isProdEnv(env: string): boolean {
-  return /^(prod|production|生产)$/i.test(env.trim());
+  return /^(prod|production|shengchan|生产库?|正式库?)$/i.test(env.trim());
 }
