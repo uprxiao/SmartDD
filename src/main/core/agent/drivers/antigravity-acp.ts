@@ -8,6 +8,7 @@ import Database from 'better-sqlite3';
 import { z } from 'zod';
 import { DriverError, Emitter, type AgentDriver, type DriverInstance, type DriverModel, type DriverOpenOptions, type TurnInput } from '../driver';
 import { JsonlRpcPeer, type RpcHandlers } from '../jsonl-rpc';
+import { startGeminiResponseRelay } from './gemini-response-relay';
 
 const protocolVersion = 1;
 const authMethod = 'gemini-api-key';
@@ -105,6 +106,7 @@ function configValues(option: ConfigOption): string[] {
 class AntigravityInstance implements DriverInstance {
   readonly driverId = 'antigravity-acp' as const;
   private readonly events = new Emitter();
+  private opening?: AbortController;
   private process?: ReturnType<typeof acpProcess>;
   private session?: string;
   private turn?: ActiveTurn;
@@ -117,19 +119,31 @@ class AntigravityInstance implements DriverInstance {
   on(listener: Parameters<DriverInstance['on']>[0]) { return this.events.on(listener); }
 
   async open(options: DriverOpenOptions) {
-    if (this.process) throw new DriverError('STATE', 'Antigravity 会话已经启动');
+    if (this.opening || this.process) throw new DriverError('STATE', 'Antigravity 会话已经启动');
     if (options.readOnly) throw new DriverError('UNSUPPORTED', 'Antigravity 尚无已验证的只读执行能力');
     options.assertStarting?.();
     const args = options.extraArgs ?? ['acp'];
     const directoryFlag = args.indexOf('--gemini-dir');
     this.geminiDirectory = directoryFlag < 0 ? undefined : args[directoryFlag + 1];
-    const process = this.process = acpProcess(options.executable.path, args, options.cwd, options.env, {
-      request: (id, method, params) => this.request(id, method, params),
-      notification: (method, params) => this.notification(method, params),
-    }, (code, signal) => this.events.emit({ type: 'exit', code, signal }));
-    const abort = () => { void process.close(); };
+    const opening = this.opening = new AbortController();
+    const abort = () => { void this.close(); };
+    let relay: Awaited<ReturnType<typeof startGeminiResponseRelay>> | undefined;
     options.startupSignal?.addEventListener('abort', abort, { once: true });
     try {
+      options.startupSignal?.throwIfAborted();
+      if (options.env.GOOGLE_GEMINI_BASE_URL && options.env.GEMINI_API_KEY) {
+        relay = await startGeminiResponseRelay(options.env.GOOGLE_GEMINI_BASE_URL, options.env);
+      }
+      opening.signal.throwIfAborted();
+      options.assertStarting?.();
+      const env = relay ? { ...options.env, GOOGLE_GEMINI_BASE_URL: relay.endpoint } : options.env;
+      const process = this.process = acpProcess(options.executable.path, args, options.cwd, env, {
+        request: (id, method, params) => this.request(id, method, params),
+        notification: (method, params) => this.notification(method, params),
+      }, (code, signal) => {
+        relay?.close();
+        this.events.emit({ type: 'exit', code, signal });
+      });
       this.events.emit({ type: 'process', pid: await process.started });
       await options.beforeInitialize?.();
       options.assertStarting?.();
@@ -158,9 +172,11 @@ class AntigravityInstance implements DriverInstance {
       this.events.emit({ type: 'session', nativeId: this.session });
       return { nativeId: this.session, confirmed: true, defaultModel: options.model ?? model?.currentValue };
     } catch (error) {
-      await process.close();
+      relay?.close();
+      await this.process?.close();
       throw error;
     } finally {
+      this.opening = undefined;
       options.startupSignal?.removeEventListener('abort', abort);
     }
   }
@@ -339,7 +355,10 @@ class AntigravityInstance implements DriverInstance {
     }
     this.requests.clear();
   }
-  async close() { await this.process?.close(); }
+  async close() {
+    this.opening?.abort();
+    await this.process?.close();
+  }
 }
 
 export const antigravityAcpDriver: AgentDriver = {

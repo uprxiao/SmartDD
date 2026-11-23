@@ -40,6 +40,26 @@ test.skipIf(!executable)('real agy negotiates ACP, applies model options, resume
     const history = JSON.stringify(contents);
     requests.push({ model, history });
     const latest = JSON.stringify(contents.at(-1));
+    if (latest.includes('TEST-WY-GEMINI-HEADERS')) {
+      res.writeHead(200, { 'content-type': 'text/event-stream' });
+      const firstChunk = {
+        candidates: [{ index: 0, content: { role: 'model', parts: [{ text: 'Gemini 流式' }] } }],
+        modelVersion: model,
+        sdkHttpResponse: { headers: {
+          'Alt-Svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+          'Content-Type': 'text/event-stream',
+          Vary: ['Accept-Encoding'],
+        } },
+      };
+      const lastChunk = {
+        candidates: [{ index: 0, content: { role: 'model', parts: [{ text: '回复完整' }] }, finishReason: 'STOP' }],
+        modelVersion: model,
+        usageMetadata: { trafficType: 'ON_DEMAND' },
+      };
+      res.write(`data: ${JSON.stringify(firstChunk)}\n\n`);
+      res.end(`data: ${JSON.stringify(lastChunk)}\n\n`);
+      return;
+    }
     const failure = latest.includes('TEST-WY-BAD-KEY') ? { code: 401, status: 'UNAUTHENTICATED' } :
       latest.includes('TEST-WY-FAIL') ? { code: 400, status: 'INVALID_ARGUMENT' } : undefined;
     if (failure) {
@@ -82,6 +102,9 @@ test.skipIf(!executable)('real agy negotiates ACP, applies model options, resume
       await driver!.startTurn({ text, model, effort: 'high', tier: 'ask', clientInputId: String(requests.length) });
       return end;
     };
+    expect(await send('TEST-WY-GEMINI-HEADERS')).toMatchObject({
+      status: 'completed', answer: 'Gemini 流式回复完整', error: undefined,
+    });
     expect((await send('Remember WY-RANDOM-F35')).status).toBe('completed');
     expect((await send('What was the code?', argon)).answer).toContain('WY-RANDOM-F35');
     expect(requests.at(-1)?.model).toBe(argon);
