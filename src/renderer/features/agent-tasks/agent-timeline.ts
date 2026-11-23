@@ -160,8 +160,15 @@ export function buildTimeline(items: TimelineItem[], turns: TurnInfo[], now = Da
     flush(true);
     const lastReply = rows.findLastIndex(row => row.kind === 'item' && row.item.type === 'assistant_message' && row.item.terminal === 'completed');
     const reply = rows[lastReply];
-    if (reply?.kind === 'item' && turn?.status === 'completed') reply.finalReply = true;
-    rows.splice(lastReply < 0 ? rows.length : lastReply + 1, 0, ...changes);
+    if (reply?.kind === 'item' && turn?.status === 'completed') {
+      reply.finalReply = true;
+      // Some executors report buffered reasoning after the reply.
+      const trailing = rows.slice(lastReply + 1);
+      rows.splice(lastReply, trailing.length + 1, ...trailing.filter(row => row.kind === 'work'),
+        reply, ...changes, ...trailing.filter(row => row.kind !== 'work'));
+    } else {
+      rows.splice(lastReply < 0 ? rows.length : lastReply + 1, 0, ...changes);
+    }
     const limited = list.find(it => it.type === 'error' && it.payload?.limited)?.payload.limited.kind;
     if (turn && (turn.status === 'interrupted' || turn.status === 'failed' || turn.status === 'unknown' || turn.status === 'completed' && limited && limited !== 'output')) {
       // An output limit leaves a partial answer. An exhausted quota pauses work.

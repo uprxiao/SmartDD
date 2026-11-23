@@ -70,6 +70,33 @@ it('shows one ended work entry above the final reply and opens the full process 
   expect(completedTime?.textContent?.trim()).toMatch(/^\d{1,2}:\d{2}$/);
 });
 
+it('shows reasoning recorded after the answer above the completed reply when work is expanded', async () => {
+  const turnId = 'late-reasoning';
+  const started = '2026-11-23T00:00:00Z', ended = '2026-11-23T00:00:03Z';
+  const items = [
+    item('user_message', { text: '当前是哪个目录？' }),
+    item('assistant_message', { text: '当前目录是 /w' }),
+    item('reasoning', { text: '从当前会话读取目录' }),
+  ].map((entry, ordinal) => ({ ...entry, ordinal, turnId, itemId: `late-reasoning-${ordinal}` }));
+  mocks.snapshot.mockResolvedValue(snapshot({ items, status: 'completed', turns: [
+    { turn_id: turnId, status: 'completed', accepted_at: started, started_at: started, ended_at: ended },
+  ] }));
+  render(<AgentTaskView taskId="task" />);
+  const reply = await screen.findByText('当前目录是 /w');
+  const fold = screen.getByRole('button', { name: '用时 3 秒' });
+  expect(screen.queryByText('思考')).toBeNull();
+  fireEvent.click(fold);
+  const reasoning = screen.getByText('思考');
+  const actions = screen.getByRole('group', { name: '回复操作' });
+  expect(fold.compareDocumentPosition(reasoning) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(reasoning.compareDocumentPosition(reply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(reply.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  fireEvent.click(fold);
+  expect(screen.queryByText('思考')).toBeNull();
+  expect(screen.getByText('当前目录是 /w')).toBe(reply);
+  expect(screen.getByRole('group', { name: '回复操作' })).toBe(actions);
+});
+
 it('runs a single live clock for multiple process segments', async () => {
   const turnId = 'active-clock';
   const now = new Date(Date.now() - 5_000).toISOString();
