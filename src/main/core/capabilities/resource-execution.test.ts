@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, type AddressInfo, type Server as TcpServer, type Socket } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -31,6 +31,65 @@ function dbConfig(type: string, port: number) {
   writeFileSync(path, JSON.stringify({ projectId: 'selected-project', configVersion: 7, configHash: 'fixture-hash', projects: [{ key: 'selected-project', databases: [{ key: 'selected-db', resourceId: 'selected-db', type, host: '127.0.0.1', port, database: 'selected_database', schema: type === 'postgres' ? 'selected_schema' : null, username: 'selected_user', passwordEnv: 'SMARTDD_DB_PROBE_PASSWORD', accessLevel: 'readonly' }] }] }));
   return path;
 }
+
+describe('project database selection', () => {
+  const databases = [
+    { key: 'dev-orders', label: '开发订单库', environment: 'dev', aliases: ['订单库'], host: '192.0.2.173', port: 3306, database: 'orders_dev', type: 'mysql' },
+    { key: 'test-orders', label: '测试订单库', environment: 'testing', aliases: ['订单库'], host: '192.0.2.174', port: 3306, database: 'orders_test', type: 'mysql' },
+    { key: 'prod-orders', label: '生产订单库', environment: 'production', aliases: ['订单库', '174'], host: '192.0.2.175', port: 5432, database: 'orders_prod', type: 'postgres' },
+    { key: 'uat-archive', label: '归档库', environment: 'UAT', aliases: ['归档'], host: 'archive.example', port: 5432, type: 'postgres' },
+  ];
+  function run(args: string[], defaultDatabase?: string) {
+    const path = join(tmp, 'selection.json');
+    writeFileSync(path, JSON.stringify({ projects: [
+      { key: 'current-project', defaultDatabase, databases },
+      { key: 'different-project', databases: [{ key: 'other', environment: 'prod', aliases: ['外部库'] }] },
+    ] }));
+    return exec('python3', [queryScript(), ...args], { env: pyEnv({ PROJECT_DB_CONFIG: path }) });
+  }
+
+  it.each([
+    [['--target', '测试库'], 'test-orders'],
+    [['--env', '开发', '--target', '订单库'], 'dev-orders'],
+    [['--env', '测试', '--db', '订单库'], 'test-orders'],
+    [['--target', '生产库'], 'prod-orders'],
+    [['--target', '174'], 'prod-orders'],
+    [['--target', '192.0.2.174:3306'], 'test-orders'],
+    [['--target', 'orders_prod'], 'prod-orders'],
+    [['--env', 'uat', '--target', '归档'], 'uat-archive'],
+  ])('resolves %j to %s', async (args, expected) => {
+    const { stdout } = await run([...args, '--show-selected']);
+    expect(JSON.parse(stdout)).toMatchObject({ project: 'current-project', database: { key: expected } });
+  });
+
+  it.each([
+    [['--target', '订单库'], 'Multiple databases'],
+    [['--target', '173'], 'No database matches'],
+    [['--db', 'prod-orders', '--target', '开发库'], 'No database matches'],
+    [['--env', 'prod', '--target', '归档'], 'No database matches'],
+    [['--env', 'prod', '--db', 'dev-orders'], 'No database matches'],
+    [['--env', 'staging', '--target', '订单库'], 'No database matches'],
+    [['--target', '外部库'], 'No database matches'],
+  ])('stops before connecting for %j', async (args, error) => {
+    await expect(run([...args, '--sql', 'SELECT 1'])).rejects.toMatchObject({ stderr: expect.stringContaining(error) });
+    expect(existsSync(join(tmp, 'audit.jsonl'))).toBe(false);
+  });
+
+  it('uses only an explicitly configured non-production default', async () => {
+    const { stdout } = await run(['--show-selected'], 'test-orders');
+    expect(JSON.parse(stdout).database.key).toBe('test-orders');
+    for (const defaultKey of [undefined, 'missing', 'prod-orders']) {
+      await expect(run(['--show-selected'], defaultKey)).rejects.toMatchObject({
+        stderr: expect.stringContaining('No non-production default database'),
+      });
+    }
+  });
+
+  it('lists database labels, aliases and environments for clarification', async () => {
+    const { stdout } = await run(['--list']);
+    expect(stdout).toMatch(/prod-orders:.*生产订单库.*订单库.*174.*env=production/);
+  });
+});
 
 describe('reused DB script over native protocols', () => {
   it('requires an explicit project config outside Desktop instead of looking up global credentials', async () => {

@@ -226,6 +226,7 @@ it('puts real file tabs in the titlebar and only shows the directory tab after t
     });
     const user = userEvent.setup();
     const header = within(titlebar);
+    expect(screen.getByRole('tabpanel')).toBeTruthy();
     expect(screen.queryByRole('tablist', { name:'文件标签' })).toBeNull();
     expect(header.queryByRole('tab', { name:'文件' })).toBeNull();
     await user.click(header.getByRole('tab', { name:'A.txt' }));
@@ -235,5 +236,8 @@ it('puts real file tabs in the titlebar and only shows the directory tab after t
     await waitFor(() => expect(header.getByRole('tab', {name:'B.txt'}).getAttribute('aria-selected')).toBe('true'));
     await user.click(header.getByRole('button', { name:'关闭 B.txt' }));
     expect(await header.findByRole('tab', {name:'文件'})).toBeTruthy();
+    expect(screen.getByRole('textbox', {name:'筛选文件'})).toBeTruthy();
+    expect(screen.queryByRole('tabpanel')).toBeNull();
+    expect(screen.queryByRole('separator', {name:'调整目录树宽度'})).toBeNull();
   } finally { cleanup(); titlebar.remove(); }
 });

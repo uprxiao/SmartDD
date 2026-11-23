@@ -24,6 +24,7 @@ import { Field, PathInput, ProdWarning, SecretInput, secretChange, splitAliases,
 import { FormDialog, useSave } from './project-dialogs';
 
 const KEEP: SecretDraft = { mode: 'keep' };
+type DatabaseEnvironmentChoice = (typeof ENV_PRESETS)[number] | 'custom';
 
 function EnvInput({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
   return (
@@ -39,7 +40,7 @@ function EnvInput({ id, value, onChange }: { id: string; value: string; onChange
 }
 
 /** Test-connection button plus its last result; the test never saves anything. */
-function useDraftTest(test: () => Promise<ConnectionTestResult>) {
+function useDraftTest(test: () => Promise<ConnectionTestResult>, disabled = false) {
   const { t } = useTranslation();
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<ConnectionTestResult | null>(null);
@@ -59,7 +60,7 @@ function useDraftTest(test: () => Promise<ConnectionTestResult>) {
   };
   const node = (
     <div className="flex min-w-0 items-start gap-3">
-      <Button type="button" variant="outline" disabled={testing} onClick={() => void run()} data-testid="test-draft">
+      <Button type="button" variant="outline" disabled={testing || disabled} onClick={() => void run()} data-testid="test-draft">
         {testing
           ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" strokeWidth={1.75} aria-hidden="true" />
           : <Plug className="size-4" strokeWidth={1.75} aria-hidden="true" />}
@@ -86,7 +87,12 @@ export function DatabaseDialog({
   db?: DatabaseView;
 }) {
   const { t } = useTranslation();
-  const [env, setEnv] = useState(db?.env ?? 'dev');
+  const [environmentChoice, setEnvironmentChoice] = useState<DatabaseEnvironmentChoice | null>(() => {
+    if (!db?.env) return null;
+    return ENV_PRESETS.find(preset => preset === db.env) ?? 'custom';
+  });
+  const [customEnvironment, setCustomEnvironment] = useState(environmentChoice === 'custom' ? db?.env ?? '' : '');
+  const env = environmentChoice === 'custom' ? customEnvironment.trim() : environmentChoice ?? '';
   const [label, setLabel] = useState(db?.label ?? '');
   const [vendor, setVendor] = useState<DbVendor>(db?.vendor ?? 'mysql');
   const [host, setHost] = useState(db?.host ?? '');
@@ -116,7 +122,7 @@ export function DatabaseDialog({
     note,
     password: secretChange(password),
   });
-  const testNode = useDraftTest(() => rpc.databases.testDraft(input(), db?.id));
+  const testNode = useDraftTest(() => rpc.databases.testDraft(input(), db?.id), !env);
 
   const changeVendor = (next: DbVendor) => {
     // Follow the vendor's default port unless the user typed their own.
@@ -135,14 +141,30 @@ export function DatabaseDialog({
       title={db ? t('projects.dialog.editDatabase') : t('projects.dialog.newDatabase')}
       error={error}
       busy={busy}
+      submitDisabled={!env}
       submitLabel={db ? t('projects.actions.save') : t('projects.actions.add')}
       onSubmit={submit}
       footerStart={testNode}
     >
       {isProdEnv(env) && <ProdWarning />}
       <div className="grid grid-cols-2 gap-4">
-        <Field id="db-env" label={t('projects.fields.env')} hint={t('projects.fields.envHint')}>
-          <EnvInput id="db-env" value={env} onChange={setEnv} />
+        <Field id="db-env" label={t('projects.fields.env')}>
+          <Select value={environmentChoice} onValueChange={setEnvironmentChoice} required>
+            <SelectTrigger id="db-env" className="w-full">
+              <SelectValue placeholder={t('projects.fields.dbEnvironmentPlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              {ENV_PRESETS.map(preset => (
+                <SelectItem key={preset} value={preset}>{t(`projects.fields.dbEnvironments.${preset}`)}</SelectItem>
+              ))}
+              <SelectItem value="custom">{t('projects.fields.dbEnvironments.custom')}</SelectItem>
+            </SelectContent>
+          </Select>
+          {environmentChoice === 'custom' && (
+            <Field id="db-custom-env" label={t('projects.fields.dbCustomEnvironment')}>
+              <Input id="db-custom-env" value={customEnvironment} onChange={e => setCustomEnvironment(e.target.value)} maxLength={32} />
+            </Field>
+          )}
         </Field>
         <Field id="db-label" label={t('projects.fields.label')}>
           <Input id="db-label" value={label} onChange={(e) => setLabel(e.target.value)} />
@@ -201,7 +223,7 @@ export function DatabaseDialog({
             <Switch checked={isDefault} onCheckedChange={setIsDefault} data-testid="db-default" />
           </div>
         </Field>
-        <Field id="db-aliases" label={t('projects.fields.aliases')} hint={t('projects.fields.aliasesHint')}>
+        <Field id="db-aliases" label={t('projects.fields.aliases')} hint={t('projects.fields.dbAliasesHint')}>
           <Input id="db-aliases" value={aliases} onChange={(e) => setAliases(e.target.value)} />
         </Field>
         <Field id="db-note" label={t('projects.fields.note')}>

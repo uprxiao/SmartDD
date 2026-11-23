@@ -144,6 +144,23 @@ describe('project runtime projection', () => {
     expect(server.deployments.app.modules.app.logs.primary).toBe('/log/app.log');
   });
 
+  it('activates the database matching fix on upgrade from the previous bundled package', () => {
+    const skillId = 'project-db-diagnostics';
+    const previousHash = 'e35d11cc0f884fac02c598d072202e336b70eb4607ac341bed9b552020a2ab91';
+    const previousId = `${skillId}:${previousHash}`;
+    sqlite.prepare('UPDATE skill_versions SET active=0 WHERE skill_id=?').run(skillId);
+    db.insert(schema.skillVersions).values({
+      id: previousId, skillId, hash: previousHash, name: 'smartdd-project-db-diagnostics',
+      version: '1.0.0', installedAt: 1, active: true,
+    }).run();
+
+    const next = new CapabilityService({ db, projects, secrets, userData: join(tmp, 'data') });
+    services.push(next);
+    const skill = next.list().find(entry => entry.id === skillId)!;
+    expect(skill).toMatchObject({ updateAvailable: false, current: { version: '1.0.1' } });
+    expect(skill.versions).toContainEqual(expect.objectContaining({ id: previousId, active: false }));
+  });
+
   it('retains skill versions for old tasks across upgrades, but refreshes resource config per run', () => {
     const old = prepare();
     const bundles = BUNDLED_SKILLS.map((s) => { const files = { ...s.files, 'SKILL.md': s.files['SKILL.md'] + '\nUpgrade fixture\n' }; return { ...s, files, version: '2.0.0', hash: treeHash(files) }; });
@@ -153,7 +170,7 @@ describe('project runtime projection', () => {
     projects.createDatabase(a.id, dbInput('new-password'));
     const resumed = prepare(a, 'claude', old.snapshot, next);
     const fresh = prepare(a, 'claude', undefined, next);
-    expect(resumed.snapshot.skills.every((s) => s.version === '1.0.0')).toBe(true);
+    expect(resumed.snapshot.skills.map(s => s.versionId)).toEqual(old.snapshot.skills.map(s => s.versionId));
     expect(fresh.snapshot.skills.every((s) => s.version === '2.0.0')).toBe(true);
     expect(next.list().every((s) => s.versions.length === 2)).toBe(true);
     expect(resumed.snapshot.configVersion).toBeGreaterThan(old.snapshot.configVersion);

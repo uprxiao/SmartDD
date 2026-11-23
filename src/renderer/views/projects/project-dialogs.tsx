@@ -21,6 +21,7 @@ export function FormDialog({
   wide,
   error,
   busy,
+  submitDisabled,
   submitLabel,
   onSubmit,
   footerStart,
@@ -32,6 +33,7 @@ export function FormDialog({
   wide?: boolean;
   error: string;
   busy: boolean;
+  submitDisabled?: boolean;
   submitLabel: string;
   onSubmit: () => void;
   footerStart?: ReactNode;
@@ -57,7 +59,7 @@ export function FormDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('projects.actions.cancel')}
           </Button>
-          <Button disabled={busy} onClick={onSubmit}>
+          <Button disabled={busy || submitDisabled} onClick={onSubmit}>
             {submitLabel}
           </Button>
         </DialogFooter>

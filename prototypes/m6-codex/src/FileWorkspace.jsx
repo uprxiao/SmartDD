@@ -377,7 +377,10 @@ function LocalFileWorkspace({
   }, [store, task.id]);
   const [treeReveal, setTreeReveal] = useState(null);
   useEffect(() => setTreeReveal(null), [scope]);
-  const createState=()=>roots.length?initialWorkspace():{...initialWorkspace(),tabs:[],active:null};
+  const createState = () => {
+    const initial = initialWorkspace();
+    return roots.length && !embedded ? initial : { ...initial, tabs: [], active: null };
+  };
   const state = store[scope] || createState(),
     set = fn => setStore(old => {
       const previous=old[scope]||createState();
@@ -1020,7 +1023,8 @@ function LocalFileWorkspace({
             setRich(null);
           }} onDoubleClick={() => open(t.path, true, t.root)} title={roots.find(r => r.id === t.root)?.path + '/' + t.path}><Icon file={t.path} /><span>{key===state.active&&rich?'格式演示 · '+rich.toUpperCase():t.path.split('/').pop()}</span>{state.drafts[key] && <span className="fw-dirty" aria-label="未保存" />}</button><button className="fw-tab-close" aria-label={'关闭 ' + t.path} onMouseDown={event => { if (event.button === 0) event.preventDefault(); }} onClick={event => close(key, event.currentTarget)}><X size={14} /></button></div>;
       });
-  return <aside ref={host} className={'file-workspace ' + (full ? 'fw-full' : '') + (dock === 'bottom' ? ' fw-bottom' : '')} aria-label="M9 文件工作区原型" onKeyDown={keys} onKeyUpCapture={captureReading} onPointerDownCapture={e=>{captureReading();pointerRef.current={x:e.clientX,y:e.clientY,time:performance.now()};}}>
+  const directoryOnly = Boolean(workspaceHeader && !current);
+  return <aside ref={host} className={'file-workspace ' + (directoryOnly ? 'fw-directory-only ' : '') + (full ? 'fw-full' : '') + (dock === 'bottom' ? ' fw-bottom' : '')} aria-label="M9 文件工作区原型" onKeyDown={keys} onKeyUpCapture={captureReading} onPointerDownCapture={e=>{captureReading();pointerRef.current={x:e.clientX,y:e.clientY,time:performance.now()};}}>
   <div className="bw-tab-tooltip">{webTip.element}</div>
   {workspaceHeader?.target && createPortal(fileTabs.length ? fileTabs : <div className={'m14-rp-tab'+(workspaceHeader.active?' on':'')}><button role="tab" aria-selected={workspaceHeader.active} onClick={workspaceHeader.onActivate}><FolderOpen size={14}/>文件</button><button className="m14-rp-tab-x" aria-label="关闭文件" onClick={workspaceHeader.onRemove}><X size={11}/></button></div>, workspaceHeader.target)}
   {!workspaceHeader && <div className="fw-tabs" role="tablist" aria-label="文件标签" onKeyDown={e=>{if(imeComposing(e)||!e.target.matches('[role=tab]'))return;const tabs=[...e.currentTarget.querySelectorAll('[role=tab]')],i=tabs.indexOf(e.target);if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next]?.click();tabs[next]?.focus();}}}>{fileTabs}{webTabs.map(w => <div key={w.id} className={'fw-tab fw-web-tab ' + (w.id === webActiveId ? 'selected' : '')}><button role="tab" tabIndex={w.id === webActiveId ? 0 : -1} aria-selected={w.id === webActiveId} {...webTip.bind([w.title||'新标签页',w.url].filter(Boolean).join('\n'))} onClick={() => onWebSelect?.(w.id)}><WebGlobe size={14} strokeWidth={1.7} /><span>{w.title}</span>{w.marked && <span className={'bw-tab-agent' + (w.paused ? ' paused' : '')} aria-label={w.paused ? 'Agent 已暂停' : 'Agent 正在操作'} />}</button><button className="fw-tab-close" aria-label={'关闭网页 ' + w.title} onMouseDown={event => { if (event.button === 0) event.preventDefault(); }} onClick={() => onWebClose?.(w.id)}><X size={14} /></button></div>)}<Button icon={Plus} label="查找并打开文件" onClick={() => {
@@ -1047,14 +1051,14 @@ function LocalFileWorkspace({
             root: displayRoot.id
           })}>{part}</button>{i < arr.length - 1 && <ChevronRight data-breadcrumb-separator="true" size={13} />}</span>)}</div><div className="fw-tools">{roots.length>0 && root.hostId==='local' && root.path && <Button preserveEditorFocus icon={FileSearch} label="在文件中搜索" active={searchMode} onClick={() => setContentSearch(true)} />}{!rich && file && ['markdown', 'svg', 'html', 'tex'].includes(file.kind) && <Button preserveEditorFocus icon={Code2} label={mode === 'source' ? file.kind === 'svg' ? '查看图像' : file.kind === 'tex' ? '编译并查看 PDF' : '查看文档' : '查看源码'} active={mode === 'source'} onClick={switchMode} />}{!rich && /\.(?:csv|tsv)$/i.test(current?.path || '') && <Button preserveEditorFocus icon={Code2} label={mode === 'source' ? '查看表格' : '查看源码'} active={mode === 'source'} onClick={switchMode} />}<Button icon={MoreHorizontal} label="文件查看选项" onClick={() => setMenu({
           type: 'viewer'
-        })} /><Button icon={FolderOpen} label="切换文件目录" active={state.tree} onClick={() => set(s => ({
+        })} />{!directoryOnly && <Button icon={FolderOpen} label="切换文件目录" active={state.tree} onClick={() => set(s => ({
           ...s,
           tree: !s.tree
-        }))} /><div className="fw-open-button"><button aria-label={applications.preferred ? `使用 ${applications.preferred.name} 打开（原型模拟）` : "打开文件（原型模拟）"} title={applications.preferredUnavailable ? "首选应用不可用，请选择打开方式" : "打开文件（原型模拟）"} disabled={!current || appsState!=='ready' || !applications.preferred} onClick={()=>openApplication(applications.preferred?.id, false, current?.root, current?.path)}><ExternalLink size={14} /><span>打开</span></button><button aria-label="打开方式" onClick={() => setMenu(menu?.type === 'external' ? null : {
+        }))} />}<div className="fw-open-button"><button aria-label={applications.preferred ? `使用 ${applications.preferred.name} 打开（原型模拟）` : "打开文件（原型模拟）"} title={applications.preferredUnavailable ? "首选应用不可用，请选择打开方式" : "打开文件（原型模拟）"} disabled={!current || appsState!=='ready' || !applications.preferred} onClick={()=>openApplication(applications.preferred?.id, false, current?.root, current?.path)}><ExternalLink size={14} /><span>打开</span></button><button aria-label="打开方式" onClick={() => setMenu(menu?.type === 'external' ? null : {
           type: 'external'
         })}><ChevronDown size={12} /></button></div></div></div>
   {modePending && <div className="fw-save-strip" role="status">保存中（合成）：{modePending.key}<button data-testid="complete-mode-save" onClick={finishModeSave}>完成保存（合成）</button></div>}
-  <div className="fw-body"><section ref={content} className="fw-content" aria-label="文件内容" onScrollCapture={event => {
+  <div className="fw-body">{!directoryOnly && <section ref={content} className="fw-content" aria-label="文件内容" onScrollCapture={event => {
     const node = scrollNode(); if (event.target === node && node?.isConnected) captureReading();
   }}>
    {current?.attachment && <div className="fw-save-strip" role="status">本机附件为只读，仅在当前会话保留；关闭或重启后请从原来源重新打开。</div>}
@@ -1127,7 +1131,7 @@ function LocalFileWorkspace({
             compose.current = false;
             setComposing(false);
           }} />{file.kind === 'large' && <div className="fw-readonly">10–20 MiB 文本：只读预览示例</div>}</div> : file.kind === 'image' ? <div className="fw-image fw-ordinary-image"><img draggable onDragStart={e => dragFile(e, current.root, current.path)} onDragEnd={finishFileDrag} src={file.text} alt={file.path} /></div> : ['audio', 'video'].includes(file.kind) ? <Media key={identity} kind={file.kind} name={file.path.split('/').pop()} sourceUrl={file.sourceUrl} onCopy={url => copy(url ?? activeRoot.path + '/' + current.path)} onDownload={resource => download(current.path,current.root,resource)} onResourceRead={resource=>registerOfficeResource(current.root,current.path,resource)} /> : <FileArtifactPreview path={current.path} onInsertContext={sendToTerminal} onAddComments={addPdfRefs} key={scope + ':' + identity + ':' + (state.reloads?.[state.active] || 0)} kind={file.kind === 'pdf' && current?.navigationView ? 'pdf-review' : file.kind} hostOptions={file.kind === 'pdf' ? { pdfSource: file.pdfSource } : ['xlsx','xlsm'].includes(file.kind) ? {sourceKind:'local',isEditing:true,manualEditUiEnabled:true,artifactSearchEnabled:false} : undefined} initialPage={current?.pdf?.page || 1} initialZoom={current?.pdf?.zoom} onReadingChange={file.kind === 'pdf' ? savePdfReading : undefined} readOnly={!!current?.attachment || scenario==='conflict'} initialValue={text} onDraft={edit} onDownload={resource => download(current.path,current.root,resource)} onResourceRead={resource=>registerOfficeResource(current.root,current.path,resource)} />}
-  </section>{state.tree && <><div className="fw-tree-resizer" role="separator" tabIndex={0} aria-label="调整目录宽度" aria-orientation="vertical" aria-valuenow={Math.round(treeWidth)} aria-valuemin={Math.round(treeMinimum)} aria-valuemax={Math.round(treeMaximum)} onPointerDown={resize} onKeyDown={e => {
+  </section>}{(directoryOnly || state.tree) && <>{!directoryOnly && <div className="fw-tree-resizer" role="separator" tabIndex={0} aria-label="调整目录宽度" aria-orientation="vertical" aria-valuenow={Math.round(treeWidth)} aria-valuemin={Math.round(treeMinimum)} aria-valuemax={Math.round(treeMaximum)} onPointerDown={resize} onKeyDown={e => {
           if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
             e.preventDefault();
             set(s => ({
@@ -1135,9 +1139,7 @@ function LocalFileWorkspace({
               width: Math.max(treeMinimum, Math.min(treeMaximum, treeWidth + (e.key === 'ArrowLeft' ? 10 : -10)))
             }));
           }
-        }} /><aside className="fw-tree" style={{
-          width: treeWidth, minWidth: treeMinimum
-        }} aria-label="目录树"><label className="fw-filter"><Search size={14} /><input ref={filter} placeholder={searchMode ? '搜索文件内容…' : '筛选文件…'} aria-label="筛选文件" value={query} onChange={e => {setQuery(e.target.value);anchor.current=null;setSearchCollapsed([]);}} onKeyDown={e => {
+        }} />}<aside className="fw-tree" style={directoryOnly ? {width: '100%'} : {width: treeWidth, minWidth: treeMinimum}} aria-label="目录树"><label className="fw-filter"><Search size={14} /><input ref={filter} placeholder={searchMode ? '搜索文件内容…' : '筛选文件…'} aria-label="筛选文件" value={query} onChange={e => {setQuery(e.target.value);anchor.current=null;setSearchCollapsed([]);}} onKeyDown={e => {
               if(imeComposing(e))return;
               if (e.key === 'Escape') {
                 e.stopPropagation();

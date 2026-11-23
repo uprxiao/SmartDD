@@ -7,6 +7,7 @@ import { DB_VENDORS, removeResource, safeSecretFields, saveResource } from './pr
 const TABS = [['overview', '概览'], ['code', '代码目录'], ['database', '数据库'], ['server', '服务器'], ['apps', '应用'], ['skills', 'Skill 与 MCP'], ['tasks', '项目任务']];
 const COLLECTIONS = { code: 'dirs', database: 'databases', server: 'servers' };
 const NAMES = { dirs: '代码目录', databases: '数据库', servers: '服务器' };
+const DB_ENVIRONMENTS = { dev: '开发', test: '测试', prod: '生产' };
 
 export function ProjectEditor({ project, onClose, onSave }) {
   return <Dialog title={project ? '编辑项目信息' : '新建项目'} subtitle="管理名称、别名、说明与项目规则。" onClose={onClose} className="parity-dialog"><form onSubmit={e => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.currentTarget)); onSave(data); }}>
@@ -21,20 +22,40 @@ export function ProjectEditor({ project, onClose, onSave }) {
 }
 
 function ResourceEditor({ kind, resource, onClose, onSave }) {
-  const [env, setEnv] = useState(resource?.env || 'dev');
+  const isDatabase = kind === 'databases';
+  const [environmentChoice, setEnvironmentChoice] = useState(() => {
+    if (!resource?.env) return '';
+    return Object.hasOwn(DB_ENVIRONMENTS, resource.env) ? resource.env : 'custom';
+  });
+  const [customEnv, setCustomEnv] = useState(environmentChoice === 'custom' ? resource.env : '');
+  const [serverEnv, setServerEnv] = useState(resource?.env || 'dev');
+  const env = isDatabase ? (environmentChoice === 'custom' ? customEnv.trim() : environmentChoice) : serverEnv;
   const [vendor, setVendor] = useState(resource?.vendor || 'mysql'), [port, setPort] = useState(resource?.port || (kind === 'databases' ? 3306 : 22));
   const [authType, setAuthType] = useState(resource?.authType || 'password'), [sudoPolicy, setSudoPolicy] = useState(resource?.sudoPolicy || 'none');
   const [tested, setTested] = useState(false);
   return <Dialog title={(resource ? '编辑' : '添加') + NAMES[kind]} subtitle="原型使用示例数据；请勿填写真实凭据。" onClose={onClose} className="parity-dialog"><form onChange={() => setTested(false)} onSubmit={e => {
     e.preventDefault(); const values = Object.fromEntries(new FormData(e.currentTarget));
+    if (isDatabase) values.env = env;
     const row = safeSecretFields({ ...resource, ...values, port: Number(values.port), available: true, isDefault: values.isDefault === 'on', defaultRoot: values.defaultRoot === 'on' }, resource);
     if (kind === 'dirs') { row.isDefault = resource?.isDefault || false; delete row.port; }
     else { row.lastTest = tested ? '示例：连接成功 · 12 ms，未连接实际资源' : null; }
     onSave(row);
   }}>
     {kind === 'dirs' ? <><PathField label="目录路径" name="path" required defaultValue={resource?.path} /><Field label="目录名称" name="label" defaultValue={resource?.label || ''} /><p className="section-description">实际应用会显示路径存在、可读写与 Git / SVN 状态。</p></> : <>
-      <div className="field-grid"><Field label="环境"><input name="env" list="resource-environments" value={env} onChange={e => setEnv(e.target.value)} required /><datalist id="resource-environments"><option value="dev" /><option value="test" /><option value="prod" /></datalist></Field><Field label="资源名称" name="label" defaultValue={resource?.label || ''} /></div>
-      {['prod', 'production', '生产'].includes(env.toLowerCase()) && <div className="notice warning" role="alert">生产环境：确认目标和操作范围，勿将开发配置误用于生产。</div>}
+      <div className="field-grid">
+        <div>
+          {isDatabase ? <>
+            <Field label="环境"><select value={environmentChoice} onChange={e => setEnvironmentChoice(e.target.value)} required>
+              <option value="" disabled>请选择环境</option>
+              {Object.entries(DB_ENVIRONMENTS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              <option value="custom">自定义</option>
+            </select></Field>
+            {environmentChoice === 'custom' && <Field label="自定义环境"><input value={customEnv} onChange={e => setCustomEnv(e.target.value)} maxLength={32} required /></Field>}
+          </> : <Field label="环境"><input name="env" list="resource-environments" value={serverEnv} onChange={e => setServerEnv(e.target.value)} required /><datalist id="resource-environments"><option value="dev" /><option value="test" /><option value="prod" /></datalist></Field>}
+        </div>
+        <Field label="资源名称" name="label" defaultValue={resource?.label || ''} />
+      </div>
+      {/^(prod|production|shengchan|生产库?|正式库?)$/i.test(env.trim()) && <div className="notice warning" role="alert">生产环境：确认目标和操作范围。</div>}
       {kind === 'databases' && <Field label="数据库类型"><select name="vendor" value={vendor} onChange={e => { if (Number(port) === DB_VENDORS[vendor][1]) setPort(DB_VENDORS[e.target.value][1]); setVendor(e.target.value); }}>{Object.entries(DB_VENDORS).map(([key, [name]]) => <option key={key} value={key}>{name}</option>)}</select></Field>}
       <div className="field-grid"><Field label="主机地址" name="host" defaultValue={resource?.host || ''} placeholder="dev.example" required /><Field label="端口"><input name="port" type="number" min="1" max="65535" value={port} onChange={e => setPort(e.target.value)} required /></Field></div>
       {kind === 'databases' && <><Field label="数据库名" name="database" defaultValue={resource?.database || ''} />{!['mysql', 'oceanbase', 'goldendb'].includes(vendor) && <Field label="Schema" name="schema" defaultValue={resource?.schema || ''} />}</>}
@@ -47,10 +68,12 @@ function ResourceEditor({ kind, resource, onClose, onSave }) {
         <label className="checkbox-line"><input name="defaultRoot" type="checkbox" defaultChecked={resource?.defaultRoot || false} />默认使用 root 上下文</label>
         <Field label="应用根目录" name="appRoot" defaultValue={resource?.appRoot || ''} /><Field label="日志目录" name="logsPath" defaultValue={resource?.logsPath || ''} />
       </>}
-      <Field label="别名" name="aliases" defaultValue={resource?.aliases || ''} placeholder="多个别名用逗号分隔" /><Field label="备注"><textarea name="note" rows={2} defaultValue={resource?.note || ''} /></Field>
+      <Field label="别名" name="aliases" defaultValue={resource?.aliases || ''} placeholder="多个别名用逗号分隔" />
+      {isDatabase && <p className="section-description">对话中按完整别名匹配，同名时可用环境区分。</p>}
+      <Field label="备注"><textarea name="note" rows={2} defaultValue={resource?.note || ''} /></Field>
     </>}
     {tested && <p className="notice" role="status">示例：连接成功 · 12 ms。未执行真实连接。</p>}
-    <div className="dialog-footer">{kind !== 'dirs' && <button type="button" className="button secondary" onClick={e => { if (e.currentTarget.form.reportValidity()) setTested(true); }}><Plug size={16} strokeWidth={1.75} aria-hidden="true" />测试连接（示例）</button>}<button type="button" className="button secondary" onClick={onClose}>取消</button><button className="button primary">保存{NAMES[kind]}</button></div>
+    <div className="dialog-footer">{kind !== 'dirs' && <button type="button" className="button secondary" disabled={isDatabase && !env} onClick={e => { if (e.currentTarget.form.reportValidity()) setTested(true); }}><Plug size={16} strokeWidth={1.75} aria-hidden="true" />测试连接（示例）</button>}<button type="button" className="button secondary" onClick={onClose}>取消</button><button className="button primary" disabled={isDatabase && !env}>保存{NAMES[kind]}</button></div>
   </form></Dialog>;
 }
 

@@ -38,7 +38,11 @@ class NavigationStore {
   private agentProviderSequence=0;
   /** ⌘K task search. */
   searchOpen = false;
-  filePanelOpen = typeof localStorage !== 'undefined' && localStorage.getItem('willyou-file-panel-open') === 'true';
+  private savedFilePanelOpen = typeof localStorage !== 'undefined' && localStorage.getItem('willyou-file-panel-open') === 'true';
+  private homeFilePanelOpen = false;
+  get filePanelOpen(): boolean {
+    return this.currentViewId === 'home' ? this.homeFilePanelOpen : this.savedFilePanelOpen;
+  }
   filePanelWidthPreference = readFilePanelWidthPreference(typeof localStorage === 'undefined' ? null : localStorage.getItem('willyou-file-panel-width'));
   sidebarWidth = typeof localStorage === 'undefined' ? 240 : Math.max(240, Math.min(420, Number(localStorage.getItem('smartdd-sidebar-width')) || 240));
   collapsedSidebarProjects = new Set<string>();
@@ -58,16 +62,17 @@ class NavigationStore {
   }
 
   navigate(viewId: ViewId): void {
+    if (viewId === 'home') this.homeFilePanelOpen = false;
     this.currentViewId = viewId;
   }
 
   newTask(projectId?: string): void {
     if (projectId) this.homePreset = { projectId, seq: (this.homePreset?.seq ?? 0) + 1 };
-    this.applicationAgentTaskId=null;this.currentViewId = 'home';
+    this.applicationAgentTaskId=null;this.navigate('home');
   }
 
   prepareApplicationTask(projectId:string,prompt:string):void{this.newTask(projectId);this.homePreset={...this.homePreset!,applicationPrompt:prompt};}
-  preparePluginTask(prompt:string):void{this.pluginPromptRequest={seq:++this.pluginPromptSequence,prompt};this.currentViewId='home';}
+  preparePluginTask(prompt:string):void{this.pluginPromptRequest={seq:++this.pluginPromptSequence,prompt};this.navigate('home');}
   consumePluginPrompt(seq:number):string|undefined{if(this.pluginPromptRequest?.seq!==seq)return;const prompt=this.pluginPromptRequest.prompt;this.pluginPromptRequest=null;return prompt;}
   consumeApplicationPrompt(seq:number):string|undefined{if(this.homePreset?.seq!==seq)return;const value=this.homePreset.applicationPrompt;if(value)this.homePreset={projectId:this.homePreset.projectId,seq};return value;}
   homeInput(projectId: string | null): string { return this.homeInputDrafts.get(projectId)?.text ?? ''; }
@@ -90,8 +95,12 @@ class NavigationStore {
     this.searchOpen = open;
   }
   toggleFilePanel(): void {
-    this.filePanelOpen = !this.filePanelOpen;
-    if (typeof localStorage !== 'undefined') localStorage.setItem('willyou-file-panel-open', String(this.filePanelOpen));
+    if (this.currentViewId === 'home') {
+      this.homeFilePanelOpen = !this.homeFilePanelOpen;
+      return;
+    }
+    this.savedFilePanelOpen = !this.savedFilePanelOpen;
+    if (typeof localStorage !== 'undefined') localStorage.setItem('willyou-file-panel-open', String(this.savedFilePanelOpen));
   }
   setFilePanelWidth(width: number, available: number): void {
     const preference = normalizedFilePanelWidth(width, available);
@@ -140,7 +149,7 @@ class NavigationStore {
     if (this.homePreset?.projectId === id) this.homePreset = null;
     if (this.currentProjectId !== id) return;
     this.currentProjectId = null;
-    if (this.currentViewId === 'project') this.currentViewId = 'home';
+    if (this.currentViewId === 'project') this.navigate('home');
   }
 
 }

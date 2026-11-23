@@ -78,8 +78,9 @@ const HomeTitlebarActions = observer(function HomeTitlebarActions() {
   const open = navigation.filePanelOpen;
   return <div className="agent-home-titlebar-actions app-no-drag" data-testid="agent-home-titlebar-actions">
     <button type="button" className="icon-button" title={open ? '收起右侧面板' : '打开右侧面板'} aria-pressed={open} onClick={() => {
-      if (open) panels.maximized = false;
-      navigation.toggleFilePanel();
+      panels.maximized = false;
+      if (open) navigation.toggleFilePanel();
+      else panels.open('files');
     }}><FolderOpen size={16} /></button>
     <button type="button" className="icon-button" title={'底部终端抽屉（⌃`）'} disabled={!homeWorkspace.cwd}
       aria-pressed={panels.drawer} onClick={() => panels.terminalDrawer()}><PanelBottom size={16} /></button>

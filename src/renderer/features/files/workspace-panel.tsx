@@ -65,7 +65,9 @@ function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: Re
   const terminal = useFileTerminalContext();
   const panel = useRef<HTMLElement>(null), [full, setFull] = useState(false), [wrap, setWrap] = useState(false), [closePrompt, setClosePrompt] = useState<{ id: string; instance?: string } | null>(null);
   const [width, setWidth] = useState(800), [actionError, setActionError] = useState('');
-  const treeVisible = store.treeVisible, setTreeVisible = (value: boolean | ((previous: boolean) => boolean)) => store.setTreeVisible(typeof value === 'function' ? value(store.treeVisible) : value);
+  const active = store.active, buffer = active?.buffer, file = buffer?.file;
+  const directoryOnly = Boolean(workspaceHeader && !active);
+  const treeVisible = directoryOnly || store.treeVisible, setTreeVisible = (value: boolean | ((previous: boolean) => boolean)) => store.setTreeVisible(typeof value === 'function' ? value(store.treeVisible) : value);
   const [searchOpen, setSearchOpen] = useState(false), [changesOnly, setChangesOnly] = useState(false), [blame, setBlame] = useState(false);
   const searchFocus = useRef<{ buffer: FileBuffer; dispose(): void } | null>(null);
   const [recoveryOpen, setRecoveryOpen] = useState(false);
@@ -91,7 +93,6 @@ function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: Re
     const refresh = () => { void store.refresh(); };
     window.addEventListener('focus', refresh); return () => window.removeEventListener('focus', refresh);
   }, [store]);
-  const active = store.active, buffer = active?.buffer, file = buffer?.file;
   const searchAvailable = canSearchFileContents(store.treeRoot, store.openSearchRow, rpc.files);
   useEffect(() => { if (!searchAvailable) setSearchOpen(false); }, [searchAvailable]);
   useEffect(() => () => { searchFocus.current?.dispose(); searchFocus.current = null; }, []);
@@ -156,7 +157,7 @@ function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: Re
       <button role="tab" aria-selected={selected} title={`${tab.route.sourcePath}/${tab.route.relativePath}`} onClick={() => { workspaceHeader?.onActivate(); web?.onFiles(); store.activate(tab.id); }} onDoubleClick={() => store.pin(tab.id)}><FileTreeIcon path={tab.route.relativePath} /><span>{name}</span>{tab.buffer?.dirty && <i className="fw-dirty" aria-label="未保存" />}</button><button className="fw-tab-close" aria-label={`关闭 ${name}`} onMouseDown={(event) => { if (event.button === 0) event.preventDefault(); }} onClick={(event) => void close(tab.id, event.currentTarget)}><X size={13} /></button>
     </div>;
   });
-  return <aside ref={panel} className={`file-workspace fw-production ${full ? 'fw-full' : ''}`} aria-label="文件工作区" data-testid="file-workspace">
+  return <aside ref={panel} className={`file-workspace fw-production ${full ? 'fw-full' : ''} ${directoryOnly ? 'fw-directory-only' : ''}`} aria-label="文件工作区" data-testid="file-workspace">
     {workspaceHeader?.target && createPortal(fileTabs.length ? fileTabs : <div className={`agent-surface-tab ${workspaceHeader.active ? 'on' : ''}`}>
       <button type="button" role="tab" aria-selected={workspaceHeader.active} onClick={workspaceHeader.onActivate}><FolderOpen size={14}/>文件</button>
       <button type="button" aria-label="关闭文件面板" onClick={workspaceHeader.onCloseDirectory}><X size={10}/></button>
@@ -193,9 +194,9 @@ function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: Re
           if (store.active !== active || active.buffer !== buffer || !root) throw new Error('当前文件来源已改变，请重新选择查看器');
           await store.open(root, active.route.relativePath, active.pinned, { fileViewer: id === null ? 'default' : id ?? null, reveal: false });
         }) : undefined} /><DropdownMenuSeparator /><DropdownMenuItem disabled={!store.canRestoreClosed} onClick={() => void store.restoreClosed()}><Undo2 />重新打开关闭的文件</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTreeVisible((value) => !value)}><PanelRight />{treeVisible ? '隐藏目录树' : '显示目录树'}</DropdownMenuItem>
+        {!directoryOnly && <DropdownMenuItem onClick={() => setTreeVisible((value) => !value)}><PanelRight />{treeVisible ? '隐藏目录树' : '显示目录树'}</DropdownMenuItem>}
       </DropdownMenuContent></DropdownMenu>
-      <Tool label={treeVisible ? '隐藏目录树' : '显示目录树'} active={treeVisible} onClick={() => setTreeVisible((value) => !value)}><FolderOpen size={16} /></Tool>
+      {!directoryOnly && <Tool label={treeVisible ? '隐藏目录树' : '显示目录树'} active={treeVisible} onClick={() => setTreeVisible((value) => !value)}><FolderOpen size={16} /></Tool>}
       {file && <FileOpenButton key={`${file.ref.id}:${file.revision.inode}:${file.revision.hash}`} target={{ kind: 'document', ref: file.ref }} run={action} />}
     </div></div>
     {(actionError || store.error) && <div role="alert" className="fw-save-strip"><AlertCircle size={15} />{actionError || store.error}</div>}
@@ -203,7 +204,7 @@ function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: Re
     {actionNotice && <div role="status" className="fw-save-strip"><Check size={15} /><span>{actionNotice}</span><button aria-label="关闭文件操作提示" onClick={() => setActionNotice('')}><X size={14} /></button></div>}
     {[...store.watchStates.values()].filter((state) => state.message).map((state) => <div key={state.lease} role="status" className="fw-save-strip">{state.message}</div>)}
     {store.roots.unavailable.map(root => <div key={`${root.source ?? ''}:${root.sourceId}`} className="fw-save-strip" role="alert"><span title={root.path}>{root.label}：{root.reason}</span><button disabled={[...store.retryingRoots].some(key => key.endsWith(':' + root.sourceId))} onClick={() => void store.retryUnavailableRoot(root.sourceId, root.source)}>重试目录</button></div>)}
-    <div className="fw-body"><div className="fw-content" role="tabpanel">
+    <div className="fw-body">{!directoryOnly && <div className="fw-content" role="tabpanel">
       <LanguageResults />
       {buffer && <>
         {active?.attachment && <div className="fw-save-strip" role="status">{ATTACHMENT_SESSION_NOTICE}</div>}
@@ -227,13 +228,13 @@ function WorkspaceContents({ store, onClose, web, workspaceHeader }: { store: Re
       </>}
       {!buffer && active && <div className="fw-empty" role={active.error ? 'alert' : 'status'}>{active.loading ? <Loader2 className="animate-spin" size={20} /> : <AlertCircle size={20} />}<p>{active.error || '正在打开文件…'}</p>{active.error && !active.loading && <button className="fw-pill" onClick={() => void store.retryTab(active.id)}><RotateCcw size={15} />重试</button>}</div>}
       {!active && <div className="fw-empty"><FolderOpen size={28} /><p>{store.loading ? '正在读取项目目录…' : store.roots.roots.length ? '从右侧目录选择文件' : '没有可用的本机目录'}</p>{store.error && <button onClick={() => void store.initialize()}>重试</button>}</div>}
-    </div>
-    {treeVisible && <><div className="fw-tree-resizer" role="separator" tabIndex={0} aria-label="调整目录树宽度" aria-orientation="vertical" aria-valuenow={Math.round(treeWidth)} aria-valuemin={Math.min(200, width * 0.6)} aria-valuemax={Math.floor(width * 0.6)} onPointerDown={(event) => event.currentTarget.setPointerCapture(event.pointerId)} onPointerMove={(event) => {
+    </div>}
+    {treeVisible && <>{!directoryOnly && <div className="fw-tree-resizer" role="separator" tabIndex={0} aria-label="调整目录树宽度" aria-orientation="vertical" aria-valuenow={Math.round(treeWidth)} aria-valuemin={Math.min(200, width * 0.6)} aria-valuemax={Math.floor(width * 0.6)} onPointerDown={(event) => event.currentTarget.setPointerCapture(event.pointerId)} onPointerMove={(event) => {
       if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
       const next = (panel.current?.getBoundingClientRect().right ?? 0) - event.clientX;
       if (next < 100) { event.currentTarget.releasePointerCapture(event.pointerId); setTreeVisible(false); } else store.setTreeWidth(next);
-    }} onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); store.setTreeWidth(treeWidth + (event.key === 'ArrowLeft' ? 10 : -10)); } }} />
-      <div className="fw-tree" style={{ width: treeWidth }}>{store.roots.roots.length > 1 && <div className="fw-root"><DropdownMenu><DropdownMenuTrigger className="fw-root-trigger" aria-label="文件目录来源" title={store.treeRoot?.path}><span>{store.treeRoot?.path.split('/').filter(Boolean).at(-1)} · {store.treeRoot?.label}</span><ChevronDown size={13} /></DropdownMenuTrigger><DropdownMenuContent align="end" className="fw-file-menu">{store.roots.roots.map((root) => <DropdownMenuItem key={root.lease} title={root.path} onClick={() => store.selectRoot(root)}><FolderOpen size={14} /><span>{root.path.split('/').filter(Boolean).at(-1)} · {root.label}</span>{store.treeRoot === root && <Check size={14} />}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu></div>}{changesOnly ? <FileChanges store={store} state={treeGit} onBack={() => setChangesOnly(false)} run={action} /> : <FileNameFilter store={store}><WorkspaceTree store={store} run={action} git={gitEntries} /></FileNameFilter>}</div></>}
+    }} onPointerUp={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); store.setTreeWidth(treeWidth + (event.key === 'ArrowLeft' ? 10 : -10)); } }} />}
+      <div className="fw-tree" style={{ width: directoryOnly ? '100%' : treeWidth }}>{store.roots.roots.length > 1 && <div className="fw-root"><DropdownMenu><DropdownMenuTrigger className="fw-root-trigger" aria-label="文件目录来源" title={store.treeRoot?.path}><span>{store.treeRoot?.path.split('/').filter(Boolean).at(-1)} · {store.treeRoot?.label}</span><ChevronDown size={13} /></DropdownMenuTrigger><DropdownMenuContent align="end" className="fw-file-menu">{store.roots.roots.map((root) => <DropdownMenuItem key={root.lease} title={root.path} onClick={() => store.selectRoot(root)}><FolderOpen size={14} /><span>{root.path.split('/').filter(Boolean).at(-1)} · {root.label}</span>{store.treeRoot === root && <Check size={14} />}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu></div>}{changesOnly ? <FileChanges store={store} state={treeGit} onBack={() => setChangesOnly(false)} run={action} /> : <FileNameFilter store={store}><WorkspaceTree store={store} run={action} git={gitEntries} /></FileNameFilter>}</div></>}
     </div>
     <TerminalReferenceTray />
     <FileRecoveryDialog open={recoveryOpen} onOpenChange={setRecoveryOpen}/>
