@@ -511,7 +511,7 @@ export function App() {
     </nav>
     <ReferenceSidebar agentMode={m14Preview} taskStatus={m14Preview ? m14SidebarStatus : null} projects={projects} tasks={tasks} route={route} collapsed={collapsed} closedProjects={closedProjects} activeProject={isProject ? activeProject.id : route === 'home' ? projectId : null} activeTaskId={taskId}
       onToggleProject={key => setClosedProjects(old => old.includes(key) ? old.filter(p => p !== key) : [...old, key])}
-      onHome={key => { if (key) setProjectId(key); nav('home'); }} onSearch={() => { setSearch(''); setModal({ type: 'search' }); }} onSelectProject={key => { setProjectId(key); nav('home'); }} onOpenTask={key => nav('task/' + key)}
+      onHome={key => { if (key) setProjectId(key); nav('home'); }} onSearch={() => { setSearch(''); setModal({ type: 'search' }); }} onOpenTask={key => nav('task/' + key)}
       onCreateProject={() => setModal({ type: 'project' })} onEditProject={p => { setProjectId(p.id); nav('project/' + p.id); }}
       onImportProject={() => setModal({ type: 'project-transfer', mode: 'import' })} onExportProject={p => setModal({ type: 'project-transfer', mode: 'export', project: p })}
       onRenameTask={t => setModal({ type: 'rename-task', task: t })} onArchiveTask={requestArchive}

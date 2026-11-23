@@ -41,6 +41,7 @@ class NavigationStore {
   filePanelOpen = typeof localStorage !== 'undefined' && localStorage.getItem('willyou-file-panel-open') === 'true';
   filePanelWidthPreference = readFilePanelWidthPreference(typeof localStorage === 'undefined' ? null : localStorage.getItem('willyou-file-panel-width'));
   sidebarWidth = typeof localStorage === 'undefined' ? 240 : Math.max(240, Math.min(420, Number(localStorage.getItem('smartdd-sidebar-width')) || 240));
+  collapsedSidebarProjects = new Set<string>();
 
   constructor() {
     makeAutoObservable(this);
@@ -49,6 +50,11 @@ class NavigationStore {
   setSidebarWidth(width: number): void {
     this.sidebarWidth = Math.max(240, Math.min(420, width));
     if (typeof localStorage !== 'undefined') localStorage.setItem('smartdd-sidebar-width', String(this.sidebarWidth));
+  }
+
+  toggleSidebarProject(projectId: string): void {
+    if (this.collapsedSidebarProjects.has(projectId)) this.collapsedSidebarProjects.delete(projectId);
+    else this.collapsedSidebarProjects.add(projectId);
   }
 
   navigate(viewId: ViewId): void {
@@ -130,6 +136,7 @@ class NavigationStore {
   closeProject(id: string): void {
     this.homeInputDrafts.delete(id);
     this.homeLaunchAttempts.delete(id);
+    this.collapsedSidebarProjects.delete(id);
     if (this.homePreset?.projectId === id) this.homePreset = null;
     if (this.currentProjectId !== id) return;
     this.currentProjectId = null;

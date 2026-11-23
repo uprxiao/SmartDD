@@ -149,8 +149,8 @@ export const zhCN = {
     noneInProject: '该项目下还没有任务。',
     noProjectGroup: '未关联项目',
     archivedGroup: '已归档任务（{{count}}）',
-    expand: '展开',
-    collapse: '收起',
+    expandProject: '展开「{{name}}」的会话',
+    collapseProject: '收起「{{name}}」的会话',
   },
   search: {
     placeholder: '按标题、首条消息或项目名搜索',
@@ -545,8 +545,8 @@ export const en: Widen<typeof zhCN> = {
     noneInProject: 'No tasks in this project yet.',
     noProjectGroup: 'No project',
     archivedGroup: 'Archived tasks ({{count}})',
-    expand: 'Expand',
-    collapse: 'Collapse',
+    expandProject: 'Expand chats in {{name}}',
+    collapseProject: 'Collapse chats in {{name}}',
   },
   search: {
     placeholder: 'Search by title, first message or project',
