@@ -61,6 +61,7 @@ export const AgentsSection=observer(function AgentsSection(){
   };
   const close=()=>setModal(null);
   const currentProvider=modal?.type==='provider'?providers.find(p=>p.id===modal.id):undefined;
+  const editorProps={configs,providers,tools,onRefresh:refresh,onRedetect:()=>void detect(true),redetecting:detecting};
   return <div className="m13-shell m13-settings-embed" data-testid="agents-settings">
     <GlobalModelNotice/>
     <div className="m10-page-head"><div><h1>智能体</h1><p>智能体＝Code Agent＋订阅或供应商。这里的列表就是首页的智能体下拉，默认的排第一，其余可拖动调整顺序；每次运行按需注入，不修改 CLI 的全局配置。</p></div>
@@ -72,10 +73,12 @@ export const AgentsSection=observer(function AgentsSection(){
       setDefault:c=>void action(()=>rpc.agents.setDefault(c.id),'已设为默认智能体'),toggleVisible:c=>void action(()=>rpc.agents.homeVisible(c.id,!c.homeVisible)),reorder:(c,index)=>void action(()=>rpc.agents.reorder(c.id,index))}}/>:<ProviderList providers={providers} configs={configs} onEdit={p=>setModal({type:'provider',id:p.id})} onCreate={()=>setModal({type:'catalog'})}/>}
 
     {error&&<div className="m13-alert danger" role="alert">{error}</div>}
-    {modal?.type==='agent'&&<AgentEditor key={modal.initial?.id??`${modal.preset?.kind??'new'}:${modal.preset?.providerId??''}`} initial={modal.initial} preset={modal.preset} configs={configs} providers={providers} tools={tools} onClose={close} onRefresh={refresh} onSaved={()=>toast.success(modal.initial?'智能体已保存':'智能体已创建')} onEditExisting={edit} onAddProvider={forTool=>setModal({type:'catalog',forTool})} onToolPath={tool=>setModal({type:'path',tool,back:modal})} onRedetect={()=>void detect(true)} redetecting={detecting}/>}
+    {modal?.type==='agent'&&<AgentEditor {...editorProps} key={modal.initial?.id??`${modal.preset?.kind??'new'}:${modal.preset?.providerId??''}`} initial={modal.initial} preset={modal.preset} onClose={close} onSaved={()=>toast.success(modal.initial?'智能体已保存':'智能体已创建')} onEditExisting={edit} onAddProvider={forTool=>setModal({type:'catalog',forTool})} onToolPath={tool=>setModal({type:'path',tool,back:modal})}/>}
     {modal?.type==='legacy'&&<LegacyAgentEditor key={modal.config.id} config={configs.find(c=>c.id===modal.config.id)??modal.config} onClose={close} onSaved={refresh}/>}
     {modal?.type==='catalog'&&<ProviderCatalogDialog providers={providers} forTool={modal.forTool} onClose={close} onConnected={refresh} onNewAgent={newWithProvider}/>}
-    {modal?.type==='provider'&&currentProvider&&<ProviderDetail provider={currentProvider} configs={configs} onClose={close} onRefresh={refresh} onNewAgent={newWithProvider}/>}
+    {modal?.type==='provider'&&currentProvider&&<ProviderDetail key={currentProvider.id} provider={currentProvider} configs={configs} onClose={close} onRefresh={refresh} onNewAgent={newWithProvider}
+      renderAgentEditor={(config,onBack)=>config.source==='legacy'?<LegacyAgentEditor key={config.id} config={config} onClose={onBack} onSaved={refresh}/>:<AgentEditor {...editorProps} key={config.id} initial={config} returnToProvider onClose={onBack}
+        onSaved={()=>toast.success('智能体已保存')} onEditExisting={edit} onAddProvider={forTool=>setModal({type:'catalog',forTool})} onToolPath={tool=>setModal({type:'path',tool,back:modal})}/>}/>}
     {modal?.type==='import'&&<AgentImportDialog onClose={close} onDone={()=>{void refresh();toast.success('智能体配置已导入');}}/>}
     {modal?.type==='export'&&<AgentExportDialog providers={providers} configs={configs} onClose={close} onDone={()=>toast.success('智能体配置已导出')}/>}
     {modal?.type==='path'&&<ToolPathDialog tool={modal.tool} onClose={()=>setModal(modal.back??null)} onSaved={async()=>{await refresh();setModal(modal.back??null);}}/>}

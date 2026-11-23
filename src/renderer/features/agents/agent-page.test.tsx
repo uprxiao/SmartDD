@@ -14,9 +14,9 @@ import { SettingsView } from '@renderer/views/settings-view';
 import { toast } from 'sonner';
 const api=vi.hoisted(()=>{
  const fn=()=>vi.fn<(...args:any[])=>Promise<any>>();
- return {query:{data:{configs:[] as RunConfigView[],providers:[] as ProviderView[],tools:[] as CodeAgentTool[]},isPending:false,error:null as Error|null},refresh:fn(),save:fn(),saveProvider:fn(),check:fn(),refreshModels:fn(),deleteProvider:fn(),setDefault:fn(),visible:fn(),reorder:fn(),remove:fn(),detect:fn(),models:fn(),probe:fn(),connect:fn(),cancel:fn(),getLegacy:fn(),updateLegacy:fn(),nav:{settingsSection:'aiProfiles',openSettings:vi.fn(),openApplications:vi.fn(),agentProviderRequest:null as {id:string;seq:number}|null,consumeAgentProviderRequest:vi.fn()}};
+ return {query:{data:{configs:[] as RunConfigView[],providers:[] as ProviderView[],tools:[] as CodeAgentTool[]},isPending:false,error:null as Error|null},refresh:fn(),save:fn(),saveProvider:fn(),check:fn(),refreshModels:fn(),modelCatalog:fn(),saveModels:fn(),deleteProvider:fn(),setDefault:fn(),visible:fn(),reorder:fn(),remove:fn(),detect:fn(),models:fn(),probe:fn(),connect:fn(),cancel:fn(),getLegacy:fn(),updateLegacy:fn(),nav:{settingsSection:'aiProfiles',openSettings:vi.fn(),openApplications:vi.fn(),agentProviderRequest:null as {id:string;seq:number}|null,consumeAgentProviderRequest:vi.fn()}};
 });
-vi.mock('@renderer/lib/ipc',()=>({rpc:{tasks:{codexGlobalNotices:async()=>[]},agents:{save:api.save,saveProvider:api.saveProvider,checkProviderModel:api.check,refreshProviderModels:api.refreshModels,deleteProvider:api.deleteProvider,setDefault:api.setDefault,homeVisible:api.visible,reorder:api.reorder,delete:api.remove,refreshTools:api.detect,updateLegacy:api.updateLegacy},providerSetup:{models:api.models,probe:api.probe,connect:api.connect,cancel:api.cancel},aiProfiles:{get:api.getLegacy}},events:{on:()=>()=>{}}}));
+vi.mock('@renderer/lib/ipc',()=>({rpc:{tasks:{codexGlobalNotices:async()=>[]},agents:{save:api.save,saveProvider:api.saveProvider,checkProviderModel:api.check,refreshProviderModels:api.refreshModels,providerModelCatalog:api.modelCatalog,saveProviderModels:api.saveModels,deleteProvider:api.deleteProvider,setDefault:api.setDefault,homeVisible:api.visible,reorder:api.reorder,delete:api.remove,refreshTools:api.detect,updateLegacy:api.updateLegacy},providerSetup:{models:api.models,probe:api.probe,connect:api.connect,cancel:api.cancel},aiProfiles:{get:api.getLegacy}},events:{on:()=>()=>{}}}));
 vi.mock('@renderer/lib/hooks/useAgents',()=>({useAgents:()=>api.query,useRefreshAgents:()=>api.refresh}));
 vi.mock('sonner',()=>({toast:{success:vi.fn(),error:vi.fn()}}));
 // Unrelated Settings branches are outside this test; the AI branch and its labels are real.
@@ -30,7 +30,7 @@ vi.mock('react-i18next',async()=>{const {zhCN}=await import('@renderer/lib/i18n/
 const clients:QueryClient[]=[];
 function mountQuery(node:React.ReactNode){const c=new QueryClient({defaultOptions:{queries:{retry:false,gcTime:Infinity}}});clients.push(c);return render(<QueryClientProvider client={c}>{node}</QueryClientProvider>);}
 
-beforeEach(()=>{vi.clearAllMocks();for(const fn of [api.refresh,api.save,api.saveProvider,api.check,api.refreshModels,api.deleteProvider,api.setDefault,api.visible,api.reorder,api.remove,api.detect,api.cancel,api.updateLegacy])fn.mockResolvedValue(undefined);api.models.mockResolvedValue({ok:true,value:{models:[model('a'),model('b')],recommended:{claude:'a',codex:'a'},note:null}});api.probe.mockResolvedValue({ok:true,value:{state:'candidate',message:'候选协议'}});api.connect.mockResolvedValue({ok:true,value:provider()});api.query.data={configs:[],providers:[],tools:[tool('claude'),tool('codex')]};api.query.isPending=false;api.query.error=null;api.nav.settingsSection='aiProfiles';});
+beforeEach(()=>{vi.clearAllMocks();for(const fn of [api.refresh,api.save,api.saveProvider,api.check,api.saveModels,api.deleteProvider,api.setDefault,api.visible,api.reorder,api.remove,api.detect,api.cancel,api.updateLegacy])fn.mockResolvedValue(undefined);api.refreshModels.mockResolvedValue({...provider(),catalog:[model('a'),model('b')]});api.modelCatalog.mockResolvedValue(null);api.models.mockResolvedValue({ok:true,value:{models:[model('a'),model('b')],recommended:{claude:'a',codex:'a'},note:null}});api.probe.mockResolvedValue({ok:true,value:{state:'candidate',message:'候选协议'}});api.connect.mockResolvedValue({ok:true,value:provider()});api.query.data={configs:[],providers:[],tools:[tool('claude'),tool('codex')]};api.query.isPending=false;api.query.error=null;api.nav.settingsSection='aiProfiles';});
 afterEach(()=>{cleanup();clients.splice(0).forEach(c=>c.clear());});
 function model(id:string){return {id,name:'Model '+id.toUpperCase(),contextWindow:128000,offline:false,availability:{claude:'available' as const,codex:'available' as const}};}
 function provider(changes:Partial<ProviderView>={}):ProviderView{return {id:'p',name:'Private Provider',preset:null,endpoints:{responses:'https://provider.example.invalid/v1',anthropic:'https://provider.example.invalid/anthropic'},authType:'bearer',hasKey:true,identityRevision:1,models:[model('a'),model('b')],recommended:{claude:'a',codex:'b'},refreshedAt:1,...changes};}
@@ -238,6 +238,47 @@ it('provider failed address save preserves typed addresses and displays real RPC
 });
 it('provider refresh uses saved ID then incoming query state; single recheck targets exact model/tool and keeps failure visible',async()=>{
  const {props,rerender}=detail();fireEvent.click(screen.getByRole('button',{name:'刷新模型'}));await waitFor(()=>expect(props.onRefresh).toHaveBeenCalledOnce());expect(api.refreshModels).toHaveBeenCalledExactlyOnceWith('p');const changed=provider();changed.models[0].availability.codex='unavailable' as any;rerender(<ProviderDetail {...props} provider={changed}/>);const cell=document.querySelector('[data-model="a"] [data-tool="codex"]') as HTMLElement;expect(cell.getAttribute('data-avail')).toBe('unavailable');api.check.mockRejectedValue(new Error('模型拒绝工具调用'));fireEvent.click(within(cell).getByRole('button',{name:'重测'}));await waitFor(()=>expect(screen.getByRole('alert').textContent).toBe('模型拒绝工具调用'));expect(api.check).toHaveBeenCalledExactlyOnceWith('p','codex','a');expect(cell.getAttribute('data-avail')).toBe('unavailable');
+});
+it('stages filtered candidates until save and keeps tab counts based on the saved connection',async()=>{
+ const c={...model('deepseek-c'),vendor:'DeepSeek',purpose:'conversation'},d={...model('qwen-embedding'),vendor:'阿里云',purpose:'embedding'};
+ api.refreshModels.mockResolvedValue({...provider(),catalog:[model('a'),model('b'),c,d]});
+ const {props,rerender}=detail();
+ fireEvent.click(screen.getByRole('button',{name:'刷新模型'}));
+ fireEvent.click(await screen.findByRole('tab',{name:'未选 2'}));
+ fireEvent.change(screen.getByRole('combobox',{name:'厂商'}),{target:{value:'DeepSeek'}});
+ fireEvent.change(screen.getByRole('combobox',{name:'用途'}),{target:{value:'conversation'}});
+ expect(screen.queryByText(d.name)).toBeNull();
+ fireEvent.click(screen.getByRole('checkbox',{name:c.name}));
+ expect(screen.getByText('待接入')).toBeTruthy();
+ expect(screen.getByRole('tab',{name:'已选 2'})).toBeTruthy();
+ expect(api.saveModels).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'取消修改'}));
+ expect(screen.getByRole<HTMLInputElement>('checkbox',{name:c.name}).checked).toBe(false);
+ fireEvent.click(screen.getByRole('checkbox',{name:c.name}));
+ fireEvent.click(screen.getByRole('button',{name:'保存模型'}));
+ await waitFor(()=>expect(api.saveModels).toHaveBeenCalledExactlyOnceWith('p',['a','b'],['a','b',c.id],1));
+ rerender(<ProviderDetail {...props} provider={provider({models:[model('a'),model('b'),c]})}/>);
+ expect(screen.getByRole('tab',{name:'已选 3'})).toBeTruthy();
+ expect(screen.getByRole('tab',{name:'未选 1'}).getAttribute('aria-selected')).toBe('true');
+ expect(screen.queryByText(c.name)).toBeNull();
+});
+
+it('lists every referencing agent and returns to the Provider with pending selections intact',async()=>{
+ const first=config(),second=config({id:'second',name:'Agent Two',toolId:'claude',kind:'claude',models:['a'],defaultModel:'a'});
+ const callbacks={onClose:vi.fn(),onRefresh:vi.fn(async()=>{}),onNewAgent:vi.fn()};
+ const renderAgentEditor=vi.fn((_agent:RunConfigView,back:()=>void)=><button onClick={back}>返回供应商</button>);
+ const p=provider({models:[...provider().models,model('c')]});
+ render(<ProviderDetail provider={p} configs={[first,second]} {...callbacks} renderAgentEditor={renderAgentEditor}/>);
+ fireEvent.click(screen.getByRole('checkbox',{name:'Model C'}));
+ fireEvent.click(screen.getByRole('checkbox',{name:'Model A'}));
+ expect(screen.getByRole<HTMLInputElement>('checkbox',{name:'Model A'}).checked).toBe(true);
+ expect(screen.getByRole('alert').textContent).toContain('Agent Two');
+ fireEvent.click(screen.getByRole('button',{name:'编辑智能体 Agent One'}));
+ expect(renderAgentEditor).toHaveBeenCalledWith(first,expect.any(Function));
+ expect(screen.queryByRole('dialog')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'返回供应商'}));
+ expect(screen.getByRole<HTMLInputElement>('checkbox',{name:'Model C'}).checked).toBe(false);
+ expect(screen.getByText('待移除 1 个')).toBeTruthy();
 });
 it('test-all checks only untested endpoint-compatible online model/tool pairs, not available/offline ones',async()=>{
  const p=provider();p.models[0].availability.codex='untested' as any;p.models[1].availability.claude='untested' as any;p.models.push({...model('offline'),offline:true,availability:{claude:'untested',codex:'untested'}});detail(p);fireEvent.click(screen.getByRole('button',{name:'测试全部未测试（2）'}));await waitFor(()=>expect(api.check).toHaveBeenCalledTimes(2));expect(api.check.mock.calls).toEqual([['p','codex','a'],['p','claude','b']]);expect(api.saveProvider).not.toHaveBeenCalled();

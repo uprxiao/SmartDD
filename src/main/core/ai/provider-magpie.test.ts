@@ -97,17 +97,18 @@ describe('Magpie exact canonical tool identity and full service/client integrati
     expect(seen[0].url.searchParams.get('client_version')).toBe('0.167.1'); expect(seen[1].url.search).toBe('');
     expect(seen.map(item => item.headers.get('Authorization'))).toEqual(['Bearer magpie-codex', 'Bearer magpie-claude']);
     expect(seen.every(item => item.init?.redirect === 'error')).toBe(true);
-    const codex = refreshed.models.find(model => model.id === 'codex-only')!, claude = refreshed.models.find(model => model.id === 'claude-only')!, shared = refreshed.models.find(model => model.id === 'shared')!;
+    const codex = refreshed.catalog.find(model => model.id === 'codex-only')!, claude = refreshed.catalog.find(model => model.id === 'claude-only')!, shared = refreshed.catalog.find(model => model.id === 'shared')!;
     expect(codex.availability).toEqual({ codex: 'untested', claude: 'unavailable' }); expect(claude.availability).toEqual({ codex: 'unavailable', claude: 'untested' });
     expect(shared.availability).toEqual({ codex: 'untested', claude: 'untested' }); expect(shared.contextWindow).toBe(256000);
     expect(codex.codex).toEqual({ reasoningLevels: ['low', 'high'], defaultReasoning: 'high', inputModalities: ['text', 'image'], supportVerbosity: true });
-    const nativeCatalog = buildCodexModelCatalog(refreshed.models, ['codex-only']);
+    const selected = service.saveModelSelection(p.id, ['old-retained'], ['codex-only'], p.identityRevision);
+    const nativeCatalog = buildCodexModelCatalog(selected.models, ['codex-only']);
     expect(nativeCatalog.models[0].base_instructions).toBe(CODEX_CATALOG_BASE_INSTRUCTIONS); expect(JSON.stringify(refreshed)).not.toContain('P1_REMOTE_');
     expect(JSON.stringify(nativeCatalog)).not.toContain('P1_REMOTE_'); expect(agents.configs()).toEqual([]);
   });
   it('allows the Magpie-only 8MiB default budget to receive a catalog larger than the generic 2MiB cap', async () => {
     route = url => url.pathname === codexPath ? json({ ...codexBody(), ignored_padding: 'P'.repeat(2 * 1024 * 1024 + 100) }) : json(claudeBody());
-    const p = service.save(input()); expect((await service.refresh(p.id)).models.some(model => model.id === 'codex-only')).toBe(true);
+    const p = service.save(input()); expect((await service.refresh(p.id)).catalog.some(model => model.id === 'codex-only')).toBe(true);
   });
   it('rejects declared response larger than 8MiB and preserves the committed old directory', async () => {
     const p = service.save(input()), old = rawProvider(p.id);
@@ -121,7 +122,7 @@ describe('Magpie exact canonical tool identity and full service/client integrati
   });
   it('accepts an explicit zero left-out header without downgrading the scoped union', async () => {
     const p = service.save(input()); route = url => json(url.pathname === codexPath ? codexBody() : claudeBody(), 200, { 'X-Magpie-Left-Out': '0' });
-    expect((await service.refresh(p.id)).models.filter(model => !model.offline).map(model => model.id).sort()).toEqual(['claude-only', 'codex-only', 'shared']);
+    expect((await service.refresh(p.id)).catalog.filter(model => !model.offline).map(model => model.id).sort()).toEqual(['claude-only', 'codex-only', 'shared']);
   });
   it.each([401, 404])('does not commit the first scoped catalog when the second catalog returns %i', async status => {
     const p = service.save(input()), old = rawProvider(p.id);
@@ -146,7 +147,7 @@ describe('Magpie exact canonical tool identity and full service/client integrati
     release.resolve(json(codexBody())); await rejected; expect(rawProvider(p.id)).toEqual(changed);
   });
   it('removes a vanished tool scope and its successful check, then returns a reappearing scope as untested', async () => {
-    const p = service.save(input()); await service.refresh(p.id); await service.check(p.id, 'codex', 'shared'); await service.check(p.id, 'claude', 'shared');
+    const p = service.save(input({models:[{id:'shared',name:'Shared'}]})); await service.refresh(p.id); await service.check(p.id, 'codex', 'shared'); await service.check(p.id, 'claude', 'shared');
     expect(agents.providers()[0].models.find(model => model.id === 'shared')!.availability).toEqual({ codex: 'available', claude: 'available' });
     route = (url, init) => init?.method === 'POST' ? toolStream('claude') : url.pathname === codexPath ? json({ models: [codexBody().models[0]] }) : json(claudeBody());
     const gone = (await service.refresh(p.id)).models.find(model => model.id === 'shared')!;
@@ -159,6 +160,7 @@ describe('Magpie exact canonical tool identity and full service/client integrati
   it.each(['codex', 'claude'] as const)('hands the exact public %s token through runtimeConnection into a real generated Agent plan', async kind => {
     const p = service.save(input()); await service.refresh(p.id);
     const model = kind === 'codex' ? 'codex-only' : 'claude-only';
+    service.saveModelSelection(p.id, ['old-retained'], [model], p.identityRevision);
     const config = agents.saveConfig({ name: 'P1 Magpie ' + kind, toolId: kind, source: 'provider', providerId: p.id, models: [model], defaultModel: model });
     const connection = service.runtimeConnection(p.id, kind); expect(connection.target.preset).toBe('magpie'); expect(connection.target.key).toBe('magpie-' + kind);
     const userData = join(fixtureRoot, 'userdata'), cwd = join(fixtureRoot, 'project'); mkdirSync(userData); mkdirSync(cwd);

@@ -69,10 +69,11 @@ it('keeps the model menu open to save model and reasoning together', async () =>
 });
 
 it('keeps the applied Antigravity effort in the collapsed task picker using its own probed catalog', async () => {
-  const model = 'gemini-4-carbon';
+  const model = 'gemini-4-neon';
   const scope = { kind: 'task' as const, taskId: 'antigravity-catalog-effort' };
   const installed = [
-    { profileId: 'ag', name: 'Antigravity · Model Hub', kind: 'antigravity', source: 'provider', models: [model], available: true },
+    { profileId: 'ag', name: 'Antigravity·MH', kind: 'antigravity', source: 'provider', models: ['gemini-4-carbon', model],
+      defaultModel: 'gemini-4-carbon', provider: { name: 'Model Hub', catalog: 'ultracloud' }, available: true },
     { profileId: 'another', name: 'Another Antigravity profile', kind: 'antigravity', source: 'provider', models: [model], defaultModel: model, available: true },
   ];
   catalog.mockImplementation(async (_scope, profileId) => ({ status: 'ready', models: [
@@ -85,7 +86,16 @@ it('keeps the applied Antigravity effort in the collapsed task picker using its 
   await screen.findByRole('button', { name: '高' });
   fireEvent.keyDown(document, { key: 'Escape' });
   expect(screen.queryByRole('dialog')).toBeNull();
-  expect(screen.getByRole('button', { name: '选择智能体与模型' }).textContent).toContain(`${model} · 中等`);
+  const trigger = screen.getByRole('button', { name: '选择智能体与模型' });
+  expect(trigger.textContent).toBe('Antigravity·MH · gemini-4-neon · 中等');
+  expect(trigger.querySelector('[data-agent-icon] > svg image')?.getAttribute('href')).toContain('antigravity.png');
+  expect(trigger.querySelector('.m13-agent-badge image')?.getAttribute('href')).toContain('model-hub.svg');
+});
+
+it('uses the saved Codex subscription name in the collapsed picker even without a known effort', () => {
+  const config = { ...profiles[0], name: '我的 Codex 订阅', codexSubscription: true };
+  render(<AgentModelPicker profiles={[config]} profileId={config.profileId} onPick={() => {}} onExtensions={() => {}} />);
+  expect(screen.getByRole('button', { name: '选择智能体与模型' }).textContent).toBe('我的 Codex 订阅 · 执行器默认');
 });
 
 it.each([undefined, { model: 'gpt-6.2-sol', effort: 'high' }, { model: null, effort: null }])(
@@ -152,8 +162,7 @@ it('shows the bound provider with the executor and offers only the selected mode
   }];
   render(<AgentModelPicker profiles={providerProfiles} profileId="gateway" model="gpt-6.1-sol" effort="none" onPick={() => {}} onExtensions={() => {}} />);
   const trigger = screen.getByRole('button', { name: '选择智能体与模型' });
-  expect(trigger.textContent).toContain('我的工作配置 · Codex · Model Hub');
-  expect(trigger.textContent).toContain('中等');
+  expect(trigger.textContent).toBe('我的工作配置 · gpt-6.1-sol · 中等');
   expect(trigger.querySelector('.m13-agent-badge image')?.getAttribute('href')).toContain('model-hub');
   open();
   expect(screen.getByRole('button', { name: '我的工作配置 · Codex · Model Hub' }).querySelector('.m13-agent-badge')).toBeTruthy();

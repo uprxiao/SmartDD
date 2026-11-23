@@ -17,8 +17,68 @@ const purposeLabels = {
   embedding: '向量',
 };
 
+type ModelMetadata = Pick<ProviderCatalogModel, 'id' | 'name' | 'vendor' | 'purpose'>;
+
+const matchesQuery = (model: ModelMetadata, term: string) =>
+  model.name.toLowerCase().includes(term) || model.id.toLowerCase().includes(term);
+const vendorsOf = (models: ModelMetadata[]) => [...new Set(models.map(model => model.vendor ?? '其他'))]
+  .sort((a, b) => a.localeCompare(b, 'zh-CN'));
+
+export type ModelCatalogFilters = { query: string; vendor: string; purpose: string };
+
+export function ProviderModelCandidates({ models, picked, filters, onFilters, onToggle, busy, loaded }: {
+  models: ModelMetadata[];
+  picked: Set<string>;
+  filters: ModelCatalogFilters;
+  onFilters: (filters: ModelCatalogFilters) => void;
+  onToggle: (id: string, checked: boolean) => void;
+  busy: boolean;
+  loaded: boolean;
+}) {
+  const term = filters.query.trim().toLowerCase();
+  const owners = vendorsOf(models);
+  const visible = models.filter(model => matchesQuery(model, term) &&
+    (!filters.vendor || filters.vendor === (model.vendor ?? '其他')) &&
+    (!filters.purpose || filters.purpose === (model.purpose ?? 'unknown')));
+  const empty = !loaded ? '点击「刷新模型」获取目录。' : !models.length ? '没有未接入的模型。' : '没有符合条件的模型。';
+  return <div className="m13-model-picker m13-model-candidates">
+    <div className="m13-model-picker-tools">
+      <label className="m13-model-picker-search">
+        <Search size={14} aria-hidden="true"/>
+        <input className="m13-input" aria-label="搜索模型" placeholder="搜索模型" value={filters.query}
+          onChange={e=>onFilters({...filters,query:e.target.value})}/>
+      </label>
+      <select className="m13-input" aria-label="厂商" value={filters.vendor} onChange={e=>onFilters({...filters,vendor:e.target.value})}>
+        <option value="">全部厂商</option>
+        {filters.vendor&&!owners.includes(filters.vendor)&&<option>{filters.vendor}</option>}
+        {owners.map(owner=><option key={owner}>{owner}</option>)}
+      </select>
+      <select className="m13-input" aria-label="用途" value={filters.purpose} onChange={e=>onFilters({...filters,purpose:e.target.value})}>
+        <option value="">全部用途</option>
+        {Object.entries(purposeLabels).map(([id,label])=><option key={id} value={id}>{id==='conversation'?'对话与编程':label}</option>)}
+        <option value="unknown">待确认</option>
+      </select>
+    </div>
+    <div className="m13-model-picker-scroll">
+      <table aria-label="未选模型">
+        <thead><tr><th scope="col">模型</th><th scope="col">厂商</th><th scope="col">用途</th><th scope="col">状态</th></tr></thead>
+        <tbody>
+          {visible.map(model=><tr key={model.id} data-model={model.id}>
+            <td><label title={model.id}><input type="checkbox" checked={picked.has(model.id)} disabled={busy}
+              onChange={e=>onToggle(model.id,e.target.checked)}/><span>{model.name}</span></label></td>
+            <td title={model.vendor}>{model.vendor??'其他'}</td>
+            <td>{model.purpose==='conversation'?'对话与编程':model.purpose?purposeLabels[model.purpose]:'待确认'}</td>
+            <td>{picked.has(model.id)&&<span className="m13-model-pending">待接入</span>}</td>
+          </tr>)}
+          {!visible.length&&<tr><td colSpan={4} className="m13-model-picker-empty">{empty}</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  </div>;
+}
+
 export function ProviderModelPicker({ models, picked, onPick, busy }: {
-  models: Pick<ProviderCatalogModel, 'id' | 'name' | 'vendor' | 'purpose'>[];
+  models: ModelMetadata[];
   picked: string[];
   onPick: (ids: string[]) => void;
   busy: boolean;
@@ -34,7 +94,7 @@ export function ProviderModelPicker({ models, picked, onPick, busy }: {
     (filter !== 'conversation' || !model.purpose || model.purpose === 'conversation') &&
     (filter !== 'selected' || selected.has(model.id)) &&
     (!vendor || vendor === (model.vendor ?? '其他')) &&
-    (!term || model.name.toLowerCase().includes(term) || model.id.toLowerCase().includes(term)));
+    matchesQuery(model, term));
   const allVisibleSelected = visible.every(model => selected.has(model.id));
 
   return <section className="m13-fetched m13-model-picker" aria-label="选择模型">

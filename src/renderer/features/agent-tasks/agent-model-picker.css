@@ -1,11 +1,11 @@
 /* 布局尺寸沿用原型 m14.css 的 picker；颜色接实际主题变量。 */
-.agent-model-picker { position: relative; min-width: 0; }
+.agent-model-picker { position: relative; min-width: 0; max-width: 100%; }
 .agent-model-pill { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 28px; padding: 0 8px; border-radius: 14px; font-size: 13px; white-space: nowrap; }
 .agent-model-pill svg { flex: none; }
 .agent-model-pill .m13-agent-icon,.agent-picker-rail .m13-agent-icon { position: relative; display: inline-flex; }
 .agent-model-pill .m13-agent-badge,.agent-picker-rail .m13-agent-badge { position: absolute; display: inline-flex; border-radius: 3px; background: var(--background); box-shadow: 0 0 0 1px var(--background); }
-.agent-model-pill :is(.agent-model-profile, small) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.agent-model-pill small { color: var(--foreground-passive); max-width: 150px; }
+.agent-model-caption { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.agent-model-separator { color: var(--foreground-passive); }
 .agent-model-pill:hover,.agent-model-pill[aria-expanded=true] { background: var(--hover); }
 .agent-picker { position: fixed; z-index: 60; width: 560px; max-width: calc(100vw - 40px); border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--foreground); box-shadow: 0 10px 32px #0004; overflow: hidden; text-align: left; }
 .agent-picker-main { display: flex; height: 340px; }
@@ -36,4 +36,4 @@
 .agent-extension-toggle { display: flex; align-items: center; gap: 8px; margin: 0 2px 6px; padding: 6px 8px; border-radius: 8px; background: var(--hover); font-size: 12px; }
 .agent-extension-toggle > span { flex: 1; display: flex; flex-direction: column; line-height: 1.3; }
 .agent-extension-toggle small { font-size: 11px; color: var(--foreground-passive); }
-@media (max-width: 640px) { .agent-picker-traits { width: 120px; } .agent-model-pill small { display: none; } }
+@media (max-width: 640px) { .agent-picker-traits { width: 120px; } }

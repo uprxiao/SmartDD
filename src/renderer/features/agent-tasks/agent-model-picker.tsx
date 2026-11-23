@@ -127,7 +127,6 @@ export function AgentModelPicker(p: Props) {
     document.addEventListener('mousedown', outside); document.addEventListener('keydown', key);
     return () => { document.removeEventListener('mousedown', outside); document.removeEventListener('keydown', key); };
   }, [open, models, target, saving]); // a current model list is required for the keyboard shortcuts
-  const triggerProfile = selected?.codexSubscription ? 'Codex' : selected ? profileLabel(selected) : p.profileId;
   const triggerModel = p.model || p.defaultModel || selected?.defaultModel || undefined;
   const label = p.defaultPending ? '正在读取模型' : p.model
     ? p.nativeModels?.find(m => m.id === p.model)?.name ?? modelLabel(p.model)
@@ -135,10 +134,15 @@ export function AgentModelPicker(p: Props) {
   const triggerModels = selected?.kind === 'antigravity' ? selectedCatalog.data?.models ?? p.nativeModels : p.nativeModels;
   const triggerOption = modelOption(selected, triggerModels ?? [], triggerModel);
   const triggerEffort = resolveModelEffort(triggerOption, p.modelEfforts ? p.modelEfforts[modelEffortKey(p.profileId, triggerModel)] : p.effort, selected?.kind === 'codex');
-  const detail = `${label}${triggerEffort ? ` · ${effortLabel(triggerEffort)}` : ''}`;
+  const caption = [selected?.name ?? p.profileId, label];
+  if (triggerEffort) caption.push(effortLabel(triggerEffort));
   return <div className="agent-model-picker" ref={root}>
     <button type="button" disabled={p.disabled} ref={p.triggerRef} className="agent-model-pill" aria-label="选择智能体与模型" aria-haspopup="dialog" aria-expanded={open} onClick={() => { setRail(p.profileId); setQuery(''); setChoice(undefined); setOpen(v => !v); }}>
-      <AgentIcon tool={selected?.kind ?? 'codex'} provider={selected?.provider} size={16} /><span className="agent-model-profile" title={triggerProfile}>{triggerProfile}</span><small title={detail}>· {detail}</small><ChevronDown size={12} />
+      <AgentIcon tool={selected?.kind ?? 'codex'} provider={selected?.provider} size={16} />
+      <span className="agent-model-caption" title={caption.join(' · ')}>{caption.map((part, index) => <span key={index}>
+        {index > 0 && <span className="agent-model-separator"> · </span>}{part}
+      </span>)}</span>
+      <ChevronDown size={12} />
     </button>
     {open && target && createPortal(<div ref={popup} style={position} className="agent-picker" role="dialog" aria-label="选择智能体与模型">
       <div className="agent-picker-main">

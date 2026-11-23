@@ -292,10 +292,12 @@ button.m14-log:hover { background: var(--hover); }
 .m14-queued-meta button { display: inline-flex; align-items: center; gap: 3px; height: 22px; padding: 0 6px; border-radius: 6px; color: var(--secondary); }
 .m14-queued-meta button:hover:not(:disabled) { background: var(--hover); color: var(--text); }
 .m14-queued-meta button:disabled { opacity: .45; cursor: not-allowed; }
-/* 模型按钮（T3：图标＋模型名＋强度，药丸） */
-.m14-pill-btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border-radius: 14px; font-size: 13px; color: var(--text); white-space: nowrap; }
+/* 智能体与模型选择按钮 */
+.m14-pill-btn { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 28px; padding: 0 8px; border-radius: 14px; font-size: 13px; color: var(--text); white-space: nowrap; }
 .m14-pill-btn:hover, .m14-pill-btn[aria-expanded=true] { background: var(--hover); }
-.m14-pill-model { color: var(--muted); }
+.m14-pill-btn > svg { flex: none; }
+.m14-pill-caption { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.m14-pill-separator { color: var(--muted); }
 /* 模型选择器（T3 ModelPickerContent） */
 .m14-picker { position: absolute; bottom: calc(100% + 10px); z-index: 60; width: 560px; max-width: calc(100vw - 40px); border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); box-shadow: 0 10px 32px #0004; overflow: hidden; text-align: left; }
 :root[data-theme="dark"] .m14-picker { background: #252525; }
@@ -789,12 +791,10 @@ button.m14-log:hover { background: var(--hover); }
 .m14-composer-wrap { container-type: inline-size; }
 @container (max-width: 560px) {
   .m14-deleg { font-size: 0; gap: 0; padding: 0 6px; }
-  .m14-pill-model { display: none; }
   .m14-composer .reference-composer-toolbar { gap: 8px; }
   .m13-perm-trigger { font-size: 0; gap: 0; }
   .m13-perm-trigger svg { margin: 0; }
 }
-@container (max-width: 420px) { .m14-pill-btn > span:nth-of-type(1) { display: none; } }
 .m14-composer .reference-composer-toolbar { min-width: 0; }
 .m14-composer .reference-composer-toolbar > * { flex-shrink: 0; }
 .m14-composer .composer-profile { flex-shrink: 1; min-width: 0; }

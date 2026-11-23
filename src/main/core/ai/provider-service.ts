@@ -18,6 +18,7 @@ type ProviderRow = typeof aiProviders.$inferSelect;
 export class ProviderService {
   private readonly queues = new Map<string, Promise<unknown>>();
   private readonly mutations = new Map<string, number>();
+  private readonly catalogs = new Map<string, { generation: string; models: ProviderCatalogModel[] }>();
   constructor(private readonly db: AppDb, private readonly secrets: SecretsStore, private readonly agents: AgentService,
     private readonly client: ProviderClientOptions = {}, private readonly now = () => Date.now()) {}
 
@@ -26,18 +27,21 @@ export class ProviderService {
     const previous = id ? this.agents.providers().find((row) => row.id === id) : undefined;
     const oldModels = new Map(previous?.models.map((model) => [model.id, model]));
     // Availability and error history can only come from saved main-process checks.
-    const models = data.models.map((model) => ({ ...model,
+    const models = (input.models === undefined && previous ? previous.models : data.models).map((model) => ({ ...model,
       availability: oldModels.get(model.id)?.availability ?? { claude: 'untested' as const, codex: 'untested' as const },
       checks: oldModels.get(model.id)?.checks,
     }));
-    const saved = this.agents.saveProvider({ ...data, models }, id);
+    const recommended = input.recommended === undefined && previous ? previous.recommended : data.recommended;
+    const saved = this.agents.saveProvider({ ...data, models, recommended }, id);
     this.mutations.set(saved.id, (this.mutations.get(saved.id) ?? 0) + 1);
+    this.catalogs.delete(saved.id);
     return saved;
   }
 
   delete(id: string): string[] {
     const deleted = this.agents.deleteProvider(id);
     this.mutations.set(id, (this.mutations.get(id) ?? 0) + 1);
+    this.catalogs.delete(id);
     return deleted;
   }
 
@@ -109,32 +113,65 @@ export class ProviderService {
     } };
   }
 
-  refresh(id: string, signal?: AbortSignal): Promise<ProviderView> {
+  modelCatalog(id: string): ProviderCatalogModel[] | null {
+    const catalog = this.catalogs.get(id);
+    return catalog && catalog.generation === this.generation(this.row(id)) ? catalog.models : null;
+  }
+
+  saveModelSelection(id: string, expectedIds: string[], selectedIds: string[], identityRevision: number): ProviderView {
+    const ids = z.array(providerModelSchema.shape.id).max(4096);
+    const expected = new Set(ids.parse(expectedIds));
+    const selected = new Set(ids.parse(selectedIds));
+    const provider = this.view(id);
+    if (!provider || provider.identityRevision !== identityRevision || provider.models.length !== expected.size ||
+        provider.models.some(model => !expected.has(model.id))) {
+      throw new Error('供应商模型已变更，请重新打开详情后再编辑');
+    }
+    const models = provider.models.filter(model => selected.has(model.id));
+    const catalog = new Map(this.modelCatalog(id)?.map(model => [model.id, model]));
+    for (const modelId of selected) {
+      if (expected.has(modelId)) continue;
+      const model = catalog.get(modelId);
+      if (!model || model.offline) throw new Error('待接入模型已不在目录中，请刷新模型后重新选择');
+      models.push(modelForStorage(model));
+    }
+    const recommended = { ...provider.recommended };
+    for (const kind of codeAgentKindSchema.options) {
+      const modelId = recommended[kind];
+      if (modelId && !selected.has(modelId)) delete recommended[kind];
+    }
+    const { name, preset, endpoints, authType } = provider;
+    return this.agents.saveProvider({ name, preset, endpoints, authType, models, recommended }, id);
+  }
+
+  refresh(id: string, signal?: AbortSignal): Promise<ProviderView & { catalog: ProviderCatalogModel[] }> {
     return this.serial(id, async () => {
       if(signal?.aborted)throw new Error('请求已取消');
       const captured = this.capture(id);
       const options={...this.client,...(signal?{signal:this.client.signal?AbortSignal.any([this.client.signal,signal]):signal}:{})};
       const catalog = await fetchProviderModels(captured.target, options);
-      const received = z.array(providerModelSchema).max(4096).parse(presetModelMetadata(captured.row.preset,captured.target.endpoints,catalog.map(modelForStorage)));
+      const received = presetModelMetadata(captured.row.preset, captured.target.endpoints, catalog).map(model => ({
+        ...providerModelSchema.parse(modelForStorage(model)), vendor: model.vendor, purpose: model.purpose,
+      }));
       if(signal?.aborted)throw new Error('请求已取消');
       this.assertCurrent(id, captured.fingerprint);
-      const old = new Map(this.models(captured.row).map((model) => [model.id, model]));
-      const present = new Set(received.map((model) => model.id));
+      const present = new Map(received.map(model => [model.id, model]));
       const magpie=publicLocalMagpie(captured.row.preset,captured.target.endpoints);
-      const models: ProviderModel[] = received.map((model) => {
-        const previous=old.get(model.id);
-        const availability={...model.availability},checks={...previous?.checks};
+      const models: ProviderModel[] = this.models(captured.row).map(previous => {
+        const entry = present.get(previous.id);
+        if (!entry) return previous.catalogSource === 'manual' ? previous : { ...previous, offline: true };
+        const model = modelForStorage(entry);
+        const availability={...model.availability},checks={...previous.checks};
         for(const kind of codeAgentKindSchema.options){
           if(kind==='antigravity'&&!captured.target.endpoints.gemini)continue;
           if(magpie&&model.availability[kind]==='unavailable'){availability[kind]='unavailable';delete checks[kind];}
-          else availability[kind]=magpie&&previous?.availability[kind]==='unavailable'&&!previous.checks?.[kind]?'untested':previous?.availability[kind]??model.availability[kind]??'untested';
+          else availability[kind]=magpie&&previous.availability[kind]==='unavailable'&&!previous.checks?.[kind]?'untested':previous.availability[kind]??model.availability[kind]??'untested';
         }
         return {...model,availability,antigravity:previous?.antigravity,...(Object.keys(checks).length?{checks}:{checks:undefined})};
       });
-      for (const model of old.values()) if (!present.has(model.id)) models.push({ ...model, offline: true });
-      if (models.length > 4096) throw new Error('合并后的模型目录超过大小限制');
       this.db.update(aiProviders).set({ models: JSON.stringify(models), refreshedAt: this.now(), updatedAt: this.now() }).where(eq(aiProviders.id, id)).run();
-      return this.view(id);
+      this.catalogs.set(id, { generation: this.generation(captured.row), models: received });
+      return { ...this.view(id), catalog: received };
     });
   }
 
@@ -143,7 +180,7 @@ export class ProviderService {
     if(signal?.aborted||this.client.signal?.aborted)throw new Error('请求已取消');
     const provider=this.view(id);
     const manual=provider.models.length>0&&provider.models.every(model=>model.catalogSource==='manual')&&!publicLocalMagpie(provider.preset,provider.endpoints);
-    if(!manual)return this.refresh(id,signal);
+    if(!manual){await this.refresh(id,signal);return this.view(id);}
     return this.serial(id,async()=>{
       if(signal?.aborted||this.client.signal?.aborted)throw new Error('请求已取消');
       const captured=this.capture(id),models=this.models(captured.row);

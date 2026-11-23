@@ -79,6 +79,13 @@ export class AgentService {
     return this.db.transaction(() => {
       const before = id ? this.requireProvider(id) : undefined;
       if (this.db.select().from(aiProviders).all().some((row) => row.id !== id && row.name === data.name)) throw new Error('供应商名称已存在');
+      if (before) {
+        const selected = new Set(data.models.map(model => model.id));
+        const removed = new Set(modelsOf(before).map(model => model.id).filter(modelId => !selected.has(modelId)));
+        const users = removed.size ? this.configs().filter(config => config.providerId === id &&
+          (config.models.some(modelId => removed.has(modelId)) || (config.defaultModel && removed.has(config.defaultModel)))) : [];
+        if (users.length) throw new Error(`请先在这些智能体中移除模型：${users.map(config => config.name).join('、')}`);
+      }
       const providerId = id ?? randomUUID();
       const hadKey = Boolean(before && ((before.secretRef && this.secrets.has(before.secretRef)) || publicLocalMagpie(before.preset,endpointsOf(before))));
       let secretRef = before?.secretRef ?? null;
@@ -157,9 +164,16 @@ export class AgentService {
         if (!endpoints[agentProtocol[kind]]) throw new Error('供应商不支持该 Code Agent 所需协议');
         if (!verifiedPresetProtocol(provider.preset, endpoints, kind) && !modelsOf(provider).some((model) => !model.offline && model.availability[kind] === 'available')) throw new Error('自定义供应商须先验证该协议的模型工具调用');
         const allowed = new Set(modelsOf(provider).filter((model) => !model.offline && model.availability[kind] !== 'unavailable').map((model) => model.id));
-        selected = [...new Set(data.models)].filter((model) => allowed.has(model));
-        if (!selected.length) throw new Error('至少选择一个可用或未测试的模型');
-        defaultModel = data.defaultModel && selected.includes(data.defaultModel) ? data.defaultModel : selected[0];
+        const previous = before?.providerId === providerId ? before : undefined;
+        const previouslySelected = new Set<string>(previous ? z.array(z.string()).parse(JSON.parse(previous.models)) : []);
+        if (previous?.defaultModel) previouslySelected.add(previous.defaultModel);
+        selected = [...new Set(data.models)].filter(model => allowed.has(model) || previouslySelected.has(model));
+        const eligible = selected.filter(model => allowed.has(model));
+        if (!eligible.length) throw new Error('至少选择一个可用或未测试的模型');
+        if (previous?.defaultModel && (!data.defaultModel || !eligible.includes(data.defaultModel))) {
+          throw new Error('请先将另一个已勾选的模型设为默认');
+        }
+        defaultModel = data.defaultModel && eligible.includes(data.defaultModel) ? data.defaultModel : eligible[0];
       } else if (kind === 'antigravity' || tool.login === 'none') throw new Error('此 Code Agent 当前没有可用的本机登录');
       const profileId = id ?? randomUUID();
       this.db.insert(aiProfiles).values({ id: profileId, name: data.name, runner: tool.kind, executable: tool.executable, env: '[]', args: '[]', isDefault: false, createdAt: this.now(), updatedAt: this.now() })

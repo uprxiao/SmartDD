@@ -108,8 +108,29 @@ it('merges directory changes without losing per-tool checks or selected config i
   expect(refreshed.models).toEqual(expect.arrayContaining([
     expect.objectContaining({ id: 'a', offline: false, availability: { claude: 'available', codex: 'unavailable' } }),
     expect.objectContaining({ id: 'b', offline: true, availability: { claude: 'unavailable', codex: 'available' } }),
-    expect.objectContaining({ id: 'c', offline: false, availability: { claude: 'untested', codex: 'untested' } }),
   ])); expect(agents.configs()).toEqual([]);
+  expect(refreshed.models.map(model => model.id)).toEqual(['a', 'b']);
+  expect(refreshed.catalog.map(model => model.id)).toEqual(['a', 'c']);
+});
+
+it('refreshes without enrolling models and protects agent references until the agent saves its removal', async () => {
+  const service = new ProviderService(db, secrets, agents, { fetch: async () => json({ data: [
+    { id: 'a' }, { id: 'b' }, { id: 'deepseek-v4-pro', owned_by: 'deepseek' },
+  ] }) });
+  const provider = agents.saveProvider(input({ models: [
+    { id: 'a', name: 'A' }, { id: 'b', name: 'B', availability: { claude: 'untested', codex: 'available' } },
+  ] }));
+  const agent = { name: 'Agent referencing A', toolId: 'codex', source: 'provider', providerId: provider.id, models: ['a', 'b'], defaultModel: 'a' } as const;
+  const saved = agents.saveConfig({ ...agent, models: [...agent.models] });
+  await service.refresh(provider.id);
+  expect(service.modelCatalog(provider.id)).toContainEqual(expect.objectContaining({ id: 'deepseek-v4-pro', vendor: 'DeepSeek' }));
+  expect(() => service.saveModelSelection(provider.id, ['a', 'b'], ['b', 'deepseek-v4-pro'], provider.identityRevision)).toThrow('Agent referencing A');
+  expect(agents.providers()[0].models.map(model => model.id)).toEqual(['a', 'b']);
+  expect(() => agents.saveConfig({ ...agent, models: ['b'] }, saved.id)).toThrow('设为默认');
+  agents.saveConfig({ ...agent, models: ['b'], defaultModel: 'b' }, saved.id);
+  expect(service.saveModelSelection(provider.id, ['a', 'b'], ['b', 'deepseek-v4-pro'], provider.identityRevision).models.map(model => model.id)).toEqual(['b', 'deepseek-v4-pro']);
+  expect(() => service.saveModelSelection(provider.id, ['a', 'b'], ['b'], provider.identityRevision)).toThrow('已变更');
+  expect((await service.refreshForLaunch(provider.id, 'codex')).models.map(model => model.id)).toEqual(['b', 'deepseek-v4-pro']);
 });
 
 it.each(['name', 'key', 'endpoints'] as const)('discards a late refresh after %s editing, including a frozen clock', async (field) => {
@@ -246,8 +267,9 @@ it('normalizes empty remote display names before committing and keeps the Provid
 it('redacts credentials in successful display metadata and rejects credential-bearing model identities without modifying the old directory', async () => {
   const queue = [json({ data: [{ id: 'a', display_name: 'echo PUBLIC_PROVIDER_TEST' }] }), json({ data: [{ id: 'PUBLIC_PROVIDER_TEST' }] })];
   const service = new ProviderService(db, secrets, agents, { fetch: async () => queue.shift()! });
-  const p = service.save(input()); const safe = await service.refresh(p.id);
+  const p = service.save(input()); const { catalog, ...safe } = await service.refresh(p.id);
   expect(safe.models[0].name).toBe('echo [redacted]');
   await expect(service.refresh(p.id)).rejects.toThrow('包含认证值'); expect(agents.providers()[0]).toEqual(safe);
+  expect(service.modelCatalog(p.id)).toEqual(catalog);
   expect(sqlite.prepare('SELECT models FROM ai_providers').get()).not.toEqual(expect.objectContaining({ models: expect.stringContaining('PUBLIC_PROVIDER_TEST') }));
 });

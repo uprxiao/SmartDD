@@ -15,6 +15,8 @@ export function createAgentController(service: AgentService, tools: AgentToolSer
       saveProvider: (input: ProviderInput, id?: string) => providers.save(input, id),
       deleteProvider: (id: string) => { const deleted=providers.delete(id);onTasksChanged?.();return deleted; },
       refreshProviderModels: (id: string) => providers.refresh(id),
+      providerModelCatalog: (id: string) => providers.modelCatalog(id),
+      saveProviderModels: (id: string, expected: string[], selected: string[], revision: number) => providers.saveModelSelection(id, expected, selected, revision),
       probeProvider: (id: string, kind: CodeAgentKind) => providers.probe(id, kind),
       checkProviderModel: (id: string, kind: CodeAgentKind, model: string) => providers.check(id, kind, model),
       list: () => service.configs(),

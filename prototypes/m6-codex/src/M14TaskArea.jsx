@@ -307,9 +307,13 @@ export function ModelPicker({ agent, model, effort, onPick, onClose, onToast, ru
 }
 export function ModelPill({ agent, model, effort, onClick, open }) {
   const a = AGENTS.find(x => x.id === agent); const m = a.models.find(x => x.id === model);
+  const caption = [a.name, m?.name ?? '执行器默认', effort].filter(Boolean);
   return <button type="button" className="m14-pill-btn" aria-haspopup="dialog" aria-expanded={open} onClick={onClick}>
     {a.tool ? <AgentIcon tool={a.tool} provider={a.providerBadge ?? (a.provider ? { catalog: 'deepseek', name: 'DeepSeek' } : null)} size={16} /> : <SquareTerminal size={14} />}
-    <span>{a.short}</span><span className="m14-pill-model">{m?.name}{effort ? ' ' + effort : ''}</span><ChevronDown size={12} />
+    <span className="m14-pill-caption" title={caption.join(' · ')}>{caption.map((part, index) => <span key={index}>
+      {index > 0 && <span className="m14-pill-separator"> · </span>}{part}
+    </span>)}</span>
+    <ChevronDown size={12} />
   </button>;
 }
 

@@ -37,12 +37,29 @@ it('lists available+untested models but hides unavailable/offline models, and th
  edit();expect(within(screen.getByRole('group',{name:'模型'})).queryByText('Unavailable Model')).toBeNull();expect(screen.queryByText('Offline Model')).toBeNull();expect(screen.getByText('Model B')).toBeTruthy();
  fireEvent.click(within(modelRow('a')).getByRole('checkbox'));expect((createButton() as HTMLButtonElement).disabled).toBe(true);fireEvent.click(createButton());expect(api.save).not.toHaveBeenCalled();
 });
-it('default deselection falls back to the first still selected model',async()=>{
- edit({initial:config()});fireEvent.click(within(modelRow('b')).getByRole('checkbox'));fireEvent.click(screen.getByRole('button',{name:'保存'}));await waitFor(()=>expect(api.save).toHaveBeenCalledOnce());expect(api.save.mock.calls[0][0]).toMatchObject({models:['a'],defaultModel:'a'});
+it('requires a new default before removing the saved default from an existing agent',async()=>{
+ edit({initial:config()});
+ const previous=within(modelRow('b')).getByRole<HTMLInputElement>('checkbox');
+ fireEvent.click(previous);
+ expect(previous.checked).toBe(true);
+ expect(screen.getByRole('alert').textContent).toContain('请先将另一个已勾选的模型设为默认');
+ fireEvent.click(within(modelRow('a')).getByRole('button',{name:'设为默认'}));
+ fireEvent.click(previous);
+ expect(within(modelRow('b')).getByText('待移除')).toBeTruthy();
+ expect(api.save).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'保存'}));
+ await waitFor(()=>expect(api.save).toHaveBeenCalledOnce());
+ expect(api.save.mock.calls[0][0]).toMatchObject({models:['a'],defaultModel:'a'});
 });
-it('refresh removes newly unusable selected/default models and never silently adds an unselected recommendation',async()=>{
+it('keeps an unavailable saved model visible for explicit removal and requires a usable default',async()=>{
  const {props,rerender}=edit({initial:config()});const fresh=provider();fresh.models=fresh.models.map(m=>m.id==='b'?{...m,availability:{claude:'unavailable',codex:'available'}}:m);fresh.recommended.claude='bad';rerender(<AgentEditor {...props} providers={[fresh]}/>);
- expect(screen.queryByText('Model B')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'保存'}));await waitFor(()=>expect(api.save).toHaveBeenCalledOnce());expect(api.save.mock.calls[0][0]).toMatchObject({models:['a'],defaultModel:'a'});
+ expect(within(modelRow('b')).getByText('不可用')).toBeTruthy();
+ expect(screen.getByRole<HTMLButtonElement>('button',{name:'保存'}).disabled).toBe(true);
+ fireEvent.click(within(modelRow('a')).getByRole('button',{name:'设为默认'}));
+ fireEvent.click(within(modelRow('b')).getByRole('checkbox'));
+ fireEvent.click(screen.getByRole('button',{name:'保存'}));
+ await waitFor(()=>expect(api.save).toHaveBeenCalledOnce());
+ expect(api.save.mock.calls[0][0]).toMatchObject({models:['a'],defaultModel:'a'});
 });
 it.each(['gone','bad','absent'])('new selection ignores unusable recommended %s and falls back to a usable model',recommended=>{
  const p=provider({recommended:{claude:recommended,codex:recommended}});edit({providers:[p]});expect((within(modelRow('a')).getByRole('checkbox') as HTMLInputElement).checked).toBe(true);expect((createButton() as HTMLButtonElement).disabled).toBe(false);
